@@ -46,6 +46,9 @@ import Foundation
     /// For entitlements granted via RevenueCat's External Purchases API.
     @objc(RCExternal) case external = 8
 
+    /// For entitlements granted via Paddle.
+    @objc(RCPaddle) case paddle = 9
+
 }
 
 extension Store: CaseIterable {}

@@ -261,7 +261,7 @@ fileprivate extension EntitlementInfo {
             if productIdentifier.isPromotionalLifetime(store: store) {
                 return "Lifetime"
             }
-        case .appStore, .macAppStore, .playStore, .stripe, .unknownStore, .amazon, .rcBilling, .external:
+        case .appStore, .macAppStore, .playStore, .stripe, .unknownStore, .amazon, .rcBilling, .external, .paddle:
             return nil
         @unknown default:
             return nil
@@ -297,7 +297,7 @@ fileprivate extension EntitlementInfo {
             return .promotional
         case .playStore:
             return .google
-        case .stripe, .rcBilling:
+        case .stripe, .rcBilling, .paddle:
             return .web
         case .external, .unknownStore:
             return .otherStorePurchase
@@ -321,7 +321,7 @@ fileprivate extension EntitlementInfo {
                 return .date(date)
             }
             return nil
-        case .appStore, .macAppStore, .playStore, .stripe, .unknownStore, .amazon, .rcBilling, .external:
+        case .appStore, .macAppStore, .playStore, .stripe, .unknownStore, .amazon, .rcBilling, .external, .paddle:
             if let date = self.expirationDate.map({ dateFormatter.string(from: $0) }) {
                 return .date(date)
             }
