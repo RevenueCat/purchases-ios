@@ -43,7 +43,7 @@ enum OfferingStrings {
     case unknown_package_type(Package)
     case custom_package_type(Package)
     case overriding_package(old: String, new: String)
-    case known_issue_ios_18_4_simulator
+    case known_issue_ios_18_4_simulator_products_not_found
 
 }
 
@@ -157,11 +157,12 @@ extension OfferingStrings: LogMessage {
         case let .overriding_package(old, new):
             return "Package: \(old) already exists, overwriting with: \(new)"
 
-        case .known_issue_ios_18_4_simulator:
+        case .known_issue_ios_18_4_simulator_products_not_found:
             return "None of the products registered in the RevenueCat dashboard could be fetched from App Store " +
             "Connect (or the StoreKit Configuration file if one is being used)." +
-            "\nThis issue is widely reported by iOS 18.4 simulator users. Try using a different simulator version." +
-            "\nMore information: https://github.com/RevenueCat/purchases-ios/issues/4954"
+            "\nThis issue is widely reported by iOS 18.4 simulator users. Try using a different iOS version with " +
+            "your simulator." +
+            "\nMore information: https://rev.cat/ios-18-4-simulator-issue"
         }
     }
 

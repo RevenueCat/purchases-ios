@@ -224,9 +224,9 @@ class SystemInfo {
                                                            minorVersion: 4,
                                                            patchVersion: 0)
 
-        // Conservative estimate. No iOS fix version currently known (as at 2025-04-15).
-        let firstOSVersionWithFix = OperatingSystemVersion(majorVersion: 19,
-                                                           minorVersion: 0,
+        // Conservative estimate. No Simulator iOS fix version currently known (as at 2025-04-15).
+        let firstOSVersionWithFix = OperatingSystemVersion(majorVersion: 18,
+                                                           minorVersion: 5,
                                                            patchVersion: 0)
 
         return SystemInfo.isRunningInSimulator
