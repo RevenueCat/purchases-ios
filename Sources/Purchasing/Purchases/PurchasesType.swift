@@ -30,6 +30,7 @@ public protocol PurchasesType: AnyObject {
      * The three-letter code representing the country or region
      * associated with the App Store storefront.
      * - Note: This property uses the ISO 3166-1 Alpha-3 country code representation.
+     * 
      * #### Related articles
      * - ``Purchases/getStorefront(completion:)``
      * - ``Purchases/getStorefront()``

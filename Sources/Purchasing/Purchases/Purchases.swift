@@ -247,9 +247,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         set { self.systemInfo.finishTransactions = newValue.finishTransactions }
     }
 
-    /// The three-letter code representing the country or region
-    /// associated with the App Store storefront.
-    /// - Note: This property uses the ISO 3166-1 Alpha-3 country code representation.
     @objc public var storeFrontCountryCode: String? {
         systemInfo.storefront?.countryCode
     }
