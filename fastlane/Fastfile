@@ -150,9 +150,6 @@ platform :ios do
       pr_number = $1
     end
 
-    UI.message("TESTING Branch name: #{branch_name}")
-    UI.message("TESTING PR number: #{pr_number} (is nil: #{pr_number.nil?})")
-
     emerge_args = {repo_name: "RevenueCat/purchases-ios"}
     emerge_args[:pr_number] = pr_number if pr_number
     emerge(emerge_args)
