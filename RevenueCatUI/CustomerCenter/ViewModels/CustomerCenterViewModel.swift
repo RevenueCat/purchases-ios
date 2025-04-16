@@ -122,10 +122,6 @@ import StoreKit
 
     #endif
 
-    func resetScreen() {
-
-    }
-
     func loadScreen(shouldSync: Bool = false) async {
         do {
             if shouldSync {

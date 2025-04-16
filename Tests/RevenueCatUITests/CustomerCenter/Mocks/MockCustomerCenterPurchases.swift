@@ -131,4 +131,9 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
         }
         return .success
     }
+
+    var syncPurchasesCount = 0
+    func syncPurchases() async throws {
+        syncPurchasesCount += 1
+    }
 }

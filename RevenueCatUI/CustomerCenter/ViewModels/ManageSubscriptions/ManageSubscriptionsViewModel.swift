@@ -217,18 +217,7 @@ private extension ManageSubscriptionsViewModel {
             }
 
         case .changePlans, .cancel:
-            do {
-                if path.type == .cancel {
-                    self.actionWrapper.handleAction(
-                        .subscriptionCancelled(purchaseInformation?.productIdentifier ?? "")
-                    )
-                }
-
-                self.actionWrapper.handleAction(.showingManageSubscriptions)
-                try await purchasesProvider.showManageSubscriptions()
-            } catch {
-                self.state = .error(error)
-            }
+            self.actionWrapper.handleAction(.showingManageSubscriptions)
 
         case .customUrl:
             guard let url = path.url,

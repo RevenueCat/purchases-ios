@@ -56,11 +56,6 @@ import RevenueCat
 
     // MARK: - Subscription Management
 
-    #if os(iOS) || os(macOS) || os(visionOS)
-    @Sendable
-    func showManageSubscriptions() async throws
-    #endif
-
     #if os(iOS) || os(visionOS)
     @Sendable
     func beginRefundRequest(forProduct productID: String) async throws -> RefundRequestStatus

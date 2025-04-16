@@ -46,7 +46,6 @@ struct CustomerCenterActionViewModifier: ViewModifier {
     @State private var feedbackSurveyCompleted: UniqueWrapper<String>?
     @State private var managementOptionSelected: UniqueWrapper<CustomerCenterActionable>?
     @State private var promotionalOfferSuccess: UniqueWrapper<Void>?
-    @State private var subscriptionCancelled: UniqueWrapper<String>?
 
     func body(content: Content) -> some View {
         content
@@ -72,8 +71,6 @@ struct CustomerCenterActionViewModifier: ViewModifier {
                         value: managementOptionSelected)
             .preference(key: CustomerCenterView.PromotionalOfferSuccessPreferenceKey.self,
                         value: promotionalOfferSuccess)
-            .preference(key: CustomerCenterView.SubscriptionCancelledPreferenceKey.self,
-                        value: subscriptionCancelled)
     }
 
     // Set up direct binding to the state variables
@@ -112,10 +109,6 @@ struct CustomerCenterActionViewModifier: ViewModifier {
 
         actionWrapper.setPromotionalOfferSuccess = {
             promotionalOfferSuccess = UniqueWrapper(value: ())
-        }
-
-        actionWrapper.setSubscriptionCancelled = { productIdentifier in
-            subscriptionCancelled = UniqueWrapper(value: productIdentifier)
         }
     }
 }
