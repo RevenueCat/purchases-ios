@@ -236,7 +236,9 @@ private extension OfferingsManager {
             let products = result.value ?? []
 
             guard products.isEmpty == false else {
-                completion(.failure(Self.createErrorForEmptyResult(result.error)))
+                let subjectToSimIssue = self.systemInfo.isSubjectToKnownIssue_18_4_sim()
+                completion(.failure(Self.createErrorForEmptyResult(result.error,
+                                                                   isSubjectToSimIssue: subjectToSimIssue)))
                 return
             }
 
@@ -287,10 +289,14 @@ private extension OfferingsManager {
         }
     }
 
-    private static func createErrorForEmptyResult(_ error: PurchasesError?) -> OfferingsManager.Error {
+    private static func createErrorForEmptyResult(_ error: PurchasesError?,
+                                                  isSubjectToSimIssue: Bool = false) -> OfferingsManager.Error {
         if let purchasesError = error,
            case ErrorCode.productRequestTimedOut = purchasesError.error {
             return .timeout(purchasesError)
+        } else if isSubjectToSimIssue {
+            return .configurationError(Strings.offering.known_issue_ios_18_4_simulator.description,
+                                       underlyingError: error?.asPublicError)
         } else {
             return .configurationError(Strings.offering.configuration_error_products_not_found.description,
                                        underlyingError: error?.asPublicError)
