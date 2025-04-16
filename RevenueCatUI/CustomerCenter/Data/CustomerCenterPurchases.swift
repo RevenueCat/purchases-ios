@@ -78,8 +78,8 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
         try await Purchases.shared.restorePurchases()
     }
 
-    func syncPurchases() async throws {
-        _ = try await Purchases.shared.syncPurchases()
+    func syncPurchases() async throws -> CustomerInfo {
+        try await Purchases.shared.syncPurchases()
     }
 
     #if os(iOS) || os(visionOS)

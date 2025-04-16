@@ -52,7 +52,7 @@ import RevenueCat
 
     func restorePurchases() async throws -> CustomerInfo
 
-    func syncPurchases() async throws
+    func syncPurchases() async throws -> CustomerInfo
 
     // MARK: - Subscription Management
 
