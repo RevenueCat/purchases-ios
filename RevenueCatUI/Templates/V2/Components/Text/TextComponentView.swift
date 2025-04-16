@@ -74,29 +74,49 @@ private struct NonLocalizedMarkdownText: View {
     let fontWeight: Font.Weight
 
     var markdownText: AttributedString? {
-        return try? AttributedString(
-            // AttributedString allegedly uses CommonMark hard line breaks
-            // which is two or more spaces before line break
-            markdown: self.text.replacingOccurrences(of: "\n", with: "  \n")
-        )
+        #if swift(>=5.7)
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            return try? AttributedString(
+                // AttributedString allegedly uses CommonMark hard line breaks
+                // which is two or more spaces before line break
+                markdown: self.text.replacingOccurrences(of: "\n", with: "  \n")
+            )
+        } else {
+            return nil
+        }
+        #else
+        return nil
+        #endif
     }
 
     var body: some View {
+        #if swift(>=5.7)
         Group {
             if let markdownText = self.markdownText {
+                // Use markdown if we can successfully parse it
                 Text(markdownText)
                     .font(self.font)
                     .fontWeight(self.fontWeight)
             } else {
-                Text(verbatim: self.text)
+                // Display text as is because markdown is priority
+                Text(self.text)
                     .font(self.font)
                     .fontWeight(self.fontWeight)
             }
         }
+        #else
+        // Display text as is because markdown is priority
+        Text(self.text)
+            .font(self.font)
+            .fontWeight(self.fontWeight)
+        #endif
     }
 }
 
 #if DEBUG
+
+// Needed for Xcode 14 since there are more than 10 previews
+#if swift(>=5.9)
 
 // swiftlint:disable type_body_length
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -616,6 +636,8 @@ struct TextComponentView_Previews: PreviewProvider {
 
     }
 }
+
+#endif
 
 #endif
 
