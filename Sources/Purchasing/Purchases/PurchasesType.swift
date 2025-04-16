@@ -71,7 +71,7 @@ public protocol PurchasesType: AnyObject {
 
     /**
      * Obtain the storefront currently used by the Apple account. This will use StoreKit 2 first,
-     * and if not possible, fallback to StoreKit 1. It will be null if we can't obtain Apple's storefront.
+     * and if not possible, fallback to StoreKit 1. It will be `nil` if we can't obtain Apple's storefront.
      *
      * #### Related Articles
      * - ``Purchases/storeFrontCountryCode``
