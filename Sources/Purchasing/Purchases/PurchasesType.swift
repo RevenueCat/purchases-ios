@@ -27,7 +27,9 @@ public protocol PurchasesType: AnyObject {
     var appUserID: String { get }
 
     /**
-     * The storefront country code currently used by the Apple account. This is always provided by StoreKit 1.
+     * The three-letter code representing the country or region
+     * associated with the App Store storefront.
+     * - Note: This property uses the ISO 3166-1 Alpha-3 country code representation.
      * #### Related articles
      * - ``Purchases/getStorefront(completion:)``
      * - ``Purchases/getStorefront()``
