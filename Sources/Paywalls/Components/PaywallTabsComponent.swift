@@ -121,6 +121,28 @@ public extension PaywallComponent {
             public enum TabControlType: Codable, Sendable, Hashable, Equatable {
                 case buttons
                 case toggle
+
+                public init(from decoder: Decoder) throws {
+                    let container = try decoder.singleValueContainer()
+                    let value = try container.decode(String.self)
+
+                    switch value {
+                    case "buttons": self = .buttons
+                    case "toggle": self = .toggle
+                    default: throw DecodingError.dataCorruptedError(
+                        in: container,
+                        debugDescription: "Invalid TabControlType: \(value)"
+                    )
+                    }
+                }
+
+                public func encode(to encoder: Encoder) throws {
+                    var container = encoder.singleValueContainer()
+                    switch self {
+                    case .buttons: try container.encode("buttons")
+                    case .toggle: try container.encode("toggle")
+                    }
+                }
             }
 
             public let type: TabControlType
