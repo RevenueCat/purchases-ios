@@ -41,7 +41,7 @@ public typealias PurchaseCompletedBlock = @MainActor @Sendable (StoreTransaction
                                                                 Bool) -> Void
 
 /**
- Completion block for ``Purchases/getStorefrontCountryCode(``
+ Completion block for ``Purchases/getStorefront(completion:)``
  */
 public typealias GetStorefrontBlock = @MainActor @Sendable (Storefront?) -> Void
 
