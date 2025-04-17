@@ -392,6 +392,8 @@ extension StoreKit1WrapperTests {
         let error2 = NSError(domain: SKErrorDomain, code: SKError.paymentNotAllowed.rawValue)
         transaction2.mockError = error2
 
+        paymentQueue.stubbedStorefront = MockSK1Storefront(countryCode: "USA")
+
         wrapper?.paymentQueue(paymentQueue, updatedTransactions: [transaction0, transaction1, transaction2])
 
         let mockDiagnosticsTracker = try XCTUnwrap(self.mockDiagnosticsTracker)
@@ -402,18 +404,21 @@ extension StoreKit1WrapperTests {
         expect(params0.paymentDiscountId) == nil
         expect(params0.transactionState) == "PURCHASING"
         expect(params0.errorMessage) == nil
+        expect(params0.storefront) == "USA"
 
         let params1 = mockDiagnosticsTracker.trackedAppleTransactionQueueReceivedParams.value[1]
         expect(params1.productId) == "product_id_1"
         expect(params1.paymentDiscountId) == nil
         expect(params1.transactionState) == "RESTORED"
         expect(params1.errorMessage) == nil
+        expect(params1.storefront) == "USA"
 
         let params2 = mockDiagnosticsTracker.trackedAppleTransactionQueueReceivedParams.value[2]
         expect(params2.productId) == "product_id_2"
         expect(params2.paymentDiscountId) == nil
         expect(params2.transactionState) == "FAILED"
         expect(params2.errorMessage) == error2.localizedDescription
+        expect(params2.storefront) == "USA"
     }
 }
 

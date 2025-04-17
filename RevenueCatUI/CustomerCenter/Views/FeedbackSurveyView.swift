@@ -44,11 +44,13 @@ struct FeedbackSurveyView: View {
 
     init(
         feedbackSurveyData: FeedbackSurveyData,
+        purchasesProvider: CustomerCenterPurchasesType,
         actionWrapper: CustomerCenterActionWrapper,
         isPresented: Binding<Bool>
     ) {
         self._viewModel = StateObject(wrappedValue: FeedbackSurveyViewModel(
             feedbackSurveyData: feedbackSurveyData,
+            purchasesProvider: purchasesProvider,
             actionWrapper: actionWrapper
         ))
         self._isPresented = isPresented
@@ -77,6 +79,7 @@ struct FeedbackSurveyView: View {
                         promotionalOffer: promotionalOfferData.promotionalOffer,
                         product: promotionalOfferData.product,
                         promoOfferDetails: promotionalOfferData.promoOfferDetails,
+                        purchasesProvider: self.viewModel.purchasesProvider,
                         onDismissPromotionalOfferView: { userAction in
                             Task(priority: .userInitiated) {
                                 await viewModel.handleDismissPromotionalOfferView(
@@ -91,8 +94,15 @@ struct FeedbackSurveyView: View {
                     .environment(\.localization, localization)
                 })
         }
-        .navigationTitle(self.viewModel.feedbackSurveyData.configuration.title)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar(content: {
+            ToolbarItem(placement: .principal) {
+                Text(self.viewModel.feedbackSurveyData.configuration.title)
+                    .font(.headline)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+            }
+        })
     }
 
     private func dismissView() {
@@ -131,5 +141,51 @@ struct FeedbackSurveyButtonsView: View {
     }
 
 }
+
+#if DEBUG
+ @available(iOS 15.0, *)
+ @available(macOS, unavailable)
+ @available(tvOS, unavailable)
+ @available(watchOS, unavailable)
+ struct FeedbackSurveyView_Previews: PreviewProvider {
+
+    static let title = "really long tile that should go to multiple lines but its getting clipped and now it does not"
+
+    static var previews: some View {
+        ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
+            CompatibilityNavigationStack {
+                FeedbackSurveyView(
+                    feedbackSurveyData: FeedbackSurveyData(
+                        configuration: CustomerCenterConfigData.HelpPath.FeedbackSurvey(
+                            title: Self.title,
+                            options: [
+                                .init(id: "id1", title: "title1", promotionalOffer: nil),
+                                .init(id: "id2", title: "title2", promotionalOffer: nil),
+                                .init(id: "id3", title: "title3", promotionalOffer: nil)
+                            ]
+                        ),
+                        path: CustomerCenterConfigData.HelpPath(
+                            id: "id1",
+                            title: "helpPathTitle1",
+                            type: .missingPurchase,
+                            detail: nil
+                        ),
+                        onOptionSelected: {}
+                    ),
+                    purchasesProvider: CustomerCenterPurchases(),
+                    actionWrapper: .init(),
+                    isPresented: .constant(true)
+                )
+                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
+                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Monthly renewing - \(colorScheme)")
+        }
+    }
+
+ }
+
+#endif
 
 #endif

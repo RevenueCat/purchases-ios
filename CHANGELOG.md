@@ -1,3 +1,80 @@
+## 5.22.0
+## RevenueCat SDK
+### ✨ New Features
+* Add `getStorefront` APIs (#4997) via Toni Rico (@tonidero)
+
+### 🔄 Other Changes
+* [Paywalls v2] Fixes decoding `TabControlType` (#5001) via JayShortway (@JayShortway)
+
+## 5.21.2
+## RevenueCat SDK
+### Customer Center
+#### 🐞 Bugfixes
+* fix: Unify finding active transaction for customer center (#4992) via Facundo Menzella (@facumenzella)
+
+## RevenueCatUI SDK
+### Paywallv2
+#### 🐞 Bugfixes
+* Fix paywalls text component compilation for iOS 15 (#4995) via Josh Holtz (@joshdholtz)
+* Fix Paywalls v2 Text component to not localized from bundle but support markdown (#4990) via Josh Holtz (@joshdholtz)
+
+### 🔄 Other Changes
+* UI preview mode: enable customer center previews (#4947) via Antonio Pallares (@ajpallares)
+* Adds CEC V5 migration guide (#4984) via JayShortway (@JayShortway)
+
+## 5.21.1
+## RevenueCatUI SDK
+### Paywallv2
+#### 🐞 Bugfixes
+* Make Paywalls v2 Text use verbatim (#4975) via Josh Holtz (@joshdholtz)
+
+### 🔄 Other Changes
+* New APIs to CustomEntitlementsComputationMode SDK (#4972) via Toni Rico (@tonidero)
+* Updates the changelog for hotfix 4.43.5. (#4980) via JayShortway (@JayShortway)
+* Fixes unit tests compilation on Xcode 16.3/iOS 18.4 (#4977) via Antonio Pallares (@ajpallares)
+* Remove preprocessor script for PaywallsTester (#4969) via Antonio Pallares (@ajpallares)
+* [Customer center] unify and propagate Purchases provider (#4957) via Antonio Pallares (@ajpallares)
+
+## 5.21.0
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Remove Identifiable conformance from StoreKit2PurchaseIntentListenerType (#4964) via Will Taylor (@fire-at-will)
+* Fix `CustomerCenterViewController` view (#4960) via Antonio Pallares (@ajpallares)
+
+## RevenueCatUI SDK
+### Customer Center
+#### ✨ New Features
+* feat: Don't hide contact support on simulator (#4951) via Facundo Menzella (@facumenzella)
+* feat: Change default copy for web_subscription_manage (#4921) via Facundo Menzella (@facumenzella)
+#### 🐞 Bugfixes
+* Update strings for restore purchases alerts (#4933) via Cesar de la Vega (@vegaro)
+* Replace initial alert dialog with a progress view when restoring in Customer Center (#4930) via Cesar de la Vega (@vegaro)
+
+### 🔄 Other Changes
+* feat: Add log for promo offer eligibility (#4949) via Facundo Menzella (@facumenzella)
+
+## 5.20.3
+## RevenueCatUI SDK
+### Customer Center
+#### 🐞 Bugfixes
+* fix: Allow two lines for feedback survey title (#4950) via Facundo Menzella (@facumenzella)
+* feat: Reload customer center onCustomerCenterPromotionalOfferSuccess (#4917) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Only preview `RestorePurchasesAlert` on iOS (#4958) via Cesar de la Vega (@vegaro)
+* Add `X-Is-Backgrounded` header (#4938) via Toni Rico (@tonidero)
+* Add previews for `RestorePurchasesAlert` (#4922) via Cesar de la Vega (@vegaro)
+* [Diagnostics] Add `storefront` property to more events (#4948) via Toni Rico (@tonidero)
+* Improve Korean translation (#4946) via Jaewoong Eum (@skydoves)
+* [Diagnostics] Sync diagnostics if file reaches lower size limit (#4929) via Toni Rico (@tonidero)
+* Add diagnostics event when AppTransaction fails to be fetched (#4936) via Mark Villacampa (@MarkVillacampa)
+* [Paywalls] Fix gradients in angles around 135º (#4934) via Mark Villacampa (@MarkVillacampa)
+* Fix load shedder integration tests after project changes (#4932) via Toni Rico (@tonidero)
+* [Diagnostics] Fix cache fetch policy key not matching specs (#4924) via Toni Rico (@tonidero)
+* [Paywall] Center-align all Timeline component  icons by calculating and setting their max width (#4890) via Mark Villacampa (@MarkVillacampa)
+* [Paywalls] Add support for TimelineItem overrides (#4875) via Mark Villacampa (@MarkVillacampa)
+* [Paywalls] Extend the padding by border.width amount in components that support both (#4915) via Mark Villacampa (@MarkVillacampa)
+
 ## 5.20.2
 ## RevenueCat SDK
 ### 🐞 Bugfixes
@@ -974,6 +1051,10 @@ or if using the modifier:
 The RevenueCat iOS SDK v5 is here!! Version 5.0 of the RevenueCat SDK enables full StoreKit 2 flow on the SDK and the RevenueCat backend by default.
 
 See our [RevenueCat v5 Migration Guide](Sources/DocCDocumentation/DocCDocumentation.docc/V5_API_Migration_guide.md) for all the details.
+
+## 4.43.5
+### Other Changes
+* v4: Add promotional offer APIs to CustomEntitlementComputation V4 SDK (#4973) via Toni Rico (@tonidero)
 
 ## 4.43.4
 ### Bugfixes

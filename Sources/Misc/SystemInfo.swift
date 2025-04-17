@@ -47,6 +47,11 @@ class SystemInfo {
         set { self._finishTransactions.value = newValue }
     }
 
+    var isAppBackgroundedState: Bool {
+        get { self._isAppBackgroundedState.value }
+        set { self._isAppBackgroundedState.value = newValue }
+    }
+
     var bundle: Bundle { return self._bundle.value }
 
     var observerMode: Bool { return !self.finishTransactions }
@@ -54,6 +59,7 @@ class SystemInfo {
     private let sandboxEnvironmentDetector: SandboxEnvironmentDetector
     private let storefrontProvider: StorefrontProviderType
     private let _finishTransactions: Atomic<Bool>
+    private let _isAppBackgroundedState: Atomic<Bool>
     private let _bundle: Atomic<Bundle>
 
     private static let _forceUniversalAppStore: Atomic<Bool> = false
@@ -84,7 +90,7 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "5.21.0-SNAPSHOT"
+        return "5.23.0-SNAPSHOT"
     }
 
     static var systemVersion: String {
@@ -160,6 +166,7 @@ class SystemInfo {
          storeKitVersion: StoreKitVersion = .default,
          responseVerificationMode: Signing.ResponseVerificationMode = .default,
          dangerousSettings: DangerousSettings? = nil,
+         isAppBackgrounded: Bool? = nil,
          clock: ClockType = Clock.default,
          preferredLocalesProvider: PreferredLocalesProviderType = PreferredLocalesProvider.default) {
         self.platformFlavor = platformInfo?.flavor ?? "native"
@@ -167,6 +174,7 @@ class SystemInfo {
         self._bundle = .init(bundle)
 
         self._finishTransactions = .init(finishTransactions)
+        self._isAppBackgroundedState = .init(isAppBackgrounded ?? false)
         self.operationDispatcher = operationDispatcher
         self.storeKitVersion = storeKitVersion
         self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
@@ -175,31 +183,29 @@ class SystemInfo {
         self.dangerousSettings = dangerousSettings ?? DangerousSettings()
         self.clock = clock
         self.preferredLocalesProvider = preferredLocalesProvider
+
+        if isAppBackgrounded == nil {
+            self.isApplicationBackgrounded { isAppBackgrounded in
+                self.isAppBackgroundedState = isAppBackgrounded
+            }
+        }
     }
 
     var supportsOfflineEntitlements: Bool {
         !self.observerMode && !self.dangerousSettings.customEntitlementComputation
     }
 
-    /// Asynchronous API if caller can't ensure that it's invoked in the `@MainActor`
-    /// - Seealso: `isApplicationBackgrounded`
+    /// Asynchronous API to check if app is backgrounded at a specific moment.
     func isApplicationBackgrounded(completion: @escaping @Sendable (Bool) -> Void) {
         self.operationDispatcher.dispatchOnMainActor {
-            completion(self.isApplicationBackgrounded)
+            var isApplicationBackgrounded: Bool = false
+            #if os(iOS) || os(tvOS) || VISION_OS
+            isApplicationBackgrounded = self.isApplicationBackgroundedIOSAndTVOS
+            #elseif os(watchOS)
+            isApplicationBackgrounded = self.isApplicationBackgroundedWatchOS
+            #endif
+            completion(isApplicationBackgrounded)
         }
-    }
-
-    /// Synchronous API for callers in `@MainActor`.
-    /// - Seealso: `isApplicationBackgrounded(completion:)`
-    @MainActor
-    var isApplicationBackgrounded: Bool {
-    #if os(iOS) || os(tvOS) || VISION_OS
-        return self.isApplicationBackgroundedIOSAndTVOS
-    #elseif os(macOS)
-        return false
-    #elseif os(watchOS)
-        return self.isApplicationBackgroundedWatchOS
-    #endif
     }
 
     #if targetEnvironment(simulator)

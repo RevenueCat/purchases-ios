@@ -64,6 +64,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
          errorMessage: String?,
          errorCode: Int?,
          storeKitErrorDescription: String?,
+         storefront: String?,
          productId: String,
          promotionalOfferId: String?,
          winBackOfferApplied: Bool,
@@ -76,6 +77,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                               errorMessage: String?,
                               errorCode: Int?,
                               storeKitErrorDescription: String?,
+                              storefront: String?,
                               productId: String,
                               promotionalOfferId: String?,
                               winBackOfferApplied: Bool,
@@ -88,6 +90,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                  errorMessage,
                  errorCode,
                  storeKitErrorDescription,
+                 storefront,
                  productId,
                  promotionalOfferId,
                  winBackOfferApplied,
@@ -117,6 +120,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
          errorMessage: String?,
          errorCode: Int?,
          storeKitErrorDescription: String?,
+         storefront: String?,
          requestedProductIds: Set<String>,
          notFoundProductIds: Set<String>,
          responseTime: TimeInterval)
@@ -127,6 +131,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                               errorMessage: String?,
                               errorCode: Int?,
                               storeKitErrorDescription: String?,
+                              storefront: String?,
                               requestedProductIds: Set<String>,
                               notFoundProductIds: Set<String>,
                               responseTime: TimeInterval) {
@@ -137,6 +142,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                  errorMessage,
                  errorCode,
                  storeKitErrorDescription,
+                 storefront,
                  requestedProductIds,
                  notFoundProductIds,
                  responseTime)
@@ -353,6 +359,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
          eligibilityNoIntroOfferCount: Int?,
          errorMessage: String?,
          errorCode: Int?,
+         storefront: String?,
          responseTime: TimeInterval)
     ]> = .init([])
     // swiftlint:disable:next function_parameter_count
@@ -364,6 +371,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                                   eligibilityNoIntroOfferCount: Int?,
                                                   errorMessage: String?,
                                                   errorCode: Int?,
+                                                  storefront: String?,
                                                   responseTime: TimeInterval) {
         self.trackedAppleTrialOrIntroEligibilityRequestParams.modify {
             $0.append((storeKitVersion,
@@ -374,22 +382,26 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                        eligibilityNoIntroOfferCount,
                        errorMessage,
                        errorCode,
+                       storefront,
                        responseTime))
         }
     }
 
     let trackedAppleTransactionQueueReceivedParams: Atomic<[
+        // swiftlint:disable:next large_tuple
         (productId: String?,
          paymentDiscountId: String?,
          transactionState: String,
+         storefront: String?,
          errorMessage: String?)
     ]> = .init([])
     func trackAppleTransactionQueueReceived(productId: String?,
                                             paymentDiscountId: String?,
                                             transactionState: String,
+                                            storefront: String?,
                                             errorMessage: String?) {
         self.trackedAppleTransactionQueueReceivedParams.modify {
-            $0.append((productId, paymentDiscountId, transactionState, errorMessage))
+            $0.append((productId, paymentDiscountId, transactionState, storefront, errorMessage))
         }
     }
 
@@ -426,6 +438,14 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                        price: price,
                        currency: currency,
                        reason: reason))
+        }
+    }
+
+    let trackedAppleAppTransactionErrorReceivedParams: Atomic<[String]> = .init([])
+
+    func trackAppleAppTransactionError(errorMessage: String) {
+        self.trackedAppleAppTransactionErrorReceivedParams.modify {
+            $0.append(errorMessage)
         }
     }
 
