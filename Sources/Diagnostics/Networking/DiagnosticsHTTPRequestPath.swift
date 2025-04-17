@@ -46,10 +46,10 @@ extension HTTPRequest.DiagnosticsPath: HTTPRequestPath {
         }
     }
 
-    var pathComponent: String {
+    var relativePath: String {
         switch self {
         case .postDiagnostics:
-            return "diagnostics"
+            return "/v1/diagnostics"
         }
     }
 
