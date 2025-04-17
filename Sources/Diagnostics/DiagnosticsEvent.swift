@@ -81,6 +81,7 @@ struct DiagnosticsEvent: Codable, Equatable {
     struct Properties: Codable, Equatable {
         let verificationResult: String?
         let endpointName: String?
+        let host: String?
         let responseTimeMillis: Int?
         let storeKitVersion: String?
         let successful: Bool?
@@ -119,6 +120,7 @@ struct DiagnosticsEvent: Codable, Equatable {
 
         init(verificationResult: String? = nil,
              endpointName: String? = nil,
+             host: String? = nil,
              responseTime: TimeInterval? = nil,
              storeKitVersion: StoreKitVersion? = nil,
              successful: Bool? = nil,
@@ -156,6 +158,7 @@ struct DiagnosticsEvent: Codable, Equatable {
              reason: String? = nil) {
             self.verificationResult = verificationResult
             self.endpointName = endpointName
+            self.host = host
             self.responseTimeMillis = responseTime.map { Int($0 * 1000) }
             self.storeKitVersion = storeKitVersion.map { "store_kit_\($0.debugDescription)" }
             self.successful = successful

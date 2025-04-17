@@ -125,6 +125,7 @@ class DiagnosticsTrackerTests: TestCase {
 
     func testTracksHttpRequestPerformedWithExpectedParameters() async {
         self.tracker.trackHttpRequestPerformed(endpointName: "mock_endpoint",
+                                               host: "api.revenuecat.com",
                                                responseTime: 50,
                                                wasSuccessful: true,
                                                responseCode: 200,

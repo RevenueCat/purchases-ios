@@ -32,10 +32,11 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
 
     let trackedHttpRequestPerformedParams: Atomic<[
         // swiftlint:disable:next large_tuple
-        (String, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult, Bool)
+        (String, String?, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult, Bool)
     ]> = .init([])
     // swiftlint:disable:next function_parameter_count
     func trackHttpRequestPerformed(endpointName: String,
+                                   host: String?,
                                    responseTime: TimeInterval,
                                    wasSuccessful: Bool,
                                    responseCode: Int,
@@ -46,6 +47,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         self.trackedHttpRequestPerformedParams.modify {
             $0.append(
                 (endpointName,
+                 host,
                  responseTime,
                  wasSuccessful,
                  responseCode,
