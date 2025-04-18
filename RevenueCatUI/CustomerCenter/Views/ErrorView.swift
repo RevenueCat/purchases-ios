@@ -11,6 +11,7 @@
 //
 //  Created by Cesar de la Vega on 11/12/24.
 
+import RevenueCat
 import SwiftUI
 
 #if os(iOS)
@@ -21,17 +22,13 @@ import SwiftUI
 @available(watchOS, unavailable)
 struct ErrorView: View {
 
-    @Environment(\.locale)
-    private var locale
+    @Environment(\.localization)
+    private var localization: CustomerCenterConfigData.Localization
 
     var body: some View {
         VStack(spacing: 20) {
-            let errorMessage: String = Localization.localizedBundle(self.locale)
-                .localizedString(forKey: "Something went wrong",
-                                 value: "Something went wrong",
-                                 table: nil)
             CompatibilityContentUnavailableView(
-                String(errorMessage),
+                localization[.somethingWentWrong],
                 systemImage: "exclamationmark.triangle.fill",
                 description: nil
             )

@@ -25,11 +25,18 @@ import SwiftUI
 struct CompatibilityContentUnavailableView: View {
 
     let title: String
+    let titleAccessibilityId: String?
     let systemImage: String
     let description: Text?
 
-    init(_ title: String, systemImage: String, description: Text? = nil) {
+    init(
+        _ title: String,
+        titleAccessibilityId: String? = nil,
+        systemImage: String,
+        description: Text? = nil
+    ) {
         self.title = title
+        self.titleAccessibilityId = titleAccessibilityId
         self.systemImage = systemImage
         self.description = description
     }
@@ -71,6 +78,7 @@ struct CompatibilityContentUnavailableView: View {
             .font(.title2)
             .bold()
             .fixedSize(horizontal: false, vertical: true)
+            .accessibilityIdentifier(titleAccessibilityId ?? title)
     }
 
     private var iconView: some View {
