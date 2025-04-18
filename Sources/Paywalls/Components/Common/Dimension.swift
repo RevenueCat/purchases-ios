@@ -41,25 +41,21 @@ public extension PaywallComponent {
         }
 
         public init(from decoder: Decoder) throws {
-            do {
-                let container = try decoder.container(keyedBy: CodingKeys.self)
-                let type = try container.decode(DimensionType.self, forKey: .type)
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            let type = try container.decode(DimensionType.self, forKey: .type)
 
-                switch type {
-                case .vertical:
-                    let alignment = try container.decode(HorizontalAlignment.self, forKey: .alignment)
-                    let distribution = try container.decode(FlexDistribution.self, forKey: .distribution)
-                    self = .vertical(alignment, distribution)
-                case .horizontal:
-                    let alignment = try container.decode(VerticalAlignment.self, forKey: .alignment)
-                    let distribution = try container.decode(FlexDistribution.self, forKey: .distribution)
-                    self = .horizontal(alignment, distribution)
-                case .zlayer:
-                    let alignment = try container.decode(TwoDimensionAlignment.self, forKey: .alignment)
-                    self = .zlayer(alignment)
-                }
-            } catch {
-                self = .vertical(.leading, .start)
+            switch type {
+            case .vertical:
+                let alignment = try container.decode(HorizontalAlignment.self, forKey: .alignment)
+                let distribution = try container.decode(FlexDistribution.self, forKey: .distribution)
+                self = .vertical(alignment, distribution)
+            case .horizontal:
+                let alignment = try container.decode(VerticalAlignment.self, forKey: .alignment)
+                let distribution = try container.decode(FlexDistribution.self, forKey: .distribution)
+                self = .horizontal(alignment, distribution)
+            case .zlayer:
+                let alignment = try container.decode(TwoDimensionAlignment.self, forKey: .alignment)
+                self = .zlayer(alignment)
             }
         }
 

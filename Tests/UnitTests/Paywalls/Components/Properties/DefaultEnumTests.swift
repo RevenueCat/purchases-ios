@@ -116,12 +116,12 @@ class DefaultEnumTests: TestCase {
             let prop: PaywallComponent.Dimension
         }
 
-        let thing = try JSONDecoder.default.decode(
-            Thing.self,
-            from: json.data(using: .utf8)!
-        )
-
-        expect(thing.prop).to(equal(.vertical(.leading, .start)))
+        expect {
+            try JSONDecoder.default.decode(
+                Thing.self,
+                from: json.data(using: .utf8)!
+            )
+        }.to(throwError())
     }
 
     func testFitMode() throws {
