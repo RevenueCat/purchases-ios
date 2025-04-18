@@ -441,11 +441,21 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         }
     }
 
-    let trackedAppleAppTransactionErrorReceivedParams: Atomic<[String]> = .init([])
+    let trackedAppleAppTransactionErrorReceivedParams: Atomic<[
+        (errorMessage: String,
+        errorCode: Int?,
+        storeKitErrorDescription: String?)
+    ]> = .init([])
 
-    func trackAppleAppTransactionError(errorMessage: String) {
+    func trackAppleAppTransactionError(errorMessage: String,
+                                       errorCode: Int?,
+                                       storeKitErrorDescription: String?) {
         self.trackedAppleAppTransactionErrorReceivedParams.modify {
-            $0.append(errorMessage)
+            $0.append((
+                errorMessage: errorMessage,
+                errorCode: errorCode,
+                storeKitErrorDescription: storeKitErrorDescription
+            ))
         }
     }
 
