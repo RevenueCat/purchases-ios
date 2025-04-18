@@ -37,6 +37,12 @@ public enum PaywallEvent: FeatureEvent {
     /// A `PaywallView` was displayed.
     case impression(CreationData, Data)
 
+    /// A purchase was made.
+    case purchase(CreationData, Data)
+
+    /// A restore was made.
+    case restore(CreationData, Data)
+
     /// A purchase was cancelled.
     case cancel(CreationData, Data)
 
@@ -79,6 +85,12 @@ extension PaywallEvent {
         public var displayMode: PaywallViewMode
         public var localeIdentifier: String
         public var darkMode: Bool
+
+        // For purchase
+        public var storeTransationID: String?
+
+        // For impression
+        public var fallbackReason: FallbackReason?
 
         #if !os(macOS) && !os(tvOS) // For Paywalls V2
         @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -141,6 +153,43 @@ extension PaywallEvent {
 
 }
 
+extension PaywallEvent.Data {
+
+    /// A reason for the display of a fallback paywall to be sent by the `RevenueCatUI` SDK.
+    public struct FallbackReason {
+
+        /// A type of fallback reason
+        public var type: FallbackReasonType?
+
+        /// A message of why the fallback happened
+        public var message: String?
+
+        public init(type: PaywallEvent.Data.FallbackReasonType? = nil, message: String? = nil) {
+            self.type = type
+            self.message = message
+        }
+
+    }
+
+    /// A reason type for the display of a fallback paywall to be sent by the `RevenueCatUI` SDK.
+    public enum FallbackReasonType {
+
+        /// A reason if offering error
+        case offering
+
+        /// A reason if localization error
+        case localization
+
+        /// A reason if schema decoding error
+        case schema
+
+        /// An unknown reason
+        case unknown
+
+    }
+
+}
+
 extension PaywallEvent {
 
     /// - Returns: the underlying ``PaywallEvent/CreationData-swift.struct`` for this event.
@@ -149,6 +198,8 @@ extension PaywallEvent {
         case let .impression(creationData, _): return creationData
         case let .cancel(creationData, _): return creationData
         case let .close(creationData, _): return creationData
+        case let .purchase(creationData, _): return creationData
+        case let .restore(creationData, _): return creationData
         }
     }
 
@@ -158,6 +209,8 @@ extension PaywallEvent {
         case let .impression(_, data): return data
         case let .cancel(_, data): return data
         case let .close(_, data): return data
+        case let .purchase(_, data): return data
+        case let .restore(_, data): return data
         }
     }
 
@@ -166,5 +219,7 @@ extension PaywallEvent {
 // MARK: - 
 
 extension PaywallEvent.CreationData: Equatable, Codable, Sendable {}
+extension PaywallEvent.Data.FallbackReason: Equatable, Codable, Sendable {}
+extension PaywallEvent.Data.FallbackReasonType: Equatable, Codable, Sendable {}
 extension PaywallEvent.Data: Equatable, Codable, Sendable {}
 extension PaywallEvent: Equatable, Codable, Sendable {}

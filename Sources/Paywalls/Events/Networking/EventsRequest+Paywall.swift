@@ -21,6 +21,7 @@ extension EventsRequest {
         let version: Int
         var type: EventType
         var appUserID: String
+        var appSessionID: UUID?
         var sessionID: String
         var offeringID: String
         var paywallRevision: Int
@@ -28,6 +29,25 @@ extension EventsRequest {
         var displayMode: PaywallViewMode
         var darkMode: Bool
         var localeIdentifier: String
+
+        // For purchase
+        var storeTransationID: String?
+
+        // For impression
+        var fallbackReasonType: FallbackReasonType?
+        var fallbackReasonMessage: String?
+    }
+
+}
+
+extension EventsRequest.PaywallEvent {
+
+    enum FallbackReasonType: String {
+
+        case offering
+        case localization
+        case schema
+        case unknown
 
     }
 
@@ -40,6 +60,8 @@ extension EventsRequest.PaywallEvent {
         case impression = "paywall_impression"
         case cancel = "paywall_cancel"
         case close = "paywall_close"
+        case purchase = "paywall_purchase_from_sdk"
+        case restore = "paywall_restore"
 
     }
 
@@ -60,6 +82,7 @@ extension EventsRequest.PaywallEvent {
                 version: Self.version,
                 type: paywallEvent.eventType,
                 appUserID: storedEvent.userID,
+                appSessionID: storedEvent.appSessionID,
                 sessionID: data.sessionIdentifier.uuidString,
                 offeringID: data.offeringIdentifier,
                 paywallRevision: data.paywallRevision,
@@ -86,6 +109,8 @@ private extension PaywallEvent {
         case .impression: return .impression
         case .cancel: return .cancel
         case .close: return .close
+        case .purchase: return .purchase
+        case .restore: return .restore
         }
 
     }
@@ -94,6 +119,7 @@ private extension PaywallEvent {
 
 // MARK: - Codable
 
+extension EventsRequest.PaywallEvent.FallbackReasonType: Encodable {}
 extension EventsRequest.PaywallEvent.EventType: Encodable {}
 extension EventsRequest.PaywallEvent: Encodable {
 
@@ -104,6 +130,7 @@ extension EventsRequest.PaywallEvent: Encodable {
         case version
         case type
         case appUserID = "appUserId"
+        case appSessionID = "appSessionId"
         case sessionID = "sessionId"
         case offeringID = "offeringId"
         case paywallRevision
@@ -111,6 +138,8 @@ extension EventsRequest.PaywallEvent: Encodable {
         case displayMode
         case darkMode
         case localeIdentifier = "locale"
+
+        case storeTransationID = "storeTransationID"
 
     }
 
