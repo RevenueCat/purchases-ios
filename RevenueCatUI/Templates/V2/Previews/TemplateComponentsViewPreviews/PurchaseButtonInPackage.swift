@@ -61,8 +61,46 @@ private enum PurchaseButtonInPackagePreview {
         fontSize: 15,
         horizontalAlignment: .center
     )
+    static let orText = PaywallComponent.TextComponent(
+        text: "or",
+        fontName: nil,
+        fontWeight: .regular,
+        color: .init(light: .hex("#000000")),
+        backgroundColor: nil,
+        padding: .zero,
+        margin: .zero,
+        fontSize: 15,
+        horizontalAlignment: .center
+    )
 
-    static var packageWeeklyStack: PaywallComponent.StackComponent {
+    static var packageStack: PaywallComponent.StackComponent {
+        return .init(
+            components: [
+                .text(.init(
+                    text: "package_name",
+                    fontWeight: .bold,
+                    color: .init(light: .hex("#000000")),
+                    padding: .zero,
+                    margin: .zero
+                )),
+                .text(.init(
+                    text: "package_detail",
+                    color: .init(light: .hex("#000000")),
+                    padding: .zero,
+                    margin: .zero
+                ))
+            ],
+            dimension: .vertical(.center, .start),
+            spacing: 0,
+            backgroundColor: nil,
+            padding: .init(top: 0,
+                           bottom: 0,
+                           leading: 0,
+                           trailing: 0)
+        )
+    }
+
+    static var packageLifetimeStack: PaywallComponent.StackComponent {
         return .init(
             components: [
                 .purchaseButton(.init(
@@ -70,7 +108,7 @@ private enum PurchaseButtonInPackagePreview {
                         components: [
                             // WIP: Intro offer state with "cta_intro",
                             .text(.init(
-                                text: "cta_weekly",
+                                text: "cta_lifetime",
                                 fontWeight: .bold,
                                 color: .init(light: .hex("#ffffff")),
                                 backgroundColor: .init(light: .hex("#e89d89")),
@@ -94,50 +132,102 @@ private enum PurchaseButtonInPackagePreview {
         )
     }
 
-    static var packageMonthlyStack: PaywallComponent.StackComponent {
-        return .init(
+    static func makePackage(
+        packageID: String,
+        nameTextLid: String,
+        detailTextLid: String,
+        isSelectedByDefault: Bool = false
+    ) -> PaywallComponent.PackageComponent {
+        let stack: PaywallComponent.StackComponent = .init(
             components: [
-                .purchaseButton(.init(
-                    stack: .init(
-                        components: [
-                            // WIP: Intro offer state with "cta_intro",
-                            .text(.init(
-                                text: "cta_monthly",
-                                fontWeight: .bold,
-                                color: .init(light: .hex("#ffffff")),
-                                backgroundColor: .init(light: .hex("#e89d89")),
-                                padding: .init(top: 10,
-                                               bottom: 10,
-                                               leading: 30,
-                                               trailing: 30)
-                            ))
-                        ],
-                        shape: .pill
-                    )
+                .text(.init(
+                    text: nameTextLid,
+                    fontWeight: .bold,
+                    color: .init(light: .hex("#000000")),
+                    size: .init(width: .fill, height: .fit),
+                    padding: .zero,
+                    margin: .zero,
+                    horizontalAlignment: .leading
+                )),
+                .text(.init(
+                    text: detailTextLid,
+                    color: .init(light: .hex("#000000")),
+                    size: .init(width: .fill, height: .fit),
+                    padding: .zero,
+                    margin: .zero,
+                    horizontalAlignment: .leading
                 ))
             ],
-            dimension: .vertical(.center, .start),
+            dimension: .vertical(.leading, .start),
+            size: .init(width: .fill, height: .fit),
             spacing: 0,
             backgroundColor: nil,
-            padding: .init(top: 0,
-                           bottom: 0,
-                           leading: 0,
-                           trailing: 0)
+            padding: PaywallComponent.Padding(top: 10,
+                                              bottom: 10,
+                                              leading: 20,
+                                              trailing: 20),
+            shape: .rectangle(.init(topLeading: 16,
+                                    topTrailing: 16,
+                                    bottomLeading: 16,
+                                    bottomTrailing: 20)),
+            border: .init(color: .init(light: .hex("#cccccc")), width: 1),
+            overrides: [
+                .init(conditions: [
+                    .selected
+                ], properties: .init(
+                    backgroundColor: .init(light: .hex("#ffdfdd")),
+                    border: .init(color: .init(light: .hex("#e89d89")), width: 1)
+                ))
+            ]
+        )
+
+        return PaywallComponent.PackageComponent(
+            packageID: packageID,
+            isSelectedByDefault: isSelectedByDefault,
+            stack: stack
         )
     }
+
+    static var packagesStack = PaywallComponent.StackComponent(
+        components: [
+            .package(makePackage(packageID: "weekly",
+                                 nameTextLid: "weekly_title",
+                                 detailTextLid: "weekly_desc",
+                                 isSelectedByDefault: true)),
+            .package(makePackage(packageID: "monthly",
+                                 nameTextLid: "monthly_title",
+                                 detailTextLid: "monthly_desc",
+                                 isSelectedByDefault: true))
+        ]
+    )
 
     static let bodyStack = PaywallComponent.StackComponent(
         components: [
             .text(body),
-            .package(.init(
-                packageID: "weekly",
-                isSelectedByDefault: false,
-                stack: packageWeeklyStack
+            .stack(packagesStack),
+            .purchaseButton(.init(
+                stack: .init(
+                    components: [
+                        // WIP: Intro offer state with "cta_intro",
+                        .text(.init(
+                            text: "cta",
+                            fontWeight: .bold,
+                            color: .init(light: .hex("#ffffff")),
+                            backgroundColor: .init(light: .hex("#e89d89")),
+                            padding: .init(top: 10,
+                                           bottom: 10,
+                                           leading: 30,
+                                           trailing: 30)
+                        ))
+                    ],
+                    shape: .pill
+                )
             )),
+            .text(orText),
             .package(.init(
-                packageID: "monthly",
+                packageID: "lifetime",
                 isSelectedByDefault: false,
-                stack: packageMonthlyStack
+                stack: packageLifetimeStack
             ))
         ],
         dimension: .vertical(.center, .start),
@@ -172,17 +262,7 @@ private enum PurchaseButtonInPackagePreview {
     )
 
     static let paywallComponents: Offering.PaywallComponents = .init(
-        uiConfig: .init(
-            app: .init(
-                colors: [:],
-                fonts: [:]
-            ),
-            localizations: [:],
-            variableConfig: .init(
-                variableCompatibilityMap: [:],
-                functionCompatibilityMap: [:]
-            )
-        ),
+        uiConfig: PreviewUIConfig.make(),
         data: data
     )
 
@@ -206,8 +286,13 @@ private enum PurchaseButtonInPackagePreview {
         componentsLocalizations: ["en_US": [
             "title": .string("Ignite your cat's curiosity"),
             "body": .string("Get access to all of our educational content trusted by thousands of pet parents."),
-            "cta_weekly": .string("Buy Weekly"),
-            "cta_monthly": .string("Buy Monthly")
+            "or": .string("or"),
+            "cta": .string("Continue for {{ price_per_period }}"),
+            "weekly_title": .string("Buy Weekly"),
+            "weekly_desc": .string("Weekly something"),
+            "monthly_title": .string("Buy Monthly"),
+            "monthly_desc": .string("Monthly something"),
+            "cta_lifetime": .string("Buy Lifetime")
         ]],
         revision: 1,
         defaultLocaleIdentifier: "en_US"
@@ -231,6 +316,13 @@ struct PurchaseButtonInPackagePreview_Previews: PreviewProvider {
                      offeringIdentifier: "default")
     }
 
+    static var lifetimePackage: Package {
+        return .init(identifier: "lifetime",
+                     packageType: .lifetime,
+                     storeProduct: .init(sk1Product: .init()),
+                     offeringIdentifier: "default")
+    }
+
     // Need to wrap in VStack otherwise preview rerenders and images won't show
     static var previews: some View {
 
@@ -239,7 +331,7 @@ struct PurchaseButtonInPackagePreview_Previews: PreviewProvider {
             paywallComponents: PurchaseButtonInPackagePreview.paywallComponents,
             offering: .init(identifier: "default",
                             serverDescription: "",
-                            availablePackages: [weeklyPackage, monthlyPackage]),
+                            availablePackages: [weeklyPackage, monthlyPackage, lifetimePackage]),
             purchaseHandler: PurchaseHandler.default(),
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,
