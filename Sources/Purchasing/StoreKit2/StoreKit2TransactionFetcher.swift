@@ -122,7 +122,7 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
                 do {
                     return try await AppTransaction.shared.jwsRepresentation
                 } catch {
-                    trackAppleAppTransactionError(error)
+                    self.trackAppleAppTransactionError(error)
                     return nil
                 }
             } else {
@@ -307,7 +307,7 @@ extension StoreKit2TransactionFetcher {
                     return nil
                 }
             } catch {
-                trackAppleAppTransactionError(error)
+                self.trackAppleAppTransactionError(error)
                 return nil
             }
         }
