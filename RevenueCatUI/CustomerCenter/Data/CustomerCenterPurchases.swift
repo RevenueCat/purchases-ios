@@ -78,11 +78,9 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
         try await Purchases.shared.restorePurchases()
     }
 
-    #if os(iOS) || os(macOS) || os(visionOS)
-    func showManageSubscriptions() async throws {
-        try await Purchases.shared.showManageSubscriptions()
+    func syncPurchases() async throws -> CustomerInfo {
+        try await Purchases.shared.syncPurchases()
     }
-    #endif
 
     #if os(iOS) || os(visionOS)
     func beginRefundRequest(forProduct productID: String) async throws -> RefundRequestStatus {

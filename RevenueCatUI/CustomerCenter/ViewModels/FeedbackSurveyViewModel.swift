@@ -23,7 +23,7 @@ import RevenueCat
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @MainActor
-class FeedbackSurveyViewModel: ObservableObject {
+final class FeedbackSurveyViewModel: ObservableObject {
 
     var feedbackSurveyData: FeedbackSurveyData
 
@@ -76,6 +76,7 @@ class FeedbackSurveyViewModel: ObservableObject {
                 self.promotionalOfferData = promotionalOfferData
             case .failure:
                 self.feedbackSurveyData.onOptionSelected()
+                dismissView()
                 self.loadingOption = nil
             }
         } else {

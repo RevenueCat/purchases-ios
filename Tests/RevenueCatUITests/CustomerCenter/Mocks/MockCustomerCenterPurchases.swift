@@ -131,4 +131,11 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
         }
         return .success
     }
+
+    var syncPurchasesCount = 0
+    var syncPurchasesResult: CustomerInfo = CustomerInfoFixtures.customerInfoWithLifetimePromotional
+    func syncPurchases() async throws -> CustomerInfo {
+        syncPurchasesCount += 1
+        return syncPurchasesResult
+    }
 }
