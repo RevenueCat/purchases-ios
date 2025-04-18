@@ -40,6 +40,7 @@ public extension PaywallComponent {
         case expanded
         case introOffer = "intro_offer"
         case selected
+        case disabled
 
         // For unknown cases
         case unsupported
@@ -58,6 +59,8 @@ public extension PaywallComponent {
                 try container.encode(ConditionType.introOffer.rawValue, forKey: .type)
             case .selected:
                 try container.encode(ConditionType.selected.rawValue, forKey: .type)
+            case .disabled:
+                try container.encode(ConditionType.disabled.rawValue, forKey: .type)
             case .unsupported:
                 // Encode a default value for unsupported
                 try container.encode(Self.unsupported.rawValue, forKey: .type)
@@ -80,6 +83,8 @@ public extension PaywallComponent {
                     self = .introOffer
                 case .selected:
                     self = .selected
+                case .disabled:
+                    self = .disabled
                 }
             } else {
                 self = .unsupported
@@ -101,6 +106,7 @@ public extension PaywallComponent {
             case expanded
             case introOffer = "intro_offer"
             case selected
+            case disabled
 
         }
 

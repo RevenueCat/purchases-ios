@@ -19,6 +19,7 @@ import SwiftUI
 enum ComponentViewState {
     case `default`
     case selected
+    case disabled
 }
 
 struct ComponentViewStateKey: EnvironmentKey {

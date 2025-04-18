@@ -92,6 +92,10 @@ extension PresentedPartial {
                 if state != .selected {
                     return false
                 }
+            case .disabled:
+                if state != .disabled {
+                    return false
+                }
             case .unsupported:
                 return false
             }
