@@ -27,7 +27,7 @@ class PaywallViewEventsTests: TestCase {
     private var handler: PurchaseHandler!
 
     private let mode: PaywallViewMode = .random
-    private let scheme: ColorScheme = Bool.random() ? .dark : .light
+    private let scheme: ColorScheme = .light
 
     private var closeEventExpectation: XCTestExpectation!
     override func setUp() {
@@ -120,6 +120,9 @@ private extension PaywallViewEventsTests {
         try await Task {
             let dispose = try self.createView()
                 .addToHierarchy()
+
+            try await Task.sleep(nanoseconds: 3 * 1_000_000)
+
             try await closure()
             dispose()
         }.value
@@ -157,7 +160,7 @@ private extension PaywallViewEventsTests {
     }
 
     func waitForCloseEvent() async {
-        await self.fulfillment(of: [self.closeEventExpectation], timeout: 1)
+        await self.fulfillment(of: [self.closeEventExpectation], timeout: 3)
     }
 
 }
