@@ -55,9 +55,7 @@ struct ButtonComponentView: View {
     }
 
     var body: some View {
-        if self.viewModel.hasUnknownAction {
-            EmptyView()
-        } else {
+        if !self.viewModel.hasUnknownAction {
             AsyncButton {
                 try await performAction()
             } label: {
