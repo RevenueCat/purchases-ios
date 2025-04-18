@@ -26,6 +26,7 @@ class ButtonComponentViewModel {
         case restorePurchases
         case navigateTo(destination: Destination)
         case navigateBack
+        case unknown
     }
 
     /// A mirror of ButtonComponent.Destination, with any urlLid parameters changed to be of the actual URL type. This
@@ -36,6 +37,7 @@ class ButtonComponentViewModel {
         case url(url: URL, method: PaywallComponent.ButtonComponent.URLMethod)
         case privacyPolicy(url: URL, method: PaywallComponent.ButtonComponent.URLMethod)
         case terms(url: URL, method: PaywallComponent.ButtonComponent.URLMethod)
+        case unknown
     }
 
     let component: PaywallComponent.ButtonComponent
@@ -76,9 +78,20 @@ class ButtonComponentViewModel {
                 self.action = .navigateTo(
                     destination: .terms(url: try localizedStrings.urlFromLid(urlLid), method: method)
                 )
+            case .unknown:
+                self.action = .unknown
             }
         case .navigateBack:
             self.action = .navigateBack
+        case .unknown:
+            self.action = .unknown
+        }
+    }
+
+    var hasUnknownAction: Bool {
+        switch self.action {
+        case .unknown: return true
+        default: return false
         }
     }
 
@@ -89,6 +102,8 @@ class ButtonComponentViewModel {
         case .navigateTo:
             return false
         case .navigateBack:
+            return false
+        case .unknown:
             return false
         }
     }

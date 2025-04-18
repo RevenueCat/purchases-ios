@@ -11,6 +11,8 @@
 //
 //  Created by Josh Holtz on 9/30/24.
 
+// swiftlint:disable nesting
+
 import Foundation
 import RevenueCat
 import SwiftUI
@@ -41,9 +43,63 @@ struct ShapeModifier: ViewModifier {
         case concave
         case convex
 
+        private enum CodingKeys: String, CodingKey {
+            case type
+            case radius
+        }
+
+        private enum ShapeType: String, Codable {
+            case rectangle
+            case pill
+            case circle
+            case concave
+            case convex
+        }
+
+        init(from decoder: Decoder) throws {
+            do {
+                let container = try decoder.container(keyedBy: CodingKeys.self)
+                let type = try container.decode(ShapeType.self, forKey: .type)
+
+                switch type {
+                case .rectangle:
+                    let radius = try container.decodeIfPresent(RadiusInfo.self, forKey: .radius)
+                    self = .rectangle(radius)
+                case .pill:
+                    self = .pill
+                case .circle:
+                    self = .circle
+                case .concave:
+                    self = .concave
+                case .convex:
+                    self = .convex
+                }
+            } catch {
+                self = .rectangle(nil)
+            }
+        }
+
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+
+            switch self {
+            case .rectangle(let radius):
+                try container.encode(ShapeType.rectangle, forKey: .type)
+                try container.encodeIfPresent(radius, forKey: .radius)
+            case .pill:
+                try container.encode(ShapeType.pill, forKey: .type)
+            case .circle:
+                try container.encode(ShapeType.circle, forKey: .type)
+            case .concave:
+                try container.encode(ShapeType.concave, forKey: .type)
+            case .convex:
+                try container.encode(ShapeType.convex, forKey: .type)
+            }
+        }
+
     }
 
-    struct RadiusInfo: Hashable {
+    struct RadiusInfo: Hashable, Codable {
 
         let topLeft: Double?
         let topRight: Double?
