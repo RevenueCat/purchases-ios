@@ -578,7 +578,8 @@ struct LoadedOfferingPaywallView: View {
             sessionID: .init(),
             displayMode: self.mode,
             locale: .current,
-            darkMode: self.colorScheme == .dark
+            darkMode: self.colorScheme == .dark,
+            fallbackReason: self.fallbackReason
         )
     }
 

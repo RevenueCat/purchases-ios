@@ -89,7 +89,9 @@ extension EventsRequest.PaywallEvent {
                 timestamp: creationData.date.millisecondsSince1970,
                 displayMode: data.displayMode,
                 darkMode: data.darkMode,
-                localeIdentifier: data.localeIdentifier
+                localeIdentifier: data.localeIdentifier,
+                fallbackReasonType: data.fallbackReason?.type?.toRequestFallbackReasonType,
+                fallbackReasonMessage: data.fallbackReason?.message
             )
         } catch {
             Logger.error(Strings.paywalls.event_cannot_deserialize(error))
@@ -98,6 +100,19 @@ extension EventsRequest.PaywallEvent {
     }
 
     private static let version: Int = 1
+
+}
+
+private extension PaywallEvent.Data.FallbackReasonType {
+
+    var toRequestFallbackReasonType: EventsRequest.PaywallEvent.FallbackReasonType {
+        switch self {
+        case .localization: return .localization
+        case .offering: return .offering
+        case .schema: return .schema
+        case .unknown: return .unknown
+        }
+    }
 
 }
 
@@ -140,6 +155,9 @@ extension EventsRequest.PaywallEvent: Encodable {
         case localeIdentifier = "locale"
 
         case storeTransationID = "storeTransationID"
+
+        case fallbackReasonType = "fallbackReason"
+        case fallbackReasonMessage = "fallbackReasonMessage"
 
     }
 

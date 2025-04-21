@@ -100,7 +100,8 @@ extension PaywallEvent {
             sessionID: SessionID,
             displayMode: PaywallViewMode,
             locale: Locale,
-            darkMode: Bool
+            darkMode: Bool,
+            fallbackReason: FallbackReason?
         ) {
             self.init(
                 offeringIdentifier: offering.identifier,
@@ -108,7 +109,8 @@ extension PaywallEvent {
                 sessionID: sessionID,
                 displayMode: displayMode,
                 localeIdentifier: locale.identifier,
-                darkMode: darkMode
+                darkMode: darkMode,
+                fallbackReason: fallbackReason
             )
         }
         #endif
@@ -120,7 +122,8 @@ extension PaywallEvent {
             sessionID: SessionID,
             displayMode: PaywallViewMode,
             locale: Locale,
-            darkMode: Bool
+            darkMode: Bool,
+            fallbackReason: FallbackReason?
         ) {
             self.init(
                 offeringIdentifier: offering.identifier,
@@ -128,7 +131,8 @@ extension PaywallEvent {
                 sessionID: sessionID,
                 displayMode: displayMode,
                 localeIdentifier: locale.identifier,
-                darkMode: darkMode
+                darkMode: darkMode,
+                fallbackReason: fallbackReason
             )
         }
         // swiftlint:enable missing_docs
@@ -139,7 +143,8 @@ extension PaywallEvent {
             sessionID: SessionID,
             displayMode: PaywallViewMode,
             localeIdentifier: String,
-            darkMode: Bool
+            darkMode: Bool,
+            fallbackReason: FallbackReason?
         ) {
             self.offeringIdentifier = offeringIdentifier
             self.paywallRevision = paywallRevision
@@ -147,6 +152,7 @@ extension PaywallEvent {
             self.displayMode = displayMode
             self.localeIdentifier = localeIdentifier
             self.darkMode = darkMode
+            self.fallbackReason = fallbackReason
         }
 
     }

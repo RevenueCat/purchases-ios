@@ -187,8 +187,6 @@ struct PaywallsV2View: View {
                             self.createEventData(),
                             fallbackReason: nil
                         )
-                    } else {
-                        print("ho")
                     }
                 }
                 .onDisappear {
@@ -261,7 +259,8 @@ struct PaywallsV2View: View {
             sessionID: .init(),
             displayMode: .fullScreen,
             locale: .current,
-            darkMode: self.colorScheme == .dark
+            darkMode: self.colorScheme == .dark,
+            fallbackReason: nil
         )
     }
 
