@@ -3,5 +3,5 @@
 # Ensure this file is checked in to source control!
 
 gem 'fastlane-plugin-create_xcframework', git: "https://github.com/RevenueCat/fastlane-plugin-create_xcframework"
-gem "fastlane-plugin-revenuecat_internal", git: "https://github.com/RevenueCat/fastlane-plugin-revenuecat_internal", branch: "only-retry-tests-that-failed-but-didnt-succeed-after-in-run-retry"
+gem "fastlane-plugin-revenuecat_internal", git: "https://github.com/RevenueCat/fastlane-plugin-revenuecat_internal"
 gem 'fastlane-plugin-emerge'
