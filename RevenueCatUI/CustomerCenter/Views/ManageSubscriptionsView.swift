@@ -89,12 +89,12 @@ struct ManageSubscriptionsView: View {
                 isPresented: $viewModel.showBalances,
                 usesNavigationStack: navigationOptions.usesNavigationStack
             ) {
-                #warning("TODO: construct VC view")
-                Text("TODO: construct VC view")
-//                VirtualCurrencyBalancesSectionView(virtualCurrencies: self.viewModel.virtualCurrencyBalances)
-//                    .environment(\.appearance, appearance)
-//                    .environment(\.localization, localization)
-//                    .environment(\.navigationOptions, navigationOptions)
+                VirtualCurrenciesView(
+                    viewModel: VirtualCurrenciesViewModel(purchasesProvider: self.viewModel.purchasesProvider)
+                )
+                    .environment(\.appearance, appearance)
+                    .environment(\.localization, localization)
+                    .environment(\.navigationOptions, navigationOptions)
             }
             .sheet(item: self.$viewModel.promotionalOfferData) { promotionalOfferData in
                 PromotionalOfferView(
@@ -129,8 +129,7 @@ struct ManageSubscriptionsView: View {
                     refundRequestStatus: self.viewModel.refundRequestStatus
                 )
 
-//                if support?.displayPurchaseHistoryLink == true {
-                if true {
+                if support?.displayPurchaseHistoryLink == true {
                     Button {
                         viewModel.showPurchases = true
                     } label: {
@@ -145,7 +144,7 @@ struct ManageSubscriptionsView: View {
                     Button {
                         viewModel.showBalances = true
                     } label: {
-                        Text(localization[.seeBalances])
+                        Text(localization[.seeVirtualCurrencies])
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                             .contentShape(Rectangle())
                     }
