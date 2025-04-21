@@ -142,6 +142,11 @@ public struct CustomerCenterConfigData: Equatable {
             case storeExternal = "store_external"
             case storeUnknownStore = "store_unknown"
             case debugHeaderTitle = "Debug"
+            case seeBalances = "see_balances"
+            case virtualCurrencyBalancesHeader = "virtual_currency_balances_header"
+            case noVirtualCurrencyBalancesFound = "no_virtual_currency_balances"
+            case showAll = "show_all"
+            case showLess = "show_less"
 
             var defaultValue: String {
                 switch self {
@@ -327,6 +332,16 @@ public struct CustomerCenterConfigData: Equatable {
                     return "Unknown Store"
                 case .debugHeaderTitle:
                     return "Debug"
+                case .virtualCurrencyBalancesHeader:
+                    return "Balances"
+                case .showAll:
+                    return "Show All"
+                case .showLess:
+                    return "Show Less"
+                case .seeBalances:
+                    return "See balances"
+                case .noVirtualCurrencyBalancesFound:
+                    return "No balances were found."
                 }
             }
         }

@@ -37,6 +37,9 @@ import RevenueCat
     private(set) var appIsLatestVersion: Bool = defaultAppIsLatestVersion
 
     @Published
+    private(set) var virtualCurrencies: [String: VirtualCurrencyInfo] = [:]
+
+    @Published
     private(set) var onUpdateAppClick: (() -> Void)?
 
     private(set) var purchasesProvider: CustomerCenterPurchasesType
@@ -181,6 +184,8 @@ private extension CustomerCenterViewModel {
             for: activeTransaction,
             entitlement: entitlement,
             customerInfo: customerInfo)
+
+        self.virtualCurrencies = customerInfo.virtualCurrencies
     }
 
     func loadCustomerCenterConfig() async throws {

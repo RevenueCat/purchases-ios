@@ -45,6 +45,7 @@ struct ManageSubscriptionsView: View {
     init(screen: CustomerCenterConfigData.Screen,
          purchaseInformation: PurchaseInformation?,
          purchasesProvider: CustomerCenterPurchasesType,
+         virtualCurrencies: [String: VirtualCurrencyInfo],
          actionWrapper: CustomerCenterActionWrapper) {
         let viewModel = ManageSubscriptionsViewModel(
             screen: screen,
@@ -84,6 +85,17 @@ struct ManageSubscriptionsView: View {
                     .environment(\.localization, localization)
                     .environment(\.navigationOptions, navigationOptions)
             }
+            .compatibleNavigation(
+                isPresented: $viewModel.showBalances,
+                usesNavigationStack: navigationOptions.usesNavigationStack
+            ) {
+                #warning("TODO: construct VC view")
+                Text("TODO: construct VC view")
+//                VirtualCurrencyBalancesSectionView(virtualCurrencies: self.viewModel.virtualCurrencyBalances)
+//                    .environment(\.appearance, appearance)
+//                    .environment(\.localization, localization)
+//                    .environment(\.navigationOptions, navigationOptions)
+            }
             .sheet(item: self.$viewModel.promotionalOfferData) { promotionalOfferData in
                 PromotionalOfferView(
                     promotionalOffer: promotionalOfferData.promotionalOffer,
@@ -117,11 +129,23 @@ struct ManageSubscriptionsView: View {
                     refundRequestStatus: self.viewModel.refundRequestStatus
                 )
 
-                if support?.displayPurchaseHistoryLink == true {
+//                if support?.displayPurchaseHistoryLink == true {
+                if true {
                     Button {
                         viewModel.showPurchases = true
                     } label: {
                         Text(localization[.seeAllPurchases])
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
+                    }
+                }
+
+#warning("TODO: Conditionally display this based on dashboard config and presence of currencies")
+                if true {
+                    Button {
+                        viewModel.showBalances = true
+                    } label: {
+                        Text(localization[.seeBalances])
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                             .contentShape(Rectangle())
                     }

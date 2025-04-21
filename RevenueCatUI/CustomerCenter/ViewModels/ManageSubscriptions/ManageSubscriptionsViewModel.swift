@@ -41,6 +41,8 @@ final class ManageSubscriptionsViewModel: ObservableObject {
     @Published
     var showPurchases: Bool = false
 
+    @Published var showBalances: Bool = false
+
     @Published
     var feedbackSurveyData: FeedbackSurveyData?
 
