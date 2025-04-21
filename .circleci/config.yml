@@ -1,6 +1,7 @@
 orbs:
   macos: circleci/macos@2.5.1
   slack: circleci/slack@5.0.0
+  codecov: codecov/codecov@5.3.0
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -718,6 +719,11 @@ jobs:
           no_output_timeout: 15m
           environment:
             SCAN_DEVICE: iPhone 16 (18.0)
+      - codecov/upload:
+          file: fastlane/test_output/xctest/ios/RevenueCat.xcresult
+          token: $CODECOV_TOKEN
+          flags: ios-18
+          verbose: true
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
