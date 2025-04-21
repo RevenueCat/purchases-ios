@@ -720,7 +720,7 @@ jobs:
           environment:
             SCAN_DEVICE: iPhone 16 (18.0)
       - codecov/upload:
-          files: fastlane/test_output/xctest/ios/RevenueCat.xcresult
+          files: fastlane/test_output/xctest/ios/report.junit
           token: CODECOV_TOKEN
           flags: ios-18
           verbose: true
