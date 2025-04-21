@@ -79,8 +79,6 @@ public struct PaywallView: View {
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil
     ) {
-        // TODO: this could be the cause of the impression event being cleared
-        // TODO: this gets reset when PaywallView is rerendered and would overwrite event data
         let purchaseHandler = PurchaseHandler.default(performPurchase: performPurchase, performRestore: performRestore)
         self.init(
             configuration: .init(

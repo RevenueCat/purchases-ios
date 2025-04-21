@@ -235,7 +235,10 @@ struct PaywallsV2View: View {
     }
 
     @ViewBuilder
-    func fallbackViewWithErrorMessage(_ errorMessage: String, fallbackReason: PaywallEvent.Data.FallbackReason?) -> some View {
+    func fallbackViewWithErrorMessage(
+        _ errorMessage: String,
+        fallbackReason: PaywallEvent.Data.FallbackReason?
+    ) -> some View {
         let fullMessage = """
         \(errorMessage)
         Validate your paywall is correct in the RevenueCat dashboard,
