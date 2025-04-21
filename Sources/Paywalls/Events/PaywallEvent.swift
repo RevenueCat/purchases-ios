@@ -164,6 +164,7 @@ extension PaywallEvent.Data {
         /// A message of why the fallback happened
         public var message: String?
 
+        /// Creates a PaywallEvent with an optional fallback reason and message
         public init(type: PaywallEvent.Data.FallbackReasonType? = nil, message: String? = nil) {
             self.type = type
             self.message = message
