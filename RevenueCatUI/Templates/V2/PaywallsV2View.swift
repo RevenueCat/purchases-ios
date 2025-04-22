@@ -260,6 +260,7 @@ struct PaywallsV2View: View {
             displayMode: .fullScreen,
             locale: .current,
             darkMode: self.colorScheme == .dark,
+            storeTransactionID: nil,
             fallbackReason: nil
         )
     }

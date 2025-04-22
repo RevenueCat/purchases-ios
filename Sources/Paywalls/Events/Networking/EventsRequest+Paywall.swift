@@ -31,7 +31,7 @@ extension EventsRequest {
         var localeIdentifier: String
 
         // For purchase
-        var storeTransationID: String?
+        var storeTransactionID: String?
 
         // For impression
         var fallbackReasonType: FallbackReasonType?
@@ -90,6 +90,7 @@ extension EventsRequest.PaywallEvent {
                 displayMode: data.displayMode,
                 darkMode: data.darkMode,
                 localeIdentifier: data.localeIdentifier,
+                storeTransactionID: data.storeTransactionIdentifier,
                 fallbackReasonType: data.fallbackReason?.type?.toRequestFallbackReasonType,
                 fallbackReasonMessage: data.fallbackReason?.message
             )
@@ -154,7 +155,7 @@ extension EventsRequest.PaywallEvent: Encodable {
         case darkMode
         case localeIdentifier = "locale"
 
-        case storeTransationID = "storeTransationID"
+        case storeTransactionID = "storeTransactionId"
 
         case fallbackReasonType = "fallbackReason"
         case fallbackReasonMessage = "fallbackReasonMessage"

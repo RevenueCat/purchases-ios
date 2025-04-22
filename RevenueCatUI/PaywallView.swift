@@ -579,6 +579,7 @@ struct LoadedOfferingPaywallView: View {
             displayMode: self.mode,
             locale: .current,
             darkMode: self.colorScheme == .dark,
+            storeTransactionID: nil,
             fallbackReason: self.fallbackReason
         )
     }

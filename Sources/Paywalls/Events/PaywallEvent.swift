@@ -87,7 +87,7 @@ extension PaywallEvent {
         public var darkMode: Bool
 
         // For purchase
-        public var storeTransationID: String?
+        public var storeTransactionIdentifier: String?
 
         // For impression
         public var fallbackReason: FallbackReason?
@@ -101,6 +101,7 @@ extension PaywallEvent {
             displayMode: PaywallViewMode,
             locale: Locale,
             darkMode: Bool,
+            storeTransactionID: String?,
             fallbackReason: FallbackReason?
         ) {
             self.init(
@@ -110,6 +111,7 @@ extension PaywallEvent {
                 displayMode: displayMode,
                 localeIdentifier: locale.identifier,
                 darkMode: darkMode,
+                storeTransactionID: storeTransactionID,
                 fallbackReason: fallbackReason
             )
         }
@@ -123,6 +125,7 @@ extension PaywallEvent {
             displayMode: PaywallViewMode,
             locale: Locale,
             darkMode: Bool,
+            storeTransactionID: String?,
             fallbackReason: FallbackReason?
         ) {
             self.init(
@@ -132,6 +135,7 @@ extension PaywallEvent {
                 displayMode: displayMode,
                 localeIdentifier: locale.identifier,
                 darkMode: darkMode,
+                storeTransactionID: storeTransactionID,
                 fallbackReason: fallbackReason
             )
         }
@@ -144,6 +148,7 @@ extension PaywallEvent {
             displayMode: PaywallViewMode,
             localeIdentifier: String,
             darkMode: Bool,
+            storeTransactionID: String?,
             fallbackReason: FallbackReason?
         ) {
             self.offeringIdentifier = offeringIdentifier
@@ -152,6 +157,7 @@ extension PaywallEvent {
             self.displayMode = displayMode
             self.localeIdentifier = localeIdentifier
             self.darkMode = darkMode
+            self.storeTransactionIdentifier = storeTransactionID
             self.fallbackReason = fallbackReason
         }
 

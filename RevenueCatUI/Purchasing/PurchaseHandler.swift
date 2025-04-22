@@ -179,7 +179,9 @@ extension PurchaseHandler {
             if result.userCancelled {
                 self.trackCancelledPurchase()
             } else {
-                self.trackPaywallPurchase(storeTransationID: result.transaction?.transactionIdentifier)
+                // This will track both new purchases and if the user already has purchased the product
+                // This event should not get tracked alone but should be paired with the POST /receipts event as well
+                self.trackPaywallPurchase(storeTransationIdentifier: result.transaction?.transactionIdentifier)
 
                 withAnimation(Constants.defaultAnimation) {
                     self.purchased = true
@@ -230,7 +232,7 @@ extension PurchaseHandler {
 
         if !result.userCancelled && result.error == nil {
             // Nil because we don't know about it
-            self.trackPaywallPurchase(storeTransationID: nil)
+            self.trackPaywallPurchase(storeTransationIdentifier: nil)
 
             withAnimation(Constants.defaultAnimation) {
                 self.purchased = true
@@ -333,14 +335,16 @@ extension PurchaseHandler {
     /// - Returns: whether the event was tracked
     @discardableResult
     func trackPaywallPurchase(
-        storeTransationID: String?
+        storeTransationIdentifier: String?
     ) -> Bool {
         guard let data = self.baseEventData else {
             Logger.warning(Strings.attempted_to_track_event_with_missing_data)
             return false
         }
 
-        self.track(.purchase(.init(), data.toPurchase(storeTransationID: storeTransationID)))
+        let newData = data.toPurchase(storeTransactionIdentifier: storeTransationIdentifier)
+
+        self.track(.purchase(.init(), newData))
         return true
     }
 
@@ -400,10 +404,10 @@ extension PaywallEvent.Data {
     }
 
     func toPurchase(
-        storeTransationID: String?
+        storeTransactionIdentifier: String?
     ) -> Self {
         var result = self
-        result.storeTransationID = storeTransationID
+        result.storeTransactionIdentifier = storeTransactionIdentifier
         return result
     }
 
