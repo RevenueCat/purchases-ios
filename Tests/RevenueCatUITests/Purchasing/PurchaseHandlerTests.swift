@@ -203,6 +203,7 @@ class PurchaseHandlerTests: TestCase {
             displayMode: .fullScreen,
             locale: .init(identifier: "en_US"),
             darkMode: false,
+            storeTransactionID: nil,
             fallbackReason: nil
         )
 
