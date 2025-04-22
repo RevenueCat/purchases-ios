@@ -74,6 +74,7 @@ struct CustomerCenterActionViewModifier: ViewModifier {
     }
 
     // Set up direct binding to the state variables
+    @MainActor
     private func setUpActionWrappers() {
         actionWrapper.setRestoreStarted = {
             restoreStarted = UniqueWrapper(value: ())
