@@ -78,7 +78,7 @@ struct RestorePurchasesAlert: View {
         )
         .task(id: isPresented) {
             if isPresented {
-                await viewModel.performRestore()
+                await viewModel.performRestore(purchasesProvider: customerCenterViewModel.purchasesProvider)
             }
         }
     }
@@ -264,7 +264,7 @@ private class MockRestorePurchasesAlertViewModel: RestorePurchasesAlertViewModel
         self.alertType = alertType
     }
 
-    override func performRestore() async {
+    override func performRestore(purchasesProvider: CustomerCenterPurchasesType) async {
     }
 
 }
