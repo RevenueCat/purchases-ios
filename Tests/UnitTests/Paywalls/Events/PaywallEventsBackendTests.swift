@@ -87,7 +87,9 @@ private extension BackendPaywallEventTests {
         sessionID: .init(uuidString: "98CC0F1D-7665-4093-9624-1D7308FFF4DB")!,
         displayMode: .fullScreen,
         localeIdentifier: "es_ES",
-        darkMode: true
+        darkMode: true,
+        storeTransactionID: nil,
+        fallbackReason: nil
     )
 
     static let eventData2: PaywallEvent.Data = .init(
@@ -96,7 +98,9 @@ private extension BackendPaywallEventTests {
         sessionID: .init(uuidString: "10CC0F1D-7665-4093-9624-1D7308FFF4DB")!,
         displayMode: .fullScreen,
         localeIdentifier: "en_US",
-        darkMode: false
+        darkMode: false,
+        storeTransactionID: nil,
+        fallbackReason: nil
     )
 
     static func createStoredEvent(from event: PaywallEvent) throws -> StoredEvent {
