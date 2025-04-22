@@ -159,16 +159,15 @@ private extension CustomerCenterView {
         }
         .manageSubscriptionsSheet(isPresented: $viewModel.manageSubscriptionsSheet)
         .modifier(CustomerCenterActionViewModifier(actionWrapper: viewModel.actionWrapper))
-        .onCustomerCenterFeedbackSurveyCompleted { _ in
-            viewModel.manageSubscriptionsSheet = true
-        }
         .onCustomerCenterPromotionalOfferSuccess {
             Task {
                 await viewModel.loadScreen(shouldSync: true)
             }
         }
         .onCustomerCenterShowingManageSubscriptions {
-            viewModel.manageSubscriptionsSheet = true
+            Task { @MainActor in
+                viewModel.manageSubscriptionsSheet = true
+            }
         }
         .onChangeOf(viewModel.manageSubscriptionsSheet) { manageSubscriptionsSheet in
             if !manageSubscriptionsSheet {
