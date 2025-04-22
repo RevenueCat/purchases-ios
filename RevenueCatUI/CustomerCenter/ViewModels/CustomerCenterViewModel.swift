@@ -39,6 +39,9 @@ import RevenueCat
     @Published
     private(set) var onUpdateAppClick: (() -> Void)?
 
+    @Published
+    var manageSubscriptionsSheet = false
+
     private(set) var purchasesProvider: CustomerCenterPurchasesType
     private(set) var customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
 
@@ -55,6 +58,7 @@ import RevenueCat
             }
         }
     }
+
     @Published
     var configuration: CustomerCenterConfigData? {
         didSet {
@@ -117,9 +121,13 @@ import RevenueCat
 
     #endif
 
-    func loadScreen() async {
+    func loadScreen(shouldSync: Bool = false) async {
         do {
-            try await self.loadPurchaseInformation()
+            let customerInfo = shouldSync ?
+            try await self.purchasesProvider.syncPurchases() :
+            try await purchasesProvider.customerInfo(fetchPolicy: .fetchCurrent)
+
+            try await self.loadPurchaseInformation(customerInfo: customerInfo)
             try await self.loadCustomerCenterConfig()
             self.state = .success
         } catch {
@@ -147,7 +155,6 @@ import RevenueCat
         let event = CustomerCenterEvent.impression(CustomerCenterEventCreationData(), eventData)
         purchasesProvider.track(customerCenterEvent: event)
     }
-
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -156,9 +163,7 @@ import RevenueCat
 @available(watchOS, unavailable)
 private extension CustomerCenterViewModel {
 
-    func loadPurchaseInformation() async throws {
-        let customerInfo = try await purchasesProvider.customerInfo(fetchPolicy: .fetchCurrent)
-
+    func loadPurchaseInformation(customerInfo: CustomerInfo) async throws {
         let hasActiveProducts =  !customerInfo.activeSubscriptions.isEmpty ||
         !customerInfo.nonSubscriptions.isEmpty
 
@@ -226,7 +231,6 @@ private extension CustomerCenterViewModel {
             customerInfoRequestedDate: customerInfo.requestDate
         )
     }
-
 }
 
 fileprivate extension String {
