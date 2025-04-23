@@ -91,6 +91,14 @@ public struct CustomerCenterView: View {
             self.navigationOptions = navigationOptions
     }
 
+    // swiftlint:disable:next missing_docs
+    @_spi(Internal) public init(
+        uiPreviewPurchaseProvider: CustomerCenterPurchasesType,
+        navigationOptions: CustomerCenterNavigationOptions) {
+        self.init(viewModel: CustomerCenterViewModel(uiPreviewPurchaseProvider: uiPreviewPurchaseProvider),
+                  navigationOptions: navigationOptions)
+    }
+
     fileprivate init(
         viewModel: CustomerCenterViewModel,
         mode: CustomerCenterPresentationMode =  .default,
@@ -149,10 +157,23 @@ private extension CustomerCenterView {
                 }
             }
         }
+        .manageSubscriptionsSheet(isPresented: $viewModel.manageSubscriptionsSheet)
         .modifier(CustomerCenterActionViewModifier(actionWrapper: viewModel.actionWrapper))
         .onCustomerCenterPromotionalOfferSuccess {
             Task {
-                await viewModel.loadScreen()
+                await viewModel.loadScreen(shouldSync: true)
+            }
+        }
+        .onCustomerCenterShowingManageSubscriptions {
+            Task { @MainActor in
+                viewModel.manageSubscriptionsSheet = true
+            }
+        }
+        .onChangeOf(viewModel.manageSubscriptionsSheet) { manageSubscriptionsSheet in
+            if !manageSubscriptionsSheet {
+                Task {
+                    await viewModel.loadScreen(shouldSync: true)
+                }
             }
         }
     }
@@ -190,10 +211,11 @@ private extension CustomerCenterView {
                         }
                     )
                 } else {
-                    ManageSubscriptionsView(screen: screen,
-                                            purchaseInformation: purchaseInformation,
-                                            purchasesProvider: self.viewModel.purchasesProvider,
-                                            actionWrapper: self.viewModel.actionWrapper)
+                    ManageSubscriptionsView(
+                        screen: screen,
+                        purchaseInformation: purchaseInformation,
+                        purchasesProvider: self.viewModel.purchasesProvider,
+                        actionWrapper: self.viewModel.actionWrapper)
                 }
             } else if let screen = configuration.screens[.management] {
                 WrongPlatformView(screen: screen,
