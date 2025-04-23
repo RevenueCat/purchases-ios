@@ -157,10 +157,23 @@ private extension CustomerCenterView {
                 }
             }
         }
+        .manageSubscriptionsSheet(isPresented: $viewModel.manageSubscriptionsSheet)
         .modifier(CustomerCenterActionViewModifier(actionWrapper: viewModel.actionWrapper))
         .onCustomerCenterPromotionalOfferSuccess {
             Task {
-                await viewModel.loadScreen()
+                await viewModel.loadScreen(shouldSync: true)
+            }
+        }
+        .onCustomerCenterShowingManageSubscriptions {
+            Task { @MainActor in
+                viewModel.manageSubscriptionsSheet = true
+            }
+        }
+        .onChangeOf(viewModel.manageSubscriptionsSheet) { manageSubscriptionsSheet in
+            if !manageSubscriptionsSheet {
+                Task {
+                    await viewModel.loadScreen(shouldSync: true)
+                }
             }
         }
     }

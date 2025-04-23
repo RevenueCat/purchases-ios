@@ -56,11 +56,13 @@ struct PurchaseButtonComponentView: View {
 
     var body: some View {
         AsyncButton {
+            self.logIfInPreview(package: self.packageContext.package)
+
             guard !self.purchaseHandler.actionInProgress else { return }
 
             // WIP: Need to log warning if currently subscribed
             guard let selectedPackage = self.packageContext.package
-//                    , selectedPackage.currentlySubscribed
+                    //                    , selectedPackage.currentlySubscribed
             else {
                 Logger.warning(Strings.product_already_subscribed)
                 return
@@ -79,6 +81,17 @@ struct PurchaseButtonComponentView: View {
             $0.disabled(true)
                 .opacity(0.35)
         }
+    }
+
+    /// Used to see purchasing information when using SwiftUI Previews
+    private func logIfInPreview(package: Package?) {
+        #if DEBUG
+        let isInPreview: Bool = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+
+        if isInPreview {
+            print("Purchasing package: \(package?.identifier ?? "NOTHING")")
+        }
+        #endif
     }
 
 }

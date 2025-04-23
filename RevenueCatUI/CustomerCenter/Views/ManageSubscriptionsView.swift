@@ -79,12 +79,12 @@ struct ManageSubscriptionsView: View {
                 isPresented: $viewModel.showPurchases,
                 usesNavigationStack: navigationOptions.usesNavigationStack
             ) {
-                PurchaseHistoryView(viewModel:
-                                        PurchaseHistoryViewModel(purchasesProvider: self.viewModel.purchasesProvider)
+                PurchaseHistoryView(
+                    viewModel: PurchaseHistoryViewModel(purchasesProvider: self.viewModel.purchasesProvider)
                 )
-                    .environment(\.appearance, appearance)
-                    .environment(\.localization, localization)
-                    .environment(\.navigationOptions, navigationOptions)
+                .environment(\.appearance, appearance)
+                .environment(\.localization, localization)
+                .environment(\.navigationOptions, navigationOptions)
             }
             .sheet(item: self.$viewModel.promotionalOfferData) { promotionalOfferData in
                 PromotionalOfferView(
@@ -108,6 +108,7 @@ struct ManageSubscriptionsView: View {
             }, content: { inAppBrowserURL in
                 SafariView(url: inAppBrowserURL.url)
             })
+
     }
 
     @ViewBuilder
@@ -180,6 +181,7 @@ struct ManageSubscriptionsView: View {
             $0.navigationTitle(self.viewModel.screen.title)
                 .navigationBarTitleDisplayMode(.inline)
          })
+
     }
 
 }
