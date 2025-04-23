@@ -1,0 +1,125 @@
+{
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
+  "identifier" : "37351D1E",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_applicationInternalID" : "6744533481",
+    "_developerTeamID" : "8SXR2327BM",
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 766323196.95597005,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Subscription Status"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Refund Request Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      }
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "21666521",
+      "localizations" : [
+
+      ],
+      "name" : "maestro-tests",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+            {
+              "displayPrice" : "0.99",
+              "internalID" : "280C9B71",
+              "numberOfPeriods" : 1,
+              "offerID" : "maestro.weekly.tests.promotional1",
+              "paymentMode" : "payAsYouGo",
+              "referenceName" : "maestro.weekly.tests.promotional1",
+              "subscriptionPeriod" : "P1W"
+            }
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "1.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "6744534472",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Weekly Tests for RC Maestro",
+              "displayName" : "Maestro Weekly Tests",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "maestro.weekly.tests",
+          "recurringSubscriptionPeriod" : "P1W",
+          "referenceName" : "maestro-tests",
+          "subscriptionGroupID" : "21666521",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}
