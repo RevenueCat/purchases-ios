@@ -59,6 +59,11 @@ struct VirtualCurrencyBalanceListRow: View {
     let rowData: RowData
 
     var body: some View {
+        content()
+    }
+
+    @ViewBuilder
+    private func content() -> some View {
         if #available(iOS 16.0, *) {
             LabeledContent {
                 Text(rowData.balance.formatted())

@@ -121,7 +121,7 @@ class CustomerInfoFixtures {
         }.joined(separator: ",\n")
 
         let virtualCurrenciesJson = String(
-            data: (try? JSONEncoder().encode(virtualCurrencies) ?? Data()),
+            data: (try? JSONEncoder().encode(virtualCurrencies)) ?? Data(),
             encoding: .utf8
         ) ?? ""
 
