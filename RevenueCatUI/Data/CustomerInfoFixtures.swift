@@ -91,6 +91,7 @@ class CustomerInfoFixtures {
         }
     }
 
+    // swiftlint:disable:next function_body_length
     static func customerInfo(
         subscriptions: [Subscription],
         entitlements: [Entitlement],
@@ -118,7 +119,10 @@ class CustomerInfoFixtures {
             """
         }.joined(separator: ",\n")
 
-        let virtualCurrenciesJson = String(data: try? JSONEncoder().encode(virtualCurrencies) ?? Data())
+        let virtualCurrenciesJson = String(
+            data: (try? JSONEncoder().encode(virtualCurrencies) ?? Data()),
+            encoding: .utf8
+        ) ?? ""
 
         return .decode(
         """
