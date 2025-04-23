@@ -27,6 +27,15 @@ import XCTest
 @MainActor
 final class VirtualCurrenciesScreenViewModelTests: TestCase {
 
+    private let error = TestError(message: "An error occurred")
+
+    private struct TestError: Error, Equatable {
+        let message: String
+        var localizedDescription: String {
+            return message
+        }
+    }
+
     func testInitialState() {
         let viewModel = VirtualCurrenciesScreenViewModel(
             purchasesProvider: MockCustomerCenterPurchases()
