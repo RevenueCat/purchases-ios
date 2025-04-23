@@ -37,7 +37,7 @@ struct VirtualCurrenciesListSection: View {
 
     init(
         virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo],
-        purchasesProvider: CustomerCenterPurchasesType,
+        purchasesProvider: CustomerCenterPurchasesType
     ) {
         let sortedCurrencies = virtualCurrencies.map {
             VirtualCurrencyBalanceListRow.RowData(
