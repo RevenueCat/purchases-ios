@@ -59,27 +59,12 @@ struct VirtualCurrencyBalanceListRow: View {
     let rowData: RowData
 
     var body: some View {
-        content()
-    }
-
-    @ViewBuilder
-    private func content() -> some View {
-        if #available(iOS 16.0, *) {
-            LabeledContent {
-                Text(rowData.balance.formatted())
-            } label: {
-                Text(rowData.virtualCurrencyCode)
-            }
-            .transition(.slide)
-        } else {
-            HStack {
-                Text(rowData.virtualCurrencyCode)
-                Spacer()
-                Text(rowData.balance.formatted())
-                    .foregroundStyle(.secondary)
-            }
-            .transition(.slide)
+        CompatibilityLabeledContent {
+            Text(rowData.balance.formatted())
+        } content: {
+            Text(rowData.virtualCurrencyCode)
         }
+        .transition(.slide)
     }
 }
 
