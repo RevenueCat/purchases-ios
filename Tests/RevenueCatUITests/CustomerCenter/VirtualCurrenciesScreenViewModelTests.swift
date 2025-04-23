@@ -83,8 +83,8 @@ final class VirtualCurrenciesScreenViewModelTests: TestCase {
 
     func testLoadDataEmptyVirtualCurrencies() async {
         let customerInfo = CustomerInfoFixtures.customerInfo(
-            subscriptions = [],
-            entitlements = [],
+            subscriptions: [],
+            entitlements: [],
             virtualCurrencies: [:]
         )
         let mockPurchases = MockCustomerCenterPurchases(customerInfo: customerInfo)
