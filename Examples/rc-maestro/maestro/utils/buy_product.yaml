@@ -1,7 +1,10 @@
 appId: com.revenuecat.maestro.ios  
 
+inputText: ${PRODUCT_ID}
+
 --- 
 
-- tapOn: "Buy product"
+- tapOn: "Buy something"
+- tapOn: "Buy ${PRODUCT_ID}"
 - tapOn: "Subscribe"
 - tapOn: "Ok"
