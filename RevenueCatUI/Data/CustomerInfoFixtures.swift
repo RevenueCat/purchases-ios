@@ -94,7 +94,8 @@ class CustomerInfoFixtures {
     static func customerInfo(
         subscriptions: [Subscription],
         entitlements: [Entitlement],
-        nonSubscriptions: [NonSubscriptionTransaction] = []
+        nonSubscriptions: [NonSubscriptionTransaction] = [],
+        virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo] = [:]
     ) -> CustomerInfo {
         let subscriptionsJson = subscriptions.map { subscription in
             """
@@ -141,6 +142,9 @@ class CustomerInfoFixtures {
                 "entitlements": {
                     \(entitlementsJson)
                 }
+            },
+            "virtualCurrencies": {
+                \(virtualCurrenciesJson)
             }
         }
         """
@@ -152,7 +156,8 @@ class CustomerInfoFixtures {
         productId: String = "com.revenuecat.product",
         purchaseDate: String = "2022-04-12T00:03:28Z",
         expirationDate: String? = "2062-04-12T00:03:35Z",
-        unsubscribeDetectedAt: String? = nil
+        unsubscribeDetectedAt: String? = nil,
+        virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo] = [:]
     ) -> CustomerInfo {
         return customerInfo(
             subscriptions: [
@@ -171,7 +176,8 @@ class CustomerInfoFixtures {
                     purchaseDate: purchaseDate,
                     expirationDate: expirationDate
                 )
-            ]
+            ],
+            virtualCurrencies: virtualCurrencies
         )
     }
 
@@ -257,6 +263,14 @@ class CustomerInfoFixtures {
 
     static let customerInfoWithPromotional: CustomerInfo = {
         makeCustomerInfo(store: "promotional", productId: "rc_promo_pro_cat_yearly")
+    }()
+
+    static let customerInfoWithVirtualCurrencies: CustomerInfo = {
+        makeCustomerInfo(
+            store: "promotional",
+            productId: "rc_promo_pro_cat_yearly",
+            virtualCurrencies: CustomerCenterConfigTestData.fourVirtualCurrencies
+        )
     }()
 
     static let customerInfoWithLifetimePromotional: CustomerInfo = {

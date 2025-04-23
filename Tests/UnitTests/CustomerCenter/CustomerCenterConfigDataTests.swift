@@ -114,7 +114,8 @@ class CustomerCenterConfigDataTests: TestCase {
                 support: .init(
                     email: "support@example.com",
                     shouldWarnCustomerToUpdate: false,
-                    displayPurchaseHistoryLink: true
+                    displayPurchaseHistoryLink: true,
+                    displayVirtualCurrencies: true
                 )
             ),
             lastPublishedAppVersion: "1.2.3",

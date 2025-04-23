@@ -43,13 +43,15 @@ final class ManageSubscriptionsViewModelTests: TestCase {
         let viewModel =
         ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.default,
                                      actionWrapper: CustomerCenterActionWrapper(),
-                                     purchasesProvider: MockCustomerCenterPurchases())
+                                     purchasesProvider: MockCustomerCenterPurchases(),
+                                     virtualCurrencies: CustomerCenterConfigTestData.threeVirtualCurrencies)
 
         expect(viewModel.state) == CustomerCenterViewState.success
         expect(viewModel.purchaseInformation).to(beNil())
         expect(viewModel.refundRequestStatus).to(beNil())
         expect(viewModel.screen).toNot(beNil())
         expect(viewModel.showRestoreAlert) == false
+        expect(viewModel.virtualCurrencies).to(equal(CustomerCenterConfigTestData.threeVirtualCurrencies))
     }
 
     func testLifetimeSubscriptionDoesNotShowCancel() {
@@ -59,7 +61,8 @@ final class ManageSubscriptionsViewModelTests: TestCase {
             screen: ManageSubscriptionsViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
-            purchasesProvider: MockCustomerCenterPurchases())
+            purchasesProvider: MockCustomerCenterPurchases(),
+            virtualCurrencies: [:])
 
         expect(viewModel.relevantPathsForPurchase.count) == 3
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beFalse())
@@ -72,7 +75,8 @@ final class ManageSubscriptionsViewModelTests: TestCase {
             screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .forever),
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
-            purchasesProvider: MockCustomerCenterPurchases())
+            purchasesProvider: MockCustomerCenterPurchases(),
+            virtualCurrencies: [:])
 
         expect(viewModel.relevantPathsForPurchase.count) == 4
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beTrue())
@@ -99,7 +103,8 @@ final class ManageSubscriptionsViewModelTests: TestCase {
             screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .duration(oneDay)),
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
-            purchasesProvider: MockCustomerCenterPurchases())
+            purchasesProvider: MockCustomerCenterPurchases(),
+            virtualCurrencies: [:])
 
         expect(viewModel.relevantPathsForPurchase.count) == 3
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beFalse())
@@ -117,7 +122,8 @@ final class ManageSubscriptionsViewModelTests: TestCase {
             screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .forever),
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
-            purchasesProvider: MockCustomerCenterPurchases())
+            purchasesProvider: MockCustomerCenterPurchases(),
+            virtualCurrencies: [:])
 
         expect(viewModel.relevantPathsForPurchase.count) == 3
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beFalse())
@@ -136,7 +142,8 @@ final class ManageSubscriptionsViewModelTests: TestCase {
             screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .forever),
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
-            purchasesProvider: MockCustomerCenterPurchases())
+            purchasesProvider: MockCustomerCenterPurchases(),
+            virtualCurrencies: [:])
 
         expect(viewModel.relevantPathsForPurchase.count) == 3
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beFalse())
@@ -163,7 +170,8 @@ final class ManageSubscriptionsViewModelTests: TestCase {
             screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .duration(oneDay)),
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
-            purchasesProvider: MockCustomerCenterPurchases())
+            purchasesProvider: MockCustomerCenterPurchases(),
+            virtualCurrencies: [:])
 
         expect(viewModel.relevantPathsForPurchase.count) == 4
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beTrue())
@@ -173,7 +181,8 @@ final class ManageSubscriptionsViewModelTests: TestCase {
         let viewModel =
         ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.default,
                                      actionWrapper: CustomerCenterActionWrapper(),
-                                     purchasesProvider: MockCustomerCenterPurchases())
+                                     purchasesProvider: MockCustomerCenterPurchases(),
+                                     virtualCurrencies: [:])
 
         viewModel.state = CustomerCenterViewState.error(error)
 
@@ -306,7 +315,8 @@ final class ManageSubscriptionsViewModelTests: TestCase {
                     customerInfo: customerInfo,
                     products: products
                 ),
-                loadPromotionalOfferUseCase: loadPromotionalOfferUseCase)
+                loadPromotionalOfferUseCase: loadPromotionalOfferUseCase,
+                virtualCurrencies: [:])
 
             let screen = try XCTUnwrap(viewModel.screen)
             expect(viewModel.state) == .success
@@ -408,7 +418,8 @@ final class ManageSubscriptionsViewModelTests: TestCase {
                                                         customerInfo: customerInfo,
                                                         products: products
                                                      ),
-                                                     loadPromotionalOfferUseCase: loadPromotionalOfferUseCase)
+                                                     loadPromotionalOfferUseCase: loadPromotionalOfferUseCase,
+                                                     virtualCurrencies: [:])
 
         return (viewModel, loadPromotionalOfferUseCase)
     }
