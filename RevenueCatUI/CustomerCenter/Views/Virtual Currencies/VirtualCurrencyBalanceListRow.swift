@@ -11,6 +11,8 @@
 //
 //  Created by Will Taylor on 4/22/25.
 
+#if os(iOS)
+
 import SwiftUI
 
 /// A SwiftUI view that displays a virtual currency balance in a list row format.
@@ -33,9 +35,6 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// ## Platform Support
-/// - iOS 15.0+
-/// - Not available on macOS, tvOS, or watchOS
 @available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
@@ -64,12 +63,11 @@ struct VirtualCurrencyBalanceListRow: View {
         } content: {
             Text(rowData.virtualCurrencyCode)
         }
-        .transition(.slide)
+        .transition(.opacity)
     }
 }
 
 #Preview {
-    #if os(iOS)
     if #available(iOS 15.0, *) {
         List {
             VirtualCurrencyBalanceListRow(
@@ -82,7 +80,6 @@ struct VirtualCurrencyBalanceListRow: View {
     } else {
         Text("Unavailable on iOS <15.0")
     }
-    #else
-    Text("Unavailable on this platform")
-    #endif
 }
+
+#endif

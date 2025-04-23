@@ -11,6 +11,8 @@
 //
 //  Created by Will Taylor on 4/22/25.
 
+#if os(iOS)
+
 import Foundation
 import RevenueCat
 import SwiftUI
@@ -108,4 +110,6 @@ struct VirtualCurrenciesListSection_Previews: PreviewProvider {
     }
 
 }
+#endif
+
 #endif

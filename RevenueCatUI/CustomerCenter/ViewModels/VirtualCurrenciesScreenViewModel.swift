@@ -11,11 +11,12 @@
 //
 //  Created by Will Taylor on 4/21/25.
 
-import Foundation
+#if os(iOS)
 
+import Foundation
 import RevenueCat
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
@@ -47,7 +48,7 @@ final class VirtualCurrenciesScreenViewModel: ObservableObject {
     }
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
@@ -84,3 +85,5 @@ internal extension VirtualCurrenciesScreenViewModel {
                 .sorted { $0.balance < $1.balance }
     }
 }
+
+#endif
