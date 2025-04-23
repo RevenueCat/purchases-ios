@@ -11,6 +11,7 @@
 //
 //  Created by Cesar de la Vega on 28/10/24.
 
+import Foundation
 import RevenueCat
 
 // swiftlint:disable force_unwrapping
