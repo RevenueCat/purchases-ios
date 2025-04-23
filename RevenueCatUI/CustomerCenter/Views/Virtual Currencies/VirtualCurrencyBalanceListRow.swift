@@ -79,6 +79,7 @@ struct VirtualCurrencyBalanceListRow: View {
 }
 
 #Preview {
+    #if os(iOS)
     if #available(iOS 15.0, *) {
         List {
             VirtualCurrencyBalanceListRow(
@@ -91,4 +92,7 @@ struct VirtualCurrencyBalanceListRow: View {
     } else {
         Text("Unavailable on iOS <15.0")
     }
+    #else
+    Text("Unavailable on this platform")
+    #endif
 }
