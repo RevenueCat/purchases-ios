@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  VirtualCurrenciesView.swift
+//  VirtualCurrenciesScreen.swift
 //
 //  Created by Will Taylor on 4/21/25.
 
@@ -20,23 +20,17 @@ import SwiftUI
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-struct VirtualCurrenciesView: View {
+struct VirtualCurrenciesScreen: View {
 
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
 
-    @StateObject var viewModel: VirtualCurrenciesViewModel
+    @StateObject var viewModel: VirtualCurrenciesScreenViewModel
 
     enum ViewState {
         case loading
-        case loaded([VirtualCurrencyBalanceRowData])
+        case loaded([VirtualCurrencyBalanceListRow.RowData])
         case error
-    }
-
-    struct VirtualCurrencyBalanceRowData: Identifiable, Hashable {
-        let id = UUID()
-        let code: String
-        let balance: Int
     }
 
     var body: some View {
@@ -52,11 +46,8 @@ struct VirtualCurrenciesView: View {
             case .loaded(let virtualCurrencyBalanceData):
                 if !virtualCurrencyBalanceData.isEmpty {
                     Section {
-                        ForEach(virtualCurrencyBalanceData) { virtualCurrencyData in
-                            VirtualCurrencyBalanceRow(
-                                title: virtualCurrencyData.code,
-                                balance: virtualCurrencyData.balance
-                            )
+                        ForEach(virtualCurrencyBalanceData) { virtualCurrencyBalanceData in
+                            VirtualCurrencyBalanceListRow(rowData: virtualCurrencyBalanceData)
                         }
                     } header: {
                         Text(localization[.virtualCurrenciesScreenHeader])
@@ -86,39 +77,14 @@ struct VirtualCurrenciesView: View {
             }
         }
     }
-
-    private struct VirtualCurrencyBalanceRow: View {
-
-        let title: String
-        let balance: Int
-
-        var body: some View {
-            if #available(iOS 16.0, *) {
-                LabeledContent {
-                    Text(balance.formatted())
-                } label: {
-                    Text(title)
-                }
-                .transition(.slide)
-            } else {
-                HStack {
-                    Text(title)
-                    Spacer()
-                    Text(balance.formatted())
-                        .foregroundStyle(.secondary)
-                }
-                .transition(.slide)
-            }
-        }
-    }
 }
 
 @available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-extension VirtualCurrenciesView.ViewState: Equatable {
-    static func == (lhs: VirtualCurrenciesView.ViewState, rhs: VirtualCurrenciesView.ViewState) -> Bool {
+extension VirtualCurrenciesScreen.ViewState: Equatable {
+    static func == (lhs: VirtualCurrenciesScreen.ViewState, rhs: VirtualCurrenciesScreen.ViewState) -> Bool {
         switch (lhs, rhs) {
         case (.loading, .loading):
             return true
@@ -136,8 +102,8 @@ extension VirtualCurrenciesView.ViewState: Equatable {
     if #available(iOS 14.0, *) {
         NavigationView {
             if #available(iOS 15.0, *) {
-                VirtualCurrenciesView(
-                    viewModel: VirtualCurrenciesViewModel(
+                VirtualCurrenciesScreen(
+                    viewModel: VirtualCurrenciesScreenViewModel(
                         viewState: .loading,
                         purchasesProvider: CustomerCenterPurchases(),
                         isRunningInSwiftUIPreview: true
@@ -158,8 +124,8 @@ extension VirtualCurrenciesView.ViewState: Equatable {
     if #available(iOS 14.0, *) {
         NavigationView {
             if #available(iOS 15.0, *) {
-                VirtualCurrenciesView(
-                    viewModel: VirtualCurrenciesViewModel(
+                VirtualCurrenciesScreen(
+                    viewModel: VirtualCurrenciesScreenViewModel(
                         viewState: .loaded([]),
                         purchasesProvider: CustomerCenterPurchases(),
                         isRunningInSwiftUIPreview: true
@@ -180,13 +146,13 @@ extension VirtualCurrenciesView.ViewState: Equatable {
     if #available(iOS 14.0, *) {
         NavigationView {
             if #available(iOS 15.0, *) {
-                VirtualCurrenciesView(
-                    viewModel: VirtualCurrenciesViewModel(
+                VirtualCurrenciesScreen(
+                    viewModel: VirtualCurrenciesScreenViewModel(
                         viewState: .loaded([
-                            .init(code: "PLTNM", balance: 2000),
-                            .init(code: "BRNZ", balance: 1000),
-                            .init(code: "SLVR", balance: 500),
-                            .init(code: "GLD", balance: 100)
+                            .init(virtualCurrencyCode: "PLTNM", balance: 2000),
+                            .init(virtualCurrencyCode: "BRNZ", balance: 1000),
+                            .init(virtualCurrencyCode: "SLVR", balance: 500),
+                            .init(virtualCurrencyCode: "GLD", balance: 100)
 
                         ]),
                         purchasesProvider: CustomerCenterPurchases(),
@@ -208,8 +174,8 @@ extension VirtualCurrenciesView.ViewState: Equatable {
     if #available(iOS 14.0, *) {
         NavigationView {
             if #available(iOS 15.0, *) {
-                VirtualCurrenciesView(
-                    viewModel: VirtualCurrenciesViewModel(
+                VirtualCurrenciesScreen(
+                    viewModel: VirtualCurrenciesScreenViewModel(
                         viewState: .error,
                         purchasesProvider: CustomerCenterPurchases(),
                         isRunningInSwiftUIPreview: true

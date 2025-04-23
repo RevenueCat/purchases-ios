@@ -142,7 +142,7 @@ public struct CustomerCenterConfigData: Equatable {
             case storeExternal = "store_external"
             case storeUnknownStore = "store_unknown"
             case debugHeaderTitle = "Debug"
-            case seeVirtualCurrencies = "see_virtual_currencies"
+            case seeAllVirtualCurrencies = "see_all_virtual_currencies"
             case virtualCurrenciesScreenHeader = "virtual_currency_balances_header"
             case noVirtualCurrencyBalancesFound = "no_virtual_currency_balances"
 
@@ -332,8 +332,8 @@ public struct CustomerCenterConfigData: Equatable {
                     return "Debug"
                 case .virtualCurrenciesScreenHeader:
                     return "In-App Currencies"
-                case .seeVirtualCurrencies:
-                    return "See in-app currencies"
+                case .seeAllVirtualCurrencies:
+                    return "See all in-app currencies"
                 case .noVirtualCurrencyBalancesFound:
                     return "It doesn't look like you've purchased any in-app currencies."
                 }
@@ -570,15 +570,18 @@ public struct CustomerCenterConfigData: Equatable {
         public let email: String
         public let shouldWarnCustomerToUpdate: Bool
         public let displayPurchaseHistoryLink: Bool
+        public let displayVirtualCurrencies: Bool
 
         public init(
             email: String,
             shouldWarnCustomerToUpdate: Bool,
-            displayPurchaseHistoryLink: Bool
+            displayPurchaseHistoryLink: Bool,
+            displayVirtualCurrencies: Bool
         ) {
             self.email = email
             self.shouldWarnCustomerToUpdate = shouldWarnCustomerToUpdate
             self.displayPurchaseHistoryLink = displayPurchaseHistoryLink
+            self.displayVirtualCurrencies = displayVirtualCurrencies
         }
 
     }
@@ -723,6 +726,7 @@ extension CustomerCenterConfigData.Support {
         self.email = response.email
         self.shouldWarnCustomerToUpdate = response.shouldWarnCustomerToUpdate ?? true
         self.displayPurchaseHistoryLink = response.displayPurchaseHistoryLink ?? false
+        self.displayVirtualCurrencies = response.displayVirtualCurrencies ?? true
     }
 
 }

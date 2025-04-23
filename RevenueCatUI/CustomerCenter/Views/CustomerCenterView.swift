@@ -220,6 +220,8 @@ private extension CustomerCenterView {
             } else {
                 // Fallback with a restore button
                 NoSubscriptionsView(configuration: configuration,
+                                    virtualCurrencies: self.viewModel.virtualCurrencies,
+                                    purchasesProvider: self.viewModel.purchasesProvider,
                                     actionWrapper: self.viewModel.actionWrapper)
             }
         }

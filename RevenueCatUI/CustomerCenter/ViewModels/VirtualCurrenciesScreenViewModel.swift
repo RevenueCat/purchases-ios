@@ -19,14 +19,14 @@ import RevenueCat
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-final class VirtualCurrenciesViewModel: ObservableObject {
+final class VirtualCurrenciesScreenViewModel: ObservableObject {
 
-    @Published var viewState: VirtualCurrenciesView.ViewState
+    @Published var viewState: VirtualCurrenciesScreen.ViewState
 
     private let isRunningInSwiftUIPreview: Bool
 
     init(
-        viewState: VirtualCurrenciesView.ViewState = .loading,
+        viewState: VirtualCurrenciesScreen.ViewState = .loading,
         purchasesProvider: CustomerCenterPurchasesType,
         isRunningInSwiftUIPreview: Bool = false
     ) {
@@ -51,7 +51,7 @@ final class VirtualCurrenciesViewModel: ObservableObject {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-internal extension VirtualCurrenciesViewModel {
+internal extension VirtualCurrenciesScreenViewModel {
 
     func loadData() async {
         await MainActor.run {
@@ -59,7 +59,7 @@ internal extension VirtualCurrenciesViewModel {
         }
 
         do {
-            let customerInfo = try await self.purchasesProvider.customerInfo()
+            let customerInfo = try await self.purchasesProvider.customerInfo(fetchPolicy: .fetchCurrent)
             let virtualCurrencyBalanceData = self.extractVirtualCurrencyBalanceData(from: customerInfo)
 
             await MainActor.run {
@@ -73,11 +73,11 @@ internal extension VirtualCurrenciesViewModel {
     }
 
     private func extractVirtualCurrencyBalanceData(
-        from customerInfo: RevenueCat.CustomerInfo) -> [VirtualCurrenciesView.VirtualCurrencyBalanceRowData] {
+        from customerInfo: RevenueCat.CustomerInfo) -> [VirtualCurrencyBalanceListRow.RowData] {
             return customerInfo.virtualCurrencies
                 .map {
-                    VirtualCurrenciesView.VirtualCurrencyBalanceRowData(
-                        code: $0.key, // VC Code
+                    VirtualCurrencyBalanceListRow.RowData(
+                        virtualCurrencyCode: $0.key,
                         balance: $0.value.balance
                     )
                 }

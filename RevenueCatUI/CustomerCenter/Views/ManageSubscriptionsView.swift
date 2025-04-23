@@ -51,7 +51,8 @@ struct ManageSubscriptionsView: View {
             screen: screen,
             actionWrapper: actionWrapper,
             purchaseInformation: purchaseInformation,
-            purchasesProvider: purchasesProvider)
+            purchasesProvider: purchasesProvider,
+            virtualCurrencies: virtualCurrencies)
         self.init(viewModel: viewModel)
     }
 
@@ -80,17 +81,6 @@ struct ManageSubscriptionsView: View {
             ) {
                 PurchaseHistoryView(viewModel:
                                         PurchaseHistoryViewModel(purchasesProvider: self.viewModel.purchasesProvider)
-                )
-                    .environment(\.appearance, appearance)
-                    .environment(\.localization, localization)
-                    .environment(\.navigationOptions, navigationOptions)
-            }
-            .compatibleNavigation(
-                isPresented: $viewModel.showBalances,
-                usesNavigationStack: navigationOptions.usesNavigationStack
-            ) {
-                VirtualCurrenciesView(
-                    viewModel: VirtualCurrenciesViewModel(purchasesProvider: self.viewModel.purchasesProvider)
                 )
                     .environment(\.appearance, appearance)
                     .environment(\.localization, localization)
@@ -139,15 +129,11 @@ struct ManageSubscriptionsView: View {
                     }
                 }
 
-#warning("TODO: Conditionally display this based on dashboard config and presence of currencies")
-                if true {
-                    Button {
-                        viewModel.showBalances = true
-                    } label: {
-                        Text(localization[.seeVirtualCurrencies])
-                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                            .contentShape(Rectangle())
-                    }
+                if support?.displayVirtualCurrencies == true {
+                    VirtualCurrenciesListSection(
+                        virtualCurrencies: self.viewModel.virtualCurrencies,
+                        purchasesProvider: self.viewModel.purchasesProvider
+                    )
                 }
 
                 Section {
@@ -162,6 +148,13 @@ struct ManageSubscriptionsView: View {
                 }
             } else {
                 let fallbackDescription = localization[.tryCheckRestore]
+
+                if support?.displayVirtualCurrencies == true {
+                    VirtualCurrenciesListSection(
+                        virtualCurrencies: self.viewModel.virtualCurrencies,
+                        purchasesProvider: self.viewModel.purchasesProvider
+                    )
+                }
 
                 Section {
                     CompatibilityContentUnavailableView(
@@ -207,7 +200,8 @@ struct ManageSubscriptionsView: View {
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
                     refundRequestStatus: .success,
-                    purchasesProvider: CustomerCenterPurchases())
+                    purchasesProvider: CustomerCenterPurchases(),
+                    virtualCurrencies: [:])
                 ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
@@ -220,7 +214,8 @@ struct ManageSubscriptionsView: View {
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring,
-                    purchasesProvider: CustomerCenterPurchases())
+                    purchasesProvider: CustomerCenterPurchases(),
+                    virtualCurrencies: [:])
                 ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
@@ -233,7 +228,8 @@ struct ManageSubscriptionsView: View {
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationFree,
-                    purchasesProvider: CustomerCenterPurchases())
+                    purchasesProvider: CustomerCenterPurchases(),
+                    virtualCurrencies: [:])
                 ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
@@ -246,13 +242,44 @@ struct ManageSubscriptionsView: View {
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.consumable,
-                    purchasesProvider: CustomerCenterPurchases())
+                    purchasesProvider: CustomerCenterPurchases(),
+                    virtualCurrencies: [:])
                 ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Consumable - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                let viewModelWith3VCs = ManageSubscriptionsViewModel(
+                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                    actionWrapper: CustomerCenterActionWrapper(),
+                    purchaseInformation: CustomerCenterConfigTestData.consumable,
+                    purchasesProvider: CustomerCenterPurchases(),
+                    virtualCurrencies: CustomerCenterConfigTestData.threeVirtualCurrencies)
+                ManageSubscriptionsView(viewModel: viewModelWith3VCs)
+                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
+                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+                .environment(\.supportInformation, CustomerCenterConfigTestData.customerCenterData.support)
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("3 Virtual Currencies - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
+                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                    actionWrapper: CustomerCenterActionWrapper(),
+                    purchaseInformation: CustomerCenterConfigTestData.consumable,
+                    purchasesProvider: CustomerCenterPurchases(),
+                    virtualCurrencies: CustomerCenterConfigTestData.fourVirtualCurrencies)
+                ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
+                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
+                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+                .environment(\.supportInformation, CustomerCenterConfigTestData.customerCenterData.support)
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("4 Virtual Currencies - \(colorScheme)")
         }
     }
 

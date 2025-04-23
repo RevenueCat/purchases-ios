@@ -161,6 +161,7 @@ private extension CustomerCenterViewModel {
 
     func loadPurchaseInformation() async throws {
         let customerInfo = try await purchasesProvider.customerInfo(fetchPolicy: .fetchCurrent)
+        self.virtualCurrencies = customerInfo.virtualCurrencies
 
         let hasActiveProducts =  !customerInfo.activeSubscriptions.isEmpty ||
         !customerInfo.nonSubscriptions.isEmpty
@@ -184,8 +185,6 @@ private extension CustomerCenterViewModel {
             for: activeTransaction,
             entitlement: entitlement,
             customerInfo: customerInfo)
-
-        self.virtualCurrencies = customerInfo.virtualCurrencies
     }
 
     func loadCustomerCenterConfig() async throws {
