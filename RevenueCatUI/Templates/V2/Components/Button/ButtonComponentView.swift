@@ -129,13 +129,32 @@ struct ButtonComponentView: View {
 #if os(tvOS)
             // There's no SafariServices on tvOS, so we're falling back to opening in an external browser.
             Logger.warning(Strings.no_in_app_browser_tvos)
-            openURL(url)
+            openURL(url) { success in
+                if success {
+                    Logger.debug(Strings.successfully_opened_url_external_browser(url.absoluteString))
+                } else {
+                    Logger.error(Strings.failed_to_open_url_external_browser(url.absoluteString))
+                }
+            }
 #else
             inAppBrowserURL = url
 #endif
-        case .externalBrowser,
-                .deepLink:
-            openURL(url)
+        case .externalBrowser:
+            openURL(url) { success in
+                if success {
+                    Logger.debug(Strings.successfully_opened_url_external_browser(url.absoluteString))
+                } else {
+                    Logger.error(Strings.failed_to_open_url_external_browser(url.absoluteString))
+                }
+            }
+        case .deepLink:
+            openURL(url) { success in
+                if success {
+                    Logger.debug(Strings.successfully_opened_url_deep_link(url.absoluteString))
+                } else {
+                    Logger.error(Strings.failed_to_open_url_deep_link(url.absoluteString))
+                }
+            }
         case .unknown:
             break
         }
