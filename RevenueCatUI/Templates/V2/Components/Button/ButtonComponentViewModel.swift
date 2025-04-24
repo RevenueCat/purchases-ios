@@ -13,7 +13,7 @@
 //
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
 
@@ -113,12 +113,12 @@ class ButtonComponentViewModel {
 fileprivate extension PaywallComponent.LocalizationDictionary {
 
     func urlFromLid(_ urlLid: String) throws -> URL {
-        let urlString = try string(key: urlLid)
-        let url = URL(string: urlString)
-        if url == nil {
+        do {
+            return try url(key: urlLid)
+        } catch {
             Logger.error(Strings.paywall_invalid_url(urlLid))
+            throw error
         }
-        return url!
     }
 
 }
