@@ -167,7 +167,6 @@ commands:
           name: Install Tuist via mise
           command: |
             curl https://mise.run | sh
-            export PATH="$HOME/.local/bin:$PATH"
             mise install
 
   install-dependencies:
@@ -1391,7 +1390,7 @@ jobs:
       - install-tuist
       - run:
           name: Build Maestro Project
-          command: cd Examples/rc-maestro && tuist generate
+          command: cd Examples/rc-maestro && mise x -- tuist generate
       - run:
           name: Build Maestro App
           command: bundle exec fastlane build_maestro_app
