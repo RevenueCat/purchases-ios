@@ -16,6 +16,22 @@
 import RevenueCat
 import SwiftUI
 
+/// A SwiftUI view that displays a list of virtual currency balances for the current user.
+///
+/// This view shows a loading state while fetching balances, displays the balances in a list when loaded,
+/// or shows an error state if the fetch fails. Each virtual currency balance is displayed in a row
+/// showing the currency code and balance amount.
+///
+/// ## Example
+/// ```swift
+/// NavigationView {
+///     VirtualCurrenciesScreen(
+///         viewModel: VirtualCurrenciesScreenViewModel(
+///             purchasesProvider: CustomerCenterPurchases()
+///         )
+///     )
+/// }
+/// ```
 @available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
@@ -27,6 +43,11 @@ struct VirtualCurrenciesScreen: View {
 
     @StateObject var viewModel: VirtualCurrenciesScreenViewModel
 
+    /// Represents the different states the view can be in.
+    ///
+    /// - `loading`: The view is currently fetching virtual currency balances.
+    /// - `loaded`: The view has successfully loaded the balances. Contains an array of balance data.
+    /// - `error`: An error occurred while fetching the balances.
     enum ViewState {
         case loading
         case loaded([VirtualCurrencyBalanceListRow.RowData])

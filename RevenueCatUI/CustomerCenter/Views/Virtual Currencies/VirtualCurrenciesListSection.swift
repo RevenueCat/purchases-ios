@@ -21,6 +21,11 @@ import SwiftUI
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
+/// A SwiftUI view that displays a list of virtual currency balances in a section format.
+///
+/// This view shows up to three virtual currencies sorted by balance in descending order.
+/// If there are more than three currencies, a "See All" button is displayed that navigates
+/// to a full list of virtual currencies.
 struct VirtualCurrenciesListSection: View {
 
     @Environment(\.localization)

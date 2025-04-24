@@ -16,14 +16,24 @@
 import Foundation
 import RevenueCat
 
+/// A view model that manages the state and data for the virtual currencies screen.
+///
+/// This view model is responsible for loading and managing virtual currency balance data
+/// from RevenueCat's CustomerInfo. It provides a reactive interface through
+/// SwiftUI's `@Published` property wrapper to update the UI when the data changes.
 @available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 final class VirtualCurrenciesScreenViewModel: ObservableObject {
 
+    /// The current state of the virtual currencies screen.
     @Published var viewState: VirtualCurrenciesScreen.ViewState
 
+    /// A flag indicating whether the view model is running in a SwiftUI preview.
+    ///
+    /// When true, data loading is skipped to prevent unnecessary network calls
+    /// during preview rendering.
     private let isRunningInSwiftUIPreview: Bool
 
     init(
@@ -38,6 +48,10 @@ final class VirtualCurrenciesScreenViewModel: ObservableObject {
 
     private let purchasesProvider: CustomerCenterPurchasesType
 
+    /// Call this function when the view appears.
+    ///
+    /// This method is responsible for loading the virtual currency data when the view
+    /// becomes visible. It skips data loading if running in a SwiftUI preview.
     func onAppear() async {
         if isRunningInSwiftUIPreview {
             // We don't want to load data in previews.
@@ -54,7 +68,12 @@ final class VirtualCurrenciesScreenViewModel: ObservableObject {
 @available(watchOS, unavailable)
 internal extension VirtualCurrenciesScreenViewModel {
 
-    func loadData() async {
+    /// Loads the virtual currency data from the RevenueCat SDK.
+    ///
+    /// This method updates the view state to reflect the loading process and handles
+    /// any errors that occur during data fetching. On success, it transforms the
+    /// customer information into a format suitable for display in the UI.
+    private func loadData() async {
         await MainActor.run {
             self.viewState = .loading
         }
@@ -73,6 +92,10 @@ internal extension VirtualCurrenciesScreenViewModel {
         }
     }
 
+    /// Extracts and formats virtual currency balance data from customer information.
+    ///
+    /// - Parameter customerInfo: The customer information containing virtual currency data.
+    /// - Returns: An array of row data objects sorted by balance in descending order.
     private func extractVirtualCurrencyBalanceData(
         from customerInfo: RevenueCat.CustomerInfo) -> [VirtualCurrencyBalanceListRow.RowData] {
             return customerInfo.virtualCurrencies
