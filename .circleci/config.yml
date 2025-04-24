@@ -169,10 +169,12 @@ commands:
             curl https://mise.run | sh
             export PATH="$HOME/.local/bin:$PATH"
             mise install
-            cd Examples/rc-maestro 
+            cd Examples/rc-maestro && cp rc-maestro/Resources/Local.xcconfig.sample rc-maestro/Resources/Local.xcconfig
+            sed -i '' "s/REVENUECAT_API_KEY *= *api_key/REVENUECAT_API_KEY = $iOS_API_KEY/" rc-maestro/Resources/Local.xcconfig
             mise x -- tuist install
             mise x -- tuist generate
-
+            
+            
   install-dependencies:
     parameters:
       directory:
@@ -1544,7 +1546,7 @@ workflows:
     jobs:
       - maestro:
           context:
-            - slack-secrets-ios
+            - maestro
 
   # To trigger tests manually, log into circleCI, select the project, a branch, and then click "Trigger Pipeline"
   # in the top right hand corner of the screen. In the modal that appears, set the following parameter fields
