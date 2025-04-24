@@ -169,7 +169,9 @@ commands:
             curl https://mise.run | sh
             export PATH="$HOME/.local/bin:$PATH"
             mise install
-            cd Examples/rc-maestro && mise x -- tuist generate
+            cd Examples/rc-maestro 
+            mise x -- tuist install
+            mise x -- tuist generate
 
   install-dependencies:
     parameters:
