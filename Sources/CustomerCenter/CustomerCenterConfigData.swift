@@ -143,7 +143,7 @@ public struct CustomerCenterConfigData: Equatable {
             case storeUnknownStore = "store_unknown"
             case debugHeaderTitle = "Debug"
             case seeAllVirtualCurrencies = "see_all_virtual_currencies"
-            case virtualCurrenciesScreenHeader = "virtual_currency_balances_header"
+            case virtualCurrencyBalancesScreenHeader = "virtual_currency_balances_header"
             case noVirtualCurrencyBalancesFound = "no_virtual_currency_balances"
 
             var defaultValue: String {
@@ -330,7 +330,7 @@ public struct CustomerCenterConfigData: Equatable {
                     return "Unknown Store"
                 case .debugHeaderTitle:
                     return "Debug"
-                case .virtualCurrenciesScreenHeader:
+                case .virtualCurrencyBalancesScreenHeader:
                     return "In-App Currencies"
                 case .seeAllVirtualCurrencies:
                     return "See all in-app currencies"

@@ -82,7 +82,7 @@ struct VirtualCurrenciesListSection: View {
                     }
                 }
             } header: {
-                Text(localization[.virtualCurrenciesScreenHeader])
+                Text(localization[.virtualCurrencyBalancesScreenHeader])
             }
         }
     }

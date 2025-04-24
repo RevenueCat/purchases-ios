@@ -71,7 +71,7 @@ struct VirtualCurrencyBalancesScreen: View {
                             VirtualCurrencyBalanceListRow(rowData: virtualCurrencyBalanceData)
                         }
                     } header: {
-                        Text(localization[.virtualCurrenciesScreenHeader])
+                        Text(localization[.virtualCurrencyBalancesScreenHeader])
                     }
                     .transition(.opacity)
                 } else {
@@ -91,7 +91,7 @@ struct VirtualCurrencyBalancesScreen: View {
 
         }
         .animation(.default, value: viewModel.viewState)
-        .navigationTitle(localization[.virtualCurrenciesScreenHeader])
+        .navigationTitle(localization[.virtualCurrencyBalancesScreenHeader])
         .onAppear {
             Task {
                 await self.viewModel.onAppear()
