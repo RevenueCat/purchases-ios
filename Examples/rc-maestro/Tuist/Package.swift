@@ -1,5 +1,17 @@
 // swift-tools-version: 6.0
-import PackageDescription
+@preconcurrency import PackageDescription
+
+#if TUIST
+    import ProjectDescription
+
+    let packageSettings = PackageSettings(
+        productTypes: [
+            "RevenueCat": .framework,
+            "RevenueCatUI": .framework // default is .staticFramework
+        ]
+    )
+
+#endif
 
 let package = Package(
     name: "Dependencies",
@@ -8,9 +20,5 @@ let package = Package(
             url: "https://github.com/RevenueCat/purchases-ios-spm", 
             branch: "main"
         ),
-        // do not modify yet, because it will modify the local copy of purchases-ios
-        // .package(
-        //     path: "../../../../purchases-ios"
-        // ),
     ]
 )
