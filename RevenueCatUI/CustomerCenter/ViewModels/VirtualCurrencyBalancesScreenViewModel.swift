@@ -19,16 +19,15 @@ import RevenueCat
 /// A view model that manages the state and data for the virtual currencies screen.
 ///
 /// This view model is responsible for loading and managing virtual currency balance data
-/// from RevenueCat's CustomerInfo. It provides a reactive interface through
-/// SwiftUI's `@Published` property wrapper to update the UI when the data changes.
+/// from RevenueCat's CustomerInfo.
 @available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-final class VirtualCurrenciesScreenViewModel: ObservableObject {
+final class VirtualCurrencyBalancesScreenViewModel: ObservableObject {
 
     /// The current state of the virtual currencies screen.
-    @Published var viewState: VirtualCurrenciesScreen.ViewState
+    @Published var viewState: VirtualCurrencyBalancesScreen.ViewState
 
     /// A flag indicating whether the view model is running in a SwiftUI preview.
     ///
@@ -37,7 +36,7 @@ final class VirtualCurrenciesScreenViewModel: ObservableObject {
     private let isRunningInSwiftUIPreview: Bool
 
     init(
-        viewState: VirtualCurrenciesScreen.ViewState = .loading,
+        viewState: VirtualCurrencyBalancesScreen.ViewState = .loading,
         purchasesProvider: CustomerCenterPurchasesType,
         isRunningInSwiftUIPreview: Bool = false
     ) {
@@ -66,7 +65,7 @@ final class VirtualCurrenciesScreenViewModel: ObservableObject {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-internal extension VirtualCurrenciesScreenViewModel {
+internal extension VirtualCurrencyBalancesScreenViewModel {
 
     /// Loads the virtual currency data from the RevenueCat SDK.
     ///

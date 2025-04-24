@@ -76,8 +76,8 @@ struct VirtualCurrenciesListSection: View {
                         isPresented: $showVirtualCurrenciesListScreen,
                         usesNavigationStack: navigationOptions.usesNavigationStack
                     ) {
-                        VirtualCurrenciesScreen(
-                            viewModel: VirtualCurrenciesScreenViewModel(purchasesProvider: self.purchasesProvider)
+                        VirtualCurrencyBalancesScreen(
+                            viewModel: VirtualCurrencyBalancesScreenViewModel(purchasesProvider: self.purchasesProvider)
                         )
                     }
                 }

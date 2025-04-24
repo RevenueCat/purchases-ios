@@ -19,13 +19,14 @@ import XCTest
 
 #if os(iOS)
 
-// swiftlint:disable file_length
+// swiftlint:disable:next file_length
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @MainActor
-final class VirtualCurrenciesScreenViewModelTests: TestCase {
+// swiftlint:disable:next type_name
+final class VirtualCurrencyBalancesScreenViewModelTests: TestCase {
 
     private let error = TestError(message: "An error occurred")
 
@@ -37,7 +38,7 @@ final class VirtualCurrenciesScreenViewModelTests: TestCase {
     }
 
     func testInitialState() {
-        let viewModel = VirtualCurrenciesScreenViewModel(
+        let viewModel = VirtualCurrencyBalancesScreenViewModel(
             purchasesProvider: MockCustomerCenterPurchases()
         )
 
@@ -45,7 +46,7 @@ final class VirtualCurrenciesScreenViewModelTests: TestCase {
     }
 
     func testInitialStateWithCustomState() {
-        let viewModel = VirtualCurrenciesScreenViewModel(
+        let viewModel = VirtualCurrencyBalancesScreenViewModel(
             viewState: .error,
             purchasesProvider: MockCustomerCenterPurchases()
         )
@@ -54,7 +55,7 @@ final class VirtualCurrenciesScreenViewModelTests: TestCase {
     }
 
     func testOnAppearSkipsLoadingInPreview() async {
-        let viewModel = VirtualCurrenciesScreenViewModel(
+        let viewModel = VirtualCurrencyBalancesScreenViewModel(
             purchasesProvider: MockCustomerCenterPurchases(),
             isRunningInSwiftUIPreview: true
         )
@@ -67,7 +68,7 @@ final class VirtualCurrenciesScreenViewModelTests: TestCase {
     func testLoadDataSuccess() async {
         let customerInfo = CustomerInfoFixtures.customerInfoWithVirtualCurrencies
         let mockPurchases = MockCustomerCenterPurchases(customerInfo: customerInfo)
-        let viewModel = VirtualCurrenciesScreenViewModel(
+        let viewModel = VirtualCurrencyBalancesScreenViewModel(
             purchasesProvider: mockPurchases
         )
 
@@ -88,7 +89,7 @@ final class VirtualCurrenciesScreenViewModelTests: TestCase {
             virtualCurrencies: [:]
         )
         let mockPurchases = MockCustomerCenterPurchases(customerInfo: customerInfo)
-        let viewModel = VirtualCurrenciesScreenViewModel(
+        let viewModel = VirtualCurrencyBalancesScreenViewModel(
             purchasesProvider: mockPurchases
         )
 
@@ -104,7 +105,7 @@ final class VirtualCurrenciesScreenViewModelTests: TestCase {
 
     func testLoadDataFailure() async {
         let mockPurchases = MockCustomerCenterPurchases(customerInfoError: error)
-        let viewModel = VirtualCurrenciesScreenViewModel(
+        let viewModel = VirtualCurrencyBalancesScreenViewModel(
             purchasesProvider: mockPurchases
         )
 
@@ -116,7 +117,7 @@ final class VirtualCurrenciesScreenViewModelTests: TestCase {
     func testVirtualCurrenciesSortedByBalance() async {
         let customerInfo = CustomerInfoFixtures.customerInfoWithVirtualCurrencies
         let mockPurchases = MockCustomerCenterPurchases(customerInfo: customerInfo)
-        let viewModel = VirtualCurrenciesScreenViewModel(
+        let viewModel = VirtualCurrencyBalancesScreenViewModel(
             purchasesProvider: mockPurchases
         )
 

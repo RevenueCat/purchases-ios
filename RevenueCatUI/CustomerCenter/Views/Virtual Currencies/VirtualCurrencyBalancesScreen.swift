@@ -36,12 +36,12 @@ import SwiftUI
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-struct VirtualCurrenciesScreen: View {
+struct VirtualCurrencyBalancesScreen: View {
 
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
 
-    @StateObject var viewModel: VirtualCurrenciesScreenViewModel
+    @StateObject var viewModel: VirtualCurrencyBalancesScreenViewModel
 
     /// Represents the different states the view can be in.
     ///
@@ -104,8 +104,11 @@ struct VirtualCurrenciesScreen: View {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-extension VirtualCurrenciesScreen.ViewState: Equatable {
-    static func == (lhs: VirtualCurrenciesScreen.ViewState, rhs: VirtualCurrenciesScreen.ViewState) -> Bool {
+extension VirtualCurrencyBalancesScreen.ViewState: Equatable {
+    static func == (
+        lhs: VirtualCurrencyBalancesScreen.ViewState,
+        rhs: VirtualCurrencyBalancesScreen.ViewState
+    ) -> Bool {
         switch (lhs, rhs) {
         case (.loading, .loading):
             return true
@@ -123,8 +126,8 @@ extension VirtualCurrenciesScreen.ViewState: Equatable {
     if #available(iOS 14.0, *) {
         NavigationView {
             if #available(iOS 15.0, *) {
-                VirtualCurrenciesScreen(
-                    viewModel: VirtualCurrenciesScreenViewModel(
+                VirtualCurrencyBalancesScreen(
+                    viewModel: VirtualCurrencyBalancesScreenViewModel(
                         viewState: .loading,
                         purchasesProvider: CustomerCenterPurchases(),
                         isRunningInSwiftUIPreview: true
@@ -145,8 +148,8 @@ extension VirtualCurrenciesScreen.ViewState: Equatable {
     if #available(iOS 14.0, *) {
         NavigationView {
             if #available(iOS 15.0, *) {
-                VirtualCurrenciesScreen(
-                    viewModel: VirtualCurrenciesScreenViewModel(
+                VirtualCurrencyBalancesScreen(
+                    viewModel: VirtualCurrencyBalancesScreenViewModel(
                         viewState: .loaded([]),
                         purchasesProvider: CustomerCenterPurchases(),
                         isRunningInSwiftUIPreview: true
@@ -167,8 +170,8 @@ extension VirtualCurrenciesScreen.ViewState: Equatable {
     if #available(iOS 14.0, *) {
         NavigationView {
             if #available(iOS 15.0, *) {
-                VirtualCurrenciesScreen(
-                    viewModel: VirtualCurrenciesScreenViewModel(
+                VirtualCurrencyBalancesScreen(
+                    viewModel: VirtualCurrencyBalancesScreenViewModel(
                         viewState: .loaded([
                             .init(virtualCurrencyCode: "PLTNM", balance: 2000),
                             .init(virtualCurrencyCode: "BRNZ", balance: 1000),
@@ -195,8 +198,8 @@ extension VirtualCurrenciesScreen.ViewState: Equatable {
     if #available(iOS 14.0, *) {
         NavigationView {
             if #available(iOS 15.0, *) {
-                VirtualCurrenciesScreen(
-                    viewModel: VirtualCurrenciesScreenViewModel(
+                VirtualCurrencyBalancesScreen(
+                    viewModel: VirtualCurrencyBalancesScreenViewModel(
                         viewState: .error,
                         purchasesProvider: CustomerCenterPurchases(),
                         isRunningInSwiftUIPreview: true
