@@ -14,11 +14,13 @@
 import Foundation
 import RevenueCat
 
+// swiftlint:disable missing_docs
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-protocol CustomerCenterPurchasesType: Sendable {
+@_spi(Internal) public protocol CustomerCenterPurchasesType: Sendable {
 
     var isSandbox: Bool { get }
     var appUserID: String { get }
@@ -50,12 +52,9 @@ protocol CustomerCenterPurchasesType: Sendable {
 
     func restorePurchases() async throws -> CustomerInfo
 
-    // MARK: - Subscription Management
+    func syncPurchases() async throws -> CustomerInfo
 
-    #if os(iOS) || os(macOS) || os(visionOS)
-    @Sendable
-    func showManageSubscriptions() async throws
-    #endif
+    // MARK: - Subscription Management
 
     #if os(iOS) || os(visionOS)
     @Sendable

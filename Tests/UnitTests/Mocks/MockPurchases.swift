@@ -127,6 +127,10 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
+    var storeFrontCountryCode: String? {
+        self.unimplemented()
+    }
+
     var isAnonymous: Bool {
         self.unimplemented()
     }
@@ -147,6 +151,14 @@ extension MockPurchases: PurchasesType {
         get { self.unimplemented() }
         // swiftlint:disable:next unused_setter_value
         set { self.unimplemented() }
+    }
+
+    func getStorefront() async -> RevenueCat.Storefront? {
+        self.unimplemented()
+    }
+
+    func getStorefront(completion: @escaping GetStorefrontBlock) {
+        self.unimplemented()
     }
 
     func logIn(

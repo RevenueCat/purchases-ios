@@ -13,7 +13,7 @@
 
 import Foundation
 import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
@@ -130,5 +130,12 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
             return .error
         }
         return .success
+    }
+
+    var syncPurchasesCount = 0
+    var syncPurchasesResult: CustomerInfo = CustomerInfoFixtures.customerInfoWithLifetimePromotional
+    func syncPurchases() async throws -> CustomerInfo {
+        syncPurchasesCount += 1
+        return syncPurchasesResult
     }
 }
