@@ -21,7 +21,7 @@ extension PurchasesDiagnostics.SDKHealthStatus {
             Image(systemName: warnings.count > 0 ? "checkmark.circle.badge.questionmark.fill" : "checkmark.circle.fill")
                 .foregroundColor(.green)
         case .unhealthy:
-            Image(systemName: "exclamationmark.triangle")
+            Image(systemName: "xmark.circle.fill")
                 .foregroundColor(.red)
         }
 
