@@ -158,7 +158,7 @@ platform :ios do
   desc "Build Maestro App"
   lane :build_maestro_app do |options|
     # Find a simulator (first available iPhone/iPad)
-    device_id = sh("xcrun simctl list devices available | grep -E 'iPhone|iPad' | grep -Eo '[A-F0-9\\-]{36}' | head -n1").strip
+    device_id = sh("xcrun simctl list devices available | grep -E 'iPhone' | grep -Eo '[A-F0-9\\-]{36}' | tail -n1").strip
     UI.user_error!("❌ No available simulator found!") if device_id.empty?
 
     # Boot it (safe if already booted)
