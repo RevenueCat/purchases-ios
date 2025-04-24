@@ -17,7 +17,7 @@ let appTarget: Target = .target(
     sources: ["rc-maestro/Sources/**/*.swift"],
     resources: [
         "rc-maestro/Resources/**/*.xcassets",
-        "rc-maestro/Resources/**/Local-SAMPLE.xcconfig",
+        "rc-maestro/Resources/**/Local.xcconfig.SAMPLE",
         "rc-maestro/Resources/**/Local.xcconfig"
     ],
     dependencies: [
@@ -48,7 +48,7 @@ let project = Project(
     settings: .settings(
         base: [:],
         configurations: [
-            .debug(name: "Debug", xcconfig: .relativeToManifest("rc-maestro/Resources/Maestro.xcconfig"))
+            .debug(name: "Debug", xcconfig: .relativeToManifest("rc-maestro/Resources/Local.xcconfig"))
         ]
     ),
     targets: [appTarget],
