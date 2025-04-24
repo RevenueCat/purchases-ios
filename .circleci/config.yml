@@ -9,7 +9,7 @@ version: 2.1
 parameters:
   action:
     type: enum
-    enum: [default, bump, run-manual-tests, run-manual-docs-deploy]
+    enum: [default, bump, run-manual-tests, run-manual-docs-deploy, run-maestro]
     default: default
   generate_snapshots:
     default: false
@@ -160,6 +160,15 @@ commands:
           key: v3-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}
           paths:
             - vendor/bundle
+
+  install-tuist:
+    steps:
+      - run:
+          name: Install Tuist via mise
+          command: |
+            curl https://mise.run | sh
+            export PATH="$HOME/.local/bin:$PATH"
+            mise install
 
   install-dependencies:
     parameters:
@@ -1372,6 +1381,29 @@ jobs:
             git remote set-url origin https://github.com/RevenueCat/purchases-ios-spm.git
             git push origin
             git push --tags
+  
+
+  maestro:
+    executor:
+      name: macos-executor
+    steps:
+      - checkout
+      - install-tuist
+      - run:
+          name: Build Maestro Project
+          command: cd Examples/rc-maestro && tuist generate
+      - run:
+          name: Build Maestro App
+          command: bundle exec fastlane build_maestro_app
+      - run:
+          name: Install Maestro CLI
+          command: |
+            curl -Ls "https://get.maestro.mobile.dev" | bash
+      - run:
+          name: Run Maestro Tests
+          command: |
+            maestro test maestro/
+      - slack-notify-on-fail
 
 workflows:
   version: 2
@@ -1505,6 +1537,14 @@ workflows:
       equal: [run-manual-docs-deploy, << pipeline.parameters.action >>]
     jobs:
       - docs-deploy
+
+  manual-trigger-maestro:
+    when:
+      equal: [run-maestro, << pipeline.parameters.action >>]
+    jobs:
+      - maestro:
+          context:
+            - slack-secrets-ios
 
   # To trigger tests manually, log into circleCI, select the project, a branch, and then click "Trigger Pipeline"
   # in the top right hand corner of the screen. In the modal that appears, set the following parameter fields

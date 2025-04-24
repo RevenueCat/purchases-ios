@@ -155,6 +155,34 @@ platform :ios do
     emerge(emerge_args)
   end
 
+  desc "Build Maestro App"
+  lane :build_paywalls_tester_for_maestro do |options|
+    # Find a simulator (first available iPhone/iPad)
+    device_id = sh("xcrun simctl list devices available | grep -E 'iPhone|iPad' | grep -Eo '[A-F0-9\\-]{36}' | head -n1").strip
+    UI.user_error!("❌ No available simulator found!") if device_id.empty?
+
+    # Boot it (safe if already booted)
+    sh("xcrun simctl boot #{device_id}") rescue nil
+
+    # Build the .app for simulator
+    scan(
+      workspace: "Examples/rc-maestro/Maestro.xcworkspace",
+      scheme: "Maestro-Debug",
+      build_for_testing: true,
+      configuration: "Debug",
+      destination: "id=#{device_id}",
+      derived_data_path: "derivedData"
+    )
+
+    # Get the built .app path
+    app_path = Dir["../derivedData/Build/Products/**/Maestro-Debug.app"].first
+    UI.user_error!("❌ Could not find built app at expected path") unless app_path
+
+    # Install to simulator
+    sh("xcrun simctl install #{device_id} '#{app_path}'")
+    UI.success("✅ Maestro App installed on simulator #{device_id}")
+  end
+
   desc "Runs all the iOS tests"
   lane :test_ios do |options|
     generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
