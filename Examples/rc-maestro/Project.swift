@@ -17,8 +17,8 @@ let appTarget: Target = .target(
     sources: ["rc-maestro/Sources/**/*.swift"],
     resources: [
         "rc-maestro/Resources/**/*.xcassets",
-        "rc-maestro/Resources/**/Maestro-SAMPLE.xcconfig",
-        "rc-maestro/Resources/**/Maestro.xcconfig"
+        "rc-maestro/Resources/**/Local-SAMPLE.xcconfig",
+        "rc-maestro/Resources/**/Local.xcconfig"
     ],
     dependencies: [
         .external(name: "RevenueCat"),

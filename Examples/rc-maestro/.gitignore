@@ -70,4 +70,4 @@ Derived/
 Tuist/.build
 
 ### xcconfig
-**/Maestro.xcconfig
+**/Local.xcconfig
