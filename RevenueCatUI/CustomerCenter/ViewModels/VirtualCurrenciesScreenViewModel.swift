@@ -82,7 +82,7 @@ internal extension VirtualCurrenciesScreenViewModel {
                         balance: $0.value.balance
                     )
                 }
-                .sorted { $0.balance < $1.balance }
+                .sorted { $0.balance > $1.balance }
     }
 }
 

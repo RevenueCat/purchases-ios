@@ -42,11 +42,11 @@ struct NoSubscriptionsView: View {
     @State
     private var showRestoreAlert: Bool = false
 
-    private let virtualCurrencies: [String: VirtualCurrencyInfo]
+    private let virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]
     private let purchasesProvider: CustomerCenterPurchasesType
 
     init(configuration: CustomerCenterConfigData,
-         virtualCurrencies: [String: VirtualCurrencyInfo],
+         virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo],
          purchasesProvider: CustomerCenterPurchasesType,
          actionWrapper: CustomerCenterActionWrapper) {
         self.configuration = configuration

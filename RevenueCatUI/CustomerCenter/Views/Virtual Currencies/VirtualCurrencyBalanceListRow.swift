@@ -59,9 +59,9 @@ struct VirtualCurrencyBalanceListRow: View {
 
     var body: some View {
         CompatibilityLabeledContent {
-            Text(rowData.balance.formatted())
-        } content: {
             Text(rowData.virtualCurrencyCode)
+        } content: {
+            Text(rowData.balance.formatted())
         }
         .transition(.opacity)
     }
