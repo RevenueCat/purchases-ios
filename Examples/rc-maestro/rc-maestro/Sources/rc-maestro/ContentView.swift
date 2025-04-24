@@ -23,7 +23,6 @@ public struct ContentView: View {
         .ignoresSafeArea(.all)
         .presentCustomerCenter(isPresented: $presentCustomerCenter)
         .safeAreaInset(edge: .bottom, content: {
-
             Button("Buy something") {
                 actionSheetIsPresented = true
             }

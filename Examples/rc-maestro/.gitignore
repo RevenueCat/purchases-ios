@@ -68,3 +68,6 @@ Derived/
 
 ### Tuist managed dependencies ###
 Tuist/.build
+
+### xcconfig
+**/Maestro.xcconfig

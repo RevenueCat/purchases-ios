@@ -11,11 +11,14 @@ let appTarget: Target = .target(
                 "UIColorName": "",
                 "UIImageName": "",
             ],
+            "REVENUECAT_API_KEY": "$(REVENUECAT_API_KEY)"
         ]
     ),
     sources: ["rc-maestro/Sources/**/*.swift"],
     resources: [
-        "rc-maestro/Resources/**/*.xcassets"
+        "rc-maestro/Resources/**/*.xcassets",
+        "rc-maestro/Resources/**/Maestro-SAMPLE.xcconfig",
+        "rc-maestro/Resources/**/Maestro.xcconfig"
     ],
     dependencies: [
         .external(name: "RevenueCat"),
@@ -42,6 +45,12 @@ let appScheme: Scheme = .scheme(
 let project = Project(
     name: "Maestro",
     organizationName: "RevenueCat",
+    settings: .settings(
+        base: [:],
+        configurations: [
+            .debug(name: "Debug", xcconfig: .relativeToManifest("rc-maestro/Resources/Maestro.xcconfig"))
+        ]
+    ),
     targets: [appTarget],
     schemes: [appScheme]
 )
