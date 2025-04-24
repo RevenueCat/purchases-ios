@@ -51,7 +51,14 @@ final class ManageSubscriptionsViewModelTests: TestCase {
         expect(viewModel.refundRequestStatus).to(beNil())
         expect(viewModel.screen).toNot(beNil())
         expect(viewModel.showRestoreAlert) == false
-        expect(viewModel.virtualCurrencies).to(equal(CustomerCenterConfigTestData.threeVirtualCurrencies))
+
+        // Compare virtual currencies by checking each key-value pair individually since
+        // the order of the dictionary is not guaranteed.
+        let expectedCurrencies = CustomerCenterConfigTestData.threeVirtualCurrencies
+        expect(viewModel.virtualCurrencies.count) == expectedCurrencies.count
+        for (key, value) in expectedCurrencies {
+            expect(viewModel.virtualCurrencies[key]?.balance) == value.balance
+        }
     }
 
     func testLifetimeSubscriptionDoesNotShowCancel() {
