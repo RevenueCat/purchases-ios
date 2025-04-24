@@ -1397,6 +1397,7 @@ jobs:
           install_swiftlint: false
           install_xcbeautify: false
           install_mint: false
+      - install-tuist
       - run:
           name: Build Maestro App
           command: bundle exec fastlane build_maestro_app
