@@ -120,10 +120,13 @@ class CustomerInfoFixtures {
             """
         }.joined(separator: ",\n")
 
-        let virtualCurrenciesJson = String(
-            data: (try? JSONEncoder().encode(virtualCurrencies)) ?? Data(),
-            encoding: .utf8
-        ) ?? ""
+        let virtualCurrenciesJson = virtualCurrencies.map { vcCode, virtualCurrencyInfo in
+            """
+            "\(vcCode)": {
+                "balance": \(virtualCurrencyInfo.balance)
+            }
+            """
+        }.joined(separator: ",\n")
 
         return .decode(
         """
@@ -148,10 +151,10 @@ class CustomerInfoFixtures {
                 },
                 "entitlements": {
                     \(entitlementsJson)
+                },
+                "virtual_currencies": {
+                    \(virtualCurrenciesJson)
                 }
-            },
-            "virtualCurrencies": {
-                \(virtualCurrenciesJson)
             }
         }
         """

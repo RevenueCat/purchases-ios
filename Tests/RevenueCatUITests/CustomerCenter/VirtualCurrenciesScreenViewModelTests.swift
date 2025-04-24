@@ -41,7 +41,7 @@ final class VirtualCurrenciesScreenViewModelTests: TestCase {
             purchasesProvider: MockCustomerCenterPurchases()
         )
 
-        expect(viewModel.viewState) == .loading
+        expect(viewModel.viewState).to(equal(.loading))
     }
 
     func testInitialStateWithCustomState() {
@@ -50,7 +50,7 @@ final class VirtualCurrenciesScreenViewModelTests: TestCase {
             purchasesProvider: MockCustomerCenterPurchases()
         )
 
-        expect(viewModel.viewState) == .error
+        expect(viewModel.viewState).to(equal(.error))
     }
 
     func testOnAppearSkipsLoadingInPreview() async {
@@ -61,7 +61,7 @@ final class VirtualCurrenciesScreenViewModelTests: TestCase {
 
         await viewModel.onAppear()
 
-        expect(viewModel.viewState) == .loading
+        expect(viewModel.viewState).to(equal(.loading))
     }
 
     func testLoadDataSuccess() async {
@@ -75,7 +75,7 @@ final class VirtualCurrenciesScreenViewModelTests: TestCase {
 
         switch viewModel.viewState {
         case .loaded(let virtualCurrencyRowData):
-            expect(virtualCurrencyRowData.count) == 4
+            expect(virtualCurrencyRowData.count).to(equal(4))
         default:
             fail("Expected state to be .loaded")
         }
@@ -110,7 +110,7 @@ final class VirtualCurrenciesScreenViewModelTests: TestCase {
 
         await viewModel.onAppear()
 
-        expect(viewModel.viewState) == .error
+        expect(viewModel.viewState).to(equal(.error))
     }
 
     func testVirtualCurrenciesSortedByBalance() async {
@@ -124,15 +124,15 @@ final class VirtualCurrenciesScreenViewModelTests: TestCase {
 
         switch viewModel.viewState {
         case .loaded(let data):
-            expect(data.count) == 4
-            expect(data[0].balance) == 400
-            expect(data[0].virtualCurrencyCode) == "PLTNM"
-            expect(data[1].balance) == 300
-            expect(data[1].virtualCurrencyCode) == "BRNZ"
-            expect(data[2].balance) == 200
-            expect(data[2].virtualCurrencyCode) == "SLV"
-            expect(data[3].balance) == 100
-            expect(data[3].virtualCurrencyCode) == "GLD"
+            expect(data.count).to(equal(4))
+            expect(data[0].balance).to(equal(400))
+            expect(data[0].virtualCurrencyCode).to(equal("PLTNM"))
+            expect(data[1].balance).to(equal(300))
+            expect(data[1].virtualCurrencyCode).to(equal("BRNZ"))
+            expect(data[2].balance).to(equal(200))
+            expect(data[2].virtualCurrencyCode).to(equal("SLV"))
+            expect(data[3].balance).to(equal(100))
+            expect(data[3].virtualCurrencyCode).to(equal("GLD"))
         default:
             fail("Expected state to be .loaded")
         }
