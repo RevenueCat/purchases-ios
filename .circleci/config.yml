@@ -170,7 +170,7 @@ commands:
             export PATH="$HOME/.local/bin:$PATH"
             mise install
             cd Examples/rc-maestro && cp rc-maestro/Resources/Local.xcconfig.sample rc-maestro/Resources/Local.xcconfig
-            sed -i '' "s/REVENUECAT_API_KEY *= *api_key/REVENUECAT_API_KEY = $iOS_API_KEY/" rc-maestro/Resources/Local.xcconfig
+            sed -i '' "s/REVENUECAT_API_KEY *= *api_key/REVENUECAT_API_KEY = $IOS_API_KEY/" rc-maestro/Resources/Local.xcconfig
             mise x -- tuist install
             mise x -- tuist generate
             
@@ -1393,7 +1393,10 @@ jobs:
       name: macos-executor
     steps:
       - checkout
-      - install-tuist
+      - install-dependencies:
+          install_swiftlint: false
+          install_xcbeautify: false
+          install_mint: false
       - run:
           name: Build Maestro App
           command: bundle exec fastlane build_maestro_app
