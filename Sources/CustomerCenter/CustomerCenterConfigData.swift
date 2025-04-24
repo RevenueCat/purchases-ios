@@ -144,7 +144,7 @@ public struct CustomerCenterConfigData: Equatable {
             case debugHeaderTitle = "Debug"
             case seeAllVirtualCurrencies = "see_all_virtual_currencies"
             case virtualCurrencyBalancesScreenHeader = "virtual_currency_balances_screen_header"
-            case noVirtualCurrencyBalancesFound = "no_virtual_currency_balances"
+            case noVirtualCurrencyBalancesFound = "no_virtual_currency_balances_found"
 
             var defaultValue: String {
                 switch self {
