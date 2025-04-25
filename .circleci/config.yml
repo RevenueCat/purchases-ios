@@ -1408,7 +1408,7 @@ jobs:
       - run:
           name: Run Maestro Tests
           command: |
-            maestro test maestro/
+            maestro test Examples/rc-maestro/maestro/
       - slack-notify-on-fail
 
 workflows:
