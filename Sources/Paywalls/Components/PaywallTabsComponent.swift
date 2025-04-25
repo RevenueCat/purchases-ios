@@ -118,7 +118,7 @@ public extension PaywallComponent {
 
         final public class TabControl: Codable, Sendable, Hashable, Equatable {
 
-            public enum TabControlType: Codable, Sendable, Hashable, Equatable {
+            public enum TabControlType: String, Codable, Sendable, Hashable, Equatable {
                 case buttons
                 case toggle
             }

@@ -12,7 +12,6 @@
 //  Created by Cesar de la Vega on 28/3/25.
 
 import Foundation
-import RevenueCat
 import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -24,7 +23,6 @@ import SwiftUI
     @Published
     var alertType: RestorePurchasesAlertViewModel.AlertType = .loading
 
-    private let purchasesProvider: CustomerCenterPurchasesType
     private let actionWrapper: CustomerCenterActionWrapper
 
     enum AlertType: Identifiable {
@@ -36,11 +34,10 @@ import SwiftUI
         purchasesProvider: CustomerCenterPurchasesType = CustomerCenterPurchases(),
         actionWrapper: CustomerCenterActionWrapper
     ) {
-        self.purchasesProvider = purchasesProvider
         self.actionWrapper = actionWrapper
     }
 
-    func performRestore() async {
+    func performRestore(purchasesProvider: CustomerCenterPurchasesType) async {
         self.alertType = .loading
         self.actionWrapper.handleAction(.restoreStarted)
 

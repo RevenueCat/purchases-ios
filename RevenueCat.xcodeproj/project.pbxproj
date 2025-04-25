@@ -22,6 +22,8 @@
 		0354AA4B2D4029C300F9E330 /* TabControlToggleComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0354AA422D4029C300F9E330 /* TabControlToggleComponentViewModel.swift */; };
 		0354AA4C2D4029C300F9E330 /* TabControlToggleComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0354AA412D4029C300F9E330 /* TabControlToggleComponentView.swift */; };
 		0354AA4D2D4029C300F9E330 /* TabControlComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0354AA3F2D4029C300F9E330 /* TabControlComponentView.swift */; };
+		0368727A2D9DCF7100506BBB /* DefaultEnumTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 036872792D9DCF6D00506BBB /* DefaultEnumTests.swift */; };
+		0368728B2DA45C1900506BBB /* PurchaseButtonInPackage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0368728A2DA45C1900506BBB /* PurchaseButtonInPackage.swift */; };
 		03A98CEF2D1EE048009BCA61 /* FallbackComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98CEE2D1EE040009BCA61 /* FallbackComponentTests.swift */; };
 		03A98CF12D222F5F009BCA61 /* FallbackComponentPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98CF02D222F53009BCA61 /* FallbackComponentPreview.swift */; };
 		03A98D302D240C41009BCA61 /* UIConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98D2F2D240C3E009BCA61 /* UIConfig.swift */; };
@@ -540,6 +542,12 @@
 		4FFFE6C82AA9467800B2955C /* PaywallEventsManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FFFE6C72AA9467800B2955C /* PaywallEventsManagerTests.swift */; };
 		4FFFE6CA2AA946A700B2955C /* MockInternalAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FFFE6C92AA946A700B2955C /* MockInternalAPI.swift */; };
 		4FFFE6E72AA948A600B2955C /* PaywallEventsIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FFFE6E62AA948A600B2955C /* PaywallEventsIntegrationTests.swift */; };
+		537B4B2E2DA9662700CEFF4C /* HealthReportResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 537B4B2D2DA9662700CEFF4C /* HealthReportResponse.swift */; };
+		537B4B302DA9742500CEFF4C /* HealthReportOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 537B4B2F2DA9742500CEFF4C /* HealthReportOperation.swift */; };
+		537B4B322DA9743800CEFF4C /* HealthReport+Validate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 537B4B312DA9743800CEFF4C /* HealthReport+Validate.swift */; };
+		537B4B382DA9744B00CEFF4C /* SDKHealthStatus+Icon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 537B4B362DA9744B00CEFF4C /* SDKHealthStatus+Icon.swift */; };
+		537B4B392DA9744B00CEFF4C /* SDKHealthCheckStatus+Icon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 537B4B352DA9744B00CEFF4C /* SDKHealthCheckStatus+Icon.swift */; };
+		537B4B3A2DA9744B00CEFF4C /* ProductStatus+Icon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 537B4B342DA9744B00CEFF4C /* ProductStatus+Icon.swift */; };
 		57045B3829C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57045B3729C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift */; };
 		57045B3A29C51751001A5417 /* GetProductEntitlementMappingOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57045B3929C51751001A5417 /* GetProductEntitlementMappingOperation.swift */; };
 		57045B3C29C51AF7001A5417 /* ProductEntitlementMappingCallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57045B3B29C51AF7001A5417 /* ProductEntitlementMappingCallback.swift */; };
@@ -1326,6 +1334,8 @@
 		0354AA422D4029C300F9E330 /* TabControlToggleComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabControlToggleComponentViewModel.swift; sourceTree = "<group>"; };
 		0354AA432D4029C300F9E330 /* TabsComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabsComponentView.swift; sourceTree = "<group>"; };
 		0354AA442D4029C300F9E330 /* TabsComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabsComponentViewModel.swift; sourceTree = "<group>"; };
+		036872792D9DCF6D00506BBB /* DefaultEnumTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultEnumTests.swift; sourceTree = "<group>"; };
+		0368728A2DA45C1900506BBB /* PurchaseButtonInPackage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseButtonInPackage.swift; sourceTree = "<group>"; };
 		03A98CEE2D1EE040009BCA61 /* FallbackComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackComponentTests.swift; sourceTree = "<group>"; };
 		03A98CF02D222F53009BCA61 /* FallbackComponentPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackComponentPreview.swift; sourceTree = "<group>"; };
 		03A98D2F2D240C3E009BCA61 /* UIConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIConfig.swift; sourceTree = "<group>"; };
@@ -1897,6 +1907,12 @@
 		4FFFE6C72AA9467800B2955C /* PaywallEventsManagerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallEventsManagerTests.swift; sourceTree = "<group>"; };
 		4FFFE6C92AA946A700B2955C /* MockInternalAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockInternalAPI.swift; sourceTree = "<group>"; };
 		4FFFE6E62AA948A600B2955C /* PaywallEventsIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallEventsIntegrationTests.swift; sourceTree = "<group>"; };
+		537B4B2D2DA9662700CEFF4C /* HealthReportResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthReportResponse.swift; sourceTree = "<group>"; };
+		537B4B2F2DA9742500CEFF4C /* HealthReportOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthReportOperation.swift; sourceTree = "<group>"; };
+		537B4B312DA9743800CEFF4C /* HealthReport+Validate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HealthReport+Validate.swift"; sourceTree = "<group>"; };
+		537B4B342DA9744B00CEFF4C /* ProductStatus+Icon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ProductStatus+Icon.swift"; sourceTree = "<group>"; };
+		537B4B352DA9744B00CEFF4C /* SDKHealthCheckStatus+Icon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SDKHealthCheckStatus+Icon.swift"; sourceTree = "<group>"; };
+		537B4B362DA9744B00CEFF4C /* SDKHealthStatus+Icon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SDKHealthStatus+Icon.swift"; sourceTree = "<group>"; };
 		57045B3729C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductEntitlementMappingDecodingTests.swift; sourceTree = "<group>"; };
 		57045B3929C51751001A5417 /* GetProductEntitlementMappingOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetProductEntitlementMappingOperation.swift; sourceTree = "<group>"; };
 		57045B3B29C51AF7001A5417 /* ProductEntitlementMappingCallback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductEntitlementMappingCallback.swift; sourceTree = "<group>"; };
@@ -2659,6 +2675,7 @@
 		03F446222D2FE0B90046129A /* Properties */ = {
 			isa = PBXGroup;
 			children = (
+				036872792D9DCF6D00506BBB /* DefaultEnumTests.swift */,
 				03F446232D2FE0C10046129A /* ShapePropertyTests.swift */,
 				03F446542D303E350046129A /* PaddingPropertyTests.swift */,
 				03F446562D303FA10046129A /* CornerRadiusesPropertyTests.swift */,
@@ -2699,6 +2716,7 @@
 			children = (
 				03A98CF02D222F53009BCA61 /* FallbackComponentPreview.swift */,
 				2C2AEB0E2CA64E0E00A50F38 /* Template1Preview.swift */,
+				0368728A2DA45C1900506BBB /* PurchaseButtonInPackage.swift */,
 				2C8EC6DA2CCC23B700D6CCF8 /* MultiTierPreview.swift */,
 				03C72F6C2D32CDFB00297FEC /* FamilySharingTogglePreview.swift */,
 			);
@@ -4080,6 +4098,7 @@
 				4FE6669E2A2F95A1004EEAFC /* PaywallExtensions.swift */,
 				1E473B652AC42D34008B07F9 /* StoreMessagesHelper.swift */,
 				1E473B672AC43254008B07F9 /* StoreMessageType.swift */,
+				537B4B312DA9743800CEFF4C /* HealthReport+Validate.swift */,
 			);
 			path = Support;
 			sourceTree = "<group>";
@@ -4250,6 +4269,9 @@
 				4F6BEDDF2A26B65900CD9322 /* DebugViewSheetPresentation.swift */,
 				4F6BEDE12A26B69500CD9322 /* DebugContentViews.swift */,
 				4FCEEA5D2A379B80002C2112 /* DebugViewController.swift */,
+				537B4B342DA9744B00CEFF4C /* ProductStatus+Icon.swift */,
+				537B4B352DA9744B00CEFF4C /* SDKHealthCheckStatus+Icon.swift */,
+				537B4B362DA9744B00CEFF4C /* SDKHealthStatus+Icon.swift */,
 			);
 			path = DebugUI;
 			sourceTree = "<group>";
@@ -4590,6 +4612,7 @@
 				57D5412D27F6311C004CC35C /* OfferingsResponse.swift */,
 				574A2F4A282D7AEA00150D40 /* PostOfferResponse.swift */,
 				57488A7E29CA145B0000EE7E /* ProductEntitlementMappingResponse.swift */,
+				537B4B2D2DA9662700CEFF4C /* HealthReportResponse.swift */,
 			);
 			path = Responses;
 			sourceTree = "<group>";
@@ -5176,6 +5199,7 @@
 				B34605BA279A6E380031CA74 /* GetOfferingsOperation.swift */,
 				57045B3929C51751001A5417 /* GetProductEntitlementMappingOperation.swift */,
 				4F5F47072AA91F8A005649D8 /* HealthOperation.swift */,
+				537B4B2F2DA9742500CEFF4C /* HealthReportOperation.swift */,
 				B34605B7279A6E380031CA74 /* LogInOperation.swift */,
 				B34605AB279A6E380031CA74 /* NetworkOperation.swift */,
 				B34605AD279A6E380031CA74 /* PostOfferForSigningOperation.swift */,
@@ -6178,6 +6202,7 @@
 				57EAE52B274332830060EB74 /* Obsoletions.swift in Sources */,
 				57E9CF0F290B2A4B00EE12D1 /* CachingTrialOrIntroPriceEligibilityChecker.swift in Sources */,
 				2C0B98CD2797070B00C5874F /* PromotionalOffer.swift in Sources */,
+				537B4B2E2DA9662700CEFF4C /* HealthReportResponse.swift in Sources */,
 				57DC9F4627CC2E4900DA6AF9 /* HTTPRequest.swift in Sources */,
 				2DC5623024EC63730031F69B /* OperationDispatcher.swift in Sources */,
 				352137322CDBA2AA00FE961B /* FeatureEvent.swift in Sources */,
@@ -6198,6 +6223,7 @@
 				57488C7729CB90F90000EE7E /* PurchasedProductsFetcher.swift in Sources */,
 				4F3C986A2A44FA60009AECA3 /* ErrorResponse.swift in Sources */,
 				578C5F2C28DB82DD00A56F02 /* PurchasesDiagnostics.swift in Sources */,
+				537B4B322DA9743800CEFF4C /* HealthReport+Validate.swift in Sources */,
 				B34605C9279A6E380031CA74 /* GetIntroEligibilityOperation.swift in Sources */,
 				354895D6267BEDE3001DC5B1 /* ReservedSubscriberAttributes.swift in Sources */,
 				570FAF4B2864EC2300D3C769 /* NonSubscriptionTransaction.swift in Sources */,
@@ -6223,6 +6249,7 @@
 				03C730F32D35F14600297FEC /* PaywallV2CacheWarming.swift in Sources */,
 				B3C4AAD526B8911300E1B3C8 /* Backend.swift in Sources */,
 				35AAEB452BBB14D000A12548 /* DiagnosticsFileHandler.swift in Sources */,
+				537B4B302DA9742500CEFF4C /* HealthReportOperation.swift in Sources */,
 				B34D2AA626976FC700D88C3A /* ErrorCode.swift in Sources */,
 				4F15B4A12A6774C9005BEFE8 /* CustomerInfo+NonSubscriptions.swift in Sources */,
 				887E7B592C13CD2C002977DE /* PurchasesAreCompletedBy.swift in Sources */,
@@ -6250,6 +6277,9 @@
 				2C7F0AD32B8EEB4600381179 /* RateLimiter.swift in Sources */,
 				B3A55B7D26C452A7007EFC56 /* AttributionPoster.swift in Sources */,
 				4F8452682A5756CC00084550 /* HTTPRequestBody+Signing.swift in Sources */,
+				537B4B382DA9744B00CEFF4C /* SDKHealthStatus+Icon.swift in Sources */,
+				537B4B392DA9744B00CEFF4C /* SDKHealthCheckStatus+Icon.swift in Sources */,
+				537B4B3A2DA9744B00CEFF4C /* ProductStatus+Icon.swift in Sources */,
 				5791FE4A2994453500F1FEDA /* Signing+ResponseVerification.swift in Sources */,
 				2DC19195255F36D10039389A /* Logger.swift in Sources */,
 				2DDF419F24F6F331005BC22D /* ReceiptParsingError.swift in Sources */,
@@ -6481,6 +6511,7 @@
 				35272E2226D0048D00F22C3B /* HTTPClientTests.swift in Sources */,
 				2DDF41CB24F6F4C3005BC22D /* ASN1ObjectIdentifierBuilderTests.swift in Sources */,
 				5766AA5A283D4CAB00FA6091 /* IgnoreHashableTests.swift in Sources */,
+				0368727A2D9DCF7100506BBB /* DefaultEnumTests.swift in Sources */,
 				03C7305B2D35985900297FEC /* TextComponentTests.swift in Sources */,
 				B36824BF268FBC8700957E4C /* SubscriberAttributeTests.swift in Sources */,
 				351B51BC26D450E800BD2BD7 /* OfferingsTests.swift in Sources */,
@@ -6937,6 +6968,7 @@
 				03A98CF12D222F5F009BCA61 /* FallbackComponentPreview.swift in Sources */,
 				887A60862C1D037000E1A461 /* FooterHidingModifier.swift in Sources */,
 				4D3BA5882D432E5900668AFC /* Fill.swift in Sources */,
+				0368728B2DA45C1900506BBB /* PurchaseButtonInPackage.swift in Sources */,
 				FDAD6AC72D132DD900FB047E /* CustomerCenterStoreKitUtilitiesType.swift in Sources */,
 				887A60C02C1D037000E1A461 /* AsyncButton.swift in Sources */,
 				887A60892C1D037000E1A461 /* PaywallPurchasesType.swift in Sources */,

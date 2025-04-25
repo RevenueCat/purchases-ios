@@ -1,0 +1,3 @@
+# config.yaml
+flows:
+  - customer_center/promo_offer/*
