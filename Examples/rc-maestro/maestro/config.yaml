@@ -1,7 +1,7 @@
 # config.yaml
 
 executionOrder:
-  continueOnFailure: false # default is true
+  continueOnFailure: false
   flowsOrder:
     - Manage Subscriptions Empty
     - Manage Subscriptions Restore Purchases
