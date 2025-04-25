@@ -24,6 +24,7 @@ import RevenueCat
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
+@MainActor
 final class VirtualCurrencyBalancesScreenViewModel: ObservableObject {
 
     /// The current state of the virtual currencies screen.
@@ -70,21 +71,15 @@ final class VirtualCurrencyBalancesScreenViewModel: ObservableObject {
     /// any errors that occur during data fetching. On success, it transforms the
     /// customer information into a format suitable for display in the UI.
     private func loadData() async {
-        await MainActor.run {
-            self.viewState = .loading
-        }
+        self.viewState = .loading
 
         do {
             let customerInfo = try await self.purchasesProvider.customerInfo(fetchPolicy: .fetchCurrent)
             let virtualCurrencyBalanceData = self.extractVirtualCurrencyBalanceData(from: customerInfo)
 
-            await MainActor.run {
-                self.viewState = .loaded(virtualCurrencyBalanceData)
-            }
+            self.viewState = .loaded(virtualCurrencyBalanceData)
         } catch {
-            await MainActor.run {
-                self.viewState = .error
-            }
+            self.viewState = .error
         }
     }
 
