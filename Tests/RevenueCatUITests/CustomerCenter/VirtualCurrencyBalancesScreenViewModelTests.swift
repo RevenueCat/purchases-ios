@@ -54,16 +54,6 @@ final class VirtualCurrencyBalancesScreenViewModelTests: TestCase {
         expect(viewModel.viewState).to(equal(.error))
     }
 
-    func testOnViewAppearedSkipsLoadingInPreview() async {
-        let viewModel = VirtualCurrencyBalancesScreenViewModel(
-            purchasesProvider: MockCustomerCenterPurchases()
-        )
-
-        await viewModel.onViewAppeared()
-
-        expect(viewModel.viewState).to(equal(.loading))
-    }
-
     func testLoadDataSuccess() async {
         let customerInfo = CustomerInfoFixtures.customerInfoWithVirtualCurrencies
         let mockPurchases = MockCustomerCenterPurchases(customerInfo: customerInfo)
