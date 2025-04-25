@@ -1841,7 +1841,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             0,
             nil,
             .notRequested,
-            false,
+            false
         )))
         expect(trackedParams1).to(matchTrackParams((
             "get_product_entitlement_mapping",
