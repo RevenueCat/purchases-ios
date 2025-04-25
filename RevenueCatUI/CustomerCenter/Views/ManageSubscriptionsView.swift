@@ -254,34 +254,34 @@ struct ManageSubscriptionsView: View {
             .previewDisplayName("Consumable - \(colorScheme)")
 
             CompatibilityNavigationStack {
-                let viewModelWith3VCs = ManageSubscriptionsViewModel(
-                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
-                    actionWrapper: CustomerCenterActionWrapper(),
-                    purchaseInformation: CustomerCenterConfigTestData.consumable,
-                    purchasesProvider: CustomerCenterPurchases(),
-                    virtualCurrencies: CustomerCenterConfigTestData.threeVirtualCurrencies)
-                ManageSubscriptionsView(viewModel: viewModelWith3VCs)
-                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
-                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
-                .environment(\.supportInformation, CustomerCenterConfigTestData.customerCenterData.support)
-            }
-            .preferredColorScheme(colorScheme)
-            .previewDisplayName("3 Virtual Currencies - \(colorScheme)")
-
-            CompatibilityNavigationStack {
-                let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
+                let viewModelWith4VCs = ManageSubscriptionsViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.consumable,
                     purchasesProvider: CustomerCenterPurchases(),
                     virtualCurrencies: CustomerCenterConfigTestData.fourVirtualCurrencies)
-                ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
+                ManageSubscriptionsView(viewModel: viewModelWith4VCs)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
                 .environment(\.supportInformation, CustomerCenterConfigTestData.customerCenterData.support)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("4 Virtual Currencies - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                let viewModelWith5VCs = ManageSubscriptionsViewModel(
+                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                    actionWrapper: CustomerCenterActionWrapper(),
+                    purchaseInformation: CustomerCenterConfigTestData.consumable,
+                    purchasesProvider: CustomerCenterPurchases(),
+                    virtualCurrencies: CustomerCenterConfigTestData.fiveVirtualCurrencies)
+                ManageSubscriptionsView(viewModel: viewModelWith5VCs)
+                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
+                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+                .environment(\.supportInformation, CustomerCenterConfigTestData.customerCenterData.support)
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("5 Virtual Currencies - \(colorScheme)")
         }
     }
 

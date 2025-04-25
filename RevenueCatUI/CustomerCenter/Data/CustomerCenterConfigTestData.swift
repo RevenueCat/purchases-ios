@@ -203,7 +203,7 @@ enum CustomerCenterConfigTestData {
         customerInfoRequestedDate: Date()
     )
 
-    static var threeVirtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo] {
+    static var fourVirtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo] {
         let jsonData = """
             {
               "GLD": {
@@ -214,6 +214,9 @@ enum CustomerCenterConfigTestData {
               },
               "BRNZ": {
                 "balance": 300
+              },
+              "PLTNM": {
+                "balance": 400
               }
             }
             """.data(using: .utf8)
@@ -229,7 +232,7 @@ enum CustomerCenterConfigTestData {
         }
     }
 
-    static var fourVirtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo] {
+    static var fiveVirtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo] {
         let jsonData = """
             {
               "GLD": {
@@ -243,6 +246,9 @@ enum CustomerCenterConfigTestData {
               },
               "PLTNM": {
                 "balance": 400
+              },
+              "RC_COIN": {
+                "balance": 1
               }
             }
             """.data(using: .utf8)

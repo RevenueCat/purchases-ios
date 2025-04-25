@@ -110,18 +110,18 @@ struct NoSubscriptionsView_Previews: PreviewProvider {
         .previewDisplayName("No Subscriptions View")
 
         NoSubscriptionsView(configuration: CustomerCenterConfigTestData.customerCenterData,
-                            virtualCurrencies: CustomerCenterConfigTestData.threeVirtualCurrencies,
-                            purchasesProvider: CustomerCenterPurchases(),
-                            actionWrapper: CustomerCenterActionWrapper())
-        .environment(\.supportInformation, CustomerCenterConfigTestData.customerCenterData.support)
-        .previewDisplayName("3 Virtual Currencies")
-
-        NoSubscriptionsView(configuration: CustomerCenterConfigTestData.customerCenterData,
                             virtualCurrencies: CustomerCenterConfigTestData.fourVirtualCurrencies,
                             purchasesProvider: CustomerCenterPurchases(),
                             actionWrapper: CustomerCenterActionWrapper())
         .environment(\.supportInformation, CustomerCenterConfigTestData.customerCenterData.support)
         .previewDisplayName("4 Virtual Currencies")
+
+        NoSubscriptionsView(configuration: CustomerCenterConfigTestData.customerCenterData,
+                            virtualCurrencies: CustomerCenterConfigTestData.fiveVirtualCurrencies,
+                            purchasesProvider: CustomerCenterPurchases(),
+                            actionWrapper: CustomerCenterActionWrapper())
+        .environment(\.supportInformation, CustomerCenterConfigTestData.customerCenterData.support)
+        .previewDisplayName("5 Virtual Currencies")
     }
 
 }

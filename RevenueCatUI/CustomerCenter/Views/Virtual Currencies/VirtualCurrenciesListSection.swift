@@ -28,6 +28,8 @@ import SwiftUI
 /// to a full list of virtual currencies.
 struct VirtualCurrenciesListSection: View {
 
+    private static let maxNumberOfRows = 4
+
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
 
@@ -52,8 +54,16 @@ struct VirtualCurrenciesListSection: View {
         }
             .sorted(by: { $0.balance > $1.balance })
 
-        self.virtualCurrencies = Array(sortedCurrencies.prefix(3))
-        self.displayShowAllButton = sortedCurrencies.count > 3
+        // We want to limit the number of rows in the list to 4 max. We accomplish this by:
+        // - Showing all currencies if there are 4 or fewer currencies
+        // - Show first 3 currencies + "See All" button to limit to 4 rows if there are 5 or more currencies
+        if sortedCurrencies.count <= Self.maxNumberOfRows {
+            self.virtualCurrencies = sortedCurrencies
+            self.displayShowAllButton = false
+        } else {
+            self.virtualCurrencies = Array(sortedCurrencies.prefix(3))
+            self.displayShowAllButton = true
+        }
         self.purchasesProvider = purchasesProvider
     }
 
@@ -97,13 +107,6 @@ struct VirtualCurrenciesListSection: View {
 struct VirtualCurrenciesListSection_Previews: PreviewProvider {
 
     static var previews: some View {
-        List {
-            VirtualCurrenciesListSection(
-                virtualCurrencies: CustomerCenterConfigTestData.threeVirtualCurrencies,
-                purchasesProvider: CustomerCenterPurchases()
-            )
-        }
-        .previewDisplayName("Three Virtual Currencies")
 
         List {
             VirtualCurrenciesListSection(
@@ -111,7 +114,15 @@ struct VirtualCurrenciesListSection_Previews: PreviewProvider {
                 purchasesProvider: CustomerCenterPurchases()
             )
         }
-        .previewDisplayName("Four Virtual Currencies")
+        .previewDisplayName("4 Virtual Currencies")
+
+        List {
+            VirtualCurrenciesListSection(
+                virtualCurrencies: CustomerCenterConfigTestData.fiveVirtualCurrencies,
+                purchasesProvider: CustomerCenterPurchases()
+            )
+        }
+        .previewDisplayName("5 Virtual Currencies")
     }
 
 }
