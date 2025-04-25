@@ -2496,7 +2496,7 @@ extension HTTPClientTests {
         expect(nextFallbackHostRequest.retryCount).to(equal(1))
     }
 
-    func testrequestWithNextFallbackHostReturnsNilIfNoMoreHosts() throws {
+    func testRequestWithNextFallbackHostReturnsNilIfNoMoreHosts() throws {
         var nextRequest = buildEmptyRequest(isRetryable: true, hasFallbackHosts: true)
 
         let fallbacksCount = nextRequest.httpRequest.path.fallbackHosts.count
