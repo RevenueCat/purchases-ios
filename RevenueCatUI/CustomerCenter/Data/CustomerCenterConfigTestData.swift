@@ -24,6 +24,7 @@ enum CustomerCenterConfigTestData {
         lastPublishedAppVersion: String?,
         shouldWarnCustomerToUpdate: Bool = false,
         displayPurchaseHistoryLink: Bool = false,
+        displayVirtualCurrencies: Bool = false,
         refundWindowDuration: CustomerCenterConfigData.HelpPath.RefundWindowDuration = .forever
     ) -> CustomerCenterConfigData {
         CustomerCenterConfigData(
@@ -124,7 +125,8 @@ enum CustomerCenterConfigTestData {
             support: .init(
                 email: "test-support@revenuecat.com",
                 shouldWarnCustomerToUpdate: shouldWarnCustomerToUpdate,
-                displayPurchaseHistoryLink: displayPurchaseHistoryLink
+                displayPurchaseHistoryLink: displayPurchaseHistoryLink,
+                displayVirtualCurrencies: displayVirtualCurrencies
             ),
             lastPublishedAppVersion: lastPublishedAppVersion,
             productId: 1
@@ -132,7 +134,7 @@ enum CustomerCenterConfigTestData {
     }
 
     @available(iOS 14.0, *)
-    static let customerCenterData = customerCenterData(lastPublishedAppVersion: "1.0.0")
+    static let customerCenterData = customerCenterData(lastPublishedAppVersion: "1.0.0", displayVirtualCurrencies: true)
 
     static let standardAppearance = CustomerCenterConfigData.Appearance(
         accentColor: .init(light: "#007AFF", dark: "#007AFF"),
@@ -201,4 +203,64 @@ enum CustomerCenterConfigTestData {
         customerInfoRequestedDate: Date()
     )
 
+    static var fourVirtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo] {
+        let jsonData = """
+            {
+              "GLD": {
+                "balance": 100
+              },
+              "SLV": {
+                "balance": 200
+              },
+              "BRNZ": {
+                "balance": 300
+              },
+              "PLTNM": {
+                "balance": 400
+              }
+            }
+            """.data(using: .utf8)
+
+        guard let data = jsonData else {
+            return [:]
+        }
+
+        do {
+            return try JSONDecoder().decode([String: VirtualCurrencyInfo].self, from: data)
+        } catch {
+            return [:]
+        }
+    }
+
+    static var fiveVirtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo] {
+        let jsonData = """
+            {
+              "GLD": {
+                "balance": 100
+              },
+              "SLV": {
+                "balance": 200
+              },
+              "BRNZ": {
+                "balance": 300
+              },
+              "PLTNM": {
+                "balance": 400
+              },
+              "RC_COIN": {
+                "balance": 1
+              }
+            }
+            """.data(using: .utf8)
+
+        guard let data = jsonData else {
+            return [:]
+        }
+
+        do {
+            return try JSONDecoder().decode([String: VirtualCurrencyInfo].self, from: data)
+        } catch {
+            return [:]
+        }
+    }
 }
