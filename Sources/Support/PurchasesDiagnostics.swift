@@ -137,6 +137,7 @@ extension PurchasesDiagnostics {
 
     }
 
+    /// An error that represents a problem in the SDK's configuration
     public enum SDKHealthError: Swift.Error {
         /// API key is invalid
         case invalidAPIKey
