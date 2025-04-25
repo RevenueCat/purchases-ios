@@ -11,6 +11,8 @@
 //
 //  Created by Pol Piella Abadia on 25/04/2025.
 
+import Foundation
+
 extension PurchasesDiagnostics.SDKHealthError: CustomNSError {
 
     // swiftlint:disable:next missing_docs
