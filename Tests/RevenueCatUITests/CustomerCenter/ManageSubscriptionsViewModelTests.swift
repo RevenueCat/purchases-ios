@@ -44,7 +44,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
         ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.default,
                                      actionWrapper: CustomerCenterActionWrapper(),
                                      purchasesProvider: MockCustomerCenterPurchases(),
-                                     virtualCurrencies: CustomerCenterConfigTestData.threeVirtualCurrencies)
+                                     virtualCurrencies: CustomerCenterConfigTestData.fourVirtualCurrencies)
 
         expect(viewModel.state) == CustomerCenterViewState.success
         expect(viewModel.purchaseInformation).to(beNil())
@@ -54,7 +54,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 
         // Compare virtual currencies by checking each key-value pair individually since
         // the order of the dictionary is not guaranteed.
-        let expectedCurrencies = CustomerCenterConfigTestData.threeVirtualCurrencies
+        let expectedCurrencies = CustomerCenterConfigTestData.fourVirtualCurrencies
         expect(viewModel.virtualCurrencies.count) == expectedCurrencies.count
         for (key, value) in expectedCurrencies {
             expect(viewModel.virtualCurrencies[key]?.balance) == value.balance
