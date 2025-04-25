@@ -41,7 +41,7 @@ let project = Project(
             name: "Maestro-Debug",
             shared: true,
             hidden: false,
-            buildAction: .buildAction(targets: ["Maestro-Debug"], findImplicitDependencies: false),
+            buildAction: .buildAction(targets: ["Maestro-Debug"], findImplicitDependencies: true),
             runAction: .runAction(
                 configuration: "Debug",
                 executable: "Maestro-Debug",

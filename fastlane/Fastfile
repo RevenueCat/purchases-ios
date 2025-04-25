@@ -175,7 +175,7 @@ platform :ios do
     )
 
     # Get the built .app path
-    app_path = Dir["../derivedData/Build/Products/**/Maestro-Debug.app"].first
+    app_path = Dir["../derivedData/Build/Products/**/Maestro_Debug.app"].first
     UI.user_error!("❌ Could not find built app at expected path") unless app_path
 
     # Install to simulator
