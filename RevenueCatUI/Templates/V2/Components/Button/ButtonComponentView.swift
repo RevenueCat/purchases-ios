@@ -55,30 +55,32 @@ struct ButtonComponentView: View {
     }
 
     var body: some View {
-        AsyncButton {
-            try await performAction()
-        } label: {
-            StackComponentView(
-                viewModel: self.viewModel.stackViewModel,
-                onDismiss: self.onDismiss,
-                showActivityIndicatorOverContent: self.showActivityIndicatorOverContent
-            )
+        if !self.viewModel.hasUnknownAction {
+            AsyncButton {
+                try await performAction()
+            } label: {
+                StackComponentView(
+                    viewModel: self.viewModel.stackViewModel,
+                    onDismiss: self.onDismiss,
+                    showActivityIndicatorOverContent: self.showActivityIndicatorOverContent
+                )
+            }
+            .applyIf(self.shouldBeDisabled, apply: { view in
+                view
+                    .disabled(true)
+                    .opacity(0.35)
+            })
+            #if canImport(SafariServices) && canImport(UIKit)
+            .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
+                SafariView(url: self.inAppBrowserURL!)
+            }
+            #if os(iOS)
+            .presentCustomerCenter(isPresented: self.$showCustomerCenter, onDismiss: {
+                self.showCustomerCenter = false
+            })
+            #endif
+            #endif
         }
-        .applyIf(self.shouldBeDisabled, apply: { view in
-            view
-                .disabled(true)
-                .opacity(0.35)
-        })
-        #if canImport(SafariServices) && canImport(UIKit)
-        .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
-            SafariView(url: self.inAppBrowserURL!)
-        }
-        #if os(iOS)
-        .presentCustomerCenter(isPresented: self.$showCustomerCenter, onDismiss: {
-            self.showCustomerCenter = false
-        })
-        #endif
-        #endif
     }
 
     private func performAction() async throws {
@@ -89,6 +91,8 @@ struct ButtonComponentView: View {
             navigateTo(destination: destination)
         case .navigateBack:
             onDismiss()
+        case .unknown:
+            break
         }
     }
 
@@ -114,6 +118,8 @@ struct ButtonComponentView: View {
                 .privacyPolicy(let url, let method),
                 .terms(let url, let method):
             navigateToUrl(url: url, method: method)
+        case .unknown:
+            break
         }
     }
 
@@ -123,13 +129,44 @@ struct ButtonComponentView: View {
 #if os(tvOS)
             // There's no SafariServices on tvOS, so we're falling back to opening in an external browser.
             Logger.warning(Strings.no_in_app_browser_tvos)
-            openURL(url)
+            openURL(url) { success in
+                if success {
+                    Logger.debug(Strings.successfully_opened_url_external_browser(url.absoluteString))
+                } else {
+                    Logger.error(Strings.failed_to_open_url_external_browser(url.absoluteString))
+                }
+            }
 #else
             inAppBrowserURL = url
 #endif
-        case .externalBrowser,
-                .deepLink:
+        case .externalBrowser:
+#if os(watchOS)
+            // watchOS doesn't support openURL with a completion handler, so we're just opening the URL.
             openURL(url)
+#else
+            openURL(url) { success in
+                if success {
+                    Logger.debug(Strings.successfully_opened_url_external_browser(url.absoluteString))
+                } else {
+                    Logger.error(Strings.failed_to_open_url_external_browser(url.absoluteString))
+                }
+            }
+#endif
+        case .deepLink:
+#if os(watchOS)
+            // watchOS doesn't support openURL with a completion handler, so we're just opening the URL.
+            openURL(url)
+#else
+            openURL(url) { success in
+                if success {
+                    Logger.debug(Strings.successfully_opened_url_deep_link(url.absoluteString))
+                } else {
+                    Logger.error(Strings.failed_to_open_url_deep_link(url.absoluteString))
+                }
+            }
+#endif
+        case .unknown:
+            break
         }
     }
 

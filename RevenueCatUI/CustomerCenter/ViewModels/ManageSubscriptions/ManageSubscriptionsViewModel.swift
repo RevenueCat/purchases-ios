@@ -201,6 +201,7 @@ private extension ManageSubscriptionsViewModel {
         switch path.type {
         case .missingPurchase:
             self.showRestoreAlert = true
+
         case .refundRequest:
             guard let purchaseInformation = self.purchaseInformation else { return }
             let productId = purchaseInformation.productIdentifier
@@ -214,14 +215,10 @@ private extension ManageSubscriptionsViewModel {
                 self.refundRequestStatus = .error
                 self.actionWrapper.handleAction(.refundRequestCompleted(productId, .error))
             }
-        case .changePlans, .cancel:
-            do {
-                self.actionWrapper.handleAction(.showingManageSubscriptions)
 
-                try await purchasesProvider.showManageSubscriptions()
-            } catch {
-                self.state = .error(error)
-            }
+        case .changePlans, .cancel:
+            self.actionWrapper.handleAction(.showingManageSubscriptions)
+
         case .customUrl:
             guard let url = path.url,
                   let openMethod = path.openMethod else {
@@ -238,6 +235,7 @@ private extension ManageSubscriptionsViewModel {
                 Logger.warning(Strings.could_not_determine_type_of_custom_url)
                 URLUtilities.openURLIfNotAppExtension(url)
             }
+
         default:
             break
         }
