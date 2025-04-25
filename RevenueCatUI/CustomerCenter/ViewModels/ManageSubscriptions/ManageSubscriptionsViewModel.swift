@@ -53,8 +53,7 @@ final class ManageSubscriptionsViewModel: ObservableObject {
     @Published
     var inAppBrowserURL: IdentifiableURL?
 
-    @Published
-    var virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]
+    let virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]
 
     @Published
     var state: CustomerCenterViewState {
