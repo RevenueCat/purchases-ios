@@ -1796,9 +1796,10 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
     func testDiagnosticsHttpRequestPerformedTrackedOnFallbackHost() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        let request = HTTPRequest(method: .get, path: .mockPath)
-        let hostCount = type(of: request.path).serverHostURLs.count
-        try XCTSkipIf(hostCount <= 1, "This test requires at least 2 hosts")
+        let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
+        let mainPath = request.path
+        let fallbackHost = try XCTUnwrap(mainPath.fallbackHosts.first?.host,
+                                         "This test requires at least 1 fallback host")
 
         let serverErrorResponse = HTTPStubsResponse(
             data: Data(),
@@ -1806,8 +1807,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             headers: nil
         )
 
-        let host1 = try XCTUnwrap(HTTPRequest.Path.serverHostURLs.first?.host)
-        stub(condition: isHost(host1)) { _ in
+        let mainHost = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        stub(condition: isHost(mainHost)) { _ in
             return serverErrorResponse
         }
 
@@ -1817,8 +1818,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             headers: nil
         )
 
-        let host2 = try XCTUnwrap(HTTPRequest.Path.serverHostURLs[1].host)
-        stub(condition: isHost(host2)) { _ in
+        stub(condition: isHost(fallbackHost)) { _ in
             return successfulResponse
         }
 
@@ -1833,7 +1833,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         let trackedParams0 = mockDiagnosticsTracker.trackedHttpRequestPerformedParams.value[0]
         let trackedParams1 = mockDiagnosticsTracker.trackedHttpRequestPerformedParams.value[1]
         expect(trackedParams0).to(matchTrackParams((
-            "log_in",
+            "get_product_entitlement_mapping",
             "api.revenuecat.com",
             -1,
             false,
@@ -1844,8 +1844,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             false,
         )))
         expect(trackedParams1).to(matchTrackParams((
-            "log_in",
-            "api2.revenuecat.com",
+            "get_product_entitlement_mapping",
+            "api-production.8-lives-cat.io",
             -1, // Any
             true,
             200,
