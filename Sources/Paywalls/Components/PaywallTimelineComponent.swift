@@ -151,6 +151,12 @@ public extension PaywallComponent {
         public enum IconAlignment: String, Sendable, Codable, Equatable, Hashable {
             case title = "title"
             case titleAndDescription = "title_and_description"
+
+            public init(from decoder: Decoder) throws {
+                let container = try decoder.singleValueContainer()
+                let rawValue = try? container.decode(String.self)
+                self = IconAlignment(rawValue: rawValue ?? "") ?? .title
+            }
         }
     }
 

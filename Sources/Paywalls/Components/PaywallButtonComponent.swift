@@ -69,6 +69,8 @@ public extension PaywallComponent {
             case navigateBack
             case navigateTo(destination: Destination)
 
+            case unknown
+
             private enum CodingKeys: String, CodingKey {
                 case type
                 case destination
@@ -85,6 +87,8 @@ public extension PaywallComponent {
                 case .navigateTo(let destination):
                     try container.encode("navigate_to", forKey: .type)
                     try destination.encode(to: encoder)
+                case .unknown:
+                    try container.encode("unknown", forKey: .type)
                 }
             }
 
@@ -100,11 +104,10 @@ public extension PaywallComponent {
                 case "navigate_to":
                     let destination = try Destination(from: decoder)
                     self = .navigateTo(destination: destination)
+                case "unknown":
+                    self = .unknown
                 default:
-                    throw DecodingError.dataCorruptedError(
-                        forKey: .type, in: container,
-                        debugDescription: "Invalid action type"
-                    )
+                    self = .unknown
                 }
             }
         }
@@ -114,6 +117,8 @@ public extension PaywallComponent {
             case privacyPolicy(urlLid: String, method: URLMethod)
             case terms(urlLid: String, method: URLMethod)
             case url(urlLid: String, method: URLMethod)
+
+            case unknown
 
             private enum CodingKeys: String, CodingKey {
                 case destination
@@ -135,6 +140,8 @@ public extension PaywallComponent {
                 case .url(let urlLid, let method):
                     try container.encode("url", forKey: .destination)
                     try container.encode(URLPayload(urlLid: urlLid, method: method), forKey: .url)
+                case .unknown:
+                    try container.encode("unknown", forKey: .destination)
                 }
             }
 
@@ -154,11 +161,10 @@ public extension PaywallComponent {
                 case "url":
                     let urlPayload = try container.decode(URLPayload.self, forKey: .url)
                     self = .url(urlLid: urlPayload.urlLid, method: urlPayload.method)
+                case "unknown":
+                    self = .unknown
                 default:
-                    throw DecodingError.dataCorruptedError(
-                        forKey: .destination, in: container,
-                        debugDescription: "Invalid destination type"
-                    )
+                    self = .unknown
                 }
             }
         }
@@ -167,6 +173,14 @@ public extension PaywallComponent {
             case inAppBrowser = "in_app_browser"
             case externalBrowser = "external_browser"
             case deepLink = "deep_link"
+
+            case unknown = "unknown"
+
+            public init(from decoder: Decoder) throws {
+                let container = try decoder.singleValueContainer()
+                let rawValue = try container.decode(String.self)
+                self = URLMethod(rawValue: rawValue) ?? .unknown
+            }
         }
 
         private struct URLPayload: Codable, Hashable, Sendable {

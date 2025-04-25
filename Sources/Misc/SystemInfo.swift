@@ -90,7 +90,7 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "5.22.0-SNAPSHOT"
+        return "5.23.0-SNAPSHOT"
     }
 
     static var systemVersion: String {
@@ -216,6 +216,22 @@ class SystemInfo {
 
     func isOperatingSystemAtLeast(_ version: OperatingSystemVersion) -> Bool {
         return ProcessInfo.processInfo.isOperatingSystemAtLeast(version)
+    }
+
+    /// Checks for exposure to https://github.com/RevenueCat/purchases-ios/issues/4954
+    func isSubjectToKnownIssue_18_4_sim() -> Bool {
+        let firstOSVersionWithBug = OperatingSystemVersion(majorVersion: 18,
+                                                           minorVersion: 4,
+                                                           patchVersion: 0)
+
+        // Conservative estimate. No Simulator iOS fix version currently known (as at 2025-04-15).
+        let firstOSVersionWithFix = OperatingSystemVersion(majorVersion: 18,
+                                                           minorVersion: 5,
+                                                           patchVersion: 0)
+
+        return SystemInfo.isRunningInSimulator
+            && self.isOperatingSystemAtLeast(firstOSVersionWithBug)
+            && !self.isOperatingSystemAtLeast(firstOSVersionWithFix)
     }
 
     #if os(iOS) || os(tvOS) || VISION_OS
