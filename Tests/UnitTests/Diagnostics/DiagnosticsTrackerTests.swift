@@ -139,6 +139,7 @@ class DiagnosticsTrackerTests: TestCase {
                   properties: DiagnosticsEvent.Properties(
                     verificationResult: "VERIFIED",
                     endpointName: "mock_endpoint",
+                    host: "api.revenuecat.com",
                     responseTime: 50,
                     successful: true,
                     responseCode: 200,
