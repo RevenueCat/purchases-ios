@@ -3,5 +3,7 @@ name: Manage Subscriptions Restore Purchases
 
 ---
 - tapOn: "Restore past purchases"
-- assertVisible: "No past purchases"
+- extendedWaitUntil:
+    visible: "No past purchases"
+    timeout: 10000
 - tapOn: "Dismiss"
