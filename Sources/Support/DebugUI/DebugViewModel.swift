@@ -161,7 +161,7 @@ extension DebugViewModel {
         }
     }
 
-    var errorsToExpandOn: [PurchasesDiagnostics.Error] {
+    var errorsToExpandOn: [PurchasesDiagnostics.SDKHealthError] {
         switch self.diagnosticsResult {
         case .loading: return []
         case let .loaded(healthReport):

@@ -451,7 +451,7 @@ private struct DebugPackageView: View {
 
 @available(iOS 16.0, macOS 13.0, *)
 private struct DebugStatusDetailsView: View {
-    let errors: [PurchasesDiagnostics.Error]
+    let errors: [PurchasesDiagnostics.SDKHealthError]
 
     var body: some View {
         List {

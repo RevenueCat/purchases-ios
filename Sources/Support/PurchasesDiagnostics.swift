@@ -132,6 +132,15 @@ extension PurchasesDiagnostics {
         /// Failure performing a signed request
         case failedMakingSignedRequest(Swift.Error)
 
+        /// Any other not identifier error. You can check the undelying error for details.
+        case unknown(Swift.Error)
+
+    }
+
+    public enum SDKHealthError: Swift.Error {
+        /// API key is invalid
+        case invalidAPIKey
+
         /// There are no offerings in project
         case noOfferings
 
@@ -149,7 +158,6 @@ extension PurchasesDiagnostics {
 
         /// Any other not identifier error. You can check the undelying error for details.
         case unknown(Swift.Error)
-
     }
 
 }
@@ -187,9 +195,31 @@ extension PurchasesDiagnostics {
     /// Status of the SDK Health report
     public enum SDKHealthStatus: Sendable {
         /// SDK configuration is valid but might have some non-blocking issues
-        case healthy(warnings: [PurchasesDiagnostics.Error])
+        case healthy(warnings: [PurchasesDiagnostics.SDKHealthError])
         /// SDK configuration is not valid and has issues that must be resolved
-        case unhealthy(PurchasesDiagnostics.Error)
+        case unhealthy(PurchasesDiagnostics.SDKHealthError)
+    }
+
+    @available(*, deprecated, message: """
+    Use the `PurchasesDiagnostics.shared.checkSDKHealth()` method instead.
+    """)
+    /// Perform tests to ensure SDK is configured correctly.
+    /// - `Throws`: ``PurchasesDiagnostics/Error`` if any step fails
+    @objc(testSDKHealthWithCompletion:)
+    public func testSDKHealth() async throws {
+        do {
+            try await self.unauthenticatedRequest()
+            #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+            try await self.authenticatedRequest()
+            #endif
+            try await self.offeringsRequest()
+            try await self.signatureVerification()
+        } catch let error as Error {
+            throw error
+        } catch let error {
+            // Catch every other error to ensure that we only throw `Error`s from here.
+            throw Error.unknown(error)
+        }
     }
 
     #if DEBUG
@@ -197,7 +227,7 @@ extension PurchasesDiagnostics {
     /// - Important: This method is intended solely for debugging configuration issues with the SDK implementation.
     /// It should not be invoked in production builds.
     /// - Throws: The specific configuration issue that needs to be solved.
-    public func testSDKHealth() async throws {
+    public func checkSDKHealth() async throws {
         switch await self.healthReport().status {
         case let .unhealthy(error): throw error
         default: break
@@ -299,7 +329,7 @@ private extension PurchasesDiagnostics {
 
 }
 
-extension PurchasesDiagnostics.Error: CustomNSError {
+extension PurchasesDiagnostics.SDKHealthError : CustomNSError {
 
     // swiftlint:disable:next missing_docs
     public var errorUserInfo: [String: Any] {
@@ -313,9 +343,6 @@ extension PurchasesDiagnostics.Error: CustomNSError {
         switch self {
         case .notAuthorizedToMakePayments: return "The person is not authorized to make payments on this device"
         case let .unknown(error): return "Unknown error: \(error.localizedDescription)"
-        case let .failedConnectingToAPI(error): return "Error connecting to API: \(error.localizedDescription)"
-        case let .failedFetchingOfferings(error): return "Failed fetching offerings: \(error.localizedDescription)"
-        case let .failedMakingSignedRequest(error): return "Failed making signed request: \(error.localizedDescription)"
         case .invalidAPIKey: return "API key is not valid"
         case .noOfferings: return "No offerings configured"
         case let .offeringConfiguration(payload):
@@ -351,15 +378,45 @@ extension PurchasesDiagnostics.Error: CustomNSError {
     private var underlyingError: Swift.Error? {
         switch self {
         case let .unknown(error): return error
-        case let .failedConnectingToAPI(error): return error
-        case let .failedFetchingOfferings(error): return error
-        case let .failedMakingSignedRequest(error): return error
         case .invalidAPIKey,
                 .offeringConfiguration,
                 .noOfferings,
                 .invalidBundleId,
                 .invalidProducts,
                 .notAuthorizedToMakePayments:
+            return nil
+        }
+    }
+
+}
+
+extension PurchasesDiagnostics.Error: CustomNSError {
+
+    // swiftlint:disable:next missing_docs
+    public var errorUserInfo: [String: Any] {
+        return [
+            NSUnderlyingErrorKey: self.underlyingError as NSError? ?? NSNull(),
+            NSLocalizedDescriptionKey: self.localizedDescription
+        ]
+    }
+
+    var localizedDescription: String {
+        switch self {
+        case let .unknown(error): return "Unknown error: \(error.localizedDescription)"
+        case let .failedConnectingToAPI(error): return "Error connecting to API: \(error.localizedDescription)"
+        case let .failedFetchingOfferings(error): return "Failed fetching offerings: \(error.localizedDescription)"
+        case let .failedMakingSignedRequest(error): return "Failed making signed request: \(error.localizedDescription)"
+        case .invalidAPIKey: return "API key is not valid"
+        }
+    }
+
+    private var underlyingError: Swift.Error? {
+        switch self {
+        case let .unknown(error): return error
+        case let .failedConnectingToAPI(error): return error
+        case let .failedFetchingOfferings(error): return error
+        case let .failedMakingSignedRequest(error): return error
+        case .invalidAPIKey:
             return nil
         }
     }
