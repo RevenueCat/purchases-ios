@@ -181,12 +181,12 @@ extension HealthReport {
 
     private func status(from productCheckStatus: ProductStatus) -> PurchasesDiagnostics.ProductStatus {
         switch productCheckStatus {
-        case .valid: .valid
-        case .couldNotCheck: .couldNotCheck
-        case .notFound: .notFound
-        case .actionInProgress: .actionInProgress
-        case .needsAction: .needsAction
-        case .unknown: .unknown
+        case .valid: return .valid
+        case .couldNotCheck: return .couldNotCheck
+        case .notFound: return .notFound
+        case .actionInProgress: return .actionInProgress
+        case .needsAction: return .needsAction
+        case .unknown: return .unknown
         }
     }
 }
