@@ -1413,7 +1413,7 @@ jobs:
           command: |
             export MAESTRO_CLI_NO_ANALYTICS=1
             export MAESTRO_DRIVER_STARTUP_TIMEOUT=60000
-            maestro record Examples/rc-maestro/maestro/
+            maestro test Examples/rc-maestro/maestro/
       - slack-notify-on-fail
 
 workflows:
