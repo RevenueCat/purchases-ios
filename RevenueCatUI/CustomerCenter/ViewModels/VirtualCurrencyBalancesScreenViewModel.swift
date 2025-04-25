@@ -63,13 +63,6 @@ final class VirtualCurrencyBalancesScreenViewModel: ObservableObject {
 
         await self.loadData()
     }
-}
-
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-internal extension VirtualCurrencyBalancesScreenViewModel {
 
     /// Loads the virtual currency data from the RevenueCat SDK.
     ///
