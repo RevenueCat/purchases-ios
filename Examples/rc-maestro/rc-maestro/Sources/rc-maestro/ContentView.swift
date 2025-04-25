@@ -5,6 +5,7 @@ import StoreKit
 
 public struct ContentView: View {
     @State private var presentCustomerCenter = false
+    @State private var manageSubscriptions = false
     @State private var actionSheetIsPresented = false
 
     @State private var productToBuy: String?
@@ -23,10 +24,17 @@ public struct ContentView: View {
         .ignoresSafeArea(.all)
         .presentCustomerCenter(isPresented: $presentCustomerCenter)
         .safeAreaInset(edge: .bottom, content: {
-            Button("Buy something") {
-                actionSheetIsPresented = true
+            HStack {
+                Button("Buy something") {
+                    actionSheetIsPresented = true
+                }
+                .buttonStyle(.bordered)
+
+                Button("Manage subscriptions") {
+                    manageSubscriptions = true
+                }
+                .buttonStyle(.bordered)
             }
-            .buttonStyle(.bordered)
         })
         .confirmationDialog(
             "Buy something",
@@ -34,6 +42,7 @@ public struct ContentView: View {
         ) {
             buttonsView
         }
+        .manageSubscriptionsSheet(isPresented: $manageSubscriptions)
     }
 
     @ViewBuilder
