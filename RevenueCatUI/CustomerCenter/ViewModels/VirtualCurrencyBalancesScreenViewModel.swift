@@ -38,11 +38,15 @@ final class VirtualCurrencyBalancesScreenViewModel: ObservableObject {
     init(
         viewState: VirtualCurrencyBalancesScreen.ViewState = .loading,
         purchasesProvider: CustomerCenterPurchasesType,
-        isRunningInSwiftUIPreview: Bool = false
     ) {
         self.viewState = viewState
         self.purchasesProvider = purchasesProvider
-        self.isRunningInSwiftUIPreview = isRunningInSwiftUIPreview
+
+        #if DEBUG
+        self.isRunningInSwiftUIPreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+        #else
+        self.isRunningInSwiftUIPreview = false
+        #endif
     }
 
     private let purchasesProvider: CustomerCenterPurchasesType

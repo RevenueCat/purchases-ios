@@ -56,8 +56,7 @@ final class VirtualCurrencyBalancesScreenViewModelTests: TestCase {
 
     func testOnAppearSkipsLoadingInPreview() async {
         let viewModel = VirtualCurrencyBalancesScreenViewModel(
-            purchasesProvider: MockCustomerCenterPurchases(),
-            isRunningInSwiftUIPreview: true
+            purchasesProvider: MockCustomerCenterPurchases()
         )
 
         await viewModel.onAppear()

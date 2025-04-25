@@ -107,8 +107,7 @@ struct VirtualCurrencyBalancesScreen: View {
                 VirtualCurrencyBalancesScreen(
                     viewModel: VirtualCurrencyBalancesScreenViewModel(
                         viewState: .loading,
-                        purchasesProvider: CustomerCenterPurchases(),
-                        isRunningInSwiftUIPreview: true
+                        purchasesProvider: CustomerCenterPurchases()
                     )
                 )
                 .environment(\.localization, CustomerCenterConfigData.Localization.default)
@@ -129,8 +128,7 @@ struct VirtualCurrencyBalancesScreen: View {
                 VirtualCurrencyBalancesScreen(
                     viewModel: VirtualCurrencyBalancesScreenViewModel(
                         viewState: .loaded([]),
-                        purchasesProvider: CustomerCenterPurchases(),
-                        isRunningInSwiftUIPreview: true
+                        purchasesProvider: CustomerCenterPurchases()
                     )
                 )
                 .environment(\.localization, CustomerCenterConfigData.Localization.default)
@@ -157,8 +155,7 @@ struct VirtualCurrencyBalancesScreen: View {
                             .init(virtualCurrencyCode: "GLD", balance: 100)
 
                         ]),
-                        purchasesProvider: CustomerCenterPurchases(),
-                        isRunningInSwiftUIPreview: true
+                        purchasesProvider: CustomerCenterPurchases()
                     )
                 )
                 .environment(\.localization, CustomerCenterConfigData.Localization.default)
@@ -179,8 +176,7 @@ struct VirtualCurrencyBalancesScreen: View {
                 VirtualCurrencyBalancesScreen(
                     viewModel: VirtualCurrencyBalancesScreenViewModel(
                         viewState: .error,
-                        purchasesProvider: CustomerCenterPurchases(),
-                        isRunningInSwiftUIPreview: true
+                        purchasesProvider: CustomerCenterPurchases()
                     )
                 )
                 .environment(\.localization, CustomerCenterConfigData.Localization.default)
