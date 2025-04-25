@@ -54,12 +54,12 @@ final class VirtualCurrencyBalancesScreenViewModelTests: TestCase {
         expect(viewModel.viewState).to(equal(.error))
     }
 
-    func testOnAppearSkipsLoadingInPreview() async {
+    func testOnViewAppearedSkipsLoadingInPreview() async {
         let viewModel = VirtualCurrencyBalancesScreenViewModel(
             purchasesProvider: MockCustomerCenterPurchases()
         )
 
-        await viewModel.onAppear()
+        await viewModel.onViewAppeared()
 
         expect(viewModel.viewState).to(equal(.loading))
     }
@@ -71,7 +71,7 @@ final class VirtualCurrencyBalancesScreenViewModelTests: TestCase {
             purchasesProvider: mockPurchases
         )
 
-        await viewModel.onAppear()
+        await viewModel.onViewAppeared()
 
         switch viewModel.viewState {
         case .loaded(let virtualCurrencyRowData):
@@ -92,7 +92,7 @@ final class VirtualCurrencyBalancesScreenViewModelTests: TestCase {
             purchasesProvider: mockPurchases
         )
 
-        await viewModel.onAppear()
+        await viewModel.onViewAppeared()
 
         switch viewModel.viewState {
         case .loaded(let data):
@@ -108,7 +108,7 @@ final class VirtualCurrencyBalancesScreenViewModelTests: TestCase {
             purchasesProvider: mockPurchases
         )
 
-        await viewModel.onAppear()
+        await viewModel.onViewAppeared()
 
         expect(viewModel.viewState).to(equal(.error))
     }
@@ -120,7 +120,7 @@ final class VirtualCurrencyBalancesScreenViewModelTests: TestCase {
             purchasesProvider: mockPurchases
         )
 
-        await viewModel.onAppear()
+        await viewModel.onViewAppeared()
 
         switch viewModel.viewState {
         case .loaded(let data):

@@ -56,7 +56,7 @@ final class VirtualCurrencyBalancesScreenViewModel: ObservableObject {
     ///
     /// This method is responsible for loading the virtual currency data when the view
     /// becomes visible. It skips data loading if running in a SwiftUI preview.
-    func onAppear() async {
+    func onViewAppeared() async {
         if isRunningInSwiftUIPreview {
             // We don't want to load data in previews.
             return

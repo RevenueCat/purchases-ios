@@ -92,10 +92,8 @@ struct VirtualCurrencyBalancesScreen: View {
         }
         .animation(.default, value: viewModel.viewState)
         .navigationTitle(localization[.virtualCurrencyBalancesScreenHeader])
-        .onAppear {
-            Task {
-                await self.viewModel.onAppear()
-            }
+        .task(priority: .userInitiated) {
+            await self.viewModel.onViewAppeared()
         }
     }
 }
