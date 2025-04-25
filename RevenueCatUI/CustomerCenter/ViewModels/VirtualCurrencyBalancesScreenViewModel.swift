@@ -37,7 +37,7 @@ final class VirtualCurrencyBalancesScreenViewModel: ObservableObject {
 
     init(
         viewState: VirtualCurrencyBalancesScreen.ViewState = .loading,
-        purchasesProvider: CustomerCenterPurchasesType,
+        purchasesProvider: CustomerCenterPurchasesType
     ) {
         self.viewState = viewState
         self.purchasesProvider = purchasesProvider
