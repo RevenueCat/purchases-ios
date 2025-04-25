@@ -1751,6 +1751,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         }
         expect(trackedParams).to(matchTrackParams((
             "log_in",
+            "api.revenuecat.com",
             -1, // Any
             true,
             200,
@@ -1780,11 +1781,76 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         }
         expect(trackedParams).to(matchTrackParams((
             "log_in",
+            "api.revenuecat.com",
             -1, // Any
             false,
             401,
             7225,
             nil,
+            .notRequested,
+            false
+        )))
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testDiagnosticsHttpRequestPerformedTrackedOnFallbackHost() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
+        let mainPath = request.path
+        let fallbackHost = try XCTUnwrap(mainPath.fallbackHosts.first?.host,
+                                         "This test requires at least 1 fallback host")
+
+        let serverErrorResponse = HTTPStubsResponse(
+            data: Data(),
+            statusCode: HTTPStatusCode.internalServerError,
+            headers: nil
+        )
+
+        let mainHost = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        stub(condition: isHost(mainHost)) { _ in
+            return serverErrorResponse
+        }
+
+        let successfulResponse = HTTPStubsResponse(
+            data: Data(),
+            statusCode: HTTPStatusCode.success,
+            headers: nil
+        )
+
+        stub(condition: isHost(fallbackHost)) { _ in
+            return successfulResponse
+        }
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: EmptyResponse) in completion() }
+        }
+
+        // swiftlint:disable:next force_cast
+        let mockDiagnosticsTracker = self.diagnosticsTracker as! MockDiagnosticsTracker
+        expect(mockDiagnosticsTracker.trackedHttpRequestPerformedParams.value.count).to(equal(2))
+
+        let trackedParams0 = mockDiagnosticsTracker.trackedHttpRequestPerformedParams.value[0]
+        let trackedParams1 = mockDiagnosticsTracker.trackedHttpRequestPerformedParams.value[1]
+        expect(trackedParams0).to(matchTrackParams((
+            "get_product_entitlement_mapping",
+            "api.revenuecat.com",
+            -1,
+            false,
+            500,
+            0,
+            nil,
+            .notRequested,
+            false
+        )))
+        expect(trackedParams1).to(matchTrackParams((
+            "get_product_entitlement_mapping",
+            "api-production.8-lives-cat.io",
+            -1, // Any
+            true,
+            200,
+            nil,
+            .backend,
             .notRequested,
             false
         )))
@@ -2620,19 +2686,20 @@ extension HTTPClientTests {
 // swiftlint:disable large_tuple
 
 private func matchTrackParams(
-    _ data: (String, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult, Bool)
-) -> Nimble.Predicate<(String, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult, Bool)> {
+    _ data: (String, String?, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult, Bool)
+) -> Nimble.Predicate<(String, String?, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult, Bool)> {
     return .init {
         let other = try $0.evaluate()
-        let timeInterval = other?.1 ?? -1
+        let timeInterval = other?.2 ?? -1
         let matches = (other?.0 == data.0 &&
+                       other?.1 == data.1 &&
                        timeInterval > 0 && timeInterval.isLess(than: 1) &&
-                       other?.2 == data.2 &&
                        other?.3 == data.3 &&
                        other?.4 == data.4 &&
                        other?.5 == data.5 &&
                        other?.6 == data.6 &&
-                       other?.7 == data.7)
+                       other?.7 == data.7 &&
+                       other?.8 == data.8)
 
         return .init(bool: matches, message: .fail("Diagnostics tracked params do not match"))
     }
