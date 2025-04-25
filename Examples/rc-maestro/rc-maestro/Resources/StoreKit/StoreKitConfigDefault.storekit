@@ -20,7 +20,7 @@
     "_applicationInternalID" : "6744533481",
     "_developerTeamID" : "8SXR2327BM",
     "_failTransactionsEnabled" : false,
-    "_lastSynchronizedDate" : 767105909.83790004,
+    "_lastSynchronizedDate" : 767273240.60117495,
     "_locale" : "en_US",
     "_storefront" : "USA",
     "_storeKitErrors" : [
@@ -83,7 +83,7 @@
           "adHocOffers" : [
             {
               "displayPrice" : "0.99",
-              "internalID" : "D8AF38DF",
+              "internalID" : "77AAC0D8",
               "numberOfPeriods" : 1,
               "offerID" : "maestro.weekly.tests.promotional1",
               "paymentMode" : "payAsYouGo",

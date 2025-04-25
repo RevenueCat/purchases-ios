@@ -1,13 +1,8 @@
 appId: com.revenuecat.maestro.ios
-onFlowComplete:
-  - runFlow: ../../utils/cancel_subscription.yaml
-  
+name: Change Subscription Plan
+
 ---
 - launchApp
-- runFlow: 
-    file: "../../utils/buy_product.yaml"
-    env:
-        PRODUCT_ID: "maestro.weekly.tests"
 - runFlow: "../../utils/open_customer_center.yaml"
 - tapOn: "Change plans"
 - tapOn: "Maestro Montly Tests (1 month)"

@@ -23,6 +23,13 @@ public struct ContentView: View {
         }
         .ignoresSafeArea(.all)
         .presentCustomerCenter(isPresented: $presentCustomerCenter)
+        .manageSubscriptionsSheet(isPresented: $manageSubscriptions)
+        .confirmationDialog(
+            "Buy something",
+            isPresented: $actionSheetIsPresented
+        ) {
+            buttonsView
+        }
         .safeAreaInset(edge: .bottom, content: {
             HStack {
                 Button("Buy something") {
@@ -36,13 +43,6 @@ public struct ContentView: View {
                 .buttonStyle(.bordered)
             }
         })
-        .confirmationDialog(
-            "Buy something",
-            isPresented: $actionSheetIsPresented
-        ) {
-            buttonsView
-        }
-        .manageSubscriptionsSheet(isPresented: $manageSubscriptions)
     }
 
     @ViewBuilder
@@ -52,10 +52,22 @@ public struct ContentView: View {
                 productToBuy = product
 
                 Task {
-                    let product = await Purchases.shared.products([product]).first!
-                    _ = try await Purchases.shared.purchase(product: product)
+                    let fetchedProducts = await Purchases.shared.products([product])
+                    guard let product = fetchedProducts.first else {
+                        print("⚠️ Failed to find product: \(product)")
+                        await MainActor.run {
+                            productToBuy = nil
+                        }
+                        return
+                    }
 
-                    Task { @MainActor in
+                    do {
+                        _ = try await Purchases.shared.purchase(product: product)
+                    } catch {
+                        print("⚠️ Purchase failed: \(error)")
+                    }
+
+                    await MainActor.run {
                         productToBuy = nil
                     }
                 }

@@ -1,6 +1,5 @@
 appId: com.revenuecat.maestro.ios
-onFlowComplete:
-  - runFlow: ../../utils/cancel_subscription.yaml
+name: Accept Promo Offer
 
 ---
 - launchApp

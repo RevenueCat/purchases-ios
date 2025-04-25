@@ -1,4 +1,5 @@
 appId: com.revenuecat.maestro.ios
+name: Manage Subscriptions Restore Purchases
 
 ---
 - launchApp
@@ -6,5 +7,3 @@ appId: com.revenuecat.maestro.ios
 - tapOn: "Restore past purchases"
 - assertVisible: "No past purchases"
 - tapOn: "Dismiss"
-- tapOn:
-    id: "xmark"
