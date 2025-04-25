@@ -1400,7 +1400,10 @@ jobs:
       - install-tuist
       - run:
           name: Build Maestro App
-          command: bundle exec fastlane build_maestro_app
+          command: |
+            export FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT=30
+            export FASTLANE_XCODEBUILD_SETTINGS_RETRIES=6 
+            bundle exec fastlane build_maestro_app
       - run:
           name: Install Maestro CLI
           command: |
