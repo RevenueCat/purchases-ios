@@ -48,7 +48,7 @@ struct VirtualCurrencyBalancesScreen: View {
     /// - `loading`: The view is currently fetching virtual currency balances.
     /// - `loaded`: The view has successfully loaded the balances. Contains an array of balance data.
     /// - `error`: An error occurred while fetching the balances.
-    enum ViewState {
+    enum ViewState: Equatable {
         case loading
         case loaded([VirtualCurrencyBalanceListRow.RowData])
         case error
@@ -96,28 +96,6 @@ struct VirtualCurrencyBalancesScreen: View {
             Task {
                 await self.viewModel.onAppear()
             }
-        }
-    }
-}
-
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-extension VirtualCurrencyBalancesScreen.ViewState: Equatable {
-    static func == (
-        lhs: VirtualCurrencyBalancesScreen.ViewState,
-        rhs: VirtualCurrencyBalancesScreen.ViewState
-    ) -> Bool {
-        switch (lhs, rhs) {
-        case (.loading, .loading):
-            return true
-        case (.error, .error):
-            return true
-        case let (.loaded(lhsData), .loaded(rhsData)):
-            return lhsData == rhsData
-        default:
-            return false
         }
     }
 }
