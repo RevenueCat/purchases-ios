@@ -11,6 +11,7 @@
 //
 //  Created by Pol Piella on 4/10/25.
 
+#if DEBUG
 extension HealthReport {
     func validate() -> PurchasesDiagnostics.SDKHealthReport {
         guard let firstFailedCheck = self.checks.first(where: { $0.status == .failed }) else {
@@ -62,7 +63,7 @@ extension HealthReport {
         )
     }
 
-    func error(from check: HealthCheck) -> PurchasesDiagnostics.Error {
+    func error(from check: HealthCheck) -> PurchasesDiagnostics.SDKHealthError {
         switch check.name {
         case .apiKey: return .invalidAPIKey
         case .bundleId: return createBundleIdError(from: check)
@@ -72,14 +73,14 @@ extension HealthReport {
         }
     }
 
-    private func createBundleIdError(from check: HealthCheck) -> PurchasesDiagnostics.Error {
+    private func createBundleIdError(from check: HealthCheck) -> PurchasesDiagnostics.SDKHealthError {
         guard case let .bundleId(payload) = check.details else {
             return .invalidBundleId(nil)
         }
         return .invalidBundleId(.init(appBundleId: payload.appBundleId, sdkBundleId: payload.sdkBundleId))
     }
 
-    private func createProductsError(from check: HealthCheck) -> PurchasesDiagnostics.Error {
+    private func createProductsError(from check: HealthCheck) -> PurchasesDiagnostics.SDKHealthError {
         guard case let .products(payload) = check.details else {
             return .invalidProducts([])
         }
@@ -87,7 +88,7 @@ extension HealthReport {
         return .invalidProducts(payload.products.map(createProductPayload))
     }
 
-    private func createOfferingsError(from check: HealthCheck) -> PurchasesDiagnostics.Error {
+    private func createOfferingsError(from check: HealthCheck) -> PurchasesDiagnostics.SDKHealthError {
         guard case let .offeringsProducts(payload) = check.details else {
             return .offeringConfiguration([])
         }
@@ -190,3 +191,4 @@ extension HealthReport {
         }
     }
 }
+#endif
