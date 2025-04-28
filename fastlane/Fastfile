@@ -156,33 +156,43 @@ platform :ios do
   end
 
   desc "Build Maestro App"
-  lane :build_maestro_app do |options|
-    device_id = options[:device_id] || ENV['DEVICE_ID']
+lane :build_maestro_app do |options|
+  # Accept optional device_id from outside (e.g., CircleCI)
+  device_id = options[:device_id] || ENV['DEVICE_ID']
 
-    if device_id.nil? || device_id.empty?
-      UI.user_error!("❌ device_id not provided! Pass it using 'device_id:' when calling the lane.")
-    end
-
-    UI.message("📱 Building app for simulator device: #{device_id}")
-
-    # Build the .app for simulator
-    scan(
-      workspace: "Examples/rc-maestro/Maestro.xcworkspace",
-      scheme: "Maestro-Debug",
-      build_for_testing: true,
-      configuration: "Debug",
-      destination: "id=#{device_id}",
-      derived_data_path: "derivedData"
-    )
-
-    # Get the built .app path
-    app_path = Dir["../derivedData/Build/Products/**/Maestro_Debug.app"].first
-    UI.user_error!("❌ Could not find built app at expected path") unless app_path
-
-    # Install to simulator
-    sh("xcrun simctl install #{device_id} '#{app_path}'")
-    UI.success("✅ Maestro App installed on simulator #{device_id}")
+  if device_id.nil? || device_id.empty?
+    # If not passed, find it by name
+    device_name = "Maestro_iPhone11_17"
+    device_id = sh("xcrun simctl list devices available | grep '#{device_name}' | grep -oE '[A-F0-9\\-]{36}'").strip
+    UI.message("🔍 Fetched device ID from device name '#{device_name}': #{device_id}")
+  else
+    UI.message("📱 Using provided simulator device: #{device_id}")
   end
+
+  if device_id.nil? || device_id.empty?
+    UI.user_error!("❌ Could not find device ID for simulator named 'Maestro_iPhone11_17'")
+  end
+
+  # Now you have a valid UUID
+
+  # Build the app for simulator
+  scan(
+    workspace: "Examples/rc-maestro/Maestro.xcworkspace",
+    scheme: "Maestro-Debug",
+    build_for_testing: true,
+    configuration: "Debug",
+    destination: "platform=iOS Simulator,id=#{device_id},arch=arm64",
+    derived_data_path: "derivedData"
+  )
+
+  # Get the built .app path
+  app_path = Dir["derivedData/Build/Products/**/Maestro_Debug.app"].first
+  UI.user_error!("❌ Could not find built app at expected path") unless app_path
+
+  # Install to simulator
+  sh("xcrun simctl install #{device_id} '#{app_path}'")
+  UI.success("✅ Maestro App installed on simulator #{device_id}")
+end
 
   desc "Runs all the iOS tests"
   lane :test_ios do |options|
