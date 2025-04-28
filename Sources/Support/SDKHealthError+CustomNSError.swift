@@ -13,6 +13,7 @@
 
 import Foundation
 
+#if DEBUG
 extension PurchasesDiagnostics.SDKHealthError: CustomNSError {
 
     // swiftlint:disable:next missing_docs
@@ -73,3 +74,4 @@ extension PurchasesDiagnostics.SDKHealthError: CustomNSError {
     }
 
 }
+#endif

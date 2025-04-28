@@ -43,8 +43,8 @@ public final class PurchasesDiagnostics: NSObject, Sendable {
     public static let `default`: PurchasesDiagnostics = .init(purchases: Purchases.shared)
 }
 
+#if DEBUG
 extension PurchasesDiagnostics {
-
     /// Enum representing the status of a product in the store
     public enum ProductStatus: Sendable {
         /// Product is configured correctly in App Store Connect
@@ -117,26 +117,6 @@ extension PurchasesDiagnostics {
         public let productTitle: String?
     }
 
-    /// An error that represents a failing step in ``PurchasesDiagnostics``
-    public enum Error: Swift.Error {
-
-        /// Connection to the API failed
-        case failedConnectingToAPI(Swift.Error)
-
-        /// API key is invalid
-        case invalidAPIKey
-
-        /// Fetching offerings failed due to the underlying error
-        case failedFetchingOfferings(Swift.Error)
-
-        /// Failure performing a signed request
-        case failedMakingSignedRequest(Swift.Error)
-
-        /// Any other not identifier error. You can check the undelying error for details.
-        case unknown(Swift.Error)
-
-    }
-
     /// An error that represents a problem in the SDK's configuration
     public enum SDKHealthError: Swift.Error {
         /// API key is invalid
@@ -161,9 +141,6 @@ extension PurchasesDiagnostics {
         case unknown(Swift.Error)
     }
 
-}
-
-extension PurchasesDiagnostics {
     /// A report that encapsulates the result of the SDK configuration health check.
     /// Use this to programmatically inspect the SDK's health status after calling `healthReport()`.
     public struct SDKHealthReport: Sendable {
@@ -200,6 +177,34 @@ extension PurchasesDiagnostics {
         /// SDK configuration is not valid and has issues that must be resolved
         case unhealthy(PurchasesDiagnostics.SDKHealthError)
     }
+}
+#endif
+
+extension PurchasesDiagnostics {
+
+    /// An error that represents a failing step in ``PurchasesDiagnostics``
+    public enum Error: Swift.Error {
+
+        /// Connection to the API failed
+        case failedConnectingToAPI(Swift.Error)
+
+        /// API key is invalid
+        case invalidAPIKey
+
+        /// Fetching offerings failed due to the underlying error
+        case failedFetchingOfferings(Swift.Error)
+
+        /// Failure performing a signed request
+        case failedMakingSignedRequest(Swift.Error)
+
+        /// Any other not identifier error. You can check the undelying error for details.
+        case unknown(Swift.Error)
+
+    }
+
+}
+
+extension PurchasesDiagnostics {
 
     /// Checks if the SDK is configured correctly.
     /// - Important: This method is intended solely for debugging configuration issues with the SDK implementation.
