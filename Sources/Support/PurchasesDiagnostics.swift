@@ -201,8 +201,10 @@ extension PurchasesDiagnostics {
         case unhealthy(PurchasesDiagnostics.SDKHealthError)
     }
 
-    /// Perform tests to ensure SDK is configured correctly.
-    /// - `Throws`: ``PurchasesDiagnostics/Error`` if any step fails
+    /// Checks if the SDK is configured correctly.
+    /// - Important: This method is intended solely for debugging configuration issues with the SDK implementation.
+    /// It should not be invoked in production builds.
+    /// - Throws: ``PurchasesDiagnostics/Error`` if any step fails
     @available(*, deprecated, message: """
     Use the `PurchasesDiagnostics.shared.checkSDKHealth()` method instead.
     """)
@@ -225,8 +227,7 @@ extension PurchasesDiagnostics {
 
     #if DEBUG
     /// Performs a full SDK configuration health check and throws an error if the configuration is not valid.
-    /// - Important: This method is intended solely for debugging configuration issues with the SDK implementation.
-    /// It should not be invoked in production builds.
+    /// - Important: This method can not be invoked in production builds.
     /// - Throws: The specific configuration issue that needs to be solved.
     public func checkSDKHealth() async throws {
         switch await self.healthReport().status {
