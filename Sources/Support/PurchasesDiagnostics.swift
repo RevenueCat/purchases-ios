@@ -233,7 +233,7 @@ extension PurchasesDiagnostics {
     #if DEBUG
     /// Performs a full SDK configuration health check and throws an error if the configuration is not valid.
     /// - Important: This method can not be invoked in production builds.
-    /// - Throws: The specific configuration issue that needs to be solved.
+    /// - Throws: ``SDKHealthError`` indicating the specific configuration issue that needs to be solved.
     public func checkSDKHealth() async throws {
         switch await self.healthReport().status {
         case let .unhealthy(error): throw error
