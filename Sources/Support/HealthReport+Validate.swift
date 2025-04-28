@@ -11,6 +11,7 @@
 //
 //  Created by Pol Piella on 4/10/25.
 
+#if DEBUG
 extension HealthReport {
     func validate() -> PurchasesDiagnostics.SDKHealthReport {
         guard let firstFailedCheck = self.checks.first(where: { $0.status == .failed }) else {
@@ -190,3 +191,4 @@ extension HealthReport {
         }
     }
 }
+#endif
