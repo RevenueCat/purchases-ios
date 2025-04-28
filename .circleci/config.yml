@@ -1405,8 +1405,8 @@ jobs:
       - run:
           name: Start Maestro Simulator & Build Maestro App
           command: |
-            export DEVICE_ID=$(maestro start-device --platform ios --os-version 17 | grep -oE '[A-F0-9\-]{36}')
-            echo "🆔 Using simulator device ID: $DEVICE_ID"
+            export MAESTRO_DEVICE_ID=$(maestro start-device --platform ios --os-version 17 | grep -oE '[A-F0-9\-]{36}')
+            echo "🆔 Using simulator device ID: $MAESTRO_DEVICE_ID"
             
             export FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT=30
             export FASTLANE_XCODEBUILD_SETTINGS_RETRIES=6 
