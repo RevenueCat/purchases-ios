@@ -156,7 +156,7 @@ platform :ios do
   end
 
   desc "Build Maestro App"
-lane :build_maestro_app do |options|
+  lane :build_maestro_app do |options|
   # Accept optional device_id from outside (e.g., CircleCI)
   device_id = options[:device_id] || ENV['DEVICE_ID']
 
@@ -181,7 +181,7 @@ lane :build_maestro_app do |options|
     scheme: "Maestro-Debug",
     build_for_testing: true,
     configuration: "Debug",
-    destination: "platform=iOS Simulator,id=#{device_id},arch=arm64",
+    destination: "id=#{device_id}",
     derived_data_path: "derivedData"
   )
 
