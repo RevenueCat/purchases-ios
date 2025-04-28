@@ -1412,6 +1412,7 @@ jobs:
             
             export FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT=30
             export FASTLANE_XCODEBUILD_SETTINGS_RETRIES=6 
+            export DEVICE_ID=$MAESTRO_DEVICE_ID
             
             bundle exec fastlane build_maestro_app device_id:"$MAESTRO_DEVICE_ID"
       - run:
