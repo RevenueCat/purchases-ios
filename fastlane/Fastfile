@@ -157,7 +157,13 @@ platform :ios do
 
   desc "Build Maestro App"
   lane :build_maestro_app do |options|
-    device_id = ENV['MAESTRO_DEVICE_ID']
+    device_id = options[:device_id]
+
+    if device_id.nil? || device_id.empty?
+      UI.user_error!("❌ device_id not provided! Pass it using 'device_id:' when calling the lane.")
+    end
+
+    UI.message("📱 Building app for simulator device: #{device_id}")
 
     # Build the .app for simulator
     scan(
