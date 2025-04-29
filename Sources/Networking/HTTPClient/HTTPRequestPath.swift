@@ -18,6 +18,11 @@ protocol HTTPRequestPath {
     /// The base URL for requests to this path.
     static var serverHostURL: URL { get }
 
+    /// The fallback hosts to use when the main server is down.
+    ///
+    /// Not all endpoints have a fallback host, but some do.
+    var fallbackHosts: [URL] { get }
+
     /// Whether requests to this path are authenticated.
     var authenticated: Bool { get }
 
@@ -30,27 +35,35 @@ protocol HTTPRequestPath {
     /// Whether endpoint requires a nonce for signature verification.
     var needsNonceForSigning: Bool { get }
 
-    /// The path component for this endpoint.
-    var pathComponent: String { get }
-
     /// The name of the endpoint.
     var name: String { get }
 
+    /// The full relative path for this endpoint.
+    var relativePath: String { get }
 }
 
 extension HTTPRequestPath {
 
-    /// The full relative path for this endpoint.
-    var relativePath: String {
-        return "/v1/\(self.pathComponent)"
+    var fallbackHosts: [URL] {
+        return []
     }
 
     var url: URL? { return self.url(proxyURL: nil) }
 
-    func url(proxyURL: URL? = nil) -> URL? {
-        return URL(string: self.relativePath, relativeTo: proxyURL ?? Self.serverHostURL)
+    func url(proxyURL: URL? = nil, fallbackHostIndex: Int? = nil) -> URL? {
+        let baseURL: URL
+        if let proxyURL {
+            baseURL = proxyURL
+        } else if let fallbackHostIndex {
+            guard let fallbackHost = self.fallbackHosts[safe: fallbackHostIndex] else {
+                return nil
+            }
+            baseURL = fallbackHost
+        } else {
+            baseURL = Self.serverHostURL
+        }
+        return URL(string: self.relativePath, relativeTo: baseURL)
     }
-
 }
 
 // MARK: - Main paths
@@ -94,6 +107,16 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     // swiftlint:disable:next force_unwrapping
     static let serverHostURL = URL(string: "https://api.revenuecat.com")!
+
+    var fallbackHosts: [URL] {
+        switch self {
+        case .getOfferings, .getProductEntitlementMapping:
+            // swiftlint:disable:next force_unwrapping
+            return [URL(string: "https://api-production.8-lives-cat.io")!]
+        default:
+            return []
+        }
+    }
 
     var authenticated: Bool {
         switch self {
@@ -178,6 +201,10 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .appHealthReport:
             return false
         }
+    }
+
+    var relativePath: String {
+        return "/v1/\(self.pathComponent)"
     }
 
     var pathComponent: String {
