@@ -86,6 +86,10 @@ extension CustomerCenterPurchasesType {
 
     let isPresented: Binding<Bool>
 
+    @_spi(Internal) public init(isPresented: Binding<Bool>) {
+        self.isPresented = isPresented
+    }
+
     @_spi(Internal) public func body(content: Content) -> some View {
         content.manageSubscriptionsSheet(isPresented: isPresented)
     }
