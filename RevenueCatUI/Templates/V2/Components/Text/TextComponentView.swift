@@ -194,6 +194,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 localizationProvider: .init(
                     locale: Locale.current,
                     localizedStrings: [
+                        // swiftlint:disable:next line_length
                         "id_1": .string("Before blank line.\n\nAfter blank line.")
                     ]
                 ),
