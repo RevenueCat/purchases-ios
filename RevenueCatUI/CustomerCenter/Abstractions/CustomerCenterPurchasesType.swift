@@ -63,6 +63,7 @@ import SwiftUI
     func beginRefundRequest(forProduct productID: String) async throws -> RefundRequestStatus
     #endif
 
+    @MainActor
     func manageSubscriptionsSheetViewModifier(isPresented: Binding<Bool>) -> ManageSubscriptionSheetModifier
 }
 
