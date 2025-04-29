@@ -95,4 +95,3 @@ extension CustomerCenterPurchasesType {
         content.manageSubscriptionsSheet(isPresented: isPresented)
     }
 }
-
