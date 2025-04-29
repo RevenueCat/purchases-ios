@@ -78,7 +78,7 @@ private struct NonLocalizedMarkdownText: View {
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
             return try? AttributedString(
                 markdown: self.text,
-                // We want to only processing inline markdown, preserving line feeds in the original text.
+                // We want to only process inline markdown, preserving line feeds in the original text.
                 options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnly)
             )
         } else {
