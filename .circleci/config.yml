@@ -1418,7 +1418,7 @@ jobs:
           command: |
             export MAESTRO_CLI_NO_ANALYTICS=1
             export MAESTRO_DRIVER_STARTUP_TIMEOUT=60000
-            maestro record Examples/rc-maestro/maestro/customer_center/manage_subscriptions/customer_center_manage_subscriptions_restore_purchases.yaml
+            maestro record Examples/rc-maestro/maestro/customer_center/promo_offer/customer_center_accept_promo_offer.yaml
 
 workflows:
   version: 2
