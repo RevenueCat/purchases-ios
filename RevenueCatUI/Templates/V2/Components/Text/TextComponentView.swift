@@ -77,9 +77,9 @@ private struct NonLocalizedMarkdownText: View {
         #if swift(>=5.7)
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
             return try? AttributedString(
-                // AttributedString allegedly uses CommonMark hard line breaks
-                // which is two or more spaces before line break
-                markdown: self.text.replacingOccurrences(of: "\n", with: "  \n")
+                markdown: self.text,
+                // We want to preserve whitespace and linefeeds in the original text.
+                options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnlyPreservingWhitespace)
             )
         } else {
             return nil
@@ -186,6 +186,28 @@ struct TextComponentView_Previews: PreviewProvider {
         .previewRequiredEnvironmentProperties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Markdown - Invalid")
+
+        // Blank line
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        // swiftlint:disable:next line_length
+                        "id_1": .string("Before blank line.\n\nAfter blank line.")
+                    ]
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(
+                    text: "id_1",
+                    color: .init(light: .hex("#000000"))
+                )
+            )
+        )
+        .previewRequiredEnvironmentProperties()
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Blank line")
 
         // Custom Font
         VStack {
