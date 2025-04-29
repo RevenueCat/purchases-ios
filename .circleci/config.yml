@@ -1391,6 +1391,7 @@ jobs:
   maestro:
     executor:
       name: macos-executor
+      xcode_version: '16.2.0'
     steps:
       - checkout
       - install-dependencies:
@@ -1407,14 +1408,13 @@ jobs:
       - run:
           name: Start Maestro Simulator & Build Maestro App
           command: |
-            export MAESTRO_DEVICE_ID=$(maestro start-device --platform ios --os-version 17 | grep -oE '[A-F0-9\-]{36}')
             echo "🆔 Using simulator device ID: $MAESTRO_DEVICE_ID"
             
             export FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT=30
             export FASTLANE_XCODEBUILD_SETTINGS_RETRIES=6 
-            export DEVICE_ID=$MAESTRO_DEVICE_ID
-            
-            bundle exec fastlane build_maestro_app device_id:"$MAESTRO_DEVICE_ID"
+            export DEVICE_ID=7BC2D06C-D4C6-4DBC-8274-3084AC509B6A
+
+            bundle exec fastlane build_maestro_app device_id:"7BC2D06C-D4C6-4DBC-8274-3084AC509B6A"
       - run:
           name: Run Maestro Tests
           command: |
