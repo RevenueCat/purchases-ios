@@ -10,7 +10,7 @@ public struct ContentView: View {
 
     @State private var productToBuy: String?
 
-    public init() {}
+    public init() { }
 
     public var body: some View {
         VStack {

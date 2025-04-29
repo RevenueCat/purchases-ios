@@ -9,7 +9,7 @@ version: 2.1
 parameters:
   action:
     type: enum
-    enum: [default, bump, run-manual-tests, run-manual-docs-deploy, run-maestro]
+    enum: [default, bump, run-manual-tests, run-manual-docs-deploy]
     default: default
   generate_snapshots:
     default: false
@@ -160,19 +160,6 @@ commands:
           key: v3-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}
           paths:
             - vendor/bundle
-
-  install-tuist:
-    steps:
-      - run:
-          name: Install Tuist via mise
-          command: |
-            curl https://mise.run | sh
-            export PATH="$HOME/.local/bin:$PATH"
-            mise install
-            cd Examples/rc-maestro && cp rc-maestro/Resources/Local.xcconfig.sample rc-maestro/Resources/Local.xcconfig
-            sed -i '' "s/REVENUECAT_API_KEY *= *api_key/REVENUECAT_API_KEY = $IOS_API_KEY/" rc-maestro/Resources/Local.xcconfig
-            mise x -- tuist install
-            mise x -- tuist generate
             
             
   install-dependencies:
@@ -1386,39 +1373,6 @@ jobs:
             git remote set-url origin https://github.com/RevenueCat/purchases-ios-spm.git
             git push origin
             git push --tags
-  
-
-  maestro:
-    executor:
-      name: macos-executor
-      xcode_version: '16.2.0'
-    steps:
-      - checkout
-      - install-dependencies:
-          install_swiftlint: false
-          install_xcbeautify: false
-          install_mint: false
-      - install-tuist
-      - run:
-          name: Install Maestro CLI
-          command: |
-            curl -Ls "https://get.maestro.mobile.dev" | bash
-      - run:
-          name: Start Maestro Simulator & Build Maestro App
-          command: |
-            echo "🆔 Using simulator device ID: $MAESTRO_DEVICE_ID"
-            
-            export FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT=30
-            export FASTLANE_XCODEBUILD_SETTINGS_RETRIES=6 
-            export DEVICE_ID=7BC2D06C-D4C6-4DBC-8274-3084AC509B6A
-
-            bundle exec fastlane build_maestro_app device_id:"7BC2D06C-D4C6-4DBC-8274-3084AC509B6A"
-      - run:
-          name: Run Maestro Tests
-          command: |
-            export MAESTRO_CLI_NO_ANALYTICS=1
-            export MAESTRO_DRIVER_STARTUP_TIMEOUT=60000
-            maestro record Examples/rc-maestro/maestro/customer_center/promo_offer/customer_center_accept_promo_offer.yaml
 
 workflows:
   version: 2
@@ -1552,14 +1506,6 @@ workflows:
       equal: [run-manual-docs-deploy, << pipeline.parameters.action >>]
     jobs:
       - docs-deploy
-
-  manual-trigger-maestro:
-    when:
-      equal: [run-maestro, << pipeline.parameters.action >>]
-    jobs:
-      - maestro:
-          context:
-            - maestro
 
   # To trigger tests manually, log into circleCI, select the project, a branch, and then click "Trigger Pipeline"
   # in the top right hand corner of the screen. In the modal that appears, set the following parameter fields

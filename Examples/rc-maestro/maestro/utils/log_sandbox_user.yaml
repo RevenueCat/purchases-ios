@@ -1,7 +1,0 @@
-appId: com.revenuecat.maestro.ios  
-
----
-- inputText: ${MAESTRO_IOS_SANDBOX_USER}
-- tapOn: "Password"
-- inputText: ${MAESTRO_IOS_SANDBOX_PASSWORD}
-- tapOn: "Ok"

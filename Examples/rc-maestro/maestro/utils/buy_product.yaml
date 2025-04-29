@@ -6,9 +6,5 @@ inputText: ${PRODUCT_ID}
 
 - tapOn: "Buy something"
 - tapOn: "Buy ${PRODUCT_ID}"
-- runFlow:
-    when:
-      notVisible: "Subscribe"
-    file: log_sandbox_user.yaml
 - tapOn: "Subscribe"
 - tapOn: "Ok"
