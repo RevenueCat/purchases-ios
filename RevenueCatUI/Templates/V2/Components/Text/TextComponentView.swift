@@ -78,8 +78,8 @@ private struct NonLocalizedMarkdownText: View {
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
             return try? AttributedString(
                 markdown: self.text,
-                // We want to preserve whitespace and linefeeds in the original text.
-                options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnlyPreservingWhitespace)
+                // We want to preserve whitespace and linefeeds in the original text, only processing inline markdown.
+                options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnly)
             )
         } else {
             return nil
@@ -194,7 +194,6 @@ struct TextComponentView_Previews: PreviewProvider {
                 localizationProvider: .init(
                     locale: Locale.current,
                     localizedStrings: [
-                        // swiftlint:disable:next line_length
                         "id_1": .string("Before blank line.\n\nAfter blank line.")
                     ]
                 ),
