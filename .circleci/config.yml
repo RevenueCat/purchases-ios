@@ -1398,8 +1398,6 @@ jobs:
           install_swiftlint: false
           install_xcbeautify: false
           install_mint: false
-      - install-runtime:
-          runtime-name: iOS 17.0
       - install-tuist
       - run:
           name: Install Maestro CLI
