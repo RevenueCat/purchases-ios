@@ -158,11 +158,11 @@ private extension CustomerCenterView {
             }
         }
         // This is needed because `CustomerCenterViewModel` is isolated to @MainActor
-        // A bigger refactor is needed, but its already throwing a warning. 
-        .manageSubscriptionsSheet(isPresented: .init(
+        // A bigger refactor is needed, but its already throwing a warning.
+        .modifier(self.viewModel.purchasesProvider.manageSubscriptionsSheetViewModifier(isPresented: .init(
             get: { viewModel.manageSubscriptionsSheet },
-            set: { manage in DispatchQueue.main.async { viewModel.manageSubscriptionsSheet = manage } })
-        )
+            set: { manage in DispatchQueue.main.async { viewModel.manageSubscriptionsSheet = manage } }
+        )))
         .modifier(CustomerCenterActionViewModifier(actionWrapper: viewModel.actionWrapper))
         .onCustomerCenterPromotionalOfferSuccess {
             Task {
