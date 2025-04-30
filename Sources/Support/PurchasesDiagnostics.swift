@@ -43,8 +43,8 @@ public final class PurchasesDiagnostics: NSObject, Sendable {
     public static let `default`: PurchasesDiagnostics = .init(purchases: Purchases.shared)
 }
 
+#if DEBUG
 extension PurchasesDiagnostics {
-
     /// Enum representing the status of a product in the store
     public enum ProductStatus: Sendable {
         /// Product is configured correctly in App Store Connect
@@ -117,20 +117,10 @@ extension PurchasesDiagnostics {
         public let productTitle: String?
     }
 
-    /// An error that represents a failing step in ``PurchasesDiagnostics``
-    public enum Error: Swift.Error {
-
-        /// Connection to the API failed
-        case failedConnectingToAPI(Swift.Error)
-
+    /// An error that represents a problem in the SDK's configuration
+    public enum SDKHealthError: Swift.Error {
         /// API key is invalid
         case invalidAPIKey
-
-        /// Fetching offerings failed due to the underlying error
-        case failedFetchingOfferings(Swift.Error)
-
-        /// Failure performing a signed request
-        case failedMakingSignedRequest(Swift.Error)
 
         /// There are no offerings in project
         case noOfferings
@@ -149,12 +139,8 @@ extension PurchasesDiagnostics {
 
         /// Any other not identifier error. You can check the undelying error for details.
         case unknown(Swift.Error)
-
     }
 
-}
-
-extension PurchasesDiagnostics {
     /// A report that encapsulates the result of the SDK configuration health check.
     /// Use this to programmatically inspect the SDK's health status after calling `healthReport()`.
     public struct SDKHealthReport: Sendable {
@@ -187,17 +173,68 @@ extension PurchasesDiagnostics {
     /// Status of the SDK Health report
     public enum SDKHealthStatus: Sendable {
         /// SDK configuration is valid but might have some non-blocking issues
-        case healthy(warnings: [PurchasesDiagnostics.Error])
+        case healthy(warnings: [PurchasesDiagnostics.SDKHealthError])
         /// SDK configuration is not valid and has issues that must be resolved
-        case unhealthy(PurchasesDiagnostics.Error)
+        case unhealthy(PurchasesDiagnostics.SDKHealthError)
+    }
+}
+#endif
+
+extension PurchasesDiagnostics {
+
+    /// An error that represents a failing step in ``PurchasesDiagnostics``
+    public enum Error: Swift.Error {
+
+        /// Connection to the API failed
+        case failedConnectingToAPI(Swift.Error)
+
+        /// API key is invalid
+        case invalidAPIKey
+
+        /// Fetching offerings failed due to the underlying error
+        case failedFetchingOfferings(Swift.Error)
+
+        /// Failure performing a signed request
+        case failedMakingSignedRequest(Swift.Error)
+
+        /// Any other not identifier error. You can check the undelying error for details.
+        case unknown(Swift.Error)
+
+    }
+
+}
+
+extension PurchasesDiagnostics {
+
+    /// Checks if the SDK is configured correctly.
+    /// - Important: This method is intended solely for debugging configuration issues with the SDK implementation.
+    /// It should not be invoked in production builds.
+    /// - Throws: ``PurchasesDiagnostics/Error`` if any step fails
+    @available(*, deprecated, message: """
+    Use the `PurchasesDiagnostics.shared.checkSDKHealth()` method instead.
+    """)
+    @objc(testSDKHealthWithCompletion:)
+    public func testSDKHealth() async throws {
+        do {
+            try await self.unauthenticatedRequest()
+            #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+            try await self.authenticatedRequest()
+            #endif
+            try await self.offeringsRequest()
+            try await self.signatureVerification()
+        } catch let error as Error {
+            throw error
+        } catch let error {
+            // Catch every other error to ensure that we only throw `Error`s from here.
+            throw Error.unknown(error)
+        }
     }
 
     #if DEBUG
     /// Performs a full SDK configuration health check and throws an error if the configuration is not valid.
-    /// - Important: This method is intended solely for debugging configuration issues with the SDK implementation.
-    /// It should not be invoked in production builds.
-    /// - Throws: The specific configuration issue that needs to be solved.
-    public func testSDKHealth() async throws {
+    /// - Important: This method can not be invoked in production builds.
+    /// - Throws: ``SDKHealthError`` indicating the specific configuration issue that needs to be solved.
+    public func checkSDKHealth() async throws {
         switch await self.healthReport().status {
         case let .unhealthy(error): throw error
         default: break
@@ -311,40 +348,11 @@ extension PurchasesDiagnostics.Error: CustomNSError {
 
     var localizedDescription: String {
         switch self {
-        case .notAuthorizedToMakePayments: return "The person is not authorized to make payments on this device"
         case let .unknown(error): return "Unknown error: \(error.localizedDescription)"
         case let .failedConnectingToAPI(error): return "Error connecting to API: \(error.localizedDescription)"
         case let .failedFetchingOfferings(error): return "Failed fetching offerings: \(error.localizedDescription)"
         case let .failedMakingSignedRequest(error): return "Failed making signed request: \(error.localizedDescription)"
         case .invalidAPIKey: return "API key is not valid"
-        case .noOfferings: return "No offerings configured"
-        case let .offeringConfiguration(payload):
-            guard let offendingOffering = payload.first(where: { $0.status == .failed }) else {
-                return "Default offering is not configured correctly"
-            }
-
-            let offeringIdentifier = offendingOffering.identifier
-            let offendingPackageCount = offendingOffering.packages.filter({ $0.status != .valid }).count
-            let noPackages = "Offering '\(offeringIdentifier)' has no packages"
-            let packagesNotReady = """
-            Offering '\(offeringIdentifier)' uses \(offendingPackageCount) products \
-            that are not ready in App Store Connect
-            """
-
-            return offendingOffering.packages.isEmpty ? noPackages : packagesNotReady
-        case let .invalidBundleId(payload):
-            guard let payload else {
-                return "Bundle ID in your app does not match the Bundle ID in the RevenueCat Website"
-            }
-            let sdkBundleId = payload.sdkBundleId
-            let appBundleId = payload.appBundleId
-            return "Bundle ID in your app '\(sdkBundleId)' does not match the RevenueCat app Bundle ID '\(appBundleId)'"
-        case let .invalidProducts(products):
-            if products.isEmpty {
-                return "Your app has no products"
-            }
-
-            return "You must have at least one product approved in App Store Connect"
         }
     }
 
@@ -354,12 +362,7 @@ extension PurchasesDiagnostics.Error: CustomNSError {
         case let .failedConnectingToAPI(error): return error
         case let .failedFetchingOfferings(error): return error
         case let .failedMakingSignedRequest(error): return error
-        case .invalidAPIKey,
-                .offeringConfiguration,
-                .noOfferings,
-                .invalidBundleId,
-                .invalidProducts,
-                .notAuthorizedToMakePayments:
+        case .invalidAPIKey:
             return nil
         }
     }
