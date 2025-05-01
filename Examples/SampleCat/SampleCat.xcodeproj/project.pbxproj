@@ -346,7 +346,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/RevenueCat/purchases-ios";
 			requirement = {
-				branch = "dx-345-use-the-ios-sdk-to-check-the-health-of-an-app-with-a-given";
+				branch = "bugfix/return-offerings-data-with-health-report";
 				kind = branch;
 			};
 		};

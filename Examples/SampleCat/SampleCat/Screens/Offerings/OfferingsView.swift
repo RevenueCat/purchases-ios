@@ -12,20 +12,27 @@ struct OfferingsView: View {
             ConceptIntroductionView(imageName: "visual-offerings",
                                     title: "Offerings",
                                     description: "Offerings are the products you can “offer” to customers on your paywall.")
-                
-            ForEach(offerings) { offering in
-                Button(action: { selectedOffering = offering }) {
-                    Text(offering.identifier)
-                        .textCase(.uppercase)
-                        .font(.caption)
-                        .fontWeight(.bold)
-                        .padding(.vertical, 12)
-                        .padding(.horizontal, 16)
-                        .background(selectedOffering == offering ? Color.accentColor : .secondary.opacity(0.2))
-                        .foregroundStyle(selectedOffering == offering ? Color.white : .primary)
-                        .clipShape(Capsule())
+
+            VStack {
+                ForEach(offerings) { offering in
+                    Button(action: { selectedOffering = offering }) {
+                        Text(offering.identifier)
+                            .textCase(.uppercase)
+                            .font(.caption)
+                            .fontWeight(.bold)
+                            .padding(.vertical, 12)
+                            .padding(.horizontal, 16)
+                            .background(selectedOffering == offering ? Color.accentColor : .secondary.opacity(0.2))
+                            .foregroundStyle(selectedOffering == offering ? Color.white : .primary)
+                            .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
+            }
+            .overlay {
+                if isLoading {
+                    Spinner()
+                }
             }
         }
         .scrollContentBackground(.hidden)
@@ -51,6 +58,8 @@ struct OfferingsView: View {
     
     private func checkAppHealth() async throws {
         let report = await PurchasesDiagnostics.default.healthReport()
+        print(report)
+        print(report.offerings)
         self.offerings = report.offerings.map { offering in
             OfferingViewModel(
                 identifier: offering.identifier,
