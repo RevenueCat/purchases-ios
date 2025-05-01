@@ -21,12 +21,7 @@ struct ProductsView: View {
                                     description: "Products are the individual in-app purchases and subscriptions you set up on the App Store.")
             VStack {
                 ForEach(healthViewModel.products) { product in
-                    Button {
-                        presentedProduct = product
-                    } label: {
-                        ProductCell(product: product)
-                    }
-                    .buttonStyle(.plain)
+                    ProductCell(product: product)
                 }
             }
             .padding()

@@ -18,7 +18,9 @@ import SwiftUI
     var subscriptionActive: Bool = false
     
     var isFetchingOfferings: Bool = false
-    
+
+    var isPurchasing: Bool = false
+
     init() {
         // Configure the SDK with the API Key
         Purchases.configure(withAPIKey: Constants.apiKey)
@@ -29,7 +31,22 @@ import SwiftUI
             }
         }
     }
-    
+
+    func purchase(_ product: StoreProduct) async {
+        isPurchasing = true
+        defer { isPurchasing = false }
+
+        do {
+            let (transaction, customerInfo, userCancelled) = try await Purchases.shared.purchase(product: product)
+
+            guard !userCancelled else { return }
+
+            self.customerInfo = customerInfo
+        } catch let error {
+            print("Failed to purchase product with error: \(error)")
+        }
+    }
+
     func fetchOfferings() async {
         isFetchingOfferings = true
         do {
