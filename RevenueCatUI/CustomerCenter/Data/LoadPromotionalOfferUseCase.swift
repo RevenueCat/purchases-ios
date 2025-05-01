@@ -48,17 +48,17 @@ class LoadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType {
             }
 
             let subscribedProduct = try await getActiveSubscription(activeTransaction.productIdentifier)
-            let discount = try await findDiscount(for: subscribedProduct,
-                                                  productIdentifier: subscribedProduct.productIdentifier,
-                                                  promoOfferDetails: promoOfferDetails)
+            let (discount, targetProduct) = try await findDiscount(for: subscribedProduct,
+                                                                   productIdentifier: subscribedProduct.productIdentifier,
+                                                                   promoOfferDetails: promoOfferDetails)
 
             let promotionalOffer = try await self.purchasesProvider.promotionalOffer(
                 forProductDiscount: discount,
-                product: subscribedProduct
+                product: targetProduct
             )
             return .success(PromotionalOfferData(
                 promotionalOffer: promotionalOffer,
-                product: subscribedProduct,
+                product: targetProduct,
                 promoOfferDetails: promoOfferDetails
             ))
         } catch {
@@ -84,38 +84,38 @@ private extension LoadPromotionalOfferUseCase {
     }
 
     private func findDiscount(
-        for product: StoreProduct,
+        for activeProduct: StoreProduct,
         productIdentifier: String,
         promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer
-    ) async throws -> StoreProductDiscount {
+    ) async throws -> (StoreProductDiscount, StoreProduct) {
         // First try cross-product promotions if available
         if let crossProductPromotion = promoOfferDetails.crossProductPromotions[productIdentifier] {
-            let discount = try await findCrossProductDiscount(
+            let (discount, targetProduct) = try await findCrossProductDiscount(
                 for: crossProductPromotion,
                 productIdentifier: productIdentifier
             )
-            return discount
+            return (discount, targetProduct)
         }
-        
+
         // Fall back to existing logic if no cross-product promotions
         let discount = !promoOfferDetails.productMapping.isEmpty
-            ? findMappedDiscount(for: product,
+            ? findMappedDiscount(for: activeProduct,
                                  productIdentifier: productIdentifier,
                                  promoOfferDetails: promoOfferDetails)
-            : findLegacyDiscount(for: product, promoOfferDetails: promoOfferDetails)
+            : findLegacyDiscount(for: activeProduct, promoOfferDetails: promoOfferDetails)
 
         guard let discount = discount else {
             logDiscountError(productIdentifier: productIdentifier, promoOfferDetails: promoOfferDetails)
             throw CustomerCenterError.couldNotFindSubscriptionInformation
         }
 
-        return discount
+        return (discount, activeProduct)
     }
 
     private func findCrossProductDiscount(
         for crossProductPromotion: CustomerCenterConfigData.HelpPath.PromotionalOffer.CrossProductPromotion,
         productIdentifier: String
-    ) async throws -> StoreProductDiscount {
+    ) async throws -> (StoreProductDiscount, StoreProduct) {
         let targetProducts = await self.purchasesProvider.products([crossProductPromotion.targetProductId])
         guard let targetProduct = targetProducts.first else {
             Logger.warning(Strings.could_not_find_target_product(
@@ -124,7 +124,7 @@ private extension LoadPromotionalOfferUseCase {
             ))
             throw CustomerCenterError.couldNotFindSubscriptionInformation
         }
-        
+
         guard let discount = targetProduct.discounts.first(where: {
             $0.offerIdentifier == crossProductPromotion.storeOfferIdentifier
         }) else {
@@ -134,8 +134,8 @@ private extension LoadPromotionalOfferUseCase {
             ))
             throw CustomerCenterError.couldNotFindSubscriptionInformation
         }
-        
-        return discount
+
+        return (discount, targetProduct)
     }
 
     private func findMappedDiscount(
