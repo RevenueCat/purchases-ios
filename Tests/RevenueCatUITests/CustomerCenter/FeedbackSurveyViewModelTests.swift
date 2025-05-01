@@ -14,7 +14,7 @@
 // swiftlint:disable type_body_length file_length
 
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 @testable import RevenueCatUI
 import XCTest
 
@@ -497,7 +497,6 @@ private struct MockStoreProductDiscount: StoreProductDiscountType {
     let subscriptionPeriod: SubscriptionPeriod
     let numberOfPeriods: Int
     let type: StoreProductDiscount.DiscountType
-
 }
 
 #endif
