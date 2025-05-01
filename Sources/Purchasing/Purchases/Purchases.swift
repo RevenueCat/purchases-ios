@@ -1112,6 +1112,10 @@ public extension Purchases {
         self.customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
     }
 
+    @objc func markCustomerInfoCacheAsStale() {
+        self.customerInfoManager.clearCustomerInfoCacheTimestamp(forAppUserID: appUserID)
+    }
+
     @objc func syncPurchases(completion: ((CustomerInfo?, PublicError?) -> Void)?) {
         self.purchasesOrchestrator.syncPurchases { @Sendable in
             completion?($0.value, $0.error?.asPublicError)

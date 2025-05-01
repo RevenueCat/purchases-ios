@@ -21,6 +21,7 @@ import SwiftUI
 struct ButtonComponentView: View {
     @Environment(\.openURL) private var openURL
     @State private var inAppBrowserURL: URL?
+    @State private var didOpenWebPaywallLinkUrl: Bool = false
     @State private var showCustomerCenter = false
 
     @EnvironmentObject
@@ -74,6 +75,25 @@ struct ButtonComponentView: View {
             .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
                 SafariView(url: self.inAppBrowserURL!)
             }
+            .onChange(of: self.inAppBrowserURL,
+                      perform: { inAppBrowserURL in
+                if inAppBrowserURL == nil, self.didOpenWebPaywallLinkUrl {
+                    Task {
+                        guard let customerInfo = try? await Purchases.shared.customerInfo() else {
+                            return
+                        }
+                        // WIP: We should properly compare the customer info before/after
+                        // displaying the browser to avoid edge cases.
+                        let hasWebEntitlements = customerInfo.entitlements.all.contains { (_, entitlementInfo) in
+                            entitlementInfo.store == Store.rcBilling
+                        }
+                        if hasWebEntitlements {
+                            self.onDismiss()
+                        }
+                        self.didOpenWebPaywallLinkUrl = false
+                    }
+                }
+            })
             #if os(iOS)
             .presentCustomerCenter(isPresented: self.$showCustomerCenter, onDismiss: {
                 self.showCustomerCenter = false
@@ -124,6 +144,10 @@ struct ButtonComponentView: View {
     }
 
     private func navigateToUrl(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) {
+        if self.isWebPaywallLinkURL(url) {
+            Purchases.shared.markCustomerInfoCacheAsStale()
+            self.didOpenWebPaywallLinkUrl = true
+        }
         switch method {
         case .inAppBrowser:
 #if os(tvOS)
@@ -168,6 +192,10 @@ struct ButtonComponentView: View {
         case .unknown:
             break
         }
+    }
+
+    private func isWebPaywallLinkURL(_ url: URL) -> Bool {
+        return url.absoluteString.hasPrefix("https://pay.rev.cat")
     }
 
 }

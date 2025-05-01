@@ -284,6 +284,12 @@ class CustomerInfoManager {
         }
     }
 
+    func clearCustomerInfoCacheTimestamp(forAppUserID appUserID: String) {
+        self.modifyData {
+            $0.deviceCache.clearCustomerInfoCacheTimestamp(appUserID: appUserID)
+        }
+    }
+
     func setLastSentCustomerInfo(_ info: CustomerInfo) {
         self.modifyData {
             $0.lastSentCustomerInfo = info
