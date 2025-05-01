@@ -132,7 +132,7 @@ struct ButtonStyles_Previews: PreviewProvider {
             DismissCircleButton()
         }.padding()
             .environment(\.appearance, CustomerCenterConfigTestData.standardAppearance)
-            .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
+            .environment(\.localization, CustomerCenterConfigTestData.customerCenterData().localization)
     }
 
 }

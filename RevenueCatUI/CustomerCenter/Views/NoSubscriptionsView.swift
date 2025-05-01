@@ -86,7 +86,7 @@ struct NoSubscriptionsView: View {
 struct NoSubscriptionsView_Previews: PreviewProvider {
 
     static var previews: some View {
-        NoSubscriptionsView(configuration: CustomerCenterConfigTestData.customerCenterData,
+        NoSubscriptionsView(configuration: CustomerCenterConfigTestData.customerCenterData(),
                             actionWrapper: CustomerCenterActionWrapper())
     }
 

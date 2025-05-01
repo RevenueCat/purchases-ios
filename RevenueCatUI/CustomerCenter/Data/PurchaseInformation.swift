@@ -17,7 +17,7 @@ import Foundation
 @_spi(Internal) import RevenueCat
 import StoreKit
 
-// swiftlint:disable nesting
+// swiftlint:disable nesting file_length
 
 /// Information about a purchase.
 struct PurchaseInformation {
@@ -72,6 +72,8 @@ struct PurchaseInformation {
 
     let renewalDate: Date?
 
+    private let dateFormatter: DateFormatter
+
     init(title: String,
          durationTitle: String?,
          explanation: Explanation,
@@ -103,6 +105,7 @@ struct PurchaseInformation {
         self.introductoryDiscount = introductoryDiscount
         self.expirationDate = expirationDate
         self.renewalDate = renewalDate
+        self.dateFormatter = Self.defaultDateFormatter
     }
 
     // swiftlint:disable:next function_body_length
@@ -111,7 +114,7 @@ struct PurchaseInformation {
          transaction: Transaction,
          renewalPrice: PriceDetails? = nil,
          customerInfoRequestedDate: Date,
-         dateFormatter: DateFormatter = DateFormatter()) {
+         dateFormatter: DateFormatter = Self.defaultDateFormatter) {
         dateFormatter.dateStyle = .medium
 
         // Title and duration from product if available
@@ -184,6 +187,8 @@ struct PurchaseInformation {
 
             self.isCancelled = transaction.isCancelled
         }
+
+        self.dateFormatter = dateFormatter
     }
 
     struct ExpirationOrRenewal {
@@ -219,6 +224,12 @@ struct PurchaseInformation {
         case expired
         case lifetime
     }
+
+    private static let defaultDateFormatter: DateFormatter = {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = .medium
+        return dateFormatter
+    }()
 }
 // swiftlint:enable nesting
 
@@ -368,50 +379,10 @@ fileprivate extension EntitlementInfo {
 
 }
 
-fileprivate extension String {
+private extension String {
 
     func isPromotionalLifetime(store: Store) -> Bool {
         return self.hasSuffix("_lifetime") && store == .promotional
-    }
-
-}
-
-protocol Transaction {
-
-    var productIdentifier: String { get }
-    var store: Store { get }
-    var type: TransactionType { get }
-    var isCancelled: Bool { get }
-}
-
-enum TransactionType {
-
-    case subscription(isActive: Bool, willRenew: Bool, expiresDate: Date?, isTrial: Bool)
-    case nonSubscription
-}
-
-extension RevenueCat.SubscriptionInfo: Transaction {
-
-    var type: TransactionType {
-        .subscription(isActive: isActive,
-                      willRenew: willRenew,
-                      expiresDate: expiresDate,
-                      isTrial: periodType == .trial)
-    }
-
-    var isCancelled: Bool {
-        unsubscribeDetectedAt != nil && !willRenew
-    }
-}
-
-extension NonSubscriptionTransaction: Transaction {
-
-    var type: TransactionType {
-        .nonSubscription
-    }
-
-    var isCancelled: Bool {
-        false
     }
 }
 
@@ -420,40 +391,42 @@ extension PurchaseInformation {
     var billingInformation: String {
         guard let expirationDate else {
             // non subscription
-            return "-"
+            return price.billingInformation
         }
 
         if let introductoryDiscount {
-            if introductoryDiscount.paymentMode == .freeTrial {
-                if isCancelled {
-                    return "Free trial expires on \(expirationDate) without any charges"
-                } else {
-                    return "Free trial until \(expirationDate). \(introductoryDiscount.localizedPricePerPeriodByPaymentMode(.current)) afterwards."
-                }
+            if isCancelled {
+                var renewString = "\(introductoryDiscount.localizedPricePerPeriodByPaymentMode(.current))."
+                renewString += "\n"
+                renewString += "Expires on \(dateFormatter.string(from: expirationDate)) without further charges."
+                return renewString
             }
 
-            if isCancelled {
-                return "\(introductoryDiscount.titleString), renewal off: Expires on \(expirationDate) without further charges."
+            if introductoryDiscount.paymentMode == .freeTrial {
+                var renewString = "Free trial until \(dateFormatter.string(from: expirationDate))."
+                renewString += "\n"
+                renewString += priceAfterDiscount
+                return renewString
             } else {
-                var renewString = "renewal on: \(introductoryDiscount.localizedPricePerPeriodByPaymentMode(.current))"
-                renewString += " <regular price per period> per <period> afterwards"
+                var renewString = "\(introductoryDiscount.localizedPricePerPeriodByPaymentMode(.current))."
+                renewString += "\n"
+                renewString += priceAfterDiscount
                 return renewString
             }
         } else if isCancelled {
-            switch price {
-            case let .paid(priceString):
-                return "\(priceString) per <period>. Next bill on \(expirationDate)"
-            case .free, .unknown:
-                return "Next bill on \(expirationDate)"
-            }
+            return "Expires on \(dateFormatter.string(from: expirationDate)) without further charges."
         } else {
             switch price {
             case let .paid(priceString):
-                return "\(priceString) per <period>. Expires on \(expirationDate) without further charges."
+                return "Renews on \(dateFormatter.string(from: expirationDate)) for \(priceString)."
             case .free, .unknown:
-                return "Next bill on \(expirationDate)"
+                return "Renews on \(dateFormatter.string(from: expirationDate))"
             }
         }
+    }
+
+    var priceAfterDiscount: String {
+        "\(durationTitle.map { "\($0)" } ?? "") \(price.billingInformation + " " + "afterwards.")"
     }
 }
 
@@ -466,6 +439,19 @@ private extension StoreProductDiscountType {
             return "Free trial"
         case .payUpFront:
             return "Pay up front"
+        }
+    }
+}
+
+private extension PurchaseInformation.PriceDetails {
+    var billingInformation: String {
+        switch self {
+        case .free:
+            return "Free"
+        case .paid(let priceString):
+            return priceString
+        case .unknown:
+            return "Unknown"
         }
     }
 }

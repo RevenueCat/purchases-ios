@@ -21,7 +21,7 @@ enum CustomerCenterConfigTestData {
     @available(iOS 14.0, *)
     // swiftlint:disable:next function_body_length
     static func customerCenterData(
-        lastPublishedAppVersion: String?,
+        lastPublishedAppVersion: String? = "1.0.0",
         shouldWarnCustomerToUpdate: Bool = false,
         displayPurchaseHistoryLink: Bool = false,
         refundWindowDuration: CustomerCenterConfigData.HelpPath.RefundWindowDuration = .forever
@@ -131,9 +131,6 @@ enum CustomerCenterConfigTestData {
         )
     }
 
-    @available(iOS 14.0, *)
-    static let customerCenterData = customerCenterData(lastPublishedAppVersion: "1.0.0")
-
     static let standardAppearance = CustomerCenterConfigData.Appearance(
         accentColor: .init(light: "#007AFF", dark: "#007AFF"),
         textColor: .init(light: "#000000", dark: "#ffffff"),
@@ -142,21 +139,27 @@ enum CustomerCenterConfigTestData {
         buttonBackgroundColor: .init(light: "#287aff", dark: "#287aff")
     )
 
-    static let subscriptionInformationMonthlyRenewing: PurchaseInformation = PurchaseInformation(
-        title: "Basic",
-        durationTitle: "Monthly",
-        explanation: .earliestRenewal,
-        price: .paid("$4.99"),
-        expirationOrRenewal: .init(label: .nextBillingDate,
-                                   date: .date("June 1st, 2024")),
-        productIdentifier: "product_id",
-        store: .appStore,
-        isTrial: false,
-        isLifetime: false,
-        latestPurchaseDate: nil,
-        isCancelled: false,
-        customerInfoRequestedDate: Date()
-    )
+    static func subscriptionInformationMonthlyRenewing(
+        introductoryDiscount: StoreProductDiscountType? = nil
+    ) -> PurchaseInformation {
+        PurchaseInformation(
+            title: "Basic",
+            durationTitle: "Monthly",
+            explanation: .earliestRenewal,
+            price: .paid("$4.99"),
+            expirationOrRenewal: .init(label: .nextBillingDate, date: .date("June 1st, 2024")),
+            productIdentifier: "product_id",
+            store: .appStore,
+            isTrial: false,
+            isLifetime: false,
+            latestPurchaseDate: Date(),
+            isCancelled: false,
+            customerInfoRequestedDate: Date(),
+            introductoryDiscount: introductoryDiscount,
+            expirationDate: Date().addingTimeInterval(24 * 60 * 60),
+            renewalDate: Date().addingTimeInterval(24 * 60 * 60)
+        )
+    }
 
     static let subscriptionInformationFree: PurchaseInformation = PurchaseInformation(
         title: "Basic",
@@ -174,7 +177,7 @@ enum CustomerCenterConfigTestData {
         customerInfoRequestedDate: Date()
     )
 
-    static func subscriptionInformationYearlyExpiring(isCancelled: Bool = false) -> PurchaseInformation {
+    static func subscriptionInformationYearlyExpiring(isCancelled: Bool = true) -> PurchaseInformation {
         PurchaseInformation(
             title: "Basic",
             durationTitle: "Yearly",
@@ -189,12 +192,9 @@ enum CustomerCenterConfigTestData {
             latestPurchaseDate: nil,
             isCancelled: isCancelled,
             customerInfoRequestedDate: Date(),
-            introductoryDiscount: MockStoreProductDiscount.mock(
-                paymentMode: .payAsYouGo,
-                discountType: .introductory
-            ),
+            introductoryDiscount: nil,
             expirationDate: Date(),
-            renewalDate: Date()
+            renewalDate: nil
         )
     }
 
@@ -212,6 +212,25 @@ enum CustomerCenterConfigTestData {
         isCancelled: false,
         customerInfoRequestedDate: Date()
     )
+
+    static func discount(
+        paymentMode: StoreProductDiscount.PaymentMode = .payAsYouGo,
+        price: Decimal = 0.99,
+        subscriptionPeriod: SubscriptionPeriod = .init(value: 1, unit: .month),
+        numberOfPeriods: Int = 3,
+        type: StoreProductDiscount.DiscountType = .introductory
+    ) -> StoreProductDiscountType {
+        MockStoreProductDiscount(
+            offerIdentifier: "offerIdentifier",
+            currencyCode: "USD",
+            price: price,
+            localizedPriceString: "\(price) USD",
+            paymentMode: paymentMode,
+            subscriptionPeriod: subscriptionPeriod,
+            numberOfPeriods: numberOfPeriods,
+            type: type
+        )
+    }
 
 }
 

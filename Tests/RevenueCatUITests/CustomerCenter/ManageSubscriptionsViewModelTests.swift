@@ -449,7 +449,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 private extension ManageSubscriptionsViewModelTests {
 
     static let `default`: CustomerCenterConfigData.Screen =
-    CustomerCenterConfigTestData.customerCenterData.screens[.management]!
+    CustomerCenterConfigTestData.customerCenterData().screens[.management]!
 
     static func managementScreen(
         refundWindowDuration: CustomerCenterConfigData.HelpPath.RefundWindowDuration

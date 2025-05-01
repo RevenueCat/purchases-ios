@@ -182,7 +182,7 @@ struct WrongPlatformView_Previews: PreviewProvider {
                     store: data.store,
                     managementURL: data.managementURL,
                     purchaseInformation: getPurchaseInformation(for: data.customerInfo),
-                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!
+                    screen: CustomerCenterConfigTestData.customerCenterData().screens[.management]!
                 )
                 .previewDisplayName(data.displayName)
             }

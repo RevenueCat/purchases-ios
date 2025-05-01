@@ -31,28 +31,53 @@ struct SubscriptionDetailsView: View {
     private var localization: CustomerCenterConfigData.Localization
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            SubscriptionDetailsHeader(
-                purchaseInformation: purchaseInformation,
-                localization: localization
-            )
-            .padding(.bottom, 10)
+        SubscriptionDetailsHeader(
+            purchaseInformation: purchaseInformation,
+            refundRequestStatus: refundRequestStatus,
+            localization: localization
+        )
+    }
+}
 
-            Divider()
-                .padding(.bottom)
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+struct SubscriptionDetailsHeader: View {
+    let purchaseInformation: PurchaseInformation
+    let refundRequestStatus: RefundRequestStatus?
+    let localization: CustomerCenterConfigData.Localization
 
-            VStack(alignment: .leading, spacing: 16.0) {
-                if let refundRequestStatus = refundRequestStatus,
-                   let refundStatusMessage = refundStatusMessage(for: refundRequestStatus) {
-                    IconLabelView(
-                        iconName: "arrowshape.turn.up.backward",
-                        label: localization[.refundStatus],
-                        value: refundStatusMessage
-                    )
-                }
-            }
+    var body: some View {
+        VStack(alignment: .leading) {
+            Text(titleString).font(.title3) +
+            Text(statusString.map {" " +  "(\($0))"} ?? "")
+                .font(.subheadline)
+
+            Text(purchaseInformation.billingInformation)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.leading)
         }
-        .padding(.vertical, 8.0)
+    }
+
+    private var titleString: String {
+        purchaseInformation.title ?? purchaseInformation.productIdentifier
+    }
+
+    private var statusString: String? {
+        if let cancelledString {
+            return cancelledString
+        } else if let refundRequestStatus = refundRequestStatus,
+           let refundStatusMessage = refundStatusMessage(for: refundRequestStatus) {
+            return refundStatusMessage
+        }
+
+        return nil
+    }
+
+    private var cancelledString: String? {
+        purchaseInformation.isCancelled ? "Cancelled" : nil
     }
 
     private func refundStatusMessage(for status: RefundRequestStatus) -> String? {
@@ -67,108 +92,6 @@ struct SubscriptionDetailsView: View {
             return nil
         }
     }
-
-    private func label(for expirationOrRenewal: PurchaseInformation.ExpirationOrRenewal) -> String {
-        switch expirationOrRenewal.label {
-        case .nextBillingDate:
-            return localization[.nextBillingDate]
-        case .expires:
-            return localization[.expires]
-        case .expired:
-            return localization[.expired]
-        }
-    }
 }
-
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-struct SubscriptionDetailsHeader: View {
-    let purchaseInformation: PurchaseInformation
-    let localization: CustomerCenterConfigData.Localization
-
-    var body: some View {
-        VStack(alignment: .leading) {
-            Text(cancelledString.map { titleString + "(\($0)" } ?? titleString)
-                .font(.headline)
-
-            Text(purchaseInformation.billingInformation)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.leading)
-        }
-    }
-
-    private var titleString: String {
-        purchaseInformation.title ?? purchaseInformation.productIdentifier
-    }
-
-    private var cancelledString: String? {
-        purchaseInformation.isCancelled ? "Cancelled" : nil
-    }
-}
-
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-struct IconLabelView: View {
-    let iconName: String
-    let label: String
-    let value: String
-
-    private let iconWidth = 22.0
-
-    var body: some View {
-        HStack(alignment: .center) {
-            Image(systemName: iconName)
-                .accessibilityHidden(true)
-                .frame(width: iconWidth)
-            VStack(alignment: .leading) {
-                Text(label)
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-                    .textCase(.uppercase)
-                Text(value)
-                    .font(.body)
-            }
-        }
-    }
-}
-
-#if DEBUG
-
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-struct SubscriptionDetailsView_Previews: PreviewProvider {
-
-    static var previews: some View {
-        ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
-            SubscriptionDetailsView(
-                purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring(
-                    isCancelled: false),
-                refundRequestStatus: .success
-            )
-            .preferredColorScheme(colorScheme)
-            .previewDisplayName("Subscription Details - Monthly - \(colorScheme)")
-            .padding()
-
-            SubscriptionDetailsView(
-                purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring(
-                    isCancelled: true),
-                refundRequestStatus: .success
-            )
-            .preferredColorScheme(colorScheme)
-            .previewDisplayName("Subscription Details - Monthly - Cancelled - \(colorScheme)")
-            .padding()
-        }
-    }
-
-}
-
-#endif
 
 #endif
