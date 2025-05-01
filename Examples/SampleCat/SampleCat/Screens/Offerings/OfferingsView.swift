@@ -8,32 +8,35 @@ struct OfferingsView: View {
     @State private var isLoading = false
     
     var body: some View {
-        ScrollView {
-            ConceptIntroductionView(imageName: "visual-offerings",
-                                    title: "Offerings",
-                                    description: "Offerings are the products you can “offer” to customers on your paywall.")
+        NavigationStack {
+            ScrollView {
+                ConceptIntroductionView(imageName: "visual-offerings",
+                                        title: "Offerings",
+                                        description: "Offerings are the products you can “offer” to customers on your paywall.")
 
-            VStack {
-                ForEach(offerings) { offering in
-                    Button(action: { selectedOffering = offering }) {
-                        OfferingCell(offering: offering)
+                VStack {
+                    ForEach(offerings) { offering in
+                        NavigationLink(destination: { OfferingPackagesView(offering: offering) }) {
+                            OfferingCell(offering: offering)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
+                }
+                .padding()
+                .overlay {
+                    if isLoading {
+                        Spinner()
+                    }
                 }
             }
-            .padding()
-            .overlay {
-                if isLoading {
-                    Spinner()
-                }
+            .scrollContentBackground(.hidden)
+            .background {
+                ContentBackgroundView(color: Color("RC-green"))
             }
+            .onAppear(perform: loadData)
+            .refreshable(action: loadData)
         }
-        .scrollContentBackground(.hidden)
-        .background {
-            ContentBackgroundView(color: Color("RC-green"))
-        }
-        .onAppear(perform: loadData)
-        .refreshable(action: loadData)
+
     }
     
     private func loadData() {
