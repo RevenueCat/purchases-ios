@@ -428,7 +428,7 @@ extension PurchaseInformation {
                 if isCancelled {
                     return "Free trial expires on \(expirationDate) without any charges"
                 } else {
-                    return "Free trial until \(expirationDate). <price per period> per <period> afterwards."
+                    return "Free trial until \(expirationDate). \(introductoryDiscount.localizedPricePerPeriodByPaymentMode(.current)) afterwards."
                 }
             }
 

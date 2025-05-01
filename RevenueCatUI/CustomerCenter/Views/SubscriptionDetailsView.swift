@@ -90,12 +90,8 @@ struct SubscriptionDetailsHeader: View {
 
     var body: some View {
         VStack(alignment: .leading) {
-            CompatibilityLabeledContent {
-                Text(purchaseInformation.title ?? purchaseInformation.productIdentifier)
-                    .font(.headline)
-            } content: {
-                labeledContent
-            }
+            Text(cancelledString.map { titleString + "(\($0)" } ?? titleString)
+                .font(.headline)
 
             Text(purchaseInformation.billingInformation)
                 .font(.subheadline)
@@ -104,14 +100,12 @@ struct SubscriptionDetailsHeader: View {
         }
     }
 
-    @ViewBuilder
-    private var labeledContent: some View {
-        if purchaseInformation.isCancelled {
-            Text("Cancelled")
-                .font(.caption)
-        } else {
-            EmptyView()
-        }
+    private var titleString: String {
+        purchaseInformation.title ?? purchaseInformation.productIdentifier
+    }
+
+    private var cancelledString: String? {
+        purchaseInformation.isCancelled ? "Cancelled" : nil
     }
 }
 

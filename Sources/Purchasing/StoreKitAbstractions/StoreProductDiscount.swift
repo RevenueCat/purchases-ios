@@ -115,7 +115,7 @@ public final class StoreProductDiscount: NSObject {
 
 }
 
-@_spi(Internal) extension StoreProductDiscount: StoreProductDiscountType { } // only internally visible
+@_spi(Internal) extension StoreProductDiscount: StoreProductDiscountType { }
 
 extension StoreProductDiscount {
     // swiftlint:disable:next missing_docs
