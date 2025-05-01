@@ -489,7 +489,7 @@ private extension PurchaseInformation {
             isTrial: false,
             isLifetime: true,
             latestPurchaseDate: nil,
-            customerInfoRequestedDate: customerInfoRequestedDate
+            customerInfoRequestedDate: customerInfoRequestedDate,
         )
     }
 

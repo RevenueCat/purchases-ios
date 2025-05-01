@@ -37,6 +37,7 @@ final class PurchaseInformationTests: TestCase {
         let productIdentifier: String
         let store: Store
         let type: TransactionType
+        let isCancelled: Bool
     }
 
     func testAppleEntitlementAndSubscribedProduct() throws {
@@ -64,11 +65,12 @@ final class PurchaseInformationTests: TestCase {
                 willRenew: true,
                 expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
                 isTrial: false
-            )
+            ),
+            isCancelled: false
         )
 
         let subscriptionInfo = try XCTUnwrap(PurchaseInformation(entitlement: entitlement,
-                                                                 subscribedProduct: mockProduct.toStoreProduct(),
+                                                                 storeProduct: mockProduct.toStoreProduct(),
                                                                  transaction: mockTransaction,
                                                                  customerInfoRequestedDate: Date(),
                                                                  dateFormatter: Self.mockDateFormatter))
@@ -111,11 +113,12 @@ final class PurchaseInformationTests: TestCase {
                 willRenew: true,
                 expiresDate: nil,
                 isTrial: false
-            )
+            ),
+            isCancelled: false
         )
 
         let subscriptionInfo = try XCTUnwrap(PurchaseInformation(entitlement: entitlement,
-                                                                 subscribedProduct: mockProduct.toStoreProduct(),
+                                                                 storeProduct: mockProduct.toStoreProduct(),
                                                                  transaction: mockTransaction,
                                                                  customerInfoRequestedDate: Date(),
                                                                  dateFormatter: Self.mockDateFormatter))
@@ -158,11 +161,12 @@ final class PurchaseInformationTests: TestCase {
                 willRenew: false,
                 expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
                 isTrial: false
-            )
+            ),
+            isCancelled: false
         )
 
         let subscriptionInfo = try XCTUnwrap(PurchaseInformation(entitlement: entitlement,
-                                                                 subscribedProduct: mockProduct.toStoreProduct(),
+                                                                 storeProduct: mockProduct.toStoreProduct(),
                                                                  transaction: mockTransaction,
                                                                  customerInfoRequestedDate: Date(),
                                                                  dateFormatter: Self.mockDateFormatter))
@@ -205,11 +209,12 @@ final class PurchaseInformationTests: TestCase {
                 willRenew: false,
                 expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2000"),
                 isTrial: false
-            )
+            ),
+            isCancelled: false
         )
 
         let subscriptionInfo = try XCTUnwrap(PurchaseInformation(entitlement: entitlement,
-                                                                 subscribedProduct: mockProduct.toStoreProduct(),
+                                                                 storeProduct: mockProduct.toStoreProduct(),
                                                                  transaction: mockTransaction,
                                                                  customerInfoRequestedDate: Date(),
                                                                  dateFormatter: Self.mockDateFormatter))
@@ -239,7 +244,8 @@ final class PurchaseInformationTests: TestCase {
                 willRenew: true,
                 expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
                 isTrial: false
-            )
+            ),
+            isCancelled: false
         )
 
         let subscriptionInfo = try XCTUnwrap(PurchaseInformation(entitlement: entitlement,
@@ -273,7 +279,8 @@ final class PurchaseInformationTests: TestCase {
                 willRenew: false,
                 expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
                 isTrial: false
-            )
+            ),
+            isCancelled: false
         )
 
         let subscriptionInfo = try XCTUnwrap(PurchaseInformation(entitlement: entitlement,
@@ -307,7 +314,8 @@ final class PurchaseInformationTests: TestCase {
                 willRenew: false,
                 expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2000"),
                 isTrial: false
-            )
+            ),
+            isCancelled: false
         )
 
         let subscriptionInfo = try XCTUnwrap(PurchaseInformation(entitlement: entitlement,
@@ -341,7 +349,8 @@ final class PurchaseInformationTests: TestCase {
                 willRenew: false,
                 expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
                 isTrial: false
-            )
+            ),
+            isCancelled: false
         )
 
         let subscriptionInfo = try XCTUnwrap(PurchaseInformation(entitlement: entitlement,
@@ -375,7 +384,8 @@ final class PurchaseInformationTests: TestCase {
                 willRenew: false,
                 expiresDate: nil,
                 isTrial: false
-            )
+            ),
+            isCancelled: false
         )
 
         let subscriptionInfo = try XCTUnwrap(PurchaseInformation(entitlement: entitlement,
@@ -410,7 +420,8 @@ final class PurchaseInformationTests: TestCase {
                 willRenew: true,
                 expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
                 isTrial: false
-            )
+            ),
+            isCancelled: false
         )
 
         let subscriptionInfo = try XCTUnwrap(PurchaseInformation(entitlement: entitlement,
@@ -444,7 +455,8 @@ final class PurchaseInformationTests: TestCase {
                 willRenew: false,
                 expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
                 isTrial: false
-            )
+            ),
+            isCancelled: false
         )
 
         let subscriptionInfo = try XCTUnwrap(PurchaseInformation(entitlement: entitlement,
@@ -478,7 +490,8 @@ final class PurchaseInformationTests: TestCase {
                 willRenew: false,
                 expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2000"),
                 isTrial: false
-            )
+            ),
+            isCancelled: false
         )
 
         let subscriptionInfo = try XCTUnwrap(PurchaseInformation(entitlement: entitlement,
@@ -509,11 +522,12 @@ final class PurchaseInformationTests: TestCase {
                 willRenew: false,
                 expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2000"),
                 isTrial: false
-            )
+            ),
+            isCancelled: false
         )
 
         let subscriptionInfo = try XCTUnwrap(PurchaseInformation(entitlement: nil,
-                                                                 subscribedProduct: nil,
+                                                                 storeProduct: nil,
                                                                  transaction: mockTransaction,
                                                                  customerInfoRequestedDate: Date(),
                                                                  dateFormatter: Self.mockDateFormatter))

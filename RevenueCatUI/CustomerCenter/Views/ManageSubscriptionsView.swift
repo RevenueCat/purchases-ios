@@ -198,7 +198,7 @@ struct ManageSubscriptionsView: View {
                 let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
-                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring,
+                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring(),
                     purchasesProvider: CustomerCenterPurchases())
                 ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)

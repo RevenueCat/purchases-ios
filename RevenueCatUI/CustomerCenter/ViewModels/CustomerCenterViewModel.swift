@@ -199,14 +199,14 @@ private extension CustomerCenterViewModel {
         }
     }
 
-    func createPurchaseInformation(for transaction: Transaction,
+    func createPurchaseInformation(for transaction: RevenueCatUI.Transaction,
                                    entitlement: EntitlementInfo?,
                                    customerInfo: CustomerInfo) async throws -> PurchaseInformation {
         if transaction.store == .appStore {
             if let product = await purchasesProvider.products([transaction.productIdentifier]).first {
                 return await PurchaseInformation.purchaseInformationUsingRenewalInfo(
                     entitlement: entitlement,
-                    subscribedProduct: product,
+                    storeProduct: product,
                     transaction: transaction,
                     customerCenterStoreKitUtilities: customerCenterStoreKitUtilities,
                     customerInfoRequestedDate: customerInfo.requestDate

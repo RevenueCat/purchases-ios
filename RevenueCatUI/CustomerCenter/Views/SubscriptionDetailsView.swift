@@ -26,62 +26,22 @@ struct SubscriptionDetailsView: View {
 
     let purchaseInformation: PurchaseInformation
     let refundRequestStatus: RefundRequestStatus?
+
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            SubscriptionDetailsHeader(purchaseInformation: purchaseInformation, localization: localization)
-                .padding(.bottom, 10)
+            SubscriptionDetailsHeader(
+                purchaseInformation: purchaseInformation,
+                localization: localization
+            )
+            .padding(.bottom, 10)
 
             Divider()
                 .padding(.bottom)
 
             VStack(alignment: .leading, spacing: 16.0) {
-                if let durationTitle = purchaseInformation.durationTitle {
-                    IconLabelView(
-                        iconName: "coloncurrencysign.arrow.circlepath",
-                        label: localization[.billingCycle],
-                        value: durationTitle
-                    )
-                }
-
-                let priceValue: String? = {
-                    switch purchaseInformation.price {
-                    case .free:
-                        return localization[.free]
-                    case .paid(let localizedPrice):
-                        return localizedPrice
-                    case .unknown:
-                        return nil
-                    }
-                }()
-
-                if let price = priceValue {
-                    IconLabelView(
-                        iconName: "coloncurrencysign",
-                        label: localization[.currentPrice],
-                        value: price
-                    )
-                }
-
-                if let expirationOrRenewal = purchaseInformation.expirationOrRenewal {
-                    switch expirationOrRenewal.date {
-                    case .never:
-                        IconLabelView(
-                            iconName: "calendar",
-                            label: label(for: expirationOrRenewal),
-                            value: localization[.never]
-                        )
-                    case .date(let value):
-                        IconLabelView(
-                            iconName: "calendar",
-                            label: label(for: expirationOrRenewal),
-                            value: value
-                        )
-                    }
-                }
-
                 if let refundRequestStatus = refundRequestStatus,
                    let refundStatusMessage = refundStatusMessage(for: refundRequestStatus) {
                     IconLabelView(
@@ -130,45 +90,27 @@ struct SubscriptionDetailsHeader: View {
 
     var body: some View {
         VStack(alignment: .leading) {
-            if let title = purchaseInformation.title {
-                Text(title)
+            CompatibilityLabeledContent {
+                Text(purchaseInformation.title ?? purchaseInformation.productIdentifier)
                     .font(.headline)
+            } content: {
+                labeledContent
             }
 
-            if let explanation = getSubscriptionExplanation(from: purchaseInformation, localization: localization) {
-                Text(explanation)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.leading)
-            }
+            Text(purchaseInformation.billingInformation)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.leading)
         }
     }
 
-    private func getSubscriptionExplanation(from purchaseInformation: PurchaseInformation,
-                                            localization: CustomerCenterConfigData.Localization) -> String? {
-        guard purchaseInformation.expirationOrRenewal != nil else {
-            return nil
-        }
-
-        switch purchaseInformation.explanation {
-        case .promotional:
-            return localization[.youHavePromo]
-        case .earliestRenewal:
-            return localization[.subEarliestRenewal]
-        case .earliestExpiration:
-            return localization[.subEarliestExpiration]
-        case .expired:
-            return localization[.subExpired]
-        case .lifetime:
-            return localization[.youHaveLifetime]
-        case .google:
-            return localization[.googleSubscriptionManage]
-        case .web:
-            return localization[.webSubscriptionManage]
-        case .otherStorePurchase:
-            return localization[.pleaseContactSupportToManage]
-        case .amazon:
-            return localization[.amazonSubscriptionManage]
+    @ViewBuilder
+    private var labeledContent: some View {
+        if purchaseInformation.isCancelled {
+            Text("Cancelled")
+                .font(.caption)
+        } else {
+            EmptyView()
         }
     }
 }
@@ -212,11 +154,21 @@ struct SubscriptionDetailsView_Previews: PreviewProvider {
     static var previews: some View {
         ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
             SubscriptionDetailsView(
-                purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
+                purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring(
+                    isCancelled: false),
                 refundRequestStatus: .success
             )
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Subscription Details - Monthly - \(colorScheme)")
+            .padding()
+
+            SubscriptionDetailsView(
+                purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring(
+                    isCancelled: true),
+                refundRequestStatus: .success
+            )
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Subscription Details - Monthly - Cancelled - \(colorScheme)")
             .padding()
         }
     }

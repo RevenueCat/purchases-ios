@@ -14,7 +14,7 @@
 //
 
 import Foundation
-import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 enum CustomerCenterConfigTestData {
 
@@ -142,7 +142,7 @@ enum CustomerCenterConfigTestData {
         buttonBackgroundColor: .init(light: "#287aff", dark: "#287aff")
     )
 
-    static let subscriptionInformationMonthlyRenewing: PurchaseInformation = .init(
+    static let subscriptionInformationMonthlyRenewing: PurchaseInformation = PurchaseInformation(
         title: "Basic",
         durationTitle: "Monthly",
         explanation: .earliestRenewal,
@@ -154,10 +154,11 @@ enum CustomerCenterConfigTestData {
         isTrial: false,
         isLifetime: false,
         latestPurchaseDate: nil,
+        isCancelled: false,
         customerInfoRequestedDate: Date()
     )
 
-    static let subscriptionInformationFree: PurchaseInformation = .init(
+    static let subscriptionInformationFree: PurchaseInformation = PurchaseInformation(
         title: "Basic",
         durationTitle: "Monthly",
         explanation: .earliestRenewal,
@@ -169,25 +170,35 @@ enum CustomerCenterConfigTestData {
         isTrial: false,
         isLifetime: false,
         latestPurchaseDate: nil,
+        isCancelled: false,
         customerInfoRequestedDate: Date()
     )
 
-    static let subscriptionInformationYearlyExpiring: PurchaseInformation = .init(
-        title: "Basic",
-        durationTitle: "Yearly",
-        explanation: .earliestRenewal,
-        price: .paid("$49.99"),
-        expirationOrRenewal: .init(label: .expires,
-                                   date: .date("June 1st, 2024")),
-        productIdentifier: "product_id",
-        store: .appStore,
-        isTrial: false,
-        isLifetime: false,
-        latestPurchaseDate: nil,
-        customerInfoRequestedDate: Date()
-    )
+    static func subscriptionInformationYearlyExpiring(isCancelled: Bool = false) -> PurchaseInformation {
+        PurchaseInformation(
+            title: "Basic",
+            durationTitle: "Yearly",
+            explanation: .earliestRenewal,
+            price: .paid("$49.99"),
+            expirationOrRenewal: .init(label: .expires,
+                                       date: .date("June 1st, 2024")),
+            productIdentifier: "product_id",
+            store: .appStore,
+            isTrial: false,
+            isLifetime: false,
+            latestPurchaseDate: nil,
+            isCancelled: isCancelled,
+            customerInfoRequestedDate: Date(),
+            introductoryDiscount: MockStoreProductDiscount.mock(
+                paymentMode: .payAsYouGo,
+                discountType: .introductory
+            ),
+            expirationDate: Date(),
+            renewalDate: Date()
+        )
+    }
 
-    static let consumable: PurchaseInformation = .init(
+    static let consumable: PurchaseInformation = PurchaseInformation(
         title: "Basic",
         durationTitle: nil,
         explanation: .lifetime,
@@ -198,7 +209,36 @@ enum CustomerCenterConfigTestData {
         isTrial: false,
         isLifetime: true,
         latestPurchaseDate: Date(),
+        isCancelled: false,
         customerInfoRequestedDate: Date()
     )
 
+}
+
+private struct MockStoreProductDiscount: StoreProductDiscountType {
+
+    let offerIdentifier: String?
+    let currencyCode: String?
+    let price: Decimal
+    let localizedPriceString: String
+    let paymentMode: StoreProductDiscount.PaymentMode
+    let subscriptionPeriod: RevenueCat.SubscriptionPeriod
+    let numberOfPeriods: Int
+    let type: StoreProductDiscount.DiscountType
+
+    static func mock(
+        paymentMode: StoreProductDiscount.PaymentMode,
+        discountType: StoreProductDiscount.DiscountType
+    ) -> MockStoreProductDiscount {
+        MockStoreProductDiscount(
+            offerIdentifier: nil,
+            currencyCode: nil,
+            price: 0.01,
+            localizedPriceString: "$0.01",
+            paymentMode: paymentMode,
+            subscriptionPeriod: SubscriptionPeriod(value: 1, unit: .month),
+            numberOfPeriods: 6,
+            type: discountType
+        )
+    }
 }
