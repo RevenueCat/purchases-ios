@@ -175,7 +175,7 @@ extension StoreProductDiscount {
 }
 
 /// The details of an introductory offer or a promotional offer for an auto-renewable subscription.
-internal protocol StoreProductDiscountType: Sendable {
+@_spi(Internal) public protocol StoreProductDiscountType: Sendable {
 
     // Note: this is only `nil` for SK1 products.
     // It can become `String` once it's not longer supported.
