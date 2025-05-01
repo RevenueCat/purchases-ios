@@ -27,3 +27,21 @@ extension PurchasesDiagnostics.ProductStatus {
         }
     }
 }
+
+extension PurchasesDiagnostics.SDKHealthCheckStatus {
+    var icon: String {
+        switch self {
+        case .passed: "checkmark.circle.fill"
+        case .failed: "xmark.circle.fill"
+        case .warning: "exclamationmark.triangle.fill"
+        }
+    }
+
+    var color: Color {
+        switch self {
+        case .passed: .green
+        case .failed: .red
+        case .warning: .yellow
+        }
+    }
+}

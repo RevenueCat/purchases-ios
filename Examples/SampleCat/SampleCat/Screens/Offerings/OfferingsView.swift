@@ -16,19 +16,12 @@ struct OfferingsView: View {
             VStack {
                 ForEach(offerings) { offering in
                     Button(action: { selectedOffering = offering }) {
-                        Text(offering.identifier)
-                            .textCase(.uppercase)
-                            .font(.caption)
-                            .fontWeight(.bold)
-                            .padding(.vertical, 12)
-                            .padding(.horizontal, 16)
-                            .background(selectedOffering == offering ? Color.accentColor : .secondary.opacity(0.2))
-                            .foregroundStyle(selectedOffering == offering ? Color.white : .primary)
-                            .clipShape(Capsule())
+                        OfferingCell(offering: offering)
                     }
                     .buttonStyle(.plain)
                 }
             }
+            .padding()
             .overlay {
                 if isLoading {
                     Spinner()

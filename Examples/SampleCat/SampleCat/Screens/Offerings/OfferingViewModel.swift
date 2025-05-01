@@ -11,4 +11,12 @@ struct OfferingViewModel: Identifiable, Equatable {
     var id: String { identifier }
     let identifier: String
     let status: PurchasesDiagnostics.SDKHealthCheckStatus
+
+    var icon: String {
+        status.icon
+    }
+
+    var color: Color {
+        status.color
+    }
 }
