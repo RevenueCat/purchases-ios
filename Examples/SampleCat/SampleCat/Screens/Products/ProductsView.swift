@@ -30,6 +30,7 @@ struct ProductsView: View {
                 }
             }
             .padding()
+            .blur(radius: healthViewModel.isfetchingHealthReport ? 5 : 0)
             .overlay {
                 if healthViewModel.isfetchingHealthReport {
                     Spinner()
@@ -48,6 +49,7 @@ struct ProductsView: View {
 
             await healthViewModel.fetchHealthReport()
         }
+        .refreshable(action: healthViewModel.fetchHealthReport)
     }
 }
 

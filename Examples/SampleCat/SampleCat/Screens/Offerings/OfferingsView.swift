@@ -21,6 +21,7 @@ struct OfferingsView: View {
                     }
                 }
                 .padding()
+                .blur(radius: healthViewModel.isfetchingHealthReport ? 5 : 0)
                 .overlay {
                     if healthViewModel.isfetchingHealthReport {
                         Spinner()
