@@ -14,6 +14,16 @@ struct OfferingCell: View {
             }
             .font(.headline)
             .symbolRenderingMode(.hierarchical)
+
+            if offering.products.isEmpty {
+                Text("No products")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            } else {
+                Text("\(offering.products.count) product\(offering.products.count > 1 ? "s" : "")")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
         }
         .padding()
         .background(scheme == .dark ? Color.black : Color.white)

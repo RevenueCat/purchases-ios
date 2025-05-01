@@ -51,12 +51,19 @@ struct OfferingsView: View {
     
     private func checkAppHealth() async throws {
         let report = await PurchasesDiagnostics.default.healthReport()
-        print(report)
-        print(report.offerings)
         self.offerings = report.offerings.map { offering in
             OfferingViewModel(
                 identifier: offering.identifier,
-                status: offering.status
+                status: offering.status,
+                products: offering.packages.map { package in
+                    ProductViewModel(
+                        id: package.identifier,
+                        status: package.status,
+                        title: package.productIdentifier,
+                        description: package.description,
+                        storeProduct: nil
+                    )
+                }
             )
         }
         self.selectedOffering = offerings.first
