@@ -37,6 +37,7 @@ class ButtonComponentViewModel {
         case url(url: URL, method: PaywallComponent.ButtonComponent.URLMethod)
         case privacyPolicy(url: URL, method: PaywallComponent.ButtonComponent.URLMethod)
         case terms(url: URL, method: PaywallComponent.ButtonComponent.URLMethod)
+        case webPaywallLink(url: URL, method: PaywallComponent.ButtonComponent.URLMethod)
         case unknown
     }
 
@@ -77,6 +78,10 @@ class ButtonComponentViewModel {
             case .terms(let urlLid, let method):
                 self.action = .navigateTo(
                     destination: .terms(url: try localizedStrings.urlFromLid(urlLid), method: method)
+                )
+            case .webPaywallLink(urlLid: let urlLid, method: let method):
+                self.action = .navigateTo(
+                    destination: .webPaywallLink(url: try localizedStrings.urlFromLid(urlLid), method: method)
                 )
             case .unknown:
                 self.action = .unknown

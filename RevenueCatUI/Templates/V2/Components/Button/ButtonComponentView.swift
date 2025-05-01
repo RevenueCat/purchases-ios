@@ -22,6 +22,8 @@ struct ButtonComponentView: View {
     @Environment(\.openURL) private var openURL
     @State private var inAppBrowserURL: URL?
     @State private var showCustomerCenter = false
+    @State private var showingWebPaywallLinkAlert = false
+    @State private var webPaywallLinkURL: URL?
 
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
@@ -64,6 +66,29 @@ struct ButtonComponentView: View {
                     onDismiss: self.onDismiss,
                     showActivityIndicatorOverContent: self.showActivityIndicatorOverContent
                 )
+            }
+            .alert("Open in web browser?",
+                   isPresented: $showingWebPaywallLinkAlert) {
+                Button("Cancel", role: .cancel) {}
+                Button("Open") {
+                    if let url = webPaywallLinkURL {
+#if os(watchOS)
+                        // watchOS doesn't support openURL with a completion handler, so we're just opening the URL.
+                        openURL(url)
+#else
+                        openURL(url) { success in
+                            if success {
+                                Logger.debug(Strings.successfully_opened_url_external_browser(url.absoluteString))
+                            } else {
+                                Logger.error(Strings.failed_to_open_url_external_browser(url.absoluteString))
+                            }
+                        }
+#endif
+                        onDismiss()
+                    }
+                }
+            } message: {
+                Text("You will leave the app and go to the developer’s website.")
             }
             .applyIf(self.shouldBeDisabled, apply: { view in
                 view
@@ -120,6 +145,8 @@ struct ButtonComponentView: View {
             navigateToUrl(url: url, method: method)
         case .unknown:
             break
+        case .webPaywallLink(url: let url, method: let method):
+            openWebPaywallLink(url: url, method: method)
         }
     }
 
@@ -139,6 +166,19 @@ struct ButtonComponentView: View {
         case .unknown:
             break
         }
+    }
+
+    private func openWebPaywallLink(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) {
+        var url = url.appendingPathComponent(Purchases.shared.appUserID)
+        if var components = URLComponents(url: url, resolvingAgainstBaseURL: false) {
+            var items = components.queryItems ?? []
+            items.append(.init(name: "rc_source", value: "app"))
+            components.queryItems = items
+            url = components.url ?? url
+        }
+        Purchases.shared.invalidateCustomerInfoCache()
+        webPaywallLinkURL = url
+        showingWebPaywallLinkAlert = true
     }
 
 }
