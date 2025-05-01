@@ -171,46 +171,50 @@ struct ManageSubscriptionsView: View {
 }
 
 #if DEBUG
- @available(iOS 15.0, *)
- @available(macOS, unavailable)
- @available(tvOS, unavailable)
- @available(watchOS, unavailable)
- struct ManageSubscriptionsView_Previews: PreviewProvider {
+// swiftlint:disable force_unwrapping
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+struct ManageSubscriptionsView_Previews: PreviewProvider {
 
-    // swiftlint:disable force_unwrapping
+    static let managementScreen: CustomerCenterConfigData.Screen = CustomerCenterConfigTestData
+        .customerCenterData()
+        .screens[.management]!
+
     static var previews: some View {
         ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
             CompatibilityNavigationStack {
                 let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
-                    screen: CustomerCenterConfigTestData.customerCenterData().screens[.management]!,
+                    screen: Self.managementScreen,
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing(),
                     purchasesProvider: CustomerCenterPurchases())
                 ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing)
-                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData().localization)
-                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData().appearance)
+                    .environment(\.localization, CustomerCenterConfigTestData.customerCenterData().localization)
+                    .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData().appearance)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Renewing subscription - No refund - No discount - \(colorScheme)")
 
             CompatibilityNavigationStack {
                 let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
-                    screen: CustomerCenterConfigTestData.customerCenterData().screens[.management]!,
+                    screen: Self.managementScreen,
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing(
                         introductoryDiscount: CustomerCenterConfigTestData.discount(paymentMode: .payAsYouGo)
                     ),
                     purchasesProvider: CustomerCenterPurchases())
                 ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing)
-                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData().localization)
-                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData().appearance)
+                    .environment(\.localization, CustomerCenterConfigTestData.customerCenterData().localization)
+                    .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData().appearance)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Renewing subscription - No refund - Pay as you go - \(colorScheme)")
 
             CompatibilityNavigationStack {
                 let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
-                    screen: CustomerCenterConfigTestData.customerCenterData().screens[.management]!,
+                    screen: Self.managementScreen,
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing(
                         introductoryDiscount: CustomerCenterConfigTestData.discount(
@@ -221,15 +225,15 @@ struct ManageSubscriptionsView: View {
                     ),
                     purchasesProvider: CustomerCenterPurchases())
                 ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing)
-                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData().localization)
-                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData().appearance)
+                    .environment(\.localization, CustomerCenterConfigTestData.customerCenterData().localization)
+                    .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData().appearance)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Renewing subscription - No refund - Pay up front - \(colorScheme)")
 
             CompatibilityNavigationStack {
                 let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
-                    screen: CustomerCenterConfigTestData.customerCenterData().screens[.management]!,
+                    screen: Self.managementScreen,
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing(
                         introductoryDiscount: CustomerCenterConfigTestData.discount(
@@ -240,68 +244,68 @@ struct ManageSubscriptionsView: View {
                     ),
                     purchasesProvider: CustomerCenterPurchases())
                 ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing)
-                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData().localization)
-                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData().appearance)
+                    .environment(\.localization, CustomerCenterConfigTestData.customerCenterData().localization)
+                    .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData().appearance)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Renewing subscription - No refund - Free trial - \(colorScheme)")
 
             CompatibilityNavigationStack {
                 let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
-                    screen: CustomerCenterConfigTestData.customerCenterData().screens[.management]!,
+                    screen: Self.managementScreen,
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing(),
                     refundRequestStatus: .success,
                     purchasesProvider: CustomerCenterPurchases())
                 ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing)
-                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData().localization)
-                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData().appearance)
+                    .environment(\.localization, CustomerCenterConfigTestData.customerCenterData().localization)
+                    .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData().appearance)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Renewing subscription - Requested refund - No discount - \(colorScheme)")
 
             CompatibilityNavigationStack {
                 let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
-                    screen: CustomerCenterConfigTestData.customerCenterData().screens[.management]!,
+                    screen: Self.managementScreen,
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring(),
                     purchasesProvider: CustomerCenterPurchases())
                 ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
-                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData().localization)
-                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData().appearance)
+                    .environment(\.localization, CustomerCenterConfigTestData.customerCenterData().localization)
+                    .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData().appearance)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Cancelled subscription - No refund - No discount - \(colorScheme)")
 
             CompatibilityNavigationStack {
                 let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
-                    screen: CustomerCenterConfigTestData.customerCenterData().screens[.management]!,
+                    screen: Self.managementScreen,
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationFree,
                     purchasesProvider: CustomerCenterPurchases())
                 ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
-                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData().localization)
-                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData().appearance)
+                    .environment(\.localization, CustomerCenterConfigTestData.customerCenterData().localization)
+                    .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData().appearance)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Free subscription - No refund - No discount - \(colorScheme)")
 
             CompatibilityNavigationStack {
                 let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
-                    screen: CustomerCenterConfigTestData.customerCenterData().screens[.management]!,
+                    screen: Self.managementScreen,
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.consumable,
                     purchasesProvider: CustomerCenterPurchases())
                 ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
-                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData().localization)
-                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData().appearance)
+                    .environment(\.localization, CustomerCenterConfigTestData.customerCenterData().localization)
+                    .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData().appearance)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Consumable - \(colorScheme)")
 
             CompatibilityNavigationStack {
                 let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
-                    screen: CustomerCenterConfigTestData.customerCenterData().screens[.management]!,
+                    screen: Self.managementScreen,
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.consumable,
                     purchasesProvider: CustomerCenterPurchases())
@@ -317,7 +321,7 @@ struct ManageSubscriptionsView: View {
         }
     }
 
- }
+}
 
 #endif
 
