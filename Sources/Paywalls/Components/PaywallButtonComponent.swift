@@ -116,6 +116,7 @@ public extension PaywallComponent {
             case customerCenter
             case privacyPolicy(urlLid: String, method: URLMethod)
             case terms(urlLid: String, method: URLMethod)
+            case webPaywallLink(urlLid: String, method: URLMethod)
             case url(urlLid: String, method: URLMethod)
 
             case unknown
@@ -136,6 +137,9 @@ public extension PaywallComponent {
                     try container.encode(URLPayload(urlLid: urlLid, method: method), forKey: .url)
                 case .privacyPolicy(let urlLid, let method):
                     try container.encode("privacy_policy", forKey: .destination)
+                    try container.encode(URLPayload(urlLid: urlLid, method: method), forKey: .url)
+                case .webPaywallLink(let urlLid, let method):
+                    try container.encode("web_paywall_link", forKey: .destination)
                     try container.encode(URLPayload(urlLid: urlLid, method: method), forKey: .url)
                 case .url(let urlLid, let method):
                     try container.encode("url", forKey: .destination)
@@ -161,6 +165,9 @@ public extension PaywallComponent {
                 case "url":
                     let urlPayload = try container.decode(URLPayload.self, forKey: .url)
                     self = .url(urlLid: urlPayload.urlLid, method: urlPayload.method)
+                case "web_paywall_link":
+                    let urlPayload = try container.decode(URLPayload.self, forKey: .url)
+                    self = .webPaywallLink(urlLid: urlPayload.urlLid, method: urlPayload.method)
                 case "unknown":
                     self = .unknown
                 default:
