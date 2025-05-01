@@ -2,6 +2,27 @@ import SwiftUI
 import Foundation
 import RevenueCat
 
+extension PurchasesDiagnostics.SDKHealthError: @retroactive Identifiable {
+    public var id: String {
+        switch self {
+        case .notAuthorizedToMakePayments:
+            return "notAuthorizedToMakePayments"
+        case .invalidAPIKey:
+            return "invalidAPIKey"
+        case .noOfferings:
+            return "noOfferings"
+        case .offeringConfiguration:
+            return "offeringConfiguration"
+        case .invalidBundleId:
+            return "invalidBundleId"
+        case .invalidProducts:
+            return "invalidProducts"
+        case let .unknown(error):
+            return "unknown-\(error.localizedDescription)"
+        }
+    }
+}
+
 #if DEBUG
 @MainActor @Observable final class HealthViewModel {
     var products = [ProductViewModel]()
@@ -9,11 +30,18 @@ import RevenueCat
 
     var isfetchingHealthReport: Bool = false
 
+    var blockingError: PurchasesDiagnostics.SDKHealthError?
+
     func fetchHealthReport() async {
         defer { isfetchingHealthReport = false }
         isfetchingHealthReport = true
 
         let report = await PurchasesDiagnostics.default.healthReport()
+        if case let .unhealthy(error) = report.status {
+            self.blockingError = error
+            return
+        }
+        self.blockingError = nil
         let reportProducts = report.products
         let identifiers = Set(reportProducts.map(\.identifier) + report.offerings.flatMap { $0.packages.map(\.productIdentifier) })
         let storeProducts = await Purchases.shared.products(Array(identifiers))

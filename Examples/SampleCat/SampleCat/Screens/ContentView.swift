@@ -1,7 +1,11 @@
 import SwiftUI
 
 struct ContentView: View {
+    @Environment(HealthViewModel.self) var healthViewModel
+
     var body: some View {
+        @Bindable var healthViewModel = healthViewModel
+
         TabView {
             OfferingsView()
                 .tabItem {
@@ -12,6 +16,9 @@ struct ContentView: View {
                 .tabItem {
                     Label("Products", systemImage: "shippingbox.fill")
                 }
+        }
+        .fullScreenCover(item: $healthViewModel.blockingError) { error in
+            FullScreenErrorView(error: error)
         }
     }
 }
