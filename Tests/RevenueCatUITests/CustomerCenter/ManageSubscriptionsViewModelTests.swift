@@ -65,7 +65,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beFalse())
     }
 
-    func testCancelledDoesNotShowCancel() {
+    func testCancelledDoesNotShowCancelAndRefund() {
         let purchase = PurchaseInformation.mockNonLifetime(
             isCancelled: true
         )
@@ -76,8 +76,9 @@ final class ManageSubscriptionsViewModelTests: TestCase {
             purchaseInformation: purchase,
             purchasesProvider: MockCustomerCenterPurchases())
 
-        expect(viewModel.relevantPathsForPurchase.count) == 3
+        expect(viewModel.relevantPathsForPurchase.count) == 2
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beFalse())
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beFalse())
     }
 
     func testShowsRefundIfRefundWindowIsForever() {
