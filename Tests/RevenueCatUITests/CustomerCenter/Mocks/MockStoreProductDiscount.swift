@@ -9,8 +9,9 @@
 //
 //  MockStoreProductDiscount.swift
 //
-//  Created by Nacho Soto on 1/17/22.
+//  Created by Facundo Menzella on 1/5/25.
 
+import Foundation
 @_spi(Internal) @testable import RevenueCat
 
 struct MockStoreProductDiscount {
@@ -23,7 +24,6 @@ struct MockStoreProductDiscount {
     let subscriptionPeriod: SubscriptionPeriod
     let numberOfPeriods: Int
     let type: StoreProductDiscount.DiscountType
-
 }
 
-@_spi(Internal) extension MockStoreProductDiscount: StoreProductDiscountType { }
+@_spi(Internal) extension MockStoreProductDiscount: StoreProductDiscountType {}

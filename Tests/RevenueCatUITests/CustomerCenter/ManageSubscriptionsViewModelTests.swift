@@ -461,19 +461,6 @@ private extension ManageSubscriptionsViewModelTests {
 
 }
 
-private struct MockStoreProductDiscount: StoreProductDiscountType {
-
-    let offerIdentifier: String?
-    let currencyCode: String?
-    let price: Decimal
-    let localizedPriceString: String
-    let paymentMode: StoreProductDiscount.PaymentMode
-    let subscriptionPeriod: RevenueCat.SubscriptionPeriod
-    let numberOfPeriods: Int
-    let type: StoreProductDiscount.DiscountType
-
-}
-
 private extension PurchaseInformation {
     static func mockLifetime(
         customerInfoRequestedDate: Date = Date()

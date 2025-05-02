@@ -14,7 +14,7 @@
 // swiftlint:disable type_body_length file_length
 
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 @testable import RevenueCatUI
 import XCTest
 
@@ -484,19 +484,6 @@ private extension FeedbackSurveyViewModelTests {
         type: .cancel,
         detail: .feedbackSurvey(feedbackSurvey),
         refundWindowDuration: .forever)
-
-}
-
-private struct MockStoreProductDiscount: StoreProductDiscountType {
-
-    let offerIdentifier: String?
-    let currencyCode: String?
-    let price: Decimal
-    let localizedPriceString: String
-    let paymentMode: StoreProductDiscount.PaymentMode
-    let subscriptionPeriod: SubscriptionPeriod
-    let numberOfPeriods: Int
-    let type: StoreProductDiscount.DiscountType
 
 }
 
