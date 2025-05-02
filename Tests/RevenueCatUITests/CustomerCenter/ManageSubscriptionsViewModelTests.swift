@@ -65,6 +65,21 @@ final class ManageSubscriptionsViewModelTests: TestCase {
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beFalse())
     }
 
+    func testCancelledDoesNotShowCancel() {
+        let purchase = PurchaseInformation.mockNonLifetime(
+            isCancelled: true
+        )
+
+        let viewModel = ManageSubscriptionsViewModel(
+            screen: ManageSubscriptionsViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases())
+
+        expect(viewModel.relevantPathsForPurchase.count) == 3
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beFalse())
+    }
+
     func testShowsRefundIfRefundWindowIsForever() {
         let purchase = PurchaseInformation.mockNonLifetime()
 
@@ -486,8 +501,9 @@ private extension PurchaseInformation {
             expirationOrRenewal: PurchaseInformation.ExpirationOrRenewal(label: .expires, date: .date("")),
             productIdentifier: "",
             store: .appStore,
-            isTrial: false,
             isLifetime: true,
+            isTrial: false,
+            isCancelled: false,
             latestPurchaseDate: nil,
             customerInfoRequestedDate: customerInfoRequestedDate
         )
@@ -496,6 +512,7 @@ private extension PurchaseInformation {
     static func mockNonLifetime(
         price: PurchaseInformation.PriceDetails = .paid("5"),
         isTrial: Bool = false,
+        isCancelled: Bool = false,
         latestPurchaseDate: Date = Date(),
         customerInfoRequestedDate: Date = Date()) -> PurchaseInformation {
         PurchaseInformation(
@@ -509,8 +526,9 @@ private extension PurchaseInformation {
             ),
             productIdentifier: "",
             store: .appStore,
-            isTrial: isTrial,
             isLifetime: false,
+            isTrial: isTrial,
+            isCancelled: isCancelled,
             latestPurchaseDate: latestPurchaseDate,
             customerInfoRequestedDate: customerInfoRequestedDate
         )
