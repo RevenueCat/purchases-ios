@@ -658,11 +658,7 @@ final class PurchasesOrchestrator {
 
             if let transaction = transaction {
                 customerInfo = try await self.handlePurchasedTransaction(transaction, .purchase, metadata)
-
-                Task {
-                    try await Task.sleep(nanoseconds: 1_000_000_00 * 3)
-                    self.postPaywallEventsIfNeeded()
-                }
+                self.postPaywallEventsIfNeeded()
             } else {
                 // `transaction` would be `nil` for `Product.PurchaseResult.pending` and
                 // `Product.PurchaseResult.userCancelled`.

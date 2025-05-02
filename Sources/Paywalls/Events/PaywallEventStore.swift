@@ -59,7 +59,10 @@ internal actor PaywallEventStore: PaywallEventStoreType {
         do {
             return try await self.handler.readLines()
                 .prefix(count)
-                .compactMap { try? StoredEventSerializer.decode($0) }
+                .compactMap {
+                    print("line: \($0)")
+                    return try? StoredEventSerializer.decode($0)
+                }
                 .extractValues()
         } catch {
             Logger.error(PaywallEventStoreStrings.error_fetching_events(error))
