@@ -4,7 +4,7 @@
 //
 
 import Foundation
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 extension ProductRequestData {
 
