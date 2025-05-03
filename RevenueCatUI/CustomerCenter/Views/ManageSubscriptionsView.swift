@@ -39,7 +39,7 @@ struct ManageSubscriptionsView: View {
     @Environment(\.navigationOptions)
     var navigationOptions
 
-    @StateObject
+    @ObservedObject
     private var viewModel: ManageSubscriptionsViewModel
 
     init(screen: CustomerCenterConfigData.Screen,
@@ -55,7 +55,7 @@ struct ManageSubscriptionsView: View {
     }
 
     fileprivate init(viewModel: ManageSubscriptionsViewModel) {
-        self._viewModel = .init(wrappedValue: viewModel)
+        self.viewModel = viewModel
     }
 
     var body: some View {
