@@ -44,12 +44,14 @@ struct ManageSubscriptionsView: View {
 
     init(screen: CustomerCenterConfigData.Screen,
          purchaseInformation: PurchaseInformation?,
+         purchasesActive: [PurchaseInformation] = [],
          purchasesProvider: CustomerCenterPurchasesType,
          actionWrapper: CustomerCenterActionWrapper) {
         let viewModel = ManageSubscriptionsViewModel(
             screen: screen,
             actionWrapper: actionWrapper,
             purchaseInformation: purchaseInformation,
+            purchasesActive: purchasesActive,
             purchasesProvider: purchasesProvider)
         self.init(viewModel: viewModel)
     }
@@ -112,33 +114,7 @@ struct ManageSubscriptionsView: View {
     @ViewBuilder
     var content: some View {
         List {
-            if let purchaseInformation = self.viewModel.purchaseInformation {
-                SubscriptionDetailsView(
-                    purchaseInformation: purchaseInformation,
-                    refundRequestStatus: self.viewModel.refundRequestStatus
-                )
-
-                if support?.displayPurchaseHistoryLink == true {
-                    Button {
-                        viewModel.showPurchases = true
-                    } label: {
-                        Text(localization[.seeAllPurchases])
-                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                            .contentShape(Rectangle())
-                    }
-                }
-
-                Section {
-                    ManageSubscriptionsButtonsView(
-                        viewModel: self.viewModel
-                    )
-                } header: {
-                    if let subtitle = self.viewModel.screen.subtitle {
-                        Text(subtitle)
-                            .textCase(nil)
-                    }
-                }
-            } else {
+            if viewModel.purchasesActive.isEmpty {
                 let fallbackDescription = localization[.tryCheckRestore]
 
                 Section {
@@ -151,6 +127,37 @@ struct ManageSubscriptionsView: View {
 
                 Section {
                     ManageSubscriptionsButtonsView(viewModel: self.viewModel)
+                }
+
+            } else {
+                Section("Active subscriptions") {
+                    ForEach(viewModel.purchasesActive) {
+                        SubscriptionDetailsView(
+                            purchaseInformation: $0,
+                            refundRequestStatus: self.viewModel.refundRequestStatus
+                        )
+                    }
+                }
+            }
+
+            if support?.displayPurchaseHistoryLink == true {
+                Button {
+                    viewModel.showPurchases = true
+                } label: {
+                    Text(localization[.seeAllPurchases])
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
+                }
+            }
+
+            Section {
+                ManageSubscriptionsButtonsView(
+                    viewModel: self.viewModel
+                )
+            } header: {
+                if let subtitle = self.viewModel.screen.subtitle {
+                    Text(subtitle)
+                        .textCase(nil)
                 }
             }
         }

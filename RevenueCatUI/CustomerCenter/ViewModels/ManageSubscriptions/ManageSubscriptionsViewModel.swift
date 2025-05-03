@@ -65,6 +65,9 @@ final class ManageSubscriptionsViewModel: ObservableObject {
     let actionWrapper: CustomerCenterActionWrapper
 
     @Published
+    private(set) var purchasesActive: [PurchaseInformation] = []
+
+    @Published
     private(set) var purchaseInformation: PurchaseInformation?
 
     @Published
@@ -79,12 +82,14 @@ final class ManageSubscriptionsViewModel: ObservableObject {
         screen: CustomerCenterConfigData.Screen,
         actionWrapper: CustomerCenterActionWrapper,
         purchaseInformation: PurchaseInformation? = nil,
+        purchasesActive: [PurchaseInformation] = [],
         refundRequestStatus: RefundRequestStatus? = nil,
         purchasesProvider: CustomerCenterPurchasesType,
         loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
             self.screen = screen
             self.paths = screen.filteredPaths
             self.purchaseInformation = purchaseInformation
+            self.purchasesActive = purchasesActive
             self.purchasesProvider = purchasesProvider
             self.refundRequestStatus = refundRequestStatus
             self.actionWrapper = actionWrapper

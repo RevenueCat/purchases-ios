@@ -202,8 +202,8 @@ private extension CustomerCenterView {
 
     @ViewBuilder
     func destinationContent(configuration: CustomerCenterConfigData) -> some View {
-        if let purchaseInformation = viewModel.purchaseInformation {
-            if purchaseInformation.store == .appStore,
+        if let purchaseInformation = viewModel.purchasesActive.first {
+            if viewModel.purchasesActive.contains(where: { $0.store == .appStore }),
                let screen = configuration.screens[.management] {
                 if let onUpdateAppClick = viewModel.onUpdateAppClick,
                     !ignoreAppUpdateWarning && viewModel.shouldShowAppUpdateWarnings {
@@ -219,21 +219,25 @@ private extension CustomerCenterView {
                     ManageSubscriptionsView(
                         screen: screen,
                         purchaseInformation: purchaseInformation,
+                        purchasesActive: viewModel.purchasesActive,
                         purchasesProvider: self.viewModel.purchasesProvider,
                         actionWrapper: self.viewModel.actionWrapper)
                 }
             } else if let screen = configuration.screens[.management] {
-                WrongPlatformView(screen: screen,
-                                  purchaseInformation: purchaseInformation)
+                WrongPlatformView(
+                    screen: screen,
+                    purchaseInformation: purchaseInformation
+                )
             } else {
                 WrongPlatformView(purchaseInformation: purchaseInformation)
             }
         } else {
             if let screen = configuration.screens[.noActive] {
-                ManageSubscriptionsView(screen: screen,
-                                        purchaseInformation: nil,
-                                        purchasesProvider: self.viewModel.purchasesProvider,
-                                        actionWrapper: self.viewModel.actionWrapper)
+                ManageSubscriptionsView(
+                    screen: screen,
+                    purchaseInformation: nil,
+                    purchasesProvider: self.viewModel.purchasesProvider,
+                    actionWrapper: self.viewModel.actionWrapper)
             } else {
                 // Fallback with a restore button
                 NoSubscriptionsView(configuration: configuration,
