@@ -78,7 +78,7 @@ struct ManageSubscriptionsView: View {
     @ViewBuilder
     var content: some View {
         List {
-            if true {
+            if support?.shouldWarnCustomersAboutMultipleSubscriptions == true {
                 CompatibilityContentUnavailableView(
                     "You May Have Duplicate Subscriptions",
                     systemImage: "exclamationmark.square",
