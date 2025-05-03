@@ -68,7 +68,7 @@ final class ManageSubscriptionsViewModel: ObservableObject {
     private(set) var purchasesActive: [PurchaseInformation] = []
 
     @Published
-    private(set) var purchaseInformation: PurchaseInformation?
+    var purchaseInformation: PurchaseInformation?
 
     @Published
     private(set) var refundRequestStatus: RefundRequestStatus?

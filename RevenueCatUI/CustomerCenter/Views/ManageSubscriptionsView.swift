@@ -131,11 +131,15 @@ struct ManageSubscriptionsView: View {
 
             } else {
                 Section("Active subscriptions") {
-                    ForEach(viewModel.purchasesActive) {
-                        SubscriptionDetailsView(
-                            purchaseInformation: $0,
-                            refundRequestStatus: self.viewModel.refundRequestStatus
-                        )
+                    ForEach(viewModel.purchasesActive) { purchase in
+                        Button {
+                            viewModel.purchaseInformation = purchase
+                        } label: {
+                            SubscriptionDetailsView(
+                                purchaseInformation: purchase,
+                                refundRequestStatus: self.viewModel.refundRequestStatus
+                            )
+                        }
                     }
                 }
 
@@ -143,20 +147,26 @@ struct ManageSubscriptionsView: View {
                     Button {
                         viewModel.showPurchases = true
                     } label: {
-                        Text(localization[.seeAllPurchases])
-                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                            .contentShape(Rectangle())
+                        CompatibilityLabeledContent {
+                            Text(localization[.seeAllPurchases])
+                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                                .contentShape(Rectangle())
+                        } content: {
+                            Image(systemName: "chevron.forward")
+                        }
                     }
                 }
 
-                Section {
-                    ManageSubscriptionsButtonsView(
-                        viewModel: self.viewModel
-                    )
-                } header: {
-                    if let subtitle = self.viewModel.screen.subtitle {
-                        Text(subtitle)
-                            .textCase(nil)
+                if viewModel.purchasesActive.count == 1 {
+                    Section {
+                        ManageSubscriptionsButtonsView(
+                            viewModel: self.viewModel
+                        )
+                    } header: {
+                        if let subtitle = self.viewModel.screen.subtitle {
+                            Text(subtitle)
+                                .textCase(nil)
+                        }
                     }
                 }
             }
