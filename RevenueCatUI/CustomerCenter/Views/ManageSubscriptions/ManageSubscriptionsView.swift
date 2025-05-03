@@ -78,6 +78,27 @@ struct ManageSubscriptionsView: View {
     @ViewBuilder
     var content: some View {
         List {
+            if true {
+                CompatibilityContentUnavailableView(
+                    "You May Have Duplicate Subscriptions",
+                    systemImage: "exclamationmark.square",
+                    description: "It looks like you might be subscribed both on the web and through the App Store. To avoid being charged twice, please cancel your iOS subscription in your device settings."
+                )
+                .padding(.horizontal, 16)
+                .padding(.vertical, 24)
+                .fixedSize(horizontal: false, vertical: true)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(
+                            Color(colorScheme == .light
+                                  ? UIColor.systemBackground
+                                  : UIColor.secondarySystemBackground)
+                        )
+                        .padding(.horizontal, 24)
+                        .padding(.top, 24)
+                )
+            }
+
             if viewModel.purchasesActive.isEmpty {
                 let fallbackDescription = localization[.tryCheckRestore]
 

@@ -561,15 +561,18 @@ public struct CustomerCenterConfigData: Equatable {
         public let email: String
         public let shouldWarnCustomerToUpdate: Bool
         public let displayPurchaseHistoryLink: Bool
+        public let shouldWarnCustomersAboutMultipleSubscriptions: Bool
 
         public init(
             email: String,
             shouldWarnCustomerToUpdate: Bool,
-            displayPurchaseHistoryLink: Bool
+            displayPurchaseHistoryLink: Bool,
+            shouldWarnCustomersAboutMultipleSubscriptions: Bool
         ) {
             self.email = email
             self.shouldWarnCustomerToUpdate = shouldWarnCustomerToUpdate
             self.displayPurchaseHistoryLink = displayPurchaseHistoryLink
+            self.shouldWarnCustomersAboutMultipleSubscriptions = shouldWarnCustomersAboutMultipleSubscriptions
         }
 
     }
@@ -714,6 +717,7 @@ extension CustomerCenterConfigData.Support {
         self.email = response.email
         self.shouldWarnCustomerToUpdate = response.shouldWarnCustomerToUpdate ?? true
         self.displayPurchaseHistoryLink = response.displayPurchaseHistoryLink ?? false
+        self.shouldWarnCustomersAboutMultipleSubscriptions = response.shouldWarnCustomersAboutMultipleSubscriptions ?? false
     }
 
 }
