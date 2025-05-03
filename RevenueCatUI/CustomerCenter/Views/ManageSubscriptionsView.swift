@@ -138,26 +138,26 @@ struct ManageSubscriptionsView: View {
                         )
                     }
                 }
-            }
 
-            if support?.displayPurchaseHistoryLink == true {
-                Button {
-                    viewModel.showPurchases = true
-                } label: {
-                    Text(localization[.seeAllPurchases])
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                        .contentShape(Rectangle())
+                if support?.displayPurchaseHistoryLink == true {
+                    Button {
+                        viewModel.showPurchases = true
+                    } label: {
+                        Text(localization[.seeAllPurchases])
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
+                    }
                 }
-            }
 
-            Section {
-                ManageSubscriptionsButtonsView(
-                    viewModel: self.viewModel
-                )
-            } header: {
-                if let subtitle = self.viewModel.screen.subtitle {
-                    Text(subtitle)
-                        .textCase(nil)
+                Section {
+                    ManageSubscriptionsButtonsView(
+                        viewModel: self.viewModel
+                    )
+                } header: {
+                    if let subtitle = self.viewModel.screen.subtitle {
+                        Text(subtitle)
+                            .textCase(nil)
+                    }
                 }
             }
         }
