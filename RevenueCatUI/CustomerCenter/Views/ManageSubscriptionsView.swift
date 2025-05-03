@@ -74,7 +74,7 @@ struct ManageSubscriptionsView: View {
                 .environment(\.navigationOptions, navigationOptions)
             }
             .compatibleNavigation(
-                isPresented: $viewModel.showPurchases,
+                isPresented: $viewModel.showAllPurchases,
                 usesNavigationStack: navigationOptions.usesNavigationStack
             ) {
                 PurchaseHistoryView(
@@ -120,11 +120,15 @@ struct ManageSubscriptionsView: View {
 
                 if support?.displayPurchaseHistoryLink == true {
                     Button {
-                        viewModel.showPurchases = true
+                        viewModel.showAllPurchases = true
                     } label: {
-                        Text(localization[.seeAllPurchases])
-                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                            .contentShape(Rectangle())
+                        CompatibilityLabeledContent {
+                            Text(localization[.seeAllPurchases])
+                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                                .contentShape(Rectangle())
+                        } content: {
+                            Image(systemName: "chevron.forward")
+                        }
                     }
                 }
 
