@@ -10,7 +10,7 @@
 //  ManageSubscriptionsViewModel.swift
 //
 //
-//  Created by Cesar de la Vega on 27/5/24.
+//  Created by Facundo Menzella on 3/5/25.
 //
 
 import Foundation
@@ -24,7 +24,7 @@ import SwiftUI
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @MainActor
-final class ManageSubscriptionsViewModel: ObservableObject {
+final class ManageSubscriptionViewModel: ObservableObject {
 
     let screen: CustomerCenterConfigData.Screen
 
@@ -65,10 +65,7 @@ final class ManageSubscriptionsViewModel: ObservableObject {
     let actionWrapper: CustomerCenterActionWrapper
 
     @Published
-    private(set) var purchasesActive: [PurchaseInformation] = []
-
-    @Published
-    var purchaseInformation: PurchaseInformation?
+    private(set) var purchaseInformation: PurchaseInformation?
 
     @Published
     private(set) var refundRequestStatus: RefundRequestStatus?
@@ -82,14 +79,12 @@ final class ManageSubscriptionsViewModel: ObservableObject {
         screen: CustomerCenterConfigData.Screen,
         actionWrapper: CustomerCenterActionWrapper,
         purchaseInformation: PurchaseInformation? = nil,
-        purchasesActive: [PurchaseInformation] = [],
         refundRequestStatus: RefundRequestStatus? = nil,
         purchasesProvider: CustomerCenterPurchasesType,
         loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
             self.screen = screen
             self.paths = screen.filteredPaths
             self.purchaseInformation = purchaseInformation
-            self.purchasesActive = purchasesActive
             self.purchasesProvider = purchasesProvider
             self.refundRequestStatus = refundRequestStatus
             self.actionWrapper = actionWrapper
@@ -159,7 +154,7 @@ final class ManageSubscriptionsViewModel: ObservableObject {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-extension ManageSubscriptionsViewModel {
+extension ManageSubscriptionViewModel {
 
     /// Function responsible for handling the user's action on the PromotionalOfferView
     func handleDismissPromotionalOfferView(_ userAction: PromotionalOfferViewAction) async {
@@ -188,7 +183,7 @@ extension ManageSubscriptionsViewModel {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-private extension ManageSubscriptionsViewModel {
+private extension ManageSubscriptionViewModel {
 
 #if os(iOS) || targetEnvironment(macCatalyst)
     // swiftlint:disable:next cyclomatic_complexity

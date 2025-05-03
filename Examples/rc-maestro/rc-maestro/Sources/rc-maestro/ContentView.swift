@@ -80,7 +80,8 @@ public struct ContentView: View {
     static var products: [String] {
         [
             "maestro.weekly.tests",
-            "maestro.monthly.tests"
+            "maestro.monthly.tests",
+            "maestro.weekly2.tests"
         ]
     }
 }

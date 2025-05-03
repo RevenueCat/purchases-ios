@@ -18,7 +18,7 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/RevenueCat/purchases-ios", 
-            branch: "main"
+            revision: "6dd190f23"
         ),
     ]
 )
