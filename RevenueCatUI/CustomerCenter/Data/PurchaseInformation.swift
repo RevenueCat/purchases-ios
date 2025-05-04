@@ -54,7 +54,7 @@ struct PurchaseInformation {
     /// - `false` for purchases outside the trial period.
     let isTrial: Bool
 
-    /// Indicates wheter the purchased subscripcion is cancelled
+    /// Indicates whether the purchased subscription is cancelled
     /// - `true` if the subscription is user-cancelled
     /// - `false` if the subscription is not user-cancelled
     ///
