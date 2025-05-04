@@ -39,11 +39,11 @@ struct ManageSubscriptionsView: View {
     @Environment(\.navigationOptions)
     var navigationOptions
 
-    @ObservedObject
+    @StateObject
     private var viewModel: ManageSubscriptionsViewModel
 
     init(screen: CustomerCenterConfigData.Screen,
-         purchaseInformation: PurchaseInformation?,
+         purchaseInformation: Binding<PurchaseInformation?>,
          purchasesProvider: CustomerCenterPurchasesType,
          actionWrapper: CustomerCenterActionWrapper) {
         let viewModel = ManageSubscriptionsViewModel(
@@ -55,7 +55,7 @@ struct ManageSubscriptionsView: View {
     }
 
     fileprivate init(viewModel: ManageSubscriptionsViewModel) {
-        self.viewModel = viewModel
+        self._viewModel = .init(wrappedValue: viewModel)
     }
 
     var body: some View {
@@ -177,14 +177,14 @@ struct ManageSubscriptionsView: View {
  @available(watchOS, unavailable)
  struct ManageSubscriptionsView_Previews: PreviewProvider {
 
-    // swiftlint:disable force_unwrapping
+    // swiftlint:disable force_unwrapping line_length
     static var previews: some View {
         ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
             CompatibilityNavigationStack {
                 let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
-                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
+                    purchaseInformation: .init(get: { CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing }, set: { _ in}),
                     refundRequestStatus: .success,
                     purchasesProvider: CustomerCenterPurchases())
                 ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing)
@@ -198,7 +198,7 @@ struct ManageSubscriptionsView: View {
                 let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
-                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring,
+                    purchaseInformation: .init(get: { CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring }, set: { _ in}),
                     purchasesProvider: CustomerCenterPurchases())
                 ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
@@ -211,7 +211,7 @@ struct ManageSubscriptionsView: View {
                 let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
-                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationFree,
+                    purchaseInformation: .init(get: { CustomerCenterConfigTestData.subscriptionInformationFree }, set: { _ in}),
                     purchasesProvider: CustomerCenterPurchases())
                 ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
@@ -224,7 +224,7 @@ struct ManageSubscriptionsView: View {
                 let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
-                    purchaseInformation: CustomerCenterConfigTestData.consumable,
+                    purchaseInformation: .init(get: { CustomerCenterConfigTestData.consumable }, set: { _ in}),
                     purchasesProvider: CustomerCenterPurchases())
                 ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
