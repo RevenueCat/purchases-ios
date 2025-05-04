@@ -65,6 +65,10 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testCanPurchaseConsumablePackage() async throws {
+        // WIP: remove this check so we also verify in this case once backend supports this case
+        if disableHeaderSignatureVerification {
+            throw XCTSkip("Currently does not work with disabled header signature verification.")
+        }
         let purchaseData = try await self.purchaseConsumablePackage()
 
         let purchasedProductIds = purchaseData.customerInfo.allPurchasedProductIdentifiers
@@ -83,6 +87,10 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testCanPurchaseNonConsumablePackage() async throws {
+        // WIP: remove this check so we also verify in this case once backend supports this case
+        if disableHeaderSignatureVerification {
+            throw XCTSkip("Currently does not work with disabled header signature verification.")
+        }
         let purchaseData = try await self.purchaseNonConsumablePackage()
 
         try await self.verifyEntitlementWentThrough(purchaseData.customerInfo)
