@@ -21,10 +21,11 @@ enum CustomerCenterConfigTestData {
     @available(iOS 14.0, *)
     // swiftlint:disable:next function_body_length
     static func customerCenterData(
-        lastPublishedAppVersion: String?,
+        lastPublishedAppVersion: String? = "1.0.0",
         shouldWarnCustomerToUpdate: Bool = false,
         displayPurchaseHistoryLink: Bool = false,
-        refundWindowDuration: CustomerCenterConfigData.HelpPath.RefundWindowDuration = .forever
+        refundWindowDuration: CustomerCenterConfigData.HelpPath.RefundWindowDuration = .forever,
+        shouldWarnCustomersAboutMultipleSubscriptions: Bool = false
     ) -> CustomerCenterConfigData {
         CustomerCenterConfigData(
             screens: [.management:
@@ -125,7 +126,7 @@ enum CustomerCenterConfigTestData {
                 email: "test-support@revenuecat.com",
                 shouldWarnCustomerToUpdate: shouldWarnCustomerToUpdate,
                 displayPurchaseHistoryLink: displayPurchaseHistoryLink,
-                shouldWarnCustomersAboutMultipleSubscriptions: false
+                shouldWarnCustomersAboutMultipleSubscriptions: shouldWarnCustomersAboutMultipleSubscriptions
             ),
             lastPublishedAppVersion: lastPublishedAppVersion,
             productId: 1

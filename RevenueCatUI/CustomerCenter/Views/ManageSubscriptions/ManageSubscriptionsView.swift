@@ -113,8 +113,6 @@ struct ManageSubscriptionsView: View {
                         "To avoid being charged twice, please cancel your iOS subscription in your device settings."
                     )
                 )
-                .padding(.horizontal, 16)
-                .padding(.vertical, 24)
                 .fixedSize(horizontal: false, vertical: true)
                 .background(
                     RoundedRectangle(cornerRadius: 8)
@@ -195,5 +193,76 @@ struct ManageSubscriptionsView: View {
          })
     }
 }
+
+#if DEBUG
+ @available(iOS 15.0, *)
+ @available(macOS, unavailable)
+ @available(tvOS, unavailable)
+ @available(watchOS, unavailable)
+ struct ManageSubscriptionsView_Previews: PreviewProvider {
+
+    // swiftlint:disable force_unwrapping
+    static var previews: some View {
+        let purchases = [
+           CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring,
+           CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing
+       ]
+
+        let warningOff = CustomerCenterConfigTestData.customerCenterData(
+            displayPurchaseHistoryLink: true,
+        ).support
+
+        let warningOn = CustomerCenterConfigTestData.customerCenterData(
+            displayPurchaseHistoryLink: true,
+            shouldWarnCustomersAboutMultipleSubscriptions: true
+        ).support
+
+        ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
+            CompatibilityNavigationStack {
+                let viewModel = ManageSubscriptionsViewModel(
+                    screen: CustomerCenterConfigTestData.customerCenterData(
+                        displayPurchaseHistoryLink: true,
+                    ).screens[.management]!,
+                    actionWrapper: CustomerCenterActionWrapper(),
+                    purchasesActive: purchases,
+                    purchasesProvider: CustomerCenterPurchases()
+                )
+                ManageSubscriptionsView(
+                    purchasesActive: .constant(purchases),
+                    viewModel: viewModel
+                )
+                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
+                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+                .environment(\.supportInformation, warningOff)
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Active subs - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                let viewModel = ManageSubscriptionsViewModel(
+                    screen: CustomerCenterConfigTestData.customerCenterData(
+                        displayPurchaseHistoryLink: true,
+                        shouldWarnCustomersAboutMultipleSubscriptions: true
+                    ).screens[.management]!,
+                    actionWrapper: CustomerCenterActionWrapper(),
+                    purchasesActive: purchases,
+                    purchasesProvider: CustomerCenterPurchases()
+                )
+                ManageSubscriptionsView(
+                    purchasesActive: .constant(purchases),
+                    viewModel: viewModel
+                )
+                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
+                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+                .environment(\.supportInformation, warningOn)
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Dup subs warning - \(colorScheme)")
+        }
+    }
+
+ }
+
+#endif
 
 #endif
