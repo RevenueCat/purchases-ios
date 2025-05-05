@@ -54,6 +54,9 @@ struct BottomSheetView<Content: View>: View {
     var body: some View {
         ScrollView(.vertical) {
             content
+                .safeAreaInset(edge: .bottom, spacing: 0) {
+                    EmptyView()
+                }
         }
         .frame(maxWidth: .infinity, maxHeight: height)
         .background(backgroundColor)
