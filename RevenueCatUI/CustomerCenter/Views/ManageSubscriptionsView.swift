@@ -142,8 +142,7 @@ struct ManageSubscriptionsView: View {
 
                 Section {
                     ManageSubscriptionsButtonsView(
-                        viewModel: self.viewModel,
-                        purchaseInformation: $purchaseInformation
+                        viewModel: self.viewModel
                     )
                 } header: {
                     if let subtitle = self.viewModel.screen.subtitle {
@@ -163,8 +162,7 @@ struct ManageSubscriptionsView: View {
                 }
 
                 Section {
-                    ManageSubscriptionsButtonsView(viewModel: self.viewModel,
-                                                   purchaseInformation: $purchaseInformation)
+                    ManageSubscriptionsButtonsView(viewModel: self.viewModel)
                 }
             }
         }
