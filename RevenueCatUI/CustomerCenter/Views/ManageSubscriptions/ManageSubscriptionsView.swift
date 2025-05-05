@@ -63,6 +63,20 @@ struct ManageSubscriptionsView: View {
     var body: some View {
         content
             .compatibleNavigation(
+                item: $viewModel.purchaseInformation,
+                usesNavigationStack: navigationOptions.usesNavigationStack
+            ) { purchase in
+                ManageSubscriptionView(
+                    screen: viewModel.screen,
+                    purchaseInformation: purchase,
+                    purchasesProvider: self.viewModel.purchasesProvider,
+                    actionWrapper: self.viewModel.actionWrapper
+                )
+                .environment(\.appearance, appearance)
+                .environment(\.localization, localization)
+                .environment(\.navigationOptions, navigationOptions)
+            }
+            .compatibleNavigation(
                 isPresented: $viewModel.showAllPurchases,
                 usesNavigationStack: navigationOptions.usesNavigationStack
             ) {
@@ -82,7 +96,10 @@ struct ManageSubscriptionsView: View {
                 CompatibilityContentUnavailableView(
                     "You May Have Duplicate Subscriptions",
                     systemImage: "exclamationmark.square",
-                    description: Text("It looks like you might be subscribed both on the web and through the App Store. To avoid being charged twice, please cancel your iOS subscription in your device settings.")
+                    description: Text(
+                        "It looks like you might be subscribed both on the web and through the App Store." +
+                        "To avoid being charged twice, please cancel your iOS subscription in your device settings."
+                    )
                 )
                 .padding(.horizontal, 16)
                 .padding(.vertical, 24)
