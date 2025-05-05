@@ -22,9 +22,9 @@ public extension PaywallComponent {
 
             public let msTimePerPage: Int
             public let msTransitionTime: Int
-            public let transitionType: AutoAdvanceTransitionType
+            public let transitionType: AutoAdvanceTransitionType?
 
-            public init(msTimePerPage: Int, msTransitionTime: Int, transitionType: AutoAdvanceTransitionType) {
+            public init(msTimePerPage: Int, msTransitionTime: Int, transitionType: AutoAdvanceTransitionType?) {
                 self.msTimePerPage = msTimePerPage
                 self.msTransitionTime = msTransitionTime
                 self.transitionType = transitionType
@@ -33,7 +33,7 @@ public extension PaywallComponent {
         }
 
         public enum AutoAdvanceTransitionType: PaywallComponentBase {
-            case fade
+            case fade, slide
         }
 
         public struct PageControl: PaywallComponentBase {
