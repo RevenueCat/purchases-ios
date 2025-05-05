@@ -65,7 +65,7 @@ final class ManageSubscriptionsViewModel: ObservableObject {
     let actionWrapper: CustomerCenterActionWrapper
 
     @Published
-    var purchaseInformation: PurchaseInformation?
+    private(set) var purchaseInformation: PurchaseInformation?
 
     @Published
     private(set) var refundRequestStatus: RefundRequestStatus?
