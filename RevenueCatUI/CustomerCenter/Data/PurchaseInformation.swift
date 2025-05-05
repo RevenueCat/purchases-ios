@@ -161,7 +161,7 @@ struct PurchaseInformation {
         }
     }
 
-    struct ExpirationOrRenewal {
+    struct ExpirationOrRenewal: Equatable {
         let label: Label
         let date: Date
 
@@ -264,6 +264,8 @@ extension PurchaseInformation: Identifiable {
     }
 }
 
+extension PurchaseInformation: Equatable { }
+
 private extension EntitlementInfo {
 
     var isCancelled: Bool {
@@ -364,20 +366,6 @@ private extension String {
         return self.hasSuffix("_lifetime") && store == .promotional
     }
 
-}
-
-protocol Transaction {
-
-    var productIdentifier: String { get }
-    var store: Store { get }
-    var type: TransactionType { get }
-    var isCancelled: Bool { get }
-}
-
-enum TransactionType {
-
-    case subscription(isActive: Bool, willRenew: Bool, expiresDate: Date?, isTrial: Bool)
-    case nonSubscription
 }
 
 extension RevenueCat.SubscriptionInfo: Transaction {

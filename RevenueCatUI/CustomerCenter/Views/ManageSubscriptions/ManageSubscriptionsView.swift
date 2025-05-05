@@ -42,21 +42,30 @@ struct ManageSubscriptionsView: View {
     @StateObject
     private var viewModel: ManageSubscriptionsViewModel
 
+    @Binding
+    var purchasesActive: [PurchaseInformation]
+
     init(screen: CustomerCenterConfigData.Screen,
-         purchaseInformation: PurchaseInformation?,
-         purchasesActive: [PurchaseInformation] = [],
+         purchasesActive: Binding<[PurchaseInformation]>,
          purchasesProvider: CustomerCenterPurchasesType,
          actionWrapper: CustomerCenterActionWrapper) {
         let viewModel = ManageSubscriptionsViewModel(
             screen: screen,
             actionWrapper: actionWrapper,
-            purchaseInformation: purchaseInformation,
-            purchasesActive: purchasesActive,
+            purchasesActive: purchasesActive.wrappedValue,
             purchasesProvider: purchasesProvider)
-        self.init(viewModel: viewModel)
+
+        self.init(
+            purchasesActive: purchasesActive,
+            viewModel: viewModel
+        )
     }
 
-    fileprivate init(viewModel: ManageSubscriptionsViewModel) {
+    fileprivate init(
+        purchasesActive: Binding<[PurchaseInformation]>,
+        viewModel: ManageSubscriptionsViewModel
+    ) {
+        self._purchasesActive = purchasesActive
         self._viewModel = .init(wrappedValue: viewModel)
     }
 
@@ -86,6 +95,9 @@ struct ManageSubscriptionsView: View {
                 .environment(\.appearance, appearance)
                 .environment(\.localization, localization)
                 .environment(\.navigationOptions, navigationOptions)
+            }
+            .onChangeOf(purchasesActive) { _ in
+                viewModel.updatePurchases(purchasesActive)
             }
     }
 

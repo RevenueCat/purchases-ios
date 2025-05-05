@@ -97,8 +97,8 @@ final class ManageSubscriptionsViewModel: ObservableObject {
             self.restoreAlertType = .loading
         }
 
-    func reloadPurchaseInformation(_ purchaseInformation: PurchaseInformation) {
-        self.purchaseInformation = purchaseInformation
+    func updatePurchases(_ purchasesActive: [PurchaseInformation]) {
+        self.purchasesActive = purchasesActive
     }
 
 #if os(iOS) || targetEnvironment(macCatalyst)

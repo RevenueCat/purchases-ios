@@ -76,6 +76,9 @@ import RevenueCat
         }
     }
 
+    @Published
+    var purchasesActive: [PurchaseInformation] = []
+
     private let currentVersionFetcher: CurrentVersionFetcher
 
     /// The action wrapper that handles both the deprecated handler and the new preference system
