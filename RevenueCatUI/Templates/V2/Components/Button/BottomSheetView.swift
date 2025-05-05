@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  ButtonSheet.swift
+//  BottomSheetView.swift
 //
 //  Created by Will Taylor on 5/5/25.
 
@@ -20,7 +20,7 @@ import SwiftUI
 /// This view is designed to be used as a bottom sheet that slides up from the bottom of the screen.
 /// It provides a scrollable container for its content with a fixed height and customizable background color.
 ///
-/// - Note: This view is typically used in conjunction with ``ButtonSheetOverlayModifier`` to present
+/// - Note: This view is typically used in conjunction with ``BottomSheetOverlayModifier`` to present
 ///   content in a sheet-like interface.
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -155,7 +155,6 @@ struct BottomSheetOverlayModifier<SheetContent: View>: ViewModifier {
                         }
                 }
             )
-
             .animation(.spring(duration: 0.25), value: isPresented.wrappedValue)
         }
     }
@@ -171,7 +170,7 @@ extension View {
     ///
     /// - Parameters:
     ///   - isPresented: A binding to a Boolean value that determines whether to present the sheet.
-    ///   - buttonConfig: The configuration for the sheet. Defaults to a configuration with
+    ///   - config: The configuration for the sheet. Defaults to a configuration with
     ///     system background color and one-third screen height.
     ///   - content: A closure that returns the content of the sheet.
     ///
