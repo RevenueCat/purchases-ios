@@ -63,7 +63,7 @@ struct ManageSubscriptionsView: View {
     var body: some View {
         content
             .compatibleNavigation(
-                isPresented: $viewModel.showPurchases,
+                isPresented: $viewModel.showAllPurchases,
                 usesNavigationStack: navigationOptions.usesNavigationStack
             ) {
                 PurchaseHistoryView(
@@ -82,7 +82,7 @@ struct ManageSubscriptionsView: View {
                 CompatibilityContentUnavailableView(
                     "You May Have Duplicate Subscriptions",
                     systemImage: "exclamationmark.square",
-                    description: "It looks like you might be subscribed both on the web and through the App Store. To avoid being charged twice, please cancel your iOS subscription in your device settings."
+                    description: Text("It looks like you might be subscribed both on the web and through the App Store. To avoid being charged twice, please cancel your iOS subscription in your device settings.")
                 )
                 .padding(.horizontal, 16)
                 .padding(.vertical, 24)
@@ -118,13 +118,15 @@ struct ManageSubscriptionsView: View {
                                 for: path,
                                 activeProductId: nil
                             )
-                        }) { path in
+                        },
+                        label: { path in
                             if self.viewModel.loadingPath?.id == path.id {
                                 TintedProgressView()
                             } else {
                                 Text(path.title)
                             }
                         }
+                    )
                 }
 
             } else {
@@ -148,38 +150,10 @@ struct ManageSubscriptionsView: View {
 
                 if support?.displayPurchaseHistoryLink == true {
                     Button {
-                        viewModel.showPurchases = true
+                        viewModel.showAllPurchases = true
                     } label: {
-                        CompatibilityLabeledContent {
-                            Text(localization[.seeAllPurchases])
-                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                                .contentShape(Rectangle())
-                        } content: {
+                        CompatibilityLabeledContent(localization[.seeAllPurchases]) {
                             Image(systemName: "chevron.forward")
-                        }
-                    }
-                }
-
-                if viewModel.purchasesActive.count == 1 {
-                    Section {
-                        ManageSubscriptionsButtonsView(
-                            relevantPathsForPurchase: self.viewModel.relevantPathsForPurchase,
-                            determineFlowForPath: { path in
-                                await self.viewModel.determineFlow(
-                                    for: path,
-                                    activeProductId: viewModel.purchasesActive.first?.id
-                                )
-                            }) { path in
-                                if self.viewModel.loadingPath?.id == path.id {
-                                    TintedProgressView()
-                                } else {
-                                    Text(path.title)
-                                }
-                            }
-                    } header: {
-                        if let subtitle = self.viewModel.screen.subtitle {
-                            Text(subtitle)
-                                .textCase(nil)
                         }
                     }
                 }

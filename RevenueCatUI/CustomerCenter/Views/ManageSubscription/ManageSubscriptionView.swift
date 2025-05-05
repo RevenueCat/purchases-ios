@@ -74,17 +74,6 @@ struct ManageSubscriptionView: View {
                 .environment(\.localization, localization)
                 .environment(\.navigationOptions, navigationOptions)
             }
-            .compatibleNavigation(
-                isPresented: $viewModel.showAllPurchases,
-                usesNavigationStack: navigationOptions.usesNavigationStack
-            ) {
-                PurchaseHistoryView(
-                    viewModel: PurchaseHistoryViewModel(purchasesProvider: self.viewModel.purchasesProvider)
-                )
-                .environment(\.appearance, appearance)
-                .environment(\.localization, localization)
-                .environment(\.navigationOptions, navigationOptions)
-            }
             .sheet(item: self.$viewModel.promotionalOfferData) { promotionalOfferData in
                 PromotionalOfferView(
                     promotionalOffer: promotionalOfferData.promotionalOffer,
@@ -118,20 +107,6 @@ struct ManageSubscriptionView: View {
                     purchaseInformation: purchaseInformation,
                     refundRequestStatus: self.viewModel.refundRequestStatus
                 )
-
-                if support?.displayPurchaseHistoryLink == true {
-                    Button {
-                        viewModel.showAllPurchases = true
-                    } label: {
-                        CompatibilityLabeledContent {
-                            Text(localization[.seeAllPurchases])
-                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                                .contentShape(Rectangle())
-                        } content: {
-                            Image(systemName: "chevron.forward")
-                        }
-                    }
-                }
 
                 Section {
                     ManageSubscriptionsButtonsView(
