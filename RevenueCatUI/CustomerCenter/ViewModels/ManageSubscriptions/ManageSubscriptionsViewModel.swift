@@ -39,7 +39,7 @@ final class ManageSubscriptionsViewModel: ObservableObject {
     var restoreAlertType: RestorePurchasesAlertViewModel.AlertType
 
     @Published
-    var showPurchases: Bool = false
+    var showAllPurchases: Bool = false
 
     @Published
     var feedbackSurveyData: FeedbackSurveyData?

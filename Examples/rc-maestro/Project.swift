@@ -46,7 +46,7 @@ let project = Project(
                 configuration: "Debug",
                 executable: "Maestro-Debug",
                 options: .options(
-                    storeKitConfigurationPath: "rc-maestro/Resources/StoreKit/StoreKitConfigDefault.storekit"
+                    storeKitConfigurationPath: "rc-maestro/Resources/StoreKit/StoreKitConfiguration.storekit"
                 )
             )
         )
