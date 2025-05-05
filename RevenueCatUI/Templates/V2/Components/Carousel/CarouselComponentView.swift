@@ -209,8 +209,10 @@ private struct CarouselView<Content: View>: View {
             .frame(width: self.width, alignment: .leading)
             .offset(x: xOffset(in: self.width) + dragOffset) // Apply drag offset
             .opacity(opacity)
-            // Animate only final snaps (or auto transitions), not real-time dragging
-//            .animation(.easeInOut(duration: self.transitionTime), value: index)
+            .applyIf(setUpAnimationViewModifier, apply: { view in
+                // Animate only final snaps (or auto transitions), not real-time dragging
+                view.animation(.easeInOut(duration: self.transitionTime), value: index)
+            })
             .gesture(
                 DragGesture()
 
@@ -263,6 +265,11 @@ private struct CarouselView<Content: View>: View {
 
     // MARK: - Setup
 
+    /// When `loop` is `true`, and `fadeTransition` is turned on we don't setUp the animation view modifier
+    private var setUpAnimationViewModifier: Bool {
+        true
+    }
+
     private func setupData() {
         guard !originalPages.isEmpty else { return }
 
@@ -294,40 +301,67 @@ private struct CarouselView<Content: View>: View {
 
     // MARK: - Auto-Play
 
-    private func startAutoPlayIfNeeded() {
+    private var autoPlayTimerDuration: TimeInterval? {
         guard let msTimePerSlide = msTimePerSlide,
-              let msTransitionTime = msTransitionTime else { return }
+              let msTransitionTime = msTransitionTime else { return nil }
+
+        return Double(msTimePerSlide + msTransitionTime) / 1000
+    }
+
+    // arbitrary but works smoothly
+    private var fadeDuration: TimeInterval? {
+        guard let autoPlayTimerDuration else {
+            return nil
+        }
+        return 2 * autoPlayTimerDuration / 5
+    }
+
+    private func startAutoPlayIfNeeded() {
+        guard let autoPlayTimerDuration, let msTransitionTime else { return }
 
         autoTimer?.invalidate()
 
         autoTimer = Timer.scheduledTimer(
-            withTimeInterval: Double(msTimePerSlide + msTransitionTime) / 1000,
+            withTimeInterval: autoPlayTimerDuration,
             repeats: true
         ) { _ in
             guard !isPaused else {
+                // If paused, check if 10 seconds have passed
                 if let pauseEndDate = pauseEndDate, Date() >= pauseEndDate {
-                    isPaused = false
+                    isPaused = false // Resume auto-play
                 }
                 return
             }
 
-            let fadeDuration: Double = 1.0
+            let fadeTransitionEnabled = false
 
-            // Fade out both slide + indicator
-            withAnimation(.easeInOut(duration: fadeDuration)) {
-                opacity = 0
-            }
-
-            DispatchQueue.main.asyncAfter(deadline: .now() + fadeDuration) {
-                index = (index + 1) % data.count
-                if loop {
-                    expandDataIfNeeded()
-                    pruneDataIfNeeded()
+            if fadeTransitionEnabled, let fadeDuration {
+                // Fade out both slide + indicator
+                withAnimation(.easeInOut(duration: fadeDuration)) {
+                    opacity = 0
                 }
 
-                // Fade in both slide + indicator
-                withAnimation(.easeInOut(duration: fadeDuration)) {
-                    opacity = 1
+                DispatchQueue.main.asyncAfter(deadline: .now() + fadeDuration) {
+                    index = (index + 1) % data.count
+                    if loop {
+                        expandDataIfNeeded()
+                        pruneDataIfNeeded()
+                    }
+
+                    // Fade in both slide + indicator
+                    withAnimation(.easeInOut(duration: fadeDuration)) {
+                        opacity = 1
+                    }
+                }
+            } else {
+                withAnimation(.easeInOut(duration: Double(msTransitionTime) / 1000)) {
+                    index += 1
+                    if loop {
+                        expandDataIfNeeded()
+                        pruneDataIfNeeded()
+                    } else {
+                        index = min(index, data.count - 1)
+                    }
                 }
             }
         }
@@ -448,7 +482,9 @@ struct PageControlView: View {
     let originalCount: Int
     let pageControl: DisplayablePageControl
     @Binding var currentIndex: Int
-    let animationDuration: CGFloat // Half of whatever the fade animation is
+
+    // Half of whatever the fade animation is
+    let animationDuration: CGFloat
 
     @State private var localCurrentIndex: Int = 0
 
@@ -673,7 +709,7 @@ struct CarouselComponentView_Previews: PreviewProvider {
                         pagePeek: 20,
                         initialPageIndex: 1,
                         loop: true,
-                        autoAdvance: .init(msTimePerPage: 1500, msTransitionTime: 1000),
+                        autoAdvance: .init(msTimePerPage: 1000, msTransitionTime: 500),
                         pageControl: .init(
                             position: .bottom,
                             padding: PaywallComponent.Padding(top: 0, bottom: 0, leading: 0, trailing: 0),
