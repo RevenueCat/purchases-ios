@@ -78,12 +78,12 @@ public struct ContentView: View {
     }
 
     static var products: [String] {
-        [
-            "maestro.weekly.tests",
-            "maestro.monthly.tests",
-            "maestro.weekly2.tests"
-        ]
-    }
+         [
+             "maestro.weekly.tests.01",
+             "maestro.monthly.tests.02",
+             "maestro.weekly2.tests.01"
+         ]
+     }
 }
 
 struct ContentView_Previews: PreviewProvider {

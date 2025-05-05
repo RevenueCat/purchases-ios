@@ -78,7 +78,13 @@
       "subscriptions" : [
         {
           "adHocOffers" : [
-
+            {
+              "internalID" : "7AF59252",
+              "offerID" : "maestro.weekly.tests.promo.free.01",
+              "paymentMode" : "free",
+              "referenceName" : "Product 1 Promo [Weekly]",
+              "subscriptionPeriod" : "P3D"
+            }
           ],
           "codeOffers" : [
 
@@ -90,13 +96,13 @@
           "introductoryOffer" : null,
           "localizations" : [
             {
-              "description" : "",
-              "displayName" : "",
+              "description" : "Product 1 on weekly basis",
+              "displayName" : "Product 1 [Weekly]",
               "locale" : "en_US"
             }
           ],
-          "productID" : "maestro.weekly.tests",
-          "recurringSubscriptionPeriod" : "P1M",
+          "productID" : "maestro.weekly.tests.01",
+          "recurringSubscriptionPeriod" : "P1W",
           "referenceName" : "Product 1 [Weekly]",
           "subscriptionGroupID" : "F7DE1690",
           "type" : "RecurringSubscription",
@@ -118,12 +124,12 @@
           "introductoryOffer" : null,
           "localizations" : [
             {
-              "description" : "",
-              "displayName" : "",
+              "description" : "Product 1 on monthly basis",
+              "displayName" : "Product 1 [Monthly]",
               "locale" : "en_US"
             }
           ],
-          "productID" : "maestro.monthly.tests",
+          "productID" : "maestro.monthly.tests.02",
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "Product 1 [Monthly]",
           "subscriptionGroupID" : "F7DE1690",
@@ -155,12 +161,12 @@
           "introductoryOffer" : null,
           "localizations" : [
             {
-              "description" : "",
-              "displayName" : "",
+              "description" : "Product 2 on weekly basis",
+              "displayName" : "Product 2 [Weekly]",
               "locale" : "en_US"
             }
           ],
-          "productID" : "maestro.weekly2.tests",
+          "productID" : "maestro.weekly2.tests.01",
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "Product 2 [Weekly]",
           "subscriptionGroupID" : "31558EC7",
