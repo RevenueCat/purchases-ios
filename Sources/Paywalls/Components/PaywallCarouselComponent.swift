@@ -86,14 +86,14 @@ public extension PaywallComponent {
             public let width: Int
             public let height: Int
             public let color: ColorScheme
-            public let strokeColor: ColorScheme
-            public let strokeWidth: CGFloat
+            public let strokeColor: ColorScheme?
+            public let strokeWidth: CGFloat?
 
-            public init(width: Int, height: Int, color: ColorScheme, strokeColor: ColorScheme?, strokeWidth: CGFloat) {
+            public init(width: Int, height: Int, color: ColorScheme, strokeColor: ColorScheme? = nil, strokeWidth: CGFloat? = nil) {
                 self.width = width
                 self.height = height
                 self.color = color
-                self.strokeColor = strokeColor ?? color
+                self.strokeColor = strokeColor
                 self.strokeWidth = strokeWidth
             }
 
