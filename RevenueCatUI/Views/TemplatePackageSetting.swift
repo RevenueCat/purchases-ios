@@ -38,6 +38,7 @@ extension PaywallTemplate {
         case .template4: return .multiple
         case .template5: return .multiple
         case .template7: return .multiTier
+        case .defaultTemplate: return .multiple        
         }
     }
 

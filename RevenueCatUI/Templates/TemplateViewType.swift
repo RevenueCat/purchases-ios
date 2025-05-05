@@ -134,6 +134,8 @@ extension PaywallData {
             Template5View(configuration)
         case .template7:
             Template7View(configuration)
+        case .defaultTemplate:
+            DefaultTemplateView(configuration)
         }
         #endif
     }

@@ -38,7 +38,7 @@ extension PaywallData {
             config: .init(
                 packages: packageIdentifiers,
                 images: .init(
-                    background: Self.backgroundImage,
+                    background: nil,
                     icon: Self.appIconPlaceholder
                 ),
                 colors: Self.colors,
@@ -52,7 +52,7 @@ extension PaywallData {
         )
     }
 
-    static let defaultTemplate: PaywallTemplate = .template2
+    static let defaultTemplate: PaywallTemplate = .defaultTemplate
 
     static let appIconPlaceholder = "revenuecatui_default_paywall_app_icon"
 
