@@ -242,7 +242,7 @@ private struct CarouselView<Content: View>: View {
                     originalCount: self.originalCount,
                     pageControl: pageControl,
                     currentIndex: self.$index,
-                    animationDuration: 0.5
+                    animationDuration: autoPlayTimerDuration.map { $0 / 5 }
                 )
             }
         }
