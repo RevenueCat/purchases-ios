@@ -42,19 +42,27 @@ struct ManageSubscriptionsView: View {
     @StateObject
     private var viewModel: ManageSubscriptionsViewModel
 
+    @Binding
+    var purchaseInformation: PurchaseInformation?
+
     init(screen: CustomerCenterConfigData.Screen,
          purchaseInformation: Binding<PurchaseInformation?>,
          purchasesProvider: CustomerCenterPurchasesType,
          actionWrapper: CustomerCenterActionWrapper) {
-        let viewModel = ManageSubscriptionsViewModel(
+        self.init(
+            purchaseInformation: purchaseInformation,
+            viewModel: ManageSubscriptionsViewModel(
             screen: screen,
             actionWrapper: actionWrapper,
-            purchaseInformation: purchaseInformation,
-            purchasesProvider: purchasesProvider)
-        self.init(viewModel: viewModel)
+            purchaseInformation: purchaseInformation.wrappedValue,
+            purchasesProvider: purchasesProvider))
     }
 
-    fileprivate init(viewModel: ManageSubscriptionsViewModel) {
+    fileprivate init(
+        purchaseInformation: Binding<PurchaseInformation?>,
+        viewModel: ManageSubscriptionsViewModel
+    ) {
+        self._purchaseInformation = purchaseInformation
         self._viewModel = .init(wrappedValue: viewModel)
     }
 
@@ -130,7 +138,8 @@ struct ManageSubscriptionsView: View {
 
                 Section {
                     ManageSubscriptionsButtonsView(
-                        viewModel: self.viewModel
+                        viewModel: self.viewModel,
+                        purchaseInformation: $purchaseInformation
                     )
                 } header: {
                     if let subtitle = self.viewModel.screen.subtitle {
@@ -150,7 +159,8 @@ struct ManageSubscriptionsView: View {
                 }
 
                 Section {
-                    ManageSubscriptionsButtonsView(viewModel: self.viewModel)
+                    ManageSubscriptionsButtonsView(viewModel: self.viewModel,
+                                                   purchaseInformation: $purchaseInformation)
                 }
             }
         }
@@ -165,29 +175,35 @@ struct ManageSubscriptionsView: View {
             $0.navigationTitle(self.viewModel.screen.title)
                 .navigationBarTitleDisplayMode(.inline)
          })
-
+        .onChangeOf(purchaseInformation?.customerInfoRequestedDate) { _ in
+            guard let purchase = purchaseInformation else { return }
+            viewModel.reloadPurchaseInformation(purchase)
+        }
     }
 
 }
 
-#if DEBUG
+ #if DEBUG
  @available(iOS 15.0, *)
  @available(macOS, unavailable)
  @available(tvOS, unavailable)
  @available(watchOS, unavailable)
  struct ManageSubscriptionsView_Previews: PreviewProvider {
 
-    // swiftlint:disable force_unwrapping line_length
+    // swiftlint:disable force_unwrapping
     static var previews: some View {
         ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
             CompatibilityNavigationStack {
                 let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
-                    purchaseInformation: .init(get: { CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing }, set: { _ in}),
+                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
                     refundRequestStatus: .success,
                     purchasesProvider: CustomerCenterPurchases())
-                ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing)
+                ManageSubscriptionsView(
+                    purchaseInformation: .constant(CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing),
+                    viewModel: viewModelMonthlyRenewing
+                )
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
             }
@@ -198,9 +214,11 @@ struct ManageSubscriptionsView: View {
                 let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
-                    purchaseInformation: .init(get: { CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring }, set: { _ in}),
+                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring,
                     purchasesProvider: CustomerCenterPurchases())
-                ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
+                ManageSubscriptionsView(
+                    purchaseInformation: .constant(CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring),
+                    viewModel: viewModelYearlyExpiring)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
             }
@@ -211,9 +229,11 @@ struct ManageSubscriptionsView: View {
                 let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
-                    purchaseInformation: .init(get: { CustomerCenterConfigTestData.subscriptionInformationFree }, set: { _ in}),
+                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationFree,
                     purchasesProvider: CustomerCenterPurchases())
-                ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
+                ManageSubscriptionsView(
+                    purchaseInformation: .constant(CustomerCenterConfigTestData.subscriptionInformationFree),
+                    viewModel: viewModelYearlyExpiring)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
             }
@@ -224,9 +244,11 @@ struct ManageSubscriptionsView: View {
                 let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
-                    purchaseInformation: .init(get: { CustomerCenterConfigTestData.consumable }, set: { _ in}),
+                    purchaseInformation: CustomerCenterConfigTestData.consumable,
                     purchasesProvider: CustomerCenterPurchases())
-                ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
+                ManageSubscriptionsView(
+                    purchaseInformation: .constant(CustomerCenterConfigTestData.consumable),
+                    viewModel: viewModelYearlyExpiring)
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
             }
@@ -237,6 +259,6 @@ struct ManageSubscriptionsView: View {
 
  }
 
-#endif
+ #endif
 
 #endif

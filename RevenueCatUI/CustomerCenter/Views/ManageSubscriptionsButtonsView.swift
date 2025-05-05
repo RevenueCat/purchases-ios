@@ -26,6 +26,9 @@ struct ManageSubscriptionsButtonsView: View {
     @ObservedObject
     var viewModel: ManageSubscriptionsViewModel
 
+    @Binding
+    var purchaseInformation: PurchaseInformation?
+
     var body: some View {
         ForEach(self.viewModel.relevantPathsForPurchase, id: \.id) { path in
             ManageSubscriptionButton(

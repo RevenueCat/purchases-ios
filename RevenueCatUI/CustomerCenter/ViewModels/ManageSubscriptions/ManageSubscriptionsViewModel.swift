@@ -64,7 +64,7 @@ final class ManageSubscriptionsViewModel: ObservableObject {
 
     let actionWrapper: CustomerCenterActionWrapper
 
-    @Binding
+    @Published
     var purchaseInformation: PurchaseInformation?
 
     @Published
@@ -78,13 +78,13 @@ final class ManageSubscriptionsViewModel: ObservableObject {
     init(
         screen: CustomerCenterConfigData.Screen,
         actionWrapper: CustomerCenterActionWrapper,
-        purchaseInformation: Binding<PurchaseInformation?>,
+        purchaseInformation: PurchaseInformation?,
         refundRequestStatus: RefundRequestStatus? = nil,
         purchasesProvider: CustomerCenterPurchasesType,
         loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
             self.screen = screen
             self.paths = screen.filteredPaths
-            self._purchaseInformation = purchaseInformation
+            self.purchaseInformation = purchaseInformation
             self.purchasesProvider = purchasesProvider
             self.refundRequestStatus = refundRequestStatus
             self.actionWrapper = actionWrapper
@@ -93,6 +93,10 @@ final class ManageSubscriptionsViewModel: ObservableObject {
             self.state = .success
             self.restoreAlertType = .loading
         }
+
+    func reloadPurchaseInformation(_ purchaseInformation: PurchaseInformation) {
+        self.purchaseInformation = purchaseInformation
+    }
 
 #if os(iOS) || targetEnvironment(macCatalyst)
     func determineFlow(for path: CustomerCenterConfigData.HelpPath, activeProductId: String? = nil) async {
