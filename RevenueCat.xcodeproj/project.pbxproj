@@ -1135,6 +1135,7 @@
 		FD43D2FC2C41864000077235 /* TimeInterval+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD43D2FA2C4185B700077235 /* TimeInterval+Extensions.swift */; };
 		FD43D2FE2C41867600077235 /* TimeInterval+ExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD43D2FD2C41867600077235 /* TimeInterval+ExtensionsTests.swift */; };
 		FD6186542D1393FA007843DA /* MockCustomerCenterStoreKitUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD6186532D1393FA007843DA /* MockCustomerCenterStoreKitUtilities.swift */; };
+		FD9BCEBC2DC946C400408A5D /* ButtonSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD9BCEBB2DC946C400408A5D /* ButtonSheetView.swift */; };
 		FD9F982D2BE28A7F0091A5BF /* MockNotificationCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B515526D44B2300BD2BD7 /* MockNotificationCenter.swift */; };
 		FDAADFCB2BE2A5BF00BD1659 /* MockAllTransactionsProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDAADFCA2BE2A5BF00BD1659 /* MockAllTransactionsProvider.swift */; };
 		FDAADFCC2BE2A5BF00BD1659 /* MockAllTransactionsProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDAADFCA2BE2A5BF00BD1659 /* MockAllTransactionsProvider.swift */; };
@@ -2471,6 +2472,7 @@
 		FD43D2FA2C4185B700077235 /* TimeInterval+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TimeInterval+Extensions.swift"; sourceTree = "<group>"; };
 		FD43D2FD2C41867600077235 /* TimeInterval+ExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TimeInterval+ExtensionsTests.swift"; sourceTree = "<group>"; };
 		FD6186532D1393FA007843DA /* MockCustomerCenterStoreKitUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockCustomerCenterStoreKitUtilities.swift; sourceTree = "<group>"; };
+		FD9BCEBB2DC946C400408A5D /* ButtonSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonSheetView.swift; sourceTree = "<group>"; };
 		FDAADFCA2BE2A5BF00BD1659 /* MockAllTransactionsProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAllTransactionsProvider.swift; sourceTree = "<group>"; };
 		FDAADFCE2BE2B84500BD1659 /* StoreKit2ObserverModePurchaseDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2ObserverModePurchaseDetector.swift; sourceTree = "<group>"; };
 		FDAADFD22BE2B99900BD1659 /* MockStoreKit2ObserverModePurchaseDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreKit2ObserverModePurchaseDetector.swift; sourceTree = "<group>"; };
@@ -4714,6 +4716,7 @@
 			children = (
 				7707A94F2CAD9775006E0313 /* ButtonComponentView.swift */,
 				7707A94D2CAD94D2006E0313 /* ButtonComponentViewModel.swift */,
+				FD9BCEBB2DC946C400408A5D /* ButtonSheetView.swift */,
 			);
 			path = Button;
 			sourceTree = "<group>";
@@ -7017,6 +7020,7 @@
 				887A60852C1D037000E1A461 /* FitToAspectRatio.swift in Sources */,
 				353756652C382C2800A1B8D6 /* CustomerCenterConfigTestData.swift in Sources */,
 				2C4C36132C6FBA8B00AE959B /* CompatibilityTopBarTrailing.swift in Sources */,
+				FD9BCEBC2DC946C400408A5D /* ButtonSheetView.swift in Sources */,
 				3546355C2C391F38001D7E85 /* FeedbackSurveyViewModel.swift in Sources */,
 				353756692C382C2800A1B8D6 /* CustomerCenterViewState.swift in Sources */,
 				7783607B2CCA88E4000785B8 /* StickyFooterComponentView.swift in Sources */,
