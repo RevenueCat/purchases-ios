@@ -39,9 +39,6 @@ final class ManageSubscriptionViewModel: ObservableObject {
     var restoreAlertType: RestorePurchasesAlertViewModel.AlertType
 
     @Published
-    var showPurchases: Bool = false
-
-    @Published
     var feedbackSurveyData: FeedbackSurveyData?
 
     @Published
@@ -52,15 +49,6 @@ final class ManageSubscriptionViewModel: ObservableObject {
 
     @Published
     var inAppBrowserURL: IdentifiableURL?
-
-    @Published
-    var state: CustomerCenterViewState {
-        didSet {
-            if case let .error(stateError) = state {
-                self.error = stateError
-            }
-        }
-    }
 
     let actionWrapper: CustomerCenterActionWrapper
 
@@ -90,7 +78,6 @@ final class ManageSubscriptionViewModel: ObservableObject {
             self.actionWrapper = actionWrapper
             self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase
             ?? LoadPromotionalOfferUseCase(purchasesProvider: purchasesProvider)
-            self.state = .success
             self.restoreAlertType = .loading
         }
 
@@ -132,13 +119,6 @@ final class ManageSubscriptionViewModel: ObservableObject {
 
         default:
             await self.onPathSelected(path: path)
-        }
-    }
-
-    func handleSheetDismiss() async {
-        if let loadingPath = loadingPath {
-            await self.onPathSelected(path: loadingPath)
-            self.loadingPath = nil
         }
     }
 

@@ -143,17 +143,6 @@ final class ManageSubscriptionsViewModel: ObservableObject {
             await self.onPathSelected(path: path)
         }
     }
-
-    func handleSheetDismiss() async {
-        if let loadingPath = loadingPath {
-            await self.onPathSelected(path: loadingPath)
-            self.loadingPath = nil
-        }
-    }
-
-    func onDismissInAppBrowser() {
-        self.inAppBrowserURL = nil
-    }
 #endif
 
 }
