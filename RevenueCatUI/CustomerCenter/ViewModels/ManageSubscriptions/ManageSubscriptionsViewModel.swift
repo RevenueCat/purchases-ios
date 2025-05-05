@@ -99,6 +99,8 @@ final class ManageSubscriptionsViewModel: ObservableObject {
 
     func updatePurchases(_ purchasesActive: [PurchaseInformation]) {
         self.purchasesActive = purchasesActive
+        // go back to the list
+        self.purchaseInformation = nil
     }
 
 #if os(iOS) || targetEnvironment(macCatalyst)
