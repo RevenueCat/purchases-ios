@@ -43,6 +43,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
         let viewModel =
         ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.default,
                                      actionWrapper: CustomerCenterActionWrapper(),
+                                     purchaseInformation: nil,
                                      purchasesProvider: MockCustomerCenterPurchases())
 
         expect(viewModel.state) == CustomerCenterViewState.success
@@ -189,6 +190,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
         let viewModel =
         ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.default,
                                      actionWrapper: CustomerCenterActionWrapper(),
+                                     purchaseInformation: nil,
                                      purchasesProvider: MockCustomerCenterPurchases())
 
         viewModel.state = CustomerCenterViewState.error(error)
@@ -318,6 +320,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
             let viewModel = ManageSubscriptionsViewModel(
                 screen: PurchaseInformationFixtures.screenWithIneligiblePromo,
                 actionWrapper: CustomerCenterActionWrapper(),
+                purchaseInformation: nil,
                 purchasesProvider: MockCustomerCenterPurchases(
                     customerInfo: customerInfo,
                     products: products
@@ -420,6 +423,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
         let screen = PurchaseInformationFixtures.screenWithPromo(offerID: offerIdentifierInJSON)
         let viewModel = ManageSubscriptionsViewModel(screen: screen,
                                                      actionWrapper: CustomerCenterActionWrapper(),
+                                                     purchaseInformation: nil,
                                                      purchasesProvider: MockCustomerCenterPurchases(
                                                         customerInfo: customerInfo,
                                                         products: products
