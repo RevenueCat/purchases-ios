@@ -218,7 +218,7 @@ private extension CustomerCenterView {
                 } else {
                     ManageSubscriptionsView(
                         screen: screen,
-                        purchaseInformation: purchaseInformation,
+                        purchaseInformation: nil,
                         purchasesActive: viewModel.purchasesActive,
                         purchasesProvider: self.viewModel.purchasesProvider,
                         actionWrapper: self.viewModel.actionWrapper)
