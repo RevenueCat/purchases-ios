@@ -142,7 +142,7 @@ private struct CarouselView<Content: View>: View {
     @State private var dragOffset: CGFloat = 0
 
     @State private var opacity: CGFloat = 1.0
-
+    @State private var indicatorOpacity: CGFloat = 1.0
     // MARK: - Init
 
     init(
@@ -192,10 +192,12 @@ private struct CarouselView<Content: View>: View {
             // If top page control
             if let pageControl = self.pageControl, pageControl.position == .top {
                 PageControlView(
-                    originalCount: self.originalCount,
-                    pageControl: pageControl,
-                    currentIndex: self.$index
-                )
+                        originalCount: self.originalCount,
+                        pageControl: pageControl,
+                        currentIndex: self.$index,
+                        opacity: self.indicatorOpacity,
+                        animationDuration: 0.5
+                    )
             }
 
             // Main horizontal “strip” of pages:
@@ -237,7 +239,9 @@ private struct CarouselView<Content: View>: View {
                 PageControlView(
                     originalCount: self.originalCount,
                     pageControl: pageControl,
-                    currentIndex: self.$index
+                    currentIndex: self.$index,
+                    opacity: self.indicatorOpacity,
+                    animationDuration: 0.5
                 )
             }
         }
@@ -296,39 +300,39 @@ private struct CarouselView<Content: View>: View {
         guard let msTimePerSlide = msTimePerSlide,
               let msTransitionTime = msTransitionTime else { return }
 
-        autoTimer?.invalidate() // Stop any existing timer
+        autoTimer?.invalidate()
 
         autoTimer = Timer.scheduledTimer(
             withTimeInterval: Double(msTimePerSlide + msTransitionTime) / 1000,
             repeats: true
         ) { _ in
             guard !isPaused else {
-                // If paused, check if 10 seconds have passed
                 if let pauseEndDate = pauseEndDate, Date() >= pauseEndDate {
-                    isPaused = false // Resume auto-play
+                    isPaused = false
                 }
                 return
             }
 
-            let slideDuration: Double = Double(msTransitionTime) / 1000
-            let fadeDuration: Double = Double(msTransitionTime) / 4000
+            let fadeDuration: Double = 1.0
 
+            // Fade out both slide + indicator
             withAnimation(.easeInOut(duration: fadeDuration)) {
                 opacity = 0
+                indicatorOpacity = 0
             }
 
-            withAnimation(.easeInOut(duration: slideDuration).delay(fadeDuration)) {
-                index += 1
+            DispatchQueue.main.asyncAfter(deadline: .now() + fadeDuration) {
+                index = (index + 1) % data.count
                 if loop {
                     expandDataIfNeeded()
                     pruneDataIfNeeded()
-                } else {
-                    index = min(index, data.count - 1)
                 }
-            }
 
-            withAnimation(.easeInOut(duration: fadeDuration).delay(slideDuration)) {
-                opacity = 1
+                // Fade in both slide + indicator
+                withAnimation(.easeInOut(duration: fadeDuration)) {
+                    opacity = 1
+                    indicatorOpacity = 1
+                }
             }
         }
     }
@@ -448,7 +452,9 @@ struct PageControlView: View {
     let originalCount: Int
     let pageControl: DisplayablePageControl
     @Binding var currentIndex: Int
-
+    var opacity: CGFloat
+    let animationDuration: CGFloat // Half of whatever the fade animation is
+    
     @State private var localCurrentIndex: Int = 0
 
     var activeIndicator: DisplayablePageControlIndicator {
@@ -469,9 +475,10 @@ struct PageControlView: View {
                             width: localCurrentIndex == index ? activeIndicator.width : indicator.width,
                             height: localCurrentIndex == index ? activeIndicator.height : indicator.height
                         )
-                        .animation(.easeInOut, value: self.localCurrentIndex)
                 }
             }
+//            .opacity(opacity)
+            .animation(.easeInOut(duration: 1.0), value: opacity)
             .padding(self.pageControl.padding)
             .shape(border: pageControl.border,
                    shape: pageControl.shape,
@@ -480,17 +487,12 @@ struct PageControlView: View {
             .shadow(shadow: pageControl.shadow, shape: pageControl.shape?.toInsettableShape())
             .padding(self.pageControl.margin)
             .onChangeOf(self.currentIndex) { newValue in
-                withAnimation {
-                    guard originalCount > 0 else {
-                        self.localCurrentIndex = 0
-                        return
-                    }
+                withAnimation(.easeInOut(duration: animationDuration)) {
                     self.localCurrentIndex = newValue % originalCount
                 }
             }
         }
     }
-
 }
 
 #if DEBUG
