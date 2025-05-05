@@ -63,7 +63,8 @@ struct CarouselComponentView: View {
                         cardWidth: reader.size.width - (style.pagePeek * 2) - (style.pageSpacing * 2),
                         pageControl: style.pageControl,
                         msTimePerSlide: style.autoAdvance?.msTimePerPage,
-                        msTransitionTime: style.autoAdvance?.msTransitionTime
+                        msTransitionTime: style.autoAdvance?.msTransitionTime,
+                        setUpAutoAdvanceAnimation: style.autoAdvance.map { _ in true } ?? false
                     ).clipped()
                 }
                 // Need to set height since geometry reader has no intrinsic height
@@ -157,7 +158,8 @@ private struct CarouselView<Content: View>: View {
         pageControl: DisplayablePageControl?,
         /// If either of these is nil, auto‐play is off.
         msTimePerSlide: Int?,
-        msTransitionTime: Int?
+        msTransitionTime: Int?,
+        setUpAutoAdvanceAnimation: Bool
     ) {
         self.width = width
         self.pageAlignment = pageAlignment
@@ -169,6 +171,7 @@ private struct CarouselView<Content: View>: View {
         self.pageControl = pageControl
         self.msTimePerSlide = msTimePerSlide
         self.msTransitionTime = msTransitionTime
+        self.setUpAutoAdvanceAnimation = setUpAutoAdvanceAnimation
     }
 
     // MARK: - Body
@@ -210,7 +213,7 @@ private struct CarouselView<Content: View>: View {
             .frame(width: self.width, alignment: .leading)
             .offset(x: xOffset(in: self.width) + dragOffset) // Apply drag offset
             .opacity(opacity)
-            .applyIf(setUpAnimationViewModifier, apply: { view in
+            .applyIf(!setUpAutoAdvanceAnimation, apply: { view in
                 // Animate only final snaps (or auto transitions), not real-time dragging
                 view.animation(.easeInOut(duration: self.transitionTime), value: index)
             })
@@ -267,9 +270,7 @@ private struct CarouselView<Content: View>: View {
     // MARK: - Setup
 
     /// When `loop` is `true`, and `fadeTransition` is turned on we don't setUp the animation view modifier
-    private var setUpAnimationViewModifier: Bool {
-        true
-    }
+    private let setUpAutoAdvanceAnimation: Bool
 
     private func setupData() {
         guard !originalPages.isEmpty else { return }
@@ -311,10 +312,10 @@ private struct CarouselView<Content: View>: View {
 
     // arbitrary but works smoothly
     private var fadeDuration: TimeInterval? {
-        guard let autoPlayTimerDuration else {
+        guard let msTimePerSlide else {
             return nil
         }
-        return 2 * autoPlayTimerDuration / 5
+        return TimeInterval(msTimePerSlide) / 1000
     }
 
     private func startAutoPlayIfNeeded() {
@@ -334,9 +335,7 @@ private struct CarouselView<Content: View>: View {
                 return
             }
 
-            let fadeTransitionEnabled = false
-
-            if fadeTransitionEnabled, let fadeDuration {
+            if setUpAutoAdvanceAnimation, let fadeDuration {
                 // Fade out both slide + indicator
                 withAnimation(.easeInOut(duration: fadeDuration)) {
                     opacity = 0
@@ -721,7 +720,7 @@ struct CarouselComponentView_Previews: PreviewProvider {
                         pagePeek: 20,
                         initialPageIndex: 1,
                         loop: true,
-                        autoAdvance: .init(msTimePerPage: 1000, msTransitionTime: 500),
+                        autoAdvance: .init(msTimePerPage: 1000, msTransitionTime: 500, transitionType: .fade),
                         pageControl: .init(
                             position: .bottom,
                             padding: PaywallComponent.Padding(top: 0, bottom: 0, leading: 0, trailing: 0),
