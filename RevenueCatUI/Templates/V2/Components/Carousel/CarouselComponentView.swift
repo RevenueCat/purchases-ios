@@ -197,11 +197,11 @@ private struct CarouselView<Content: View>: View {
             // If top page control
             if let pageControl = self.pageControl, pageControl.position == .top {
                 PageControlView(
-                        originalCount: self.originalCount,
-                        pageControl: pageControl,
-                        currentIndex: self.$index,
-                        animationDuration: autoPlayTimerDuration.map { $0 / 5 }
-                    )
+                    originalCount: self.originalCount,
+                    pageControl: pageControl,
+                    currentIndex: self.$index,
+                    animationDuration: autoPlayTimerDuration.map { $0 / 5 }
+                )
             }
 
             // Main horizontal “strip” of pages:
