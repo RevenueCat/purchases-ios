@@ -145,7 +145,6 @@ struct ManageSubscriptionView: View {
 //                }
             }
         }
-        .dismissCircleButtonToolbarIfNeeded()
         .overlay {
             RestorePurchasesAlert(
                 isPresented: self.$viewModel.showRestoreAlert,
