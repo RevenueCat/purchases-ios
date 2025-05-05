@@ -166,7 +166,7 @@ struct BottomSheetOverlayModifier<SheetContent: View>: ViewModifier {
                         }
                 }
             )
-            .animation(.spring(duration: 0.25), value: isPresented.wrappedValue)
+            .animation(.spring(duration: 0.35), value: isPresented.wrappedValue)
         }
     }
 }
