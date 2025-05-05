@@ -544,12 +544,16 @@ struct CarouselComponentView_Previews: PreviewProvider {
                             default: .init(
                                 width: 10,
                                 height: 10,
-                                color: PaywallComponent.ColorScheme(light: .hex("#aeaeae"))
+                                color: PaywallComponent.ColorScheme(light: .hex("#aeaeae")),
+                                strokeColor: PaywallComponent.ColorScheme(light: .hex("#000000")),
+                                strokeWidth: 0
                             ),
                             active: .init(
                                 width: 10,
                                 height: 10,
-                                color: PaywallComponent.ColorScheme(light: .hex("#000000"))
+                                color: PaywallComponent.ColorScheme(light: .hex("#000000")),
+                                strokeColor: PaywallComponent.ColorScheme(light: .hex("#FFFF00")),
+                                strokeWidth: 0
                             )
                         )
                     ),
@@ -617,12 +621,16 @@ struct CarouselComponentView_Previews: PreviewProvider {
                             default: .init(
                                 width: 10,
                                 height: 10,
-                                color: PaywallComponent.ColorScheme(light: .hex("#cccccc"))
+                                color: PaywallComponent.ColorScheme(light: .hex("#cccccc")),
+                                strokeColor: PaywallComponent.ColorScheme(light: .hex("#000000")),
+                                strokeWidth: 0
                             ),
                             active: .init(
                                 width: 10,
                                 height: 10,
-                                color: PaywallComponent.ColorScheme(light: .hex("#000000"))
+                                color: PaywallComponent.ColorScheme(light: .hex("#00000000")),
+                                strokeColor: PaywallComponent.ColorScheme(light: .hex("#000000")),
+                                strokeWidth: 1
                             )
                         )
                     ),
@@ -684,12 +692,16 @@ struct CarouselComponentView_Previews: PreviewProvider {
                             default: .init(
                                 width: 10,
                                 height: 10,
-                                color: PaywallComponent.ColorScheme(light: .hex("#4462e96e"))
+                                color: PaywallComponent.ColorScheme(light: .hex("#4462e96e")),
+                                strokeColor: PaywallComponent.ColorScheme(light: .hex("#000000")),
+                                strokeWidth: 0
                             ),
                             active: .init(
                                 width: 60,
                                 height: 20,
-                                color: PaywallComponent.ColorScheme(light: .hex("#4462e9"))
+                                color: PaywallComponent.ColorScheme(light: .hex("#4462e9")),
+                                strokeColor: PaywallComponent.ColorScheme(light: .hex("#000000")),
+                                strokeWidth: 0
                             )
                         )
                     ),
