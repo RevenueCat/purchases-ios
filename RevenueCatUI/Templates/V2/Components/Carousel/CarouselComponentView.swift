@@ -141,6 +141,7 @@ private struct CarouselView<Content: View>: View {
     /// Used to keep the drag position for better animations
     @State private var dragOffset: CGFloat = 0
 
+    /// Used to animate opacity for the loop transition
     @State private var opacity: CGFloat = 1.0
 
     // MARK: - Init
@@ -195,7 +196,7 @@ private struct CarouselView<Content: View>: View {
                         originalCount: self.originalCount,
                         pageControl: pageControl,
                         currentIndex: self.$index,
-                        animationDuration: 0.5
+                        animationDuration: autoPlayTimerDuration.map { $0 / 5 }
                     )
             }
 
@@ -484,7 +485,7 @@ struct PageControlView: View {
     @Binding var currentIndex: Int
 
     // Half of whatever the fade animation is
-    let animationDuration: CGFloat
+    let animationDuration: CGFloat?
 
     @State private var localCurrentIndex: Int = 0
 
@@ -516,9 +517,20 @@ struct PageControlView: View {
             .shadow(shadow: pageControl.shadow, shape: pageControl.shape?.toInsettableShape())
             .padding(self.pageControl.margin)
             .onChangeOf(self.currentIndex) { newValue in
-                withAnimation(.easeInOut(duration: animationDuration)) {
-                    self.localCurrentIndex = newValue % originalCount
+                if let animationDuration {
+                    withAnimation(.easeInOut(duration: animationDuration)) {
+                        self.localCurrentIndex = newValue % originalCount
+                    }
+                } else {
+                    withAnimation {
+                        guard originalCount > 0 else {
+                            self.localCurrentIndex = 0
+                            return
+                        }
+                        self.localCurrentIndex = newValue % originalCount
+                    }
                 }
+
             }
         }
     }
