@@ -13,6 +13,8 @@
 
 import SwiftUI
 
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
+
 /// A view that presents content in a sheet-like interface with customizable height and background.
 ///
 /// This view is designed to be used as a bottom sheet that slides up from the bottom of the screen.
@@ -20,7 +22,9 @@ import SwiftUI
 ///
 /// - Note: This view is typically used in conjunction with ``ButtonSheetOverlayModifier`` to present
 ///   content in a sheet-like interface.
-struct ButtonSheetView<Content: View>: View {
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct BottomSheetView<Content: View>: View {
 
     /// The background color of the sheet.
     let backgroundColor: Color
@@ -61,7 +65,8 @@ struct ButtonSheetView<Content: View>: View {
 /// Use this type to customize the appearance and behavior of a sheet view.
 /// You can specify the background color, height percentage relative to the screen,
 /// and whether tapping outside the sheet should dismiss it.
-struct ButtonSheetConfig: Sendable {
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct BottomSheetConfig: Sendable {
 
     /// The background color of the sheet.
     let backgroundColor: Color
@@ -97,12 +102,13 @@ struct ButtonSheetConfig: Sendable {
 ///
 /// This modifier handles the presentation and dismissal of a sheet view, including
 /// the animation and tap-to-dismiss behavior.
-struct ButtonSheetOverlayModifier<SheetContent: View>: ViewModifier {
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct BottomSheetOverlayModifier<SheetContent: View>: ViewModifier {
     /// A binding to a Boolean value that determines whether the sheet is presented.
     let isPresented: Binding<Bool>
 
     /// The configuration for the sheet.
-    let buttonConfig: ButtonSheetConfig
+    let config: BottomSheetConfig
 
     /// A closure that creates the content of the sheet.
     let sheetContent: () -> SheetContent
@@ -110,16 +116,8 @@ struct ButtonSheetOverlayModifier<SheetContent: View>: ViewModifier {
     @State private var sheetHeight: CGFloat = 0
 
     func body(content: Content) -> some View {
-        if #available(iOS 14.0, *) {
-            modifierBody(content: content)
-                .ignoresSafeArea()
-        } else {
-            // .ignoresSafeArea() is not available in iOS <14,
-            // so we use .edgesIgnoringSafeArea instead
-            modifierBody(content: content)
-                .edgesIgnoringSafeArea(.all)
-        }
-    }
+        modifierBody(content: content)
+            .ignoresSafeArea()    }
 
     @ViewBuilder
     private func modifierBody(
@@ -128,7 +126,7 @@ struct ButtonSheetOverlayModifier<SheetContent: View>: ViewModifier {
         ZStack {
             content
             // Invisible tap area that covers the screen
-            if isPresented.wrappedValue && buttonConfig.tapOutsideToDismiss {
+            if isPresented.wrappedValue && config.tapOutsideToDismiss {
                 Color.clear
                     .contentShape(Rectangle())
                     .onTapGesture {
@@ -140,8 +138,8 @@ struct ButtonSheetOverlayModifier<SheetContent: View>: ViewModifier {
             VStack {
                 Spacer()
                 if isPresented.wrappedValue {
-                    ButtonSheetView(
-                        backgroundColor: buttonConfig.backgroundColor,
+                    BottomSheetView(
+                        backgroundColor: config.backgroundColor,
                         height: self.sheetHeight
                     ) {
                         sheetContent()
@@ -153,7 +151,7 @@ struct ButtonSheetOverlayModifier<SheetContent: View>: ViewModifier {
                 GeometryReader { proxy in
                     Color.clear
                         .onAppear {
-                            self.sheetHeight = proxy.size.height * buttonConfig.screenHeightPercentage
+                            self.sheetHeight = proxy.size.height * config.screenHeightPercentage
                         }
                 }
             )
@@ -163,6 +161,7 @@ struct ButtonSheetOverlayModifier<SheetContent: View>: ViewModifier {
     }
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
     /// Presents a sheet view when a binding to a Boolean value is true.
     ///
@@ -177,19 +176,20 @@ extension View {
     ///   - content: A closure that returns the content of the sheet.
     ///
     /// - Returns: A view that presents the sheet when `isPresented` is true.
-    func buttonSheet<Content: View>(
+    func bottomSheet<Content: View>(
         isPresented: Binding<Bool>,
-        buttonConfig: ButtonSheetConfig = ButtonSheetConfig(),
+        config: BottomSheetConfig = BottomSheetConfig(),
         @ViewBuilder content: @escaping () -> Content
     ) -> some View {
-        modifier(ButtonSheetOverlayModifier(
+        modifier(BottomSheetOverlayModifier(
             isPresented: isPresented,
-            buttonConfig: buttonConfig,
+            config: config,
             sheetContent: content
         ))
     }
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 #Preview {
     struct Preview: View {
         @State private var isPresented = false
@@ -202,7 +202,14 @@ extension View {
                     Button("Show Sheet") {
                         isPresented.toggle()
                     }
-                    .buttonSheet(isPresented: $isPresented) {
+                    .bottomSheet(
+                        isPresented: $isPresented,
+                        config: BottomSheetConfig(
+                            backgroundColor: Color.blue,
+                            screenHeightPercentage: 0.5,
+                            tapOutsideToDismiss: false
+                        )
+                    ) {
                         VStack(spacing: 20) {
                             Text("Sheet Content")
                                 .font(.title)
@@ -218,3 +225,4 @@ extension View {
 
     return Preview()
 }
+#endif
