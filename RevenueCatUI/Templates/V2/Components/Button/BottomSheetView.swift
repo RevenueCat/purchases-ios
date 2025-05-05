@@ -88,13 +88,21 @@ struct BottomSheetConfig: Sendable {
     ///   - tapOutsideToDismiss: A Boolean value that determines whether tapping outside the sheet
     ///     dismisses it. Defaults to `true`.
     init(
-        backgroundColor: Color = Color(UIColor.systemBackground),
+        backgroundColor: Color = Self.systemBackgroundColor,
         screenHeightPercentage: CGFloat = 0.33333,
         tapOutsideToDismiss: Bool = true
     ) {
         self.backgroundColor = backgroundColor
         self.screenHeightPercentage = screenHeightPercentage
         self.tapOutsideToDismiss = tapOutsideToDismiss
+    }
+
+    private static var systemBackgroundColor: Color {
+        #if os(watchOS)
+        Color.black
+        #else
+        return Color(UIColor.systemBackground)
+        #endif
     }
 }
 
@@ -206,7 +214,7 @@ extension View {
                         config: BottomSheetConfig(
                             backgroundColor: Color.blue,
                             screenHeightPercentage: 0.5,
-                            tapOutsideToDismiss: false
+                            tapOutsideToDismiss: true
                         )
                     ) {
                         VStack(spacing: 20) {
