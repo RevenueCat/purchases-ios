@@ -142,7 +142,7 @@ private struct CarouselView<Content: View>: View {
     @State private var dragOffset: CGFloat = 0
 
     @State private var opacity: CGFloat = 1.0
-    @State private var indicatorOpacity: CGFloat = 1.0
+
     // MARK: - Init
 
     init(
@@ -195,7 +195,6 @@ private struct CarouselView<Content: View>: View {
                         originalCount: self.originalCount,
                         pageControl: pageControl,
                         currentIndex: self.$index,
-                        opacity: self.indicatorOpacity,
                         animationDuration: 0.5
                     )
             }
@@ -240,7 +239,6 @@ private struct CarouselView<Content: View>: View {
                     originalCount: self.originalCount,
                     pageControl: pageControl,
                     currentIndex: self.$index,
-                    opacity: self.indicatorOpacity,
                     animationDuration: 0.5
                 )
             }
@@ -318,7 +316,6 @@ private struct CarouselView<Content: View>: View {
             // Fade out both slide + indicator
             withAnimation(.easeInOut(duration: fadeDuration)) {
                 opacity = 0
-                indicatorOpacity = 0
             }
 
             DispatchQueue.main.asyncAfter(deadline: .now() + fadeDuration) {
@@ -331,7 +328,6 @@ private struct CarouselView<Content: View>: View {
                 // Fade in both slide + indicator
                 withAnimation(.easeInOut(duration: fadeDuration)) {
                     opacity = 1
-                    indicatorOpacity = 1
                 }
             }
         }
@@ -452,9 +448,8 @@ struct PageControlView: View {
     let originalCount: Int
     let pageControl: DisplayablePageControl
     @Binding var currentIndex: Int
-    var opacity: CGFloat
     let animationDuration: CGFloat // Half of whatever the fade animation is
-    
+
     @State private var localCurrentIndex: Int = 0
 
     var activeIndicator: DisplayablePageControlIndicator {
@@ -477,8 +472,6 @@ struct PageControlView: View {
                         )
                 }
             }
-//            .opacity(opacity)
-            .animation(.easeInOut(duration: 1.0), value: opacity)
             .padding(self.pageControl.padding)
             .shape(border: pageControl.border,
                    shape: pageControl.shape,
