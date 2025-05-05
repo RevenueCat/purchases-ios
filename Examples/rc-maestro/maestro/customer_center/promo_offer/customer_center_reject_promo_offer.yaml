@@ -13,3 +13,5 @@ name: Reject Promo Offer
 - tapOn: "No, thanks"
 - tapOn: "Cancel Subscription"
 - tapOn: "Confirm"
+- tapOn: "Cancel"
+- assertNotVisible: "Cancel Subscription"
