@@ -200,7 +200,7 @@ private struct CarouselView<Content: View>: View {
                     originalCount: self.originalCount,
                     pageControl: pageControl,
                     currentIndex: self.$index,
-                    animationDuration: autoPlayTimerDuration.map { $0 / 2 }
+                    animationDuration: fadeDuration.map { $0 / 2 }
                 )
             }
 
@@ -246,7 +246,7 @@ private struct CarouselView<Content: View>: View {
                     originalCount: self.originalCount,
                     pageControl: pageControl,
                     currentIndex: self.$index,
-                    animationDuration: autoPlayTimerDuration.map { $0 / 2 }
+                    animationDuration: fadeDuration.map { $0 / 2 }
                 )
             }
         }
