@@ -264,7 +264,7 @@ struct DefaultTemplateView: TemplateViewType {
 
     private func textColor(_ selected: Bool) -> Color {
         return selected
-        ? self.configuration.colors.accent1Color
+        ? self.configuration.colors.callToActionForegroundColor
         : self.configuration.colors.text1Color
     }
 

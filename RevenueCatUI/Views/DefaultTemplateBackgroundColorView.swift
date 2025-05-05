@@ -37,13 +37,13 @@ struct DefaultTemplateBackgroundColorView: View {
     }
     
     private func darkened(color: UIColor, amount: CGFloat) -> UIColor {
-        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
-        guard color.getRed(&r, green: &g, blue: &b, alpha: &a) else { return color }
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        guard color.getRed(&red, green: &green, blue: &blue, alpha: &alpha) else { return color }
         return  UIColor(
-            red: max(r - amount, 0),
-            green: max(g - amount, 0),
-            blue: max(b - amount, 0),
-            alpha: a
+            red: max(red - amount, 0),
+            green: max(green - amount, 0),
+            blue: max(blue - amount, 0),
+            alpha: alpha
         )
     }
 }
