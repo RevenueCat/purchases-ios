@@ -489,7 +489,8 @@ struct PageControlView: View {
     let pageControl: DisplayablePageControl
     @Binding var currentIndex: Int
 
-    // Half of whatever the fade animation is
+    /// Used for fade transition
+    /// - Note: This needs to be half of whatever the fade duration is
     let animationDuration: CGFloat?
 
     @State private var localCurrentIndex: Int = 0
