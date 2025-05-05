@@ -1095,6 +1095,15 @@
 		B3F8418F26F3A93400E560FB /* ErrorCodeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F8418E26F3A93400E560FB /* ErrorCodeTests.swift */; };
 		C3AD12BA2C6EA61F00A4F86F /* CompatibilityNavigationStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3AD12B92C6EA61F00A4F86F /* CompatibilityNavigationStack.swift */; };
 		C3AD12BC2C6EA69D00A4F86F /* SubscriptionDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3AD12BB2C6EA69D00A4F86F /* SubscriptionDetailsView.swift */; };
+		C5434EBE2CA3462900FE8F15 /* base64encoded_sandboxReceipt2.txt in Resources */ = {isa = PBXBuildFile; fileRef = C5434EBA2CA3462900FE8F15 /* base64encoded_sandboxReceipt2.txt */; };
+		C5434EBF2CA3462900FE8F15 /* base64encoded_sandboxReceipt3.txt in Resources */ = {isa = PBXBuildFile; fileRef = C5434EBB2CA3462900FE8F15 /* base64encoded_sandboxReceipt3.txt */; };
+		C5434EC02CA3462900FE8F15 /* base64encoded_unsupportedReceipt1.txt in Resources */ = {isa = PBXBuildFile; fileRef = C5434EBC2CA3462900FE8F15 /* base64encoded_unsupportedReceipt1.txt */; };
+		C5434EC12CA3462900FE8F15 /* base64encoded_unsupportedReceipt2.txt in Resources */ = {isa = PBXBuildFile; fileRef = C5434EBD2CA3462900FE8F15 /* base64encoded_unsupportedReceipt2.txt */; };
+		C5434EC62CA3475800FE8F15 /* base64encoded_sandboxReceipt2.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = C5434EBA2CA3462900FE8F15 /* base64encoded_sandboxReceipt2.txt */; };
+		C5434EC72CA3475800FE8F15 /* base64encoded_sandboxReceipt3.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = C5434EBB2CA3462900FE8F15 /* base64encoded_sandboxReceipt3.txt */; };
+		C5434EC82CA3475800FE8F15 /* base64encoded_unsupportedReceipt1.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = C5434EBC2CA3462900FE8F15 /* base64encoded_unsupportedReceipt1.txt */; };
+		C5434EC92CA3475800FE8F15 /* base64encoded_unsupportedReceipt2.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = C5434EBD2CA3462900FE8F15 /* base64encoded_unsupportedReceipt2.txt */; };
+		C5434ECB2CA347BB00FE8F15 /* ISO8601DateFormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5434ECA2CA347B800FE8F15 /* ISO8601DateFormatterTests.swift */; };
 		F516BD29282434070083480B /* StoreKit2StorefrontListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = F516BD28282434070083480B /* StoreKit2StorefrontListener.swift */; };
 		F52CFAFC28290AE500E8ABC5 /* StoreKit2StorefrontListenerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F516BD322828FDD90083480B /* StoreKit2StorefrontListenerTests.swift */; };
 		F530E4FF275646EF001AF6BD /* MacDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = F530E4FE275646EF001AF6BD /* MacDevice.swift */; };
@@ -1311,6 +1320,10 @@
 			dstPath = "";
 			dstSubfolderSpec = 7;
 			files = (
+				C5434EC62CA3475800FE8F15 /* base64encoded_sandboxReceipt2.txt in CopyFiles */,
+				C5434EC72CA3475800FE8F15 /* base64encoded_sandboxReceipt3.txt in CopyFiles */,
+				C5434EC82CA3475800FE8F15 /* base64encoded_unsupportedReceipt1.txt in CopyFiles */,
+				C5434EC92CA3475800FE8F15 /* base64encoded_unsupportedReceipt2.txt in CopyFiles */,
 				57E6C2C92975C777001AFE98 /* verifyReceiptSample1.txt in CopyFiles */,
 				57E6C2CA2975C777001AFE98 /* base64encodedreceiptsample1.txt in CopyFiles */,
 				57E6C2CB2975C777001AFE98 /* base64encoded_sandboxReceipt.txt in CopyFiles */,
@@ -2434,6 +2447,11 @@
 		B3F8418E26F3A93400E560FB /* ErrorCodeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorCodeTests.swift; sourceTree = "<group>"; };
 		C3AD12B92C6EA61F00A4F86F /* CompatibilityNavigationStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompatibilityNavigationStack.swift; sourceTree = "<group>"; };
 		C3AD12BB2C6EA69D00A4F86F /* SubscriptionDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionDetailsView.swift; sourceTree = "<group>"; };
+		C5434EBA2CA3462900FE8F15 /* base64encoded_sandboxReceipt2.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = base64encoded_sandboxReceipt2.txt; sourceTree = "<group>"; };
+		C5434EBB2CA3462900FE8F15 /* base64encoded_sandboxReceipt3.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = base64encoded_sandboxReceipt3.txt; sourceTree = "<group>"; };
+		C5434EBC2CA3462900FE8F15 /* base64encoded_unsupportedReceipt1.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = base64encoded_unsupportedReceipt1.txt; sourceTree = "<group>"; };
+		C5434EBD2CA3462900FE8F15 /* base64encoded_unsupportedReceipt2.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = base64encoded_unsupportedReceipt2.txt; sourceTree = "<group>"; };
+		C5434ECA2CA347B800FE8F15 /* ISO8601DateFormatterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ISO8601DateFormatterTests.swift; sourceTree = "<group>"; };
 		EFB3CBAA73855779FE828CE2 /* ProductsFetcherSK1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductsFetcherSK1.swift; sourceTree = "<group>"; };
 		F516BD28282434070083480B /* StoreKit2StorefrontListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2StorefrontListener.swift; sourceTree = "<group>"; };
 		F516BD322828FDD90083480B /* StoreKit2StorefrontListenerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2StorefrontListenerTests.swift; sourceTree = "<group>"; };
@@ -3515,6 +3533,10 @@
 			children = (
 				2DDE559A24C8B5E300DCB087 /* verifyReceiptSample1.txt */,
 				2DDE559B24C8B5E300DCB087 /* base64encodedreceiptsample1.txt */,
+				C5434EBA2CA3462900FE8F15 /* base64encoded_sandboxReceipt2.txt */,
+				C5434EBB2CA3462900FE8F15 /* base64encoded_sandboxReceipt3.txt */,
+				C5434EBC2CA3462900FE8F15 /* base64encoded_unsupportedReceipt1.txt */,
+				C5434EBD2CA3462900FE8F15 /* base64encoded_unsupportedReceipt2.txt */,
 				5791CE7F273F26A000E50C4B /* base64encoded_sandboxReceipt.txt */,
 				B319514A26C1991E002CA9AC /* base64EncodedReceiptSampleForDataExtension.txt */,
 			);
@@ -4491,6 +4513,7 @@
 				5759B462296E1A3E002472D5 /* Helpers */,
 				4FA696A329FC43C600D228B1 /* ReceiptParserTests-Info.plist */,
 				5759B404296DF6C4002472D5 /* ReceiptParserFetchingTests.swift */,
+				C5434ECA2CA347B800FE8F15 /* ISO8601DateFormatterTests.swift */,
 			);
 			name = ReceiptParserTests;
 			path = Tests/ReceiptParserTests;
@@ -5903,6 +5926,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C5434EBE2CA3462900FE8F15 /* base64encoded_sandboxReceipt2.txt in Resources */,
+				C5434EBF2CA3462900FE8F15 /* base64encoded_sandboxReceipt3.txt in Resources */,
+				C5434EC02CA3462900FE8F15 /* base64encoded_unsupportedReceipt1.txt in Resources */,
+				C5434EC12CA3462900FE8F15 /* base64encoded_unsupportedReceipt2.txt in Resources */,
 				2D4D6AF624F7193700B656BE /* verifyReceiptSample1.txt in Resources */,
 				75D9DE072D79FC0E0068554F /* testEncoding.1.json in Resources */,
 				2D4D6AF724F7193700B656BE /* base64encodedreceiptsample1.txt in Resources */,
@@ -6872,6 +6899,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5759B406296DF8EE002472D5 /* ReceiptParserFetchingTests.swift in Sources */,
+				C5434ECB2CA347BB00FE8F15 /* ISO8601DateFormatterTests.swift in Sources */,
 				5759B465296E1A4B002472D5 /* MockBundle.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
