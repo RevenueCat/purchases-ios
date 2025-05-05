@@ -141,6 +141,8 @@ private struct CarouselView<Content: View>: View {
     /// Used to keep the drag position for better animations
     @State private var dragOffset: CGFloat = 0
 
+    @State private var opacity: CGFloat = 1.0
+
     // MARK: - Init
 
     init(
@@ -205,10 +207,12 @@ private struct CarouselView<Content: View>: View {
             }
             .frame(width: self.width, alignment: .leading)
             .offset(x: xOffset(in: self.width) + dragOffset) // Apply drag offset
+            .opacity(opacity)
             // Animate only final snaps (or auto transitions), not real-time dragging
-            .animation(.easeInOut(duration: self.transitionTime), value: index)
+//            .animation(.easeInOut(duration: self.transitionTime), value: index)
             .gesture(
                 DragGesture()
+
                     .onChanged({ _ in
                         pauseAutoPlay(for: 10)
                     })
@@ -306,7 +310,14 @@ private struct CarouselView<Content: View>: View {
                 return
             }
 
-            withAnimation(.easeInOut(duration: Double(msTransitionTime) / 1000)) {
+            let slideDuration: Double = Double(msTransitionTime) / 1000
+            let fadeDuration: Double = Double(msTransitionTime) / 4000
+
+            withAnimation(.easeInOut(duration: fadeDuration)) {
+                opacity = 0
+            }
+
+            withAnimation(.easeInOut(duration: slideDuration).delay(fadeDuration)) {
                 index += 1
                 if loop {
                     expandDataIfNeeded()
@@ -314,6 +325,10 @@ private struct CarouselView<Content: View>: View {
                 } else {
                     index = min(index, data.count - 1)
                 }
+            }
+
+            withAnimation(.easeInOut(duration: fadeDuration).delay(slideDuration)) {
+                opacity = 1
             }
         }
     }
@@ -663,7 +678,7 @@ struct CarouselComponentView_Previews: PreviewProvider {
                         pagePeek: 20,
                         initialPageIndex: 1,
                         loop: true,
-                        autoAdvance: .init(msTimePerPage: 1000, msTransitionTime: 500),
+                        autoAdvance: .init(msTimePerPage: 1500, msTransitionTime: 1000),
                         pageControl: .init(
                             position: .bottom,
                             padding: PaywallComponent.Padding(top: 0, bottom: 0, leading: 0, trailing: 0),
