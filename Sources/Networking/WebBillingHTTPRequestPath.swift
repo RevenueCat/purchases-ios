@@ -16,7 +16,7 @@ import Foundation
 extension HTTPRequest.WebBillingPath: HTTPRequestPath {
 
     // swiftlint:disable:next force_unwrapping
-    static let serverHostURL = URL(string: "https://api-diagnostics.revenuecat.com")!
+    static let serverHostURL = URL(string: "https://api.revenuecat.com")!
 
     var authenticated: Bool {
         switch self {
@@ -49,7 +49,8 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
     var relativePath: String {
         switch self {
         case let .getWebProducts(appUserId, productIds):
-            return "subscribers/\(appUserId.trimmedAndEscaped))/products?id=\(productIds.joined(separator: "&id="))"
+            let productIdsQuery = productIds.joined(separator: "&id=")
+            return "/rcbilling/v1/subscribers/\(appUserId.trimmedAndEscaped))/products?id=\(productIdsQuery)"
         }
     }
 

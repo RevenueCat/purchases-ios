@@ -69,8 +69,7 @@ private extension GetWebProductsOperation {
             return
         }
 
-        let request = HTTPRequest(method: .get, path: WebBillingPath.getWebProducts(appUserId: appUserID,
-                                                                                    productIds: productIds))
+        let request = HTTPRequest(method: .get, path: .getWebProducts(appUserId: appUserID, productIds: productIds))
 
         httpClient.perform(request) { (response: VerifiedHTTPResponse<WebProductsResponse>.Result) in
             defer {
