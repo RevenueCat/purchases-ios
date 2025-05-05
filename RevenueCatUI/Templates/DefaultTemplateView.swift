@@ -58,11 +58,7 @@ struct DefaultTemplateView: TemplateViewType {
             .edgesIgnoringSafeArea(self.configuration.mode.isFullScreen ? .top : [])
             .animation(Constants.fastAnimation, value: self.selectedPackage)
             .background {
-                BackgroundColorView()
-                
-                Color.clear
-                    .background(.ultraThinMaterial)
-                    .ignoresSafeArea()
+                DefaultTemplateBackgroundColorView()
             }
     }
 
@@ -285,25 +281,6 @@ struct DefaultTemplateView: TemplateViewType {
                    locale: self.selectedLocalization.locale,
                    purchaseHandler: self.purchaseHandler,
                    displayingAllPlans: self.$displayingAllPlans)
-    }
-    
-    private struct BackgroundColorView: View {
-        private let backgroundColorOpacity = 0.4
-        
-        var body: some View {
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    Color.primary.opacity(backgroundColorOpacity),
-                    // using UIColor.tintColor instead of SwiftUI's accentColor
-                    // because accentColor doesn't load sometimes and defaults to blue
-                    Color(UIColor.tintColor).opacity(backgroundColorOpacity),
-                    Color.secondary.opacity(backgroundColorOpacity)
-                ]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-        }
     }
 
     @ViewBuilder

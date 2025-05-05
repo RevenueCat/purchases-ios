@@ -52,12 +52,7 @@ struct LoadingPaywallView: View {
         .redacted(reason: .placeholder)
         .shimmering(enable: self.mode.shouldDisplayBackground && self.shimmer)
         .background {
-            TemplateBackgroundImageView(
-                url: Self.defaultPaywall.backgroundImageURL,
-                lowResUrl: Self.defaultPaywall.backgroundLowResImageURL,
-                blurred: true,
-                ignoreSafeArea: self.mode.shouldDisplayBackground
-            )
+            DefaultTemplateBackgroundColorView()
         }
     }
 
