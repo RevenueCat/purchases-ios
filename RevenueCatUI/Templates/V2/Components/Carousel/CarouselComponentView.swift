@@ -448,13 +448,21 @@ struct PageControlView: View {
         if self.originalCount > 1 {
             HStack(spacing: self.pageControl.spacing) {
                 ForEach(0..<originalCount, id: \.self) { index in
-                    Capsule()
-                        .fill(localCurrentIndex == index ? activeIndicator.color : indicator.color)
-                        .frame(
-                            width: localCurrentIndex == index ? activeIndicator.width : indicator.width,
-                            height: localCurrentIndex == index ? activeIndicator.height : indicator.height
-                        )
-                        .animation(.easeInOut, value: self.localCurrentIndex)
+                    ZStack {
+                        Capsule()
+                            .fill(localCurrentIndex == index ? activeIndicator.color : indicator.color)
+                        Capsule()
+                            .strokeBorder(
+                                localCurrentIndex == index ? activeIndicator.strokeColor : indicator.strokeColor,
+                                style: StrokeStyle(lineWidth: localCurrentIndex == index ? activeIndicator.strokeWidth : indicator.strokeWidth),
+                                antialiased: false
+                            )
+                    }
+                    .frame(
+                        width: localCurrentIndex == index ? activeIndicator.width : indicator.width,
+                        height: localCurrentIndex == index ? activeIndicator.height : indicator.height
+                    )
+                    .animation(.easeInOut, value: self.localCurrentIndex)
                 }
             }
             .padding(self.pageControl.padding)

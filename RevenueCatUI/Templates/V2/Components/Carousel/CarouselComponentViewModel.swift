@@ -231,6 +231,8 @@ struct DisplayablePageControlIndicator {
     let width: CGFloat
     let height: CGFloat
     let color: Color
+    let strokeColor: Color
+    let strokeWidth: CGFloat
 
     let uiConfigProvider: UIConfigProvider
 
@@ -241,8 +243,10 @@ struct DisplayablePageControlIndicator {
         self.width = CGFloat(pageControlIndicator.width)
         self.height = CGFloat(pageControlIndicator.height)
         self.color = pageControlIndicator.color.asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor()
+        self.strokeColor = pageControlIndicator.strokeColor.asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor()
 
         self.uiConfigProvider = uiConfigProvider
+        self.strokeWidth = pageControlIndicator.strokeWidth
     }
 
 }
