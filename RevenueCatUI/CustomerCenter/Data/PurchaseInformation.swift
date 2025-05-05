@@ -54,6 +54,13 @@ struct PurchaseInformation {
     /// - `false` for purchases outside the trial period.
     let isTrial: Bool
 
+    /// Indicates whether the purchased subscription is cancelled
+    /// - `true` if the subscription is user-cancelled
+    /// - `false` if the subscription is not user-cancelled
+    ///
+    /// Note: `false` for non-subscriptions
+    let isCancelled: Bool
+
     let latestPurchaseDate: Date?
     let customerInfoRequestedDate: Date
 
@@ -64,8 +71,9 @@ struct PurchaseInformation {
          expirationOrRenewal: ExpirationOrRenewal?,
          productIdentifier: String,
          store: Store,
-         isTrial: Bool,
          isLifetime: Bool,
+         isTrial: Bool,
+         isCancelled: Bool,
          latestPurchaseDate: Date?,
          customerInfoRequestedDate: Date
     ) {
@@ -78,6 +86,7 @@ struct PurchaseInformation {
         self.store = store
         self.isLifetime = isLifetime
         self.isTrial = isTrial
+        self.isCancelled = isCancelled
         self.latestPurchaseDate = latestPurchaseDate
         self.customerInfoRequestedDate = customerInfoRequestedDate
     }
@@ -109,6 +118,7 @@ struct PurchaseInformation {
             }
             self.isLifetime = entitlement.expirationDate == nil
             self.isTrial = entitlement.periodType == .trial
+            self.isCancelled = entitlement.isCancelled
             self.latestPurchaseDate = entitlement.latestPurchaseDate
         } else {
             switch transaction.type {
@@ -137,6 +147,7 @@ struct PurchaseInformation {
 
             self.productIdentifier = transaction.productIdentifier
             self.store = transaction.store
+            self.isCancelled = transaction.isCancelled
 
             if transaction.store == .promotional {
                 self.price = .free
@@ -253,7 +264,11 @@ extension PurchaseInformation: Identifiable {
     }
 }
 
-fileprivate extension EntitlementInfo {
+private extension EntitlementInfo {
+
+    var isCancelled: Bool {
+        unsubscribeDetectedAt != nil && !willRenew
+    }
 
     func priceBestEffort(product: StoreProduct?) -> PurchaseInformation.PriceDetails {
         if let product {
@@ -343,7 +358,7 @@ fileprivate extension EntitlementInfo {
 
 }
 
-fileprivate extension String {
+private extension String {
 
     func isPromotionalLifetime(store: Store) -> Bool {
         return self.hasSuffix("_lifetime") && store == .promotional
@@ -356,6 +371,7 @@ protocol Transaction {
     var productIdentifier: String { get }
     var store: Store { get }
     var type: TransactionType { get }
+    var isCancelled: Bool { get }
 }
 
 enum TransactionType {
@@ -373,11 +389,18 @@ extension RevenueCat.SubscriptionInfo: Transaction {
                       isTrial: periodType == .trial)
     }
 
+    var isCancelled: Bool {
+        unsubscribeDetectedAt != nil && !willRenew
+    }
 }
 
 extension NonSubscriptionTransaction: Transaction {
 
     var type: TransactionType {
         .nonSubscription
+    }
+
+    var isCancelled: Bool {
+        false
     }
 }

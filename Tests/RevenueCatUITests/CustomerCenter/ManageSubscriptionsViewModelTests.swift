@@ -43,6 +43,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
         let viewModel =
         ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.default,
                                      actionWrapper: CustomerCenterActionWrapper(),
+                                     purchaseInformation: nil,
                                      purchasesProvider: MockCustomerCenterPurchases())
 
         expect(viewModel.state) == CustomerCenterViewState.success
@@ -63,6 +64,22 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 
         expect(viewModel.relevantPathsForPurchase.count) == 3
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beFalse())
+    }
+
+    func testCancelledDoesNotShowCancelAndRefund() {
+        let purchase = PurchaseInformation.mockNonLifetime(
+            isCancelled: true
+        )
+
+        let viewModel = ManageSubscriptionsViewModel(
+            screen: ManageSubscriptionsViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases())
+
+        expect(viewModel.relevantPathsForPurchase.count) == 2
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beFalse())
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beFalse())
     }
 
     func testShowsRefundIfRefundWindowIsForever() {
@@ -173,6 +190,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
         let viewModel =
         ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.default,
                                      actionWrapper: CustomerCenterActionWrapper(),
+                                     purchaseInformation: nil,
                                      purchasesProvider: MockCustomerCenterPurchases())
 
         viewModel.state = CustomerCenterViewState.error(error)
@@ -302,6 +320,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
             let viewModel = ManageSubscriptionsViewModel(
                 screen: PurchaseInformationFixtures.screenWithIneligiblePromo,
                 actionWrapper: CustomerCenterActionWrapper(),
+                purchaseInformation: nil,
                 purchasesProvider: MockCustomerCenterPurchases(
                     customerInfo: customerInfo,
                     products: products
@@ -404,6 +423,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
         let screen = PurchaseInformationFixtures.screenWithPromo(offerID: offerIdentifierInJSON)
         let viewModel = ManageSubscriptionsViewModel(screen: screen,
                                                      actionWrapper: CustomerCenterActionWrapper(),
+                                                     purchaseInformation: nil,
                                                      purchasesProvider: MockCustomerCenterPurchases(
                                                         customerInfo: customerInfo,
                                                         products: products
@@ -473,8 +493,9 @@ private extension PurchaseInformation {
             expirationOrRenewal: PurchaseInformation.ExpirationOrRenewal(label: .expires, date: .date("")),
             productIdentifier: "",
             store: .appStore,
-            isTrial: false,
             isLifetime: true,
+            isTrial: false,
+            isCancelled: false,
             latestPurchaseDate: nil,
             customerInfoRequestedDate: customerInfoRequestedDate
         )
@@ -483,6 +504,7 @@ private extension PurchaseInformation {
     static func mockNonLifetime(
         price: PurchaseInformation.PriceDetails = .paid("5"),
         isTrial: Bool = false,
+        isCancelled: Bool = false,
         latestPurchaseDate: Date = Date(),
         customerInfoRequestedDate: Date = Date()) -> PurchaseInformation {
         PurchaseInformation(
@@ -496,8 +518,9 @@ private extension PurchaseInformation {
             ),
             productIdentifier: "",
             store: .appStore,
-            isTrial: isTrial,
             isLifetime: false,
+            isTrial: isTrial,
+            isCancelled: isCancelled,
             latestPurchaseDate: latestPurchaseDate,
             customerInfoRequestedDate: customerInfoRequestedDate
         )

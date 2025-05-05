@@ -31,7 +31,7 @@ import RevenueCat
     private lazy var currentAppVersion: String? = currentVersionFetcher()
 
     @Published
-    private(set) var purchasesActive: [PurchaseInformation] = []
+    var purchaseInformation: PurchaseInformation?
 
     @Published
     private(set) var appIsLatestVersion: Bool = defaultAppIsLatestVersion

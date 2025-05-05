@@ -218,7 +218,6 @@ private extension CustomerCenterView {
                 } else {
                     ManageSubscriptionsView(
                         screen: screen,
-                        purchaseInformation: nil,
                         purchasesActive: viewModel.purchasesActive,
                         purchasesProvider: self.viewModel.purchasesProvider,
                         actionWrapper: self.viewModel.actionWrapper)
@@ -235,7 +234,7 @@ private extension CustomerCenterView {
             if let screen = configuration.screens[.noActive] {
                 ManageSubscriptionsView(
                     screen: screen,
-                    purchaseInformation: nil,
+                    purchasesActive: viewModel.purchasesActive,
                     purchasesProvider: self.viewModel.purchasesProvider,
                     actionWrapper: self.viewModel.actionWrapper)
             } else {

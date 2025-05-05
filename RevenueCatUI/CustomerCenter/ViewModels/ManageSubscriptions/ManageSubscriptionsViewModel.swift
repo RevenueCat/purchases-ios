@@ -81,14 +81,12 @@ final class ManageSubscriptionsViewModel: ObservableObject {
     init(
         screen: CustomerCenterConfigData.Screen,
         actionWrapper: CustomerCenterActionWrapper,
-        purchaseInformation: PurchaseInformation? = nil,
         purchasesActive: [PurchaseInformation] = [],
         refundRequestStatus: RefundRequestStatus? = nil,
         purchasesProvider: CustomerCenterPurchasesType,
         loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
             self.screen = screen
             self.paths = screen.filteredPaths
-            self.purchaseInformation = purchaseInformation
             self.purchasesActive = purchasesActive
             self.purchasesProvider = purchasesProvider
             self.refundRequestStatus = refundRequestStatus
@@ -98,6 +96,10 @@ final class ManageSubscriptionsViewModel: ObservableObject {
             self.state = .success
             self.restoreAlertType = .loading
         }
+
+    func reloadPurchaseInformation(_ purchaseInformation: PurchaseInformation) {
+        self.purchaseInformation = purchaseInformation
+    }
 
 #if os(iOS) || targetEnvironment(macCatalyst)
     func determineFlow(for path: CustomerCenterConfigData.HelpPath, activeProductId: String? = nil) async {
@@ -259,13 +261,21 @@ private extension Array<CustomerCenterConfigData.HelpPath> {
 
         return filter {
             // if it's cancel, it cannot be a lifetime subscription
-            ($0.type != .cancel || !purchaseInformation.isLifetime) &&
+            let isCancel = $0.type == .cancel
+            let isEligibleCancel = !purchaseInformation.isLifetime && !purchaseInformation.isCancelled
 
             // if it's refundRequest, it cannot be free  nor within trial period
-            ($0.type != .refundRequest || (purchaseInformation.price != .free && !purchaseInformation.isTrial)) &&
+            let isRefund = $0.type == .refundRequest
+            let isRefundEligible = purchaseInformation.price != .free
+                                    && !purchaseInformation.isTrial
+                                    && !purchaseInformation.isCancelled
 
             // if it has a refundDuration, check it's still valid
-            ($0.refundWindowDuration?.isWithin(purchaseInformation) ?? true)
+            let refundWindowIsValid = $0.refundWindowDuration?.isWithin(purchaseInformation) ?? true
+
+            return (!isCancel || isEligibleCancel) &&
+                    (!isRefund || isRefundEligible) &&
+                    refundWindowIsValid
         }
     }
 }
