@@ -13,6 +13,8 @@
 
 import SwiftUI
 
+import RevenueCat
+
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 /// A view that presents content in a sheet-like interface with customizable height and background.
@@ -25,9 +27,6 @@ import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct BottomSheetView<Content: View>: View {
-
-    /// The background color of the sheet.
-    let backgroundColor: Color
 
     /// The height of the sheet.
     let height: CGFloat
@@ -42,11 +41,9 @@ struct BottomSheetView<Content: View>: View {
     ///   - height: The height of the sheet.
     ///   - content: A view builder closure that creates the content of the sheet.
     init(
-        backgroundColor: Color,
         height: CGFloat,
         @ViewBuilder content: () -> Content
     ) {
-        self.backgroundColor = backgroundColor
         self.height = height
         self.content = content()
     }
@@ -59,53 +56,6 @@ struct BottomSheetView<Content: View>: View {
                 }
         }
         .frame(maxWidth: .infinity, maxHeight: height)
-        .background(backgroundColor)
-    }
-}
-
-/// Configuration options for presenting a sheet view.
-///
-/// Use this type to customize the appearance and behavior of a sheet view.
-/// You can specify the background color, height percentage relative to the screen,
-/// and whether tapping outside the sheet should dismiss it.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct BottomSheetConfig: Sendable {
-
-    /// The background color of the sheet.
-    let backgroundColor: Color
-
-    /// The height of the sheet as a percentage of the screen height.
-    ///
-    /// This value should be between 0 and 1, where 1 represents 100% of the screen height.
-    let screenHeightPercentage: CGFloat
-
-    /// A Boolean value that determines whether tapping outside the sheet dismisses it.
-    let tapOutsideToDismiss: Bool
-
-    /// Creates a new sheet configuration with the specified parameters.
-    ///
-    /// - Parameters:
-    ///   - backgroundColor: The background color of the sheet. Defaults to the system background color.
-    ///   - screenHeightPercentage: The height of the sheet as a percentage of the screen height.
-    ///     Defaults to 0.33333 (one-third of the screen height).
-    ///   - tapOutsideToDismiss: A Boolean value that determines whether tapping outside the sheet
-    ///     dismisses it. Defaults to `true`.
-    init(
-        backgroundColor: Color = Self.systemBackgroundColor,
-        screenHeightPercentage: CGFloat = 0.33333,
-        tapOutsideToDismiss: Bool = true
-    ) {
-        self.backgroundColor = backgroundColor
-        self.screenHeightPercentage = screenHeightPercentage
-        self.tapOutsideToDismiss = tapOutsideToDismiss
-    }
-
-    private static var systemBackgroundColor: Color {
-        #if os(watchOS)
-        Color.black
-        #else
-        return Color(UIColor.systemBackground)
-        #endif
     }
 }
 
@@ -114,47 +64,61 @@ struct BottomSheetConfig: Sendable {
 /// This modifier handles the presentation and dismissal of a sheet view, including
 /// the animation and tap-to-dismiss behavior.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct BottomSheetOverlayModifier<SheetContent: View>: ViewModifier {
+struct BottomSheetOverlayModifier: ViewModifier {
     /// A binding to a Boolean value that determines whether the sheet is presented.
-    let isPresented: Binding<Bool>
-
-    /// The configuration for the sheet.
-    let config: BottomSheetConfig
-
-    /// A closure that creates the content of the sheet.
-    let sheetContent: () -> SheetContent
-
+    @Binding var sheet: RevenueCat.PaywallComponent.ButtonComponent.Sheet?
+    let sheetStackViewModel: StackComponentViewModel?
     @State private var sheetHeight: CGFloat = 0
 
     func body(content: Content) -> some View {
-        modifierBody(content: content)
-            .ignoresSafeArea()    }
+        if let sheetStackViewModel {
+            modifierBody(content: content, sheetStackViewModel: sheetStackViewModel)
+                .ignoresSafeArea()
+        } else {
+            content
+        }
+    }
+
+    var backgroundStyle: BackgroundStyle? {
+        if let sheet, let sheetStackViewModel {
+            sheet.background?.asDisplayable(uiConfigProvider: sheetStackViewModel.uiConfigProvider)
+        } else {
+            nil
+        }
+    }
 
     @ViewBuilder
     private func modifierBody(
-        content: Content
+        content: Content,
+        sheetStackViewModel: StackComponentViewModel,
     ) -> some View {
         ZStack {
             content
+                .blur(radius: sheet?.backgroundBlur ?? false ? 10 : 0)
             // Invisible tap area that covers the screen
-            if isPresented.wrappedValue && config.tapOutsideToDismiss {
+            if sheet != nil {
                 Color.clear
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        isPresented.wrappedValue = false
+                        sheet = nil
                     }
             }
 
             // Sheet content
             VStack {
                 Spacer()
-                if isPresented.wrappedValue {
+                if self.sheet != nil {
                     BottomSheetView(
-                        backgroundColor: config.backgroundColor,
                         height: self.sheetHeight
                     ) {
-                        sheetContent()
+                        StackComponentView(
+                            viewModel: sheetStackViewModel,
+                            onDismiss: {
+                                self.sheet = nil
+                            }
+                        )
                     }
+                    .backgroundStyle(backgroundStyle)
                     .transition(.move(edge: .bottom))
                 }
             }
@@ -162,11 +126,11 @@ struct BottomSheetOverlayModifier<SheetContent: View>: ViewModifier {
                 GeometryReader { proxy in
                     Color.clear
                         .onAppear {
-                            self.sheetHeight = proxy.size.height * config.screenHeightPercentage
+                            self.sheetHeight = proxy.size.height * 0.33333
                         }
                 }
             )
-            .animation(.spring(duration: 0.35), value: isPresented.wrappedValue)
+            .animation(.spring(duration: 0.35), value: sheet)
         }
     }
 }
@@ -186,50 +150,79 @@ extension View {
     ///   - content: A closure that returns the content of the sheet.
     ///
     /// - Returns: A view that presents the sheet when `isPresented` is true.
-    func bottomSheet<Content: View>(
-        isPresented: Binding<Bool>,
-        config: BottomSheetConfig = BottomSheetConfig(),
-        @ViewBuilder content: @escaping () -> Content
+    func bottomSheet(
+        sheet: Binding<RevenueCat.PaywallComponent.ButtonComponent.Sheet?>,
+        sheetStackViewModel: StackComponentViewModel?
     ) -> some View {
-        modifier(BottomSheetOverlayModifier(
-            isPresented: isPresented,
-            config: config,
-            sheetContent: content
-        ))
+        modifier(
+            BottomSheetOverlayModifier(sheet: sheet, sheetStackViewModel: sheetStackViewModel)
+        )
     }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 #Preview {
     struct Preview: View {
-        @State private var isPresented = false
+        @State private var sheet: PaywallComponent.ButtonComponent.Sheet? = PaywallComponent.ButtonComponent.Sheet(
+            id: "exampleSheet",
+            name: nil,
+            stack: .init(
+                components: [
+                    PaywallComponent.text(
+                        PaywallComponent.TextComponent(
+                            text: "buttonText",
+                            color: .init(light: .hex("#000000"))
+                        )
+                    )
+                ],
+                backgroundColor: nil,
+            ),
+            background: .color(.init(light: .hex("#000aaa"))),
+            backgroundBlur: false
+        )
 
         var body: some View {
             ZStack {
                 Color.gray.opacity(0.2)
 
                 VStack {
-                    Button("Show Sheet") {
-                        isPresented.toggle()
-                    }
-                    .bottomSheet(
-                        isPresented: $isPresented,
-                        config: BottomSheetConfig(
-                            backgroundColor: Color.blue,
-                            screenHeightPercentage: 0.5,
-                            tapOutsideToDismiss: true
+                    Text("This view will have a sheet over it")
+                        .bottomSheet(
+                            sheet: $sheet,
+                            sheetStackViewModel: {
+                                let factory = ViewModelFactory()
+                                // swiftlint:disable:next force_try
+                                return try! factory.toStackViewModel(
+                                    component: .init(
+                                        components: [
+                                            PaywallComponent.text(
+                                                PaywallComponent.TextComponent(
+                                                    text: "buttonText",
+                                                    color: .init(light: .hex("#000000"))
+                                                )
+                                            )
+                                        ],
+                                        size: .init(width: .fill, height: .fill),
+                                        backgroundColor: .init(light: .hex("#ab56ab"))
+                                    ),
+                                    packageValidator: factory.packageValidator,
+                                    firstImageInfo: nil,
+                                    localizationProvider: .init(
+                                        locale: Locale.current,
+                                        localizedStrings: [
+                                            "buttonText": PaywallComponentsData.LocalizationData.string("Do something")
+                                        ]
+                                    ),
+                                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                                    offering: Offering(identifier: "", serverDescription: "", availablePackages: [])
+                                )
+
+                            }()
                         )
-                    ) {
-                        VStack(spacing: 20) {
-                            Text("Sheet Content")
-                                .font(.title)
-                            Text("This is a simple sheet preview")
-                        }
-                        .padding()
-                    }
                 }
             }
             .edgesIgnoringSafeArea(.all)
+            .previewRequiredEnvironmentProperties()
         }
     }
 
