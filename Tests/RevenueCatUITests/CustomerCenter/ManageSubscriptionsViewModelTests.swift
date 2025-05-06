@@ -84,6 +84,22 @@ final class ManageSubscriptionViewModelTests: TestCase {
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beFalse())
     }
 
+    func testNonAppleHasLimitedPaths() {
+        let purchase = PurchaseInformation.mockNonLifetime(
+            store: .playStore
+        )
+
+        let viewModel = ManageSubscriptionViewModel(
+            screen: ManageSubscriptionViewModelTests.default,
+            showPurchaseHistory: false,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases())
+
+        expect(viewModel.relevantPathsForPurchase.count) == 1
+        expect(viewModel.relevantPathsForPurchase.first?.type) == .cancel
+    }
+
     func testShowsRefundIfRefundWindowIsForever() {
         let purchase = PurchaseInformation.mockNonLifetime()
 
@@ -499,6 +515,7 @@ private extension PurchaseInformation {
         price: PurchaseInformation.PriceDetails = .paid("5"),
         isTrial: Bool = false,
         isCancelled: Bool = false,
+        store: Store = .appStore,
         latestPurchaseDate: Date = Date(),
         customerInfoRequestedDate: Date = Date()) -> PurchaseInformation {
             PurchaseInformation(
@@ -511,7 +528,7 @@ private extension PurchaseInformation {
                     date: .date("")
                 ),
                 productIdentifier: "",
-                store: .appStore,
+                store: store,
                 isLifetime: false,
                 isTrial: isTrial,
                 isCancelled: isCancelled,

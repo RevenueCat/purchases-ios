@@ -274,8 +274,10 @@ private extension CustomerCenterConfigData.HelpPath.PathType {
         switch self {
         case .cancel, .customUrl:
             return false
+
         case .changePlans, .refundRequest, .missingPurchase, .unknown:
             return true
+
         @unknown default:
             return false
         }
