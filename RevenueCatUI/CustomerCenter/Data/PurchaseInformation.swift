@@ -378,10 +378,6 @@ private extension String {
 
 @_spi(Internal) extension RevenueCat.SubscriptionInfo: Transaction {
 
-    var subscriptionManagementURL: URL? {
-        managementURL
-    }
-
     var type: TransactionType {
         .subscription(isActive: isActive,
                       willRenew: willRenew,
@@ -404,7 +400,7 @@ extension NonSubscriptionTransaction: Transaction {
         false
     }
 
-    var subscriptionManagementURL: URL? {
+    var managementURL: URL? {
         nil
     }
 }

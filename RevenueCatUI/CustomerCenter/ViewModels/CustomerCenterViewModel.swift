@@ -244,7 +244,7 @@ private extension CustomerCenterViewModel {
                     transaction: transaction,
                     customerCenterStoreKitUtilities: customerCenterStoreKitUtilities,
                     customerInfoRequestedDate: customerInfo.requestDate,
-                    managePurchaseURL: transaction.subscriptionManagementURL
+                    managePurchaseURL: transaction.managementURL
                 )
             } else {
                 Logger.warning(
@@ -255,7 +255,7 @@ private extension CustomerCenterViewModel {
                     entitlement: entitlement,
                     transaction: transaction,
                     customerInfoRequestedDate: customerInfo.requestDate,
-                    managePurchaseURL: transaction.subscriptionManagementURL
+                    managePurchaseURL: transaction.managementURL
                 )
             }
         }

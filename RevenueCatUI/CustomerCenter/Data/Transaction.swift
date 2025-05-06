@@ -20,7 +20,7 @@ protocol Transaction {
     var store: Store { get }
     var type: TransactionType { get }
     var isCancelled: Bool { get }
-    var subscriptionManagementURL: URL? { get }
+    var managementURL: URL? { get }
 }
 
 enum TransactionType {

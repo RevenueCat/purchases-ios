@@ -38,7 +38,7 @@ final class PurchaseInformationTests: TestCase {
         let store: Store
         let type: TransactionType
         let isCancelled: Bool
-        var subscriptionManagementURL: URL?
+        var managementURL: URL?
     }
 
     func testAppleEntitlementAndSubscribedProduct() throws {

@@ -412,10 +412,11 @@ final class ManageSubscriptionViewModelTests: TestCase {
                                                                               signedData: signedData)
 
         let screen = PurchaseInformationFixtures.screenWithPromo(offerID: offerIdentifierInJSON)
+        let purchaseInformation = CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring
         let viewModel = ManageSubscriptionViewModel(screen: screen,
                                                     showPurchaseHistory: false,
                                                     actionWrapper: CustomerCenterActionWrapper(),
-                                                    purchaseInformation: nil,
+                                                    purchaseInformation: purchaseInformation,
                                                     purchasesProvider: MockCustomerCenterPurchases(
                                                         customerInfo: customerInfo,
                                                         products: products
@@ -430,7 +431,7 @@ final class ManageSubscriptionViewModelTests: TestCase {
                                                expectedOfferIdentifierInJSON: String,
                                                expectedOfferIdentifierInProduct: String? = nil) async throws {
         let screen = try XCTUnwrap(viewModel.screen)
-        //        expect(viewModel.state) == .success
+//        expect(viewModel.state) == .success
 
         let pathWithPromotionalOffer = try XCTUnwrap(screen.paths.first { path in
             if case .promotionalOffer = path.detail {
