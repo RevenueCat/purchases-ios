@@ -97,11 +97,9 @@ struct PurchaseButtonComponentView: View {
 
         guard !self.purchaseHandler.actionInProgress else { return }
 
-        // WIP: Need to log warning if currently subscribed
-        guard let selectedPackage = self.packageContext.package
-                //                    , selectedPackage.currentlySubscribed
-        else {
-            Logger.warning(Strings.product_already_subscribed)
+
+        guard let selectedPackage = self.packageContext.package else {
+            Logger.warning(Strings.no_selected_package_found)
             return
         }
 
@@ -110,11 +108,6 @@ struct PurchaseButtonComponentView: View {
 
     private func purchaseWeb() async throws {
         self.logIfInPreview(package: self.packageContext.package)
-
-        guard let selectedPackage = self.packageContext.package else {
-            Logger.warning(Strings.product_already_subscribed)
-            return
-        }
 
         guard let webCheckoutUrl = self.packageContext.package?.webCheckoutUrl else {
             Logger.warning(Strings.no_web_checkout_url_found)
