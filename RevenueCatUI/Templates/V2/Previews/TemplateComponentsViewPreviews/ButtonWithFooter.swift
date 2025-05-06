@@ -132,6 +132,46 @@ private enum ButtonWithSheetPreview {
                              name: "sheet",
                              stack: .init(
                                 components: [
+                                    .stack(
+                                        .init(
+                                            components: [
+                                                .button(.init(
+                                                action: .navigateBack,
+                                                stack: .init(
+                                                    components: [
+                                                        .stack(
+                                                            .init(
+                                                                components: [
+                                                                    // WIP: Intro offer state with "cta_intro",
+                                                                    .text(.init(
+                                                                        text: "close",
+                                                                        fontWeight: .bold,
+                                                                        color: .init(light: .hex("#ffffff")),
+                                                                        backgroundColor: nil,
+                                                                        size: .init(width: .fit, height: .fit),
+                                                                        padding: .init(top: 20,
+                                                                                       bottom: 20,
+                                                                                       leading: 20,
+                                                                                       trailing: 20)
+                                                                    ))
+                                                                ],
+                                                                dimension: .horizontal(.center, .start),
+                                                                size: .init(width: .fit, height: .fit),
+                                                                shape: .rectangle(nil)
+                                                            )
+                                                        )
+                                                    ],
+                                                    dimension: .horizontal(.center, .start),
+                                                    size: .init(width: .fit, height: .fit),
+                                                    shape: .rectangle(nil)
+                                                )))
+                                            ],
+                                            dimension: .horizontal(.center, .start),
+                                            size: .init(width: .fill, height: .fit),
+                                            shape: .rectangle(nil)
+                                        )
+                                    ),
+
                                     .stack(packagesStack),
                                     .purchaseButton(.init(
                                         stack: .init(
@@ -318,6 +358,8 @@ private enum ButtonWithSheetPreview {
             "weekly_desc": .string("Weekly something"),
             "monthly_title": .string("Buy Monthly"),
             "monthly_desc": .string("Monthly something"),
+
+            "close": .string("X")
         ]],
         revision: 1,
         defaultLocaleIdentifier: "en_US"
