@@ -20,11 +20,10 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ButtonComponentView: View {
     @Environment(\.openURL) private var openURL
+    @Environment(\.openSheet) private var openSheet
     @State private var inAppBrowserURL: URL?
     @State private var showCustomerCenter = false
     @State private var showingWebPaywallLinkAlert = false
-
-    @State private var sheetData: RevenueCat.PaywallComponent.ButtonComponent.Sheet?
 
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
@@ -73,7 +72,6 @@ struct ButtonComponentView: View {
                     .disabled(true)
                     .opacity(0.35)
             })
-            .bottomSheet(sheet: $sheetData, sheetStackViewModel: self.viewModel.sheetStackViewModel)
             #if canImport(SafariServices) && canImport(UIKit)
             .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
                 SafariView(url: self.inAppBrowserURL!)
@@ -98,7 +96,13 @@ struct ButtonComponentView: View {
         case .unknown:
             break
         case .sheet(let sheet):
-            self.sheetData = sheet
+            if let sheetStackViewModel = self.viewModel.sheetStackViewModel {
+                let sheetViewModel = SheetViewModel(
+                    sheet: sheet,
+                    sheetStackViewModel: sheetStackViewModel
+                )
+                openSheet(sheetViewModel)
+            }
         }
     }
 
