@@ -65,7 +65,6 @@ struct BottomSheetView<Content: View>: View {
 /// the animation and tap-to-dismiss behavior.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct BottomSheetOverlayModifier: ViewModifier {
-    /// A binding to a Boolean value that determines whether the sheet is presented.
     @Binding var sheet: RevenueCat.PaywallComponent.ButtonComponent.Sheet?
     let sheetStackViewModel: StackComponentViewModel?
     @State private var sheetHeight: CGFloat = 0
@@ -95,6 +94,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
         ZStack {
             content
                 .blur(radius: sheet?.backgroundBlur ?? false ? 10 : 0)
+
             // Invisible tap area that covers the screen
             if sheet != nil {
                 Color.clear
@@ -189,35 +189,23 @@ extension View {
                     Text("This view will have a sheet over it")
                         .bottomSheet(
                             sheet: $sheet,
-                            sheetStackViewModel: {
-                                let factory = ViewModelFactory()
-                                // swiftlint:disable:next force_try
-                                return try! factory.toStackViewModel(
-                                    component: .init(
-                                        components: [
-                                            PaywallComponent.text(
-                                                PaywallComponent.TextComponent(
-                                                    text: "buttonText",
-                                                    color: .init(light: .hex("#000000"))
-                                                )
-                                            )
-                                        ],
-                                        size: .init(width: .fill, height: .fill),
-                                        backgroundColor: .init(light: .hex("#ab56ab"))
-                                    ),
-                                    packageValidator: factory.packageValidator,
-                                    firstImageInfo: nil,
-                                    localizationProvider: .init(
-                                        locale: Locale.current,
-                                        localizedStrings: [
-                                            "buttonText": PaywallComponentsData.LocalizationData.string("Do something")
-                                        ]
-                                    ),
-                                    uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-                                    offering: Offering(identifier: "", serverDescription: "", availablePackages: [])
-                                )
-
-                            }()
+                            // swiftlint:disable:next force_try
+                            sheetStackViewModel: try! .init(component: .init(
+                                components: [
+                                    PaywallComponent.text(
+                                        PaywallComponent.TextComponent(
+                                            text: "buttonText",
+                                            color: .init(light: .hex("#000000"))
+                                        )
+                                    )
+                                ],
+                                backgroundColor: .init(light: .hex("#ab56ab"))
+                            ), localizationProvider: .init(
+                                locale: Locale.current,
+                                localizedStrings: [
+                                    "buttonText": PaywallComponentsData.LocalizationData.string("Do something")
+                                ]
+                            ))
                         )
                 }
             }
