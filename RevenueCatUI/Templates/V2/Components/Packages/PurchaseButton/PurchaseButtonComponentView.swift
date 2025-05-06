@@ -88,7 +88,7 @@ struct PurchaseButtonComponentView: View {
         case .webCheckout:
             try await self.purchaseWeb()
         case .webProductSelection:
-            try await self.purchaseWebProductSelection()
+            try await self.purchaseSelectedWebProduct()
         }
     }
 
@@ -97,9 +97,8 @@ struct PurchaseButtonComponentView: View {
 
         guard !self.purchaseHandler.actionInProgress else { return }
 
-
         guard let selectedPackage = self.packageContext.package else {
-            Logger.warning(Strings.no_selected_package_found)
+            Logger.error(Strings.no_selected_package_found)
             return
         }
 
@@ -110,18 +109,18 @@ struct PurchaseButtonComponentView: View {
         self.logIfInPreview(package: self.packageContext.package)
 
         guard let webCheckoutUrl = self.packageContext.package?.webCheckoutUrl else {
-            Logger.warning(Strings.no_web_checkout_url_found)
+            Logger.error(Strings.no_web_checkout_url_found)
             return
         }
 
         self.openWebPaywallLink(url: webCheckoutUrl, method: .externalBrowser)
     }
 
-    private func purchaseWebProductSelection() async throws {
+    private func purchaseSelectedWebProduct() async throws {
         self.logIfInPreview(package: self.packageContext.package)
 
         guard let webCheckoutUrl = self.viewModel.offeringWebCheckoutUrl else {
-            Logger.warning(Strings.no_web_checkout_url_found)
+            Logger.error(Strings.no_web_checkout_url_found)
             return
         }
 
