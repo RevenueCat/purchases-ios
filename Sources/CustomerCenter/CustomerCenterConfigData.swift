@@ -142,6 +142,8 @@ public struct CustomerCenterConfigData: Equatable {
             case storeExternal = "store_external"
             case storeUnknownStore = "store_unknown"
             case debugHeaderTitle = "Debug"
+            case youMayHaveDuplicatedSubscriptionsTitle = "common_you_may_have_duplicated_subscriptions_title"
+            case youMayHaveDuplicatedSubscriptionsSubtitle = "common_you_may_have_duplicated_subscriptions_subtitle"
 
             var defaultValue: String {
                 switch self {
@@ -327,6 +329,11 @@ public struct CustomerCenterConfigData: Equatable {
                     return "Unknown Store"
                 case .debugHeaderTitle:
                     return "Debug"
+                case .youMayHaveDuplicatedSubscriptionsTitle:
+                    return "You may have duplicated subscriptions"
+                case .youMayHaveDuplicatedSubscriptionsSubtitle:
+                    return "You might be subscribed both on the web and through the App Store." +
+                        "To avoid being charged twice, please cancel your iOS subscription in your device settings."
                 }
             }
         }

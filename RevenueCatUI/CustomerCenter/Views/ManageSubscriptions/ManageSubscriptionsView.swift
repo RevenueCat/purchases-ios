@@ -107,11 +107,10 @@ struct ManageSubscriptionsView: View {
         List {
             if support?.shouldWarnCustomersAboutMultipleSubscriptions == true {
                 CompatibilityContentUnavailableView(
-                    "You May Have Duplicate Subscriptions",
+                    localization[.youMayHaveDuplicatedSubscriptionsTitle],
                     systemImage: "exclamationmark.square",
                     description: Text(
-                        "It looks like you might be subscribed both on the web and through the App Store." +
-                        "To avoid being charged twice, please cancel your iOS subscription in your device settings."
+                        localization[.youMayHaveDuplicatedSubscriptionsSubtitle]
                     )
                 )
                 .fixedSize(horizontal: false, vertical: true)
