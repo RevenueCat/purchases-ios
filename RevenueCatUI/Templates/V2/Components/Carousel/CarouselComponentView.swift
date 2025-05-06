@@ -454,7 +454,9 @@ struct PageControlView: View {
                         Capsule()
                             .strokeBorder(
                                 localCurrentIndex == index ? activeIndicator.strokeColor : indicator.strokeColor,
-                                style: StrokeStyle(lineWidth: localCurrentIndex == index ? activeIndicator.strokeWidth : indicator.strokeWidth),
+                                style: StrokeStyle(lineWidth: localCurrentIndex == index
+                                                   ? activeIndicator.strokeWidth
+                                                   : indicator.strokeWidth),
                                 antialiased: false
                             )
                     }

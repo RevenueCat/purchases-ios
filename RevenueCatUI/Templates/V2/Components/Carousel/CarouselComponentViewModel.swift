@@ -245,9 +245,10 @@ struct DisplayablePageControlIndicator {
 
         let color = pageControlIndicator.color.asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor()
         self.color = color
-        self.strokeColor = pageControlIndicator.strokeColor?.asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor() ?? color
+        self.strokeColor = pageControlIndicator.strokeColor?
+            .asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor() ?? color
         self.strokeWidth = pageControlIndicator.strokeWidth ?? 0
-        
+
         self.uiConfigProvider = uiConfigProvider
     }
 
