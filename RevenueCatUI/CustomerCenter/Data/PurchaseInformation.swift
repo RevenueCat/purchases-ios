@@ -17,7 +17,7 @@ import Foundation
 @_spi(Internal) import RevenueCat
 import StoreKit
 
-// swiftlint:disable nesting file_length
+// swiftlint:disable nesting
 
 /// Information about a purchase.
 struct PurchaseInformation {
@@ -374,33 +374,4 @@ private extension String {
         return self.hasSuffix("_lifetime") && store == .promotional
     }
 
-}
-
-@_spi(Internal) extension RevenueCat.SubscriptionInfo: Transaction {
-
-    var type: TransactionType {
-        .subscription(isActive: isActive,
-                      willRenew: willRenew,
-                      expiresDate: expiresDate,
-                      isTrial: periodType == .trial)
-    }
-
-    var isCancelled: Bool {
-        unsubscribeDetectedAt != nil && !willRenew
-    }
-}
-
-extension NonSubscriptionTransaction: Transaction {
-
-    var type: TransactionType {
-        .nonSubscription
-    }
-
-    var isCancelled: Bool {
-        false
-    }
-
-    var managementURL: URL? {
-        nil
-    }
 }

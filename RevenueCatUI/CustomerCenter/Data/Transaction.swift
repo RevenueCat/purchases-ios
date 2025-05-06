@@ -12,7 +12,7 @@
 //  Created by Facundo Menzella on 5/5/25.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 protocol Transaction {
 
@@ -27,4 +27,33 @@ enum TransactionType {
 
     case subscription(isActive: Bool, willRenew: Bool, expiresDate: Date?, isTrial: Bool)
     case nonSubscription
+}
+
+@_spi(Internal) extension RevenueCat.SubscriptionInfo: Transaction {
+
+    var type: TransactionType {
+        .subscription(isActive: isActive,
+                      willRenew: willRenew,
+                      expiresDate: expiresDate,
+                      isTrial: periodType == .trial)
+    }
+
+    var isCancelled: Bool {
+        unsubscribeDetectedAt != nil && !willRenew
+    }
+}
+
+extension NonSubscriptionTransaction: Transaction {
+
+    var type: TransactionType {
+        .nonSubscription
+    }
+
+    var isCancelled: Bool {
+        false
+    }
+
+    var managementURL: URL? {
+        nil
+    }
 }
