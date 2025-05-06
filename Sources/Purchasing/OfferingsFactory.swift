@@ -95,7 +95,7 @@ class OfferingsFactory {
         webProductsById: [String: StoreProduct],
         offeringIdentifier: String
     ) -> Package? {
-        let webProductId = data.productIdByStoreType[.rcBilling]
+        let webProductId = data.productIdByStoreType?[.rcBilling]
         var webProduct: StoreProduct?
         if let webProductId {
             webProduct = webProductsById[webProductId]
