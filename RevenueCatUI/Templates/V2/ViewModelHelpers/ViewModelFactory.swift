@@ -381,7 +381,7 @@ struct ViewModelFactory {
             switch image.size.width {
             case .fill:
                 return .init(imageComponent: image, parentZStack: nil)
-            case .fit, .fixed:
+            case .fit, .fixed, .relative:
                 return nil
             }
         case .icon:

@@ -189,16 +189,22 @@ private enum ButtonWithSheetPreview {
                                                                    trailing: 30)
                                                 ))
                                             ],
+                                            size: .init(width: .fill, height: .fit),
                                             shape: .pill
                                         ),
                                         action: nil
                                     ))
                                 ],
-                                padding: .init(top: 20, bottom: 20, leading: 20, trailing: 20),
-                                shape: .rectangle(nil)
+                                size: .init(width: .fill, height: .fit),
+                                background: .color(.init(light: .hex("#ffcc00"))),
+                                padding: .init(top: 0, bottom: 50, leading: 20, trailing: 20),
+                                shape: .rectangle(nil),
+                                overflow: .none
                              ),
+                             // Sheet background
                              background: .color(.init(light: .hex("#2b43bf"))),
-                             backgroundBlur: true
+                             backgroundBlur: true,
+                             size: .init(width: .fill, height: .relative(0.25))
                             )
             )),
         stack: .init(
@@ -284,8 +290,34 @@ private enum ButtonWithSheetPreview {
             .package(makePackage(packageID: "monthly",
                                  nameTextLid: "monthly_title",
                                  detailTextLid: "monthly_desc",
+                                 isSelectedByDefault: true)),
+            .package(makePackage(packageID: "weekly",
+                                 nameTextLid: "weekly_title",
+                                 detailTextLid: "weekly_desc",
+                                 isSelectedByDefault: true)),
+            .package(makePackage(packageID: "monthly",
+                                 nameTextLid: "monthly_title",
+                                 detailTextLid: "monthly_desc",
+                                 isSelectedByDefault: true)),
+            .package(makePackage(packageID: "weekly",
+                                 nameTextLid: "weekly_title",
+                                 detailTextLid: "weekly_desc",
+                                 isSelectedByDefault: true)),
+            .package(makePackage(packageID: "monthly",
+                                 nameTextLid: "monthly_title",
+                                 detailTextLid: "monthly_desc",
+                                 isSelectedByDefault: true)),
+            .package(makePackage(packageID: "weekly",
+                                 nameTextLid: "weekly_title",
+                                 detailTextLid: "weekly_desc",
+                                 isSelectedByDefault: true)),
+            .package(makePackage(packageID: "monthly",
+                                 nameTextLid: "monthly_title",
+                                 detailTextLid: "monthly_desc",
                                  isSelectedByDefault: true))
-        ]
+        ],
+        size: .init(width: .fill, height: .fill),
+        overflow: .scroll,
     )
 
     static let contentStack = PaywallComponent.StackComponent(

@@ -59,13 +59,10 @@ struct BottomSheetView<Content: View>: View {
     }
 
     var body: some View {
-        ScrollView(.vertical) {
-            content
-                .safeAreaInset(edge: .bottom, spacing: 0) {
-                    EmptyView()
-                }
-        }
-        .frame(maxWidth: .infinity, maxHeight: height)
+        content
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                EmptyView()
+            }
     }
 }
 
@@ -76,11 +73,30 @@ struct BottomSheetView<Content: View>: View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct BottomSheetOverlayModifier: ViewModifier {
     @Binding var sheetViewModel: SheetViewModel?
-    @State private var sheetHeight: CGFloat = 0
+
+    @State private var parentHeight: CGFloat?
+
+    var sheetHeight: CGFloat? {
+        guard let size = self.sheetViewModel?.sheet.size else {
+            return nil
+        }
+
+        switch size.height {
+        case .fit, .fill:
+            return nil
+        case .fixed(let height):
+            return CGFloat(height)
+        case .relative(let percent):
+            guard let parentHeight = self.parentHeight else {
+                return nil
+            }
+            return parentHeight * percent
+        }
+    }
 
     var backgroundStyle: BackgroundStyle? {
         if let sheetViewModel {
-            let stackBackground = sheetViewModel.sheet.stack.background
+            let stackBackground = sheetViewModel.sheet.background
 
             return stackBackground?.asDisplayable(
                 uiConfigProvider: sheetViewModel.sheetStackViewModel.uiConfigProvider
@@ -109,16 +125,15 @@ struct BottomSheetOverlayModifier: ViewModifier {
             VStack {
                 Spacer()
                 if let sheetViewModel {
-                    BottomSheetView(
-                        height: self.sheetHeight
-                    ) {
-                        StackComponentView(
-                            viewModel: sheetViewModel.sheetStackViewModel,
-                            onDismiss: {
-                                self.sheetViewModel = nil
-                            }
-                        )
-                    }
+                    StackComponentView(
+                        viewModel: sheetViewModel.sheetStackViewModel,
+                        onDismiss: {
+                            self.sheetViewModel = nil
+                        }
+                    )
+                    .applyIfLet(self.sheetHeight, apply: { view, height in
+                        view.frame(height: height)
+                    })
                     .transition(.move(edge: .bottom))
                     .backgroundStyle(self.backgroundStyle)
                 }
@@ -127,7 +142,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
                 GeometryReader { proxy in
                     Color.clear
                         .onAppear {
-                            self.sheetHeight = proxy.size.height * 0.5
+                            self.parentHeight = proxy.size.height
                         }
                 }
             )
@@ -179,7 +194,8 @@ extension View {
                     backgroundColor: nil
                 ),
                 background: .color(.init(light: .hex("#FFFFFF"))),
-                backgroundBlur: false
+                backgroundBlur: false,
+                size: .init(width: .fill, height: .fit)
             ),
             // swiftlint:disable:next force_try
             sheetStackViewModel: try! .init(component: .init(

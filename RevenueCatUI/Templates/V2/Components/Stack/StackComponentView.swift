@@ -85,6 +85,10 @@ struct StackComponentView: View {
                     viewModels: self.viewModel.viewModels,
                     onDismiss: self.onDismiss
                 )
+                .scrollableIfEnabled(
+                    style.dimension,
+                    enabled: style.scrollable ?? self.isScrollableByDefault
+                )
                 // This alignment positions the inner VStack horizontally and vertically
                 .size(style.size,
                       horizontalAlignment: horizontalAlignment.frameAlignment,
@@ -96,6 +100,10 @@ struct StackComponentView: View {
                     distribution: distribution,
                     viewModels: self.viewModel.viewModels,
                     onDismiss: self.onDismiss
+                )
+                .scrollableIfEnabled(
+                    style.dimension,
+                    enabled: style.scrollable ?? self.isScrollableByDefault
                 )
                 // This alignment positions the inner VStack horizontally and vertically
                 .size(style.size,
@@ -122,10 +130,10 @@ struct StackComponentView: View {
         .applyIf(self.showActivityIndicatorOverContent, apply: { view in
             view.progressOverlay(for: style.backgroundStyle)
         })
-        .scrollableIfEnabled(
-            style.dimension,
-            enabled: style.scrollable ?? self.isScrollableByDefault
-        )
+//        .scrollableIfEnabled(
+//            style.dimension,
+//            enabled: style.scrollable ?? self.isScrollableByDefault
+//        )
         .shape(border: nil,
                shape: style.shape,
                background: style.backgroundStyle,
