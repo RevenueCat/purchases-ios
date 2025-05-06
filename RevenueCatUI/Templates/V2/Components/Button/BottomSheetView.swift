@@ -175,7 +175,7 @@ extension View {
                         )
                     )
                 ],
-                backgroundColor: nil,
+                backgroundColor: nil
             ),
             background: .color(.init(light: .hex("#000aaa"))),
             backgroundBlur: false
