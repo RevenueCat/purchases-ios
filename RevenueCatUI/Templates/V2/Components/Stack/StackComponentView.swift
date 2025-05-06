@@ -126,7 +126,6 @@ struct StackComponentView: View {
             style.dimension,
             enabled: style.scrollable ?? self.isScrollableByDefault
         )
-        // Scroll needs to be applied before size
         .shape(border: nil,
                shape: style.shape,
                background: style.backgroundStyle,
