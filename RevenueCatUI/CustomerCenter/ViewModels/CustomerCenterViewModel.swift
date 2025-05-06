@@ -31,9 +31,6 @@ import RevenueCat
     private lazy var currentAppVersion: String? = currentVersionFetcher()
 
     @Published
-    var purchaseInformation: PurchaseInformation?
-
-    @Published
     private(set) var appIsLatestVersion: Bool = defaultAppIsLatestVersion
 
     @Published
@@ -76,8 +73,15 @@ import RevenueCat
         }
     }
 
+    var hasPurchases: Bool {
+        !purchasesActive.isEmpty || purchaseInformation != nil
+    }
+
     @Published
     var purchasesActive: [PurchaseInformation] = []
+
+    @Published
+    var purchaseInformation: PurchaseInformation?
 
     private let currentVersionFetcher: CurrentVersionFetcher
 
@@ -201,7 +205,18 @@ private extension CustomerCenterViewModel {
 
         self.purchasesActive = activePurchases
 
-        if activePurchases.isEmpty {
+        if activePurchases.isEmpty, let activeTransaction = customerInfo.earliestExpiringTransaction() {
+            let entitlement = customerInfo.entitlements.all.values
+                .first(where: { $0.productIdentifier == activeTransaction.productIdentifier })
+
+            self.purchaseInformation = try await createPurchaseInformation(
+                for: activeTransaction,
+                entitlement: entitlement,
+                customerInfo: customerInfo
+            )
+
+            return
+        } else if activePurchases.isEmpty {
             Logger.warning(Strings.could_not_find_subscription_information)
             throw CustomerCenterError.couldNotFindSubscriptionInformation
         }
@@ -229,7 +244,7 @@ private extension CustomerCenterViewModel {
                     transaction: transaction,
                     customerCenterStoreKitUtilities: customerCenterStoreKitUtilities,
                     customerInfoRequestedDate: customerInfo.requestDate,
-                    managePurchaseURL: customerInfo.managementURL!
+                    managePurchaseURL: transaction.subscriptionManagementURL
                 )
             } else {
                 Logger.warning(
@@ -240,7 +255,7 @@ private extension CustomerCenterViewModel {
                     entitlement: entitlement,
                     transaction: transaction,
                     customerInfoRequestedDate: customerInfo.requestDate,
-                    managePurchaseURL: customerInfo.managementURL!
+                    managePurchaseURL: transaction.subscriptionManagementURL
                 )
             }
         }
@@ -250,7 +265,7 @@ private extension CustomerCenterViewModel {
             entitlement: entitlement,
             transaction: transaction,
             customerInfoRequestedDate: customerInfo.requestDate,
-            managePurchaseURL: customerInfo.managementURL!
+            managePurchaseURL: customerInfo.managementURL
         )
     }
 }

@@ -78,6 +78,7 @@ struct ManageSubscriptionsView: View {
                 ManageSubscriptionView(
                     screen: viewModel.screen,
                     purchaseInformation: purchase,
+                    showPurchaseHistory: false,
                     purchasesProvider: self.viewModel.purchasesProvider,
                     actionWrapper: self.viewModel.actionWrapper
                 )

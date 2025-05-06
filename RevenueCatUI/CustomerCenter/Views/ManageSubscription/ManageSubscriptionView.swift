@@ -34,9 +34,6 @@ struct ManageSubscriptionView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
-    @Environment(\.supportInformation)
-    private var support
-
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
 
@@ -48,10 +45,12 @@ struct ManageSubscriptionView: View {
 
     init(screen: CustomerCenterConfigData.Screen,
          purchaseInformation: PurchaseInformation?,
+         showPurchaseHistory: Bool,
          purchasesProvider: CustomerCenterPurchasesType,
          actionWrapper: CustomerCenterActionWrapper) {
         let viewModel = ManageSubscriptionViewModel(
             screen: screen,
+            showPurchaseHistory: showPurchaseHistory,
             actionWrapper: actionWrapper,
             purchaseInformation: purchaseInformation,
             purchasesProvider: purchasesProvider)
@@ -73,6 +72,17 @@ struct ManageSubscriptionView: View {
                     purchasesProvider: self.viewModel.purchasesProvider,
                     actionWrapper: self.viewModel.actionWrapper,
                     isPresented: .isNotNil(self.$viewModel.feedbackSurveyData))
+                .environment(\.appearance, appearance)
+                .environment(\.localization, localization)
+                .environment(\.navigationOptions, navigationOptions)
+            }
+            .compatibleNavigation(
+                isPresented: $viewModel.showAllPurchases,
+                usesNavigationStack: navigationOptions.usesNavigationStack
+            ) {
+                PurchaseHistoryView(
+                    viewModel: PurchaseHistoryViewModel(purchasesProvider: self.viewModel.purchasesProvider)
+                )
                 .environment(\.appearance, appearance)
                 .environment(\.localization, localization)
                 .environment(\.navigationOptions, navigationOptions)
@@ -99,10 +109,6 @@ struct ManageSubscriptionView: View {
             }, content: { inAppBrowserURL in
                 SafariView(url: inAppBrowserURL.url)
             })
-            .onOpenManageSubscriptionURL { productId in
-
-            }
-
     }
 
     @ViewBuilder
@@ -113,6 +119,18 @@ struct ManageSubscriptionView: View {
                     purchaseInformation: purchaseInformation,
                     refundRequestStatus: self.viewModel.refundRequestStatus
                 )
+
+                Section {
+                    if viewModel.showPurchaseHistory {
+                        Button {
+                            viewModel.showAllPurchases = true
+                        } label: {
+                            CompatibilityLabeledContent(localization[.seeAllPurchases]) {
+                                Image(systemName: "chevron.forward")
+                            }
+                        }
+                    }
+                }
 
                 Section {
                     ManageSubscriptionsButtonsView(
@@ -198,6 +216,7 @@ struct ManageSubscriptionView: View {
             CompatibilityNavigationStack {
                 let viewModelMonthlyRenewing = ManageSubscriptionViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                    showPurchaseHistory: false,
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
                     refundRequestStatus: .success,
@@ -213,6 +232,7 @@ struct ManageSubscriptionView: View {
             CompatibilityNavigationStack {
                 let viewModelYearlyExpiring = ManageSubscriptionViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                    showPurchaseHistory: false,
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring,
                     refundRequestStatus: .success,
@@ -228,6 +248,7 @@ struct ManageSubscriptionView: View {
             CompatibilityNavigationStack {
                 let viewModelYearlyExpiring = ManageSubscriptionViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                    showPurchaseHistory: false,
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationFree,
                     purchasesProvider: CustomerCenterPurchases())
@@ -241,6 +262,7 @@ struct ManageSubscriptionView: View {
             CompatibilityNavigationStack {
                 let viewModelYearlyExpiring = ManageSubscriptionViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                    showPurchaseHistory: false,
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.consumable,
                     purchasesProvider: CustomerCenterPurchases())

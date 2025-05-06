@@ -16,6 +16,7 @@
 import Foundation
 import RevenueCat
 
+// swiftlint:disable force_unwrapping
 enum CustomerCenterConfigTestData {
 
     @available(iOS 14.0, *)

@@ -24,6 +24,29 @@ import SwiftUI
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @MainActor
-final class ManageSubscriptionViewModel: BaseManageSubscriptionViewModel {}
+final class ManageSubscriptionViewModel: BaseManageSubscriptionViewModel {
+
+    let showPurchaseHistory: Bool
+
+    init(
+        screen: CustomerCenterConfigData.Screen,
+        showPurchaseHistory: Bool,
+        actionWrapper: CustomerCenterActionWrapper,
+        purchaseInformation: PurchaseInformation? = nil,
+        refundRequestStatus: RefundRequestStatus? = nil,
+        purchasesProvider: CustomerCenterPurchasesType,
+        loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
+        self.showPurchaseHistory = showPurchaseHistory
+
+        super.init(
+            screen: screen,
+            actionWrapper: actionWrapper,
+            purchaseInformation: purchaseInformation,
+            refundRequestStatus: refundRequestStatus,
+            purchasesProvider: purchasesProvider,
+            loadPromotionalOfferUseCase: loadPromotionalOfferUseCase
+        )
+    }
+}
 
 #endif

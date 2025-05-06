@@ -14,10 +14,10 @@
 //
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import StoreKit
 
-// swiftlint:disable nesting
+// swiftlint:disable nesting file_length
 
 /// Information about a purchase.
 struct PurchaseInformation {
@@ -64,7 +64,7 @@ struct PurchaseInformation {
     let latestPurchaseDate: Date?
     let customerInfoRequestedDate: Date
 
-    let managePurchaseURL: URL
+    let managePurchaseURL: URL?
 
     init(title: String,
          durationTitle: String?,
@@ -78,7 +78,7 @@ struct PurchaseInformation {
          isCancelled: Bool,
          latestPurchaseDate: Date?,
          customerInfoRequestedDate: Date,
-         managePurchaseURL: URL
+         managePurchaseURL: URL?
     ) {
         self.title = title
         self.durationTitle = durationTitle
@@ -102,7 +102,7 @@ struct PurchaseInformation {
          renewalPrice: PriceDetails? = nil,
          customerInfoRequestedDate: Date,
          dateFormatter: DateFormatter = DateFormatter(),
-         managePurchaseURL: URL) {
+         managePurchaseURL: URL?) {
         dateFormatter.dateStyle = .medium
 
         // Title and duration from product if available
@@ -225,7 +225,7 @@ extension PurchaseInformation {
         transaction: Transaction,
         customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType,
         customerInfoRequestedDate: Date,
-        managePurchaseURL: URL
+        managePurchaseURL: URL?
     ) async -> PurchaseInformation {
         let renewalPriceDetails = await Self.extractPriceDetailsFromRenewalInfo(
             forProduct: subscribedProduct,
@@ -376,7 +376,11 @@ private extension String {
 
 }
 
-extension RevenueCat.SubscriptionInfo: Transaction {
+@_spi(Internal) extension RevenueCat.SubscriptionInfo: Transaction {
+
+    var subscriptionManagementURL: URL? {
+        managementURL
+    }
 
     var type: TransactionType {
         .subscription(isActive: isActive,
@@ -398,5 +402,9 @@ extension NonSubscriptionTransaction: Transaction {
 
     var isCancelled: Bool {
         false
+    }
+
+    var subscriptionManagementURL: URL? {
+        nil
     }
 }

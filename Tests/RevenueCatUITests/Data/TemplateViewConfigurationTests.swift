@@ -1083,7 +1083,8 @@ private extension BaseTemplateViewConfigurationTests {
         identifier: "consumable",
         packageType: .custom,
         storeProduct: consumableProduct.toStoreProduct(),
-        offeringIdentifier: offeringIdentifier
+        offeringIdentifier: offeringIdentifier,
+        webCheckoutUrl: nil
     )
 
     static let localization: PaywallData.LocalizedConfiguration = .init(

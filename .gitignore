@@ -67,3 +67,5 @@ Local.xcconfig
 /buildServer.json
 
 *.orig
+
+Examples/rc-maestro/SubscriptionKey_*.p8

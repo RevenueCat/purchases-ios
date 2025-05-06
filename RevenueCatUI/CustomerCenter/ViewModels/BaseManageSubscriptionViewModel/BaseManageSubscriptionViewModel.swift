@@ -31,6 +31,9 @@ class BaseManageSubscriptionViewModel: ObservableObject {
     }
 
     @Published
+    var showAllPurchases = false
+
+    @Published
     var showRestoreAlert: Bool = false
 
     @Published
@@ -97,7 +100,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
                     }
                 }
 
-        case let .promotionalOffer(promotionalOffer):
+        case let .promotionalOffer(promotionalOffer) where purchaseInformation?.store == .appStore:
             if promotionalOffer.eligible {
                 self.loadingPath = path
                 let result = await loadPromotionalOfferUseCase.execute(promoOfferDetails: promotionalOffer)
@@ -123,6 +126,17 @@ class BaseManageSubscriptionViewModel: ObservableObject {
     func onDismissInAppBrowser() {
         self.inAppBrowserURL = nil
     }
+
+    func openManagementURL(for productId: String) {
+        guard let purchaseInformation,
+              purchaseInformation.productIdentifier == productId,
+        let url = purchaseInformation.managePurchaseURL else {
+            return
+        }
+
+        self.inAppBrowserURL = IdentifiableURL(url: url)
+    }
+
 #endif
 
 }
@@ -185,7 +199,11 @@ private extension BaseManageSubscriptionViewModel {
             }
 
         case .cancel where purchaseInformation?.store != .appStore:
-            self.actionWrapper.handleAction(.showingManageSubscriptions)
+            if let url = purchaseInformation?.managePurchaseURL {
+                self.inAppBrowserURL = IdentifiableURL(url: url)
+            } else {
+                // WIP: shor error alert?
+            }
 
         case .changePlans, .cancel:
             self.actionWrapper.handleAction(.showingManageSubscriptions)

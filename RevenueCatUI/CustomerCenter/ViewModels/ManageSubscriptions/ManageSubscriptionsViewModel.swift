@@ -29,9 +29,6 @@ final class ManageSubscriptionsViewModel: BaseManageSubscriptionViewModel {
     @Published
     private(set) var purchasesActive: [PurchaseInformation] = []
 
-    @Published
-    var showAllPurchases = false
-
     init(
         screen: CustomerCenterConfigData.Screen,
         actionWrapper: CustomerCenterActionWrapper,

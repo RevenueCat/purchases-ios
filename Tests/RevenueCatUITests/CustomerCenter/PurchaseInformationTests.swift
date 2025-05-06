@@ -38,6 +38,7 @@ final class PurchaseInformationTests: TestCase {
         let store: Store
         let type: TransactionType
         let isCancelled: Bool
+        var subscriptionManagementURL: URL?
     }
 
     func testAppleEntitlementAndSubscribedProduct() throws {
@@ -595,7 +596,7 @@ final class PurchaseInformationTests: TestCase {
                 managePurchaseURL: URL(string: "https://www.revenuecat.com")!
             )
         )
-        
+
         expect(subscriptionInfo.title).to(beNil())
         expect(subscriptionInfo.explanation) == .expired
         expect(subscriptionInfo.durationTitle).to(beNil())

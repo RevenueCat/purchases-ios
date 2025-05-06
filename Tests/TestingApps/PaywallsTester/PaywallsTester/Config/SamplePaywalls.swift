@@ -34,7 +34,8 @@ final class SamplePaywallLoader {
             serverDescription: Self.offeringIdentifier,
             metadata: [:],
             paywall: self.paywall(for: template),
-            availablePackages: self.packages
+            availablePackages: self.packages,
+            webCheckoutUrl: nil
         )
     }
 
@@ -44,7 +45,8 @@ final class SamplePaywallLoader {
             identifier: Self.offeringIdentifier,
             serverDescription: Self.offeringIdentifier,
             metadata: [:],
-            availablePackages: self.packages
+            availablePackages: self.packages,
+            webCheckoutUrl: nil
         )
     }
     #endif
@@ -55,7 +57,8 @@ final class SamplePaywallLoader {
             serverDescription: Self.offeringIdentifier,
             metadata: [:],
             paywall: nil,
-            availablePackages: self.packages
+            availablePackages: self.packages,
+            webCheckoutUrl: nil
         )
     }
 
@@ -65,7 +68,8 @@ final class SamplePaywallLoader {
             serverDescription: Self.offeringIdentifier,
             metadata: [:],
             paywall: Self.unrecognizedTemplate(),
-            availablePackages: self.packages
+            availablePackages: self.packages,
+            webCheckoutUrl: nil
         )
     }
 
@@ -98,37 +102,43 @@ private extension SamplePaywallLoader {
         identifier: Package.string(from: .weekly)!,
         packageType: .weekly,
         storeProduct: weeklyProduct.toStoreProduct(),
-        offeringIdentifier: offeringIdentifier
+        offeringIdentifier: offeringIdentifier,
+        webCheckoutUrl: nil
     )
     static let monthlyPackage = Package(
         identifier: Package.string(from: .monthly)!,
         packageType: .monthly,
         storeProduct: monthlyProduct.toStoreProduct(),
-        offeringIdentifier: offeringIdentifier
+        offeringIdentifier: offeringIdentifier,
+        webCheckoutUrl: nil
     )
     static let sixMonthPackage = Package(
         identifier: Package.string(from: .sixMonth)!,
         packageType: .sixMonth,
         storeProduct: sixMonthProduct.toStoreProduct(),
-        offeringIdentifier: offeringIdentifier
+        offeringIdentifier: offeringIdentifier,
+        webCheckoutUrl: nil
     )
     static let threeMonthPackage = Package(
         identifier: Package.string(from: .threeMonth)!,
         packageType: .threeMonth,
         storeProduct: threeMonthProduct.toStoreProduct(),
-        offeringIdentifier: offeringIdentifier
+        offeringIdentifier: offeringIdentifier,
+        webCheckoutUrl: nil
     )
     static let annualPackage = Package(
         identifier: Package.string(from: .annual)!,
         packageType: .annual,
         storeProduct: annualProduct.toStoreProduct(),
-        offeringIdentifier: offeringIdentifier
+        offeringIdentifier: offeringIdentifier,
+        webCheckoutUrl: nil
     )
     static let lifetimePackage = Package(
         identifier: Package.string(from: .lifetime)!,
         packageType: .lifetime,
         storeProduct: lifetimeProduct.toStoreProduct(),
-        offeringIdentifier: offeringIdentifier
+        offeringIdentifier: offeringIdentifier,
+        webCheckoutUrl: nil
     )
 
     static let weeklyProduct = TestStoreProduct(

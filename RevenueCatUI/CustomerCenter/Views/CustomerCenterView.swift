@@ -202,45 +202,53 @@ private extension CustomerCenterView {
 
     @ViewBuilder
     func destinationContent(configuration: CustomerCenterConfigData) -> some View {
-        if let purchaseInformation = viewModel.purchasesActive.first {
-            if viewModel.purchasesActive.contains(where: { $0.store == .appStore }),
-               let screen = configuration.screens[.management] {
-                if let onUpdateAppClick = viewModel.onUpdateAppClick,
-                    !ignoreAppUpdateWarning && viewModel.shouldShowAppUpdateWarnings {
-                    AppUpdateWarningView(
-                        onUpdateAppClick: onUpdateAppClick,
-                        onContinueAnywayClick: {
-                            withAnimation {
-                                ignoreAppUpdateWarning = true
-                            }
+        if viewModel.hasPurchases,
+           let screen = configuration.screens[.management] {
+            if let onUpdateAppClick = viewModel.onUpdateAppClick,
+               !ignoreAppUpdateWarning
+                && viewModel.shouldShowAppUpdateWarnings {
+                AppUpdateWarningView(
+                    onUpdateAppClick: onUpdateAppClick,
+                    onContinueAnywayClick: {
+                        withAnimation {
+                            ignoreAppUpdateWarning = true
                         }
-                    )
-                } else {
-                    ManageSubscriptionsView(
-                        screen: screen,
-                        purchasesActive: $viewModel.purchasesActive,
-                        purchasesProvider: self.viewModel.purchasesProvider,
-                        actionWrapper: self.viewModel.actionWrapper)
-                }
-            } else if let screen = configuration.screens[.management] {
-                WrongPlatformView(
-                    screen: screen,
-                    purchaseInformation: purchaseInformation
+                    }
                 )
-            } else {
-                WrongPlatformView(purchaseInformation: purchaseInformation)
-            }
-        } else {
-            if let screen = configuration.screens[.noActive] {
+            } else if viewModel.purchasesActive.count > 1 {
                 ManageSubscriptionsView(
                     screen: screen,
                     purchasesActive: $viewModel.purchasesActive,
                     purchasesProvider: self.viewModel.purchasesProvider,
-                    actionWrapper: self.viewModel.actionWrapper)
+                    actionWrapper: self.viewModel.actionWrapper
+                )
+                .dismissCircleButtonToolbarIfNeeded()
+            } else {
+                ManageSubscriptionView(
+                    screen: screen,
+                    purchaseInformation: viewModel.purchasesActive.first ?? viewModel.purchaseInformation,
+                    showPurchaseHistory: viewModel.configuration?.support.displayPurchaseHistoryLink == true,
+                    purchasesProvider: self.viewModel.purchasesProvider,
+                    actionWrapper: self.viewModel.actionWrapper
+                )
+                .dismissCircleButtonToolbarIfNeeded()
+            }
+        } else {
+            if let screen = configuration.screens[.noActive] {
+                ManageSubscriptionView(
+                    screen: screen,
+                    purchaseInformation: nil,
+                    showPurchaseHistory: viewModel.configuration?.support.displayPurchaseHistoryLink == true,
+                    purchasesProvider: self.viewModel.purchasesProvider,
+                    actionWrapper: self.viewModel.actionWrapper
+                )
+                .dismissCircleButtonToolbarIfNeeded()
             } else {
                 // Fallback with a restore button
-                NoSubscriptionsView(configuration: configuration,
-                                    actionWrapper: self.viewModel.actionWrapper)
+                NoSubscriptionsView(
+                    configuration: configuration,
+                    actionWrapper: self.viewModel.actionWrapper
+                )
             }
         }
     }
