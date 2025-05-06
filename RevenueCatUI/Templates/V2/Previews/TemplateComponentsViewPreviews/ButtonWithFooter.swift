@@ -122,7 +122,8 @@ private enum ButtonWithSheetPreview {
                 ))
             ],
             shape: .pill
-        )
+        ),
+        action: nil
     )
 
     static let viewAllButton = PaywallComponent.ButtonComponent(
@@ -189,7 +190,8 @@ private enum ButtonWithSheetPreview {
                                                 ))
                                             ],
                                             shape: .pill
-                                        )
+                                        ),
+                                        action: nil
                                     ))
                                 ],
                                 padding: .init(top: 20, bottom: 20, leading: 20, trailing: 20),
@@ -373,14 +375,16 @@ struct ButtonWithSheetPreview_Previews: PreviewProvider {
         return .init(identifier: "weekly",
                      packageType: .weekly,
                      storeProduct: .init(sk1Product: .init()),
-                     offeringIdentifier: "default")
+                     offeringIdentifier: "default",
+                     webCheckoutUrl: nil)
     }
 
     static var monthlyPackage: Package {
         return .init(identifier: "monthly",
                      packageType: .monthly,
                      storeProduct: .init(sk1Product: .init()),
-                     offeringIdentifier: "default")
+                     offeringIdentifier: "default",
+                     webCheckoutUrl: nil)
     }
 
     // Need to wrap in VStack otherwise preview rerenders and images won't show
@@ -391,7 +395,8 @@ struct ButtonWithSheetPreview_Previews: PreviewProvider {
             paywallComponents: ButtonWithSheetPreview.paywallComponents,
             offering: .init(identifier: "default",
                             serverDescription: "",
-                            availablePackages: [package, monthlyPackage]),
+                            availablePackages: [package, monthlyPackage],
+                            webCheckoutUrl: nil),
             purchaseHandler: PurchaseHandler.default(),
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,
