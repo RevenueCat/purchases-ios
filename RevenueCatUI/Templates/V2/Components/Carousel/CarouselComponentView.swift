@@ -313,10 +313,10 @@ private struct CarouselView<Content: View>: View {
 
     // arbitrary but works smoothly
     private var fadeDuration: TimeInterval? {
-        guard let msTimePerSlide else {
+        guard let msTransitionTime else {
             return nil
         }
-        return TimeInterval(msTimePerSlide) / 1000
+        return TimeInterval(msTransitionTime) / 1000
     }
 
     private func startAutoPlayIfNeeded() {
