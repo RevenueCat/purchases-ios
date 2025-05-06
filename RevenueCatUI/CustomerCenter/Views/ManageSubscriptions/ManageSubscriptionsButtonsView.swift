@@ -21,41 +21,55 @@ import SwiftUI
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-struct ManageSubscriptionsButtonsView<Content: View>: View {
-
-    var relevantPathsForPurchase: [CustomerCenterConfigData.HelpPath]
-    let determineFlowForPath: (CustomerCenterConfigData.HelpPath) async -> Void
-
-    @ViewBuilder let label: (CustomerCenterConfigData.HelpPath) -> Content
-
-    var body: some View {
-        ForEach(relevantPathsForPurchase, id: \.id) { path in
-            ManageSubscriptionButton(
-                path: path,
-                determineFlowForPath: determineFlowForPath,
-                label: label
-            )
-        }
-    }
+protocol ManageSubscriptionsButtonsViewModel {
+    var relevantPathsForPurchase: [CustomerCenterConfigData.HelpPath] { get }
+    var determineFlowForPath: (CustomerCenterConfigData.HelpPath) async -> Void { get }
 }
 
 @available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-private struct ManageSubscriptionButton<Content: View>: View {
+struct ManageSubscriptionsButtonsView: View {
 
-    let path: CustomerCenterConfigData.HelpPath
-    let determineFlowForPath: (CustomerCenterConfigData.HelpPath) async -> Void
-    let label: (CustomerCenterConfigData.HelpPath) -> Content
+    @ObservedObject
+    var viewModel: BaseManageSubscriptionViewModel
 
     var body: some View {
-        AsyncButton(action: {
-            await determineFlowForPath(path)
-        }, label: {
-            label(path)
-        })
-    }
+         ForEach(self.viewModel.relevantPathsForPurchase, id: \.id) { path in
+             ManageSubscriptionButton(
+                 path: path,
+                 viewModel: self.viewModel
+             )
+         }
+     }
+}
+
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+private struct ManageSubscriptionButton: View {
+
+    let path: CustomerCenterConfigData.HelpPath
+
+    @ObservedObject
+     var viewModel: BaseManageSubscriptionViewModel
+
+     var body: some View {
+         AsyncButton(action: {
+             await self.viewModel.determineFlow(
+                 for: path,
+                 activeProductId: viewModel.purchaseInformation?.productIdentifier)
+         }, label: {
+             if self.viewModel.loadingPath?.id == path.id {
+                 TintedProgressView()
+             } else {
+                 Text(path.title)
+             }
+         })
+         .disabled(self.viewModel.loadingPath != nil)
+     }
 }
 
 #endif

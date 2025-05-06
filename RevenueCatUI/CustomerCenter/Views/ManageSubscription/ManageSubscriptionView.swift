@@ -134,22 +134,8 @@ struct ManageSubscriptionView: View {
 
                 Section {
                     ManageSubscriptionsButtonsView(
-                        relevantPathsForPurchase: self.viewModel.relevantPathsForPurchase,
-                        determineFlowForPath: { path in
-                            await self.viewModel.determineFlow(
-                                for: path,
-                                activeProductId: nil
-                            )
-                        },
-                        label: { path in
-                            if self.viewModel.loadingPath?.id == path.id {
-                                TintedProgressView()
-                            } else {
-                                Text(path.title)
-                            }
-                        }
+                        viewModel: self.viewModel
                     )
-                    .disabled(self.viewModel.loadingPath != nil)
                 } header: {
                     if let subtitle = self.viewModel.screen.subtitle {
                         Text(subtitle)
@@ -169,22 +155,8 @@ struct ManageSubscriptionView: View {
 
                 Section {
                     ManageSubscriptionsButtonsView(
-                        relevantPathsForPurchase: self.viewModel.relevantPathsForPurchase,
-                        determineFlowForPath: { path in
-                            await self.viewModel.determineFlow(
-                                for: path,
-                                activeProductId: nil
-                            )
-                        },
-                        label: { path in
-                            if self.viewModel.loadingPath?.id == path.id {
-                                TintedProgressView()
-                            } else {
-                                Text(path.title)
-                            }
-                        }
+                        viewModel: self.viewModel
                     )
-                    .disabled(self.viewModel.loadingPath != nil)
                 }
             }
         }
