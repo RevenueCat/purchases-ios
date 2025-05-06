@@ -85,11 +85,6 @@ struct StackComponentView: View {
                     viewModels: self.viewModel.viewModels,
                     onDismiss: self.onDismiss
                 )
-                // Scroll needs to be applied before size
-                .scrollableIfEnabled(
-                    style.dimension,
-                    enabled: style.scrollable ?? self.isScrollableByDefault
-                )
                 // This alignment positions the inner VStack horizontally and vertically
                 .size(style.size,
                       horizontalAlignment: horizontalAlignment.frameAlignment,
@@ -101,11 +96,6 @@ struct StackComponentView: View {
                     distribution: distribution,
                     viewModels: self.viewModel.viewModels,
                     onDismiss: self.onDismiss
-                )
-                // Scroll needs to be applied before size
-                .scrollableIfEnabled(
-                    style.dimension,
-                    enabled: style.scrollable ?? self.isScrollableByDefault
                 )
                 // This alignment positions the inner VStack horizontally and vertically
                 .size(style.size,
@@ -120,11 +110,6 @@ struct StackComponentView: View {
                         onDismiss: self.onDismiss
                     )
                 }
-                // Scroll needs to be applied before size
-                .scrollableIfEnabled(
-                    style.dimension,
-                    enabled: style.scrollable ?? self.isScrollableByDefault
-                )
                 // These alignments define the position of inner components inside the ZStack
                 .size(style.size,
                       horizontalAlignment: alignment.stackAlignment,
@@ -137,7 +122,10 @@ struct StackComponentView: View {
         .applyIf(self.showActivityIndicatorOverContent, apply: { view in
             view.progressOverlay(for: style.backgroundStyle)
         })
-        // Scroll needs to be applied before size
+        .scrollableIfEnabled(
+            style.dimension,
+            enabled: style.scrollable ?? self.isScrollableByDefault
+        )
         .shape(border: nil,
                shape: style.shape,
                background: style.backgroundStyle,
