@@ -1,19 +1,23 @@
 ## RevenueCat SDK
-### Customer Center
-#### 🐞 Bugfixes
-* fix: Reload customer center on subscription cancelled (#4993) via Facundo Menzella (@facumenzella)
+### 🐞 Bugfixes
+* Fix Backwards compatibility errors introduced by new `testSDKHealthCheck` implementation (#5022) via Pol Piella Abadia (@polpielladev)
+* [Paywalls v2] fixes crash when getting invalid URL from paywall components localization (#5016) via Antonio Pallares (@ajpallares)
 
 ## RevenueCatUI SDK
 ### Paywallv2
 #### 🐞 Bugfixes
-* [Paywalls V2] Add default values for enums (#4955) via Josh Holtz (@joshdholtz)
+* [Paywalls v2] Fixes blank lines not showing up (#5024) via JayShortway (@JayShortway)
+### Customer Center
+#### 🐞 Bugfixes
+* fix: Wrap viewmodel binding into another binding (#5023) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* [Customer center] missing inject of Purchases provider (#5011) via Antonio Pallares (@ajpallares)
-* Fix Magic Weather SwiftUI compilation error by @pattogato at #4987 (#5012) via Toni Rico (@tonidero)
-* Log a warning to iOS 18.4 Simulator users with empty offerings (#5002) via Chris Perriam (@cperriam-rc)
-* Maybe fix some flaky PaywallViewEventsTests in CI (#5008) via Josh Holtz (@joshdholtz)
-* Update internal fastlane plugin to not try new scan run when retried tests eventually passed (#5007) via Josh Holtz (@joshdholtz)
-* [Diagnostics] Add extra fields when tracking AppTransaction errors (#5005) via Mark Villacampa (@MarkVillacampa)
-* Added purchase button in package SwiftUI Preview example (#4967) via Josh Holtz (@joshdholtz)
-* Parses the PR number from the merge queue branch name. (#4996) via JayShortway (@JayShortway)
+* [Paywalls] Add new button component action for web paywall links (#5029) via Mark Villacampa (@MarkVillacampa)
+* [Customer center] show manage subscriptions through purchases provider (#5025) via Antonio Pallares (@ajpallares)
+* [Diagnostics] add `host` parameter to `http_request_performed` event (#4982) via Antonio Pallares (@ajpallares)
+* fix compilation issues in older versions of Xcode (#5021) via Antonio Pallares (@ajpallares)
+* Add load shedder integration tests for consumable and non-consumable products (#5018) via Toni Rico (@tonidero)
+* Use fallback API hosts when receiving server down response (#4970) via Antonio Pallares (@ajpallares)
+* feat: Introduce maestro for UI testing (#5013) via Facundo Menzella (@facumenzella)
+* [Paywalls v2] Adds logs to indicate whether URLs are opened successfully (#5020) via JayShortway (@JayShortway)
+* [DX-345] Update the `testSDKHealth` to use the new `/health_report` endpoint (#4979) via Pol Piella Abadia (@polpielladev)
