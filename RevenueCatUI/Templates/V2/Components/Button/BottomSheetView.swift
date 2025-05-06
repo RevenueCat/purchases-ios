@@ -178,7 +178,7 @@ extension View {
                 ],
                 backgroundColor: nil
             ),
-            background: .color(.init(light: .hex("#000aaa"))),
+            background: .color(.init(light: .hex("#FFFFFF"))),
             backgroundBlur: false
         )
 
@@ -200,7 +200,7 @@ extension View {
                                         )
                                     )
                                 ],
-                                backgroundColor: .init(light: .hex("#ab56ab"))
+                                backgroundColor: .init(light: .hex("#FFFFFF"))
                             ), localizationProvider: .init(
                                 locale: Locale.current,
                                 localizedStrings: [
