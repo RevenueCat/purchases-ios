@@ -655,7 +655,7 @@ struct StackComponentViewHorizontal_Previews: PreviewProvider {
             .horizontal(.bottom, .end),
             .horizontal(.top, .spaceAround),
             .horizontal(.center, .spaceBetween),
-            .horizontal(.bottom, .spaceEvenly),
+            .horizontal(.bottom, .spaceEvenly)
         ])
     }
 }
@@ -712,8 +712,10 @@ func stackAlignmentAndDistributionPreviews(dimensions: [PaywallComponent.Dimensi
 func displayName(dimension: PaywallComponent.Dimension, overflow: PaywallComponent.StackComponent.Overflow) -> String {
     switch dimension {
     case .vertical(let horizontalAlignment, let flexDistribution):
+        // swiftlint:disable:next line_length
         return "Vertical (\(horizontalAlignment.rawValue), \(flexDistribution.rawValue)) - Overflow (\(overflow.rawValue))"
     case .horizontal(let verticalAlignment, let flexDistribution):
+        // swiftlint:disable:next line_length
         return "Horizontal (\(verticalAlignment.rawValue), \(flexDistribution.rawValue)) - Overflow (\(overflow.rawValue))"
     case .zlayer:
         return ""
