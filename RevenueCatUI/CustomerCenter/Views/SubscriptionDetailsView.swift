@@ -164,13 +164,13 @@ struct SubscriptionDetailsHeader: View {
             return localization[.youHaveLifetime]
         case .google:
             return localization[.googleSubscriptionManage]
-        case .web:
+        case .externalWeb:
             return localization[.webSubscriptionManage]
         case .otherStorePurchase:
             return localization[.pleaseContactSupportToManage]
         case .amazon:
             return localization[.amazonSubscriptionManage]
-        case .webBilling:
+        case .rcWebBilling:
             return localization[.webSubscriptionManage]
         }
     }

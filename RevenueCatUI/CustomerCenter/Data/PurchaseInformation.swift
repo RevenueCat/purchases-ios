@@ -186,8 +186,8 @@ struct PurchaseInformation {
     enum Explanation {
         case promotional
         case google
-        case web
-        case webBilling
+        case externalWeb
+        case rcWebBilling
         case otherStorePurchase
         case amazon
         case earliestRenewal
@@ -314,9 +314,9 @@ private extension EntitlementInfo {
         case .playStore:
             return .google
         case .rcBilling:
-            return .webBilling
+            return .rcWebBilling
         case .stripe:
-            return .web
+            return .externalWeb
         case .external, .unknownStore:
             return .otherStorePurchase
         case .amazon:
