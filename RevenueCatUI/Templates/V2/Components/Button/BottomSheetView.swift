@@ -48,7 +48,6 @@ struct BottomSheetView<Content: View>: View {
     /// Creates a new sheet view with the specified parameters.
     ///
     /// - Parameters:
-    ///   - backgroundColor: The background color of the sheet.
     ///   - height: The height of the sheet.
     ///   - content: A view builder closure that creates the content of the sheet.
     init(
@@ -76,12 +75,14 @@ struct BottomSheetView<Content: View>: View {
 /// the animation and tap-to-dismiss behavior.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct BottomSheetOverlayModifier: ViewModifier {
-    @Binding var sheet: SheetViewModel?
+    @Binding var sheetViewModel: SheetViewModel?
     @State private var sheetHeight: CGFloat = 0
 
     var backgroundStyle: BackgroundStyle? {
-        if let sheet {
-            sheet.sheet.background?.asDisplayable(uiConfigProvider: sheet.sheetStackViewModel.uiConfigProvider)
+        if let sheetViewModel {
+            sheetViewModel.sheet.background?.asDisplayable(
+                uiConfigProvider: sheetViewModel.sheetStackViewModel.uiConfigProvider
+            )
         } else {
             nil
         }
@@ -90,28 +91,28 @@ struct BottomSheetOverlayModifier: ViewModifier {
     func body(content: Content) -> some View {
         ZStack {
             content
-                .blur(radius: sheet?.sheet.backgroundBlur ?? false ? 10 : 0)
+                .blur(radius: sheetViewModel?.sheet.backgroundBlur ?? false ? 10 : 0)
 
             // Invisible tap area that covers the screen
-            if sheet != nil {
+            if sheetViewModel != nil {
                 Color.clear
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        sheet = nil
+                        sheetViewModel = nil
                     }
             }
 
             // Sheet content
             VStack {
                 Spacer()
-                if let sheet {
+                if let sheetViewModel {
                     BottomSheetView(
                         height: self.sheetHeight
                     ) {
                         StackComponentView(
-                            viewModel: sheet.sheetStackViewModel,
+                            viewModel: sheetViewModel.sheetStackViewModel,
                             onDismiss: {
-                                self.sheet = nil
+                                self.sheetViewModel = nil
                             }
                         )
                     }
@@ -127,7 +128,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         }
                 }
             )
-            .animation(.spring(duration: 0.35), value: sheet)
+            .animation(.spring(duration: 0.35), value: sheetViewModel)
         }
         .ignoresSafeArea()
     }
@@ -142,9 +143,7 @@ extension View {
     /// the sheet (if `tapOutsideToDismiss` is enabled in the configuration).
     ///
     /// - Parameters:
-    ///   - isPresented: A binding to a Boolean value that determines whether to present the sheet.
-    ///   - config: The configuration for the sheet. Defaults to a configuration with
-    ///     system background color and one-third screen height.
+    ///   - sheet: A binding to a SheetViewModel value that determines whether to present the sheet.
     ///   - content: A closure that returns the content of the sheet.
     ///
     /// - Returns: A view that presents the sheet when `isPresented` is true.
@@ -152,7 +151,7 @@ extension View {
         sheet: Binding<SheetViewModel?>
     ) -> some View {
         modifier(
-            BottomSheetOverlayModifier(sheet: sheet)
+            BottomSheetOverlayModifier(sheetViewModel: sheet)
         )
     }
 }
