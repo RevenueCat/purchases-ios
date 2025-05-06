@@ -28,6 +28,10 @@ final class ManageSubscriptionViewModel: BaseManageSubscriptionViewModel {
 
     let showPurchaseHistory: Bool
 
+    var shouldShowContactSupport: Bool {
+        purchaseInformation?.store != .appStore
+    }
+
     init(
         screen: CustomerCenterConfigData.Screen,
         showPurchaseHistory: Bool,

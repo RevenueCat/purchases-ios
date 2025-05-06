@@ -168,8 +168,8 @@ struct ManageSubscriptionView: View {
                 if let url = support?.supportURL(
                     localization: localization,
                     purchasesProvider: viewModel.purchasesProvider
-                ),
-                   URLUtilities.canOpenURL(url) || RuntimeUtils.isSimulator {
+                ), viewModel.shouldShowContactSupport,
+                    URLUtilities.canOpenURL(url) || RuntimeUtils.isSimulator {
                     Section {
                         AsyncButton {
                             if RuntimeUtils.isSimulator {
