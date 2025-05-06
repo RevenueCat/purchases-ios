@@ -24,7 +24,7 @@ struct ButtonComponentView: View {
     @State private var showCustomerCenter = false
     @State private var showingWebPaywallLinkAlert = false
 
-    @State private var sheetData: RevenueCat.PaywallComponent.ButtonComponent.Sheet?
+    @State private var sheetViewModel: SheetViewModel?
 
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
@@ -73,7 +73,7 @@ struct ButtonComponentView: View {
                     .disabled(true)
                     .opacity(0.35)
             })
-            .bottomSheet(sheet: $sheetData, sheetStackViewModel: self.viewModel.sheetStackViewModel)
+            .preference(key: SheetPreferenceKey.self, value: sheetViewModel)
             #if canImport(SafariServices) && canImport(UIKit)
             .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
                 SafariView(url: self.inAppBrowserURL!)
@@ -98,7 +98,12 @@ struct ButtonComponentView: View {
         case .unknown:
             break
         case .sheet(let sheet):
-            self.sheetData = sheet
+            if let sheetStackViewModel = self.viewModel.sheetStackViewModel {
+                self.sheetViewModel = .init(
+                    sheet: sheet,
+                    sheetStackViewModel: sheetStackViewModel
+                )
+            }
         }
     }
 

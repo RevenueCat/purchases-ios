@@ -24,6 +24,17 @@ import RevenueCat
 ///
 /// - Note: This view is typically used in conjunction with ``BottomSheetOverlayModifier`` to present
 ///   content in a sheet-like interface.
+///
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct SheetViewModel: Equatable {
+    let sheet: RevenueCat.PaywallComponent.ButtonComponent.Sheet
+    let sheetStackViewModel: StackComponentViewModel
+
+    static func == (lhs: SheetViewModel, rhs: SheetViewModel) -> Bool {
+        lhs.sheet.id == rhs.sheet.id
+    }
+}
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct BottomSheetView<Content: View>: View {
@@ -65,13 +76,12 @@ struct BottomSheetView<Content: View>: View {
 /// the animation and tap-to-dismiss behavior.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct BottomSheetOverlayModifier: ViewModifier {
-    @Binding var sheet: RevenueCat.PaywallComponent.ButtonComponent.Sheet?
-    let sheetStackViewModel: StackComponentViewModel?
+    @Binding var sheet: SheetViewModel?
     @State private var sheetHeight: CGFloat = 0
 
     func body(content: Content) -> some View {
-        if let sheetStackViewModel {
-            modifierBody(content: content, sheetStackViewModel: sheetStackViewModel)
+        if let sheet {
+            modifierBody(content: content, sheetStackViewModel: sheet.sheetStackViewModel)
                 .ignoresSafeArea()
         } else {
             content
@@ -79,8 +89,8 @@ struct BottomSheetOverlayModifier: ViewModifier {
     }
 
     var backgroundStyle: BackgroundStyle? {
-        if let sheet, let sheetStackViewModel {
-            sheet.background?.asDisplayable(uiConfigProvider: sheetStackViewModel.uiConfigProvider)
+        if let sheet {
+            sheet.sheet.background?.asDisplayable(uiConfigProvider: sheet.sheetStackViewModel.uiConfigProvider)
         } else {
             nil
         }
@@ -93,7 +103,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
     ) -> some View {
         ZStack {
             content
-                .blur(radius: sheet?.backgroundBlur ?? false ? 10 : 0)
+                .blur(radius: sheet?.sheet.backgroundBlur ?? false ? 10 : 0)
 
             // Invisible tap area that covers the screen
             if sheet != nil {
@@ -151,11 +161,10 @@ extension View {
     ///
     /// - Returns: A view that presents the sheet when `isPresented` is true.
     func bottomSheet(
-        sheet: Binding<RevenueCat.PaywallComponent.ButtonComponent.Sheet?>,
-        sheetStackViewModel: StackComponentViewModel?
+        sheet: Binding<SheetViewModel?>,
     ) -> some View {
         modifier(
-            BottomSheetOverlayModifier(sheet: sheet, sheetStackViewModel: sheetStackViewModel)
+            BottomSheetOverlayModifier(sheet: sheet)
         )
     }
 }
@@ -164,10 +173,26 @@ extension View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 #Preview {
     struct Preview: View {
-        @State private var sheet: PaywallComponent.ButtonComponent.Sheet? = PaywallComponent.ButtonComponent.Sheet(
-            id: "exampleSheet",
-            name: nil,
-            stack: .init(
+        @State private var sheetViewModel: SheetViewModel? = .init(
+            sheet: PaywallComponent.ButtonComponent.Sheet(
+                id: "exampleSheet",
+                name: nil,
+                stack: .init(
+                    components: [
+                        PaywallComponent.text(
+                            PaywallComponent.TextComponent(
+                                text: "buttonText",
+                                color: .init(light: .hex("#000000"))
+                            )
+                        )
+                    ],
+                    backgroundColor: nil
+                ),
+                background: .color(.init(light: .hex("#FFFFFF"))),
+                backgroundBlur: false
+            ),
+            // swiftlint:disable:next force_try
+            sheetStackViewModel: try! .init(component: .init(
                 components: [
                     PaywallComponent.text(
                         PaywallComponent.TextComponent(
@@ -176,11 +201,13 @@ extension View {
                         )
                     )
                 ],
-                backgroundColor: nil
-            ),
-            background: .color(.init(light: .hex("#FFFFFF"))),
-            backgroundBlur: false
-        )
+                backgroundColor: .init(light: .hex("#FFFFFF"))
+            ), localizationProvider: .init(
+                locale: Locale.current,
+                localizedStrings: [
+                    "buttonText": PaywallComponentsData.LocalizationData.string("Do something")
+                ]
+            )))
 
         var body: some View {
             ZStack {
@@ -188,26 +215,7 @@ extension View {
 
                 VStack {
                     Text("This view will have a sheet over it")
-                        .bottomSheet(
-                            sheet: $sheet,
-                            // swiftlint:disable:next force_try
-                            sheetStackViewModel: try! .init(component: .init(
-                                components: [
-                                    PaywallComponent.text(
-                                        PaywallComponent.TextComponent(
-                                            text: "buttonText",
-                                            color: .init(light: .hex("#000000"))
-                                        )
-                                    )
-                                ],
-                                backgroundColor: .init(light: .hex("#FFFFFF"))
-                            ), localizationProvider: .init(
-                                locale: Locale.current,
-                                localizedStrings: [
-                                    "buttonText": PaywallComponentsData.LocalizationData.string("Do something")
-                                ]
-                            ))
-                        )
+                        .bottomSheet(sheet: $sheetViewModel)
                 }
             }
             .edgesIgnoringSafeArea(.all)
