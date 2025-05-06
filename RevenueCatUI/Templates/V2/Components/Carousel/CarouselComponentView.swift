@@ -507,12 +507,22 @@ struct PageControlView: View {
         if self.originalCount > 1 {
             HStack(spacing: self.pageControl.spacing) {
                 ForEach(0..<originalCount, id: \.self) { index in
-                    Capsule()
-                        .fill(localCurrentIndex == index ? activeIndicator.color : indicator.color)
-                        .frame(
-                            width: localCurrentIndex == index ? activeIndicator.width : indicator.width,
-                            height: localCurrentIndex == index ? activeIndicator.height : indicator.height
-                        )
+                    ZStack {
+                        Capsule()
+                            .fill(localCurrentIndex == index ? activeIndicator.color : indicator.color)
+                        Capsule()
+                            .strokeBorder(
+                                localCurrentIndex == index ? activeIndicator.strokeColor : indicator.strokeColor,
+                                style: StrokeStyle(lineWidth: localCurrentIndex == index
+                                                   ? activeIndicator.strokeWidth
+                                                   : indicator.strokeWidth)
+                            )
+                    }
+                    .frame(
+                        width: localCurrentIndex == index ? activeIndicator.width : indicator.width,
+                        height: localCurrentIndex == index ? activeIndicator.height : indicator.height
+                    )
+                    .animation(.easeInOut, value: self.localCurrentIndex)
                 }
             }
             .padding(self.pageControl.padding)
@@ -605,12 +615,16 @@ struct CarouselComponentView_Previews: PreviewProvider {
                             default: .init(
                                 width: 10,
                                 height: 10,
-                                color: PaywallComponent.ColorScheme(light: .hex("#aeaeae"))
+                                color: PaywallComponent.ColorScheme(light: .hex("#aeaeae")),
+                                strokeColor: PaywallComponent.ColorScheme(light: .hex("#000000")),
+                                strokeWidth: 0
                             ),
                             active: .init(
                                 width: 10,
                                 height: 10,
-                                color: PaywallComponent.ColorScheme(light: .hex("#000000"))
+                                color: PaywallComponent.ColorScheme(light: .hex("#000000")),
+                                strokeColor: PaywallComponent.ColorScheme(light: .hex("#FFFF00")),
+                                strokeWidth: 0
                             )
                         )
                     ),
@@ -678,12 +692,16 @@ struct CarouselComponentView_Previews: PreviewProvider {
                             default: .init(
                                 width: 10,
                                 height: 10,
-                                color: PaywallComponent.ColorScheme(light: .hex("#cccccc"))
+                                color: PaywallComponent.ColorScheme(light: .hex("#cccccc")),
+                                strokeColor: PaywallComponent.ColorScheme(light: .hex("#000000")),
+                                strokeWidth: 0
                             ),
                             active: .init(
                                 width: 10,
                                 height: 10,
-                                color: PaywallComponent.ColorScheme(light: .hex("#000000"))
+                                color: PaywallComponent.ColorScheme(light: .hex("#00000000")),
+                                strokeColor: PaywallComponent.ColorScheme(light: .hex("#000000")),
+                                strokeWidth: 1
                             )
                         )
                     ),
@@ -745,12 +763,16 @@ struct CarouselComponentView_Previews: PreviewProvider {
                             default: .init(
                                 width: 10,
                                 height: 10,
-                                color: PaywallComponent.ColorScheme(light: .hex("#4462e96e"))
+                                color: PaywallComponent.ColorScheme(light: .hex("#4462e96e")),
+                                strokeColor: PaywallComponent.ColorScheme(light: .hex("#000000")),
+                                strokeWidth: 0
                             ),
                             active: .init(
                                 width: 60,
                                 height: 20,
-                                color: PaywallComponent.ColorScheme(light: .hex("#4462e9"))
+                                color: PaywallComponent.ColorScheme(light: .hex("#4462e9")),
+                                strokeColor: PaywallComponent.ColorScheme(light: .hex("#000000")),
+                                strokeWidth: 0
                             )
                         )
                     ),
