@@ -91,7 +91,9 @@ struct BottomSheetOverlayModifier: ViewModifier {
     func body(content: Content) -> some View {
         ZStack {
             content
-                .blur(radius: sheetViewModel?.sheet.backgroundBlur ?? false ? 10 : 0)
+                .blur(radius: sheetViewModel?.sheet.backgroundBlur == true ? 10 : 0)
+                .animation(.easeInOut(duration: 0.25), value: sheetViewModel?.sheet.backgroundBlur)
+
 
             // Invisible tap area that covers the screen
             if sheetViewModel != nil {
