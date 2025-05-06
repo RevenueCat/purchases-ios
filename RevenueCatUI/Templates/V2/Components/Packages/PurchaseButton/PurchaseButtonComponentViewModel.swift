@@ -20,12 +20,26 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class PurchaseButtonComponentViewModel {
 
+    private let component: PaywallComponent.PurchaseButtonComponent
+    private let offering: Offering
     let stackViewModel: StackComponentViewModel
 
     init(
+        component: PaywallComponent.PurchaseButtonComponent,
+        offering: Offering,
         stackViewModel: StackComponentViewModel
     ) {
+        self.component = component
+        self.offering = offering
         self.stackViewModel = stackViewModel
+    }
+
+    var action: PaywallComponent.PurchaseButtonComponent.Action? {
+        return self.component.action
+    }
+
+    var offeringWebCheckoutUrl: URL? {
+        return self.offering.webCheckoutUrl
     }
 
 }

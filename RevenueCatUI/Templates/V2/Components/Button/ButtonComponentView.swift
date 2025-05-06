@@ -221,7 +221,12 @@ struct ButtonComponentView_Previews: PreviewProvider {
                             "buttonText": PaywallComponentsData.LocalizationData.string("Do something")
                         ]
                     ),
-                    offering: Offering(identifier: "", serverDescription: "", availablePackages: [])
+                    offering: Offering(
+                        identifier: "",
+                        serverDescription: "",
+                        availablePackages: [],
+                        webCheckoutUrl: nil
+                    )
                 ),
                 onDismiss: { }
             )
