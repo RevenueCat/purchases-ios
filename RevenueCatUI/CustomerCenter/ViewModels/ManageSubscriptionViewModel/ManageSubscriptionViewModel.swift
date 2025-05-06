@@ -47,6 +47,10 @@ final class ManageSubscriptionViewModel: BaseManageSubscriptionViewModel {
             loadPromotionalOfferUseCase: loadPromotionalOfferUseCase
         )
     }
+
+    func reloadPurchaseInformation(_ purchaseInformation: PurchaseInformation) {
+        self.purchaseInformation = purchaseInformation
+    }
 }
 
 #endif

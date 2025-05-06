@@ -74,10 +74,10 @@ struct ManageSubscriptionsView: View {
             .compatibleNavigation(
                 item: $viewModel.purchaseInformation,
                 usesNavigationStack: navigationOptions.usesNavigationStack
-            ) { purchase in
+            ) { _ in
                 ManageSubscriptionView(
                     screen: viewModel.screen,
-                    purchaseInformation: purchase,
+                    purchaseInformation: $viewModel.purchaseInformation,
                     showPurchaseHistory: false,
                     purchasesProvider: self.viewModel.purchasesProvider,
                     actionWrapper: self.viewModel.actionWrapper

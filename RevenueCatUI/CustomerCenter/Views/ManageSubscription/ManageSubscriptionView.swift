@@ -43,8 +43,11 @@ struct ManageSubscriptionView: View {
     @StateObject
     private var viewModel: ManageSubscriptionViewModel
 
+    @Binding
+    private var purchaseInformation: PurchaseInformation?
+
     init(screen: CustomerCenterConfigData.Screen,
-         purchaseInformation: PurchaseInformation?,
+         purchaseInformation: Binding<PurchaseInformation?>,
          showPurchaseHistory: Bool,
          purchasesProvider: CustomerCenterPurchasesType,
          actionWrapper: CustomerCenterActionWrapper) {
@@ -52,12 +55,19 @@ struct ManageSubscriptionView: View {
             screen: screen,
             showPurchaseHistory: showPurchaseHistory,
             actionWrapper: actionWrapper,
-            purchaseInformation: purchaseInformation,
+            purchaseInformation: purchaseInformation.wrappedValue,
             purchasesProvider: purchasesProvider)
-        self.init(viewModel: viewModel)
+        self.init(
+            purchaseInformation: purchaseInformation,
+            viewModel: viewModel
+        )
     }
 
-    fileprivate init(viewModel: ManageSubscriptionViewModel) {
+    fileprivate init(
+        purchaseInformation: Binding<PurchaseInformation?>,
+        viewModel: ManageSubscriptionViewModel
+    ) {
+        self._purchaseInformation = purchaseInformation
         self._viewModel = .init(wrappedValue: viewModel)
     }
 
@@ -170,7 +180,10 @@ struct ManageSubscriptionView: View {
             $0.navigationTitle(self.viewModel.screen.title)
                 .navigationBarTitleDisplayMode(.inline)
          })
-
+        .onChangeOf(purchaseInformation?.customerInfoRequestedDate) { _ in
+            guard let purchase = purchaseInformation else { return }
+            viewModel.reloadPurchaseInformation(purchase)
+        }
     }
 
 }
@@ -194,7 +207,10 @@ struct ManageSubscriptionView: View {
                     refundRequestStatus: .success,
                     purchasesProvider: CustomerCenterPurchases()
                 )
-                ManageSubscriptionView(viewModel: viewModelMonthlyRenewing)
+                ManageSubscriptionView(
+                    purchaseInformation: .constant(nil),
+                    viewModel: viewModelMonthlyRenewing
+                )
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
             }
@@ -210,7 +226,10 @@ struct ManageSubscriptionView: View {
                     refundRequestStatus: .success,
                     purchasesProvider: CustomerCenterPurchases()
                 )
-                ManageSubscriptionView(viewModel: viewModelYearlyExpiring)
+                ManageSubscriptionView(
+                    purchaseInformation: .constant(nil),
+                    viewModel: viewModelYearlyExpiring
+                )
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
             }
@@ -224,7 +243,10 @@ struct ManageSubscriptionView: View {
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationFree,
                     purchasesProvider: CustomerCenterPurchases())
-                ManageSubscriptionView(viewModel: viewModelYearlyExpiring)
+                ManageSubscriptionView(
+                    purchaseInformation: .constant(nil),
+                    viewModel: viewModelYearlyExpiring
+                )
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
             }
@@ -238,7 +260,10 @@ struct ManageSubscriptionView: View {
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.consumable,
                     purchasesProvider: CustomerCenterPurchases())
-                ManageSubscriptionView(viewModel: viewModelYearlyExpiring)
+                ManageSubscriptionView(
+                    purchaseInformation: .constant(nil),
+                    viewModel: viewModelYearlyExpiring
+                )
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
             }

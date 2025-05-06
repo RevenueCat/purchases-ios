@@ -204,7 +204,10 @@ private extension CustomerCenterViewModel {
 
         self.activePurchases = activePurchases
 
-        if activePurchases.isEmpty, let activeTransaction = customerInfo.earliestExpiringTransaction() {
+        if activePurchases.count == 1 {
+            self.purchaseInformation = activePurchases.first
+        } else if activePurchases.isEmpty, let activeTransaction = customerInfo.earliestExpiringTransaction() {
+            // get the active non-subscription transaction
             let entitlement = customerInfo.entitlements.all.values
                 .first(where: { $0.productIdentifier == activeTransaction.productIdentifier })
 
