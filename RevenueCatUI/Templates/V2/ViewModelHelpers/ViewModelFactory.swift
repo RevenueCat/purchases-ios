@@ -118,12 +118,28 @@ struct ViewModelFactory {
                 offering: offering
             )
 
+            var sheetStackViewModel: StackComponentViewModel?
+
+            if case let .navigateTo(destination) = component.action {
+                if case let .sheet(sheet) = destination {
+                    sheetStackViewModel = try toStackViewModel(
+                        component: sheet.stack,
+                        packageValidator: packageValidator,
+                        firstImageInfo: nil,
+                        localizationProvider: localizationProvider,
+                        uiConfigProvider: uiConfigProvider,
+                        offering: offering
+                    )
+                }
+            }
+
             return .button(
                 try ButtonComponentViewModel(
                     component: component,
                     localizationProvider: localizationProvider,
                     offering: offering,
-                    stackViewModel: stackViewModel
+                    stackViewModel: stackViewModel,
+                    sheetStackViewModel: sheetStackViewModel
                 )
             )
         case .package(let component):
