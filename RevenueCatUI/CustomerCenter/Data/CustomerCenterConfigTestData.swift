@@ -179,22 +179,24 @@ enum CustomerCenterConfigTestData {
         managePurchaseURL: URL(string: "https://www.revenuecat.com")!
     )
 
-    static let subscriptionInformationYearlyExpiring: PurchaseInformation = .init(
-        title: "Basic",
-        durationTitle: "Yearly",
-        explanation: .earliestRenewal,
-        price: .paid("$49.99"),
-        expirationOrRenewal: .init(label: .expires,
-                                   date: .date("June 1st, 2024")),
-        productIdentifier: "product_id",
-        store: .appStore,
-        isLifetime: false,
-        isTrial: false,
-        isCancelled: false,
-        latestPurchaseDate: nil,
-        customerInfoRequestedDate: Date(),
-        managePurchaseURL: URL(string: "https://www.revenuecat.com")!
-    )
+    static func subscriptionInformationYearlyExpiring(store: Store = .appStore) -> PurchaseInformation {
+        PurchaseInformation(
+            title: "Basic",
+            durationTitle: "Yearly",
+            explanation: .earliestRenewal,
+            price: .paid("$49.99"),
+            expirationOrRenewal: .init(label: .expires,
+                                       date: .date("June 1st, 2024")),
+            productIdentifier: "product_id",
+            store: Store.amazon,
+            isLifetime: false,
+            isTrial: false,
+            isCancelled: false,
+            latestPurchaseDate: nil,
+            customerInfoRequestedDate: Date(),
+            managePurchaseURL: URL(string: "https://www.revenuecat.com")!
+        )
+    }
 
     static let consumable: PurchaseInformation = .init(
         title: "Basic",

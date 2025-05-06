@@ -29,6 +29,11 @@ final class ManageSubscriptionsViewModel: BaseManageSubscriptionViewModel {
     @Published
     private(set) var activePurchases: [PurchaseInformation] = []
 
+    var purchasesMightBeDuplicated: Bool {
+        activePurchases.first(where: { $0.store == .appStore }) != nil
+            && activePurchases.first(where: { $0.store != .appStore }) != nil
+    }
+
     init(
         screen: CustomerCenterConfigData.Screen,
         actionWrapper: CustomerCenterActionWrapper,

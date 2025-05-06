@@ -142,8 +142,8 @@ public struct CustomerCenterConfigData: Equatable {
             case storeExternal = "store_external"
             case storeUnknownStore = "store_unknown"
             case debugHeaderTitle = "Debug"
-            case youMayHaveDuplicatedSubscriptionsTitle = "common_you_may_have_duplicated_subscriptions_title"
-            case youMayHaveDuplicatedSubscriptionsSubtitle = "common_you_may_have_duplicated_subscriptions_subtitle"
+            case youMayHaveDuplicatedSubscriptionsTitle = "you_may_have_duplicated_subscriptions_title"
+            case youMayHaveDuplicatedSubscriptionsSubtitle = "you_may_have_duplicated_subscriptions_subtitle"
 
             var defaultValue: String {
                 switch self {

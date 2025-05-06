@@ -444,7 +444,7 @@ final class ManageSubscriptionViewModelTests: TestCase {
                                                                               signedData: signedData)
 
         let screen = PurchaseInformationFixtures.screenWithPromo(offerID: offerIdentifierInJSON)
-        let purchaseInformation = CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring
+        let purchaseInformation = CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring()
         let viewModel = ManageSubscriptionViewModel(screen: screen,
                                                     showPurchaseHistory: false,
                                                     actionWrapper: CustomerCenterActionWrapper(),

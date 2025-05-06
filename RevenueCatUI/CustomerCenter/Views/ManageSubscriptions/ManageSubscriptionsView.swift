@@ -105,7 +105,7 @@ struct ManageSubscriptionsView: View {
     @ViewBuilder
     var content: some View {
         List {
-            if support?.shouldWarnCustomersAboutMultipleSubscriptions == true {
+            if viewModel.purchasesMightBeDuplicated, support?.shouldWarnCustomersAboutMultipleSubscriptions == true {
                 CompatibilityContentUnavailableView(
                     localization[.youMayHaveDuplicatedSubscriptionsTitle],
                     systemImage: "exclamationmark.square",
@@ -181,18 +181,19 @@ struct ManageSubscriptionsView: View {
 }
 
 #if DEBUG
- @available(iOS 15.0, *)
- @available(macOS, unavailable)
- @available(tvOS, unavailable)
- @available(watchOS, unavailable)
- struct ManageSubscriptionsView_Previews: PreviewProvider {
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+struct ManageSubscriptionsView_Previews: PreviewProvider {
 
     // swiftlint:disable force_unwrapping
     static var previews: some View {
         let purchases = [
-           CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring,
-           CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing
-       ]
+            CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring(store: .amazon),
+            CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
+            CustomerCenterConfigTestData.subscriptionInformationFree
+        ]
 
         let warningOff = CustomerCenterConfigTestData.customerCenterData(
             displayPurchaseHistoryLink: true
@@ -247,7 +248,7 @@ struct ManageSubscriptionsView: View {
         }
     }
 
- }
+}
 
 #endif
 

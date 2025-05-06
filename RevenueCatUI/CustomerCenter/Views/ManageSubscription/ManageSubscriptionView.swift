@@ -253,7 +253,7 @@ struct ManageSubscriptionView: View {
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
                     showPurchaseHistory: false,
                     actionWrapper: CustomerCenterActionWrapper(),
-                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring,
+                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring(),
                     refundRequestStatus: .success,
                     purchasesProvider: CustomerCenterPurchases()
                 )
