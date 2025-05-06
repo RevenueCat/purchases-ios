@@ -7,9 +7,9 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  OfferingsResponse.swift
+//  WebProductsResponse.swift
 //
-//  Created by Nacho Soto on 3/31/22.
+//  Created by Toni Rico on 5/6/25.
 
 import Foundation
 
@@ -17,6 +17,7 @@ struct WebProductsResponse {
 
     struct Price {
         let amountMicros: Int
+        // This will be a 3-letter currency code
         let currency: String
     }
 

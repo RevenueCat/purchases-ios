@@ -7,9 +7,9 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  DiagnosticsHTTPRequestPath.swift
+//  WebBillingHTTPRequestPath.swift
 //
-//  Created by Cesar de la Vega on 8/4/24.
+//  Created by Toni Rico on 5/6/25.
 
 import Foundation
 

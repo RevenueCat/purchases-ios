@@ -7,9 +7,9 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  GetOfferingsOperation.swift
+//  GetWebProductsOperation.swift
 //
-//  Created by Joshua Liebowitz on 11/19/21.
+//  Created by Toni Rico on 5/6/25.
 
 import Foundation
 
