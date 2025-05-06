@@ -197,7 +197,7 @@ private enum ButtonWithSheetPreview {
                                 ],
                                 size: .init(width: .fill, height: .fit),
                                 background: .color(.init(light: .hex("#ffcc00"))),
-                                padding: .init(top: 0, bottom: 50, leading: 20, trailing: 20),
+                                padding: .init(top: 0, bottom: 30, leading: 20, trailing: 20),
                                 shape: .rectangle(nil),
                                 overflow: .none
                              ),

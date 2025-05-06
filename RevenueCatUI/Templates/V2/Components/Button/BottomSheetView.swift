@@ -43,6 +43,7 @@ struct SheetViewModel: Equatable {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct BottomSheetOverlayModifier: ViewModifier {
     @Binding var sheetViewModel: SheetViewModel?
+    let safeAreaInsets: EdgeInsets
 
     @State private var parentHeight: CGFloat?
 
@@ -105,6 +106,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         view.frame(height: height)
                     })
                     .transition(.move(edge: .bottom))
+                    .padding(.bottom, self.safeAreaInsets.bottom)
                     .backgroundStyle(self.backgroundStyle)
                 }
             }
@@ -136,10 +138,11 @@ extension View {
     ///
     /// - Returns: A view that presents the sheet when `isPresented` is true.
     func bottomSheet(
-        sheet: Binding<SheetViewModel?>
+        sheet: Binding<SheetViewModel?>,
+        safeAreaInsets: EdgeInsets
     ) -> some View {
         modifier(
-            BottomSheetOverlayModifier(sheetViewModel: sheet)
+            BottomSheetOverlayModifier(sheetViewModel: sheet, safeAreaInsets: safeAreaInsets)
         )
     }
 }
@@ -191,7 +194,8 @@ extension View {
 
                 VStack {
                     Text("This view will have a sheet over it")
-                        .bottomSheet(sheet: $sheetViewModel)
+                        .bottomSheet(sheet: $sheetViewModel,
+                                     safeAreaInsets: .init(top: 0, leading: 0, bottom: 0, trailing: 0))
                 }
             }
             .edgesIgnoringSafeArea(.all)
