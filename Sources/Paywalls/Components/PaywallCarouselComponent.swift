@@ -32,8 +32,9 @@ public extension PaywallComponent {
 
         }
 
-        public enum AutoAdvanceTransitionType: PaywallComponentBase {
-            case fade, slide
+        public enum AutoAdvanceTransitionType: String, PaywallComponentBase {
+            case fade
+            case slide
         }
 
         public struct PageControl: PaywallComponentBase {
