@@ -98,7 +98,10 @@ final class CustomerCenterViewModelTests: TestCase {
 
         await viewModel.loadScreen()
 
-        let purchaseInformation = try XCTUnwrap(viewModel.purchaseInformation)
+        expect(viewModel.purchaseInformation).to(beNil())
+        expect(viewModel.purchasesActive.isEmpty).to(beTrue())
+        let purchaseInformation = try XCTUnwrap(viewModel.purchasesActive.first)
+
         expect(purchaseInformation.store) == .appStore
         expect(viewModel.state) == .success
     }
@@ -115,7 +118,10 @@ final class CustomerCenterViewModelTests: TestCase {
 
         await viewModel.loadScreen()
 
-        let purchaseInformation = try XCTUnwrap(viewModel.purchaseInformation)
+        expect(viewModel.purchaseInformation).to(beNil())
+        expect(viewModel.purchasesActive.isEmpty).to(beTrue())
+        let purchaseInformation = try XCTUnwrap(viewModel.purchasesActive.first)
+
         expect(purchaseInformation.store) == .playStore
         expect(viewModel.state) == .success
     }

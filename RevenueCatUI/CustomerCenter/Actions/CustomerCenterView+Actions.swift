@@ -53,6 +53,7 @@ extension CustomerCenterView {
     @MainActor @Sendable (_ managementOption: CustomerCenterActionable) -> Void
 
     typealias PromotionalOfferSuccessHandler = @MainActor @Sendable () -> Void
+    typealias OpenManageSubscriptionURLHandler = @MainActor @Sendable (String) -> Void
 
     // MARK: - View Modifiers
 
@@ -168,6 +169,19 @@ extension CustomerCenterView {
                 .onPreferenceChange(PromotionalOfferSuccessPreferenceKey.self) { wrappedStarted in
                     if wrappedStarted != nil {
                         self.handler()
+                    }
+                }
+        }
+    }
+
+    struct OpenManageSubscriptionURL: ViewModifier {
+        let handler: OpenManageSubscriptionURLHandler
+
+        func body(content: Content) -> some View {
+            content
+                .onPreferenceChange(OpenManageSubscriptionPrefereKey.self) { wrapper in
+                    if let wrapper = wrapper {
+                        self.handler(wrapper.value)
                     }
                 }
         }
@@ -345,6 +359,12 @@ extension View {
         _ handler: @escaping CustomerCenterView.PromotionalOfferSuccessHandler
     ) -> some View {
         return self.modifier(CustomerCenterView.OnPromotionalOfferSuccess(handler: handler))
+    }
+
+    func onOpenManageSubscriptionURL(
+        _ handler: @escaping CustomerCenterView.OpenManageSubscriptionURLHandler
+    ) -> some View {
+        return self.modifier(CustomerCenterView.OpenManageSubscriptionURL(handler: handler))
     }
 }
 

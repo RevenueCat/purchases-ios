@@ -479,7 +479,8 @@ private extension PurchaseInformation {
             isTrial: false,
             isCancelled: false,
             latestPurchaseDate: nil,
-            customerInfoRequestedDate: customerInfoRequestedDate
+            customerInfoRequestedDate: customerInfoRequestedDate,
+            managePurchaseURL: URL(string: "https://www.revenuecat.com")!
         )
     }
 
@@ -504,7 +505,8 @@ private extension PurchaseInformation {
                 isTrial: isTrial,
                 isCancelled: isCancelled,
                 latestPurchaseDate: latestPurchaseDate,
-                customerInfoRequestedDate: customerInfoRequestedDate
+                customerInfoRequestedDate: customerInfoRequestedDate,
+                managePurchaseURL: URL(string: "https://www.revenuecat.com")!
             )
         }
 }

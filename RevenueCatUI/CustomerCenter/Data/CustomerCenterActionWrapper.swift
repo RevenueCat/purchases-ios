@@ -32,6 +32,7 @@ internal enum CustomerCenterInternalAction {
     case buttonTapped(action: CustomerCenterActionable)
     // Internal action for when a promotional offer succeeds
     case promotionalOfferSuccess
+    case openManageSubscription(String)
 
     /// Converts this internal action to the corresponding legacy action if one exists
     /// Returns nil for actions that don't have a legacy CustomerCenterAction equivalent
@@ -51,7 +52,7 @@ internal enum CustomerCenterInternalAction {
             return .refundRequestCompleted(status)
         case .feedbackSurveyCompleted(let optionId):
             return .feedbackSurveyCompleted(optionId)
-        case .buttonTapped, .promotionalOfferSuccess:
+        case .buttonTapped, .promotionalOfferSuccess, .openManageSubscription:
             return nil // No public equivalent
         }
     }
@@ -72,6 +73,7 @@ final class CustomerCenterActionWrapper {
     var setFeedbackSurveyCompleted: (String) -> Void = { _ in }
     var setManagementOptionSelected: (CustomerCenterActionable) -> Void = { _ in }
     var setPromotionalOfferSuccess: () -> Void = { }
+    var setOpenManageSubscription: (String) -> Void = { _ in }
 
     // The handler for legacy actions
     private let legacyActionHandler: DeprecatedCustomerCenterActionHandler?
@@ -113,6 +115,8 @@ final class CustomerCenterActionWrapper {
             setManagementOptionSelected(action)
         case .promotionalOfferSuccess:
             setPromotionalOfferSuccess()
+        case let .openManageSubscription(productId):
+            setOpenManageSubscription(productId)
         }
     }
 }

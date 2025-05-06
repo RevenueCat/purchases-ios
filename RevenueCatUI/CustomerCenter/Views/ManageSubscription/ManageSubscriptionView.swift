@@ -25,6 +25,9 @@ import SwiftUI
 @available(watchOS, unavailable)
 struct ManageSubscriptionView: View {
 
+    @Environment(\.openURL)
+    private var openURL
+
     @Environment(\.appearance)
     private var appearance: CustomerCenterConfigData.Appearance
 
@@ -96,6 +99,9 @@ struct ManageSubscriptionView: View {
             }, content: { inAppBrowserURL in
                 SafariView(url: inAppBrowserURL.url)
             })
+            .onOpenManageSubscriptionURL { productId in
+
+            }
 
     }
 

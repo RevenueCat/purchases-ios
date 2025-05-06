@@ -157,7 +157,8 @@ enum CustomerCenterConfigTestData {
         isTrial: false,
         isCancelled: false,
         latestPurchaseDate: nil,
-        customerInfoRequestedDate: Date()
+        customerInfoRequestedDate: Date(),
+        managePurchaseURL: URL(string: "https://www.revenuecat.com")!
     )
 
     static let subscriptionInformationFree: PurchaseInformation = .init(
@@ -173,7 +174,8 @@ enum CustomerCenterConfigTestData {
         isTrial: false,
         isCancelled: false,
         latestPurchaseDate: nil,
-        customerInfoRequestedDate: Date()
+        customerInfoRequestedDate: Date(),
+        managePurchaseURL: URL(string: "https://www.revenuecat.com")!
     )
 
     static let subscriptionInformationYearlyExpiring: PurchaseInformation = .init(
@@ -189,7 +191,8 @@ enum CustomerCenterConfigTestData {
         isTrial: false,
         isCancelled: false,
         latestPurchaseDate: nil,
-        customerInfoRequestedDate: Date()
+        customerInfoRequestedDate: Date(),
+        managePurchaseURL: URL(string: "https://www.revenuecat.com")!
     )
 
     static let consumable: PurchaseInformation = .init(
@@ -204,7 +207,8 @@ enum CustomerCenterConfigTestData {
         isTrial: false,
         isCancelled: false,
         latestPurchaseDate: Date(),
-        customerInfoRequestedDate: Date()
+        customerInfoRequestedDate: Date(),
+        managePurchaseURL: URL(string: "https://www.revenuecat.com")!
     )
 
 }

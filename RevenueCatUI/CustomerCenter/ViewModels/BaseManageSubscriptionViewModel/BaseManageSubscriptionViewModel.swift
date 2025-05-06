@@ -184,6 +184,9 @@ private extension BaseManageSubscriptionViewModel {
                 self.actionWrapper.handleAction(.refundRequestCompleted(productId, .error))
             }
 
+        case .cancel where purchaseInformation?.store != .appStore:
+            self.actionWrapper.handleAction(.showingManageSubscriptions)
+
         case .changePlans, .cancel:
             self.actionWrapper.handleAction(.showingManageSubscriptions)
 
@@ -231,6 +234,14 @@ private extension Array<CustomerCenterConfigData.HelpPath> {
         }
 
         return filter {
+            let isNonAppStorePurchase = purchaseInformation.store != .appStore
+            let isAppStoreOnlyPath = $0.type.isAppStoreOnly
+
+            // skip AppStore only paths if the purchase is not from App Store
+            guard !(isNonAppStorePurchase && isAppStoreOnlyPath) else {
+                return false
+            }
+
             // if it's cancel, it cannot be a lifetime subscription
             let isCancel = $0.type == .cancel
             let isEligibleCancel = !purchaseInformation.isLifetime && !purchaseInformation.isCancelled
@@ -247,6 +258,20 @@ private extension Array<CustomerCenterConfigData.HelpPath> {
             return (!isCancel || isEligibleCancel) &&
                     (!isRefund || isRefundEligible) &&
                     refundWindowIsValid
+        }
+    }
+}
+
+private extension CustomerCenterConfigData.HelpPath.PathType {
+
+    var isAppStoreOnly: Bool {
+        switch self {
+        case .cancel, .customUrl, .missingPurchase:
+            return false
+        case .changePlans, .refundRequest, .unknown:
+            return true
+        @unknown default:
+            return false
         }
     }
 }

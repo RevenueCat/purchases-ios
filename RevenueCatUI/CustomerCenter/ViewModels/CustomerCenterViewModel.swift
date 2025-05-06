@@ -228,7 +228,8 @@ private extension CustomerCenterViewModel {
                     subscribedProduct: product,
                     transaction: transaction,
                     customerCenterStoreKitUtilities: customerCenterStoreKitUtilities,
-                    customerInfoRequestedDate: customerInfo.requestDate
+                    customerInfoRequestedDate: customerInfo.requestDate,
+                    managePurchaseURL: customerInfo.managementURL!
                 )
             } else {
                 Logger.warning(
@@ -238,7 +239,8 @@ private extension CustomerCenterViewModel {
                 return PurchaseInformation(
                     entitlement: entitlement,
                     transaction: transaction,
-                    customerInfoRequestedDate: customerInfo.requestDate
+                    customerInfoRequestedDate: customerInfo.requestDate,
+                    managePurchaseURL: customerInfo.managementURL!
                 )
             }
         }
@@ -247,7 +249,8 @@ private extension CustomerCenterViewModel {
         return PurchaseInformation(
             entitlement: entitlement,
             transaction: transaction,
-            customerInfoRequestedDate: customerInfo.requestDate
+            customerInfoRequestedDate: customerInfo.requestDate,
+            managePurchaseURL: customerInfo.managementURL!
         )
     }
 }
