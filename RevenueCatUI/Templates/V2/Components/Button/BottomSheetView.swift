@@ -90,7 +90,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
     @ViewBuilder
     private func modifierBody(
         content: Content,
-        sheetStackViewModel: StackComponentViewModel,
+        sheetStackViewModel: StackComponentViewModel
     ) -> some View {
         ZStack {
             content
