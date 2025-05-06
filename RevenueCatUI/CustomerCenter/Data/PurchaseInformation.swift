@@ -259,7 +259,7 @@ extension PurchaseInformation: Identifiable {
     var id: String {
         let formatter = ISO8601DateFormatter()
         let purchaseDateString = latestPurchaseDate.map { formatter.string(from: $0) }
-        ?? formatter.string(from: Date())
+            ?? formatter.string(from: Date())
         return "\(productIdentifier)_\(purchaseDateString)"
     }
 }

@@ -154,10 +154,11 @@ struct ManageSubscriptionsView: View {
                             }
                         }
                     )
+                    .disabled(self.viewModel.loadingPath != nil)
                 }
 
             } else {
-                Section("Active subscriptions") {
+                Section(localization[.activeSubscriptions]) {
                     ForEach(viewModel.purchasesActive) { purchase in
                         Button {
                             viewModel.purchaseInformation = purchase

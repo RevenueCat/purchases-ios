@@ -25,6 +25,7 @@ struct ManageSubscriptionsButtonsView<Content: View>: View {
 
     var relevantPathsForPurchase: [CustomerCenterConfigData.HelpPath]
     let determineFlowForPath: (CustomerCenterConfigData.HelpPath) async -> Void
+
     @ViewBuilder let label: (CustomerCenterConfigData.HelpPath) -> Content
 
     var body: some View {
@@ -54,7 +55,6 @@ private struct ManageSubscriptionButton<Content: View>: View {
         }, label: {
             label(path)
         })
-//        .disabled(self.viewModel.loadingPath != nil)
     }
 }
 

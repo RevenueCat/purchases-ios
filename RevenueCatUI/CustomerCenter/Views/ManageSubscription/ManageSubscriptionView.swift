@@ -125,6 +125,7 @@ struct ManageSubscriptionView: View {
                             }
                         }
                     )
+                    .disabled(self.viewModel.loadingPath != nil)
                 } header: {
                     if let subtitle = self.viewModel.screen.subtitle {
                         Text(subtitle)
@@ -159,6 +160,7 @@ struct ManageSubscriptionView: View {
                             }
                         }
                     )
+                    .disabled(self.viewModel.loadingPath != nil)
                 }
             }
         }
