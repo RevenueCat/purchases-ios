@@ -324,7 +324,8 @@ private extension PaywallDataValidationTests {
             localizationByTier: [:],
             assetBaseURL: TestData.paywallAssetBaseURL
         ),
-        availablePackages: TestData.packages
+        availablePackages: TestData.packages,
+        webCheckoutUrl: nil
     )
 
     static let offeringWithMultiTierTemplateAndMissingLocalization = Offering(
@@ -341,7 +342,8 @@ private extension PaywallDataValidationTests {
             localization: TestData.localization1,
             assetBaseURL: TestData.paywallAssetBaseURL
         ),
-        availablePackages: TestData.packages
+        availablePackages: TestData.packages,
+        webCheckoutUrl: nil
     )
 
 }
