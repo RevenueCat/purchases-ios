@@ -1016,14 +1016,20 @@ private extension CustomerCenterViewModelTests {
                         "period_type": "intro",
                         "purchase_date": "2022-04-12T00:03:28Z",
                         "store": "play_store",
-                        "unsubscribe_detected_at": null
+                        "unsubscribe_detected_at": null,
+                        "display_name": "Weekly Scratched Sofa",
+                        "price": {
+                          "amount": 4.99,
+                          "currency": "USD"
+                        },
                     },
                 },
                 "entitlements": {
                     "premium": {
                         "expires_date": "2062-04-12T00:03:35Z",
                         "product_identifier": "com.revenuecat.product",
-                        "purchase_date": "2022-04-12T00:03:28Z"
+                        "purchase_date": "2022-04-12T00:03:28Z",
+                        "grace_period_expires_date": null
                     }
                 }
             }
