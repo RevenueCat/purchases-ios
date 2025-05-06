@@ -85,6 +85,8 @@ struct StackComponentView: View {
                     viewModels: self.viewModel.viewModels,
                     onDismiss: self.onDismiss
                 )
+                .padding(style.padding.extend(by: style.border?.width ?? 0))
+                .padding(additionalPadding)
                 // Scroll needs to be applied before size
                 .scrollableIfEnabled(
                     style.dimension,
@@ -102,6 +104,8 @@ struct StackComponentView: View {
                     viewModels: self.viewModel.viewModels,
                     onDismiss: self.onDismiss
                 )
+                .padding(style.padding.extend(by: style.border?.width ?? 0))
+                .padding(additionalPadding)
                 // Scroll needs to be applied before size
                 .scrollableIfEnabled(
                     style.dimension,
@@ -120,6 +124,8 @@ struct StackComponentView: View {
                         onDismiss: self.onDismiss
                     )
                 }
+                .padding(style.padding.extend(by: style.border?.width ?? 0))
+                .padding(additionalPadding)
                 // Scroll needs to be applied before size
                 .scrollableIfEnabled(
                     style.dimension,
@@ -132,11 +138,10 @@ struct StackComponentView: View {
             }
         }
         .hidden(if: self.showActivityIndicatorOverContent)
-        .padding(style.padding.extend(by: style.border?.width ?? 0))
-        .padding(additionalPadding)
         .applyIf(self.showActivityIndicatorOverContent, apply: { view in
             view.progressOverlay(for: style.backgroundStyle)
         })
+        // Scroll needs to be applied before size
         .shape(border: nil,
                shape: style.shape,
                background: style.backgroundStyle,
@@ -667,7 +672,7 @@ struct StackComponentView_Previews: PreviewProvider {
                         size: .init(width: .fill, height: .fixed(150)),
                         spacing: 10,
                         backgroundColor: .init(light: .hex("#ff0000")),
-                        padding: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
+                        padding: .init(top: 10, bottom: 10, leading: 10, trailing: 10),
                     ),
                     localizationProvider: .init(
                         locale: Locale.current,
