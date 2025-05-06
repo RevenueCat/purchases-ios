@@ -306,7 +306,8 @@ private extension PaywallDataValidationTests {
             identifier: "offering",
             serverDescription: "Offering",
             paywall: paywall,
-            availablePackages: TestData.packages
+            availablePackages: TestData.packages,
+            webCheckoutUrl: nil
         )
     }
 
