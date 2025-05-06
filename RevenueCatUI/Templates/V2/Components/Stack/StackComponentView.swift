@@ -85,13 +85,6 @@ struct StackComponentView: View {
                     viewModels: self.viewModel.viewModels,
                     onDismiss: self.onDismiss
                 )
-                .padding(style.padding.extend(by: style.border?.width ?? 0))
-                .padding(additionalPadding)
-                // Scroll needs to be applied before size
-                .scrollableIfEnabled(
-                    style.dimension,
-                    enabled: style.scrollable ?? self.isScrollableByDefault
-                )
                 // This alignment positions the inner VStack horizontally and vertically
                 .size(style.size,
                       horizontalAlignment: horizontalAlignment.frameAlignment,
@@ -103,13 +96,6 @@ struct StackComponentView: View {
                     distribution: distribution,
                     viewModels: self.viewModel.viewModels,
                     onDismiss: self.onDismiss
-                )
-                .padding(style.padding.extend(by: style.border?.width ?? 0))
-                .padding(additionalPadding)
-                // Scroll needs to be applied before size
-                .scrollableIfEnabled(
-                    style.dimension,
-                    enabled: style.scrollable ?? self.isScrollableByDefault
                 )
                 // This alignment positions the inner VStack horizontally and vertically
                 .size(style.size,
@@ -124,13 +110,6 @@ struct StackComponentView: View {
                         onDismiss: self.onDismiss
                     )
                 }
-                .padding(style.padding.extend(by: style.border?.width ?? 0))
-                .padding(additionalPadding)
-                // Scroll needs to be applied before size
-                .scrollableIfEnabled(
-                    style.dimension,
-                    enabled: style.scrollable ?? self.isScrollableByDefault
-                )
                 // These alignments define the position of inner components inside the ZStack
                 .size(style.size,
                       horizontalAlignment: alignment.stackAlignment,
@@ -138,9 +117,15 @@ struct StackComponentView: View {
             }
         }
         .hidden(if: self.showActivityIndicatorOverContent)
+        .padding(style.padding.extend(by: style.border?.width ?? 0))
+        .padding(additionalPadding)
         .applyIf(self.showActivityIndicatorOverContent, apply: { view in
             view.progressOverlay(for: style.backgroundStyle)
         })
+        .scrollableIfEnabled(
+            style.dimension,
+            enabled: style.scrollable ?? self.isScrollableByDefault
+        )
         // Scroll needs to be applied before size
         .shape(border: nil,
                shape: style.shape,
