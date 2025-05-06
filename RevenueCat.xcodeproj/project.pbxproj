@@ -295,7 +295,6 @@
 		3537566C2C382C2800A1B8D6 /* ManageSubscriptionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3537565C2C382C2800A1B8D6 /* ManageSubscriptionsView.swift */; };
 		3537566D2C382C2800A1B8D6 /* NoSubscriptionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3537565D2C382C2800A1B8D6 /* NoSubscriptionsView.swift */; };
 		3537566E2C382C2800A1B8D6 /* RestorePurchasesAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3537565E2C382C2800A1B8D6 /* RestorePurchasesAlert.swift */; };
-		3537566F2C382C2800A1B8D6 /* WrongPlatformView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3537565F2C382C2800A1B8D6 /* WrongPlatformView.swift */; };
 		353756722C382C2800A1B8D6 /* URLUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353756632C382C2800A1B8D6 /* URLUtilities.swift */; };
 		353DE0072CCA506100A8F632 /* EventsRequest+Paywall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353DE0062CCA504600A8F632 /* EventsRequest+Paywall.swift */; };
 		353FDAEC2CA1866A0055F328 /* StoreKitErrorHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353FDAEB2CA1866A0055F328 /* StoreKitErrorHelper.swift */; };
@@ -1668,7 +1667,6 @@
 		3537565C2C382C2800A1B8D6 /* ManageSubscriptionsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ManageSubscriptionsView.swift; sourceTree = "<group>"; };
 		3537565D2C382C2800A1B8D6 /* NoSubscriptionsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NoSubscriptionsView.swift; sourceTree = "<group>"; };
 		3537565E2C382C2800A1B8D6 /* RestorePurchasesAlert.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestorePurchasesAlert.swift; sourceTree = "<group>"; };
-		3537565F2C382C2800A1B8D6 /* WrongPlatformView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WrongPlatformView.swift; sourceTree = "<group>"; };
 		353756632C382C2800A1B8D6 /* URLUtilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = URLUtilities.swift; sourceTree = "<group>"; };
 		353DE0062CCA504600A8F632 /* EventsRequest+Paywall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EventsRequest+Paywall.swift"; sourceTree = "<group>"; };
 		353FDAEB2CA1866A0055F328 /* StoreKitErrorHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitErrorHelper.swift; sourceTree = "<group>"; };
@@ -3853,7 +3851,6 @@
 				3537565D2C382C2800A1B8D6 /* NoSubscriptionsView.swift */,
 				3546355E2C391F4D001D7E85 /* PromotionalOfferView.swift */,
 				3537565E2C382C2800A1B8D6 /* RestorePurchasesAlert.swift */,
-				3537565F2C382C2800A1B8D6 /* WrongPlatformView.swift */,
 				3551E39C2C4A6A1400D27C25 /* TintedProgressView.swift */,
 				C3AD12B92C6EA61F00A4F86F /* CompatibilityNavigationStack.swift */,
 				C3AD12BB2C6EA69D00A4F86F /* SubscriptionDetailsView.swift */,
@@ -7035,7 +7032,6 @@
 				2C8EC71B2CCDD43900D6CCF8 /* ComponentViewState.swift in Sources */,
 				57A9CD242DC9B1A000D0594B /* BaseManageSubscriptionViewModel.swift in Sources */,
 				77089F9E2CD39EC100848CD5 /* ShadowModifier.swift in Sources */,
-				3537566F2C382C2800A1B8D6 /* WrongPlatformView.swift in Sources */,
 				0354AA462D4029C300F9E330 /* TabControlButtonComponentViewModel.swift in Sources */,
 				030F918E2D5664410085103F /* LocaleExtensions.swift in Sources */,
 				0354AA472D4029C300F9E330 /* TabControlComponentViewModel.swift in Sources */,

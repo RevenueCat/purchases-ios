@@ -100,6 +100,22 @@ final class ManageSubscriptionViewModelTests: TestCase {
         expect(viewModel.relevantPathsForPurchase.first?.type) == .cancel
     }
 
+    func testNonAppleWithouURLDoesNotShowCancel() {
+        let purchase = PurchaseInformation.mockNonLifetime(
+            store: .playStore,
+            managementURL: nil
+        )
+
+        let viewModel = ManageSubscriptionViewModel(
+            screen: ManageSubscriptionViewModelTests.default,
+            showPurchaseHistory: false,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases())
+
+        expect(viewModel.relevantPathsForPurchase.isEmpty).to(beTrue())
+    }
+
     func testShowsRefundIfRefundWindowIsForever() {
         let purchase = PurchaseInformation.mockNonLifetime()
 
@@ -517,7 +533,9 @@ private extension PurchaseInformation {
         isCancelled: Bool = false,
         store: Store = .appStore,
         latestPurchaseDate: Date = Date(),
-        customerInfoRequestedDate: Date = Date()) -> PurchaseInformation {
+        customerInfoRequestedDate: Date = Date(),
+        managementURL: URL? = URL(string: "https://www.revenuecat.com")!
+    ) -> PurchaseInformation {
             PurchaseInformation(
                 title: "",
                 durationTitle: "",
@@ -534,7 +552,7 @@ private extension PurchaseInformation {
                 isCancelled: isCancelled,
                 latestPurchaseDate: latestPurchaseDate,
                 customerInfoRequestedDate: customerInfoRequestedDate,
-                managePurchaseURL: URL(string: "https://www.revenuecat.com")!
+                managePurchaseURL: managementURL
             )
         }
 }

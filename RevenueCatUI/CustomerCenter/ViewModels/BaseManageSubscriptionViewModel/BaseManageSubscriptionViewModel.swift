@@ -243,13 +243,8 @@ private extension Array<CustomerCenterConfigData.HelpPath> {
             let isNonAppStorePurchase = purchaseInformation.store != .appStore
             let isAppStoreOnlyPath = $0.type.isAppStoreOnly
 
-            // skip AppStore only paths if the purchase is not from App Store
-            if isNonAppStorePurchase && isAppStoreOnlyPath {
-                return false
-            }
-
-            // if it's cancel, it cannot be a lifetime subscription
             let isCancel = $0.type == .cancel
+            // if it's cancel, it cannot be a lifetime subscription
             let isEligibleCancel = !purchaseInformation.isLifetime && !purchaseInformation.isCancelled
 
             // if it's refundRequest, it cannot be free  nor within trial period
@@ -260,6 +255,16 @@ private extension Array<CustomerCenterConfigData.HelpPath> {
 
             // if it has a refundDuration, check it's still valid
             let refundWindowIsValid = $0.refundWindowDuration?.isWithin(purchaseInformation) ?? true
+
+            // skip AppStore only paths if the purchase is not from App Store
+            if isNonAppStorePurchase && isAppStoreOnlyPath {
+                return false
+            }
+
+            // don't show cancel if there's no URL
+            if isCancel && isNonAppStorePurchase && purchaseInformation.managePurchaseURL == nil {
+                 return false
+            }
 
             return (!isCancel || isEligibleCancel) &&
                     (!isRefund || isRefundEligible) &&

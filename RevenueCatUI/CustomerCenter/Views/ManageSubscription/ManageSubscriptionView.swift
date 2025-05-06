@@ -40,11 +40,17 @@ struct ManageSubscriptionView: View {
     @Environment(\.navigationOptions)
     var navigationOptions
 
+    @Environment(\.supportInformation)
+    private var support
+
     @StateObject
     private var viewModel: ManageSubscriptionViewModel
 
     @Binding
     private var purchaseInformation: PurchaseInformation?
+
+    @State
+    private var showSimulatorAlert: Bool = false
 
     init(screen: CustomerCenterConfigData.Screen,
          purchaseInformation: Binding<PurchaseInformation?>,
@@ -119,6 +125,12 @@ struct ManageSubscriptionView: View {
             }, content: { inAppBrowserURL in
                 SafariView(url: inAppBrowserURL.url)
             })
+            .alert(isPresented: $showSimulatorAlert, content: {
+                return Alert(
+                    title: Text("Can't open URL"),
+                    message: Text("There's no email app in the simulator"),
+                    dismissButton: .default(Text("Ok")))
+            })
     }
 
     @ViewBuilder
@@ -152,6 +164,25 @@ struct ManageSubscriptionView: View {
                             .textCase(nil)
                     }
                 }
+
+                if let url = support?.supportURL(
+                    localization: localization,
+                    purchasesProvider: viewModel.purchasesProvider
+                ),
+                   URLUtilities.canOpenURL(url) || RuntimeUtils.isSimulator {
+                    Section {
+                        AsyncButton {
+                            if RuntimeUtils.isSimulator {
+                                self.showSimulatorAlert = true
+                            } else {
+                                openURL(url)
+                            }
+                        } label: {
+                            Text(localization[.contactSupport])
+                        }
+                    }
+                }
+
             } else {
                 let fallbackDescription = localization[.tryCheckRestore]
 
