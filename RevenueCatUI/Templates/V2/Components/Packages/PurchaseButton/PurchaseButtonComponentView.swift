@@ -20,6 +20,9 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct PurchaseButtonComponentView: View {
 
+    @Environment(\.openURL)
+    private var openURL
+
     @EnvironmentObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
@@ -30,9 +33,11 @@ struct PurchaseButtonComponentView: View {
     private var purchaseHandler: PurchaseHandler
 
     private let viewModel: PurchaseButtonComponentViewModel
+    private let onDismiss: () -> Void
 
-    internal init(viewModel: PurchaseButtonComponentViewModel) {
+    internal init(viewModel: PurchaseButtonComponentViewModel, onDismiss: @escaping () -> Void) {
         self.viewModel = viewModel
+        self.onDismiss = onDismiss
     }
 
     /// Show activity indicator only if purchase action in purchase handler
@@ -56,19 +61,7 @@ struct PurchaseButtonComponentView: View {
 
     var body: some View {
         AsyncButton {
-            self.logIfInPreview(package: self.packageContext.package)
-
-            guard !self.purchaseHandler.actionInProgress else { return }
-
-            // WIP: Need to log warning if currently subscribed
-            guard let selectedPackage = self.packageContext.package
-                    //                    , selectedPackage.currentlySubscribed
-            else {
-                Logger.warning(Strings.product_already_subscribed)
-                return
-            }
-
-            _ = try await self.purchaseHandler.purchase(package: selectedPackage)
+            try await self.purchase()
         } label: {
             // Not passing an onDismiss - nothing in this stack should be able to dismiss
             StackComponentView(
@@ -81,6 +74,82 @@ struct PurchaseButtonComponentView: View {
             $0.disabled(true)
                 .opacity(0.35)
         }
+    }
+
+    private func purchase() async throws {
+        guard let action = self.viewModel.action else {
+            try await self.purchaseInApp()
+            return
+        }
+
+        switch action {
+        case .inAppCheckout:
+            try await self.purchaseInApp()
+        case .webCheckout:
+            try await self.purchaseWeb()
+        case .webProductSelection:
+            try await self.purchaseWebProductSelection()
+        }
+    }
+
+    private func purchaseInApp() async throws {
+        self.logIfInPreview(package: self.packageContext.package)
+
+        guard !self.purchaseHandler.actionInProgress else { return }
+
+        // WIP: Need to log warning if currently subscribed
+        guard let selectedPackage = self.packageContext.package
+                //                    , selectedPackage.currentlySubscribed
+        else {
+            Logger.warning(Strings.product_already_subscribed)
+            return
+        }
+
+        _ = try await self.purchaseHandler.purchase(package: selectedPackage)
+    }
+
+    private func purchaseWeb() async throws {
+        self.logIfInPreview(package: self.packageContext.package)
+
+        guard let selectedPackage = self.packageContext.package else {
+            Logger.warning(Strings.product_already_subscribed)
+            return
+        }
+
+        guard let webCheckoutUrl = self.packageContext.package?.webCheckoutUrl else {
+            // TODO: Add a warning about no web checkout url
+            return
+        }
+
+        self.openWebPaywallLink(url: webCheckoutUrl, method: .externalBrowser)
+    }
+
+    private func purchaseWebProductSelection() async throws {
+        self.logIfInPreview(package: self.packageContext.package)
+
+        guard let webCheckoutUrl = self.viewModel.offeringWebCheckoutUrl else {
+            // TODO: Add a warning about no web checkout url
+            return
+        }
+
+        self.openWebPaywallLink(url: webCheckoutUrl, method: .externalBrowser)
+    }
+
+    private func openWebPaywallLink(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) {
+        Purchases.shared.invalidateCustomerInfoCache()
+#if os(watchOS)
+        // watchOS doesn't support openURL with a completion handler, so we're just opening the URL.
+        openURL(url)
+#else
+        openURL(url) { success in
+            if success {
+                Logger.debug(Strings.successfully_opened_url_external_browser(url.absoluteString))
+            } else {
+                Logger.error(Strings.failed_to_open_url_external_browser(url.absoluteString))
+            }
+        }
+#endif
+        onDismiss()
     }
 
     /// Used to see purchasing information when using SwiftUI Previews
@@ -119,7 +188,8 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                                            leading: 30,
                                            trailing: 30)
                         ))
-                    ])
+                    ]),
+                    action: .inAppCheckout
                 ),
                 localizationProvider: .init(
                     locale: Locale.current,
@@ -130,8 +200,10 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                 ),
                 offering: Offering(identifier: "",
                                    serverDescription: "",
-                                   availablePackages: [])
-            )
+                                   availablePackages: [],
+                                   webCheckoutUrl: nil)
+            ),
+            onDismiss: {}
         )
         .previewRequiredEnvironmentProperties()
         .previewLayout(.sizeThatFits)
@@ -160,7 +232,8 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                                                 topTrailing: 8,
                                                 bottomLeading: 8,
                                                 bottomTrailing: 8))
-                    )
+                    ),
+                    action: .inAppCheckout
                 ),
                 localizationProvider: .init(
                     locale: Locale.current,
@@ -171,8 +244,10 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                 ),
                 offering: Offering(identifier: "",
                                    serverDescription: "",
-                                   availablePackages: [])
-            )
+                                   availablePackages: [],
+                                   webCheckoutUrl: nil)
+            ),
+            onDismiss: {}
         )
         .previewRequiredEnvironmentProperties()
         .previewLayout(.sizeThatFits)
@@ -199,6 +274,8 @@ fileprivate extension PurchaseButtonComponentViewModel {
         )
 
         self.init(
+            component: component,
+            offering: offering,
             stackViewModel: stackViewModel
         )
     }

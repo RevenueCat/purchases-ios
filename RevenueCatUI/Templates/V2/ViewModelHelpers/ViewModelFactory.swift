@@ -158,7 +158,11 @@ struct ViewModelFactory {
             )
 
             return .purchaseButton(
-                PurchaseButtonComponentViewModel(stackViewModel: stackViewModel)
+                PurchaseButtonComponentViewModel(
+                    component: component,
+                    offering: offering,
+                    stackViewModel: stackViewModel
+                )
             )
         case .stickyFooter(let component):
             let stackViewModel = try toStackViewModel(

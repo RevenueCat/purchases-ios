@@ -122,7 +122,8 @@ private enum Template1Preview {
                 ))
             ],
             shape: .pill
-        )
+        ),
+        action: .inAppCheckout
     )
 
     static let contentStack = PaywallComponent.StackComponent(
@@ -203,7 +204,8 @@ struct Template1Preview_Previews: PreviewProvider {
         return .init(identifier: "weekly",
                      packageType: .weekly,
                      storeProduct: .init(sk1Product: .init()),
-                     offeringIdentifier: "default")
+                     offeringIdentifier: "default",
+                     webCheckoutUrl: nil)
     }
 
     // Need to wrap in VStack otherwise preview rerenders and images won't show
@@ -214,7 +216,8 @@ struct Template1Preview_Previews: PreviewProvider {
             paywallComponents: Template1Preview.paywallComponents,
             offering: .init(identifier: "default",
                             serverDescription: "",
-                            availablePackages: [package]),
+                            availablePackages: [package],
+                            webCheckoutUrl: nil),
             purchaseHandler: PurchaseHandler.default(),
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,
