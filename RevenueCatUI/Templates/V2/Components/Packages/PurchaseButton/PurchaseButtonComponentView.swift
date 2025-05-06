@@ -189,7 +189,8 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                                            trailing: 30)
                         ))
                     ]),
-                    action: .inAppCheckout
+                    action: .inAppCheckout,
+                    url: nil
                 ),
                 localizationProvider: .init(
                     locale: Locale.current,
@@ -233,7 +234,8 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                                                 bottomLeading: 8,
                                                 bottomTrailing: 8))
                     ),
-                    action: .inAppCheckout
+                    action: .inAppCheckout,
+                    url: nil
                 ),
                 localizationProvider: .init(
                     locale: Locale.current,

@@ -39,7 +39,7 @@ class PurchaseButtonComponentViewModel {
     }
 
     var offeringWebCheckoutUrl: URL? {
-        return self.offering.webCheckoutUrl
+        return self.component.url
     }
 
 }

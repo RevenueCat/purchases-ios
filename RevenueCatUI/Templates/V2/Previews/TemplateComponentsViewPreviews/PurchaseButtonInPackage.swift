@@ -120,7 +120,8 @@ private enum PurchaseButtonInPackagePreview {
                         ],
                         shape: .pill
                     ),
-                    action: .inAppCheckout
+                    action: .inAppCheckout,
+                    url: nil
                 ))
             ],
             dimension: .vertical(.center, .start),
@@ -223,7 +224,8 @@ private enum PurchaseButtonInPackagePreview {
                     ],
                     shape: .pill
                 ),
-                action: .inAppCheckout
+                action: .inAppCheckout,
+                url: nil
             )),
             .text(orText),
             .package(.init(
