@@ -174,7 +174,6 @@ struct ManageSubscriptionsView: View {
                 }
             }
         }
-        .dismissCircleButtonToolbarIfNeeded()
         .applyIf(self.viewModel.screen.type == .management, apply: {
             $0.navigationTitle(self.viewModel.screen.title)
                 .navigationBarTitleDisplayMode(.inline)

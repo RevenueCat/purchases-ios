@@ -18,8 +18,8 @@
   ],
   "settings" : {
     "_failTransactionsEnabled" : false,
-    "_locale" : "en_US",
-    "_storefront" : "USA",
+    "_locale" : "pt_BR",
+    "_storefront" : "ESP",
     "_storeKitErrors" : [
       {
         "current" : null,
