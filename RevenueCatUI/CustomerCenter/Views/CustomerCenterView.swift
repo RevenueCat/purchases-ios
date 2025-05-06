@@ -215,10 +215,10 @@ private extension CustomerCenterView {
                         }
                     }
                 )
-            } else if viewModel.purchasesActive.count > 1 {
+            } else if viewModel.activePurchases.count > 1 {
                 ManageSubscriptionsView(
                     screen: screen,
-                    purchasesActive: $viewModel.purchasesActive,
+                    activePurchases: $viewModel.activePurchases,
                     purchasesProvider: self.viewModel.purchasesProvider,
                     actionWrapper: self.viewModel.actionWrapper
                 )
@@ -226,7 +226,7 @@ private extension CustomerCenterView {
             } else {
                 ManageSubscriptionView(
                     screen: screen,
-                    purchaseInformation: viewModel.purchasesActive.first ?? viewModel.purchaseInformation,
+                    purchaseInformation: viewModel.activePurchases.first ?? viewModel.purchaseInformation,
                     showPurchaseHistory: viewModel.configuration?.support.displayPurchaseHistoryLink == true,
                     purchasesProvider: self.viewModel.purchasesProvider,
                     actionWrapper: self.viewModel.actionWrapper

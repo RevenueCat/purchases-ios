@@ -127,16 +127,6 @@ class BaseManageSubscriptionViewModel: ObservableObject {
         self.inAppBrowserURL = nil
     }
 
-    func openManagementURL(for productId: String) {
-        guard let purchaseInformation,
-              purchaseInformation.productIdentifier == productId,
-        let url = purchaseInformation.managePurchaseURL else {
-            return
-        }
-
-        self.inAppBrowserURL = IdentifiableURL(url: url)
-    }
-
 #endif
 
 }
@@ -201,8 +191,6 @@ private extension BaseManageSubscriptionViewModel {
         case .cancel where purchaseInformation?.store != .appStore:
             if let url = purchaseInformation?.managePurchaseURL {
                 self.inAppBrowserURL = IdentifiableURL(url: url)
-            } else {
-                // WIP: shor error alert?
             }
 
         case .changePlans, .cancel:
@@ -256,7 +244,7 @@ private extension Array<CustomerCenterConfigData.HelpPath> {
             let isAppStoreOnlyPath = $0.type.isAppStoreOnly
 
             // skip AppStore only paths if the purchase is not from App Store
-            guard !(isNonAppStorePurchase && isAppStoreOnlyPath) else {
+            if isNonAppStorePurchase && isAppStoreOnlyPath {
                 return false
             }
 
@@ -284,9 +272,9 @@ private extension CustomerCenterConfigData.HelpPath.PathType {
 
     var isAppStoreOnly: Bool {
         switch self {
-        case .cancel, .customUrl, .missingPurchase:
+        case .cancel, .customUrl:
             return false
-        case .changePlans, .refundRequest, .unknown:
+        case .changePlans, .refundRequest, .missingPurchase, .unknown:
             return true
         @unknown default:
             return false

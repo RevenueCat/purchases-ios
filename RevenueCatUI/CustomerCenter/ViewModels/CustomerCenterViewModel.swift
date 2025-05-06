@@ -74,11 +74,11 @@ import RevenueCat
     }
 
     var hasPurchases: Bool {
-        !purchasesActive.isEmpty || purchaseInformation != nil
+        !activePurchases.isEmpty || purchaseInformation != nil
     }
 
     @Published
-    var purchasesActive: [PurchaseInformation] = []
+    var activePurchases: [PurchaseInformation] = []
 
     @Published
     var purchaseInformation: PurchaseInformation?
@@ -121,7 +121,7 @@ import RevenueCat
         configuration: CustomerCenterConfigData
     ) {
         self.init(actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil))
-        self.purchasesActive = [purchaseInformation]
+        self.activePurchases = [purchaseInformation]
         self.configuration = configuration
         self.state = .success
     }
@@ -175,7 +175,7 @@ private extension CustomerCenterViewModel {
             !customerInfo.nonSubscriptions.isEmpty
 
         if !hasActiveProducts {
-            self.purchasesActive = []
+            self.activePurchases = []
             self.state = .success
             return
         }
@@ -202,7 +202,7 @@ private extension CustomerCenterViewModel {
             activePurchases.append(purchaseInfo)
         }
 
-        self.purchasesActive = activePurchases
+        self.activePurchases = activePurchases
 
         if activePurchases.isEmpty, let activeTransaction = customerInfo.earliestExpiringTransaction() {
             let entitlement = customerInfo.entitlements.all.values

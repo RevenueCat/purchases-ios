@@ -27,16 +27,16 @@ import SwiftUI
 final class ManageSubscriptionsViewModel: BaseManageSubscriptionViewModel {
 
     @Published
-    private(set) var purchasesActive: [PurchaseInformation] = []
+    private(set) var activePurchases: [PurchaseInformation] = []
 
     init(
         screen: CustomerCenterConfigData.Screen,
         actionWrapper: CustomerCenterActionWrapper,
-        purchasesActive: [PurchaseInformation] = [],
+        activePurchases: [PurchaseInformation] = [],
         refundRequestStatus: RefundRequestStatus? = nil,
         purchasesProvider: CustomerCenterPurchasesType,
         loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
-            self.purchasesActive = purchasesActive
+            self.activePurchases = activePurchases
             super.init(
                 screen: screen,
                 actionWrapper: actionWrapper,
@@ -47,8 +47,8 @@ final class ManageSubscriptionsViewModel: BaseManageSubscriptionViewModel {
             )
         }
 
-    func updatePurchases(_ purchasesActive: [PurchaseInformation]) {
-        self.purchasesActive = purchasesActive
+    func updatePurchases(_ activePurchases: [PurchaseInformation]) {
+        self.activePurchases = activePurchases
         // go back to the list
         self.purchaseInformation = nil
     }

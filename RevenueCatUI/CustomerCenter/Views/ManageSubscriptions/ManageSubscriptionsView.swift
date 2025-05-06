@@ -43,29 +43,29 @@ struct ManageSubscriptionsView: View {
     private var viewModel: ManageSubscriptionsViewModel
 
     @Binding
-    var purchasesActive: [PurchaseInformation]
+    var activePurchases: [PurchaseInformation]
 
     init(screen: CustomerCenterConfigData.Screen,
-         purchasesActive: Binding<[PurchaseInformation]>,
+         activePurchases: Binding<[PurchaseInformation]>,
          purchasesProvider: CustomerCenterPurchasesType,
          actionWrapper: CustomerCenterActionWrapper) {
         let viewModel = ManageSubscriptionsViewModel(
             screen: screen,
             actionWrapper: actionWrapper,
-            purchasesActive: purchasesActive.wrappedValue,
+            activePurchases: activePurchases.wrappedValue,
             purchasesProvider: purchasesProvider)
 
         self.init(
-            purchasesActive: purchasesActive,
+            activePurchases: activePurchases,
             viewModel: viewModel
         )
     }
 
     fileprivate init(
-        purchasesActive: Binding<[PurchaseInformation]>,
+        activePurchases: Binding<[PurchaseInformation]>,
         viewModel: ManageSubscriptionsViewModel
     ) {
-        self._purchasesActive = purchasesActive
+        self._activePurchases = activePurchases
         self._viewModel = .init(wrappedValue: viewModel)
     }
 
@@ -97,8 +97,8 @@ struct ManageSubscriptionsView: View {
                 .environment(\.localization, localization)
                 .environment(\.navigationOptions, navigationOptions)
             }
-            .onChangeOf(purchasesActive) { _ in
-                viewModel.updatePurchases(purchasesActive)
+            .onChangeOf(activePurchases) { _ in
+                viewModel.updatePurchases(activePurchases)
             }
     }
 
@@ -127,7 +127,7 @@ struct ManageSubscriptionsView: View {
                 )
             }
 
-            if viewModel.purchasesActive.isEmpty {
+            if viewModel.activePurchases.isEmpty {
                 let fallbackDescription = localization[.tryCheckRestore]
 
                 Section {
@@ -146,7 +146,7 @@ struct ManageSubscriptionsView: View {
 
             } else {
                 Section(localization[.activeSubscriptions]) {
-                    ForEach(viewModel.purchasesActive) { purchase in
+                    ForEach(viewModel.activePurchases) { purchase in
                         Button {
                             viewModel.purchaseInformation = purchase
                         } label: {
@@ -212,11 +212,11 @@ struct ManageSubscriptionsView: View {
                         displayPurchaseHistoryLink: true
                     ).screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
-                    purchasesActive: purchases,
+                    activePurchases: purchases,
                     purchasesProvider: CustomerCenterPurchases()
                 )
                 ManageSubscriptionsView(
-                    purchasesActive: .constant(purchases),
+                    activePurchases: .constant(purchases),
                     viewModel: viewModel
                 )
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
@@ -233,11 +233,11 @@ struct ManageSubscriptionsView: View {
                         shouldWarnCustomersAboutMultipleSubscriptions: true
                     ).screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
-                    purchasesActive: purchases,
+                    activePurchases: purchases,
                     purchasesProvider: CustomerCenterPurchases()
                 )
                 ManageSubscriptionsView(
-                    purchasesActive: .constant(purchases),
+                    activePurchases: .constant(purchases),
                     viewModel: viewModel
                 )
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
