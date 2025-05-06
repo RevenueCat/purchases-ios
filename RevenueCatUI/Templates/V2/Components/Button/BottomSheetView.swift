@@ -80,11 +80,13 @@ struct BottomSheetOverlayModifier: ViewModifier {
 
     var backgroundStyle: BackgroundStyle? {
         if let sheetViewModel {
-            sheetViewModel.sheet.background?.asDisplayable(
+            let stackBackground = sheetViewModel.sheet.stack.background
+
+            return stackBackground?.asDisplayable(
                 uiConfigProvider: sheetViewModel.sheetStackViewModel.uiConfigProvider
             )
         } else {
-            nil
+            return nil
         }
     }
 
@@ -117,8 +119,8 @@ struct BottomSheetOverlayModifier: ViewModifier {
                             }
                         )
                     }
-                    .backgroundStyle(backgroundStyle)
                     .transition(.move(edge: .bottom))
+                    .backgroundStyle(self.backgroundStyle)
                 }
             }
             .background(
