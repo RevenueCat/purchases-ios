@@ -36,36 +36,6 @@ struct SheetViewModel: Equatable {
     }
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct BottomSheetView<Content: View>: View {
-
-    /// The height of the sheet.
-    let height: CGFloat
-
-    /// The content to be displayed within the sheet.
-    let content: Content
-
-    /// Creates a new sheet view with the specified parameters.
-    ///
-    /// - Parameters:
-    ///   - height: The height of the sheet.
-    ///   - content: A view builder closure that creates the content of the sheet.
-    init(
-        height: CGFloat,
-        @ViewBuilder content: () -> Content
-    ) {
-        self.height = height
-        self.content = content()
-    }
-
-    var body: some View {
-        content
-            .safeAreaInset(edge: .bottom, spacing: 0) {
-                EmptyView()
-            }
-    }
-}
-
 /// A view modifier that presents content in a sheet-like interface.
 ///
 /// This modifier handles the presentation and dismissal of a sheet view, including
