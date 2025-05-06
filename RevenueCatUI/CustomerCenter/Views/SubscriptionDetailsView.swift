@@ -170,6 +170,8 @@ struct SubscriptionDetailsHeader: View {
             return localization[.pleaseContactSupportToManage]
         case .amazon:
             return localization[.amazonSubscriptionManage]
+        case .webBilling:
+            return localization[.webSubscriptionManage]
         }
     }
 }

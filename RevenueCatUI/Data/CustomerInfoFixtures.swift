@@ -28,7 +28,8 @@ class CustomerInfoFixtures {
              store: String,
              purchaseDate: String,
              expirationDate: String?,
-             unsubscribeDetectedAt: String? = nil) {
+             unsubscribeDetectedAt: String? = nil,
+             periodType: PeriodType = .normal) {
             self.id = id
             self.json = """
             {
@@ -39,12 +40,17 @@ class CustomerInfoFixtures {
                 "is_sandbox": true,
                 "original_purchase_date": "\(purchaseDate)",
                 "ownership_type": "PURCHASED",
-                "period_type": "intro",
+                "period_type": "\(periodType.stringValue)",
                 "purchase_date": "\(purchaseDate)",
                 "refunded_at": null,
                 "store": "\(store)",
                 "store_transaction_id": "0",
-                "unsubscribe_detected_at": \(unsubscribeDetectedAt != nil ? "\"\(unsubscribeDetectedAt!)\"" : "null")
+                "unsubscribe_detected_at": \(unsubscribeDetectedAt != nil ? "\"\(unsubscribeDetectedAt!)\"" : "null"),
+                "display_name": "Weekly Scratched Sofa",
+                "price": {
+                  "amount": \(periodType == .trial ? 0 : 4.99),
+                  "currency": "USD"
+                }
             }
             """
         }
@@ -152,7 +158,8 @@ class CustomerInfoFixtures {
         productId: String = "com.revenuecat.product",
         purchaseDate: String = "2022-04-12T00:03:28Z",
         expirationDate: String? = "2062-04-12T00:03:35Z",
-        unsubscribeDetectedAt: String? = nil
+        unsubscribeDetectedAt: String? = nil,
+        periodType: PeriodType = .normal
     ) -> CustomerInfo {
         return customerInfo(
             subscriptions: [
@@ -161,7 +168,8 @@ class CustomerInfoFixtures {
                     store: store,
                     purchaseDate: purchaseDate,
                     expirationDate: expirationDate,
-                    unsubscribeDetectedAt: unsubscribeDetectedAt
+                    unsubscribeDetectedAt: unsubscribeDetectedAt,
+                    periodType: periodType
                 )
             ],
             entitlements: [

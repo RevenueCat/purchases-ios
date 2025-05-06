@@ -187,6 +187,7 @@ struct PurchaseInformation {
         case promotional
         case google
         case web
+        case webBilling
         case otherStorePurchase
         case amazon
         case earliestRenewal
@@ -312,7 +313,9 @@ private extension EntitlementInfo {
             return .promotional
         case .playStore:
             return .google
-        case .stripe, .rcBilling:
+        case .rcBilling:
+            return .webBilling
+        case .stripe:
             return .web
         case .external, .unknownStore:
             return .otherStorePurchase
