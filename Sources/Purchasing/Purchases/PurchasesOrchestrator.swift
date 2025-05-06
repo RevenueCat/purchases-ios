@@ -505,12 +505,12 @@ final class PurchasesOrchestrator {
                                  false)
             }
             #else
-            completion(nil,
-                       nil,
-                       ErrorUtils.unsupportedError(
-                            "Opening web payment links not supported in this platform"
-                       ).asPublicError,
-                       false)
+            await completion(nil,
+                             nil,
+                             ErrorUtils.unsupportedError(
+                                  "Opening web payment links not supported in this platform"
+                             ).asPublicError,
+                             false)
             #endif
         }
 
