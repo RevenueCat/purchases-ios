@@ -222,7 +222,7 @@ struct ManageSubscriptionsView: View {
             CompatibilityNavigationStack {
                 let viewModel = ManageSubscriptionsViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData(
-                        displayPurchaseHistoryLink: true,
+                        displayPurchaseHistoryLink: true
                     ).screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchasesActive: purchases,
