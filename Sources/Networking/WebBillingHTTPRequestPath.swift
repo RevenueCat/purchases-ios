@@ -28,7 +28,7 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
     var shouldSendEtag: Bool {
         switch self {
         case .getWebProducts:
-            return false
+            return true
         }
     }
 
