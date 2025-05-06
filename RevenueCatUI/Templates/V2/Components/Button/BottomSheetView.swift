@@ -149,7 +149,7 @@ extension View {
     ///
     /// - Returns: A view that presents the sheet when `isPresented` is true.
     func bottomSheet(
-        sheet: Binding<SheetViewModel?>,
+        sheet: Binding<SheetViewModel?>
     ) -> some View {
         modifier(
             BottomSheetOverlayModifier(sheet: sheet)
