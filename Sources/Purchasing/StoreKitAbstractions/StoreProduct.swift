@@ -328,6 +328,10 @@ extension StoreProduct {
         return (self.product as? SK2StoreProduct)?.underlyingSK2Product
     }
 
+    internal var isWebBillingProduct: Bool {
+        return self.product is WebBillingStoreProduct
+    }
+
     var isTestProduct: Bool {
         return self.product is TestStoreProduct
     }

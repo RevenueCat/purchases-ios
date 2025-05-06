@@ -515,6 +515,7 @@ private extension DeviceCacheTests {
 
         let offering = try XCTUnwrap(
             OfferingsFactory().createOffering(from: products,
+                                              webProductsById: [:],
                                               offering: offeringsData,
                                               uiConfig: nil)
         )
