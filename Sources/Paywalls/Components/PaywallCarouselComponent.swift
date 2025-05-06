@@ -22,12 +22,19 @@ public extension PaywallComponent {
 
             public let msTimePerPage: Int
             public let msTransitionTime: Int
+            public let transitionType: AutoAdvanceTransitionType?
 
-            public init(msTimePerPage: Int, msTransitionTime: Int) {
+            public init(msTimePerPage: Int, msTransitionTime: Int, transitionType: AutoAdvanceTransitionType?) {
                 self.msTimePerPage = msTimePerPage
                 self.msTransitionTime = msTransitionTime
+                self.transitionType = transitionType
             }
 
+        }
+
+        public enum AutoAdvanceTransitionType: String, PaywallComponentBase {
+            case fade
+            case slide
         }
 
         public struct PageControl: PaywallComponentBase {
@@ -35,6 +42,12 @@ public extension PaywallComponent {
             public enum Position: String, Codable, Sendable, Hashable, Equatable {
                 case top
                 case bottom
+
+                public init(from decoder: Decoder) throws {
+                    let container = try decoder.singleValueContainer()
+                    let rawValue = try container.decode(String.self)
+                    self = Position(rawValue: rawValue) ?? .bottom
+                }
             }
 
             public let position: Position
@@ -80,11 +93,21 @@ public extension PaywallComponent {
             public let width: Int
             public let height: Int
             public let color: ColorScheme
+            public let strokeColor: ColorScheme?
+            public let strokeWidth: CGFloat?
 
-            public init(width: Int, height: Int, color: ColorScheme) {
+            public init(
+                width: Int,
+                height: Int,
+                color: ColorScheme,
+                strokeColor: ColorScheme? = nil,
+                strokeWidth: CGFloat? = nil
+            ) {
                 self.width = width
                 self.height = height
                 self.color = color
+                self.strokeColor = strokeColor
+                self.strokeWidth = strokeWidth
             }
 
         }

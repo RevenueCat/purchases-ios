@@ -41,6 +41,11 @@ public typealias PurchaseCompletedBlock = @MainActor @Sendable (StoreTransaction
                                                                 Bool) -> Void
 
 /**
+ Completion block for ``Purchases/getStorefront(completion:)``
+ */
+public typealias GetStorefrontBlock = @MainActor @Sendable (Storefront?) -> Void
+
+/**
  Block for starting purchases in ``PurchasesDelegate/purchases(_:readyForPromotedProduct:purchase:)``
  */
 public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
@@ -242,9 +247,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         set { self.systemInfo.finishTransactions = newValue.finishTransactions }
     }
 
-    /// The three-letter code representing the country or region
-    /// associated with the App Store storefront.
-    /// - Note: This property uses the ISO 3166-1 Alpha-3 country code representation.
     @objc public var storeFrontCountryCode: String? {
         systemInfo.storefront?.countryCode
     }
@@ -928,6 +930,19 @@ public extension Purchases {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func syncAttributesAndOfferingsIfNeeded() async throws -> Offerings? {
         return try await syncAttributesAndOfferingsIfNeededAsync()
+    }
+
+    @objc func getStorefront(completion: @escaping GetStorefrontBlock) {
+        Task {
+            let storefront = await Storefront.currentStorefront
+            self.operationDispatcher.dispatchOnMainActor {
+                completion(storefront)
+            }
+        }
+    }
+
+    func getStorefront() async -> Storefront? {
+        return await getStorefrontAsync()
     }
 
 }
@@ -1760,6 +1775,10 @@ extension Purchases: InternalPurchasesType {
         } catch {
             throw NewErrorUtils.purchasesError(withUntypedError: error)
         }
+    }
+
+    internal func healthReportRequest() async throws -> HealthReport {
+        try await self.backend.healthReportRequest(appUserID: self.appUserID)
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)

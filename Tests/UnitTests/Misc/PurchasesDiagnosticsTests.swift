@@ -28,6 +28,11 @@ class PurchasesDiagnosticsTests: TestCase {
         self.diagnostics = .init(purchases: self.purchases)
 
         self.purchases.mockedHealthRequestResponse = .success(())
+        self.purchases.mockedHealthReportRequestResponse = .success(
+            HealthReport(status: .failed, projectId: nil, appId: nil, checks: [
+                HealthCheck(name: HealthCheckType.apiKey, status: HealthCheckStatus.failed)
+            ])
+        )
         self.purchases.mockedCustomerInfoResponse = .success(.emptyInfo)
         self.purchases.mockedOfferingsResponse = .success(
             .init(offerings: [:],
@@ -42,7 +47,7 @@ class PurchasesDiagnosticsTests: TestCase {
         )
     }
 
-    func testFailingHealthRequest() async throws {
+    func testLegacyFailingHealthRequest() async throws {
         let error = ErrorUtils.offlineConnectionError().asPublicError
         self.purchases.mockedHealthRequestResponse = .failure(error)
 
@@ -51,6 +56,17 @@ class PurchasesDiagnosticsTests: TestCase {
             fail("Expected error")
         } catch let PurchasesDiagnostics.Error.failedConnectingToAPI(underlyingError) {
             expect(underlyingError).to(matchError(error))
+        } catch {
+            fail("Unexpected error: \(error)")
+        }
+    }
+
+    func testFailingHealthRequest() async throws {
+        do {
+            try await self.diagnostics.checkSDKHealth()
+            fail("Expected error")
+        } catch PurchasesDiagnostics.SDKHealthError.invalidAPIKey {
+            /* Test Succeeds */
         } catch {
             fail("Unexpected error: \(error)")
         }
@@ -156,6 +172,104 @@ class PurchasesDiagnosticsTests: TestCase {
 
         expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSError).to(matchError(underlyingError))
         expect(error.localizedDescription) == "Failed fetching offerings: \(underlyingError.localizedDescription)"
+    }
+
+    func testNoOfferings() {
+        let error = PurchasesDiagnostics.SDKHealthError.noOfferings
+
+        expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
+        expect(error.localizedDescription) == "No offerings configured"
+    }
+
+    func testOfferingConfigurationError() {
+        let error = PurchasesDiagnostics.SDKHealthError.offeringConfiguration(
+            [
+                .init(
+                    identifier: "test_offering",
+                    packages: [
+                        .init(
+                            identifier: "failing_package",
+                            title: "Failing Package",
+                            status: .notFound,
+                            description: "Could not find package",
+                            productIdentifier: "failing_product_identifier",
+                            productTitle: "Failing Product Title"
+                        )
+                    ],
+                    status: .failed
+                )
+            ]
+        )
+
+        expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
+        let expected = "Offering 'test_offering' uses 1 products that are not ready in App Store Connect"
+        expect(error.localizedDescription) == expected
+    }
+
+    func testOfferingConfigurationWithNoPackages() {
+        let error = PurchasesDiagnostics.SDKHealthError.offeringConfiguration(
+            [
+                .init(
+                    identifier: "test_offering",
+                    packages: [],
+                    status: .failed
+                )
+            ]
+        )
+
+        expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
+        let expected = "Offering 'test_offering' has no packages"
+        expect(error.localizedDescription) == expected
+    }
+
+    func testGenericOfferingConfigurationError() {
+        let error = PurchasesDiagnostics.SDKHealthError.offeringConfiguration([])
+
+        expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
+        let expected = "Default offering is not configured correctly"
+        expect(error.localizedDescription) == expected
+    }
+
+    func testBundleIdError() {
+        let error = PurchasesDiagnostics.SDKHealthError.invalidBundleId(
+            .init(
+                appBundleId: "app_bundle_id",
+                sdkBundleId: "sdk_bundle_id"
+            )
+        )
+
+        expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
+        let expected = """
+        Bundle ID in your app 'sdk_bundle_id' does not match \
+        the RevenueCat app Bundle ID 'app_bundle_id'
+        """
+        expect(error.localizedDescription) == expected
+    }
+
+    func testGenericBundleIdError() {
+        let error = PurchasesDiagnostics.SDKHealthError.invalidBundleId(nil)
+
+        expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
+        let expected = "Bundle ID in your app does not match the Bundle ID in the RevenueCat Website"
+        expect(error.localizedDescription) == expected
+    }
+
+    func testNoProductsError() {
+        let error = PurchasesDiagnostics.SDKHealthError.invalidProducts([])
+
+        expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
+        let expected = "Your app has no products"
+        expect(error.localizedDescription) == expected
+    }
+
+    func testAtLeastOneValidProductError() {
+        let error = PurchasesDiagnostics.SDKHealthError.invalidProducts([
+            .init(identifier: "", title: nil, status: .notFound, description: "")
+        ])
+
+        expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
+        let expected = "You must have at least one product approved in App Store Connect"
+        expect(error.localizedDescription) == expected
     }
 
 }

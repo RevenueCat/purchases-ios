@@ -22,6 +22,14 @@ extension Purchases {
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
+    func getStorefrontAsync() async -> Storefront? {
+        return await withUnsafeContinuation { continuation in
+            getStorefront { storefrontCountryCode in
+                continuation.resume(returning: storefrontCountryCode)
+            }
+        }
+    }
+
     func logInAsync(_ appUserID: String) async throws -> (customerInfo: CustomerInfo, created: Bool) {
         return try await withUnsafeThrowingContinuation { continuation in
             logIn(appUserID) { customerInfo, created, error in

@@ -60,6 +60,12 @@ enum Strings {
     case paywall_could_not_find_any_packages
     case paywall_invalid_url(String)
     case no_in_app_browser_tvos
+    case failed_to_open_url_external_browser(String)
+    case successfully_opened_url_external_browser(String)
+    case failed_to_open_url_deep_link(String)
+    case successfully_opened_url_deep_link(String)
+    case no_selected_package_found
+    case no_web_checkout_url_found
 
     // Customer Center
     case could_not_find_subscription_information
@@ -226,6 +232,24 @@ extension Strings: CustomStringConvertible {
                 User not eligible for promo with id '\(promoOfferId)'. Check eligibility configuration in the dashboard,
                 and make sure the user has an active/expired subscription for the product with id '\(productId)'."
             """
+
+        case .failed_to_open_url_external_browser(let url):
+            return "Failed to open URL in external browser: \(url)"
+
+        case .successfully_opened_url_external_browser(let url):
+            return "Successfully opened URL in external browser: \(url)"
+
+        case .failed_to_open_url_deep_link(let url):
+            return "Failed to open URL as deep link: \(url)"
+
+        case .successfully_opened_url_deep_link(let url):
+            return "Successfully opened URL as deep link: \(url)"
+
+        case .no_selected_package_found:
+            return "No selected package found."
+
+        case .no_web_checkout_url_found:
+            return "No web checkout url found."
         }
     }
 

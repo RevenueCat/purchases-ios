@@ -157,10 +157,28 @@ private extension CustomerCenterView {
                 }
             }
         }
+        // This is needed because `CustomerCenterViewModel` is isolated to @MainActor
+        // A bigger refactor is needed, but its already throwing a warning.
+        .modifier(self.viewModel.purchasesProvider.manageSubscriptionsSheetViewModifier(isPresented: .init(
+            get: { viewModel.manageSubscriptionsSheet },
+            set: { manage in DispatchQueue.main.async { viewModel.manageSubscriptionsSheet = manage } }
+        )))
         .modifier(CustomerCenterActionViewModifier(actionWrapper: viewModel.actionWrapper))
         .onCustomerCenterPromotionalOfferSuccess {
             Task {
-                await viewModel.loadScreen()
+                await viewModel.loadScreen(shouldSync: true)
+            }
+        }
+        .onCustomerCenterShowingManageSubscriptions {
+            Task { @MainActor in
+                viewModel.manageSubscriptionsSheet = true
+            }
+        }
+        .onChangeOf(viewModel.manageSubscriptionsSheet) { manageSubscriptionsSheet in
+            if !manageSubscriptionsSheet {
+                Task {
+                    await viewModel.loadScreen(shouldSync: true)
+                }
             }
         }
     }
@@ -198,10 +216,11 @@ private extension CustomerCenterView {
                         }
                     )
                 } else {
-                    ManageSubscriptionsView(screen: screen,
-                                            purchaseInformation: purchaseInformation,
-                                            purchasesProvider: self.viewModel.purchasesProvider,
-                                            actionWrapper: self.viewModel.actionWrapper)
+                    ManageSubscriptionsView(
+                        screen: screen,
+                        purchaseInformation: $viewModel.purchaseInformation,
+                        purchasesProvider: self.viewModel.purchasesProvider,
+                        actionWrapper: self.viewModel.actionWrapper)
                 }
             } else if let screen = configuration.screens[.management] {
                 WrongPlatformView(screen: screen,
@@ -212,7 +231,7 @@ private extension CustomerCenterView {
         } else {
             if let screen = configuration.screens[.noActive] {
                 ManageSubscriptionsView(screen: screen,
-                                        purchaseInformation: nil,
+                                        purchaseInformation: $viewModel.purchaseInformation,
                                         purchasesProvider: self.viewModel.purchasesProvider,
                                         actionWrapper: self.viewModel.actionWrapper)
             } else {

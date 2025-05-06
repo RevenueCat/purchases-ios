@@ -47,13 +47,13 @@ public struct TestStoreProductDiscount {
 
 }
 
-extension TestStoreProductDiscount: StoreProductDiscountType {
+@_spi(Internal) extension TestStoreProductDiscount: StoreProductDiscountType {
 
-    var offerIdentifier: String? {
+    @_spi(Internal) public var offerIdentifier: String? {
         return self.identifier
     }
 
-    var currencyCode: String? {
+    @_spi(Internal) public var currencyCode: String? {
         // Test currency defaults to current locale
         return Locale.current.rc_currencyCode
     }

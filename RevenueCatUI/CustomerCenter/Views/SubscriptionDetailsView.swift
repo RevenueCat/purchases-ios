@@ -26,6 +26,7 @@ struct SubscriptionDetailsView: View {
 
     let purchaseInformation: PurchaseInformation
     let refundRequestStatus: RefundRequestStatus?
+
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
 

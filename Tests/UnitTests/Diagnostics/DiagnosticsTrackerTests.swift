@@ -125,6 +125,7 @@ class DiagnosticsTrackerTests: TestCase {
 
     func testTracksHttpRequestPerformedWithExpectedParameters() async {
         self.tracker.trackHttpRequestPerformed(endpointName: "mock_endpoint",
+                                               host: "api.revenuecat.com",
                                                responseTime: 50,
                                                wasSuccessful: true,
                                                responseCode: 200,
@@ -138,6 +139,7 @@ class DiagnosticsTrackerTests: TestCase {
                   properties: DiagnosticsEvent.Properties(
                     verificationResult: "VERIFIED",
                     endpointName: "mock_endpoint",
+                    host: "api.revenuecat.com",
                     responseTime: 50,
                     successful: true,
                     responseCode: 200,
@@ -541,14 +543,18 @@ class DiagnosticsTrackerTests: TestCase {
     // MARK: - App Transaction Error
 
     func testTrackingAppleAppTransactionError() async throws {
-        self.tracker.trackAppleAppTransactionError(errorMessage: "error message")
+        self.tracker.trackAppleAppTransactionError(errorMessage: "error message",
+                                                   errorCode: 0,
+                                                   storeKitErrorDescription: "storekit error description")
 
         let entries = await self.handler.getEntries()
         Self.expectEventArrayWithoutId(entries, [
             .init(
                 name: .appleAppTransactionError,
                 properties: DiagnosticsEvent.Properties(
-                    errorMessage: "error message"
+                    errorMessage: "error message",
+                    errorCode: 0,
+                    skErrorDescription: "storekit error description"
                 ),
                 timestamp: Self.eventTimestamp1,
                 appSessionId: SystemInfo.appSessionID
