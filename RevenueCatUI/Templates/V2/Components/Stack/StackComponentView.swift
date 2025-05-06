@@ -85,8 +85,6 @@ struct StackComponentView: View {
                     viewModels: self.viewModel.viewModels,
                     onDismiss: self.onDismiss
                 )
-                .padding(style.padding.extend(by: style.border?.width ?? 0))
-                .padding(additionalPadding)
                 // Scroll needs to be applied before size
                 .scrollableIfEnabled(
                     style.dimension,
@@ -104,8 +102,6 @@ struct StackComponentView: View {
                     viewModels: self.viewModel.viewModels,
                     onDismiss: self.onDismiss
                 )
-                .padding(style.padding.extend(by: style.border?.width ?? 0))
-                .padding(additionalPadding)
                 // Scroll needs to be applied before size
                 .scrollableIfEnabled(
                     style.dimension,
@@ -124,8 +120,6 @@ struct StackComponentView: View {
                         onDismiss: self.onDismiss
                     )
                 }
-                .padding(style.padding.extend(by: style.border?.width ?? 0))
-                .padding(additionalPadding)
                 // Scroll needs to be applied before size
                 .scrollableIfEnabled(
                     style.dimension,
@@ -138,6 +132,8 @@ struct StackComponentView: View {
             }
         }
         .hidden(if: self.showActivityIndicatorOverContent)
+        .padding(style.padding.extend(by: style.border?.width ?? 0))
+        .padding(additionalPadding)
         .applyIf(self.showActivityIndicatorOverContent, apply: { view in
             view.progressOverlay(for: style.backgroundStyle)
         })
@@ -713,10 +709,10 @@ func displayName(dimension: PaywallComponent.Dimension, overflow: PaywallCompone
     switch dimension {
     case .vertical(let horizontalAlignment, let flexDistribution):
         // swiftlint:disable:next line_length
-        return "Vertical (\(horizontalAlignment.rawValue), \(flexDistribution.rawValue)) - Overflow (\(overflow.rawValue))"
+        return "Vertical (\(horizontalAlignment.rawValue), \(flexDistribution.rawValue))\(overflow == .scroll ? " - Overflow" : "")"
     case .horizontal(let verticalAlignment, let flexDistribution):
         // swiftlint:disable:next line_length
-        return "Horizontal (\(verticalAlignment.rawValue), \(flexDistribution.rawValue)) - Overflow (\(overflow.rawValue))"
+        return "Horizontal (\(verticalAlignment.rawValue), \(flexDistribution.rawValue))\(overflow == .scroll ? " - Overflow" : "")"
     case .zlayer:
         return ""
     @unknown default:
