@@ -210,7 +210,7 @@ struct ManageSubscriptionsView: View {
        ]
 
         let warningOff = CustomerCenterConfigTestData.customerCenterData(
-            displayPurchaseHistoryLink: true,
+            displayPurchaseHistoryLink: true
         ).support
 
         let warningOn = CustomerCenterConfigTestData.customerCenterData(
