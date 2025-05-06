@@ -27,7 +27,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
     let screen: CustomerCenterConfigData.Screen
 
     var relevantPathsForPurchase: [CustomerCenterConfigData.HelpPath] {
-        paths.relevantPathsForPurchase(purchaseInformation)
+        paths.relevantPahts(for: purchaseInformation)
     }
 
     @Published
@@ -72,7 +72,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
         purchasesProvider: CustomerCenterPurchasesType,
         loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
             self.screen = screen
-            self.paths = screen.filteredPaths
+            self.paths = screen.supportedPaths
             self.purchaseInformation = purchaseInformation
             self.purchasesProvider = purchasesProvider
             self.refundRequestStatus = refundRequestStatus
@@ -83,7 +83,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
         }
 
 #if os(iOS) || targetEnvironment(macCatalyst)
-    func determineFlow(for path: CustomerCenterConfigData.HelpPath, activeProductId: String? = nil) async {
+    func handleHelpPath(_ path: CustomerCenterConfigData.HelpPath, wihtActiveProductId: String? = nil) async {
         // Convert the path to an appropriate action using the extension
         if let action = path.asAction() {
             // Send the action through the action wrapper
@@ -113,7 +113,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
                 }
             } else {
                 Logger.debug(Strings.promo_offer_not_eligible_for_product(
-                    promotionalOffer.iosOfferId, activeProductId ?? ""
+                    promotionalOffer.iosOfferId, wihtActiveProductId ?? ""
                 ))
                 await self.onPathSelected(path: path)
             }
@@ -235,7 +235,7 @@ private extension BaseManageSubscriptionViewModel {
 
 private extension CustomerCenterConfigData.Screen {
 
-    var filteredPaths: [CustomerCenterConfigData.HelpPath] {
+    var supportedPaths: [CustomerCenterConfigData.HelpPath] {
         return self.paths.filter { path in
             return path.type != .unknown
         }
@@ -244,8 +244,8 @@ private extension CustomerCenterConfigData.Screen {
 }
 
 private extension Array<CustomerCenterConfigData.HelpPath> {
-    func relevantPathsForPurchase(
-        _ purchaseInformation: PurchaseInformation?
+    func relevantPahts(
+        for purchaseInformation: PurchaseInformation?
     ) -> [CustomerCenterConfigData.HelpPath] {
         guard let purchaseInformation else {
             return self

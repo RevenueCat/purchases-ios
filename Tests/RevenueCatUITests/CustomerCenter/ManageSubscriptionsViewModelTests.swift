@@ -330,7 +330,7 @@ final class ManageSubscriptionViewModelTests: TestCase {
 
             expect(loadPromotionalOfferUseCase.offerToLoadPromoFor).to(beNil())
 
-            await viewModel.determineFlow(for: pathWithPromotionalOffer)
+            await viewModel.handleHelpPath(pathWithPromotionalOffer)
 
             expect(loadPromotionalOfferUseCase.offerToLoadPromoFor).to(beNil())
         }
@@ -442,7 +442,7 @@ final class ManageSubscriptionViewModelTests: TestCase {
 
         expect(loadPromotionalOfferUseCase.offerToLoadPromoFor).to(beNil())
 
-        await viewModel.determineFlow(for: pathWithPromotionalOffer)
+        await viewModel.handleHelpPath(pathWithPromotionalOffer)
 
         let loadingPath = try XCTUnwrap(viewModel.loadingPath)
         expect(loadingPath.id) == pathWithPromotionalOffer.id

@@ -182,9 +182,8 @@ private extension CustomerCenterViewModel {
 
         var activePurchases: [PurchaseInformation] = []
 
-        for subscription in customerInfo.subscriptionsByProductIdentifier
-            .values
-            .filter(\.isActive)
+        for subscription in customerInfo.activeSubscriptions
+            .compactMap({ id in customerInfo.subscriptionsByProductIdentifier[id] })
             .sorted(by: {
                 guard let date1 = $0.expiresDate, let date2 = $1.expiresDate else {
                     return $0.expiresDate != nil
