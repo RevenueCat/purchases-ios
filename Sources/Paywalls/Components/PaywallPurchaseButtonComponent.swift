@@ -16,6 +16,7 @@ public extension PaywallComponent {
         public let stack: PaywallComponent.StackComponent
         public let action: Action?
 
+        // swiftlint:disable nesting
         public enum Action: String, Codable, Sendable, Hashable, Equatable {
             case inAppCheckout = "in_app_checkout"
             case webCheckout = "web_checkout"

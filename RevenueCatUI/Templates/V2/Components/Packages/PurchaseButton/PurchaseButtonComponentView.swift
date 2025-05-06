@@ -117,7 +117,7 @@ struct PurchaseButtonComponentView: View {
         }
 
         guard let webCheckoutUrl = self.packageContext.package?.webCheckoutUrl else {
-            // TODO: Add a warning about no web checkout url
+            Logger.warning(Strings.no_web_checkout_url_found)
             return
         }
 
@@ -128,7 +128,7 @@ struct PurchaseButtonComponentView: View {
         self.logIfInPreview(package: self.packageContext.package)
 
         guard let webCheckoutUrl = self.viewModel.offeringWebCheckoutUrl else {
-            // TODO: Add a warning about no web checkout url
+            Logger.warning(Strings.no_web_checkout_url_found)
             return
         }
 
