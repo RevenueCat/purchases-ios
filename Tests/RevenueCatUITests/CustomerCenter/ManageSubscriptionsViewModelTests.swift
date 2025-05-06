@@ -42,6 +42,7 @@ final class ManageSubscriptionViewModelTests: TestCase {
     func testInitialState() {
         let viewModel =
         ManageSubscriptionViewModel(screen: ManageSubscriptionViewModelTests.default,
+                                    showPurchaseHistory: false,
                                     actionWrapper: CustomerCenterActionWrapper(),
                                     purchaseInformation: nil,
                                     purchasesProvider: MockCustomerCenterPurchases())
@@ -57,6 +58,7 @@ final class ManageSubscriptionViewModelTests: TestCase {
 
         let viewModel = ManageSubscriptionViewModel(
             screen: ManageSubscriptionViewModelTests.default,
+            showPurchaseHistory: false,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
             purchasesProvider: MockCustomerCenterPurchases())
@@ -72,6 +74,7 @@ final class ManageSubscriptionViewModelTests: TestCase {
 
         let viewModel = ManageSubscriptionViewModel(
             screen: ManageSubscriptionViewModelTests.default,
+            showPurchaseHistory: false,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
             purchasesProvider: MockCustomerCenterPurchases())
@@ -86,6 +89,7 @@ final class ManageSubscriptionViewModelTests: TestCase {
 
         let viewModel = ManageSubscriptionViewModel(
             screen: ManageSubscriptionViewModelTests.managementScreen(refundWindowDuration: .forever),
+            showPurchaseHistory: false,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
             purchasesProvider: MockCustomerCenterPurchases())
@@ -113,6 +117,7 @@ final class ManageSubscriptionViewModelTests: TestCase {
 
         let viewModel = ManageSubscriptionViewModel(
             screen: ManageSubscriptionViewModelTests.managementScreen(refundWindowDuration: .duration(oneDay)),
+            showPurchaseHistory: false,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
             purchasesProvider: MockCustomerCenterPurchases())
@@ -131,6 +136,7 @@ final class ManageSubscriptionViewModelTests: TestCase {
 
         let viewModel = ManageSubscriptionViewModel(
             screen: ManageSubscriptionViewModelTests.managementScreen(refundWindowDuration: .forever),
+            showPurchaseHistory: false,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
             purchasesProvider: MockCustomerCenterPurchases())
@@ -150,6 +156,7 @@ final class ManageSubscriptionViewModelTests: TestCase {
 
         let viewModel = ManageSubscriptionViewModel(
             screen: ManageSubscriptionViewModelTests.managementScreen(refundWindowDuration: .forever),
+            showPurchaseHistory: false,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
             purchasesProvider: MockCustomerCenterPurchases())
@@ -177,6 +184,7 @@ final class ManageSubscriptionViewModelTests: TestCase {
 
         let viewModel = ManageSubscriptionViewModel(
             screen: ManageSubscriptionViewModelTests.managementScreen(refundWindowDuration: .duration(oneDay)),
+            showPurchaseHistory: false,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
             purchasesProvider: MockCustomerCenterPurchases())
@@ -301,6 +309,7 @@ final class ManageSubscriptionViewModelTests: TestCase {
 
             let viewModel = ManageSubscriptionViewModel(
                 screen: PurchaseInformationFixtures.screenWithIneligiblePromo,
+                showPurchaseHistory: false,
                 actionWrapper: CustomerCenterActionWrapper(),
                 purchaseInformation: nil,
                 purchasesProvider: MockCustomerCenterPurchases(
@@ -404,6 +413,7 @@ final class ManageSubscriptionViewModelTests: TestCase {
 
         let screen = PurchaseInformationFixtures.screenWithPromo(offerID: offerIdentifierInJSON)
         let viewModel = ManageSubscriptionViewModel(screen: screen,
+                                                    showPurchaseHistory: false,
                                                     actionWrapper: CustomerCenterActionWrapper(),
                                                     purchaseInformation: nil,
                                                     purchasesProvider: MockCustomerCenterPurchases(
