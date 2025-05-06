@@ -26,7 +26,7 @@ public extension PaywallComponent {
 
         public init(
             stack: PaywallComponent.StackComponent,
-            action: Action?,
+            action: Action?
         ) {
             self.type = .button
             self.stack = stack
