@@ -126,7 +126,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
                 GeometryReader { proxy in
                     Color.clear
                         .onAppear {
-                            self.sheetHeight = proxy.size.height * 0.33333
+                            self.sheetHeight = proxy.size.height * 0.5
                         }
                 }
             )
