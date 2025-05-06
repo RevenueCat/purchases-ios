@@ -85,6 +85,10 @@ struct StackComponentView: View {
                     viewModels: self.viewModel.viewModels,
                     onDismiss: self.onDismiss
                 )
+                .scrollableIfEnabled(
+                    style.dimension,
+                    enabled: style.scrollable ?? self.isScrollableByDefault
+                )
                 // This alignment positions the inner VStack horizontally and vertically
                 .size(style.size,
                       horizontalAlignment: horizontalAlignment.frameAlignment,
@@ -96,6 +100,10 @@ struct StackComponentView: View {
                     distribution: distribution,
                     viewModels: self.viewModel.viewModels,
                     onDismiss: self.onDismiss
+                )
+                .scrollableIfEnabled(
+                    style.dimension,
+                    enabled: style.scrollable ?? self.isScrollableByDefault
                 )
                 // This alignment positions the inner VStack horizontally and vertically
                 .size(style.size,
@@ -110,6 +118,10 @@ struct StackComponentView: View {
                         onDismiss: self.onDismiss
                     )
                 }
+                .scrollableIfEnabled(
+                    style.dimension,
+                    enabled: style.scrollable ?? self.isScrollableByDefault
+                )
                 // These alignments define the position of inner components inside the ZStack
                 .size(style.size,
                       horizontalAlignment: alignment.stackAlignment,
@@ -122,10 +134,6 @@ struct StackComponentView: View {
         .applyIf(self.showActivityIndicatorOverContent, apply: { view in
             view.progressOverlay(for: style.backgroundStyle)
         })
-        .scrollableIfEnabled(
-            style.dimension,
-            enabled: style.scrollable ?? self.isScrollableByDefault
-        )
         .shape(border: nil,
                shape: style.shape,
                background: style.backgroundStyle,
@@ -161,13 +169,24 @@ fileprivate extension View {
                 ScrollView(.horizontal) {
                     self
                 }
+                .scrollIndicatorHiddenIfAvailable()
             case .vertical:
                 ScrollView(.vertical) {
                     self
                 }
+                .scrollIndicatorHiddenIfAvailable()
             case .zlayer:
                 self
             }
+        } else {
+            self
+        }
+    }
+
+    @ViewBuilder
+    func scrollIndicatorHiddenIfAvailable() -> some View {
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            self.scrollIndicators(.hidden)
         } else {
             self
         }
