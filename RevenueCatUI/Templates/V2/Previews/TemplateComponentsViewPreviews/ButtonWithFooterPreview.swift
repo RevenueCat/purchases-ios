@@ -317,7 +317,7 @@ private enum ButtonWithSheetPreview {
                                  isSelectedByDefault: true))
         ],
         size: .init(width: .fill, height: .fill),
-        overflow: .scroll,
+        overflow: .scroll
     )
 
     static let contentStack = PaywallComponent.StackComponent(
