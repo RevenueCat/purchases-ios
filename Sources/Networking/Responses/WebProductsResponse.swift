@@ -16,7 +16,7 @@ import Foundation
 struct WebProductsResponse {
 
     struct Price {
-        let amountMicros: Int
+        let amountMicros: Int64
         // This will be a 3-letter currency code
         let currency: String
     }
