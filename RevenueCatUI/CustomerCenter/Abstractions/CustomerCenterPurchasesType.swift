@@ -40,6 +40,9 @@ import SwiftUI
     @Sendable
     func products(_ productIdentifiers: [String]) async -> [StoreProduct]
 
+    @Sendable
+    func products(_ productIdentifiers: [String], _ store: Store) async -> [StoreProduct]
+
     func promotionalOffer(forProductDiscount discount: StoreProductDiscount,
                           product: StoreProduct) async throws -> PromotionalOffer
 

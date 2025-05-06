@@ -38,18 +38,22 @@ extension CustomerInfo {
                 return date1 < date2
             })
 
-        let (activeAppleSubscriptions, otherActiveSubscriptions) = (
+        let (activeAppleSubscriptions, webSubscriptions, otherActiveSubscriptions) = (
             activeSubscriptions.filter { $0.store == .appStore },
-            activeSubscriptions.filter { $0.store != .appStore }
+            activeSubscriptions.filter { $0.store == .rcBilling },
+            activeSubscriptions.filter { $0.store != .appStore && $0.store != .rcBilling }
         )
 
-        let (appleNonSubscriptions, otherNonSubscriptions) = (
+        let (appleNonSubscriptions, webNonSubscriptions, otherNonSubscriptions) = (
             nonSubscriptions.filter { $0.store == .appStore },
-            nonSubscriptions.filter { $0.store != .appStore }
+            nonSubscriptions.filter { $0.store == .rcBilling },
+            nonSubscriptions.filter { $0.store != .appStore && $0.store != .rcBilling }
         )
 
         return activeAppleSubscriptions.first ??
+        webSubscriptions.first ??
         appleNonSubscriptions.first ??
+        webNonSubscriptions.first ??
         otherActiveSubscriptions.first ??
         otherNonSubscriptions.first
     }
