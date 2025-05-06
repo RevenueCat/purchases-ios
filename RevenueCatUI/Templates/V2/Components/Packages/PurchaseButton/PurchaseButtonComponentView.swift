@@ -86,9 +86,9 @@ struct PurchaseButtonComponentView: View {
         case .inAppCheckout:
             try await self.purchaseInApp()
         case .webCheckout:
-            try await self.purchaseWeb()
-        case .webProductSelection:
             try await self.purchaseSelectedWebProduct()
+        case .webProductSelection:
+            try await self.openWebProductSelection()
         }
     }
 
@@ -105,7 +105,7 @@ struct PurchaseButtonComponentView: View {
         _ = try await self.purchaseHandler.purchase(package: selectedPackage)
     }
 
-    private func purchaseWeb() async throws {
+    private func purchaseSelectedWebProduct() async throws {
         self.logIfInPreview(package: self.packageContext.package)
 
         guard let webCheckoutUrl = self.packageContext.package?.webCheckoutUrl else {
@@ -116,7 +116,7 @@ struct PurchaseButtonComponentView: View {
         self.openWebPaywallLink(url: webCheckoutUrl, method: .externalBrowser)
     }
 
-    private func purchaseSelectedWebProduct() async throws {
+    private func openWebProductSelection() async throws {
         self.logIfInPreview(package: self.packageContext.package)
 
         guard let webCheckoutUrl = self.viewModel.offeringWebCheckoutUrl else {

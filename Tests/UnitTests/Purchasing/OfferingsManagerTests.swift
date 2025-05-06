@@ -716,8 +716,11 @@ private extension OfferingsManagerTests {
                 .init(identifier: "base",
                       description: "This is the base offering",
                       packages: [
-                        .init(identifier: "$rc_monthly", platformProductIdentifier: "monthly_freetrial")
-                      ])
+                        .init(identifier: "$rc_monthly",
+                              platformProductIdentifier: "monthly_freetrial",
+                              webCheckoutUrl: nil)
+                      ],
+                      webCheckoutUrl: nil)
             ],
             placements: nil,
             targeting: nil,
@@ -729,9 +732,14 @@ private extension OfferingsManagerTests {
                 .init(identifier: "base",
                       description: "This is the base offering",
                       packages: [
-                        .init(identifier: "$rc_monthly", platformProductIdentifier: "monthly_freetrial"),
-                        .init(identifier: "$rc_yearly", platformProductIdentifier: "yearly_freetrial")
-                      ])
+                        .init(identifier: "$rc_monthly",
+                              platformProductIdentifier: "monthly_freetrial",
+                              webCheckoutUrl: nil),
+                        .init(identifier: "$rc_yearly",
+                              platformProductIdentifier: "yearly_freetrial",
+                              webCheckoutUrl: nil)
+                      ],
+                      webCheckoutUrl: nil)
             ],
             placements: nil,
             targeting: nil,
@@ -754,9 +762,11 @@ private extension OfferingsManagerTests {
                                     storeProduct: StoreProduct(sk1Product: MockSK1Product(
                                         mockProductIdentifier: package.platformProductIdentifier
                                     )),
-                                    offeringIdentifier: offering.identifier
+                                    offeringIdentifier: offering.identifier,
+                                    webCheckoutUrl: nil
                                 )
-                        }
+                        },
+                        webCheckoutUrl: nil
                     )
                 }
                 .dictionaryWithKeys(\.identifier),

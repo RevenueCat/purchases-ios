@@ -19,7 +19,9 @@ class OfferingsTests: TestCase {
 
     func testPackageIsNotCreatedIfNoValidProducts() {
         let package = self.offeringsFactory.createPackage(
-            with: .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly"),
+            with: .init(identifier: "$rc_monthly",
+                        platformProductIdentifier: "com.myproduct.monthly",
+                        webCheckoutUrl: nil),
             productsByID: [
                 "com.myproduct.annual": StoreProduct(sk1Product: SK1Product())
             ],
@@ -35,7 +37,9 @@ class OfferingsTests: TestCase {
         let packageIdentifier = "$rc_monthly"
         let package = try XCTUnwrap(
             self.offeringsFactory.createPackage(
-                with: .init(identifier: packageIdentifier, platformProductIdentifier: productIdentifier),
+                with: .init(identifier: packageIdentifier,
+                            platformProductIdentifier: productIdentifier,
+                            webCheckoutUrl: nil),
                 productsByID: [
                     productIdentifier: StoreProduct(sk1Product: product)
                 ],
@@ -58,9 +62,14 @@ class OfferingsTests: TestCase {
                 identifier: "offering_a",
                 description: "This is the base offering",
                 packages: [
-                    .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly"),
-                    .init(identifier: "$rc_annual", platformProductIdentifier: "com.myproduct.annual")
-                ]),
+                    .init(identifier: "$rc_monthly",
+                          platformProductIdentifier: "com.myproduct.monthly",
+                          webCheckoutUrl: nil),
+                    .init(identifier: "$rc_annual",
+                          platformProductIdentifier: "com.myproduct.annual",
+                          webCheckoutUrl: nil)
+                ],
+                webCheckoutUrl: nil),
             uiConfig: nil
         )
 
@@ -83,10 +92,17 @@ class OfferingsTests: TestCase {
                     identifier: offeringIdentifier,
                     description: serverDescription,
                     packages: [
-                        .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly"),
-                        .init(identifier: "$rc_annual", platformProductIdentifier: "com.myproduct.annual"),
-                        .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.sixMonth")
-                    ]),
+                        .init(identifier: "$rc_monthly",
+                              platformProductIdentifier: "com.myproduct.monthly",
+                              webCheckoutUrl: nil),
+                        .init(identifier: "$rc_annual",
+                              platformProductIdentifier: "com.myproduct.annual",
+                              webCheckoutUrl: nil),
+                        .init(identifier: "$rc_six_month",
+                              platformProductIdentifier: "com.myproduct.sixMonth",
+                              webCheckoutUrl: nil)
+                    ],
+                    webCheckoutUrl: nil),
                 uiConfig: nil
             )
         )
@@ -108,13 +124,19 @@ class OfferingsTests: TestCase {
                     .init(identifier: "offering_a",
                           description: "This is the base offering",
                           packages: [
-                            .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.sixMonth")
-                          ]),
+                            .init(identifier: "$rc_six_month",
+                                  platformProductIdentifier: "com.myproduct.sixMonth",
+                                  webCheckoutUrl: nil)
+                          ],
+                          webCheckoutUrl: nil),
                     .init(identifier: "offering_b",
                           description: "This is the base offering b",
                           packages: [
-                            .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly")
-                          ])
+                            .init(identifier: "$rc_monthly",
+                                  platformProductIdentifier: "com.myproduct.monthly",
+                                  webCheckoutUrl: nil)
+                          ],
+                          webCheckoutUrl: nil)
                 ],
                 placements: nil,
                 targeting: nil,
@@ -143,14 +165,22 @@ class OfferingsTests: TestCase {
                         .init(identifier: "offering_a",
                               description: "This is the base offering",
                               packages: [
-                                .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual")
-                              ]),
+                                .init(identifier: "$rc_six_month",
+                                      platformProductIdentifier: "com.myproduct.annual",
+                                      webCheckoutUrl: nil)
+                              ],
+                              webCheckoutUrl: nil),
                         .init(identifier: "offering_b",
                               description: "This is the base offering b",
                               packages: [
-                                .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly"),
-                                .init(identifier: "custom_package", platformProductIdentifier: "com.myproduct.custom")
-                              ])
+                                .init(identifier: "$rc_monthly",
+                                      platformProductIdentifier: "com.myproduct.monthly",
+                                      webCheckoutUrl: nil),
+                                .init(identifier: "custom_package",
+                                      platformProductIdentifier: "com.myproduct.custom",
+                                      webCheckoutUrl: nil)
+                              ],
+                              webCheckoutUrl: nil)
                     ],
                     placements: nil,
                     targeting: nil,
@@ -191,20 +221,30 @@ class OfferingsTests: TestCase {
                         .init(identifier: "offering_a",
                               description: "This is the base offering",
                               packages: [
-                                .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual")
-                              ]),
+                                .init(identifier: "$rc_six_month",
+                                      platformProductIdentifier: "com.myproduct.annual",
+                                      webCheckoutUrl: nil)
+                              ], webCheckoutUrl: nil),
                         .init(identifier: "offering_b",
                               description: "This is the base offering b",
                               packages: [
-                                .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly"),
-                                .init(identifier: "custom_package", platformProductIdentifier: "com.myproduct.custom")
-                              ]),
+                                .init(identifier: "$rc_monthly",
+                                      platformProductIdentifier: "com.myproduct.monthly",
+                                      webCheckoutUrl: nil),
+                                .init(identifier: "custom_package",
+                                      platformProductIdentifier: "com.myproduct.custom",
+                                      webCheckoutUrl: nil)
+                              ], webCheckoutUrl: nil),
                         .init(identifier: "offering_c",
                               description: "This is the base offering b",
                               packages: [
-                                .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly"),
-                                .init(identifier: "custom_package", platformProductIdentifier: "com.myproduct.custom")
-                              ])
+                                .init(identifier: "$rc_monthly",
+                                      platformProductIdentifier: "com.myproduct.monthly",
+                                      webCheckoutUrl: nil),
+                                .init(identifier: "custom_package",
+                                      platformProductIdentifier: "com.myproduct.custom",
+                                      webCheckoutUrl: nil)
+                              ], webCheckoutUrl: nil)
                     ],
                     placements: .init(fallbackOfferingId: "offering_c",
                                       offeringIdsByPlacement: .init(wrappedValue: [
@@ -270,14 +310,22 @@ class OfferingsTests: TestCase {
                         .init(identifier: "offering_a",
                               description: "This is the base offering",
                               packages: [
-                                .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual")
-                              ]),
+                                .init(identifier: "$rc_six_month",
+                                      platformProductIdentifier: "com.myproduct.annual",
+                                      webCheckoutUrl: nil)
+                              ],
+                              webCheckoutUrl: nil),
                         .init(identifier: "offering_b",
                               description: "This is the base offering b",
                               packages: [
-                                .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly"),
-                                .init(identifier: "custom_package", platformProductIdentifier: "com.myproduct.custom")
-                              ])
+                                .init(identifier: "$rc_monthly",
+                                      platformProductIdentifier: "com.myproduct.monthly",
+                                      webCheckoutUrl: nil),
+                                .init(identifier: "custom_package",
+                                      platformProductIdentifier: "com.myproduct.custom",
+                                      webCheckoutUrl: nil)
+                              ],
+                              webCheckoutUrl: nil)
                     ],
                     placements: .init(fallbackOfferingId: nil,
                                       offeringIdsByPlacement: .init(wrappedValue: [
@@ -316,8 +364,10 @@ class OfferingsTests: TestCase {
                         .init(identifier: "offering_a",
                               description: "This is the base offering",
                               packages: [
-                                .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual")
-                              ])
+                                .init(identifier: "$rc_six_month",
+                                      platformProductIdentifier: "com.myproduct.annual",
+                                      webCheckoutUrl: nil)
+                              ], webCheckoutUrl: nil)
                     ],
                     placements: nil,
                     targeting: .init(revision: 1, ruleId: "abc123"),
@@ -381,16 +431,22 @@ class OfferingsTests: TestCase {
                         .init(identifier: "offering_a",
                               description: "This is the base offering",
                               packages: [
-                                .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual")
+                                .init(identifier: "$rc_six_month",
+                                      platformProductIdentifier: "com.myproduct.annual",
+                                      webCheckoutUrl: nil)
                               ],
                               metadata: .init(
                                 wrappedValue: metadata
-                              )),
+                              ),
+                              webCheckoutUrl: nil),
                         .init(identifier: "offering_b",
                               description: "This is the base offering b",
                               packages: [
-                                .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly")
-                              ])
+                                .init(identifier: "$rc_monthly",
+                                      platformProductIdentifier: "com.myproduct.monthly",
+                                      webCheckoutUrl: nil)
+                              ],
+                              webCheckoutUrl: nil)
                     ],
                     placements: nil,
                     targeting: nil,
@@ -528,8 +584,11 @@ class OfferingsTests: TestCase {
                 .init(identifier: "offering_a",
                       description: "This is the base offering",
                       packages: [
-                        .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual")
-                      ])
+                        .init(identifier: "$rc_six_month",
+                              platformProductIdentifier: "com.myproduct.annual",
+                              webCheckoutUrl: nil)
+                      ],
+                      webCheckoutUrl: nil)
             ],
             placements: nil,
             targeting: nil,
@@ -706,8 +765,11 @@ private extension OfferingsTests {
                         .init(identifier: "offering_a",
                               description: "This is the base offering",
                               packages: [
-                                .init(identifier: identifier, platformProductIdentifier: productIdentifier)
-                              ])
+                                .init(identifier: identifier,
+                                      platformProductIdentifier: productIdentifier,
+                                      webCheckoutUrl: nil)
+                              ],
+                              webCheckoutUrl: nil)
                     ],
                     placements: nil,
                     targeting: nil,
