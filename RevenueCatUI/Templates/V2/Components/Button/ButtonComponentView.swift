@@ -96,11 +96,11 @@ struct ButtonComponentView: View {
         case .unknown:
             break
         case .sheet(let sheet):
-            if let sheetStackViewModel = self.viewModel.sheetStackViewModel,
-               let sheetViewModel: SheetViewModel = .init(
-                sheet: sheet,
-                sheetStackViewModel: sheetStackViewModel
-               ) {
+            if let sheetStackViewModel = self.viewModel.sheetStackViewModel {
+                let sheetViewModel = SheetViewModel(
+                    sheet: sheet,
+                    sheetStackViewModel: sheetStackViewModel
+                )
                 openSheet(sheetViewModel)
             }
         }
