@@ -38,7 +38,7 @@ extension CustomerInfo {
                 return date1 < date2
             })
 
-        let (activeAppleSubscriptions, webSubscriptions, otherActiveSubscriptions) = (
+        let (activeAppleSubscriptions, activeWebSubscriptions, otherActiveSubscriptions) = (
             activeSubscriptions.filter { $0.store == .appStore },
             activeSubscriptions.filter { $0.store == .rcBilling },
             activeSubscriptions.filter { $0.store != .appStore && $0.store != .rcBilling }
@@ -51,7 +51,7 @@ extension CustomerInfo {
         )
 
         return activeAppleSubscriptions.first ??
-        webSubscriptions.first ??
+        activeWebSubscriptions.first ??
         appleNonSubscriptions.first ??
         webNonSubscriptions.first ??
         otherActiveSubscriptions.first ??
