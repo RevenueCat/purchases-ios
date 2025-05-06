@@ -291,8 +291,7 @@ private enum MultiTierPreview {
                                     bottomLeading: 16,
                                     bottomTrailing: 16))
         ),
-        action: .inAppCheckout,
-        url: nil
+        action: .inAppCheckout
     )
 
     static let purchaseButtonStack = PaywallComponent.StackComponent(
