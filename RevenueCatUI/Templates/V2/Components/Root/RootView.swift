@@ -18,14 +18,6 @@ import SwiftUI
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct SheetPreferenceKey: PreferenceKey {
-    static var defaultValue: SheetViewModel?
-    static func reduce(value: inout SheetViewModel?, nextValue: () -> SheetViewModel?) {
-        value = nextValue() ?? value
-    }
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct RootView: View {
 
     @Environment(\.safeAreaInsets)
@@ -63,10 +55,10 @@ struct RootView: View {
                 .fixedSize(horizontal: false, vertical: true)
             }
         }
+        .environment(\.openSheet, { sheet in
+            self.sheetViewModel = sheet
+        })
         .bottomSheet(sheet: $sheetViewModel)
-        .onPreferenceChange(SheetPreferenceKey.self) { sheetViewModel in
-            self.sheetViewModel = sheetViewModel
-        }
     }
 
 }

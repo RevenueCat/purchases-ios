@@ -79,15 +79,6 @@ struct BottomSheetOverlayModifier: ViewModifier {
     @Binding var sheet: SheetViewModel?
     @State private var sheetHeight: CGFloat = 0
 
-    func body(content: Content) -> some View {
-        if let sheet {
-            modifierBody(content: content, sheetStackViewModel: sheet.sheetStackViewModel)
-                .ignoresSafeArea()
-        } else {
-            content
-        }
-    }
-
     var backgroundStyle: BackgroundStyle? {
         if let sheet {
             sheet.sheet.background?.asDisplayable(uiConfigProvider: sheet.sheetStackViewModel.uiConfigProvider)
@@ -96,11 +87,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
         }
     }
 
-    @ViewBuilder
-    private func modifierBody(
-        content: Content,
-        sheetStackViewModel: StackComponentViewModel
-    ) -> some View {
+    func body(content: Content) -> some View {
         ZStack {
             content
                 .blur(radius: sheet?.sheet.backgroundBlur ?? false ? 10 : 0)
@@ -117,12 +104,12 @@ struct BottomSheetOverlayModifier: ViewModifier {
             // Sheet content
             VStack {
                 Spacer()
-                if self.sheet != nil {
+                if let sheet {
                     BottomSheetView(
                         height: self.sheetHeight
                     ) {
                         StackComponentView(
-                            viewModel: sheetStackViewModel,
+                            viewModel: sheet.sheetStackViewModel,
                             onDismiss: {
                                 self.sheet = nil
                             }
@@ -142,6 +129,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
             )
             .animation(.spring(duration: 0.35), value: sheet)
         }
+        .ignoresSafeArea()
     }
 }
 
