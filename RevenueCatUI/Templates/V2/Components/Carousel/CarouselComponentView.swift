@@ -515,8 +515,7 @@ struct PageControlView: View {
                                 localCurrentIndex == index ? activeIndicator.strokeColor : indicator.strokeColor,
                                 style: StrokeStyle(lineWidth: localCurrentIndex == index
                                                    ? activeIndicator.strokeWidth
-                                                   : indicator.strokeWidth),
-                                antialiased: false
+                                                   : indicator.strokeWidth)
                             )
                     }
                     .frame(
