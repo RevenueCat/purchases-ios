@@ -11,6 +11,7 @@
 //
 // Created by Andrés Boedo on 7/16/21.
 //
+// swiftlint:disable file_length
 
 import Foundation
 import StoreKit
@@ -45,6 +46,10 @@ public typealias SK2Product = StoreKit.Product
     static func from(product: StoreProductType) -> StoreProduct {
         return product as? StoreProduct
             ?? StoreProduct(product)
+    }
+
+    internal static func from(webBillingProduct: WebProductsResponse.Product) -> StoreProduct {
+        return StoreProduct(WebBillingStoreProduct(product: webBillingProduct))
     }
 
     public override func isEqual(_ object: Any?) -> Bool {
@@ -366,4 +371,131 @@ private extension StoreProduct {
         return formatter.string(from: price as NSDecimalNumber)
     }
 
+}
+
+/// Implementation of StoreProductType for web billing products
+private final class WebBillingStoreProduct: StoreProductType {
+    let product: WebProductsResponse.Product
+
+    init(product: WebProductsResponse.Product) {
+        self.product = product
+    }
+
+    var productCategory: StoreProduct.ProductCategory {
+        switch self.product.productType {
+        case "subscription":
+            return .subscription
+        default:
+            return .nonSubscription
+        }
+    }
+
+    var productType: StoreProduct.ProductType {
+        switch self.product.productType {
+        case "subscription":
+            return .autoRenewableSubscription
+        case "consumable":
+            return .consumable
+        case "non_consumable":
+            return .nonConsumable
+        default:
+            Logger.error("Unknown web product type: \(self.product.productType)")
+            return .autoRenewableSubscription
+        }
+    }
+
+    var localizedDescription: String {
+        return self.product.description ?? ""
+    }
+
+    var localizedTitle: String {
+        return self.product.title
+    }
+
+    var currencyCode: String? {
+        return self.defaultPurchaseOption?.basePrice?.currency ??
+            self.defaultPurchaseOption?.base?.price.currency
+    }
+
+    var price: Decimal {
+        if let basePrice = self.defaultPurchaseOption?.basePrice {
+            return Decimal(basePrice.amountMicros) / 1_000_000
+        } else if let base = self.defaultPurchaseOption?.base {
+            return Decimal(base.price.amountMicros) / 1_000_000
+        }
+        return 0
+    }
+
+    var localizedPriceString: String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        if let currencyCode = self.currencyCode {
+            formatter.currencyCode = currencyCode
+        }
+        return formatter.string(from: self.price as NSDecimalNumber) ?? "\(self.price)"
+    }
+
+    var productIdentifier: String {
+        return self.product.identifier
+    }
+
+    @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+    var isFamilyShareable: Bool {
+        return false
+    }
+
+    var subscriptionGroupIdentifier: String? {
+        return nil
+    }
+
+    var priceFormatter: NumberFormatter? {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        if let currencyCode = self.currencyCode {
+            formatter.currencyCode = currencyCode
+        }
+        return formatter
+    }
+
+    var subscriptionPeriod: SubscriptionPeriod? {
+        guard let base = self.defaultPurchaseOption?.base,
+              let periodDuration = base.periodDuration else {
+            return nil
+        }
+
+        // Parse period duration string (e.g. "P1M" for 1 month)
+        // Format is ISO 8601 duration format
+        if periodDuration.hasPrefix("P") {
+            let duration = String(periodDuration.dropFirst())
+            if duration.hasSuffix("D") {
+                let days = Int(duration.dropLast()) ?? 1
+                return SubscriptionPeriod(value: days, unit: .day)
+            } else if duration.hasSuffix("W") {
+                let weeks = Int(duration.dropLast()) ?? 1
+                return SubscriptionPeriod(value: weeks, unit: .week)
+            } else if duration.hasSuffix("M") {
+                let months = Int(duration.dropLast()) ?? 1
+                return SubscriptionPeriod(value: months, unit: .month)
+            } else if duration.hasSuffix("Y") {
+                let years = Int(duration.dropLast()) ?? 1
+                return SubscriptionPeriod(value: years, unit: .year)
+            }
+        }
+        return nil
+    }
+
+    var introductoryDiscount: StoreProductDiscount? {
+        return nil
+    }
+
+    var discounts: [StoreProductDiscount] {
+        return []
+    }
+
+    private var defaultPurchaseOption: WebProductsResponse.PurchaseOption? {
+        guard let defaultId = self.product.defaultPurchaseOptionId else {
+            return self.product.purchaseOptions.values.first
+        }
+        return self.product.purchaseOptions[defaultId]
+    }
 }
