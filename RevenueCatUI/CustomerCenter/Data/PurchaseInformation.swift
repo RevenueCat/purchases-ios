@@ -74,6 +74,8 @@ struct PurchaseInformation {
 
     private let dateFormatter: DateFormatter
 
+    let managePurchaseURL: URL?
+
     init(title: String,
          durationTitle: String?,
          explanation: Explanation,
@@ -88,7 +90,8 @@ struct PurchaseInformation {
          isCancelled: Bool = false,
          introductoryDiscount: StoreProductDiscountType? = nil,
          expirationDate: Date? = nil,
-         renewalDate: Date? = nil
+         renewalDate: Date? = nil,
+         managePurchaseURL: URL?
     ) {
         self.title = title
         self.durationTitle = durationTitle
@@ -106,6 +109,7 @@ struct PurchaseInformation {
         self.expirationDate = expirationDate
         self.renewalDate = renewalDate
         self.dateFormatter = Self.defaultDateFormatter
+        self.managePurchaseURL = managePurchaseURL
     }
 
     // swiftlint:disable:next function_body_length
@@ -114,7 +118,9 @@ struct PurchaseInformation {
          transaction: Transaction,
          renewalPrice: PriceDetails? = nil,
          customerInfoRequestedDate: Date,
-         dateFormatter: DateFormatter = Self.defaultDateFormatter) {
+         managePurchaseURL: URL?,
+         dateFormatter: DateFormatter = Self.defaultDateFormatter
+    ) {
         dateFormatter.dateStyle = .medium
 
         // Title and duration from product if available
@@ -122,6 +128,7 @@ struct PurchaseInformation {
         self.durationTitle = storeProduct?.subscriptionPeriod?.durationTitle
         self.customerInfoRequestedDate = customerInfoRequestedDate
         self.introductoryDiscount = storeProduct?.introductoryDiscount
+        self.managePurchaseURL = managePurchaseURL
 
         // Use entitlement data if available, otherwise derive from transaction
         if let entitlement = entitlement {
@@ -189,7 +196,7 @@ struct PurchaseInformation {
         self.dateFormatter = dateFormatter
     }
 
-    struct ExpirationOrRenewal {
+    struct ExpirationOrRenewal: Equatable {
         let label: Label
         let date: Date
 
@@ -214,7 +221,8 @@ struct PurchaseInformation {
     enum Explanation {
         case promotional
         case google
-        case web
+        case externalWeb
+        case rcWebBilling
         case otherStorePurchase
         case amazon
         case earliestRenewal
@@ -251,7 +259,8 @@ extension PurchaseInformation {
         storeProduct: StoreProduct,
         transaction: Transaction,
         customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType,
-        customerInfoRequestedDate: Date
+        customerInfoRequestedDate: Date,
+        managePurchaseURL: URL?
     ) async -> PurchaseInformation {
         let renewalPriceDetails = await Self.extractPriceDetailsFromRenewalInfo(
             forProduct: storeProduct,
@@ -262,7 +271,8 @@ extension PurchaseInformation {
             storeProduct: storeProduct,
             transaction: transaction,
             renewalPrice: renewalPriceDetails,
-            customerInfoRequestedDate: customerInfoRequestedDate
+            customerInfoRequestedDate: customerInfoRequestedDate,
+            managePurchaseURL: managePurchaseURL
         )
     }
 
@@ -284,6 +294,16 @@ extension PurchaseInformation {
         guard let formattedPrice = formatter.string(from: renewalPriceDetails.price as NSNumber) else { return nil }
 
         return .paid(formattedPrice)
+    }
+}
+
+extension PurchaseInformation: Identifiable {
+
+    var id: String {
+        let formatter = ISO8601DateFormatter()
+        let purchaseDateString = latestPurchaseDate.map { formatter.string(from: $0) }
+            ?? formatter.string(from: Date())
+        return "\(productIdentifier)_\(purchaseDateString)"
     }
 }
 
@@ -345,8 +365,10 @@ private extension EntitlementInfo {
             return .promotional
         case .playStore:
             return .google
-        case .stripe, .rcBilling:
-            return .web
+        case .rcBilling:
+            return .rcWebBilling
+        case .stripe:
+            return .externalWeb
         case .external, .unknownStore:
             return .otherStorePurchase
         case .amazon:
@@ -390,30 +412,23 @@ private extension String {
 
 extension PurchaseInformation {
 
-    var billingInformation: String {
+    func billingInformation(localizations: CustomerCenterConfigData.Localization) -> String {
         guard let expirationDate else {
             // non subscription
-            return price.billingInformation
+            return "Paid \(price.billingInformation(localizations: localizations))"
         }
 
         if let introductoryDiscount {
             if isCancelled {
                 var renewString = "\(introductoryDiscount.localizedPricePerPeriodByPaymentMode(.current))."
-                renewString += "\n"
                 renewString += "Expires on \(dateFormatter.string(from: expirationDate)) without further charges."
                 return renewString
             }
 
             if introductoryDiscount.paymentMode == .freeTrial {
-                var renewString = "Free trial until \(dateFormatter.string(from: expirationDate))."
-                renewString += "\n"
-                renewString += priceAfterDiscount
-                return renewString
+                return "Free trial until \(dateFormatter.string(from: expirationDate)). \(priceAfterDiscount(localizations: localizations))"
             } else {
-                var renewString = "\(introductoryDiscount.localizedPricePerPeriodByPaymentMode(.current))."
-                renewString += "\n"
-                renewString += priceAfterDiscount
-                return renewString
+                return "\(introductoryDiscount.localizedPricePerPeriodByPaymentMode(.current)). \(priceAfterDiscount(localizations: localizations))"
             }
         } else if isCancelled {
             return "Expires on \(dateFormatter.string(from: expirationDate)) without further charges."
@@ -427,26 +442,13 @@ extension PurchaseInformation {
         }
     }
 
-    var priceAfterDiscount: String {
-        "\(durationTitle.map { "\($0)" } ?? "") \(price.billingInformation + " " + "afterwards.")"
-    }
-}
-
-private extension StoreProductDiscountType {
-    var titleString: String {
-        switch paymentMode {
-        case .payAsYouGo:
-            return "Pay as you go"
-        case .freeTrial:
-            return "Free trial"
-        case .payUpFront:
-            return "Pay up front"
-        }
+    func priceAfterDiscount(localizations: CustomerCenterConfigData.Localization) -> String {
+        "\(durationTitle.map { "\($0)" } ?? "") \(price.billingInformation(localizations: localizations) + " " + "afterwards.")"
     }
 }
 
 private extension PurchaseInformation.PriceDetails {
-    var billingInformation: String {
+    func billingInformation(localizations: CustomerCenterConfigData.Localization) -> String {
         switch self {
         case .free:
             return "Free"

@@ -9,10 +9,10 @@
 //
 //  Transaction.swift
 //
-//  Created by Facundo Menzella on 1/5/25.
+//  Created by Facundo Menzella on 5/5/25.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 protocol Transaction {
 
@@ -20,6 +20,7 @@ protocol Transaction {
     var store: Store { get }
     var type: TransactionType { get }
     var isCancelled: Bool { get }
+    var managementURL: URL? { get }
 }
 
 enum TransactionType {
@@ -28,7 +29,7 @@ enum TransactionType {
     case nonSubscription
 }
 
-extension RevenueCat.SubscriptionInfo: Transaction {
+@_spi(Internal) extension RevenueCat.SubscriptionInfo: Transaction {
 
     var type: TransactionType {
         .subscription(isActive: isActive,
@@ -50,5 +51,9 @@ extension NonSubscriptionTransaction: Transaction {
 
     var isCancelled: Bool {
         false
+    }
+
+    var managementURL: URL? {
+        nil
     }
 }

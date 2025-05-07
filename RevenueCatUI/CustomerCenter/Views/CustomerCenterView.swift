@@ -202,42 +202,53 @@ private extension CustomerCenterView {
 
     @ViewBuilder
     func destinationContent(configuration: CustomerCenterConfigData) -> some View {
-        if let purchaseInformation = viewModel.purchaseInformation {
-            if purchaseInformation.store == .appStore,
-               let screen = configuration.screens[.management] {
-                if let onUpdateAppClick = viewModel.onUpdateAppClick,
-                    !ignoreAppUpdateWarning && viewModel.shouldShowAppUpdateWarnings {
-                    AppUpdateWarningView(
-                        onUpdateAppClick: onUpdateAppClick,
-                        onContinueAnywayClick: {
-                            withAnimation {
-                                ignoreAppUpdateWarning = true
-                            }
+        if viewModel.hasPurchases,
+           let screen = configuration.screens[.management] {
+            if let onUpdateAppClick = viewModel.onUpdateAppClick,
+               !ignoreAppUpdateWarning
+                && viewModel.shouldShowAppUpdateWarnings {
+                AppUpdateWarningView(
+                    onUpdateAppClick: onUpdateAppClick,
+                    onContinueAnywayClick: {
+                        withAnimation {
+                            ignoreAppUpdateWarning = true
                         }
-                    )
-                } else {
-                    ManageSubscriptionsView(
-                        screen: screen,
-                        purchaseInformation: $viewModel.purchaseInformation,
-                        purchasesProvider: self.viewModel.purchasesProvider,
-                        actionWrapper: self.viewModel.actionWrapper)
-                }
-            } else if let screen = configuration.screens[.management] {
-                WrongPlatformView(screen: screen,
-                                  purchaseInformation: purchaseInformation)
+                    }
+                )
+            } else if viewModel.activePurchases.count > 1 {
+                ManageSubscriptionsView(
+                    screen: screen,
+                    activePurchases: $viewModel.activePurchases,
+                    purchasesProvider: self.viewModel.purchasesProvider,
+                    actionWrapper: self.viewModel.actionWrapper
+                )
+                .dismissCircleButtonToolbarIfNeeded()
             } else {
-                WrongPlatformView(purchaseInformation: purchaseInformation)
+                ManageSubscriptionView(
+                    screen: screen,
+                    purchaseInformation: $viewModel.purchaseInformation,
+                    showPurchaseHistory: viewModel.configuration?.support.displayPurchaseHistoryLink == true,
+                    purchasesProvider: self.viewModel.purchasesProvider,
+                    actionWrapper: self.viewModel.actionWrapper
+                )
+                .dismissCircleButtonToolbarIfNeeded()
             }
         } else {
             if let screen = configuration.screens[.noActive] {
-                ManageSubscriptionsView(screen: screen,
-                                        purchaseInformation: $viewModel.purchaseInformation,
-                                        purchasesProvider: self.viewModel.purchasesProvider,
-                                        actionWrapper: self.viewModel.actionWrapper)
+                ManageSubscriptionView(
+                    screen: screen,
+                    purchaseInformation: .constant(nil),
+                    showPurchaseHistory: viewModel.configuration?.support.displayPurchaseHistoryLink == true,
+                    purchasesProvider: self.viewModel.purchasesProvider,
+                    actionWrapper: self.viewModel.actionWrapper
+                )
+                .dismissCircleButtonToolbarIfNeeded()
             } else {
                 // Fallback with a restore button
-                NoSubscriptionsView(configuration: configuration,
-                                    actionWrapper: self.viewModel.actionWrapper)
+                NoSubscriptionsView(
+                    configuration: configuration,
+                    actionWrapper: self.viewModel.actionWrapper
+                )
             }
         }
     }
@@ -268,10 +279,11 @@ struct CustomerCenterView_Previews: PreviewProvider {
 
     static var previews: some View {
         let purchaseInformationApple =
-        CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing()
+        PurchaseInformation.monthlyRenewing
         let viewModelApple = CustomerCenterViewModel(
             purchaseInformation: purchaseInformationApple,
-            configuration: CustomerCenterConfigTestData.customerCenterData())
+            configuration: CustomerCenterConfigData.default
+        )
         CustomerCenterView(viewModel: viewModelApple)
             .previewDisplayName("Monthly Apple")
     }

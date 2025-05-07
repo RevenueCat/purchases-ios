@@ -43,6 +43,9 @@ fileprivate extension View {
         case .fixed(let value):
             self
                 .frame(width: CGFloat(value), alignment: alignment)
+        case .relative:
+            // WIP: Maybe handle
+            self
         }
     }
 
@@ -57,6 +60,9 @@ fileprivate extension View {
         case .fixed(let value):
             self
                 .frame(height: CGFloat(value), alignment: alignment)
+        case .relative:
+            // WIP: Maybe handle
+            self
         }
     }
 

@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  CustomerCenterConfigTestData.swift
+//  CustomerCenterConfigData+Mock.swift
 //
 //
 //  Created by Cesar de la Vega on 28/5/24.
@@ -16,18 +16,21 @@
 import Foundation
 @_spi(Internal) @testable import RevenueCat
 
-enum CustomerCenterConfigTestData {
+// swiftlint:disable force_unwrapping
+extension CustomerCenterConfigData {
 
     @available(iOS 14.0, *)
     // swiftlint:disable:next function_body_length
-    static func customerCenterData(
+    static func mock(
         lastPublishedAppVersion: String? = "1.0.0",
         shouldWarnCustomerToUpdate: Bool = false,
         displayPurchaseHistoryLink: Bool = false,
-        refundWindowDuration: CustomerCenterConfigData.HelpPath.RefundWindowDuration = .forever
+        refundWindowDuration: CustomerCenterConfigData.HelpPath.RefundWindowDuration = .forever,
+        shouldWarnCustomersAboutMultipleSubscriptions: Bool = false
     ) -> CustomerCenterConfigData {
         CustomerCenterConfigData(
-            screens: [.management:
+            screens: [
+                .management:
                     .init(
                         type: .management,
                         title: "Manage Subscription",
@@ -124,12 +127,16 @@ enum CustomerCenterConfigTestData {
             support: .init(
                 email: "test-support@revenuecat.com",
                 shouldWarnCustomerToUpdate: shouldWarnCustomerToUpdate,
-                displayPurchaseHistoryLink: displayPurchaseHistoryLink
+                displayPurchaseHistoryLink: displayPurchaseHistoryLink,
+                shouldWarnCustomersAboutMultipleSubscriptions: shouldWarnCustomersAboutMultipleSubscriptions
             ),
             lastPublishedAppVersion: lastPublishedAppVersion,
             productId: 1
         )
     }
+
+    @available(iOS 14.0, *)
+    static let `default` = mock(lastPublishedAppVersion: "1.0.0")
 
     static let standardAppearance = CustomerCenterConfigData.Appearance(
         accentColor: .init(light: "#007AFF", dark: "#007AFF"),
@@ -138,125 +145,4 @@ enum CustomerCenterConfigTestData {
         buttonTextColor: .init(light: "#ffffff", dark: "#000000"),
         buttonBackgroundColor: .init(light: "#287aff", dark: "#287aff")
     )
-
-    static func subscriptionInformationMonthlyRenewing(
-        introductoryDiscount: StoreProductDiscountType? = nil
-    ) -> PurchaseInformation {
-        PurchaseInformation(
-            title: "Basic",
-            durationTitle: "Monthly",
-            explanation: .earliestRenewal,
-            price: .paid("$4.99"),
-            expirationOrRenewal: .init(label: .nextBillingDate, date: .date("June 1st, 2024")),
-            productIdentifier: "product_id",
-            store: .appStore,
-            isLifetime: false,
-            isTrial: false,
-            latestPurchaseDate: Date(),
-            customerInfoRequestedDate: Date(), isCancelled: false,
-            introductoryDiscount: introductoryDiscount,
-            expirationDate: Date().addingTimeInterval(24 * 60 * 60),
-            renewalDate: Date().addingTimeInterval(24 * 60 * 60)
-        )
-    }
-
-    static let subscriptionInformationFree: PurchaseInformation = PurchaseInformation(
-        title: "Basic",
-        durationTitle: "Monthly",
-        explanation: .earliestRenewal,
-        price: .free,
-        expirationOrRenewal: .init(label: .nextBillingDate,
-                                   date: .date("June 1st, 2024")),
-        productIdentifier: "product_id",
-        store: .appStore,
-        isLifetime: false,
-        isTrial: false,
-        latestPurchaseDate: nil,
-        customerInfoRequestedDate: Date(),
-        isCancelled: false
-    )
-
-    static func subscriptionInformationYearlyExpiring(isCancelled: Bool = true) -> PurchaseInformation {
-        PurchaseInformation(
-            title: "Basic",
-            durationTitle: "Yearly",
-            explanation: .earliestRenewal,
-            price: .paid("$49.99"),
-            expirationOrRenewal: .init(label: .expires,
-                                       date: .date("June 1st, 2024")),
-            productIdentifier: "product_id",
-            store: .appStore,
-            isLifetime: false,
-            isTrial: false,
-            latestPurchaseDate: nil,
-            customerInfoRequestedDate: Date(),
-            isCancelled: isCancelled,
-            introductoryDiscount: nil,
-            expirationDate: Date(),
-            renewalDate: nil
-        )
-    }
-
-    static let consumable: PurchaseInformation = PurchaseInformation(
-        title: "Basic",
-        durationTitle: nil,
-        explanation: .lifetime,
-        price: .paid("$49.99"),
-        expirationOrRenewal: nil,
-        productIdentifier: "product_id",
-        store: .appStore,
-        isLifetime: true,
-        isTrial: false,
-        latestPurchaseDate: Date(),
-        customerInfoRequestedDate: Date(),
-        isCancelled: false
-    )
-
-    static func discount(
-        paymentMode: StoreProductDiscount.PaymentMode = .payAsYouGo,
-        price: Decimal = 0.99,
-        subscriptionPeriod: SubscriptionPeriod = .init(value: 1, unit: .month),
-        numberOfPeriods: Int = 3,
-        type: StoreProductDiscount.DiscountType = .introductory
-    ) -> StoreProductDiscountType {
-        MockStoreProductDiscount(
-            offerIdentifier: "offerIdentifier",
-            currencyCode: "USD",
-            price: price,
-            localizedPriceString: "\(price) USD",
-            paymentMode: paymentMode,
-            subscriptionPeriod: subscriptionPeriod,
-            numberOfPeriods: numberOfPeriods,
-            type: type
-        )
-    }
-
-}
-
-private struct MockStoreProductDiscount: StoreProductDiscountType {
-
-    let offerIdentifier: String?
-    let currencyCode: String?
-    let price: Decimal
-    let localizedPriceString: String
-    let paymentMode: StoreProductDiscount.PaymentMode
-    let subscriptionPeriod: RevenueCat.SubscriptionPeriod
-    let numberOfPeriods: Int
-    let type: StoreProductDiscount.DiscountType
-
-    static func mock(
-        paymentMode: StoreProductDiscount.PaymentMode,
-        discountType: StoreProductDiscount.DiscountType
-    ) -> MockStoreProductDiscount {
-        MockStoreProductDiscount(
-            offerIdentifier: nil,
-            currencyCode: nil,
-            price: 0.01,
-            localizedPriceString: "$0.01",
-            paymentMode: paymentMode,
-            subscriptionPeriod: SubscriptionPeriod(value: 1, unit: .month),
-            numberOfPeriods: 6,
-            type: discountType
-        )
-    }
 }
