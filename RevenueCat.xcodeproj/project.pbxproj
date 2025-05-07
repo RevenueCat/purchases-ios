@@ -23,7 +23,8 @@
 		0354AA4C2D4029C300F9E330 /* TabControlToggleComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0354AA412D4029C300F9E330 /* TabControlToggleComponentView.swift */; };
 		0354AA4D2D4029C300F9E330 /* TabControlComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0354AA3F2D4029C300F9E330 /* TabControlComponentView.swift */; };
 		0368727A2D9DCF7100506BBB /* DefaultEnumTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 036872792D9DCF6D00506BBB /* DefaultEnumTests.swift */; };
-		0368728B2DA45C1900506BBB /* PurchaseButtonInPackage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0368728A2DA45C1900506BBB /* PurchaseButtonInPackage.swift */; };
+		038211972DCA730C003C02C3 /* PurchaseButtonInPackagePreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 038211962DCA730C003C02C3 /* PurchaseButtonInPackagePreview.swift */; };
+		038211982DCA730C003C02C3 /* ButtonWithFooterPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 038211952DCA730C003C02C3 /* ButtonWithFooterPreview.swift */; };
 		03A98CEF2D1EE048009BCA61 /* FallbackComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98CEE2D1EE040009BCA61 /* FallbackComponentTests.swift */; };
 		03A98CF12D222F5F009BCA61 /* FallbackComponentPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98CF02D222F53009BCA61 /* FallbackComponentPreview.swift */; };
 		03A98D302D240C41009BCA61 /* UIConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98D2F2D240C3E009BCA61 /* UIConfig.swift */; };
@@ -1342,7 +1343,8 @@
 		0354AA432D4029C300F9E330 /* TabsComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabsComponentView.swift; sourceTree = "<group>"; };
 		0354AA442D4029C300F9E330 /* TabsComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabsComponentViewModel.swift; sourceTree = "<group>"; };
 		036872792D9DCF6D00506BBB /* DefaultEnumTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultEnumTests.swift; sourceTree = "<group>"; };
-		0368728A2DA45C1900506BBB /* PurchaseButtonInPackage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseButtonInPackage.swift; sourceTree = "<group>"; };
+		038211952DCA730C003C02C3 /* ButtonWithFooterPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonWithFooterPreview.swift; sourceTree = "<group>"; };
+		038211962DCA730C003C02C3 /* PurchaseButtonInPackagePreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseButtonInPackagePreview.swift; sourceTree = "<group>"; };
 		03A98CEE2D1EE040009BCA61 /* FallbackComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackComponentTests.swift; sourceTree = "<group>"; };
 		03A98CF02D222F53009BCA61 /* FallbackComponentPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackComponentPreview.swift; sourceTree = "<group>"; };
 		03A98D2F2D240C3E009BCA61 /* UIConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIConfig.swift; sourceTree = "<group>"; };
@@ -2728,9 +2730,10 @@
 		2C2AEB0D2CA64DA900A50F38 /* TemplateComponentsViewPreviews */ = {
 			isa = PBXGroup;
 			children = (
+				038211952DCA730C003C02C3 /* ButtonWithFooterPreview.swift */,
+				038211962DCA730C003C02C3 /* PurchaseButtonInPackagePreview.swift */,
 				03A98CF02D222F53009BCA61 /* FallbackComponentPreview.swift */,
 				2C2AEB0E2CA64E0E00A50F38 /* Template1Preview.swift */,
-				0368728A2DA45C1900506BBB /* PurchaseButtonInPackage.swift */,
 				2C8EC6DA2CCC23B700D6CCF8 /* MultiTierPreview.swift */,
 				03C72F6C2D32CDFB00297FEC /* FamilySharingTogglePreview.swift */,
 			);
@@ -6994,7 +6997,6 @@
 				03A98CF12D222F5F009BCA61 /* FallbackComponentPreview.swift in Sources */,
 				887A60862C1D037000E1A461 /* FooterHidingModifier.swift in Sources */,
 				4D3BA5882D432E5900668AFC /* Fill.swift in Sources */,
-				0368728B2DA45C1900506BBB /* PurchaseButtonInPackage.swift in Sources */,
 				FDAD6AC72D132DD900FB047E /* CustomerCenterStoreKitUtilitiesType.swift in Sources */,
 				887A60C02C1D037000E1A461 /* AsyncButton.swift in Sources */,
 				887A60892C1D037000E1A461 /* PaywallPurchasesType.swift in Sources */,
@@ -7078,6 +7080,8 @@
 				887A60802C1D037000E1A461 /* Package+VariableDataProvider.swift in Sources */,
 				887A60CE2C1D037000E1A461 /* View+PresentPaywall.swift in Sources */,
 				357CEC702C5940CE00A80837 /* ColorFromAppearance.swift in Sources */,
+				038211972DCA730C003C02C3 /* PurchaseButtonInPackagePreview.swift in Sources */,
+				038211982DCA730C003C02C3 /* ButtonWithFooterPreview.swift in Sources */,
 				887A60832C1D037000E1A461 /* VersionDetector.swift in Sources */,
 				574D1C702D3E75F9005840CD /* PurchaseDetailView.swift in Sources */,
 				030F93B32D5ED90B0085103F /* ProgressViewModifier.swift in Sources */,

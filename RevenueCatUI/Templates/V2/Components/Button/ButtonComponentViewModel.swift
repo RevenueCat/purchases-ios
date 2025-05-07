@@ -14,7 +14,6 @@
 
 import Foundation
 @_spi(Internal) import RevenueCat
-
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -25,6 +24,7 @@ class ButtonComponentViewModel {
     enum Action {
         case restorePurchases
         case navigateTo(destination: Destination)
+        case sheet(RevenueCat.PaywallComponent.ButtonComponent.Sheet)
         case navigateBack
         case unknown
     }
@@ -45,16 +45,20 @@ class ButtonComponentViewModel {
     let localizationProvider: LocalizationProvider
     let action: Action
     let stackViewModel: StackComponentViewModel
+    let sheetStackViewModel: StackComponentViewModel?
 
+    // swiftlint:disable:next cyclomatic_complexity
     init(
         component: PaywallComponent.ButtonComponent,
         localizationProvider: LocalizationProvider,
         offering: Offering,
-        stackViewModel: StackComponentViewModel
+        stackViewModel: StackComponentViewModel,
+        sheetStackViewModel: StackComponentViewModel? = nil
     ) throws {
         self.component = component
         self.localizationProvider = localizationProvider
         self.stackViewModel = stackViewModel
+        self.sheetStackViewModel = sheetStackViewModel
 
         let localizedStrings = localizationProvider.localizedStrings
 
@@ -85,6 +89,8 @@ class ButtonComponentViewModel {
                 )
             case .unknown:
                 self.action = .unknown
+            case .sheet(let sheet):
+                self.action = .sheet(sheet)
             }
         case .navigateBack:
             self.action = .navigateBack
@@ -109,6 +115,8 @@ class ButtonComponentViewModel {
         case .navigateBack:
             return false
         case .unknown:
+            return false
+        case .sheet:
             return false
         }
     }

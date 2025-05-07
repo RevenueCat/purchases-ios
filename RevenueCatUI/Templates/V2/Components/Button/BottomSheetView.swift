@@ -13,6 +13,8 @@
 
 import SwiftUI
 
+import RevenueCat
+
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 /// A view that presents content in a sheet-like interface with customizable height and background.
@@ -22,90 +24,15 @@ import SwiftUI
 ///
 /// - Note: This view is typically used in conjunction with ``BottomSheetOverlayModifier`` to present
 ///   content in a sheet-like interface.
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct BottomSheetView<Content: View>: View {
-
-    /// The background color of the sheet.
-    let backgroundColor: Color
-
-    /// The height of the sheet.
-    let height: CGFloat
-
-    /// The content to be displayed within the sheet.
-    let content: Content
-
-    /// Creates a new sheet view with the specified parameters.
-    ///
-    /// - Parameters:
-    ///   - backgroundColor: The background color of the sheet.
-    ///   - height: The height of the sheet.
-    ///   - content: A view builder closure that creates the content of the sheet.
-    init(
-        backgroundColor: Color,
-        height: CGFloat,
-        @ViewBuilder content: () -> Content
-    ) {
-        self.backgroundColor = backgroundColor
-        self.height = height
-        self.content = content()
-    }
-
-    var body: some View {
-        ScrollView(.vertical) {
-            content
-                .safeAreaInset(edge: .bottom, spacing: 0) {
-                    EmptyView()
-                }
-        }
-        .frame(maxWidth: .infinity, maxHeight: height)
-        .background(backgroundColor)
-    }
-}
-
-/// Configuration options for presenting a sheet view.
 ///
-/// Use this type to customize the appearance and behavior of a sheet view.
-/// You can specify the background color, height percentage relative to the screen,
-/// and whether tapping outside the sheet should dismiss it.
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct BottomSheetConfig: Sendable {
+struct SheetViewModel: Equatable {
+    let sheet: RevenueCat.PaywallComponent.ButtonComponent.Sheet
+    let sheetStackViewModel: StackComponentViewModel
 
-    /// The background color of the sheet.
-    let backgroundColor: Color
-
-    /// The height of the sheet as a percentage of the screen height.
-    ///
-    /// This value should be between 0 and 1, where 1 represents 100% of the screen height.
-    let screenHeightPercentage: CGFloat
-
-    /// A Boolean value that determines whether tapping outside the sheet dismisses it.
-    let tapOutsideToDismiss: Bool
-
-    /// Creates a new sheet configuration with the specified parameters.
-    ///
-    /// - Parameters:
-    ///   - backgroundColor: The background color of the sheet. Defaults to the system background color.
-    ///   - screenHeightPercentage: The height of the sheet as a percentage of the screen height.
-    ///     Defaults to 0.33333 (one-third of the screen height).
-    ///   - tapOutsideToDismiss: A Boolean value that determines whether tapping outside the sheet
-    ///     dismisses it. Defaults to `true`.
-    init(
-        backgroundColor: Color = Self.systemBackgroundColor,
-        screenHeightPercentage: CGFloat = 0.33333,
-        tapOutsideToDismiss: Bool = true
-    ) {
-        self.backgroundColor = backgroundColor
-        self.screenHeightPercentage = screenHeightPercentage
-        self.tapOutsideToDismiss = tapOutsideToDismiss
-    }
-
-    private static var systemBackgroundColor: Color {
-        #if os(watchOS)
-        Color.black
-        #else
-        return Color(UIColor.systemBackground)
-        #endif
+    static func == (lhs: SheetViewModel, rhs: SheetViewModel) -> Bool {
+        lhs.sheet.id == rhs.sheet.id
     }
 }
 
@@ -114,60 +41,86 @@ struct BottomSheetConfig: Sendable {
 /// This modifier handles the presentation and dismissal of a sheet view, including
 /// the animation and tap-to-dismiss behavior.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct BottomSheetOverlayModifier<SheetContent: View>: ViewModifier {
-    /// A binding to a Boolean value that determines whether the sheet is presented.
-    let isPresented: Binding<Bool>
+struct BottomSheetOverlayModifier: ViewModifier {
+    @Binding var sheetViewModel: SheetViewModel?
+    let safeAreaInsets: EdgeInsets
 
-    /// The configuration for the sheet.
-    let config: BottomSheetConfig
+    @State private var parentHeight: CGFloat?
 
-    /// A closure that creates the content of the sheet.
-    let sheetContent: () -> SheetContent
+    var sheetHeight: CGFloat? {
+        guard let size = self.sheetViewModel?.sheet.size else {
+            return nil
+        }
 
-    @State private var sheetHeight: CGFloat = 0
+        switch size.height {
+        case .fit, .fill:
+            return nil
+        case .fixed(let height):
+            return CGFloat(height)
+        case .relative(let percent):
+            guard let parentHeight = self.parentHeight else {
+                return nil
+            }
+            return parentHeight * percent
+        }
+    }
+
+    var backgroundStyle: BackgroundStyle? {
+        if let sheetViewModel {
+            let stackBackground = sheetViewModel.sheet.background
+
+            return stackBackground?.asDisplayable(
+                uiConfigProvider: sheetViewModel.sheetStackViewModel.uiConfigProvider
+            )
+        } else {
+            return nil
+        }
+    }
 
     func body(content: Content) -> some View {
-        modifierBody(content: content)
-            .ignoresSafeArea()    }
-
-    @ViewBuilder
-    private func modifierBody(
-        content: Content
-    ) -> some View {
         ZStack {
             content
+                .blur(radius: sheetViewModel?.sheet.backgroundBlur == true ? 10 : 0)
+                .animation(.easeInOut(duration: 0.25), value: sheetViewModel?.sheet.backgroundBlur)
+
             // Invisible tap area that covers the screen
-            if isPresented.wrappedValue && config.tapOutsideToDismiss {
+            if sheetViewModel != nil {
                 Color.clear
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        isPresented.wrappedValue = false
+                        sheetViewModel = nil
                     }
             }
 
             // Sheet content
             VStack {
                 Spacer()
-                if isPresented.wrappedValue {
-                    BottomSheetView(
-                        backgroundColor: config.backgroundColor,
-                        height: self.sheetHeight
-                    ) {
-                        sheetContent()
-                    }
-                    .transition(.move(edge: .bottom))
+                if let sheetViewModel {
+                    StackComponentView(
+                        viewModel: sheetViewModel.sheetStackViewModel,
+                        onDismiss: {
+                            self.sheetViewModel = nil
+                        }
+                    )
+                    .applyIfLet(self.sheetHeight, apply: { view, height in
+                        view.frame(height: height)
+                    })
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .padding(.bottom, self.safeAreaInsets.bottom)
+                    .backgroundStyle(self.backgroundStyle)
                 }
             }
             .background(
                 GeometryReader { proxy in
                     Color.clear
                         .onAppear {
-                            self.sheetHeight = proxy.size.height * config.screenHeightPercentage
+                            self.parentHeight = proxy.size.height
                         }
                 }
             )
-            .animation(.spring(duration: 0.35), value: isPresented.wrappedValue)
+            .animation(.spring(duration: 0.35), value: sheetViewModel)
         }
+        .ignoresSafeArea()
     }
 }
 
@@ -180,59 +133,77 @@ extension View {
     /// the sheet (if `tapOutsideToDismiss` is enabled in the configuration).
     ///
     /// - Parameters:
-    ///   - isPresented: A binding to a Boolean value that determines whether to present the sheet.
-    ///   - config: The configuration for the sheet. Defaults to a configuration with
-    ///     system background color and one-third screen height.
+    ///   - sheet: A binding to a SheetViewModel value that determines whether to present the sheet.
     ///   - content: A closure that returns the content of the sheet.
     ///
     /// - Returns: A view that presents the sheet when `isPresented` is true.
-    func bottomSheet<Content: View>(
-        isPresented: Binding<Bool>,
-        config: BottomSheetConfig = BottomSheetConfig(),
-        @ViewBuilder content: @escaping () -> Content
+    func bottomSheet(
+        sheet: Binding<SheetViewModel?>,
+        safeAreaInsets: EdgeInsets
     ) -> some View {
-        modifier(BottomSheetOverlayModifier(
-            isPresented: isPresented,
-            config: config,
-            sheetContent: content
-        ))
+        modifier(
+            BottomSheetOverlayModifier(sheetViewModel: sheet, safeAreaInsets: safeAreaInsets)
+        )
     }
 }
 
+#if DEBUG
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 #Preview {
     struct Preview: View {
-        @State private var isPresented = false
+        @State private var sheetViewModel: SheetViewModel? = .init(
+            sheet: PaywallComponent.ButtonComponent.Sheet(
+                id: "exampleSheet",
+                name: nil,
+                stack: .init(
+                    components: [
+                        PaywallComponent.text(
+                            PaywallComponent.TextComponent(
+                                text: "buttonText",
+                                color: .init(light: .hex("#000000"))
+                            )
+                        )
+                    ],
+                    backgroundColor: nil
+                ),
+                background: .color(.init(light: .hex("#FFFFFF"))),
+                backgroundBlur: false,
+                size: .init(width: .fill, height: .fit)
+            ),
+            // swiftlint:disable:next force_try
+            sheetStackViewModel: try! .init(component: .init(
+                components: [
+                    PaywallComponent.text(
+                        PaywallComponent.TextComponent(
+                            text: "buttonText",
+                            color: .init(light: .hex("#000000"))
+                        )
+                    )
+                ],
+                backgroundColor: .init(light: .hex("#FFFFFF"))
+            ), localizationProvider: .init(
+                locale: Locale.current,
+                localizedStrings: [
+                    "buttonText": PaywallComponentsData.LocalizationData.string("Do something")
+                ]
+            )))
 
         var body: some View {
             ZStack {
                 Color.gray.opacity(0.2)
 
                 VStack {
-                    Button("Show Sheet") {
-                        isPresented.toggle()
-                    }
-                    .bottomSheet(
-                        isPresented: $isPresented,
-                        config: BottomSheetConfig(
-                            backgroundColor: Color.blue,
-                            screenHeightPercentage: 0.5,
-                            tapOutsideToDismiss: true
-                        )
-                    ) {
-                        VStack(spacing: 20) {
-                            Text("Sheet Content")
-                                .font(.title)
-                            Text("This is a simple sheet preview")
-                        }
-                        .padding()
-                    }
+                    Text("This view will have a sheet over it")
+                        .bottomSheet(sheet: $sheetViewModel,
+                                     safeAreaInsets: .init(top: 0, leading: 0, bottom: 0, trailing: 0))
                 }
             }
             .edgesIgnoringSafeArea(.all)
+            .previewRequiredEnvironmentProperties()
         }
     }
 
     return Preview()
 }
+#endif
 #endif
