@@ -20,6 +20,7 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ButtonComponentView: View {
     @Environment(\.openURL) private var openURL
+    @Environment(\.openSheet) private var openSheet
     @State private var inAppBrowserURL: URL?
     @State private var showCustomerCenter = false
     @State private var showingWebPaywallLinkAlert = false
@@ -94,6 +95,14 @@ struct ButtonComponentView: View {
             onDismiss()
         case .unknown:
             break
+        case .sheet(let sheet):
+            if let sheetStackViewModel = self.viewModel.sheetStackViewModel {
+                let sheetViewModel = SheetViewModel(
+                    sheet: sheet,
+                    sheetStackViewModel: sheetStackViewModel
+                )
+                openSheet(sheetViewModel)
+            }
         }
     }
 

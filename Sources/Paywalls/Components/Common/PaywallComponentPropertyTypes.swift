@@ -376,6 +376,9 @@ public extension PaywallComponent {
         case fill
         case fixed(UInt)
 
+        // Only used for button sheet for now
+        case relative(Double)
+
         public func encode(to encoder: any Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
 
@@ -386,6 +389,9 @@ public extension PaywallComponent {
                 try container.encode(SizeConstraintType.fill.rawValue, forKey: .type)
             case .fixed(let value):
                 try container.encode(SizeConstraintType.fixed.rawValue, forKey: .type)
+                try container.encode(value, forKey: .value)
+            case .relative(let value):
+                try container.encode(SizeConstraintType.relative.rawValue, forKey: .type)
                 try container.encode(value, forKey: .value)
             }
         }
@@ -403,6 +409,9 @@ public extension PaywallComponent {
                 case .fixed:
                     let value = try container.decode(UInt.self, forKey: .value)
                     self = .fixed(value)
+                case .relative:
+                    let value = try container.decode(Double.self, forKey: .value)
+                    self = .relative(value)
                 }
             } catch {
                 self = .fit
@@ -423,6 +432,7 @@ public extension PaywallComponent {
             case fit
             case fill
             case fixed
+            case relative
 
         }
 
