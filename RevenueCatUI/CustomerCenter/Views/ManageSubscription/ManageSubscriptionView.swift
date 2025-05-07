@@ -234,7 +234,7 @@ struct ManageSubscriptionView: View {
                     viewModel: ManageSubscriptionViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: false,
-                        purchaseInformation: CustomerCenterConfigData.subscriptionInformationMonthlyRenewing,
+                        purchaseInformation: CustomerCenterConfigData.subscriptionInformationMonthlyRenewing
                     )
                 )
             }
@@ -246,7 +246,7 @@ struct ManageSubscriptionView: View {
                     viewModel: ManageSubscriptionViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: false,
-                        purchaseInformation: CustomerCenterConfigData.subscriptionInformationYearlyExpiring(),
+                        purchaseInformation: CustomerCenterConfigData.subscriptionInformationYearlyExpiring()
                     )
                 )
             }
@@ -270,7 +270,7 @@ struct ManageSubscriptionView: View {
                     viewModel: ManageSubscriptionViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: false,
-                        purchaseInformation: CustomerCenterConfigData.consumable,
+                        purchaseInformation: CustomerCenterConfigData.consumable
                     )
                 )
             }
@@ -283,7 +283,7 @@ struct ManageSubscriptionView: View {
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: false,
                         purchaseInformation: CustomerCenterConfigData.subscriptionInformationYearlyExpiring(
-                            store: .playStore),
+                            store: .playStore)
                     )
                 )
             }
