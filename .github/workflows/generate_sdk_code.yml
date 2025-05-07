@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Checkout current repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0  # Required for detecting file changes
 
@@ -27,9 +27,11 @@ jobs:
             https://api.github.com/repos/RevenueCat/khepri/contents/services/customer_center/domain/default_stored_customer_center_config.json \
             -o config.json
 
-          echo "CONFIG_JSON<<EOF" >> $GITHUB_ENV
-          cat config.json >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          {
+            echo "CONFIG_JSON<<EOF"
+            cat config.json
+            echo "EOF"
+          } >> "$GITHUB_ENV"
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -66,5 +68,3 @@ jobs:
             This PR was automatically created after processing `default_stored_customer_center_config.json`.
           commit-message: "Update based on customer center config"
           base: main  # change if your default branch is different
-
-          
