@@ -250,7 +250,7 @@ private extension OfferingsManager {
         let productIdentifiers = response.productIdentifiers
         let webProductIdentifiers = response.productIdentifiersByStoreType[.rcBilling] ?? []
 
-        guard !productIdentifiers.isEmpty && !webProductIdentifiers.isEmpty else {
+        guard !productIdentifiers.isEmpty || !webProductIdentifiers.isEmpty else {
             let errorMessage = Strings.offering.configuration_error_no_products_for_offering.description
             completion(.failure(.configurationError(errorMessage, underlyingError: nil)))
             return
