@@ -14,9 +14,8 @@
 //
 
 import Foundation
-@_spi(Internal) @testable import RevenueCat
+@_spi(Internal) import RevenueCat
 
-// swiftlint:disable force_unwrapping
 extension CustomerCenterConfigData {
 
     @available(iOS 14.0, *)
