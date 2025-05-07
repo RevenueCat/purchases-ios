@@ -188,7 +188,7 @@ enum CustomerCenterConfigTestData {
             expirationOrRenewal: .init(label: .expires,
                                        date: .date("June 1st, 2024")),
             productIdentifier: "product_id",
-            store: Store.amazon,
+            store: store,
             isLifetime: false,
             isTrial: false,
             isCancelled: false,
