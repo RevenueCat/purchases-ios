@@ -4,21 +4,21 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - feat/generate-ios-code  # 🔁 triggers on push to this branch
-      
+      - feat/generate-ios-code  # Trigger on pushes to this branch
+
 jobs:
   fetch_run_and_pr:
     runs-on: macos-latest
 
     permissions:
-      contents: write       # Needed to commit and push changes
-      pull-requests: write  # Needed to create PRs
+      contents: write
+      pull-requests: write
 
     steps:
       - name: Checkout current repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Required for detecting file changes
+          fetch-depth: 0
 
       - name: Download customer center config from private repo
         env:
@@ -30,10 +30,11 @@ jobs:
             https://api.github.com/repos/RevenueCat/khepri/contents/services/customer_center/domain/default_stored_customer_center_config.json \
             -o config.json
 
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.1'
+          {
+            echo "CONFIG_JSON<<EOF"
+            cat config.json
+            echo "EOF"
+          } >> "$GITHUB_ENV"
 
       - name: Install Fastlane
         run: gem install fastlane
@@ -53,15 +54,21 @@ jobs:
             git commit -m "Update based on customer center config"
           else
             echo "No changes to commit."
+            echo "no_changes=true" >> "$GITHUB_ENV"
           fi
 
-      - name: Create Pull Request if there were changes
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ github.token }}
-          branch: auto/update-customer-config
-          title: "Update from customer center config"
-          body: |
-            This PR was automatically created after processing `default_stored_customer_center_config.json`.
-          commit-message: "Update based on customer center config"
-          base: main  # change if your default branch is different
+      - name: Push changes (if any)
+        if: env.no_changes != 'true'
+        run: |
+          git push --set-upstream origin auto/update-customer-config
+
+      - name: Create Pull Request (if changes exist)
+        if: env.no_changes != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr create \
+            --head auto/update-customer-config \
+            --base main \
+            --title "Update from customer center config" \
+            --body "This PR was automatically created after processing \`default_stored_customer_center_config.json\`."
