@@ -145,6 +145,7 @@ struct SubscriptionDetailsHeader: View {
         }
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     private func getSubscriptionExplanation(from purchaseInformation: PurchaseInformation,
                                             localization: CustomerCenterConfigData.Localization) -> String? {
         guard purchaseInformation.expirationOrRenewal != nil else {
@@ -164,12 +165,14 @@ struct SubscriptionDetailsHeader: View {
             return localization[.youHaveLifetime]
         case .google:
             return localization[.googleSubscriptionManage]
-        case .web:
+        case .externalWeb:
             return localization[.webSubscriptionManage]
         case .otherStorePurchase:
             return localization[.pleaseContactSupportToManage]
         case .amazon:
             return localization[.amazonSubscriptionManage]
+        case .rcWebBilling:
+            return localization[.webSubscriptionManage]
         }
     }
 }
