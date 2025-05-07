@@ -118,7 +118,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         }
                 }
             )
-            .animation(.spring(duration: 0.35), value: sheetViewModel)
+            .animation(.spring(response: 0.35, dampingFraction: 0.7), value: sheetViewModel)
         }
         .ignoresSafeArea()
     }
