@@ -55,6 +55,24 @@ final class ManageSubscriptionViewModel: BaseManageSubscriptionViewModel {
     func reloadPurchaseInformation(_ purchaseInformation: PurchaseInformation) {
         self.purchaseInformation = purchaseInformation
     }
+
+    // Previews
+    convenience init(
+        screen: CustomerCenterConfigData.Screen,
+        showPurchaseHistory: Bool,
+        purchaseInformation: PurchaseInformation? = nil,
+        refundRequestStatus: RefundRequestStatus? = nil
+    ) {
+        self.init(
+            screen: screen,
+            showPurchaseHistory: showPurchaseHistory,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchaseInformation,
+            refundRequestStatus: refundRequestStatus,
+            purchasesProvider: CustomerCenterPurchases(),
+            loadPromotionalOfferUseCase: nil
+        )
+    }
 }
 
 #endif

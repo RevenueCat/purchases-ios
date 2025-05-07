@@ -52,6 +52,19 @@ final class ManageSubscriptionsViewModel: BaseManageSubscriptionViewModel {
             )
         }
 
+    // Used for Previews
+    convenience init(
+        screen: CustomerCenterConfigData.Screen,
+        activePurchases: [PurchaseInformation] = []
+    ) {
+        self.init(
+            screen: screen,
+            actionWrapper: CustomerCenterActionWrapper(),
+            activePurchases: activePurchases,
+            purchasesProvider: CustomerCenterPurchases(),
+        )
+    }
+
     func updatePurchases(_ activePurchases: [PurchaseInformation]) {
         self.activePurchases = activePurchases
         // go back to the list

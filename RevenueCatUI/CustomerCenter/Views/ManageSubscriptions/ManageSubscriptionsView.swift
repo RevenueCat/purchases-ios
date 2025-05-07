@@ -61,8 +61,9 @@ struct ManageSubscriptionsView: View {
         )
     }
 
+    // Used for Previews
     fileprivate init(
-        activePurchases: Binding<[PurchaseInformation]>,
+        activePurchases: Binding<[PurchaseInformation]> = .constant([]),
         viewModel: ManageSubscriptionsViewModel
     ) {
         self._activePurchases = activePurchases
@@ -190,62 +191,47 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
     // swiftlint:disable force_unwrapping
     static var previews: some View {
         let purchases = [
-            CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring(store: .amazon),
-            CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
-            CustomerCenterConfigTestData.subscriptionInformationFree
+            CustomerCenterConfigData.subscriptionInformationYearlyExpiring(store: .amazon),
+            CustomerCenterConfigData.subscriptionInformationMonthlyRenewing,
+            CustomerCenterConfigData.subscriptionInformationFree
         ]
 
-        let warningOff = CustomerCenterConfigTestData.customerCenterData(
+        let warningOffMock = CustomerCenterConfigData.mock(
             displayPurchaseHistoryLink: true
-        ).support
+        )
 
-        let warningOn = CustomerCenterConfigTestData.customerCenterData(
+        let warningOnMock = CustomerCenterConfigData.mock(
             displayPurchaseHistoryLink: true,
             shouldWarnCustomersAboutMultipleSubscriptions: true
-        ).support
+        )
 
         ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
             CompatibilityNavigationStack {
-                let viewModel = ManageSubscriptionsViewModel(
-                    screen: CustomerCenterConfigTestData.customerCenterData(
-                        displayPurchaseHistoryLink: true
-                    ).screens[.management]!,
-                    actionWrapper: CustomerCenterActionWrapper(),
-                    activePurchases: purchases,
-                    purchasesProvider: CustomerCenterPurchases()
-                )
                 ManageSubscriptionsView(
-                    activePurchases: .constant(purchases),
-                    viewModel: viewModel
+                    viewModel: ManageSubscriptionsViewModel(
+                        screen: warningOffMock.screens[.management]!,
+                        activePurchases: purchases
+                    )
                 )
-                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
-                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
-                .environment(\.supportInformation, warningOff)
+                .environment(\.supportInformation, warningOffMock.support)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Active subs - \(colorScheme)")
 
             CompatibilityNavigationStack {
-                let viewModel = ManageSubscriptionsViewModel(
-                    screen: CustomerCenterConfigTestData.customerCenterData(
-                        displayPurchaseHistoryLink: true,
-                        shouldWarnCustomersAboutMultipleSubscriptions: true
-                    ).screens[.management]!,
-                    actionWrapper: CustomerCenterActionWrapper(),
-                    activePurchases: purchases,
-                    purchasesProvider: CustomerCenterPurchases()
-                )
                 ManageSubscriptionsView(
-                    activePurchases: .constant(purchases),
-                    viewModel: viewModel
+                    viewModel: ManageSubscriptionsViewModel(
+                        screen: warningOnMock.screens[.management]!,
+                        activePurchases: purchases
+                    )
                 )
-                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
-                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
-                .environment(\.supportInformation, warningOn)
+                .environment(\.supportInformation, warningOnMock.support)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Dup subs warning - \(colorScheme)")
         }
+        .environment(\.localization, CustomerCenterConfigData.default.localization)
+        .environment(\.appearance, CustomerCenterConfigData.default.appearance)
     }
 
 }

@@ -443,7 +443,7 @@ final class ManageSubscriptionViewModelTests: TestCase {
                                                                               signedData: signedData)
 
         let screen = PurchaseInformationFixtures.screenWithPromo(offerID: offerIdentifierInJSON)
-        let purchaseInformation = CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring()
+        let purchaseInformation = CustomerCenterConfigData.subscriptionInformationYearlyExpiring()
         let viewModel = ManageSubscriptionViewModel(screen: screen,
                                                     showPurchaseHistory: false,
                                                     actionWrapper: CustomerCenterActionWrapper(),
@@ -492,14 +492,15 @@ final class ManageSubscriptionViewModelTests: TestCase {
 private extension ManageSubscriptionViewModelTests {
 
     static let `default`: CustomerCenterConfigData.Screen =
-    CustomerCenterConfigTestData.customerCenterData.screens[.management]!
+    CustomerCenterConfigData.default.screens[.management]!
 
     static func managementScreen(
         refundWindowDuration: CustomerCenterConfigData.HelpPath.RefundWindowDuration
     ) -> CustomerCenterConfigData.Screen {
-        CustomerCenterConfigTestData.customerCenterData(
+        CustomerCenterConfigData.mock(
             lastPublishedAppVersion: "1.0.0",
-            refundWindowDuration: refundWindowDuration).screens[.management]!
+            refundWindowDuration: refundWindowDuration
+        ).screens[.management]!
     }
 
 }
