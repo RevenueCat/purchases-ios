@@ -145,6 +145,7 @@ struct SubscriptionDetailsHeader: View {
         }
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     private func getSubscriptionExplanation(from purchaseInformation: PurchaseInformation,
                                             localization: CustomerCenterConfigData.Localization) -> String? {
         guard purchaseInformation.expirationOrRenewal != nil else {

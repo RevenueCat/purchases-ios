@@ -244,20 +244,28 @@ class CustomerInfoFixtures {
         )
     }()
 
+    static let customerInfoWithExpiredStripeSubscriptions: CustomerInfo = {
+        makeCustomerInfo(
+            store: "stripe",
+            purchaseDate: "1999-04-12T00:03:28Z",
+            expirationDate: "2000-04-12T00:03:35Z"
+        )
+    }()
+
     static let customerInfoWithRCBillingSubscriptions: CustomerInfo = {
         makeCustomerInfo(store: "rc_billing")
     }()
 
     static let customerInfoWithNonRenewingRCBillingSubscriptions: CustomerInfo = {
         makeCustomerInfo(
-            store: "stripe",
+            store: "rc_billing",
             unsubscribeDetectedAt: "2023-04-12T00:03:35Z"
         )
     }()
 
-    static let customerInfoWithExpiredStripeSubscriptions: CustomerInfo = {
+    static let customerInfoWithExpiredRCBillingSubscriptions: CustomerInfo = {
         makeCustomerInfo(
-            store: "stripe",
+            store: "rc_billing",
             purchaseDate: "1999-04-12T00:03:28Z",
             expirationDate: "2000-04-12T00:03:35Z"
         )
