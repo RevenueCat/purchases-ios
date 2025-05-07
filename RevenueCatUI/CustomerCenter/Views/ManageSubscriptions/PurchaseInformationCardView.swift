@@ -79,12 +79,14 @@ struct PurchaseInformationCardView: View {
                     .multilineTextAlignment(.leading)
             }
         } content: {
-            Image(systemName: "chevron.forward")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 12, height: 12)
-                .foregroundStyle(.secondary)
-                .font(Font.system(size: 12, weight: .bold))
+            if showChevron {
+                Image(systemName: "chevron.forward")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 12, height: 12)
+                    .foregroundStyle(.secondary)
+                    .font(Font.system(size: 12, weight: .bold))
+            }
         }
     }
 }
