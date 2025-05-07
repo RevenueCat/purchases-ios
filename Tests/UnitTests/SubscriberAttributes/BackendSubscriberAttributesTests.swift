@@ -32,7 +32,8 @@ class BackendSubscriberAttributesTests: TestCase {
     private var mockETagManager: MockETagManager!
     private var mockDiagnosticsTracker: DiagnosticsTrackerType?
 
-    private static let apiKey = "the api key"
+    private static let apiKeys = Purchases.APIKeys(apiKey: "the api key",
+                                                   webBillingAPIKey: "the Web Billing api key")
 
     let validSubscriberResponse: [String: Any] = [
         "request_date": "2019-08-16T10:30:42Z",
@@ -420,7 +421,7 @@ class BackendSubscriberAttributesTests: TestCase {
             self.mockDiagnosticsTracker = MockDiagnosticsTracker()
         }
 
-        return MockHTTPClient(apiKey: Self.apiKey,
+        return MockHTTPClient(apiKeys: Self.apiKeys,
                               systemInfo: self.systemInfo,
                               eTagManager: self.mockETagManager,
                               diagnosticsTracker: self.mockDiagnosticsTracker,
