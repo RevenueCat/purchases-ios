@@ -141,6 +141,7 @@ public struct CustomerCenterConfigData: Equatable {
             case storeRCBilling = "store_web"
             case storeExternal = "store_external"
             case storeUnknownStore = "store_unknown"
+            case storePaddle = "store_paddle"
             case debugHeaderTitle = "Debug"
 
             var defaultValue: String {
@@ -325,6 +326,8 @@ public struct CustomerCenterConfigData: Equatable {
                     return "External Purchases"
                 case .storeUnknownStore:
                     return "Unknown Store"
+                case .storePaddle:
+                    return "Paddle"
                 case .debugHeaderTitle:
                     return "Debug"
                 }
