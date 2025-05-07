@@ -514,14 +514,14 @@ private extension PurchaseInformation {
             durationTitle: "",
             explanation: .lifetime,
             price: .paid(""),
-            expirationOrRenewal: PurchaseInformation.ExpirationOrRenewal(label: .expires, date: .date("")),
+            expirationOrRenewal: ExpirationOrRenewal(label: .expires, date: .date("")),
             productIdentifier: "",
             store: .appStore,
             isLifetime: true,
             isTrial: false,
-            isCancelled: false,
             latestPurchaseDate: nil,
             customerInfoRequestedDate: customerInfoRequestedDate,
+            isCancelled: false,
             managePurchaseURL: URL(string: "https://www.revenuecat.com")!
         )
     }
@@ -548,9 +548,9 @@ private extension PurchaseInformation {
                 store: store,
                 isLifetime: false,
                 isTrial: isTrial,
-                isCancelled: isCancelled,
                 latestPurchaseDate: latestPurchaseDate,
                 customerInfoRequestedDate: customerInfoRequestedDate,
+                isCancelled: isCancelled,
                 managePurchaseURL: managementURL
             )
         }
