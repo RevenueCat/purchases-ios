@@ -1,23 +1,29 @@
 ## RevenueCat SDK
-### 🐞 Bugfixes
-* Fix Backwards compatibility errors introduced by new `testSDKHealthCheck` implementation (#5022) via Pol Piella Abadia (@polpielladev)
-* [Paywalls v2] fixes crash when getting invalid URL from paywall components localization (#5016) via Antonio Pallares (@ajpallares)
+### ✨ New Features
+* Paywalls v2 sheet anysize (#5056) via Josh Holtz (@joshdholtz)
+* Purchase web package (#5049) via Josh Holtz (@joshdholtz)
 
 ## RevenueCatUI SDK
+### ✨ New Features
+* Add Bottom Sheet View (#5044) via Will Taylor (@fire-at-will)
 ### Paywallv2
-#### 🐞 Bugfixes
-* [Paywalls v2] Fixes blank lines not showing up (#5024) via JayShortway (@JayShortway)
+#### ✨ New Features
+* Fix new carousel transition (#5051) via Josh Holtz (@joshdholtz)
+* [Paywalls v2] add stroke support in carousel dots (#5045) via Antonio Pallares (@ajpallares)
+* feat: Introduce fade transition for loop animated CarouselView (#5047) via Facundo Menzella (@facumenzella)
 ### Customer Center
 #### 🐞 Bugfixes
-* fix: Wrap viewmodel binding into another binding (#5023) via Facundo Menzella (@facumenzella)
+* fix: Hide cancel & refundRequest if subscription is already cancelled (#5035) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* [Paywalls] Add new button component action for web paywall links (#5029) via Mark Villacampa (@MarkVillacampa)
-* [Customer center] show manage subscriptions through purchases provider (#5025) via Antonio Pallares (@ajpallares)
-* [Diagnostics] add `host` parameter to `http_request_performed` event (#4982) via Antonio Pallares (@ajpallares)
-* fix compilation issues in older versions of Xcode (#5021) via Antonio Pallares (@ajpallares)
-* Add load shedder integration tests for consumable and non-consumable products (#5018) via Toni Rico (@tonidero)
-* Use fallback API hosts when receiving server down response (#4970) via Antonio Pallares (@ajpallares)
-* feat: Introduce maestro for UI testing (#5013) via Facundo Menzella (@facumenzella)
-* [Paywalls v2] Adds logs to indicate whether URLs are opened successfully (#5020) via JayShortway (@JayShortway)
-* [DX-345] Update the `testSDKHealth` to use the new `/health_report` endpoint (#4979) via Pol Piella Abadia (@polpielladev)
+* use m1 pro large (#5060) via Mark Villacampa (@MarkVillacampa)
+* use m2pro.large for all jobs (#5059) via Mark Villacampa (@MarkVillacampa)
+* Add endpoint for fetching web billing products (#5055) via Toni Rico (@tonidero)
+* Bump nokogiri from 1.18.5 to 1.18.8 in /Tests/InstallationTests/CocoapodsInstallation (#5054) via dependabot[bot] (@dependabot[bot])
+* Bump fastlane from 2.225.0 to 2.227.2 (#5052) via dependabot[bot] (@dependabot[bot])
+* Bump nokogiri from 1.18.7 to 1.18.8 (#5032) via dependabot[bot] (@dependabot[bot])
+* [Paywalls] Remove url manipulation and alert from web paywall links (#5041) via Mark Villacampa (@MarkVillacampa)
+* chore: Add right chevron to see all purchases (#5039) via Facundo Menzella (@facumenzella)
+* other: Use not synced storekit config to avoid unwanted changes (#5037) via Facundo Menzella (@facumenzella)
+* chore: Make StoreProductDiscountType @__spi public (#5034) via Facundo Menzella (@facumenzella)
+* feat: Add missing pieces for maestro local execution (#5017) via Facundo Menzella (@facumenzella)

@@ -52,6 +52,15 @@ struct HTTPRequest {
         self.init(method: method, requestPath: path, nonce: nonce, isRetryable: isRetryable)
     }
 
+    init(
+        method: Method,
+        path: HTTPRequest.WebBillingPath,
+        nonce: Data? = nil,
+        isRetryable: Bool = false
+    ) {
+        self.init(method: method, requestPath: path, nonce: nonce, isRetryable: isRetryable)
+    }
+
     private init(
         method: Method,
         requestPath: HTTPRequestPath,

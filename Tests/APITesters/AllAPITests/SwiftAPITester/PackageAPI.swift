@@ -30,7 +30,8 @@ private func checkCreatePackageAPI(product: StoreProduct) {
         identifier: "",
         packageType: PackageType.annual,
         storeProduct: product,
-        offeringIdentifier: ""
+        offeringIdentifier: "",
+        webCheckoutUrl: URL(string: "https://revenuecat.com")
     )
 }
 
