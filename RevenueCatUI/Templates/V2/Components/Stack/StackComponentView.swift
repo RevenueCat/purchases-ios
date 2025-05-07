@@ -720,7 +720,10 @@ extension StackComponentViewModel {
     ) throws {
         let validator = PackageValidator()
         let factory = ViewModelFactory()
-        let offering = Offering(identifier: "", serverDescription: "", availablePackages: [])
+        let offering = Offering(identifier: "",
+                                serverDescription: "",
+                                availablePackages: [],
+                                webCheckoutUrl: nil)
         let uiConfigProvider = UIConfigProvider(uiConfig: PreviewUIConfig.make())
 
         let viewModels = try component.components.map { component in

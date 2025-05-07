@@ -5,11 +5,12 @@ import StoreKit
 
 public struct ContentView: View {
     @State private var presentCustomerCenter = false
+    @State private var manageSubscriptions = false
     @State private var actionSheetIsPresented = false
 
     @State private var productToBuy: String?
 
-    public init() {}
+    public init() { }
 
     public var body: some View {
         VStack {
@@ -22,18 +23,26 @@ public struct ContentView: View {
         }
         .ignoresSafeArea(.all)
         .presentCustomerCenter(isPresented: $presentCustomerCenter)
-        .safeAreaInset(edge: .bottom, content: {
-            Button("Buy something") {
-                actionSheetIsPresented = true
-            }
-            .buttonStyle(.bordered)
-        })
+        .manageSubscriptionsSheet(isPresented: $manageSubscriptions)
         .confirmationDialog(
             "Buy something",
             isPresented: $actionSheetIsPresented
         ) {
             buttonsView
         }
+        .safeAreaInset(edge: .bottom, content: {
+            HStack {
+                Button("Buy something") {
+                    actionSheetIsPresented = true
+                }
+                .buttonStyle(.bordered)
+
+                Button("Manage subscriptions") {
+                    manageSubscriptions = true
+                }
+                .buttonStyle(.bordered)
+            }
+        })
     }
 
     @ViewBuilder
@@ -43,10 +52,22 @@ public struct ContentView: View {
                 productToBuy = product
 
                 Task {
-                    let product = await Purchases.shared.products([product]).first!
-                    _ = try await Purchases.shared.purchase(product: product)
+                    let fetchedProducts = await Purchases.shared.products([product])
+                    guard let product = fetchedProducts.first else {
+                        print("⚠️ Failed to find product: \(product)")
+                        await MainActor.run {
+                            productToBuy = nil
+                        }
+                        return
+                    }
 
-                    Task { @MainActor in
+                    do {
+                        _ = try await Purchases.shared.purchase(product: product)
+                    } catch {
+                        print("⚠️ Purchase failed: \(error)")
+                    }
+
+                    await MainActor.run {
                         productToBuy = nil
                     }
                 }
@@ -57,11 +78,12 @@ public struct ContentView: View {
     }
 
     static var products: [String] {
-        [
-            "maestro.weekly.tests",
-            "maestro.monthly.tests"
-        ]
-    }
+         [
+             "maestro.weekly.tests.01",
+             "maestro.monthly.tests.02",
+             "maestro.weekly2.tests.01"
+         ]
+     }
 }
 
 struct ContentView_Previews: PreviewProvider {

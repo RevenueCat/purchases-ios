@@ -9,7 +9,7 @@
       }
     ]
   },
-  "identifier" : "37351D1E",
+  "identifier" : "6FF06023",
   "nonRenewingSubscriptions" : [
 
   ],
@@ -17,10 +17,7 @@
 
   ],
   "settings" : {
-    "_applicationInternalID" : "6744533481",
-    "_developerTeamID" : "8SXR2327BM",
     "_failTransactionsEnabled" : false,
-    "_lastSynchronizedDate" : 767105909.83790004,
     "_locale" : "en_US",
     "_storefront" : "USA",
     "_storeKitErrors" : [
@@ -73,43 +70,41 @@
   },
   "subscriptionGroups" : [
     {
-      "id" : "21666521",
+      "id" : "F7DE1690",
       "localizations" : [
 
       ],
-      "name" : "maestro-tests",
+      "name" : "subscription.group.1",
       "subscriptions" : [
         {
           "adHocOffers" : [
             {
-              "displayPrice" : "0.99",
-              "internalID" : "D8AF38DF",
-              "numberOfPeriods" : 1,
-              "offerID" : "maestro.weekly.tests.promotional1",
-              "paymentMode" : "payAsYouGo",
-              "referenceName" : "maestro.weekly.tests.promotional1",
-              "subscriptionPeriod" : "P1W"
+              "internalID" : "7AF59252",
+              "offerID" : "maestro.weekly.tests.promo.free.01",
+              "paymentMode" : "free",
+              "referenceName" : "Product 1 Promo [Weekly]",
+              "subscriptionPeriod" : "P3D"
             }
           ],
           "codeOffers" : [
 
           ],
-          "displayPrice" : "1.99",
+          "displayPrice" : "0.99",
           "familyShareable" : false,
           "groupNumber" : 1,
-          "internalID" : "6744534472",
+          "internalID" : "45C8F602",
           "introductoryOffer" : null,
           "localizations" : [
             {
-              "description" : "Weekly Tests for RC Maestro",
-              "displayName" : "Maestro Weekly Tests",
+              "description" : "Product 1 on weekly basis",
+              "displayName" : "Product 1 [Weekly]",
               "locale" : "en_US"
             }
           ],
-          "productID" : "maestro.weekly.tests",
+          "productID" : "maestro.weekly.tests.01",
           "recurringSubscriptionPeriod" : "P1W",
-          "referenceName" : "maestro-tests",
-          "subscriptionGroupID" : "21666521",
+          "referenceName" : "Product 1 [Weekly]",
+          "subscriptionGroupID" : "F7DE1690",
           "type" : "RecurringSubscription",
           "winbackOffers" : [
 
@@ -122,22 +117,59 @@
           "codeOffers" : [
 
           ],
-          "displayPrice" : "3.99",
+          "displayPrice" : "1.99",
           "familyShareable" : false,
-          "groupNumber" : 2,
-          "internalID" : "6744970035",
+          "groupNumber" : 1,
+          "internalID" : "AB1B73AE",
           "introductoryOffer" : null,
           "localizations" : [
             {
-              "description" : "Mostly Tests for RC Maestro",
-              "displayName" : "Maestro Montly Tests",
+              "description" : "Product 1 on monthly basis",
+              "displayName" : "Product 1 [Monthly]",
               "locale" : "en_US"
             }
           ],
-          "productID" : "maestro.monthly.tests",
+          "productID" : "maestro.monthly.tests.02",
           "recurringSubscriptionPeriod" : "P1M",
-          "referenceName" : "maestro-tests2",
-          "subscriptionGroupID" : "21666521",
+          "referenceName" : "Product 1 [Monthly]",
+          "subscriptionGroupID" : "F7DE1690",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    },
+    {
+      "id" : "31558EC7",
+      "localizations" : [
+
+      ],
+      "name" : "subscription.group.2",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "0.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "B2B6951D",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Product 2 on weekly basis",
+              "displayName" : "Product 2 [Weekly]",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "maestro.weekly2.tests.01",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Product 2 [Weekly]",
+          "subscriptionGroupID" : "31558EC7",
           "type" : "RecurringSubscription",
           "winbackOffers" : [
 

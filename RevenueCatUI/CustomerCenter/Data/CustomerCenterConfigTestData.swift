@@ -150,11 +150,10 @@ enum CustomerCenterConfigTestData {
             expirationOrRenewal: .init(label: .nextBillingDate, date: .date("June 1st, 2024")),
             productIdentifier: "product_id",
             store: .appStore,
-            isTrial: false,
             isLifetime: false,
+            isTrial: false,
             latestPurchaseDate: Date(),
-            isCancelled: false,
-            customerInfoRequestedDate: Date(),
+            customerInfoRequestedDate: Date(), isCancelled: false,
             introductoryDiscount: introductoryDiscount,
             expirationDate: Date().addingTimeInterval(24 * 60 * 60),
             renewalDate: Date().addingTimeInterval(24 * 60 * 60)
@@ -170,11 +169,11 @@ enum CustomerCenterConfigTestData {
                                    date: .date("June 1st, 2024")),
         productIdentifier: "product_id",
         store: .appStore,
-        isTrial: false,
         isLifetime: false,
+        isTrial: false,
         latestPurchaseDate: nil,
-        isCancelled: false,
-        customerInfoRequestedDate: Date()
+        customerInfoRequestedDate: Date(),
+        isCancelled: false
     )
 
     static func subscriptionInformationYearlyExpiring(isCancelled: Bool = true) -> PurchaseInformation {
@@ -187,11 +186,11 @@ enum CustomerCenterConfigTestData {
                                        date: .date("June 1st, 2024")),
             productIdentifier: "product_id",
             store: .appStore,
-            isTrial: false,
             isLifetime: false,
+            isTrial: false,
             latestPurchaseDate: nil,
-            isCancelled: isCancelled,
             customerInfoRequestedDate: Date(),
+            isCancelled: isCancelled,
             introductoryDiscount: nil,
             expirationDate: Date(),
             renewalDate: nil
@@ -206,11 +205,11 @@ enum CustomerCenterConfigTestData {
         expirationOrRenewal: nil,
         productIdentifier: "product_id",
         store: .appStore,
-        isTrial: false,
         isLifetime: true,
+        isTrial: false,
         latestPurchaseDate: Date(),
-        isCancelled: false,
-        customerInfoRequestedDate: Date()
+        customerInfoRequestedDate: Date(),
+        isCancelled: false
     )
 
     static func discount(

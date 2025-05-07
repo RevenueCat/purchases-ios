@@ -22,6 +22,7 @@ struct OfferingsResponse {
 
             let identifier: String
             let platformProductIdentifier: String
+            let webCheckoutUrl: URL?
 
         }
 
@@ -34,6 +35,7 @@ struct OfferingsResponse {
         var metadata: [String: AnyDecodable]
         var paywallComponents: PaywallComponentsData?
         var draftPaywallComponents: PaywallComponentsData?
+        let webCheckoutUrl: URL?
     }
 
     struct Placements {

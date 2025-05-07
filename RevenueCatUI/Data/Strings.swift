@@ -64,6 +64,8 @@ enum Strings {
     case successfully_opened_url_external_browser(String)
     case failed_to_open_url_deep_link(String)
     case successfully_opened_url_deep_link(String)
+    case no_selected_package_found
+    case no_web_checkout_url_found
 
     // Customer Center
     case could_not_find_subscription_information
@@ -242,6 +244,12 @@ extension Strings: CustomStringConvertible {
 
         case .successfully_opened_url_deep_link(let url):
             return "Successfully opened URL as deep link: \(url)"
+
+        case .no_selected_package_found:
+            return "No selected package found."
+
+        case .no_web_checkout_url_found:
+            return "No web checkout url found."
         }
     }
 

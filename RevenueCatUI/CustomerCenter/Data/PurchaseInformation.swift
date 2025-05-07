@@ -54,17 +54,17 @@ struct PurchaseInformation {
     /// - `false` for purchases outside the trial period.
     let isTrial: Bool
 
-    let latestPurchaseDate: Date?
-
-    /// The fetch date of this CustomerInfo. (a.k.a. CustomerInfo.requestedDate)
-    let customerInfoRequestedDate: Date
-
     /// Indicates wheter the purchased subscripcion is cancelled
     /// - `true` if the subscription is user-cancelled
     /// - `false` if the subscription is not user-cancelled
     ///
     /// Note: `false` for non-subscriptions
     let isCancelled: Bool
+
+    let latestPurchaseDate: Date?
+
+    /// The fetch date of this CustomerInfo. (a.k.a. CustomerInfo.requestedDate)
+    let customerInfoRequestedDate: Date
 
     let introductoryDiscount: StoreProductDiscountType?
 
@@ -81,11 +81,11 @@ struct PurchaseInformation {
          expirationOrRenewal: ExpirationOrRenewal?,
          productIdentifier: String,
          store: Store,
-         isTrial: Bool,
          isLifetime: Bool,
+         isTrial: Bool,
          latestPurchaseDate: Date?,
-         isCancelled: Bool = false,
          customerInfoRequestedDate: Date,
+         isCancelled: Bool = false,
          introductoryDiscount: StoreProductDiscountType? = nil,
          expirationDate: Date? = nil,
          renewalDate: Date? = nil
@@ -99,8 +99,8 @@ struct PurchaseInformation {
         self.store = store
         self.isLifetime = isLifetime
         self.isTrial = isTrial
-        self.latestPurchaseDate = latestPurchaseDate
         self.isCancelled = isCancelled
+        self.latestPurchaseDate = latestPurchaseDate
         self.customerInfoRequestedDate = customerInfoRequestedDate
         self.introductoryDiscount = introductoryDiscount
         self.expirationDate = expirationDate
@@ -136,10 +136,9 @@ struct PurchaseInformation {
             }
             self.isLifetime = entitlement.expirationDate == nil
 
-            self.latestPurchaseDate = entitlement.latestPurchaseDate
-
             self.isTrial = entitlement.periodType == .trial
-            self.isCancelled = entitlement.unsubscribeDetectedAt != nil && !entitlement.willRenew
+            self.isCancelled = entitlement.isCancelled
+            self.latestPurchaseDate = entitlement.latestPurchaseDate
             self.expirationDate = entitlement.expirationDate
             self.renewalDate = entitlement.willRenew ? entitlement.expirationDate : nil
         } else {
@@ -174,6 +173,7 @@ struct PurchaseInformation {
 
             self.productIdentifier = transaction.productIdentifier
             self.store = transaction.store
+            self.isCancelled = transaction.isCancelled
 
             if transaction.store == .promotional {
                 self.price = .free
@@ -184,8 +184,6 @@ struct PurchaseInformation {
                     self.price = storeProduct.map { .paid($0.localizedPriceString) } ?? .unknown
                 }
             }
-
-            self.isCancelled = transaction.isCancelled
         }
 
         self.dateFormatter = dateFormatter
@@ -289,7 +287,11 @@ extension PurchaseInformation {
     }
 }
 
-fileprivate extension EntitlementInfo {
+private extension EntitlementInfo {
+
+    var isCancelled: Bool {
+        unsubscribeDetectedAt != nil && !willRenew
+    }
 
     func priceBestEffort(product: StoreProduct?) -> PurchaseInformation.PriceDetails {
         if let product {
@@ -453,5 +455,9 @@ private extension PurchaseInformation.PriceDetails {
         case .unknown:
             return "Unknown"
         }
+    }
+
+    var isCancelled: Bool {
+        false
     }
 }

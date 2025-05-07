@@ -42,19 +42,27 @@ struct ManageSubscriptionsView: View {
     @StateObject
     private var viewModel: ManageSubscriptionsViewModel
 
+    @Binding
+    var purchaseInformation: PurchaseInformation?
+
     init(screen: CustomerCenterConfigData.Screen,
-         purchaseInformation: PurchaseInformation?,
+         purchaseInformation: Binding<PurchaseInformation?>,
          purchasesProvider: CustomerCenterPurchasesType,
          actionWrapper: CustomerCenterActionWrapper) {
-        let viewModel = ManageSubscriptionsViewModel(
+        self.init(
+            purchaseInformation: purchaseInformation,
+            viewModel: ManageSubscriptionsViewModel(
             screen: screen,
             actionWrapper: actionWrapper,
-            purchaseInformation: purchaseInformation,
-            purchasesProvider: purchasesProvider)
-        self.init(viewModel: viewModel)
+            purchaseInformation: purchaseInformation.wrappedValue,
+            purchasesProvider: purchasesProvider))
     }
 
-    fileprivate init(viewModel: ManageSubscriptionsViewModel) {
+    fileprivate init(
+        purchaseInformation: Binding<PurchaseInformation?>,
+        viewModel: ManageSubscriptionsViewModel
+    ) {
+        self._purchaseInformation = purchaseInformation
         self._viewModel = .init(wrappedValue: viewModel)
     }
 
@@ -74,7 +82,7 @@ struct ManageSubscriptionsView: View {
                 .environment(\.navigationOptions, navigationOptions)
             }
             .compatibleNavigation(
-                isPresented: $viewModel.showPurchases,
+                isPresented: $viewModel.showAllPurchases,
                 usesNavigationStack: navigationOptions.usesNavigationStack
             ) {
                 PurchaseHistoryView(
@@ -120,11 +128,15 @@ struct ManageSubscriptionsView: View {
 
                 if support?.displayPurchaseHistoryLink == true {
                     Button {
-                        viewModel.showPurchases = true
+                        viewModel.showAllPurchases = true
                     } label: {
-                        Text(localization[.seeAllPurchases])
-                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                            .contentShape(Rectangle())
+                        CompatibilityLabeledContent {
+                            Text(localization[.seeAllPurchases])
+                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                                .contentShape(Rectangle())
+                        } content: {
+                            Image(systemName: "chevron.forward")
+                        }
                     }
                 }
 
@@ -165,7 +177,10 @@ struct ManageSubscriptionsView: View {
             $0.navigationTitle(self.viewModel.screen.title)
                 .navigationBarTitleDisplayMode(.inline)
          })
-
+        .onChangeOf(purchaseInformation?.customerInfoRequestedDate) { _ in
+            guard let purchase = purchaseInformation else { return }
+            viewModel.reloadPurchaseInformation(purchase)
+        }
     }
 
 }
@@ -178,9 +193,9 @@ struct ManageSubscriptionsView: View {
 @available(watchOS, unavailable)
 struct ManageSubscriptionsView_Previews: PreviewProvider {
 
-    static let managementScreen: CustomerCenterConfigData.Screen = CustomerCenterConfigTestData
-        .customerCenterData()
-        .screens[.management]!
+     static let managementScreen: CustomerCenterConfigData.Screen = CustomerCenterConfigTestData
+         .customerCenterData()
+         .screens[.management]!
 
     static var previews: some View {
         ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
@@ -190,7 +205,11 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing(),
                     purchasesProvider: CustomerCenterPurchases())
-                ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing)
+
+                ManageSubscriptionsView(
+                    purchaseInformation: .constant(nil),
+                    viewModel: viewModelMonthlyRenewing
+                )
                     .environment(\.localization, CustomerCenterConfigTestData.customerCenterData().localization)
                     .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData().appearance)
             }
@@ -205,7 +224,10 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
                         introductoryDiscount: CustomerCenterConfigTestData.discount(paymentMode: .payAsYouGo)
                     ),
                     purchasesProvider: CustomerCenterPurchases())
-                ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing)
+                ManageSubscriptionsView(
+                    purchaseInformation: .constant(nil),
+                    viewModel: viewModelMonthlyRenewing
+                )
                     .environment(\.localization, CustomerCenterConfigTestData.customerCenterData().localization)
                     .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData().appearance)
             }
@@ -224,7 +246,10 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
                         )
                     ),
                     purchasesProvider: CustomerCenterPurchases())
-                ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing)
+                ManageSubscriptionsView(
+                    purchaseInformation: .constant(nil),
+                    viewModel: viewModelMonthlyRenewing
+                )
                     .environment(\.localization, CustomerCenterConfigTestData.customerCenterData().localization)
                     .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData().appearance)
             }
@@ -243,7 +268,10 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
                         )
                     ),
                     purchasesProvider: CustomerCenterPurchases())
-                ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing)
+                ManageSubscriptionsView(
+                    purchaseInformation: .constant(nil),
+                    viewModel: viewModelMonthlyRenewing
+                )
                     .environment(\.localization, CustomerCenterConfigTestData.customerCenterData().localization)
                     .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData().appearance)
             }
@@ -257,22 +285,28 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
                     purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing(),
                     refundRequestStatus: .success,
                     purchasesProvider: CustomerCenterPurchases())
-                ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing)
-                    .environment(\.localization, CustomerCenterConfigTestData.customerCenterData().localization)
-                    .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData().appearance)
+
+                ManageSubscriptionsView(
+                    purchaseInformation: .constant(nil),
+                    viewModel: viewModelMonthlyRenewing
+                )
+                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData().localization)
+                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData().appearance)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Renewing subscription - Requested refund - No discount - \(colorScheme)")
-
+//
             CompatibilityNavigationStack {
                 let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
                     screen: Self.managementScreen,
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring(),
                     purchasesProvider: CustomerCenterPurchases())
-                ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
-                    .environment(\.localization, CustomerCenterConfigTestData.customerCenterData().localization)
-                    .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData().appearance)
+                ManageSubscriptionsView(
+                    purchaseInformation: .constant(nil),
+                    viewModel: viewModelYearlyExpiring)
+                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData().localization)
+                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData().appearance)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Cancelled subscription - No refund - No discount - \(colorScheme)")
@@ -283,9 +317,11 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationFree,
                     purchasesProvider: CustomerCenterPurchases())
-                ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
-                    .environment(\.localization, CustomerCenterConfigTestData.customerCenterData().localization)
-                    .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData().appearance)
+                ManageSubscriptionsView(
+                    purchaseInformation: .constant(nil),
+                    viewModel: viewModelYearlyExpiring)
+                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData().localization)
+                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData().appearance)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Free subscription - No refund - No discount - \(colorScheme)")
@@ -296,9 +332,11 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.consumable,
                     purchasesProvider: CustomerCenterPurchases())
-                ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
-                    .environment(\.localization, CustomerCenterConfigTestData.customerCenterData().localization)
-                    .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData().appearance)
+                ManageSubscriptionsView(
+                    purchaseInformation: .constant(nil),
+                    viewModel: viewModelYearlyExpiring)
+                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData().localization)
+                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData().appearance)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Consumable - \(colorScheme)")
@@ -309,7 +347,10 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.consumable,
                     purchasesProvider: CustomerCenterPurchases())
-                ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
+                ManageSubscriptionsView(
+                    purchaseInformation: .constant(nil),
+                    viewModel: viewModelYearlyExpiring
+                )
                     .environment(\.localization, CustomerCenterConfigTestData.customerCenterData().localization)
                     .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData().appearance)
                     .environment(\.supportInformation, CustomerCenterConfigTestData.customerCenterData(
@@ -323,6 +364,6 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
 
 }
 
-#endif
+ #endif
 
 #endif
