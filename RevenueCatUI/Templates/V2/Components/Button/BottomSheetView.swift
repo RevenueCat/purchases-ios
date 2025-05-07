@@ -118,7 +118,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         }
                 }
             )
-            .animation(.spring(duration: 0.35), value: sheetViewModel)
+            .animation(.spring(response: 0.35, dampingFraction: 0.7), value: sheetViewModel)
         }
         .ignoresSafeArea()
     }
@@ -149,29 +149,12 @@ extension View {
 
 #if DEBUG
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-#Preview {
-    struct Preview: View {
-        @State private var sheetViewModel: SheetViewModel? = .init(
-            sheet: PaywallComponent.ButtonComponent.Sheet(
-                id: "exampleSheet",
-                name: nil,
-                stack: .init(
-                    components: [
-                        PaywallComponent.text(
-                            PaywallComponent.TextComponent(
-                                text: "buttonText",
-                                color: .init(light: .hex("#000000"))
-                            )
-                        )
-                    ],
-                    backgroundColor: nil
-                ),
-                background: .color(.init(light: .hex("#FFFFFF"))),
-                backgroundBlur: false,
-                size: .init(width: .fill, height: .fit)
-            ),
-            // swiftlint:disable:next force_try
-            sheetStackViewModel: try! .init(component: .init(
+struct BottomSheetViewTestView: View {
+    @State private var sheetViewModel: SheetViewModel? = .init(
+        sheet: PaywallComponent.ButtonComponent.Sheet(
+            id: "exampleSheet",
+            name: nil,
+            stack: .init(
                 components: [
                     PaywallComponent.text(
                         PaywallComponent.TextComponent(
@@ -180,30 +163,49 @@ extension View {
                         )
                     )
                 ],
-                backgroundColor: .init(light: .hex("#FFFFFF"))
-            ), localizationProvider: .init(
-                locale: Locale.current,
-                localizedStrings: [
-                    "buttonText": PaywallComponentsData.LocalizationData.string("Do something")
-                ]
-            )))
+                backgroundColor: nil
+            ),
+            background: .color(.init(light: .hex("#FFFFFF"))),
+            backgroundBlur: false,
+            size: .init(width: .fill, height: .fit)
+        ),
+        // swiftlint:disable:next force_try
+        sheetStackViewModel: try! .init(component: .init(
+            components: [
+                PaywallComponent.text(
+                    PaywallComponent.TextComponent(
+                        text: "buttonText",
+                        color: .init(light: .hex("#000000"))
+                    )
+                )
+            ],
+            backgroundColor: .init(light: .hex("#FFFFFF"))
+        ), localizationProvider: .init(
+            locale: Locale.current,
+            localizedStrings: [
+                "buttonText": PaywallComponentsData.LocalizationData.string("Do something")
+            ]
+        )))
+    var body: some View {
+        ZStack {
+            Color.gray.opacity(0.2)
 
-        var body: some View {
-            ZStack {
-                Color.gray.opacity(0.2)
-
-                VStack {
-                    Text("This view will have a sheet over it")
-                        .bottomSheet(sheet: $sheetViewModel,
-                                     safeAreaInsets: .init(top: 0, leading: 0, bottom: 0, trailing: 0))
-                }
+            VStack {
+                Text("This view will have a sheet over it")
+                    .bottomSheet(sheet: $sheetViewModel,
+                                 safeAreaInsets: .init(top: 0, leading: 0, bottom: 0, trailing: 0))
             }
-            .edgesIgnoringSafeArea(.all)
-            .previewRequiredEnvironmentProperties()
         }
+        .edgesIgnoringSafeArea(.all)
+        .previewRequiredEnvironmentProperties()
     }
+}
 
-    return Preview()
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct BottomSheetView_Previews: PreviewProvider {
+    static var previews: some View {
+        BottomSheetViewTestView()
+    }
 }
 #endif
 #endif
