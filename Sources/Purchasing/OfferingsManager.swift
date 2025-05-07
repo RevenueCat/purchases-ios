@@ -250,7 +250,7 @@ private extension OfferingsManager {
         let productIdentifiers = response.productIdentifiers
         let webProductIdentifiers = response.productIdentifiersByStoreType[.rcBilling] ?? []
 
-        guard !productIdentifiers.isEmpty && !webProductIdentifiers.isEmpty else {
+        guard !productIdentifiers.isEmpty || !webProductIdentifiers.isEmpty else {
             let errorMessage = Strings.offering.configuration_error_no_products_for_offering.description
             completion(.failure(.configurationError(errorMessage, underlyingError: nil)))
             return
@@ -267,7 +267,7 @@ private extension OfferingsManager {
             self.fetchProducts(withIdentifiers: productIdentifiers, fromResponse: response) { result in
                 let products = result.value ?? []
 
-                guard products.isEmpty == false && webProductsByID.isEmpty == false else {
+                guard !products.isEmpty || !webProductsByID.isEmpty else {
                     // Check if empty products is likely caused by
                     // https://github.com/RevenueCat/purchases-ios/issues/4954. There is a widely reported bug in
                     // the iOS 18.4 Simulator affecting some HTTP requests

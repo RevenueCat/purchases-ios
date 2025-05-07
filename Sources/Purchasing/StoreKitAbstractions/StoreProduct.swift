@@ -436,7 +436,7 @@ private final class WebBillingStoreProduct: StoreProductType {
         if let currencyCode = self.currencyCode {
             formatter.currencyCode = currencyCode
         }
-        return formatter.string(from: self.price as NSDecimalNumber) ?? "\(self.price)"
+        return self.priceFormatter?.string(from: self.price as NSDecimalNumber) ?? "\(self.price)"
     }
 
     var productIdentifier: String {
