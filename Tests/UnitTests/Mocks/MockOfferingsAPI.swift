@@ -54,6 +54,23 @@ class MockOfferingsAPI: OfferingsAPI {
         completion(self.stubbedGetOfferingsCompletionResult!)
     }
 
+    var invokedGetWebProducts = false
+    var invokedGetWebProductsCount = 0
+    var invokedGetWebProductsParameters: (appUserID: String,
+                                          productIDs: Set<String>,
+                                          completion: WebProductsResponseHandler)?
+    var stubbedGetWebProductsCompletionResult: Result<WebProductsResponse, BackendError>?
+
+    override func getWebProducts(appUserID: String,
+                                 productIDs: Set<String>,
+                                 completion: @escaping WebProductsResponseHandler) {
+        self.invokedGetWebProducts = true
+        self.invokedGetWebProductsCount += 1
+        self.invokedGetWebProductsParameters = (appUserID, productIDs, completion)
+
+        completion(self.stubbedGetWebProductsCompletionResult!)
+    }
+
     var invokedPostOffer = false
     var invokedPostOfferCount = 0
     var invokedPostOfferParameters: (offerIdentifier: String?, productIdentifier: String?, subscriptionGroup: String?, data: EncodedAppleReceipt?, applicationUsername: String?, completion: OfferingsAPI.OfferSigningResponseHandler?)?
