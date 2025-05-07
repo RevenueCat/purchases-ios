@@ -121,7 +121,7 @@ import RevenueCat
         configuration: CustomerCenterConfigData
     ) {
         self.init(actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil))
-        self.activePurchases = [purchaseInformation]
+        self.purchaseInformation = purchaseInformation
         self.configuration = configuration
         self.state = .success
     }
