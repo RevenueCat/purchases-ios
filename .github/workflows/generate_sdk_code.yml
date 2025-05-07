@@ -1,0 +1,68 @@
+name: Run Fastlane and Create PR if Changed
+
+on:
+  workflow_dispatch:
+
+jobs:
+  fetch_run_and_pr:
+    runs-on: macos-latest
+
+    permissions:
+      contents: write       # Needed to commit and push changes
+      pull-requests: write  # Needed to create PRs
+
+    steps:
+      - name: Checkout current repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Required for detecting file changes
+
+      - name: Download customer center config from private repo
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl -sL \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github.v3.raw" \
+            https://api.github.com/repos/RevenueCat/khepri/contents/services/customer_center/domain/default_stored_customer_center_config.json \
+            -o config.json
+
+          echo "CONFIG_JSON<<EOF" >> $GITHUB_ENV
+          cat config.json >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1'
+
+      - name: Install Fastlane
+        run: gem install fastlane
+
+      - name: Run Fastlane
+        run: |
+          fastlane run_with_customer_center_config config_json:"$CONFIG_JSON"
+
+      - name: Create branch and commit changes if any
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b auto/update-customer-config || git switch auto/update-customer-config
+          git add -A
+
+          if ! git diff --cached --quiet; then
+            git commit -m "Update based on customer center config"
+          else
+            echo "No changes to commit."
+          fi
+
+      - name: Create Pull Request if there were changes
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ github.token }}
+          branch: auto/update-customer-config
+          title: "Update from customer center config"
+          body: |
+            This PR was automatically created after processing `default_stored_customer_center_config.json`.
+          commit-message: "Update based on customer center config"
+          base: main  # change if your default branch is different
