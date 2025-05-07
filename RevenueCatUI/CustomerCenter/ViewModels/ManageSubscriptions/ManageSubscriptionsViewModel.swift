@@ -30,8 +30,8 @@ final class ManageSubscriptionsViewModel: BaseManageSubscriptionViewModel {
     private(set) var activePurchases: [PurchaseInformation] = []
 
     var purchasesMightBeDuplicated: Bool {
-        activePurchases.first(where: { $0.store == .appStore }) != nil
-            && activePurchases.first(where: { $0.store != .appStore }) != nil
+        // WIP: This is false till we implement it in the backend
+        return false
     }
 
     init(
