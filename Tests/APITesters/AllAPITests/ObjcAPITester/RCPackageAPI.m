@@ -33,7 +33,8 @@
     RCPackage *package __unused = [[RCPackage alloc] initWithIdentifier:i
                                                             packageType:RCPackageTypeAnnual
                                                            storeProduct:storeProduct
-                                                     offeringIdentifier:oid];
+                                                     offeringIdentifier:oid
+                                                         webCheckoutUrl:[NSURL URLWithString:@"https://revenuecat.com"]];
 }
 
 + (void)checkEnums {
