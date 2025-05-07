@@ -31,9 +31,6 @@ import RevenueCat
     private lazy var currentAppVersion: String? = currentVersionFetcher()
 
     @Published
-    var purchaseInformation: PurchaseInformation?
-
-    @Published
     private(set) var appIsLatestVersion: Bool = defaultAppIsLatestVersion
 
     @Published
@@ -76,6 +73,16 @@ import RevenueCat
         }
     }
 
+    var hasPurchases: Bool {
+        !activePurchases.isEmpty || purchaseInformation != nil
+    }
+
+    @Published
+    var activePurchases: [PurchaseInformation] = []
+
+    @Published
+    var purchaseInformation: PurchaseInformation?
+
     private let currentVersionFetcher: CurrentVersionFetcher
 
     /// The action wrapper that handles both the deprecated handler and the new preference system
@@ -114,7 +121,7 @@ import RevenueCat
         configuration: CustomerCenterConfigData
     ) {
         self.init(actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil))
-        self.purchaseInformation = purchaseInformation
+        self.activePurchases = [purchaseInformation]
         self.configuration = configuration
         self.state = .success
     }
@@ -165,27 +172,56 @@ private extension CustomerCenterViewModel {
 
     func loadPurchaseInformation(customerInfo: CustomerInfo) async throws {
         let hasActiveProducts =  !customerInfo.activeSubscriptions.isEmpty ||
-        !customerInfo.nonSubscriptions.isEmpty
+            !customerInfo.nonSubscriptions.isEmpty
 
         if !hasActiveProducts {
-            self.purchaseInformation = nil
+            self.activePurchases = []
             self.state = .success
             return
         }
 
-        guard let activeTransaction = customerInfo.earliestExpiringTransaction() else {
-            Logger.warning(Strings.could_not_find_subscription_information)
-            self.purchaseInformation = nil
-            throw CustomerCenterError.couldNotFindSubscriptionInformation
+        var activePurchases: [PurchaseInformation] = []
+
+        for subscription in customerInfo.activeSubscriptions
+            .compactMap({ id in customerInfo.subscriptionsByProductIdentifier[id] })
+            .sorted(by: {
+                guard let date1 = $0.expiresDate, let date2 = $1.expiresDate else {
+                    return $0.expiresDate != nil
+                }
+                return date1 < date2
+            }) {
+
+            let entitlement = customerInfo.entitlements.all.values
+                .first(where: { $0.productIdentifier == subscription.productIdentifier })
+
+            let purchaseInfo = try await createPurchaseInformation(
+                for: subscription,
+                entitlement: entitlement,
+                customerInfo: customerInfo)
+
+            activePurchases.append(purchaseInfo)
         }
 
-        let entitlement = customerInfo.entitlements.all.values
-            .first(where: { $0.productIdentifier == activeTransaction.productIdentifier })
+        self.activePurchases = activePurchases
 
-        self.purchaseInformation = try await createPurchaseInformation(
-            for: activeTransaction,
-            entitlement: entitlement,
-            customerInfo: customerInfo)
+        if activePurchases.count == 1 {
+            self.purchaseInformation = activePurchases.first
+        } else if activePurchases.isEmpty, let activeTransaction = customerInfo.earliestExpiringTransaction() {
+            // get the active non-subscription transaction
+            let entitlement = customerInfo.entitlements.all.values
+                .first(where: { $0.productIdentifier == activeTransaction.productIdentifier })
+
+            self.purchaseInformation = try await createPurchaseInformation(
+                for: activeTransaction,
+                entitlement: entitlement,
+                customerInfo: customerInfo
+            )
+
+            return
+        } else if activePurchases.isEmpty {
+            Logger.warning(Strings.could_not_find_subscription_information)
+            throw CustomerCenterError.couldNotFindSubscriptionInformation
+        }
     }
 
     func loadCustomerCenterConfig() async throws {
@@ -213,7 +249,8 @@ private extension CustomerCenterViewModel {
                     subscribedProduct: product,
                     transaction: transaction,
                     customerCenterStoreKitUtilities: customerCenterStoreKitUtilities,
-                    customerInfoRequestedDate: customerInfo.requestDate
+                    customerInfoRequestedDate: customerInfo.requestDate,
+                    managePurchaseURL: transaction.managementURL
                 )
             } else {
                 Logger.warning(
@@ -223,7 +260,8 @@ private extension CustomerCenterViewModel {
                 return PurchaseInformation(
                     entitlement: entitlement,
                     transaction: transaction,
-                    customerInfoRequestedDate: customerInfo.requestDate
+                    customerInfoRequestedDate: customerInfo.requestDate,
+                    managePurchaseURL: transaction.managementURL
                 )
             }
         case .macAppStore, .promotional, .playStore, .stripe, .unknownStore, .amazon, .external:
@@ -232,7 +270,8 @@ private extension CustomerCenterViewModel {
             return PurchaseInformation(
                 entitlement: entitlement,
                 transaction: transaction,
-                customerInfoRequestedDate: customerInfo.requestDate
+                customerInfoRequestedDate: customerInfo.requestDate,
+                managePurchaseURL: customerInfo.managementURL
             )
         }
     }

@@ -7,10 +7,11 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  ManageSubscriptionsView.swift
 //
+//  ManageSubscriptionViewModel.swift
+//  RevenueCat
 //
-//  Created by Andrés Boedo on 5/3/24.
+//  Created by Facundo Menzella on 3/5/25.
 //
 
 import RevenueCat
@@ -22,7 +23,10 @@ import SwiftUI
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-struct ManageSubscriptionsView: View {
+struct ManageSubscriptionView: View {
+
+    @Environment(\.openURL)
+    private var openURL
 
     @Environment(\.appearance)
     private var appearance: CustomerCenterConfigData.Appearance
@@ -30,37 +34,44 @@ struct ManageSubscriptionsView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
-    @Environment(\.supportInformation)
-    private var support
-
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
 
     @Environment(\.navigationOptions)
     var navigationOptions
 
+    @Environment(\.supportInformation)
+    private var support
+
     @StateObject
-    private var viewModel: ManageSubscriptionsViewModel
+    private var viewModel: ManageSubscriptionViewModel
 
     @Binding
-    var purchaseInformation: PurchaseInformation?
+    private var purchaseInformation: PurchaseInformation?
+
+    @State
+    private var showSimulatorAlert: Bool = false
 
     init(screen: CustomerCenterConfigData.Screen,
          purchaseInformation: Binding<PurchaseInformation?>,
+         showPurchaseHistory: Bool,
          purchasesProvider: CustomerCenterPurchasesType,
          actionWrapper: CustomerCenterActionWrapper) {
-        self.init(
-            purchaseInformation: purchaseInformation,
-            viewModel: ManageSubscriptionsViewModel(
+        let viewModel = ManageSubscriptionViewModel(
             screen: screen,
+            showPurchaseHistory: showPurchaseHistory,
             actionWrapper: actionWrapper,
             purchaseInformation: purchaseInformation.wrappedValue,
-            purchasesProvider: purchasesProvider))
+            purchasesProvider: purchasesProvider)
+        self.init(
+            purchaseInformation: purchaseInformation,
+            viewModel: viewModel
+        )
     }
 
     fileprivate init(
         purchaseInformation: Binding<PurchaseInformation?>,
-        viewModel: ManageSubscriptionsViewModel
+        viewModel: ManageSubscriptionViewModel
     ) {
         self._purchaseInformation = purchaseInformation
         self._viewModel = .init(wrappedValue: viewModel)
@@ -114,7 +125,12 @@ struct ManageSubscriptionsView: View {
             }, content: { inAppBrowserURL in
                 SafariView(url: inAppBrowserURL.url)
             })
-
+            .alert(isPresented: $showSimulatorAlert, content: {
+                return Alert(
+                    title: Text("Can't open URL"),
+                    message: Text("There's no email app in the simulator"),
+                    dismissButton: .default(Text("Ok")))
+            })
     }
 
     @ViewBuilder
@@ -126,16 +142,14 @@ struct ManageSubscriptionsView: View {
                     refundRequestStatus: self.viewModel.refundRequestStatus
                 )
 
-                if support?.displayPurchaseHistoryLink == true {
-                    Button {
-                        viewModel.showAllPurchases = true
-                    } label: {
-                        CompatibilityLabeledContent {
-                            Text(localization[.seeAllPurchases])
-                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                                .contentShape(Rectangle())
-                        } content: {
-                            Image(systemName: "chevron.forward")
+                Section {
+                    if viewModel.showPurchaseHistory {
+                        Button {
+                            viewModel.showAllPurchases = true
+                        } label: {
+                            CompatibilityLabeledContent(localization[.seeAllPurchases]) {
+                                Image(systemName: "chevron.forward")
+                            }
                         }
                     }
                 }
@@ -150,6 +164,25 @@ struct ManageSubscriptionsView: View {
                             .textCase(nil)
                     }
                 }
+
+                if let url = support?.supportURL(
+                    localization: localization,
+                    purchasesProvider: viewModel.purchasesProvider
+                ), viewModel.shouldShowContactSupport,
+                    URLUtilities.canOpenURL(url) || RuntimeUtils.isSimulator {
+                    Section {
+                        AsyncButton {
+                            if RuntimeUtils.isSimulator {
+                                self.showSimulatorAlert = true
+                            } else {
+                                openURL(url)
+                            }
+                        } label: {
+                            Text(localization[.contactSupport])
+                        }
+                    }
+                }
+
             } else {
                 let fallbackDescription = localization[.tryCheckRestore]
 
@@ -162,11 +195,12 @@ struct ManageSubscriptionsView: View {
                 }
 
                 Section {
-                    ManageSubscriptionsButtonsView(viewModel: self.viewModel)
+                    ManageSubscriptionsButtonsView(
+                        viewModel: self.viewModel
+                    )
                 }
             }
         }
-        .dismissCircleButtonToolbarIfNeeded()
         .overlay {
             RestorePurchasesAlert(
                 isPresented: self.$viewModel.showRestoreAlert,
@@ -185,25 +219,27 @@ struct ManageSubscriptionsView: View {
 
 }
 
- #if DEBUG
+#if DEBUG
  @available(iOS 15.0, *)
  @available(macOS, unavailable)
  @available(tvOS, unavailable)
  @available(watchOS, unavailable)
- struct ManageSubscriptionsView_Previews: PreviewProvider {
+ struct ManageSubscriptionView_Previews: PreviewProvider {
 
     // swiftlint:disable force_unwrapping
     static var previews: some View {
         ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
             CompatibilityNavigationStack {
-                let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
+                let viewModelMonthlyRenewing = ManageSubscriptionViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                    showPurchaseHistory: false,
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
                     refundRequestStatus: .success,
-                    purchasesProvider: CustomerCenterPurchases())
-                ManageSubscriptionsView(
-                    purchaseInformation: .constant(CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing),
+                    purchasesProvider: CustomerCenterPurchases()
+                )
+                ManageSubscriptionView(
+                    purchaseInformation: .constant(nil),
                     viewModel: viewModelMonthlyRenewing
                 )
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
@@ -213,14 +249,18 @@ struct ManageSubscriptionsView: View {
             .previewDisplayName("Monthly renewing - \(colorScheme)")
 
             CompatibilityNavigationStack {
-                let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
+                let viewModelYearlyExpiring = ManageSubscriptionViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                    showPurchaseHistory: false,
                     actionWrapper: CustomerCenterActionWrapper(),
-                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring,
-                    purchasesProvider: CustomerCenterPurchases())
-                ManageSubscriptionsView(
-                    purchaseInformation: .constant(CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring),
-                    viewModel: viewModelYearlyExpiring)
+                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring(),
+                    refundRequestStatus: .success,
+                    purchasesProvider: CustomerCenterPurchases()
+                )
+                ManageSubscriptionView(
+                    purchaseInformation: .constant(nil),
+                    viewModel: viewModelYearlyExpiring
+                )
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
             }
@@ -228,14 +268,16 @@ struct ManageSubscriptionsView: View {
             .previewDisplayName("Yearly expiring - \(colorScheme)")
 
             CompatibilityNavigationStack {
-                let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
+                let viewModelYearlyExpiring = ManageSubscriptionViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                    showPurchaseHistory: false,
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationFree,
                     purchasesProvider: CustomerCenterPurchases())
-                ManageSubscriptionsView(
-                    purchaseInformation: .constant(CustomerCenterConfigTestData.subscriptionInformationFree),
-                    viewModel: viewModelYearlyExpiring)
+                ManageSubscriptionView(
+                    purchaseInformation: .constant(nil),
+                    viewModel: viewModelYearlyExpiring
+                )
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
             }
@@ -243,14 +285,16 @@ struct ManageSubscriptionsView: View {
             .previewDisplayName("Free subscription - \(colorScheme)")
 
             CompatibilityNavigationStack {
-                let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
+                let viewModelYearlyExpiring = ManageSubscriptionViewModel(
                     screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                    showPurchaseHistory: false,
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.consumable,
                     purchasesProvider: CustomerCenterPurchases())
-                ManageSubscriptionsView(
-                    purchaseInformation: .constant(CustomerCenterConfigTestData.consumable),
-                    viewModel: viewModelYearlyExpiring)
+                ManageSubscriptionView(
+                    purchaseInformation: .constant(nil),
+                    viewModel: viewModelYearlyExpiring
+                )
                 .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
             }
@@ -261,6 +305,6 @@ struct ManageSubscriptionsView: View {
 
  }
 
- #endif
+#endif
 
 #endif

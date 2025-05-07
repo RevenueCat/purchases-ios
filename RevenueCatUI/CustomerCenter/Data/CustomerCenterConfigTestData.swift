@@ -16,15 +16,17 @@
 import Foundation
 import RevenueCat
 
+// swiftlint:disable force_unwrapping
 enum CustomerCenterConfigTestData {
 
     @available(iOS 14.0, *)
     // swiftlint:disable:next function_body_length
     static func customerCenterData(
-        lastPublishedAppVersion: String?,
+        lastPublishedAppVersion: String? = "1.0.0",
         shouldWarnCustomerToUpdate: Bool = false,
         displayPurchaseHistoryLink: Bool = false,
-        refundWindowDuration: CustomerCenterConfigData.HelpPath.RefundWindowDuration = .forever
+        refundWindowDuration: CustomerCenterConfigData.HelpPath.RefundWindowDuration = .forever,
+        shouldWarnCustomersAboutMultipleSubscriptions: Bool = false
     ) -> CustomerCenterConfigData {
         CustomerCenterConfigData(
             screens: [.management:
@@ -124,7 +126,8 @@ enum CustomerCenterConfigTestData {
             support: .init(
                 email: "test-support@revenuecat.com",
                 shouldWarnCustomerToUpdate: shouldWarnCustomerToUpdate,
-                displayPurchaseHistoryLink: displayPurchaseHistoryLink
+                displayPurchaseHistoryLink: displayPurchaseHistoryLink,
+                shouldWarnCustomersAboutMultipleSubscriptions: shouldWarnCustomersAboutMultipleSubscriptions
             ),
             lastPublishedAppVersion: lastPublishedAppVersion,
             productId: 1
@@ -155,7 +158,8 @@ enum CustomerCenterConfigTestData {
         isTrial: false,
         isCancelled: false,
         latestPurchaseDate: nil,
-        customerInfoRequestedDate: Date()
+        customerInfoRequestedDate: Date(),
+        managePurchaseURL: URL(string: "https://www.revenuecat.com")!
     )
 
     static let subscriptionInformationFree: PurchaseInformation = .init(
@@ -171,24 +175,28 @@ enum CustomerCenterConfigTestData {
         isTrial: false,
         isCancelled: false,
         latestPurchaseDate: nil,
-        customerInfoRequestedDate: Date()
+        customerInfoRequestedDate: Date(),
+        managePurchaseURL: URL(string: "https://www.revenuecat.com")!
     )
 
-    static let subscriptionInformationYearlyExpiring: PurchaseInformation = .init(
-        title: "Basic",
-        durationTitle: "Yearly",
-        explanation: .earliestRenewal,
-        price: .paid("$49.99"),
-        expirationOrRenewal: .init(label: .expires,
-                                   date: .date("June 1st, 2024")),
-        productIdentifier: "product_id",
-        store: .appStore,
-        isLifetime: false,
-        isTrial: false,
-        isCancelled: false,
-        latestPurchaseDate: nil,
-        customerInfoRequestedDate: Date()
-    )
+    static func subscriptionInformationYearlyExpiring(store: Store = .appStore) -> PurchaseInformation {
+        PurchaseInformation(
+            title: "Basic",
+            durationTitle: "Yearly",
+            explanation: .earliestRenewal,
+            price: .paid("$49.99"),
+            expirationOrRenewal: .init(label: .expires,
+                                       date: .date("June 1st, 2024")),
+            productIdentifier: "product_id",
+            store: Store.amazon,
+            isLifetime: false,
+            isTrial: false,
+            isCancelled: false,
+            latestPurchaseDate: nil,
+            customerInfoRequestedDate: Date(),
+            managePurchaseURL: URL(string: "https://www.revenuecat.com")!
+        )
+    }
 
     static let consumable: PurchaseInformation = .init(
         title: "Basic",
@@ -202,7 +210,8 @@ enum CustomerCenterConfigTestData {
         isTrial: false,
         isCancelled: false,
         latestPurchaseDate: Date(),
-        customerInfoRequestedDate: Date()
+        customerInfoRequestedDate: Date(),
+        managePurchaseURL: URL(string: "https://www.revenuecat.com")!
     )
 
 }
