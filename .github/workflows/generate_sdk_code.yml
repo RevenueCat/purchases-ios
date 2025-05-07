@@ -2,7 +2,10 @@ name: Run Fastlane and Create PR if Changed
 
 on:
   workflow_dispatch:
-
+  push:
+    branches:
+      - feat/generate-ios-code  # 🔁 triggers on push to this branch
+      
 jobs:
   fetch_run_and_pr:
     runs-on: macos-latest
