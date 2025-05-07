@@ -211,10 +211,10 @@ struct ManageSubscriptionView: View {
             $0.navigationTitle(self.viewModel.screen.title)
                 .navigationBarTitleDisplayMode(.inline)
          })
-//        .onChangeOf(purchaseInformation?.customerInfoRequestedDate) { _ in
-//            guard let purchase = purchaseInformation else { return }
-//            viewModel.reloadPurchaseInformation(purchase)
-//        }
+        .onChangeOf(purchaseInformation?.customerInfoRequestedDate) { _ in
+            guard let purchase = purchaseInformation else { return }
+            viewModel.reloadPurchaseInformation(purchase)
+        }
     }
 
 }

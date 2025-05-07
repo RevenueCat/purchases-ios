@@ -48,7 +48,8 @@ struct ManageSubscriptionsView: View {
     init(screen: CustomerCenterConfigData.Screen,
          activePurchases: Binding<[PurchaseInformation]>,
          purchasesProvider: CustomerCenterPurchasesType,
-         actionWrapper: CustomerCenterActionWrapper) {
+         actionWrapper: CustomerCenterActionWrapper
+    ) {
         let viewModel = ManageSubscriptionsViewModel(
             screen: screen,
             actionWrapper: actionWrapper,
@@ -98,9 +99,9 @@ struct ManageSubscriptionsView: View {
                 .environment(\.localization, localization)
                 .environment(\.navigationOptions, navigationOptions)
             }
-        //            .onChangeOf(activePurchases) { _ in
-        //                viewModel.updatePurchases(activePurchases)
-        //            }
+            .onChangeOf(activePurchases.first?.customerInfoRequestedDate) { _ in
+                viewModel.updatePurchases(activePurchases)
+            }
     }
 
     @ViewBuilder
