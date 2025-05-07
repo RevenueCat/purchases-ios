@@ -545,7 +545,7 @@ final class PurchaseInformationTests: TestCase {
         expect(expirationOrRenewal.date) == .date("Apr 12, 2062")
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
-        expect(subscriptionInfo.store) == .stripe
+        expect(subscriptionInfo.store) == .rcBilling
     }
 
     func testInitWithRCBillingEntitlementNonRenewing() throws {
@@ -580,7 +580,7 @@ final class PurchaseInformationTests: TestCase {
         expect(expirationOrRenewal.date) == .date("Apr 12, 2062")
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
-        expect(subscriptionInfo.store) == .stripe
+        expect(subscriptionInfo.store) == .rcBilling
     }
 
     func testInitWithRCBillingEntitlementExpired() throws {
@@ -615,7 +615,7 @@ final class PurchaseInformationTests: TestCase {
         expect(expirationOrRenewal.date) == .date("Apr 12, 2000")
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
-        expect(subscriptionInfo.store) == .stripe
+        expect(subscriptionInfo.store) == .rcBilling
     }
 
     func testLoadingOnlyWithOnlyPurchaseInformation() throws {
