@@ -42,7 +42,7 @@ import Foundation
     static let storeKitRequestTimeoutDefault: TimeInterval = 30
     static let networkTimeoutDefault: TimeInterval = 60
 
-    let apiKey: String
+    let apiKeys: Purchases.APIKeys
     let appUserID: String?
     let observerMode: Bool
     let userDefaults: UserDefaults?
@@ -58,7 +58,7 @@ import Foundation
     private init(with builder: Builder) {
         Self.verify(apiKey: builder.apiKey)
 
-        self.apiKey = builder.apiKey
+        self.apiKeys = Purchases.APIKeys(apiKey: builder.apiKey, webBillingAPIKey: builder.webBillingAPIKey)
         self.appUserID = builder.appUserID
         self.observerMode = builder.observerMode
         self.userDefaults = builder.userDefaults
@@ -94,6 +94,7 @@ import Foundation
         private static let minimumTimeout: TimeInterval = 5
 
         private(set) var apiKey: String
+        private(set) var webBillingAPIKey: String?
         private(set) var appUserID: String?
         var observerMode: Bool {
             switch purchasesAreCompletedBy {
@@ -141,6 +142,11 @@ import Foundation
         /// Update your API key.
         @objc public func with(apiKey: String) -> Builder {
             self.apiKey = apiKey
+            return self
+        }
+
+        @objc public func with(webBillingAPIKey: String) -> Builder {
+            self.webBillingAPIKey = webBillingAPIKey
             return self
         }
 

@@ -279,7 +279,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let diagnosticsTracker: DiagnosticsTrackerType?
 
     // swiftlint:disable:next function_body_length cyclomatic_complexity
-    convenience init(apiKey: String,
+    convenience init(apiKeys: APIKeys,
                      appUserID: String?,
                      userDefaults: UserDefaults? = nil,
                      applicationSupportDirectory: URL? = nil,
@@ -339,7 +339,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let transactionFetcher = StoreKit2TransactionFetcher(diagnosticsTracker: diagnosticsTracker)
 
         let backend = Backend(
-            apiKey: apiKey,
+            apiKeys: apiKeys,
             systemInfo: systemInfo,
             httpClientTimeout: networkTimeout,
             eTagManager: eTagManager,
@@ -1367,7 +1367,7 @@ public extension Purchases {
      */
     @objc(configureWithConfiguration:)
     @discardableResult static func configure(with configuration: Configuration) -> Purchases {
-        configure(withAPIKey: configuration.apiKey,
+        configure(withAPIKeys: configuration.apiKeys,
                   appUserID: configuration.appUserID,
                   observerMode: configuration.observerMode,
                   userDefaults: configuration.userDefaults,
@@ -1580,7 +1580,7 @@ public extension Purchases {
 
     // swiftlint:disable:next function_parameter_count
     @discardableResult internal static func configure(
-        withAPIKey apiKey: String,
+        withAPIKeys apiKeys: APIKeys,
         appUserID: String?,
         observerMode: Bool,
         userDefaults: UserDefaults?,
@@ -1595,7 +1595,7 @@ public extension Purchases {
         diagnosticsEnabled: Bool
     ) -> Purchases {
         return self.setDefaultInstance(
-            .init(apiKey: apiKey,
+            .init(apiKeys: apiKeys,
                   appUserID: appUserID,
                   userDefaults: userDefaults,
                   applicationSupportDirectory: applicationSupportDirectory,
