@@ -340,6 +340,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         let backend = Backend(
             apiKey: apiKey,
+            webApiKey: "", // TODO ADD WEB API KEY (TO BE REMOVED ONCE WE HAVE A PROPER API TO SET THE WEB API KEY)
             systemInfo: systemInfo,
             httpClientTimeout: networkTimeout,
             eTagManager: eTagManager,

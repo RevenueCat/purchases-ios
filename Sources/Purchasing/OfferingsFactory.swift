@@ -95,9 +95,9 @@ class OfferingsFactory {
         webProductsById: [String: StoreProduct],
         offeringIdentifier: String
     ) -> Package? {
-        let webProductId = data.productIdByStoreType?[.rcBilling]
+        let webProductId = data.productIdByStoreType?["rc_billing"]
         var webProduct: StoreProduct?
-        if let webProductId {
+        if let webProductId = webProductId {
             webProduct = webProductsById[webProductId]
         }
         let iosProduct = productsByID[data.platformProductIdentifier]
@@ -115,7 +115,7 @@ class OfferingsFactory {
 
         return .init(package: data,
                      product: product,
-                     storeProductByStoreRawValue: storeProductByStoreRawValue,
+                     packageProducts: PackageProducts(nativeProduct: iosProduct, webBillingProduct: webProduct),
                      offeringIdentifier: offeringIdentifier,
                      webCheckoutUrl: data.webCheckoutUrl)
     }
@@ -143,14 +143,14 @@ private extension Package {
     convenience init(
         package: OfferingsResponse.Offering.Package,
         product: StoreProduct,
-        storeProductByStoreRawValue: [Int: StoreProduct],
+        packageProducts: PackageProducts,
         offeringIdentifier: String,
         webCheckoutUrl: URL?
     ) {
         self.init(identifier: package.identifier,
                   packageType: Package.packageType(from: package.identifier),
                   storeProduct: product,
-                  storeProductByStoreRawValue: storeProductByStoreRawValue,
+                  packageProducts: packageProducts,
                   presentedOfferingContext: .init(offeringIdentifier: offeringIdentifier),
                   webCheckoutUrl: webCheckoutUrl)
     }

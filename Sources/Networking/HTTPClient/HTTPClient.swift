@@ -26,6 +26,8 @@ class HTTPClient {
     let apiKey: String
     let authHeaders: RequestHeaders
 
+    private let webAuthHeaders: RequestHeaders?
+
     private let session: URLSession
     private let state: Atomic<State> = .init(.initial)
     private let eTagManager: ETagManager
@@ -43,6 +45,7 @@ class HTTPClient {
     ]
 
     init(apiKey: String,
+         webApiKey: String?,
          systemInfo: SystemInfo,
          eTagManager: ETagManager,
          signing: SigningType,
@@ -71,6 +74,12 @@ class HTTPClient {
         self.authHeaders = HTTPClient.authorizationHeader(withAPIKey: apiKey)
         self.dateProvider = dateProvider
         self.operationDispatcher = operationDispatcher
+
+        if let webApiKey = webApiKey {
+            self.webAuthHeaders = HTTPClient.authorizationHeader(withAPIKey: webApiKey)
+        } else {
+            self.webAuthHeaders = nil
+        }
     }
 
     /// - Parameter verificationMode: if `nil`, this will default to `SystemInfo.responseVerificationMode`
@@ -96,8 +105,14 @@ class HTTPClient {
         }
         #endif
 
+        var authHeadersToUse = self.authHeaders
+        if request.path.apiKeyToUseInRequest == .web,
+            let webAuthHeaders = self.webAuthHeaders {
+            authHeadersToUse = webAuthHeaders
+        }
+
         self.perform(request: .init(httpRequest: request,
-                                    authHeaders: self.authHeaders,
+                                    authHeaders: authHeadersToUse,
                                     defaultHeaders: self.defaultHeaders,
                                     verificationMode: verificationMode ?? self.systemInfo.responseVerificationMode,
                                     internalSettings: self.systemInfo.dangerousSettings.internalSettings,
@@ -134,7 +149,8 @@ class HTTPClient {
             RequestHeader.retryCount.rawValue: "0",
             RequestHeader.sandbox.rawValue: "\(self.systemInfo.isSandbox)",
             "X-Is-Backgrounded": "\(self.systemInfo.isAppBackgroundedState)",
-            "X-Is-Debug-Build": "\(self.systemInfo.isDebugBuild)"
+            "X-Is-Debug-Build": "\(self.systemInfo.isDebugBuild)",
+            "X-RC-Canary": "mappings" // TODO: To remove
         ]
 
         if let storefront = self.systemInfo.storefront {

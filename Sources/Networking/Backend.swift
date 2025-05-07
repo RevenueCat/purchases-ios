@@ -27,6 +27,7 @@ class Backend {
 
     convenience init(
         apiKey: String,
+        webApiKey: String?,
         systemInfo: SystemInfo,
         httpClientTimeout: TimeInterval = Configuration.networkTimeoutDefault,
         eTagManager: ETagManager,
@@ -37,6 +38,7 @@ class Backend {
         dateProvider: DateProvider = DateProvider()
     ) {
         let httpClient = HTTPClient(apiKey: apiKey,
+                                    webApiKey: webApiKey,
                                     systemInfo: systemInfo,
                                     eTagManager: eTagManager,
                                     signing: Signing(apiKey: apiKey, clock: systemInfo.clock),

@@ -248,7 +248,7 @@ private extension OfferingsManager {
         completion: @escaping (@Sendable (Result<OfferingsResultData, Error>) -> Void)
     ) {
         let productIdentifiers = response.productIdentifiers
-        let webProductIdentifiers = response.productIdentifiersByStoreType[.rcBilling] ?? []
+        let webProductIdentifiers = response.productIdentifiersByStoreType["rc_billing"] ?? []
 
         guard !productIdentifiers.isEmpty || !webProductIdentifiers.isEmpty else {
             let errorMessage = Strings.offering.configuration_error_no_products_for_offering.description

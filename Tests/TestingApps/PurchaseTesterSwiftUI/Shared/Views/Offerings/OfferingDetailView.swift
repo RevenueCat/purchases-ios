@@ -85,10 +85,28 @@ struct OfferingDetailView: View {
                 Divider()
 
                 self.button("Buy as Product") {
-                    try await self.purchaseAsProduct()
+                    try await self.purchaseAsProduct(product: package.storeProduct)
                 }
 
                 Divider()
+
+                if let nativeProduct = package.packageProducts.nativeProduct {
+                    let productPrice = "\(nativeProduct.price) \(nativeProduct.currencyCode ?? "Unknown currency")"
+                    self.button("Buy native Product: \(productPrice)") {
+                        try await self.purchaseAsProduct(product: nativeProduct)
+                    }
+
+                    Divider()
+                }
+
+                if let webProduct = package.packageProducts.webBillingProduct {
+                    let productPrice = "\(webProduct.price) \(webProduct.currencyCode ?? "Unknown currency")"
+                    self.button("Buy web Product: \(productPrice)") {
+                        try await self.purchaseAsProduct(product: webProduct)
+                    }
+
+                    Divider()
+                }
 
                 if self.observerModeManager.observerModeEnabled {
                     self.button("Buy directly from SK1 (w/o RevenueCat)") {
@@ -151,23 +169,11 @@ struct OfferingDetailView: View {
 
         }
         
-        private func purchaseAsProduct() async throws {
+        private func purchaseAsProduct(product: StoreProduct) async throws {
             self.isPurchasing = true
             defer { self.isPurchasing = false }
 
-            let result: PurchaseResultData
-            if let metadata = customerData.metadata {
-                #if ENABLE_TRANSACTION_METADATA
-                let params = PurchaseParams.Builder(package: package).with(metadata: metadata).build()
-                #else
-                let params = PurchaseParams.Builder(package: package).build()
-                print("⚠️ Warning - ENABLE_TRANSACTION_METADATA feature flag is not enabled")
-                print("⚠️ Warning - Metadata will not be sent with the purchase")
-                #endif
-                result = try await Purchases.shared.purchase(params)
-            } else {
-                result = try await Purchases.shared.purchase(product: self.package.storeProduct)
-            }
+            let result = try await Purchases.shared.purchase(product: product)
 
             self.completedPurchase(result)
         }

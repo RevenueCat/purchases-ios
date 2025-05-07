@@ -98,10 +98,11 @@ import Foundation
     @objc public let identifier: String
     /// The type configured for this package.
     @objc public let packageType: PackageType
-    /// The underlying ``storeProduct``
+    /// The underlying ``storeProduct``. Will be the native product if available.
+    /// If not, it will fallback to the web product.
     @objc public let storeProduct: StoreProduct
-    /// The product for the available stores keyed by the ``Store`` raw value.
-    @objc public let storeProductByStoreRawValue: [Int: StoreProduct]
+    /// The products available for the package
+    @objc public let packageProducts: PackageProducts
 
     ////  The information about the ``Offering`` containing this Package
     @objc public let presentedOfferingContext: PresentedOfferingContext
@@ -150,7 +151,7 @@ import Foundation
         self.init(identifier: identifier,
                   packageType: packageType,
                   storeProduct: storeProduct,
-                  storeProductByStoreRawValue: [:],
+                  packageProducts: PackageProducts(nativeProduct: storeProduct, webBillingProduct: nil),
                   presentedOfferingContext: presentedOfferingContext,
                   webCheckoutUrl: webCheckoutUrl)
     }
@@ -161,14 +162,14 @@ import Foundation
         identifier: String,
         packageType: PackageType,
         storeProduct: StoreProduct,
-        storeProductByStoreRawValue: [Int: StoreProduct],
+        packageProducts: PackageProducts,
         presentedOfferingContext: PresentedOfferingContext,
         webCheckoutUrl: URL?
     ) {
         self.identifier = identifier
         self.packageType = packageType
         self.storeProduct = storeProduct
-        self.storeProductByStoreRawValue = storeProductByStoreRawValue
+        self.packageProducts = packageProducts
         self.presentedOfferingContext = presentedOfferingContext
         self.webCheckoutUrl = webCheckoutUrl
 
@@ -182,7 +183,7 @@ import Foundation
             self.identifier == other.identifier &&
                 self.packageType == other.packageType &&
                 self.storeProduct == other.storeProduct &&
-                self.storeProductByStoreRawValue == other.storeProductByStoreRawValue &&
+                self.packageProducts == other.packageProducts &&
                 self.presentedOfferingContext == other.presentedOfferingContext
         )
     }
@@ -192,7 +193,7 @@ import Foundation
         hasher.combine(self.identifier)
         hasher.combine(self.packageType)
         hasher.combine(self.storeProduct)
-        hasher.combine(self.storeProductByStoreRawValue)
+        hasher.combine(self.packageProducts)
         hasher.combine(self.presentedOfferingContext)
 
         return hasher.finalize()

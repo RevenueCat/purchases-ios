@@ -23,7 +23,7 @@ struct OfferingsResponse {
             let identifier: String
             let platformProductIdentifier: String
             let webCheckoutUrl: URL?
-            var productIdByStoreType: [Store: String]?
+            var productIdByStoreType: [String: String]?
 
         }
 
@@ -69,8 +69,8 @@ extension OfferingsResponse {
         )
     }
 
-    var productIdentifiersByStoreType: [Store: Set<String>] {
-        var result: [Store: Set<String>] = [:]
+    var productIdentifiersByStoreType: [String: Set<String>] {
+        var result: [String: Set<String>] = [:]
 
         for offering in self.offerings {
             for package in offering.packages {
