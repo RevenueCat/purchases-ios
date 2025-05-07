@@ -50,14 +50,17 @@ struct SubscriptionDetailsHeader: View {
 
     var body: some View {
         VStack(alignment: .leading) {
-            Text(titleString).font(.title3) +
-            Text(statusString.map {" " +  "(\($0))"} ?? "")
-                .font(.subheadline)
+            if let title = purchaseInformation.title {
+                Text(title)
+                    .font(.headline)
+            }
 
-            Text(purchaseInformation.billingInformation(localizations: localization))
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.leading)
+            if let explanation = getSubscriptionExplanation(from: purchaseInformation, localization: localization) {
+                Text(explanation)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.leading)
+            }
         }
     }
 
@@ -189,4 +192,3 @@ struct SubscriptionDetailsView_Previews: PreviewProvider {
 #endif
 
 #endif
-

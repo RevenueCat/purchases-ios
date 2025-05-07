@@ -162,11 +162,14 @@ struct ManageSubscriptionsView: View {
                             Button {
                                 viewModel.purchaseInformation = purchase
                             } label: {
-                                PurchaseInformationCardView(purchaseInformation: purchase)
-                                    .padding(16)
-                                    .background(Color(UIColor.systemBackground))
-                                    .cornerRadius(10)
-                                    .padding(.horizontal)
+                                PurchaseInformationCardView(
+                                    purchaseInformation: purchase,
+                                    localization: localization
+                                )
+                                .padding(16)
+                                .background(Color(UIColor.systemBackground))
+                                .cornerRadius(10)
+                                .padding(.horizontal)
                             }
                             .tint(.primary)
                         }
@@ -213,10 +216,18 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
     // swiftlint:disable force_unwrapping
     static var previews: some View {
         let purchases: [PurchaseInformation] = [
-            .subscriptionInformationYearlyExpiring(productIdentifier: "p1"),
-            .subscriptionInformationYearlyExpiring(productIdentifier: "p2", store: .amazon),
-            .subscriptionInformationYearlyExpiring(productIdentifier: "p3", introductoryDiscount: MockStoreProductDiscount.mock(paymentMode: .payAsYouGo, discountType: .introductory)),
-            .subscriptionInformationYearlyExpiring(productIdentifier: "p4", introductoryDiscount: MockStoreProductDiscount.mock(paymentMode: .payUpFront, discountType: .promotional)),
+            .yearlyExpiring(productIdentifier: "p1"),
+            .yearlyExpiring(productIdentifier: "p2", store: .amazon),
+            .yearlyExpiring(
+                productIdentifier: "p3",
+                introductoryDiscount: MockStoreProductDiscount.mock(
+                    paymentMode: .payAsYouGo,
+                    discountType: .introductory)),
+            .yearlyExpiring(
+                productIdentifier: "p4",
+                introductoryDiscount: MockStoreProductDiscount.mock(
+                    paymentMode: .payUpFront,
+                    discountType: .promotional)),
             .monthlyRenewing,
             .subscriptionInformationFree
         ]

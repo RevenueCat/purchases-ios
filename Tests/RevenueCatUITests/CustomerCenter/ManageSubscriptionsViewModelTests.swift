@@ -443,7 +443,7 @@ final class ManageSubscriptionViewModelTests: TestCase {
                                                                               signedData: signedData)
 
         let screen = PurchaseInformationFixtures.screenWithPromo(offerID: offerIdentifierInJSON)
-        let purchaseInformation = PurchaseInformation.subscriptionInformationYearlyExpiring()
+        let purchaseInformation = PurchaseInformation.yearlyExpiring()
         let viewModel = ManageSubscriptionViewModel(screen: screen,
                                                     showPurchaseHistory: false,
                                                     actionWrapper: CustomerCenterActionWrapper(),

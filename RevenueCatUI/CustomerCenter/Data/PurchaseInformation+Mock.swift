@@ -14,6 +14,7 @@
 import Foundation
 @_spi(Internal) @testable import RevenueCat
 
+// swiftlint:disable force_unwrapping
 extension PurchaseInformation {
     static let monthlyRenewing = PurchaseInformation(
         title: "Basic",
@@ -48,10 +49,11 @@ extension PurchaseInformation {
         managePurchaseURL: URL(string: "https://www.revenuecat.com")!
     )
 
-    static func subscriptionInformationYearlyExpiring(
+    static func yearlyExpiring(
         title: String = "Product name",
         productIdentifier: String = "productIdentifier3",
         store: Store = .appStore,
+        isCancelled: Bool = false,
         expirationDate: Date = Date(),
         introductoryDiscount: StoreProductDiscountType? = nil
     ) -> PurchaseInformation {
@@ -67,7 +69,7 @@ extension PurchaseInformation {
             isTrial: false,
             latestPurchaseDate: nil,
             customerInfoRequestedDate: Date(),
-            isCancelled: false,
+            isCancelled: isCancelled,
             introductoryDiscount: introductoryDiscount,
             expirationDate: expirationDate,
             managePurchaseURL: URL(string: "https://www.revenuecat.com")!

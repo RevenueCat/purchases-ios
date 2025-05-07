@@ -219,159 +219,143 @@ struct ManageSubscriptionView: View {
 
 }
 
-//#if DEBUG
-// @available(iOS 15.0, *)
-// @available(macOS, unavailable)
-// @available(tvOS, unavailable)
-// @available(watchOS, unavailable)
-// struct ManageSubscriptionView_Previews: PreviewProvider {
-//
-//    static var previews: some View {
-//        ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
-//            CompatibilityNavigationStack {
-//                ManageSubscriptionView(
-//                    viewModel: ManageSubscriptionViewModel(
-//                        screen: CustomerCenterConfigData.default.screens[.management]!,
-//                        showPurchaseHistory: false,
-//                        purchaseInformation: .monthlyRenewing
-//                    )
-//                )
-//            }
-//            .preferredColorScheme(colorScheme)
-//            .previewDisplayName("Renewing subscription - No refund - No discount - \(colorScheme)")
-//
-//            CompatibilityNavigationStack {
-//                ManageSubscriptionView(
-//                    viewModel: ManageSubscriptionViewModel(
-//                        screen: CustomerCenterConfigData.default.screens[.management]!,
-//                        showPurchaseHistory: false,
-//                        purchaseInformation: PurchaseInformation.subscriptionInformationYearlyExpiring()
-//                    )
-//                )
-//            }
-//            .preferredColorScheme(colorScheme)
-//            .previewDisplayName("Renewing subscription - No refund - Pay as you go - \(colorScheme)")
-//
-//            CompatibilityNavigationStack {
-//                let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
-//                    screen: Self.managementScreen,
-//                    actionWrapper: CustomerCenterActionWrapper(),
-//                    purchaseInformation: .monthlyRenewing(
-//                        introductoryDiscount: CustomerCenterConfigData.discount(
-//                            paymentMode: .payUpFront,
-//                            price: 2.99,
-//                            subscriptionPeriod: .init(value: 3, unit: .month)
-//                        )
-//                    ),
-//                    purchasesProvider: CustomerCenterPurchases())
-//                ManageSubscriptionsView(
-//                    purchaseInformation: .constant(nil),
-//                    viewModel: viewModelMonthlyRenewing
-//                )
-//                    .environment(\.localization, CustomerCenterConfigData.default.localization)
-//                    .environment(\.appearance, CustomerCenterConfigData.default.appearance)
-//            }
-//            .preferredColorScheme(colorScheme)
-//            .previewDisplayName("Renewing subscription - No refund - Pay up front - \(colorScheme)")
-//
-//            CompatibilityNavigationStack {
-//                let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
-//                    screen: Self.managementScreen,
-//                    actionWrapper: CustomerCenterActionWrapper(),
-//                    purchaseInformation: .monthlyRenewing(
-//                        introductoryDiscount: CustomerCenterConfigData.discount(
-//                            paymentMode: .freeTrial,
-//                            price: 2.99,
-//                            subscriptionPeriod: .init(value: 3, unit: .month)
-//                        )
-//                    ),
-//                    purchasesProvider: CustomerCenterPurchases())
-//                ManageSubscriptionsView(
-//                    purchaseInformation: .constant(nil),
-//                    viewModel: viewModelMonthlyRenewing
-//                )
-//                    .environment(\.localization, CustomerCenterConfigData.default.localization)
-//                    .environment(\.appearance, CustomerCenterConfigData.default.appearance)
-//            }
-//            .preferredColorScheme(colorScheme)
-//            .previewDisplayName("Renewing subscription - No refund - Free trial - \(colorScheme)")
-//
-//            CompatibilityNavigationStack {
-//                let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
-//                    screen: Self.managementScreen,
-//                    actionWrapper: CustomerCenterActionWrapper(),
-//                    purchaseInformation: .monthlyRenewing(),
-//                    refundRequestStatus: .success,
-//                    purchasesProvider: CustomerCenterPurchases())
-//
-//                ManageSubscriptionsView(
-//                    purchaseInformation: .constant(nil),
-//                    viewModel: viewModelMonthlyRenewing
-//                )
-//                .environment(\.localization, CustomerCenterConfigData.customerCenterData().localization)
-//                .environment(\.appearance, CustomerCenterConfigData.customerCenterData().appearance)
-//            }
-//            .preferredColorScheme(colorScheme)
-//            .previewDisplayName("Renewing subscription - Requested refund - No discount - \(colorScheme)")
-//
-//            CompatibilityNavigationStack {
-//                let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
-//                    screen: Self.managementScreen,
-//                    actionWrapper: CustomerCenterActionWrapper(),
-//                    purchaseInformation: PurchaseInformation.subscriptionInformationYearlyExpiring(),
-//                    purchasesProvider: CustomerCenterPurchases())
-//                ManageSubscriptionsView(
-//                    purchaseInformation: .constant(nil),
-//                    viewModel: viewModelYearlyExpiring)
-//                .environment(\.localization, CustomerCenterConfigData.default.localization)
-//                .environment(\.appearance, CustomerCenterConfigData.default.appearance)
-//            }
-//            .preferredColorScheme(colorScheme)
-//            .previewDisplayName("Cancelled subscription - No refund - No discount - \(colorScheme)")
-//
-//            CompatibilityNavigationStack {
-//                ManageSubscriptionView(
-//                    viewModel: ManageSubscriptionViewModel(
-//                        screen: CustomerCenterConfigData.default.screens[.management]!,
-//                        showPurchaseHistory: false,
-//                        purchaseInformation: PurchaseInformation.subscriptionInformationFree
-//                    )
-//                )
-//            }
-//            .preferredColorScheme(colorScheme)
-//            .previewDisplayName("Free subscription - No refund - No discount - \(colorScheme)")
-//
-//            CompatibilityNavigationStack {
-//                ManageSubscriptionView(
-//                    viewModel: ManageSubscriptionViewModel(
-//                        screen: CustomerCenterConfigData.default.screens[.management]!,
-//                        showPurchaseHistory: false,
-//                        purchaseInformation: PurchaseInformation.consumable
-//                    )
-//                )
-//            }
-//            .preferredColorScheme(colorScheme)
-//            .previewDisplayName("Consumable - \(colorScheme)")
-//
-//            CompatibilityNavigationStack {
-//                ManageSubscriptionView(
-//                    viewModel: ManageSubscriptionViewModel(
-//                        screen: CustomerCenterConfigData.default.screens[.management]!,
-//                        showPurchaseHistory: false,
-//                        purchaseInformation: PurchaseInformation.subscriptionInformationYearlyExpiring(
-//                            store: .playStore)
-//                    )
-//                )
-//            }
-//            .preferredColorScheme(colorScheme)
-//            .previewDisplayName("Play Store - \(colorScheme)")
-//        }
-//        .environment(\.localization, CustomerCenterConfigData.default.localization)
-//        .environment(\.appearance, CustomerCenterConfigData.default.appearance)
-//    }
-//
-//}
-//
-//#endif
+#if DEBUG
+ @available(iOS 15.0, *)
+ @available(macOS, unavailable)
+ @available(tvOS, unavailable)
+ @available(watchOS, unavailable)
+ struct ManageSubscriptionView_Previews: PreviewProvider {
+
+    // swiftlint:disable force_unwrapping
+    static var previews: some View {
+        ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
+            CompatibilityNavigationStack {
+                ManageSubscriptionView(
+                    viewModel: ManageSubscriptionViewModel(
+                        screen: CustomerCenterConfigData.default.screens[.management]!,
+                        showPurchaseHistory: false,
+                        purchaseInformation: .monthlyRenewing
+                    )
+                )
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Renewing subscription - No refund - No discount - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                ManageSubscriptionView(
+                    viewModel: ManageSubscriptionViewModel(
+                        screen: CustomerCenterConfigData.default.screens[.management]!,
+                        showPurchaseHistory: false,
+                        purchaseInformation: PurchaseInformation.yearlyExpiring()
+                    )
+                )
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Renewing subscription - No refund - Pay as you go - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                ManageSubscriptionView(
+                    viewModel: ManageSubscriptionViewModel(
+                        screen: CustomerCenterConfigData.default.screens[.management]!,
+                        showPurchaseHistory: false,
+                        purchaseInformation: .yearlyExpiring(
+                            introductoryDiscount: MockStoreProductDiscount.discount(
+                                paymentMode: .payUpFront,
+                                price: 2.99,
+                                subscriptionPeriod: .init(value: 3, unit: .month)
+                            )
+                        )
+                    )
+                )
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Renewing subscription - No refund - Pay up front - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                ManageSubscriptionView(
+                    viewModel: ManageSubscriptionViewModel(
+                        screen: CustomerCenterConfigData.default.screens[.management]!,
+                        showPurchaseHistory: false,
+                        purchaseInformation: .yearlyExpiring(
+                            introductoryDiscount: MockStoreProductDiscount.discount(
+                                paymentMode: .freeTrial,
+                                price: 2.99,
+                                subscriptionPeriod: .init(value: 3, unit: .month)
+                            )
+                        )
+                    )
+                )
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Renewing subscription - No refund - Free trial - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                ManageSubscriptionView(
+                    viewModel: ManageSubscriptionViewModel(
+                        screen: CustomerCenterConfigData.default.screens[.management]!,
+                        showPurchaseHistory: false,
+                        purchaseInformation: .yearlyExpiring(),
+                    )
+                )
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Renewing subscription - Requested refund - No discount - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                let viewModelYearlyExpiring =
+                ManageSubscriptionView(
+                    viewModel: ManageSubscriptionViewModel(
+                        screen: CustomerCenterConfigData.default.screens[.management]!,
+                        showPurchaseHistory: false,
+                        purchaseInformation: .yearlyExpiring(isCancelled: true)
+                    )
+                )
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Cancelled subscription - No refund - No discount - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                ManageSubscriptionView(
+                    viewModel: ManageSubscriptionViewModel(
+                        screen: CustomerCenterConfigData.default.screens[.management]!,
+                        showPurchaseHistory: false,
+                        purchaseInformation: PurchaseInformation.subscriptionInformationFree
+                    )
+                )
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Free subscription - No refund - No discount - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                ManageSubscriptionView(
+                    viewModel: ManageSubscriptionViewModel(
+                        screen: CustomerCenterConfigData.default.screens[.management]!,
+                        showPurchaseHistory: false,
+                        purchaseInformation: PurchaseInformation.consumable
+                    )
+                )
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Consumable - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                ManageSubscriptionView(
+                    viewModel: ManageSubscriptionViewModel(
+                        screen: CustomerCenterConfigData.default.screens[.management]!,
+                        showPurchaseHistory: false,
+                        purchaseInformation: PurchaseInformation.yearlyExpiring(
+                            store: .playStore)
+                    )
+                )
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Play Store - \(colorScheme)")
+        }
+        .environment(\.localization, CustomerCenterConfigData.default.localization)
+        .environment(\.appearance, CustomerCenterConfigData.default.appearance)
+    }
+}
+
+#endif
 
 #endif
