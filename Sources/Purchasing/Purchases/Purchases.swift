@@ -1766,6 +1766,17 @@ extension Purchases {
         )
     }
 
+    // swiftlint:disable missing_docs
+    @_spi(Internal) public func webProducts(_ productIdentifiers: [String]) async -> [String: StoreProduct] {
+        return await withUnsafeContinuation { continuation in
+            offeringsManager.fetchWebProductsInfo(
+                appUserID: appUserID,
+                productIDs: Set(productIdentifiers)) { productsByIdentifier in
+                    continuation.resume(returning: productsByIdentifier)
+                }
+        }
+    }
+
 }
 
 extension Purchases: InternalPurchasesType {

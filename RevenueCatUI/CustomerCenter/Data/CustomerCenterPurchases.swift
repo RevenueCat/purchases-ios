@@ -12,7 +12,7 @@
 //  Created by Cesar de la Vega on 18/7/24.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
@@ -48,6 +48,15 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
 
     func products(_ productIdentifiers: [String]) async -> [StoreProduct] {
         await Purchases.shared.products(productIdentifiers)
+    }
+
+    func products(_ productIdentifiers: [String], _ store: Store) async -> [StoreProduct] {
+        switch store {
+        case .rcBilling:
+            await Array(Purchases.shared.webProducts(productIdentifiers).values)
+        case .appStore, .macAppStore, .promotional, .playStore, .stripe, .unknownStore, .amazon, .external:
+            await Purchases.shared.products(productIdentifiers)
+        }
     }
 
     func promotionalOffer(forProductDiscount discount: StoreProductDiscount,

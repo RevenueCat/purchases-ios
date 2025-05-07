@@ -202,8 +202,12 @@ private extension CustomerCenterViewModel {
     func createPurchaseInformation(for transaction: Transaction,
                                    entitlement: EntitlementInfo?,
                                    customerInfo: CustomerInfo) async throws -> PurchaseInformation {
-        if transaction.store == .appStore {
-            if let product = await purchasesProvider.products([transaction.productIdentifier]).first {
+        switch transaction.store {
+        case .appStore, .rcBilling:
+            if let product = await purchasesProvider.products(
+                [transaction.productIdentifier],
+                transaction.store
+            ).first {
                 return await PurchaseInformation.purchaseInformationUsingRenewalInfo(
                     entitlement: entitlement,
                     subscribedProduct: product,
@@ -222,14 +226,15 @@ private extension CustomerCenterViewModel {
                     customerInfoRequestedDate: customerInfo.requestDate
                 )
             }
-        }
-        Logger.warning(Strings.active_product_is_not_apple_loading_without_product_information(transaction.store))
+        case .macAppStore, .promotional, .playStore, .stripe, .unknownStore, .amazon, .external:
+            Logger.warning(Strings.active_product_is_not_apple_loading_without_product_information(transaction.store))
 
-        return PurchaseInformation(
-            entitlement: entitlement,
-            transaction: transaction,
-            customerInfoRequestedDate: customerInfo.requestDate
-        )
+            return PurchaseInformation(
+                entitlement: entitlement,
+                transaction: transaction,
+                customerInfoRequestedDate: customerInfo.requestDate
+            )
+        }
     }
 }
 

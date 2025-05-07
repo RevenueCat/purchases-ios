@@ -27,8 +27,8 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
 
     var customerInfo: CustomerInfo
     let customerInfoError: Error?
-    // StoreProducts keyed by productIdentifier.
-    let products: [String: RevenueCat.StoreProduct]
+    // StoreProducts keyed by store.
+    let products: [Store: [RevenueCat.StoreProduct]]
     let showManageSubscriptionsError: Error?
     let beginRefundShouldFail: Bool
 
@@ -50,9 +50,7 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
     ) {
         self.customerInfo = customerInfo
         self.customerInfoError = customerInfoError
-        self.products = Dictionary(uniqueKeysWithValues: products.map({ product in
-            (product.productIdentifier, product)
-        }))
+        self.products = [Store.appStore: products]
         self.showManageSubscriptionsError = showManageSubscriptionsError
         self.beginRefundShouldFail = beginRefundShouldFail
         self.loadCustomerCenterResult = .success(customerCenterConfigData)
@@ -76,9 +74,15 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
     }
 
     func products(_ productIdentifiers: [String]) async -> [RevenueCat.StoreProduct] {
-        return productIdentifiers.compactMap { productIdentifier in
-            products[productIdentifier]
+        return products.values.flatMap(\.self).filter { product in
+            productIdentifiers.contains(product.productIdentifier)
         }
+    }
+
+    func products(_ productIdentifiers: [String], _ store: RevenueCat.Store) async -> [RevenueCat.StoreProduct] {
+        return products[store]?.filter { product in
+            productIdentifiers.contains(product.productIdentifier)
+        } ?? []
     }
 
     var promotionalOfferCallCount = 0

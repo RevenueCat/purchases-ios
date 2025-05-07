@@ -168,6 +168,27 @@ class OfferingsManager {
         }
     }
 
+    func fetchWebProductsInfo(appUserID: String,
+                              productIDs: Set<String>,
+                              completion: @escaping ([String: StoreProduct]) -> Void) {
+        if productIDs.isEmpty {
+            completion([:])
+            return
+        }
+        self.backend.offerings.getWebProducts(appUserID: appUserID, productIDs: productIDs) { result in
+            switch result {
+            case let .success(response):
+                completion(response.productDetails
+                            .map { webProduct in StoreProduct.from(webBillingProduct: webProduct) }
+                            .dictionaryWithKeys({ $0.productIdentifier }) as [String: StoreProduct])
+
+            case let .failure(error):
+                Logger.warn(Strings.offering.fetching_web_products_failed(error: error))
+                completion([:])
+            }
+        }
+    }
+
 }
 
 private extension OfferingsManager {
@@ -218,27 +239,6 @@ private extension OfferingsManager {
                 }
             }
         )
-    }
-
-    func fetchWebProductsInfo(appUserID: String,
-                              productIDs: Set<String>,
-                              completion: @escaping ([String: StoreProduct]) -> Void) {
-        if productIDs.isEmpty {
-            completion([:])
-            return
-        }
-        self.backend.offerings.getWebProducts(appUserID: appUserID, productIDs: productIDs) { result in
-            switch result {
-            case let .success(response):
-                completion(response.productDetails
-                            .map { webProduct in StoreProduct.from(webBillingProduct: webProduct) }
-                            .dictionaryWithKeys({ $0.productIdentifier }) as [String: StoreProduct])
-
-            case let .failure(error):
-                Logger.warn(Strings.offering.fetching_web_products_failed(error: error))
-                completion([:])
-            }
-        }
     }
 
     func createOfferings(
