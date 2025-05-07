@@ -18,8 +18,8 @@
   ],
   "settings" : {
     "_failTransactionsEnabled" : false,
-    "_locale" : "en_US",
-    "_storefront" : "USA",
+    "_locale" : "pt_BR",
+    "_storefront" : "ESP",
     "_storeKitErrors" : [
       {
         "current" : null,
@@ -178,6 +178,10 @@
       ]
     }
   ],
+  "subscriptionOffersKeyPair" : {
+    "id" : "851B7BE3",
+    "privateKey" : "MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQg66ysmTWr15OY0KySAawM00Infa40RCu9oxFQYbAsJnigCgYIKoZIzj0DAQehRANCAATMMiGAa8LWx98uY+/NFCnxLdb9ZlKR9YgZAhYbYgaqywt7sUCEamtPoixYv0t6kmHbeoOHGbgeK3KFh+9WX3ju"
+  },
   "version" : {
     "major" : 4,
     "minor" : 0
