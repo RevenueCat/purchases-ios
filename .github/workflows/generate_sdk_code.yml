@@ -27,12 +27,6 @@ jobs:
             https://api.github.com/repos/RevenueCat/khepri/contents/services/customer_center/domain/default_stored_customer_center_config.json \
             -o config.json
 
-          {
-            echo "CONFIG_JSON<<EOF"
-            cat config.json
-            echo "EOF"
-          } >> "$GITHUB_ENV"
-
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
