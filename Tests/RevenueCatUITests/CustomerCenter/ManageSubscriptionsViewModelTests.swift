@@ -351,7 +351,6 @@ final class ManageSubscriptionViewModelTests: TestCase {
                 loadPromotionalOfferUseCase: loadPromotionalOfferUseCase)
 
             let screen = try XCTUnwrap(viewModel.screen)
-            //            expect(viewModel.state) == .success
 
             let pathWithPromotionalOffer = try XCTUnwrap(screen.paths.first { path in
                 if case .promotionalOffer = path.detail {
@@ -463,7 +462,6 @@ final class ManageSubscriptionViewModelTests: TestCase {
                                                expectedOfferIdentifierInJSON: String,
                                                expectedOfferIdentifierInProduct: String? = nil) async throws {
         let screen = try XCTUnwrap(viewModel.screen)
-//        expect(viewModel.state) == .success
 
         let pathWithPromotionalOffer = try XCTUnwrap(screen.paths.first { path in
             if case .promotionalOffer = path.detail {
