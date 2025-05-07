@@ -28,7 +28,7 @@ import XCTest
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @MainActor
-final class ManageSubscriptionsViewModelTests: TestCase {
+final class ManageSubscriptionViewModelTests: TestCase {
 
     private let error = TestError(message: "An error occurred")
 
@@ -41,12 +41,12 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 
     func testInitialState() {
         let viewModel =
-        ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.default,
-                                     actionWrapper: CustomerCenterActionWrapper(),
-                                     purchaseInformation: nil,
-                                     purchasesProvider: MockCustomerCenterPurchases())
+        ManageSubscriptionViewModel(screen: ManageSubscriptionViewModelTests.default,
+                                    showPurchaseHistory: false,
+                                    actionWrapper: CustomerCenterActionWrapper(),
+                                    purchaseInformation: nil,
+                                    purchasesProvider: MockCustomerCenterPurchases())
 
-        expect(viewModel.state) == CustomerCenterViewState.success
         expect(viewModel.purchaseInformation).to(beNil())
         expect(viewModel.refundRequestStatus).to(beNil())
         expect(viewModel.screen).toNot(beNil())
@@ -56,8 +56,9 @@ final class ManageSubscriptionsViewModelTests: TestCase {
     func testLifetimeSubscriptionDoesNotShowCancel() {
         let purchase = PurchaseInformation.mockLifetime()
 
-        let viewModel = ManageSubscriptionsViewModel(
-            screen: ManageSubscriptionsViewModelTests.default,
+        let viewModel = ManageSubscriptionViewModel(
+            screen: ManageSubscriptionViewModelTests.default,
+            showPurchaseHistory: false,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
             purchasesProvider: MockCustomerCenterPurchases())
@@ -71,8 +72,9 @@ final class ManageSubscriptionsViewModelTests: TestCase {
             isCancelled: true
         )
 
-        let viewModel = ManageSubscriptionsViewModel(
-            screen: ManageSubscriptionsViewModelTests.default,
+        let viewModel = ManageSubscriptionViewModel(
+            screen: ManageSubscriptionViewModelTests.default,
+            showPurchaseHistory: false,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
             purchasesProvider: MockCustomerCenterPurchases())
@@ -82,11 +84,44 @@ final class ManageSubscriptionsViewModelTests: TestCase {
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beFalse())
     }
 
+    func testNonAppleHasLimitedPaths() {
+        let purchase = PurchaseInformation.mockNonLifetime(
+            store: .playStore
+        )
+
+        let viewModel = ManageSubscriptionViewModel(
+            screen: ManageSubscriptionViewModelTests.default,
+            showPurchaseHistory: false,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases())
+
+        expect(viewModel.relevantPathsForPurchase.count) == 1
+        expect(viewModel.relevantPathsForPurchase.first?.type) == .cancel
+    }
+
+    func testNonAppleWithouURLDoesNotShowCancel() {
+        let purchase = PurchaseInformation.mockNonLifetime(
+            store: .playStore,
+            managementURL: nil
+        )
+
+        let viewModel = ManageSubscriptionViewModel(
+            screen: ManageSubscriptionViewModelTests.default,
+            showPurchaseHistory: false,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases())
+
+        expect(viewModel.relevantPathsForPurchase.isEmpty).to(beTrue())
+    }
+
     func testShowsRefundIfRefundWindowIsForever() {
         let purchase = PurchaseInformation.mockNonLifetime()
 
-        let viewModel = ManageSubscriptionsViewModel(
-            screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .forever),
+        let viewModel = ManageSubscriptionViewModel(
+            screen: ManageSubscriptionViewModelTests.managementScreen(refundWindowDuration: .forever),
+            showPurchaseHistory: false,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
             purchasesProvider: MockCustomerCenterPurchases())
@@ -112,8 +147,9 @@ final class ManageSubscriptionsViewModelTests: TestCase {
             latestPurchaseDate: latestPurchaseDate,
             customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
 
-        let viewModel = ManageSubscriptionsViewModel(
-            screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .duration(oneDay)),
+        let viewModel = ManageSubscriptionViewModel(
+            screen: ManageSubscriptionViewModelTests.managementScreen(refundWindowDuration: .duration(oneDay)),
+            showPurchaseHistory: false,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
             purchasesProvider: MockCustomerCenterPurchases())
@@ -130,8 +166,9 @@ final class ManageSubscriptionsViewModelTests: TestCase {
             latestPurchaseDate: latestPurchaseDate,
             customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
 
-        let viewModel = ManageSubscriptionsViewModel(
-            screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .forever),
+        let viewModel = ManageSubscriptionViewModel(
+            screen: ManageSubscriptionViewModelTests.managementScreen(refundWindowDuration: .forever),
+            showPurchaseHistory: false,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
             purchasesProvider: MockCustomerCenterPurchases())
@@ -149,8 +186,9 @@ final class ManageSubscriptionsViewModelTests: TestCase {
             latestPurchaseDate: latestPurchaseDate,
             customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
 
-        let viewModel = ManageSubscriptionsViewModel(
-            screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .forever),
+        let viewModel = ManageSubscriptionViewModel(
+            screen: ManageSubscriptionViewModelTests.managementScreen(refundWindowDuration: .forever),
+            showPurchaseHistory: false,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
             purchasesProvider: MockCustomerCenterPurchases())
@@ -176,31 +214,15 @@ final class ManageSubscriptionsViewModelTests: TestCase {
             latestPurchaseDate: latestPurchaseDate,
             customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
 
-        let viewModel = ManageSubscriptionsViewModel(
-            screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .duration(oneDay)),
+        let viewModel = ManageSubscriptionViewModel(
+            screen: ManageSubscriptionViewModelTests.managementScreen(refundWindowDuration: .duration(oneDay)),
+            showPurchaseHistory: false,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
             purchasesProvider: MockCustomerCenterPurchases())
 
         expect(viewModel.relevantPathsForPurchase.count) == 4
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beTrue())
-    }
-
-    func testStateChangeToError() {
-        let viewModel =
-        ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.default,
-                                     actionWrapper: CustomerCenterActionWrapper(),
-                                     purchaseInformation: nil,
-                                     purchasesProvider: MockCustomerCenterPurchases())
-
-        viewModel.state = CustomerCenterViewState.error(error)
-
-        switch viewModel.state {
-        case .error(let stateError):
-            expect(stateError as? TestError) == error
-        default:
-            fail("Expected state to be .error")
-        }
     }
 
     func testLoadsPromotionalOffer() async throws {
@@ -317,8 +339,9 @@ final class ManageSubscriptionsViewModelTests: TestCase {
                 signedData: signedData
             )
 
-            let viewModel = ManageSubscriptionsViewModel(
+            let viewModel = ManageSubscriptionViewModel(
                 screen: PurchaseInformationFixtures.screenWithIneligiblePromo,
+                showPurchaseHistory: false,
                 actionWrapper: CustomerCenterActionWrapper(),
                 purchaseInformation: nil,
                 purchasesProvider: MockCustomerCenterPurchases(
@@ -328,7 +351,6 @@ final class ManageSubscriptionsViewModelTests: TestCase {
                 loadPromotionalOfferUseCase: loadPromotionalOfferUseCase)
 
             let screen = try XCTUnwrap(viewModel.screen)
-            expect(viewModel.state) == .success
 
             let pathWithPromotionalOffer = try XCTUnwrap(screen.paths.first { path in
                 if case .promotionalOffer = path.detail {
@@ -339,7 +361,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 
             expect(loadPromotionalOfferUseCase.offerToLoadPromoFor).to(beNil())
 
-            await viewModel.determineFlow(for: pathWithPromotionalOffer)
+            await viewModel.handleHelpPath(pathWithPromotionalOffer)
 
             expect(loadPromotionalOfferUseCase.offerToLoadPromoFor).to(beNil())
         }
@@ -348,7 +370,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
     // Helper methods
     private func setupPromotionalOfferTest(offerIdentifierInJSON: String,
                                            offerIdentifierInProduct: String
-    ) async throws -> (ManageSubscriptionsViewModel, MockLoadPromotionalOfferUseCase) {
+    ) async throws -> (ManageSubscriptionViewModel, MockLoadPromotionalOfferUseCase) {
         let productIdOne = "com.revenuecat.product1"
         let productIdTwo = "com.revenuecat.product2"
         let purchaseDate = "2022-04-12T00:03:28Z"
@@ -421,24 +443,25 @@ final class ManageSubscriptionsViewModelTests: TestCase {
                                                                               signedData: signedData)
 
         let screen = PurchaseInformationFixtures.screenWithPromo(offerID: offerIdentifierInJSON)
-        let viewModel = ManageSubscriptionsViewModel(screen: screen,
-                                                     actionWrapper: CustomerCenterActionWrapper(),
-                                                     purchaseInformation: nil,
-                                                     purchasesProvider: MockCustomerCenterPurchases(
+        let purchaseInformation = CustomerCenterConfigData.subscriptionInformationYearlyExpiring()
+        let viewModel = ManageSubscriptionViewModel(screen: screen,
+                                                    showPurchaseHistory: false,
+                                                    actionWrapper: CustomerCenterActionWrapper(),
+                                                    purchaseInformation: purchaseInformation,
+                                                    purchasesProvider: MockCustomerCenterPurchases(
                                                         customerInfo: customerInfo,
                                                         products: products
-                                                     ),
-                                                     loadPromotionalOfferUseCase: loadPromotionalOfferUseCase)
+                                                    ),
+                                                    loadPromotionalOfferUseCase: loadPromotionalOfferUseCase)
 
         return (viewModel, loadPromotionalOfferUseCase)
     }
 
-    private func verifyPromotionalOfferLoading(viewModel: ManageSubscriptionsViewModel,
+    private func verifyPromotionalOfferLoading(viewModel: ManageSubscriptionViewModel,
                                                loadPromotionalOfferUseCase: MockLoadPromotionalOfferUseCase,
                                                expectedOfferIdentifierInJSON: String,
                                                expectedOfferIdentifierInProduct: String? = nil) async throws {
         let screen = try XCTUnwrap(viewModel.screen)
-        expect(viewModel.state) == .success
 
         let pathWithPromotionalOffer = try XCTUnwrap(screen.paths.first { path in
             if case .promotionalOffer = path.detail {
@@ -449,7 +472,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 
         expect(loadPromotionalOfferUseCase.offerToLoadPromoFor).to(beNil())
 
-        await viewModel.determineFlow(for: pathWithPromotionalOffer)
+        await viewModel.handleHelpPath(pathWithPromotionalOffer)
 
         let loadingPath = try XCTUnwrap(viewModel.loadingPath)
         expect(loadingPath.id) == pathWithPromotionalOffer.id
@@ -466,17 +489,18 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension ManageSubscriptionsViewModelTests {
+private extension ManageSubscriptionViewModelTests {
 
     static let `default`: CustomerCenterConfigData.Screen =
-    CustomerCenterConfigTestData.customerCenterData.screens[.management]!
+    CustomerCenterConfigData.default.screens[.management]!
 
     static func managementScreen(
         refundWindowDuration: CustomerCenterConfigData.HelpPath.RefundWindowDuration
     ) -> CustomerCenterConfigData.Screen {
-        CustomerCenterConfigTestData.customerCenterData(
+        CustomerCenterConfigData.mock(
             lastPublishedAppVersion: "1.0.0",
-            refundWindowDuration: refundWindowDuration).screens[.management]!
+            refundWindowDuration: refundWindowDuration
+        ).screens[.management]!
     }
 
 }
@@ -497,7 +521,8 @@ private extension PurchaseInformation {
             isTrial: false,
             isCancelled: false,
             latestPurchaseDate: nil,
-            customerInfoRequestedDate: customerInfoRequestedDate
+            customerInfoRequestedDate: customerInfoRequestedDate,
+            managePurchaseURL: URL(string: "https://www.revenuecat.com")!
         )
     }
 
@@ -505,26 +530,30 @@ private extension PurchaseInformation {
         price: PurchaseInformation.PriceDetails = .paid("5"),
         isTrial: Bool = false,
         isCancelled: Bool = false,
+        store: Store = .appStore,
         latestPurchaseDate: Date = Date(),
-        customerInfoRequestedDate: Date = Date()) -> PurchaseInformation {
-        PurchaseInformation(
-            title: "",
-            durationTitle: "",
-            explanation: .earliestExpiration,
-            price: price,
-            expirationOrRenewal: PurchaseInformation.ExpirationOrRenewal(
-                label: .expires,
-                date: .date("")
-            ),
-            productIdentifier: "",
-            store: .appStore,
-            isLifetime: false,
-            isTrial: isTrial,
-            isCancelled: isCancelled,
-            latestPurchaseDate: latestPurchaseDate,
-            customerInfoRequestedDate: customerInfoRequestedDate
-        )
-    }
+        customerInfoRequestedDate: Date = Date(),
+        managementURL: URL? = URL(string: "https://www.revenuecat.com")!
+    ) -> PurchaseInformation {
+            PurchaseInformation(
+                title: "",
+                durationTitle: "",
+                explanation: .earliestExpiration,
+                price: price,
+                expirationOrRenewal: PurchaseInformation.ExpirationOrRenewal(
+                    label: .expires,
+                    date: .date("")
+                ),
+                productIdentifier: "",
+                store: store,
+                isLifetime: false,
+                isTrial: isTrial,
+                isCancelled: isCancelled,
+                latestPurchaseDate: latestPurchaseDate,
+                customerInfoRequestedDate: customerInfoRequestedDate,
+                managePurchaseURL: managementURL
+            )
+        }
 }
 
 #endif
