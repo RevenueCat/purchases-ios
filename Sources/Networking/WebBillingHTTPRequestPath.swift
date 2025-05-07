@@ -61,4 +61,8 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
         }
     }
 
+    func getAPIKey(from apiKeys: Purchases.APIKeys) -> String? {
+        return apiKeys.webBillingAPIKey
+    }
+
 }

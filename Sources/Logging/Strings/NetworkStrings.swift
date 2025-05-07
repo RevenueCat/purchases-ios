@@ -49,6 +49,7 @@ enum NetworkStrings {
     case api_request_redirect(from: URL, to: URL)
     case operation_state(NetworkOperation.Type, state: String)
     case request_handled_by_load_shedder(HTTPRequestPath)
+    case missing_api_key(forStore: Purchases.APIKeys.Store)
 
     #if DEBUG
     case api_request_forcing_server_error(HTTPRequest)
@@ -145,6 +146,9 @@ extension NetworkStrings: LogMessage {
 
         case let .api_request_failed_all_retries(httpMethod, path, retryCount):
             return "Request \(httpMethod) \(path) failed all \(retryCount) retries."
+
+        case let .missing_api_key(store):
+            return "Missing API key for store \(store.description)"
 
         #if DEBUG
         case let .api_request_forcing_server_error(request):

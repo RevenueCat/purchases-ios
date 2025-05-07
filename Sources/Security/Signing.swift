@@ -41,14 +41,13 @@ final class Signing: SigningType {
         var nonce: Data?
         var etag: String?
         var requestDate: UInt64
+        var apiKeys: Purchases.APIKeys
 
     }
 
-    private let apiKey: String
     private let clock: ClockType
 
-    init(apiKey: String, clock: ClockType = Clock.default) {
-        self.apiKey = apiKey
+    init(clock: ClockType = Clock.default) {
         self.clock = clock
     }
 
@@ -96,7 +95,12 @@ final class Signing: SigningType {
 
         let salt = signature.component(.salt)
         let payload = signature.component(.payload)
-        let messageToVerify = parameters.signature(salt: salt, apiKey: self.apiKey)
+
+        guard let apiKey = parameters.path.apiKeyStore.getAPIKey(from: parameters.apiKeys) else {
+            return false
+        }
+
+        let messageToVerify = parameters.signature(salt: salt, apiKey: apiKey)
 
         #if DEBUG
         Logger.verbose(Strings.signing.verifying_signature(
@@ -244,7 +248,8 @@ extension Signing.SignatureParameters {
         requestBody: HTTPRequestBody? = nil,
         nonce: Data? = nil,
         etag: String? = nil,
-        requestDate: UInt64
+        requestDate: UInt64,
+        apiKeys: Purchases.APIKeys,
     ) {
         self.path = path
         self.message = message
@@ -253,6 +258,7 @@ extension Signing.SignatureParameters {
         self.nonce = nonce
         self.etag = etag
         self.requestDate = requestDate
+        self.apiKeys = apiKeys
     }
 
     func signature(salt: Data, apiKey: String) -> Data {
@@ -302,6 +308,7 @@ extension Signing.SignatureParameters: CustomDebugStringConvertible {
             nonce: '\(self.nonce?.base64EncodedString() ?? "")'
             etag: '\(self.etag ?? "")'
             requestDate: \(self.requestDate)
+            apiKeys: '\(self.apiKeys.debugDescription)'
         )
         """
     }
