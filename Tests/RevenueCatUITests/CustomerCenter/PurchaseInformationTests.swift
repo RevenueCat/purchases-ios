@@ -589,11 +589,15 @@ final class PurchaseInformationTests: TestCase {
             isCancelled: false
         )
 
-        let subscriptionInfo = try XCTUnwrap(PurchaseInformation(entitlement: entitlement,
-                                                                 transaction: mockTransaction,
-                                                                 customerInfoRequestedDate: Date(),
-                                                                 dateFormatter: Self.mockDateFormatter))
-
+        let subscriptionInfo = try XCTUnwrap(
+            PurchaseInformation(
+                entitlement: entitlement,
+                transaction: mockTransaction,
+                customerInfoRequestedDate: Date(),
+                dateFormatter: Self.mockDateFormatter,
+                managePurchaseURL: URL(string: "https://www.revenuecat.com")!
+            )
+        )
         expect(subscriptionInfo.title).to(beNil())
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.explanation) == .rcWebBilling
@@ -624,10 +628,15 @@ final class PurchaseInformationTests: TestCase {
             isCancelled: false
         )
 
-        let subscriptionInfo = try XCTUnwrap(PurchaseInformation(entitlement: entitlement,
-                                                                 transaction: mockTransaction,
-                                                                 customerInfoRequestedDate: Date(),
-                                                                 dateFormatter: Self.mockDateFormatter))
+        let subscriptionInfo = try XCTUnwrap(
+            PurchaseInformation(
+                entitlement: entitlement,
+                transaction: mockTransaction,
+                customerInfoRequestedDate: Date(),
+                dateFormatter: Self.mockDateFormatter,
+                managePurchaseURL: URL(string: "https://www.revenuecat.com")!
+            )
+        )
 
         expect(subscriptionInfo.title).to(beNil())
         expect(subscriptionInfo.durationTitle).to(beNil())
@@ -659,10 +668,15 @@ final class PurchaseInformationTests: TestCase {
             isCancelled: false
         )
 
-        let subscriptionInfo = try XCTUnwrap(PurchaseInformation(entitlement: entitlement,
-                                                                 transaction: mockTransaction,
-                                                                 customerInfoRequestedDate: Date(),
-                                                                 dateFormatter: Self.mockDateFormatter))
+        let subscriptionInfo = try XCTUnwrap(
+            PurchaseInformation(
+                entitlement: entitlement,
+                transaction: mockTransaction,
+                customerInfoRequestedDate: Date(),
+                dateFormatter: Self.mockDateFormatter,
+                managePurchaseURL: URL(string: "https://www.revenuecat.com")!
+            )
+        )
 
         expect(subscriptionInfo.title).to(beNil())
         expect(subscriptionInfo.durationTitle).to(beNil())
