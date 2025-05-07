@@ -11,8 +11,8 @@
 //
 //  Created by Facundo Menzella on 7/5/25.
 
-import SwiftUI
 import RevenueCat
+import SwiftUI
 
 #if os(iOS)
 
@@ -25,8 +25,13 @@ struct PurchaseInformationCardView: View {
     private let title: String
     private let subtitle: String
     private let storeTitle: String
+    private let showChevron: Bool
 
-    init(purchaseInformation: PurchaseInformation, localization: CustomerCenterConfigData.Localization) {
+    init(
+        purchaseInformation: PurchaseInformation,
+        showChevron: Bool = true,
+        localization: CustomerCenterConfigData.Localization
+    ) {
         if purchaseInformation.title?.isEmpty == true {
             self.title = purchaseInformation.productIdentifier
         } else {
@@ -35,16 +40,19 @@ struct PurchaseInformationCardView: View {
 
         self.subtitle = purchaseInformation.billingInformation(localizations: localization)
         self.storeTitle = localization[purchaseInformation.store.localizationKey]
+        self.showChevron = showChevron
     }
 
     init(
         title: String,
         subtitle: String,
-        storeTitle: String
+        storeTitle: String,
+        showChevron: Bool = true,
     ) {
         self.title = title
         self.subtitle = subtitle
         self.storeTitle = storeTitle
+        self.showChevron = showChevron
     }
 
     var body: some View {
@@ -63,7 +71,7 @@ struct PurchaseInformationCardView: View {
                     .padding(.bottom, 4)
                     .frame(alignment: .leading)
                     .multilineTextAlignment(.leading)
-                
+
                 Text(storeTitle)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
@@ -88,7 +96,6 @@ struct PurchaseInformationCardView: View {
 @available(watchOS, unavailable)
 struct PurchaseInformationCardView_Previews: PreviewProvider {
 
-    // swiftlint:disable force_unwrapping
     static var previews: some View {
         ScrollView {
             PurchaseInformationCardView(

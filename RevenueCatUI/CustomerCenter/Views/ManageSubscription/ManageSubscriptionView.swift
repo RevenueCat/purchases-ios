@@ -139,6 +139,7 @@ struct ManageSubscriptionView: View {
             if let purchaseInformation = self.viewModel.purchaseInformation {
                 PurchaseInformationCardView(
                     purchaseInformation: purchaseInformation,
+                    showChevron: false,
                     localization: localization
                 )
 
