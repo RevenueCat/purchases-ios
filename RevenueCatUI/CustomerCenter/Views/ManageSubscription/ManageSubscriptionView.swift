@@ -137,9 +137,9 @@ struct ManageSubscriptionView: View {
     var content: some View {
         List {
             if let purchaseInformation = self.viewModel.purchaseInformation {
-                SubscriptionDetailsView(
+                PurchaseInformationCardView(
                     purchaseInformation: purchaseInformation,
-                    refundRequestStatus: self.viewModel.refundRequestStatus
+                    localization: localization
                 )
 
                 Section {
