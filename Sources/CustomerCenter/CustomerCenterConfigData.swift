@@ -351,7 +351,7 @@ public struct CustomerCenterConfigData: Equatable {
                 case .priceAfterwards:
                     return "{{ price }} afterwards."
                 case .freeTrialUntilDate:
-                    return "Free trial until {{ date }}"
+                    return "Free trial until {{ date }}."
                 }
             }
         }
