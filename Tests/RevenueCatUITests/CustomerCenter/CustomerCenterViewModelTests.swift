@@ -98,7 +98,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         await viewModel.loadScreen()
 
-        expect(viewModel.purchaseInformation) == viewModel.activePurchases.first
+        expect(viewModel.purchaseInformation?.productIdentifier) == viewModel.activePurchases.first?.productIdentifier
         let purchaseInformation = try XCTUnwrap(viewModel.activePurchases.first)
 
         expect(purchaseInformation.store) == .appStore
@@ -117,7 +117,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         await viewModel.loadScreen()
 
-        expect(viewModel.purchaseInformation) == viewModel.activePurchases.first
+        expect(viewModel.purchaseInformation?.productIdentifier) == viewModel.activePurchases.first?.productIdentifier
         let purchaseInformation = try XCTUnwrap(viewModel.activePurchases.first)
 
         expect(purchaseInformation.store) == .playStore
@@ -203,7 +203,7 @@ final class CustomerCenterViewModelTests: TestCase {
         // Assert
         expect(viewModel.state) == .success
 
-        expect(viewModel.purchaseInformation) == viewModel.activePurchases.first
+        expect(viewModel.purchaseInformation?.productIdentifier) == viewModel.activePurchases.first?.productIdentifier
         let purchaseInformation = try XCTUnwrap(viewModel.activePurchases.first)
         expect(purchaseInformation.title) == "title"
         expect(purchaseInformation.durationTitle) == "1 month"

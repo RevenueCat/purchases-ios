@@ -72,11 +72,11 @@ final class PurchaseInformationTests: TestCase {
 
         let subscriptionInfo = try XCTUnwrap(PurchaseInformation(
             entitlement: entitlement,
-            subscribedProduct: mockProduct.toStoreProduct(),
+            storeProduct: mockProduct.toStoreProduct(),
             transaction: mockTransaction,
             customerInfoRequestedDate: Date(),
-            dateFormatter: Self.mockDateFormatter,
-            managePurchaseURL: URL(string: "https://www.revenuecat.com")!
+            managePurchaseURL: URL(string: "https://www.revenuecat.com")!,
+            dateFormatter: Self.mockDateFormatter
         ))
 
         expect(subscriptionInfo.title) == "Monthly Product"
@@ -125,13 +125,14 @@ final class PurchaseInformationTests: TestCase {
         let subscriptionInfo = try XCTUnwrap(
             PurchaseInformation(
                 entitlement: entitlement,
-                subscribedProduct: mockProduct.toStoreProduct(),
+                storeProduct: mockProduct.toStoreProduct(),
                 transaction: mockTransaction,
                 customerInfoRequestedDate: Date(),
-                dateFormatter: Self.mockDateFormatter,
-                managePurchaseURL: URL(string: "https://www.revenuecat.com")!
+                managePurchaseURL: URL(string: "https://www.revenuecat.com")!,
+                dateFormatter: Self.mockDateFormatter
             )
         )
+
         expect(subscriptionInfo.title) == "Monthly Product"
         expect(subscriptionInfo.durationTitle) == "1 month"
         expect(subscriptionInfo.explanation) == .lifetime
@@ -178,13 +179,14 @@ final class PurchaseInformationTests: TestCase {
         let subscriptionInfo = try XCTUnwrap(
             PurchaseInformation(
                 entitlement: entitlement,
-                subscribedProduct: mockProduct.toStoreProduct(),
+                storeProduct: mockProduct.toStoreProduct(),
                 transaction: mockTransaction,
                 customerInfoRequestedDate: Date(),
-                dateFormatter: Self.mockDateFormatter,
-                managePurchaseURL: URL(string: "https://www.revenuecat.com")!
+                managePurchaseURL: URL(string: "https://www.revenuecat.com")!,
+                dateFormatter: Self.mockDateFormatter
             )
         )
+
         expect(subscriptionInfo.title) == "Monthly Product"
         expect(subscriptionInfo.durationTitle) == "1 month"
         expect(subscriptionInfo.explanation) == .earliestExpiration
@@ -231,13 +233,14 @@ final class PurchaseInformationTests: TestCase {
         let subscriptionInfo = try XCTUnwrap(
             PurchaseInformation(
                 entitlement: entitlement,
-                subscribedProduct: mockProduct.toStoreProduct(),
+                storeProduct: mockProduct.toStoreProduct(),
                 transaction: mockTransaction,
                 customerInfoRequestedDate: Date(),
-                dateFormatter: Self.mockDateFormatter,
-                managePurchaseURL: URL(string: "https://www.revenuecat.com")!
+                managePurchaseURL: URL(string: "https://www.revenuecat.com")!,
+                dateFormatter: Self.mockDateFormatter
             )
         )
+
         expect(subscriptionInfo.title) == "Monthly Product"
         expect(subscriptionInfo.durationTitle) == "1 month"
         expect(subscriptionInfo.explanation) == .expired
@@ -273,8 +276,8 @@ final class PurchaseInformationTests: TestCase {
                 entitlement: entitlement,
                 transaction: mockTransaction,
                 customerInfoRequestedDate: Date(),
-                dateFormatter: Self.mockDateFormatter,
-                managePurchaseURL: URL(string: "https://www.revenuecat.com")!
+                managePurchaseURL: URL(string: "https://www.revenuecat.com")!,
+                dateFormatter: Self.mockDateFormatter
             )
         )
 
@@ -313,8 +316,8 @@ final class PurchaseInformationTests: TestCase {
                 entitlement: entitlement,
                 transaction: mockTransaction,
                 customerInfoRequestedDate: Date(),
-                dateFormatter: Self.mockDateFormatter,
-                managePurchaseURL: URL(string: "https://www.revenuecat.com")!
+                managePurchaseURL: URL(string: "https://www.revenuecat.com")!,
+                dateFormatter: Self.mockDateFormatter
             )
         )
 
@@ -353,8 +356,8 @@ final class PurchaseInformationTests: TestCase {
                 entitlement: entitlement,
                 transaction: mockTransaction,
                 customerInfoRequestedDate: Date(),
-                dateFormatter: Self.mockDateFormatter,
-                managePurchaseURL: URL(string: "https://www.revenuecat.com")!
+                managePurchaseURL: URL(string: "https://www.revenuecat.com")!,
+                dateFormatter: Self.mockDateFormatter
             )
         )
 
@@ -393,8 +396,8 @@ final class PurchaseInformationTests: TestCase {
                 entitlement: entitlement,
                 transaction: mockTransaction,
                 customerInfoRequestedDate: Date(),
-                dateFormatter: Self.mockDateFormatter,
-                managePurchaseURL: URL(string: "https://www.revenuecat.com")!
+                managePurchaseURL: URL(string: "https://www.revenuecat.com")!,
+                dateFormatter: Self.mockDateFormatter
             )
         )
 
@@ -433,8 +436,8 @@ final class PurchaseInformationTests: TestCase {
                 entitlement: entitlement,
                 transaction: mockTransaction,
                 customerInfoRequestedDate: Date(),
-                dateFormatter: Self.mockDateFormatter,
-                managePurchaseURL: URL(string: "https://www.revenuecat.com")!
+                managePurchaseURL: URL(string: "https://www.revenuecat.com")!,
+                dateFormatter: Self.mockDateFormatter
             )
         )
 
@@ -474,8 +477,8 @@ final class PurchaseInformationTests: TestCase {
                 entitlement: entitlement,
                 transaction: mockTransaction,
                 customerInfoRequestedDate: Date(),
-                dateFormatter: Self.mockDateFormatter,
-                managePurchaseURL: URL(string: "https://www.revenuecat.com")!
+                managePurchaseURL: URL(string: "https://www.revenuecat.com")!,
+                dateFormatter: Self.mockDateFormatter
             )
         )
 
@@ -514,8 +517,8 @@ final class PurchaseInformationTests: TestCase {
                 entitlement: entitlement,
                 transaction: mockTransaction,
                 customerInfoRequestedDate: Date(),
-                dateFormatter: Self.mockDateFormatter,
-                managePurchaseURL: URL(string: "https://www.revenuecat.com")!
+                managePurchaseURL: URL(string: "https://www.revenuecat.com")!,
+                dateFormatter: Self.mockDateFormatter
             )
         )
 
@@ -554,8 +557,8 @@ final class PurchaseInformationTests: TestCase {
                 entitlement: entitlement,
                 transaction: mockTransaction,
                 customerInfoRequestedDate: Date(),
-                dateFormatter: Self.mockDateFormatter,
-                managePurchaseURL: URL(string: "https://www.revenuecat.com")!
+                managePurchaseURL: URL(string: "https://www.revenuecat.com")!,
+                dateFormatter: Self.mockDateFormatter
             )
         )
 
@@ -594,8 +597,8 @@ final class PurchaseInformationTests: TestCase {
                 entitlement: entitlement,
                 transaction: mockTransaction,
                 customerInfoRequestedDate: Date(),
-                dateFormatter: Self.mockDateFormatter,
-                managePurchaseURL: URL(string: "https://www.revenuecat.com")!
+                managePurchaseURL: URL(string: "https://www.revenuecat.com")!,
+                dateFormatter: Self.mockDateFormatter
             )
         )
         expect(subscriptionInfo.title).to(beNil())
@@ -633,8 +636,8 @@ final class PurchaseInformationTests: TestCase {
                 entitlement: entitlement,
                 transaction: mockTransaction,
                 customerInfoRequestedDate: Date(),
-                dateFormatter: Self.mockDateFormatter,
-                managePurchaseURL: URL(string: "https://www.revenuecat.com")!
+                managePurchaseURL: URL(string: "https://www.revenuecat.com")!,
+                dateFormatter: Self.mockDateFormatter
             )
         )
 
@@ -673,8 +676,8 @@ final class PurchaseInformationTests: TestCase {
                 entitlement: entitlement,
                 transaction: mockTransaction,
                 customerInfoRequestedDate: Date(),
-                dateFormatter: Self.mockDateFormatter,
-                managePurchaseURL: URL(string: "https://www.revenuecat.com")!
+                managePurchaseURL: URL(string: "https://www.revenuecat.com")!,
+                dateFormatter: Self.mockDateFormatter
             )
         )
 
@@ -708,11 +711,11 @@ final class PurchaseInformationTests: TestCase {
         let subscriptionInfo = try XCTUnwrap(
             PurchaseInformation(
                 entitlement: nil,
-                subscribedProduct: nil,
+                storeProduct: nil,
                 transaction: mockTransaction,
                 customerInfoRequestedDate: Date(),
-                dateFormatter: Self.mockDateFormatter,
-                managePurchaseURL: URL(string: "https://www.revenuecat.com")!
+                managePurchaseURL: URL(string: "https://www.revenuecat.com")!,
+                dateFormatter: Self.mockDateFormatter
             )
         )
 
