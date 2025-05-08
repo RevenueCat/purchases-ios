@@ -303,11 +303,10 @@ struct ManageSubscriptionView: View {
             .previewDisplayName("Renewing subscription - Requested refund - No discount - \(colorScheme)")
 
             CompatibilityNavigationStack {
-                let viewModelYearlyExpiring =
                 ManageSubscriptionView(
                     viewModel: ManageSubscriptionViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
-                        showPurchaseHistory: false,
+                        showPurchaseHistory: true,
                         purchaseInformation: .yearlyExpiring(isCancelled: true)
                     )
                 )
