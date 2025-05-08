@@ -12,7 +12,7 @@
 //  Created by Facundo Menzella on 7/5/25.
 
 import Foundation
-@_spi(Internal) @testable import RevenueCat
+@_spi(Internal) import RevenueCat
 
 // swiftlint:disable force_unwrapping
 extension PurchaseInformation {

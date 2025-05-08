@@ -295,7 +295,7 @@ struct ManageSubscriptionView: View {
                     viewModel: ManageSubscriptionViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: false,
-                        purchaseInformation: .yearlyExpiring(),
+                        purchaseInformation: .yearlyExpiring()
                     )
                 )
             }
