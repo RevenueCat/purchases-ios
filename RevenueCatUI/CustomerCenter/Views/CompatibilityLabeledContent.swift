@@ -66,8 +66,8 @@ import SwiftUI
 @available(watchOS, unavailable)
 struct CompatibilityLabeledContent<Label: View, Content: View>: View {
 
-    let label: () -> Label
-    let content: () -> Content
+    @ViewBuilder let label: () -> Label
+    @ViewBuilder let content: () -> Content
 
     var body: some View {
         if #available(iOS 16.0, *) {
