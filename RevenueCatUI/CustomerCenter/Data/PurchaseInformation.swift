@@ -456,42 +456,45 @@ extension PurchaseInformation {
     func billingInformation(localizations: CustomerCenterConfigData.Localization) -> String {
         guard let expirationDate else {
             // non subscription
-            return "Paid \(pricePaid.billingInformation(localizations: localizations))"
+            return localizations[.pricePaid]
+                .replacingOccurrences(of: "{{ price }}", with: pricePaid.billingInformation(localizations: localizations))
         }
 
         if let introductoryDiscount {
             if isCancelled {
                 var renewString = "\(introductoryDiscount.localizedPricePerPeriodByPaymentMode(.current))."
-                renewString += "Expires on \(dateFormatter.string(from: expirationDate)) without further charges."
+                renewString += localizations[.expiresOnDateWithoutChanges]
+                    .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: expirationDate))
                 return renewString
             }
 
             if introductoryDiscount.paymentMode == .freeTrial {
-                return "Free trial until \(dateFormatter.string(from: expirationDate)). \(priceAfterDiscount(localizations: localizations))"
+                return localizations[.freeTrialUntilDate]
+                    .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: expirationDate))
+                    .replacingOccurrences(of: "{{ price }}", with: priceAfterDiscount(localizations: localizations))
             } else {
-                return "\(introductoryDiscount.localizedPricePerPeriodByPaymentMode(.current)). \(priceAfterDiscount(localizations: localizations))"
+                let introPrice = introductoryDiscount.localizedPricePerPeriodByPaymentMode(.current)
+                return "\(introPrice). \(priceAfterDiscount(localizations: localizations))"
             }
         } else if isCancelled {
-            return "Expires on \(dateFormatter.string(from: expirationDate)) without further charges."
+            return localizations[.expiresOnDateWithoutChanges]
+                .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: expirationDate))
         } else {
             switch renewalPrice {
             case let .nonFree(priceString):
-                return "Renews on \(dateFormatter.string(from: expirationDate)) for \(priceString)."
+                return localizations[.renewsOnDateForPrice]
+                    .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: expirationDate))
+                    .replacingOccurrences(of: "{{ price }}", with: priceString)
             case .free, .unknown, .none:
-                return "Renews on \(dateFormatter.string(from: expirationDate))"
+                return localizations[.renewsOnDate]
+                    .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: expirationDate))
             }
         }
     }
 
     func priceAfterDiscount(localizations: CustomerCenterConfigData.Localization) -> String {
-        switch renewalPrice {
-        case let .nonFree(formattedPrice):
-            return "\(durationTitle.map { "\($0)" } ?? "") \(formattedPrice) afterwards."
-        case .free:
-            return "\(durationTitle.map { "\($0)" } ?? "") free afterwards."
-        case .unknown, .none:
-            return ""
-        }
+        return localizations[.price_afterwards]
+            .replacingOccurrences(of: "{{ price }}", with: renewalPrice.billingInformation(localizations: localizations))
     }
 }
 
@@ -499,7 +502,7 @@ private extension PurchaseInformation.PriceDetails {
     func billingInformation(localizations: CustomerCenterConfigData.Localization) -> String {
         switch self {
         case .free:
-            return "Free"
+            return localizations[.free]
         case .nonFree(let priceString):
             return priceString
         case .unknown:

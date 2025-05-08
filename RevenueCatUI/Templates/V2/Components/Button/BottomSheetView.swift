@@ -100,13 +100,13 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         viewModel: sheetViewModel.sheetStackViewModel,
                         onDismiss: {
                             self.sheetViewModel = nil
-                        }
+                        },
+                        additionalPadding: self.safeAreaInsets
                     )
                     .applyIfLet(self.sheetHeight, apply: { view, height in
                         view.frame(height: height)
                     })
                     .transition(.move(edge: .bottom).combined(with: .opacity))
-                    .padding(.bottom, self.safeAreaInsets.bottom)
                     .backgroundStyle(self.backgroundStyle)
                 }
             }
