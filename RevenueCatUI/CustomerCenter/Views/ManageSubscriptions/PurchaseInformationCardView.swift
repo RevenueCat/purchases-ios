@@ -35,7 +35,7 @@ struct PurchaseInformationCardView: View {
         if purchaseInformation.title?.isEmpty == true {
             self.title = purchaseInformation.productIdentifier
         } else {
-            self.title = purchaseInformation.title ?? ""
+            self.title = purchaseInformation.title ?? purchaseInformation.productIdentifier
         }
 
         self.subtitle = purchaseInformation.billingInformation(localizations: localization)
