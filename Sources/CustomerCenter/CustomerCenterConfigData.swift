@@ -341,7 +341,7 @@ public struct CustomerCenterConfigData: Equatable {
                     return "You might be subscribed both on the web and through the App Store." +
                         "To avoid being charged twice, please cancel your iOS subscription in your device settings."
                 case .pricePaid:
-                    return "Paid {{ price }}"
+                    return "Paid {{ price }}."
                 case .expiresOnDateWithoutChanges:
                     return "Expires on {{ date }} without further charges."
                 case .renewsOnDateForPrice:
