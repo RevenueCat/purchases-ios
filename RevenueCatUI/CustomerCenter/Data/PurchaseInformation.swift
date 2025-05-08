@@ -495,7 +495,7 @@ extension PurchaseInformation {
     }
 
     func priceAfterDiscount(localizations: CustomerCenterConfigData.Localization) -> String {
-        return localizations[.price_afterwards]
+        return localizations[.priceAfterwards]
             .replacingOccurrences(of: "{{ price }}",
                                   with: renewalPrice.billingInformation(localizations: localizations))
     }
