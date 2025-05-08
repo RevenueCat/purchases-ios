@@ -145,6 +145,7 @@ import Foundation
             return self
         }
 
+        /// Update your Web Billing API key.
         @objc public func with(webBillingAPIKey: String) -> Builder {
             self.webBillingAPIKey = webBillingAPIKey
             return self

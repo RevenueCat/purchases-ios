@@ -13,6 +13,8 @@
 
 import Foundation
 
+// swiftlint:disable nesting
+
 extension Purchases {
 
     /// Holds the API keys used to initialize the SDK.
@@ -28,7 +30,6 @@ extension Purchases {
 
         /// The Web Billing API key.
         let webBillingAPIKey: String?
-        
     }
 
 }
@@ -54,7 +55,6 @@ extension Purchases.APIKeys.Store {
     }
 }
 
-
 extension Purchases.APIKeys: CustomDebugStringConvertible {
 
     var debugDescription: String {
@@ -64,5 +64,4 @@ extension Purchases.APIKeys: CustomDebugStringConvertible {
             webBillingAPIKey: '\(webBillingAPIKey ?? "<nil>")'
         """
     }
-
 }

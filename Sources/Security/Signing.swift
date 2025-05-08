@@ -22,7 +22,6 @@ protocol SigningType {
         with parameters: Signing.SignatureParameters,
         publicKey: Signing.PublicKey
     ) -> Bool
-
 }
 
 /// Utilities for handling signature verification.
@@ -146,7 +145,6 @@ final class Signing: SigningType {
     fileprivate typealias Algorithm = Curve25519.Signing.PublicKey
 
     private static let publicKey = "UC1upXWg5QVmyOSwozp755xLqquBKjjU+di6U8QhMlM="
-
 }
 
 extension Signing {
@@ -184,7 +182,6 @@ extension Signing {
         }
 
     }
-
 }
 
 /// A type representing a public key that can be used to validate signatures
@@ -236,7 +233,6 @@ extension Signing {
                     .sum()
             }
     }
-
 }
 
 extension Signing.SignatureParameters {
@@ -289,7 +285,6 @@ extension Signing.SignatureParameters {
             message
         )
     }
-
 }
 
 extension Signing.SignatureParameters: CustomDebugStringConvertible {
@@ -316,7 +311,6 @@ extension Signing.SignatureParameters: CustomDebugStringConvertible {
     private var messageString: String {
         return self.message.flatMap { String(data: $0, encoding: .utf8) } ?? ""
     }
-
 }
 
 // MARK: - Private
@@ -380,7 +374,6 @@ private extension Signing {
 
         return expirationDate
     }
-
 }
 
 // MARK: - Extensions
@@ -394,7 +387,6 @@ private extension Data {
 
         return self.subdata(in: offset ..< offset + size)
     }
-
 }
 
 private extension Date {
@@ -402,5 +394,4 @@ private extension Date {
     init(daysSince1970: UInt32) {
         self.init(timeIntervalSince1970: DispatchTimeInterval.days(Int(daysSince1970)).seconds)
     }
-
 }
