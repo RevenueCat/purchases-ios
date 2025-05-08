@@ -235,7 +235,7 @@ private extension OfferingsManager {
                             .dictionaryWithKeys({ $0.productIdentifier }) as [String: StoreProduct])
 
             case let .failure(error):
-                Logger.warn(Strings.offering.fetching_web_products_failed(error: error))
+                Logger.error(Strings.offering.fetching_web_products_failed(error: error))
                 completion([:])
             }
         }

@@ -54,6 +54,7 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
         switch self {
         case let .getWebProducts(appUserId, productIds):
             let productIdsQuery = productIds.map(\.trimmedAndEscaped).joined(separator: "&id=")
+            // TODO: Use alias endpoint instead of actual endpoint
             return "/rcbilling/v1/subscribers/\(appUserId.trimmedAndEscaped))/products?id=\(productIdsQuery)"
         }
     }

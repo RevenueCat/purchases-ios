@@ -403,17 +403,26 @@ final class PurchasesOrchestrator {
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
+        let packageStoreProduct = params.packageStoreProduct
         let winBackOffer = params.winBackOffer
         let metadata = params.metadata
 
         #else
 
+        let packageStoreProduct: StoreProduct? = nil
         let winBackOffer: WinBackOffer? = nil
         let metadata: [String: String]? = nil
 
         #endif
 
-        purchase(product: product,
+        let productToBuy: StoreProduct
+        if params.package != nil {
+            productToBuy = packageStoreProduct ?? product
+        } else {
+            productToBuy = product
+        }
+
+        purchase(product: productToBuy,
                  package: params.package,
                  promotionalOffer: params.promotionalOffer?.signedData,
                  winBackOffer: winBackOffer,

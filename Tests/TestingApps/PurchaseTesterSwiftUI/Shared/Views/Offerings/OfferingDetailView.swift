@@ -79,7 +79,7 @@ struct OfferingDetailView: View {
                 Divider()
 
                 self.button("Buy as Package") {
-                    try await self.purchaseAsPackage()
+                    try await self.purchaseAsPackage(package: package)
                 }
 
                 Divider()
@@ -92,17 +92,16 @@ struct OfferingDetailView: View {
 
                 if let nativeProduct = package.packageProducts.nativeProduct {
                     let productPrice = "\(nativeProduct.price) \(nativeProduct.currencyCode ?? "Unknown currency")"
-                    self.button("Buy native Product: \(productPrice)") {
-                        try await self.purchaseAsProduct(product: nativeProduct)
-                    }
+                    self.button("Buy native Package: \(productPrice)") {
+                        try await self.purchaseAsPackage(package: package, packageStoreProduct: nativeProduct)                    }
 
                     Divider()
                 }
 
                 if let webProduct = package.packageProducts.webBillingProduct {
                     let productPrice = "\(webProduct.price) \(webProduct.currencyCode ?? "Unknown currency")"
-                    self.button("Buy web Product: \(productPrice)") {
-                        try await self.purchaseAsProduct(product: webProduct)
+                    self.button("Buy web Package: \(productPrice)") {
+                        try await self.purchaseAsPackage(package: package, packageStoreProduct: webProduct)
                     }
 
                     Divider()
@@ -148,7 +147,7 @@ struct OfferingDetailView: View {
             }
         }
         
-        private func purchaseAsPackage() async throws {
+        private func purchaseAsPackage(package: Package, packageStoreProduct: StoreProduct? = nil) async throws {
             self.isPurchasing = true
             defer { self.isPurchasing = false }
 
@@ -157,13 +156,18 @@ struct OfferingDetailView: View {
                 #if ENABLE_TRANSACTION_METADATA
                 let params = PurchaseParams.Builder(package: package).with(metadata: metadata).build()
                 #else
-                let params = PurchaseParams.Builder(package: package).build()
+                let params = PurchaseParams.Builder(package: package)
+                    .with(packageStoreProduct: packageStoreProduct)
+                    .build()
                 print("⚠️ Warning - ENABLE_TRANSACTION_METADATA feature flag is not enabled")
                 print("⚠️ Warning - Metadata will not be sent with the purchase")
                 #endif
                 result = try await Purchases.shared.purchase(params)
             } else {
-                result = try await Purchases.shared.purchase(package: self.package)
+                let params = PurchaseParams.Builder(package: package)
+                    .with(packageStoreProduct: packageStoreProduct)
+                    .build()
+                result = try await Purchases.shared.purchase(params)
             }
             self.completedPurchase(result)
 
