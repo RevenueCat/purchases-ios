@@ -457,14 +457,16 @@ extension PurchaseInformation {
         guard let expirationDate else {
             // non subscription
             return localizations[.pricePaid]
-                .replacingOccurrences(of: "{{ price }}", with: pricePaid.billingInformation(localizations: localizations))
+                .replacingOccurrences(of: "{{ price }}",
+                                      with: pricePaid.billingInformation(localizations: localizations))
         }
 
         if let introductoryDiscount {
             if isCancelled {
                 var renewString = "\(introductoryDiscount.localizedPricePerPeriodByPaymentMode(.current))."
                 renewString += localizations[.expiresOnDateWithoutChanges]
-                    .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: expirationDate))
+                    .replacingOccurrences(of: "{{ date }}",
+                                          with: dateFormatter.string(from: expirationDate))
                 return renewString
             }
 
@@ -494,7 +496,8 @@ extension PurchaseInformation {
 
     func priceAfterDiscount(localizations: CustomerCenterConfigData.Localization) -> String {
         return localizations[.price_afterwards]
-            .replacingOccurrences(of: "{{ price }}", with: renewalPrice.billingInformation(localizations: localizations))
+            .replacingOccurrences(of: "{{ price }}",
+                                  with: renewalPrice.billingInformation(localizations: localizations))
     }
 }
 
