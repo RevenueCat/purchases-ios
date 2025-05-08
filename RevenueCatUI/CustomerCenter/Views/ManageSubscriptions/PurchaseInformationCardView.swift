@@ -47,7 +47,7 @@ struct PurchaseInformationCardView: View {
         title: String,
         subtitle: String,
         storeTitle: String,
-        showChevron: Bool = true,
+        showChevron: Bool = true
     ) {
         self.title = title
         self.subtitle = subtitle
