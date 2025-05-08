@@ -189,7 +189,7 @@ struct PurchaseInformation {
         } else if let renewalPrice {
             self.renewalPrice = renewalPrice
         } else {
-            self.renewalPrice = transaction.guessRenewalPrice()
+            self.renewalPrice = transaction.determineRenewalPrice()
         }
 
         self.pricePaid = transaction.paidPrice()
@@ -310,7 +310,7 @@ extension PurchaseInformation: Identifiable {
 
 private extension Transaction {
 
-    func guessRenewalPrice() -> PurchaseInformation.PriceDetails {
+    func determineRenewalPrice() -> PurchaseInformation.PriceDetails {
         if self.productIdentifier.isPromotionalLifetime(store: self.store) {
             return .free
         }
