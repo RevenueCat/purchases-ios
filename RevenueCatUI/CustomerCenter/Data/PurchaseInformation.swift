@@ -24,7 +24,7 @@ struct PurchaseInformation {
 
     /// The title of the storekit product, if applicable.
     /// - Note: See `StoreProduct.localizedTitle` for more details.
-    let title: String?
+    let title: String
 
     /// The duration of the product, if applicable.
     /// - Note: See `StoreProduct.localizedDetails` for more details.
@@ -129,7 +129,7 @@ struct PurchaseInformation {
         dateFormatter.dateStyle = .medium
 
         // Title and duration from product if available
-        self.title = storeProduct?.localizedTitle
+        self.title = storeProduct?.localizedTitle ?? transaction.displayName ?? transaction.productIdentifier
         self.durationTitle = storeProduct?.subscriptionPeriod?.durationTitle
         self.customerInfoRequestedDate = customerInfoRequestedDate
         self.introductoryDiscount = storeProduct?.introductoryDiscount
@@ -476,7 +476,11 @@ extension PurchaseInformation {
                     .replacingOccurrences(of: "{{ price }}", with: priceAfterDiscount(localizations: localizations))
             } else {
                 let introPrice = introductoryDiscount.localizedPricePerPeriodByPaymentMode(.current)
-                return "\(introPrice). \(priceAfterDiscount(localizations: localizations))"
+                if let renewalPrice = renewalPrice {
+                    return "\(introPrice). \(priceAfterDiscount(price: renewalPrice, localizations: localizations))"
+                } else {
+                    return "\(introPrice)."
+                }
             }
         } else if isCancelled {
             return localizations[.expiresOnDateWithoutChanges]
@@ -494,10 +498,11 @@ extension PurchaseInformation {
         }
     }
 
-    func priceAfterDiscount(localizations: CustomerCenterConfigData.Localization) -> String {
+    func priceAfterDiscount(price: PurchaseInformation.PriceDetails,
+                            localizations: CustomerCenterConfigData.Localization) -> String {
         return localizations[.priceAfterwards]
             .replacingOccurrences(of: "{{ price }}",
-                                  with: renewalPrice.billingInformation(localizations: localizations))
+                                  with: price.billingInformation(localizations: localizations))
     }
 }
 
