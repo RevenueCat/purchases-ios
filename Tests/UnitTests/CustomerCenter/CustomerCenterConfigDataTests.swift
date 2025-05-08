@@ -110,11 +110,14 @@ class CustomerCenterConfigDataTests: TestCase {
                         ]
                     )
                 ],
-                localization: .init(locale: "en_US", localizedStrings: ["key": "value"]),
-                support: .init(
+                localization: CustomerCenterConfigResponse.Localization(
+                    locale: "en_US",
+                    localizedStrings: ["key": "value"]),
+                support: CustomerCenterConfigResponse.Support(
                     email: "support@example.com",
                     shouldWarnCustomerToUpdate: false,
-                    displayPurchaseHistoryLink: true
+                    displayPurchaseHistoryLink: true,
+                    shouldWarnCustomersAboutMultipleSubscriptions: false
                 )
             ),
             lastPublishedAppVersion: "1.2.3",

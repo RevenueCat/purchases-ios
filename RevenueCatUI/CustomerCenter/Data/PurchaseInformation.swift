@@ -14,7 +14,7 @@
 //
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import StoreKit
 
 // swiftlint:disable nesting
@@ -64,6 +64,8 @@ struct PurchaseInformation {
     let latestPurchaseDate: Date?
     let customerInfoRequestedDate: Date
 
+    let managePurchaseURL: URL?
+
     init(title: String,
          durationTitle: String?,
          explanation: Explanation,
@@ -75,7 +77,8 @@ struct PurchaseInformation {
          isTrial: Bool,
          isCancelled: Bool,
          latestPurchaseDate: Date?,
-         customerInfoRequestedDate: Date
+         customerInfoRequestedDate: Date,
+         managePurchaseURL: URL?
     ) {
         self.title = title
         self.durationTitle = durationTitle
@@ -89,6 +92,7 @@ struct PurchaseInformation {
         self.isCancelled = isCancelled
         self.latestPurchaseDate = latestPurchaseDate
         self.customerInfoRequestedDate = customerInfoRequestedDate
+        self.managePurchaseURL = managePurchaseURL
     }
 
     // swiftlint:disable:next function_body_length
@@ -97,13 +101,15 @@ struct PurchaseInformation {
          transaction: Transaction,
          renewalPrice: PriceDetails? = nil,
          customerInfoRequestedDate: Date,
-         dateFormatter: DateFormatter = DateFormatter()) {
+         dateFormatter: DateFormatter = DateFormatter(),
+         managePurchaseURL: URL?) {
         dateFormatter.dateStyle = .medium
 
         // Title and duration from product if available
         self.title = subscribedProduct?.localizedTitle
         self.durationTitle = subscribedProduct?.subscriptionPeriod?.durationTitle
         self.customerInfoRequestedDate = customerInfoRequestedDate
+        self.managePurchaseURL = managePurchaseURL
 
         // Use entitlement data if available, otherwise derive from transaction
         if let entitlement = entitlement {
@@ -161,7 +167,7 @@ struct PurchaseInformation {
         }
     }
 
-    struct ExpirationOrRenewal {
+    struct ExpirationOrRenewal: Equatable {
         let label: Label
         let date: Date
 
@@ -186,7 +192,8 @@ struct PurchaseInformation {
     enum Explanation {
         case promotional
         case google
-        case web
+        case externalWeb
+        case rcWebBilling
         case otherStorePurchase
         case amazon
         case earliestRenewal
@@ -218,7 +225,8 @@ extension PurchaseInformation {
         subscribedProduct: StoreProduct,
         transaction: Transaction,
         customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType,
-        customerInfoRequestedDate: Date
+        customerInfoRequestedDate: Date,
+        managePurchaseURL: URL?
     ) async -> PurchaseInformation {
         let renewalPriceDetails = await Self.extractPriceDetailsFromRenewalInfo(
             forProduct: subscribedProduct,
@@ -229,7 +237,8 @@ extension PurchaseInformation {
             subscribedProduct: subscribedProduct,
             transaction: transaction,
             renewalPrice: renewalPriceDetails,
-            customerInfoRequestedDate: customerInfoRequestedDate
+            customerInfoRequestedDate: customerInfoRequestedDate,
+            managePurchaseURL: managePurchaseURL
         )
     }
 
@@ -253,6 +262,18 @@ extension PurchaseInformation {
         return .paid(formattedPrice)
     }
 }
+
+extension PurchaseInformation: Identifiable {
+
+    var id: String {
+        let formatter = ISO8601DateFormatter()
+        let purchaseDateString = latestPurchaseDate.map { formatter.string(from: $0) }
+            ?? formatter.string(from: Date())
+        return "\(productIdentifier)_\(purchaseDateString)"
+    }
+}
+
+extension PurchaseInformation: Equatable { }
 
 private extension EntitlementInfo {
 
@@ -312,8 +333,10 @@ private extension EntitlementInfo {
             return .promotional
         case .playStore:
             return .google
-        case .stripe, .rcBilling:
-            return .web
+        case .rcBilling:
+            return .rcWebBilling
+        case .stripe:
+            return .externalWeb
         case .external, .unknownStore:
             return .otherStorePurchase
         case .amazon:
@@ -354,43 +377,4 @@ private extension String {
         return self.hasSuffix("_lifetime") && store == .promotional
     }
 
-}
-
-protocol Transaction {
-
-    var productIdentifier: String { get }
-    var store: Store { get }
-    var type: TransactionType { get }
-    var isCancelled: Bool { get }
-}
-
-enum TransactionType {
-
-    case subscription(isActive: Bool, willRenew: Bool, expiresDate: Date?, isTrial: Bool)
-    case nonSubscription
-}
-
-extension RevenueCat.SubscriptionInfo: Transaction {
-
-    var type: TransactionType {
-        .subscription(isActive: isActive,
-                      willRenew: willRenew,
-                      expiresDate: expiresDate,
-                      isTrial: periodType == .trial)
-    }
-
-    var isCancelled: Bool {
-        unsubscribeDetectedAt != nil && !willRenew
-    }
-}
-
-extension NonSubscriptionTransaction: Transaction {
-
-    var type: TransactionType {
-        .nonSubscription
-    }
-
-    var isCancelled: Bool {
-        false
-    }
 }
