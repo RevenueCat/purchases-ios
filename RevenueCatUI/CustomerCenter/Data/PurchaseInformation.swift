@@ -430,7 +430,6 @@ extension PurchaseInformation {
             if introductoryDiscount.paymentMode == .freeTrial {
                 return localizations[.freeTrialUntilDate]
                     .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: expirationDate))
-                    .replacingOccurrences(of: "{{ price }}", with: priceAfterDiscount(localizations: localizations))
             } else {
                 let introPrice = introductoryDiscount.localizedPricePerPeriodByPaymentMode(.current)
                 return "\(introPrice). \(priceAfterDiscount(localizations: localizations))"
