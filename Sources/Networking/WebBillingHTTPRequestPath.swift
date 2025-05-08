@@ -18,6 +18,10 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
     // swiftlint:disable:next force_unwrapping
     static let serverHostURL = URL(string: "https://api.revenuecat.com")!
 
+    var apiKeyToUseInRequest: ApiKeyToUseInRequest {
+        return .web
+    }
+
     var authenticated: Bool {
         switch self {
         case .getWebProducts:
@@ -50,6 +54,7 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
         switch self {
         case let .getWebProducts(appUserId, productIds):
             let productIdsQuery = productIds.map(\.trimmedAndEscaped).joined(separator: "&id=")
+            // TODO: Use alias endpoint instead of actual endpoint
             return "/rcbilling/v1/subscribers/\(appUserId.trimmedAndEscaped))/products?id=\(productIdsQuery)"
         }
     }

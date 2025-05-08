@@ -200,6 +200,7 @@ private extension OfferingsManager {
 
         self.createOfferings(
             from: response,
+            appUserID: appUserID,
             fetchPolicy: fetchPolicy,
             completion: { [cache = self.deviceCache] result in
                 switch result {
@@ -219,54 +220,89 @@ private extension OfferingsManager {
         )
     }
 
+    func fetchWebProductsInfo(appUserID: String,
+                              productIDs: Set<String>,
+                              completion: @escaping ([String: StoreProduct]) -> Void) {
+        if productIDs.isEmpty {
+            completion([:])
+            return
+        }
+        self.backend.offerings.getWebProducts(appUserID: appUserID, productIDs: productIDs) { result in
+            switch result {
+            case let .success(response):
+                completion(response.productDetails
+                            .map { webProduct in StoreProduct.from(webBillingProduct: webProduct) }
+                            .dictionaryWithKeys({ $0.productIdentifier }) as [String: StoreProduct])
+
+            case let .failure(error):
+                Logger.error(Strings.offering.fetching_web_products_failed(error: error))
+                completion([:])
+            }
+        }
+    }
+
     func createOfferings(
         from response: OfferingsResponse,
+        appUserID: String,
         fetchPolicy: FetchPolicy,
         completion: @escaping (@Sendable (Result<OfferingsResultData, Error>) -> Void)
     ) {
         let productIdentifiers = response.productIdentifiers
+        let webProductIdentifiers = response.productIdentifiersByStoreType["rc_billing"] ?? []
 
-        guard !productIdentifiers.isEmpty else {
+        guard !productIdentifiers.isEmpty || !webProductIdentifiers.isEmpty else {
             let errorMessage = Strings.offering.configuration_error_no_products_for_offering.description
             completion(.failure(.configurationError(errorMessage, underlyingError: nil)))
             return
         }
 
-        self.fetchProducts(withIdentifiers: productIdentifiers, fromResponse: response) { result in
-            let products = result.value ?? []
-
-            guard products.isEmpty == false else {
-                // Check if empty products is likely caused by https://github.com/RevenueCat/purchases-ios/issues/4954
-                // There is a widely reported bug in the iOS 18.4 Simulator affecting some HTTP requests
-                let showSimulatorWarning = self.systemInfo.isSubjectToKnownIssue_18_4_sim()
-                completion(.failure(Self.createErrorForEmptyResult(result.error,
-                                                                   showSimulatorWarning: showSimulatorWarning)))
-                return
+        self.fetchWebProductsInfo(appUserID: appUserID,
+                                  productIDs: webProductIdentifiers) { webProductsByID in
+            let missingWebProductIDs = self.getMissingProductIDs(productIDsFromStore: Set(webProductsByID.keys),
+                                                                 productIDsFromBackend: webProductIdentifiers)
+            if !missingWebProductIDs.isEmpty {
+                Logger.warn(Strings.offering.cannot_find_web_products(missingWebProductIDs: missingWebProductIDs))
             }
 
-            let productsByID = products.dictionaryWithKeys { $0.productIdentifier }
+            self.fetchProducts(withIdentifiers: productIdentifiers, fromResponse: response) { result in
+                let products = result.value ?? []
 
-            let missingProductIDs = self.getMissingProductIDs(productIDsFromStore: Set(productsByID.keys),
-                                                              productIDsFromBackend: productIdentifiers)
-            if !missingProductIDs.isEmpty {
-                switch fetchPolicy {
-                case .ignoreNotFoundProducts:
-                    Logger.appleWarning(
-                        Strings.offering.cannot_find_product_configuration_error(identifiers: missingProductIDs)
-                    )
-
-                case .failIfProductsAreMissing:
-                    completion(.failure(.missingProducts(identifiers: missingProductIDs)))
+                guard !products.isEmpty || !webProductsByID.isEmpty else {
+                    // Check if empty products is likely caused by
+                    // https://github.com/RevenueCat/purchases-ios/issues/4954. There is a widely reported bug in
+                    // the iOS 18.4 Simulator affecting some HTTP requests
+                    let showSimulatorWarning = self.systemInfo.isSubjectToKnownIssue_18_4_sim()
+                    completion(.failure(Self.createErrorForEmptyResult(result.error,
+                                                                       showSimulatorWarning: showSimulatorWarning)))
                     return
                 }
-            }
 
-            if let createdOfferings = self.offeringsFactory.createOfferings(from: productsByID, data: response) {
-                completion(.success(OfferingsResultData(offerings: createdOfferings,
-                                                        requestedProductIds: productIdentifiers,
-                                                        notFoundProductIds: missingProductIDs)))
-            } else {
-                completion(.failure(.noOfferingsFound()))
+                let productsByID = products.dictionaryWithKeys { $0.productIdentifier }
+
+                let missingProductIDs = self.getMissingProductIDs(productIDsFromStore: Set(productsByID.keys),
+                                                                  productIDsFromBackend: productIdentifiers)
+                if !missingProductIDs.isEmpty {
+                    switch fetchPolicy {
+                    case .ignoreNotFoundProducts:
+                        Logger.appleWarning(
+                            Strings.offering.cannot_find_product_configuration_error(identifiers: missingProductIDs)
+                        )
+
+                    case .failIfProductsAreMissing:
+                        completion(.failure(.missingProducts(identifiers: missingProductIDs)))
+                        return
+                    }
+                }
+
+                if let createdOfferings = self.offeringsFactory.createOfferings(from: productsByID,
+                                                                                webProductsByID: webProductsByID,
+                                                                                data: response) {
+                    completion(.success(OfferingsResultData(offerings: createdOfferings,
+                                                            requestedProductIds: productIdentifiers,
+                                                            notFoundProductIds: missingProductIDs)))
+                } else {
+                    completion(.failure(.noOfferingsFound()))
+                }
             }
         }
     }
@@ -277,7 +313,7 @@ private extension OfferingsManager {
         fetchPolicy: FetchPolicy,
         completion: (@MainActor @Sendable (Result<OfferingsResultData, Error>) -> Void)?
     ) {
-        self.createOfferings(from: response, fetchPolicy: fetchPolicy) { result in
+        self.createOfferings(from: response, appUserID: appUserID, fetchPolicy: fetchPolicy) { result in
             switch result {
             case let .success(offeringsResultData):
                 Logger.rcSuccess(Strings.offering.offerings_stale_updated_from_network)

@@ -23,6 +23,7 @@ struct OfferingsResponse {
             let identifier: String
             let platformProductIdentifier: String
             let webCheckoutUrl: URL?
+            var productIdByStoreType: [String: String]?
 
         }
 
@@ -66,6 +67,22 @@ extension OfferingsResponse {
                 .flatMap { $0.packages }
                 .map { $0.platformProductIdentifier }
         )
+    }
+
+    var productIdentifiersByStoreType: [String: Set<String>] {
+        var result: [String: Set<String>] = [:]
+
+        for offering in self.offerings {
+            for package in offering.packages {
+                if let productIdByStoreType = package.productIdByStoreType {
+                    for (store, productId) in productIdByStoreType {
+                        result[store, default: Set()].insert(productId)
+                    }
+                }
+            }
+        }
+
+        return result
     }
 
     var packages: [Offering.Package] {
