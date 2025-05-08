@@ -348,7 +348,7 @@ public struct CustomerCenterConfigData: Equatable {
                 case .expiresOnDateWithoutChanges:
                     return "Expires on {{ date }} without further charges."
                 case .renewsOnDateForPrice:
-                    return "Renews on {{ date }} for {{ price}}."
+                    return "Renews on {{ date }} for {{ price }}."
                 case .renewsOnDate:
                     return "Renews on {{ date }}"
                 case .priceAfterwards:
