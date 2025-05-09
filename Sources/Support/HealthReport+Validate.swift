@@ -31,7 +31,7 @@ extension HealthReport {
             let offerings: [PurchasesDiagnostics.OfferingDiagnosticsPayload] = {
                 guard case let .offeringsProducts(payload) = self
                     .checks
-                    .first(where: { $0.name == .products })?.details else {
+                    .first(where: { $0.name == .offeringsProducts })?.details else {
                     return []
                 }
 
