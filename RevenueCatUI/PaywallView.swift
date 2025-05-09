@@ -33,7 +33,7 @@ public struct PaywallView: View {
     private let paywallViewOwnsPurchaseHandler: Bool
     private let useDraftPaywall: Bool
 
-    private var locale: Locale
+    private var preferredLocale: Locale?
 
     @StateObject
     private var internalPurchaseHandler: PurchaseHandler
@@ -84,7 +84,8 @@ public struct PaywallView: View {
             configuration: .init(
                 fonts: fonts,
                 displayCloseButton: displayCloseButton,
-                purchaseHandler: purchaseHandler
+                purchaseHandler: purchaseHandler,
+                preferredLocale: nil
             )
         )
     }
@@ -122,6 +123,7 @@ public struct PaywallView: View {
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
         useDraftPaywall: Bool,
+        preferredLocale: Locale? = nil,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil
     ) {
@@ -132,7 +134,8 @@ public struct PaywallView: View {
                 fonts: fonts,
                 displayCloseButton: displayCloseButton,
                 useDraftPaywall: useDraftPaywall,
-                purchaseHandler: purchaseHandler
+                purchaseHandler: purchaseHandler,
+                preferredLocale: preferredLocale
             )
         )
     }
@@ -166,7 +169,7 @@ public struct PaywallView: View {
 
         self.initializationError = Self.checkForConfigurationConsistency(purchaseHandler: configuration.purchaseHandler)
 
-        self.locale = configuration.locale
+        self.preferredLocale = configuration.preferredLocale
     }
 
     private static func checkForConfigurationConsistency(purchaseHandler: PurchaseHandler) -> NSError? {
@@ -283,7 +286,7 @@ public struct PaywallView: View {
 
             // For fallback view or footer
             let paywall: PaywallData = .createDefault(with: offering.availablePackages,
-                                                      locale: self.locale)
+                                                      locale: self.preferredLocale ?? .current)
 
             switch self.mode {
             // Show the default/fallback paywall for Paywalls V2 footer views
@@ -298,7 +301,7 @@ public struct PaywallView: View {
                     displayCloseButton: self.displayCloseButton,
                     introEligibility: checker,
                     purchaseHandler: purchaseHandler,
-                    locale: locale,
+                    locale: self.preferredLocale ?? .current,
                     showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
                 )
             // Show the actually V2 paywall for full screen
@@ -313,7 +316,7 @@ public struct PaywallView: View {
                     displayCloseButton: self.displayCloseButton,
                     introEligibility: checker,
                     purchaseHandler: purchaseHandler,
-                    locale: self.locale,
+                    locale: self.preferredLocale ?? .current,
                     showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
                 )
 
@@ -323,6 +326,7 @@ public struct PaywallView: View {
                     purchaseHandler: purchaseHandler,
                     introEligibilityChecker: checker,
                     showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+                    preferredLocale: self.preferredLocale,
                     onDismiss: {
                         guard let onRequestedDismissal = self.onRequestedDismissal else {
                             self.dismiss()
@@ -335,7 +339,9 @@ public struct PaywallView: View {
             }
         } else {
 
-            let (paywall, displayedLocale, template, error) = offering.validatedPaywall(locale: self.locale)
+            let (paywall, displayedLocale, template, error) = offering.validatedPaywall(
+                locale: self.preferredLocale ?? .current
+            )
 
             let paywallView = LoadedOfferingPaywallView(
                 offering: offering,
@@ -644,7 +650,8 @@ struct PaywallView_Previews: PreviewProvider {
                         customerInfo: TestData.customerInfo,
                         mode: mode,
                         introEligibility: PreviewHelpers.introEligibilityChecker,
-                        purchaseHandler: PreviewHelpers.purchaseHandler
+                        purchaseHandler: PreviewHelpers.purchaseHandler,
+                        preferredLocale: nil
                     )
                 )
                 .previewLayout(mode.layout)
