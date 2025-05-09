@@ -262,7 +262,9 @@ extension PaywallEvent.Data {
             sessionID: .init(),
             displayMode: PaywallViewMode.allCases.randomElement()!,
             localeIdentifier: "es_ES",
-            darkMode: Bool.random()
+            darkMode: Bool.random(),
+            storeTransactionID: nil,
+            fallbackReason: nil
         )
     }
 
