@@ -24,7 +24,7 @@ struct PurchaseInformation {
 
     /// The title of the storekit product, if applicable.
     /// - Note: See `StoreProduct.localizedTitle` for more details.
-    let title: String?
+    let title: String
 
     /// The duration of the product, if applicable.
     /// - Note: See `StoreProduct.localizedDetails` for more details.
@@ -32,8 +32,11 @@ struct PurchaseInformation {
 
     let explanation: Explanation
 
-    /// Pricing details of the purchase.
-    let price: PriceDetails
+    /// Pricing details of the latest purchase.
+    let pricePaid: PriceDetails
+
+    /// Renewal pricing details of the subscription.
+    let renewalPrice: PriceDetails?
 
     /// Subscription expiration or renewal details, if applicable.
     let expirationOrRenewal: ExpirationOrRenewal?
@@ -79,7 +82,8 @@ struct PurchaseInformation {
     init(title: String,
          durationTitle: String?,
          explanation: Explanation,
-         price: PriceDetails,
+         pricePaid: PriceDetails,
+         renewalPrice: PriceDetails?,
          expirationOrRenewal: ExpirationOrRenewal?,
          productIdentifier: String,
          store: Store,
@@ -96,7 +100,8 @@ struct PurchaseInformation {
         self.title = title
         self.durationTitle = durationTitle
         self.explanation = explanation
-        self.price = price
+        self.pricePaid = pricePaid
+        self.renewalPrice = renewalPrice
         self.expirationOrRenewal = expirationOrRenewal
         self.productIdentifier = productIdentifier
         self.store = store
@@ -124,7 +129,7 @@ struct PurchaseInformation {
         dateFormatter.dateStyle = .medium
 
         // Title and duration from product if available
-        self.title = storeProduct?.localizedTitle
+        self.title = storeProduct?.localizedTitle ?? transaction.displayName ?? transaction.productIdentifier
         self.durationTitle = storeProduct?.subscriptionPeriod?.durationTitle
         self.customerInfoRequestedDate = customerInfoRequestedDate
         self.introductoryDiscount = storeProduct?.introductoryDiscount
@@ -181,17 +186,17 @@ struct PurchaseInformation {
             self.productIdentifier = transaction.productIdentifier
             self.store = transaction.store
             self.isCancelled = transaction.isCancelled
-
-            if transaction.store == .promotional {
-                self.price = .free
-            } else {
-                if let renewalPrice {
-                    self.price = renewalPrice
-                } else {
-                    self.price = storeProduct.map { .paid($0.localizedPriceString) } ?? .unknown
-                }
-            }
         }
+
+        if self.expirationDate == nil {
+            self.renewalPrice = nil
+        } else if let renewalPrice {
+            self.renewalPrice = renewalPrice
+        } else {
+            self.renewalPrice = transaction.determineRenewalPrice()
+        }
+
+        self.pricePaid = transaction.paidPrice()
 
         self.dateFormatter = dateFormatter
     }
@@ -214,7 +219,7 @@ struct PurchaseInformation {
 
     enum PriceDetails: Equatable {
         case free
-        case paid(String)
+        case nonFree(String)
         case unknown
     }
 
@@ -293,7 +298,7 @@ extension PurchaseInformation {
 
         guard let formattedPrice = formatter.string(from: renewalPriceDetails.price as NSNumber) else { return nil }
 
-        return .paid(formattedPrice)
+        return .nonFree(formattedPrice)
     }
 }
 
@@ -307,20 +312,60 @@ extension PurchaseInformation: Identifiable {
     }
 }
 
+private extension Transaction {
+
+    func determineRenewalPrice() -> PurchaseInformation.PriceDetails {
+        if self.productIdentifier.isPromotionalLifetime(store: self.store) {
+            return .free
+        }
+
+        guard let price = self.price,
+              price.amount != 0 else {
+            // If it was a trial we can't infer the renewal price
+            return .unknown
+        }
+
+        guard self.store == .rcBilling else {
+            // RCBilling does not support product price changes yet
+            // So it's the only store we can infer the renewal price from
+            // latest price paid
+            return .unknown
+        }
+
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = price.currency
+
+        guard let formattedPrice = formatter.string(from: price.amount as NSNumber) else { return .unknown }
+
+        return .nonFree(formattedPrice)
+    }
+
+    func paidPrice() -> PurchaseInformation.PriceDetails {
+        if self.store == .promotional || self.price?.amount == 0 {
+            return .free
+        }
+
+        guard let price = self.price,
+              price.amount != 0 else {
+            return .unknown
+        }
+
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = price.currency
+
+        guard let formattedPrice = formatter.string(from: price.amount as NSNumber) else { return .unknown }
+
+        return .nonFree(formattedPrice)
+    }
+
+}
+
 private extension EntitlementInfo {
 
     var isCancelled: Bool {
         unsubscribeDetectedAt != nil && !willRenew
-    }
-
-    func priceBestEffort(product: StoreProduct?) -> PurchaseInformation.PriceDetails {
-        if let product {
-            return .paid(product.localizedPriceString)
-        }
-        if self.store == .promotional {
-            return .free
-        }
-        return .unknown
     }
 
     func durationTitleBestEffort(productIdentifier: String) -> String? {
@@ -416,43 +461,52 @@ extension PurchaseInformation {
         guard let expirationDate else {
             // non subscription
             return localizations[.pricePaid]
-                .replacingOccurrences(of: "{{ price }}", with: price.billingInformation(localizations: localizations))
+                .replacingOccurrences(of: "{{ price }}",
+                                      with: pricePaid.billingInformation(localizations: localizations))
         }
 
         if let introductoryDiscount {
             if isCancelled {
                 var renewString = "\(introductoryDiscount.localizedPricePerPeriodByPaymentMode(.current))."
                 renewString += localizations[.expiresOnDateWithoutChanges]
-                    .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: expirationDate))
+                    .replacingOccurrences(of: "{{ date }}",
+                                          with: dateFormatter.string(from: expirationDate))
                 return renewString
             }
 
             if introductoryDiscount.paymentMode == .freeTrial {
                 return localizations[.freeTrialUntilDate]
                     .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: expirationDate))
+                    .replacingOccurrences(of: "{{ price }}", with: priceAfterDiscount(localizations: localizations))
             } else {
                 let introPrice = introductoryDiscount.localizedPricePerPeriodByPaymentMode(.current)
-                return "\(introPrice). \(priceAfterDiscount(localizations: localizations))"
+                if let renewalPrice = renewalPrice {
+                    return "\(introPrice). \(priceAfterDiscount(price: renewalPrice, localizations: localizations))"
+                } else {
+                    return "\(introPrice)."
+                }
             }
         } else if isCancelled {
             return localizations[.expiresOnDateWithoutChanges]
                 .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: expirationDate))
         } else {
-            switch price {
-            case let .paid(priceString):
+            switch renewalPrice {
+            case let .nonFree(priceString):
                 return localizations[.renewsOnDateForPrice]
                     .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: expirationDate))
                     .replacingOccurrences(of: "{{ price }}", with: priceString)
-            case .free, .unknown:
+            case .free, .unknown, .none:
                 return localizations[.renewsOnDate]
                     .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: expirationDate))
             }
         }
     }
 
-    func priceAfterDiscount(localizations: CustomerCenterConfigData.Localization) -> String {
+    func priceAfterDiscount(price: PurchaseInformation.PriceDetails,
+                            localizations: CustomerCenterConfigData.Localization) -> String {
         return localizations[.priceAfterwards]
-            .replacingOccurrences(of: "{{ price }}", with: price.billingInformation(localizations: localizations))
+            .replacingOccurrences(of: "{{ price }}",
+                                  with: price.billingInformation(localizations: localizations))
     }
 }
 
@@ -461,7 +515,7 @@ private extension PurchaseInformation.PriceDetails {
         switch self {
         case .free:
             return localizations[.free]
-        case .paid(let priceString):
+        case .nonFree(let priceString):
             return priceString
         case .unknown:
             return "Unknown"

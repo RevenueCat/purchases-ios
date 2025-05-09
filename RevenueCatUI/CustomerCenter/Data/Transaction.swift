@@ -21,6 +21,9 @@ protocol Transaction {
     var type: TransactionType { get }
     var isCancelled: Bool { get }
     var managementURL: URL? { get }
+    var price: ProductPaidPrice? { get }
+    var displayName: String? { get }
+
 }
 
 enum TransactionType {
@@ -41,6 +44,7 @@ enum TransactionType {
     var isCancelled: Bool {
         unsubscribeDetectedAt != nil && !willRenew
     }
+
 }
 
 extension NonSubscriptionTransaction: Transaction {
@@ -56,4 +60,10 @@ extension NonSubscriptionTransaction: Transaction {
     var managementURL: URL? {
         nil
     }
+
+    var price: ProductPaidPrice? {
+        // We don't have that information in the CustomerInfo
+        nil
+    }
+
 }
