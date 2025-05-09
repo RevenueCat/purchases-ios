@@ -30,7 +30,6 @@ extension PurchaseInformation {
         latestPurchaseDate: nil,
         customerInfoRequestedDate: Date(),
         isCancelled: false,
-
         managePurchaseURL: URL(string: "https://www.revenuecat.com")!
     )
 

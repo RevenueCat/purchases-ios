@@ -141,7 +141,11 @@ struct PurchaseInformation {
             self.expirationOrRenewal = entitlement.expirationOrRenewal(dateFormatter: dateFormatter)
             self.productIdentifier = entitlement.productIdentifier
             self.store = entitlement.store
-
+            if let renewalPrice {
+                self.price = renewalPrice
+            } else {
+                self.price = entitlement.priceBestEffort(product: storeProduct)
+            }
             self.isLifetime = entitlement.expirationDate == nil
 
             self.isTrial = entitlement.periodType == .trial
