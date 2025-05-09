@@ -21,10 +21,12 @@ class OfferingsTests: TestCase {
         let package = self.offeringsFactory.createPackage(
             with: .init(identifier: "$rc_monthly",
                         platformProductIdentifier: "com.myproduct.monthly",
-                        webCheckoutUrl: nil),
+                        webCheckoutUrl: nil,
+                        productIdByStoreType: [Store.appStore: "com.myproduct.monthly"]),
             productsByID: [
                 "com.myproduct.annual": StoreProduct(sk1Product: SK1Product())
             ],
+            webProductsById: [:],
             offeringIdentifier: "offering"
         )
 
@@ -39,10 +41,12 @@ class OfferingsTests: TestCase {
             self.offeringsFactory.createPackage(
                 with: .init(identifier: packageIdentifier,
                             platformProductIdentifier: productIdentifier,
-                            webCheckoutUrl: nil),
+                            webCheckoutUrl: nil,
+                            productIdByStoreType: [Store.appStore: productIdentifier]),
                 productsByID: [
                     productIdentifier: StoreProduct(sk1Product: product)
                 ],
+                webProductsById: [:],
                 offeringIdentifier: "offering"
             )
         )
@@ -58,16 +62,19 @@ class OfferingsTests: TestCase {
         let products = ["com.myproduct.bad": StoreProduct(sk1Product: SK1Product())]
         let offering = self.offeringsFactory.createOffering(
             from: products,
+            webProductsById: [:],
             offering: .init(
                 identifier: "offering_a",
                 description: "This is the base offering",
                 packages: [
                     .init(identifier: "$rc_monthly",
                           platformProductIdentifier: "com.myproduct.monthly",
-                          webCheckoutUrl: nil),
+                          webCheckoutUrl: nil,
+                          productIdByStoreType: [Store.appStore: "com.myproduct.monthly"]),
                     .init(identifier: "$rc_annual",
                           platformProductIdentifier: "com.myproduct.annual",
-                          webCheckoutUrl: nil)
+                          webCheckoutUrl: nil,
+                          productIdByStoreType: [Store.appStore: "com.myproduct.annual"])
                 ],
                 webCheckoutUrl: nil),
             uiConfig: nil
@@ -88,19 +95,23 @@ class OfferingsTests: TestCase {
         let offering = try XCTUnwrap(
             self.offeringsFactory.createOffering(
                 from: products,
+                webProductsById: [:],
                 offering: .init(
                     identifier: offeringIdentifier,
                     description: serverDescription,
                     packages: [
                         .init(identifier: "$rc_monthly",
                               platformProductIdentifier: "com.myproduct.monthly",
-                              webCheckoutUrl: nil),
+                              webCheckoutUrl: nil,
+                              productIdByStoreType: [Store.appStore: "com.myproduct.monthly"]),
                         .init(identifier: "$rc_annual",
                               platformProductIdentifier: "com.myproduct.annual",
-                              webCheckoutUrl: nil),
+                              webCheckoutUrl: nil,
+                              productIdByStoreType: [Store.appStore: "com.myproduct.annual"]),
                         .init(identifier: "$rc_six_month",
                               platformProductIdentifier: "com.myproduct.sixMonth",
-                              webCheckoutUrl: nil)
+                              webCheckoutUrl: nil,
+                              productIdByStoreType: [Store.appStore: "com.myproduct.sixMonth"])
                     ],
                     webCheckoutUrl: nil),
                 uiConfig: nil
@@ -118,6 +129,7 @@ class OfferingsTests: TestCase {
     func testListOfOfferingsIsNilIfNoValidOffering() {
         let offerings = self.offeringsFactory.createOfferings(
             from: [:],
+            webProductsByID: [:],
             data: .init(
                 currentOfferingId: "offering_a",
                 offerings: [
@@ -126,7 +138,8 @@ class OfferingsTests: TestCase {
                           packages: [
                             .init(identifier: "$rc_six_month",
                                   platformProductIdentifier: "com.myproduct.sixMonth",
-                                  webCheckoutUrl: nil)
+                                  webCheckoutUrl: nil,
+                                  productIdByStoreType: [Store.appStore: "com.myproduct.sixMonth"])
                           ],
                           webCheckoutUrl: nil),
                     .init(identifier: "offering_b",
@@ -134,7 +147,8 @@ class OfferingsTests: TestCase {
                           packages: [
                             .init(identifier: "$rc_monthly",
                                   platformProductIdentifier: "com.myproduct.monthly",
-                                  webCheckoutUrl: nil)
+                                  webCheckoutUrl: nil,
+                                  productIdByStoreType: [Store.appStore: "com.myproduct.monthly"])
                           ],
                           webCheckoutUrl: nil)
                 ],
@@ -159,6 +173,7 @@ class OfferingsTests: TestCase {
         let offerings = try XCTUnwrap(
             self.offeringsFactory.createOfferings(
                 from: products,
+                webProductsByID: [:],
                 data: .init(
                     currentOfferingId: "offering_a",
                     offerings: [
@@ -167,7 +182,8 @@ class OfferingsTests: TestCase {
                               packages: [
                                 .init(identifier: "$rc_six_month",
                                       platformProductIdentifier: "com.myproduct.annual",
-                                      webCheckoutUrl: nil)
+                                      webCheckoutUrl: nil,
+                                      productIdByStoreType: [Store.appStore: "com.myproduct.annual"])
                               ],
                               webCheckoutUrl: nil),
                         .init(identifier: "offering_b",
@@ -175,10 +191,12 @@ class OfferingsTests: TestCase {
                               packages: [
                                 .init(identifier: "$rc_monthly",
                                       platformProductIdentifier: "com.myproduct.monthly",
-                                      webCheckoutUrl: nil),
+                                      webCheckoutUrl: nil,
+                                      productIdByStoreType: [Store.appStore: "com.myproduct.monthly"]),
                                 .init(identifier: "custom_package",
                                       platformProductIdentifier: "com.myproduct.custom",
-                                      webCheckoutUrl: nil)
+                                      webCheckoutUrl: nil,
+                                      productIdByStoreType: [Store.appStore: "com.myproduct.custom"])
                               ],
                               webCheckoutUrl: nil)
                     ],
@@ -215,6 +233,7 @@ class OfferingsTests: TestCase {
         let offerings = try XCTUnwrap(
             self.offeringsFactory.createOfferings(
                 from: products,
+                webProductsByID: [:],
                 data: .init(
                     currentOfferingId: "offering_a",
                     offerings: [
@@ -223,27 +242,32 @@ class OfferingsTests: TestCase {
                               packages: [
                                 .init(identifier: "$rc_six_month",
                                       platformProductIdentifier: "com.myproduct.annual",
-                                      webCheckoutUrl: nil)
+                                      webCheckoutUrl: nil,
+                                      productIdByStoreType: [Store.appStore: "com.myproduct.annual"])
                               ], webCheckoutUrl: nil),
                         .init(identifier: "offering_b",
                               description: "This is the base offering b",
                               packages: [
                                 .init(identifier: "$rc_monthly",
                                       platformProductIdentifier: "com.myproduct.monthly",
-                                      webCheckoutUrl: nil),
+                                      webCheckoutUrl: nil,
+                                      productIdByStoreType: [Store.appStore: "com.myproduct.monthly"]),
                                 .init(identifier: "custom_package",
                                       platformProductIdentifier: "com.myproduct.custom",
-                                      webCheckoutUrl: nil)
+                                      webCheckoutUrl: nil,
+                                      productIdByStoreType: [Store.appStore: "com.myproduct.custom"])
                               ], webCheckoutUrl: nil),
                         .init(identifier: "offering_c",
                               description: "This is the base offering b",
                               packages: [
                                 .init(identifier: "$rc_monthly",
                                       platformProductIdentifier: "com.myproduct.monthly",
-                                      webCheckoutUrl: nil),
+                                      webCheckoutUrl: nil,
+                                      productIdByStoreType: [Store.appStore: "com.myproduct.monthly"]),
                                 .init(identifier: "custom_package",
                                       platformProductIdentifier: "com.myproduct.custom",
-                                      webCheckoutUrl: nil)
+                                      webCheckoutUrl: nil,
+                                      productIdByStoreType: [Store.appStore: "com.myproduct.custom"])
                               ], webCheckoutUrl: nil)
                     ],
                     placements: .init(fallbackOfferingId: "offering_c",
@@ -304,6 +328,7 @@ class OfferingsTests: TestCase {
         let offerings = try XCTUnwrap(
             self.offeringsFactory.createOfferings(
                 from: products,
+                webProductsByID: [:],
                 data: .init(
                     currentOfferingId: "offering_a",
                     offerings: [
@@ -312,7 +337,8 @@ class OfferingsTests: TestCase {
                               packages: [
                                 .init(identifier: "$rc_six_month",
                                       platformProductIdentifier: "com.myproduct.annual",
-                                      webCheckoutUrl: nil)
+                                      webCheckoutUrl: nil,
+                                      productIdByStoreType: [Store.appStore: "com.myproduct.annual"])
                               ],
                               webCheckoutUrl: nil),
                         .init(identifier: "offering_b",
@@ -320,10 +346,12 @@ class OfferingsTests: TestCase {
                               packages: [
                                 .init(identifier: "$rc_monthly",
                                       platformProductIdentifier: "com.myproduct.monthly",
-                                      webCheckoutUrl: nil),
+                                      webCheckoutUrl: nil,
+                                      productIdByStoreType: [Store.appStore: "com.myproduct.monthly"]),
                                 .init(identifier: "custom_package",
                                       platformProductIdentifier: "com.myproduct.custom",
-                                      webCheckoutUrl: nil)
+                                      webCheckoutUrl: nil,
+                                      productIdByStoreType: [Store.appStore: "custom_product_id"])
                               ],
                               webCheckoutUrl: nil)
                     ],
@@ -358,6 +386,7 @@ class OfferingsTests: TestCase {
         let offerings = try XCTUnwrap(
             self.offeringsFactory.createOfferings(
                 from: products,
+                webProductsByID: [:],
                 data: .init(
                     currentOfferingId: "offering_a",
                     offerings: [
@@ -366,7 +395,8 @@ class OfferingsTests: TestCase {
                               packages: [
                                 .init(identifier: "$rc_six_month",
                                       platformProductIdentifier: "com.myproduct.annual",
-                                      webCheckoutUrl: nil)
+                                      webCheckoutUrl: nil,
+                                      productIdByStoreType: [Store.appStore: "com.myproduct.annual"])
                               ], webCheckoutUrl: nil)
                     ],
                     placements: nil,
@@ -425,6 +455,7 @@ class OfferingsTests: TestCase {
         let offerings = try XCTUnwrap(
             self.offeringsFactory.createOfferings(
                 from: products,
+                webProductsByID: [:],
                 data: .init(
                     currentOfferingId: "offering_a",
                     offerings: [
@@ -433,7 +464,8 @@ class OfferingsTests: TestCase {
                               packages: [
                                 .init(identifier: "$rc_six_month",
                                       platformProductIdentifier: "com.myproduct.annual",
-                                      webCheckoutUrl: nil)
+                                      webCheckoutUrl: nil,
+                                      productIdByStoreType: [:])
                               ],
                               metadata: .init(
                                 wrappedValue: metadata
@@ -444,7 +476,8 @@ class OfferingsTests: TestCase {
                               packages: [
                                 .init(identifier: "$rc_monthly",
                                       platformProductIdentifier: "com.myproduct.monthly",
-                                      webCheckoutUrl: nil)
+                                      webCheckoutUrl: nil,
+                                      productIdByStoreType: [:])
                               ],
                               webCheckoutUrl: nil)
                     ],
@@ -566,7 +599,7 @@ class OfferingsTests: TestCase {
         """.asData
 
         let offeringsResponse: OfferingsResponse = try JSONDecoder.default.decode(jsonData: json)
-        let offerings = self.offeringsFactory.createOfferings(from: [:], data: offeringsResponse)
+        let offerings = self.offeringsFactory.createOfferings(from: [:], webProductsByID: [:], data: offeringsResponse)
 
         expect(offerings).to(beNil())
     }
@@ -586,7 +619,8 @@ class OfferingsTests: TestCase {
                       packages: [
                         .init(identifier: "$rc_six_month",
                               platformProductIdentifier: "com.myproduct.annual",
-                              webCheckoutUrl: nil)
+                              webCheckoutUrl: nil,
+                              productIdByStoreType: [Store.appStore: "com.myproduct.annual"])
                       ],
                       webCheckoutUrl: nil)
             ],
@@ -595,7 +629,7 @@ class OfferingsTests: TestCase {
             uiConfig: nil
         )
         let offerings = try XCTUnwrap(
-            self.offeringsFactory.createOfferings(from: storeProductsByID, data: response)
+            self.offeringsFactory.createOfferings(from: storeProductsByID, webProductsByID: [:], data: response)
         )
 
         expect(offerings.current).to(beNil())
@@ -621,6 +655,7 @@ class OfferingsTests: TestCase {
 
         let offering = try XCTUnwrap(
             self.offeringsFactory.createOffering(from: products,
+                                                 webProductsById: [:],
                                                  offering: offeringResponse0,
                                                  uiConfig: uiConfig)
             )
@@ -649,6 +684,7 @@ class OfferingsTests: TestCase {
 
         let offering = try XCTUnwrap(
             self.offeringsFactory.createOffering(from: products,
+                                                 webProductsById: [:],
                                                  offering: offeringResponse0,
                                                  uiConfig: uiConfig)
             )
@@ -675,6 +711,7 @@ class OfferingsTests: TestCase {
 
         let offering = try XCTUnwrap(
             self.offeringsFactory.createOffering(from: products,
+                                                 webProductsById: [:],
                                                  offering: offeringResponse0,
                                                  uiConfig: uiConfig)
             )
@@ -701,6 +738,7 @@ class OfferingsTests: TestCase {
 
         let offering = try XCTUnwrap(
             self.offeringsFactory.createOffering(from: products,
+                                                 webProductsById: [:],
                                                  offering: offeringResponse0,
                                                  uiConfig: uiConfig)
             )
@@ -727,6 +765,7 @@ class OfferingsTests: TestCase {
 
         let offering = try XCTUnwrap(
             self.offeringsFactory.createOffering(from: products,
+                                                 webProductsById: [:],
                                                  offering: offeringResponse0,
                                                  uiConfig: uiConfig)
             )
@@ -759,6 +798,7 @@ private extension OfferingsTests {
         let offerings = try XCTUnwrap(
             offeringsFactory.createOfferings(
                 from: products,
+                webProductsByID: [:],
                 data: .init(
                     currentOfferingId: "offering_a",
                     offerings: [
@@ -767,7 +807,8 @@ private extension OfferingsTests {
                               packages: [
                                 .init(identifier: identifier,
                                       platformProductIdentifier: productIdentifier,
-                                      webCheckoutUrl: nil)
+                                      webCheckoutUrl: nil,
+                                      productIdByStoreType: [Store.appStore: productIdentifier])
                               ],
                               webCheckoutUrl: nil)
                     ],

@@ -13,10 +13,16 @@
 
 import Foundation
 
+enum ApiKeyToUseInRequest {
+    case native, web
+}
+
 protocol HTTPRequestPath {
 
     /// The base URL for requests to this path.
     static var serverHostURL: URL { get }
+
+    var apiKeyToUseInRequest: ApiKeyToUseInRequest { get }
 
     /// The fallback hosts to use when the main server is down.
     ///
@@ -40,12 +46,18 @@ protocol HTTPRequestPath {
 
     /// The full relative path for this endpoint.
     var relativePath: String { get }
+
+    var apiKeyStore: Purchases.APIKeys.Store { get }
 }
 
 extension HTTPRequestPath {
 
     var fallbackHosts: [URL] {
         return []
+    }
+
+    var apiKeyToUseInRequest: ApiKeyToUseInRequest {
+        return .native
     }
 
     var url: URL? { return self.url(proxyURL: nil) }
@@ -63,6 +75,10 @@ extension HTTPRequestPath {
             baseURL = Self.serverHostURL
         }
         return URL(string: self.relativePath, relativeTo: baseURL)
+    }
+
+    var apiKeyStore: Purchases.APIKeys.Store {
+        return .appStore
     }
 }
 

@@ -35,7 +35,8 @@ class BaseBackendTests: TestCase {
     private(set) var customerCenterConfig: CustomerCenterConfigAPI!
     private(set) var redeemWebPurchaseAPI: RedeemWebPurchaseAPI!
 
-    static let apiKey = "asharedsecret"
+    private static let apiKeys = Purchases.APIKeys(apiKey: "asharedsecret",
+                                                   webBillingAPIKey: "awebbillingsharedsecret")
     static let userID = "user"
 
     override func setUpWithError() throws {
@@ -125,7 +126,7 @@ extension BaseBackendTests {
             self.diagnosticsTracker = nil
         }
 
-        return MockHTTPClient(apiKey: Self.apiKey,
+        return MockHTTPClient(apiKeys: Self.apiKeys,
                               systemInfo: self.systemInfo,
                               eTagManager: eTagManager,
                               diagnosticsTracker: self.diagnosticsTracker,

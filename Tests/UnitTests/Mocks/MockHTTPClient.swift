@@ -54,7 +54,7 @@ class MockHTTPClient: HTTPClient {
     var mocks: [URL: Response] = [:]
     var calls: [Call] = []
 
-    init(apiKey: String,
+    init(apiKeys: Purchases.APIKeys,
          systemInfo: SystemInfo,
          eTagManager: ETagManager,
          diagnosticsTracker: DiagnosticsTrackerType?,
@@ -63,7 +63,7 @@ class MockHTTPClient: HTTPClient {
          sourceTestFile: StaticString = #file) {
         self.sourceTestFile = sourceTestFile
 
-        super.init(apiKey: apiKey,
+        super.init(apiKeys: apiKeys,
                    systemInfo: systemInfo,
                    eTagManager: eTagManager,
                    signing: FakeSigning.default,
@@ -86,8 +86,13 @@ class MockHTTPClient: HTTPClient {
             .requestAddingNonceIfRequired(with: verificationMode)
             .withHardcodedNonce
 
+        let apiKeyStore = request.path.apiKeyStore
+        let apiKey = apiKeyStore.getAPIKey(from: self.apiKeys)
+
+        XCTAssertNotNil(apiKey, "Nil \(apiKeyStore) API key for path '\(request.path)'")
+
         let call = Call(request: request,
-                        headers: request.headers(with: self.authHeaders,
+                        headers: request.headers(with: Self.authorizationHeader(withAPIKey: apiKey!),
                                                  defaultHeaders: self.defaultHeaders,
                                                  verificationMode: verificationMode,
                                                  internalSettings: self.systemInfo.dangerousSettings.internalSettings))

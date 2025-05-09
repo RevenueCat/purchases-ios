@@ -572,6 +572,19 @@ enum ErrorUtils {
                                 functionName: functionName,
                                 line: line)
     }
+
+    /**
+     * Constructs an Error with the ``ErrorCode/unsupportedError`` code and the given message.
+     */
+    static func unsupportedError(
+        _ message: String, fileName: String = #fileID, functionName: String = #function, line: UInt = #line
+    ) -> PurchasesError {
+        return ErrorUtils.error(with: .unsupportedError,
+                                message: message,
+                                fileName: fileName,
+                                functionName: functionName,
+                                line: line)
+    }
 }
 
 extension ErrorUtils {

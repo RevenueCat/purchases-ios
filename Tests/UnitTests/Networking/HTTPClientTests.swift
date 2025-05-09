@@ -28,7 +28,8 @@ class BaseHTTPClientTests<ETag: ETagManager>: TestCase {
     var diagnosticsTracker: DiagnosticsTrackerType?
     var operationDispatcher: OperationDispatcher!
 
-    fileprivate let apiKey = "MockAPIKey"
+    fileprivate let apiKeys = Purchases.APIKeys(apiKey: "MockAPIKey",
+                                                webBillingAPIKey: "MockWebBillingAPIKey")
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -66,7 +67,7 @@ class BaseHTTPClientTests<ETag: ETagManager>: TestCase {
         _ systemInfo: SystemInfo,
         operationDispatcher: OperationDispatcher = MockOperationDispatcher()
     ) -> HTTPClient {
-        return HTTPClient(apiKey: self.apiKey,
+        return HTTPClient(apiKeys: self.apiKeys,
                           systemInfo: systemInfo,
                           eTagManager: self.eTagManager,
                           signing: self.signing,

@@ -17,11 +17,14 @@ import StoreKit
 
 class OfferingsFactory {
 
-    func createOfferings(from storeProductsByID: [String: StoreProduct], data: OfferingsResponse) -> Offerings? {
+    func createOfferings(from storeProductsByID: [String: StoreProduct],
+                         webProductsByID: [String: StoreProduct],
+                         data: OfferingsResponse) -> Offerings? {
         let offerings: [String: Offering] = data
             .offerings
             .compactMap { offeringData in
                 createOffering(from: storeProductsByID,
+                               webProductsById: webProductsByID,
                                offering: offeringData,
                                uiConfig: data.uiConfig)
             }
@@ -40,11 +43,15 @@ class OfferingsFactory {
 
     func createOffering(
         from storeProductsByID: [String: StoreProduct],
+        webProductsById: [String: StoreProduct],
         offering: OfferingsResponse.Offering,
         uiConfig: UIConfig?
     ) -> Offering? {
         let availablePackages: [Package] = offering.packages.compactMap { package in
-            createPackage(with: package, productsByID: storeProductsByID, offeringIdentifier: offering.identifier)
+            createPackage(with: package,
+                          productsByID: storeProductsByID,
+                          webProductsById: webProductsById,
+                          offeringIdentifier: offering.identifier)
         }
 
         guard !availablePackages.isEmpty else {
@@ -85,14 +92,30 @@ class OfferingsFactory {
     func createPackage(
         with data: OfferingsResponse.Offering.Package,
         productsByID: [String: StoreProduct],
+        webProductsById: [String: StoreProduct],
         offeringIdentifier: String
     ) -> Package? {
-        guard let product = productsByID[data.platformProductIdentifier] else {
+        let webProductId = data.productIdByStoreType?["rc_billing"]
+        var webProduct: StoreProduct?
+        if let webProductId = webProductId {
+            webProduct = webProductsById[webProductId]
+        }
+        let iosProduct = productsByID[data.platformProductIdentifier]
+        guard let product = iosProduct ?? webProduct else {
             return nil
+        }
+
+        var storeProductByStoreRawValue: [Int: StoreProduct] = [:]
+        if let iosProduct = iosProduct {
+            storeProductByStoreRawValue[Store.appStore.rawValue] = iosProduct
+        }
+        if let webProduct = webProduct {
+            storeProductByStoreRawValue[Store.rcBilling.rawValue] = webProduct
         }
 
         return .init(package: data,
                      product: product,
+                     packageProducts: PackageProducts(nativeProduct: iosProduct, webBillingProduct: webProduct),
                      offeringIdentifier: offeringIdentifier,
                      webCheckoutUrl: data.webCheckoutUrl)
     }
@@ -120,13 +143,15 @@ private extension Package {
     convenience init(
         package: OfferingsResponse.Offering.Package,
         product: StoreProduct,
+        packageProducts: PackageProducts,
         offeringIdentifier: String,
         webCheckoutUrl: URL?
     ) {
         self.init(identifier: package.identifier,
                   packageType: Package.packageType(from: package.identifier),
                   storeProduct: product,
-                  offeringIdentifier: offeringIdentifier,
+                  packageProducts: packageProducts,
+                  presentedOfferingContext: .init(offeringIdentifier: offeringIdentifier),
                   webCheckoutUrl: webCheckoutUrl)
     }
 
