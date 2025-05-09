@@ -46,6 +46,8 @@ protocol HTTPRequestPath {
 
     /// The full relative path for this endpoint.
     var relativePath: String { get }
+
+    var apiKeyStore: Purchases.APIKeys.Store { get }
 }
 
 extension HTTPRequestPath {
@@ -73,6 +75,10 @@ extension HTTPRequestPath {
             baseURL = Self.serverHostURL
         }
         return URL(string: self.relativePath, relativeTo: baseURL)
+    }
+
+    var apiKeyStore: Purchases.APIKeys.Store {
+        return .appStore
     }
 }
 

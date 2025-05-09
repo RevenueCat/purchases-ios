@@ -29,6 +29,7 @@ public final class ConfiguredPurchases {
 
     public convenience init(
         apiKey: String,
+        webApiKey: String?,
         proxyURL: String?,
         useStoreKit2: Bool,
         observerMode: Bool,
@@ -45,11 +46,15 @@ public final class ConfiguredPurchases {
 
         let purchasesAreCompletedBy: PurchasesAreCompletedBy = observerMode ? .myApp : .revenueCat
         let storeKitVersion: StoreKitVersion = useStoreKit2 ? .storeKit2 : .storeKit1
+        var configurationBuilder = Configuration.Builder(withAPIKey: apiKey)
+            .with(diagnosticsEnabled: true)
+            .with(purchasesAreCompletedBy: purchasesAreCompletedBy, storeKitVersion: storeKitVersion)
+            .with(entitlementVerificationMode: entitlementVerificationMode)
+        if let webApiKey = webApiKey {
+            configurationBuilder = configurationBuilder.with(webBillingAPIKey: webApiKey)
+        }
         let purchases = Purchases.configure(
-            with: .init(withAPIKey: apiKey)
-                .with(diagnosticsEnabled: true)
-                .with(purchasesAreCompletedBy: purchasesAreCompletedBy, storeKitVersion: storeKitVersion)
-                .with(entitlementVerificationMode: entitlementVerificationMode)
+            with: configurationBuilder
         )
 
         self.init(purchases: purchases, proxyURL: Purchases.proxyURL)

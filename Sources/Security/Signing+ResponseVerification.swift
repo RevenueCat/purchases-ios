@@ -19,6 +19,7 @@ extension HTTPResponse where Body == Data? {
         signing: SigningType,
         request: HTTPRequest,
         requestHeaders: HTTPRequest.Headers,
+        apiKeys: Purchases.APIKeys,
         publicKey: Signing.PublicKey?
     ) -> VerifiedHTTPResponse<Body> {
         let verificationResult = Self.verificationResult(
@@ -28,6 +29,7 @@ extension HTTPResponse where Body == Data? {
             responseHeaders: self.responseHeaders,
             requestDate: self.requestDate,
             request: request,
+            apiKeys: apiKeys,
             publicKey: publicKey,
             signing: signing
         )
@@ -54,6 +56,7 @@ extension HTTPResponse where Body == Data? {
         responseHeaders: HTTPClient.ResponseHeaders,
         requestDate: Date?,
         request: HTTPRequest,
+        apiKeys: Purchases.APIKeys,
         publicKey: Signing.PublicKey?,
         signing: SigningType
     ) -> VerificationResult {
@@ -87,7 +90,8 @@ extension HTTPResponse where Body == Data? {
                             requestBody: request.requestBody,
                             nonce: request.nonce,
                             etag: HTTPResponse.value(forCaseInsensitiveHeaderField: .eTag, in: responseHeaders),
-                            requestDate: requestDate.millisecondsSince1970
+                            requestDate: requestDate.millisecondsSince1970,
+                            apiKeys: apiKeys,
                           ),
                           publicKey: publicKey) {
             return .verified

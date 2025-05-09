@@ -19,7 +19,8 @@ import XCTest
 
 class HTTPResponseTests: TestCase {
 
-    private static let signing: Signing = .init(apiKey: "api_key")
+    private static let signing: Signing = .init()
+    private static let apiKeys = Purchases.APIKeys(apiKey: "api_key", webBillingAPIKey: "web_billing_api_key")
 
     func testResponseVerificationNotRequestedWithNoPublicKey() {
         let request = HTTPRequest(method: .get, path: .health)
@@ -32,6 +33,7 @@ class HTTPResponseTests: TestCase {
             signing: Self.signing,
             request: request,
             requestHeaders: [:],
+            apiKeys: Self.apiKeys,
             publicKey: nil
         )
 
@@ -51,6 +53,7 @@ class HTTPResponseTests: TestCase {
             signing: Self.signing,
             request: request,
             requestHeaders: [:],
+            apiKeys: Self.apiKeys,
             publicKey: key
         )
 
@@ -70,6 +73,7 @@ class HTTPResponseTests: TestCase {
             signing: Self.signing,
             request: request,
             requestHeaders: [:],
+            apiKeys: Self.apiKeys,
             publicKey: key
         )
 

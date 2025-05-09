@@ -12,6 +12,7 @@ func checkConfigurationAPI() {
     let builder = Configuration
         .builder(withAPIKey: "")
         .with(apiKey: "")
+        .with(webBillingAPIKey: "")
         .with(appUserID: nil)
         .with(purchasesAreCompletedBy: .myApp, storeKitVersion: .storeKit2)
         .with(userDefaults: UserDefaults.standard)

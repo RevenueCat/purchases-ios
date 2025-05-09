@@ -15,6 +15,7 @@ struct PurchaseTesterWatchApp: App {
         WindowGroup {
             ContentView(
                 configuration: .init(apiKey: Constants.apiKey,
+                                     webApiKey: nil,
                                      proxyURL: nil,
                                      useStoreKit2: true,
                                      observerMode: false,

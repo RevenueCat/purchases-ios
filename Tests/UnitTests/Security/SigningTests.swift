@@ -30,7 +30,7 @@ class SigningTests: TestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        self.signing = .init(apiKey: Self.apiKey, clock: TestClock(now: Self.mockDate))
+        self.signing = .init(clock: TestClock(now: Self.mockDate))
     }
 
     func testLoadDefaultPublicKey() throws {
@@ -52,7 +52,8 @@ class SigningTests: TestCase {
                 message: message.asData,
                 nonce: nonce.asData,
                 etag: nil,
-                requestDate: requestDate
+                requestDate: requestDate,
+                apiKeys: Self.apiKeys
             ),
             publicKey: Signing.loadPublicKey()
         )) == false
@@ -72,7 +73,8 @@ class SigningTests: TestCase {
             message: message.asData,
             nonce: nonce.asData,
             etag: etag,
-            requestDate: requestDate
+            requestDate: requestDate,
+            apiKeys: Self.apiKeys
         )
 
         let signature = try self.sign(parameters: parameters, salt: salt.asData)
@@ -103,7 +105,8 @@ class SigningTests: TestCase {
             message: message.asData,
             nonce: nonce.asData,
             etag: etag,
-            requestDate: requestDate
+            requestDate: requestDate,
+            apiKeys: Self.apiKeys
         )
 
         let signature = try self.sign(parameters: parameters, salt: salt.asData)
@@ -133,7 +136,8 @@ class SigningTests: TestCase {
                 message: "Hello World".asData,
                 nonce: "nonce".asData,
                 etag: nil,
-                requestDate: 1677005916012
+                requestDate: 1677005916012,
+                apiKeys: Self.apiKeys
             ),
             publicKey: Signing.loadPublicKey()
         )) == false
@@ -150,7 +154,8 @@ class SigningTests: TestCase {
                 message: "Hello World".asData,
                 nonce: "nonce".asData,
                 etag: nil,
-                requestDate: 1677005916012
+                requestDate: 1677005916012,
+                apiKeys: Self.apiKeys
             ),
             publicKey: Signing.loadPublicKey()
         )
@@ -180,7 +185,8 @@ class SigningTests: TestCase {
                     message: message.asData,
                     nonce: nonce.asData,
                     etag: nil,
-                    requestDate: requestDate
+                    requestDate: requestDate,
+                    apiKeys: Self.apiKeys
                 ),
                 publicKey: self.publicKey
             )
@@ -200,7 +206,8 @@ class SigningTests: TestCase {
                 message: "Hello World".asData,
                 nonce: "nonce".asData,
                 etag: nil,
-                requestDate: 1677005916012
+                requestDate: 1677005916012,
+                apiKeys: Self.apiKeys
             ),
             publicKey: Signing.loadPublicKey()
         )
@@ -222,7 +229,8 @@ class SigningTests: TestCase {
                 message: message.asData,
                 nonce: nonce.asData,
                 etag: nil,
-                requestDate: requestDate
+                requestDate: requestDate,
+                apiKeys: Self.apiKeys
             ),
             salt: salt.asData
         )
@@ -239,7 +247,8 @@ class SigningTests: TestCase {
                 message: message.asData,
                 nonce: nonce.asData,
                 etag: nil,
-                requestDate: requestDate
+                requestDate: requestDate,
+                apiKeys: Self.apiKeys
             ),
             publicKey: self.publicKey
         )) == true
@@ -259,7 +268,8 @@ class SigningTests: TestCase {
                 message: message.asData,
                 nonce: nonce.asData,
                 etag: etag,
-                requestDate: requestDate
+                requestDate: requestDate,
+                apiKeys: Self.apiKeys
             ),
             salt: salt.asData
         )
@@ -276,7 +286,8 @@ class SigningTests: TestCase {
                 message: message.asData,
                 nonce: nonce.asData,
                 etag: etag,
-                requestDate: requestDate
+                requestDate: requestDate,
+                apiKeys: Self.apiKeys
             ),
             publicKey: self.publicKey
         )) == true
@@ -319,7 +330,8 @@ class SigningTests: TestCase {
                     message: response.asData,
                     nonce: nonce,
                     etag: etag,
-                    requestDate: requestDate
+                    requestDate: requestDate,
+                    apiKeys: Self.apiKeys
                 ),
                 publicKey: Signing.loadPublicKey()
             )
@@ -352,7 +364,8 @@ class SigningTests: TestCase {
                     message: response.asData,
                     nonce: nil,
                     etag: nil,
-                    requestDate: requestDate
+                    requestDate: requestDate,
+                    apiKeys: Self.apiKeys
                 ),
                 publicKey: Signing.loadPublicKey()
             )
@@ -383,7 +396,8 @@ class SigningTests: TestCase {
                     message: response.asData,
                     nonce: nonce,
                     etag: nil,
-                    requestDate: requestDate
+                    requestDate: requestDate,
+                    apiKeys: Self.apiKeys
                 ),
                 publicKey: Signing.loadPublicKey()
             )
@@ -416,7 +430,8 @@ class SigningTests: TestCase {
                     message: nil, // 304 response
                     nonce: nonce,
                     etag: etag,
-                    requestDate: requestDate
+                    requestDate: requestDate,
+                    apiKeys: Self.apiKeys
                 ),
                 publicKey: Signing.loadPublicKey()
             )
@@ -451,7 +466,8 @@ class SigningTests: TestCase {
                     message: response.asData,
                     nonce: nonce,
                     etag: etag,
-                    requestDate: requestDate
+                    requestDate: requestDate,
+                    apiKeys: Self.apiKeys
                 ),
                 publicKey: Signing.loadPublicKey()
             )
@@ -492,7 +508,8 @@ class SigningTests: TestCase {
                     ),
                     nonce: nonce,
                     etag: nil,
-                    requestDate: requestDate
+                    requestDate: requestDate,
+                    apiKeys: Self.apiKeys
                 ),
                 publicKey: Signing.loadPublicKey()
             )
@@ -531,7 +548,8 @@ class SigningTests: TestCase {
                     ],
                     nonce: nonce,
                     etag: "5f74102dd8cbfc5e",
-                    requestDate: requestDate
+                    requestDate: requestDate,
+                    apiKeys: Self.apiKeys
                 ),
                 publicKey: Signing.loadPublicKey()
             )
@@ -577,7 +595,8 @@ class SigningTests: TestCase {
                     ),
                     nonce: nonce,
                     etag: nil,
-                    requestDate: requestDate
+                    requestDate: requestDate,
+                    apiKeys: Self.apiKeys
                 ),
                 publicKey: Signing.loadPublicKey()
             )
@@ -591,6 +610,7 @@ class SigningTests: TestCase {
             signing: self.signing,
             request: request,
             requestHeaders: [:],
+            apiKeys: Self.apiKeys,
             publicKey: nil
         )
 
@@ -605,6 +625,7 @@ class SigningTests: TestCase {
             signing: self.signing,
             request: request,
             requestHeaders: [:],
+            apiKeys: Self.apiKeys,
             publicKey: self.publicKey
         )
 
@@ -627,6 +648,7 @@ class SigningTests: TestCase {
             signing: self.signing,
             request: request,
             requestHeaders: [:],
+            apiKeys: Self.apiKeys,
             publicKey: self.publicKey
         )
 
@@ -649,7 +671,8 @@ class SigningTests: TestCase {
                                                         requestHeaders: requestHeaders,
                                                         nonce: nonce.asData,
                                                         etag: nil,
-                                                        requestDate: requestDate),
+                                                        requestDate: requestDate,
+                                                        apiKeys: Self.apiKeys),
                                       salt: salt.asData)
         let fullSignature = Self.fullSignature(
             intermediateKey: intermediateKey,
@@ -669,6 +692,7 @@ class SigningTests: TestCase {
             signing: self.signing,
             request: request,
             requestHeaders: requestHeaders,
+            apiKeys: Self.apiKeys,
             publicKey: self.publicKey
         )
 
@@ -689,7 +713,8 @@ class SigningTests: TestCase {
                                                         requestHeaders: requestHeaders,
                                                         nonce: nonce.asData,
                                                         etag: etag,
-                                                        requestDate: requestDate),
+                                                        requestDate: requestDate,
+                                                        apiKeys: Self.apiKeys),
                                       salt: salt.asData)
         let fullSignature = Self.fullSignature(
             intermediateKey: intermediateKey,
@@ -710,6 +735,7 @@ class SigningTests: TestCase {
             signing: self.signing,
             request: request,
             requestHeaders: requestHeaders,
+            apiKeys: Self.apiKeys,
             publicKey: self.publicKey
         )
 
@@ -731,7 +757,8 @@ class SigningTests: TestCase {
                                                         requestHeaders: requestHeaders,
                                                         nonce: nil,
                                                         etag: nil,
-                                                        requestDate: requestDate),
+                                                        requestDate: requestDate,
+                                                        apiKeys: Self.apiKeys),
                                       salt: salt.asData)
         let fullSignature = Self.fullSignature(
             intermediateKey: intermediateKey,
@@ -751,6 +778,7 @@ class SigningTests: TestCase {
             signing: self.signing,
             request: request,
             requestHeaders: requestHeaders,
+            apiKeys: Self.apiKeys,
             publicKey: self.publicKey
         )
 
@@ -773,6 +801,7 @@ class SigningTests: TestCase {
             signing: self.signing,
             request: request,
             requestHeaders: [:],
+            apiKeys: Self.apiKeys,
             publicKey: self.publicKey
         )
 
@@ -797,7 +826,8 @@ private extension SigningTests {
     }
 
     func sign(key: PrivateKey, parameters: Signing.SignatureParameters, salt: Data) throws -> Data {
-        return try key.signature(for: parameters.signature(salt: salt, apiKey: Self.apiKey))
+        let apiKeys = try XCTUnwrap(parameters.path.apiKeyStore.getAPIKey(from: Self.apiKeys))
+        return try key.signature(for: parameters.signature(salt: salt, apiKey: apiKeys))
     }
 
     static func fullSignature(intermediateKey: Data, salt: String, signature: Data) -> Data {
@@ -828,7 +858,8 @@ private extension SigningTests {
         count: Signing.SignatureComponent.intermediateKeyExpiration.size
     )
 
-    static let apiKey = "appl_fFVBVAoYujMZJnepIziGKVjnZBz"
+    static let apiKeys = Purchases.APIKeys(apiKey: "appl_fFVBVAoYujMZJnepIziGKVjnZBz",
+                                           webBillingAPIKey: "mockWebBillingAPIKey")
     static let mockPath: HTTPRequest.Path = .getCustomerInfo(appUserID: "user")
 
     // 2023-07-07: The hardcoded signatures have an intermediate signature that expires

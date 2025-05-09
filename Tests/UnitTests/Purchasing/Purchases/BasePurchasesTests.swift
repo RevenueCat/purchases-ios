@@ -73,8 +73,8 @@ class BasePurchasesTests: TestCase {
         self.mockPurchasedProductsFetcher = MockPurchasedProductsFetcher()
         self.mockTransactionFetcher = MockStoreKit2TransactionFetcher()
 
-        let apiKey = "mockAPIKey"
-        let httpClient = MockHTTPClient(apiKey: apiKey,
+        let mockAPIKeys = Purchases.APIKeys(apiKey: "mockAPIKey", webBillingAPIKey: "mockWebBillingAPIKey")
+        let httpClient = MockHTTPClient(apiKeys: mockAPIKeys,
                                         systemInfo: self.systemInfo,
                                         eTagManager: MockETagManager(),
                                         diagnosticsTracker: self.diagnosticsTracker)

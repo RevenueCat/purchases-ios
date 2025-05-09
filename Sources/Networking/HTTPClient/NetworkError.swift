@@ -25,6 +25,7 @@ enum NetworkError: Swift.Error, Equatable {
     case unexpectedResponse(URLResponse?, Source)
     case errorResponse(ErrorResponse, HTTPStatusCode, Source)
     case signatureVerificationFailed(path: String, HTTPStatusCode, Source)
+    case apiKeyMissing(forStore: Purchases.APIKeys.Store)
 
 }
 
@@ -165,6 +166,9 @@ extension NetworkError: PurchasesErrorConvertible {
                 functionName: source.function,
                 line: source.line
             )
+
+        case let .apiKeyMissing(store):
+            return ErrorUtils.networkError(message: NetworkStrings.missing_api_key(forStore: store).description)
         }
     }
 
@@ -197,6 +201,9 @@ extension NetworkError: DescribableError {
             return self.asPurchasesError.localizedDescription
 
         case .signatureVerificationFailed:
+            return self.asPurchasesError.localizedDescription
+
+        case .apiKeyMissing(forStore: let forStore):
             return self.asPurchasesError.localizedDescription
         }
     }
@@ -240,7 +247,8 @@ extension NetworkError {
              .dnsError,
              .unableToCreateRequest,
              .unexpectedResponse,
-             .signatureVerificationFailed:
+             .signatureVerificationFailed,
+             .apiKeyMissing:
             return nil
         }
     }
