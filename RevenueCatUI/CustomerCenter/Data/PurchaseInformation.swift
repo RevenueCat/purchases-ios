@@ -421,10 +421,10 @@ extension PurchaseInformation {
 
         if let introductoryDiscount {
             if isCancelled {
-                var renewString = "\(introductoryDiscount.localizedPricePerPeriodByPaymentMode(.current))."
-                renewString += localizations[.expiresOnDateWithoutChanges]
+                let price = introductoryDiscount.localizedPricePerPeriodByPaymentMode(.current)
+                return localizations[.priceExpiresOnDateWithoutChanges]
+                    .replacingOccurrences(of: "{{ price }}", with: price)
                     .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: expirationDate))
-                return renewString
             }
 
             if introductoryDiscount.paymentMode == .freeTrial {

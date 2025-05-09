@@ -146,6 +146,7 @@ public struct CustomerCenterConfigData: Equatable {
             case youMayHaveDuplicatedSubscriptionsSubtitle = "you_may_have_duplicated_subscriptions_subtitle"
             case pricePaid = "price_paid"
             case expiresOnDateWithoutChanges = "expires_on_date_without_changes"
+            case priceExpiresOnDateWithoutChanges = "price_expires_on_date_without_changes"
             case renewsOnDateForPrice = "renews_on_date_for_price"
             case renewsOnDate = "renews_on_date"
             case priceAfterwards = "price_afterwards"
@@ -344,6 +345,8 @@ public struct CustomerCenterConfigData: Equatable {
                     return "Paid {{ price }}."
                 case .expiresOnDateWithoutChanges:
                     return "Expires on {{ date }} without further charges."
+                case .priceExpiresOnDateWithoutChanges:
+                    return "{{ price }}. Expires on {{ date }} without changes."
                 case .renewsOnDateForPrice:
                     return "Renews on {{ date }} for {{ price }}."
                 case .renewsOnDate:
