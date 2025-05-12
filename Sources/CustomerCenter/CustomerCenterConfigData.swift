@@ -144,6 +144,12 @@ public struct CustomerCenterConfigData: Equatable {
             case debugHeaderTitle = "Debug"
             case youMayHaveDuplicatedSubscriptionsTitle = "you_may_have_duplicated_subscriptions_title"
             case youMayHaveDuplicatedSubscriptionsSubtitle = "you_may_have_duplicated_subscriptions_subtitle"
+            case pricePaid = "price_paid"
+            case expiresOnDateWithoutChanges = "expires_on_date_without_changes"
+            case renewsOnDateForPrice = "renews_on_date_for_price"
+            case renewsOnDate = "renews_on_date"
+            case priceAfterwards = "price_afterwards"
+            case freeTrialUntilDate = "free_trial_until_date"
 
             var defaultValue: String {
                 switch self {
@@ -334,6 +340,18 @@ public struct CustomerCenterConfigData: Equatable {
                 case .youMayHaveDuplicatedSubscriptionsSubtitle:
                     return "You might be subscribed both on the web and through the App Store." +
                         "To avoid being charged twice, please cancel your iOS subscription in your device settings."
+                case .pricePaid:
+                    return "Paid {{ price }}."
+                case .expiresOnDateWithoutChanges:
+                    return "Expires on {{ date }} without further charges."
+                case .renewsOnDateForPrice:
+                    return "Renews on {{ date }} for {{ price }}."
+                case .renewsOnDate:
+                    return "Renews on {{ date }}."
+                case .priceAfterwards:
+                    return "{{ price }} afterwards."
+                case .freeTrialUntilDate:
+                    return "Free trial until {{ date }}."
                 }
             }
         }

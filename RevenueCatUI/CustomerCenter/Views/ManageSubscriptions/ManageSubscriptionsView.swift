@@ -13,7 +13,7 @@
 //  Created by Andrés Boedo on 5/3/24.
 //
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if os(iOS)
@@ -48,7 +48,8 @@ struct ManageSubscriptionsView: View {
     init(screen: CustomerCenterConfigData.Screen,
          activePurchases: Binding<[PurchaseInformation]>,
          purchasesProvider: CustomerCenterPurchasesType,
-         actionWrapper: CustomerCenterActionWrapper) {
+         actionWrapper: CustomerCenterActionWrapper
+    ) {
         let viewModel = ManageSubscriptionsViewModel(
             screen: screen,
             actionWrapper: actionWrapper,
@@ -98,90 +99,115 @@ struct ManageSubscriptionsView: View {
                 .environment(\.localization, localization)
                 .environment(\.navigationOptions, navigationOptions)
             }
-            .onChangeOf(activePurchases) { _ in
+            .onChangeOf(activePurchases.first?.customerInfoRequestedDate) { _ in
                 viewModel.updatePurchases(activePurchases)
             }
     }
 
     @ViewBuilder
     var content: some View {
-        List {
-            if viewModel.purchasesMightBeDuplicated, support?.shouldWarnCustomersAboutMultipleSubscriptions == true {
-                CompatibilityContentUnavailableView(
-                    localization[.youMayHaveDuplicatedSubscriptionsTitle],
-                    systemImage: "exclamationmark.square",
-                    description: Text(
-                        localization[.youMayHaveDuplicatedSubscriptionsSubtitle]
-                    )
-                )
-                .fixedSize(horizontal: false, vertical: true)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(
-                            Color(colorScheme == .light
-                                  ? UIColor.systemBackground
-                                  : UIColor.secondarySystemBackground)
+        ZStack {
+            Color(
+                colorScheme == .dark
+                ? UIColor.secondarySystemBackground
+                : UIColor.systemGroupedBackground
+            )
+            .ignoresSafeArea()
+
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 16) {
+                    if viewModel.purchasesMightBeDuplicated,
+                       support?.shouldWarnCustomersAboutMultipleSubscriptions == true {
+                        CompatibilityContentUnavailableView(
+                            localization[.youMayHaveDuplicatedSubscriptionsTitle],
+                            systemImage: "exclamationmark.square",
+                            description: Text(
+                                localization[.youMayHaveDuplicatedSubscriptionsSubtitle]
+                            )
                         )
+                        .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, 24)
                         .padding(.top, 24)
-                )
-            }
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(
+                                    Color(colorScheme == .light
+                                          ? UIColor.systemBackground
+                                          : UIColor.secondarySystemBackground)
+                                )
+                        )
+                    }
 
-            if viewModel.activePurchases.isEmpty {
-                let fallbackDescription = localization[.tryCheckRestore]
+                    if viewModel.activePurchases.isEmpty {
+                        let fallbackDescription = localization[.tryCheckRestore]
 
-                Section {
-                    CompatibilityContentUnavailableView(
-                        self.viewModel.screen.title,
-                        systemImage: "exclamationmark.triangle.fill",
-                        description: Text(self.viewModel.screen.subtitle ?? fallbackDescription)
-                    )
-                }
+                        CompatibilityContentUnavailableView(
+                            self.viewModel.screen.title,
+                            systemImage: "exclamationmark.triangle.fill",
+                            description: Text(self.viewModel.screen.subtitle ?? fallbackDescription)
+                        )
+                        .padding(.horizontal)
 
-                Section {
-                    ManageSubscriptionsButtonsView(
-                        viewModel: self.viewModel
-                    )
-                }
+                        ManageSubscriptionsButtonsView(
+                            viewModel: self.viewModel
+                        )
+                        .padding(.horizontal)
 
-            } else {
-                Section(localization[.activeSubscriptions]) {
-                    ForEach(viewModel.activePurchases) { purchase in
-                        Button {
-                            viewModel.purchaseInformation = purchase
-                        } label: {
-                            CompatibilityLabeledContent {
-                                if purchase.title?.isEmpty == true {
-                                    Text(purchase.productIdentifier)
-                                } else {
-                                    Text(purchase.title ?? "")
-                                }
-                            } content: {
-                                Image(systemName: "chevron.forward")
+                    } else {
+                        Text(localization[.activeSubscriptions].uppercased())
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal, 32)
+
+                        ForEach(viewModel.activePurchases) { purchase in
+                            Button {
+                                viewModel.purchaseInformation = purchase
+                            } label: {
+                                PurchaseInformationCardView(
+                                    purchaseInformation: purchase,
+                                    localization: localization
+                                )
+                                .padding(16)
+                                .background(Color(UIColor.systemBackground))
+                                .cornerRadius(10)
+                                .padding(.horizontal)
                             }
+                            .tint(.primary)
                         }
-                    }
-                }
 
-                if support?.displayPurchaseHistoryLink == true {
-                    Button {
-                        viewModel.showAllPurchases = true
-                    } label: {
-                        CompatibilityLabeledContent(localization[.seeAllPurchases]) {
-                            Image(systemName: "chevron.forward")
+                        if support?.displayPurchaseHistoryLink == true {
+                            Button {
+                                viewModel.showAllPurchases = true
+                            } label: {
+                                CompatibilityLabeledContent(localization[.seeAllPurchases]) {
+                                    Image(systemName: "chevron.forward")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 12, height: 12)
+                                        .foregroundStyle(.secondary)
+                                        .font(Font.system(size: 12, weight: .bold))
+                                }
+                                .padding(16)
+                                .background(Color(UIColor.systemBackground))
+                                .cornerRadius(10)
+                                .tint(.primary)
+                            }
+                            .padding(.horizontal)
                         }
                     }
                 }
+                .padding(.top)
             }
         }
         .applyIf(self.viewModel.screen.type == .management, apply: {
             $0.navigationTitle(self.viewModel.screen.title)
                 .navigationBarTitleDisplayMode(.inline)
-         })
+        })
     }
 }
 
 #if DEBUG
+
 @available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
@@ -190,10 +216,21 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
 
     // swiftlint:disable force_unwrapping
     static var previews: some View {
-        let purchases = [
-            CustomerCenterConfigData.subscriptionInformationYearlyExpiring(store: .amazon),
-            CustomerCenterConfigData.subscriptionInformationMonthlyRenewing,
-            CustomerCenterConfigData.subscriptionInformationFree
+        let purchases: [PurchaseInformation] = [
+            .yearlyExpiring(productIdentifier: "p1"),
+            .yearlyExpiring(productIdentifier: "p2", store: .amazon),
+            .yearlyExpiring(
+                productIdentifier: "p3",
+                introductoryDiscount: MockStoreProductDiscount.mock(
+                    paymentMode: .payAsYouGo,
+                    discountType: .introductory)),
+            .yearlyExpiring(
+                productIdentifier: "p4",
+                introductoryDiscount: MockStoreProductDiscount.mock(
+                    paymentMode: .payUpFront,
+                    discountType: .promotional)),
+            .monthlyRenewing,
+            .subscriptionInformationFree
         ]
 
         let warningOffMock = CustomerCenterConfigData.mock(
@@ -233,7 +270,6 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
         .environment(\.localization, CustomerCenterConfigData.default.localization)
         .environment(\.appearance, CustomerCenterConfigData.default.appearance)
     }
-
 }
 
 #endif
