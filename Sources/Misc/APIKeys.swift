@@ -20,11 +20,6 @@ extension Purchases {
     /// Holds the API keys used to initialize the SDK.
     internal struct APIKeys {
 
-        internal enum Store {
-            case appStore
-            case webBilling
-        }
-
         /// The App Store API key.
         let apiKey: String
 
@@ -34,22 +29,22 @@ extension Purchases {
 
 }
 
-extension Purchases.APIKeys.Store {
+extension ApiKeyToUseInRequest {
 
     func getAPIKey(from apiKeys: Purchases.APIKeys) -> String? {
         switch self {
-        case .appStore:
+        case .native:
             return apiKeys.apiKey
-        case .webBilling:
+        case .web:
             return apiKeys.webBillingAPIKey
         }
     }
 
     var description: String {
         switch self {
-        case .appStore:
+        case .native:
             return "App Store"
-        case .webBilling:
+        case .web:
             return "Web Billing"
         }
     }

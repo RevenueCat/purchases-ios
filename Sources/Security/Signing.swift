@@ -95,7 +95,7 @@ final class Signing: SigningType {
         let salt = signature.component(.salt)
         let payload = signature.component(.payload)
 
-        guard let apiKey = parameters.path.apiKeyStore.getAPIKey(from: parameters.apiKeys) else {
+        guard let apiKey = parameters.path.apiKeyToUseInRequest.getAPIKey(from: parameters.apiKeys) else {
             return false
         }
 

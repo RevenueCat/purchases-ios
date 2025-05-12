@@ -49,7 +49,7 @@ enum NetworkStrings {
     case api_request_redirect(from: URL, to: URL)
     case operation_state(NetworkOperation.Type, state: String)
     case request_handled_by_load_shedder(HTTPRequestPath)
-    case missing_api_key(forStore: Purchases.APIKeys.Store)
+    case missing_api_key(ApiKeyToUseInRequest)
 
     #if DEBUG
     case api_request_forcing_server_error(HTTPRequest)

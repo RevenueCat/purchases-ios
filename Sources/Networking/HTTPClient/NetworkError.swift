@@ -25,7 +25,7 @@ enum NetworkError: Swift.Error, Equatable {
     case unexpectedResponse(URLResponse?, Source)
     case errorResponse(ErrorResponse, HTTPStatusCode, Source)
     case signatureVerificationFailed(path: String, HTTPStatusCode, Source)
-    case apiKeyMissing(forStore: Purchases.APIKeys.Store)
+    case apiKeyMissing(ApiKeyToUseInRequest)
 
 }
 
@@ -167,8 +167,8 @@ extension NetworkError: PurchasesErrorConvertible {
                 line: source.line
             )
 
-        case let .apiKeyMissing(store):
-            return ErrorUtils.networkError(message: NetworkStrings.missing_api_key(forStore: store).description)
+        case let .apiKeyMissing(apiKeyType):
+            return ErrorUtils.networkError(message: NetworkStrings.missing_api_key(apiKeyType).description)
         }
     }
 

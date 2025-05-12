@@ -94,9 +94,9 @@ class HTTPClient {
         }
         #endif
 
-        let apiKeyStore = request.path.apiKeyStore
-        guard let apiKey = apiKeyStore.getAPIKey(from: self.apiKeys) else {
-            completionHandler?(.failure(.apiKeyMissing(forStore: apiKeyStore)))
+        let apiKeyToUseInRequest = request.path.apiKeyToUseInRequest
+        guard let apiKey = apiKeyToUseInRequest.getAPIKey(from: self.apiKeys) else {
+            completionHandler?(.failure(.apiKeyMissing(apiKeyToUseInRequest)))
             return
         }
 
