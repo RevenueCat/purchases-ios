@@ -16,6 +16,7 @@
 import Foundation
 import RevenueCat
 
+// swiftlint:disable force_unwrapping
 enum CustomerCenterConfigTestData {
 
     @available(iOS 14.0, *)
@@ -156,7 +157,8 @@ enum CustomerCenterConfigTestData {
         isTrial: false,
         isCancelled: false,
         latestPurchaseDate: nil,
-        customerInfoRequestedDate: Date()
+        customerInfoRequestedDate: Date(),
+        managementURL: URL(string: "https://www.revenuecat.com")!
     )
 
     static let subscriptionInformationFree: PurchaseInformation = .init(
@@ -172,7 +174,8 @@ enum CustomerCenterConfigTestData {
         isTrial: false,
         isCancelled: false,
         latestPurchaseDate: nil,
-        customerInfoRequestedDate: Date()
+        customerInfoRequestedDate: Date(),
+        managementURL: URL(string: "https://www.revenuecat.com")!
     )
 
     static let subscriptionInformationYearlyExpiring: PurchaseInformation = .init(
@@ -188,7 +191,8 @@ enum CustomerCenterConfigTestData {
         isTrial: false,
         isCancelled: false,
         latestPurchaseDate: nil,
-        customerInfoRequestedDate: Date()
+        customerInfoRequestedDate: Date(),
+        managementURL: URL(string: "https://www.revenuecat.com")!
     )
 
     static let consumable: PurchaseInformation = .init(
@@ -203,7 +207,8 @@ enum CustomerCenterConfigTestData {
         isTrial: false,
         isCancelled: false,
         latestPurchaseDate: Date(),
-        customerInfoRequestedDate: Date()
+        customerInfoRequestedDate: Date(),
+        managementURL: URL(string: "https://www.revenuecat.com")!
     )
 
 }

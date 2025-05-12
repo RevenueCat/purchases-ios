@@ -64,6 +64,9 @@ struct PurchaseInformation {
     let latestPurchaseDate: Date?
     let customerInfoRequestedDate: Date
 
+    /// Product specific management URL
+    let managementURL: URL?
+
     init(title: String,
          durationTitle: String?,
          explanation: Explanation,
@@ -75,7 +78,8 @@ struct PurchaseInformation {
          isTrial: Bool,
          isCancelled: Bool,
          latestPurchaseDate: Date?,
-         customerInfoRequestedDate: Date
+         customerInfoRequestedDate: Date,
+         managementURL: URL?
     ) {
         self.title = title
         self.durationTitle = durationTitle
@@ -89,6 +93,7 @@ struct PurchaseInformation {
         self.isCancelled = isCancelled
         self.latestPurchaseDate = latestPurchaseDate
         self.customerInfoRequestedDate = customerInfoRequestedDate
+        self.managementURL = managementURL
     }
 
     // swiftlint:disable:next function_body_length
@@ -97,13 +102,15 @@ struct PurchaseInformation {
          transaction: Transaction,
          renewalPrice: PriceDetails? = nil,
          customerInfoRequestedDate: Date,
-         dateFormatter: DateFormatter = DateFormatter()) {
+         dateFormatter: DateFormatter = DateFormatter(),
+         managementURL: URL?) {
         dateFormatter.dateStyle = .medium
 
         // Title and duration from product if available
         self.title = subscribedProduct?.localizedTitle
         self.durationTitle = subscribedProduct?.subscriptionPeriod?.durationTitle
         self.customerInfoRequestedDate = customerInfoRequestedDate
+        self.managementURL = managementURL
 
         // Use entitlement data if available, otherwise derive from transaction
         if let entitlement = entitlement {
@@ -219,7 +226,8 @@ extension PurchaseInformation {
         subscribedProduct: StoreProduct,
         transaction: Transaction,
         customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType,
-        customerInfoRequestedDate: Date
+        customerInfoRequestedDate: Date,
+        managementURL: URL?
     ) async -> PurchaseInformation {
         let renewalPriceDetails = await Self.extractPriceDetailsFromRenewalInfo(
             forProduct: subscribedProduct,
@@ -230,7 +238,8 @@ extension PurchaseInformation {
             subscribedProduct: subscribedProduct,
             transaction: transaction,
             renewalPrice: renewalPriceDetails,
-            customerInfoRequestedDate: customerInfoRequestedDate
+            customerInfoRequestedDate: customerInfoRequestedDate,
+            managementURL: managementURL
         )
     }
 
@@ -357,43 +366,4 @@ private extension String {
         return self.hasSuffix("_lifetime") && store == .promotional
     }
 
-}
-
-protocol Transaction {
-
-    var productIdentifier: String { get }
-    var store: Store { get }
-    var type: TransactionType { get }
-    var isCancelled: Bool { get }
-}
-
-enum TransactionType {
-
-    case subscription(isActive: Bool, willRenew: Bool, expiresDate: Date?, isTrial: Bool)
-    case nonSubscription
-}
-
-extension RevenueCat.SubscriptionInfo: Transaction {
-
-    var type: TransactionType {
-        .subscription(isActive: isActive,
-                      willRenew: willRenew,
-                      expiresDate: expiresDate,
-                      isTrial: periodType == .trial)
-    }
-
-    var isCancelled: Bool {
-        unsubscribeDetectedAt != nil && !willRenew
-    }
-}
-
-extension NonSubscriptionTransaction: Transaction {
-
-    var type: TransactionType {
-        .nonSubscription
-    }
-
-    var isCancelled: Bool {
-        false
-    }
 }

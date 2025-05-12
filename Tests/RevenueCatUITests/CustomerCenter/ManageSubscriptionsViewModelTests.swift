@@ -339,7 +339,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 
             expect(loadPromotionalOfferUseCase.offerToLoadPromoFor).to(beNil())
 
-            await viewModel.determineFlow(for: pathWithPromotionalOffer)
+            await viewModel.handleHelpPath(pathWithPromotionalOffer)
 
             expect(loadPromotionalOfferUseCase.offerToLoadPromoFor).to(beNil())
         }
@@ -449,7 +449,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 
         expect(loadPromotionalOfferUseCase.offerToLoadPromoFor).to(beNil())
 
-        await viewModel.determineFlow(for: pathWithPromotionalOffer)
+        await viewModel.handleHelpPath(pathWithPromotionalOffer)
 
         let loadingPath = try XCTUnwrap(viewModel.loadingPath)
         expect(loadingPath.id) == pathWithPromotionalOffer.id
@@ -497,7 +497,8 @@ private extension PurchaseInformation {
             isTrial: false,
             isCancelled: false,
             latestPurchaseDate: nil,
-            customerInfoRequestedDate: customerInfoRequestedDate
+            customerInfoRequestedDate: customerInfoRequestedDate,
+            managementURL: URL(string: "https://www.revenuecat.com")!
         )
     }
 
@@ -522,7 +523,8 @@ private extension PurchaseInformation {
             isTrial: isTrial,
             isCancelled: isCancelled,
             latestPurchaseDate: latestPurchaseDate,
-            customerInfoRequestedDate: customerInfoRequestedDate
+            customerInfoRequestedDate: customerInfoRequestedDate,
+            managementURL: URL(string: "https://www.revenuecat.com")!
         )
     }
 }
