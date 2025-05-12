@@ -14,8 +14,9 @@
 //
 
 import Foundation
-@_spi(Internal) import RevenueCat
+import RevenueCat
 
+// swiftlint:disable force_unwrapping
 extension CustomerCenterConfigData {
 
     @available(iOS 14.0, *)
@@ -135,7 +136,76 @@ extension CustomerCenterConfigData {
     }
 
     @available(iOS 14.0, *)
-    static let `default` = mock(lastPublishedAppVersion: "1.0.0")
+    static let `default` = mock()
+
+    static let subscriptionInformationMonthlyRenewing: PurchaseInformation = .init(
+        title: "Basic",
+        durationTitle: "Monthly",
+        explanation: .earliestRenewal,
+        price: .paid("$4.99"),
+        expirationOrRenewal: .init(label: .nextBillingDate,
+                                   date: .date("June 1st, 2024")),
+        productIdentifier: "product_id",
+        store: .appStore,
+        isLifetime: false,
+        isTrial: false,
+        isCancelled: false,
+        latestPurchaseDate: nil,
+        customerInfoRequestedDate: Date(),
+        managementURL: URL(string: "https://www.revenuecat.com")!
+    )
+
+    static let subscriptionInformationFree: PurchaseInformation = .init(
+        title: "Basic",
+        durationTitle: "Monthly",
+        explanation: .earliestRenewal,
+        price: .free,
+        expirationOrRenewal: .init(label: .nextBillingDate,
+                                   date: .date("June 1st, 2024")),
+        productIdentifier: "product_id",
+        store: .appStore,
+        isLifetime: false,
+        isTrial: false,
+        isCancelled: false,
+        latestPurchaseDate: nil,
+        customerInfoRequestedDate: Date(),
+        managementURL: URL(string: "https://www.revenuecat.com")!
+    )
+
+    static func subscriptionInformationYearlyExpiring(store: Store = .appStore) -> PurchaseInformation {
+        PurchaseInformation(
+            title: "Basic",
+            durationTitle: "Yearly",
+            explanation: .earliestRenewal,
+            price: .paid("$49.99"),
+            expirationOrRenewal: .init(label: .expires,
+                                       date: .date("June 1st, 2024")),
+            productIdentifier: "product_id",
+            store: store,
+            isLifetime: false,
+            isTrial: false,
+            isCancelled: false,
+            latestPurchaseDate: nil,
+            customerInfoRequestedDate: Date(),
+            managementURL: URL(string: "https://www.revenuecat.com")!
+        )
+    }
+
+    static let consumable: PurchaseInformation = .init(
+        title: "Basic",
+        durationTitle: nil,
+        explanation: .lifetime,
+        price: .paid("$49.99"),
+        expirationOrRenewal: nil,
+        productIdentifier: "product_id",
+        store: .appStore,
+        isLifetime: true,
+        isTrial: false,
+        isCancelled: false,
+        latestPurchaseDate: Date(),
+        customerInfoRequestedDate: Date(),
+        managementURL: URL(string: "https://www.revenuecat.com")!
+    )
 
     static let standardAppearance = CustomerCenterConfigData.Appearance(
         accentColor: .init(light: "#007AFF", dark: "#007AFF"),
@@ -144,4 +214,5 @@ extension CustomerCenterConfigData {
         buttonTextColor: .init(light: "#ffffff", dark: "#000000"),
         buttonBackgroundColor: .init(light: "#287aff", dark: "#287aff")
     )
+
 }

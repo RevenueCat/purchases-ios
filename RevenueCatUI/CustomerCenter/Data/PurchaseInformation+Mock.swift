@@ -9,7 +9,7 @@
 //
 //  PurchaseInformation+Mock.swift
 //
-//  Created by Facundo Menzella on 7/5/25.
+//  Created by Facundo Menzella on 12/5/25.
 
 import Foundation
 @_spi(Internal) import RevenueCat
@@ -27,10 +27,10 @@ extension PurchaseInformation {
         store: .appStore,
         isLifetime: false,
         isTrial: false,
+        isCancelled: false,
         latestPurchaseDate: nil,
         customerInfoRequestedDate: Date(),
-        isCancelled: false,
-        managePurchaseURL: URL(string: "https://www.revenuecat.com")!
+        managementURL: URL(string: "https://www.revenuecat.com")!
     )
 
     static let subscriptionInformationFree = PurchaseInformation(
@@ -45,9 +45,10 @@ extension PurchaseInformation {
         store: .appStore,
         isLifetime: false,
         isTrial: true,
+        isCancelled: false,
         latestPurchaseDate: nil,
         customerInfoRequestedDate: Date(),
-        managePurchaseURL: URL(string: "https://www.revenuecat.com")!
+        managementURL: URL(string: "https://www.revenuecat.com")!
     )
 
     static func yearlyExpiring(
@@ -69,12 +70,10 @@ extension PurchaseInformation {
             store: store,
             isLifetime: false,
             isTrial: false,
+            isCancelled: false,
             latestPurchaseDate: nil,
             customerInfoRequestedDate: Date(),
-            isCancelled: isCancelled,
-            introductoryDiscount: introductoryDiscount,
-            expirationDate: expirationDate,
-            managePurchaseURL: URL(string: "https://www.revenuecat.com")!
+            managementURL: URL(string: "https://www.revenuecat.com")!
         )
     }
 
@@ -89,8 +88,9 @@ extension PurchaseInformation {
         store: .appStore,
         isLifetime: true,
         isTrial: false,
+        isCancelled: false,
         latestPurchaseDate: Date(),
         customerInfoRequestedDate: Date(),
-        managePurchaseURL: URL(string: "https://www.revenuecat.com")!
+        managementURL: URL(string: "https://www.revenuecat.com")!
     )
 }
