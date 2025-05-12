@@ -601,6 +601,8 @@
 		573A10DB2800AF4700F976E5 /* PurchaseErrorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 573A10DA2800AF4700F976E5 /* PurchaseErrorTests.swift */; };
 		573E7F092819B989007C9128 /* StoreKitWorkarounds.swift in Sources */ = {isa = PBXBuildFile; fileRef = 573E7F082819B989007C9128 /* StoreKitWorkarounds.swift */; };
 		5740FCD32996CE5E00E049F9 /* VerificationResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5740FCD22996CE5E00E049F9 /* VerificationResult.swift */; };
+		57412F572DD2382500F0F677 /* AppliedTransactionOffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57412F562DD2382200F0F677 /* AppliedTransactionOffer.swift */; };
+		57412F5A2DD23CE900F0F677 /* Transaction+AcceptedOffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57412F592DD23CE100F0F677 /* Transaction+AcceptedOffer.swift */; };
 		5744D8AB28E3B86600646735 /* AppleReceiptTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5744D8AA28E3B86600646735 /* AppleReceiptTests.swift */; };
 		5746508C27586B2E0053AB09 /* Result+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5746508B27586B2E0053AB09 /* Result+Extensions.swift */; };
 		5746508E275949F20053AB09 /* DispatchTimeInterval+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5746508D275949F20053AB09 /* DispatchTimeInterval+Extensions.swift */; };
@@ -1981,6 +1983,8 @@
 		573A10DA2800AF4700F976E5 /* PurchaseErrorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseErrorTests.swift; sourceTree = "<group>"; };
 		573E7F082819B989007C9128 /* StoreKitWorkarounds.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitWorkarounds.swift; sourceTree = "<group>"; };
 		5740FCD22996CE5E00E049F9 /* VerificationResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerificationResult.swift; sourceTree = "<group>"; };
+		57412F562DD2382200F0F677 /* AppliedTransactionOffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppliedTransactionOffer.swift; sourceTree = "<group>"; };
+		57412F592DD23CE100F0F677 /* Transaction+AcceptedOffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Transaction+AcceptedOffer.swift"; sourceTree = "<group>"; };
 		5744D8AA28E3B86600646735 /* AppleReceiptTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleReceiptTests.swift; sourceTree = "<group>"; };
 		5746508B27586B2E0053AB09 /* Result+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Result+Extensions.swift"; sourceTree = "<group>"; };
 		5746508D275949F20053AB09 /* DispatchTimeInterval+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DispatchTimeInterval+Extensions.swift"; sourceTree = "<group>"; };
@@ -3805,6 +3809,7 @@
 		353756562C382C2800A1B8D6 /* Data */ = {
 			isa = PBXGroup;
 			children = (
+				57412F562DD2382200F0F677 /* AppliedTransactionOffer.swift */,
 				570A671D2DD2026500DEBABE /* Transaction.swift */,
 				570A671B2DD2021000DEBABE /* PurchaseInformation+Mock.swift */,
 				3563EB932DCAA37A0061E058 /* EntitlementInfo+Extensions.swift */,
@@ -4060,6 +4065,7 @@
 		35D41B412D40354A000621C7 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				57412F592DD23CE100F0F677 /* Transaction+AcceptedOffer.swift */,
 				57B179D22DAE4C94009A5CFE /* CustomerInfo+ActiveTransaction.swift */,
 				57CD17262D9D830F00B4B667 /* CustomerCenterConfigDataSupport+URL.swift */,
 				35D41B422D403550000621C7 /* Store+Localization.swift */,
@@ -7045,6 +7051,7 @@
 				353756672C382C2800A1B8D6 /* PurchaseInformation.swift in Sources */,
 				887A60682C1D037000E1A461 /* TemplateError.swift in Sources */,
 				887A60792C1D037000E1A461 /* UserInterfaceIdiom.swift in Sources */,
+				57412F5A2DD23CE900F0F677 /* Transaction+AcceptedOffer.swift in Sources */,
 				03C06FCC2D479C7C00600693 /* CarouselComponentViewModel.swift in Sources */,
 				35D41B432D403556000621C7 /* Store+Localization.swift in Sources */,
 				887A60742C1D037000E1A461 /* Strings.swift in Sources */,
@@ -7132,6 +7139,7 @@
 				887A60842C1D037000E1A461 /* ConsistentPackageContentView.swift in Sources */,
 				887A60C42C1D037000E1A461 /* IconView.swift in Sources */,
 				887A60732C1D037000E1A461 /* ProcessedLocalizedConfiguration.swift in Sources */,
+				57412F572DD2382500F0F677 /* AppliedTransactionOffer.swift in Sources */,
 				574CBC842D944D7100B8B9FA /* CustomerCenterView+Actions.swift in Sources */,
 				570A671E2DD2026600DEBABE /* Transaction.swift in Sources */,
 				574CBC852D944D7100B8B9FA /* CustomerCenter+PreferenceKeys.swift in Sources */,

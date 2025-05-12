@@ -58,8 +58,10 @@ public final class SubscriptionPeriod: NSObject {
             .normalized()
     }
 
+    // swiftlint:disable missing_docs
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8, *)
-    static func from(sk2SubscriptionPeriod: StoreKit.Product.SubscriptionPeriod) -> SubscriptionPeriod? {
+    @_spi(Internal) public static func from(
+        sk2SubscriptionPeriod: StoreKit.Product.SubscriptionPeriod) -> SubscriptionPeriod? {
         guard let unit = SubscriptionPeriod.Unit.from(sk2PeriodUnit: sk2SubscriptionPeriod.unit) else {
             return nil
         }
@@ -67,6 +69,7 @@ public final class SubscriptionPeriod: NSObject {
         return .init(value: sk2SubscriptionPeriod.value, unit: unit)
             .normalized()
     }
+    // swiftlint:enable missing_docs
 
     public override func isEqual(_ object: Any?) -> Bool {
         guard let other = object as? SubscriptionPeriod else { return false }

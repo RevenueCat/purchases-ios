@@ -15,6 +15,7 @@
 
 import Foundation
 import RevenueCat
+import StoreKit
 
 #if os(iOS)
 
@@ -204,6 +205,9 @@ private extension CustomerCenterViewModel {
                                    customerInfo: CustomerInfo) async throws -> PurchaseInformation {
         if transaction.store == .appStore {
             if let product = await purchasesProvider.products([transaction.productIdentifier]).first {
+                let latestTransaction = await StoreKit.Transaction.latest(for: transaction.productIdentifier)
+                let appliedOffer = try? latestTransaction?.payloadValue.acceptedOffer
+
                 return await PurchaseInformation.purchaseInformationUsingRenewalInfo(
                     entitlement: entitlement,
                     subscribedProduct: product,
