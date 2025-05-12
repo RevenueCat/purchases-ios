@@ -176,8 +176,8 @@ struct FeedbackSurveyButtonsView: View {
                     actionWrapper: .init(),
                     isPresented: .constant(true)
                 )
-                .environment(\.localization, CustomerCenterConfigData.default.localization)
-                .environment(\.appearance, CustomerCenterConfigData.default.appearance)
+                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
+                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Monthly renewing - \(colorScheme)")

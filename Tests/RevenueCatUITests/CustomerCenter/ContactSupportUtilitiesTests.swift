@@ -20,7 +20,7 @@ import XCTest
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-final class ContactSupportUtilitiesTest: TestCase {
+class ContactSupportUtilitiesTest: TestCase {
 
     private let support: CustomerCenterConfigData.Support = .init(
         email: "support@example.com",
