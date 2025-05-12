@@ -44,7 +44,7 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
                                              price: 2.99)],
         showManageSubscriptionsError: Error? = nil,
         beginRefundShouldFail: Bool = false,
-        customerCenterConfigData: CustomerCenterConfigData = CustomerCenterConfigTestData.customerCenterData(
+        customerCenterConfigData: CustomerCenterConfigData = CustomerCenterConfigData.mock(
             lastPublishedAppVersion: "2.0.0"
         )
     ) {

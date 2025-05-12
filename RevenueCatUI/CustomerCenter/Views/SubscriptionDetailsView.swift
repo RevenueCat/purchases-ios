@@ -216,7 +216,7 @@ struct SubscriptionDetailsView_Previews: PreviewProvider {
     static var previews: some View {
         ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
             SubscriptionDetailsView(
-                purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
+                purchaseInformation: CustomerCenterConfigData.subscriptionInformationMonthlyRenewing,
                 refundRequestStatus: .success
             )
             .preferredColorScheme(colorScheme)

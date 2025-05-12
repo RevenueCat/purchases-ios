@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  CustomerCenterConfigTestData.swift
+//  CustomerCenterConfigData+Mock.swift
 //
 //
 //  Created by Cesar de la Vega on 28/5/24.
@@ -17,18 +17,20 @@ import Foundation
 import RevenueCat
 
 // swiftlint:disable force_unwrapping
-enum CustomerCenterConfigTestData {
+extension CustomerCenterConfigData {
 
     @available(iOS 14.0, *)
     // swiftlint:disable:next function_body_length
-    static func customerCenterData(
-        lastPublishedAppVersion: String?,
+    static func mock(
+        lastPublishedAppVersion: String? = "1.0.0",
         shouldWarnCustomerToUpdate: Bool = false,
         displayPurchaseHistoryLink: Bool = false,
-        refundWindowDuration: CustomerCenterConfigData.HelpPath.RefundWindowDuration = .forever
+        refundWindowDuration: CustomerCenterConfigData.HelpPath.RefundWindowDuration = .forever,
+        shouldWarnCustomersAboutMultipleSubscriptions: Bool = false
     ) -> CustomerCenterConfigData {
         CustomerCenterConfigData(
-            screens: [.management:
+            screens: [
+                .management:
                     .init(
                         type: .management,
                         title: "Manage Subscription",
@@ -126,7 +128,7 @@ enum CustomerCenterConfigTestData {
                 email: "test-support@revenuecat.com",
                 shouldWarnCustomerToUpdate: shouldWarnCustomerToUpdate,
                 displayPurchaseHistoryLink: displayPurchaseHistoryLink,
-                shouldWarnCustomersAboutMultipleSubscriptions: false
+                shouldWarnCustomersAboutMultipleSubscriptions: shouldWarnCustomersAboutMultipleSubscriptions
             ),
             lastPublishedAppVersion: lastPublishedAppVersion,
             productId: 1
@@ -134,15 +136,7 @@ enum CustomerCenterConfigTestData {
     }
 
     @available(iOS 14.0, *)
-    static let customerCenterData = customerCenterData(lastPublishedAppVersion: "1.0.0")
-
-    static let standardAppearance = CustomerCenterConfigData.Appearance(
-        accentColor: .init(light: "#007AFF", dark: "#007AFF"),
-        textColor: .init(light: "#000000", dark: "#ffffff"),
-        backgroundColor: .init(light: "#f5f5f7", dark: "#000000"),
-        buttonTextColor: .init(light: "#ffffff", dark: "#000000"),
-        buttonBackgroundColor: .init(light: "#287aff", dark: "#287aff")
-    )
+    static let `default` = mock()
 
     static let subscriptionInformationMonthlyRenewing: PurchaseInformation = .init(
         title: "Basic",
@@ -178,22 +172,24 @@ enum CustomerCenterConfigTestData {
         managementURL: URL(string: "https://www.revenuecat.com")!
     )
 
-    static let subscriptionInformationYearlyExpiring: PurchaseInformation = .init(
-        title: "Basic",
-        durationTitle: "Yearly",
-        explanation: .earliestRenewal,
-        price: .paid("$49.99"),
-        expirationOrRenewal: .init(label: .expires,
-                                   date: .date("June 1st, 2024")),
-        productIdentifier: "product_id",
-        store: .appStore,
-        isLifetime: false,
-        isTrial: false,
-        isCancelled: false,
-        latestPurchaseDate: nil,
-        customerInfoRequestedDate: Date(),
-        managementURL: URL(string: "https://www.revenuecat.com")!
-    )
+    static func subscriptionInformationYearlyExpiring(store: Store = .appStore) -> PurchaseInformation {
+        PurchaseInformation(
+            title: "Basic",
+            durationTitle: "Yearly",
+            explanation: .earliestRenewal,
+            price: .paid("$49.99"),
+            expirationOrRenewal: .init(label: .expires,
+                                       date: .date("June 1st, 2024")),
+            productIdentifier: "product_id",
+            store: store,
+            isLifetime: false,
+            isTrial: false,
+            isCancelled: false,
+            latestPurchaseDate: nil,
+            customerInfoRequestedDate: Date(),
+            managementURL: URL(string: "https://www.revenuecat.com")!
+        )
+    }
 
     static let consumable: PurchaseInformation = .init(
         title: "Basic",
@@ -209,6 +205,14 @@ enum CustomerCenterConfigTestData {
         latestPurchaseDate: Date(),
         customerInfoRequestedDate: Date(),
         managementURL: URL(string: "https://www.revenuecat.com")!
+    )
+
+    static let standardAppearance = CustomerCenterConfigData.Appearance(
+        accentColor: .init(light: "#007AFF", dark: "#007AFF"),
+        textColor: .init(light: "#000000", dark: "#ffffff"),
+        backgroundColor: .init(light: "#f5f5f7", dark: "#000000"),
+        buttonTextColor: .init(light: "#ffffff", dark: "#000000"),
+        buttonBackgroundColor: .init(light: "#287aff", dark: "#287aff")
     )
 
 }
