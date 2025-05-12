@@ -135,7 +135,7 @@ extension CustomerCenterConfigData {
     }
 
     @available(iOS 14.0, *)
-    static let `default` = mock(lastPublishedAppVersion: "1.0.0")
+    static let `default` = mock()
 
     static let subscriptionInformationMonthlyRenewing: PurchaseInformation = .init(
         title: "Basic",

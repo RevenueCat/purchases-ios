@@ -754,7 +754,7 @@ final class CustomerCenterViewModelTests: TestCase {
                     currentVersionFetcher: { return currentVersion }
                 )
                 viewModel.state = .success
-                viewModel.configuration = CustomerCenterConfigData.default(
+                viewModel.configuration = CustomerCenterConfigData.mock(
                     lastPublishedAppVersion: latestVersion
                 )
 
@@ -802,7 +802,7 @@ final class CustomerCenterViewModelTests: TestCase {
             currentVersionFetcher: { return currentVersion },
             purchasesProvider: mockPurchases
         )
-        viewModel.configuration = CustomerCenterConfigData.default(
+        viewModel.configuration = CustomerCenterConfigData.mock(
             lastPublishedAppVersion: latestVersion,
             shouldWarnCustomerToUpdate: true
         )
@@ -818,7 +818,7 @@ final class CustomerCenterViewModelTests: TestCase {
             currentVersionFetcher: { return latestVersion },
             purchasesProvider: mockPurchases
         )
-        viewModel.configuration = CustomerCenterConfigData.default(
+        viewModel.configuration = CustomerCenterConfigData.mock(
             lastPublishedAppVersion: latestVersion,
             shouldWarnCustomerToUpdate: true
         )
@@ -834,7 +834,7 @@ final class CustomerCenterViewModelTests: TestCase {
             currentVersionFetcher: { return latestVersion },
             purchasesProvider: mockPurchases
         )
-        viewModel.configuration = CustomerCenterConfigData.default(
+        viewModel.configuration = CustomerCenterConfigData.mock(
             lastPublishedAppVersion: latestVersion,
             shouldWarnCustomerToUpdate: false
         )

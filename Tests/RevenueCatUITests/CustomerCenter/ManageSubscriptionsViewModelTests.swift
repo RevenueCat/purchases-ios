@@ -474,7 +474,7 @@ private extension ManageSubscriptionsViewModelTests {
     static func managementScreen(
         refundWindowDuration: CustomerCenterConfigData.HelpPath.RefundWindowDuration
     ) -> CustomerCenterConfigData.Screen {
-        CustomerCenterConfigData.default(
+        CustomerCenterConfigData.mock(
             lastPublishedAppVersion: "1.0.0",
             refundWindowDuration: refundWindowDuration).screens[.management]!
     }
