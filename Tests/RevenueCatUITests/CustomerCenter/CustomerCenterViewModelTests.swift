@@ -66,7 +66,7 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(viewModel.state) == .notLoaded
 
         viewModel.state = .success
-        viewModel.configuration = CustomerCenterConfigTestData.customerCenterData
+        viewModel.configuration = CustomerCenterConfigData.default
 
         expect(viewModel.state) == .success
     }
@@ -754,7 +754,7 @@ final class CustomerCenterViewModelTests: TestCase {
                     currentVersionFetcher: { return currentVersion }
                 )
                 viewModel.state = .success
-                viewModel.configuration = CustomerCenterConfigTestData.customerCenterData(
+                viewModel.configuration = CustomerCenterConfigData.default(
                     lastPublishedAppVersion: latestVersion
                 )
 
@@ -802,7 +802,7 @@ final class CustomerCenterViewModelTests: TestCase {
             currentVersionFetcher: { return currentVersion },
             purchasesProvider: mockPurchases
         )
-        viewModel.configuration = CustomerCenterConfigTestData.customerCenterData(
+        viewModel.configuration = CustomerCenterConfigData.default(
             lastPublishedAppVersion: latestVersion,
             shouldWarnCustomerToUpdate: true
         )
@@ -818,7 +818,7 @@ final class CustomerCenterViewModelTests: TestCase {
             currentVersionFetcher: { return latestVersion },
             purchasesProvider: mockPurchases
         )
-        viewModel.configuration = CustomerCenterConfigTestData.customerCenterData(
+        viewModel.configuration = CustomerCenterConfigData.default(
             lastPublishedAppVersion: latestVersion,
             shouldWarnCustomerToUpdate: true
         )
@@ -834,7 +834,7 @@ final class CustomerCenterViewModelTests: TestCase {
             currentVersionFetcher: { return latestVersion },
             purchasesProvider: mockPurchases
         )
-        viewModel.configuration = CustomerCenterConfigTestData.customerCenterData(
+        viewModel.configuration = CustomerCenterConfigData.default(
             lastPublishedAppVersion: latestVersion,
             shouldWarnCustomerToUpdate: false
         )

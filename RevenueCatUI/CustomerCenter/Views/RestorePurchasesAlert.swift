@@ -299,15 +299,15 @@ private struct PreviewContainer: View {
 
     var body: some View {
         let purchaseInformationApple =
-        CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing
+        CustomerCenterConfigData.subscriptionInformationMonthlyRenewing
         let viewModelApple = CustomerCenterViewModel(purchaseInformation: purchaseInformationApple,
-                                                     configuration: CustomerCenterConfigTestData.customerCenterData)
+                                                     configuration: CustomerCenterConfigData.default)
 
         RestorePurchasesAlert(
             isPresented: $isPresented,
             viewModel: MockRestorePurchasesAlertViewModel(alertType: alertType)
         )
-        .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
+        .environment(\.localization, CustomerCenterConfigData.default.localization)
         .environmentObject(viewModelApple)
         .emergeRenderingMode(.window)
     }

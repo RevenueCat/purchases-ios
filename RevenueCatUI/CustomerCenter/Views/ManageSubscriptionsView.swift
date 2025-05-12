@@ -197,62 +197,62 @@ struct ManageSubscriptionsView: View {
         ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
             CompatibilityNavigationStack {
                 let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
-                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                    screen: CustomerCenterConfigData.default.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
-                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
+                    purchaseInformation: CustomerCenterConfigData.subscriptionInformationMonthlyRenewing,
                     refundRequestStatus: .success,
                     purchasesProvider: CustomerCenterPurchases())
                 ManageSubscriptionsView(
-                    purchaseInformation: .constant(CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing),
+                    purchaseInformation: .constant(CustomerCenterConfigData.subscriptionInformationMonthlyRenewing),
                     viewModel: viewModelMonthlyRenewing
                 )
-                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
-                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+                .environment(\.localization, CustomerCenterConfigData.default.localization)
+                .environment(\.appearance, CustomerCenterConfigData.default.appearance)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Monthly renewing - \(colorScheme)")
 
             CompatibilityNavigationStack {
                 let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
-                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                    screen: CustomerCenterConfigData.default.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
-                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring,
+                    purchaseInformation: CustomerCenterConfigData.subscriptionInformationYearlyExpiring(),
                     purchasesProvider: CustomerCenterPurchases())
                 ManageSubscriptionsView(
-                    purchaseInformation: .constant(CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring),
+                    purchaseInformation: .constant(CustomerCenterConfigData.subscriptionInformationYearlyExpiring()),
                     viewModel: viewModelYearlyExpiring)
-                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
-                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+                .environment(\.localization, CustomerCenterConfigData.default.localization)
+                .environment(\.appearance, CustomerCenterConfigData.default.appearance)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Yearly expiring - \(colorScheme)")
 
             CompatibilityNavigationStack {
                 let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
-                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                    screen: CustomerCenterConfigData.default.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
-                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationFree,
+                    purchaseInformation: CustomerCenterConfigData.subscriptionInformationFree,
                     purchasesProvider: CustomerCenterPurchases())
                 ManageSubscriptionsView(
-                    purchaseInformation: .constant(CustomerCenterConfigTestData.subscriptionInformationFree),
+                    purchaseInformation: .constant(CustomerCenterConfigData.subscriptionInformationFree),
                     viewModel: viewModelYearlyExpiring)
-                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
-                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+                .environment(\.localization, CustomerCenterConfigData.default.localization)
+                .environment(\.appearance, CustomerCenterConfigData.default.appearance)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Free subscription - \(colorScheme)")
 
             CompatibilityNavigationStack {
                 let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
-                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                    screen: CustomerCenterConfigData.default.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
-                    purchaseInformation: CustomerCenterConfigTestData.consumable,
+                    purchaseInformation: CustomerCenterConfigData.consumable,
                     purchasesProvider: CustomerCenterPurchases())
                 ManageSubscriptionsView(
-                    purchaseInformation: .constant(CustomerCenterConfigTestData.consumable),
+                    purchaseInformation: .constant(CustomerCenterConfigData.consumable),
                     viewModel: viewModelYearlyExpiring)
-                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
-                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+                .environment(\.localization, CustomerCenterConfigData.default.localization)
+                .environment(\.appearance, CustomerCenterConfigData.default.appearance)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Consumable - \(colorScheme)")

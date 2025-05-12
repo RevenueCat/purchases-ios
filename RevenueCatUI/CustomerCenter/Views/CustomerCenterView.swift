@@ -268,9 +268,9 @@ struct CustomerCenterView_Previews: PreviewProvider {
 
     static var previews: some View {
         let purchaseInformationApple =
-        CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing
+        CustomerCenterConfigData.subscriptionInformationMonthlyRenewing
         let viewModelApple = CustomerCenterViewModel(purchaseInformation: purchaseInformationApple,
-                                                     configuration: CustomerCenterConfigTestData.customerCenterData)
+                                                     configuration: CustomerCenterConfigData.default)
         CustomerCenterView(viewModel: viewModelApple)
             .previewDisplayName("Monthly Apple")
     }
