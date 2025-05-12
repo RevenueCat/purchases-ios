@@ -142,7 +142,6 @@ public struct CustomerCenterConfigData: Equatable {
             case storeExternal = "store_external"
             case storeUnknownStore = "store_unknown"
             case debugHeaderTitle = "Debug"
-            case cancelledSubscritionTitle = "cancelled_subscription_title"
             case youMayHaveDuplicatedSubscriptionsTitle = "you_may_have_duplicated_subscriptions_title"
             case youMayHaveDuplicatedSubscriptionsSubtitle = "you_may_have_duplicated_subscriptions_subtitle"
             case pricePaid = "price_paid"
@@ -336,8 +335,6 @@ public struct CustomerCenterConfigData: Equatable {
                     return "Unknown Store"
                 case .debugHeaderTitle:
                     return "Debug"
-                case .cancelledSubscritionTitle:
-                    return "You've cancelled your subscription"
                 case .youMayHaveDuplicatedSubscriptionsTitle:
                     return "You may have duplicated subscriptions"
                 case .youMayHaveDuplicatedSubscriptionsSubtitle:
