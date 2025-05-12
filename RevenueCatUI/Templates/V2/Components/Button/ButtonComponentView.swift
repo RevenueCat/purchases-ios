@@ -22,6 +22,7 @@ struct ButtonComponentView: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.openSheet) private var openSheet
     @State private var inAppBrowserURL: URL?
+    @State private var inAppBrowserDidDisappearCompletion: (() -> Void)?
     @State private var showCustomerCenter = false
     @State private var showingWebPaywallLinkAlert = false
 
@@ -75,6 +76,11 @@ struct ButtonComponentView: View {
             #if canImport(SafariServices) && canImport(UIKit)
             .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
                 SafariView(url: self.inAppBrowserURL!)
+            }
+            .onChange(of: self.inAppBrowserURL) { inAppBrowserURL in
+                guard inAppBrowserURL == nil else { return }
+                inAppBrowserDidDisappearCompletion?()
+                inAppBrowserDidDisappearCompletion = nil
             }
             #if os(iOS)
             .presentCustomerCenter(isPresented: self.$showCustomerCenter, onDismiss: {
@@ -135,7 +141,7 @@ struct ButtonComponentView: View {
         }
     }
 
-    private func navigateToUrl(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) {
+    private func navigateToUrl(url: URL, method: PaywallComponent.ButtonComponent.URLMethod, completion: (() -> Void)? = nil) {
         switch method {
         case .inAppBrowser:
 #if os(tvOS)
@@ -147,14 +153,17 @@ struct ButtonComponentView: View {
                 } else {
                     Logger.error(Strings.failed_to_open_url_external_browser(url.absoluteString))
                 }
+                completion?()
             }
 #else
+            inAppBrowserDidDisappearCompletion = completion
             inAppBrowserURL = url
 #endif
         case .externalBrowser:
 #if os(watchOS)
             // watchOS doesn't support openURL with a completion handler, so we're just opening the URL.
             openURL(url)
+            completion?()
 #else
             openURL(url) { success in
                 if success {
@@ -162,12 +171,14 @@ struct ButtonComponentView: View {
                 } else {
                     Logger.error(Strings.failed_to_open_url_external_browser(url.absoluteString))
                 }
+                completion?()
             }
 #endif
         case .deepLink:
 #if os(watchOS)
             // watchOS doesn't support openURL with a completion handler, so we're just opening the URL.
             openURL(url)
+            completion?()
 #else
             openURL(url) { success in
                 if success {
@@ -175,28 +186,51 @@ struct ButtonComponentView: View {
                 } else {
                     Logger.error(Strings.failed_to_open_url_deep_link(url.absoluteString))
                 }
+                completion?()
             }
 #endif
         case .unknown:
-            break
+            completion?()
         }
     }
 
     private func openWebPaywallLink(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) {
-        Purchases.shared.invalidateCustomerInfoCache()
-#if os(watchOS)
-        // watchOS doesn't support openURL with a completion handler, so we're just opening the URL.
-        openURL(url)
-#else
-        openURL(url) { success in
-            if success {
-                Logger.debug(Strings.successfully_opened_url_external_browser(url.absoluteString))
-            } else {
-                Logger.error(Strings.failed_to_open_url_external_browser(url.absoluteString))
+        switch method {
+        case .inAppBrowser:
+                Task {
+                    let prevCustomerInfo = try? await Purchases.shared.customerInfo(fetchPolicy: .fromCacheOnly)
+                    navigateToUrl(url: url, method: method) {
+                        self.onInAppBroserWebPaywallLinkClosed(previousCustomerInfo: prevCustomerInfo)
+                    }
+                }
+        case .externalBrowser, .deepLink, .unknown:
+            Purchases.shared.invalidateCustomerInfoCache()
+            navigateToUrl(url: url, method: method, completion: onDismiss)
+        }
+    }
+
+    private func onInAppBroserWebPaywallLinkClosed(previousCustomerInfo: CustomerInfo?) {
+        Task {
+            guard let newCustomerInfo = try? await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent) else {
+                onDismiss()
+                return
+            }
+
+            let prevRCBillingEntitlements = previousCustomerInfo?.entitlements.all ?? [:]
+            let prevRCBillingEntitlementIDs = Set(
+                prevRCBillingEntitlements.filter { _, entitlementInfo in
+                    entitlementInfo.store == .rcBilling
+                }.map { $0.key }
+            )
+            let hasNewActiveRCBillingEntitlement = newCustomerInfo.entitlements.all
+                .contains { (entitlementID, entitlementInfo) in
+                    !prevRCBillingEntitlementIDs.contains(entitlementID) && entitlementInfo.store == .rcBilling
+            }
+            if hasNewActiveRCBillingEntitlement {
+                // The user has a new active RC Billing entitlement, so we assume that the purchase was completed.
+                self.onDismiss()
             }
         }
-#endif
-        onDismiss()
     }
 }
 
