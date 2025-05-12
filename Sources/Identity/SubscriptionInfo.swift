@@ -75,9 +75,6 @@ import Foundation
     /// Paid price for the subscription
     @objc public let price: ProductPaidPrice?
 
-    /// Management purchase URL
-    @_spi(Internal) public let managementURL: URL?
-
     init(productIdentifier: String,
          purchaseDate: Date,
          originalPurchaseDate: Date?,
@@ -92,8 +89,7 @@ import Foundation
          refundedAt: Date?,
          storeTransactionId: String?,
          requestDate: Date,
-         price: ProductPaidPrice?,
-         managementURL: URL?) {
+         price: ProductPaidPrice?) {
         self.productIdentifier = productIdentifier
         self.purchaseDate = purchaseDate
         self.originalPurchaseDate = originalPurchaseDate
@@ -114,7 +110,6 @@ import Foundation
                                                                      billingIssueDetectedAt: billingIssuesDetectedAt,
                                                                      periodType: periodType)
         self.price = price
-        self.managementURL = managementURL
 
         super.init()
     }
@@ -135,8 +130,7 @@ import Foundation
             refundedAt: \(String(describing: refundedAt)),
             storeTransactionId: \(String(describing: storeTransactionId)),
             isActive: \(isActive),
-            willRenew: \(willRenew),
-            managementURL: \(String(describing: managementURL)),
+            willRenew: \(willRenew)
         }
         """
     }

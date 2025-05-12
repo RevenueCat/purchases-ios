@@ -77,6 +77,7 @@ enum Strings {
     case active_product_is_not_apple_loading_without_product_information(Store)
     case could_not_find_product_loading_without_product_information(String)
     case promo_offer_not_eligible_for_product(String, String)
+
 }
 
 extension Strings: CustomStringConvertible {

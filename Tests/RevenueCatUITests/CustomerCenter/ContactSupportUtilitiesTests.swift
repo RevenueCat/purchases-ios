@@ -20,13 +20,12 @@ import XCTest
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-final class ContactSupportUtilitiesTest: TestCase {
+class ContactSupportUtilitiesTest: TestCase {
 
     private let support: CustomerCenterConfigData.Support = .init(
         email: "support@example.com",
         shouldWarnCustomerToUpdate: false,
-        displayPurchaseHistoryLink: false,
-        shouldWarnCustomersAboutMultipleSubscriptions: false
+        displayPurchaseHistoryLink: false
     )
     private let localization: CustomerCenterConfigData.Localization = .init(locale: "en_US", localizedStrings: [:])
 

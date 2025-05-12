@@ -70,9 +70,6 @@ extension CustomerInfoResponse {
 
         /// Price paid for the subscription
         var price: PurchasePaidPrice?
-
-        /// Management URL for the purchase
-        var managementUrl: URL?
     }
 
     struct PurchasePaidPrice {
