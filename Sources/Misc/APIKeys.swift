@@ -60,8 +60,9 @@ extension Purchases.APIKeys: CustomDebugStringConvertible {
     var debugDescription: String {
         return """
         APIKeys(
-            apiKey: '\(apiKey)',
+            apiKey: '\(apiKey)'
             webBillingAPIKey: '\(webBillingAPIKey ?? "<nil>")'
+        )
         """
     }
 }
