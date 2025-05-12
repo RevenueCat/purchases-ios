@@ -16,6 +16,7 @@
 import Foundation
 import RevenueCat
 
+// swiftlint:disable force_unwrapping
 extension CustomerCenterConfigData {
 
     @available(iOS 14.0, *)
@@ -150,7 +151,8 @@ extension CustomerCenterConfigData {
         isTrial: false,
         isCancelled: false,
         latestPurchaseDate: nil,
-        customerInfoRequestedDate: Date()
+        customerInfoRequestedDate: Date(),
+        managementURL: URL(string: "https://www.revenuecat.com")!
     )
 
     static let subscriptionInformationFree: PurchaseInformation = .init(
@@ -166,7 +168,8 @@ extension CustomerCenterConfigData {
         isTrial: false,
         isCancelled: false,
         latestPurchaseDate: nil,
-        customerInfoRequestedDate: Date()
+        customerInfoRequestedDate: Date(),
+        managementURL: URL(string: "https://www.revenuecat.com")!
     )
 
     static func subscriptionInformationYearlyExpiring(store: Store = .appStore) -> PurchaseInformation {
@@ -183,7 +186,8 @@ extension CustomerCenterConfigData {
             isTrial: false,
             isCancelled: false,
             latestPurchaseDate: nil,
-            customerInfoRequestedDate: Date()
+            customerInfoRequestedDate: Date(),
+            managementURL: URL(string: "https://www.revenuecat.com")!
         )
     }
 
@@ -199,7 +203,8 @@ extension CustomerCenterConfigData {
         isTrial: false,
         isCancelled: false,
         latestPurchaseDate: Date(),
-        customerInfoRequestedDate: Date()
+        customerInfoRequestedDate: Date(),
+        managementURL: URL(string: "https://www.revenuecat.com")!
     )
 
     static let standardAppearance = CustomerCenterConfigData.Appearance(
