@@ -28,7 +28,7 @@ extension CustomerInfo {
     /// - Note: This is a **temporary** implementation and should eventually be replaced by
     ///         backend-side logic for consistency and accuracy.
     ///
-    func earliestExpiringTransaction() -> RevenueCatUI.Transaction? {
+    func earliestExpiringTransaction() -> Transaction? {
         let activeSubscriptions = subscriptionsByProductIdentifier.values
             .filter(\.isActive)
             .sorted(by: {

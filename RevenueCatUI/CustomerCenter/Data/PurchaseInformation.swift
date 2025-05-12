@@ -14,10 +14,10 @@
 //
 
 import Foundation
-@_spi(Internal) import RevenueCat
+import RevenueCat
 import StoreKit
 
-// swiftlint:disable nesting file_length
+// swiftlint:disable nesting
 
 /// Information about a purchase.
 struct PurchaseInformation {
@@ -54,7 +54,7 @@ struct PurchaseInformation {
     /// - `false` for purchases outside the trial period.
     let isTrial: Bool
 
-    /// Indicates wheter the purchased subscripcion is cancelled
+    /// Indicates whether the purchased subscription is cancelled
     /// - `true` if the subscription is user-cancelled
     /// - `false` if the subscription is not user-cancelled
     ///
@@ -62,19 +62,7 @@ struct PurchaseInformation {
     let isCancelled: Bool
 
     let latestPurchaseDate: Date?
-
-    /// The fetch date of this CustomerInfo. (a.k.a. CustomerInfo.requestedDate)
     let customerInfoRequestedDate: Date
-
-    let introductoryDiscount: StoreProductDiscountType?
-
-    let expirationDate: Date?
-
-    let renewalDate: Date?
-
-    private let dateFormatter: DateFormatter
-
-    let managePurchaseURL: URL?
 
     init(title: String,
          durationTitle: String?,
@@ -85,13 +73,9 @@ struct PurchaseInformation {
          store: Store,
          isLifetime: Bool,
          isTrial: Bool,
+         isCancelled: Bool,
          latestPurchaseDate: Date?,
-         customerInfoRequestedDate: Date,
-         isCancelled: Bool = false,
-         introductoryDiscount: StoreProductDiscountType? = nil,
-         expirationDate: Date? = nil,
-         renewalDate: Date? = nil,
-         managePurchaseURL: URL?
+         customerInfoRequestedDate: Date
     ) {
         self.title = title
         self.durationTitle = durationTitle
@@ -105,30 +89,21 @@ struct PurchaseInformation {
         self.isCancelled = isCancelled
         self.latestPurchaseDate = latestPurchaseDate
         self.customerInfoRequestedDate = customerInfoRequestedDate
-        self.introductoryDiscount = introductoryDiscount
-        self.expirationDate = expirationDate
-        self.renewalDate = renewalDate
-        self.dateFormatter = Self.defaultDateFormatter
-        self.managePurchaseURL = managePurchaseURL
     }
 
     // swiftlint:disable:next function_body_length
     init(entitlement: EntitlementInfo? = nil,
-         storeProduct: StoreProduct? = nil,
+         subscribedProduct: StoreProduct? = nil,
          transaction: Transaction,
          renewalPrice: PriceDetails? = nil,
          customerInfoRequestedDate: Date,
-         managePurchaseURL: URL?,
-         dateFormatter: DateFormatter = Self.defaultDateFormatter
-    ) {
+         dateFormatter: DateFormatter = DateFormatter()) {
         dateFormatter.dateStyle = .medium
 
         // Title and duration from product if available
-        self.title = storeProduct?.localizedTitle
-        self.durationTitle = storeProduct?.subscriptionPeriod?.durationTitle
+        self.title = subscribedProduct?.localizedTitle
+        self.durationTitle = subscribedProduct?.subscriptionPeriod?.durationTitle
         self.customerInfoRequestedDate = customerInfoRequestedDate
-        self.introductoryDiscount = storeProduct?.introductoryDiscount
-        self.managePurchaseURL = managePurchaseURL
 
         // Use entitlement data if available, otherwise derive from transaction
         if let entitlement = entitlement {
@@ -139,15 +114,12 @@ struct PurchaseInformation {
             if let renewalPrice {
                 self.price = renewalPrice
             } else {
-                self.price = entitlement.priceBestEffort(product: storeProduct)
+                self.price = entitlement.priceBestEffort(product: subscribedProduct)
             }
             self.isLifetime = entitlement.expirationDate == nil
-
             self.isTrial = entitlement.periodType == .trial
             self.isCancelled = entitlement.isCancelled
             self.latestPurchaseDate = entitlement.latestPurchaseDate
-            self.expirationDate = entitlement.expirationDate
-            self.renewalDate = entitlement.willRenew ? entitlement.expirationDate : nil
         } else {
             switch transaction.type {
             case let .subscription(isActive, willRenew, expiresDate, isTrial):
@@ -163,17 +135,12 @@ struct PurchaseInformation {
                 }
                 self.isLifetime = false
                 self.isTrial = isTrial
-
-                self.expirationDate = expiresDate
-                self.renewalDate = willRenew ? expiresDate : nil
                 self.latestPurchaseDate = (transaction as? RevenueCat.SubscriptionInfo)?.purchaseDate
 
             case .nonSubscription:
                 self.explanation = .lifetime
                 self.expirationOrRenewal = nil
                 self.isLifetime = true
-                self.renewalDate = nil
-                self.expirationDate = nil
                 self.isTrial = false
                 self.latestPurchaseDate = (transaction as? NonSubscriptionTransaction)?.purchaseDate
             }
@@ -188,15 +155,13 @@ struct PurchaseInformation {
                 if let renewalPrice {
                     self.price = renewalPrice
                 } else {
-                    self.price = storeProduct.map { .paid($0.localizedPriceString) } ?? .unknown
+                    self.price = subscribedProduct.map { .paid($0.localizedPriceString) } ?? .unknown
                 }
             }
         }
-
-        self.dateFormatter = dateFormatter
     }
 
-    struct ExpirationOrRenewal: Equatable {
+    struct ExpirationOrRenewal {
         let label: Label
         let date: Date
 
@@ -231,11 +196,6 @@ struct PurchaseInformation {
         case lifetime
     }
 
-    private static let defaultDateFormatter: DateFormatter = {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateStyle = .medium
-        return dateFormatter
-    }()
 }
 // swiftlint:enable nesting
 
@@ -256,23 +216,21 @@ extension PurchaseInformation {
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
     static func purchaseInformationUsingRenewalInfo(
         entitlement: EntitlementInfo? = nil,
-        storeProduct: StoreProduct,
+        subscribedProduct: StoreProduct,
         transaction: Transaction,
         customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType,
-        customerInfoRequestedDate: Date,
-        managePurchaseURL: URL?
+        customerInfoRequestedDate: Date
     ) async -> PurchaseInformation {
         let renewalPriceDetails = await Self.extractPriceDetailsFromRenewalInfo(
-            forProduct: storeProduct,
+            forProduct: subscribedProduct,
             customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
         )
         return PurchaseInformation(
             entitlement: entitlement,
-            storeProduct: storeProduct,
+            subscribedProduct: subscribedProduct,
             transaction: transaction,
             renewalPrice: renewalPriceDetails,
-            customerInfoRequestedDate: customerInfoRequestedDate,
-            managePurchaseURL: managePurchaseURL
+            customerInfoRequestedDate: customerInfoRequestedDate
         )
     }
 
@@ -294,16 +252,6 @@ extension PurchaseInformation {
         guard let formattedPrice = formatter.string(from: renewalPriceDetails.price as NSNumber) else { return nil }
 
         return .paid(formattedPrice)
-    }
-}
-
-extension PurchaseInformation: Identifiable {
-
-    var id: String {
-        let formatter = ISO8601DateFormatter()
-        let purchaseDateString = latestPurchaseDate.map { formatter.string(from: $0) }
-            ?? formatter.string(from: Date())
-        return "\(productIdentifier)_\(purchaseDateString)"
     }
 }
 
@@ -408,64 +356,41 @@ private extension String {
     func isPromotionalLifetime(store: Store) -> Bool {
         return self.hasSuffix("_lifetime") && store == .promotional
     }
+
 }
 
-extension PurchaseInformation {
+protocol Transaction {
 
-    func billingInformation(localizations: CustomerCenterConfigData.Localization) -> String {
-        guard let expirationDate else {
-            // non subscription
-            return localizations[.pricePaid]
-                .replacingOccurrences(of: "{{ price }}", with: price.billingInformation(localizations: localizations))
-        }
+    var productIdentifier: String { get }
+    var store: Store { get }
+    var type: TransactionType { get }
+    var isCancelled: Bool { get }
+}
 
-        if let introductoryDiscount {
-            if isCancelled {
-                var renewString = "\(introductoryDiscount.localizedPricePerPeriodByPaymentMode(.current))."
-                renewString += localizations[.expiresOnDateWithoutChanges]
-                    .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: expirationDate))
-                return renewString
-            }
+enum TransactionType {
 
-            if introductoryDiscount.paymentMode == .freeTrial {
-                return localizations[.freeTrialUntilDate]
-                    .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: expirationDate))
-            } else {
-                let introPrice = introductoryDiscount.localizedPricePerPeriodByPaymentMode(.current)
-                return "\(introPrice). \(priceAfterDiscount(localizations: localizations))"
-            }
-        } else if isCancelled {
-            return localizations[.expiresOnDateWithoutChanges]
-                .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: expirationDate))
-        } else {
-            switch price {
-            case let .paid(priceString):
-                return localizations[.renewsOnDateForPrice]
-                    .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: expirationDate))
-                    .replacingOccurrences(of: "{{ price }}", with: priceString)
-            case .free, .unknown:
-                return localizations[.renewsOnDate]
-                    .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: expirationDate))
-            }
-        }
+    case subscription(isActive: Bool, willRenew: Bool, expiresDate: Date?, isTrial: Bool)
+    case nonSubscription
+}
+
+extension RevenueCat.SubscriptionInfo: Transaction {
+
+    var type: TransactionType {
+        .subscription(isActive: isActive,
+                      willRenew: willRenew,
+                      expiresDate: expiresDate,
+                      isTrial: periodType == .trial)
     }
 
-    func priceAfterDiscount(localizations: CustomerCenterConfigData.Localization) -> String {
-        return localizations[.priceAfterwards]
-            .replacingOccurrences(of: "{{ price }}", with: price.billingInformation(localizations: localizations))
+    var isCancelled: Bool {
+        unsubscribeDetectedAt != nil && !willRenew
     }
 }
 
-private extension PurchaseInformation.PriceDetails {
-    func billingInformation(localizations: CustomerCenterConfigData.Localization) -> String {
-        switch self {
-        case .free:
-            return localizations[.free]
-        case .paid(let priceString):
-            return priceString
-        case .unknown:
-            return "Unknown"
-        }
+extension NonSubscriptionTransaction: Transaction {
+
+    var type: TransactionType {
+        .nonSubscription
     }
 
     var isCancelled: Bool {
