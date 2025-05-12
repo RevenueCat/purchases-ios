@@ -124,7 +124,8 @@ enum CustomerCenterConfigTestData {
             support: .init(
                 email: "test-support@revenuecat.com",
                 shouldWarnCustomerToUpdate: shouldWarnCustomerToUpdate,
-                displayPurchaseHistoryLink: displayPurchaseHistoryLink
+                displayPurchaseHistoryLink: displayPurchaseHistoryLink,
+                shouldWarnCustomersAboutMultipleSubscriptions: false
             ),
             lastPublishedAppVersion: lastPublishedAppVersion,
             productId: 1
