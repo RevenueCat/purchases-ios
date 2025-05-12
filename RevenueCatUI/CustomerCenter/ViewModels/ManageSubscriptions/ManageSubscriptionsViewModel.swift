@@ -40,7 +40,8 @@ final class ManageSubscriptionsViewModel: BaseManageSubscriptionViewModel {
         activePurchases: [PurchaseInformation] = [],
         refundRequestStatus: RefundRequestStatus? = nil,
         purchasesProvider: CustomerCenterPurchasesType,
-        loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
+        loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil
+    ) {
             self.activePurchases = activePurchases
             super.init(
                 screen: screen,

@@ -137,9 +137,10 @@ struct ManageSubscriptionView: View {
     var content: some View {
         List {
             if let purchaseInformation = self.viewModel.purchaseInformation {
-                SubscriptionDetailsView(
+                PurchaseInformationCardView(
                     purchaseInformation: purchaseInformation,
-                    refundRequestStatus: self.viewModel.refundRequestStatus
+                    showChevron: false,
+                    localization: localization
                 )
 
                 Section {
@@ -234,43 +235,103 @@ struct ManageSubscriptionView: View {
                     viewModel: ManageSubscriptionViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: false,
-                        purchaseInformation: CustomerCenterConfigData.subscriptionInformationMonthlyRenewing
+                        purchaseInformation: .monthlyRenewing
                     )
                 )
             }
             .preferredColorScheme(colorScheme)
-            .previewDisplayName("Monthly renewing - \(colorScheme)")
+            .previewDisplayName("Renewing subscription - No refund - No discount - \(colorScheme)")
 
             CompatibilityNavigationStack {
                 ManageSubscriptionView(
                     viewModel: ManageSubscriptionViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: false,
-                        purchaseInformation: CustomerCenterConfigData.subscriptionInformationYearlyExpiring()
+                        purchaseInformation: PurchaseInformation.yearlyExpiring()
                     )
                 )
             }
             .preferredColorScheme(colorScheme)
-            .previewDisplayName("Yearly expiring - \(colorScheme)")
+            .previewDisplayName("Renewing subscription - No refund - Pay as you go - \(colorScheme)")
 
             CompatibilityNavigationStack {
                 ManageSubscriptionView(
                     viewModel: ManageSubscriptionViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: false,
-                        purchaseInformation: CustomerCenterConfigData.subscriptionInformationFree
+                        purchaseInformation: .yearlyExpiring(
+                            introductoryDiscount: MockStoreProductDiscount.discount(
+                                paymentMode: .payUpFront,
+                                price: 2.99,
+                                subscriptionPeriod: .init(value: 3, unit: .month)
+                            )
+                        )
                     )
                 )
             }
             .preferredColorScheme(colorScheme)
-            .previewDisplayName("Free subscription - \(colorScheme)")
+            .previewDisplayName("Renewing subscription - No refund - Pay up front - \(colorScheme)")
 
             CompatibilityNavigationStack {
                 ManageSubscriptionView(
                     viewModel: ManageSubscriptionViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: false,
-                        purchaseInformation: CustomerCenterConfigData.consumable
+                        purchaseInformation: .yearlyExpiring(
+                            introductoryDiscount: MockStoreProductDiscount.discount(
+                                paymentMode: .freeTrial,
+                                price: 2.99,
+                                subscriptionPeriod: .init(value: 3, unit: .month)
+                            )
+                        )
+                    )
+                )
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Renewing subscription - No refund - Free trial - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                ManageSubscriptionView(
+                    viewModel: ManageSubscriptionViewModel(
+                        screen: CustomerCenterConfigData.default.screens[.management]!,
+                        showPurchaseHistory: false,
+                        purchaseInformation: .yearlyExpiring()
+                    )
+                )
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Renewing subscription - Requested refund - No discount - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                ManageSubscriptionView(
+                    viewModel: ManageSubscriptionViewModel(
+                        screen: CustomerCenterConfigData.default.screens[.management]!,
+                        showPurchaseHistory: true,
+                        purchaseInformation: .yearlyExpiring(isCancelled: true)
+                    )
+                )
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Cancelled subscription - No refund - No discount - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                ManageSubscriptionView(
+                    viewModel: ManageSubscriptionViewModel(
+                        screen: CustomerCenterConfigData.default.screens[.management]!,
+                        showPurchaseHistory: false,
+                        purchaseInformation: PurchaseInformation.subscriptionInformationFree
+                    )
+                )
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Free subscription - No refund - No discount - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                ManageSubscriptionView(
+                    viewModel: ManageSubscriptionViewModel(
+                        screen: CustomerCenterConfigData.default.screens[.management]!,
+                        showPurchaseHistory: false,
+                        purchaseInformation: PurchaseInformation.consumable
                     )
                 )
             }
@@ -282,7 +343,7 @@ struct ManageSubscriptionView: View {
                     viewModel: ManageSubscriptionViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: false,
-                        purchaseInformation: CustomerCenterConfigData.subscriptionInformationYearlyExpiring(
+                        purchaseInformation: PurchaseInformation.yearlyExpiring(
                             store: .playStore)
                     )
                 )
@@ -293,8 +354,7 @@ struct ManageSubscriptionView: View {
         .environment(\.localization, CustomerCenterConfigData.default.localization)
         .environment(\.appearance, CustomerCenterConfigData.default.appearance)
     }
-
- }
+}
 
 #endif
 
