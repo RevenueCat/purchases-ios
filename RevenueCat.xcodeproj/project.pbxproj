@@ -585,6 +585,7 @@
 		572247D127BEC28E00C524A7 /* Array+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 572247D027BEC28E00C524A7 /* Array+Extensions.swift */; };
 		572247F727BF1ADF00C524A7 /* ArrayExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 572247F627BF1ADF00C524A7 /* ArrayExtensionsTests.swift */; };
 		5722482727C2BD3200C524A7 /* LockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5722482627C2BD3200C524A7 /* LockTests.swift */; };
+		572262C02DD348E3006E2B4D /* CustomerCenterLocalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 572262BF2DD348DF006E2B4D /* CustomerCenterLocalization.swift */; };
 		57233AA32D3F976500488B00 /* CustomerCenterLocalizationStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57233AA22D3F975E00488B00 /* CustomerCenterLocalizationStrings.swift */; };
 		5723FBBE28EDE1360003BA16 /* InternalAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5723FBBD28EDE1360003BA16 /* InternalAPI.swift */; };
 		5733B18E27FF586A00EC2045 /* BackendError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5733B18D27FF586A00EC2045 /* BackendError.swift */; };
@@ -1967,6 +1968,7 @@
 		572247D027BEC28E00C524A7 /* Array+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Extensions.swift"; sourceTree = "<group>"; };
 		572247F627BF1ADF00C524A7 /* ArrayExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArrayExtensionsTests.swift; sourceTree = "<group>"; };
 		5722482627C2BD3200C524A7 /* LockTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockTests.swift; sourceTree = "<group>"; };
+		572262BF2DD348DF006E2B4D /* CustomerCenterLocalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterLocalization.swift; sourceTree = "<group>"; };
 		57233AA22D3F975E00488B00 /* CustomerCenterLocalizationStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterLocalizationStrings.swift; sourceTree = "<group>"; };
 		5723FBBD28EDE1360003BA16 /* InternalAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InternalAPI.swift; sourceTree = "<group>"; };
 		5733B18D27FF586A00EC2045 /* BackendError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendError.swift; sourceTree = "<group>"; };
@@ -4042,6 +4044,7 @@
 		3592E8892C2ED54A00D7F91D /* CustomerCenter */ = {
 			isa = PBXGroup;
 			children = (
+				572262BF2DD348DF006E2B4D /* CustomerCenterLocalization.swift */,
 				356523A72CF7719B00B6E3EA /* CustomerCenterPresentationMode.swift */,
 				35F7884C2CC68F5F00080F32 /* Events */,
 				3592E8882C2ED54A00D7F91D /* CustomerCenterConfigData.swift */,
@@ -6254,6 +6257,7 @@
 				9A65E03625918B0500DE00B0 /* ConfigureStrings.swift in Sources */,
 				4FF6E4B92B069B8C000141ED /* HTTPRequest+Signing.swift in Sources */,
 				57488C7729CB90F90000EE7E /* PurchasedProductsFetcher.swift in Sources */,
+				572262C02DD348E3006E2B4D /* CustomerCenterLocalization.swift in Sources */,
 				4F3C986A2A44FA60009AECA3 /* ErrorResponse.swift in Sources */,
 				578C5F2C28DB82DD00A56F02 /* PurchasesDiagnostics.swift in Sources */,
 				537B4B322DA9743800CEFF4C /* HealthReport+Validate.swift in Sources */,

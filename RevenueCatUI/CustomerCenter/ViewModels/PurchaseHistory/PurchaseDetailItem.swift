@@ -45,7 +45,7 @@ enum PurchaseDetailItem: Identifiable {
         case .paidPrice: return .paidPrice
         case .purchaseDate: return .originalDownloadDate
         case .status: return .status
-        case .nextRenewalDate: return .nextRenewalDate
+        case .nextRenewalDate: return .nextRenewal
         case .expiresDate: return .expires
         case .unsubscribeDetectedAt: return .unsubscribedAt
         case .billingIssuesDetectedAt: return .billingIssueDetectedAt
@@ -53,9 +53,9 @@ enum PurchaseDetailItem: Identifiable {
         case .periodType: return .periodType
         case .refundedAtDate: return .refundedAt
         case .store: return .store
-        case .productID: return .productID
+        case .productID: return .productId
         case .sandbox: return .sandbox
-        case .transactionID: return .transactionID
+        case .transactionID: return .transactionId
         }
     }
 

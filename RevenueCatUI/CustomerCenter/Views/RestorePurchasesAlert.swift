@@ -153,7 +153,7 @@ struct RestorePurchasesAlert: View {
         case .purchasesRecovered:
             return localization[.purchasesRecoveredExplanation]
         case .purchasesNotFound:
-            var message = localization[.purchasesNotRecoveredExplanation]
+            var message = localization[.purchasesNotRecovered]
             if customerCenterViewModel.shouldShowAppUpdateWarnings {
                 message += "\n\n" + localization[.updateWarningDescription]
             }

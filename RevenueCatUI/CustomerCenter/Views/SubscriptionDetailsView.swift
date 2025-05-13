@@ -168,7 +168,7 @@ struct SubscriptionDetailsHeader: View {
         case .externalWeb:
             return localization[.webSubscriptionManage]
         case .otherStorePurchase:
-            return localization[.pleaseContactSupportToManage]
+            return localization[.pleaseContactSupport]
         case .amazon:
             return localization[.amazonSubscriptionManage]
         case .rcWebBilling:

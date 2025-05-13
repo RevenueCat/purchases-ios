@@ -131,7 +131,7 @@ struct ManageSubscriptionsView: View {
                         viewModel.showAllPurchases = true
                     } label: {
                         CompatibilityLabeledContent {
-                            Text(localization[.seeAllPurchases])
+                            Text(localization[.screenManagementSeeAllPurchases])
                                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                                 .contentShape(Rectangle())
                         } content: {

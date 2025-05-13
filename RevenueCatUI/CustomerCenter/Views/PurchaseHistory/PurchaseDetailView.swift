@@ -40,7 +40,7 @@ struct PurchaseDetailView: View {
             }
 
             if !viewModel.debugItems.isEmpty {
-                Section(localization[.debugHeaderTitle]) {
+                Section(localization[.restorePurchases]) {
                     ForEach(viewModel.debugItems) { detailItem in
                         CompatibilityLabeledContent(
                             localization[detailItem.label],
@@ -85,8 +85,8 @@ struct PurchaseDetailView: View {
 
         case .sandbox(let value):
             return value
-            ? localization[.answerYes]
-            : localization[.answerNo]
+            ? localization[.yes]
+            : localization[.no]
         }
     }
 }
