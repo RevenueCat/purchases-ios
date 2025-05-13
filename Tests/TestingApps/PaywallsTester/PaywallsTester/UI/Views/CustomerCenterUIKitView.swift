@@ -5,7 +5,7 @@
 //  Created by Will Taylor on 12/6/24.
 //
 
-#if !os(watchOS)
+#if canImport(UIKit) && os(iOS)
 
 import SwiftUI
 import RevenueCat
