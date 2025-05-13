@@ -155,6 +155,19 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
             }
         }
     }
+
+    /// Logs a message if the app is using StoreKit file.
+    func logIfUsingStoreKitFile() {
+        guard #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) else {
+            return
+        }
+        Task {
+            if let appTransaction = await self.appTransaction,
+               appTransaction.environment == .xcode {
+                Logger.info(Strings.storeKit.skconfig_file_detected)
+            }
+        }
+    }
 }
 
 // MARK: -
