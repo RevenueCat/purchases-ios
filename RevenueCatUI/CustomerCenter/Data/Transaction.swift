@@ -23,7 +23,7 @@ protocol Transaction {
     var managementURL: URL? { get }
     var price: ProductPaidPrice? { get }
     var displayName: String? { get }
-
+    var periodType: PeriodType { get }
 }
 
 enum TransactionType {
@@ -64,6 +64,10 @@ extension NonSubscriptionTransaction: Transaction {
     var price: ProductPaidPrice? {
         // We don't have that information in the CustomerInfo
         nil
+    }
+
+    var periodType: PeriodType {
+        .normal
     }
 
 }
