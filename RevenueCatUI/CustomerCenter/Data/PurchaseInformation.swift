@@ -65,10 +65,24 @@ struct PurchaseInformation {
     let isCancelled: Bool
 
     let latestPurchaseDate: Date?
+
+    /// The fetch date of this CustomerInfo. (a.k.a. CustomerInfo.requestedDate)
     let customerInfoRequestedDate: Date
+
+    /// Indicates the date when the subscription expires.
+    ///
+    /// Note: `nil` for non-subscriptions, and for renewing subscriptions
+    let expirationDate: Date?
+
+    /// Indicates the date when the subscription renews.
+    ///
+    /// Note: `nil` for non-subscriptions, and for expiring subscriptions
+     let renewalDate: Date?
 
     /// Product specific management URL
     let managementURL: URL?
+
+    private let dateFormatter: DateFormatter
 
     init(title: String,
          durationTitle: String?,
@@ -83,7 +97,10 @@ struct PurchaseInformation {
          isCancelled: Bool,
          latestPurchaseDate: Date?,
          customerInfoRequestedDate: Date,
-         managementURL: URL?
+         dateFormatter: DateFormatter = Self.defaultDateFormatter,
+         managementURL: URL?,
+         expirationDate: Date? = nil,
+         renewalDate: Date? = nil
     ) {
         self.title = title
         self.durationTitle = durationTitle
@@ -99,6 +116,9 @@ struct PurchaseInformation {
         self.latestPurchaseDate = latestPurchaseDate
         self.customerInfoRequestedDate = customerInfoRequestedDate
         self.managementURL = managementURL
+        self.expirationDate = expirationDate
+        self.renewalDate = renewalDate
+        self.dateFormatter = dateFormatter
     }
 
     // swiftlint:disable:next function_body_length
@@ -107,10 +127,10 @@ struct PurchaseInformation {
          transaction: Transaction,
          renewalPrice: PriceDetails? = nil,
          customerInfoRequestedDate: Date,
-         dateFormatter: DateFormatter = DateFormatter(),
-         managementURL: URL?) {
-        dateFormatter.dateStyle = .medium
-
+         dateFormatter: DateFormatter = Self.defaultDateFormatter,
+         managementURL: URL?
+    ) {
+        self.dateFormatter = dateFormatter
         // Title and duration from product if available
         self.title = subscribedProduct?.localizedTitle ?? transaction.displayName ?? transaction.productIdentifier
         self.durationTitle = subscribedProduct?.subscriptionPeriod?.durationTitle
@@ -132,6 +152,8 @@ struct PurchaseInformation {
             self.isTrial = entitlement.periodType == .trial
             self.isCancelled = entitlement.isCancelled
             self.latestPurchaseDate = entitlement.latestPurchaseDate
+            self.expirationDate = entitlement.expirationDate
+            self.renewalDate = entitlement.willRenew ? entitlement.expirationDate : nil
         } else {
             switch transaction.type {
             case let .subscription(isActive, willRenew, expiresDate, isTrial):
@@ -148,6 +170,8 @@ struct PurchaseInformation {
                 self.isLifetime = false
                 self.isTrial = isTrial
                 self.latestPurchaseDate = (transaction as? RevenueCat.SubscriptionInfo)?.purchaseDate
+                self.expirationDate = expiresDate
+                self.renewalDate = willRenew ? expiresDate : nil
 
             case .nonSubscription:
                 self.explanation = .lifetime
@@ -155,6 +179,8 @@ struct PurchaseInformation {
                 self.isLifetime = true
                 self.isTrial = false
                 self.latestPurchaseDate = (transaction as? NonSubscriptionTransaction)?.purchaseDate
+                self.renewalDate = nil
+                self.expirationDate = nil
             }
 
             self.productIdentifier = transaction.productIdentifier
@@ -210,6 +236,11 @@ struct PurchaseInformation {
         case lifetime
     }
 
+    private static let defaultDateFormatter: DateFormatter = {
+         let dateFormatter = DateFormatter()
+         dateFormatter.dateStyle = .medium
+         return dateFormatter
+     }()
 }
 // swiftlint:enable nesting
 
