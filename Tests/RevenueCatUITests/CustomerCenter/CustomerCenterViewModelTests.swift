@@ -199,7 +199,7 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(purchaseInformation.title) == "title"
         expect(purchaseInformation.durationTitle) == "1 month"
 
-        expect(purchaseInformation.pricePaid) == .paid("$2.99")
+        expect(purchaseInformation.pricePaid) == .nonFree("$2.99")
 
         let expirationOrRenewal = try XCTUnwrap(purchaseInformation.expirationOrRenewal)
         expect(expirationOrRenewal.label) == .nextBillingDate
@@ -246,7 +246,7 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(purchaseInformation.title) == "title"
         expect(purchaseInformation.durationTitle) == "1 month"
 
-        expect(purchaseInformation.pricePaid) == .paid("$2.99")
+        expect(purchaseInformation.pricePaid) == .nonFree("$2.99")
 
         let expirationOrRenewal = try XCTUnwrap(purchaseInformation.expirationOrRenewal)
         expect(expirationOrRenewal.label) == .nextBillingDate
@@ -326,7 +326,7 @@ final class CustomerCenterViewModelTests: TestCase {
             // Should always show yearly subscription since it expires first
             expect(purchaseInformation.title) == yearlyProduct.title
             expect(purchaseInformation.durationTitle) == yearlyProduct.duration
-            expect(purchaseInformation.pricePaid) == .paid(formatPrice(yearlyProduct.price))
+            expect(purchaseInformation.pricePaid) == .nonFree(formatPrice(yearlyProduct.price))
 
             let expirationOrRenewal = try XCTUnwrap(purchaseInformation.expirationOrRenewal)
             expect(expirationOrRenewal.label) == .nextBillingDate
@@ -414,7 +414,7 @@ final class CustomerCenterViewModelTests: TestCase {
             let purchaseInformation = try XCTUnwrap(viewModel.purchaseInformation)
             expect(purchaseInformation.title) == "monthly"
             expect(purchaseInformation.durationTitle) == "1 month"
-            expect(purchaseInformation.pricePaid) == .paid("$2.99")
+            expect(purchaseInformation.pricePaid) == .nonFree("$2.99")
             expect(purchaseInformation.productIdentifier) == productIdMonthly
 
             expect(purchaseInformation.expirationOrRenewal?.date) == .date(reformat(ISO8601Date: expirationDateMonthly))
@@ -465,7 +465,7 @@ final class CustomerCenterViewModelTests: TestCase {
         let purchaseInformation = try XCTUnwrap(viewModel.purchaseInformation)
         expect(purchaseInformation.title) == "lifetime"
         expect(purchaseInformation.durationTitle).to(beNil())
-        expect(purchaseInformation.pricePaid) == .paid("$29.99")
+        expect(purchaseInformation.pricePaid) == .nonFree("$29.99")
         expect(purchaseInformation.productIdentifier) == productIdLifetime
 
         expect(purchaseInformation.expirationOrRenewal?.date) == .never
@@ -542,7 +542,7 @@ final class CustomerCenterViewModelTests: TestCase {
             // Should always show yearly subscription since it expires first
             expect(purchaseInformation.title) == yearlyProduct.title
             expect(purchaseInformation.durationTitle) == yearlyProduct.duration
-            expect(purchaseInformation.pricePaid) == .paid(formatPrice(yearlyProduct.price))
+            expect(purchaseInformation.pricePaid) == .nonFree(formatPrice(yearlyProduct.price))
 
             let expirationOrRenewal = try XCTUnwrap(purchaseInformation.expirationOrRenewal)
             expect(expirationOrRenewal.label) == .nextBillingDate
@@ -625,7 +625,7 @@ final class CustomerCenterViewModelTests: TestCase {
             // We expect to see the monthly one, because the yearly one is a Google subscription
             expect(purchaseInformation.title) == appleProduct.title
             expect(purchaseInformation.durationTitle) == appleProduct.duration
-            expect(purchaseInformation.pricePaid) == .paid(formatPrice(appleProduct.price))
+            expect(purchaseInformation.pricePaid) == .nonFree(formatPrice(appleProduct.price))
 
             let expirationOrRenewal = try XCTUnwrap(purchaseInformation.expirationOrRenewal)
             expect(expirationOrRenewal.label) == .nextBillingDate
@@ -877,7 +877,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         await viewModel.loadScreen()
 
-        expect(viewModel.purchaseInformation?.price).to(equal(.paid("$5.00")))
+        expect(viewModel.purchaseInformation?.pricePaid).to(equal(.nonFree("$5.00")))
         expect(mockStoreKitUtilities.renewalPriceFromRenewalInfoCallCount).to(equal(1))
     }
 

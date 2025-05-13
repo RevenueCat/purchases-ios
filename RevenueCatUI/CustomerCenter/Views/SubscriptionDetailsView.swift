@@ -46,12 +46,14 @@ struct SubscriptionDetailsView: View {
                         value: durationTitle
                     )
                 }
+                
+                let priceToUse = purchaseInformation.renewalPrice ?? purchaseInformation.pricePaid
 
                 let priceValue: String? = {
-                    switch purchaseInformation.price {
+                    switch priceToUse {
                     case .free:
                         return localization[.free]
-                    case .paid(let localizedPrice):
+                    case .nonFree(let localizedPrice):
                         return localizedPrice
                     case .unknown:
                         return nil
@@ -131,10 +133,8 @@ struct SubscriptionDetailsHeader: View {
 
     var body: some View {
         VStack(alignment: .leading) {
-            if let title = purchaseInformation.title {
-                Text(title)
-                    .font(.headline)
-            }
+            Text(purchaseInformation.title)
+                .font(.headline)
 
             if let explanation = getSubscriptionExplanation(from: purchaseInformation, localization: localization) {
                 Text(explanation)

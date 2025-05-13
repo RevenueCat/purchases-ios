@@ -22,8 +22,9 @@ import StoreKit
 /// Information about a purchase.
 struct PurchaseInformation {
 
-    /// The title of the storekit product, if applicable.
-    /// - Note: See `StoreProduct.localizedTitle` for more details.
+    /// The `localizedTitle` of the StoreKit product, if available.
+    /// Otherwise, the display name configured in the RevenueCat dashboard.
+    /// If neither the title or the display name are available, the product identifier will be used as a fallback.
     let title: String
 
     /// The duration of the product, if applicable.
@@ -83,6 +84,7 @@ struct PurchaseInformation {
     let managementURL: URL?
 
     private let dateFormatter: DateFormatter
+    private let numberFormatter: NumberFormatter
 
     init(title: String,
          durationTitle: String?,
@@ -98,6 +100,7 @@ struct PurchaseInformation {
          latestPurchaseDate: Date?,
          customerInfoRequestedDate: Date,
          dateFormatter: DateFormatter = Self.defaultDateFormatter,
+         numberFormatter: NumberFormatter = Self.defaultNumberFormatter,
          managementURL: URL?,
          expirationDate: Date? = nil,
          renewalDate: Date? = nil
@@ -119,6 +122,7 @@ struct PurchaseInformation {
         self.expirationDate = expirationDate
         self.renewalDate = renewalDate
         self.dateFormatter = dateFormatter
+        self.numberFormatter = numberFormatter
     }
 
     // swiftlint:disable:next function_body_length
@@ -128,9 +132,11 @@ struct PurchaseInformation {
          renewalPrice: PriceDetails? = nil,
          customerInfoRequestedDate: Date,
          dateFormatter: DateFormatter = Self.defaultDateFormatter,
+         numberFormatter: NumberFormatter = Self.defaultNumberFormatter,
          managementURL: URL?
     ) {
         self.dateFormatter = dateFormatter
+        self.numberFormatter = numberFormatter
         // Title and duration from product if available
         self.title = subscribedProduct?.localizedTitle ?? transaction.displayName ?? transaction.productIdentifier
         self.durationTitle = subscribedProduct?.subscriptionPeriod?.durationTitle
@@ -143,11 +149,6 @@ struct PurchaseInformation {
             self.expirationOrRenewal = entitlement.expirationOrRenewal(dateFormatter: dateFormatter)
             self.productIdentifier = entitlement.productIdentifier
             self.store = entitlement.store
-            if let renewalPrice {
-                self.price = renewalPrice
-            } else {
-                self.price = entitlement.priceBestEffort(product: subscribedProduct)
-            }
             self.isLifetime = entitlement.expirationDate == nil
             self.isTrial = entitlement.periodType == .trial
             self.isCancelled = entitlement.isCancelled
@@ -193,12 +194,10 @@ struct PurchaseInformation {
         } else if let renewalPrice {
             self.renewalPrice = renewalPrice
         } else {
-            self.renewalPrice = transaction.determineRenewalPrice()
+            self.renewalPrice = transaction.determineRenewalPrice(numberFormatter: numberFormatter)
         }
 
-        self.pricePaid = transaction.paidPrice()
-
-        self.dateFormatter = dateFormatter
+        self.pricePaid = transaction.paidPrice(numberFormatter: numberFormatter)
     }
 
     struct ExpirationOrRenewal {
@@ -241,6 +240,12 @@ struct PurchaseInformation {
          dateFormatter.dateStyle = .medium
          return dateFormatter
      }()
+
+    private static let defaultNumberFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        return formatter
+    }()
 }
 // swiftlint:enable nesting
 
@@ -284,7 +289,8 @@ extension PurchaseInformation {
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
     private static func extractPriceDetailsFromRenewalInfo(
         forProduct product: StoreProduct,
-        customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
+        customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType,
+        numberFormatter: NumberFormatter = Self.defaultNumberFormatter
     ) async -> PriceDetails? {
         guard let renewalPriceDetails = await customerCenterStoreKitUtilities.renewalPriceFromRenewalInfo(
             for: product
@@ -292,11 +298,9 @@ extension PurchaseInformation {
             return nil
         }
 
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = renewalPriceDetails.currencyCode
+        numberFormatter.currencyCode = renewalPriceDetails.currencyCode
 
-        guard let formattedPrice = formatter.string(from: renewalPriceDetails.price as NSNumber) else { return nil }
+        guard let formattedPrice = numberFormatter.string(from: renewalPriceDetails.price as NSNumber) else { return nil }
 
         return .nonFree(formattedPrice)
     }
@@ -314,7 +318,7 @@ extension PurchaseInformation: Identifiable {
 
 private extension Transaction {
 
-    func determineRenewalPrice() -> PurchaseInformation.PriceDetails {
+    func determineRenewalPrice(numberFormatter: NumberFormatter) -> PurchaseInformation.PriceDetails {
         if self.productIdentifier.isPromotionalLifetime(store: self.store) {
             return .free
         }
@@ -332,16 +336,14 @@ private extension Transaction {
             return .unknown
         }
 
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = price.currency
+        numberFormatter.currencyCode = price.currency
 
-        guard let formattedPrice = formatter.string(from: price.amount as NSNumber) else { return .unknown }
+        guard let formattedPrice = numberFormatter.string(from: price.amount as NSNumber) else { return .unknown }
 
         return .nonFree(formattedPrice)
     }
 
-    func paidPrice() -> PurchaseInformation.PriceDetails {
+    func paidPrice(numberFormatter: NumberFormatter) -> PurchaseInformation.PriceDetails {
         if self.store == .promotional || self.price?.amount == 0 {
             return .free
         }
@@ -351,11 +353,9 @@ private extension Transaction {
             return .unknown
         }
 
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = price.currency
+        numberFormatter.currencyCode = price.currency
 
-        guard let formattedPrice = formatter.string(from: price.amount as NSNumber) else { return .unknown }
+        guard let formattedPrice = numberFormatter.string(from: price.amount as NSNumber) else { return .unknown }
 
         return .nonFree(formattedPrice)
     }
