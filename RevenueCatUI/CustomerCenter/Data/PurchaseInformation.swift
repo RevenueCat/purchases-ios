@@ -17,7 +17,7 @@ import Foundation
 import RevenueCat
 import StoreKit
 
-// swiftlint:disable nesting
+// swiftlint:disable nesting file_length
 
 /// Information about a purchase.
 struct PurchaseInformation {
@@ -454,3 +454,4 @@ private extension String {
         return self.hasSuffix("_lifetime") && store == .promotional
     }
 }
+// swiftlint:enable file_length
