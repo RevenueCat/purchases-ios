@@ -15,7 +15,7 @@
 
 import Foundation
 
-// swiftlint:disable missing_docs nesting file_length type_body_length
+// swiftlint:disable missing_docs nesting file_length
 public typealias RCColor = PaywallColor
 
 public struct CustomerCenterConfigData: Equatable {
