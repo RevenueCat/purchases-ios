@@ -199,7 +199,7 @@ private extension CustomerCenterViewModel {
         }
     }
 
-    func createPurchaseInformation(for transaction: Transaction,
+    func createPurchaseInformation(for transaction: RevenueCatUI.Transaction,
                                    entitlement: EntitlementInfo?,
                                    customerInfo: CustomerInfo) async throws -> PurchaseInformation {
         if transaction.store == .appStore {
