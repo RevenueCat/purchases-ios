@@ -29,7 +29,9 @@ extension PurchaseInformation {
         isCancelled: false,
         latestPurchaseDate: nil,
         customerInfoRequestedDate: Date(),
-        managementURL: URL(string: "https://www.revenuecat.com")!
+        managementURL: URL(string: "https://www.revenuecat.com")!,
+        expirationDate: nil,
+        renewalDate: nil
     )
 
     static let subscriptionInformationFree = PurchaseInformation(
@@ -46,7 +48,9 @@ extension PurchaseInformation {
         isCancelled: false,
         latestPurchaseDate: nil,
         customerInfoRequestedDate: Date(),
-        managementURL: URL(string: "https://www.revenuecat.com")!
+        managementURL: URL(string: "https://www.revenuecat.com")!,
+        expirationDate: nil,
+        renewalDate: nil
     )
 
     static func yearlyExpiring(
@@ -70,7 +74,9 @@ extension PurchaseInformation {
             isCancelled: false,
             latestPurchaseDate: nil,
             customerInfoRequestedDate: Date(),
-            managementURL: URL(string: "https://www.revenuecat.com")!
+            managementURL: URL(string: "https://www.revenuecat.com")!,
+            expirationDate: nil,
+            renewalDate: nil
         )
     }
 
@@ -87,6 +93,8 @@ extension PurchaseInformation {
         isCancelled: false,
         latestPurchaseDate: Date(),
         customerInfoRequestedDate: Date(),
-        managementURL: URL(string: "https://www.revenuecat.com")!
+        managementURL: URL(string: "https://www.revenuecat.com")!,
+        expirationDate: nil,
+        renewalDate: nil
     )
 }

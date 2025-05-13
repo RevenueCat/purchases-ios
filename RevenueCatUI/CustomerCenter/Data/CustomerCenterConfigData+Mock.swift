@@ -138,7 +138,7 @@ extension CustomerCenterConfigData {
     @available(iOS 14.0, *)
     static let `default` = mock()
 
-    static let subscriptionInformationMonthlyRenewing: PurchaseInformation = .init(
+    static let subscriptionInformationMonthlyRenewing = PurchaseInformation(
         title: "Basic",
         durationTitle: "Monthly",
         explanation: .earliestRenewal,
@@ -152,10 +152,12 @@ extension CustomerCenterConfigData {
         isCancelled: false,
         latestPurchaseDate: nil,
         customerInfoRequestedDate: Date(),
-        managementURL: URL(string: "https://www.revenuecat.com")!
+        managementURL: URL(string: "https://www.revenuecat.com")!,
+        expirationDate: nil,
+        renewalDate: nil
     )
 
-    static let subscriptionInformationFree: PurchaseInformation = .init(
+    static let subscriptionInformationFree = PurchaseInformation(
         title: "Basic",
         durationTitle: "Monthly",
         explanation: .earliestRenewal,
@@ -169,29 +171,12 @@ extension CustomerCenterConfigData {
         isCancelled: false,
         latestPurchaseDate: nil,
         customerInfoRequestedDate: Date(),
-        managementURL: URL(string: "https://www.revenuecat.com")!
+        managementURL: URL(string: "https://www.revenuecat.com")!,
+        expirationDate: nil,
+        renewalDate: nil
     )
 
-    static func subscriptionInformationYearlyExpiring(store: Store = .appStore) -> PurchaseInformation {
-        PurchaseInformation(
-            title: "Basic",
-            durationTitle: "Yearly",
-            explanation: .earliestRenewal,
-            price: .paid("$49.99"),
-            expirationOrRenewal: .init(label: .expires,
-                                       date: .date("June 1st, 2024")),
-            productIdentifier: "product_id",
-            store: store,
-            isLifetime: false,
-            isTrial: false,
-            isCancelled: false,
-            latestPurchaseDate: nil,
-            customerInfoRequestedDate: Date(),
-            managementURL: URL(string: "https://www.revenuecat.com")!
-        )
-    }
-
-    static let consumable: PurchaseInformation = .init(
+    static let consumable = PurchaseInformation(
         title: "Basic",
         durationTitle: nil,
         explanation: .lifetime,
@@ -204,7 +189,9 @@ extension CustomerCenterConfigData {
         isCancelled: false,
         latestPurchaseDate: Date(),
         customerInfoRequestedDate: Date(),
-        managementURL: URL(string: "https://www.revenuecat.com")!
+        managementURL: URL(string: "https://www.revenuecat.com")!,
+        expirationDate: nil,
+        renewalDate: nil
     )
 
     static let standardAppearance = CustomerCenterConfigData.Appearance(
