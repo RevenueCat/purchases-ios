@@ -717,6 +717,7 @@
 		5793397228E77A6E00C1232C /* MockPaymentQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5793397128E77A6E00C1232C /* MockPaymentQueue.swift */; };
 		579415D2293689DD00218FBC /* Codable+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 579415D1293689DD00218FBC /* Codable+Extensions.swift */; };
 		579415D529368AB200218FBC /* ReceiptStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 579415D429368AB200218FBC /* ReceiptStrings.swift */; };
+		57956AD02DD3783E00E935FF /* PurchaseCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57956ACF2DD3783900E935FF /* PurchaseCardView.swift */; };
 		5796A38127D6B78500653165 /* BaseBackendTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5796A38027D6B78500653165 /* BaseBackendTest.swift */; };
 		5796A38827D6B85900653165 /* BackendPostReceiptDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5796A38727D6B85900653165 /* BackendPostReceiptDataTests.swift */; };
 		5796A38A27D6B96300653165 /* BackendGetCustomerInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5796A38927D6B96300653165 /* BackendGetCustomerInfoTests.swift */; };
@@ -2087,6 +2088,7 @@
 		5793397128E77A6E00C1232C /* MockPaymentQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockPaymentQueue.swift; sourceTree = "<group>"; };
 		579415D1293689DD00218FBC /* Codable+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Codable+Extensions.swift"; sourceTree = "<group>"; };
 		579415D429368AB200218FBC /* ReceiptStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptStrings.swift; sourceTree = "<group>"; };
+		57956ACF2DD3783900E935FF /* PurchaseCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseCardView.swift; sourceTree = "<group>"; };
 		5796A38027D6B78500653165 /* BaseBackendTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseBackendTest.swift; sourceTree = "<group>"; };
 		5796A38727D6B85900653165 /* BackendPostReceiptDataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendPostReceiptDataTests.swift; sourceTree = "<group>"; };
 		5796A38927D6B96300653165 /* BackendGetCustomerInfoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendGetCustomerInfoTests.swift; sourceTree = "<group>"; };
@@ -3844,6 +3846,7 @@
 		353756602C382C2800A1B8D6 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				57956ACF2DD3783900E935FF /* PurchaseCardView.swift */,
 				570585932DD216BD003D3FBB /* AppUpdateWarningView.swift */,
 				570585942DD216BD003D3FBB /* CompatibilityContentUnavailableView.swift */,
 				570585952DD216BD003D3FBB /* CompatibilityLabeledContent.swift */,
@@ -6967,6 +6970,7 @@
 				3511088F2C47F6DA0048C4D8 /* CustomerInfo+CurrentEntitlement.swift in Sources */,
 				887A60752C1D037000E1A461 /* TemplateViewConfiguration.swift in Sources */,
 				038213602DCAF6BE003C02C3 /* OpenSheet.swift in Sources */,
+				57956AD02DD3783E00E935FF /* PurchaseCardView.swift in Sources */,
 				03C72FC32D349BAE00297FEC /* IconComponentView.swift in Sources */,
 				887A60702C1D037000E1A461 /* PaywallTemplate.swift in Sources */,
 				1E8A607F2CDCE5EC0034ACF3 /* View+OnRedeemWebPurchaseAttempt.swift in Sources */,
