@@ -31,9 +31,6 @@ import RevenueCat
     private lazy var currentAppVersion: String? = currentVersionFetcher()
 
     @Published
-    var purchaseInformation: PurchaseInformation?
-
-    @Published
     private(set) var appIsLatestVersion: Bool = defaultAppIsLatestVersion
 
     @Published
@@ -75,6 +72,16 @@ import RevenueCat
             self.appIsLatestVersion = currentVersion >= latestVersion
         }
     }
+
+    var hasPurchases: Bool {
+        !activePurchases.isEmpty || purchaseInformation != nil
+    }
+
+    @Published
+    var activePurchases: [PurchaseInformation] = []
+
+    @Published
+    var purchaseInformation: PurchaseInformation?
 
     private let currentVersionFetcher: CurrentVersionFetcher
 
@@ -165,27 +172,52 @@ private extension CustomerCenterViewModel {
 
     func loadPurchaseInformation(customerInfo: CustomerInfo) async throws {
         let hasActiveProducts =  !customerInfo.activeSubscriptions.isEmpty ||
-        !customerInfo.nonSubscriptions.isEmpty
+            !customerInfo.nonSubscriptions.isEmpty
 
         if !hasActiveProducts {
-            self.purchaseInformation = nil
+            self.activePurchases = []
             self.state = .success
             return
         }
 
-        guard let activeTransaction = customerInfo.earliestExpiringTransaction() else {
-            Logger.warning(Strings.could_not_find_subscription_information)
-            self.purchaseInformation = nil
-            throw CustomerCenterError.couldNotFindSubscriptionInformation
+        var activePurchases: [PurchaseInformation] = []
+
+        for subscription in customerInfo.activeSubscriptions
+            .compactMap({ id in customerInfo.subscriptionsByProductIdentifier[id] })
+            .sorted(by: {
+                guard let date1 = $0.expiresDate, let date2 = $1.expiresDate else {
+                    return $0.expiresDate != nil
+                }
+
+                return date1 < date2
+            }) {
+
+            let entitlement = customerInfo.entitlements.all.values
+                .first(where: { $0.productIdentifier == subscription.productIdentifier })
+
+            let purchaseInfo = try await createPurchaseInformation(
+                for: subscription,
+                entitlement: entitlement,
+                customerInfo: customerInfo)
+
+            activePurchases.append(purchaseInfo)
         }
 
-        let entitlement = customerInfo.entitlements.all.values
-            .first(where: { $0.productIdentifier == activeTransaction.productIdentifier })
+        self.activePurchases = activePurchases
+        if let activeTransaction = customerInfo.earliestExpiringTransaction() {
+            // get the active non-subscription transaction
+            let entitlement = customerInfo.entitlements.all.values
+                .first(where: { $0.productIdentifier == activeTransaction.productIdentifier })
 
-        self.purchaseInformation = try await createPurchaseInformation(
-            for: activeTransaction,
-            entitlement: entitlement,
-            customerInfo: customerInfo)
+            self.purchaseInformation = try await createPurchaseInformation(
+                for: activeTransaction,
+                entitlement: entitlement,
+                customerInfo: customerInfo
+            )
+        } else if activePurchases.isEmpty {
+            Logger.warning(Strings.could_not_find_subscription_information)
+            throw CustomerCenterError.couldNotFindSubscriptionInformation
+        }
     }
 
     func loadCustomerCenterConfig() async throws {
@@ -225,6 +257,7 @@ private extension CustomerCenterViewModel {
                 )
             }
         }
+
         Logger.warning(Strings.active_product_is_not_apple_loading_without_product_information(transaction.store))
 
         return PurchaseInformation(
