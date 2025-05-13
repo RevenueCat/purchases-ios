@@ -215,25 +215,6 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beTrue())
     }
 
-    func testStateChangeToError() {
-        let viewModel =
-        BaseManageSubscriptionViewModel(
-            screen: ManageSubscriptionsViewModelTests.default,
-            actionWrapper: CustomerCenterActionWrapper(),
-            purchaseInformation: nil,
-            purchasesProvider: MockCustomerCenterPurchases()
-        )
-
-        viewModel.state = CustomerCenterViewState.error(error)
-
-        switch viewModel.state {
-        case .error(let stateError):
-            expect(stateError as? TestError) == error
-        default:
-            fail("Expected state to be .error")
-        }
-    }
-
     func testLoadsPromotionalOffer() async throws {
         let offerIdentifierInJSON = "rc_refund_offer"
         let (viewModel, loadPromotionalOfferUseCase) = try await setupPromotionalOfferTest(
@@ -359,7 +340,6 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
                 loadPromotionalOfferUseCase: loadPromotionalOfferUseCase)
 
             let screen = try XCTUnwrap(viewModel.screen)
-            expect(viewModel.state) == .success
 
             let pathWithPromotionalOffer = try XCTUnwrap(screen.paths.first { path in
                 if case .promotionalOffer = path.detail {
@@ -469,7 +449,6 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
                                                expectedOfferIdentifierInJSON: String,
                                                expectedOfferIdentifierInProduct: String? = nil) async throws {
         let screen = try XCTUnwrap(viewModel.screen)
-        expect(viewModel.state) == .success
 
         let pathWithPromotionalOffer = try XCTUnwrap(screen.paths.first { path in
             if case .promotionalOffer = path.detail {

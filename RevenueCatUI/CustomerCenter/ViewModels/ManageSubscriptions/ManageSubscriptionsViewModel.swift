@@ -53,15 +53,6 @@ final class ManageSubscriptionsViewModel: ObservableObject {
     @Published
     var inAppBrowserURL: IdentifiableURL?
 
-    @Published
-    var state: CustomerCenterViewState {
-        didSet {
-            if case let .error(stateError) = state {
-                self.error = stateError
-            }
-        }
-    }
-
     let actionWrapper: CustomerCenterActionWrapper
 
     @Published
@@ -90,7 +81,6 @@ final class ManageSubscriptionsViewModel: ObservableObject {
             self.actionWrapper = actionWrapper
             self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase
             ?? LoadPromotionalOfferUseCase(purchasesProvider: purchasesProvider)
-            self.state = .success
             self.restoreAlertType = .loading
         }
 
