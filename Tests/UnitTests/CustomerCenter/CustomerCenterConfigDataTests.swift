@@ -22,7 +22,7 @@ import XCTest
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 class CustomerCenterConfigDataTests: TestCase {
-
+    
     func testCustomerCenterConfigDataConversion() throws {
         let mockResponse = CustomerCenterConfigResponse(
             customerCenter: .init(
@@ -66,7 +66,10 @@ class CustomerCenterConfigDataTests: TestCase {
                                                         subtitle: "Before you go",
                                                         productMapping: [
                                                             "product_id": "offer_id"
-                                                        ]),
+                                                        ],
+                                                        crossProductPromotions: [
+                                                            "monthly" : .init(storeOfferIdentifier: "offer_id",
+                                                                              targetProductId: "annual")]),
                                 feedbackSurvey: nil,
                                 refundWindow: nil
                             ),
@@ -86,9 +89,12 @@ class CustomerCenterConfigDataTests: TestCase {
                                                                                       title: "Wait!",
                                                                                       subtitle: "Before you go",
                                                                                       productMapping: [
-                                                                                          "product_id": "offer_id"
-                                                                                      ]))
-                                                      ]),
+                                                                                        "product_id": "offer_id"
+                                                                                      ],
+                                                                                      crossProductPromotions: [
+                                                                                        "monthly" : .init(storeOfferIdentifier: "offer_id",
+                                                                                                          targetProductId: "annual")]),
+                                                             )]),
                                 refundWindow: nil
                             ),
                             .init(
@@ -103,7 +109,10 @@ class CustomerCenterConfigDataTests: TestCase {
                                                         subtitle: "Before you go",
                                                         productMapping: [
                                                             "product_id": "offer_id"
-                                                        ]),
+                                                        ],
+                                                        crossProductPromotions: [
+                                                            "monthly" : .init(storeOfferIdentifier: "offer_id",
+                                                                              targetProductId: "annual")]),
                                 feedbackSurvey: nil,
                                 refundWindow: nil
                             )
@@ -120,12 +129,12 @@ class CustomerCenterConfigDataTests: TestCase {
             lastPublishedAppVersion: "1.2.3",
             itunesTrackId: 123
         )
-
+        
         let configData = CustomerCenterConfigData(from: mockResponse)
-
+        
         expect(configData.localization.locale) == "en_US"
         expect(configData.localization.localizedStrings["key"]) == "value"
-
+        
         expect(configData.appearance.accentColor.light!.stringRepresentation) == "#A3F9B5"
         expect(configData.appearance.accentColor.dark!.stringRepresentation) == "#5D3FD3"
         expect(configData.appearance.backgroundColor.light!.stringRepresentation) == "#E1C6FF"
@@ -136,23 +145,23 @@ class CustomerCenterConfigDataTests: TestCase {
         expect(configData.appearance.buttonTextColor.dark!.stringRepresentation) == "#FFD700"
         expect(configData.appearance.buttonBackgroundColor.light!.stringRepresentation) == "#FFA07A"
         expect(configData.appearance.buttonBackgroundColor.dark!.stringRepresentation) == "#8B4513"
-
+        
         expect(configData.screens.count) == 1
         let managementScreen = try XCTUnwrap(configData.screens[.management])
         expect(managementScreen.type.rawValue) == "MANAGEMENT"
         expect(managementScreen.title) == "Management Screen"
         expect(managementScreen.subtitle) == "Manage your account"
         expect(managementScreen.paths.count) == 4
-
+        
         let paths = try XCTUnwrap(managementScreen.paths)
-
+        
         expect(paths[0].id) == "path1"
         expect(paths[0].title) == "Path 1"
         expect(paths[0].type.rawValue) == "MISSING_PURCHASE"
         expect(paths[0].url).to(beNil())
         expect(paths[0].openMethod).to(beNil())
         expect(paths[0].detail).to(beNil())
-
+        
         expect(paths[1].id) == "path2"
         expect(paths[1].title) == "Path 2"
         expect(paths[1].type.rawValue) == "CANCEL"
@@ -164,7 +173,7 @@ class CustomerCenterConfigDataTests: TestCase {
         } else {
             fail("Expected promotionalOffer detail")
         }
-
+        
         expect(paths[2].id) == "path3"
         expect(paths[2].title) == "Path 3"
         expect(paths[2].type.rawValue) == "CHANGE_PLANS"
@@ -178,21 +187,21 @@ class CustomerCenterConfigDataTests: TestCase {
         } else {
             fail("Expected feedbackSurvey detail")
         }
-
+        
         expect(paths[3].id) == "path4"
         expect(paths[3].title) == "Path 4"
         expect(paths[3].type.rawValue) == "CUSTOM_URL"
         expect(paths[3].url?.absoluteString) == "https://revenuecat.com"
         expect(paths[3].openMethod) == .external
-
+        
         expect(configData.lastPublishedAppVersion) == "1.2.3"
         expect(configData.productId) == 123
-
+        
         expect(configData.support.shouldWarnCustomerToUpdate) == false
         expect(configData.support.email) == "support@example.com"
         expect(configData.support.displayPurchaseHistoryLink) == true
     }
-
+    
     /// The real json uses `snake_case`. This test should initialise the struct with default values
     func testDefaultValues() throws {
         let jsonString = """
@@ -240,25 +249,25 @@ class CustomerCenterConfigDataTests: TestCase {
             "itunesTrackId": 123
         }
         """
-
+        
         let jsonData = jsonString.data(using: .utf8)!
         let decoder = JSONDecoder()
         let response = try decoder.decode(CustomerCenterConfigResponse.self, from: jsonData)
-
+        
         let configData = CustomerCenterConfigData(from: response)
-
+        
         expect(configData.screens.count) == 1
         let unknownScreen = configData.screens.first?.value
         expect(unknownScreen?.type) == .unknown
         expect(unknownScreen?.title) == "Unknown Screen"
         expect(unknownScreen?.subtitle) == "This is an unknown screen type"
-
+        
         expect(unknownScreen?.paths.count) == 1
         let unknownPath = unknownScreen?.paths.first
         expect(unknownPath?.type) == .unknown
         expect(unknownPath?.id) == "unknown_path"
         expect(unknownPath?.title) == "Unknown Path"
-
+        
         expect(configData.support.email) == "support@example.com"
         expect(configData.support.shouldWarnCustomerToUpdate) == true
         expect(configData.support.displayPurchaseHistoryLink) == false
