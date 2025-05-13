@@ -181,6 +181,9 @@ private extension CustomerCenterViewModel {
         }
 
         guard let activeTransaction = customerInfo.earliestExpiringTransaction() else {
+            self.activePurchase = nil
+            self.activePurchases = []
+
             Logger.warning(Strings.could_not_find_subscription_information)
             throw CustomerCenterError.couldNotFindSubscriptionInformation
         }
