@@ -192,7 +192,7 @@ private extension CustomerCenterViewModel {
         let entitlement = customerInfo.entitlements.all.values
             .first(where: { $0.productIdentifier == activeTransaction.productIdentifier })
 
-        self.activePurchase = try await createPurchaseInformation(
+        self.activePurchase = await createPurchaseInformation(
             for: activeTransaction,
             entitlement: entitlement,
             customerInfo: customerInfo
@@ -212,10 +212,11 @@ private extension CustomerCenterViewModel {
             let entitlement = customerInfo.entitlements.all.values
                 .first(where: { $0.productIdentifier == subscription.productIdentifier })
 
-            let purchaseInfo = try await createPurchaseInformation(
+            let purchaseInfo = await createPurchaseInformation(
                 for: subscription,
                 entitlement: entitlement,
-                customerInfo: customerInfo)
+                customerInfo: customerInfo
+            )
 
             activePurchases.append(purchaseInfo)
         }
@@ -235,7 +236,7 @@ private extension CustomerCenterViewModel {
 
     func createPurchaseInformation(for transaction: RevenueCatUI.Transaction,
                                    entitlement: EntitlementInfo?,
-                                   customerInfo: CustomerInfo) async throws -> PurchaseInformation {
+                                   customerInfo: CustomerInfo) async -> PurchaseInformation {
         if transaction.store == .appStore {
             if let product = await purchasesProvider.products([transaction.productIdentifier]).first {
                 return await PurchaseInformation.purchaseInformationUsingRenewalInfo(
