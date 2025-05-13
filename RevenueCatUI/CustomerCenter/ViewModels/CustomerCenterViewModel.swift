@@ -74,14 +74,14 @@ import RevenueCat
     }
 
     var hasPurchases: Bool {
-        !activePurchases.isEmpty || purchaseInformation != nil
+        !activePurchases.isEmpty || activePurchase != nil
     }
 
     @Published
     var activePurchases: [PurchaseInformation] = []
 
     @Published
-    var purchaseInformation: PurchaseInformation?
+    var activePurchase: PurchaseInformation?
 
     private let currentVersionFetcher: CurrentVersionFetcher
 
@@ -121,7 +121,7 @@ import RevenueCat
         configuration: CustomerCenterConfigData
     ) {
         self.init(actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil))
-        self.purchaseInformation = purchaseInformation
+        self.activePurchase = purchaseInformation
         self.configuration = configuration
         self.state = .success
     }
@@ -171,11 +171,11 @@ import RevenueCat
 private extension CustomerCenterViewModel {
 
     func loadPurchaseInformation(customerInfo: CustomerInfo) async throws {
-        let hasActiveProducts =  !customerInfo.activeSubscriptions.isEmpty ||
-            !customerInfo.nonSubscriptions.isEmpty
+        let hasActiveProducts =  !customerInfo.activeSubscriptions.isEmpty || !customerInfo.nonSubscriptions.isEmpty
 
         if !hasActiveProducts {
             self.activePurchases = []
+            self.activePurchase = nil
             self.state = .success
             return
         }
@@ -209,12 +209,12 @@ private extension CustomerCenterViewModel {
             let entitlement = customerInfo.entitlements.all.values
                 .first(where: { $0.productIdentifier == activeTransaction.productIdentifier })
 
-            self.purchaseInformation = try await createPurchaseInformation(
+            self.activePurchase = try await createPurchaseInformation(
                 for: activeTransaction,
                 entitlement: entitlement,
                 customerInfo: customerInfo
             )
-        } else if activePurchases.isEmpty {
+        } else if activePurchases.isEmpty && activePurchase == nil {
             Logger.warning(Strings.could_not_find_subscription_information)
             throw CustomerCenterError.couldNotFindSubscriptionInformation
         }
