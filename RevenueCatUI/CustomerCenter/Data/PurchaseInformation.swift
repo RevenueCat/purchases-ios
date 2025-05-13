@@ -135,7 +135,7 @@ struct PurchaseInformation {
         // Use entitlement data if available, otherwise derive from transaction
         if let entitlement = entitlement {
             self.explanation = entitlement.explanation
-            self.expirationOrRenewal = entitlement.expirationOrRenewal(dateFormatter: Self.defaultDateFormatter)
+            self.expirationOrRenewal = entitlement.expirationOrRenewal(dateFormatter: dateFormatter)
             self.productIdentifier = entitlement.productIdentifier
             self.store = entitlement.store
             if let renewalPrice {
@@ -156,7 +156,7 @@ struct PurchaseInformation {
                     ? (isActive ? (willRenew ? .earliestRenewal : .earliestExpiration) : .expired)
                     : .lifetime
                 self.expirationOrRenewal = expiresDate.map { date in
-                    let dateString = Self.defaultDateFormatter.string(from: date)
+                    let dateString = dateFormatter.string(from: date)
                     let label: ExpirationOrRenewal.Label = isActive
                         ? (willRenew ? .nextBillingDate : .expires)
                         : .expired
