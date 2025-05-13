@@ -180,8 +180,22 @@ private extension CustomerCenterViewModel {
             return
         }
 
-        var activePurchases: [PurchaseInformation] = []
+        guard let activeTransaction = customerInfo.earliestExpiringTransaction() else {
+            Logger.warning(Strings.could_not_find_subscription_information)
+            throw CustomerCenterError.couldNotFindSubscriptionInformation
+        }
 
+        // get the active non-subscription transaction
+        let entitlement = customerInfo.entitlements.all.values
+            .first(where: { $0.productIdentifier == activeTransaction.productIdentifier })
+
+        self.activePurchase = try await createPurchaseInformation(
+            for: activeTransaction,
+            entitlement: entitlement,
+            customerInfo: customerInfo
+        )
+
+        var activePurchases: [PurchaseInformation] = []
         for subscription in customerInfo.activeSubscriptions
             .compactMap({ id in customerInfo.subscriptionsByProductIdentifier[id] })
             .sorted(by: {
@@ -202,22 +216,7 @@ private extension CustomerCenterViewModel {
 
             activePurchases.append(purchaseInfo)
         }
-
         self.activePurchases = activePurchases
-        if let activeTransaction = customerInfo.earliestExpiringTransaction() {
-            // get the active non-subscription transaction
-            let entitlement = customerInfo.entitlements.all.values
-                .first(where: { $0.productIdentifier == activeTransaction.productIdentifier })
-
-            self.activePurchase = try await createPurchaseInformation(
-                for: activeTransaction,
-                entitlement: entitlement,
-                customerInfo: customerInfo
-            )
-        } else if activePurchases.isEmpty && activePurchase == nil {
-            Logger.warning(Strings.could_not_find_subscription_information)
-            throw CustomerCenterError.couldNotFindSubscriptionInformation
-        }
     }
 
     func loadCustomerCenterConfig() async throws {
