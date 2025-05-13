@@ -79,6 +79,8 @@ struct PurchaseInformation {
     /// Product specific management URL
     let managementURL: URL?
 
+    private let dateFormatter: DateFormatter
+
     init(title: String,
          durationTitle: String?,
          explanation: Explanation,
@@ -91,9 +93,10 @@ struct PurchaseInformation {
          isCancelled: Bool,
          latestPurchaseDate: Date?,
          customerInfoRequestedDate: Date,
+         dateFormatter: DateFormatter = Self.defaultDateFormatter,
          managementURL: URL?,
-         expirationDate: Date?,
-         renewalDate: Date?
+         expirationDate: Date? = nil,
+         renewalDate: Date? = nil
     ) {
         self.title = title
         self.durationTitle = durationTitle
@@ -110,6 +113,7 @@ struct PurchaseInformation {
         self.managementURL = managementURL
         self.expirationDate = expirationDate
         self.renewalDate = renewalDate
+        self.dateFormatter = dateFormatter
     }
 
     // swiftlint:disable:next function_body_length
@@ -118,8 +122,10 @@ struct PurchaseInformation {
          transaction: Transaction,
          renewalPrice: PriceDetails? = nil,
          customerInfoRequestedDate: Date,
+         dateFormatter: DateFormatter = Self.defaultDateFormatter,
          managementURL: URL?
     ) {
+        self.dateFormatter = dateFormatter
         // Title and duration from product if available
         self.title = subscribedProduct?.localizedTitle
         self.durationTitle = subscribedProduct?.subscriptionPeriod?.durationTitle
