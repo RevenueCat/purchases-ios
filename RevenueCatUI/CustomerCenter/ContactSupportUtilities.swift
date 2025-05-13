@@ -46,7 +46,7 @@ extension CustomerCenterConfigData.Support {
 
     private static func defaultData(_ localization: CustomerCenterConfigData.Localization,
                                     purchasesProvider: CustomerCenterPurchasesType) -> [(String, String)] {
-        let unknown = localization[.screenNoActiveTitle]
+        let unknown = localization[.unknown]
         var osVersion = unknown
         var deviceModel = unknown
         #if canImport(UIKit) && !os(watchOS)

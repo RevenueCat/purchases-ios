@@ -18,15 +18,15 @@ extension Store {
 
     var localizationKey: CCLocalizedString {
         switch self {
-        case .appStore: return .screenNoActiveTitle
-        case .macAppStore: return .screenNoActiveTitle
-        case .playStore: return .screenNoActiveTitle
-        case .stripe: return .screenNoActiveTitle
-        case .promotional: return .screenNoActiveTitle
-        case .amazon: return .screenNoActiveTitle
-        case .rcBilling: return .screenNoActiveTitle
-        case .external: return .screenNoActiveTitle
-        case .unknownStore: return .screenNoActiveTitle
+        case .appStore: return .appStore
+        case .macAppStore: return .macAppStore
+        case .playStore: return .googlePlayStore
+        case .stripe: return .stripe
+        case .promotional: return .promotional
+        case .amazon: return .amazonStore
+        case .rcBilling: return .rcBilling
+        case .external: return .externalStore
+        case .unknownStore: return .unknownStore
         }
     }
 }

@@ -40,7 +40,7 @@ struct PurchaseDetailView: View {
             }
 
             if !viewModel.debugItems.isEmpty {
-                Section(localization[.restorePurchases]) {
+                Section(localization[.debug]) {
                     ForEach(viewModel.debugItems) { detailItem in
                         CompatibilityLabeledContent(
                             localization[detailItem.label],
