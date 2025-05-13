@@ -10,7 +10,7 @@
 //   CustomerCenterLocalization.swift
 //
 // swiftlint:disable identifier_name line_length missing_docs nesting
-import RevenueCat
+import Foundation
 
 extension CustomerCenterConfigData {
 
