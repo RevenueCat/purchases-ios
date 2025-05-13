@@ -43,7 +43,7 @@ final class CustomerCenterViewModelTests: TestCase {
         let viewModel = CustomerCenterViewModel(actionWrapper: CustomerCenterActionWrapper())
 
         expect(viewModel.state) == .notLoaded
-        expect(viewModel.purchaseInformation).to(beNil())
+        expect(viewModel.activePurchase).to(beNil())
         expect(viewModel.activePurchases).to(beEmpty())
         expect(viewModel.state) == .notLoaded
     }
@@ -101,7 +101,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         await viewModel.loadScreen()
 
-        let purchaseInformation = try XCTUnwrap(viewModel.purchaseInformation)
+        let purchaseInformation = try XCTUnwrap(viewModel.activePurchase)
         expect(viewModel.activePurchases.count) == 1
         expect(viewModel.activePurchases.first?.productIdentifier) == purchaseInformation.productIdentifier
 
@@ -121,7 +121,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         await viewModel.loadScreen()
 
-        let purchaseInformation = try XCTUnwrap(viewModel.purchaseInformation)
+        let purchaseInformation = try XCTUnwrap(viewModel.activePurchase)
         expect(viewModel.activePurchases.count) == 1
         expect(viewModel.activePurchases.first?.productIdentifier) == purchaseInformation.productIdentifier
 
@@ -141,7 +141,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         await viewModel.loadScreen()
 
-        expect(viewModel.purchaseInformation).to(beNil())
+        expect(viewModel.activePurchase).to(beNil())
         expect(viewModel.activePurchases).to(beEmpty())
         expect(viewModel.state) == .success
     }
@@ -156,7 +156,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         await viewModel.loadScreen()
 
-        expect(viewModel.purchaseInformation).to(beNil())
+        expect(viewModel.activePurchase).to(beNil())
         expect(viewModel.activePurchases).to(beEmpty())
         switch viewModel.state {
         case .error(let stateError):
@@ -206,7 +206,7 @@ final class CustomerCenterViewModelTests: TestCase {
         // Assert
         expect(viewModel.state) == .success
 
-        let purchaseInformation = try XCTUnwrap(viewModel.purchaseInformation)
+        let purchaseInformation = try XCTUnwrap(viewModel.activePurchase)
         expect(viewModel.activePurchases.count) == 1
         expect(viewModel.activePurchases.first?.productIdentifier) == purchaseInformation.productIdentifier
 
@@ -256,7 +256,7 @@ final class CustomerCenterViewModelTests: TestCase {
         // Assert
         expect(viewModel.state) == .success
 
-        let purchaseInformation = try XCTUnwrap(viewModel.purchaseInformation)
+        let purchaseInformation = try XCTUnwrap(viewModel.activePurchase)
         expect(viewModel.activePurchases.count) == 1
         expect(viewModel.activePurchases.first?.productIdentifier) == purchaseInformation.productIdentifier
 
@@ -339,7 +339,7 @@ final class CustomerCenterViewModelTests: TestCase {
             // Assert
             expect(viewModel.state) == .success
 
-            let purchaseInformation = try XCTUnwrap(viewModel.purchaseInformation)
+            let purchaseInformation = try XCTUnwrap(viewModel.activePurchase)
             expect(viewModel.activePurchases.count) == 2
             expect(viewModel.activePurchases.first?.productIdentifier) == purchaseInformation.productIdentifier
 
@@ -431,7 +431,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
             expect(viewModel.state) == .success
 
-            let purchaseInformation = try XCTUnwrap(viewModel.purchaseInformation)
+            let purchaseInformation = try XCTUnwrap(viewModel.activePurchase)
             expect(viewModel.activePurchases.count) == 2
             expect(viewModel.activePurchases.first?.productIdentifier) == purchaseInformation.productIdentifier
 
@@ -485,7 +485,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         expect(viewModel.state) == .success
 
-        let purchaseInformation = try XCTUnwrap(viewModel.purchaseInformation)
+        let purchaseInformation = try XCTUnwrap(viewModel.activePurchase)
         expect(viewModel.activePurchases.count) == 0
 
         expect(purchaseInformation.title) == "lifetime"
@@ -563,7 +563,7 @@ final class CustomerCenterViewModelTests: TestCase {
             // Assert
             expect(viewModel.state) == .success
 
-            let purchaseInformation = try XCTUnwrap(viewModel.purchaseInformation)
+            let purchaseInformation = try XCTUnwrap(viewModel.activePurchase)
             expect(viewModel.activePurchases.count) == 2
             expect(viewModel.activePurchases.first?.productIdentifier) == purchaseInformation.productIdentifier
 
@@ -649,7 +649,7 @@ final class CustomerCenterViewModelTests: TestCase {
             // Assert
             expect(viewModel.state) == .success
 
-            let purchaseInformation = try XCTUnwrap(viewModel.purchaseInformation)
+            let purchaseInformation = try XCTUnwrap(viewModel.activePurchase)
             expect(viewModel.activePurchases.count) == 2
             expect(viewModel.activePurchases.last?.productIdentifier) == purchaseInformation.productIdentifier
 
@@ -702,7 +702,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         expect(viewModel.state) == .success
 
-        let purchaseInformation = try XCTUnwrap(viewModel.purchaseInformation)
+        let purchaseInformation = try XCTUnwrap(viewModel.activePurchase)
         expect(viewModel.activePurchases.count) == 1
         expect(viewModel.activePurchases.first?.productIdentifier) == purchaseInformation.productIdentifier
 
@@ -727,7 +727,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         await viewModel.loadScreen()
 
-        expect(viewModel.purchaseInformation).to(beNil())
+        expect(viewModel.activePurchase).to(beNil())
         expect(viewModel.state) == .success
     }
 
@@ -738,7 +738,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         await viewModel.loadScreen()
 
-        expect(viewModel.purchaseInformation).to(beNil())
+        expect(viewModel.activePurchase).to(beNil())
         expect(viewModel.activePurchases).to(beEmpty())
 
         expect(viewModel.state) == .error(error)
@@ -893,7 +893,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         await viewModel.loadScreen()
 
-        expect(viewModel.purchaseInformation).toNot(beNil())
+        expect(viewModel.activePurchase).toNot(beNil())
         expect(mockStoreKitUtilities.renewalPriceFromRenewalInfoCallCount).to(equal(2))
     }
 
@@ -913,7 +913,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         await viewModel.loadScreen()
 
-        expect(viewModel.purchaseInformation?.price).to(equal(.paid("$5.00")))
+        expect(viewModel.activePurchase?.price).to(equal(.paid("$5.00")))
         expect(mockStoreKitUtilities.renewalPriceFromRenewalInfoCallCount).to(equal(2))
     }
 
@@ -947,9 +947,9 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(viewModel.state) == .success
 
         // Wait for state to change to success
-        expect(viewModel.purchaseInformation).toNot(beNil())
-        expect(viewModel.purchaseInformation?.expirationOrRenewal?.label).to(equal(.expires))
-        expect(viewModel.purchaseInformation?.expirationOrRenewal?.date).to(equal(.never))
+        expect(viewModel.activePurchase).toNot(beNil())
+        expect(viewModel.activePurchase?.expirationOrRenewal?.label).to(equal(.expires))
+        expect(viewModel.activePurchase?.expirationOrRenewal?.date).to(equal(.never))
 
         // Verify screen was reloaded
         expect(viewModel.configuration).toNot(beNil())
