@@ -461,7 +461,7 @@ private enum ButtonWithSheetPreview {
             "monthly_title": .string("Buy Monthly"),
             "monthly_desc": .string("Monthly something"),
 
-            "close": .string("X"),
+            "close": .string("X")
         ]],
         revision: 1,
         defaultLocaleIdentifier: "en_US"

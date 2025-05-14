@@ -26,6 +26,7 @@
 		038211972DCA730C003C02C3 /* PurchaseButtonInPackagePreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 038211962DCA730C003C02C3 /* PurchaseButtonInPackagePreview.swift */; };
 		038211982DCA730C003C02C3 /* ButtonWithFooterPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 038211952DCA730C003C02C3 /* ButtonWithFooterPreview.swift */; };
 		038213602DCAF6BE003C02C3 /* OpenSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0382135F2DCAF6BE003C02C3 /* OpenSheet.swift */; };
+		038213DB2DD4979A003C02C3 /* PurchaseButtonComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 038213DA2DD4979A003C02C3 /* PurchaseButtonComponentTests.swift */; };
 		03A98CEF2D1EE048009BCA61 /* FallbackComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98CEE2D1EE040009BCA61 /* FallbackComponentTests.swift */; };
 		03A98CF12D222F5F009BCA61 /* FallbackComponentPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98CF02D222F53009BCA61 /* FallbackComponentPreview.swift */; };
 		03A98D302D240C41009BCA61 /* UIConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98D2F2D240C3E009BCA61 /* UIConfig.swift */; };
@@ -1360,6 +1361,7 @@
 		038211952DCA730C003C02C3 /* ButtonWithFooterPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonWithFooterPreview.swift; sourceTree = "<group>"; };
 		038211962DCA730C003C02C3 /* PurchaseButtonInPackagePreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseButtonInPackagePreview.swift; sourceTree = "<group>"; };
 		0382135F2DCAF6BE003C02C3 /* OpenSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenSheet.swift; sourceTree = "<group>"; };
+		038213DA2DD4979A003C02C3 /* PurchaseButtonComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseButtonComponentTests.swift; sourceTree = "<group>"; };
 		03A98CEE2D1EE040009BCA61 /* FallbackComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackComponentTests.swift; sourceTree = "<group>"; };
 		03A98CF02D222F53009BCA61 /* FallbackComponentPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackComponentPreview.swift; sourceTree = "<group>"; };
 		03A98D2F2D240C3E009BCA61 /* UIConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIConfig.swift; sourceTree = "<group>"; };
@@ -2844,6 +2846,7 @@
 				03C7305A2D35985500297FEC /* TextComponentTests.swift */,
 				03A98CEE2D1EE040009BCA61 /* FallbackComponentTests.swift */,
 				2C08B2E82CD40DBF0024857B /* ButtonComponentTests.swift */,
+				038213DA2DD4979A003C02C3 /* PurchaseButtonComponentTests.swift */,
 				2C8EC6DE2CCD27A100D6CCF8 /* PartialComponentTests.swift */,
 			);
 			path = Components;
@@ -6826,6 +6829,7 @@
 				A563F586271E072B00246E0C /* MockBeginRefundRequestHelper.swift in Sources */,
 				2DA85A8A26DEA7DC00F1136D /* MockProductsRequestFactory.swift in Sources */,
 				5793397028E77A5100C1232C /* PaymentQueueWrapperTests.swift in Sources */,
+				038213DB2DD4979A003C02C3 /* PurchaseButtonComponentTests.swift in Sources */,
 				5791FDBE299419D900F1FEDA /* MockSigning.swift in Sources */,
 				57FDAA9A2846C2BD009A48F1 /* PurchasesDelegateTests.swift in Sources */,
 				351B516026D44BB600BD2BD7 /* MockAttributionDataMigrator.swift in Sources */,
