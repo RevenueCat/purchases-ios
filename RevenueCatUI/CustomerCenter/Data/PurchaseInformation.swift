@@ -262,8 +262,6 @@ extension PurchaseInformation: Identifiable {
     var id: Self { self }
 }
 
-extension PurchaseInformation: Equatable { }
-
 // swiftlint:enable nesting
 
 extension PurchaseInformation {
