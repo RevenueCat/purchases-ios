@@ -36,6 +36,8 @@ struct PurchaseInformation {
     let price: PriceDetails
 
     /// Subscription expiration or renewal details, if applicable.
+    ///
+    /// Note: Deprecated, soon to be deleted
     let expirationOrRenewal: ExpirationOrRenewal?
 
     /// The unique product identifier for the purchase.
