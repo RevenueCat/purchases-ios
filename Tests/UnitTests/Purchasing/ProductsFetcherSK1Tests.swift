@@ -148,7 +148,7 @@ class ProductsFetcherSK1Tests: TestCase {
             completionCallCount += 1
         }
 
-        let timeout = (productsRequestResponseTime + .milliseconds(30)).nimbleInterval
+        let timeout = (productsRequestResponseTime + .milliseconds(30)).seconds.nimbleInterval
         expect(completionCallCount).toEventually(equal(1),
                                                  timeout: timeout)
         expect(self.productsRequestFactory.invokedRequestCount) == 1
