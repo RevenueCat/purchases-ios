@@ -108,7 +108,7 @@ struct PurchaseButtonComponentView: View {
     private func purchaseSelectedWebProduct() async throws {
         self.logIfInPreview(package: self.packageContext.package)
 
-        guard let webCheckoutUrl = self.packageContext.package?.webCheckoutUrl else {
+        guard let webCheckoutUrl = self.viewModel.urlForWebProduct(packageContext: self.packageContext) else {
             Logger.error(Strings.no_web_checkout_url_found)
             return
         }
@@ -129,10 +129,10 @@ struct PurchaseButtonComponentView: View {
 
     private func openWebPaywallLink(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) {
         Purchases.shared.invalidateCustomerInfoCache()
-#if os(watchOS)
+        #if os(watchOS)
         // watchOS doesn't support openURL with a completion handler, so we're just opening the URL.
         openURL(url)
-#else
+        #else
         openURL(url) { success in
             if success {
                 Logger.debug(Strings.successfully_opened_url_external_browser(url.absoluteString))
@@ -140,8 +140,11 @@ struct PurchaseButtonComponentView: View {
                 Logger.error(Strings.failed_to_open_url_external_browser(url.absoluteString))
             }
         }
-#endif
-        onDismiss()
+        #endif
+
+        if self.viewModel.webAutoDimiss {
+            self.onDismiss()
+        }
     }
 
     /// Used to see purchasing information when using SwiftUI Previews

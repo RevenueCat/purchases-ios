@@ -39,7 +39,42 @@ class PurchaseButtonComponentViewModel {
     }
 
     var offeringWebCheckoutUrl: URL? {
-        return self.offering.webCheckoutUrl
+        if let customUrl = component.customUrl {
+            return customUrl.url
+        } else {
+            return self.offering.webCheckoutUrl
+        }
+    }
+
+    var webAutoDimiss: Bool {
+        return self.component.webAutoDismiss
+    }
+
+    func urlForWebProduct(packageContext: PackageContext) -> URL? {
+        guard let package = packageContext.package else {
+            return nil
+        }
+
+        if let customUrl = component.customUrl {
+            // Appends package identifier into a query param to a custom url
+            return customUrl.url.appending(name: customUrl.packageParam, value: package.identifier)
+        } else {
+            return package.webCheckoutUrl
+        }
+    }
+
+}
+
+private extension URL {
+
+    func appending(name: String, value: String?) -> URL {
+        var components = URLComponents(url: self, resolvingAgainstBaseURL: false)
+
+        var queryItems = components?.queryItems ?? []
+        queryItems.append(URLQueryItem(name: name, value: value))
+        components?.queryItems = queryItems
+
+        return components?.url ?? self
     }
 
 }
