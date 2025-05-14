@@ -23,7 +23,7 @@ import Nimble
 
 /// Overload for `Nimble.waitUntil` with our default timeout
 func waitUntil(
-    timeout: DispatchTimeInterval = defaultTimeout,
+    timeout: NimbleTimeInterval = defaultTimeout,
     file: FileString = #file,
     line: UInt = #line,
     action: @escaping (@escaping () -> Void) -> Void
@@ -41,7 +41,7 @@ func waitUntil(
 /// }
 /// ```
 func waitUntilValue<Value>(
-    timeout: DispatchTimeInterval = defaultTimeout,
+    timeout: NimbleTimeInterval = defaultTimeout,
     file: FileString = #file,
     line: UInt = #line,
     action: @escaping (@escaping @Sendable (Value?) -> Void) -> Void
@@ -62,9 +62,9 @@ private struct ConditionFailedError: Error {}
 
 func asyncWait(
     description: String? = nil,
-    timeout: DispatchTimeInterval = defaultTimeout,
-    pollInterval: DispatchTimeInterval = defaultPollInterval,
-    file: FileString = #fileID,
+    timeout: NimbleTimeInterval = defaultTimeout,
+    pollInterval: NimbleTimeInterval = defaultPollInterval,
+    file: FileString = #filePath,
     line: UInt = #line,
     until condition: @Sendable () async -> Bool
 ) async throws {
@@ -86,9 +86,9 @@ func asyncWait(
 // Also `toEventually` (Quick nor Nimble) don't support `async`.
 // Fix-me: remove once we can use Quick v6.x:
 func asyncWait<T>(
-    timeout: DispatchTimeInterval = defaultTimeout,
-    pollInterval: DispatchTimeInterval = defaultPollInterval,
-    file: FileString = #fileID,
+    timeout: NimbleTimeInterval = defaultTimeout,
+    pollInterval: NimbleTimeInterval = defaultPollInterval,
+    file: FileString = #filePath,
     line: UInt = #line,
     description: @Sendable (T?) -> String?,
     until value: @Sendable () async -> T,
@@ -128,5 +128,5 @@ func asyncWait<T>(
 }
 
 // Higher value required to avoid slow CI failing tests.
-let defaultTimeout: DispatchTimeInterval = .seconds(2)
-let defaultPollInterval: DispatchTimeInterval = AsyncDefaults.pollInterval
+let defaultTimeout: NimbleTimeInterval = .seconds(2)
+let defaultPollInterval: NimbleTimeInterval = PollingDefaults.pollInterval

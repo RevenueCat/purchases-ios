@@ -26,7 +26,8 @@ extension BaseStoreKitIntegrationTests {
     @discardableResult
     func verifyEntitlementWentThrough(
         _ customerInfo: CustomerInfo,
-        file: FileString = #file,
+        file: FileString = #filePath,
+        filename: StaticString = #file,
         line: UInt = #line
     ) async throws -> EntitlementInfo {
         // This is used to throw an error when the test fails.
@@ -56,7 +57,7 @@ extension BaseStoreKitIntegrationTests {
         do {
             entitlement = try XCTUnwrap(
                 entitlements[Self.entitlementIdentifier],
-                file: file, line: line
+                file: filename, line: line
             )
         } catch {
             await self.printReceiptContent()
