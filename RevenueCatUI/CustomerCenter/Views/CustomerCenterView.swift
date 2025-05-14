@@ -202,7 +202,7 @@ private extension CustomerCenterView {
 
     @ViewBuilder
     func destinationContent(configuration: CustomerCenterConfigData) -> some View {
-        if let purchaseInformation = viewModel.purchaseInformation {
+        if let purchaseInformation = viewModel.activePurchase {
             if purchaseInformation.store == .appStore,
                let screen = configuration.screens[.management] {
                 if let onUpdateAppClick = viewModel.onUpdateAppClick,
@@ -218,7 +218,7 @@ private extension CustomerCenterView {
                 } else {
                     ManageSubscriptionsView(
                         screen: screen,
-                        purchaseInformation: $viewModel.purchaseInformation,
+                        purchaseInformation: $viewModel.activePurchase,
                         purchasesProvider: self.viewModel.purchasesProvider,
                         actionWrapper: self.viewModel.actionWrapper)
                 }
@@ -231,7 +231,7 @@ private extension CustomerCenterView {
         } else {
             if let screen = configuration.screens[.noActive] {
                 ManageSubscriptionsView(screen: screen,
-                                        purchaseInformation: $viewModel.purchaseInformation,
+                                        purchaseInformation: $viewModel.activePurchase,
                                         purchasesProvider: self.viewModel.purchasesProvider,
                                         actionWrapper: self.viewModel.actionWrapper)
             } else {
