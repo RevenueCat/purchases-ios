@@ -35,6 +35,7 @@ import Foundation
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
+    let packageStoreProduct: StoreProduct?
     let winBackOffer: WinBackOffer?
     let metadata: [String: String]?
 
@@ -47,6 +48,7 @@ import Foundation
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
+        self.packageStoreProduct = builder.packageStoreProduct
         self.winBackOffer = builder.winBackOffer
         self.metadata = builder.metadata
 
@@ -61,6 +63,7 @@ import Foundation
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
+        private(set) var packageStoreProduct: StoreProduct?
         private(set) var winBackOffer: WinBackOffer?
         private(set) var metadata: [String: String]?
 
@@ -108,6 +111,14 @@ import Foundation
             return self
         }
         #endif
+
+        /**
+         * 
+         */
+        @objc public func with(packageStoreProduct: StoreProduct?) -> Self {
+            self.packageStoreProduct = packageStoreProduct
+            return self
+        }
 
         /**
          * Sets a win-back offer for the purchase.
