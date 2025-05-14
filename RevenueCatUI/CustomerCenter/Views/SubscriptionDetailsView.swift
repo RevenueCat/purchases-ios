@@ -46,7 +46,7 @@ struct SubscriptionDetailsView: View {
                         value: durationTitle
                     )
                 }
-                
+
                 let priceToUse = purchaseInformation.renewalPrice ?? purchaseInformation.pricePaid
 
                 let priceValue: String? = {
