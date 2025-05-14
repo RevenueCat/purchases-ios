@@ -432,6 +432,14 @@ public struct CustomerCenterConfigData: Equatable {
             public struct CrossProductPromotion: Equatable {
                 public let storeOfferIdentifier: String
                 public let targetProductId: String
+
+                public init(
+                    storeofferingidentifier: String,
+                    targetproductid: String
+                ) {
+                    self.storeOfferIdentifier = storeofferingidentifier
+                    self.targetProductId = targetproductid
+                }
             }
 
             public init(iosOfferId: String,
@@ -688,7 +696,8 @@ extension CustomerCenterConfigData.HelpPath.PromotionalOffer {
         self.title = response.title
         self.subtitle = response.subtitle
         self.productMapping = response.productMapping
-        self.crossProductPromotions = response.crossProductPromotions?.mapValues { CrossProductPromotion(from: $0) } ?? [:]
+        self.crossProductPromotions = response.crossProductPromotions?.mapValues { CrossProductPromotion(from: $0) }
+            ?? [:]
     }
 
 }
