@@ -100,21 +100,24 @@ public struct TestStoreProduct {
 }
 
 // Ensure consistency with the internal type
-extension TestStoreProduct: StoreProductType {
+extension TestStoreProduct {
+    // swiftlint:disable missing_docs
 
-    internal var productCategory: StoreProduct.ProductCategory { return self.productType.productCategory }
+    @_spi(Internal) public var productCategory: StoreProduct.ProductCategory { return self.productType.productCategory }
 
-    internal var currencyCode: String? {
+    @_spi(Internal) public var currencyCode: String? {
         return self.locale.rc_currencyCode
     }
 
-    internal var priceFormatter: NumberFormatter? {
+    @_spi(Internal) public var priceFormatter: NumberFormatter? {
         return self.currencyCode.map {
             self.priceFormatterProvider.priceFormatterForSK2(withCurrencyCode: $0, locale: self.locale)
         }
     }
-
+    // swiftlint:enable missing_docs
 }
+
+@_spi(Internal) extension TestStoreProduct: StoreProductType { }
 
 extension TestStoreProduct {
 
