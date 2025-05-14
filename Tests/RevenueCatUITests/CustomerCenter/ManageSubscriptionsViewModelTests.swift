@@ -53,6 +53,31 @@ final class ManageSubscriptionsViewModelTests: TestCase {
         expect(viewModel.showRestoreAlert) == false
     }
 
+    func testNonAppStoreFiltersAppStoreOnlyPaths() {
+        let purchase = PurchaseInformation.mockNonLifetime(store: .playStore)
+
+        let viewModel = ManageSubscriptionsViewModel(
+            screen: ManageSubscriptionsViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases())
+
+        expect(viewModel.relevantPathsForPurchase.count) == 1
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beTrue())
+    }
+
+    func testNonAppStoreFiltersAppStoreOnlyPathsAndCancelIfNoURL() {
+        let purchase = PurchaseInformation.mockNonLifetime(store: .playStore, managementURL: nil)
+
+        let viewModel = ManageSubscriptionsViewModel(
+            screen: ManageSubscriptionsViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases())
+
+        expect(viewModel.relevantPathsForPurchase.count) == 0
+    }
+
     func testLifetimeSubscriptionDoesNotShowCancel() {
         let purchase = PurchaseInformation.mockLifetime()
 
@@ -339,7 +364,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 
             expect(loadPromotionalOfferUseCase.offerToLoadPromoFor).to(beNil())
 
-            await viewModel.determineFlow(for: pathWithPromotionalOffer)
+            await viewModel.handleHelpPath(pathWithPromotionalOffer)
 
             expect(loadPromotionalOfferUseCase.offerToLoadPromoFor).to(beNil())
         }
@@ -449,7 +474,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 
         expect(loadPromotionalOfferUseCase.offerToLoadPromoFor).to(beNil())
 
-        await viewModel.determineFlow(for: pathWithPromotionalOffer)
+        await viewModel.handleHelpPath(pathWithPromotionalOffer)
 
         let loadingPath = try XCTUnwrap(viewModel.loadingPath)
         expect(loadingPath.id) == pathWithPromotionalOffer.id
@@ -483,7 +508,8 @@ private extension ManageSubscriptionsViewModelTests {
 
 private extension PurchaseInformation {
     static func mockLifetime(
-        customerInfoRequestedDate: Date = Date()
+        customerInfoRequestedDate: Date = Date(),
+        store: Store = .appStore
     ) -> PurchaseInformation {
         PurchaseInformation(
             title: "",
@@ -492,21 +518,25 @@ private extension PurchaseInformation {
             price: .paid(""),
             expirationOrRenewal: PurchaseInformation.ExpirationOrRenewal(label: .expires, date: .date("")),
             productIdentifier: "",
-            store: .appStore,
+            store: store,
             isLifetime: true,
             isTrial: false,
             isCancelled: false,
             latestPurchaseDate: nil,
-            customerInfoRequestedDate: customerInfoRequestedDate
+            customerInfoRequestedDate: customerInfoRequestedDate,
+            managementURL: URL(string: "https://www.revenuecat.com")!
         )
     }
 
     static func mockNonLifetime(
+        store: Store = .appStore,
         price: PurchaseInformation.PriceDetails = .paid("5"),
         isTrial: Bool = false,
         isCancelled: Bool = false,
         latestPurchaseDate: Date = Date(),
-        customerInfoRequestedDate: Date = Date()) -> PurchaseInformation {
+        customerInfoRequestedDate: Date = Date(),
+        managementURL: URL? = URL(string: "https://www.revenuecat.com")!
+    ) -> PurchaseInformation {
         PurchaseInformation(
             title: "",
             durationTitle: "",
@@ -517,12 +547,13 @@ private extension PurchaseInformation {
                 date: .date("")
             ),
             productIdentifier: "",
-            store: .appStore,
+            store: store,
             isLifetime: false,
             isTrial: isTrial,
             isCancelled: isCancelled,
             latestPurchaseDate: latestPurchaseDate,
-            customerInfoRequestedDate: customerInfoRequestedDate
+            customerInfoRequestedDate: customerInfoRequestedDate,
+            managementURL: managementURL
         )
     }
 }
