@@ -241,19 +241,19 @@ struct PurchaseInformation {
 extension PurchaseInformation: Hashable {
 
     func hash(into hasher: inout Hasher) {
-        title.map { hasher.combine($0) }
-        durationTitle.map { hasher.combine($0) }
+        hasher.combine(title)
+        hasher.combine(durationTitle)
         hasher.combine(explanation)
         hasher.combine(price)
         hasher.combine(productIdentifier)
         hasher.combine(store)
         hasher.combine(isLifetime)
         hasher.combine(isCancelled)
-        latestPurchaseDate.map { hasher.combine($0) }
+        hasher.combine(latestPurchaseDate)
         hasher.combine(customerInfoRequestedDate)
-        expirationDate.map { hasher.combine($0) }
-        renewalDate.map { hasher.combine($0) }
-        managementURL.map { hasher.combine($0) }
+        hasher.combine(expirationDate)
+        hasher.combine(renewalDate)
+        hasher.combine(managementURL)
     }
  }
 
