@@ -224,7 +224,10 @@ final class CustomerCenterViewModelTests: TestCase {
             renewalPrice: .nonFree(formatted(price: 2.99, currencyCode: "USD"))
         )
 
-        func checkExpectations(_ viewModel: CustomerCenterViewModel, renewalPrice: PurchaseInformation.PriceDetails?) async throws {
+        func checkExpectations(
+            _ viewModel: CustomerCenterViewModel,
+            renewalPrice: PurchaseInformation.PriceDetails?
+        ) async throws {
             await viewModel.loadScreen()
 
             expect(viewModel.state) == .success
@@ -500,7 +503,7 @@ final class CustomerCenterViewModelTests: TestCase {
                     entitlementId: "pro",
                     productId: productIdLifetime,
                     purchaseDate: purchaseDateLifetime,
-                    expirationDate: nil,
+                    expirationDate: nil
                 )
             ],
             nonSubscriptions: [
@@ -1000,7 +1003,7 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(mockPurchases.loadCustomerCenterCallCount) == 2
     }
 
-    private func formatted(price: Decimal, currencyCode: String = "USD") -> String{
+    private func formatted(price: Decimal, currencyCode: String = "USD") -> String {
         PurchaseInformation.defaultNumberFormatter.currencyCode = currencyCode
         return PurchaseInformation.defaultNumberFormatter.string(from: price as NSNumber)!
     }
