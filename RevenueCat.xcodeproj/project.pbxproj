@@ -748,6 +748,7 @@
 		57BB08642DD3BE37007493E1 /* BaseManageSubscriptionViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57BB08632DD3BE2D007493E1 /* BaseManageSubscriptionViewModelTests.swift */; };
 		57BB08662DD3D9B0007493E1 /* SubscriptionDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57BB08652DD3D9AC007493E1 /* SubscriptionDetailViewModel.swift */; };
 		57BB08682DD3D9EC007493E1 /* SubscriptionDetailViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57BB08672DD3D9EA007493E1 /* SubscriptionDetailViewModelTests.swift */; };
+		57BB1E1B2DD4D72A00DEE41E /* SubscriptionDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57BB1E1A2DD4D72600DEE41E /* SubscriptionDetailView.swift */; };
 		57BD50AA27692B7500211D6D /* StoreKitError+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57BD50A927692B7500211D6D /* StoreKitError+Extensions.swift */; };
 		57BF87592967880C00424254 /* MockCachingTrialOrIntroPriceEligibilityChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57BF87582967880C00424254 /* MockCachingTrialOrIntroPriceEligibilityChecker.swift */; };
 		57C0BB6929F840BD00827807 /* FrameworkDisambiguation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C0BB6829F840BD00827807 /* FrameworkDisambiguation.swift */; };
@@ -757,6 +758,8 @@
 		57C381DC27961547009E3940 /* SK2StoreProductDiscount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C381DB27961547009E3940 /* SK2StoreProductDiscount.swift */; };
 		57C381E2279627B7009E3940 /* MockStoreProductDiscount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C381E1279627B7009E3940 /* MockStoreProductDiscount.swift */; };
 		57C381E3279627B7009E3940 /* MockStoreProductDiscount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C381E1279627B7009E3940 /* MockStoreProductDiscount.swift */; };
+		57C5647A2DD4D54C00E9AA16 /* ActiveSubscriptionsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C564792DD4D54A00E9AA16 /* ActiveSubscriptionsListView.swift */; };
+		57C5647E2DD4D5B900E9AA16 /* ActiveSubscriptionsListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C5647D2DD4D5B200E9AA16 /* ActiveSubscriptionsListViewModel.swift */; };
 		57CB2A7829CCC3AA00C91439 /* ProductEntitlementMappingFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57CB2A7729CCC3AA00C91439 /* ProductEntitlementMappingFetcher.swift */; };
 		57CB2A7A29CCC61600C91439 /* CustomerInfoResponseHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57CB2A7929CCC61600C91439 /* CustomerInfoResponseHandlerTests.swift */; };
 		57CB2A7C29CCC91800C91439 /* MockProductEntitlementMappingFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57CB2A7B29CCC91800C91439 /* MockProductEntitlementMappingFetcher.swift */; };
@@ -2123,6 +2126,7 @@
 		57BB08632DD3BE2D007493E1 /* BaseManageSubscriptionViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseManageSubscriptionViewModelTests.swift; sourceTree = "<group>"; };
 		57BB08652DD3D9AC007493E1 /* SubscriptionDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionDetailViewModel.swift; sourceTree = "<group>"; };
 		57BB08672DD3D9EA007493E1 /* SubscriptionDetailViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionDetailViewModelTests.swift; sourceTree = "<group>"; };
+		57BB1E1A2DD4D72600DEE41E /* SubscriptionDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionDetailView.swift; sourceTree = "<group>"; };
 		57BD50A927692B7500211D6D /* StoreKitError+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StoreKitError+Extensions.swift"; sourceTree = "<group>"; };
 		57BF87582967880C00424254 /* MockCachingTrialOrIntroPriceEligibilityChecker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockCachingTrialOrIntroPriceEligibilityChecker.swift; sourceTree = "<group>"; };
 		57C0BB6829F840BD00827807 /* FrameworkDisambiguation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameworkDisambiguation.swift; sourceTree = "<group>"; };
@@ -2131,6 +2135,8 @@
 		57C381D92796153D009E3940 /* SK1StoreProductDiscount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SK1StoreProductDiscount.swift; sourceTree = "<group>"; };
 		57C381DB27961547009E3940 /* SK2StoreProductDiscount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SK2StoreProductDiscount.swift; sourceTree = "<group>"; };
 		57C381E1279627B7009E3940 /* MockStoreProductDiscount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreProductDiscount.swift; sourceTree = "<group>"; };
+		57C564792DD4D54A00E9AA16 /* ActiveSubscriptionsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSubscriptionsListView.swift; sourceTree = "<group>"; };
+		57C5647D2DD4D5B200E9AA16 /* ActiveSubscriptionsListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSubscriptionsListViewModel.swift; sourceTree = "<group>"; };
 		57CB2A7729CCC3AA00C91439 /* ProductEntitlementMappingFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductEntitlementMappingFetcher.swift; sourceTree = "<group>"; };
 		57CB2A7929CCC61600C91439 /* CustomerInfoResponseHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfoResponseHandlerTests.swift; sourceTree = "<group>"; };
 		57CB2A7B29CCC91800C91439 /* MockProductEntitlementMappingFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockProductEntitlementMappingFetcher.swift; sourceTree = "<group>"; };
@@ -3840,6 +3846,7 @@
 		3537565A2C382C2800A1B8D6 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				57C5647D2DD4D5B200E9AA16 /* ActiveSubscriptionsListViewModel.swift */,
 				57BB08652DD3D9AC007493E1 /* SubscriptionDetailViewModel.swift */,
 				57FE3A592DD3BD9700868DEF /* BaseManageSubscriptionViewModel.swift */,
 				35724B402D96DB1700332612 /* RestorePurchasesAlertViewModel.swift */,
@@ -3856,6 +3863,8 @@
 		353756602C382C2800A1B8D6 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				57BB1E1A2DD4D72600DEE41E /* SubscriptionDetailView.swift */,
+				57C564792DD4D54A00E9AA16 /* ActiveSubscriptionsListView.swift */,
 				57956ACF2DD3783900E935FF /* PurchaseCardView.swift */,
 				570585932DD216BD003D3FBB /* AppUpdateWarningView.swift */,
 				570585942DD216BD003D3FBB /* CompatibilityContentUnavailableView.swift */,
@@ -7054,6 +7063,7 @@
 				353756662C382C2800A1B8D6 /* CustomerCenterError.swift in Sources */,
 				887A60CF2C1D037000E1A461 /* View+PresentPaywallFooter.swift in Sources */,
 				570A67202DD2029D00DEBABE /* IdentifiableURL.swift in Sources */,
+				57BB1E1B2DD4D72A00DEE41E /* SubscriptionDetailView.swift in Sources */,
 				887A60BB2C1D037000E1A461 /* Template4View.swift in Sources */,
 				887A607E2C1D037000E1A461 /* Logger.swift in Sources */,
 				887A60852C1D037000E1A461 /* FitToAspectRatio.swift in Sources */,
@@ -7100,6 +7110,7 @@
 				038211972DCA730C003C02C3 /* PurchaseButtonInPackagePreview.swift in Sources */,
 				038211982DCA730C003C02C3 /* ButtonWithFooterPreview.swift in Sources */,
 				887A60832C1D037000E1A461 /* VersionDetector.swift in Sources */,
+				57C5647A2DD4D54C00E9AA16 /* ActiveSubscriptionsListView.swift in Sources */,
 				030F93B32D5ED90B0085103F /* ProgressViewModifier.swift in Sources */,
 				88B1BAFC2C813A3C001B7EE5 /* ImageComponentView.swift in Sources */,
 				357C43AF2D80510A00B96769 /* CustomerCenterManagementOption.swift in Sources */,
@@ -7133,6 +7144,7 @@
 				570585BF2DD216BD003D3FBB /* RestorePurchasesAlert.swift in Sources */,
 				570585C02DD216BD003D3FBB /* CompatibilityContentUnavailableView.swift in Sources */,
 				35C200AF2C39252D00B9778B /* FeedbackSurveyData.swift in Sources */,
+				57C5647E2DD4D5B900E9AA16 /* ActiveSubscriptionsListViewModel.swift in Sources */,
 				353FDC0D2CA41CB20055F328 /* SubscriptionPeriod+Extensions.swift in Sources */,
 				887A60BA2C1D037000E1A461 /* Template3View.swift in Sources */,
 				887A607D2C1D037000E1A461 /* ImageLoader.swift in Sources */,

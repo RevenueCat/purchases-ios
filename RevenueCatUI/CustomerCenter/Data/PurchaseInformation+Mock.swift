@@ -34,7 +34,7 @@ extension PurchaseInformation {
         renewalDate: nil
     )
 
-    static let subscriptionInformationFree = PurchaseInformation(
+    static let free = PurchaseInformation(
         title: "Basic",
         durationTitle: "Monthly",
         explanation: .earliestRenewal,
