@@ -10,16 +10,21 @@
 //  LoadPromotionalOfferUseCase.swift
 //
 //  Created by Cesar de la Vega on 18/7/24.
+//
+//  LoadPromotionalOfferUseCase.swift
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//  Licensed under the MIT License (https://opensource.org/licenses/MIT)
+//  Created by Cesar de la Vega on 18/7/24.
+//
 
 import Foundation
 import RevenueCat
 
 protocol LoadPromotionalOfferUseCaseType {
-
     func execute(
         promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer
     ) async -> Result<PromotionalOfferData, Error>
-
 }
 
 #if os(iOS)
@@ -48,17 +53,21 @@ class LoadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType {
             }
 
             let subscribedProduct = try await getActiveSubscription(activeTransaction.productIdentifier)
-            let discount = try findDiscount(for: subscribedProduct,
-                                            productIdentifier: subscribedProduct.productIdentifier,
-                                            promoOfferDetails: promoOfferDetails)
+
+            let discountFinder = DiscountsHandler(purchasesProvider: self.purchasesProvider)
+            let (discount, targetProduct) = try await discountFinder.findDiscount(
+                for: subscribedProduct,
+                promoOfferDetails: promoOfferDetails
+            )
 
             let promotionalOffer = try await self.purchasesProvider.promotionalOffer(
                 forProductDiscount: discount,
-                product: subscribedProduct
+                product: targetProduct
             )
+
             return .success(PromotionalOfferData(
                 promotionalOffer: promotionalOffer,
-                product: subscribedProduct,
+                product: targetProduct,
                 promoOfferDetails: promoOfferDetails
             ))
         } catch {
@@ -67,78 +76,12 @@ class LoadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType {
         }
     }
 
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-private extension LoadPromotionalOfferUseCase {
-
     private func getActiveSubscription(_ productId: String) async throws -> StoreProduct {
         guard let subscribedProduct = await self.purchasesProvider.products([productId]).first else {
             Logger.warning(Strings.could_not_offer_for_any_active_subscriptions)
             throw CustomerCenterError.couldNotFindSubscriptionInformation
         }
         return subscribedProduct
-    }
-
-    private func findDiscount(
-        for product: StoreProduct,
-        productIdentifier: String,
-        promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer
-    ) throws -> StoreProductDiscount {
-        let discount = !promoOfferDetails.productMapping.isEmpty
-            ? findMappedDiscount(for: product,
-                                 productIdentifier: productIdentifier,
-                                 promoOfferDetails: promoOfferDetails)
-            : findLegacyDiscount(for: product, promoOfferDetails: promoOfferDetails)
-
-        guard let discount = discount else {
-            logDiscountError(productIdentifier: productIdentifier, promoOfferDetails: promoOfferDetails)
-            throw CustomerCenterError.couldNotFindSubscriptionInformation
-        }
-
-        return discount
-    }
-
-    private func findMappedDiscount(
-        for product: StoreProduct,
-        productIdentifier: String,
-        promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer
-    ) -> StoreProductDiscount? {
-        product.discounts.first { $0.offerIdentifier == promoOfferDetails.productMapping[productIdentifier] }
-    }
-
-    private func findLegacyDiscount(
-        for product: StoreProduct,
-        promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer
-    ) -> StoreProductDiscount? {
-        // Try exact match first
-        if let exactMatch = product.discounts.first(where: {
-            $0.offerIdentifier == promoOfferDetails.iosOfferId
-        }) {
-            return exactMatch
-        }
-
-        // Fall back to suffix matching
-        return product.discounts.first { $0.offerIdentifier?.hasSuffix("_\(promoOfferDetails.iosOfferId)") == true }
-    }
-
-    private func logDiscountError(
-        productIdentifier: String,
-        promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer
-    ) {
-        let message = !promoOfferDetails.productMapping.isEmpty
-            ? Strings.could_not_offer_for_active_subscriptions(
-                promoOfferDetails.productMapping[productIdentifier] ?? "nil",
-                productIdentifier
-            )
-            : Strings.could_not_offer_for_active_subscriptions(
-                promoOfferDetails.iosOfferId,
-                productIdentifier
-            )
-        Logger.debug(message)
     }
 
 }

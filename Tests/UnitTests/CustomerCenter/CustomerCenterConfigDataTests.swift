@@ -66,6 +66,10 @@ class CustomerCenterConfigDataTests: TestCase {
                                                         subtitle: "Before you go",
                                                         productMapping: [
                                                             "product_id": "offer_id"
+                                                        ],
+                                                        crossProductPromotions: [
+                                                            "monthly": .init(storeOfferIdentifier: "offer_id",
+                                                                             targetProductId: "annual")
                                                         ]),
                                 feedbackSurvey: nil,
                                 refundWindow: nil
@@ -86,9 +90,16 @@ class CustomerCenterConfigDataTests: TestCase {
                                                                                       title: "Wait!",
                                                                                       subtitle: "Before you go",
                                                                                       productMapping: [
-                                                                                          "product_id": "offer_id"
-                                                                                      ]))
-                                                      ]),
+                                                                                        "product_id": "offer_id"
+                                                                                      ],
+                                                                                      crossProductPromotions: [
+                                                                                        "monthly": .init(
+                                                                                            storeOfferIdentifier:
+                                                                                                "offer_id",
+                                                                                            targetProductId: "annual"
+                                                                                        )
+                                                                                      ])
+                                                             )]),
                                 refundWindow: nil
                             ),
                             .init(
@@ -103,7 +114,10 @@ class CustomerCenterConfigDataTests: TestCase {
                                                         subtitle: "Before you go",
                                                         productMapping: [
                                                             "product_id": "offer_id"
-                                                        ]),
+                                                        ],
+                                                        crossProductPromotions: [
+                                                            "monthly": .init(storeOfferIdentifier: "offer_id",
+                                                                             targetProductId: "annual")]),
                                 feedbackSurvey: nil,
                                 refundWindow: nil
                             )
