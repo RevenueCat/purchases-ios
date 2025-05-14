@@ -17,7 +17,7 @@ import Foundation
 import RevenueCat
 import StoreKit
 
-// swiftlint:disable nesting
+// swiftlint:disable nesting file_length
 
 /// Information about a purchase.
 struct PurchaseInformation {
@@ -194,7 +194,7 @@ struct PurchaseInformation {
         }
     }
 
-    struct ExpirationOrRenewal {
+    struct ExpirationOrRenewal: Equatable {
         let label: Label
         let date: Date
 
@@ -235,6 +235,16 @@ struct PurchaseInformation {
          return dateFormatter
      }()
 }
+
+extension PurchaseInformation: Identifiable {
+
+     var id: String {
+         return "\(productIdentifier)_\(Self.defaultDateFormatter.string(from: customerInfoRequestedDate))"
+     }
+ }
+
+extension PurchaseInformation: Equatable { }
+
 // swiftlint:enable nesting
 
 extension PurchaseInformation {
