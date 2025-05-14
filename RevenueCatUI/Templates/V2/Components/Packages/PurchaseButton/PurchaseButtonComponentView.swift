@@ -113,6 +113,12 @@ struct PurchaseButtonComponentView: View {
             return
         }
 
+        self.logIfInPreview("Web Product: \(webCheckoutUrl)")
+
+        guard !self.isInPreview else {
+            return
+        }
+
         self.openWebPaywallLink(url: webCheckoutUrl, method: .externalBrowser)
     }
 
@@ -121,6 +127,12 @@ struct PurchaseButtonComponentView: View {
 
         guard let webCheckoutUrl = self.viewModel.offeringWebCheckoutUrl else {
             Logger.error(Strings.no_web_checkout_url_found)
+            return
+        }
+
+        self.logIfInPreview("Web Selection: \(webCheckoutUrl)")
+
+        guard !self.isInPreview else {
             return
         }
 
@@ -147,13 +159,31 @@ struct PurchaseButtonComponentView: View {
         }
     }
 
-    /// Used to see purchasing information when using SwiftUI Previews
-    private func logIfInPreview(package: Package?) {
+    private var isInPreview: Bool {
         #if DEBUG
         let isInPreview: Bool = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
 
-        if isInPreview {
-            print("Purchasing package: \(package?.identifier ?? "NOTHING")")
+        return isInPreview
+        #else
+        return false
+        #endif
+    }
+
+    /// Used to see purchasing information when using SwiftUI Previews
+    private func logIfInPreview(package: Package?) {
+        #if DEBUG
+        guard let package else { return }
+
+        self.logIfInPreview(
+            "Purchasing package: \(package.identifier)"
+        )
+        #endif
+    }
+
+    private func logIfInPreview(_ value: String) {
+        #if DEBUG
+        if self.isInPreview {
+            print(value)
         }
         #endif
     }

@@ -12,10 +12,17 @@ public extension PaywallComponent {
 
     final class PurchaseButtonComponent: PaywallComponentBase {
 
-        // swiftlint:disable:next swiftlint
+        // swiftlint:disable:next nesting
         public struct CustomURL: PaywallComponentBase {
+
             public let url: URL
             public let packageParam: String
+
+            public init(url: URL, packageParam: String) {
+                self.url = url
+                self.packageParam = packageParam
+            }
+
         }
 
         let type: ComponentType

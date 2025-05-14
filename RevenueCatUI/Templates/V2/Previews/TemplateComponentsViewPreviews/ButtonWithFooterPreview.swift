@@ -192,19 +192,107 @@ private enum ButtonWithSheetPreview {
                                             size: .init(width: .fill, height: .fit),
                                             shape: .pill
                                         ),
-                                        action: nil
+                                        action: .inAppCheckout
+                                    )),
+                                    .purchaseButton(.init(
+                                        stack: .init(
+                                            components: [
+                                                // WIP: Intro offer state with "cta_intro",
+                                                .text(.init(
+                                                    text: "cta_web",
+                                                    fontWeight: .bold,
+                                                    color: .init(light: .hex("#ffffff")),
+                                                    backgroundColor: .init(light: .hex("#e89d89")),
+                                                    padding: .init(top: 10,
+                                                                   bottom: 10,
+                                                                   leading: 30,
+                                                                   trailing: 30)
+                                                ))
+                                            ],
+                                            size: .init(width: .fill, height: .fit),
+                                            shape: .pill
+                                        ),
+                                        action: .webCheckout
+                                    )),
+                                    .purchaseButton(.init(
+                                        stack: .init(
+                                            components: [
+                                                // WIP: Intro offer state with "cta_intro",
+                                                .text(.init(
+                                                    text: "cta_web_selection",
+                                                    fontWeight: .bold,
+                                                    color: .init(light: .hex("#ffffff")),
+                                                    backgroundColor: .init(light: .hex("#e89d89")),
+                                                    padding: .init(top: 10,
+                                                                   bottom: 10,
+                                                                   leading: 30,
+                                                                   trailing: 30)
+                                                ))
+                                            ],
+                                            size: .init(width: .fill, height: .fit),
+                                            shape: .pill
+                                        ),
+                                        action: .webProductSelection
+                                    )),
+                                    .purchaseButton(.init(
+                                        stack: .init(
+                                            components: [
+                                                // WIP: Intro offer state with "cta_intro",
+                                                .text(.init(
+                                                    text: "cta_web_custom",
+                                                    fontWeight: .bold,
+                                                    color: .init(light: .hex("#ffffff")),
+                                                    backgroundColor: .init(light: .hex("#e89d89")),
+                                                    padding: .init(top: 10,
+                                                                   bottom: 10,
+                                                                   leading: 30,
+                                                                   trailing: 30)
+                                                ))
+                                            ],
+                                            size: .init(width: .fill, height: .fit),
+                                            shape: .pill
+                                        ),
+                                        action: .webCheckout,
+                                        customUrl: .init(
+                                            url: URL(string: "https://rev.cat?rc_app_user_id=123")!,
+                                            packageParam: "rc_package"
+                                        )
+                                    )),
+                                    .purchaseButton(.init(
+                                        stack: .init(
+                                            components: [
+                                                // WIP: Intro offer state with "cta_intro",
+                                                .text(.init(
+                                                    text: "cta_web_selection_custom",
+                                                    fontWeight: .bold,
+                                                    color: .init(light: .hex("#ffffff")),
+                                                    backgroundColor: .init(light: .hex("#e89d89")),
+                                                    padding: .init(top: 10,
+                                                                   bottom: 10,
+                                                                   leading: 30,
+                                                                   trailing: 30)
+                                                ))
+                                            ],
+                                            size: .init(width: .fill, height: .fit),
+                                            shape: .pill
+                                        ),
+                                        action: .webProductSelection,
+                                        customUrl: .init(
+                                            url: URL(string: "https://rev.cat?rc_app_user_id=123")!,
+                                            packageParam: "rc_package"
+                                        )
                                     ))
                                 ],
                                 size: .init(width: .fill, height: .fit),
-                                background: .color(.init(light: .hex("#ffcc00"))),
+                                background: .color(.init(light: .hex("#2b43bf"))),
                                 padding: .init(top: 0, bottom: 30, leading: 20, trailing: 20),
                                 shape: .rectangle(nil),
-                                overflow: .none
+                                overflow: .default
                              ),
                              // Sheet background
                              background: .color(.init(light: .hex("#2b43bf"))),
                              backgroundBlur: true,
-                             size: .init(width: .fill, height: .relative(0.25))
+                             size: .init(width: .fill, height: .fit)
                             )
             )),
         stack: .init(
@@ -290,34 +378,10 @@ private enum ButtonWithSheetPreview {
             .package(makePackage(packageID: "monthly",
                                  nameTextLid: "monthly_title",
                                  detailTextLid: "monthly_desc",
-                                 isSelectedByDefault: true)),
-            .package(makePackage(packageID: "weekly",
-                                 nameTextLid: "weekly_title",
-                                 detailTextLid: "weekly_desc",
-                                 isSelectedByDefault: true)),
-            .package(makePackage(packageID: "monthly",
-                                 nameTextLid: "monthly_title",
-                                 detailTextLid: "monthly_desc",
-                                 isSelectedByDefault: true)),
-            .package(makePackage(packageID: "weekly",
-                                 nameTextLid: "weekly_title",
-                                 detailTextLid: "weekly_desc",
-                                 isSelectedByDefault: true)),
-            .package(makePackage(packageID: "monthly",
-                                 nameTextLid: "monthly_title",
-                                 detailTextLid: "monthly_desc",
-                                 isSelectedByDefault: true)),
-            .package(makePackage(packageID: "weekly",
-                                 nameTextLid: "weekly_title",
-                                 detailTextLid: "weekly_desc",
-                                 isSelectedByDefault: true)),
-            .package(makePackage(packageID: "monthly",
-                                 nameTextLid: "monthly_title",
-                                 detailTextLid: "monthly_desc",
                                  isSelectedByDefault: true))
         ],
-        size: .init(width: .fill, height: .fill),
-        overflow: .scroll
+        size: .init(width: .fill, height: .fit),
+        overflow: .default
     )
 
     static let contentStack = PaywallComponent.StackComponent(
@@ -384,7 +448,11 @@ private enum ButtonWithSheetPreview {
             "body": .string("Get access to all of our educational content trusted by thousands of pet parents."),
             "package_name": .string("Monthly"),
             "package_detail": .string("Some price into"),
-            "cta": .string("Get Started"),
+            "cta": .string("In-app Checkout"),
+            "cta_web": .string("Web Checkout"),
+            "cta_web_selection": .string("Web Selection"),
+            "cta_web_custom": .string("Web Checkout (Custom)"),
+            "cta_web_selection_custom": .string("Web Selection (Custom)"),
             "cta_intro": .string("Claim Free Trial"),
             "viewall": .string("View all plans"),
 
@@ -393,7 +461,7 @@ private enum ButtonWithSheetPreview {
             "monthly_title": .string("Buy Monthly"),
             "monthly_desc": .string("Monthly something"),
 
-            "close": .string("X")
+            "close": .string("X"),
         ]],
         revision: 1,
         defaultLocaleIdentifier: "en_US"
@@ -403,12 +471,12 @@ private enum ButtonWithSheetPreview {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ButtonWithSheetPreview_Previews: PreviewProvider {
 
-    static var package: Package {
+    static var weeklyPackage: Package {
         return .init(identifier: "weekly",
                      packageType: .weekly,
                      storeProduct: .init(sk1Product: .init()),
                      offeringIdentifier: "default",
-                     webCheckoutUrl: nil)
+                     webCheckoutUrl: URL(string: "https://pay.revenuecat.com/abcd1234/the-app-user-id")!)
     }
 
     static var monthlyPackage: Package {
@@ -416,7 +484,7 @@ struct ButtonWithSheetPreview_Previews: PreviewProvider {
                      packageType: .monthly,
                      storeProduct: .init(sk1Product: .init()),
                      offeringIdentifier: "default",
-                     webCheckoutUrl: nil)
+                     webCheckoutUrl: URL(string: "https://pay.revenuecat.com/abcd1234/the-app-user-id")!)
     }
 
     // Need to wrap in VStack otherwise preview rerenders and images won't show
@@ -427,7 +495,7 @@ struct ButtonWithSheetPreview_Previews: PreviewProvider {
             paywallComponents: ButtonWithSheetPreview.paywallComponents,
             offering: .init(identifier: "default",
                             serverDescription: "",
-                            availablePackages: [package, monthlyPackage],
+                            availablePackages: [weeklyPackage, monthlyPackage],
                             webCheckoutUrl: nil),
             purchaseHandler: PurchaseHandler.default(),
             introEligibilityChecker: .default(),
