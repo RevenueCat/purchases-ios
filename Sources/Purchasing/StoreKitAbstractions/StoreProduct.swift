@@ -24,7 +24,7 @@ public typealias SK2Product = StoreKit.Product
 
 // It's an @objc wrapper of a `StoreProductType`. Swift-only code can use the protocol directly.
 /// Type that provides access to all of `StoreKit`'s product type's properties.
-@objc(RCStoreProduct) public final class StoreProduct: NSObject, StoreProductType {
+@objc(RCStoreProduct) public final class StoreProduct: NSObject {
 
     let product: StoreProductType
 
@@ -95,7 +95,7 @@ public typealias SK2Product = StoreKit.Product
 }
 
 /// Type that provides access to all of `StoreKit`'s product type's properties.
-internal protocol StoreProductType: Sendable {
+@_spi(Internal) public protocol StoreProductType: Sendable {
 
     /// The category of this product, whether a subscription or a one-time purchase.
 
@@ -192,6 +192,8 @@ internal protocol StoreProductType: Sendable {
     var discounts: [StoreProductDiscount] { get }
 
 }
+
+@_spi(Internal) extension StoreProduct: StoreProductType { }
 
 public extension StoreProduct {
 
