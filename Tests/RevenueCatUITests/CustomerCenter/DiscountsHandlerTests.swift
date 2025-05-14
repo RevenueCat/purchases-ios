@@ -16,7 +16,12 @@ import RevenueCat
 @testable import RevenueCatUI
 import XCTest
 
-@available(iOS 15.0, *)
+#if os(iOS)
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
 final class DiscountsHandlerTests: TestCase {
 
     private var mockProvider: MockCustomerCenterPurchases!
@@ -335,3 +340,5 @@ final class DiscountsHandlerTests: TestCase {
         )
     }
 }
+
+#endif
