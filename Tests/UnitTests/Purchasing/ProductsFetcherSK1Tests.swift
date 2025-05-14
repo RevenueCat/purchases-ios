@@ -9,7 +9,7 @@ class ProductsFetcherSK1Tests: TestCase {
     var productsFetcherSK1: ProductsFetcherSK1!
 
     private static let defaultTimeout: TimeInterval = 2
-    private static let defaultTimeoutInterval: NimbleTimeInterval = ProductsFetcherSK1Tests.defaultTimeout.nimbleInterval
+    private static let defaultTimeoutInterval: NimbleTimeInterval = defaultTimeout.nimbleInterval
 
     override func setUp() {
         super.setUp()
@@ -148,9 +148,9 @@ class ProductsFetcherSK1Tests: TestCase {
             completionCallCount += 1
         }
 
-        let timeout = productsRequestResponseTime + .milliseconds(30)
+        let timeout = (productsRequestResponseTime + .milliseconds(30)).nimbleInterval
         expect(completionCallCount).toEventually(equal(1),
-                                                 timeout: timeout.seconds.nimbleInterval)
+                                                 timeout: timeout)
         expect(self.productsRequestFactory.invokedRequestCount) == 1
 
         expect(receivedResult).to(beFailure())
@@ -177,8 +177,8 @@ class ProductsFetcherSK1Tests: TestCase {
             completionCallCount += 1
         }
 
-        let timeout = tolerance + .milliseconds(10)
-        expect(completionCallCount).toEventually(equal(1), timeout: timeout.seconds.nimbleInterval)
+        let timeout = (tolerance + .milliseconds(10)).seconds.nimbleInterval
+        expect(completionCallCount).toEventually(equal(1), timeout: timeout)
         expect(self.productsRequestFactory.invokedRequestCount) == 1
 
         let unwrappedProducts = try XCTUnwrap(receivedResult).get()
