@@ -210,7 +210,7 @@ struct PurchaseInformation {
         }
     }
 
-    enum PriceDetails: Equatable {
+    enum PriceDetails: Equatable, Hashable {
         case free
         case paid(String)
         case unknown
@@ -236,11 +236,23 @@ struct PurchaseInformation {
      }()
 }
 
-extension PurchaseInformation: Identifiable {
+extension PurchaseInformation: Hashable {
 
-     var id: String {
-         return "\(productIdentifier)_\(Self.defaultDateFormatter.string(from: customerInfoRequestedDate))"
-     }
+    func hash(into hasher: inout Hasher) {
+        title.map { hasher.combine($0) }
+        durationTitle.map { hasher.combine($0) }
+        hasher.combine(explanation)
+        hasher.combine(price)
+        hasher.combine(productIdentifier)
+        hasher.combine(store)
+        hasher.combine(isLifetime)
+        hasher.combine(isCancelled)
+        latestPurchaseDate.map { hasher.combine($0) }
+        hasher.combine(customerInfoRequestedDate)
+        expirationDate.map { hasher.combine($0) }
+        renewalDate.map { hasher.combine($0) }
+        managementURL.map { hasher.combine($0) }
+    }
  }
 
 extension PurchaseInformation: Equatable { }
