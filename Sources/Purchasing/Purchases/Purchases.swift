@@ -337,6 +337,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             diagnosticsTracker: diagnosticsTracker
         )
         let transactionFetcher = StoreKit2TransactionFetcher(diagnosticsTracker: diagnosticsTracker)
+        transactionFetcher.logIfUsingStoreKitFile()
 
         let backend = Backend(
             apiKey: apiKey,
