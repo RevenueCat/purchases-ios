@@ -68,7 +68,7 @@ struct OfferingsList: View {
                 Text("No data available.")
             }
         case .error(let error):
-        #if !os(watchOS)
+            #if os(iOS)
             CompatibilityContentUnavailableView("Error loading paywalls", systemImage: "exclamationmark.triangle.fill", description: Text(error.localizedDescription))
             #else
             ContentUnavailableView("Error loading paywalls", systemImage: "exclamationmark.triangle.fill", description: Text(error.localizedDescription))
@@ -138,7 +138,7 @@ struct OfferingsList: View {
 
     private func noPaywallsListItem() -> some View {
         VStack {
-            #if !os(watchOS)
+            #if canImport(UIKit) && os(iOS)
             CompatibilityContentUnavailableView("No configured paywalls",
                                                          systemImage: "exclamationmark.triangle.fill")
             #else

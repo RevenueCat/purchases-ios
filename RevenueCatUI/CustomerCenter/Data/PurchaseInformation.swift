@@ -41,6 +41,8 @@ struct PurchaseInformation {
     let renewalPrice: PriceDetails?
 
     /// Subscription expiration or renewal details, if applicable.
+    ///
+    /// Note: Deprecated, soon to be deleted
     let expirationOrRenewal: ExpirationOrRenewal?
 
     /// The unique product identifier for the purchase.
@@ -201,7 +203,7 @@ struct PurchaseInformation {
         self.pricePaid = transaction.paidPrice(numberFormatter: numberFormatter)
     }
 
-    struct ExpirationOrRenewal {
+    struct ExpirationOrRenewal: Equatable {
         let label: Label
         let date: Date
 
@@ -217,7 +219,7 @@ struct PurchaseInformation {
         }
     }
 
-    enum PriceDetails: Equatable {
+    enum PriceDetails: Equatable, Hashable {
         case free
         case nonFree(String)
         case unknown
@@ -236,18 +238,45 @@ struct PurchaseInformation {
         case lifetime
     }
 
-    private static let defaultDateFormatter: DateFormatter = {
+    static let defaultDateFormatter: DateFormatter = {
          let dateFormatter = DateFormatter()
          dateFormatter.dateStyle = .medium
          return dateFormatter
      }()
 
-    private static let defaultNumberFormatter: NumberFormatter = {
+    static let defaultNumberFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         return formatter
     }()
 }
+
+extension PurchaseInformation: Hashable {
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(title)
+        hasher.combine(durationTitle)
+        hasher.combine(explanation)
+        hasher.combine(pricePaid)
+        hasher.combine(renewalPrice)
+        hasher.combine(renewalDate)
+        hasher.combine(productIdentifier)
+        hasher.combine(store)
+        hasher.combine(isLifetime)
+        hasher.combine(isCancelled)
+        hasher.combine(latestPurchaseDate)
+        hasher.combine(customerInfoRequestedDate)
+        hasher.combine(expirationDate)
+        hasher.combine(renewalDate)
+        hasher.combine(managementURL)
+    }
+ }
+
+extension PurchaseInformation: Identifiable {
+
+    var id: Self { self }
+}
+
 // swiftlint:enable nesting
 
 extension PurchaseInformation {
@@ -312,16 +341,6 @@ extension PurchaseInformation {
         }
 
         return .nonFree(formattedPrice)
-    }
-}
-
-extension PurchaseInformation: Identifiable {
-
-    var id: String {
-        let formatter = ISO8601DateFormatter()
-        let purchaseDateString = latestPurchaseDate.map { formatter.string(from: $0) }
-            ?? formatter.string(from: Date())
-        return "\(productIdentifier)_\(purchaseDateString)"
     }
 }
 

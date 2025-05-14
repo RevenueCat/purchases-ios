@@ -28,7 +28,7 @@ import XCTest
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @MainActor
-final class ManageSubscriptionsViewModelTests: TestCase {
+final class BaseManageSubscriptionViewModelTests: TestCase {
 
     private let error = TestError(message: "An error occurred")
 
@@ -41,10 +41,12 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 
     func testInitialState() {
         let viewModel =
-        ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.default,
-                                     actionWrapper: CustomerCenterActionWrapper(),
-                                     purchaseInformation: nil,
-                                     purchasesProvider: MockCustomerCenterPurchases())
+        BaseManageSubscriptionViewModel(
+            screen: ManageSubscriptionsViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: nil,
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
 
         expect(viewModel.purchaseInformation).to(beNil())
         expect(viewModel.refundRequestStatus).to(beNil())
@@ -55,11 +57,12 @@ final class ManageSubscriptionsViewModelTests: TestCase {
     func testNonAppStoreFiltersAppStoreOnlyPaths() {
         let purchase = PurchaseInformation.mockNonLifetime(store: .playStore)
 
-        let viewModel = ManageSubscriptionsViewModel(
+        let viewModel = BaseManageSubscriptionViewModel(
             screen: ManageSubscriptionsViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
-            purchasesProvider: MockCustomerCenterPurchases())
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
 
         expect(viewModel.relevantPathsForPurchase.count) == 1
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beTrue())
@@ -72,7 +75,8 @@ final class ManageSubscriptionsViewModelTests: TestCase {
             screen: ManageSubscriptionsViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
-            purchasesProvider: MockCustomerCenterPurchases())
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
 
         expect(viewModel.relevantPathsForPurchase.count) == 0
     }
@@ -80,7 +84,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
     func testLifetimeSubscriptionDoesNotShowCancel() {
         let purchase = PurchaseInformation.mockLifetime()
 
-        let viewModel = ManageSubscriptionsViewModel(
+        let viewModel = BaseManageSubscriptionViewModel(
             screen: ManageSubscriptionsViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
@@ -95,7 +99,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
             isCancelled: true
         )
 
-        let viewModel = ManageSubscriptionsViewModel(
+        let viewModel = BaseManageSubscriptionViewModel(
             screen: ManageSubscriptionsViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
@@ -109,7 +113,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
     func testShowsRefundIfRefundWindowIsForever() {
         let purchase = PurchaseInformation.mockNonLifetime()
 
-        let viewModel = ManageSubscriptionsViewModel(
+        let viewModel = BaseManageSubscriptionViewModel(
             screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .forever),
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
@@ -136,11 +140,12 @@ final class ManageSubscriptionsViewModelTests: TestCase {
             latestPurchaseDate: latestPurchaseDate,
             customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
 
-        let viewModel = ManageSubscriptionsViewModel(
+        let viewModel = BaseManageSubscriptionViewModel(
             screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .duration(oneDay)),
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
-            purchasesProvider: MockCustomerCenterPurchases())
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
 
         expect(viewModel.relevantPathsForPurchase.count) == 3
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beFalse())
@@ -151,11 +156,10 @@ final class ManageSubscriptionsViewModelTests: TestCase {
         let twoDays: TimeInterval = 2 * 24 * 60 * 60
         let purchase = PurchaseInformation.mockNonLifetime(
             pricePaid: .free,
-            renewalPrice: .nonFree("5"),
             latestPurchaseDate: latestPurchaseDate,
             customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
 
-        let viewModel = ManageSubscriptionsViewModel(
+        let viewModel = BaseManageSubscriptionViewModel(
             screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .forever),
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
@@ -170,12 +174,11 @@ final class ManageSubscriptionsViewModelTests: TestCase {
         let twoDays: TimeInterval = 2 * 24 * 60 * 60
         let purchase = PurchaseInformation.mockNonLifetime(
             pricePaid: .nonFree(""), // just to prove price is ignored if is in trial
-            renewalPrice: .nonFree(""),
             isTrial: true,
             latestPurchaseDate: latestPurchaseDate,
             customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
 
-        let viewModel = ManageSubscriptionsViewModel(
+        let viewModel = BaseManageSubscriptionViewModel(
             screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .forever),
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
@@ -202,7 +205,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
             latestPurchaseDate: latestPurchaseDate,
             customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
 
-        let viewModel = ManageSubscriptionsViewModel(
+        let viewModel = BaseManageSubscriptionViewModel(
             screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .duration(oneDay)),
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
@@ -497,7 +500,7 @@ private extension PurchaseInformation {
             title: "",
             durationTitle: "",
             explanation: .lifetime,
-            pricePaid: .nonFree("5"),
+            pricePaid: .nonFree(""),
             renewalPrice: nil,
             expirationOrRenewal: PurchaseInformation.ExpirationOrRenewal(label: .expires, date: .date("")),
             productIdentifier: "",
@@ -514,7 +517,7 @@ private extension PurchaseInformation {
     static func mockNonLifetime(
         store: Store = .appStore,
         pricePaid: PurchaseInformation.PriceDetails = .nonFree("5"),
-        renewalPrice: PurchaseInformation.PriceDetails? = .nonFree("5"),
+        renewalPrice: PurchaseInformation.PriceDetails = .nonFree("5"),
         isTrial: Bool = false,
         isCancelled: Bool = false,
         latestPurchaseDate: Date = Date(),
