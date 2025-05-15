@@ -51,11 +51,9 @@ class BackendPostDiagnosticsTests: BaseBackendTests {
                                      timestamp: Self.eventTimestamp1,
                                      appSessionId: Self.appSessionId)
 
-        do {
+        await expect {
             try await self.internalAPI.postDiagnosticsEvents(events: [event])
-        } catch {
-            fail("Expected success")
-        }
+        }.toNot(throwError())
     }
 
     func testPostDiagnosticsEventsWithMultipleEvents() async {
@@ -71,11 +69,9 @@ class BackendPostDiagnosticsTests: BaseBackendTests {
                                       timestamp: Self.eventTimestamp2,
                                       appSessionId: Self.appSessionId)
 
-        do {
+        await expect {
             try await self.internalAPI.postDiagnosticsEvents(events: [event1, event2])
-        } catch {
-            fail("Expected success")
-        }
+        }.toNot(throwError())
     }
 
 }
