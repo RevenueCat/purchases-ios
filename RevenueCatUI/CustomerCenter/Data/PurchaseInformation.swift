@@ -518,12 +518,9 @@ extension PurchaseInformation {
             return nil
         }
     }
-}
 
-private extension PurchaseInformation {
-    func renewalPriceString(
+    func priceRenewalString(
         date: Date,
-        dateFormatter: DateFormatter,
         localizations: CustomerCenterConfigData.Localization
     ) -> String? {
         guard let renewalPrice else {
@@ -539,5 +536,17 @@ private extension PurchaseInformation {
                 .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: date))
                 .replacingOccurrences(of: "{{ price }}", with: priceString)
         }
+    }
+
+    func expirationString(
+        date: Date,
+        localizations: CustomerCenterConfigData.Localization
+    ) -> String? {
+        guard let expirationDate else {
+            return nil
+        }
+
+        return localizations[.expiresOnDateWithoutChanges]
+            .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: date))
     }
 }
