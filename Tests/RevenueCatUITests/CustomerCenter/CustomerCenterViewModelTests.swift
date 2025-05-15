@@ -752,7 +752,7 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(viewModel.activePurchases.count) == 1
         expect(viewModel.activePurchases.first?.productIdentifier) == purchaseInformation.productIdentifier
 
-        expect(purchaseInformation.title) == "Weekly Scratched Sofa" // display name
+        expect(purchaseInformation.title) == "com.revenuecat.product" // product identifier
         expect(purchaseInformation.durationTitle).to(beNil())
         expect(purchaseInformation.explanation) == .earliestRenewal
         expect(purchaseInformation.store) == .appStore

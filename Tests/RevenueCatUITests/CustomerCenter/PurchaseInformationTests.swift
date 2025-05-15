@@ -390,7 +390,7 @@ final class PurchaseInformationTests: TestCase {
             )
         )
 
-        expect(subscriptionInfo.title) == "A product"
+        expect(subscriptionInfo.title) == "com.revenuecat.product"
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.explanation) == .google
         expect(subscriptionInfo.pricePaid) == .nonFree("$6.99")
@@ -435,7 +435,7 @@ final class PurchaseInformationTests: TestCase {
             )
         )
 
-        expect(subscriptionInfo.title) == "A product"
+        expect(subscriptionInfo.title) == "com.revenuecat.product"
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.explanation) == .google
         expect(subscriptionInfo.pricePaid) == .nonFree("$6.99")
@@ -480,7 +480,7 @@ final class PurchaseInformationTests: TestCase {
             )
         )
 
-        expect(subscriptionInfo.title) == "A product"
+        expect(subscriptionInfo.title) == "com.revenuecat.product"
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.explanation) == .google
         expect(subscriptionInfo.pricePaid) == .nonFree("$6.99")
@@ -525,7 +525,7 @@ final class PurchaseInformationTests: TestCase {
             )
         )
 
-        expect(subscriptionInfo.title) == "A product"
+        expect(subscriptionInfo.title) == "rc_promo_pro_cat_yearly"
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.explanation) == .promotional
         expect(subscriptionInfo.pricePaid) == .free
@@ -570,7 +570,7 @@ final class PurchaseInformationTests: TestCase {
             )
         )
 
-        expect(subscriptionInfo.title) == "A product"
+        expect(subscriptionInfo.title) == "rc_promo_pro_cat_lifetime"
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.explanation) == .promotional
         expect(subscriptionInfo.pricePaid) == .free
@@ -616,7 +616,7 @@ final class PurchaseInformationTests: TestCase {
             )
         )
 
-        expect(subscriptionInfo.title) == "A product"
+        expect(subscriptionInfo.title) == "com.revenuecat.product"
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.explanation) == .externalWeb
         expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
@@ -661,7 +661,7 @@ final class PurchaseInformationTests: TestCase {
             )
         )
 
-        expect(subscriptionInfo.title) == "A product"
+        expect(subscriptionInfo.title) == "com.revenuecat.product"
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.explanation) == .externalWeb
         expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
@@ -706,7 +706,7 @@ final class PurchaseInformationTests: TestCase {
             )
         )
 
-        expect(subscriptionInfo.title) == "A product"
+        expect(subscriptionInfo.title) == "com.revenuecat.product"
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.explanation) == .externalWeb
         expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
@@ -751,7 +751,7 @@ final class PurchaseInformationTests: TestCase {
             )
         )
 
-        expect(subscriptionInfo.title) == "A product"
+        expect(subscriptionInfo.title) == "com.revenuecat.product"
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.explanation) == .rcWebBilling
         expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
@@ -796,7 +796,7 @@ final class PurchaseInformationTests: TestCase {
             )
         )
 
-        expect(subscriptionInfo.title) == "A product"
+        expect(subscriptionInfo.title) == "com.revenuecat.product"
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.explanation) == .rcWebBilling
         expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
@@ -841,7 +841,7 @@ final class PurchaseInformationTests: TestCase {
             )
         )
 
-        expect(subscriptionInfo.title) == "A product"
+        expect(subscriptionInfo.title) == "com.revenuecat.product"
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.explanation) == .rcWebBilling
         expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
@@ -883,7 +883,7 @@ final class PurchaseInformationTests: TestCase {
                 managementURL: URL(string: "https://www.revenuecat.com")!
             )
         )
-        expect(subscriptionInfo.title) == "A product"
+        expect(subscriptionInfo.title) == "product_id"
         expect(subscriptionInfo.explanation) == .expired
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
