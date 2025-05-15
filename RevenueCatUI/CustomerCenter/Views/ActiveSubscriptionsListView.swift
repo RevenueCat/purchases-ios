@@ -71,6 +71,10 @@ struct ActiveSubscriptionsListView: View {
 
     var body: some View {
         content
+            .applyIf(self.viewModel.screen.type == .management, apply: {
+                $0.navigationTitle(self.viewModel.screen.title)
+                    .navigationBarTitleDisplayMode(.inline)
+             })
             .compatibleNavigation(
                 item: $viewModel.purchaseInformation,
                 usesNavigationStack: navigationOptions.usesNavigationStack
@@ -104,24 +108,25 @@ struct ActiveSubscriptionsListView: View {
 
     @ViewBuilder
     var content: some View {
-        ScrollViewWithOSBackground {
-            LazyVStack {
-                if viewModel.activePurchases.isEmpty {
-                    let fallbackDescription = localization[.tryCheckRestore]
+        if viewModel.activePurchases.isEmpty {
+            List {
+                let fallbackDescription = localization[.tryCheckRestore]
 
-                    Section {
-                        CompatibilityContentUnavailableView(
-                            self.viewModel.screen.title,
-                            systemImage: "exclamationmark.triangle.fill",
-                            description: Text(self.viewModel.screen.subtitle ?? fallbackDescription)
-                        )
-                    }
+                Section {
+                    CompatibilityContentUnavailableView(
+                        self.viewModel.screen.title,
+                        systemImage: "exclamationmark.triangle.fill",
+                        description: Text(self.viewModel.screen.subtitle ?? fallbackDescription)
+                    )
+                }
 
-                    Section {
-                        ManageSubscriptionsButtonsView(viewModel: viewModel)
-                    }
-
-                } else {
+                Section {
+                    ManageSubscriptionsButtonsView(viewModel: viewModel)
+                }
+            }
+        } else {
+            ScrollViewWithOSBackground {
+                LazyVStack {
                     Text(localization[.activeSubscriptions].uppercased())
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
@@ -168,10 +173,6 @@ struct ActiveSubscriptionsListView: View {
                 }
             }
         }
-        .applyIf(self.viewModel.screen.type == .management, apply: {
-            $0.navigationTitle(self.viewModel.screen.title)
-                .navigationBarTitleDisplayMode(.inline)
-         })
     }
 
     var buttonsView: some View {
@@ -182,11 +183,19 @@ struct ActiveSubscriptionsListView: View {
                     wihtActiveProductId: viewModel.purchaseInformation?.productIdentifier
                 )
             }, label: {
-                if self.viewModel.loadingPath?.id == path.id {
-                    TintedProgressView()
-                } else {
-                    Text(path.title)
+                Group {
+                    if self.viewModel.loadingPath?.id == path.id {
+                        TintedProgressView()
+                    } else {
+                        Text(path.title)
+                    }
                 }
+                .padding()
+                .background(Color(colorScheme == .light
+                                  ? UIColor.systemBackground
+                                  : UIColor.secondarySystemBackground))
+                .cornerRadius(10)
+                .padding([.leading, .trailing])
             })
             .disabled(self.viewModel.loadingPath != nil)
         }
