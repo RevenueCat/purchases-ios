@@ -694,6 +694,7 @@
 		5774F9BE2805E71100997128 /* Fixtures in Resources */ = {isa = PBXBuildFile; fileRef = 5774F9BD2805E71100997128 /* Fixtures */; };
 		5774F9C12805EA3000997128 /* BaseHTTPResponseTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5774F9C02805EA3000997128 /* BaseHTTPResponseTest.swift */; };
 		5774F9C22805EA6900997128 /* CustomerInfoDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5774F9B92805E6E200997128 /* CustomerInfoDecodingTests.swift */; };
+		577707A32DD628F1005A0E36 /* ScrollViewWithOSBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 577707A22DD628E8005A0E36 /* ScrollViewWithOSBackgroundView.swift */; };
 		577782B52D9182A200F97EB4 /* CustomerCenterActionWrapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 577782B42D91829D00F97EB4 /* CustomerCenterActionWrapperTests.swift */; };
 		578C5F2C28DB82DD00A56F02 /* PurchasesDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 578C5F2B28DB82DD00A56F02 /* PurchasesDiagnostics.swift */; };
 		578D79742936A36B0042E434 /* LoggerType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 578D79732936A36B0042E434 /* LoggerType.swift */; };
@@ -2074,6 +2075,7 @@
 		5774F9B92805E6E200997128 /* CustomerInfoDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfoDecodingTests.swift; sourceTree = "<group>"; };
 		5774F9BD2805E71100997128 /* Fixtures */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = folder; name = Fixtures; path = Tests/UnitTests/Networking/Responses/Fixtures; sourceTree = SOURCE_ROOT; };
 		5774F9C02805EA3000997128 /* BaseHTTPResponseTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseHTTPResponseTest.swift; sourceTree = "<group>"; };
+		577707A22DD628E8005A0E36 /* ScrollViewWithOSBackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollViewWithOSBackgroundView.swift; sourceTree = "<group>"; };
 		577782B42D91829D00F97EB4 /* CustomerCenterActionWrapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterActionWrapperTests.swift; sourceTree = "<group>"; };
 		578C5F2B28DB82DD00A56F02 /* PurchasesDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesDiagnostics.swift; sourceTree = "<group>"; };
 		578D79732936A36B0042E434 /* LoggerType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerType.swift; sourceTree = "<group>"; };
@@ -3868,6 +3870,7 @@
 		353756602C382C2800A1B8D6 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				577707A22DD628E8005A0E36 /* ScrollViewWithOSBackgroundView.swift */,
 				57BB1E1A2DD4D72600DEE41E /* SubscriptionDetailView.swift */,
 				57C564792DD4D54A00E9AA16 /* ActiveSubscriptionsListView.swift */,
 				57956ACF2DD3783900E935FF /* PurchaseCardView.swift */,
@@ -7103,6 +7106,7 @@
 				03C72F8D2D3311E300297FEC /* DisplayableColor.swift in Sources */,
 				887A60CD2C1D037000E1A461 /* PaywallView.swift in Sources */,
 				1E2F910B2CC8FE5600BDB016 /* ContactSupportUtilities.swift in Sources */,
+				577707A32DD628F1005A0E36 /* ScrollViewWithOSBackgroundView.swift in Sources */,
 				1E5F8F6E2C4515430041EECD /* View+PresentCustomerCenter.swift in Sources */,
 				887A60C12C1D037000E1A461 /* DebugErrorView.swift in Sources */,
 				887A607C2C1D037000E1A461 /* ColorInformation+MultiScheme.swift in Sources */,

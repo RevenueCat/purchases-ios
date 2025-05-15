@@ -104,72 +104,67 @@ struct ActiveSubscriptionsListView: View {
 
     @ViewBuilder
     var content: some View {
-        ZStack {
-            Color(colorScheme == .light ? UIColor.secondarySystemBackground : UIColor.systemBackground)
-                .ignoresSafeArea()
+        ScrollViewWithOSBackground {
+            LazyVStack {
+                if viewModel.activePurchases.isEmpty {
+                    let fallbackDescription = localization[.tryCheckRestore]
 
-            ScrollView {
-                LazyVStack {
-                    if viewModel.activePurchases.isEmpty {
-                        let fallbackDescription = localization[.tryCheckRestore]
+                    Section {
+                        CompatibilityContentUnavailableView(
+                            self.viewModel.screen.title,
+                            systemImage: "exclamationmark.triangle.fill",
+                            description: Text(self.viewModel.screen.subtitle ?? fallbackDescription)
+                        )
+                    }
 
+                    // just temporary, until ManageSubscriptionsView is deleted
+                    Section {
+                        buttonsView
+                    }
+
+                } else {
+                    Text(localization[.activeSubscriptions].uppercased())
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 32)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .multilineTextAlignment(.leading)
+
+                    ForEach(viewModel.activePurchases) { purchase in
                         Section {
-                            CompatibilityContentUnavailableView(
-                                self.viewModel.screen.title,
-                                systemImage: "exclamationmark.triangle.fill",
-                                description: Text(self.viewModel.screen.subtitle ?? fallbackDescription)
-                            )
-                        }
-
-                        // just temporary, until ManageSubscriptionsView is deleted
-                        Section {
-                            buttonsView
-                        }
-
-                    } else {
-                        Text(localization[.activeSubscriptions].uppercased())
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                            .padding(.horizontal, 32)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .multilineTextAlignment(.leading)
-
-                        ForEach(viewModel.activePurchases) { purchase in
-                            Section {
-                                Button {
-                                    viewModel.purchaseInformation = purchase
-                                } label: {
-                                    PurchaseInformationCardView(
-                                        purchaseInformation: purchase,
-                                        localization: localization
-                                    )
-                                        .padding()
-                                        .background(Color(colorScheme == .light
-                                                          ? UIColor.systemBackground
-                                                          : UIColor.secondarySystemBackground))
-                                        .cornerRadius(10)
-                                        .padding([.leading, .trailing])
-                                }
-                                .tint(colorScheme == .dark ? .white : .black)
-                            }
-                        }
-
-                        if support?.displayPurchaseHistoryLink == true {
                             Button {
-                                viewModel.showAllPurchases = true
+                                viewModel.purchaseInformation = purchase
                             } label: {
-                                CompatibilityLabeledContent(localization[.seeAllPurchases]) {
-                                    Image(systemName: "chevron.forward")
-                                }
-                                .padding()
-                                .background(Color(colorScheme == .light
-                                                  ? UIColor.systemBackground
-                                                  : UIColor.secondarySystemBackground))
-                                .cornerRadius(10)
-                                .padding([.leading, .trailing])
+                                PurchaseInformationCardView(
+                                    purchaseInformation: purchase,
+                                    localization: localization
+                                )
+                                    .padding()
+                                    .background(Color(colorScheme == .light
+                                                      ? UIColor.systemBackground
+                                                      : UIColor.secondarySystemBackground))
+                                    .cornerRadius(10)
+                                    .padding([.leading, .trailing])
                             }
                             .tint(colorScheme == .dark ? .white : .black)
                         }
+                    }
+
+                    if support?.displayPurchaseHistoryLink == true {
+                        Button {
+                            viewModel.showAllPurchases = true
+                        } label: {
+                            CompatibilityLabeledContent(localization[.seeAllPurchases]) {
+                                Image(systemName: "chevron.forward")
+                            }
+                            .padding()
+                            .background(Color(colorScheme == .light
+                                              ? UIColor.systemBackground
+                                              : UIColor.secondarySystemBackground))
+                            .cornerRadius(10)
+                            .padding([.leading, .trailing])
+                        }
+                        .tint(colorScheme == .dark ? .white : .black)
                     }
                 }
             }
