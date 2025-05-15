@@ -513,8 +513,8 @@ private extension PurchaseInformation {
 
     static func mockNonLifetime(
         store: Store = .appStore,
-        pricePaid: PurchaseInformation.PriceDetails = .nonFree("5"),
-        renewalPrice: PurchaseInformation.PriceDetails? = .nonFree("5"),
+        pricePaid: PurchaseInformation.PricePaid = .nonFree("5"),
+        renewalPrice: PurchaseInformation.RenewalPrice? = .nonFree("5"),
         isTrial: Bool = false,
         isCancelled: Bool = false,
         latestPurchaseDate: Date = Date(),

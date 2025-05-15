@@ -34,11 +34,11 @@ struct PurchaseInformation {
     let explanation: Explanation
 
     /// Pricing details of the latest purchase.
-    let pricePaid: PriceDetails
+    let pricePaid: PricePaid
 
     /// Renewal pricing details of the subscription.
     /// It can be nil if we don't have renewal information, if it's a consumable, or if it doesn't renew
-    let renewalPrice: PriceDetails?
+    let renewalPrice: RenewalPrice?
 
     /// Subscription expiration or renewal details, if applicable.
     ///
@@ -92,8 +92,8 @@ struct PurchaseInformation {
     init(title: String,
          durationTitle: String?,
          explanation: Explanation,
-         pricePaid: PriceDetails,
-         renewalPrice: PriceDetails?,
+         pricePaid: PricePaid,
+         renewalPrice: RenewalPrice?,
          expirationOrRenewal: ExpirationOrRenewal?,
          productIdentifier: String,
          store: Store,
@@ -132,7 +132,7 @@ struct PurchaseInformation {
     init(entitlement: EntitlementInfo? = nil,
          subscribedProduct: StoreProduct? = nil,
          transaction: Transaction,
-         renewalPrice: PriceDetails? = nil,
+         renewalPrice: RenewalPrice? = nil,
          customerInfoRequestedDate: Date,
          dateFormatter: DateFormatter = Self.defaultDateFormatter,
          numberFormatter: NumberFormatter = Self.defaultNumberFormatter,
@@ -140,9 +140,11 @@ struct PurchaseInformation {
     ) {
         self.dateFormatter = dateFormatter
         self.numberFormatter = numberFormatter
+
         // Title and duration from product if available
-        self.title = subscribedProduct?.localizedTitle ?? transaction.displayName ?? transaction.productIdentifier
+        self.title = subscribedProduct?.localizedTitle ?? transaction.productIdentifier
         self.durationTitle = subscribedProduct?.subscriptionPeriod?.durationTitle
+
         self.customerInfoRequestedDate = customerInfoRequestedDate
         self.managementURL = managementURL
 
@@ -194,7 +196,7 @@ struct PurchaseInformation {
 
         if self.expirationDate == nil {
             self.renewalPrice = nil
-        } else if renewalPrice != nil && renewalPrice != .unknown {
+        } else if let renewalPrice {
             self.renewalPrice = renewalPrice
         } else {
             self.renewalPrice = transaction.determineRenewalPrice(numberFormatter: numberFormatter)
@@ -219,10 +221,15 @@ struct PurchaseInformation {
         }
     }
 
-    enum PriceDetails: Equatable, Hashable {
+    enum PricePaid: Equatable, Hashable {
         case free
         case nonFree(String)
         case unknown
+    }
+
+    enum RenewalPrice: Equatable, Hashable {
+        case free
+        case nonFree(String)
     }
 
     enum Explanation {
@@ -326,7 +333,7 @@ extension PurchaseInformation {
         forProduct product: StoreProduct,
         customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType,
         numberFormatter: NumberFormatter
-    ) async -> PriceDetails? {
+    ) async -> RenewalPrice? {
         guard let renewalPriceDetails = await customerCenterStoreKitUtilities.renewalPriceFromRenewalInfo(
             for: product
         ) else {
@@ -346,7 +353,7 @@ extension PurchaseInformation {
 
 private extension Transaction {
 
-    func determineRenewalPrice(numberFormatter: NumberFormatter) -> PurchaseInformation.PriceDetails? {
+    func determineRenewalPrice(numberFormatter: NumberFormatter) -> PurchaseInformation.RenewalPrice? {
         if self.productIdentifier.isPromotionalLifetime(store: self.store) {
             return nil
         }
@@ -358,32 +365,22 @@ private extension Transaction {
             return nil
         }
 
-        switch self.type {
-        case .subscription(isActive: let isActive,
-                           willRenew: let willRenew,
-                           expiresDate: let expiresDate,
-                           isTrial: let isTrial):
-            if !willRenew || isTrial {
-                // If it was a trial we can't infer the renewal price
-                return nil
-            }
-        case .nonSubscription:
+        if unableToInferRenewalPrice {
             return nil
         }
 
-        guard let price = self.price,
-              price.amount != 0 else {
+        guard let price = self.price, price.amount != 0 else {
             return nil
         }
 
         numberFormatter.currencyCode = price.currency
 
-        guard let formattedPrice = numberFormatter.string(from: price.amount as NSNumber) else { return .unknown }
+        guard let formattedPrice = numberFormatter.string(from: price.amount as NSNumber) else { return nil }
 
         return .nonFree(formattedPrice)
     }
 
-    func paidPrice(numberFormatter: NumberFormatter) -> PurchaseInformation.PriceDetails {
+    func paidPrice(numberFormatter: NumberFormatter) -> PurchaseInformation.PricePaid {
         if self.store == .promotional || self.price?.amount == 0 {
             return .free
         }
@@ -400,6 +397,14 @@ private extension Transaction {
         return .nonFree(formattedPrice)
     }
 
+    var unableToInferRenewalPrice: Bool {
+        if case let .subscription(_, willRenew, _, isTrial) = self.type {
+            return !willRenew || isTrial
+        }
+
+        // For non-subscriptions, always return true
+        return true
+    }
 }
 
 private extension EntitlementInfo {

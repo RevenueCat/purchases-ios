@@ -226,7 +226,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         func checkExpectations(
             _ viewModel: CustomerCenterViewModel,
-            renewalPrice: PurchaseInformation.PriceDetails?
+            renewalPrice: PurchaseInformation.RenewalPrice?
         ) async throws {
             await viewModel.loadScreen()
 
