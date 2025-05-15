@@ -169,6 +169,7 @@ struct ActiveSubscriptionsListView: View {
                             .padding([.leading, .trailing])
                         }
                         .tint(colorScheme == .dark ? .white : .black)
+                        .padding(.top, 32)
                     }
                 }
             }
