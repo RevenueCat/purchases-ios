@@ -46,35 +46,17 @@ class PurchaseButtonComponentViewModel {
 
     }
 
-    var action: PaywallComponent.PurchaseButtonComponent.Action? {
-        return self.component.action
-    }
-
-    var offeringWebCheckoutUrl: (URL, PaywallComponent.ButtonComponent.URLMethod)? {
-        guard let method = component.method else {
-            if let url = offering.webCheckoutUrl {
-                return (url, .externalBrowser)
-            } else {
-                return nil
+    var method: PaywallComponent.PurchaseButtonComponent.Method? {
+        return self.component.method ?? self.component.action.flatMap({ action in
+            switch action {
+            case .inAppCheckout:
+                return .inAppCheckout
+            case .webCheckout:
+                return .webCheckout(.init(autoDismiss: true, openMethod: .externalBrowser))
+            case .webProductSelection:
+                return .webProductSelection(.init(autoDismiss: true, openMethod: .externalBrowser))
             }
-        }
-
-        switch method {
-        case .inAppCheckout, .unknown:
-            return nil
-        case .webCheckout(let webCheckout), .webProductSelection(let webCheckout):
-            if let url = offering.webCheckoutUrl {
-                return (url, webCheckout.openMethod ?? .externalBrowser)
-            } else {
-                return nil
-            }
-        case .customWebCheckout(let customWebCheckout):
-            if let url = customWebCheckoutUrl {
-                return (url, .externalBrowser)
-            } else {
-                return nil
-            }
-        }
+        })
     }
 
     static let defaultWebAutoDismiss = true
@@ -97,41 +79,45 @@ class PurchaseButtonComponentViewModel {
         return Self.defaultWebAutoDismiss
     }
 
-    func urlForWebProduct(packageContext: PackageContext) -> (URL, PaywallComponent.ButtonComponent.URLMethod)? {
-        guard let package = packageContext.package else {
+    typealias LaunchWebCheckout = (url: URL, method: PaywallComponent.ButtonComponent.URLMethod, autoDismiss: Bool)
+
+    func urlForWebCheckout(packageContext: PackageContext?) -> LaunchWebCheckout? {
+        guard let method = self.method else {
             return nil
         }
 
-        if let method = component.method {
-            switch method {
-            case .webCheckout(let webCheckout), .webProductSelection(let webCheckout):
-                guard let url = package.webCheckoutUrl else {
-                    return nil
-                }
-
-                return (url, webCheckout.openMethod ?? .externalBrowser)
-            case .customWebCheckout(let customWebCheckout):
-                if let customUrl = self.customWebCheckoutUrl {
-                    // Appends package identifier into a query param to a custom url
-                    if let packageParam = customWebCheckout.customUrl.packageParam {
-                        let url = customUrl.appending(name: packageParam, value: package.identifier)
-                        return (url, customWebCheckout.openMethod ?? .externalBrowser)
-                    } else {
-                        return (customUrl, customWebCheckout.openMethod ?? .externalBrowser)
-                    }
+        switch method {
+        case .inAppCheckout, .unknown:
+            return nil
+        case .webCheckout(let webCheckout):
+            if let checkoutUrl = packageContext?.package?.webCheckoutUrl ?? offering.webCheckoutUrl {
+                return (checkoutUrl, webCheckout.openMethod ?? .externalBrowser, webCheckout.autoDismiss ?? true)
+            } else {
+                return nil
+            }
+        case .webProductSelection(let webCheckout):
+            if let checkoutUrl = offering.webCheckoutUrl {
+                return (checkoutUrl, webCheckout.openMethod ?? .externalBrowser, webCheckout.autoDismiss ?? true)
+            } else {
+                return nil
+            }
+        case .customWebCheckout(let customWebCheckout):
+            if let customUrl = self.customWebCheckoutUrl {
+                if let package = packageContext?.package,
+                   let packageParam = customWebCheckout.customUrl.packageParam {
+                    let url = customUrl.appending(name: packageParam, value: package.identifier)
+                    return (url,
+                            customWebCheckout.openMethod ?? .externalBrowser,
+                            customWebCheckout.autoDismiss ?? true)
                 } else {
-                    return nil
+                    return (customUrl,
+                            customWebCheckout.openMethod ?? .externalBrowser,
+                            customWebCheckout.autoDismiss ?? true)
                 }
-            case .inAppCheckout, .unknown:
+            } else {
                 return nil
             }
         }
-
-        guard let url = package.webCheckoutUrl else {
-            return nil
-        }
-
-        return (url, .externalBrowser)
     }
 
 }
