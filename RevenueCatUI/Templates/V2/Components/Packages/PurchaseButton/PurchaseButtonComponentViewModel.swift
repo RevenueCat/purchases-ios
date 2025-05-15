@@ -59,26 +59,6 @@ class PurchaseButtonComponentViewModel {
         })
     }
 
-    static let defaultWebAutoDismiss = true
-
-    var webAutoDimiss: Bool {
-        if let method = component.method {
-            switch method {
-            case .webCheckout(let webCheckout), .webProductSelection(let webCheckout):
-                return webCheckout.autoDismiss ?? Self.defaultWebAutoDismiss
-            case .customWebCheckout(let customWebCheckout):
-                return customWebCheckout.autoDismiss ?? Self.defaultWebAutoDismiss
-            case .inAppCheckout, .unknown:
-                break
-            }
-        } else if component.action != nil {
-            // Legacy action was previously always dismissing
-            return Self.defaultWebAutoDismiss
-        }
-
-        return Self.defaultWebAutoDismiss
-    }
-
     typealias LaunchWebCheckout = (url: URL, method: PaywallComponent.ButtonComponent.URLMethod, autoDismiss: Bool)
 
     func urlForWebCheckout(packageContext: PackageContext?) -> LaunchWebCheckout? {
