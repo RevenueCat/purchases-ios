@@ -150,6 +150,7 @@ public struct CustomerCenterConfigData: Equatable {
             case renewsOnDate = "renews_on_date"
             case priceAfterwards = "price_afterwards"
             case freeTrialUntilDate = "free_trial_until_date"
+            case priceExpiresOnDateWithoutChanges = "price_expires_on_date_without_changes"
 
             var defaultValue: String {
                 switch self {
@@ -352,6 +353,8 @@ public struct CustomerCenterConfigData: Equatable {
                     return "{{ price }} afterwards."
                 case .freeTrialUntilDate:
                     return "Free trial until {{ date }}."
+                case .priceExpiresOnDateWithoutChanges:
+                     return "{{ price }}. Expires on {{ date }} without changes."
                 }
             }
         }

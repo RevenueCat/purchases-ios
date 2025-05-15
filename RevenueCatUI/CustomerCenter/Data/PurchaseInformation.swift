@@ -86,6 +86,8 @@ struct PurchaseInformation {
     /// Product specific management URL
     let managementURL: URL?
 
+    let periodType: PeriodType
+
     private let dateFormatter: DateFormatter
     private let numberFormatter: NumberFormatter
 
@@ -106,7 +108,8 @@ struct PurchaseInformation {
          numberFormatter: NumberFormatter = Self.defaultNumberFormatter,
          managementURL: URL?,
          expirationDate: Date? = nil,
-         renewalDate: Date? = nil
+         renewalDate: Date? = nil,
+         periodType: PeriodType = .normal
     ) {
         self.title = title
         self.durationTitle = durationTitle
@@ -125,6 +128,7 @@ struct PurchaseInformation {
         self.expirationDate = expirationDate
         self.renewalDate = renewalDate
         self.dateFormatter = dateFormatter
+        self.periodType = periodType
         self.numberFormatter = numberFormatter
     }
 
@@ -160,6 +164,7 @@ struct PurchaseInformation {
             self.latestPurchaseDate = entitlement.latestPurchaseDate
             self.expirationDate = entitlement.expirationDate
             self.renewalDate = entitlement.willRenew ? entitlement.expirationDate : nil
+            self.periodType = entitlement.periodType
         } else {
             switch transaction.type {
             case let .subscription(isActive, willRenew, expiresDate, isTrial):
@@ -192,6 +197,7 @@ struct PurchaseInformation {
             self.productIdentifier = transaction.productIdentifier
             self.store = transaction.store
             self.isCancelled = transaction.isCancelled
+            self.periodType = transaction.periodType
         }
 
         if self.expirationDate == nil {
@@ -497,6 +503,50 @@ private extension String {
 
     func isPromotionalLifetime(store: Store) -> Bool {
         return self.hasSuffix("_lifetime") && store == .promotional
+    }
+}
+
+extension PurchaseInformation {
+
+    func pricePaidString(localizations: CustomerCenterConfigData.Localization) -> String? {
+        switch pricePaid {
+        case .free:
+            return localizations[.free]
+        case let .nonFree(priceString):
+            return priceString
+        case .unknown:
+            return nil
+        }
+    }
+
+    func priceRenewalString(
+        date: Date,
+        localizations: CustomerCenterConfigData.Localization
+    ) -> String? {
+        guard let renewalPrice else {
+            return nil
+        }
+
+        switch renewalPrice {
+        case .free:
+            return localizations[.renewsOnDate]
+                .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: date))
+        case .nonFree(let priceString):
+            return localizations[.renewsOnDateForPrice]
+                .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: date))
+                .replacingOccurrences(of: "{{ price }}", with: priceString)
+        }
+    }
+
+    func expirationString(
+        localizations: CustomerCenterConfigData.Localization
+    ) -> String? {
+        guard let expirationDate else {
+            return nil
+        }
+
+        return localizations[.expiresOnDateWithoutChanges]
+            .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: expirationDate))
     }
 }
 // swiftlint:enable file_length
