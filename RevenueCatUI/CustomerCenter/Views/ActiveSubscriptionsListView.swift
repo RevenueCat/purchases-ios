@@ -74,7 +74,7 @@ struct ActiveSubscriptionsListView: View {
             .applyIf(self.viewModel.screen.type == .management, apply: {
                 $0.navigationTitle(self.viewModel.screen.title)
                     .navigationBarTitleDisplayMode(.inline)
-             })
+            })
             .compatibleNavigation(
                 item: $viewModel.purchaseInformation,
                 usesNavigationStack: navigationOptions.usesNavigationStack
@@ -143,12 +143,12 @@ struct ActiveSubscriptionsListView: View {
                                     purchaseInformation: purchase,
                                     localization: localization
                                 )
-                                    .padding()
-                                    .background(Color(colorScheme == .light
-                                                      ? UIColor.systemBackground
-                                                      : UIColor.secondarySystemBackground))
-                                    .cornerRadius(10)
-                                    .padding([.leading, .trailing])
+                                .padding()
+                                .background(Color(colorScheme == .light
+                                                  ? UIColor.systemBackground
+                                                  : UIColor.secondarySystemBackground))
+                                .cornerRadius(10)
+                                .padding([.leading, .trailing])
                             }
                             .tint(colorScheme == .dark ? .white : .black)
                         }
@@ -202,12 +202,12 @@ struct ActiveSubscriptionsListView: View {
     }
 }
 
- #if DEBUG
- @available(iOS 15.0, *)
- @available(macOS, unavailable)
- @available(tvOS, unavailable)
- @available(watchOS, unavailable)
- struct ActiveSubscriptionsListView_Previews: PreviewProvider {
+#if DEBUG
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+struct ActiveSubscriptionsListView_Previews: PreviewProvider {
 
     // swiftlint:disable force_unwrapping
     static var previews: some View {
@@ -255,8 +255,8 @@ struct ActiveSubscriptionsListView: View {
         .environment(\.appearance, CustomerCenterConfigData.default.appearance)
     }
 
- }
+}
 
- #endif
+#endif
 
 #endif
