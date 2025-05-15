@@ -12,7 +12,7 @@
 //  Created by Cesar de la Vega on 18/7/24.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import StoreKit
 import SwiftUI
 

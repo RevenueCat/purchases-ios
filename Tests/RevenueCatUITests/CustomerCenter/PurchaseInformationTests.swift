@@ -33,15 +33,40 @@ final class PurchaseInformationTests: TestCase {
         return formatter
     }()
 
+    static let mockNumberFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.locale = Locale(identifier: "en_US")
+        formatter.currencyCode = "USD"
+        return formatter
+    }()
+
+    private class MockCustomerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType {
+        var mockRenewalPrice: (price: Decimal, currencyCode: String)?
+
+        init(mockRenewalPrice: (price: Decimal, currencyCode: String)? = (7.99, "USD")) {
+            self.mockRenewalPrice = mockRenewalPrice
+        }
+
+        func renewalPriceFromRenewalInfo(for product: RevenueCat.StoreProduct) async ->
+        (price: Decimal, currencyCode: String)? {
+            return mockRenewalPrice
+        }
+    }
+
+    private let mockCustomerCenterStoreKitUtilities = MockCustomerCenterStoreKitUtilities()
+
     private struct MockTransaction: Transaction {
         let productIdentifier: String
         let store: Store
         let type: TransactionType
         let isCancelled: Bool
         let managementURL: URL?
+        let price: RevenueCat.ProductPaidPrice?
+        let displayName: String?
     }
 
-    func testAppleEntitlementAndSubscribedProduct() throws {
+    func testAppleEntitlementAndSubscribedProductWithoutRenewalInfo() throws {
         let customerInfo = CustomerInfoFixtures.customerInfoWithAppleSubscriptions
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
 
@@ -68,7 +93,9 @@ final class PurchaseInformationTests: TestCase {
                 isTrial: false
             ),
             isCancelled: false,
-            managementURL: URL(string: "https://www.revenuecat.com")!
+            managementURL: URL(string: "https://www.revenuecat.com")!,
+            price: .init(currency: "USD", amount: 6.99),
+            displayName: "A product"
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -78,13 +105,15 @@ final class PurchaseInformationTests: TestCase {
                 transaction: mockTransaction,
                 customerInfoRequestedDate: Date(),
                 dateFormatter: Self.mockDateFormatter,
+                numberFormatter: Self.mockNumberFormatter,
                 managementURL: URL(string: "https://www.revenuecat.com")!
             )
         )
         expect(subscriptionInfo.title) == "Monthly Product"
         expect(subscriptionInfo.durationTitle) == "1 month"
         expect(subscriptionInfo.explanation) == .earliestRenewal
-        expect(subscriptionInfo.price) == .paid("$6.99")
+        expect(subscriptionInfo.pricePaid) == .nonFree("$6.99")
+        expect(subscriptionInfo.renewalPrice).to(beNil())
         expect(subscriptionInfo.isLifetime).to(beFalse())
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
@@ -95,7 +124,66 @@ final class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.store) == .appStore
     }
 
-    func testAppleEntitlementAndLifetimeProduct() throws {
+    func testAppleEntitlementAndSubscribedProductWithRenewalInfo() async throws {
+        let customerInfo = CustomerInfoFixtures.customerInfoWithAppleSubscriptions
+        let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
+
+        let mockProduct = TestStoreProduct(
+            localizedTitle: "Monthly Product",
+            price: 6.99,
+            localizedPriceString: "$6.99",
+            productIdentifier: entitlement.productIdentifier,
+            productType: .autoRenewableSubscription,
+            localizedDescription: "PRO monthly",
+            subscriptionGroupIdentifier: "group",
+            subscriptionPeriod: .init(value: 1, unit: .month),
+            introductoryDiscount: nil,
+            locale: Self.locale
+        )
+
+        let mockTransaction = MockTransaction(
+            productIdentifier: entitlement.productIdentifier,
+            store: .appStore,
+            type: .subscription(
+                isActive: true,
+                willRenew: true,
+                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
+                isTrial: false
+            ),
+            isCancelled: false,
+            managementURL: URL(string: "https://www.revenuecat.com")!,
+            price: .init(currency: "USD", amount: 6.99),
+            displayName: "A product"
+        )
+
+        let subscriptionInfoNullable = await PurchaseInformation.purchaseInformationUsingRenewalInfo(
+            entitlement: entitlement,
+            subscribedProduct: mockProduct.toStoreProduct(),
+            transaction: mockTransaction,
+            customerCenterStoreKitUtilities: mockCustomerCenterStoreKitUtilities,
+            customerInfoRequestedDate: Date(),
+            dateFormatter: Self.mockDateFormatter,
+            numberFormatter: Self.mockNumberFormatter,
+            managementURL: URL(string: "https://www.revenuecat.com")!
+        )
+
+        let subscriptionInfo = try XCTUnwrap(subscriptionInfoNullable)
+        expect(subscriptionInfo.title) == "Monthly Product"
+        expect(subscriptionInfo.durationTitle) == "1 month"
+        expect(subscriptionInfo.explanation) == .earliestRenewal
+        expect(subscriptionInfo.pricePaid) == .nonFree("$6.99")
+        expect(subscriptionInfo.renewalPrice) == .nonFree("$7.99")
+        expect(subscriptionInfo.isLifetime).to(beFalse())
+
+        let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
+        expect(expirationOrRenewal.label) == .nextBillingDate
+        expect(expirationOrRenewal.date) == .date("Apr 12, 2062")
+
+        expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
+        expect(subscriptionInfo.store) == .appStore
+    }
+
+    func testAppleEntitlementAndLifetimeProduct() async throws {
         let customerInfo = CustomerInfoFixtures.customerInfoWithLifetimeAppSubscrition
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
 
@@ -122,23 +210,29 @@ final class PurchaseInformationTests: TestCase {
                 isTrial: false
             ),
             isCancelled: false,
+            managementURL: URL(string: "https://www.revenuecat.com")!,
+            price: .init(currency: "USD", amount: 6.99),
+            displayName: "A product"
+        )
+
+        let subscriptionInfoNullable = await PurchaseInformation.purchaseInformationUsingRenewalInfo(
+            entitlement: entitlement,
+            subscribedProduct: mockProduct.toStoreProduct(),
+            transaction: mockTransaction,
+            customerCenterStoreKitUtilities: MockCustomerCenterStoreKitUtilities(mockRenewalPrice: nil),
+            customerInfoRequestedDate: Date(),
+            dateFormatter: Self.mockDateFormatter,
+            numberFormatter: Self.mockNumberFormatter,
             managementURL: URL(string: "https://www.revenuecat.com")!
         )
 
-        let subscriptionInfo = try XCTUnwrap(
-            PurchaseInformation(
-                entitlement: entitlement,
-                subscribedProduct: mockProduct.toStoreProduct(),
-                transaction: mockTransaction,
-                customerInfoRequestedDate: Date(),
-                dateFormatter: Self.mockDateFormatter,
-                managementURL: URL(string: "https://www.revenuecat.com")!
-            )
-        )
+        let subscriptionInfo = try XCTUnwrap(subscriptionInfoNullable)
+
         expect(subscriptionInfo.title) == "Monthly Product"
         expect(subscriptionInfo.durationTitle) == "1 month"
         expect(subscriptionInfo.explanation) == .lifetime
-        expect(subscriptionInfo.price) == .paid("$6.99")
+        expect(subscriptionInfo.pricePaid) == .nonFree("$6.99")
+        expect(subscriptionInfo.renewalPrice).to(beNil())
         expect(subscriptionInfo.isLifetime).to(beTrue())
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
@@ -149,7 +243,7 @@ final class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.store) == .appStore
     }
 
-    func testAppleEntitlementAndNonRenewingSubscribedProduct() throws {
+    func testAppleEntitlementAndNonRenewingSubscribedProduct() async throws {
         let customerInfo = CustomerInfoFixtures.customerInfoWithNonRenewingAppleSubscriptions
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
 
@@ -176,23 +270,27 @@ final class PurchaseInformationTests: TestCase {
                 isTrial: false
             ),
             isCancelled: false,
+            managementURL: URL(string: "https://www.revenuecat.com")!,
+            price: .init(currency: "USD", amount: 6.99),
+            displayName: "A product"
+        )
+
+        let subscriptionInfoNullable = await PurchaseInformation.purchaseInformationUsingRenewalInfo(
+            entitlement: entitlement,
+            subscribedProduct: mockProduct.toStoreProduct(),
+            transaction: mockTransaction,
+            customerCenterStoreKitUtilities: MockCustomerCenterStoreKitUtilities(mockRenewalPrice: nil),
+            customerInfoRequestedDate: Date(),
+            dateFormatter: Self.mockDateFormatter,
+            numberFormatter: Self.mockNumberFormatter,
             managementURL: URL(string: "https://www.revenuecat.com")!
         )
 
-        let subscriptionInfo = try XCTUnwrap(
-            PurchaseInformation(
-                entitlement: entitlement,
-                subscribedProduct: mockProduct.toStoreProduct(),
-                transaction: mockTransaction,
-                customerInfoRequestedDate: Date(),
-                dateFormatter: Self.mockDateFormatter,
-                managementURL: URL(string: "https://www.revenuecat.com")!
-            )
-        )
+        let subscriptionInfo = try XCTUnwrap(subscriptionInfoNullable)
         expect(subscriptionInfo.title) == "Monthly Product"
         expect(subscriptionInfo.durationTitle) == "1 month"
         expect(subscriptionInfo.explanation) == .earliestExpiration
-        expect(subscriptionInfo.price) == .paid("$6.99")
+        expect(subscriptionInfo.pricePaid) == .nonFree("$6.99")
         expect(subscriptionInfo.isLifetime).to(beFalse())
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
@@ -203,7 +301,7 @@ final class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.store) == .appStore
     }
 
-    func testAppleEntitlementAndExpiredSubscribedProduct() throws {
+    func testAppleEntitlementAndExpiredSubscribedProduct() async throws {
         let customerInfo = CustomerInfoFixtures.customerInfoWithExpiredAppleSubscriptions
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
 
@@ -230,23 +328,28 @@ final class PurchaseInformationTests: TestCase {
                 isTrial: false
             ),
             isCancelled: false,
+            managementURL: URL(string: "https://www.revenuecat.com")!,
+            price: .init(currency: "USD", amount: 6.99),
+            displayName: "A product"
+        )
+
+        let subscriptionInfoNullable = await PurchaseInformation.purchaseInformationUsingRenewalInfo(
+            entitlement: entitlement,
+            subscribedProduct: mockProduct.toStoreProduct(),
+            transaction: mockTransaction,
+            customerCenterStoreKitUtilities: MockCustomerCenterStoreKitUtilities(mockRenewalPrice: nil),
+            customerInfoRequestedDate: Date(),
+            dateFormatter: Self.mockDateFormatter,
+            numberFormatter: Self.mockNumberFormatter,
             managementURL: URL(string: "https://www.revenuecat.com")!
         )
 
-        let subscriptionInfo = try XCTUnwrap(
-            PurchaseInformation(
-                entitlement: entitlement,
-                subscribedProduct: mockProduct.toStoreProduct(),
-                transaction: mockTransaction,
-                customerInfoRequestedDate: Date(),
-                dateFormatter: Self.mockDateFormatter,
-                managementURL: URL(string: "https://www.revenuecat.com")!
-            )
-        )
+        let subscriptionInfo = try XCTUnwrap(subscriptionInfoNullable)
         expect(subscriptionInfo.title) == "Monthly Product"
         expect(subscriptionInfo.durationTitle) == "1 month"
         expect(subscriptionInfo.explanation) == .expired
-        expect(subscriptionInfo.price) == .paid("$6.99")
+        expect(subscriptionInfo.pricePaid) == .nonFree("$6.99")
+        expect(subscriptionInfo.renewalPrice).to(beNil())
         expect(subscriptionInfo.isLifetime).to(beFalse())
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
@@ -271,7 +374,9 @@ final class PurchaseInformationTests: TestCase {
                 isTrial: false
             ),
             isCancelled: false,
-            managementURL: URL(string: "https://www.revenuecat.com")!
+            managementURL: URL(string: "https://www.revenuecat.com")!,
+            price: .init(currency: "USD", amount: 6.99),
+            displayName: "A product"
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -280,14 +385,16 @@ final class PurchaseInformationTests: TestCase {
                 transaction: mockTransaction,
                 customerInfoRequestedDate: Date(),
                 dateFormatter: Self.mockDateFormatter,
+                numberFormatter: Self.mockNumberFormatter,
                 managementURL: URL(string: "https://www.revenuecat.com")!
             )
         )
 
-        expect(subscriptionInfo.title).to(beNil())
+        expect(subscriptionInfo.title) == "com.revenuecat.product"
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.explanation) == .google
-        expect(subscriptionInfo.price) == .unknown
+        expect(subscriptionInfo.pricePaid) == .nonFree("$6.99")
+        expect(subscriptionInfo.renewalPrice).to(beNil())
         expect(subscriptionInfo.isLifetime).to(beFalse())
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
@@ -312,7 +419,9 @@ final class PurchaseInformationTests: TestCase {
                 isTrial: false
             ),
             isCancelled: false,
-            managementURL: URL(string: "https://www.revenuecat.com")!
+            managementURL: URL(string: "https://www.revenuecat.com")!,
+            price: .init(currency: "USD", amount: 6.99),
+            displayName: "A product"
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -321,14 +430,16 @@ final class PurchaseInformationTests: TestCase {
                 transaction: mockTransaction,
                 customerInfoRequestedDate: Date(),
                 dateFormatter: Self.mockDateFormatter,
+                numberFormatter: Self.mockNumberFormatter,
                 managementURL: URL(string: "https://www.revenuecat.com")!
             )
         )
 
-        expect(subscriptionInfo.title).to(beNil())
+        expect(subscriptionInfo.title) == "com.revenuecat.product"
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.explanation) == .google
-        expect(subscriptionInfo.price) == .unknown
+        expect(subscriptionInfo.pricePaid) == .nonFree("$6.99")
+        expect(subscriptionInfo.renewalPrice).to(beNil())
         expect(subscriptionInfo.isLifetime).to(beFalse())
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
@@ -353,7 +464,9 @@ final class PurchaseInformationTests: TestCase {
                 isTrial: false
             ),
             isCancelled: false,
-            managementURL: URL(string: "https://www.revenuecat.com")!
+            managementURL: URL(string: "https://www.revenuecat.com")!,
+            price: .init(currency: "USD", amount: 6.99),
+            displayName: "A product"
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -362,14 +475,16 @@ final class PurchaseInformationTests: TestCase {
                 transaction: mockTransaction,
                 customerInfoRequestedDate: Date(),
                 dateFormatter: Self.mockDateFormatter,
+                numberFormatter: Self.mockNumberFormatter,
                 managementURL: URL(string: "https://www.revenuecat.com")!
             )
         )
 
-        expect(subscriptionInfo.title).to(beNil())
+        expect(subscriptionInfo.title) == "com.revenuecat.product"
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.explanation) == .google
-        expect(subscriptionInfo.price) == .unknown
+        expect(subscriptionInfo.pricePaid) == .nonFree("$6.99")
+        expect(subscriptionInfo.renewalPrice).to(beNil())
         expect(subscriptionInfo.isLifetime).to(beFalse())
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
@@ -394,7 +509,9 @@ final class PurchaseInformationTests: TestCase {
                 isTrial: false
             ),
             isCancelled: false,
-            managementURL: URL(string: "https://www.revenuecat.com")!
+            managementURL: URL(string: "https://www.revenuecat.com")!,
+            price: .init(currency: "USD", amount: 1.99),
+            displayName: "A product"
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -403,14 +520,16 @@ final class PurchaseInformationTests: TestCase {
                 transaction: mockTransaction,
                 customerInfoRequestedDate: Date(),
                 dateFormatter: Self.mockDateFormatter,
+                numberFormatter: Self.mockNumberFormatter,
                 managementURL: URL(string: "https://www.revenuecat.com")!
             )
         )
 
-        expect(subscriptionInfo.title).to(beNil())
+        expect(subscriptionInfo.title) == "rc_promo_pro_cat_yearly"
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.explanation) == .promotional
-        expect(subscriptionInfo.price) == .free
+        expect(subscriptionInfo.pricePaid) == .free
+        expect(subscriptionInfo.renewalPrice).to(beNil())
         expect(subscriptionInfo.isLifetime).to(beFalse())
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
@@ -435,7 +554,9 @@ final class PurchaseInformationTests: TestCase {
                 isTrial: false
             ),
             isCancelled: false,
-            managementURL: URL(string: "https://www.revenuecat.com")!
+            managementURL: URL(string: "https://www.revenuecat.com")!,
+            price: .init(currency: "USD", amount: 1.99),
+            displayName: "A product"
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -444,14 +565,16 @@ final class PurchaseInformationTests: TestCase {
                 transaction: mockTransaction,
                 customerInfoRequestedDate: Date(),
                 dateFormatter: Self.mockDateFormatter,
+                numberFormatter: Self.mockNumberFormatter,
                 managementURL: URL(string: "https://www.revenuecat.com")!
             )
         )
 
-        expect(subscriptionInfo.title).to(beNil())
+        expect(subscriptionInfo.title) == "rc_promo_pro_cat_lifetime"
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.explanation) == .promotional
-        expect(subscriptionInfo.price) == .free
+        expect(subscriptionInfo.pricePaid) == .free
+        expect(subscriptionInfo.renewalPrice).to(beNil())
         // false - no way to know if its lifetime
         expect(subscriptionInfo.isLifetime).to(beFalse())
 
@@ -477,7 +600,9 @@ final class PurchaseInformationTests: TestCase {
                 isTrial: false
             ),
             isCancelled: false,
-            managementURL: URL(string: "https://www.revenuecat.com")!
+            managementURL: URL(string: "https://www.revenuecat.com")!,
+            price: .init(currency: "USD", amount: 1.99),
+            displayName: "A product"
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -486,14 +611,16 @@ final class PurchaseInformationTests: TestCase {
                 transaction: mockTransaction,
                 customerInfoRequestedDate: Date(),
                 dateFormatter: Self.mockDateFormatter,
+                numberFormatter: Self.mockNumberFormatter,
                 managementURL: URL(string: "https://www.revenuecat.com")!
             )
         )
 
-        expect(subscriptionInfo.title).to(beNil())
+        expect(subscriptionInfo.title) == "com.revenuecat.product"
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.explanation) == .externalWeb
-        expect(subscriptionInfo.price) == .unknown
+        expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
+        expect(subscriptionInfo.renewalPrice).to(beNil())
         expect(subscriptionInfo.isLifetime).to(beFalse())
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
@@ -518,7 +645,9 @@ final class PurchaseInformationTests: TestCase {
                 isTrial: false
             ),
             isCancelled: false,
-            managementURL: URL(string: "https://www.revenuecat.com")!
+            managementURL: URL(string: "https://www.revenuecat.com")!,
+            price: .init(currency: "USD", amount: 1.99),
+            displayName: "A product"
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -527,14 +656,16 @@ final class PurchaseInformationTests: TestCase {
                 transaction: mockTransaction,
                 customerInfoRequestedDate: Date(),
                 dateFormatter: Self.mockDateFormatter,
+                numberFormatter: Self.mockNumberFormatter,
                 managementURL: URL(string: "https://www.revenuecat.com")!
             )
         )
 
-        expect(subscriptionInfo.title).to(beNil())
+        expect(subscriptionInfo.title) == "com.revenuecat.product"
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.explanation) == .externalWeb
-        expect(subscriptionInfo.price) == .unknown
+        expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
+        expect(subscriptionInfo.renewalPrice).to(beNil())
         expect(subscriptionInfo.isLifetime).to(beFalse())
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
@@ -559,7 +690,9 @@ final class PurchaseInformationTests: TestCase {
                 isTrial: false
             ),
             isCancelled: false,
-            managementURL: URL(string: "https://www.revenuecat.com")!
+            managementURL: URL(string: "https://www.revenuecat.com")!,
+            price: .init(currency: "USD", amount: 1.99),
+            displayName: "A product"
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -568,14 +701,16 @@ final class PurchaseInformationTests: TestCase {
                 transaction: mockTransaction,
                 customerInfoRequestedDate: Date(),
                 dateFormatter: Self.mockDateFormatter,
+                numberFormatter: Self.mockNumberFormatter,
                 managementURL: URL(string: "https://www.revenuecat.com")!
             )
         )
 
-        expect(subscriptionInfo.title).to(beNil())
+        expect(subscriptionInfo.title) == "com.revenuecat.product"
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.explanation) == .externalWeb
-        expect(subscriptionInfo.price) == .unknown
+        expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
+        expect(subscriptionInfo.renewalPrice).to(beNil())
         expect(subscriptionInfo.isLifetime).to(beFalse())
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
@@ -592,7 +727,7 @@ final class PurchaseInformationTests: TestCase {
 
         let mockTransaction = MockTransaction(
             productIdentifier: entitlement.productIdentifier,
-            store: .stripe,
+            store: .rcBilling,
             type: .subscription(
                 isActive: true,
                 willRenew: true,
@@ -600,7 +735,9 @@ final class PurchaseInformationTests: TestCase {
                 isTrial: false
             ),
             isCancelled: false,
-            managementURL: URL(string: "https://www.revenuecat.com")!
+            managementURL: URL(string: "https://www.revenuecat.com")!,
+            price: .init(currency: "USD", amount: 1.99),
+            displayName: "A product"
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -609,14 +746,16 @@ final class PurchaseInformationTests: TestCase {
                 transaction: mockTransaction,
                 customerInfoRequestedDate: Date(),
                 dateFormatter: Self.mockDateFormatter,
+                numberFormatter: Self.mockNumberFormatter,
                 managementURL: URL(string: "https://www.revenuecat.com")!
             )
         )
 
-        expect(subscriptionInfo.title).to(beNil())
+        expect(subscriptionInfo.title) == "com.revenuecat.product"
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.explanation) == .rcWebBilling
-        expect(subscriptionInfo.price) == .unknown
+        expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
+        expect(subscriptionInfo.renewalPrice) == .nonFree("$1.99")
         expect(subscriptionInfo.isLifetime).to(beFalse())
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
@@ -633,7 +772,7 @@ final class PurchaseInformationTests: TestCase {
 
         let mockTransaction = MockTransaction(
             productIdentifier: entitlement.productIdentifier,
-            store: .stripe,
+            store: .rcBilling,
             type: .subscription(
                 isActive: true,
                 willRenew: false,
@@ -641,7 +780,9 @@ final class PurchaseInformationTests: TestCase {
                 isTrial: false
             ),
             isCancelled: false,
-            managementURL: URL(string: "https://www.revenuecat.com")!
+            managementURL: URL(string: "https://www.revenuecat.com")!,
+            price: .init(currency: "USD", amount: 1.99),
+            displayName: "A product"
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -650,14 +791,16 @@ final class PurchaseInformationTests: TestCase {
                 transaction: mockTransaction,
                 customerInfoRequestedDate: Date(),
                 dateFormatter: Self.mockDateFormatter,
+                numberFormatter: Self.mockNumberFormatter,
                 managementURL: URL(string: "https://www.revenuecat.com")!
             )
         )
 
-        expect(subscriptionInfo.title).to(beNil())
+        expect(subscriptionInfo.title) == "com.revenuecat.product"
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.explanation) == .rcWebBilling
-        expect(subscriptionInfo.price) == .unknown
+        expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
+        expect(subscriptionInfo.renewalPrice).to(beNil())
         expect(subscriptionInfo.isLifetime).to(beFalse())
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
@@ -674,7 +817,7 @@ final class PurchaseInformationTests: TestCase {
 
         let mockTransaction = MockTransaction(
             productIdentifier: entitlement.productIdentifier,
-            store: .stripe,
+            store: .rcBilling,
             type: .subscription(
                 isActive: false,
                 willRenew: false,
@@ -682,7 +825,9 @@ final class PurchaseInformationTests: TestCase {
                 isTrial: false
             ),
             isCancelled: false,
-            managementURL: URL(string: "https://www.revenuecat.com")!
+            managementURL: URL(string: "https://www.revenuecat.com")!,
+            price: .init(currency: "USD", amount: 1.99),
+            displayName: "A product"
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -691,14 +836,16 @@ final class PurchaseInformationTests: TestCase {
                 transaction: mockTransaction,
                 customerInfoRequestedDate: Date(),
                 dateFormatter: Self.mockDateFormatter,
+                numberFormatter: Self.mockNumberFormatter,
                 managementURL: URL(string: "https://www.revenuecat.com")!
             )
         )
 
-        expect(subscriptionInfo.title).to(beNil())
+        expect(subscriptionInfo.title) == "com.revenuecat.product"
         expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.explanation) == .rcWebBilling
-        expect(subscriptionInfo.price) == .unknown
+        expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
+        expect(subscriptionInfo.renewalPrice).to(beNil())
         expect(subscriptionInfo.isLifetime).to(beFalse())
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
@@ -720,7 +867,9 @@ final class PurchaseInformationTests: TestCase {
                 isTrial: false
             ),
             isCancelled: false,
-            managementURL: URL(string: "https://www.revenuecat.com")!
+            managementURL: URL(string: "https://www.revenuecat.com")!,
+            price: .init(currency: "USD", amount: 1.99),
+            displayName: "A product"
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -730,13 +879,14 @@ final class PurchaseInformationTests: TestCase {
                 transaction: mockTransaction,
                 customerInfoRequestedDate: Date(),
                 dateFormatter: Self.mockDateFormatter,
+                numberFormatter: Self.mockNumberFormatter,
                 managementURL: URL(string: "https://www.revenuecat.com")!
             )
         )
-        expect(subscriptionInfo.title).to(beNil())
+        expect(subscriptionInfo.title) == "product_id"
         expect(subscriptionInfo.explanation) == .expired
         expect(subscriptionInfo.durationTitle).to(beNil())
-        expect(subscriptionInfo.price) == .unknown
+        expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
         expect(subscriptionInfo.isLifetime).to(beFalse())
 
         let expirationOrRenewal = try XCTUnwrap(subscriptionInfo.expirationOrRenewal)
