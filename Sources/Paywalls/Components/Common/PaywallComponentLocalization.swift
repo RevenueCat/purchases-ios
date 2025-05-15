@@ -13,6 +13,7 @@
 // swiftlint:disable missing_docs
 
 import Foundation
+@_spi(Internal) import RevenueCat
 
 extension PaywallComponent.LocalizationDictionary {
 

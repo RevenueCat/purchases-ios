@@ -88,6 +88,11 @@ public extension PaywallComponent {
             public let autoDismiss: Bool?
             public let openMethod: ButtonComponent.URLMethod?
 
+            public init(autoDismiss: Bool? = nil, openMethod: PaywallComponent.ButtonComponent.URLMethod? = nil) {
+                self.autoDismiss = autoDismiss
+                self.openMethod = openMethod
+            }
+
         }
 
         public struct CustomWebCheckout: Codable, Sendable, Hashable, Equatable {
@@ -97,11 +102,26 @@ public extension PaywallComponent {
                 public let url: LocalizationKey
                 public let packageParam: String?
 
+                public init(url: PaywallComponent.LocalizationKey, packageParam: String? = nil) {
+                    self.url = url
+                    self.packageParam = packageParam
+                }
+
                 private enum CodingKeys: String, CodingKey {
                     case url = "urlLid"
                     case packageParam
                 }
 
+            }
+
+            public init(
+                customUrl: PaywallComponent.PurchaseButtonComponent.CustomWebCheckout.CustomURL,
+                autoDismiss: Bool? = nil,
+                openMethod: PaywallComponent.ButtonComponent.URLMethod? = nil
+            ) {
+                self.customUrl = customUrl
+                self.autoDismiss = autoDismiss
+                self.openMethod = openMethod
             }
 
             public let customUrl: CustomURL

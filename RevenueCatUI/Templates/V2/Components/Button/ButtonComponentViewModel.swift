@@ -123,17 +123,4 @@ class ButtonComponentViewModel {
 
 }
 
-fileprivate extension PaywallComponent.LocalizationDictionary {
-
-    func urlFromLid(_ urlLid: String) throws -> URL {
-        do {
-            return try url(key: urlLid)
-        } catch {
-            Logger.error(Strings.paywall_invalid_url(urlLid))
-            throw error
-        }
-    }
-
-}
-
 #endif

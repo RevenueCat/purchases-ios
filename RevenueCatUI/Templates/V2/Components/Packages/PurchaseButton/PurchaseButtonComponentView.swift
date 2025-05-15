@@ -214,7 +214,8 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                                            trailing: 30)
                         ))
                     ]),
-                    action: .inAppCheckout
+                    action: .inAppCheckout,
+                    method: .inAppCheckout
                 ),
                 localizationProvider: .init(
                     locale: Locale.current,
@@ -258,7 +259,8 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                                                 bottomLeading: 8,
                                                 bottomTrailing: 8))
                     ),
-                    action: .inAppCheckout
+                    action: .inAppCheckout,
+                    method: .inAppCheckout
                 ),
                 localizationProvider: .init(
                     locale: Locale.current,
@@ -298,7 +300,8 @@ fileprivate extension PurchaseButtonComponentViewModel {
             offering: offering
         )
 
-        self.init(
+        try self.init(
+            localizationProvider: localizationProvider,
             component: component,
             offering: offering,
             stackViewModel: stackViewModel

@@ -123,7 +123,8 @@ private enum ButtonWithSheetPreview {
             ],
             shape: .pill
         ),
-        action: nil
+        action: nil,
+        method: nil,
     )
 
     static let viewAllButton = PaywallComponent.ButtonComponent(
@@ -192,7 +193,8 @@ private enum ButtonWithSheetPreview {
                                             size: .init(width: .fill, height: .fit),
                                             shape: .pill
                                         ),
-                                        action: .inAppCheckout
+                                        action: .inAppCheckout,
+                                        method: .inAppCheckout
                                     )),
                                     .purchaseButton(.init(
                                         stack: .init(
@@ -212,7 +214,8 @@ private enum ButtonWithSheetPreview {
                                             size: .init(width: .fill, height: .fit),
                                             shape: .pill
                                         ),
-                                        action: .webCheckout
+                                        action: .webCheckout,
+                                        method: .webCheckout(.init())
                                     )),
                                     .purchaseButton(.init(
                                         stack: .init(
@@ -232,7 +235,8 @@ private enum ButtonWithSheetPreview {
                                             size: .init(width: .fill, height: .fit),
                                             shape: .pill
                                         ),
-                                        action: .webProductSelection
+                                        action: .webProductSelection,
+                                        method: .webProductSelection(.init())
                                     )),
                                     .purchaseButton(.init(
                                         stack: .init(
@@ -253,10 +257,9 @@ private enum ButtonWithSheetPreview {
                                             shape: .pill
                                         ),
                                         action: .webCheckout,
-                                        customUrl: .init(
-                                            url: URL(string: "https://rev.cat?rc_app_user_id=123")!,
-                                            packageParam: "rc_package"
-                                        )
+                                        method: .customWebCheckout(
+                                            .init(customUrl: .init(url: "web_checkout_url", packageParam: "rc_package"))
+                                        ),
                                     )),
                                     .purchaseButton(.init(
                                         stack: .init(
@@ -277,10 +280,9 @@ private enum ButtonWithSheetPreview {
                                             shape: .pill
                                         ),
                                         action: .webProductSelection,
-                                        customUrl: .init(
-                                            url: URL(string: "https://rev.cat?rc_app_user_id=123")!,
-                                            packageParam: "rc_package"
-                                        )
+                                        method: .customWebCheckout(
+                                            .init(customUrl: .init(url: "web_checkout_url"))
+                                        ),
                                     ))
                                 ],
                                 size: .init(width: .fill, height: .fit),
@@ -461,6 +463,8 @@ private enum ButtonWithSheetPreview {
             "monthly_title": .string("Buy Monthly"),
             "monthly_desc": .string("Monthly something"),
 
+            "web_checkout_url": .string("https://rev.cat?rc_app_user_id=123"),
+
             "close": .string("X")
         ]],
         revision: 1,
@@ -471,12 +475,14 @@ private enum ButtonWithSheetPreview {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ButtonWithSheetPreview_Previews: PreviewProvider {
 
+    static let baseUrl = "https://pay.revenuecat.com/abcd1234/the-app-user-id"
+
     static var weeklyPackage: Package {
         return .init(identifier: "weekly",
                      packageType: .weekly,
                      storeProduct: .init(sk1Product: .init()),
                      offeringIdentifier: "default",
-                     webCheckoutUrl: URL(string: "https://pay.revenuecat.com/abcd1234/the-app-user-id")!)
+                     webCheckoutUrl: URL(string: "\(baseUrl)?package_id=weekly")!)
     }
 
     static var monthlyPackage: Package {
@@ -484,7 +490,7 @@ struct ButtonWithSheetPreview_Previews: PreviewProvider {
                      packageType: .monthly,
                      storeProduct: .init(sk1Product: .init()),
                      offeringIdentifier: "default",
-                     webCheckoutUrl: URL(string: "https://pay.revenuecat.com/abcd1234/the-app-user-id")!)
+                     webCheckoutUrl: URL(string: "\(baseUrl)?package_id=monthly")!)
     }
 
     // Need to wrap in VStack otherwise preview rerenders and images won't show
@@ -496,7 +502,7 @@ struct ButtonWithSheetPreview_Previews: PreviewProvider {
             offering: .init(identifier: "default",
                             serverDescription: "",
                             availablePackages: [weeklyPackage, monthlyPackage],
-                            webCheckoutUrl: nil),
+                            webCheckoutUrl: URL(string: "https://pay.revenuecat.com/abcd1234/the-app-user-id")!),
             purchaseHandler: PurchaseHandler.default(),
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,

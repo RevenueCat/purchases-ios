@@ -24,14 +24,26 @@ class PurchaseButtonComponentViewModel {
     private let offering: Offering
     let stackViewModel: StackComponentViewModel
 
+    private let customWebCheckoutUrl: URL?
+
     init(
+        localizationProvider: LocalizationProvider,
         component: PaywallComponent.PurchaseButtonComponent,
         offering: Offering,
         stackViewModel: StackComponentViewModel
-    ) {
+    ) throws {
         self.component = component
         self.offering = offering
         self.stackViewModel = stackViewModel
+
+        if case let .customWebCheckout(customWebCheckout)? = component.method {
+            self.customWebCheckoutUrl = try localizationProvider
+                .localizedStrings
+                .urlFromLid(customWebCheckout.customUrl.url)
+        } else {
+            self.customWebCheckoutUrl = nil
+        }
+
     }
 
     var action: PaywallComponent.PurchaseButtonComponent.Action? {
@@ -39,15 +51,38 @@ class PurchaseButtonComponentViewModel {
     }
 
     var offeringWebCheckoutUrl: URL? {
-        if let customUrl = component.customUrl {
-            return customUrl.url
-        } else {
-            return self.offering.webCheckoutUrl
+        guard let method = component.method else {
+            return offering.webCheckoutUrl
+        }
+
+        switch method {
+        case .inAppCheckout, .unknown:
+            return nil
+        case .webCheckout, .webProductSelection:
+            return offering.webCheckoutUrl
+        case .customWebCheckout:
+            return customWebCheckoutUrl
         }
     }
 
+    static let defaultWebAutoDismiss = true
+
     var webAutoDimiss: Bool {
-        return self.component.webAutoDismiss
+        if let method = component.method {
+            switch method {
+            case .webCheckout(let webCheckout), .webProductSelection(let webCheckout):
+                return webCheckout.autoDismiss ?? Self.defaultWebAutoDismiss
+            case .customWebCheckout(let customWebCheckout):
+                return customWebCheckout.autoDismiss ?? Self.defaultWebAutoDismiss
+            case .inAppCheckout, .unknown:
+                break
+            }
+        } else if component.action != nil {
+            // Legacy action was previously always dismissing
+            return Self.defaultWebAutoDismiss
+        }
+
+        return Self.defaultWebAutoDismiss
     }
 
     func urlForWebProduct(packageContext: PackageContext) -> URL? {
@@ -55,9 +90,14 @@ class PurchaseButtonComponentViewModel {
             return nil
         }
 
-        if let customUrl = component.customUrl {
+        if case let .customWebCheckout(customWebCheckout)? = component.method,
+            let customUrl = self.customWebCheckoutUrl {
             // Appends package identifier into a query param to a custom url
-            return customUrl.url.appending(name: customUrl.packageParam, value: package.identifier)
+            if let packageParam = customWebCheckout.customUrl.packageParam {
+                return customUrl.appending(name: packageParam, value: package.identifier)
+            } else {
+                return customUrl
+            }
         } else {
             return package.webCheckoutUrl
         }
