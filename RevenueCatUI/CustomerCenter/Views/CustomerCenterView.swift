@@ -202,42 +202,53 @@ private extension CustomerCenterView {
 
     @ViewBuilder
     func destinationContent(configuration: CustomerCenterConfigData) -> some View {
-        if let purchaseInformation = viewModel.activePurchase {
-            if purchaseInformation.store == .appStore,
-               let screen = configuration.screens[.management] {
-                if let onUpdateAppClick = viewModel.onUpdateAppClick,
-                    !ignoreAppUpdateWarning && viewModel.shouldShowAppUpdateWarnings {
-                    AppUpdateWarningView(
-                        onUpdateAppClick: onUpdateAppClick,
-                        onContinueAnywayClick: {
-                            withAnimation {
-                                ignoreAppUpdateWarning = true
-                            }
+        if viewModel.hasPurchases,
+           let screen = configuration.screens[.management] {
+            if let onUpdateAppClick = viewModel.onUpdateAppClick,
+               !ignoreAppUpdateWarning
+                && viewModel.shouldShowAppUpdateWarnings {
+                AppUpdateWarningView(
+                    onUpdateAppClick: onUpdateAppClick,
+                    onContinueAnywayClick: {
+                        withAnimation {
+                            ignoreAppUpdateWarning = true
                         }
-                    )
-                } else {
-                    ManageSubscriptionsView(
-                        screen: screen,
-                        purchaseInformation: $viewModel.activePurchase,
-                        purchasesProvider: self.viewModel.purchasesProvider,
-                        actionWrapper: self.viewModel.actionWrapper)
-                }
-            } else if let screen = configuration.screens[.management] {
-                WrongPlatformView(screen: screen,
-                                  purchaseInformation: purchaseInformation)
+                    }
+                )
+            } else if viewModel.activePurchases.count > 1 {
+                ActiveSubscriptionsListView(
+                    screen: screen,
+                    activePurchases: $viewModel.activePurchases,
+                    purchasesProvider: self.viewModel.purchasesProvider,
+                    actionWrapper: self.viewModel.actionWrapper
+                )
+                .dismissCircleButtonToolbarIfNeeded()
             } else {
-                WrongPlatformView(purchaseInformation: purchaseInformation)
+                SubscriptionDetailView(
+                    screen: screen,
+                    purchaseInformation: $viewModel.activePurchase,
+                    showPurchaseHistory: viewModel.configuration?.support.displayPurchaseHistoryLink == true,
+                    purchasesProvider: self.viewModel.purchasesProvider,
+                    actionWrapper: self.viewModel.actionWrapper
+                )
+                .dismissCircleButtonToolbarIfNeeded()
             }
         } else {
             if let screen = configuration.screens[.noActive] {
-                ManageSubscriptionsView(screen: screen,
-                                        purchaseInformation: $viewModel.activePurchase,
-                                        purchasesProvider: self.viewModel.purchasesProvider,
-                                        actionWrapper: self.viewModel.actionWrapper)
+                SubscriptionDetailView(
+                    screen: screen,
+                    purchaseInformation: .constant(nil),
+                    showPurchaseHistory: viewModel.configuration?.support.displayPurchaseHistoryLink == true,
+                    purchasesProvider: self.viewModel.purchasesProvider,
+                    actionWrapper: self.viewModel.actionWrapper
+                )
+                .dismissCircleButtonToolbarIfNeeded()
             } else {
                 // Fallback with a restore button
-                NoSubscriptionsView(configuration: configuration,
-                                    actionWrapper: self.viewModel.actionWrapper)
+                NoSubscriptionsView(
+                    configuration: configuration,
+                    actionWrapper: self.viewModel.actionWrapper
+                )
             }
         }
     }

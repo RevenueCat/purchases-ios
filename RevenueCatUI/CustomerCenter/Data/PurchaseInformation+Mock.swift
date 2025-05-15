@@ -61,6 +61,7 @@ extension PurchaseInformation {
         store: Store = .appStore,
         isCancelled: Bool = false,
         expirationDate: Date = Date(),
+        renewalDate: Date? = nil,
         introductoryDiscount: StoreProductDiscountType? = nil
     ) -> PurchaseInformation {
         PurchaseInformation(
@@ -78,8 +79,8 @@ extension PurchaseInformation {
             latestPurchaseDate: nil,
             customerInfoRequestedDate: Date(),
             managementURL: URL(string: "https://www.revenuecat.com")!,
-            expirationDate: nil,
-            renewalDate: nil
+            expirationDate: expirationDate,
+            renewalDate: renewalDate
         )
     }
 

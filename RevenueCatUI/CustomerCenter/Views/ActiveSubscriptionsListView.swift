@@ -104,44 +104,71 @@ struct ActiveSubscriptionsListView: View {
 
     @ViewBuilder
     var content: some View {
-        List {
-            if viewModel.activePurchases.isEmpty {
-                let fallbackDescription = localization[.tryCheckRestore]
+        ZStack {
+            Color(colorScheme == .light ? UIColor.secondarySystemBackground : UIColor.systemBackground)
+                .ignoresSafeArea()
 
-                Section {
-                    CompatibilityContentUnavailableView(
-                        self.viewModel.screen.title,
-                        systemImage: "exclamationmark.triangle.fill",
-                        description: Text(self.viewModel.screen.subtitle ?? fallbackDescription)
-                    )
-                }
+            ScrollView {
+                LazyVStack {
+                    if viewModel.activePurchases.isEmpty {
+                        let fallbackDescription = localization[.tryCheckRestore]
 
-                // just temporary, until ManageSubscriptionsView is deleted
-                Section {
-                    buttonsView
-                }
+                        Section {
+                            CompatibilityContentUnavailableView(
+                                self.viewModel.screen.title,
+                                systemImage: "exclamationmark.triangle.fill",
+                                description: Text(self.viewModel.screen.subtitle ?? fallbackDescription)
+                            )
+                        }
 
-            } else {
-                Section(localization[.activeSubscriptions]) {
-                    ForEach(viewModel.activePurchases) { purchase in
-                        Button {
-                            viewModel.purchaseInformation = purchase
-                        } label: {
-                            CompatibilityLabeledContent {
-                                Text(purchase.title)
-                            } content: {
-                                Image(systemName: "chevron.forward")
+                        // just temporary, until ManageSubscriptionsView is deleted
+                        Section {
+                            buttonsView
+                        }
+
+                    } else {
+                        Text(localization[.activeSubscriptions].uppercased())
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 32)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .multilineTextAlignment(.leading)
+
+                        ForEach(viewModel.activePurchases) { purchase in
+                            Section {
+                                Button {
+                                    viewModel.purchaseInformation = purchase
+                                } label: {
+                                    PurchaseInformationCardView(
+                                        purchaseInformation: purchase,
+                                        localization: localization
+                                    )
+                                        .padding()
+                                        .background(Color(colorScheme == .light
+                                                          ? UIColor.systemBackground
+                                                          : UIColor.secondarySystemBackground))
+                                        .cornerRadius(10)
+                                        .padding([.leading, .trailing])
+                                }
+                                .tint(colorScheme == .dark ? .white : .black)
                             }
                         }
-                    }
-                }
 
-                if support?.displayPurchaseHistoryLink == true {
-                    Button {
-                        viewModel.showAllPurchases = true
-                    } label: {
-                        CompatibilityLabeledContent(localization[.seeAllPurchases]) {
-                            Image(systemName: "chevron.forward")
+                        if support?.displayPurchaseHistoryLink == true {
+                            Button {
+                                viewModel.showAllPurchases = true
+                            } label: {
+                                CompatibilityLabeledContent(localization[.seeAllPurchases]) {
+                                    Image(systemName: "chevron.forward")
+                                }
+                                .padding()
+                                .background(Color(colorScheme == .light
+                                                  ? UIColor.systemBackground
+                                                  : UIColor.secondarySystemBackground))
+                                .cornerRadius(10)
+                                .padding([.leading, .trailing])
+                            }
+                            .tint(colorScheme == .dark ? .white : .black)
                         }
                     }
                 }
@@ -182,8 +209,8 @@ struct ActiveSubscriptionsListView: View {
     // swiftlint:disable force_unwrapping
     static var previews: some View {
         let purchases = [
-            PurchaseInformation.yearlyExpiring(store: .amazon),
-            .monthlyRenewing,
+            PurchaseInformation.yearlyExpiring(store: .amazon, renewalDate: Date()),
+            PurchaseInformation.yearlyExpiring(store: .appStore),
             .free
         ]
 
@@ -213,13 +240,13 @@ struct ActiveSubscriptionsListView: View {
                 ActiveSubscriptionsListView(
                     viewModel: ActiveSubscriptionsListViewModel(
                         screen: warningOnMock.screens[.management]!,
-                        activePurchases: purchases
+                        activePurchases: []
                     )
                 )
                 .environment(\.supportInformation, warningOnMock.support)
             }
             .preferredColorScheme(colorScheme)
-            .previewDisplayName("Dup subs warning - \(colorScheme)")
+            .previewDisplayName("Empty - \(colorScheme)")
         }
         .environment(\.localization, CustomerCenterConfigData.default.localization)
         .environment(\.appearance, CustomerCenterConfigData.default.appearance)
