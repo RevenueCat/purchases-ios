@@ -17,7 +17,7 @@ import Foundation
 import RevenueCat
 import StoreKit
 
-// swiftlint:disable nesting
+// swiftlint:disable nesting file_length
 
 /// Information about a purchase.
 struct PurchaseInformation {
@@ -36,6 +36,8 @@ struct PurchaseInformation {
     let price: PriceDetails
 
     /// Subscription expiration or renewal details, if applicable.
+    ///
+    /// Note: Deprecated, soon to be deleted
     let expirationOrRenewal: ExpirationOrRenewal?
 
     /// The unique product identifier for the purchase.
@@ -194,7 +196,7 @@ struct PurchaseInformation {
         }
     }
 
-    struct ExpirationOrRenewal {
+    struct ExpirationOrRenewal: Equatable {
         let label: Label
         let date: Date
 
@@ -210,7 +212,7 @@ struct PurchaseInformation {
         }
     }
 
-    enum PriceDetails: Equatable {
+    enum PriceDetails: Equatable, Hashable {
         case free
         case paid(String)
         case unknown
@@ -235,6 +237,31 @@ struct PurchaseInformation {
          return dateFormatter
      }()
 }
+
+extension PurchaseInformation: Hashable {
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(title)
+        hasher.combine(durationTitle)
+        hasher.combine(explanation)
+        hasher.combine(price)
+        hasher.combine(productIdentifier)
+        hasher.combine(store)
+        hasher.combine(isLifetime)
+        hasher.combine(isCancelled)
+        hasher.combine(latestPurchaseDate)
+        hasher.combine(customerInfoRequestedDate)
+        hasher.combine(expirationDate)
+        hasher.combine(renewalDate)
+        hasher.combine(managementURL)
+    }
+ }
+
+extension PurchaseInformation: Identifiable {
+
+    var id: Self { self }
+}
+
 // swiftlint:enable nesting
 
 extension PurchaseInformation {

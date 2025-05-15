@@ -260,14 +260,14 @@ private extension PaywallEventsManagerTests {
         return event
     }
 
-    func verifyEmptyStore(file: StaticString = #file, line: UInt = #line) async {
+    func verifyEmptyStore(file: FileString = #filePath, line: UInt = #line) async {
         let events = await self.store.storedEvents
         expect(file: file, line: line, events).to(beEmpty())
     }
 
     func verifyEvents(
         _ expected: [StoredEvent],
-        file: StaticString = #file,
+        file: FileString = #filePath,
         line: UInt = #line
     ) async {
         let events = await self.store.storedEvents
