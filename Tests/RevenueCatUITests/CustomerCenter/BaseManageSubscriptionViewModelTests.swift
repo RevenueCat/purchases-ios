@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-// ManageSubscriptionsViewModelTests.swift
+// BaseManageSubscriptionViewModel.swift
 //
 //
 //  Created by Cesar de la Vega on 11/6/24.
@@ -359,7 +359,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
     // Helper methods
     private func setupPromotionalOfferTest(offerIdentifierInJSON: String,
                                            offerIdentifierInProduct: String
-    ) async throws -> (ManageSubscriptionsViewModel, MockLoadPromotionalOfferUseCase) {
+    ) async throws -> (BaseManageSubscriptionViewModel, MockLoadPromotionalOfferUseCase) {
         let productIdOne = "com.revenuecat.product1"
         let productIdTwo = "com.revenuecat.product2"
         let purchaseDate = "2022-04-12T00:03:28Z"
@@ -444,7 +444,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         return (viewModel, loadPromotionalOfferUseCase)
     }
 
-    private func verifyPromotionalOfferLoading(viewModel: ManageSubscriptionsViewModel,
+    private func verifyPromotionalOfferLoading(viewModel: BaseManageSubscriptionViewModel,
                                                loadPromotionalOfferUseCase: MockLoadPromotionalOfferUseCase,
                                                expectedOfferIdentifierInJSON: String,
                                                expectedOfferIdentifierInProduct: String? = nil) async throws {
