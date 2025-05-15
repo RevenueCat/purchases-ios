@@ -124,7 +124,7 @@ private enum ButtonWithSheetPreview {
             shape: .pill
         ),
         action: nil,
-        method: nil,
+        method: nil
     )
 
     static let viewAllButton = PaywallComponent.ButtonComponent(
