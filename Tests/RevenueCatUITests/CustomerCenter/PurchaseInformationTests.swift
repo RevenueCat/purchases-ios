@@ -64,6 +64,7 @@ final class PurchaseInformationTests: TestCase {
         let managementURL: URL?
         let price: RevenueCat.ProductPaidPrice?
         let displayName: String?
+        let periodType: RevenueCat.PeriodType
     }
 
     func testAppleEntitlementAndSubscribedProductWithoutRenewalInfo() throws {
@@ -95,7 +96,8 @@ final class PurchaseInformationTests: TestCase {
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
             price: .init(currency: "USD", amount: 6.99),
-            displayName: "A product"
+            displayName: "A product",
+            periodType: .normal
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -153,7 +155,8 @@ final class PurchaseInformationTests: TestCase {
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
             price: .init(currency: "USD", amount: 6.99),
-            displayName: "A product"
+            displayName: "A product",
+            periodType: .normal
         )
 
         let subscriptionInfoNullable = await PurchaseInformation.purchaseInformationUsingRenewalInfo(
@@ -212,7 +215,8 @@ final class PurchaseInformationTests: TestCase {
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
             price: .init(currency: "USD", amount: 6.99),
-            displayName: "A product"
+            displayName: "A product",
+            periodType: .normal
         )
 
         let subscriptionInfoNullable = await PurchaseInformation.purchaseInformationUsingRenewalInfo(
@@ -272,7 +276,8 @@ final class PurchaseInformationTests: TestCase {
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
             price: .init(currency: "USD", amount: 6.99),
-            displayName: "A product"
+            displayName: "A product",
+            periodType: .normal
         )
 
         let subscriptionInfoNullable = await PurchaseInformation.purchaseInformationUsingRenewalInfo(
@@ -330,7 +335,8 @@ final class PurchaseInformationTests: TestCase {
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
             price: .init(currency: "USD", amount: 6.99),
-            displayName: "A product"
+            displayName: "A product",
+            periodType: .normal
         )
 
         let subscriptionInfoNullable = await PurchaseInformation.purchaseInformationUsingRenewalInfo(
@@ -376,7 +382,8 @@ final class PurchaseInformationTests: TestCase {
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
             price: .init(currency: "USD", amount: 6.99),
-            displayName: "A product"
+            displayName: "A product",
+            periodType: .normal
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -421,7 +428,8 @@ final class PurchaseInformationTests: TestCase {
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
             price: .init(currency: "USD", amount: 6.99),
-            displayName: "A product"
+            displayName: "A product",
+            periodType: .normal
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -466,7 +474,8 @@ final class PurchaseInformationTests: TestCase {
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
             price: .init(currency: "USD", amount: 6.99),
-            displayName: "A product"
+            displayName: "A product",
+            periodType: .normal
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -511,7 +520,8 @@ final class PurchaseInformationTests: TestCase {
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
             price: .init(currency: "USD", amount: 1.99),
-            displayName: "A product"
+            displayName: "A product",
+            periodType: .normal
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -556,7 +566,8 @@ final class PurchaseInformationTests: TestCase {
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
             price: .init(currency: "USD", amount: 1.99),
-            displayName: "A product"
+            displayName: "A product",
+            periodType: .normal
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -602,7 +613,8 @@ final class PurchaseInformationTests: TestCase {
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
             price: .init(currency: "USD", amount: 1.99),
-            displayName: "A product"
+            displayName: "A product",
+            periodType: .normal
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -647,7 +659,8 @@ final class PurchaseInformationTests: TestCase {
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
             price: .init(currency: "USD", amount: 1.99),
-            displayName: "A product"
+            displayName: "A product",
+            periodType: .normal
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -692,7 +705,8 @@ final class PurchaseInformationTests: TestCase {
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
             price: .init(currency: "USD", amount: 1.99),
-            displayName: "A product"
+            displayName: "A product",
+            periodType: .normal
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -737,7 +751,8 @@ final class PurchaseInformationTests: TestCase {
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
             price: .init(currency: "USD", amount: 1.99),
-            displayName: "A product"
+            displayName: "A product",
+            periodType: .normal
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -782,7 +797,8 @@ final class PurchaseInformationTests: TestCase {
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
             price: .init(currency: "USD", amount: 1.99),
-            displayName: "A product"
+            displayName: "A product",
+            periodType: .normal
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -827,7 +843,8 @@ final class PurchaseInformationTests: TestCase {
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
             price: .init(currency: "USD", amount: 1.99),
-            displayName: "A product"
+            displayName: "A product",
+            periodType: .normal
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -869,7 +886,8 @@ final class PurchaseInformationTests: TestCase {
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
             price: .init(currency: "USD", amount: 1.99),
-            displayName: "A product"
+            displayName: "A product",
+            periodType: .normal
         )
 
         let subscriptionInfo = try XCTUnwrap(
