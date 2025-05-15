@@ -128,11 +128,7 @@ struct ActiveSubscriptionsListView: View {
                             viewModel.purchaseInformation = purchase
                         } label: {
                             CompatibilityLabeledContent {
-                                if purchase.title?.isEmpty == true {
-                                    Text(purchase.productIdentifier)
-                                } else {
-                                    Text(purchase.title ?? "")
-                                }
+                                Text(purchase.title)
                             } content: {
                                 Image(systemName: "chevron.forward")
                             }
