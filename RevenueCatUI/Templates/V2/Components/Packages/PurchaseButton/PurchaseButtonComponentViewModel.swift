@@ -50,18 +50,30 @@ class PurchaseButtonComponentViewModel {
         return self.component.action
     }
 
-    var offeringWebCheckoutUrl: URL? {
+    var offeringWebCheckoutUrl: (URL, PaywallComponent.ButtonComponent.URLMethod)? {
         guard let method = component.method else {
-            return offering.webCheckoutUrl
+            if let url = offering.webCheckoutUrl {
+                return (url, .externalBrowser)
+            } else {
+                return nil
+            }
         }
 
         switch method {
         case .inAppCheckout, .unknown:
             return nil
-        case .webCheckout, .webProductSelection:
-            return offering.webCheckoutUrl
-        case .customWebCheckout:
-            return customWebCheckoutUrl
+        case .webCheckout(let webCheckout), .webProductSelection(let webCheckout):
+            if let url = offering.webCheckoutUrl {
+                return (url, webCheckout.openMethod ?? .externalBrowser)
+            } else {
+                return nil
+            }
+        case .customWebCheckout(let customWebCheckout):
+            if let url = customWebCheckoutUrl {
+                return (url, .externalBrowser)
+            } else {
+                return nil
+            }
         }
     }
 
@@ -85,22 +97,41 @@ class PurchaseButtonComponentViewModel {
         return Self.defaultWebAutoDismiss
     }
 
-    func urlForWebProduct(packageContext: PackageContext) -> URL? {
+    func urlForWebProduct(packageContext: PackageContext) -> (URL, PaywallComponent.ButtonComponent.URLMethod)? {
         guard let package = packageContext.package else {
             return nil
         }
 
-        if case let .customWebCheckout(customWebCheckout)? = component.method,
-            let customUrl = self.customWebCheckoutUrl {
-            // Appends package identifier into a query param to a custom url
-            if let packageParam = customWebCheckout.customUrl.packageParam {
-                return customUrl.appending(name: packageParam, value: package.identifier)
-            } else {
-                return customUrl
+        if let method = component.method {
+            switch method {
+            case .webCheckout(let webCheckout), .webProductSelection(let webCheckout):
+                guard let url = package.webCheckoutUrl else {
+                    return nil
+                }
+
+                return (url, webCheckout.openMethod ?? .externalBrowser)
+            case .customWebCheckout(let customWebCheckout):
+                if let customUrl = self.customWebCheckoutUrl {
+                    // Appends package identifier into a query param to a custom url
+                    if let packageParam = customWebCheckout.customUrl.packageParam {
+                        let url = customUrl.appending(name: packageParam, value: package.identifier)
+                        return (url, customWebCheckout.openMethod ?? .externalBrowser)
+                    } else {
+                        return (customUrl, customWebCheckout.openMethod ?? .externalBrowser)
+                    }
+                } else {
+                    return nil
+                }
+            case .inAppCheckout, .unknown:
+                return nil
             }
-        } else {
-            return package.webCheckoutUrl
         }
+
+        guard let url = package.webCheckoutUrl else {
+            return nil
+        }
+
+        return (url, .externalBrowser)
     }
 
 }

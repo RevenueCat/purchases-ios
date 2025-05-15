@@ -119,7 +119,7 @@ struct PurchaseButtonComponentView: View {
             return
         }
 
-        self.openWebPaywallLink(url: webCheckoutUrl, method: .externalBrowser)
+        self.openWebPaywallLink(url: webCheckoutUrl.0, method: webCheckoutUrl.1)
     }
 
     private func openWebProductSelection() async throws {
@@ -136,7 +136,7 @@ struct PurchaseButtonComponentView: View {
             return
         }
 
-        self.openWebPaywallLink(url: webCheckoutUrl, method: .externalBrowser)
+        self.openWebPaywallLink(url: webCheckoutUrl.0, method: webCheckoutUrl.1)
     }
 
     private func openWebPaywallLink(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) {
