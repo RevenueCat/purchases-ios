@@ -42,7 +42,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
     func testInitialState() {
         let viewModel =
         BaseManageSubscriptionViewModel(
-            screen: ManageSubscriptionsViewModelTests.default,
+            screen: BaseManageSubscriptionViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: nil,
             purchasesProvider: MockCustomerCenterPurchases()
@@ -58,7 +58,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         let purchase = PurchaseInformation.mockNonLifetime(store: .playStore)
 
         let viewModel = BaseManageSubscriptionViewModel(
-            screen: ManageSubscriptionsViewModelTests.default,
+            screen: BaseManageSubscriptionViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
             purchasesProvider: MockCustomerCenterPurchases()
@@ -71,8 +71,8 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
     func testNonAppStoreFiltersAppStoreOnlyPathsAndCancelIfNoURL() {
         let purchase = PurchaseInformation.mockNonLifetime(store: .playStore, managementURL: nil)
 
-        let viewModel = ManageSubscriptionsViewModel(
-            screen: ManageSubscriptionsViewModelTests.default,
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
             purchasesProvider: MockCustomerCenterPurchases()
@@ -85,7 +85,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         let purchase = PurchaseInformation.mockLifetime()
 
         let viewModel = BaseManageSubscriptionViewModel(
-            screen: ManageSubscriptionsViewModelTests.default,
+            screen: BaseManageSubscriptionViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
             purchasesProvider: MockCustomerCenterPurchases())
@@ -100,7 +100,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         )
 
         let viewModel = BaseManageSubscriptionViewModel(
-            screen: ManageSubscriptionsViewModelTests.default,
+            screen: BaseManageSubscriptionViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
             purchasesProvider: MockCustomerCenterPurchases())
@@ -114,7 +114,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         let purchase = PurchaseInformation.mockNonLifetime()
 
         let viewModel = BaseManageSubscriptionViewModel(
-            screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .forever),
+            screen: BaseManageSubscriptionViewModelTests.managementScreen(refundWindowDuration: .forever),
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
             purchasesProvider: MockCustomerCenterPurchases())
@@ -141,7 +141,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
 
         let viewModel = BaseManageSubscriptionViewModel(
-            screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .duration(oneDay)),
+            screen: BaseManageSubscriptionViewModelTests.managementScreen(refundWindowDuration: .duration(oneDay)),
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
             purchasesProvider: MockCustomerCenterPurchases()
@@ -160,7 +160,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
 
         let viewModel = BaseManageSubscriptionViewModel(
-            screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .forever),
+            screen: BaseManageSubscriptionViewModelTests.managementScreen(refundWindowDuration: .forever),
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
             purchasesProvider: MockCustomerCenterPurchases())
@@ -179,7 +179,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
 
         let viewModel = BaseManageSubscriptionViewModel(
-            screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .forever),
+            screen: BaseManageSubscriptionViewModelTests.managementScreen(refundWindowDuration: .forever),
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
             purchasesProvider: MockCustomerCenterPurchases())
@@ -206,7 +206,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
 
         let viewModel = BaseManageSubscriptionViewModel(
-            screen: ManageSubscriptionsViewModelTests.managementScreen(refundWindowDuration: .duration(oneDay)),
+            screen: BaseManageSubscriptionViewModelTests.managementScreen(refundWindowDuration: .duration(oneDay)),
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
             purchasesProvider: MockCustomerCenterPurchases())
@@ -329,7 +329,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
                 signedData: signedData
             )
 
-            let viewModel = ManageSubscriptionsViewModel(
+            let viewModel = BaseManageSubscriptionViewModel(
                 screen: PurchaseInformationFixtures.screenWithIneligiblePromo,
                 actionWrapper: CustomerCenterActionWrapper(),
                 purchaseInformation: nil,
@@ -432,14 +432,14 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
                                                                               signedData: signedData)
 
         let screen = PurchaseInformationFixtures.screenWithPromo(offerID: offerIdentifierInJSON)
-        let viewModel = ManageSubscriptionsViewModel(screen: screen,
-                                                     actionWrapper: CustomerCenterActionWrapper(),
-                                                     purchaseInformation: nil,
-                                                     purchasesProvider: MockCustomerCenterPurchases(
-                                                        customerInfo: customerInfo,
-                                                        products: products
-                                                     ),
-                                                     loadPromotionalOfferUseCase: loadPromotionalOfferUseCase)
+        let viewModel = BaseManageSubscriptionViewModel(screen: screen,
+                                                        actionWrapper: CustomerCenterActionWrapper(),
+                                                        purchaseInformation: .yearlyExpiring(store: .appStore),
+                                                        purchasesProvider: MockCustomerCenterPurchases(
+                                                            customerInfo: customerInfo,
+                                                            products: products
+                                                        ),
+                                                        loadPromotionalOfferUseCase: loadPromotionalOfferUseCase)
 
         return (viewModel, loadPromotionalOfferUseCase)
     }
@@ -476,7 +476,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension ManageSubscriptionsViewModelTests {
+private extension BaseManageSubscriptionViewModelTests {
 
     static let `default`: CustomerCenterConfigData.Screen =
     CustomerCenterConfigData.default.screens[.management]!
