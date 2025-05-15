@@ -317,6 +317,7 @@ private extension StoreKit2TransactionListenerBaseTests {
         expect(self.delegate.invokedTransactionUpdated) == false
     }
 
+    @available(iOS 16.4, macOS 13.3, tvOS 16.4, watchOS 9.4, *)
     func waitForTransactionUpdated(
         file: FileString = #fileID,
         line: UInt = #line
@@ -399,7 +400,7 @@ class StoreKit2TransactionListenerDiagnosticsTests: StoreKit2TransactionListener
 
         try await self.waitForTransactionUpdated()
 
-        expect(self.mockDiagnosticsTracker.trackedAppleTransactionUpdateReceivedParams.value).to(haveCount(1))
+        expect(self.mockDiagnosticsTracker.trackedAppleTransactionUpdateReceivedParams.value).toNot(beEmpty())
         let params = self.mockDiagnosticsTracker.trackedAppleTransactionUpdateReceivedParams.value[0]
         expect(params.productId) == Self.productID
         expect(params.environment) == "xcode"

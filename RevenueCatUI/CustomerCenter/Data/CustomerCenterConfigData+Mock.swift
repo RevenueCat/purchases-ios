@@ -183,7 +183,7 @@ extension CustomerCenterConfigData {
         durationTitle: nil,
         explanation: .lifetime,
         pricePaid: .nonFree("$49.99"),
-        renewalPrice: .nonFree("$4.99"),
+        renewalPrice: nil,
         expirationOrRenewal: nil,
         productIdentifier: "product_id",
         store: .appStore,

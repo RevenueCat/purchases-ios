@@ -47,18 +47,7 @@ struct SubscriptionDetailsView: View {
                     )
                 }
 
-                let priceValue: String? = {
-                    switch purchaseInformation.pricePaid {
-                    case .free:
-                        return localization[.free]
-                    case .nonFree(let localizedPrice):
-                        return localizedPrice
-                    case .unknown:
-                        return nil
-                    }
-                }()
-
-                if let price = priceValue {
+                if let price = price(from: purchaseInformation) {
                     IconLabelView(
                         iconName: "coloncurrencysign",
                         label: localization[.currentPrice],
@@ -117,6 +106,26 @@ struct SubscriptionDetailsView: View {
             return localization[.expires]
         case .expired:
             return localization[.expired]
+        }
+    }
+
+    private func price(from purchaseInformation: PurchaseInformation) -> String? {
+        if let renewalPrice = purchaseInformation.renewalPrice {
+            switch renewalPrice {
+            case .free:
+                return localization[.free]
+            case .nonFree(let localizedPrice):
+                return localizedPrice
+            }
+        } else {
+            switch purchaseInformation.pricePaid {
+            case .free:
+                return localization[.free]
+            case .nonFree(let localizedPrice):
+                return localizedPrice
+            case .unknown:
+                return nil
+            }
         }
     }
 }

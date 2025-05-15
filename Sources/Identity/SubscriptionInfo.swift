@@ -78,9 +78,6 @@ import Foundation
     /// Management purchase URL
     @_spi(Internal) public let managementURL: URL?
 
-    /// The display name of the subscription as configured in the RevenueCat dashboard.
-    @objc public let displayName: String?
-
     init(productIdentifier: String,
          purchaseDate: Date,
          originalPurchaseDate: Date?,
@@ -96,8 +93,7 @@ import Foundation
          storeTransactionId: String?,
          requestDate: Date,
          price: ProductPaidPrice?,
-         managementURL: URL?,
-         displayName: String?) {
+         managementURL: URL?) {
         self.productIdentifier = productIdentifier
         self.purchaseDate = purchaseDate
         self.originalPurchaseDate = originalPurchaseDate
@@ -119,7 +115,6 @@ import Foundation
                                                                      periodType: periodType)
         self.price = price
         self.managementURL = managementURL
-        self.displayName = displayName
 
         super.init()
     }
@@ -141,8 +136,7 @@ import Foundation
             storeTransactionId: \(String(describing: storeTransactionId)),
             isActive: \(isActive),
             willRenew: \(willRenew),
-            managementURL: \(String(describing: managementURL)),
-            displayName: \(String(describing: displayName))
+            managementURL: \(String(describing: managementURL))
         }
         """
     }

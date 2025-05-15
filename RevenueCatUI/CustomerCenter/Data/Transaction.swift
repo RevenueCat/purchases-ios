@@ -22,7 +22,6 @@ protocol Transaction {
     var isCancelled: Bool { get }
     var managementURL: URL? { get }
     var price: ProductPaidPrice? { get }
-    var displayName: String? { get }
     var periodType: PeriodType { get }
 }
 
