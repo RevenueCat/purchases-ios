@@ -51,9 +51,8 @@ struct PurchaseInformationCardView: View {
                 date: renewalDate,
                 localizations: localization
             )
-        } else if let expirationDate = purchaseInformation.expirationDate {
+        } else if purchaseInformation.expirationDate != nil {
             self.subtitle = purchaseInformation.expirationString(
-                date: expirationDate,
                 localizations: localization
             )
         } else {
