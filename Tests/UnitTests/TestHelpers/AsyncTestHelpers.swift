@@ -21,6 +21,8 @@ import Nimble
 @testable import RevenueCat
 #endif
 
+import XCTest
+
 /// Overload for `Nimble.waitUntil` with our default timeout
 func waitUntil(
     timeout: NimbleTimeInterval = defaultTimeout,
@@ -130,3 +132,18 @@ func asyncWait<T>(
 // Higher value required to avoid slow CI failing tests.
 let defaultTimeout: NimbleTimeInterval = .seconds(2)
 let defaultPollInterval: NimbleTimeInterval = PollingDefaults.pollInterval
+
+func XCTAssertThrowsErrorAsync<T, R>(
+    _ expression: @autoclosure () async throws -> T,
+    _ errorThrown: @autoclosure () -> R,
+    _ message: @autoclosure () -> String = "This method should fail",
+    file: StaticString = #filePath,
+    line: UInt = #line
+) async where R: Comparable, R: Error {
+    do {
+        _ = try await expression()
+        XCTFail(message(), file: file, line: line)
+    } catch {
+        XCTAssertEqual(error as? R, errorThrown())
+    }
+}
