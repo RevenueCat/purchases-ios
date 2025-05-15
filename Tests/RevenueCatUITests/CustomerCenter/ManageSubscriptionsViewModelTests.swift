@@ -170,6 +170,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
         let twoDays: TimeInterval = 2 * 24 * 60 * 60
         let purchase = PurchaseInformation.mockNonLifetime(
             pricePaid: .nonFree(""), // just to prove price is ignored if is in trial
+            renewalPrice: .nonFree(""),
             isTrial: true,
             latestPurchaseDate: latestPurchaseDate,
             customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
@@ -496,7 +497,7 @@ private extension PurchaseInformation {
             title: "",
             durationTitle: "",
             explanation: .lifetime,
-            pricePaid: .nonFree(""),
+            pricePaid: .nonFree("5"),
             renewalPrice: nil,
             expirationOrRenewal: PurchaseInformation.ExpirationOrRenewal(label: .expires, date: .date("")),
             productIdentifier: "",

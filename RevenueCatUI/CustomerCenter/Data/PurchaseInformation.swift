@@ -550,3 +550,4 @@ extension PurchaseInformation {
             .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: date))
     }
 }
+// swiftlint:enable file_length
