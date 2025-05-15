@@ -117,9 +117,8 @@ struct ActiveSubscriptionsListView: View {
                         )
                     }
 
-                    // just temporary, until ManageSubscriptionsView is deleted
                     Section {
-                        buttonsView
+                        ManageSubscriptionsButtonsView(viewModel: viewModel)
                     }
 
                 } else {

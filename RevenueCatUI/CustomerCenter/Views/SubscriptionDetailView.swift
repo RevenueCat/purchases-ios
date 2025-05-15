@@ -152,9 +152,8 @@ struct SubscriptionDetailView: View {
                     }
                 }
 
-                // just temporary, until ManageSubscriptionsView is deleted
                 Section {
-                    buttonsView
+                    ManageSubscriptionsButtonsView(viewModel: viewModel)
                 }
 
                 if let url = support?.supportURL(
@@ -186,9 +185,8 @@ struct SubscriptionDetailView: View {
                     )
                 }
 
-                // just temporary, until ManageSubscriptionsView is deleted
                 Section {
-                    buttonsView
+                    ManageSubscriptionsButtonsView(viewModel: viewModel)
                 }
             }
         }
@@ -205,24 +203,6 @@ struct SubscriptionDetailView: View {
         .onChangeOf(purchaseInformation?.customerInfoRequestedDate) { _ in
             guard let purchase = purchaseInformation else { return }
             viewModel.reloadPurchaseInformation(purchase)
-        }
-    }
-
-    var buttonsView: some View {
-        ForEach(self.viewModel.relevantPathsForPurchase, id: \.id) { path in
-            AsyncButton(action: {
-                await self.viewModel.handleHelpPath(
-                    path,
-                    wihtActiveProductId: viewModel.purchaseInformation?.productIdentifier
-                )
-            }, label: {
-                if self.viewModel.loadingPath?.id == path.id {
-                    TintedProgressView()
-                } else {
-                    Text(path.title)
-                }
-            })
-            .disabled(self.viewModel.loadingPath != nil)
         }
     }
 
