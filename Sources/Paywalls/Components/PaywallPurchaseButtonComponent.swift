@@ -15,7 +15,6 @@ public extension PaywallComponent {
         let type: ComponentType
         public let stack: PaywallComponent.StackComponent
 
-        @available(*, deprecated, message: "This API is unused and will be removed in a future version.")
         public let action: Action?
         public let method: Method?
 
