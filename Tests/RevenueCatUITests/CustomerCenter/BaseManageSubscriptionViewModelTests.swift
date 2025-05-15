@@ -155,7 +155,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         let latestPurchaseDate = Date()
         let twoDays: TimeInterval = 2 * 24 * 60 * 60
         let purchase = PurchaseInformation.mockNonLifetime(
-            price: .free,
+            pricePaid: .free,
             latestPurchaseDate: latestPurchaseDate,
             customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
 
@@ -173,7 +173,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         let latestPurchaseDate = Date()
         let twoDays: TimeInterval = 2 * 24 * 60 * 60
         let purchase = PurchaseInformation.mockNonLifetime(
-            price: .paid(""), // just to prove price is ignored if is in trial
+            pricePaid: .nonFree(""), // just to prove price is ignored if is in trial
             isTrial: true,
             latestPurchaseDate: latestPurchaseDate,
             customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
@@ -500,7 +500,8 @@ private extension PurchaseInformation {
             title: "",
             durationTitle: "",
             explanation: .lifetime,
-            price: .paid(""),
+            pricePaid: .nonFree(""),
+            renewalPrice: nil,
             expirationOrRenewal: PurchaseInformation.ExpirationOrRenewal(label: .expires, date: .date("")),
             productIdentifier: "",
             store: store,
@@ -515,7 +516,8 @@ private extension PurchaseInformation {
 
     static func mockNonLifetime(
         store: Store = .appStore,
-        price: PurchaseInformation.PriceDetails = .paid("5"),
+        pricePaid: PurchaseInformation.PricePaid = .nonFree("5"),
+        renewalPrice: PurchaseInformation.RenewalPrice = .nonFree("5"),
         isTrial: Bool = false,
         isCancelled: Bool = false,
         latestPurchaseDate: Date = Date(),
@@ -526,7 +528,8 @@ private extension PurchaseInformation {
             title: "",
             durationTitle: "",
             explanation: .earliestExpiration,
-            price: price,
+            pricePaid: pricePaid,
+            renewalPrice: renewalPrice,
             expirationOrRenewal: PurchaseInformation.ExpirationOrRenewal(
                 label: .expires,
                 date: .date("")

@@ -15,6 +15,8 @@ import RevenueCat
 
 // swiftlint:disable force_unwrapping
 
+import Foundation
+
 class CustomerInfoFixtures {
 
     private init() {}
@@ -28,6 +30,8 @@ class CustomerInfoFixtures {
              store: String,
              purchaseDate: String,
              expirationDate: String?,
+             priceAmount: Decimal = 4.99,
+             currency: String = "USD",
              unsubscribeDetectedAt: String? = nil,
              periodType: PeriodType = .normal) {
             self.id = id
@@ -48,8 +52,8 @@ class CustomerInfoFixtures {
                 "unsubscribe_detected_at": \(unsubscribeDetectedAt != nil ? "\"\(unsubscribeDetectedAt!)\"" : "null"),
                 "display_name": "Weekly Scratched Sofa",
                 "price": {
-                  "amount": \(periodType == .trial ? 0 : 4.99),
-                  "currency": "USD"
+                  "amount": \(periodType == .trial ? 0 : priceAmount),
+                  "currency": \"\(currency)\"
                 }
             }
             """

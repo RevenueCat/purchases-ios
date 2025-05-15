@@ -136,7 +136,7 @@ import Foundation
             storeTransactionId: \(String(describing: storeTransactionId)),
             isActive: \(isActive),
             willRenew: \(willRenew),
-            managementURL: \(String(describing: managementURL)),
+            managementURL: \(String(describing: managementURL))
         }
         """
     }
