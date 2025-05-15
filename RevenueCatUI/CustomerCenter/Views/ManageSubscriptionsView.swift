@@ -150,18 +150,18 @@ struct ManageSubscriptionsView: View {
             } else {
                 let fallbackDescription = localization[.tryCheckRestore]
 
-                if support?.displayVirtualCurrencies == true {
-                    VirtualCurrenciesListSection(
-                        virtualCurrencies: self.viewModel.virtualCurrencies,
-                        purchasesProvider: self.viewModel.purchasesProvider
-                    )
-                }
-
                 Section {
                     CompatibilityContentUnavailableView(
                         self.viewModel.screen.title,
                         systemImage: "exclamationmark.triangle.fill",
                         description: Text(self.viewModel.screen.subtitle ?? fallbackDescription)
+                    )
+                }
+
+                if support?.displayVirtualCurrencies == true {
+                    VirtualCurrenciesListSection(
+                        virtualCurrencies: self.viewModel.virtualCurrencies,
+                        purchasesProvider: self.viewModel.purchasesProvider
                     )
                 }
 
