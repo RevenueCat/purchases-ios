@@ -539,7 +539,6 @@ extension PurchaseInformation {
     }
 
     func expirationString(
-        date: Date,
         localizations: CustomerCenterConfigData.Localization
     ) -> String? {
         guard let expirationDate else {
@@ -547,7 +546,7 @@ extension PurchaseInformation {
         }
 
         return localizations[.expiresOnDateWithoutChanges]
-            .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: date))
+            .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: expirationDate))
     }
 }
 // swiftlint:enable file_length
