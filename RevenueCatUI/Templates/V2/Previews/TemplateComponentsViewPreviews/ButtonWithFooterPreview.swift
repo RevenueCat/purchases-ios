@@ -259,7 +259,7 @@ private enum ButtonWithSheetPreview {
                                         action: .webCheckout,
                                         method: .customWebCheckout(
                                             .init(customUrl: .init(url: "web_checkout_url", packageParam: "rc_package"))
-                                        ),
+                                        )
                                     )),
                                     .purchaseButton(.init(
                                         stack: .init(
@@ -282,7 +282,7 @@ private enum ButtonWithSheetPreview {
                                         action: .webProductSelection,
                                         method: .customWebCheckout(
                                             .init(customUrl: .init(url: "web_checkout_url"))
-                                        ),
+                                        )
                                     ))
                                 ],
                                 size: .init(width: .fill, height: .fit),
