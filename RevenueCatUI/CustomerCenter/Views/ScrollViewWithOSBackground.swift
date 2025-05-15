@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  ScrollViewWithOSBackgroundView.swift
+//  ScrollViewWithOSBackground.swift
 //
 //  Created by Facundo Menzella on 15/5/25.
 
