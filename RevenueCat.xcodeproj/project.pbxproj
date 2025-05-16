@@ -8700,8 +8700,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/quick/nimble";
 			requirement = {
-				kind = upToNextMinorVersion;
-				minimumVersion = 10.0.0;
+				kind = exactVersion;
+				version = 13.7.1;
 			};
 		};
 		2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */ = {
@@ -8716,8 +8716,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/quick/nimble";
 			requirement = {
-				kind = upToNextMinorVersion;
-				minimumVersion = 10.0.0;
+				kind = exactVersion;
+				version = 13.7.1;
 			};
 		};
 		4F6BEE0C2A27B02400CD9322 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
@@ -8740,8 +8740,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/quick/nimble";
 			requirement = {
-				kind = upToNextMinorVersion;
-				minimumVersion = 10.0.0;
+				kind = exactVersion;
+				version = 13.7.1;
 			};
 		};
 		57E04739277260DE0082FE91 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {

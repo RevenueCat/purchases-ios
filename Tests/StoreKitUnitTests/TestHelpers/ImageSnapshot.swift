@@ -27,10 +27,10 @@ func haveValidSnapshot<Value>(
     timeout: TimeInterval = 5,
     file: StaticString = #file,
     line: UInt = #line
-) -> Nimble.Predicate<Value> {
-    return Nimble.Predicate { actualExpression in
+) -> Nimble.Matcher<Value> {
+    return Nimble.Matcher { actualExpression in
         guard let value = try actualExpression.evaluate() else {
-            return PredicateResult(status: .fail, message: .fail("have valid snapshot"))
+            return MatcherResult(status: .fail, message: .fail("have valid snapshot"))
         }
 
         guard let errorMessage = verifySnapshot(
@@ -45,10 +45,10 @@ func haveValidSnapshot<Value>(
                 : CurrentTestCaseTracker.sanitizedTestName,
             line: line
         ) else {
-            return PredicateResult(bool: true, message: .fail("have valid snapshot"))
+            return MatcherResult(bool: true, message: .fail("have valid snapshot"))
         }
 
-        return PredicateResult(
+        return MatcherResult(
             bool: false,
             message: .fail(errorMessage)
         )
