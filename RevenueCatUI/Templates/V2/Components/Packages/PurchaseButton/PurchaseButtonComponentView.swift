@@ -32,6 +32,8 @@ struct PurchaseButtonComponentView: View {
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
 
+    @State private var inAppBrowserURL: URL?
+
     private let viewModel: PurchaseButtonComponentViewModel
     private let onDismiss: () -> Void
 
@@ -74,21 +76,24 @@ struct PurchaseButtonComponentView: View {
             $0.disabled(true)
                 .opacity(0.35)
         }
+        #if canImport(SafariServices) && canImport(UIKit)
+        .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
+            SafariView(url: self.inAppBrowserURL!)
+        }
+        #endif
     }
 
     private func purchase() async throws {
-        guard let action = self.viewModel.action else {
+        guard let method = self.viewModel.method else {
             try await self.purchaseInApp()
             return
         }
 
-        switch action {
-        case .inAppCheckout:
+        switch method {
+        case .inAppCheckout, .unknown:
             try await self.purchaseInApp()
-        case .webCheckout:
-            try await self.purchaseSelectedWebProduct()
-        case .webProductSelection:
-            try await self.openWebProductSelection()
+        case .webCheckout, .webProductSelection, .customWebCheckout:
+            try await self.purchaseInWeb()
         }
     }
 
@@ -105,52 +110,64 @@ struct PurchaseButtonComponentView: View {
         _ = try await self.purchaseHandler.purchase(package: selectedPackage)
     }
 
-    private func purchaseSelectedWebProduct() async throws {
+    private func purchaseInWeb() async throws {
         self.logIfInPreview(package: self.packageContext.package)
 
-        guard let webCheckoutUrl = self.packageContext.package?.webCheckoutUrl else {
+        guard let launchWebCheckout = self.viewModel.urlForWebCheckout(packageContext: packageContext) else {
             Logger.error(Strings.no_web_checkout_url_found)
             return
         }
 
-        self.openWebPaywallLink(url: webCheckoutUrl, method: .externalBrowser)
-    }
+        self.logIfInPreview("Web Product: \(launchWebCheckout)")
 
-    private func openWebProductSelection() async throws {
-        self.logIfInPreview(package: self.packageContext.package)
-
-        guard let webCheckoutUrl = self.viewModel.offeringWebCheckoutUrl else {
-            Logger.error(Strings.no_web_checkout_url_found)
+        guard !self.isInPreview else {
             return
         }
 
-        self.openWebPaywallLink(url: webCheckoutUrl, method: .externalBrowser)
+        self.openWebPaywallLink(launchWebCheckout: launchWebCheckout)
     }
 
-    private func openWebPaywallLink(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) {
+    private func openWebPaywallLink(launchWebCheckout: PurchaseButtonComponentViewModel.LaunchWebCheckout) {
         Purchases.shared.invalidateCustomerInfoCache()
-#if os(watchOS)
-        // watchOS doesn't support openURL with a completion handler, so we're just opening the URL.
-        openURL(url)
-#else
-        openURL(url) { success in
-            if success {
-                Logger.debug(Strings.successfully_opened_url_external_browser(url.absoluteString))
-            } else {
-                Logger.error(Strings.failed_to_open_url_external_browser(url.absoluteString))
-            }
+
+        let method = launchWebCheckout.method
+        let url = launchWebCheckout.url
+
+        Browser.navigateTo(url: url,
+                           method: method,
+                           openURL: self.openURL,
+                           inAppBrowserURL: self.$inAppBrowserURL)
+
+        if launchWebCheckout.autoDismiss {
+            self.onDismiss()
         }
-#endif
-        onDismiss()
+    }
+
+    private var isInPreview: Bool {
+        #if DEBUG
+        let isInPreview: Bool = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+
+        return isInPreview
+        #else
+        return false
+        #endif
     }
 
     /// Used to see purchasing information when using SwiftUI Previews
     private func logIfInPreview(package: Package?) {
         #if DEBUG
-        let isInPreview: Bool = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+        guard let package else { return }
 
-        if isInPreview {
-            print("Purchasing package: \(package?.identifier ?? "NOTHING")")
+        self.logIfInPreview(
+            "Purchasing package: \(package.identifier)"
+        )
+        #endif
+    }
+
+    private func logIfInPreview(_ value: String) {
+        #if DEBUG
+        if self.isInPreview {
+            print(value)
         }
         #endif
     }
@@ -181,7 +198,8 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                                            trailing: 30)
                         ))
                     ]),
-                    action: .inAppCheckout
+                    action: .inAppCheckout,
+                    method: .inAppCheckout
                 ),
                 localizationProvider: .init(
                     locale: Locale.current,
@@ -225,7 +243,8 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                                                 bottomLeading: 8,
                                                 bottomTrailing: 8))
                     ),
-                    action: .inAppCheckout
+                    action: .inAppCheckout,
+                    method: .inAppCheckout
                 ),
                 localizationProvider: .init(
                     locale: Locale.current,
@@ -265,7 +284,8 @@ fileprivate extension PurchaseButtonComponentViewModel {
             offering: offering
         )
 
-        self.init(
+        try self.init(
+            localizationProvider: localizationProvider,
             component: component,
             offering: offering,
             stackViewModel: stackViewModel
