@@ -240,7 +240,7 @@ struct ManageSubscriptionsView: View {
                 .environment(\.appearance, CustomerCenterConfigData.default.appearance)
             }
             .preferredColorScheme(colorScheme)
-            .previewDisplayName("Free subscription - \(colorScheme)")
+            .previewDisplayName("Subscription Free - Renewal price - \(colorScheme)")
 
             CompatibilityNavigationStack {
                 let viewModelYearlyExpiring = ManageSubscriptionsViewModel(

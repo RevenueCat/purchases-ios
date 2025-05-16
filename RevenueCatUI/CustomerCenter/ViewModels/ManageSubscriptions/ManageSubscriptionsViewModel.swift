@@ -259,9 +259,9 @@ private extension Array<CustomerCenterConfigData.HelpPath> {
             // if it's cancel, it cannot be a lifetime subscription
             let isEligibleCancel = !purchaseInformation.isLifetime && !purchaseInformation.isCancelled
 
-            // if it's refundRequest, it cannot be free  nor within trial period
+            // if it's refundRequest, it cannot be free nor within trial period
             let isRefund = $0.type == .refundRequest
-            let isRefundEligible = purchaseInformation.price != .free
+            let isRefundEligible = purchaseInformation.pricePaid != .free
                                     && !purchaseInformation.isTrial
                                     && !purchaseInformation.isCancelled
 

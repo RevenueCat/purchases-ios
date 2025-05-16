@@ -23,19 +23,43 @@ import SwiftUI
 struct PurchaseInformationCardView: View {
 
     private let title: String
-    private let subtitle: String
+    private let subtitle: String?
     private let storeTitle: String
     private let showChevron: Bool
 
     init(
         title: String,
-        subtitle: String,
         storeTitle: String,
+        subtitle: String? = nil,
         showChevron: Bool = true
     ) {
         self.title = title
         self.subtitle = subtitle
         self.storeTitle = storeTitle
+        self.showChevron = showChevron
+    }
+
+    init(
+        purchaseInformation: PurchaseInformation,
+        localization: CustomerCenterConfigData.Localization,
+        showChevron: Bool = true
+    ) {
+        self.title = purchaseInformation.title
+
+        if let renewalDate = purchaseInformation.renewalDate {
+            self.subtitle = purchaseInformation.priceRenewalString(
+                date: renewalDate,
+                localizations: localization
+            )
+        } else if purchaseInformation.expirationDate != nil {
+            self.subtitle = purchaseInformation.expirationString(
+                localizations: localization
+            )
+        } else {
+            self.subtitle = nil
+        }
+
+        self.storeTitle = localization[purchaseInformation.store.localizationKey]
         self.showChevron = showChevron
     }
 
@@ -49,12 +73,14 @@ struct PurchaseInformationCardView: View {
                     .frame(alignment: .leading)
                     .multilineTextAlignment(.leading)
 
-                Text(subtitle)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .padding(.bottom, 4)
-                    .frame(alignment: .leading)
-                    .multilineTextAlignment(.leading)
+                if let subtitle {
+                    Text(subtitle)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .padding(.bottom, 4)
+                        .frame(alignment: .leading)
+                        .multilineTextAlignment(.leading)
+                }
 
                 Text(storeTitle)
                     .font(.subheadline)
@@ -86,8 +112,8 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
         ScrollView {
             PurchaseInformationCardView(
                 title: "Product name",
-                subtitle: "Renews 24 May for $19.99",
-                storeTitle: Store.appStore.localizationKey.rawValue
+                storeTitle: Store.appStore.localizationKey.rawValue,
+                subtitle: "Renews 24 May for $19.99"
             )
             .padding()
             .background(Color.white)
@@ -97,8 +123,8 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
 
             PurchaseInformationCardView(
                 title: "Product name",
-                subtitle: "Renews 24 May for $19.99",
-                storeTitle: Store.playStore.localizationKey.rawValue
+                storeTitle: Store.playStore.localizationKey.rawValue,
+                subtitle: "Renews 24 May for $19.99"
             )
             .padding()
             .background(Color.white)
