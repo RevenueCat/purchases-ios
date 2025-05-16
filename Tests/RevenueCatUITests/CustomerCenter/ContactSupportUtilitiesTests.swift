@@ -26,7 +26,7 @@ class ContactSupportUtilitiesTest: TestCase {
         email: "support@example.com",
         shouldWarnCustomerToUpdate: false,
         displayPurchaseHistoryLink: false,
-        displayVirtualCurrencies: false
+        displayVirtualCurrencies: false,
         shouldWarnCustomersAboutMultipleSubscriptions: false
     )
     private let localization: CustomerCenterConfigData.Localization = .init(locale: "en_US", localizedStrings: [:])
