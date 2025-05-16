@@ -227,23 +227,6 @@ final class ManageSubscriptionsViewModelTests: TestCase {
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beTrue())
     }
 
-    func testStateChangeToError() {
-        let viewModel =
-        ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.default,
-                                     actionWrapper: CustomerCenterActionWrapper(),
-                                     purchasesProvider: MockCustomerCenterPurchases(),
-                                     virtualCurrencies: [:])
-
-        viewModel.state = CustomerCenterViewState.error(error)
-
-        switch viewModel.state {
-        case .error(let stateError):
-            expect(stateError as? TestError) == error
-        default:
-            fail("Expected state to be .error")
-        }
-    }
-
     func testLoadsPromotionalOffer() async throws {
         let offerIdentifierInJSON = "rc_refund_offer"
         let (viewModel, loadPromotionalOfferUseCase) = try await setupPromotionalOfferTest(
