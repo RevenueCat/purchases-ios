@@ -217,10 +217,11 @@ private extension CustomerCenterView {
                     )
                 } else {
                     ManageSubscriptionsView(
-                        screen: screen,
-                        purchaseInformation: $viewModel.activePurchase,
-                        purchasesProvider: self.viewModel.purchasesProvider,
-                        actionWrapper: self.viewModel.actionWrapper)
+                                            screen: screen,
+                                            purchaseInformation: $viewModel.activePurchase,
+                                            purchasesProvider: self.viewModel.purchasesProvider,
+                                            virtualCurrencies: self.viewModel.virtualCurrencies,
+                                            actionWrapper: self.viewModel.actionWrapper)
                 }
             } else if let screen = configuration.screens[.management] {
                 WrongPlatformView(screen: screen,
@@ -233,10 +234,13 @@ private extension CustomerCenterView {
                 ManageSubscriptionsView(screen: screen,
                                         purchaseInformation: $viewModel.activePurchase,
                                         purchasesProvider: self.viewModel.purchasesProvider,
+                                        virtualCurrencies: self.viewModel.virtualCurrencies,
                                         actionWrapper: self.viewModel.actionWrapper)
             } else {
                 // Fallback with a restore button
                 NoSubscriptionsView(configuration: configuration,
+                                    virtualCurrencies: self.viewModel.virtualCurrencies,
+                                    purchasesProvider: self.viewModel.purchasesProvider,
                                     actionWrapper: self.viewModel.actionWrapper)
             }
         }

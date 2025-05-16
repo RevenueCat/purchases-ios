@@ -53,6 +53,8 @@ final class ManageSubscriptionsViewModel: ObservableObject {
     @Published
     var inAppBrowserURL: IdentifiableURL?
 
+    let virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]
+
     let actionWrapper: CustomerCenterActionWrapper
 
     @Published
@@ -72,7 +74,8 @@ final class ManageSubscriptionsViewModel: ObservableObject {
         purchaseInformation: PurchaseInformation?,
         refundRequestStatus: RefundRequestStatus? = nil,
         purchasesProvider: CustomerCenterPurchasesType,
-        loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
+        loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil,
+        virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]) {
             self.screen = screen
             self.paths = screen.filteredPaths
             self.purchaseInformation = purchaseInformation
@@ -82,6 +85,7 @@ final class ManageSubscriptionsViewModel: ObservableObject {
             self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase
             ?? LoadPromotionalOfferUseCase(purchasesProvider: purchasesProvider)
             self.restoreAlertType = .loading
+            self.virtualCurrencies = virtualCurrencies
         }
 
     func reloadPurchaseInformation(_ purchaseInformation: PurchaseInformation) {

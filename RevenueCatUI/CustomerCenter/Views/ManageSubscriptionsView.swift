@@ -48,6 +48,7 @@ struct ManageSubscriptionsView: View {
     init(screen: CustomerCenterConfigData.Screen,
          purchaseInformation: Binding<PurchaseInformation?>,
          purchasesProvider: CustomerCenterPurchasesType,
+         virtualCurrencies: [String: VirtualCurrencyInfo],
          actionWrapper: CustomerCenterActionWrapper) {
         self.init(
             purchaseInformation: purchaseInformation,
@@ -55,7 +56,8 @@ struct ManageSubscriptionsView: View {
             screen: screen,
             actionWrapper: actionWrapper,
             purchaseInformation: purchaseInformation.wrappedValue,
-            purchasesProvider: purchasesProvider))
+            purchasesProvider: purchasesProvider,
+            virtualCurrencies: virtualCurrencies))
     }
 
     fileprivate init(
@@ -140,6 +142,13 @@ struct ManageSubscriptionsView: View {
                     }
                 }
 
+                if support?.displayVirtualCurrencies == true {
+                    VirtualCurrenciesListSection(
+                        virtualCurrencies: self.viewModel.virtualCurrencies,
+                        purchasesProvider: self.viewModel.purchasesProvider
+                    )
+                }
+
                 Section {
                     ManageSubscriptionsButtonsView(
                         viewModel: self.viewModel
@@ -158,6 +167,13 @@ struct ManageSubscriptionsView: View {
                         self.viewModel.screen.title,
                         systemImage: "exclamationmark.triangle.fill",
                         description: Text(self.viewModel.screen.subtitle ?? fallbackDescription)
+                    )
+                }
+
+                if support?.displayVirtualCurrencies == true {
+                    VirtualCurrenciesListSection(
+                        virtualCurrencies: self.viewModel.virtualCurrencies,
+                        purchasesProvider: self.viewModel.purchasesProvider
                     )
                 }
 
@@ -201,7 +217,8 @@ struct ManageSubscriptionsView: View {
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigData.subscriptionInformationMonthlyRenewing,
                     refundRequestStatus: .success,
-                    purchasesProvider: CustomerCenterPurchases())
+                    purchasesProvider: CustomerCenterPurchases(),
+                    virtualCurrencies: [:])
                 ManageSubscriptionsView(
                     purchaseInformation: .constant(CustomerCenterConfigData.subscriptionInformationMonthlyRenewing),
                     viewModel: viewModelMonthlyRenewing
@@ -217,7 +234,8 @@ struct ManageSubscriptionsView: View {
                     screen: CustomerCenterConfigData.default.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: .yearlyExpiring(),
-                    purchasesProvider: CustomerCenterPurchases())
+                    purchasesProvider: CustomerCenterPurchases(),
+                    virtualCurrencies: [:])
                 ManageSubscriptionsView(
                     purchaseInformation: .constant(.yearlyExpiring()),
                     viewModel: viewModelYearlyExpiring)
@@ -232,7 +250,8 @@ struct ManageSubscriptionsView: View {
                     screen: CustomerCenterConfigData.default.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigData.subscriptionInformationFree,
-                    purchasesProvider: CustomerCenterPurchases())
+                    purchasesProvider: CustomerCenterPurchases(),
+                    virtualCurrencies: [:])
                 ManageSubscriptionsView(
                     purchaseInformation: .constant(CustomerCenterConfigData.subscriptionInformationFree),
                     viewModel: viewModelYearlyExpiring)
@@ -247,7 +266,8 @@ struct ManageSubscriptionsView: View {
                     screen: CustomerCenterConfigData.default.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigData.consumable,
-                    purchasesProvider: CustomerCenterPurchases())
+                    purchasesProvider: CustomerCenterPurchases(),
+                    virtualCurrencies: [:])
                 ManageSubscriptionsView(
                     purchaseInformation: .constant(CustomerCenterConfigData.consumable),
                     viewModel: viewModelYearlyExpiring)
@@ -256,6 +276,36 @@ struct ManageSubscriptionsView: View {
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Consumable - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                let viewModelWith4VCs = ManageSubscriptionsViewModel(
+                    screen: CustomerCenterConfigData.default.screens[.management]!,
+                    actionWrapper: CustomerCenterActionWrapper(),
+                    purchaseInformation: CustomerCenterConfigData.consumable,
+                    purchasesProvider: CustomerCenterPurchases(),
+                    virtualCurrencies: CustomerCenterConfigData.fourVirtualCurrencies)
+                ManageSubscriptionsView(purchaseInformation: .constant(nil), viewModel: viewModelWith4VCs)
+                    .environment(\.localization, CustomerCenterConfigData.default.localization)
+                    .environment(\.appearance, CustomerCenterConfigData.default.appearance)
+                    .environment(\.supportInformation, CustomerCenterConfigData.default.support)
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("4 Virtual Currencies - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                let viewModelWith5VCs = ManageSubscriptionsViewModel(
+                    screen: CustomerCenterConfigData.default.screens[.management]!,
+                    actionWrapper: CustomerCenterActionWrapper(),
+                    purchaseInformation: CustomerCenterConfigData.consumable,
+                    purchasesProvider: CustomerCenterPurchases(),
+                    virtualCurrencies: CustomerCenterConfigData.fiveVirtualCurrencies)
+                ManageSubscriptionsView(purchaseInformation: .constant(nil), viewModel: viewModelWith5VCs)
+                    .environment(\.localization, CustomerCenterConfigData.default.localization)
+                    .environment(\.appearance, CustomerCenterConfigData.default.appearance)
+                    .environment(\.supportInformation, CustomerCenterConfigData.default.support)
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("5 Virtual Currencies - \(colorScheme)")
         }
     }
 

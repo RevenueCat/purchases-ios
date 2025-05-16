@@ -25,6 +25,7 @@ extension CustomerCenterConfigData {
         lastPublishedAppVersion: String? = "1.0.0",
         shouldWarnCustomerToUpdate: Bool = false,
         displayPurchaseHistoryLink: Bool = false,
+        displayVirtualCurrencies: Bool = false,
         refundWindowDuration: CustomerCenterConfigData.HelpPath.RefundWindowDuration = .forever,
         shouldWarnCustomersAboutMultipleSubscriptions: Bool = false
     ) -> CustomerCenterConfigData {
@@ -128,6 +129,7 @@ extension CustomerCenterConfigData {
                 email: "test-support@revenuecat.com",
                 shouldWarnCustomerToUpdate: shouldWarnCustomerToUpdate,
                 displayPurchaseHistoryLink: displayPurchaseHistoryLink,
+                displayVirtualCurrencies: displayVirtualCurrencies,
                 shouldWarnCustomersAboutMultipleSubscriptions: shouldWarnCustomersAboutMultipleSubscriptions
             ),
             lastPublishedAppVersion: lastPublishedAppVersion,
@@ -205,4 +207,64 @@ extension CustomerCenterConfigData {
         buttonBackgroundColor: .init(light: "#287aff", dark: "#287aff")
     )
 
+    static var fourVirtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo] {
+        let jsonData = """
+                {
+                  "GLD": {
+                    "balance": 100
+                  },
+                  "SLV": {
+                    "balance": 200
+                  },
+                  "BRNZ": {
+                    "balance": 300
+                  },
+                  "PLTNM": {
+                    "balance": 400
+                  }
+                }
+                """.data(using: .utf8)
+
+        guard let data = jsonData else {
+            return [:]
+        }
+
+        do {
+            return try JSONDecoder().decode([String: VirtualCurrencyInfo].self, from: data)
+        } catch {
+            return [:]
+        }
+    }
+
+    static var fiveVirtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo] {
+        let jsonData = """
+                {
+                  "GLD": {
+                    "balance": 100
+                  },
+                  "SLV": {
+                    "balance": 200
+                  },
+                  "BRNZ": {
+                    "balance": 300
+                  },
+                  "PLTNM": {
+                    "balance": 400
+                  },
+                  "RC_COIN": {
+                    "balance": 1
+                  }
+                }
+                """.data(using: .utf8)
+
+        guard let data = jsonData else {
+            return [:]
+        }
+
+        do {
+            return try JSONDecoder().decode([String: VirtualCurrencyInfo].self, from: data)
+        } catch {
+            return [:]
+        }
+    }
 }

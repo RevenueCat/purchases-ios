@@ -1,0 +1,104 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  VirtualCurrenciesViewModel.swift
+//
+//  Created by Will Taylor on 4/21/25.
+
+#if os(iOS)
+
+import Foundation
+import RevenueCat
+
+/// A view model that manages the state and data for the virtual currencies screen.
+///
+/// This view model is responsible for loading and managing virtual currency balance data
+/// from RevenueCat's CustomerInfo.
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@MainActor
+final class VirtualCurrencyBalancesScreenViewModel: ObservableObject {
+
+    /// The current state of the virtual currencies screen.
+    @Published var viewState: VirtualCurrencyBalancesScreen.ViewState
+
+    /// A flag indicating whether the view model is running in a SwiftUI preview.
+    ///
+    /// When true, data loading is skipped to prevent unnecessary network calls
+    /// during preview rendering.
+    private let isRunningInSwiftUIPreview: Bool
+
+    init(
+        viewState: VirtualCurrencyBalancesScreen.ViewState = .loading,
+        purchasesProvider: CustomerCenterPurchasesType
+    ) {
+        self.viewState = viewState
+        self.purchasesProvider = purchasesProvider
+
+        #if DEBUG
+        self.isRunningInSwiftUIPreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+        #else
+        self.isRunningInSwiftUIPreview = false
+        #endif
+    }
+
+    private let purchasesProvider: CustomerCenterPurchasesType
+
+    /// Call this function when the view appears.
+    ///
+    /// This method is responsible for loading the virtual currency data when the view
+    /// becomes visible. It skips data loading if running in a SwiftUI preview.
+    func onViewAppeared() async {
+        if isRunningInSwiftUIPreview {
+            // We don't want to load data in previews.
+            return
+        }
+
+        await self.loadData()
+    }
+
+    /// Loads the virtual currency data from the RevenueCat SDK.
+    ///
+    /// This method updates the view state to reflect the loading process and handles
+    /// any errors that occur during data fetching. On success, it transforms the
+    /// customer information into a format suitable for display in the UI.
+    private func loadData() async {
+        self.viewState = .loading
+
+        do {
+            let customerInfo = try await self.purchasesProvider.customerInfo(fetchPolicy: .fetchCurrent)
+            let virtualCurrencyBalanceData = self.extractVirtualCurrencyBalanceData(from: customerInfo)
+
+            self.viewState = .loaded(virtualCurrencyBalanceData)
+        } catch {
+            self.viewState = .error
+        }
+    }
+
+    /// Extracts and formats virtual currency balance data from customer information.
+    ///
+    /// - Parameter customerInfo: The customer information containing virtual currency data.
+    /// - Returns: An array of row data objects sorted by balance in descending order.
+    private func extractVirtualCurrencyBalanceData(
+        from customerInfo: RevenueCat.CustomerInfo
+    ) -> [VirtualCurrencyBalanceListRow.RowData] {
+        return customerInfo.virtualCurrencies
+            .map {
+                VirtualCurrencyBalanceListRow.RowData(
+                    virtualCurrencyCode: $0.key,
+                    balance: $0.value.balance
+                )
+            }
+            .sorted { $0.balance > $1.balance }
+    }
+}
+
+#endif

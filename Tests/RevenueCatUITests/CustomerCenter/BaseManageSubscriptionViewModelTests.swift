@@ -75,7 +75,8 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             screen: ManageSubscriptionsViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
-            purchasesProvider: MockCustomerCenterPurchases()
+            purchasesProvider: MockCustomerCenterPurchases(),
+            virtualCurrencies: [:]
         )
 
         expect(viewModel.relevantPathsForPurchase.count) == 0
@@ -337,7 +338,8 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
                     customerInfo: customerInfo,
                     products: products
                 ),
-                loadPromotionalOfferUseCase: loadPromotionalOfferUseCase)
+                loadPromotionalOfferUseCase: loadPromotionalOfferUseCase,
+                virtualCurrencies: [:])
 
             let screen = try XCTUnwrap(viewModel.screen)
 
@@ -439,7 +441,8 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
                                                         customerInfo: customerInfo,
                                                         products: products
                                                      ),
-                                                     loadPromotionalOfferUseCase: loadPromotionalOfferUseCase)
+                                                     loadPromotionalOfferUseCase: loadPromotionalOfferUseCase,
+                                                     virtualCurrencies: [:])
 
         return (viewModel, loadPromotionalOfferUseCase)
     }
