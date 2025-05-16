@@ -22,9 +22,6 @@ import SwiftUI
 @available(watchOS, unavailable)
 struct SubscriptionDetailView: View {
 
-    @Environment(\.openURL)
-    private var openURL
-
     @Environment(\.appearance)
     private var appearance: CustomerCenterConfigData.Appearance
 
@@ -166,7 +163,7 @@ struct SubscriptionDetailView: View {
                             if RuntimeUtils.isSimulator {
                                 self.showSimulatorAlert = true
                             } else {
-                                openURL(url)
+                                viewModel.inAppBrowserURL = IdentifiableURL(url: url)
                             }
                         } label: {
                             Text(localization[.contactSupport])
