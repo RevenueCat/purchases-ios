@@ -1763,18 +1763,27 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func testDiagnosticsHttpRequestPerformedTrackedOnError() throws {
+    func testDiagnosticsHttpRequestPerformedTrackedOnError() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let request = HTTPRequest(method: .get, path: .mockPath)
 
-        waitUntil { completion in
+        stub(condition: isPath(request.path)) { _ in
+            let json = "{\"code\": 7225, \"message\": \"Invalid API key\"}"
+            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!,
+                                     statusCode: .unauthorized,
+                                     headers: [
+                                        HTTPClient.ResponseHeader.contentType.rawValue: "application/json"
+                                    ])
+        }
+
+        await waitUntil { completion in
             self.client.perform(request) { (_: EmptyResponse) in completion() }
         }
 
         // swiftlint:disable:next force_cast
         let mockDiagnosticsTracker = self.diagnosticsTracker as! MockDiagnosticsTracker
-        expect(mockDiagnosticsTracker.trackedHttpRequestPerformedParams.value.count).toEventually(equal(1))
+        await expect(mockDiagnosticsTracker.trackedHttpRequestPerformedParams.value.count).toEventually(equal(1))
         guard let trackedParams = mockDiagnosticsTracker.trackedHttpRequestPerformedParams.value.first else {
             fail("Should have at least one call to tracked diagnostics")
             return
