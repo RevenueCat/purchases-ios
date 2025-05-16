@@ -52,6 +52,10 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
         )
     }
 
+    func reloadPurchaseInformation(_ purchaseInformation: PurchaseInformation?) {
+        self.purchaseInformation = purchaseInformation
+    }
+
     // Previews
     convenience init(
         screen: CustomerCenterConfigData.Screen,
@@ -65,7 +69,7 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchaseInformation,
             refundRequestStatus: refundRequestStatus,
-            purchasesProvider: CustomerCenterPurchases(),
+            purchasesProvider: MockCustomerCenterPurchases(),
             loadPromotionalOfferUseCase: nil
         )
     }

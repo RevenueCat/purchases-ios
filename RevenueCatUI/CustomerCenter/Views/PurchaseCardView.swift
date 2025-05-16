@@ -25,15 +25,18 @@ struct PurchaseInformationCardView: View {
     private let title: String
     private let subtitle: String?
     private let storeTitle: String
+    private let paidPrice: String
     private let showChevron: Bool
 
     init(
         title: String,
         storeTitle: String,
+        paidPrice: String,
         subtitle: String? = nil,
         showChevron: Bool = true
     ) {
         self.title = title
+        self.paidPrice = paidPrice
         self.subtitle = subtitle
         self.storeTitle = storeTitle
         self.showChevron = showChevron
@@ -59,6 +62,12 @@ struct PurchaseInformationCardView: View {
             self.subtitle = nil
         }
 
+        switch purchaseInformation.pricePaid {
+        case .free, .unknown:
+            self.paidPrice = ""
+        case .nonFree(let pricePaid):
+            self.paidPrice = pricePaid
+        }
         self.storeTitle = localization[purchaseInformation.store.localizationKey]
         self.showChevron = showChevron
     }
@@ -89,13 +98,16 @@ struct PurchaseInformationCardView: View {
                     .multilineTextAlignment(.leading)
             }
         } content: {
-            if showChevron {
-                Image(systemName: "chevron.forward")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 12, height: 12)
-                    .foregroundStyle(.secondary)
-                    .font(Font.system(size: 12, weight: .bold))
+            HStack {
+                Text(paidPrice)
+                if showChevron {
+                    Image(systemName: "chevron.forward")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 12, height: 12)
+                        .foregroundStyle(.secondary)
+                        .font(Font.system(size: 12, weight: .bold))
+                }
             }
         }
     }
@@ -113,6 +125,7 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
             PurchaseInformationCardView(
                 title: "Product name",
                 storeTitle: Store.appStore.localizationKey.rawValue,
+                paidPrice: "$19.99",
                 subtitle: "Renews 24 May for $19.99"
             )
             .padding()
@@ -124,12 +137,13 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
             PurchaseInformationCardView(
                 title: "Product name",
                 storeTitle: Store.playStore.localizationKey.rawValue,
+                paidPrice: "$19.99",
                 subtitle: "Renews 24 May for $19.99"
             )
             .padding()
             .background(Color.white)
             .cornerRadius(10)
-            .shadow(radius: 2)
+            .shadow(radius: 4)
             .padding([.leading, .trailing])
         }
         .environment(\.localization, CustomerCenterConfigData.default.localization)
