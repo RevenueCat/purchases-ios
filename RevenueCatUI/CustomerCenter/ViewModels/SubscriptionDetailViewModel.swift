@@ -53,9 +53,6 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
     }
 
     func reloadPurchaseInformation(_ purchaseInformation: PurchaseInformation?) {
-        guard let purchaseInformation else {
-            return
-        }
         self.purchaseInformation = purchaseInformation
     }
 
