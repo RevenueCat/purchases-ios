@@ -22,7 +22,7 @@ import RevenueCat
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-class FeedbackSurveyData: ObservableObject, Equatable {
+struct FeedbackSurveyData: Equatable {
 
     var configuration: CustomerCenterConfigData.HelpPath.FeedbackSurvey
     var path: CustomerCenterConfigData.HelpPath
