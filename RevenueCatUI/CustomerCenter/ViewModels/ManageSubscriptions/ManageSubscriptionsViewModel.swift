@@ -53,6 +53,8 @@ final class ManageSubscriptionsViewModel: ObservableObject {
     @Published
     var inAppBrowserURL: IdentifiableURL?
 
+    let virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]
+
     @Published
     var state: CustomerCenterViewState {
         didSet {
@@ -81,7 +83,8 @@ final class ManageSubscriptionsViewModel: ObservableObject {
         purchaseInformation: PurchaseInformation? = nil,
         refundRequestStatus: RefundRequestStatus? = nil,
         purchasesProvider: CustomerCenterPurchasesType,
-        loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
+        loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil,
+        virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]) {
             self.screen = screen
             self.paths = screen.filteredPaths
             self.purchaseInformation = purchaseInformation
@@ -92,6 +95,7 @@ final class ManageSubscriptionsViewModel: ObservableObject {
             ?? LoadPromotionalOfferUseCase(purchasesProvider: purchasesProvider)
             self.state = .success
             self.restoreAlertType = .loading
+            self.virtualCurrencies = virtualCurrencies
         }
 
 #if os(iOS) || targetEnvironment(macCatalyst)

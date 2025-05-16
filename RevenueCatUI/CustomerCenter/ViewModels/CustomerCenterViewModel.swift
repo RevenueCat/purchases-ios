@@ -37,6 +37,9 @@ import RevenueCat
     private(set) var appIsLatestVersion: Bool = defaultAppIsLatestVersion
 
     @Published
+    private(set) var virtualCurrencies: [String: VirtualCurrencyInfo] = [:]
+
+    @Published
     private(set) var onUpdateAppClick: (() -> Void)?
 
     @Published
@@ -129,6 +132,7 @@ import RevenueCat
 
             try await self.loadPurchaseInformation(customerInfo: customerInfo)
             try await self.loadCustomerCenterConfig()
+            self.virtualCurrencies = customerInfo.virtualCurrencies
             self.state = .success
         } catch {
             self.state = .error(error)

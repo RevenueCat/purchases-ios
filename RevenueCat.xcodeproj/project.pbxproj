@@ -1125,9 +1125,14 @@
 		FD2E6C9F2C480FF000CB4BD7 /* OHHTTPStubs in Frameworks */ = {isa = PBXBuildFile; productRef = FD2E6C9E2C480FF000CB4BD7 /* OHHTTPStubs */; };
 		FD2E6CA12C48100900CB4BD7 /* OHHTTPStubsSwift in Frameworks */ = {isa = PBXBuildFile; productRef = FD2E6CA02C48100900CB4BD7 /* OHHTTPStubsSwift */; };
 		FD33CD4D2D034CBD000D13A4 /* CustomerCenterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD33CD4C2D034CBD000D13A4 /* CustomerCenterViewController.swift */; };
+		FD3FB00F2DB6984800D4AEC7 /* VirtualCurrencyBalancesScreenViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD3FB00E2DB6984800D4AEC7 /* VirtualCurrencyBalancesScreenViewModel.swift */; };
 		FD43D2FC2C41864000077235 /* TimeInterval+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD43D2FA2C4185B700077235 /* TimeInterval+Extensions.swift */; };
 		FD43D2FE2C41867600077235 /* TimeInterval+ExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD43D2FD2C41867600077235 /* TimeInterval+ExtensionsTests.swift */; };
 		FD6186542D1393FA007843DA /* MockCustomerCenterStoreKitUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD6186532D1393FA007843DA /* MockCustomerCenterStoreKitUtilities.swift */; };
+		FD7247EF2DB834CF00FA3A8D /* VirtualCurrenciesListSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD7247EE2DB834CF00FA3A8D /* VirtualCurrenciesListSection.swift */; };
+		FD7247F22DB8358F00FA3A8D /* VirtualCurrencyBalanceListRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD7247F12DB8358F00FA3A8D /* VirtualCurrencyBalanceListRow.swift */; };
+		FD89DB872DB97D2E00A8C231 /* VirtualCurrencyBalancesScreenViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD89DB862DB97D2E00A8C231 /* VirtualCurrencyBalancesScreenViewModelTests.swift */; };
+		FD89DB882DB97D2E00A8C231 /* VirtualCurrencyBalancesScreenViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD89DB862DB97D2E00A8C231 /* VirtualCurrencyBalancesScreenViewModelTests.swift */; };
 		FD9F982D2BE28A7F0091A5BF /* MockNotificationCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B515526D44B2300BD2BD7 /* MockNotificationCenter.swift */; };
 		FDAADFCB2BE2A5BF00BD1659 /* MockAllTransactionsProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDAADFCA2BE2A5BF00BD1659 /* MockAllTransactionsProvider.swift */; };
 		FDAADFCC2BE2A5BF00BD1659 /* MockAllTransactionsProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDAADFCA2BE2A5BF00BD1659 /* MockAllTransactionsProvider.swift */; };
@@ -1145,6 +1150,7 @@
 		FDC892D12CCAD0EE000AEB9F /* MockStoreKit2PurchaseIntentListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDC892D02CCAD0EE000AEB9F /* MockStoreKit2PurchaseIntentListener.swift */; };
 		FDC892D22CCAD0EE000AEB9F /* MockStoreKit2PurchaseIntentListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDC892D02CCAD0EE000AEB9F /* MockStoreKit2PurchaseIntentListener.swift */; };
 		FDC892FE2CD157F1000AEB9F /* WinBackOffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDC892FD2CD157F1000AEB9F /* WinBackOffer.swift */; };
+		FDEE6C8B2DA5BC4100DD6A29 /* VirtualCurrencyBalancesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDEE6C8A2DA5BC4100DD6A29 /* VirtualCurrencyBalancesScreen.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -2454,9 +2460,13 @@
 		FD2046822CB833CD00166727 /* MockStoreKit2PurchaseIntentListenerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreKit2PurchaseIntentListenerDelegate.swift; sourceTree = "<group>"; };
 		FD33CD4C2D034CBD000D13A4 /* CustomerCenterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterViewController.swift; sourceTree = "<group>"; };
 		FD33CD5F2D03500C000D13A4 /* CustomerCenterUIKitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterUIKitView.swift; sourceTree = "<group>"; };
+		FD3FB00E2DB6984800D4AEC7 /* VirtualCurrencyBalancesScreenViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyBalancesScreenViewModel.swift; sourceTree = "<group>"; };
 		FD43D2FA2C4185B700077235 /* TimeInterval+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TimeInterval+Extensions.swift"; sourceTree = "<group>"; };
 		FD43D2FD2C41867600077235 /* TimeInterval+ExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TimeInterval+ExtensionsTests.swift"; sourceTree = "<group>"; };
 		FD6186532D1393FA007843DA /* MockCustomerCenterStoreKitUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockCustomerCenterStoreKitUtilities.swift; sourceTree = "<group>"; };
+		FD7247EE2DB834CF00FA3A8D /* VirtualCurrenciesListSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrenciesListSection.swift; sourceTree = "<group>"; };
+		FD7247F12DB8358F00FA3A8D /* VirtualCurrencyBalanceListRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyBalanceListRow.swift; sourceTree = "<group>"; };
+		FD89DB862DB97D2E00A8C231 /* VirtualCurrencyBalancesScreenViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyBalancesScreenViewModelTests.swift; sourceTree = "<group>"; };
 		FDAADFCA2BE2A5BF00BD1659 /* MockAllTransactionsProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAllTransactionsProvider.swift; sourceTree = "<group>"; };
 		FDAADFCE2BE2B84500BD1659 /* StoreKit2ObserverModePurchaseDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2ObserverModePurchaseDetector.swift; sourceTree = "<group>"; };
 		FDAADFD22BE2B99900BD1659 /* MockStoreKit2ObserverModePurchaseDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreKit2ObserverModePurchaseDetector.swift; sourceTree = "<group>"; };
@@ -2469,6 +2479,7 @@
 		FDAD6AC82D132E6500FB047E /* CustomerCenterStoreKitUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterStoreKitUtilities.swift; sourceTree = "<group>"; };
 		FDC892D02CCAD0EE000AEB9F /* MockStoreKit2PurchaseIntentListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreKit2PurchaseIntentListener.swift; sourceTree = "<group>"; };
 		FDC892FD2CD157F1000AEB9F /* WinBackOffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WinBackOffer.swift; sourceTree = "<group>"; };
+		FDEE6C8A2DA5BC4100DD6A29 /* VirtualCurrencyBalancesScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyBalancesScreen.swift; sourceTree = "<group>"; };
 		FECF627761D375C8431EB866 /* StoreProduct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreProduct.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -3804,6 +3815,7 @@
 				353756582C382C2800A1B8D6 /* CustomerCenterViewState.swift */,
 				3546355A2C391F38001D7E85 /* FeedbackSurveyViewModel.swift */,
 				3546355B2C391F38001D7E85 /* PromotionalOfferViewModel.swift */,
+				FD3FB00E2DB6984800D4AEC7 /* VirtualCurrencyBalancesScreenViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -3811,6 +3823,7 @@
 		353756602C382C2800A1B8D6 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				FD7247F02DB8356F00FA3A8D /* Virtual Currencies */,
 				57D8D5522D3EAF11009CB6ED /* CompatibilityLabeledContent.swift */,
 				574D1C6F2D3E75F9005840CD /* PurchaseHistory */,
 				571197632D3AE3F5000BC39E /* CustomerCenterNavigationOptions.swift */,
@@ -3955,6 +3968,7 @@
 				3544DA6A2C2C848E00704E9D /* ManageSubscriptionsViewModelTests.swift */,
 				1E2F911A2CC918ED00BDB016 /* ContactSupportUtilitiesTests.swift */,
 				35A99C802CCB8D530074AB41 /* PurchaseInformationTests.swift */,
+				FD89DB862DB97D2E00A8C231 /* VirtualCurrencyBalancesScreenViewModelTests.swift */,
 			);
 			path = CustomerCenter;
 			sourceTree = "<group>";
@@ -5338,6 +5352,16 @@
 				FD6186532D1393FA007843DA /* MockCustomerCenterStoreKitUtilities.swift */,
 			);
 			path = Mocks;
+			sourceTree = "<group>";
+		};
+		FD7247F02DB8356F00FA3A8D /* Virtual Currencies */ = {
+			isa = PBXGroup;
+			children = (
+				FDEE6C8A2DA5BC4100DD6A29 /* VirtualCurrencyBalancesScreen.swift */,
+				FD7247EE2DB834CF00FA3A8D /* VirtualCurrenciesListSection.swift */,
+				FD7247F12DB8358F00FA3A8D /* VirtualCurrencyBalanceListRow.swift */,
+			);
+			path = "Virtual Currencies";
 			sourceTree = "<group>";
 		};
 		FDAADFCD2BE2B82D00BD1659 /* Observer Mode */ = {
@@ -6886,6 +6910,7 @@
 				1E5F8F782C46BBD90041EECD /* CustomerCenterAction.swift in Sources */,
 				1ED4CA9F2CC25A5F0021AB8F /* SafariView.swift in Sources */,
 				887A60CC2C1D037000E1A461 /* PaywallFontProvider.swift in Sources */,
+				FD7247F22DB8358F00FA3A8D /* VirtualCurrencyBalanceListRow.swift in Sources */,
 				2C91068E2CE2481A00189565 /* SizeModifier.swift in Sources */,
 				887A60B82C1D037000E1A461 /* Template1View.swift in Sources */,
 				887A60C62C1D037000E1A461 /* LoadingPaywallView.swift in Sources */,
@@ -6913,6 +6938,7 @@
 				03C72FC32D349BAE00297FEC /* IconComponentView.swift in Sources */,
 				887A60702C1D037000E1A461 /* PaywallTemplate.swift in Sources */,
 				1E8A607F2CDCE5EC0034ACF3 /* View+OnRedeemWebPurchaseAttempt.swift in Sources */,
+				FD3FB00F2DB6984800D4AEC7 /* VirtualCurrencyBalancesScreenViewModel.swift in Sources */,
 				887A60882C1D037000E1A461 /* MockPurchases.swift in Sources */,
 				887A60BC2C1D037000E1A461 /* Template5View.swift in Sources */,
 				2C8EC7202CCF276100D6CCF8 /* PresentedPartials.swift in Sources */,
@@ -6934,6 +6960,7 @@
 				887A60812C1D037000E1A461 /* PaywallData+Default.swift in Sources */,
 				887A606A2C1D037000E1A461 /* TrialOrIntroEligibilityChecker.swift in Sources */,
 				88B1BAEE2C813A3C001B7EE5 /* TextComponentView.swift in Sources */,
+				FD89DB882DB97D2E00A8C231 /* VirtualCurrencyBalancesScreenViewModelTests.swift in Sources */,
 				3546355F2C391F4D001D7E85 /* PromotionalOfferView.swift in Sources */,
 				2C7457882CEDF7C0004ACE52 /* BackgroundStyle.swift in Sources */,
 				2C8EC6DD2CCC7C5B00D6CCF8 /* PackageValidator.swift in Sources */,
@@ -6992,8 +7019,10 @@
 				2C4C36132C6FBA8B00AE959B /* CompatibilityTopBarTrailing.swift in Sources */,
 				3546355C2C391F38001D7E85 /* FeedbackSurveyViewModel.swift in Sources */,
 				353756692C382C2800A1B8D6 /* CustomerCenterViewState.swift in Sources */,
+				FD7247EF2DB834CF00FA3A8D /* VirtualCurrenciesListSection.swift in Sources */,
 				7783607B2CCA88E4000785B8 /* StickyFooterComponentView.swift in Sources */,
 				887A608B2C1D037000E1A461 /* PurchaseHandler+TestData.swift in Sources */,
+				FDEE6C8B2DA5BC4100DD6A29 /* VirtualCurrencyBalancesScreen.swift in Sources */,
 				35F249CE2C493E3D0058993A /* CustomerCenterPurchases.swift in Sources */,
 				353756672C382C2800A1B8D6 /* PurchaseInformation.swift in Sources */,
 				887A60682C1D037000E1A461 /* TemplateError.swift in Sources */,
@@ -7098,6 +7127,7 @@
 				887A632F2C1D177800E1A461 /* VariablesTests.swift in Sources */,
 				887A63302C1D177800E1A461 /* AsyncTestHelpers.swift in Sources */,
 				887A63312C1D177800E1A461 /* AvailabilityChecks.swift in Sources */,
+				FD89DB872DB97D2E00A8C231 /* VirtualCurrencyBalancesScreenViewModelTests.swift in Sources */,
 				887A63322C1D177800E1A461 /* CurrentTestCaseTracker.swift in Sources */,
 				887A63332C1D177800E1A461 /* DataExtensions.swift in Sources */,
 				887A63342C1D177800E1A461 /* ImageSnapshot.swift in Sources */,
