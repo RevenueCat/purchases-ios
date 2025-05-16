@@ -81,7 +81,7 @@ struct ActiveSubscriptionsListView: View {
             ) { _ in
                 SubscriptionDetailView(
                     screen: viewModel.screen,
-                    purchaseInformation: $viewModel.purchaseInformation,
+                    purchaseInformation: viewModel.purchaseInformation,
                     showPurchaseHistory: false,
                     purchasesProvider: self.viewModel.purchasesProvider,
                     actionWrapper: self.viewModel.actionWrapper

@@ -226,7 +226,7 @@ private extension CustomerCenterView {
             } else {
                 SubscriptionDetailView(
                     screen: screen,
-                    purchaseInformation: $viewModel.activePurchase,
+                    purchaseInformation: viewModel.activePurchase,
                     showPurchaseHistory: viewModel.configuration?.support.displayPurchaseHistoryLink == true,
                     purchasesProvider: self.viewModel.purchasesProvider,
                     actionWrapper: self.viewModel.actionWrapper
@@ -237,7 +237,7 @@ private extension CustomerCenterView {
             if let screen = configuration.screens[.noActive] {
                 SubscriptionDetailView(
                     screen: screen,
-                    purchaseInformation: .constant(nil),
+                    purchaseInformation: nil,
                     showPurchaseHistory: viewModel.configuration?.support.displayPurchaseHistoryLink == true,
                     purchasesProvider: self.viewModel.purchasesProvider,
                     actionWrapper: self.viewModel.actionWrapper

@@ -40,14 +40,11 @@ struct SubscriptionDetailView: View {
     @StateObject
     private var viewModel: SubscriptionDetailViewModel
 
-    @Binding
-    private var purchaseInformation: PurchaseInformation?
-
     @State
     private var showSimulatorAlert: Bool = false
 
     init(screen: CustomerCenterConfigData.Screen,
-         purchaseInformation: Binding<PurchaseInformation?>,
+         purchaseInformation: PurchaseInformation?,
          showPurchaseHistory: Bool,
          purchasesProvider: CustomerCenterPurchasesType,
          actionWrapper: CustomerCenterActionWrapper) {
@@ -55,20 +52,17 @@ struct SubscriptionDetailView: View {
             screen: screen,
             showPurchaseHistory: showPurchaseHistory,
             actionWrapper: actionWrapper,
-            purchaseInformation: purchaseInformation.wrappedValue,
+            purchaseInformation: purchaseInformation,
             purchasesProvider: purchasesProvider)
 
         self.init(
-            purchaseInformation: purchaseInformation,
             viewModel: viewModel
         )
     }
 
     fileprivate init(
-        purchaseInformation: Binding<PurchaseInformation?> = .constant(nil),
         viewModel: SubscriptionDetailViewModel
     ) {
-        self._purchaseInformation = purchaseInformation
         self._viewModel = .init(wrappedValue: viewModel)
     }
 
@@ -197,10 +191,6 @@ struct SubscriptionDetailView: View {
             $0.navigationTitle(self.viewModel.screen.title)
                 .navigationBarTitleDisplayMode(.inline)
          })
-        .onChangeOf(purchaseInformation?.customerInfoRequestedDate) { _ in
-            guard let purchase = purchaseInformation else { return }
-            viewModel.reloadPurchaseInformation(purchase)
-        }
     }
 
 }
