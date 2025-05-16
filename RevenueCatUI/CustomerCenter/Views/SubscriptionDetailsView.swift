@@ -26,6 +26,7 @@ struct SubscriptionDetailsView: View {
 
     let purchaseInformation: PurchaseInformation
     let refundRequestStatus: RefundRequestStatus?
+
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
 
@@ -46,18 +47,7 @@ struct SubscriptionDetailsView: View {
                     )
                 }
 
-                let priceValue: String? = {
-                    switch purchaseInformation.price {
-                    case .free:
-                        return localization[.free]
-                    case .paid(let localizedPrice):
-                        return localizedPrice
-                    case .unknown:
-                        return nil
-                    }
-                }()
-
-                if let price = priceValue {
+                if let price = price(from: purchaseInformation) {
                     IconLabelView(
                         iconName: "coloncurrencysign",
                         label: localization[.currentPrice],
@@ -118,6 +108,26 @@ struct SubscriptionDetailsView: View {
             return localization[.expired]
         }
     }
+
+    private func price(from purchaseInformation: PurchaseInformation) -> String? {
+        if let renewalPrice = purchaseInformation.renewalPrice {
+            switch renewalPrice {
+            case .free:
+                return localization[.free]
+            case .nonFree(let localizedPrice):
+                return localizedPrice
+            }
+        } else {
+            switch purchaseInformation.pricePaid {
+            case .free:
+                return localization[.free]
+            case .nonFree(let localizedPrice):
+                return localizedPrice
+            case .unknown:
+                return nil
+            }
+        }
+    }
 }
 
 @available(iOS 15.0, *)
@@ -130,10 +140,8 @@ struct SubscriptionDetailsHeader: View {
 
     var body: some View {
         VStack(alignment: .leading) {
-            if let title = purchaseInformation.title {
-                Text(title)
-                    .font(.headline)
-            }
+            Text(purchaseInformation.title)
+                .font(.headline)
 
             if let explanation = getSubscriptionExplanation(from: purchaseInformation, localization: localization) {
                 Text(explanation)
@@ -144,6 +152,7 @@ struct SubscriptionDetailsHeader: View {
         }
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     private func getSubscriptionExplanation(from purchaseInformation: PurchaseInformation,
                                             localization: CustomerCenterConfigData.Localization) -> String? {
         guard purchaseInformation.expirationOrRenewal != nil else {
@@ -163,12 +172,14 @@ struct SubscriptionDetailsHeader: View {
             return localization[.youHaveLifetime]
         case .google:
             return localization[.googleSubscriptionManage]
-        case .web:
+        case .externalWeb:
             return localization[.webSubscriptionManage]
         case .otherStorePurchase:
             return localization[.pleaseContactSupportToManage]
         case .amazon:
             return localization[.amazonSubscriptionManage]
+        case .rcWebBilling:
+            return localization[.webSubscriptionManage]
         }
     }
 }
@@ -212,7 +223,7 @@ struct SubscriptionDetailsView_Previews: PreviewProvider {
     static var previews: some View {
         ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
             SubscriptionDetailsView(
-                purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
+                purchaseInformation: CustomerCenterConfigData.subscriptionInformationMonthlyRenewing,
                 refundRequestStatus: .success
             )
             .preferredColorScheme(colorScheme)

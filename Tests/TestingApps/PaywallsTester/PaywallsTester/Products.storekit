@@ -163,7 +163,13 @@
         },
         {
           "adHocOffers" : [
-
+            {
+              "internalID" : "B630452E",
+              "offerID" : "rc-cancel-offer",
+              "paymentMode" : "free",
+              "referenceName" : "rc-cancel-offer",
+              "subscriptionPeriod" : "P1M"
+            }
           ],
           "codeOffers" : [
 

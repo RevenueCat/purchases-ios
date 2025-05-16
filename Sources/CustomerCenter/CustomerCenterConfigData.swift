@@ -145,6 +145,15 @@ public struct CustomerCenterConfigData: Equatable {
             case seeAllVirtualCurrencies = "see_all_virtual_currencies"
             case virtualCurrencyBalancesScreenHeader = "virtual_currency_balances_screen_header"
             case noVirtualCurrencyBalancesFound = "no_virtual_currency_balances_found"
+            case youMayHaveDuplicatedSubscriptionsTitle = "you_may_have_duplicated_subscriptions_title"
+            case youMayHaveDuplicatedSubscriptionsSubtitle = "you_may_have_duplicated_subscriptions_subtitle"
+            case pricePaid = "price_paid"
+            case expiresOnDateWithoutChanges = "expires_on_date_without_changes"
+            case renewsOnDateForPrice = "renews_on_date_for_price"
+            case renewsOnDate = "renews_on_date"
+            case priceAfterwards = "price_afterwards"
+            case freeTrialUntilDate = "free_trial_until_date"
+            case priceExpiresOnDateWithoutChanges = "price_expires_on_date_without_changes"
 
             var defaultValue: String {
                 switch self {
@@ -336,6 +345,25 @@ public struct CustomerCenterConfigData: Equatable {
                     return "See all in-app currencies"
                 case .noVirtualCurrencyBalancesFound:
                     return "It doesn't look like you've purchased any in-app currencies."
+                case .youMayHaveDuplicatedSubscriptionsTitle:
+                    return "You may have duplicated subscriptions"
+                case .youMayHaveDuplicatedSubscriptionsSubtitle:
+                    return "You might be subscribed both on the web and through the App Store." +
+                        "To avoid being charged twice, please cancel your iOS subscription in your device settings."
+                case .pricePaid:
+                    return "Paid {{ price }}."
+                case .expiresOnDateWithoutChanges:
+                    return "Expires on {{ date }} without further charges."
+                case .renewsOnDateForPrice:
+                    return "Renews on {{ date }} for {{ price }}."
+                case .renewsOnDate:
+                    return "Renews on {{ date }}."
+                case .priceAfterwards:
+                    return "{{ price }} afterwards."
+                case .freeTrialUntilDate:
+                    return "Free trial until {{ date }}."
+                case .priceExpiresOnDateWithoutChanges:
+                     return "{{ price }}. Expires on {{ date }} without changes."
                 }
             }
         }
@@ -436,17 +464,33 @@ public struct CustomerCenterConfigData: Equatable {
             public let title: String
             public let subtitle: String
             public let productMapping: [String: String]
+            public let crossProductPromotions: [String: CrossProductPromotion]
+
+            public struct CrossProductPromotion: Equatable {
+                public let storeOfferIdentifier: String
+                public let targetProductId: String
+
+                public init(
+                    storeofferingidentifier: String,
+                    targetproductid: String
+                ) {
+                    self.storeOfferIdentifier = storeofferingidentifier
+                    self.targetProductId = targetproductid
+                }
+            }
 
             public init(iosOfferId: String,
                         eligible: Bool,
                         title: String,
                         subtitle: String,
-                        productMapping: [String: String]) {
+                        productMapping: [String: String],
+                        crossProductPromotions: [String: CrossProductPromotion] = [:]) {
                 self.iosOfferId = iosOfferId
                 self.eligible = eligible
                 self.title = title
                 self.subtitle = subtitle
                 self.productMapping = productMapping
+                self.crossProductPromotions = crossProductPromotions
             }
 
         }
@@ -571,17 +615,20 @@ public struct CustomerCenterConfigData: Equatable {
         public let shouldWarnCustomerToUpdate: Bool
         public let displayPurchaseHistoryLink: Bool
         public let displayVirtualCurrencies: Bool
+        public let shouldWarnCustomersAboutMultipleSubscriptions: Bool
 
         public init(
             email: String,
             shouldWarnCustomerToUpdate: Bool,
             displayPurchaseHistoryLink: Bool,
             displayVirtualCurrencies: Bool
+            shouldWarnCustomersAboutMultipleSubscriptions: Bool
         ) {
             self.email = email
             self.shouldWarnCustomerToUpdate = shouldWarnCustomerToUpdate
             self.displayPurchaseHistoryLink = displayPurchaseHistoryLink
             self.displayVirtualCurrencies = displayVirtualCurrencies
+            self.shouldWarnCustomersAboutMultipleSubscriptions = shouldWarnCustomersAboutMultipleSubscriptions
         }
 
     }
@@ -692,6 +739,17 @@ extension CustomerCenterConfigData.HelpPath.PromotionalOffer {
         self.title = response.title
         self.subtitle = response.subtitle
         self.productMapping = response.productMapping
+        self.crossProductPromotions = response.crossProductPromotions?.mapValues { CrossProductPromotion(from: $0) }
+            ?? [:]
+    }
+
+}
+
+extension CustomerCenterConfigData.HelpPath.PromotionalOffer.CrossProductPromotion {
+
+    init(from response: CustomerCenterConfigResponse.HelpPath.PromotionalOffer.CrossProductPromotion) {
+        self.storeOfferIdentifier = response.storeOfferIdentifier
+        self.targetProductId = response.targetProductId
     }
 
 }
@@ -727,6 +785,8 @@ extension CustomerCenterConfigData.Support {
         self.shouldWarnCustomerToUpdate = response.shouldWarnCustomerToUpdate ?? true
         self.displayPurchaseHistoryLink = response.displayPurchaseHistoryLink ?? false
         self.displayVirtualCurrencies = response.displayVirtualCurrencies ?? false
+        self.shouldWarnCustomersAboutMultipleSubscriptions = response.shouldWarnCustomersAboutMultipleSubscriptions
+            ?? false
     }
 
 }

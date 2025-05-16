@@ -42,12 +42,17 @@ struct ManageSubscriptionsView: View {
     @StateObject
     private var viewModel: ManageSubscriptionsViewModel
 
+    @Binding
+    var purchaseInformation: PurchaseInformation?
+
     init(screen: CustomerCenterConfigData.Screen,
-         purchaseInformation: PurchaseInformation?,
+         purchaseInformation: Binding<PurchaseInformation?>,
          purchasesProvider: CustomerCenterPurchasesType,
          virtualCurrencies: [String: VirtualCurrencyInfo],
          actionWrapper: CustomerCenterActionWrapper) {
-        let viewModel = ManageSubscriptionsViewModel(
+        self.init(
+            purchaseInformation: purchaseInformation,
+            viewModel: ManageSubscriptionsViewModel(
             screen: screen,
             actionWrapper: actionWrapper,
             purchaseInformation: purchaseInformation,
@@ -56,7 +61,11 @@ struct ManageSubscriptionsView: View {
         self.init(viewModel: viewModel)
     }
 
-    fileprivate init(viewModel: ManageSubscriptionsViewModel) {
+    fileprivate init(
+        purchaseInformation: Binding<PurchaseInformation?>,
+        viewModel: ManageSubscriptionsViewModel
+    ) {
+        self._purchaseInformation = purchaseInformation
         self._viewModel = .init(wrappedValue: viewModel)
     }
 
@@ -76,7 +85,7 @@ struct ManageSubscriptionsView: View {
                 .environment(\.navigationOptions, navigationOptions)
             }
             .compatibleNavigation(
-                isPresented: $viewModel.showPurchases,
+                isPresented: $viewModel.showAllPurchases,
                 usesNavigationStack: navigationOptions.usesNavigationStack
             ) {
                 PurchaseHistoryView(
@@ -122,11 +131,15 @@ struct ManageSubscriptionsView: View {
 
                 if support?.displayPurchaseHistoryLink == true {
                     Button {
-                        viewModel.showPurchases = true
+                        viewModel.showAllPurchases = true
                     } label: {
-                        Text(localization[.seeAllPurchases])
-                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                            .contentShape(Rectangle())
+                        CompatibilityLabeledContent {
+                            Text(localization[.seeAllPurchases])
+                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                                .contentShape(Rectangle())
+                        } content: {
+                            Image(systemName: "chevron.forward")
+                        }
                     }
                 }
 
@@ -181,12 +194,15 @@ struct ManageSubscriptionsView: View {
             $0.navigationTitle(self.viewModel.screen.title)
                 .navigationBarTitleDisplayMode(.inline)
          })
-
+        .onChangeOf(purchaseInformation?.customerInfoRequestedDate) { _ in
+            guard let purchase = purchaseInformation else { return }
+            viewModel.reloadPurchaseInformation(purchase)
+        }
     }
 
 }
 
-#if DEBUG
+ #if DEBUG
  @available(iOS 15.0, *)
  @available(macOS, unavailable)
  @available(tvOS, unavailable)
@@ -198,9 +214,9 @@ struct ManageSubscriptionsView: View {
         ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
             CompatibilityNavigationStack {
                 let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
-                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                    screen: CustomerCenterConfigData.default.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
-                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing,
+                    purchaseInformation: CustomerCenterConfigData.subscriptionInformationMonthlyRenewing,
                     refundRequestStatus: .success,
                     purchasesProvider: CustomerCenterPurchases(),
                     virtualCurrencies: [:])
@@ -213,7 +229,7 @@ struct ManageSubscriptionsView: View {
 
             CompatibilityNavigationStack {
                 let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
-                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                    screen: CustomerCenterConfigData.default.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring,
                     purchasesProvider: CustomerCenterPurchases(),
@@ -227,7 +243,7 @@ struct ManageSubscriptionsView: View {
 
             CompatibilityNavigationStack {
                 let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
-                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                    screen: CustomerCenterConfigData.default.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationFree,
                     purchasesProvider: CustomerCenterPurchases(),
@@ -237,11 +253,11 @@ struct ManageSubscriptionsView: View {
                 .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
             }
             .preferredColorScheme(colorScheme)
-            .previewDisplayName("Free subscription - \(colorScheme)")
+            .previewDisplayName("Subscription Free - Renewal price - \(colorScheme)")
 
             CompatibilityNavigationStack {
                 let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
-                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                    screen: CustomerCenterConfigData.default.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
                     purchaseInformation: CustomerCenterConfigTestData.consumable,
                     purchasesProvider: CustomerCenterPurchases(),
@@ -287,6 +303,6 @@ struct ManageSubscriptionsView: View {
 
  }
 
-#endif
+ #endif
 
 #endif

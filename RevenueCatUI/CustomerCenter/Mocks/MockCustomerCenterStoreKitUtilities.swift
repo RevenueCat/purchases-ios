@@ -12,10 +12,8 @@
 //  Created by Will Taylor on 12/18/24.
 
 import Foundation
-import StoreKit
-
 import RevenueCat
-@testable import RevenueCatUI
+import StoreKit
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
 class MockCustomerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType {

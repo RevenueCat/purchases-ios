@@ -36,14 +36,14 @@ extension XCTestCase {
         }
     }
 
-    func verifyNoUnfinishedTransactions(file: StaticString = #file, line: UInt = #line) async {
+    func verifyNoUnfinishedTransactions(file: FileString = #filePath, line: UInt = #line) async {
         let unfinished = await StoreKit.Transaction.unfinished.extractValues()
         expect(file: file, line: line, unfinished).to(beEmpty())
     }
 
     func verifyUnfinishedTransaction(
         withId identifier: Transaction.ID,
-        file: StaticString = #file,
+        file: FileString = #filePath,
         line: UInt = #line
     ) async throws {
         let unfinishedTransactions = await self.unfinishedTransactions

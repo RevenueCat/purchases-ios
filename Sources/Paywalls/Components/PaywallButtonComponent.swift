@@ -115,7 +115,9 @@ public extension PaywallComponent {
         public enum Destination: Codable, Sendable, Hashable, Equatable {
             case customerCenter
             case privacyPolicy(urlLid: String, method: URLMethod)
+            case sheet(sheet: Sheet)
             case terms(urlLid: String, method: URLMethod)
+            case webPaywallLink(urlLid: String, method: URLMethod)
             case url(urlLid: String, method: URLMethod)
 
             case unknown
@@ -123,6 +125,7 @@ public extension PaywallComponent {
             private enum CodingKeys: String, CodingKey {
                 case destination
                 case url
+                case sheet
             }
 
             public func encode(to encoder: Encoder) throws {
@@ -137,9 +140,14 @@ public extension PaywallComponent {
                 case .privacyPolicy(let urlLid, let method):
                     try container.encode("privacy_policy", forKey: .destination)
                     try container.encode(URLPayload(urlLid: urlLid, method: method), forKey: .url)
+                case .webPaywallLink(let urlLid, let method):
+                    try container.encode("web_paywall_link", forKey: .destination)
+                    try container.encode(URLPayload(urlLid: urlLid, method: method), forKey: .url)
                 case .url(let urlLid, let method):
                     try container.encode("url", forKey: .destination)
                     try container.encode(URLPayload(urlLid: urlLid, method: method), forKey: .url)
+                case .sheet:
+                    try container.encode("sheet", forKey: .destination)
                 case .unknown:
                     try container.encode("unknown", forKey: .destination)
                 }
@@ -152,6 +160,9 @@ public extension PaywallComponent {
                 switch destination {
                 case "customer_center":
                     self = .customerCenter
+                case "sheet":
+                    let sheet = try container.decode(Sheet.self, forKey: .sheet)
+                    self = .sheet(sheet: sheet)
                 case "terms":
                     let urlPayload = try container.decode(URLPayload.self, forKey: .url)
                     self = .terms(urlLid: urlPayload.urlLid, method: urlPayload.method)
@@ -161,6 +172,9 @@ public extension PaywallComponent {
                 case "url":
                     let urlPayload = try container.decode(URLPayload.self, forKey: .url)
                     self = .url(urlLid: urlPayload.urlLid, method: urlPayload.method)
+                case "web_paywall_link":
+                    let urlPayload = try container.decode(URLPayload.self, forKey: .url)
+                    self = .webPaywallLink(urlLid: urlPayload.urlLid, method: urlPayload.method)
                 case "unknown":
                     self = .unknown
                 default:
@@ -187,6 +201,30 @@ public extension PaywallComponent {
             let urlLid: String
             let method: URLMethod
         }
-    }
 
+        public struct Sheet: Codable, Hashable, Sendable {
+            public let id: String
+            public let name: String?
+            public let stack: StackComponent
+            public let background: Background?
+            public let backgroundBlur: Bool
+            public let size: Size?
+
+            public init(
+                id: String,
+                name: String?,
+                stack: StackComponent,
+                background: Background?,
+                backgroundBlur: Bool,
+                size: Size?
+            ) {
+                self.id = id
+                self.name = name
+                self.stack = stack
+                self.background = background
+                self.backgroundBlur = backgroundBlur
+                self.size = size
+            }
+        }
+    }
 }

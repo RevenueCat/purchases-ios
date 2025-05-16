@@ -22,8 +22,8 @@ import XCTest
 class StoreKitConfigTestCase: TestCase {
 
     static var requestTimeout: TimeInterval = 60
-    static var requestDispatchTimeout: DispatchTimeInterval {
-        return .seconds(Int(Self.requestTimeout))
+    static var requestDispatchTimeout: NimbleTimeInterval {
+        Self.requestTimeout.nimbleInterval
     }
 
     private static let hasWaited: Atomic<Bool> = false

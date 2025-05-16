@@ -119,7 +119,9 @@ private enum PurchaseButtonInPackagePreview {
                             ))
                         ],
                         shape: .pill
-                    )
+                    ),
+                    action: .inAppCheckout,
+                    method: .inAppCheckout
                 ))
             ],
             dimension: .vertical(.center, .start),
@@ -221,7 +223,9 @@ private enum PurchaseButtonInPackagePreview {
                         ))
                     ],
                     shape: .pill
-                )
+                ),
+                action: .inAppCheckout,
+                method: .inAppCheckout
             )),
             .text(orText),
             .package(.init(
@@ -306,21 +310,24 @@ struct PurchaseButtonInPackagePreview_Previews: PreviewProvider {
         return .init(identifier: "weekly",
                      packageType: .weekly,
                      storeProduct: .init(sk1Product: .init()),
-                     offeringIdentifier: "default")
+                     offeringIdentifier: "default",
+                     webCheckoutUrl: nil)
     }
 
     static var monthlyPackage: Package {
         return .init(identifier: "monthly",
                      packageType: .monthly,
                      storeProduct: .init(sk1Product: .init()),
-                     offeringIdentifier: "default")
+                     offeringIdentifier: "default",
+                     webCheckoutUrl: nil)
     }
 
     static var lifetimePackage: Package {
         return .init(identifier: "lifetime",
                      packageType: .lifetime,
                      storeProduct: .init(sk1Product: .init()),
-                     offeringIdentifier: "default")
+                     offeringIdentifier: "default",
+                     webCheckoutUrl: nil)
     }
 
     // Need to wrap in VStack otherwise preview rerenders and images won't show
@@ -331,7 +338,8 @@ struct PurchaseButtonInPackagePreview_Previews: PreviewProvider {
             paywallComponents: PurchaseButtonInPackagePreview.paywallComponents,
             offering: .init(identifier: "default",
                             serverDescription: "",
-                            availablePackages: [weeklyPackage, monthlyPackage, lifetimePackage]),
+                            availablePackages: [weeklyPackage, monthlyPackage, lifetimePackage],
+                            webCheckoutUrl: nil),
             purchaseHandler: PurchaseHandler.default(),
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,

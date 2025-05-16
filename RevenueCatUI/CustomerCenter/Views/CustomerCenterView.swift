@@ -157,7 +157,12 @@ private extension CustomerCenterView {
                 }
             }
         }
-        .manageSubscriptionsSheet(isPresented: $viewModel.manageSubscriptionsSheet)
+        // This is needed because `CustomerCenterViewModel` is isolated to @MainActor
+        // A bigger refactor is needed, but its already throwing a warning.
+        .modifier(self.viewModel.purchasesProvider.manageSubscriptionsSheetViewModifier(isPresented: .init(
+            get: { viewModel.manageSubscriptionsSheet },
+            set: { manage in DispatchQueue.main.async { viewModel.manageSubscriptionsSheet = manage } }
+        )))
         .modifier(CustomerCenterActionViewModifier(actionWrapper: viewModel.actionWrapper))
         .onCustomerCenterPromotionalOfferSuccess {
             Task {
@@ -197,7 +202,7 @@ private extension CustomerCenterView {
 
     @ViewBuilder
     func destinationContent(configuration: CustomerCenterConfigData) -> some View {
-        if let purchaseInformation = viewModel.purchaseInformation {
+        if let purchaseInformation = viewModel.activePurchase {
             if purchaseInformation.store == .appStore,
                let screen = configuration.screens[.management] {
                 if let onUpdateAppClick = viewModel.onUpdateAppClick,
@@ -226,7 +231,7 @@ private extension CustomerCenterView {
         } else {
             if let screen = configuration.screens[.noActive] {
                 ManageSubscriptionsView(screen: screen,
-                                        purchaseInformation: nil,
+                                        purchaseInformation: $viewModel.activePurchase,
                                         purchasesProvider: self.viewModel.purchasesProvider,
                                         virtualCurrencies: self.viewModel.virtualCurrencies,
                                         actionWrapper: self.viewModel.actionWrapper)
@@ -266,9 +271,9 @@ struct CustomerCenterView_Previews: PreviewProvider {
 
     static var previews: some View {
         let purchaseInformationApple =
-        CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing
+        CustomerCenterConfigData.subscriptionInformationMonthlyRenewing
         let viewModelApple = CustomerCenterViewModel(purchaseInformation: purchaseInformationApple,
-                                                     configuration: CustomerCenterConfigTestData.customerCenterData)
+                                                     configuration: CustomerCenterConfigData.default)
         CustomerCenterView(viewModel: viewModelApple)
             .previewDisplayName("Monthly Apple")
     }

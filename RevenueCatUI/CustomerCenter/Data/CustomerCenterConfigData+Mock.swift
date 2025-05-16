@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  CustomerCenterConfigTestData.swift
+//  CustomerCenterConfigData+Mock.swift
 //
 //
 //  Created by Cesar de la Vega on 28/5/24.
@@ -16,19 +16,22 @@
 import Foundation
 import RevenueCat
 
-enum CustomerCenterConfigTestData {
+// swiftlint:disable force_unwrapping
+extension CustomerCenterConfigData {
 
     @available(iOS 14.0, *)
     // swiftlint:disable:next function_body_length
-    static func customerCenterData(
-        lastPublishedAppVersion: String?,
+    static func mock(
+        lastPublishedAppVersion: String? = "1.0.0",
         shouldWarnCustomerToUpdate: Bool = false,
         displayPurchaseHistoryLink: Bool = false,
         displayVirtualCurrencies: Bool = false,
         refundWindowDuration: CustomerCenterConfigData.HelpPath.RefundWindowDuration = .forever
+        shouldWarnCustomersAboutMultipleSubscriptions: Bool = false
     ) -> CustomerCenterConfigData {
         CustomerCenterConfigData(
-            screens: [.management:
+            screens: [
+                .management:
                     .init(
                         type: .management,
                         title: "Manage Subscription",
@@ -127,6 +130,7 @@ enum CustomerCenterConfigTestData {
                 shouldWarnCustomerToUpdate: shouldWarnCustomerToUpdate,
                 displayPurchaseHistoryLink: displayPurchaseHistoryLink,
                 displayVirtualCurrencies: displayVirtualCurrencies
+                shouldWarnCustomersAboutMultipleSubscriptions: shouldWarnCustomersAboutMultipleSubscriptions
             ),
             lastPublishedAppVersion: lastPublishedAppVersion,
             productId: 1
@@ -135,6 +139,66 @@ enum CustomerCenterConfigTestData {
 
     @available(iOS 14.0, *)
     static let customerCenterData = customerCenterData(lastPublishedAppVersion: "1.0.0", displayVirtualCurrencies: true)
+    static let `default` = mock()
+
+    static let subscriptionInformationMonthlyRenewing = PurchaseInformation(
+        title: "Basic",
+        durationTitle: "Monthly",
+        explanation: .earliestRenewal,
+        pricePaid: .nonFree("$4.99"),
+        renewalPrice: .nonFree("$4.99"),
+        expirationOrRenewal: .init(label: .nextBillingDate,
+                                   date: .date("June 1st, 2024")),
+        productIdentifier: "product_id",
+        store: .appStore,
+        isLifetime: false,
+        isTrial: false,
+        isCancelled: false,
+        latestPurchaseDate: nil,
+        customerInfoRequestedDate: Date(),
+        managementURL: URL(string: "https://www.revenuecat.com")!,
+        expirationDate: nil,
+        renewalDate: nil
+    )
+
+    static let subscriptionInformationFree = PurchaseInformation(
+        title: "Basic",
+        durationTitle: "Monthly",
+        explanation: .earliestRenewal,
+        pricePaid: .free,
+        renewalPrice: .nonFree("$4.99"),
+        expirationOrRenewal: .init(label: .nextBillingDate,
+                                   date: .date("June 1st, 2024")),
+        productIdentifier: "product_id",
+        store: .appStore,
+        isLifetime: false,
+        isTrial: false,
+        isCancelled: false,
+        latestPurchaseDate: nil,
+        customerInfoRequestedDate: Date(),
+        managementURL: URL(string: "https://www.revenuecat.com")!,
+        expirationDate: nil,
+        renewalDate: nil
+    )
+
+    static let consumable = PurchaseInformation(
+        title: "Basic",
+        durationTitle: nil,
+        explanation: .lifetime,
+        pricePaid: .nonFree("$49.99"),
+        renewalPrice: nil,
+        expirationOrRenewal: nil,
+        productIdentifier: "product_id",
+        store: .appStore,
+        isLifetime: true,
+        isTrial: false,
+        isCancelled: false,
+        latestPurchaseDate: Date(),
+        customerInfoRequestedDate: Date(),
+        managementURL: URL(string: "https://www.revenuecat.com")!,
+        expirationDate: nil,
+        renewalDate: nil
+    )
 
     static let standardAppearance = CustomerCenterConfigData.Appearance(
         accentColor: .init(light: "#007AFF", dark: "#007AFF"),

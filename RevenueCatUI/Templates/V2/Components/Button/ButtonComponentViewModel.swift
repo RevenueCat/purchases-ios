@@ -13,8 +13,7 @@
 //
 
 import Foundation
-import RevenueCat
-
+@_spi(Internal) import RevenueCat
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -25,6 +24,7 @@ class ButtonComponentViewModel {
     enum Action {
         case restorePurchases
         case navigateTo(destination: Destination)
+        case sheet(RevenueCat.PaywallComponent.ButtonComponent.Sheet)
         case navigateBack
         case unknown
     }
@@ -37,6 +37,7 @@ class ButtonComponentViewModel {
         case url(url: URL, method: PaywallComponent.ButtonComponent.URLMethod)
         case privacyPolicy(url: URL, method: PaywallComponent.ButtonComponent.URLMethod)
         case terms(url: URL, method: PaywallComponent.ButtonComponent.URLMethod)
+        case webPaywallLink(url: URL, method: PaywallComponent.ButtonComponent.URLMethod)
         case unknown
     }
 
@@ -44,16 +45,20 @@ class ButtonComponentViewModel {
     let localizationProvider: LocalizationProvider
     let action: Action
     let stackViewModel: StackComponentViewModel
+    let sheetStackViewModel: StackComponentViewModel?
 
+    // swiftlint:disable:next cyclomatic_complexity
     init(
         component: PaywallComponent.ButtonComponent,
         localizationProvider: LocalizationProvider,
         offering: Offering,
-        stackViewModel: StackComponentViewModel
+        stackViewModel: StackComponentViewModel,
+        sheetStackViewModel: StackComponentViewModel? = nil
     ) throws {
         self.component = component
         self.localizationProvider = localizationProvider
         self.stackViewModel = stackViewModel
+        self.sheetStackViewModel = sheetStackViewModel
 
         let localizedStrings = localizationProvider.localizedStrings
 
@@ -78,8 +83,14 @@ class ButtonComponentViewModel {
                 self.action = .navigateTo(
                     destination: .terms(url: try localizedStrings.urlFromLid(urlLid), method: method)
                 )
+            case .webPaywallLink(urlLid: let urlLid, method: let method):
+                self.action = .navigateTo(
+                    destination: .webPaywallLink(url: try localizedStrings.urlFromLid(urlLid), method: method)
+                )
             case .unknown:
                 self.action = .unknown
+            case .sheet(let sheet):
+                self.action = .sheet(sheet)
             }
         case .navigateBack:
             self.action = .navigateBack
@@ -105,20 +116,9 @@ class ButtonComponentViewModel {
             return false
         case .unknown:
             return false
+        case .sheet:
+            return false
         }
-    }
-
-}
-
-fileprivate extension PaywallComponent.LocalizationDictionary {
-
-    func urlFromLid(_ urlLid: String) throws -> URL {
-        let urlString = try string(key: urlLid)
-        let url = URL(string: urlString)
-        if url == nil {
-            Logger.error(Strings.paywall_invalid_url(urlLid))
-        }
-        return url!
     }
 
 }

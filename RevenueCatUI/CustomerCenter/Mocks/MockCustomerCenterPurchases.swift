@@ -13,7 +13,6 @@
 
 import Foundation
 import RevenueCat
-@_spi(Internal) @testable import RevenueCatUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
@@ -44,7 +43,7 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
                                              price: 2.99)],
         showManageSubscriptionsError: Error? = nil,
         beginRefundShouldFail: Bool = false,
-        customerCenterConfigData: CustomerCenterConfigData = CustomerCenterConfigTestData.customerCenterData(
+        customerCenterConfigData: CustomerCenterConfigData = CustomerCenterConfigData.mock(
             lastPublishedAppVersion: "2.0.0"
         )
     ) {

@@ -182,7 +182,7 @@ struct WrongPlatformView_Previews: PreviewProvider {
                     store: data.store,
                     managementURL: data.managementURL,
                     purchaseInformation: getPurchaseInformation(for: data.customerInfo),
-                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!
+                    screen: CustomerCenterConfigData.default.screens[.management]!
                 )
                 .previewDisplayName(data.displayName)
             }
@@ -193,7 +193,9 @@ struct WrongPlatformView_Previews: PreviewProvider {
         return PurchaseInformation(
             entitlement: customerInfo.entitlements.active.first!.value,
             transaction: customerInfo.subscriptionsByProductIdentifier.values.first!,
-            customerInfoRequestedDate: customerInfo.requestDate)
+            customerInfoRequestedDate: customerInfo.requestDate,
+            managementURL: customerInfo.managementURL
+        )
     }
 
 }

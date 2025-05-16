@@ -125,6 +125,7 @@ class DiagnosticsTrackerTests: TestCase {
 
     func testTracksHttpRequestPerformedWithExpectedParameters() async {
         self.tracker.trackHttpRequestPerformed(endpointName: "mock_endpoint",
+                                               host: "api.revenuecat.com",
                                                responseTime: 50,
                                                wasSuccessful: true,
                                                responseCode: 200,
@@ -138,6 +139,7 @@ class DiagnosticsTrackerTests: TestCase {
                   properties: DiagnosticsEvent.Properties(
                     verificationResult: "VERIFIED",
                     endpointName: "mock_endpoint",
+                    host: "api.revenuecat.com",
                     responseTime: 50,
                     successful: true,
                     responseCode: 200,

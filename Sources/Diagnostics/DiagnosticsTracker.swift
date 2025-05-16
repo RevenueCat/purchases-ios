@@ -37,6 +37,7 @@ protocol DiagnosticsTrackerType: Sendable {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func trackHttpRequestPerformed(endpointName: String,
+                                   host: String?,
                                    responseTime: TimeInterval,
                                    wasSuccessful: Bool,
                                    responseCode: Int,
@@ -237,6 +238,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
     }
 
     func trackHttpRequestPerformed(endpointName: String,
+                                   host: String?,
                                    responseTime: TimeInterval,
                                    wasSuccessful: Bool,
                                    responseCode: Int,
@@ -248,6 +250,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                         properties: DiagnosticsEvent.Properties(
                             verificationResult: verificationResult.name,
                             endpointName: endpointName,
+                            host: host,
                             responseTime: responseTime,
                             successful: wasSuccessful,
                             responseCode: responseCode,

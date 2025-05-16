@@ -29,7 +29,7 @@ final class ManageSubscriptionsViewModel: ObservableObject {
     let screen: CustomerCenterConfigData.Screen
 
     var relevantPathsForPurchase: [CustomerCenterConfigData.HelpPath] {
-        paths.relevantPathsForPurchase(purchaseInformation)
+        paths.relevantPahts(for: purchaseInformation)
     }
 
     @Published
@@ -39,7 +39,7 @@ final class ManageSubscriptionsViewModel: ObservableObject {
     var restoreAlertType: RestorePurchasesAlertViewModel.AlertType
 
     @Published
-    var showPurchases: Bool = false
+    var showAllPurchases: Bool = false
 
     @Published
     var feedbackSurveyData: FeedbackSurveyData?
@@ -80,7 +80,7 @@ final class ManageSubscriptionsViewModel: ObservableObject {
     init(
         screen: CustomerCenterConfigData.Screen,
         actionWrapper: CustomerCenterActionWrapper,
-        purchaseInformation: PurchaseInformation? = nil,
+        purchaseInformation: PurchaseInformation?,
         refundRequestStatus: RefundRequestStatus? = nil,
         purchasesProvider: CustomerCenterPurchasesType,
         loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil,
@@ -93,13 +93,16 @@ final class ManageSubscriptionsViewModel: ObservableObject {
             self.actionWrapper = actionWrapper
             self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase
             ?? LoadPromotionalOfferUseCase(purchasesProvider: purchasesProvider)
-            self.state = .success
             self.restoreAlertType = .loading
             self.virtualCurrencies = virtualCurrencies
         }
 
+    func reloadPurchaseInformation(_ purchaseInformation: PurchaseInformation) {
+        self.purchaseInformation = purchaseInformation
+    }
+
 #if os(iOS) || targetEnvironment(macCatalyst)
-    func determineFlow(for path: CustomerCenterConfigData.HelpPath, activeProductId: String? = nil) async {
+    func handleHelpPath(_ path: CustomerCenterConfigData.HelpPath, activeProductId: String? = nil) async {
         // Convert the path to an appropriate action using the extension
         if let action = path.asAction() {
             // Send the action through the action wrapper
@@ -150,16 +153,6 @@ final class ManageSubscriptionsViewModel: ObservableObject {
         self.inAppBrowserURL = nil
     }
 #endif
-
-}
-
-struct IdentifiableURL: Identifiable {
-
-    var id: String {
-        return url.absoluteString
-    }
-
-    let url: URL
 
 }
 
@@ -220,6 +213,11 @@ private extension ManageSubscriptionsViewModel {
                 self.actionWrapper.handleAction(.refundRequestCompleted(productId, .error))
             }
 
+        case .cancel where purchaseInformation?.store != .appStore:
+            if let url = purchaseInformation?.managementURL {
+                self.inAppBrowserURL = IdentifiableURL(url: url)
+            }
+
         case .changePlans, .cancel:
             self.actionWrapper.handleAction(.showingManageSubscriptions)
 
@@ -259,22 +257,59 @@ private extension CustomerCenterConfigData.Screen {
 }
 
 private extension Array<CustomerCenterConfigData.HelpPath> {
-    func relevantPathsForPurchase(
-        _ purchaseInformation: PurchaseInformation?
+    func relevantPahts(
+        for purchaseInformation: PurchaseInformation?
     ) -> [CustomerCenterConfigData.HelpPath] {
         guard let purchaseInformation else {
             return self
         }
 
         return filter {
-            // if it's cancel, it cannot be a lifetime subscription
-            ($0.type != .cancel || !purchaseInformation.isLifetime) &&
+            let isNonAppStorePurchase = purchaseInformation.store != .appStore
+            let isAppStoreOnlyPath = $0.type.isAppStoreOnly
 
-            // if it's refundRequest, it cannot be free  nor within trial period
-            ($0.type != .refundRequest || (purchaseInformation.price != .free && !purchaseInformation.isTrial)) &&
+            let isCancel = $0.type == .cancel
+            // if it's cancel, it cannot be a lifetime subscription
+            let isEligibleCancel = !purchaseInformation.isLifetime && !purchaseInformation.isCancelled
+
+            // if it's refundRequest, it cannot be free nor within trial period
+            let isRefund = $0.type == .refundRequest
+            let isRefundEligible = purchaseInformation.pricePaid != .free
+                                    && !purchaseInformation.isTrial
+                                    && !purchaseInformation.isCancelled
 
             // if it has a refundDuration, check it's still valid
-            ($0.refundWindowDuration?.isWithin(purchaseInformation) ?? true)
+            let refundWindowIsValid = $0.refundWindowDuration?.isWithin(purchaseInformation) ?? true
+
+            // skip AppStore only paths if the purchase is not from App Store
+            if isNonAppStorePurchase && isAppStoreOnlyPath {
+                return false
+            }
+
+            // don't show cancel if there's no URL
+            if isCancel && isNonAppStorePurchase && purchaseInformation.managementURL == nil {
+                 return false
+            }
+
+            return (!isCancel || isEligibleCancel) &&
+                    (!isRefund || isRefundEligible) &&
+                    refundWindowIsValid
+        }
+    }
+}
+
+private extension CustomerCenterConfigData.HelpPath.PathType {
+
+    var isAppStoreOnly: Bool {
+        switch self {
+        case .cancel, .customUrl:
+            return false
+
+        case .changePlans, .refundRequest, .missingPurchase, .unknown:
+            return true
+
+        @unknown default:
+            return false
         }
     }
 }

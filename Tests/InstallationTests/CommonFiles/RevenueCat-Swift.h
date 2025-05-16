@@ -814,7 +814,6 @@ SWIFT_CLASS_NAMED("Configuration")
 
 
 
-
 @interface RCConfiguration (SWIFT_EXTENSION(RevenueCat))
 @end
 
@@ -850,6 +849,7 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCEntitlementVerificationMode, "EntitlementV
 /// <code>ErrorCode/signatureVerificationFailed</code> will be thrown.
   RCEntitlementVerificationModeEnforced = 2,
 };
+
 
 
 @class RCEntitlementInfos;
@@ -1315,9 +1315,22 @@ SWIFT_CLASS("_TtC10RevenueCat37GetProductEntitlementMappingOperation")
 
 
 
+SWIFT_CLASS("_TtC10RevenueCat23GetWebProductsOperation")
+@interface GetWebProductsOperation : CacheableNetworkOperation
+@end
+
+
+
+
 
 SWIFT_CLASS("_TtC10RevenueCat15HealthOperation")
 @interface HealthOperation : CacheableNetworkOperation
+@end
+
+
+
+SWIFT_CLASS("_TtC10RevenueCat21HealthReportOperation")
+@interface HealthReportOperation : CacheableNetworkOperation
 @end
 
 
@@ -1472,6 +1485,8 @@ SWIFT_CLASS_NAMED("Offering")
 @property (nonatomic, readonly, strong) RCPackage * _Nullable monthly;
 /// Weekly <code>Package</code> type configured in the RevenueCat dashboard, if available.
 @property (nonatomic, readonly, strong) RCPackage * _Nullable weekly;
+/// The url to purchase this package on the web
+@property (nonatomic, readonly, copy) NSURL * _Nullable webCheckoutUrl;
 @property (nonatomic, readonly, copy) NSString * _Nonnull description;
 /// Retrieves a specific <code>Package</code> by identifier, use this to access custom package types configured in the
 /// RevenueCat dashboard, e.g. <code>offering.package(identifier: "custom_package_id")</code> or
@@ -1479,7 +1494,7 @@ SWIFT_CLASS_NAMED("Offering")
 - (RCPackage * _Nullable)packageWithIdentifier:(NSString * _Nullable)identifier SWIFT_WARN_UNUSED_RESULT;
 - (RCPackage * _Nullable)objectForKeyedSubscript:(NSString * _Nonnull)key SWIFT_WARN_UNUSED_RESULT;
 /// Initialize an <code>Offering</code> given a list of <code>Package</code>s.
-- (nonnull instancetype)initWithIdentifier:(NSString * _Nonnull)identifier serverDescription:(NSString * _Nonnull)serverDescription metadata:(NSDictionary<NSString *, id> * _Nonnull)metadata availablePackages:(NSArray<RCPackage *> * _Nonnull)availablePackages;
+- (nonnull instancetype)initWithIdentifier:(NSString * _Nonnull)identifier serverDescription:(NSString * _Nonnull)serverDescription metadata:(NSDictionary<NSString *, id> * _Nonnull)metadata availablePackages:(NSArray<RCPackage *> * _Nonnull)availablePackages webCheckoutUrl:(NSURL * _Nullable)webCheckoutUrl;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
@@ -1573,10 +1588,12 @@ SWIFT_CLASS_NAMED("Package")
 /// returns:
 /// <code>nil</code> if there is no <code>introductoryDiscount</code>.
 @property (nonatomic, readonly, copy) NSString * _Nullable localizedIntroductoryPriceString;
+/// The url to purchase this package on the web
+@property (nonatomic, readonly, copy) NSURL * _Nullable webCheckoutUrl;
 /// Initialize a <code>Package</code>.
-- (nonnull instancetype)initWithIdentifier:(NSString * _Nonnull)identifier packageType:(enum RCPackageType)packageType storeProduct:(RCStoreProduct * _Nonnull)storeProduct offeringIdentifier:(NSString * _Nonnull)offeringIdentifier;
+- (nonnull instancetype)initWithIdentifier:(NSString * _Nonnull)identifier packageType:(enum RCPackageType)packageType storeProduct:(RCStoreProduct * _Nonnull)storeProduct offeringIdentifier:(NSString * _Nonnull)offeringIdentifier webCheckoutUrl:(NSURL * _Nullable)webCheckoutUrl;
 /// Initialize a <code>Package</code>.
-- (nonnull instancetype)initWithIdentifier:(NSString * _Nonnull)identifier packageType:(enum RCPackageType)packageType storeProduct:(RCStoreProduct * _Nonnull)storeProduct presentedOfferingContext:(RCPresentedOfferingContext * _Nonnull)presentedOfferingContext OBJC_DESIGNATED_INITIALIZER;
+- (nonnull instancetype)initWithIdentifier:(NSString * _Nonnull)identifier packageType:(enum RCPackageType)packageType storeProduct:(RCStoreProduct * _Nonnull)storeProduct presentedOfferingContext:(RCPresentedOfferingContext * _Nonnull)presentedOfferingContext webCheckoutUrl:(NSURL * _Nullable)webCheckoutUrl OBJC_DESIGNATED_INITIALIZER;
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
@@ -3450,13 +3467,14 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong, getter=defau
 
 
 @interface RCPurchasesDiagnostics (SWIFT_EXTENSION(RevenueCat))
-/// Perform tests to ensure SDK is configured correctly.
-/// <ul>
-///   <li>
-///     <code>Throws</code>: <code>PurchasesDiagnostics/Error</code> if any step fails
-///   </li>
-/// </ul>
-- (void)testSDKHealthWithCompletion:(void (^ _Nonnull)(NSError * _Nullable))completionHandler;
+/// Checks if the SDK is configured correctly.
+/// important:
+/// This method is intended solely for debugging configuration issues with the SDK implementation.
+/// It should not be invoked in production builds.
+///
+/// throws:
+/// <code>PurchasesDiagnostics/Error</code> if any step fails
+- (void)testSDKHealthWithCompletion:(void (^ _Nonnull)(NSError * _Nullable))completionHandler SWIFT_DEPRECATED_MSG("\n    Use the `PurchasesDiagnostics.shared.checkSDKHealth()` method instead.\n    ");
 @end
 
 
@@ -3478,11 +3496,12 @@ SWIFT_CLASS("_TtC10RevenueCat22PurchasesReceiptParser")
 
 
 
-
-
 @interface PurchasesReceiptParser (SWIFT_EXTENSION(RevenueCat))
 - (BOOL)receiptHasTransactionsWithReceiptData:(NSData * _Nonnull)receiptData SWIFT_WARN_UNUSED_RESULT;
 @end
+
+
+
 
 
 @interface PurchasesReceiptParser (SWIFT_EXTENSION(RevenueCat))
@@ -3490,7 +3509,6 @@ SWIFT_CLASS("_TtC10RevenueCat22PurchasesReceiptParser")
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong, getter=default) PurchasesReceiptParser * _Nonnull default_;)
 + (PurchasesReceiptParser * _Nonnull)default SWIFT_WARN_UNUSED_RESULT;
 @end
-
 
 
 
@@ -3859,6 +3877,7 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCDiscountType, "DiscountType", open) {
 
 
 
+
 @interface RCStoreProductDiscount (SWIFT_EXTENSION(RevenueCat))
 /// The discount price of the product in the local currency.
 /// note:
@@ -4066,13 +4085,13 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCSubscriptionPeriodUnit, "Unit", open) {
 
 
 @interface RCSubscriptionPeriod (SWIFT_EXTENSION(RevenueCat))
-/// The number of units per subscription period
-@property (nonatomic, readonly) NSInteger numberOfUnits SWIFT_AVAILABILITY(macos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(watchos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(tvos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(ios,unavailable,message="'numberOfUnits' has been renamed to 'value'");
+@property (nonatomic, readonly, copy) NSString * _Nonnull debugDescription;
 @end
 
 
 @interface RCSubscriptionPeriod (SWIFT_EXTENSION(RevenueCat))
-@property (nonatomic, readonly, copy) NSString * _Nonnull debugDescription;
+/// The number of units per subscription period
+@property (nonatomic, readonly) NSInteger numberOfUnits SWIFT_AVAILABILITY(macos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(watchos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(tvos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(ios,unavailable,message="'numberOfUnits' has been renamed to 'value'");
 @end
 
 

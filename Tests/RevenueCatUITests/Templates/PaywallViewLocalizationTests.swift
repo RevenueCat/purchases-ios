@@ -75,7 +75,8 @@ private extension PaywallViewLocalizationTests {
         ),
         availablePackages: [TestData.weeklyPackage,
                             TestData.monthlyPackage,
-                            TestData.annualPackage]
+                            TestData.annualPackage],
+        webCheckoutUrl: nil
     )
 
     private static let localization: PaywallData.LocalizedConfiguration = .init(

@@ -1,0 +1,16 @@
+# config.yaml
+
+executionOrder:
+  continueOnFailure: false
+  flowsOrder:
+    - Manage Subscriptions Empty
+    - Manage Subscriptions Restore Purchases
+    - Accept Promo Offer
+    - Reject Promo Offer
+    - Change Subscription Plan
+    - See purchase details
+
+flows:
+  - customer_center/manage_subscriptions/*
+  - customer_center/change_plans/*
+  - customer_center/promo_offer/*
