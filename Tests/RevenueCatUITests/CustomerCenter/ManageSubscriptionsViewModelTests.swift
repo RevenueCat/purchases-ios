@@ -43,9 +43,9 @@ final class ManageSubscriptionsViewModelTests: TestCase {
         let viewModel =
         ManageSubscriptionsViewModel(screen: ManageSubscriptionsViewModelTests.default,
                                      actionWrapper: CustomerCenterActionWrapper(),
+                                     purchaseInformation: nil,
                                      purchasesProvider: MockCustomerCenterPurchases(),
-                                     virtualCurrencies: CustomerCenterConfigTestData.fourVirtualCurrencies)
-                                     purchaseInformation: nil)
+                                     virtualCurrencies: CustomerCenterConfigData.fourVirtualCurrencies)
 
         expect(viewModel.purchaseInformation).to(beNil())
         expect(viewModel.refundRequestStatus).to(beNil())
@@ -54,7 +54,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 
         // Compare virtual currencies by checking each key-value pair individually since
         // the order of the dictionary is not guaranteed.
-        let expectedCurrencies = CustomerCenterConfigTestData.fourVirtualCurrencies
+        let expectedCurrencies = CustomerCenterConfigData.fourVirtualCurrencies
         expect(viewModel.virtualCurrencies.count) == expectedCurrencies.count
         for (key, value) in expectedCurrencies {
             expect(viewModel.virtualCurrencies[key]?.balance) == value.balance
@@ -68,7 +68,8 @@ final class ManageSubscriptionsViewModelTests: TestCase {
             screen: ManageSubscriptionsViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
-            purchasesProvider: MockCustomerCenterPurchases())
+            purchasesProvider: MockCustomerCenterPurchases(),
+            virtualCurrencies: [:])
 
         expect(viewModel.relevantPathsForPurchase.count) == 1
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beTrue())
@@ -81,7 +82,8 @@ final class ManageSubscriptionsViewModelTests: TestCase {
             screen: ManageSubscriptionsViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
-            purchasesProvider: MockCustomerCenterPurchases())
+            purchasesProvider: MockCustomerCenterPurchases(),
+            virtualCurrencies: [:])
 
         expect(viewModel.relevantPathsForPurchase.count) == 0
     }
@@ -109,7 +111,8 @@ final class ManageSubscriptionsViewModelTests: TestCase {
             screen: ManageSubscriptionsViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
-            purchasesProvider: MockCustomerCenterPurchases())
+            purchasesProvider: MockCustomerCenterPurchases(),
+            virtualCurrencies: [:])
 
         expect(viewModel.relevantPathsForPurchase.count) == 2
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beFalse())
