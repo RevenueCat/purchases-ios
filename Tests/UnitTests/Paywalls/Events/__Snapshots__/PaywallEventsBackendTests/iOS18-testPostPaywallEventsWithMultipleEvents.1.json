@@ -25,6 +25,7 @@
     "body" : {
       "events" : [
         {
+          "app_session_id" : "ED464FEE-BD8A-423C-893A-4F76BEF66731",
           "app_user_id" : "user",
           "dark_mode" : true,
           "display_mode" : "full_screen",
@@ -38,6 +39,7 @@
           "version" : 1
         },
         {
+          "app_session_id" : "D471C0F0-5BA9-4F8B-82CD-742EE150C457",
           "app_user_id" : "user",
           "dark_mode" : false,
           "display_mode" : "full_screen",
