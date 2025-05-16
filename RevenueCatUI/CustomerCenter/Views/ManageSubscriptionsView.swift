@@ -287,7 +287,10 @@ struct ManageSubscriptionsView: View {
                 ManageSubscriptionsView(purchaseInformation: .constant(nil), viewModel: viewModelWith4VCs)
                     .environment(\.localization, CustomerCenterConfigData.default.localization)
                     .environment(\.appearance, CustomerCenterConfigData.default.appearance)
-                    .environment(\.supportInformation, CustomerCenterConfigData.default.support)
+                    .environment(
+                        \.supportInformation,
+                        CustomerCenterConfigData.mock(displayVirtualCurrencies: true).support
+                    )
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("4 Virtual Currencies - \(colorScheme)")
@@ -302,7 +305,10 @@ struct ManageSubscriptionsView: View {
                 ManageSubscriptionsView(purchaseInformation: .constant(nil), viewModel: viewModelWith5VCs)
                     .environment(\.localization, CustomerCenterConfigData.default.localization)
                     .environment(\.appearance, CustomerCenterConfigData.default.appearance)
-                    .environment(\.supportInformation, CustomerCenterConfigData.default.support)
+                    .environment(
+                        \.supportInformation,
+                        CustomerCenterConfigData.mock(displayVirtualCurrencies: true).support
+                    )
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("5 Virtual Currencies - \(colorScheme)")
