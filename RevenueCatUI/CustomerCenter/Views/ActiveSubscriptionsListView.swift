@@ -166,7 +166,7 @@ struct ActiveSubscriptionsListView: View {
                                               ? UIColor.systemBackground
                                               : UIColor.secondarySystemBackground))
                             .cornerRadius(10)
-                            .padding([.leading, .trailing])
+                            .padding(.horizontal)
                         }
                         .tint(colorScheme == .dark ? .white : .black)
                         .padding(.top, 32)
