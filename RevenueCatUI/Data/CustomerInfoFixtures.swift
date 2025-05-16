@@ -177,7 +177,7 @@ class CustomerInfoFixtures {
         purchaseDate: String = "2022-04-12T00:03:28Z",
         expirationDate: String? = "2062-04-12T00:03:35Z",
         unsubscribeDetectedAt: String? = nil,
-        virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo] = [:]
+        virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo] = [:],
         periodType: PeriodType = .normal
     ) -> CustomerInfo {
         return customerInfo(
@@ -299,7 +299,7 @@ class CustomerInfoFixtures {
         makeCustomerInfo(
             store: "promotional",
             productId: "rc_promo_pro_cat_yearly",
-            virtualCurrencies: CustomerCenterConfigTestData.fourVirtualCurrencies
+            virtualCurrencies: CustomerCenterConfigData.fourVirtualCurrencies
         )
     }()
 

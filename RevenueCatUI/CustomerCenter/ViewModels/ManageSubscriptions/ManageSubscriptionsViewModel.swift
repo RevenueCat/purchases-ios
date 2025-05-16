@@ -55,15 +55,6 @@ final class ManageSubscriptionsViewModel: ObservableObject {
 
     let virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]
 
-    @Published
-    var state: CustomerCenterViewState {
-        didSet {
-            if case let .error(stateError) = state {
-                self.error = stateError
-            }
-        }
-    }
-
     let actionWrapper: CustomerCenterActionWrapper
 
     @Published

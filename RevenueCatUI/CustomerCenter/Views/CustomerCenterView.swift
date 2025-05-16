@@ -216,8 +216,9 @@ private extension CustomerCenterView {
                         }
                     )
                 } else {
-                    ManageSubscriptionsView(screen: screen,
-                                            purchaseInformation: purchaseInformation,
+                    ManageSubscriptionsView(
+                                            screen: screen,
+                                            purchaseInformation: $viewModel.activePurchase,
                                             purchasesProvider: self.viewModel.purchasesProvider,
                                             virtualCurrencies: self.viewModel.virtualCurrencies,
                                             actionWrapper: self.viewModel.actionWrapper)

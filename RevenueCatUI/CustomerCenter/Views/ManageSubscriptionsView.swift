@@ -55,10 +55,9 @@ struct ManageSubscriptionsView: View {
             viewModel: ManageSubscriptionsViewModel(
             screen: screen,
             actionWrapper: actionWrapper,
-            purchaseInformation: purchaseInformation,
+            purchaseInformation: purchaseInformation.wrappedValue,
             purchasesProvider: purchasesProvider,
-            virtualCurrencies: virtualCurrencies)
-        self.init(viewModel: viewModel)
+            virtualCurrencies: virtualCurrencies))
     }
 
     fileprivate init(
@@ -220,9 +219,12 @@ struct ManageSubscriptionsView: View {
                     refundRequestStatus: .success,
                     purchasesProvider: CustomerCenterPurchases(),
                     virtualCurrencies: [:])
-                ManageSubscriptionsView(viewModel: viewModelMonthlyRenewing)
-                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
-                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+                ManageSubscriptionsView(
+                    purchaseInformation: .constant(CustomerCenterConfigData.subscriptionInformationMonthlyRenewing),
+                    viewModel: viewModelMonthlyRenewing
+                )
+                .environment(\.localization, CustomerCenterConfigData.default.localization)
+                .environment(\.appearance, CustomerCenterConfigData.default.appearance)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Monthly renewing - \(colorScheme)")
@@ -231,12 +233,14 @@ struct ManageSubscriptionsView: View {
                 let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
                     screen: CustomerCenterConfigData.default.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
-                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationYearlyExpiring,
+                    purchaseInformation: .yearlyExpiring(),
                     purchasesProvider: CustomerCenterPurchases(),
                     virtualCurrencies: [:])
-                ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
-                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
-                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+                ManageSubscriptionsView(
+                    purchaseInformation: .constant(.yearlyExpiring()),
+                    viewModel: viewModelYearlyExpiring)
+                .environment(\.localization, CustomerCenterConfigData.default.localization)
+                .environment(\.appearance, CustomerCenterConfigData.default.appearance)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Yearly expiring - \(colorScheme)")
@@ -245,12 +249,14 @@ struct ManageSubscriptionsView: View {
                 let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
                     screen: CustomerCenterConfigData.default.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
-                    purchaseInformation: CustomerCenterConfigTestData.subscriptionInformationFree,
+                    purchaseInformation: CustomerCenterConfigData.subscriptionInformationFree,
                     purchasesProvider: CustomerCenterPurchases(),
                     virtualCurrencies: [:])
-                ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
-                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
-                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+                ManageSubscriptionsView(
+                    purchaseInformation: .constant(CustomerCenterConfigData.subscriptionInformationFree),
+                    viewModel: viewModelYearlyExpiring)
+                .environment(\.localization, CustomerCenterConfigData.default.localization)
+                .environment(\.appearance, CustomerCenterConfigData.default.appearance)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Subscription Free - Renewal price - \(colorScheme)")
@@ -259,42 +265,44 @@ struct ManageSubscriptionsView: View {
                 let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
                     screen: CustomerCenterConfigData.default.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
-                    purchaseInformation: CustomerCenterConfigTestData.consumable,
+                    purchaseInformation: CustomerCenterConfigData.consumable,
                     purchasesProvider: CustomerCenterPurchases(),
                     virtualCurrencies: [:])
-                ManageSubscriptionsView(viewModel: viewModelYearlyExpiring)
-                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
-                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
+                ManageSubscriptionsView(
+                    purchaseInformation: .constant(CustomerCenterConfigData.consumable),
+                    viewModel: viewModelYearlyExpiring)
+                .environment(\.localization, CustomerCenterConfigData.default.localization)
+                .environment(\.appearance, CustomerCenterConfigData.default.appearance)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Consumable - \(colorScheme)")
 
             CompatibilityNavigationStack {
                 let viewModelWith4VCs = ManageSubscriptionsViewModel(
-                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                    screen: CustomerCenterConfigData.default.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
-                    purchaseInformation: CustomerCenterConfigTestData.consumable,
+                    purchaseInformation: CustomerCenterConfigData.consumable,
                     purchasesProvider: CustomerCenterPurchases(),
-                    virtualCurrencies: CustomerCenterConfigTestData.fourVirtualCurrencies)
-                ManageSubscriptionsView(viewModel: viewModelWith4VCs)
-                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
-                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
-                .environment(\.supportInformation, CustomerCenterConfigTestData.customerCenterData.support)
+                    virtualCurrencies: CustomerCenterConfigData.fourVirtualCurrencies)
+                ManageSubscriptionsView(purchaseInformation: .constant(nil), viewModel: viewModelWith4VCs)
+                    .environment(\.localization, CustomerCenterConfigData.default.localization)
+                    .environment(\.appearance, CustomerCenterConfigData.default.appearance)
+                    .environment(\.supportInformation, CustomerCenterConfigData.default.support)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("4 Virtual Currencies - \(colorScheme)")
 
             CompatibilityNavigationStack {
                 let viewModelWith5VCs = ManageSubscriptionsViewModel(
-                    screen: CustomerCenterConfigTestData.customerCenterData.screens[.management]!,
+                    screen: CustomerCenterConfigData.default.screens[.management]!,
                     actionWrapper: CustomerCenterActionWrapper(),
-                    purchaseInformation: CustomerCenterConfigTestData.consumable,
+                    purchaseInformation: CustomerCenterConfigData.consumable,
                     purchasesProvider: CustomerCenterPurchases(),
-                    virtualCurrencies: CustomerCenterConfigTestData.fiveVirtualCurrencies)
-                ManageSubscriptionsView(viewModel: viewModelWith5VCs)
-                .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
-                .environment(\.appearance, CustomerCenterConfigTestData.customerCenterData.appearance)
-                .environment(\.supportInformation, CustomerCenterConfigTestData.customerCenterData.support)
+                    virtualCurrencies: CustomerCenterConfigData.fiveVirtualCurrencies)
+                ManageSubscriptionsView(purchaseInformation: .constant(nil), viewModel: viewModelWith5VCs)
+                    .environment(\.localization, CustomerCenterConfigData.default.localization)
+                    .environment(\.appearance, CustomerCenterConfigData.default.appearance)
+                    .environment(\.supportInformation, CustomerCenterConfigData.default.support)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("5 Virtual Currencies - \(colorScheme)")

@@ -103,24 +103,24 @@ struct NoSubscriptionsView: View {
 struct NoSubscriptionsView_Previews: PreviewProvider {
 
     static var previews: some View {
-        NoSubscriptionsView(configuration: CustomerCenterConfigTestData.customerCenterData,
+        NoSubscriptionsView(configuration: CustomerCenterConfigData.default,
                             virtualCurrencies: [:],
                             purchasesProvider: CustomerCenterPurchases(),
                             actionWrapper: CustomerCenterActionWrapper())
         .previewDisplayName("No Subscriptions View")
 
-        NoSubscriptionsView(configuration: CustomerCenterConfigTestData.customerCenterData,
-                            virtualCurrencies: CustomerCenterConfigTestData.fourVirtualCurrencies,
+        NoSubscriptionsView(configuration: CustomerCenterConfigData.default,
+                            virtualCurrencies: CustomerCenterConfigData.fourVirtualCurrencies,
                             purchasesProvider: CustomerCenterPurchases(),
                             actionWrapper: CustomerCenterActionWrapper())
-        .environment(\.supportInformation, CustomerCenterConfigTestData.customerCenterData.support)
+        .environment(\.supportInformation, CustomerCenterConfigData.default.support)
         .previewDisplayName("4 Virtual Currencies")
 
-        NoSubscriptionsView(configuration: CustomerCenterConfigTestData.customerCenterData,
-                            virtualCurrencies: CustomerCenterConfigTestData.fiveVirtualCurrencies,
+        NoSubscriptionsView(configuration: CustomerCenterConfigData.default,
+                            virtualCurrencies: CustomerCenterConfigData.fiveVirtualCurrencies,
                             purchasesProvider: CustomerCenterPurchases(),
                             actionWrapper: CustomerCenterActionWrapper())
-        .environment(\.supportInformation, CustomerCenterConfigTestData.customerCenterData.support)
+        .environment(\.supportInformation, CustomerCenterConfigData.default.support)
         .previewDisplayName("5 Virtual Currencies")
     }
 

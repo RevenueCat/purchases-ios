@@ -110,7 +110,7 @@ struct VirtualCurrenciesListSection_Previews: PreviewProvider {
 
         List {
             VirtualCurrenciesListSection(
-                virtualCurrencies: CustomerCenterConfigTestData.fourVirtualCurrencies,
+                virtualCurrencies: CustomerCenterConfigData.fourVirtualCurrencies,
                 purchasesProvider: CustomerCenterPurchases()
             )
         }
@@ -118,7 +118,7 @@ struct VirtualCurrenciesListSection_Previews: PreviewProvider {
 
         List {
             VirtualCurrenciesListSection(
-                virtualCurrencies: CustomerCenterConfigTestData.fiveVirtualCurrencies,
+                virtualCurrencies: CustomerCenterConfigData.fiveVirtualCurrencies,
                 purchasesProvider: CustomerCenterPurchases()
             )
         }

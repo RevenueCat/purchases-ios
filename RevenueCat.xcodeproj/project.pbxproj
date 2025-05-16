@@ -1156,15 +1156,13 @@
 		FD2046842CB833CD00166727 /* MockStoreKit2PurchaseIntentListenerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2046822CB833CD00166727 /* MockStoreKit2PurchaseIntentListenerDelegate.swift */; };
 		FD2E6C9F2C480FF000CB4BD7 /* OHHTTPStubs in Frameworks */ = {isa = PBXBuildFile; productRef = FD2E6C9E2C480FF000CB4BD7 /* OHHTTPStubs */; };
 		FD2E6CA12C48100900CB4BD7 /* OHHTTPStubsSwift in Frameworks */ = {isa = PBXBuildFile; productRef = FD2E6CA02C48100900CB4BD7 /* OHHTTPStubsSwift */; };
-		FD33CD4D2D034CBD000D13A4 /* CustomerCenterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD33CD4C2D034CBD000D13A4 /* CustomerCenterViewController.swift */; };
 		FD3FB00F2DB6984800D4AEC7 /* VirtualCurrencyBalancesScreenViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD3FB00E2DB6984800D4AEC7 /* VirtualCurrencyBalancesScreenViewModel.swift */; };
-		FD6186542D1393FA007843DA /* MockCustomerCenterStoreKitUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD6186532D1393FA007843DA /* MockCustomerCenterStoreKitUtilities.swift */; };
+		FD43D2FC2C41864000077235 /* TimeInterval+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD43D2FA2C4185B700077235 /* TimeInterval+Extensions.swift */; };
+		FD43D2FE2C41867600077235 /* TimeInterval+ExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD43D2FD2C41867600077235 /* TimeInterval+ExtensionsTests.swift */; };
 		FD7247EF2DB834CF00FA3A8D /* VirtualCurrenciesListSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD7247EE2DB834CF00FA3A8D /* VirtualCurrenciesListSection.swift */; };
 		FD7247F22DB8358F00FA3A8D /* VirtualCurrencyBalanceListRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD7247F12DB8358F00FA3A8D /* VirtualCurrencyBalanceListRow.swift */; };
 		FD89DB872DB97D2E00A8C231 /* VirtualCurrencyBalancesScreenViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD89DB862DB97D2E00A8C231 /* VirtualCurrencyBalancesScreenViewModelTests.swift */; };
 		FD89DB882DB97D2E00A8C231 /* VirtualCurrencyBalancesScreenViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD89DB862DB97D2E00A8C231 /* VirtualCurrencyBalancesScreenViewModelTests.swift */; };
-		FD43D2FC2C41864000077235 /* TimeInterval+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD43D2FA2C4185B700077235 /* TimeInterval+Extensions.swift */; };
-		FD43D2FE2C41867600077235 /* TimeInterval+ExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD43D2FD2C41867600077235 /* TimeInterval+ExtensionsTests.swift */; };
 		FD9BCEBC2DC946C400408A5D /* BottomSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD9BCEBB2DC946C400408A5D /* BottomSheetView.swift */; };
 		FD9F982D2BE28A7F0091A5BF /* MockNotificationCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B515526D44B2300BD2BD7 /* MockNotificationCenter.swift */; };
 		FDAADFCB2BE2A5BF00BD1659 /* MockAllTransactionsProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDAADFCA2BE2A5BF00BD1659 /* MockAllTransactionsProvider.swift */; };
@@ -2526,7 +2524,6 @@
 		FD3FB00E2DB6984800D4AEC7 /* VirtualCurrencyBalancesScreenViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyBalancesScreenViewModel.swift; sourceTree = "<group>"; };
 		FD43D2FA2C4185B700077235 /* TimeInterval+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TimeInterval+Extensions.swift"; sourceTree = "<group>"; };
 		FD43D2FD2C41867600077235 /* TimeInterval+ExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TimeInterval+ExtensionsTests.swift"; sourceTree = "<group>"; };
-		FD6186532D1393FA007843DA /* MockCustomerCenterStoreKitUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockCustomerCenterStoreKitUtilities.swift; sourceTree = "<group>"; };
 		FD7247EE2DB834CF00FA3A8D /* VirtualCurrenciesListSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrenciesListSection.swift; sourceTree = "<group>"; };
 		FD7247F12DB8358F00FA3A8D /* VirtualCurrencyBalanceListRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyBalanceListRow.swift; sourceTree = "<group>"; };
 		FD89DB862DB97D2E00A8C231 /* VirtualCurrencyBalancesScreenViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyBalancesScreenViewModelTests.swift; sourceTree = "<group>"; };
@@ -3891,21 +3888,6 @@
 			children = (
 				FD7247F02DB8356F00FA3A8D /* Virtual Currencies */,
 				FD33CD4B2D034CA6000D13A4 /* UIKit Compatibility */,
-				3531DF872CFE138800D454BF /* ManageSubscriptionsButtonsView.swift */,
-				2D2AFE8E2C6A9D8700D1B0B4 /* CompatibilityContentUnavailableView.swift */,
-				2C4C36122C6FBA8B00AE959B /* CompatibilityTopBarTrailing.swift */,
-				3537565B2C382C2800A1B8D6 /* CustomerCenterView.swift */,
-				35C200B02C39254100B9778B /* FeedbackSurveyView.swift */,
-				3537565C2C382C2800A1B8D6 /* ManageSubscriptionsView.swift */,
-				3537565D2C382C2800A1B8D6 /* NoSubscriptionsView.swift */,
-				3546355E2C391F4D001D7E85 /* PromotionalOfferView.swift */,
-				3537565E2C382C2800A1B8D6 /* RestorePurchasesAlert.swift */,
-				3537565F2C382C2800A1B8D6 /* WrongPlatformView.swift */,
-				3551E39C2C4A6A1400D27C25 /* TintedProgressView.swift */,
-				C3AD12B92C6EA61F00A4F86F /* CompatibilityNavigationStack.swift */,
-				C3AD12BB2C6EA69D00A4F86F /* SubscriptionDetailsView.swift */,
-				77372D982C6F8C7B008E59D3 /* AppUpdateWarningView.swift */,
-				352304892D0A0F2B003971A4 /* ErrorView.swift */,
 				579BAE622DD639AE00648FC4 /* ScrollViewWithOSBackground.swift */,
 				57956ACF2DD3783900E935FF /* PurchaseCardView.swift */,
 				570585932DD216BD003D3FBB /* AppUpdateWarningView.swift */,
@@ -5466,19 +5448,8 @@
 		FD33CD4B2D034CA6000D13A4 /* UIKit Compatibility */ = {
 			isa = PBXGroup;
 			children = (
-				FD33CD4C2D034CBD000D13A4 /* CustomerCenterViewController.swift */,
 			);
 			path = "UIKit Compatibility";
-			sourceTree = "<group>";
-		};
-		FD6186522D1393E2007843DA /* Mocks */ = {
-			isa = PBXGroup;
-			children = (
-				35617C772D5A45F900612B7A /* MockLoadPromotionalOfferUseCase.swift */,
-				356523A92CF885CE00B6E3EA /* MockCustomerCenterPurchases.swift */,
-				FD6186532D1393FA007843DA /* MockCustomerCenterStoreKitUtilities.swift */,
-			);
-			path = Mocks;
 			sourceTree = "<group>";
 		};
 		FD7247F02DB8356F00FA3A8D /* Virtual Currencies */ = {
@@ -7108,7 +7079,6 @@
 				887A606A2C1D037000E1A461 /* TrialOrIntroEligibilityChecker.swift in Sources */,
 				88B1BAEE2C813A3C001B7EE5 /* TextComponentView.swift in Sources */,
 				FD89DB882DB97D2E00A8C231 /* VirtualCurrencyBalancesScreenViewModelTests.swift in Sources */,
-				3546355F2C391F4D001D7E85 /* PromotionalOfferView.swift in Sources */,
 				2C7457882CEDF7C0004ACE52 /* BackgroundStyle.swift in Sources */,
 				2C8EC6DD2CCC7C5B00D6CCF8 /* PackageValidator.swift in Sources */,
 				4DEB9BC52D08CA1700D33E36 /* BadgeModifier.swift in Sources */,

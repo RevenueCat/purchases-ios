@@ -621,7 +621,7 @@ public struct CustomerCenterConfigData: Equatable {
             email: String,
             shouldWarnCustomerToUpdate: Bool,
             displayPurchaseHistoryLink: Bool,
-            displayVirtualCurrencies: Bool
+            displayVirtualCurrencies: Bool,
             shouldWarnCustomersAboutMultipleSubscriptions: Bool
         ) {
             self.email = email

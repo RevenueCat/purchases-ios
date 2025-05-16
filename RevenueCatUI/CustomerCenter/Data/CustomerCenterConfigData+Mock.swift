@@ -26,7 +26,7 @@ extension CustomerCenterConfigData {
         shouldWarnCustomerToUpdate: Bool = false,
         displayPurchaseHistoryLink: Bool = false,
         displayVirtualCurrencies: Bool = false,
-        refundWindowDuration: CustomerCenterConfigData.HelpPath.RefundWindowDuration = .forever
+        refundWindowDuration: CustomerCenterConfigData.HelpPath.RefundWindowDuration = .forever,
         shouldWarnCustomersAboutMultipleSubscriptions: Bool = false
     ) -> CustomerCenterConfigData {
         CustomerCenterConfigData(
@@ -129,7 +129,7 @@ extension CustomerCenterConfigData {
                 email: "test-support@revenuecat.com",
                 shouldWarnCustomerToUpdate: shouldWarnCustomerToUpdate,
                 displayPurchaseHistoryLink: displayPurchaseHistoryLink,
-                displayVirtualCurrencies: displayVirtualCurrencies
+                displayVirtualCurrencies: displayVirtualCurrencies,
                 shouldWarnCustomersAboutMultipleSubscriptions: shouldWarnCustomersAboutMultipleSubscriptions
             ),
             lastPublishedAppVersion: lastPublishedAppVersion,
@@ -138,7 +138,6 @@ extension CustomerCenterConfigData {
     }
 
     @available(iOS 14.0, *)
-    static let customerCenterData = customerCenterData(lastPublishedAppVersion: "1.0.0", displayVirtualCurrencies: true)
     static let `default` = mock()
 
     static let subscriptionInformationMonthlyRenewing = PurchaseInformation(
@@ -208,82 +207,23 @@ extension CustomerCenterConfigData {
         buttonBackgroundColor: .init(light: "#287aff", dark: "#287aff")
     )
 
-    static let subscriptionInformationMonthlyRenewing: PurchaseInformation = .init(
-        title: "Basic",
-        durationTitle: "Monthly",
-        explanation: .earliestRenewal,
-        price: .paid("$4.99"),
-        expirationOrRenewal: .init(label: .nextBillingDate,
-                                   date: .date("June 1st, 2024")),
-        productIdentifier: "product_id",
-        store: .appStore,
-        isTrial: false,
-        isLifetime: false,
-        latestPurchaseDate: nil,
-        customerInfoRequestedDate: Date()
-    )
-
-    static let subscriptionInformationFree: PurchaseInformation = .init(
-        title: "Basic",
-        durationTitle: "Monthly",
-        explanation: .earliestRenewal,
-        price: .free,
-        expirationOrRenewal: .init(label: .nextBillingDate,
-                                   date: .date("June 1st, 2024")),
-        productIdentifier: "product_id",
-        store: .appStore,
-        isTrial: false,
-        isLifetime: false,
-        latestPurchaseDate: nil,
-        customerInfoRequestedDate: Date()
-    )
-
-    static let subscriptionInformationYearlyExpiring: PurchaseInformation = .init(
-        title: "Basic",
-        durationTitle: "Yearly",
-        explanation: .earliestRenewal,
-        price: .paid("$49.99"),
-        expirationOrRenewal: .init(label: .expires,
-                                   date: .date("June 1st, 2024")),
-        productIdentifier: "product_id",
-        store: .appStore,
-        isTrial: false,
-        isLifetime: false,
-        latestPurchaseDate: nil,
-        customerInfoRequestedDate: Date()
-    )
-
-    static let consumable: PurchaseInformation = .init(
-        title: "Basic",
-        durationTitle: nil,
-        explanation: .lifetime,
-        price: .paid("$49.99"),
-        expirationOrRenewal: nil,
-        productIdentifier: "product_id",
-        store: .appStore,
-        isTrial: false,
-        isLifetime: true,
-        latestPurchaseDate: Date(),
-        customerInfoRequestedDate: Date()
-    )
-
     static var fourVirtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo] {
         let jsonData = """
-            {
-              "GLD": {
-                "balance": 100
-              },
-              "SLV": {
-                "balance": 200
-              },
-              "BRNZ": {
-                "balance": 300
-              },
-              "PLTNM": {
-                "balance": 400
-              }
-            }
-            """.data(using: .utf8)
+                {
+                  "GLD": {
+                    "balance": 100
+                  },
+                  "SLV": {
+                    "balance": 200
+                  },
+                  "BRNZ": {
+                    "balance": 300
+                  },
+                  "PLTNM": {
+                    "balance": 400
+                  }
+                }
+                """.data(using: .utf8)
 
         guard let data = jsonData else {
             return [:]
@@ -298,24 +238,24 @@ extension CustomerCenterConfigData {
 
     static var fiveVirtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo] {
         let jsonData = """
-            {
-              "GLD": {
-                "balance": 100
-              },
-              "SLV": {
-                "balance": 200
-              },
-              "BRNZ": {
-                "balance": 300
-              },
-              "PLTNM": {
-                "balance": 400
-              },
-              "RC_COIN": {
-                "balance": 1
-              }
-            }
-            """.data(using: .utf8)
+                {
+                  "GLD": {
+                    "balance": 100
+                  },
+                  "SLV": {
+                    "balance": 200
+                  },
+                  "BRNZ": {
+                    "balance": 300
+                  },
+                  "PLTNM": {
+                    "balance": 400
+                  },
+                  "RC_COIN": {
+                    "balance": 1
+                  }
+                }
+                """.data(using: .utf8)
 
         guard let data = jsonData else {
             return [:]
