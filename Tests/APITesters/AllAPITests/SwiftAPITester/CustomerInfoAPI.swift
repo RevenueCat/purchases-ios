@@ -46,9 +46,7 @@ func checkCustomerInfoAPI() {
 
     let subsp: [ProductIdentifier: SubscriptionInfo] = customerInfo.subscriptionsByProductIdentifier
 
-    #if ENABLE_VIRTUAL_CURRENCIES
     let _: [String: VirtualCurrencyInfo] = customerInfo.virtualCurrencies
-    #endif
 
     print(customerInfo!, entitlementInfo, asubs, appis, led!, nst, oav!, opd!, rDate!, fSeen,
           oaud!, murl!, edfpi!, pdfpi!, exdf!, pdfe!, desc, rawData, subs)

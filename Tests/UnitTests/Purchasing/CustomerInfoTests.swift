@@ -883,7 +883,6 @@ class BasicCustomerInfoTests: TestCase {
         == Set(["onemonth_freetrial", "twomonth_freetrial", "threemonth_freetrial"])
     }
 
-    #if ENABLE_VIRTUAL_CURRENCIES
     func testVirtualCurrenciesIncludesBalancesForOneCurrency() throws {
         let validJSONWithOneVirtualCurrency = """
             {
@@ -957,7 +956,6 @@ class BasicCustomerInfoTests: TestCase {
         let coin2: VirtualCurrencyInfo = try XCTUnwrap(customerInfo?.virtualCurrencies["COIN2"])
         expect(coin2.balance).to(equal(500))
     }
-    #endif
 
     func testCopyWithSameVerificationResult() throws {
         expect(self.customerInfo.copy(with: .notRequested)) === self.customerInfo
