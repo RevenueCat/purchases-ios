@@ -3895,7 +3895,7 @@
 				57740F442DD6460F00585B5A /* SubscriptionDetailsView.swift */,
 				57740F452DD6460F00585B5A /* SubscriptionDetailView.swift */,
 				57740F462DD6460F00585B5A /* TintedProgressView.swift */,
-				57740F482DD6460F00585B5A /* UIKit Compatibility */,
+				57740F482DD6460F00585B5A /* PurchaseHistory */,
 				57740F492DD6460F00585B5A /* WrongPlatformView.swift */,
 			);
 			path = Views;
@@ -4600,15 +4600,14 @@
 			path = PurchaseHistory;
 			sourceTree = "<group>";
 		};
-		57740F482DD6460F00585B5A /* UIKit Compatibility */ = {
+		57740F482DD6460F00585B5A /* PurchaseHistory */ = {
 			isa = PBXGroup;
 			children = (
 				57740F472DD6460F00585B5A /* CustomerCenterViewController.swift */,
 			);
-			path = "UIKit Compatibility";
-                        path = PurchaseHistory;
-                        sourceTree = "<group>";
-                };
+			path = PurchaseHistory;
+			sourceTree = "<group>";
+		};
 		57740F882DD72B8100585B5A /* Mocks */ = {
 			isa = PBXGroup;
 			children = (

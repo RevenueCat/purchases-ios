@@ -69,7 +69,7 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchaseInformation,
             refundRequestStatus: refundRequestStatus,
-            purchasesProvider: CustomerCenterPurchases(),
+            purchasesProvider: MockCustomerCenterPurchases(),
             loadPromotionalOfferUseCase: nil
         )
     }

@@ -54,7 +54,7 @@ final class ActiveSubscriptionsListViewModel: BaseManageSubscriptionViewModel {
             screen: screen,
             actionWrapper: CustomerCenterActionWrapper(),
             activePurchases: activePurchases,
-            purchasesProvider: CustomerCenterPurchases()
+            purchasesProvider: MockCustomerCenterPurchases()
         )
     }
 
