@@ -127,58 +127,14 @@ struct ButtonComponentView: View {
         case .url(let url, let method),
                 .privacyPolicy(let url, let method),
                 .terms(let url, let method):
-            navigateToUrl(url: url, method: method)
+            Browser.navigateTo(url: url,
+                               method: method,
+                               openURL: self.openURL,
+                               inAppBrowserURL: self.$inAppBrowserURL)
         case .unknown:
             break
         case .webPaywallLink(url: let url, method: let method):
             openWebPaywallLink(url: url, method: method)
-        }
-    }
-
-    private func navigateToUrl(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) {
-        switch method {
-        case .inAppBrowser:
-#if os(tvOS)
-            // There's no SafariServices on tvOS, so we're falling back to opening in an external browser.
-            Logger.warning(Strings.no_in_app_browser_tvos)
-            openURL(url) { success in
-                if success {
-                    Logger.debug(Strings.successfully_opened_url_external_browser(url.absoluteString))
-                } else {
-                    Logger.error(Strings.failed_to_open_url_external_browser(url.absoluteString))
-                }
-            }
-#else
-            inAppBrowserURL = url
-#endif
-        case .externalBrowser:
-#if os(watchOS)
-            // watchOS doesn't support openURL with a completion handler, so we're just opening the URL.
-            openURL(url)
-#else
-            openURL(url) { success in
-                if success {
-                    Logger.debug(Strings.successfully_opened_url_external_browser(url.absoluteString))
-                } else {
-                    Logger.error(Strings.failed_to_open_url_external_browser(url.absoluteString))
-                }
-            }
-#endif
-        case .deepLink:
-#if os(watchOS)
-            // watchOS doesn't support openURL with a completion handler, so we're just opening the URL.
-            openURL(url)
-#else
-            openURL(url) { success in
-                if success {
-                    Logger.debug(Strings.successfully_opened_url_deep_link(url.absoluteString))
-                } else {
-                    Logger.error(Strings.failed_to_open_url_deep_link(url.absoluteString))
-                }
-            }
-#endif
-        case .unknown:
-            break
         }
     }
 

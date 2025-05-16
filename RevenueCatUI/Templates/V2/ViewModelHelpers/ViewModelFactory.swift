@@ -172,7 +172,8 @@ struct ViewModelFactory {
             )
 
             return .purchaseButton(
-                PurchaseButtonComponentViewModel(
+                try PurchaseButtonComponentViewModel(
+                    localizationProvider: localizationProvider,
                     component: component,
                     offering: offering,
                     stackViewModel: stackViewModel
