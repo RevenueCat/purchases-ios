@@ -46,13 +46,18 @@ struct ActiveSubscriptionsListView: View {
 
     init(screen: CustomerCenterConfigData.Screen,
          activePurchases: Binding<[PurchaseInformation]>,
+         originalAppUserId: String,
+         originalPurchaseDate: Date?,
          purchasesProvider: CustomerCenterPurchasesType,
          actionWrapper: CustomerCenterActionWrapper) {
         let viewModel = ActiveSubscriptionsListViewModel(
             screen: screen,
             actionWrapper: actionWrapper,
             activePurchases: activePurchases.wrappedValue,
-            purchasesProvider: purchasesProvider)
+            originalAppUserId: originalAppUserId,
+            originalPurchaseDate: originalPurchaseDate,
+            purchasesProvider: purchasesProvider
+        )
 
         self.init(
             activePurchases: activePurchases,
@@ -171,12 +176,55 @@ struct ActiveSubscriptionsListView: View {
                         .tint(colorScheme == .dark ? .white : .black)
                         .padding(.top, 32)
                     }
+
+                    accountDetailsView
                 }
             }
         }
     }
 
-    var buttonsView: some View {
+    @ViewBuilder
+    private var accountDetailsView: some View {
+        Text(localization[.accountDetails].uppercased())
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 32)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .multilineTextAlignment(.leading)
+            .padding(.top, 32)
+
+        VStack {
+            if let originalPurchaseDate = viewModel.originalPurchaseDate {
+                CompatibilityLabeledContent(
+                    localization[.dateWhenAppWasPurchased],
+                    content: dateFormatter.string(from: originalPurchaseDate)
+                )
+
+                Divider()
+            }
+
+            CompatibilityLabeledContent(
+                localization[.userId],
+                content: viewModel.originalAppUserId
+            )
+            .contextMenu {
+                Button {
+                    UIPasteboard.general.string = viewModel.originalAppUserId
+                } label: {
+                    Text(localization[.copy])
+                    Image(systemName: "doc.on.clipboard")
+                }
+            }
+        }
+        .padding()
+        .background(Color(colorScheme == .light
+                          ? UIColor.systemBackground
+                          : UIColor.secondarySystemBackground))
+        .cornerRadius(10)
+        .padding(.horizontal)
+    }
+
+    private var buttonsView: some View {
         ForEach(self.viewModel.relevantPathsForPurchase, id: \.id) { path in
             AsyncButton(action: {
                 await self.viewModel.handleHelpPath(
@@ -200,6 +248,13 @@ struct ActiveSubscriptionsListView: View {
             })
             .disabled(self.viewModel.loadingPath != nil)
         }
+    }
+
+    private var dateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return formatter
     }
 }
 
