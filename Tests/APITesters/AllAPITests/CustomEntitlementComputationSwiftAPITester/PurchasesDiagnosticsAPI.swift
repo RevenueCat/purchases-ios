@@ -78,7 +78,7 @@ func checkHealthReportErrors(_ error: PurchasesDiagnostics.SDKHealthError) {
     case .invalidProducts(let products):
         let copy: [PurchasesDiagnostics.ProductDiagnosticsPayload] = products
 
-        products.forEach {
+        copy.forEach {
             let _: String = $0.identifier
             let _: String? = $0.title
             let _: PurchasesDiagnostics.ProductStatus = $0.status
