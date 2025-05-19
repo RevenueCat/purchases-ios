@@ -373,7 +373,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
         }
     }
 
-    func testHandleShowVirtualCurrenciesListScreenSetsShowVirtualCurrenciesListScreenToTrue() {
+    func testNavigateToVirtualCurrenciesListScreenSetsShowVirtualCurrenciesListScreenToTrue() {
         let viewModel = ManageSubscriptionsViewModel(
             screen: ManageSubscriptionsViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
@@ -384,7 +384,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 
         expect(viewModel.showVirtualCurrenciesListScreen).to(equal(false))
 
-        viewModel.showVirtualCurrenciesListScreen()
+        viewModel.navigateToVirtualCurrenciesListScreen()
         expect(viewModel.showVirtualCurrenciesListScreen).to(equal(true))
     }
 

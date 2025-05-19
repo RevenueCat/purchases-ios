@@ -154,7 +154,7 @@ struct ManageSubscriptionsView: View {
                     VirtualCurrenciesListSection(
                         virtualCurrencies: self.viewModel.virtualCurrencies,
                         purchasesProvider: self.viewModel.purchasesProvider,
-                        onShowVirtualCurrenciesListScreenTapped: self.viewModel.showVirtualCurrenciesListScreen
+                        onShowVirtualCurrenciesListScreenTapped: self.viewModel.navigateToVirtualCurrenciesListScreen
                     )
                 }
 
@@ -183,7 +183,7 @@ struct ManageSubscriptionsView: View {
                     VirtualCurrenciesListSection(
                         virtualCurrencies: self.viewModel.virtualCurrencies,
                         purchasesProvider: self.viewModel.purchasesProvider,
-                        onShowVirtualCurrenciesListScreenTapped: self.viewModel.showVirtualCurrenciesListScreen
+                        onShowVirtualCurrenciesListScreenTapped: self.viewModel.navigateToVirtualCurrenciesListScreen
                     )
                 }
 

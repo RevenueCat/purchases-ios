@@ -146,7 +146,7 @@ final class ManageSubscriptionsViewModel: ObservableObject {
         self.inAppBrowserURL = nil
     }
 
-    func showVirtualCurrenciesListScreen() {
+    func navigateToVirtualCurrenciesListScreen() {
         self.showVirtualCurrenciesListScreen = true
     }
 #endif
