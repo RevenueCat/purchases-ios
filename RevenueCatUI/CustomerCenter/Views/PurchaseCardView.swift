@@ -111,6 +111,22 @@ struct PurchaseInformationCardView: View {
             }
         }
     }
+
+    private func refundStatusMessage(
+        for status: RefundRequestStatus,
+        localization: CustomerCenterConfigData.Localization
+    ) -> String? {
+        switch status {
+        case .error:
+            return localization[.refundErrorGeneric]
+        case .success:
+            return localization[.refundGranted]
+        case .userCancelled:
+            return nil
+        @unknown default:
+            return nil
+        }
+    }
 }
 
 #if DEBUG

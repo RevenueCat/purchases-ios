@@ -141,7 +141,6 @@ extension CustomerCenterConfigData {
     static let subscriptionInformationMonthlyRenewing = PurchaseInformation(
         title: "Basic",
         durationTitle: "Monthly",
-        explanation: .earliestRenewal,
         pricePaid: .nonFree("$4.99"),
         renewalPrice: .nonFree("$4.99"),
         expirationOrRenewal: .init(label: .nextBillingDate,
@@ -161,7 +160,6 @@ extension CustomerCenterConfigData {
     static let subscriptionInformationFree = PurchaseInformation(
         title: "Basic",
         durationTitle: "Monthly",
-        explanation: .earliestRenewal,
         pricePaid: .free,
         renewalPrice: .nonFree("$4.99"),
         expirationOrRenewal: .init(label: .nextBillingDate,
@@ -181,7 +179,6 @@ extension CustomerCenterConfigData {
     static let consumable = PurchaseInformation(
         title: "Basic",
         durationTitle: nil,
-        explanation: .lifetime,
         pricePaid: .nonFree("$49.99"),
         renewalPrice: nil,
         expirationOrRenewal: nil,

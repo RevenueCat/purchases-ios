@@ -19,7 +19,6 @@ extension PurchaseInformation {
     static let monthlyRenewing = PurchaseInformation(
         title: "Basic",
         durationTitle: "Monthly",
-        explanation: .earliestRenewal,
         pricePaid: .nonFree("$4.99"),
         renewalPrice: .nonFree("$4.99"),
         expirationOrRenewal: .init(label: .nextBillingDate, date: .date("June 1st, 2024")),
@@ -38,7 +37,6 @@ extension PurchaseInformation {
     static let free = PurchaseInformation(
         title: "Basic",
         durationTitle: "Monthly",
-        explanation: .earliestRenewal,
         pricePaid: .free,
         renewalPrice: .nonFree("$4.99"),
         expirationOrRenewal: .init(label: .nextBillingDate,
@@ -67,7 +65,6 @@ extension PurchaseInformation {
         PurchaseInformation(
             title: title,
             durationTitle: "Yearly",
-            explanation: .earliestRenewal,
             pricePaid: .nonFree("$49.99"),
             renewalPrice: .nonFree("$49.99"),
             expirationOrRenewal: .init(label: .expires, date: .date("June 1st, 2024")),
@@ -87,7 +84,6 @@ extension PurchaseInformation {
     static let consumable: PurchaseInformation = PurchaseInformation(
         title: "Basic",
         durationTitle: nil,
-        explanation: .lifetime,
         pricePaid: .nonFree("$49.99"),
         renewalPrice: nil,
         expirationOrRenewal: nil,
