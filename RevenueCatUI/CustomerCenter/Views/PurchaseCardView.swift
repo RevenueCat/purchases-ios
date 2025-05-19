@@ -49,11 +49,14 @@ struct PurchaseInformationCardView: View {
     init(
         purchaseInformation: PurchaseInformation,
         localization: CustomerCenterConfigData.Localization,
+        refundStatus: RefundRequestStatus? = nil,
         showChevron: Bool = true
     ) {
         self.title = purchaseInformation.title
 
-        if let renewalDate = purchaseInformation.renewalDate {
+        if let refundStatus, let message = refundStatus.subtitle(localization: localization) {
+            self.subtitle = message
+        } else if let renewalDate = purchaseInformation.renewalDate {
             self.subtitle = purchaseInformation.priceRenewalString(
                 date: renewalDate,
                 localizations: localization
@@ -135,12 +138,13 @@ struct PurchaseInformationCardView: View {
             }
         }
     }
+}
 
-    private func refundStatusMessage(
-        for status: RefundRequestStatus,
+private extension RefundRequestStatus {
+    func subtitle(
         localization: CustomerCenterConfigData.Localization
     ) -> String? {
-        switch status {
+        switch self {
         case .error:
             return localization[.refundErrorGeneric]
         case .success:
