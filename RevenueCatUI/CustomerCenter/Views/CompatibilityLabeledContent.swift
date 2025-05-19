@@ -103,6 +103,17 @@ extension CompatibilityLabeledContent where Label == Text {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
+extension CompatibilityLabeledContent where Label == Text, Content == EmptyView {
+    init(_ label: String) {
+        self.label = { Text(label) }
+        self.content = { EmptyView() }
+    }
+}
+
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
 extension CompatibilityLabeledContent where Label == Text, Content == Text {
     init(_ label: String, content: String) {
         self.label = { Text(label) }
