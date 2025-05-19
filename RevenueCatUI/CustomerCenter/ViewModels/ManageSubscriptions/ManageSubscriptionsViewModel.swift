@@ -41,6 +41,8 @@ final class ManageSubscriptionsViewModel: ObservableObject {
     @Published
     var showAllPurchases: Bool = false
 
+    @Published var showVirtualCurrenciesListScreen: Bool = false
+
     @Published
     var feedbackSurveyData: FeedbackSurveyData?
 
@@ -142,6 +144,10 @@ final class ManageSubscriptionsViewModel: ObservableObject {
 
     func onDismissInAppBrowser() {
         self.inAppBrowserURL = nil
+    }
+
+    func showVirtualCurrenciesListScreen() {
+        self.showVirtualCurrenciesListScreen = true
     }
 #endif
 

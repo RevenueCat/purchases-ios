@@ -784,7 +784,7 @@ extension CustomerCenterConfigData.Support {
         self.email = response.email
         self.shouldWarnCustomerToUpdate = response.shouldWarnCustomerToUpdate ?? true
         self.displayPurchaseHistoryLink = response.displayPurchaseHistoryLink ?? false
-        self.displayVirtualCurrencies = response.displayVirtualCurrencies ?? false
+        self.displayVirtualCurrencies = response.displayVirtualCurrencies ?? true
         self.shouldWarnCustomersAboutMultipleSubscriptions = response.shouldWarnCustomersAboutMultipleSubscriptions
             ?? false
     }

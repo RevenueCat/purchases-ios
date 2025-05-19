@@ -26,6 +26,13 @@ import SwiftUI
 /// This view shows up to three virtual currencies sorted by balance in descending order.
 /// If there are more than three currencies, a "See All" button is displayed that navigates
 /// to a full list of virtual currencies.
+///
+/// ## Implementation Requirements
+///
+/// The caller must implement the `onShowVirtualCurrenciesListScreenTapped` callback to handle navigation
+/// to the VirtualCurrencyBalancesScreen when the user taps the "See All" button.
+/// This is to avoid creating a navigation destination inside a List, which logs a warning in the console
+/// and will not be supported in future OS releases.
 struct VirtualCurrenciesListSection: View {
 
     private static let maxNumberOfRows = 4
@@ -33,18 +40,25 @@ struct VirtualCurrenciesListSection: View {
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
 
-    @Environment(\.navigationOptions)
-    var navigationOptions
-
-    @State private var showVirtualCurrenciesListScreen = false
-
     private let virtualCurrencies: [VirtualCurrencyBalanceListRow.RowData]
     private let displayShowAllButton: Bool
     private let purchasesProvider: CustomerCenterPurchasesType
+    private let onShowVirtualCurrenciesListScreenTapped: () -> Void
 
+    /// Creates a new instance of the virtual currencies list section.
+    ///
+    /// - Parameters:
+    ///   - virtualCurrencies: A dictionary mapping virtual currency codes to their balance information.
+    ///   - purchasesProvider: The provider that handles purchases-related functionality.
+    ///   - onShowVirtualCurrenciesListScreenTapped: A closure that will be called when the user taps the "See All" button.
+    ///     This should handle navigation to the VirtualCurrencyBalancesScreen.
+    ///
+    /// The currencies will be sorted by balance in descending order, and up to four currencies will be displayed.
+    /// If there are more than four currencies, a "See All" button will be shown with three currencies.
     init(
         virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo],
-        purchasesProvider: CustomerCenterPurchasesType
+        purchasesProvider: CustomerCenterPurchasesType,
+        onShowVirtualCurrenciesListScreenTapped: @escaping () -> Void
     ) {
         let sortedCurrencies = virtualCurrencies.map {
             VirtualCurrencyBalanceListRow.RowData(
@@ -56,7 +70,7 @@ struct VirtualCurrenciesListSection: View {
 
         // We want to limit the number of rows in the list to 4 max. We accomplish this by:
         // - Showing all currencies if there are 4 or fewer currencies
-        // - Show first 3 currencies + "See All" button to limit to 4 rows if there are 5 or more currencies
+        // - Show first `maxNumberOfRows` currencies + "See All" button to limit to 4 rows if there are 5 or more currencies
         if sortedCurrencies.count <= Self.maxNumberOfRows {
             self.virtualCurrencies = sortedCurrencies
             self.displayShowAllButton = false
@@ -65,6 +79,7 @@ struct VirtualCurrenciesListSection: View {
             self.displayShowAllButton = true
         }
         self.purchasesProvider = purchasesProvider
+        self.onShowVirtualCurrenciesListScreenTapped = onShowVirtualCurrenciesListScreenTapped
     }
 
     var body: some View {
@@ -76,19 +91,11 @@ struct VirtualCurrenciesListSection: View {
 
                 if displayShowAllButton {
                     Button {
-                        self.showVirtualCurrenciesListScreen = true
+                        self.onShowVirtualCurrenciesListScreenTapped()
                     } label: {
                         Text(localization[.seeAllVirtualCurrencies])
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .contentShape(Rectangle())
-                    }
-                    .compatibleNavigation(
-                        isPresented: $showVirtualCurrenciesListScreen,
-                        usesNavigationStack: navigationOptions.usesNavigationStack
-                    ) {
-                        VirtualCurrencyBalancesScreen(
-                            viewModel: VirtualCurrencyBalancesScreenViewModel(purchasesProvider: self.purchasesProvider)
-                        )
                     }
                 }
             } header: {
@@ -111,7 +118,8 @@ struct VirtualCurrenciesListSection_Previews: PreviewProvider {
         List {
             VirtualCurrenciesListSection(
                 virtualCurrencies: CustomerCenterConfigData.fourVirtualCurrencies,
-                purchasesProvider: CustomerCenterPurchases()
+                purchasesProvider: CustomerCenterPurchases(),
+                onShowVirtualCurrenciesListScreenTapped: { }
             )
         }
         .previewDisplayName("4 Virtual Currencies")
@@ -119,7 +127,8 @@ struct VirtualCurrenciesListSection_Previews: PreviewProvider {
         List {
             VirtualCurrenciesListSection(
                 virtualCurrencies: CustomerCenterConfigData.fiveVirtualCurrencies,
-                purchasesProvider: CustomerCenterPurchases()
+                purchasesProvider: CustomerCenterPurchases(),
+                onShowVirtualCurrenciesListScreenTapped: { }
             )
         }
         .previewDisplayName("5 Virtual Currencies")

@@ -94,6 +94,14 @@ struct ManageSubscriptionsView: View {
                 .environment(\.localization, localization)
                 .environment(\.navigationOptions, navigationOptions)
             }
+            .compatibleNavigation(
+                isPresented: $viewModel.showVirtualCurrenciesListScreen,
+                usesNavigationStack: navigationOptions.usesNavigationStack
+            ) {
+                VirtualCurrencyBalancesScreen(
+                    viewModel: VirtualCurrencyBalancesScreenViewModel(purchasesProvider: self.viewModel.purchasesProvider)
+                )
+            }
             .sheet(item: self.$viewModel.promotionalOfferData) { promotionalOfferData in
                 PromotionalOfferView(
                     promotionalOffer: promotionalOfferData.promotionalOffer,
@@ -145,7 +153,8 @@ struct ManageSubscriptionsView: View {
                 if support?.displayVirtualCurrencies == true {
                     VirtualCurrenciesListSection(
                         virtualCurrencies: self.viewModel.virtualCurrencies,
-                        purchasesProvider: self.viewModel.purchasesProvider
+                        purchasesProvider: self.viewModel.purchasesProvider,
+                        onShowVirtualCurrenciesListScreenTapped: self.viewModel.showVirtualCurrenciesListScreen
                     )
                 }
 
@@ -173,7 +182,8 @@ struct ManageSubscriptionsView: View {
                 if support?.displayVirtualCurrencies == true {
                     VirtualCurrenciesListSection(
                         virtualCurrencies: self.viewModel.virtualCurrencies,
-                        purchasesProvider: self.viewModel.purchasesProvider
+                        purchasesProvider: self.viewModel.purchasesProvider,
+                        onShowVirtualCurrenciesListScreenTapped: self.viewModel.showVirtualCurrenciesListScreen
                     )
                 }
 

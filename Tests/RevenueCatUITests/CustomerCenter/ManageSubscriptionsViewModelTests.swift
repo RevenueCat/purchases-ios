@@ -51,6 +51,7 @@ final class ManageSubscriptionsViewModelTests: TestCase {
         expect(viewModel.refundRequestStatus).to(beNil())
         expect(viewModel.screen).toNot(beNil())
         expect(viewModel.showRestoreAlert) == false
+        expect(viewModel.showVirtualCurrenciesListScreen).to(equal(false))
 
         // Compare virtual currencies by checking each key-value pair individually since
         // the order of the dictionary is not guaranteed.
@@ -370,6 +371,21 @@ final class ManageSubscriptionsViewModelTests: TestCase {
 
             expect(loadPromotionalOfferUseCase.offerToLoadPromoFor).to(beNil())
         }
+    }
+
+    func testHandleShowVirtualCurrenciesListScreenSetsShowVirtualCurrenciesListScreenToTrue() {
+        let viewModel = ManageSubscriptionsViewModel(
+            screen: ManageSubscriptionsViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: nil,
+            purchasesProvider: MockCustomerCenterPurchases(),
+            virtualCurrencies: CustomerCenterConfigData.fourVirtualCurrencies
+        )
+
+        expect(viewModel.showVirtualCurrenciesListScreen).to(equal(false))
+
+        viewModel.showVirtualCurrenciesListScreen()
+        expect(viewModel.showVirtualCurrenciesListScreen).to(equal(true))
     }
 
     // Helper methods
