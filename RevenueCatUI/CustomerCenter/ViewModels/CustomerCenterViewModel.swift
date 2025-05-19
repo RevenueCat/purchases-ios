@@ -77,6 +77,14 @@ import RevenueCat
         !activePurchases.isEmpty || activePurchase != nil
     }
 
+    var  originalAppUserId: String {
+        customerInfo?.originalAppUserId ?? ""
+    }
+
+    var originalPurchaseDate: Date? {
+        customerInfo?.originalPurchaseDate
+    }
+
     @Published
     var activePurchases: [PurchaseInformation] = []
 
@@ -84,6 +92,8 @@ import RevenueCat
     var activePurchase: PurchaseInformation?
 
     private let currentVersionFetcher: CurrentVersionFetcher
+
+    internal var customerInfo: CustomerInfo?
 
     /// The action wrapper that handles both the deprecated handler and the new preference system
     internal let actionWrapper: CustomerCenterActionWrapper
@@ -107,6 +117,7 @@ import RevenueCat
         self.actionWrapper = actionWrapper
         self.purchasesProvider = purchasesProvider
         self.customerCenterStoreKitUtilities = customerCenterStoreKitUtilities
+        self.customerInfo = nil
     }
 
     convenience init(uiPreviewPurchaseProvider: CustomerCenterPurchasesType) {
@@ -171,6 +182,8 @@ import RevenueCat
 private extension CustomerCenterViewModel {
 
     func loadPurchaseInformation(customerInfo: CustomerInfo) async throws {
+        self.customerInfo = customerInfo
+
         let hasActiveProducts =  !customerInfo.activeSubscriptions.isEmpty || !customerInfo.nonSubscriptions.isEmpty
 
         if !hasActiveProducts {

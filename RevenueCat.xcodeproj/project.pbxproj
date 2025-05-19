@@ -294,7 +294,6 @@
 		353756672C382C2800A1B8D6 /* PurchaseInformation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353756552C382C2800A1B8D6 /* PurchaseInformation.swift */; };
 		353756682C382C2800A1B8D6 /* CustomerCenterViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353756572C382C2800A1B8D6 /* CustomerCenterViewModel.swift */; };
 		353756692C382C2800A1B8D6 /* CustomerCenterViewState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353756582C382C2800A1B8D6 /* CustomerCenterViewState.swift */; };
-		3537566A2C382C2800A1B8D6 /* ManageSubscriptionsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353756592C382C2800A1B8D6 /* ManageSubscriptionsViewModel.swift */; };
 		353756722C382C2800A1B8D6 /* URLUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353756632C382C2800A1B8D6 /* URLUtilities.swift */; };
 		353DE0072CCA506100A8F632 /* EventsRequest+Paywall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353DE0062CCA504600A8F632 /* EventsRequest+Paywall.swift */; };
 		353FDAEC2CA1866A0055F328 /* StoreKitErrorHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 353FDAEB2CA1866A0055F328 /* StoreKitErrorHelper.swift */; };
@@ -690,7 +689,6 @@
 		57740F5F2DD6460F00585B5A /* FeedbackSurveyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57740F392DD6460F00585B5A /* FeedbackSurveyView.swift */; };
 		57740F602DD6460F00585B5A /* PurchaseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57740F3E2DD6460F00585B5A /* PurchaseDetailView.swift */; };
 		57740F612DD6460F00585B5A /* CustomerCenterNavigationOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57740F362DD6460F00585B5A /* CustomerCenterNavigationOptions.swift */; };
-		57740F622DD6460F00585B5A /* CustomerCenterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57740F472DD6460F00585B5A /* CustomerCenterViewController.swift */; };
 		5774F9B62805E6CC00997128 /* CustomerInfoResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5774F9B52805E6CC00997128 /* CustomerInfoResponse.swift */; };
 		5774F9BE2805E71100997128 /* Fixtures in Resources */ = {isa = PBXBuildFile; fileRef = 5774F9BD2805E71100997128 /* Fixtures */; };
 		5774F9C12805EA3000997128 /* BaseHTTPResponseTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5774F9C02805EA3000997128 /* BaseHTTPResponseTest.swift */; };
@@ -857,6 +855,8 @@
 		75ABFDB52D5F579E00D69DF1 /* CustomerInfoManagerUIPreviewModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75ABFDB42D5F579E00D69DF1 /* CustomerInfoManagerUIPreviewModeTests.swift */; };
 		75D9DE072D79FC0E0068554F /* testEncoding.1.json in Resources */ = {isa = PBXBuildFile; fileRef = 75D9DE022D79FC0E0068554F /* testEncoding.1.json */; };
 		75D9DE082D79FC0E0068554F /* DiagnosticsEventEncodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D9DE052D79FC0E0068554F /* DiagnosticsEventEncodingTests.swift */; };
+		75F660172DDB2E7B00DBED1C /* CustomerCenterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F660152DDB2E7B00DBED1C /* CustomerCenterViewController.swift */; };
+		75F660192DDB2EBE00DBED1C /* ActiveSubscriptionsListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F660182DDB2EBE00DBED1C /* ActiveSubscriptionsListViewModel.swift */; };
 		7706ED3E2C6E374D0004B9F9 /* ButtonStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7706ED3D2C6E374D0004B9F9 /* ButtonStyles.swift */; };
 		7707A94C2CAD93AC006E0313 /* PaywallButtonComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94B2CAD93AC006E0313 /* PaywallButtonComponent.swift */; };
 		7707A94E2CAD94D2006E0313 /* ButtonComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94D2CAD94D2006E0313 /* ButtonComponentViewModel.swift */; };
@@ -1682,7 +1682,6 @@
 		353756552C382C2800A1B8D6 /* PurchaseInformation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchaseInformation.swift; sourceTree = "<group>"; };
 		353756572C382C2800A1B8D6 /* CustomerCenterViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomerCenterViewModel.swift; sourceTree = "<group>"; };
 		353756582C382C2800A1B8D6 /* CustomerCenterViewState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomerCenterViewState.swift; sourceTree = "<group>"; };
-		353756592C382C2800A1B8D6 /* ManageSubscriptionsViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ManageSubscriptionsViewModel.swift; sourceTree = "<group>"; };
 		353756632C382C2800A1B8D6 /* URLUtilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = URLUtilities.swift; sourceTree = "<group>"; };
 		353DE0062CCA504600A8F632 /* EventsRequest+Paywall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EventsRequest+Paywall.swift"; sourceTree = "<group>"; };
 		353FDAEB2CA1866A0055F328 /* StoreKitErrorHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitErrorHelper.swift; sourceTree = "<group>"; };
@@ -2070,7 +2069,6 @@
 		57740F432DD6460F00585B5A /* ScrollViewWithOSBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollViewWithOSBackground.swift; sourceTree = "<group>"; };
 		57740F452DD6460F00585B5A /* SubscriptionDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionDetailView.swift; sourceTree = "<group>"; };
 		57740F462DD6460F00585B5A /* TintedProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TintedProgressView.swift; sourceTree = "<group>"; };
-		57740F472DD6460F00585B5A /* CustomerCenterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterViewController.swift; sourceTree = "<group>"; };
 		5774F9B52805E6CC00997128 /* CustomerInfoResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfoResponse.swift; sourceTree = "<group>"; };
 		5774F9B92805E6E200997128 /* CustomerInfoDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfoDecodingTests.swift; sourceTree = "<group>"; };
 		5774F9BD2805E71100997128 /* Fixtures */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = folder; name = Fixtures; path = Tests/UnitTests/Networking/Responses/Fixtures; sourceTree = SOURCE_ROOT; };
@@ -2207,6 +2205,8 @@
 		75ABFDB42D5F579E00D69DF1 /* CustomerInfoManagerUIPreviewModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfoManagerUIPreviewModeTests.swift; sourceTree = "<group>"; };
 		75D9DE022D79FC0E0068554F /* testEncoding.1.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = testEncoding.1.json; sourceTree = "<group>"; };
 		75D9DE052D79FC0E0068554F /* DiagnosticsEventEncodingTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiagnosticsEventEncodingTests.swift; sourceTree = "<group>"; };
+		75F660152DDB2E7B00DBED1C /* CustomerCenterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterViewController.swift; sourceTree = "<group>"; };
+		75F660182DDB2EBE00DBED1C /* ActiveSubscriptionsListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSubscriptionsListViewModel.swift; sourceTree = "<group>"; };
 		7706ED3D2C6E374D0004B9F9 /* ButtonStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonStyles.swift; sourceTree = "<group>"; };
 		7707A93B2CAD8AA2006E0313 /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
 		7707A94B2CAD93AC006E0313 /* PaywallButtonComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallButtonComponent.swift; sourceTree = "<group>"; };
@@ -3854,10 +3854,10 @@
 		3537565A2C382C2800A1B8D6 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				75F660182DDB2EBE00DBED1C /* ActiveSubscriptionsListViewModel.swift */,
 				57BB08652DD3D9AC007493E1 /* SubscriptionDetailViewModel.swift */,
 				57FE3A592DD3BD9700868DEF /* BaseManageSubscriptionViewModel.swift */,
 				35724B402D96DB1700332612 /* RestorePurchasesAlertViewModel.swift */,
-				5767D0462D5B505A003D423C /* ManageSubscriptions */,
 				574BA2672D3E762E009B8EA6 /* PurchaseHistory */,
 				353756572C382C2800A1B8D6 /* CustomerCenterViewModel.swift */,
 				353756582C382C2800A1B8D6 /* CustomerCenterViewState.swift */,
@@ -3870,6 +3870,8 @@
 		353756602C382C2800A1B8D6 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				57740F412DD6460F00585B5A /* PurchaseHistory */,
+				75F660162DDB2E7B00DBED1C /* UIKit Compatibility */,
 				57740F2F2DD6460F00585B5A /* ActiveSubscriptionsListView.swift */,
 				57740F302DD6460F00585B5A /* AppUpdateWarningView.swift */,
 				57740F312DD6460F00585B5A /* CompatibilityContentUnavailableView.swift */,
@@ -3885,12 +3887,10 @@
 				57740F3B2DD6460F00585B5A /* NoSubscriptionsView.swift */,
 				57740F3C2DD6460F00585B5A /* PromotionalOfferView.swift */,
 				57740F3D2DD6460F00585B5A /* PurchaseCardView.swift */,
-				57740F412DD6460F00585B5A /* PurchaseHistory */,
 				57740F422DD6460F00585B5A /* RestorePurchasesAlert.swift */,
 				57740F432DD6460F00585B5A /* ScrollViewWithOSBackground.swift */,
 				57740F452DD6460F00585B5A /* SubscriptionDetailView.swift */,
 				57740F462DD6460F00585B5A /* TintedProgressView.swift */,
-				57740F482DD6460F00585B5A /* PurchaseHistory */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -4568,14 +4568,6 @@
 			path = Purchases;
 			sourceTree = "<group>";
 		};
-		5767D0462D5B505A003D423C /* ManageSubscriptions */ = {
-			isa = PBXGroup;
-			children = (
-				353756592C382C2800A1B8D6 /* ManageSubscriptionsViewModel.swift */,
-			);
-			path = ManageSubscriptions;
-			sourceTree = "<group>";
-		};
 		576F15482DD4ABB6003D8EEC /* Mocks */ = {
 			isa = PBXGroup;
 			children = (
@@ -4590,14 +4582,6 @@
 				57740F3E2DD6460F00585B5A /* PurchaseDetailView.swift */,
 				57740F3F2DD6460F00585B5A /* PurchaseHistoryView.swift */,
 				57740F402DD6460F00585B5A /* PurchaseLinkView.swift */,
-			);
-			path = PurchaseHistory;
-			sourceTree = "<group>";
-		};
-		57740F482DD6460F00585B5A /* PurchaseHistory */ = {
-			isa = PBXGroup;
-			children = (
-				57740F472DD6460F00585B5A /* CustomerCenterViewController.swift */,
 			);
 			path = PurchaseHistory;
 			sourceTree = "<group>";
@@ -4785,6 +4769,14 @@
 				75D9DE052D79FC0E0068554F /* DiagnosticsEventEncodingTests.swift */,
 			);
 			path = Requests;
+			sourceTree = "<group>";
+		};
+		75F660162DDB2E7B00DBED1C /* UIKit Compatibility */ = {
+			isa = PBXGroup;
+			children = (
+				75F660152DDB2E7B00DBED1C /* CustomerCenterViewController.swift */,
+			);
+			path = "UIKit Compatibility";
 			sourceTree = "<group>";
 		};
 		7707A94A2CAD936A006E0313 /* Button */ = {
@@ -7007,6 +6999,7 @@
 				57740F582DD6460F00585B5A /* CompatibilityNavigationStack.swift in Sources */,
 				57740F592DD6460F00585B5A /* ManageSubscriptionsButtonsView.swift in Sources */,
 				57740F5A2DD6460F00585B5A /* NoSubscriptionsView.swift in Sources */,
+				75F660192DDB2EBE00DBED1C /* ActiveSubscriptionsListViewModel.swift in Sources */,
 				57740F5B2DD6460F00585B5A /* PromotionalOfferView.swift in Sources */,
 				57740F5C2DD6460F00585B5A /* ActiveSubscriptionsListView.swift in Sources */,
 				57740F5D2DD6460F00585B5A /* CompatibilityContentUnavailableView.swift in Sources */,
@@ -7014,7 +7007,6 @@
 				57740F5F2DD6460F00585B5A /* FeedbackSurveyView.swift in Sources */,
 				57740F602DD6460F00585B5A /* PurchaseDetailView.swift in Sources */,
 				57740F612DD6460F00585B5A /* CustomerCenterNavigationOptions.swift in Sources */,
-				57740F622DD6460F00585B5A /* CustomerCenterViewController.swift in Sources */,
 				887A60B72C1D037000E1A461 /* WatchTemplateView.swift in Sources */,
 				887A60722C1D037000E1A461 /* PaywallViewMode+Extensions.swift in Sources */,
 				57FFAE212DD72C2F00A1DA1B /* MockLoadPromotionalOfferUseCase.swift in Sources */,
@@ -7155,6 +7147,7 @@
 				030F93B32D5ED90B0085103F /* ProgressViewModifier.swift in Sources */,
 				88B1BAFC2C813A3C001B7EE5 /* ImageComponentView.swift in Sources */,
 				357C43AF2D80510A00B96769 /* CustomerCenterManagementOption.swift in Sources */,
+				75F660172DDB2E7B00DBED1C /* CustomerCenterViewController.swift in Sources */,
 				2C91068A2CE22D3500189565 /* FlexVStack.swift in Sources */,
 				4D3BA5B22D47AB4400668AFC /* TimelineComponentView.swift in Sources */,
 				4D3BA5B32D47AB4400668AFC /* TimelineComponentViewModel.swift in Sources */,
@@ -7179,7 +7172,6 @@
 				2CC791592CC0452100FBE120 /* PurchaseButtonComponentView.swift in Sources */,
 				2CC7915A2CC0452100FBE120 /* PackageComponentViewModel.swift in Sources */,
 				887A60772C1D037000E1A461 /* TemplateViewConfiguration+Images.swift in Sources */,
-				3537566A2C382C2800A1B8D6 /* ManageSubscriptionsViewModel.swift in Sources */,
 				7707A94E2CAD94D2006E0313 /* ButtonComponentViewModel.swift in Sources */,
 				887A60842C1D037000E1A461 /* ConsistentPackageContentView.swift in Sources */,
 				887A60C42C1D037000E1A461 /* IconView.swift in Sources */,
