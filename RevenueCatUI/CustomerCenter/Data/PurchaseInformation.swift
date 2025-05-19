@@ -17,7 +17,7 @@ import Foundation
 import RevenueCat
 import StoreKit
 
-// swiftlint:disable nesting file_length
+// swiftlint:disable file_length
 
 /// Information about a purchase.
 struct PurchaseInformation {
@@ -88,7 +88,6 @@ struct PurchaseInformation {
          durationTitle: String?,
          pricePaid: PricePaid,
          renewalPrice: RenewalPrice?,
-         expirationOrRenewal: ExpirationOrRenewal?,
          productIdentifier: String,
          store: Store,
          isLifetime: Bool,
@@ -184,22 +183,6 @@ struct PurchaseInformation {
         }
 
         self.pricePaid = transaction.paidPrice(numberFormatter: numberFormatter)
-    }
-
-    struct ExpirationOrRenewal: Equatable {
-        let label: Label
-        let date: Date
-
-        enum Label {
-            case nextBillingDate
-            case expires
-            case expired
-        }
-
-        enum Date: Equatable {
-            case never
-            case date(String)
-        }
     }
 
     enum PricePaid: Equatable, Hashable {
