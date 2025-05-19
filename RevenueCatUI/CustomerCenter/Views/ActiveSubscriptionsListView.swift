@@ -148,7 +148,6 @@ struct ActiveSubscriptionsListView: View {
                                     purchaseInformation: purchase,
                                     localization: localization
                                 )
-                                .padding()
                                 .background(Color(colorScheme == .light
                                                   ? UIColor.systemBackground
                                                   : UIColor.secondarySystemBackground))
@@ -166,7 +165,8 @@ struct ActiveSubscriptionsListView: View {
                             CompatibilityLabeledContent(localization[.seeAllPurchases]) {
                                 Image(systemName: "chevron.forward")
                             }
-                            .padding()
+                            .padding(.horizontal)
+                            .padding(.vertical, 12)
                             .background(Color(colorScheme == .light
                                               ? UIColor.systemBackground
                                               : UIColor.secondarySystemBackground))
@@ -174,7 +174,7 @@ struct ActiveSubscriptionsListView: View {
                             .padding(.horizontal)
                         }
                         .tint(colorScheme == .dark ? .white : .black)
-                        .padding(.top, 32)
+                        .padding(.top, 8)
                     }
 
                     accountDetailsView
@@ -287,7 +287,7 @@ struct ActiveSubscriptionsListView_Previews: PreviewProvider {
                 ActiveSubscriptionsListView(
                     viewModel: ActiveSubscriptionsListViewModel(
                         screen: warningOffMock.screens[.management]!,
-                        originalAppUserId: UUID().uuidString,
+                        originalAppUserId: "originalAppUserId",
                         activePurchases: purchases
                     )
                 )
