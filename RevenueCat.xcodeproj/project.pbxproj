@@ -542,6 +542,7 @@
 		537B4B392DA9744B00CEFF4C /* SDKHealthCheckStatus+Icon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 537B4B352DA9744B00CEFF4C /* SDKHealthCheckStatus+Icon.swift */; };
 		537B4B3A2DA9744B00CEFF4C /* ProductStatus+Icon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 537B4B342DA9744B00CEFF4C /* ProductStatus+Icon.swift */; };
 		537BA85B2DBBFAF200C93327 /* SDKHealthError+CustomNSError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 537BA85A2DBBFAE700C93327 /* SDKHealthError+CustomNSError.swift */; };
+		5703050A2DDB7DF900393089 /* ActiveSubscriptionButtonsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 570305092DDB7DF300393089 /* ActiveSubscriptionButtonsView.swift */; };
 		57045B3829C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57045B3729C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift */; };
 		57045B3A29C51751001A5417 /* GetProductEntitlementMappingOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57045B3929C51751001A5417 /* GetProductEntitlementMappingOperation.swift */; };
 		57045B3C29C51AF7001A5417 /* ProductEntitlementMappingCallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57045B3B29C51AF7001A5417 /* ProductEntitlementMappingCallback.swift */; };
@@ -1930,6 +1931,7 @@
 		537B4B352DA9744B00CEFF4C /* SDKHealthCheckStatus+Icon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SDKHealthCheckStatus+Icon.swift"; sourceTree = "<group>"; };
 		537B4B362DA9744B00CEFF4C /* SDKHealthStatus+Icon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SDKHealthStatus+Icon.swift"; sourceTree = "<group>"; };
 		537BA85A2DBBFAE700C93327 /* SDKHealthError+CustomNSError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SDKHealthError+CustomNSError.swift"; sourceTree = "<group>"; };
+		570305092DDB7DF300393089 /* ActiveSubscriptionButtonsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSubscriptionButtonsView.swift; sourceTree = "<group>"; };
 		57045B3729C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductEntitlementMappingDecodingTests.swift; sourceTree = "<group>"; };
 		57045B3929C51751001A5417 /* GetProductEntitlementMappingOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetProductEntitlementMappingOperation.swift; sourceTree = "<group>"; };
 		57045B3B29C51AF7001A5417 /* ProductEntitlementMappingCallback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductEntitlementMappingCallback.swift; sourceTree = "<group>"; };
@@ -3870,6 +3872,7 @@
 		353756602C382C2800A1B8D6 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				570305092DDB7DF300393089 /* ActiveSubscriptionButtonsView.swift */,
 				57740F412DD6460F00585B5A /* PurchaseHistory */,
 				75F660162DDB2E7B00DBED1C /* UIKit Compatibility */,
 				57740F2F2DD6460F00585B5A /* ActiveSubscriptionsListView.swift */,
@@ -7152,6 +7155,7 @@
 				4D3BA5B22D47AB4400668AFC /* TimelineComponentView.swift in Sources */,
 				4D3BA5B32D47AB4400668AFC /* TimelineComponentViewModel.swift in Sources */,
 				03C72FC22D349BAE00297FEC /* IconComponentViewModel.swift in Sources */,
+				5703050A2DDB7DF900393089 /* ActiveSubscriptionButtonsView.swift in Sources */,
 				887A60872C1D037000E1A461 /* ViewExtensions.swift in Sources */,
 				2C8EC6DB2CCC23B700D6CCF8 /* MultiTierPreview.swift in Sources */,
 				88B1BB022C813A3C001B7EE5 /* StackComponentView.swift in Sources */,
