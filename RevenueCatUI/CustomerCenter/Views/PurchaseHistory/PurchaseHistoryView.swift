@@ -79,32 +79,6 @@ struct PurchaseHistoryView: View {
                         }
                     }
                 }
-
-                // Account Details Section
-
-                Section(header: Text(
-                    localization[.accountDetails]
-                )) {
-                    if let originalPurchaseDate = info.originalPurchaseDate {
-                        CompatibilityLabeledContent(
-                            localization[.dateWhenAppWasPurchased],
-                            content: dateFormatter.string(from: originalPurchaseDate)
-                        )
-                    }
-
-                    CompatibilityLabeledContent(
-                        localization[.userId],
-                        content: info.originalAppUserId
-                    )
-                    .contextMenu {
-                        Button {
-                            UIPasteboard.general.string = info.originalAppUserId
-                        } label: {
-                            Text(localization[.copy])
-                            Image(systemName: "doc.on.clipboard")
-                        }
-                    }
-                }
             }
         }
         .compatibleNavigation(

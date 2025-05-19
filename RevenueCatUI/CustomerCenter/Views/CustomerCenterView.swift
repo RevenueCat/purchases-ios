@@ -219,6 +219,8 @@ private extension CustomerCenterView {
                 ActiveSubscriptionsListView(
                     screen: screen,
                     activePurchases: $viewModel.activePurchases,
+                    originalAppUserId: viewModel.originalAppUserId,
+                    originalPurchaseDate: viewModel.originalPurchaseDate,
                     purchasesProvider: self.viewModel.purchasesProvider,
                     actionWrapper: self.viewModel.actionWrapper
                 )
