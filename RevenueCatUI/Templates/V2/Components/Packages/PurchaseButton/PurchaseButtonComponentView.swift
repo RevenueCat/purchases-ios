@@ -81,7 +81,7 @@ struct PurchaseButtonComponentView: View {
         .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
             SafariView(url: self.inAppBrowserURL!)
         }
-        .onChange(of: self.inAppBrowserURL) { inAppBrowserURL in
+        .onChangeOf(self.inAppBrowserURL) { inAppBrowserURL in
             guard inAppBrowserURL == nil else { return }
             inAppBrowserDidDisappearCompletion?()
             inAppBrowserDidDisappearCompletion = nil
