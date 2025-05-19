@@ -41,7 +41,8 @@ struct ActiveSubscriptionButtonsView: View {
                         TintedProgressView()
                     } else {
                         CompatibilityLabeledContent(path.title)
-                            .padding()
+                            .padding(.horizontal)
+                            .padding(.vertical, 12)
                     }
                 })
                 .disabled(self.viewModel.loadingPath != nil)

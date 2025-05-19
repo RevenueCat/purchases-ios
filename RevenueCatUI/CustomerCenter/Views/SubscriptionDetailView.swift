@@ -137,6 +137,7 @@ struct SubscriptionDetailView: View {
                                       ? UIColor.systemBackground
                                       : UIColor.secondarySystemBackground))
                     .cornerRadius(10)
+                    .shadow(radius: 0.5)
                     .padding(.horizontal)
 
                     if viewModel.showPurchaseHistory {
@@ -226,7 +227,8 @@ struct SubscriptionDetailView: View {
                     viewModel: SubscriptionDetailViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: false,
-                        purchaseInformation: .yearlyExpiring()
+                        purchaseInformation: .yearlyExpiring(),
+                        refundRequestStatus: .success
                     )
                 )
             }
