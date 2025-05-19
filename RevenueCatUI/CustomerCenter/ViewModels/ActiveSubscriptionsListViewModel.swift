@@ -56,9 +56,9 @@ final class ActiveSubscriptionsListViewModel: BaseManageSubscriptionViewModel {
     // Used for Previews
     convenience init(
         screen: CustomerCenterConfigData.Screen,
+        originalAppUserId: String,
         activePurchases: [PurchaseInformation] = [],
-        originalAppUserId: String = UUID().uuidString,
-        originalPurchaseDate: Date? = Date()
+        originalPurchaseDate: Date? = nil
     ) {
         self.init(
             screen: screen,

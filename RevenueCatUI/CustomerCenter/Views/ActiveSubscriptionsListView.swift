@@ -287,6 +287,7 @@ struct ActiveSubscriptionsListView_Previews: PreviewProvider {
                 ActiveSubscriptionsListView(
                     viewModel: ActiveSubscriptionsListViewModel(
                         screen: warningOffMock.screens[.management]!,
+                        originalAppUserId: UUID().uuidString,
                         activePurchases: purchases
                     )
                 )
@@ -299,6 +300,7 @@ struct ActiveSubscriptionsListView_Previews: PreviewProvider {
                 ActiveSubscriptionsListView(
                     viewModel: ActiveSubscriptionsListViewModel(
                         screen: warningOnMock.screens[.management]!,
+                        originalAppUserId: UUID().uuidString,
                         activePurchases: []
                     )
                 )
