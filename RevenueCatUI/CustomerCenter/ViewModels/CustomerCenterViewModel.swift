@@ -93,7 +93,7 @@ import RevenueCat
 
     private let currentVersionFetcher: CurrentVersionFetcher
 
-    internal let customerInfo: CustomerInfo?
+    internal var customerInfo: CustomerInfo?
 
     /// The action wrapper that handles both the deprecated handler and the new preference system
     internal let actionWrapper: CustomerCenterActionWrapper
@@ -182,6 +182,8 @@ import RevenueCat
 private extension CustomerCenterViewModel {
 
     func loadPurchaseInformation(customerInfo: CustomerInfo) async throws {
+        self.customerInfo = customerInfo
+
         let hasActiveProducts =  !customerInfo.activeSubscriptions.isEmpty || !customerInfo.nonSubscriptions.isEmpty
 
         if !hasActiveProducts {
