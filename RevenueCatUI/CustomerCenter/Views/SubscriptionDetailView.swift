@@ -7,11 +7,9 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  ManageSubscriptionsView.swift
+//  SubscriptionDetailView.swift
 //
-//
-//  Created by Andrés Boedo on 5/3/24.
-//
+//  Created by Facundo Menzella on 14/5/25.
 
 import RevenueCat
 import SwiftUI
@@ -22,7 +20,7 @@ import SwiftUI
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-struct ManageSubscriptionsView: View {
+struct SubscriptionDetailView: View {
 
     @Environment(\.appearance)
     private var appearance: CustomerCenterConfigData.Appearance
@@ -30,39 +28,41 @@ struct ManageSubscriptionsView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
-    @Environment(\.supportInformation)
-    private var support
-
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
 
     @Environment(\.navigationOptions)
     var navigationOptions
 
-    @StateObject
-    private var viewModel: ManageSubscriptionsViewModel
+    @Environment(\.supportInformation)
+    private var support
 
-    @Binding
-    var purchaseInformation: PurchaseInformation?
+    @StateObject
+    private var viewModel: SubscriptionDetailViewModel
+
+    @State
+    private var showSimulatorAlert: Bool = false
 
     init(screen: CustomerCenterConfigData.Screen,
-         purchaseInformation: Binding<PurchaseInformation?>,
+         purchaseInformation: PurchaseInformation?,
+         showPurchaseHistory: Bool,
          purchasesProvider: CustomerCenterPurchasesType,
          actionWrapper: CustomerCenterActionWrapper) {
-        self.init(
-            purchaseInformation: purchaseInformation,
-            viewModel: ManageSubscriptionsViewModel(
+        let viewModel = SubscriptionDetailViewModel(
             screen: screen,
+            showPurchaseHistory: showPurchaseHistory,
             actionWrapper: actionWrapper,
-            purchaseInformation: purchaseInformation.wrappedValue,
-            purchasesProvider: purchasesProvider))
+            purchaseInformation: purchaseInformation,
+            purchasesProvider: purchasesProvider)
+
+        self.init(
+            viewModel: viewModel
+        )
     }
 
     fileprivate init(
-        purchaseInformation: Binding<PurchaseInformation?>,
-        viewModel: ManageSubscriptionsViewModel
+        viewModel: SubscriptionDetailViewModel
     ) {
-        self._purchaseInformation = purchaseInformation
         self._viewModel = .init(wrappedValue: viewModel)
     }
 
@@ -114,7 +114,12 @@ struct ManageSubscriptionsView: View {
             }, content: { inAppBrowserURL in
                 SafariView(url: inAppBrowserURL.url)
             })
-
+            .alert(isPresented: $showSimulatorAlert, content: {
+                return Alert(
+                    title: Text("Can't open URL"),
+                    message: Text("There's no email app in the simulator"),
+                    dismissButton: .default(Text("Ok")))
+            })
     }
 
     @ViewBuilder
@@ -126,30 +131,40 @@ struct ManageSubscriptionsView: View {
                     refundRequestStatus: self.viewModel.refundRequestStatus
                 )
 
-                if support?.displayPurchaseHistoryLink == true {
-                    Button {
-                        viewModel.showAllPurchases = true
-                    } label: {
-                        CompatibilityLabeledContent {
-                            Text(localization[.seeAllPurchases])
-                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                                .contentShape(Rectangle())
-                        } content: {
-                            Image(systemName: "chevron.forward")
+                Section {
+                    if viewModel.showPurchaseHistory {
+                        Button {
+                            viewModel.showAllPurchases = true
+                        } label: {
+                            CompatibilityLabeledContent(localization[.seeAllPurchases]) {
+                                Image(systemName: "chevron.forward")
+                            }
                         }
                     }
                 }
 
                 Section {
-                    ManageSubscriptionsButtonsView(
-                        viewModel: self.viewModel
-                    )
-                } header: {
-                    if let subtitle = self.viewModel.screen.subtitle {
-                        Text(subtitle)
-                            .textCase(nil)
+                    ManageSubscriptionsButtonsView(viewModel: viewModel)
+                }
+
+                if let url = support?.supportURL(
+                    localization: localization,
+                    purchasesProvider: viewModel.purchasesProvider
+                ), viewModel.shouldShowContactSupport,
+                    URLUtilities.canOpenURL(url) || RuntimeUtils.isSimulator {
+                    Section {
+                        AsyncButton {
+                            if RuntimeUtils.isSimulator {
+                                self.showSimulatorAlert = true
+                            } else {
+                                viewModel.inAppBrowserURL = IdentifiableURL(url: url)
+                            }
+                        } label: {
+                            Text(localization[.contactSupport])
+                        }
                     }
                 }
+
             } else {
                 let fallbackDescription = localization[.tryCheckRestore]
 
@@ -162,11 +177,10 @@ struct ManageSubscriptionsView: View {
                 }
 
                 Section {
-                    ManageSubscriptionsButtonsView(viewModel: self.viewModel)
+                    ManageSubscriptionsButtonsView(viewModel: viewModel)
                 }
             }
         }
-        .dismissCircleButtonToolbarIfNeeded()
         .overlay {
             RestorePurchasesAlert(
                 isPresented: self.$viewModel.showRestoreAlert,
@@ -177,10 +191,6 @@ struct ManageSubscriptionsView: View {
             $0.navigationTitle(self.viewModel.screen.title)
                 .navigationBarTitleDisplayMode(.inline)
          })
-        .onChangeOf(purchaseInformation?.customerInfoRequestedDate) { _ in
-            guard let purchase = purchaseInformation else { return }
-            viewModel.reloadPurchaseInformation(purchase)
-        }
     }
 
 }
@@ -190,73 +200,73 @@ struct ManageSubscriptionsView: View {
  @available(macOS, unavailable)
  @available(tvOS, unavailable)
  @available(watchOS, unavailable)
- struct ManageSubscriptionsView_Previews: PreviewProvider {
+ struct SubscriptionDetailView_Previews: PreviewProvider {
 
     // swiftlint:disable force_unwrapping
     static var previews: some View {
         ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
             CompatibilityNavigationStack {
-                let viewModelMonthlyRenewing = ManageSubscriptionsViewModel(
-                    screen: CustomerCenterConfigData.default.screens[.management]!,
-                    actionWrapper: CustomerCenterActionWrapper(),
-                    purchaseInformation: CustomerCenterConfigData.subscriptionInformationMonthlyRenewing,
-                    refundRequestStatus: .success,
-                    purchasesProvider: CustomerCenterPurchases())
-                ManageSubscriptionsView(
-                    purchaseInformation: .constant(CustomerCenterConfigData.subscriptionInformationMonthlyRenewing),
-                    viewModel: viewModelMonthlyRenewing
+                SubscriptionDetailView(
+                    viewModel: SubscriptionDetailViewModel(
+                        screen: CustomerCenterConfigData.default.screens[.management]!,
+                        showPurchaseHistory: false,
+                        purchaseInformation: .monthlyRenewing
+                    )
                 )
-                .environment(\.localization, CustomerCenterConfigData.default.localization)
-                .environment(\.appearance, CustomerCenterConfigData.default.appearance)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Monthly renewing - \(colorScheme)")
 
             CompatibilityNavigationStack {
-                let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
-                    screen: CustomerCenterConfigData.default.screens[.management]!,
-                    actionWrapper: CustomerCenterActionWrapper(),
-                    purchaseInformation: .yearlyExpiring(),
-                    purchasesProvider: CustomerCenterPurchases())
-                ManageSubscriptionsView(
-                    purchaseInformation: .constant(.yearlyExpiring()),
-                    viewModel: viewModelYearlyExpiring)
-                .environment(\.localization, CustomerCenterConfigData.default.localization)
-                .environment(\.appearance, CustomerCenterConfigData.default.appearance)
+                SubscriptionDetailView(
+                    viewModel: SubscriptionDetailViewModel(
+                        screen: CustomerCenterConfigData.default.screens[.management]!,
+                        showPurchaseHistory: false,
+                        purchaseInformation: .yearlyExpiring()
+                    )
+                )
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Yearly expiring - \(colorScheme)")
 
             CompatibilityNavigationStack {
-                let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
-                    screen: CustomerCenterConfigData.default.screens[.management]!,
-                    actionWrapper: CustomerCenterActionWrapper(),
-                    purchaseInformation: CustomerCenterConfigData.subscriptionInformationFree,
-                    purchasesProvider: CustomerCenterPurchases())
-                ManageSubscriptionsView(
-                    purchaseInformation: .constant(CustomerCenterConfigData.subscriptionInformationFree),
-                    viewModel: viewModelYearlyExpiring)
-                .environment(\.localization, CustomerCenterConfigData.default.localization)
-                .environment(\.appearance, CustomerCenterConfigData.default.appearance)
+                SubscriptionDetailView(
+                    viewModel: SubscriptionDetailViewModel(
+                        screen: CustomerCenterConfigData.default.screens[.management]!,
+                        showPurchaseHistory: false,
+                        purchaseInformation: .free
+                    )
+                )
             }
             .preferredColorScheme(colorScheme)
-            .previewDisplayName("Subscription Free - Renewal price - \(colorScheme)")
+            .previewDisplayName("Free subscription - \(colorScheme)")
 
             CompatibilityNavigationStack {
-                let viewModelYearlyExpiring = ManageSubscriptionsViewModel(
-                    screen: CustomerCenterConfigData.default.screens[.management]!,
-                    actionWrapper: CustomerCenterActionWrapper(),
-                    purchaseInformation: CustomerCenterConfigData.consumable,
-                    purchasesProvider: CustomerCenterPurchases())
-                ManageSubscriptionsView(
-                    purchaseInformation: .constant(CustomerCenterConfigData.consumable),
-                    viewModel: viewModelYearlyExpiring)
-                .environment(\.localization, CustomerCenterConfigData.default.localization)
-                .environment(\.appearance, CustomerCenterConfigData.default.appearance)
+                SubscriptionDetailView(
+                    viewModel: SubscriptionDetailViewModel(
+                        screen: CustomerCenterConfigData.default.screens[.management]!,
+                        showPurchaseHistory: false,
+                        purchaseInformation: .consumable
+                    )
+                )
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Consumable - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                SubscriptionDetailView(
+                    viewModel: SubscriptionDetailViewModel(
+                        screen: CustomerCenterConfigData.default.screens[.management]!,
+                        showPurchaseHistory: false,
+                        purchaseInformation: .yearlyExpiring(store: .playStore)
+                    )
+                )
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Play Store - \(colorScheme)")
         }
+        .environment(\.localization, CustomerCenterConfigData.default.localization)
+        .environment(\.appearance, CustomerCenterConfigData.default.appearance)
     }
 
  }

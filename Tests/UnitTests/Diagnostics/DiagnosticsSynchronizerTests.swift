@@ -335,19 +335,19 @@ private extension DiagnosticsSynchronizerTests {
         return try FileHandler(Self.temporaryFileURL())
     }
 
-    func verifyEmptyStore(file: StaticString = #file, line: UInt = #line) async {
+    func verifyEmptyStore(file: FileString = #filePath, line: UInt = #line) async {
         let events = await self.handler.getEntries()
         expect(file: file, line: line, events).to(beEmpty())
     }
 
-    func verifyNonEmptyStore(file: StaticString = #file, line: UInt = #line) async {
+    func verifyNonEmptyStore(file: FileString = #filePath, line: UInt = #line) async {
         let events = await self.handler.getEntries()
         expect(file: file, line: line, events).toNot(beEmpty())
     }
 
     func verifyEvents(
         _ expected: [DiagnosticsEvent],
-        file: StaticString = #file,
+        file: FileString = #filePath,
         line: UInt = #line
     ) async {
         let events = await self.handler.getEntries()
