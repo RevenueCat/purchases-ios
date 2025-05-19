@@ -130,14 +130,20 @@ struct NoSubscriptionsView_Previews: PreviewProvider {
                             virtualCurrencies: CustomerCenterConfigData.fourVirtualCurrencies,
                             purchasesProvider: CustomerCenterPurchases(),
                             actionWrapper: CustomerCenterActionWrapper())
-        .environment(\.supportInformation, CustomerCenterConfigData.default.support)
+        .environment(
+            \.supportInformation,
+            CustomerCenterConfigData.mock(displayVirtualCurrencies: true).support
+        )
         .previewDisplayName("4 Virtual Currencies")
 
         NoSubscriptionsView(configuration: CustomerCenterConfigData.default,
                             virtualCurrencies: CustomerCenterConfigData.fiveVirtualCurrencies,
                             purchasesProvider: CustomerCenterPurchases(),
                             actionWrapper: CustomerCenterActionWrapper())
-        .environment(\.supportInformation, CustomerCenterConfigData.default.support)
+        .environment(
+            \.supportInformation,
+            CustomerCenterConfigData.mock(displayVirtualCurrencies: true).support
+        )
         .previewDisplayName("5 Virtual Currencies")
     }
 
