@@ -50,8 +50,8 @@ struct VirtualCurrenciesListSection: View {
     /// - Parameters:
     ///   - virtualCurrencies: A dictionary mapping virtual currency codes to their balance information.
     ///   - purchasesProvider: The provider that handles purchases-related functionality.
-    ///   - onShowVirtualCurrenciesListScreenTapped: A closure that will be called when the user taps the "See All" button.
-    ///     This should handle navigation to the VirtualCurrencyBalancesScreen.
+    ///   - onShowVirtualCurrenciesListScreenTapped: A closure that will be called when the user
+    ///   taps the "See All" button. This should handle navigation to the VirtualCurrencyBalancesScreen.
     ///
     /// The currencies will be sorted by balance in descending order, and up to four currencies will be displayed.
     /// If there are more than four currencies, a "See All" button will be shown with three currencies.
@@ -70,7 +70,8 @@ struct VirtualCurrenciesListSection: View {
 
         // We want to limit the number of rows in the list to 4 max. We accomplish this by:
         // - Showing all currencies if there are 4 or fewer currencies
-        // - Show first `maxNumberOfRows` currencies + "See All" button to limit to 4 rows if there are 5 or more currencies
+        // - Show first `maxNumberOfRows` currencies + "See All" button to limit to
+        //   4 rows if there are 5 or more currencies
         if sortedCurrencies.count <= Self.maxNumberOfRows {
             self.virtualCurrencies = sortedCurrencies
             self.displayShowAllButton = false

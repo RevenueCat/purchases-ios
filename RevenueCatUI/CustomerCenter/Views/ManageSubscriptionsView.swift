@@ -99,7 +99,9 @@ struct ManageSubscriptionsView: View {
                 usesNavigationStack: navigationOptions.usesNavigationStack
             ) {
                 VirtualCurrencyBalancesScreen(
-                    viewModel: VirtualCurrencyBalancesScreenViewModel(purchasesProvider: self.viewModel.purchasesProvider)
+                    viewModel: VirtualCurrencyBalancesScreenViewModel(
+                        purchasesProvider: self.viewModel.purchasesProvider
+                    )
                 )
             }
             .sheet(item: self.$viewModel.promotionalOfferData) { promotionalOfferData in
