@@ -155,6 +155,23 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
             }
         }
     }
+
+    /// Logs a message if the app is using StoreKit file.
+    func logIfUsingStoreKitFile() {
+        // We restrict this check to these versions to prevent an Apple account prompt happening in previous versions.
+        // In addition, a StoreKit file can only be used in sandbox environment.
+        guard #available(iOS 18.4.0, macOS 13.0, tvOS 18.4, watchOS 11.4, *),
+              BundleSandboxEnvironmentDetector.default.isSandbox else {
+            return
+        }
+        
+        Task {
+            if let appTransaction = await self.appTransaction,
+               appTransaction.environment == .xcode {
+                Logger.info(Strings.storeKit.skconfig_file_detected)
+            }
+        }
+    }
 }
 
 // MARK: -
