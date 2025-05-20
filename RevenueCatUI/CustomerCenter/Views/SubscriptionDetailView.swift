@@ -124,14 +124,20 @@ struct SubscriptionDetailView: View {
 
     @ViewBuilder
     var content: some View {
-        List {
-            if let purchaseInformation = self.viewModel.purchaseInformation {
-                SubscriptionDetailsView(
-                    purchaseInformation: purchaseInformation,
-                    refundRequestStatus: self.viewModel.refundRequestStatus
-                )
+        ScrollViewWithOSBackground {
+            LazyVStack {
+                if let purchaseInformation = self.viewModel.purchaseInformation {
+                    SubscriptionDetailsView(
+                        purchaseInformation: purchaseInformation,
+                        refundRequestStatus: self.viewModel.refundRequestStatus
+                    )
+                    .padding()
+                    .background(Color(colorScheme == .light
+                                      ? UIColor.systemBackground
+                                      : UIColor.secondarySystemBackground))
+                    .cornerRadius(10)
+                    .padding(.horizontal)
 
-                Section {
                     if viewModel.showPurchaseHistory {
                         Button {
                             viewModel.showAllPurchases = true
@@ -139,45 +145,54 @@ struct SubscriptionDetailView: View {
                             CompatibilityLabeledContent(localization[.seeAllPurchases]) {
                                 Image(systemName: "chevron.forward")
                             }
+                            .padding()
+                            .background(Color(colorScheme == .light
+                                              ? UIColor.systemBackground
+                                              : UIColor.secondarySystemBackground))
+                            .cornerRadius(10)
+                            .padding(.horizontal)
                         }
                     }
+
+                } else {
+                    let fallbackDescription = localization[.tryCheckRestore]
+
+                    CompatibilityContentUnavailableView(
+                        self.viewModel.screen.title,
+                        systemImage: "exclamationmark.triangle.fill",
+                        description: Text(self.viewModel.screen.subtitle ?? fallbackDescription)
+                    )
+                    .padding()
+                    .background(Color(colorScheme == .light
+                                      ? UIColor.systemBackground
+                                      : UIColor.secondarySystemBackground))
+                    .cornerRadius(10)
+                    .padding(.horizontal)
                 }
 
-                Section {
-                    ManageSubscriptionsButtonsView(viewModel: viewModel)
-                }
+                ActiveSubscriptionButtonsView(viewModel: viewModel)
+                    .padding(.horizontal)
 
                 if let url = support?.supportURL(
                     localization: localization,
                     purchasesProvider: viewModel.purchasesProvider
                 ), viewModel.shouldShowContactSupport,
                     URLUtilities.canOpenURL(url) || RuntimeUtils.isSimulator {
-                    Section {
-                        AsyncButton {
-                            if RuntimeUtils.isSimulator {
-                                self.showSimulatorAlert = true
-                            } else {
-                                viewModel.inAppBrowserURL = IdentifiableURL(url: url)
-                            }
-                        } label: {
-                            Text(localization[.contactSupport])
+                    AsyncButton {
+                        if RuntimeUtils.isSimulator {
+                            self.showSimulatorAlert = true
+                        } else {
+                            viewModel.inAppBrowserURL = IdentifiableURL(url: url)
                         }
+                    } label: {
+                        Text(localization[.contactSupport])
+                            .padding()
+                            .background(Color(colorScheme == .light
+                                              ? UIColor.systemBackground
+                                              : UIColor.secondarySystemBackground))
+                            .cornerRadius(10)
+                            .padding(.horizontal)
                     }
-                }
-
-            } else {
-                let fallbackDescription = localization[.tryCheckRestore]
-
-                Section {
-                    CompatibilityContentUnavailableView(
-                        self.viewModel.screen.title,
-                        systemImage: "exclamationmark.triangle.fill",
-                        description: Text(self.viewModel.screen.subtitle ?? fallbackDescription)
-                    )
-                }
-
-                Section {
-                    ManageSubscriptionsButtonsView(viewModel: viewModel)
                 }
             }
         }
@@ -258,6 +273,18 @@ struct SubscriptionDetailView: View {
                     viewModel: SubscriptionDetailViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: false,
+                        purchaseInformation: nil
+                    )
+                )
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Emtpy state - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                SubscriptionDetailView(
+                    viewModel: SubscriptionDetailViewModel(
+                        screen: CustomerCenterConfigData.default.screens[.management]!,
+                        showPurchaseHistory: true,
                         purchaseInformation: .yearlyExpiring(store: .playStore)
                     )
                 )
