@@ -215,36 +215,14 @@ private extension CustomerCenterView {
                         }
                     }
                 )
-            } else if viewModel.activePurchases.count > 1 {
-                ActiveSubscriptionsListView(
-                    screen: screen,
-                    activePurchases: $viewModel.activePurchases,
-                    originalAppUserId: viewModel.originalAppUserId,
-                    originalPurchaseDate: viewModel.originalPurchaseDate,
-                    purchasesProvider: self.viewModel.purchasesProvider,
-                    actionWrapper: self.viewModel.actionWrapper
-                )
-                .dismissCircleButtonToolbarIfNeeded()
+            } else if viewModel.activeSubscriptionPurchases.count > 1 {
+                listView(screen)
             } else {
-                SubscriptionDetailView(
-                    screen: screen,
-                    purchaseInformation: viewModel.activePurchase,
-                    showPurchaseHistory: viewModel.configuration?.support.displayPurchaseHistoryLink == true,
-                    purchasesProvider: self.viewModel.purchasesProvider,
-                    actionWrapper: self.viewModel.actionWrapper
-                )
-                .dismissCircleButtonToolbarIfNeeded()
+                singlePurchaseView(screen)
             }
         } else {
             if let screen = configuration.screens[.noActive] {
-                SubscriptionDetailView(
-                    screen: screen,
-                    purchaseInformation: nil,
-                    showPurchaseHistory: viewModel.configuration?.support.displayPurchaseHistoryLink == true,
-                    purchasesProvider: self.viewModel.purchasesProvider,
-                    actionWrapper: self.viewModel.actionWrapper
-                )
-                .dismissCircleButtonToolbarIfNeeded()
+                singlePurchaseView(screen)
             } else {
                 // Fallback with a restore button
                 NoSubscriptionsView(
@@ -264,6 +242,30 @@ private extension CustomerCenterView {
             .applyIf(accentColor != nil, apply: { $0.tint(accentColor) })
     }
 
+    func listView(_ screen: CustomerCenterConfigData.Screen) -> some View {
+        ActiveSubscriptionsListView(
+            screen: screen,
+            activePurchases: $viewModel.activeSubscriptionPurchases,
+            nonSubscriptionPurchases: $viewModel.activeNonSubscriptionPurchases,
+            originalAppUserId: viewModel.originalAppUserId,
+            originalPurchaseDate: viewModel.originalPurchaseDate,
+            purchasesProvider: self.viewModel.purchasesProvider,
+            actionWrapper: self.viewModel.actionWrapper
+        )
+        .dismissCircleButtonToolbarIfNeeded()
+    }
+
+    func singlePurchaseView(_ screen: CustomerCenterConfigData.Screen) -> some View {
+        SubscriptionDetailView(
+            screen: screen,
+            purchaseInformation: viewModel.activePurchase,
+            showPurchaseHistory: viewModel.configuration?.support.displayPurchaseHistoryLink == true,
+            purchasesProvider: self.viewModel.purchasesProvider,
+            actionWrapper: self.viewModel.actionWrapper
+        )
+        .dismissCircleButtonToolbarIfNeeded()
+    }
+
     func trackImpression() {
         viewModel.trackImpression(darkMode: self.colorScheme == .dark,
                                   displayMode: self.mode)
@@ -280,12 +282,13 @@ private extension CustomerCenterView {
 struct CustomerCenterView_Previews: PreviewProvider {
 
     static var previews: some View {
-        let purchaseInformationApple =
-        CustomerCenterConfigData.subscriptionInformationMonthlyRenewing
-        let viewModelApple = CustomerCenterViewModel(purchaseInformation: purchaseInformationApple,
-                                                     configuration: CustomerCenterConfigData.default)
-        CustomerCenterView(viewModel: viewModelApple)
-            .previewDisplayName("Monthly Apple")
+        CustomerCenterView(
+            viewModel: CustomerCenterViewModel(
+                purchaseInformation: .yearlyExpiring(),
+                configuration: CustomerCenterConfigData.default
+            )
+        )
+        .previewDisplayName("Monthly Apple")
     }
 
 }

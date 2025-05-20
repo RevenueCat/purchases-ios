@@ -44,8 +44,13 @@ struct ActiveSubscriptionsListView: View {
     @Binding
     var activePurchases: [PurchaseInformation]
 
+    /// Used to reload the viewModel
+    @Binding
+    var nonSubscriptionPurchases: [PurchaseInformation]
+
     init(screen: CustomerCenterConfigData.Screen,
          activePurchases: Binding<[PurchaseInformation]>,
+         nonSubscriptionPurchases: Binding<[PurchaseInformation]>,
          originalAppUserId: String,
          originalPurchaseDate: Date?,
          purchasesProvider: CustomerCenterPurchasesType,
@@ -54,6 +59,7 @@ struct ActiveSubscriptionsListView: View {
             screen: screen,
             actionWrapper: actionWrapper,
             activePurchases: activePurchases.wrappedValue,
+            nonSubscriptionPurchases: nonSubscriptionPurchases.wrappedValue,
             originalAppUserId: originalAppUserId,
             originalPurchaseDate: originalPurchaseDate,
             purchasesProvider: purchasesProvider
@@ -61,6 +67,7 @@ struct ActiveSubscriptionsListView: View {
 
         self.init(
             activePurchases: activePurchases,
+            nonSubscriptionPurchases: nonSubscriptionPurchases,
             viewModel: viewModel
         )
     }
@@ -68,9 +75,11 @@ struct ActiveSubscriptionsListView: View {
     // Used for Previews
     fileprivate init(
         activePurchases: Binding<[PurchaseInformation]> = .constant([]),
+        nonSubscriptionPurchases: Binding<[PurchaseInformation]> = .constant([]),
         viewModel: ActiveSubscriptionsListViewModel
     ) {
         self._activePurchases = activePurchases
+        self._nonSubscriptionPurchases = nonSubscriptionPurchases
         self._viewModel = .init(wrappedValue: viewModel)
     }
 
@@ -131,56 +140,89 @@ struct ActiveSubscriptionsListView: View {
             }
         } else {
             ScrollViewWithOSBackground {
-                LazyVStack {
-                    Text(localization[.activeSubscriptions].uppercased())
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 32)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .multilineTextAlignment(.leading)
+                LazyVStack(spacing: 0) {
+                    if !viewModel.activePurchases.isEmpty {
+                        activeSubscriptionsView
+                            .padding(.top, 16)
+                    }
 
-                    ForEach(viewModel.activePurchases) { purchase in
-                        Section {
-                            Button {
-                                viewModel.purchaseInformation = purchase
-                            } label: {
-                                PurchaseInformationCardView(
-                                    purchaseInformation: purchase,
-                                    localization: localization
-                                )
-                                .padding()
-                                .background(Color(colorScheme == .light
-                                                  ? UIColor.systemBackground
-                                                  : UIColor.secondarySystemBackground))
-                                .cornerRadius(10)
-                                .padding(.horizontal)
-                            }
-                            .tint(colorScheme == .dark ? .white : .black)
-                        }
+                    if !viewModel.nonSubscriptionPurchases.isEmpty {
+                        otherPurchasesView
+                            .padding(.top, 16)
                     }
 
                     if support?.displayPurchaseHistoryLink == true {
-                        Button {
-                            viewModel.showAllPurchases = true
-                        } label: {
-                            CompatibilityLabeledContent(localization[.seeAllPurchases]) {
-                                Image(systemName: "chevron.forward")
-                            }
-                            .padding()
-                            .background(Color(colorScheme == .light
-                                              ? UIColor.systemBackground
-                                              : UIColor.secondarySystemBackground))
-                            .cornerRadius(10)
-                            .padding(.horizontal)
-                        }
-                        .tint(colorScheme == .dark ? .white : .black)
-                        .padding(.top, 32)
+                        seeAllSubscriptionsButton
+                            .padding(.top, 16)
                     }
 
                     accountDetailsView
                 }
             }
         }
+    }
+
+    @ViewBuilder
+    private var activeSubscriptionsView: some View {
+        ScrollViewSection(title: localization[.activeSubscriptions]) {
+            ForEach(viewModel.activePurchases) { purchase in
+                Button {
+                    viewModel.purchaseInformation = purchase
+                } label: {
+                    PurchaseInformationCardView(
+                        purchaseInformation: purchase,
+                        localization: localization
+                    )
+                    .padding()
+                    .background(Color(colorScheme == .light
+                                      ? UIColor.systemBackground
+                                      : UIColor.secondarySystemBackground))
+                    .cornerRadius(10)
+                    .padding(.horizontal)
+                }
+                .tint(colorScheme == .dark ? .white : .black)
+            }
+        }
+    }
+
+    private var otherPurchasesView: some View {
+        ScrollViewSection(title: localization[.otherPurchases]) {
+            ForEach(viewModel.nonSubscriptionPurchases[0..<2]) { purchase in
+                Button {
+                    viewModel.purchaseInformation = purchase
+                } label: {
+                    PurchaseInformationCardView(
+                        purchaseInformation: purchase,
+                        localization: localization
+                    )
+                    .padding()
+                    .background(Color(colorScheme == .light
+                                      ? UIColor.systemBackground
+                                      : UIColor.secondarySystemBackground))
+                    .cornerRadius(10)
+                    .padding(.horizontal)
+                }
+                .tint(colorScheme == .dark ? .white : .black)
+            }
+        }
+    }
+
+    private var seeAllSubscriptionsButton: some View {
+        Button {
+            viewModel.showAllPurchases = true
+        } label: {
+            CompatibilityLabeledContent(localization[.seeAllPurchases]) {
+                Image(systemName: "chevron.forward")
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 16)
+            .background(Color(colorScheme == .light
+                              ? UIColor.systemBackground
+                              : UIColor.secondarySystemBackground))
+            .cornerRadius(10)
+            .padding(.horizontal)
+        }
+        .tint(colorScheme == .dark ? .white : .black)
     }
 
     @ViewBuilder
@@ -192,6 +234,7 @@ struct ActiveSubscriptionsListView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .multilineTextAlignment(.leading)
             .padding(.top, 32)
+            .padding(.bottom, 16)
 
         VStack {
             if let originalPurchaseDate = viewModel.originalPurchaseDate {
@@ -295,6 +338,20 @@ struct ActiveSubscriptionsListView_Previews: PreviewProvider {
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Active subs - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                ActiveSubscriptionsListView(
+                    viewModel: ActiveSubscriptionsListViewModel(
+                        screen: warningOffMock.screens[.management]!,
+                        originalAppUserId: UUID().uuidString,
+                        activePurchases: purchases,
+                        nonSubscriptionPurchases: [.consumable, .lifetime]
+                    )
+                )
+                .environment(\.supportInformation, warningOffMock.support)
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Active subs & other - \(colorScheme)")
 
             CompatibilityNavigationStack {
                 ActiveSubscriptionsListView(

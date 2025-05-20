@@ -27,6 +27,9 @@ final class ActiveSubscriptionsListViewModel: BaseManageSubscriptionViewModel {
     @Published
     private(set) var activePurchases: [PurchaseInformation] = []
 
+    @Published
+    private(set) var nonSubscriptionPurchases: [PurchaseInformation] = []
+
     let originalAppUserId: String
     let originalPurchaseDate: Date?
 
@@ -34,12 +37,14 @@ final class ActiveSubscriptionsListViewModel: BaseManageSubscriptionViewModel {
         screen: CustomerCenterConfigData.Screen,
         actionWrapper: CustomerCenterActionWrapper,
         activePurchases: [PurchaseInformation] = [],
+        nonSubscriptionPurchases: [PurchaseInformation] = [],
         originalAppUserId: String,
         originalPurchaseDate: Date?,
         refundRequestStatus: RefundRequestStatus? = nil,
         purchasesProvider: CustomerCenterPurchasesType,
         loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
             self.activePurchases = activePurchases
+            self.nonSubscriptionPurchases = nonSubscriptionPurchases
             self.originalAppUserId = originalAppUserId
             self.originalPurchaseDate = originalPurchaseDate
 
@@ -58,12 +63,14 @@ final class ActiveSubscriptionsListViewModel: BaseManageSubscriptionViewModel {
         screen: CustomerCenterConfigData.Screen,
         originalAppUserId: String,
         activePurchases: [PurchaseInformation] = [],
+        nonSubscriptionPurchases: [PurchaseInformation] = [],
         originalPurchaseDate: Date? = nil
     ) {
         self.init(
             screen: screen,
             actionWrapper: CustomerCenterActionWrapper(),
             activePurchases: activePurchases,
+            nonSubscriptionPurchases: nonSubscriptionPurchases,
             originalAppUserId: originalAppUserId,
             originalPurchaseDate: originalPurchaseDate,
             purchasesProvider: MockCustomerCenterPurchases()
