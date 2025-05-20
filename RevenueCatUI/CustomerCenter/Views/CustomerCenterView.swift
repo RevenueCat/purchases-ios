@@ -243,7 +243,7 @@ private extension CustomerCenterView {
     }
 
     func listView(_ screen: CustomerCenterConfigData.Screen) -> some View {
-        ActiveSubscriptionsListView(
+        RelevantPurchasesListView(
             screen: screen,
             activePurchases: $viewModel.activeSubscriptionPurchases,
             nonSubscriptionPurchases: $viewModel.activeNonSubscriptionPurchases,

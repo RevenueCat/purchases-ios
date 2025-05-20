@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  ActiveSubscriptionsListViewModel.swift
+//  RelevantPurchasesListViewModel.swift
 //
 //  Created by Facundo Menzella on 14/5/25.
 
@@ -22,7 +22,7 @@ import SwiftUI
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @MainActor
-final class ActiveSubscriptionsListViewModel: BaseManageSubscriptionViewModel {
+final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
 
     @Published
     private(set) var activePurchases: [PurchaseInformation] = []

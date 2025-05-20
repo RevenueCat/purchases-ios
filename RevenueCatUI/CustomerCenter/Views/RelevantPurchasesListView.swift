@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  ActiveSubscriptionsListView.swift
+//  RelevantPurchasesListView.swift
 //
 //  Created by Facundo Menzella on 14/5/25.
 
@@ -20,7 +20,7 @@ import SwiftUI
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-struct ActiveSubscriptionsListView: View {
+struct RelevantPurchasesListView: View {
 
     @Environment(\.appearance)
     private var appearance: CustomerCenterConfigData.Appearance
@@ -38,7 +38,7 @@ struct ActiveSubscriptionsListView: View {
     var navigationOptions
 
     @StateObject
-    private var viewModel: ActiveSubscriptionsListViewModel
+    private var viewModel: RelevantPurchasesListViewModel
 
     /// Used to reload the viewModel
     @Binding
@@ -55,7 +55,7 @@ struct ActiveSubscriptionsListView: View {
          originalPurchaseDate: Date?,
          purchasesProvider: CustomerCenterPurchasesType,
          actionWrapper: CustomerCenterActionWrapper) {
-        let viewModel = ActiveSubscriptionsListViewModel(
+        let viewModel = RelevantPurchasesListViewModel(
             screen: screen,
             actionWrapper: actionWrapper,
             activePurchases: activePurchases.wrappedValue,
@@ -76,7 +76,7 @@ struct ActiveSubscriptionsListView: View {
     fileprivate init(
         activePurchases: Binding<[PurchaseInformation]> = .constant([]),
         nonSubscriptionPurchases: Binding<[PurchaseInformation]> = .constant([]),
-        viewModel: ActiveSubscriptionsListViewModel
+        viewModel: RelevantPurchasesListViewModel
     ) {
         self._activePurchases = activePurchases
         self._nonSubscriptionPurchases = nonSubscriptionPurchases
@@ -324,8 +324,8 @@ struct ActiveSubscriptionsListView_Previews: PreviewProvider {
 
         ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
             CompatibilityNavigationStack {
-                ActiveSubscriptionsListView(
-                    viewModel: ActiveSubscriptionsListViewModel(
+                RelevantPurchasesListView(
+                    viewModel: RelevantPurchasesListViewModel(
                         screen: warningOffMock.screens[.management]!,
                         originalAppUserId: "originalAppUserId",
                         activePurchases: purchases
@@ -337,8 +337,8 @@ struct ActiveSubscriptionsListView_Previews: PreviewProvider {
             .previewDisplayName("Active subs - \(colorScheme)")
 
             CompatibilityNavigationStack {
-                ActiveSubscriptionsListView(
-                    viewModel: ActiveSubscriptionsListViewModel(
+                RelevantPurchasesListView(
+                    viewModel: RelevantPurchasesListViewModel(
                         screen: warningOffMock.screens[.management]!,
                         originalAppUserId: UUID().uuidString,
                         activePurchases: purchases,
@@ -351,8 +351,8 @@ struct ActiveSubscriptionsListView_Previews: PreviewProvider {
             .previewDisplayName("Active subs & other - \(colorScheme)")
 
             CompatibilityNavigationStack {
-                ActiveSubscriptionsListView(
-                    viewModel: ActiveSubscriptionsListViewModel(
+                RelevantPurchasesListView(
+                    viewModel: RelevantPurchasesListViewModel(
                         screen: warningOnMock.screens[.management]!,
                         originalAppUserId: "originalAppUserId",
                         activePurchases: []

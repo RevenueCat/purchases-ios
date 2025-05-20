@@ -556,6 +556,7 @@
 		570A671E2DD2026600DEBABE /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 570A671D2DD2026500DEBABE /* Transaction.swift */; };
 		570A67202DD2029D00DEBABE /* IdentifiableURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 570A671F2DD2029B00DEBABE /* IdentifiableURL.swift */; };
 		570FAF4B2864EC2300D3C769 /* NonSubscriptionTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 570FAF4A2864EC2300D3C769 /* NonSubscriptionTransaction.swift */; };
+		5712120F2DDC957200A792C7 /* RelevantPurchasesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5712120E2DDC957200A792C7 /* RelevantPurchasesListView.swift */; };
 		5712BE9029241EB500A83F15 /* TimingUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5712BE8F29241EB500A83F15 /* TimingUtil.swift */; };
 		5712BE9229241F7900A83F15 /* TimingUtilTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5712BE9129241F7900A83F15 /* TimingUtilTests.swift */; };
 		571E7AD4279F2D0C003B3606 /* StoreKitTestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 571E7AD3279F2D0C003B3606 /* StoreKitTestHelpers.swift */; };
@@ -684,7 +685,6 @@
 		57740F592DD6460F00585B5A /* ManageSubscriptionsButtonsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57740F3A2DD6460F00585B5A /* ManageSubscriptionsButtonsView.swift */; };
 		57740F5A2DD6460F00585B5A /* NoSubscriptionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57740F3B2DD6460F00585B5A /* NoSubscriptionsView.swift */; };
 		57740F5B2DD6460F00585B5A /* PromotionalOfferView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57740F3C2DD6460F00585B5A /* PromotionalOfferView.swift */; };
-		57740F5C2DD6460F00585B5A /* ActiveSubscriptionsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57740F2F2DD6460F00585B5A /* ActiveSubscriptionsListView.swift */; };
 		57740F5D2DD6460F00585B5A /* CompatibilityContentUnavailableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57740F312DD6460F00585B5A /* CompatibilityContentUnavailableView.swift */; };
 		57740F5E2DD6460F00585B5A /* PurchaseLinkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57740F402DD6460F00585B5A /* PurchaseLinkView.swift */; };
 		57740F5F2DD6460F00585B5A /* FeedbackSurveyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57740F392DD6460F00585B5A /* FeedbackSurveyView.swift */; };
@@ -858,7 +858,7 @@
 		75D9DE072D79FC0E0068554F /* testEncoding.1.json in Resources */ = {isa = PBXBuildFile; fileRef = 75D9DE022D79FC0E0068554F /* testEncoding.1.json */; };
 		75D9DE082D79FC0E0068554F /* DiagnosticsEventEncodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D9DE052D79FC0E0068554F /* DiagnosticsEventEncodingTests.swift */; };
 		75F660172DDB2E7B00DBED1C /* CustomerCenterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F660152DDB2E7B00DBED1C /* CustomerCenterViewController.swift */; };
-		75F660192DDB2EBE00DBED1C /* ActiveSubscriptionsListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F660182DDB2EBE00DBED1C /* ActiveSubscriptionsListViewModel.swift */; };
+		75F660192DDB2EBE00DBED1C /* RelevantPurchasesListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F660182DDB2EBE00DBED1C /* RelevantPurchasesListViewModel.swift */; };
 		7706ED3E2C6E374D0004B9F9 /* ButtonStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7706ED3D2C6E374D0004B9F9 /* ButtonStyles.swift */; };
 		7707A94C2CAD93AC006E0313 /* PaywallButtonComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94B2CAD93AC006E0313 /* PaywallButtonComponent.swift */; };
 		7707A94E2CAD94D2006E0313 /* ButtonComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94D2CAD94D2006E0313 /* ButtonComponentViewModel.swift */; };
@@ -1950,6 +1950,7 @@
 		570A671D2DD2026500DEBABE /* Transaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transaction.swift; sourceTree = "<group>"; };
 		570A671F2DD2029B00DEBABE /* IdentifiableURL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentifiableURL.swift; sourceTree = "<group>"; };
 		570FAF4A2864EC2300D3C769 /* NonSubscriptionTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NonSubscriptionTransaction.swift; sourceTree = "<group>"; };
+		5712120E2DDC957200A792C7 /* RelevantPurchasesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RelevantPurchasesListView.swift; sourceTree = "<group>"; };
 		5712BE8F29241EB500A83F15 /* TimingUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimingUtil.swift; sourceTree = "<group>"; };
 		5712BE9129241F7900A83F15 /* TimingUtilTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimingUtilTests.swift; sourceTree = "<group>"; };
 		571E7AD3279F2D0C003B3606 /* StoreKitTestHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitTestHelpers.swift; sourceTree = "<group>"; };
@@ -2050,7 +2051,6 @@
 		576C8ABF27D29A020058FA6E /* __Snapshots__ */ = {isa = PBXFileReference; lastKnownFileType = folder; path = __Snapshots__; sourceTree = "<group>"; };
 		576C8AD827D2BCB90058FA6E /* HTTPRequestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPRequestTests.swift; sourceTree = "<group>"; };
 		576F15462DD4AB64003D8EEC /* DiscountsHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscountsHandlerTests.swift; sourceTree = "<group>"; };
-		57740F2F2DD6460F00585B5A /* ActiveSubscriptionsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSubscriptionsListView.swift; sourceTree = "<group>"; };
 		57740F302DD6460F00585B5A /* AppUpdateWarningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateWarningView.swift; sourceTree = "<group>"; };
 		57740F312DD6460F00585B5A /* CompatibilityContentUnavailableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompatibilityContentUnavailableView.swift; sourceTree = "<group>"; };
 		57740F322DD6460F00585B5A /* CompatibilityLabeledContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompatibilityLabeledContent.swift; sourceTree = "<group>"; };
@@ -2210,7 +2210,7 @@
 		75D9DE022D79FC0E0068554F /* testEncoding.1.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = testEncoding.1.json; sourceTree = "<group>"; };
 		75D9DE052D79FC0E0068554F /* DiagnosticsEventEncodingTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiagnosticsEventEncodingTests.swift; sourceTree = "<group>"; };
 		75F660152DDB2E7B00DBED1C /* CustomerCenterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterViewController.swift; sourceTree = "<group>"; };
-		75F660182DDB2EBE00DBED1C /* ActiveSubscriptionsListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSubscriptionsListViewModel.swift; sourceTree = "<group>"; };
+		75F660182DDB2EBE00DBED1C /* RelevantPurchasesListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RelevantPurchasesListViewModel.swift; sourceTree = "<group>"; };
 		7706ED3D2C6E374D0004B9F9 /* ButtonStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonStyles.swift; sourceTree = "<group>"; };
 		7707A93B2CAD8AA2006E0313 /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
 		7707A94B2CAD93AC006E0313 /* PaywallButtonComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallButtonComponent.swift; sourceTree = "<group>"; };
@@ -3858,7 +3858,7 @@
 		3537565A2C382C2800A1B8D6 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
-				75F660182DDB2EBE00DBED1C /* ActiveSubscriptionsListViewModel.swift */,
+				75F660182DDB2EBE00DBED1C /* RelevantPurchasesListViewModel.swift */,
 				57BB08652DD3D9AC007493E1 /* SubscriptionDetailViewModel.swift */,
 				57FE3A592DD3BD9700868DEF /* BaseManageSubscriptionViewModel.swift */,
 				35724B402D96DB1700332612 /* RestorePurchasesAlertViewModel.swift */,
@@ -3874,11 +3874,11 @@
 		353756602C382C2800A1B8D6 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				5712120E2DDC957200A792C7 /* RelevantPurchasesListView.swift */,
 				57A9AFDF2DDC715900F77341 /* ScrollViewSection.swift */,
 				570305092DDB7DF300393089 /* ActiveSubscriptionButtonsView.swift */,
 				57740F412DD6460F00585B5A /* PurchaseHistory */,
 				75F660162DDB2E7B00DBED1C /* UIKit Compatibility */,
-				57740F2F2DD6460F00585B5A /* ActiveSubscriptionsListView.swift */,
 				57740F302DD6460F00585B5A /* AppUpdateWarningView.swift */,
 				57740F312DD6460F00585B5A /* CompatibilityContentUnavailableView.swift */,
 				57740F322DD6460F00585B5A /* CompatibilityLabeledContent.swift */,
@@ -7006,9 +7006,8 @@
 				57740F582DD6460F00585B5A /* CompatibilityNavigationStack.swift in Sources */,
 				57740F592DD6460F00585B5A /* ManageSubscriptionsButtonsView.swift in Sources */,
 				57740F5A2DD6460F00585B5A /* NoSubscriptionsView.swift in Sources */,
-				75F660192DDB2EBE00DBED1C /* ActiveSubscriptionsListViewModel.swift in Sources */,
+				75F660192DDB2EBE00DBED1C /* RelevantPurchasesListViewModel.swift in Sources */,
 				57740F5B2DD6460F00585B5A /* PromotionalOfferView.swift in Sources */,
-				57740F5C2DD6460F00585B5A /* ActiveSubscriptionsListView.swift in Sources */,
 				57740F5D2DD6460F00585B5A /* CompatibilityContentUnavailableView.swift in Sources */,
 				57740F5E2DD6460F00585B5A /* PurchaseLinkView.swift in Sources */,
 				57740F5F2DD6460F00585B5A /* FeedbackSurveyView.swift in Sources */,
@@ -7022,6 +7021,7 @@
 				57FFAE242DD72C2F00A1DA1B /* MockCustomerCenterStoreKitUtilities.swift in Sources */,
 				887A60C32C1D037000E1A461 /* FooterView.swift in Sources */,
 				2C7457212CE702BB004ACE52 /* PackageContext.swift in Sources */,
+				5712120F2DDC957200A792C7 /* RelevantPurchasesListView.swift in Sources */,
 				355FDB5C2D783FC400D20E65 /* CustomerCenterActionViewModifier.swift in Sources */,
 				355FDB5D2D783FC400D20E65 /* CustomerCenterActionWrapper.swift in Sources */,
 				887A607F2C1D037000E1A461 /* Optional+Extensions.swift in Sources */,
