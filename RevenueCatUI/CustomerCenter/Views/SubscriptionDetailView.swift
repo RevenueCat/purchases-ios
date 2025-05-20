@@ -180,21 +180,8 @@ struct SubscriptionDetailView: View {
                     purchasesProvider: viewModel.purchasesProvider
                 ), viewModel.shouldShowContactSupport,
                     URLUtilities.canOpenURL(url) || RuntimeUtils.isSimulator {
-                    AsyncButton {
-                        if RuntimeUtils.isSimulator {
-                            self.showSimulatorAlert = true
-                        } else {
-                            viewModel.inAppBrowserURL = IdentifiableURL(url: url)
-                        }
-                    } label: {
-                        Text(localization[.contactSupport])
-                            .padding()
-                            .background(Color(colorScheme == .light
-                                              ? UIColor.systemBackground
-                                              : UIColor.secondarySystemBackground))
-                            .cornerRadius(10)
-                            .padding(.horizontal)
-                    }
+                    contactSupportView(url)
+                        .padding(.top)
                 }
             }
         }
@@ -210,6 +197,25 @@ struct SubscriptionDetailView: View {
          })
     }
 
+    @ViewBuilder
+    func contactSupportView(_ url: URL) -> some View {
+        AsyncButton {
+            if RuntimeUtils.isSimulator {
+                self.showSimulatorAlert = true
+            } else {
+                viewModel.inAppBrowserURL = IdentifiableURL(url: url)
+            }
+        } label: {
+            CompatibilityLabeledContent(localization[.contactSupport])
+                .padding(.horizontal)
+                .padding(.vertical, 12)
+        }
+        .background(Color(colorScheme == .light
+                          ? UIColor.systemBackground
+                          : UIColor.secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .padding(.horizontal)
+    }
 }
 
  #if DEBUG
