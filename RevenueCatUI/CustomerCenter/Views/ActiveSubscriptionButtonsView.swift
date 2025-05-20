@@ -35,7 +35,7 @@ struct ActiveSubscriptionButtonsView: View {
                 AsyncButton(action: {
                     await self.viewModel.handleHelpPath(
                         path,
-                        wihtActiveProductId: viewModel.purchaseInformation?.productIdentifier)
+                        withActiveProductId: viewModel.purchaseInformation?.productIdentifier)
                 }, label: {
                     if self.viewModel.loadingPath?.id == path.id {
                         TintedProgressView()
