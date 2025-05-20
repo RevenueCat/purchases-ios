@@ -89,6 +89,7 @@ extension CustomerInfoResponse {
         @IgnoreDecodeErrors<Store>
         var store: Store
         var isSandbox: Bool
+        var displayName: String?
 
     }
 
@@ -139,6 +140,7 @@ extension CustomerInfoResponse.Transaction: Codable, Hashable {
         case storeTransactionIdentifier = "storeTransactionId"
         case store
         case isSandbox
+        case displayName
 
     }
 

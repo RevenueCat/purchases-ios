@@ -34,9 +34,7 @@ public final class NonSubscriptionTransaction: NSObject {
     /// The unique identifier for the transaction created by the Store.
     @objc public let storeTransactionIdentifier: String
 
-    /**
-     * The ``Store`` where this transaction was performed.
-     */
+    /// The ``Store`` where this transaction was performed.
     @objc public let store: Store
 
     init?(with transaction: CustomerInfoResponse.Transaction, productID: String) {

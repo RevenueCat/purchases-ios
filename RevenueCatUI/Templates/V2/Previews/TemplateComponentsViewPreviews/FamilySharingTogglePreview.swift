@@ -301,7 +301,8 @@ private enum FamilySharingTogglePreview {
                                     bottomLeading: 16,
                                     bottomTrailing: 16))
         ),
-        action: .inAppCheckout
+        action: .inAppCheckout,
+        method: .inAppCheckout
     )
 
     static let purchaseButtonStack = PaywallComponent.StackComponent(

@@ -7,11 +7,9 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  ManageSubscriptionsViewModel.swift
+//  BaseManageSubscriptionViewModel.swift
 //
-//
-//  Created by Cesar de la Vega on 27/5/24.
-//
+//  Created by Facundo Menzella on 5/5/25.
 
 import Foundation
 @_spi(Internal) import RevenueCat
@@ -24,7 +22,7 @@ import SwiftUI
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @MainActor
-final class ManageSubscriptionsViewModel: ObservableObject {
+class BaseManageSubscriptionViewModel: ObservableObject {
 
     let screen: CustomerCenterConfigData.Screen
 
@@ -33,13 +31,13 @@ final class ManageSubscriptionsViewModel: ObservableObject {
     }
 
     @Published
+    var showAllPurchases = false
+
+    @Published
     var showRestoreAlert: Bool = false
 
     @Published
     var restoreAlertType: RestorePurchasesAlertViewModel.AlertType
-
-    @Published
-    var showAllPurchases: Bool = false
 
     @Published
     var feedbackSurveyData: FeedbackSurveyData?
@@ -53,19 +51,10 @@ final class ManageSubscriptionsViewModel: ObservableObject {
     @Published
     var inAppBrowserURL: IdentifiableURL?
 
-    @Published
-    var state: CustomerCenterViewState {
-        didSet {
-            if case let .error(stateError) = state {
-                self.error = stateError
-            }
-        }
-    }
-
     let actionWrapper: CustomerCenterActionWrapper
 
     @Published
-    private(set) var purchaseInformation: PurchaseInformation?
+    var purchaseInformation: PurchaseInformation?
 
     @Published
     private(set) var refundRequestStatus: RefundRequestStatus?
@@ -78,28 +67,23 @@ final class ManageSubscriptionsViewModel: ObservableObject {
     init(
         screen: CustomerCenterConfigData.Screen,
         actionWrapper: CustomerCenterActionWrapper,
-        purchaseInformation: PurchaseInformation?,
+        purchaseInformation: PurchaseInformation? = nil,
         refundRequestStatus: RefundRequestStatus? = nil,
         purchasesProvider: CustomerCenterPurchasesType,
         loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
             self.screen = screen
-            self.paths = screen.filteredPaths
+            self.paths = screen.supportedPaths
             self.purchaseInformation = purchaseInformation
             self.purchasesProvider = purchasesProvider
             self.refundRequestStatus = refundRequestStatus
             self.actionWrapper = actionWrapper
             self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase
             ?? LoadPromotionalOfferUseCase(purchasesProvider: purchasesProvider)
-            self.state = .success
             self.restoreAlertType = .loading
         }
 
-    func reloadPurchaseInformation(_ purchaseInformation: PurchaseInformation) {
-        self.purchaseInformation = purchaseInformation
-    }
-
 #if os(iOS) || targetEnvironment(macCatalyst)
-    func handleHelpPath(_ path: CustomerCenterConfigData.HelpPath, activeProductId: String? = nil) async {
+    func handleHelpPath(_ path: CustomerCenterConfigData.HelpPath, withActiveProductId: String? = nil) async {
         // Convert the path to an appropriate action using the extension
         if let action = path.asAction() {
             // Send the action through the action wrapper
@@ -116,7 +100,7 @@ final class ManageSubscriptionsViewModel: ObservableObject {
                     }
                 }
 
-        case let .promotionalOffer(promotionalOffer):
+        case let .promotionalOffer(promotionalOffer) where purchaseInformation?.store == .appStore:
             if promotionalOffer.eligible {
                 self.loadingPath = path
                 let result = await loadPromotionalOfferUseCase.execute(promoOfferDetails: promotionalOffer)
@@ -129,7 +113,7 @@ final class ManageSubscriptionsViewModel: ObservableObject {
                 }
             } else {
                 Logger.debug(Strings.promo_offer_not_eligible_for_product(
-                    promotionalOffer.iosOfferId, activeProductId ?? ""
+                    promotionalOffer.iosOfferId, withActiveProductId ?? ""
                 ))
                 await self.onPathSelected(path: path)
             }
@@ -139,16 +123,10 @@ final class ManageSubscriptionsViewModel: ObservableObject {
         }
     }
 
-    func handleSheetDismiss() async {
-        if let loadingPath = loadingPath {
-            await self.onPathSelected(path: loadingPath)
-            self.loadingPath = nil
-        }
-    }
-
     func onDismissInAppBrowser() {
         self.inAppBrowserURL = nil
     }
+
 #endif
 
 }
@@ -158,7 +136,7 @@ final class ManageSubscriptionsViewModel: ObservableObject {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-extension ManageSubscriptionsViewModel {
+extension BaseManageSubscriptionViewModel {
 
     /// Function responsible for handling the user's action on the PromotionalOfferView
     func handleDismissPromotionalOfferView(_ userAction: PromotionalOfferViewAction) async {
@@ -187,7 +165,7 @@ extension ManageSubscriptionsViewModel {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-private extension ManageSubscriptionsViewModel {
+private extension BaseManageSubscriptionViewModel {
 
 #if os(iOS) || targetEnvironment(macCatalyst)
     // swiftlint:disable:next cyclomatic_complexity
@@ -245,7 +223,7 @@ private extension ManageSubscriptionsViewModel {
 
 private extension CustomerCenterConfigData.Screen {
 
-    var filteredPaths: [CustomerCenterConfigData.HelpPath] {
+    var supportedPaths: [CustomerCenterConfigData.HelpPath] {
         return self.paths.filter { path in
             return path.type != .unknown
         }
@@ -258,7 +236,9 @@ private extension Array<CustomerCenterConfigData.HelpPath> {
         for purchaseInformation: PurchaseInformation?
     ) -> [CustomerCenterConfigData.HelpPath] {
         guard let purchaseInformation else {
-            return self
+            return filter {
+                $0.type == .missingPurchase
+            }
         }
 
         return filter {
@@ -269,9 +249,9 @@ private extension Array<CustomerCenterConfigData.HelpPath> {
             // if it's cancel, it cannot be a lifetime subscription
             let isEligibleCancel = !purchaseInformation.isLifetime && !purchaseInformation.isCancelled
 
-            // if it's refundRequest, it cannot be free  nor within trial period
+            // if it's refundRequest, it cannot be free nor within trial period
             let isRefund = $0.type == .refundRequest
-            let isRefundEligible = purchaseInformation.price != .free
+            let isRefundEligible = purchaseInformation.pricePaid != .free
                                     && !purchaseInformation.isTrial
                                     && !purchaseInformation.isCancelled
 

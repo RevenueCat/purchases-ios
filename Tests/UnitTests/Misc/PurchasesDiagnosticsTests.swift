@@ -272,4 +272,31 @@ class PurchasesDiagnosticsTests: TestCase {
         expect(error.localizedDescription) == expected
     }
 
+    func testOfferingsAreBeingReturnedInTheHealthReport() async {
+        let checkDetails = OfferingsCheckDetails(
+            offerings: [
+                .init(identifier: "offering", packages: [], status: .passed)
+            ]
+        )
+
+        self.purchases.mockedHealthReportRequestResponse = .success(
+            HealthReport(
+                status: .passed,
+                projectId: nil,
+                appId: nil,
+                checks: [
+                    HealthCheck(
+                        name: HealthCheckType.offeringsProducts,
+                        status: HealthCheckStatus.passed,
+                        details: .offeringsProducts(checkDetails)
+                    )
+                ]
+            )
+        )
+
+        let report = await self.diagnostics.healthReport()
+
+        XCTAssertEqual(report.offerings.count, 1)
+    }
+
 }
