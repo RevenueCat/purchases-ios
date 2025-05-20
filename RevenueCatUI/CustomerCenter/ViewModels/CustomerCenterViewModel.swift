@@ -217,10 +217,10 @@ private extension CustomerCenterViewModel {
         )
 
         await loadActiveSubscriptions(customerInfo: customerInfo)
-        await loadOtherPurchases(customerInfo: customerInfo)
+        await loadActiveNonSubscriptionPurchases(customerInfo: customerInfo)
     }
 
-    func loadOtherPurchases(customerInfo: CustomerInfo) async {
+    func loadActiveNonSubscriptionPurchases(customerInfo: CustomerInfo) async {
         var activeNonSubscriptionPurchases: [PurchaseInformation] = []
         for subscription in customerInfo.nonSubscriptions {
             let entitlement = customerInfo.entitlements.all.values

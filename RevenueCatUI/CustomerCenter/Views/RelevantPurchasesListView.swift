@@ -130,8 +130,7 @@ struct RelevantPurchasesListView: View {
                         systemImage: "exclamationmark.triangle.fill",
                         description: Text(self.viewModel.screen.subtitle ?? localization[.tryCheckRestore])
                     )
-                    .padding(.horizontal)
-                    .padding(.vertical)
+                    .padding()
                     .fixedSize(horizontal: false, vertical: true)
                     .background(
                         RoundedRectangle(cornerRadius: 8)

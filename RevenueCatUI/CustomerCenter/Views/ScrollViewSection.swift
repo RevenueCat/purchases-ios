@@ -24,7 +24,7 @@ struct ScrollViewSection<Content: View>: View {
     private var colorScheme
 
     let title: String
-    @ViewBuilder var content: () -> Content
+    @ViewBuilder let content: () -> Content
 
     var body: some View {
         Text(title.uppercased())
