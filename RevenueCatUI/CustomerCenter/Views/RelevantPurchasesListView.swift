@@ -153,7 +153,7 @@ struct RelevantPurchasesListView: View {
                     }
                 }
 
-                ScrollViewSection(title: "ACTIONS") {
+                ScrollViewSection(title: localization[.actionsSectionTitle]) {
                     ActiveSubscriptionButtonsView(viewModel: viewModel)
                         .padding(.top, 16)
                         .padding(.horizontal)
@@ -171,7 +171,7 @@ struct RelevantPurchasesListView: View {
 
     @ViewBuilder
     private var activeSubscriptionsView: some View {
-        ScrollViewSection(title: "SUBSCRIPTIONS") {
+        ScrollViewSection(title: localization[.subscriptionsSectionTitle]) {
             ForEach(viewModel.activeSubscriptionPurchases) { purchase in
                 Button {
                     viewModel.purchaseInformation = purchase
@@ -189,7 +189,7 @@ struct RelevantPurchasesListView: View {
     }
 
     private var otherPurchasesView: some View {
-        ScrollViewSection(title: localization[.otherPurchases]) {
+        ScrollViewSection(title: localization[.purchasesSectionTitle]) {
             ForEach(viewModel.activeNonSubscriptionPurchases.suffix(3)) { purchase in
                 Button {
                     viewModel.purchaseInformation = purchase

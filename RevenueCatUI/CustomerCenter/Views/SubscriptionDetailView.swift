@@ -127,7 +127,7 @@ struct SubscriptionDetailView: View {
         ScrollViewWithOSBackground {
             LazyVStack(spacing: 0) {
                 if let purchaseInformation = self.viewModel.purchaseInformation {
-                    ScrollViewSection(title: "SUBSCRIPTIONS") {
+                    ScrollViewSection(title: sectionTitle) {
                         PurchaseInformationCardView(
                             purchaseInformation: purchaseInformation,
                             localization: localization,
@@ -160,7 +160,7 @@ struct SubscriptionDetailView: View {
                     .padding(.horizontal)
                 }
 
-                ScrollViewSection(title: "ACTIONS") {
+                ScrollViewSection(title: localization[.actionsSectionTitle]) {
                     ActiveSubscriptionButtonsView(viewModel: viewModel)
                         .padding(.top, 16)
                         .padding(.horizontal)
@@ -219,6 +219,14 @@ struct SubscriptionDetailView: View {
         .tint(colorScheme == .dark ? .white : .black)
     }
 
+    var sectionTitle: String {
+        if viewModel.purchaseInformation?.expirationDate == nil
+            && viewModel.purchaseInformation?.renewalDate == nil {
+            return localization[.purchasesSectionTitle]
+        } else {
+            return localization[.subscriptionsSectionTitle]
+        }
+    }
 }
 
  #if DEBUG
