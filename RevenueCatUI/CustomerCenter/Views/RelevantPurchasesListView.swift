@@ -20,6 +20,7 @@ import SwiftUI
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
+// swiftlint:disable:next type_body_length
 struct RelevantPurchasesListView: View {
 
     @Environment(\.appearance)
@@ -117,6 +118,12 @@ struct RelevantPurchasesListView: View {
             }
             .onChangeOf(activePurchases) { _ in
                 viewModel.updatePurchases(activePurchases)
+            }
+            .overlay {
+                RestorePurchasesAlert(
+                    isPresented: self.$viewModel.showRestoreAlert,
+                    actionWrapper: self.viewModel.actionWrapper
+                )
             }
     }
 
