@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  ActiveSubscriptionsListViewModel.swift
+//  RelevantPurchasesListViewModel.swift
 //
 //  Created by Facundo Menzella on 14/5/25.
 
@@ -22,10 +22,17 @@ import SwiftUI
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @MainActor
-final class ActiveSubscriptionsListViewModel: BaseManageSubscriptionViewModel {
+final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
 
     @Published
-    private(set) var activePurchases: [PurchaseInformation] = []
+    private(set) var activeSubscriptionPurchases: [PurchaseInformation] = []
+
+    @Published
+    private(set) var activeNonSubscriptionPurchases: [PurchaseInformation] = []
+
+    var isEmpty: Bool {
+        activeSubscriptionPurchases.isEmpty && activeNonSubscriptionPurchases.isEmpty
+    }
 
     let originalAppUserId: String
     let originalPurchaseDate: Date?
@@ -34,12 +41,14 @@ final class ActiveSubscriptionsListViewModel: BaseManageSubscriptionViewModel {
         screen: CustomerCenterConfigData.Screen,
         actionWrapper: CustomerCenterActionWrapper,
         activePurchases: [PurchaseInformation] = [],
+        nonSubscriptionPurchases: [PurchaseInformation] = [],
         originalAppUserId: String,
         originalPurchaseDate: Date?,
         refundRequestStatus: RefundRequestStatus? = nil,
         purchasesProvider: CustomerCenterPurchasesType,
         loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
-            self.activePurchases = activePurchases
+            self.activeSubscriptionPurchases = activePurchases
+            self.activeNonSubscriptionPurchases = nonSubscriptionPurchases
             self.originalAppUserId = originalAppUserId
             self.originalPurchaseDate = originalPurchaseDate
 
@@ -58,20 +67,22 @@ final class ActiveSubscriptionsListViewModel: BaseManageSubscriptionViewModel {
         screen: CustomerCenterConfigData.Screen,
         originalAppUserId: String,
         activePurchases: [PurchaseInformation] = [],
+        nonSubscriptionPurchases: [PurchaseInformation] = [],
         originalPurchaseDate: Date? = nil
     ) {
         self.init(
             screen: screen,
             actionWrapper: CustomerCenterActionWrapper(),
             activePurchases: activePurchases,
+            nonSubscriptionPurchases: nonSubscriptionPurchases,
             originalAppUserId: originalAppUserId,
             originalPurchaseDate: originalPurchaseDate,
             purchasesProvider: MockCustomerCenterPurchases()
         )
     }
 
-    func updatePurchases(_ activePurchases: [PurchaseInformation]) {
-        self.activePurchases = activePurchases
+    func updatePurchases(_ activeSubscriptionPurchases: [PurchaseInformation]) {
+        self.activeSubscriptionPurchases = activeSubscriptionPurchases
         // go back to the list
         self.purchaseInformation = nil
     }

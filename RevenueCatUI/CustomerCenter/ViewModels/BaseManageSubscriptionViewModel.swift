@@ -236,7 +236,9 @@ private extension Array<CustomerCenterConfigData.HelpPath> {
         for purchaseInformation: PurchaseInformation?
     ) -> [CustomerCenterConfigData.HelpPath] {
         guard let purchaseInformation else {
-            return self
+            return filter {
+                $0.type == .missingPurchase
+            }
         }
 
         return filter {

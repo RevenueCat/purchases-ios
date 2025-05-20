@@ -54,6 +54,18 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         expect(viewModel.showRestoreAlert) == false
     }
 
+    func testNoPurchaseOnlyMissingPurchasePath() {
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: nil,
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        expect(viewModel.relevantPathsForPurchase.count) == 1
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .missingPurchase })).to(beTrue())
+    }
+
     func testNonAppStoreFiltersAppStoreOnlyPaths() {
         let purchase = PurchaseInformation.mockNonLifetime(store: .playStore)
 
