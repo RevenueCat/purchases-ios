@@ -122,31 +122,36 @@ struct ActiveSubscriptionsListView: View {
 
     @ViewBuilder
     var content: some View {
-        if viewModel.activePurchases.isEmpty {
-            List {
-                let fallbackDescription = localization[.tryCheckRestore]
-
-                Section {
+        ScrollViewWithOSBackground {
+            LazyVStack(spacing: 0) {
+                if viewModel.isEmpty {
                     CompatibilityContentUnavailableView(
                         self.viewModel.screen.title,
                         systemImage: "exclamationmark.triangle.fill",
-                        description: Text(self.viewModel.screen.subtitle ?? fallbackDescription)
+                        description: Text(self.viewModel.screen.subtitle ?? localization[.tryCheckRestore])
                     )
-                }
+                    .padding(.horizontal)
+                    .padding(.vertical)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(
+                                Color(colorScheme == .light
+                                      ? UIColor.systemBackground
+                                      : UIColor.secondarySystemBackground)
+                            )
+                            .padding(.horizontal)
+                            .padding(.top)
+                    )
 
-                Section {
-                    ManageSubscriptionsButtonsView(viewModel: viewModel)
-                }
-            }
-        } else {
-            ScrollViewWithOSBackground {
-                LazyVStack(spacing: 0) {
+                    ActiveSubscriptionButtonsView(viewModel: viewModel)
+                        .padding(.top, 16)
+                        .padding(.horizontal)
+                } else {
                     if !viewModel.activePurchases.isEmpty {
                         activeSubscriptionsView
                             .padding(.top, 16)
                     }
-
-<<<<<<< HEAD
                     if !viewModel.nonSubscriptionPurchases.isEmpty {
                         otherPurchasesView
                             .padding(.top, 16)
@@ -155,45 +160,9 @@ struct ActiveSubscriptionsListView: View {
                     if support?.displayPurchaseHistoryLink == true {
                         seeAllSubscriptionsButton
                             .padding(.top, 16)
-=======
-                    ForEach(viewModel.activePurchases) { purchase in
-                        Section {
-                            Button {
-                                viewModel.purchaseInformation = purchase
-                            } label: {
-                                PurchaseInformationCardView(
-                                    purchaseInformation: purchase,
-                                    localization: localization
-                                )
-                                .cornerRadius(10)
-                                .padding(.horizontal)
-                            }
-                            .tint(colorScheme == .dark ? .white : .black)
-                        }
                     }
-
-                    if support?.displayPurchaseHistoryLink == true {
-                        Button {
-                            viewModel.showAllPurchases = true
-                        } label: {
-                            CompatibilityLabeledContent(localization[.seeAllPurchases]) {
-                                Image(systemName: "chevron.forward")
-                            }
-                            .padding(.horizontal)
-                            .padding(.vertical, 12)
-                            .background(Color(colorScheme == .light
-                                              ? UIColor.systemBackground
-                                              : UIColor.secondarySystemBackground))
-                            .cornerRadius(10)
-                            .padding(.horizontal)
-                        }
-                        .tint(colorScheme == .dark ? .white : .black)
-                        .padding(.top, 8)
->>>>>>> main
-                    }
-
-                    accountDetailsView
                 }
+                accountDetailsView
             }
         }
     }
@@ -209,10 +178,6 @@ struct ActiveSubscriptionsListView: View {
                         purchaseInformation: purchase,
                         localization: localization
                     )
-                    .padding()
-                    .background(Color(colorScheme == .light
-                                      ? UIColor.systemBackground
-                                      : UIColor.secondarySystemBackground))
                     .cornerRadius(10)
                     .padding(.horizontal)
                 }
@@ -231,10 +196,6 @@ struct ActiveSubscriptionsListView: View {
                         purchaseInformation: purchase,
                         localization: localization
                     )
-                    .padding()
-                    .background(Color(colorScheme == .light
-                                      ? UIColor.systemBackground
-                                      : UIColor.secondarySystemBackground))
                     .cornerRadius(10)
                     .padding(.horizontal)
                 }

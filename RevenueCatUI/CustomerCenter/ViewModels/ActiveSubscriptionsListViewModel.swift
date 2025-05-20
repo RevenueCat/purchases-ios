@@ -30,6 +30,10 @@ final class ActiveSubscriptionsListViewModel: BaseManageSubscriptionViewModel {
     @Published
     private(set) var nonSubscriptionPurchases: [PurchaseInformation] = []
 
+    var isEmpty: Bool {
+        activePurchases.isEmpty && nonSubscriptionPurchases.isEmpty
+    }
+
     let originalAppUserId: String
     let originalPurchaseDate: Date?
 
