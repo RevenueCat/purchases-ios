@@ -58,12 +58,12 @@ public struct CustomerCenterView: View {
     public init(
         customerCenterActionHandler: CustomerCenterActionHandler?,
         navigationOptions: CustomerCenterNavigationOptions = .default) {
-        self.init(
-            actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: customerCenterActionHandler),
-            mode: .default,
-            navigationOptions: navigationOptions
-        )
-    }
+            self.init(
+                actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: customerCenterActionHandler),
+                mode: .default,
+                navigationOptions: navigationOptions
+            )
+        }
 
     /// Create a view to handle common customer support tasks
     /// - Parameters:
@@ -89,24 +89,24 @@ public struct CustomerCenterView: View {
             self._viewModel = .init(wrappedValue: CustomerCenterViewModel(actionWrapper: actionWrapper))
             self.mode = mode
             self.navigationOptions = navigationOptions
-    }
+        }
 
     // swiftlint:disable:next missing_docs
     @_spi(Internal) public init(
         uiPreviewPurchaseProvider: CustomerCenterPurchasesType,
         navigationOptions: CustomerCenterNavigationOptions) {
-        self.init(viewModel: CustomerCenterViewModel(uiPreviewPurchaseProvider: uiPreviewPurchaseProvider),
-                  navigationOptions: navigationOptions)
-    }
+            self.init(viewModel: CustomerCenterViewModel(uiPreviewPurchaseProvider: uiPreviewPurchaseProvider),
+                      navigationOptions: navigationOptions)
+        }
 
     fileprivate init(
         viewModel: CustomerCenterViewModel,
         mode: CustomerCenterPresentationMode =  .default,
         navigationOptions: CustomerCenterNavigationOptions = .default) {
-        self._viewModel = .init(wrappedValue: viewModel)
-        self.mode = mode
-        self.navigationOptions = navigationOptions
-    }
+            self._viewModel = .init(wrappedValue: viewModel)
+            self.mode = mode
+            self.navigationOptions = navigationOptions
+        }
 
     // swiftlint:disable:next missing_docs
     public var body: some View {
@@ -215,7 +215,7 @@ private extension CustomerCenterView {
                         }
                     }
                 )
-            } else if viewModel.activePurchases.count > 1 {
+            } else {
                 ActiveSubscriptionsListView(
                     screen: screen,
                     activePurchases: $viewModel.activePurchases,
@@ -225,22 +225,14 @@ private extension CustomerCenterView {
                     actionWrapper: self.viewModel.actionWrapper
                 )
                 .dismissCircleButtonToolbarIfNeeded()
-            } else {
-                SubscriptionDetailView(
-                    screen: screen,
-                    purchaseInformation: viewModel.activePurchase,
-                    showPurchaseHistory: viewModel.configuration?.support.displayPurchaseHistoryLink == true,
-                    purchasesProvider: self.viewModel.purchasesProvider,
-                    actionWrapper: self.viewModel.actionWrapper
-                )
-                .dismissCircleButtonToolbarIfNeeded()
             }
         } else {
             if let screen = configuration.screens[.noActive] {
-                SubscriptionDetailView(
+                ActiveSubscriptionsListView(
                     screen: screen,
-                    purchaseInformation: nil,
-                    showPurchaseHistory: viewModel.configuration?.support.displayPurchaseHistoryLink == true,
+                    activePurchases: $viewModel.activePurchases,
+                    originalAppUserId: viewModel.originalAppUserId,
+                    originalPurchaseDate: viewModel.originalPurchaseDate,
                     purchasesProvider: self.viewModel.purchasesProvider,
                     actionWrapper: self.viewModel.actionWrapper
                 )
@@ -280,12 +272,13 @@ private extension CustomerCenterView {
 struct CustomerCenterView_Previews: PreviewProvider {
 
     static var previews: some View {
-        let purchaseInformationApple =
-        CustomerCenterConfigData.subscriptionInformationMonthlyRenewing
-        let viewModelApple = CustomerCenterViewModel(purchaseInformation: purchaseInformationApple,
-                                                     configuration: CustomerCenterConfigData.default)
-        CustomerCenterView(viewModel: viewModelApple)
-            .previewDisplayName("Monthly Apple")
+        CustomerCenterView(
+            viewModel: CustomerCenterViewModel(
+                activePurchases: [.yearlyExpiring()],
+                configuration: CustomerCenterConfigData.default
+            )
+        )
+        .previewDisplayName("Empty Apple")
     }
 
 }

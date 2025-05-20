@@ -50,6 +50,7 @@ struct ActiveSubscriptionsListView: View {
          originalPurchaseDate: Date?,
          purchasesProvider: CustomerCenterPurchasesType,
          actionWrapper: CustomerCenterActionWrapper) {
+
         let viewModel = ActiveSubscriptionsListViewModel(
             screen: screen,
             actionWrapper: actionWrapper,
@@ -59,10 +60,8 @@ struct ActiveSubscriptionsListView: View {
             purchasesProvider: purchasesProvider
         )
 
-        self.init(
-            activePurchases: activePurchases,
-            viewModel: viewModel
-        )
+        self._activePurchases = activePurchases
+        self._viewModel = .init(wrappedValue: viewModel)
     }
 
     // Used for Previews
@@ -140,19 +139,21 @@ struct ActiveSubscriptionsListView: View {
                         .multilineTextAlignment(.leading)
 
                     ForEach(viewModel.activePurchases) { purchase in
-                        Section {
-                            Button {
-                                viewModel.purchaseInformation = purchase
-                            } label: {
-                                PurchaseInformationCardView(
-                                    purchaseInformation: purchase,
-                                    localization: localization
-                                )
-                                .cornerRadius(10)
-                                .padding(.horizontal)
-                            }
-                            .tint(colorScheme == .dark ? .white : .black)
+                        Button {
+                            viewModel.purchaseInformation = purchase
+                        } label: {
+                            PurchaseInformationCardView(
+                                purchaseInformation: purchase,
+                                localization: localization
+                            )
+                            .cornerRadius(10)
+                            .padding(.horizontal)
                         }
+                        .tint(colorScheme == .dark ? .white : .black)
+                    }
+
+                    if viewModel.activePurchases.count == 1 {
+                        ActiveSubscriptionsListView(viewModel: viewModel)
                     }
 
                     if support?.displayPurchaseHistoryLink == true {
@@ -261,55 +262,63 @@ struct ActiveSubscriptionsListView: View {
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct ActiveSubscriptionsListView_Previews: PreviewProvider {
+    static let purchases = [
+        PurchaseInformation.yearlyExpiring(store: .amazon, renewalDate: Date()),
+        PurchaseInformation.yearlyExpiring(store: .appStore),
+        .free
+    ]
+
+    static let mock = CustomerCenterConfigData.mock(
+        displayPurchaseHistoryLink: true
+    )
 
     // swiftlint:disable force_unwrapping
     static var previews: some View {
-        let purchases = [
-            PurchaseInformation.yearlyExpiring(store: .amazon, renewalDate: Date()),
-            PurchaseInformation.yearlyExpiring(store: .appStore),
-            .free
-        ]
-
-        let warningOffMock = CustomerCenterConfigData.mock(
-            displayPurchaseHistoryLink: true
-        )
-
-        let warningOnMock = CustomerCenterConfigData.mock(
-            displayPurchaseHistoryLink: true,
-            shouldWarnCustomersAboutMultipleSubscriptions: true
-        )
-
         ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
-            CompatibilityNavigationStack {
-                ActiveSubscriptionsListView(
-                    viewModel: ActiveSubscriptionsListViewModel(
-                        screen: warningOffMock.screens[.management]!,
-                        originalAppUserId: "originalAppUserId",
-                        activePurchases: purchases
+            Group {
+                CompatibilityNavigationStack {
+                    ActiveSubscriptionsListView(
+                        viewModel: ActiveSubscriptionsListViewModel(
+                            screen: Self.mock.screens[.management]!,
+                            originalAppUserId: "originalAppUserId",
+                            activePurchases: Self.purchases
+                        )
                     )
-                )
-                .environment(\.supportInformation, warningOffMock.support)
-            }
-            .preferredColorScheme(colorScheme)
-            .previewDisplayName("Active subs - \(colorScheme)")
+                    .environment(\.supportInformation, Self.mock.support)
+                }
+                .preferredColorScheme(colorScheme)
+                .previewDisplayName("Active subs - \(colorScheme)")
 
-            CompatibilityNavigationStack {
-                ActiveSubscriptionsListView(
-                    viewModel: ActiveSubscriptionsListViewModel(
-                        screen: warningOnMock.screens[.management]!,
-                        originalAppUserId: "originalAppUserId",
-                        activePurchases: []
+                CompatibilityNavigationStack {
+                    ActiveSubscriptionsListView(
+                        viewModel: ActiveSubscriptionsListViewModel(
+                            screen: Self.mock.screens[.management]!,
+                            originalAppUserId: "originalAppUserId",
+                            activePurchases: [.yearlyExpiring()]
+                        )
                     )
-                )
-                .environment(\.supportInformation, warningOnMock.support)
+                    .environment(\.supportInformation, Self.mock.support)
+                }
+                .preferredColorScheme(colorScheme)
+                .previewDisplayName("One - \(colorScheme)")
+
+                CompatibilityNavigationStack {
+                    ActiveSubscriptionsListView(
+                        viewModel: ActiveSubscriptionsListViewModel(
+                            screen: mock.screens[.management]!,
+                            originalAppUserId: "originalAppUserId",
+                            activePurchases: []
+                        )
+                    )
+                    .environment(\.supportInformation, Self.mock.support)
+                }
+                .preferredColorScheme(colorScheme)
+                .previewDisplayName("Empty - \(colorScheme)")
             }
-            .preferredColorScheme(colorScheme)
-            .previewDisplayName("Empty - \(colorScheme)")
         }
         .environment(\.localization, CustomerCenterConfigData.default.localization)
         .environment(\.appearance, CustomerCenterConfigData.default.appearance)
     }
-
 }
 
 #endif

@@ -128,11 +128,11 @@ import RevenueCat
     #if DEBUG
 
     convenience init(
-        purchaseInformation: PurchaseInformation,
+        activePurchases: [PurchaseInformation],
         configuration: CustomerCenterConfigData
     ) {
         self.init(actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil))
-        self.activePurchase = purchaseInformation
+        self.activePurchases = activePurchases
         self.configuration = configuration
         self.state = .success
     }
