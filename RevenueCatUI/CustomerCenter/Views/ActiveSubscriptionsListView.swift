@@ -229,7 +229,7 @@ struct ActiveSubscriptionsListView: View {
             AsyncButton(action: {
                 await self.viewModel.handleHelpPath(
                     path,
-                    wihtActiveProductId: viewModel.purchaseInformation?.productIdentifier
+                    withActiveProductId: viewModel.purchaseInformation?.productIdentifier
                 )
             }, label: {
                 Group {

@@ -12,10 +12,6 @@ func checkPurchasesDiagnostics() {
     let _: PurchasesDiagnostics = .default
 }
 
-private func checkPurchasesDiagnosticsAsync(_ diagnostics: PurchasesDiagnostics) async {
-    try? await diagnostics.checkSDKHealth()
-}
-
 @available(*, deprecated) // Ignore deprecation warnings
 private func checkDeprecatedPurchasesDiagnosticsAsync(_ diagnostics: PurchasesDiagnostics) async {
     _ = try? await diagnostics.testSDKHealth()
@@ -38,6 +34,11 @@ func checkDiagnosticsErrors(_ error: PurchasesDiagnostics.Error) {
     case let .unknown(error):
         print(error)
     }
+}
+
+#if DEBUG
+private func checkPurchasesDiagnosticsAsync(_ diagnostics: PurchasesDiagnostics) async {
+    try? await diagnostics.checkSDKHealth()
 }
 
 func checkHealthReportErrors(_ error: PurchasesDiagnostics.SDKHealthError) {
@@ -100,3 +101,4 @@ func checkHealthReportErrors(_ error: PurchasesDiagnostics.SDKHealthError) {
         let _: Swift.Error = error
     }
 }
+#endif
