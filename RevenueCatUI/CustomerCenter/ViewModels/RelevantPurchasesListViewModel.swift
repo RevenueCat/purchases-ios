@@ -25,13 +25,13 @@ import SwiftUI
 final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
 
     @Published
-    private(set) var activePurchases: [PurchaseInformation] = []
+    private(set) var activeSubscriptionPurchases: [PurchaseInformation] = []
 
     @Published
-    private(set) var nonSubscriptionPurchases: [PurchaseInformation] = []
+    private(set) var activeNonSubscriptionPurchases: [PurchaseInformation] = []
 
     var isEmpty: Bool {
-        activePurchases.isEmpty && nonSubscriptionPurchases.isEmpty
+        activeSubscriptionPurchases.isEmpty && activeNonSubscriptionPurchases.isEmpty
     }
 
     let originalAppUserId: String
@@ -47,8 +47,8 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
         refundRequestStatus: RefundRequestStatus? = nil,
         purchasesProvider: CustomerCenterPurchasesType,
         loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
-            self.activePurchases = activePurchases
-            self.nonSubscriptionPurchases = nonSubscriptionPurchases
+            self.activeSubscriptionPurchases = activePurchases
+            self.activeNonSubscriptionPurchases = nonSubscriptionPurchases
             self.originalAppUserId = originalAppUserId
             self.originalPurchaseDate = originalPurchaseDate
 
@@ -81,8 +81,8 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
         )
     }
 
-    func updatePurchases(_ activePurchases: [PurchaseInformation]) {
-        self.activePurchases = activePurchases
+    func updatePurchases(_ activeSubscriptionPurchases: [PurchaseInformation]) {
+        self.activeSubscriptionPurchases = activeSubscriptionPurchases
         // go back to the list
         self.purchaseInformation = nil
     }

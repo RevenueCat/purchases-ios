@@ -147,11 +147,11 @@ struct RelevantPurchasesListView: View {
                         .padding(.top, 16)
                         .padding(.horizontal)
                 } else {
-                    if !viewModel.activePurchases.isEmpty {
+                    if !viewModel.activeSubscriptionPurchases.isEmpty {
                         activeSubscriptionsView
                             .padding(.top, 16)
                     }
-                    if !viewModel.nonSubscriptionPurchases.isEmpty {
+                    if !viewModel.activeNonSubscriptionPurchases.isEmpty {
                         otherPurchasesView
                             .padding(.top, 16)
                     }
@@ -169,7 +169,7 @@ struct RelevantPurchasesListView: View {
     @ViewBuilder
     private var activeSubscriptionsView: some View {
         ScrollViewSection(title: localization[.activeSubscriptions]) {
-            ForEach(viewModel.activePurchases) { purchase in
+            ForEach(viewModel.activeSubscriptionPurchases) { purchase in
                 Button {
                     viewModel.purchaseInformation = purchase
                 } label: {
@@ -187,7 +187,7 @@ struct RelevantPurchasesListView: View {
 
     private var otherPurchasesView: some View {
         ScrollViewSection(title: localization[.otherPurchases]) {
-            ForEach(viewModel.nonSubscriptionPurchases[0..<2]) { purchase in
+            ForEach(viewModel.activeNonSubscriptionPurchases.suffix(3)) { purchase in
                 Button {
                     viewModel.purchaseInformation = purchase
                 } label: {
