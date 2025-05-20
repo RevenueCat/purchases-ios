@@ -60,11 +60,6 @@ extension NonSubscriptionTransaction: Transaction {
         nil
     }
 
-    var price: ProductPaidPrice? {
-        // We don't have that information in the CustomerInfo
-        nil
-    }
-
     var periodType: PeriodType {
         .normal
     }

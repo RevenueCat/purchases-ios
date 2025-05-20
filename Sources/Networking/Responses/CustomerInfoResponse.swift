@@ -90,7 +90,8 @@ extension CustomerInfoResponse {
         var store: Store
         var isSandbox: Bool
         var displayName: String?
-
+        /// Price paid for the subscription
+        var price: PurchasePaidPrice?
     }
 
     struct Entitlement {
