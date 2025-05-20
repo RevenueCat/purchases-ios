@@ -499,10 +499,8 @@ private extension PurchaseInformation {
         PurchaseInformation(
             title: "",
             durationTitle: "",
-            explanation: .lifetime,
             pricePaid: .nonFree(""),
             renewalPrice: nil,
-            expirationOrRenewal: PurchaseInformation.ExpirationOrRenewal(label: .expires, date: .date("")),
             productIdentifier: "",
             store: store,
             isLifetime: true,
@@ -527,13 +525,8 @@ private extension PurchaseInformation {
         PurchaseInformation(
             title: "",
             durationTitle: "",
-            explanation: .earliestExpiration,
             pricePaid: pricePaid,
             renewalPrice: renewalPrice,
-            expirationOrRenewal: PurchaseInformation.ExpirationOrRenewal(
-                label: .expires,
-                date: .date("")
-            ),
             productIdentifier: "",
             store: store,
             isLifetime: false,

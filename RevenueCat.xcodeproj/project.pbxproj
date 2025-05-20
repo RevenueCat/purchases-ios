@@ -670,11 +670,9 @@
 		57740F4A2DD6460F00585B5A /* ScrollViewWithOSBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57740F432DD6460F00585B5A /* ScrollViewWithOSBackground.swift */; };
 		57740F4B2DD6460F00585B5A /* SubscriptionDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57740F452DD6460F00585B5A /* SubscriptionDetailView.swift */; };
 		57740F4C2DD6460F00585B5A /* CompatibilityLabeledContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57740F322DD6460F00585B5A /* CompatibilityLabeledContent.swift */; };
-		57740F4D2DD6460F00585B5A /* SubscriptionDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57740F442DD6460F00585B5A /* SubscriptionDetailsView.swift */; };
 		57740F4E2DD6460F00585B5A /* RestorePurchasesAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57740F422DD6460F00585B5A /* RestorePurchasesAlert.swift */; };
 		57740F4F2DD6460F00585B5A /* CompatibilityTopBarTrailing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57740F342DD6460F00585B5A /* CompatibilityTopBarTrailing.swift */; };
 		57740F502DD6460F00585B5A /* ErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57740F382DD6460F00585B5A /* ErrorView.swift */; };
-		57740F512DD6460F00585B5A /* WrongPlatformView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57740F492DD6460F00585B5A /* WrongPlatformView.swift */; };
 		57740F522DD6460F00585B5A /* TintedProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57740F462DD6460F00585B5A /* TintedProgressView.swift */; };
 		57740F532DD6460F00585B5A /* AppUpdateWarningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57740F302DD6460F00585B5A /* AppUpdateWarningView.swift */; };
 		57740F542DD6460F00585B5A /* CustomerCenterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57740F372DD6460F00585B5A /* CustomerCenterView.swift */; };
@@ -2069,10 +2067,8 @@
 		57740F402DD6460F00585B5A /* PurchaseLinkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseLinkView.swift; sourceTree = "<group>"; };
 		57740F422DD6460F00585B5A /* RestorePurchasesAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestorePurchasesAlert.swift; sourceTree = "<group>"; };
 		57740F432DD6460F00585B5A /* ScrollViewWithOSBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollViewWithOSBackground.swift; sourceTree = "<group>"; };
-		57740F442DD6460F00585B5A /* SubscriptionDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionDetailsView.swift; sourceTree = "<group>"; };
 		57740F452DD6460F00585B5A /* SubscriptionDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionDetailView.swift; sourceTree = "<group>"; };
 		57740F462DD6460F00585B5A /* TintedProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TintedProgressView.swift; sourceTree = "<group>"; };
-		57740F492DD6460F00585B5A /* WrongPlatformView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WrongPlatformView.swift; sourceTree = "<group>"; };
 		5774F9B52805E6CC00997128 /* CustomerInfoResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfoResponse.swift; sourceTree = "<group>"; };
 		5774F9B92805E6E200997128 /* CustomerInfoDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfoDecodingTests.swift; sourceTree = "<group>"; };
 		5774F9BD2805E71100997128 /* Fixtures */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = folder; name = Fixtures; path = Tests/UnitTests/Networking/Responses/Fixtures; sourceTree = SOURCE_ROOT; };
@@ -3894,10 +3890,8 @@
 				57740F3D2DD6460F00585B5A /* PurchaseCardView.swift */,
 				57740F422DD6460F00585B5A /* RestorePurchasesAlert.swift */,
 				57740F432DD6460F00585B5A /* ScrollViewWithOSBackground.swift */,
-				57740F442DD6460F00585B5A /* SubscriptionDetailsView.swift */,
 				57740F452DD6460F00585B5A /* SubscriptionDetailView.swift */,
 				57740F462DD6460F00585B5A /* TintedProgressView.swift */,
-				57740F492DD6460F00585B5A /* WrongPlatformView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -6993,11 +6987,9 @@
 				57740F4A2DD6460F00585B5A /* ScrollViewWithOSBackground.swift in Sources */,
 				57740F4B2DD6460F00585B5A /* SubscriptionDetailView.swift in Sources */,
 				57740F4C2DD6460F00585B5A /* CompatibilityLabeledContent.swift in Sources */,
-				57740F4D2DD6460F00585B5A /* SubscriptionDetailsView.swift in Sources */,
 				57740F4E2DD6460F00585B5A /* RestorePurchasesAlert.swift in Sources */,
 				57740F4F2DD6460F00585B5A /* CompatibilityTopBarTrailing.swift in Sources */,
 				57740F502DD6460F00585B5A /* ErrorView.swift in Sources */,
-				57740F512DD6460F00585B5A /* WrongPlatformView.swift in Sources */,
 				57740F522DD6460F00585B5A /* TintedProgressView.swift in Sources */,
 				57740F532DD6460F00585B5A /* AppUpdateWarningView.swift in Sources */,
 				57740F542DD6460F00585B5A /* CustomerCenterView.swift in Sources */,

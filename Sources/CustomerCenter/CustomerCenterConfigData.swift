@@ -153,6 +153,7 @@ public struct CustomerCenterConfigData: Equatable {
             case priceExpiresOnDateWithoutChanges = "price_expires_on_date_without_changes"
             case badgeCancelled = "badge_cancelled"
             case badgeFreeTrial = "free_trial"
+            case refundSuccess = "refund_success"
 
             var defaultValue: String {
                 switch self {
@@ -361,7 +362,8 @@ public struct CustomerCenterConfigData: Equatable {
                     return "Cancelled"
                 case .badgeFreeTrial:
                     return "Free trial"
-
+                case .refundSuccess:
+                    return "Apple has received the refund request"
                 }
             }
         }
