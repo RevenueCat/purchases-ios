@@ -127,15 +127,17 @@ struct SubscriptionDetailView: View {
         ScrollViewWithOSBackground {
             LazyVStack {
                 if let purchaseInformation = self.viewModel.purchaseInformation {
-                    SubscriptionDetailsView(
+                    PurchaseInformationCardView(
                         purchaseInformation: purchaseInformation,
-                        refundRequestStatus: self.viewModel.refundRequestStatus
+                        localization: localization,
+                        refundStatus: viewModel.refundRequestStatus,
+                        showChevron: false
                     )
-                    .padding()
                     .background(Color(colorScheme == .light
                                       ? UIColor.systemBackground
                                       : UIColor.secondarySystemBackground))
                     .cornerRadius(10)
+                    .shadow(radius: 0.5)
                     .padding(.horizontal)
 
                     if viewModel.showPurchaseHistory {
@@ -225,19 +227,8 @@ struct SubscriptionDetailView: View {
                     viewModel: SubscriptionDetailViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: false,
-                        purchaseInformation: .monthlyRenewing
-                    )
-                )
-            }
-            .preferredColorScheme(colorScheme)
-            .previewDisplayName("Monthly renewing - \(colorScheme)")
-
-            CompatibilityNavigationStack {
-                SubscriptionDetailView(
-                    viewModel: SubscriptionDetailViewModel(
-                        screen: CustomerCenterConfigData.default.screens[.management]!,
-                        showPurchaseHistory: false,
-                        purchaseInformation: .yearlyExpiring()
+                        purchaseInformation: .yearlyExpiring(),
+                        refundRequestStatus: .success
                     )
                 )
             }
