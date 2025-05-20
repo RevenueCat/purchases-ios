@@ -151,6 +151,10 @@ struct ActiveSubscriptionsListView: View {
                                 .background(Color(colorScheme == .light
                                                   ? UIColor.systemBackground
                                                   : UIColor.secondarySystemBackground))
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(colorScheme == .dark ? Color(UIColor.tertiarySystemBackground) : .clear)
+                                }
                                 .cornerRadius(10)
                                 .padding(.horizontal)
                             }
@@ -300,7 +304,7 @@ struct ActiveSubscriptionsListView_Previews: PreviewProvider {
                 ActiveSubscriptionsListView(
                     viewModel: ActiveSubscriptionsListViewModel(
                         screen: warningOnMock.screens[.management]!,
-                        originalAppUserId: UUID().uuidString,
+                        originalAppUserId: "originalAppUserId",
                         activePurchases: []
                     )
                 )
