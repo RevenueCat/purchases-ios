@@ -178,11 +178,11 @@ struct PurchaseInformationCardView: View {
                         .multilineTextAlignment(.leading)
                 }
                 .padding()
-                .background(Color(colorScheme == .light
-                                  ? UIColor.secondarySystemBackground
-                                  : UIColor.systemBackground))
             }
         }
+        .background(Color(colorScheme == .light
+                          ? UIColor.secondarySystemFill
+                          : UIColor.tertiarySystemBackground))
     }
 }
 
@@ -239,8 +239,8 @@ extension PurchaseInformationCardView {
 struct PurchaseInformationCardView_Previews: PreviewProvider {
 
     static var previews: some View {
-        ForEach(ColorScheme.allCases, id: \.self) { _ in
-            ScrollView {
+        ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
+            ScrollViewWithOSBackground {
                 PurchaseInformationCardView(
                     title: "Product name",
                     storeTitle: Store.appStore.localizationKey.rawValue,
@@ -249,7 +249,6 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                     subtitle: "Renews 24 May for $19.99"
                 )
                 .cornerRadius(10)
-                .shadow(radius: 2)
                 .padding([.leading, .trailing])
 
                 PurchaseInformationCardView(
@@ -260,7 +259,6 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                     subtitle: "Renews 24 May for $19.99"
                 )
                 .cornerRadius(10)
-                .shadow(radius: 4)
                 .padding([.leading, .trailing])
 
                 PurchaseInformationCardView(
@@ -272,9 +270,9 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                     subtitle: "Renews 24 May for $19.99"
                 )
                 .cornerRadius(10)
-                .shadow(radius: 4)
                 .padding([.leading, .trailing])
             }
+            .preferredColorScheme(colorScheme)
         }
         .environment(\.localization, CustomerCenterConfigData.default.localization)
         .environment(\.appearance, CustomerCenterConfigData.default.appearance)

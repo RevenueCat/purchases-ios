@@ -148,13 +148,6 @@ struct ActiveSubscriptionsListView: View {
                                     purchaseInformation: purchase,
                                     localization: localization
                                 )
-                                .background(Color(colorScheme == .light
-                                                  ? UIColor.systemBackground
-                                                  : UIColor.secondarySystemBackground))
-                                .overlay {
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .stroke(colorScheme == .dark ? Color(UIColor.tertiarySystemBackground) : .clear)
-                                }
                                 .cornerRadius(10)
                                 .padding(.horizontal)
                             }
