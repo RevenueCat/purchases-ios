@@ -163,15 +163,14 @@ struct PurchaseInformationCardView: View {
             if let additionalInfoTitle, let additionalInfoSubtitle {
                 VStack(alignment: .leading) {
                     Text(additionalInfoTitle)
-                        .font(.subheadline)
-                        .bold()
+                        .font(.footnote)
                         .foregroundStyle(.primary)
                         .lineLimit(1)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.bottom, 2)
 
                     Text(additionalInfoSubtitle)
-                        .font(.subheadline)
+                        .font(.caption)
                         .foregroundStyle(.secondary)
                         .padding(.bottom, 4)
                         .frame(maxWidth: .infinity, alignment: .leading)

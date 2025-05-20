@@ -153,7 +153,7 @@ struct PurchaseInformation {
             self.periodType = entitlement.periodType
         } else {
             switch transaction.type {
-            case let .subscription(isActive, willRenew, expiresDate, isTrial):
+            case let .subscription(_, willRenew, expiresDate, isTrial):
                 self.isLifetime = false
                 self.isTrial = isTrial
                 self.latestPurchaseDate = (transaction as? RevenueCat.SubscriptionInfo)?.purchaseDate
