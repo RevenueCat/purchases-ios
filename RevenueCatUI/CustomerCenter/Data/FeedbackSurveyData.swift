@@ -22,11 +22,11 @@ import RevenueCat
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-class FeedbackSurveyData: ObservableObject, Equatable {
+struct FeedbackSurveyData: Equatable {
 
-    var configuration: CustomerCenterConfigData.HelpPath.FeedbackSurvey
-    var path: CustomerCenterConfigData.HelpPath
-    var onOptionSelected: (() -> Void)
+    let configuration: CustomerCenterConfigData.HelpPath.FeedbackSurvey
+    let path: CustomerCenterConfigData.HelpPath
+    let onOptionSelected: (() -> Void)
 
     init(configuration: CustomerCenterConfigData.HelpPath.FeedbackSurvey,
          path: CustomerCenterConfigData.HelpPath,

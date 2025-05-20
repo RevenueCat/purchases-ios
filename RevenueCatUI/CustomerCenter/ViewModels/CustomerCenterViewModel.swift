@@ -77,16 +77,29 @@ import RevenueCat
     }
 
     var hasPurchases: Bool {
-        !activePurchases.isEmpty || activePurchase != nil
+        !activeSubscriptionPurchases.isEmpty || activePurchase != nil || !activeNonSubscriptionPurchases.isEmpty
+    }
+
+    var  originalAppUserId: String {
+        customerInfo?.originalAppUserId ?? ""
+    }
+
+    var originalPurchaseDate: Date? {
+        customerInfo?.originalPurchaseDate
     }
 
     @Published
-    var activePurchases: [PurchaseInformation] = []
+    var activeSubscriptionPurchases: [PurchaseInformation] = []
+
+    @Published
+    var activeNonSubscriptionPurchases: [PurchaseInformation] = []
 
     @Published
     var activePurchase: PurchaseInformation?
 
     private let currentVersionFetcher: CurrentVersionFetcher
+
+    internal var customerInfo: CustomerInfo?
 
     /// The action wrapper that handles both the deprecated handler and the new preference system
     internal let actionWrapper: CustomerCenterActionWrapper
@@ -110,6 +123,7 @@ import RevenueCat
         self.actionWrapper = actionWrapper
         self.purchasesProvider = purchasesProvider
         self.customerCenterStoreKitUtilities = customerCenterStoreKitUtilities
+        self.customerInfo = nil
     }
 
     convenience init(uiPreviewPurchaseProvider: CustomerCenterPurchasesType) {
@@ -137,7 +151,7 @@ import RevenueCat
             try await self.purchasesProvider.syncPurchases() :
             try await purchasesProvider.customerInfo(fetchPolicy: .fetchCurrent)
 
-            try await self.loadPurchaseInformation(customerInfo: customerInfo)
+            try await self.loadPurchases(customerInfo: customerInfo)
             try await self.loadCustomerCenterConfig()
             self.virtualCurrencies = customerInfo.virtualCurrencies
             self.state = .success
@@ -174,11 +188,14 @@ import RevenueCat
 @available(watchOS, unavailable)
 private extension CustomerCenterViewModel {
 
-    func loadPurchaseInformation(customerInfo: CustomerInfo) async throws {
+    func loadPurchases(customerInfo: CustomerInfo) async throws {
+        self.customerInfo = customerInfo
+
         let hasActiveProducts =  !customerInfo.activeSubscriptions.isEmpty || !customerInfo.nonSubscriptions.isEmpty
 
         if !hasActiveProducts {
-            self.activePurchases = []
+            self.activeSubscriptionPurchases = []
+            self.activeNonSubscriptionPurchases = []
             self.activePurchase = nil
             self.state = .success
             return
@@ -186,7 +203,8 @@ private extension CustomerCenterViewModel {
 
         guard let activeTransaction = customerInfo.earliestExpiringTransaction() else {
             self.activePurchase = nil
-            self.activePurchases = []
+            self.activeSubscriptionPurchases = []
+            self.activeNonSubscriptionPurchases = []
 
             Logger.warning(Strings.could_not_find_subscription_information)
             throw CustomerCenterError.couldNotFindSubscriptionInformation
@@ -202,7 +220,29 @@ private extension CustomerCenterViewModel {
             customerInfo: customerInfo
         )
 
-        var activePurchases: [PurchaseInformation] = []
+        await loadActiveSubscriptions(customerInfo: customerInfo)
+        await loadActiveNonSubscriptionPurchases(customerInfo: customerInfo)
+    }
+
+    func loadActiveNonSubscriptionPurchases(customerInfo: CustomerInfo) async {
+        var activeNonSubscriptionPurchases: [PurchaseInformation] = []
+        for subscription in customerInfo.nonSubscriptions {
+            let entitlement = customerInfo.entitlements.all.values
+                .first(where: { $0.productIdentifier == subscription.productIdentifier })
+
+            let purchaseInfo = await createPurchaseInformation(
+                for: subscription,
+                entitlement: entitlement,
+                customerInfo: customerInfo
+            )
+
+            activeNonSubscriptionPurchases.append(purchaseInfo)
+        }
+        self.activeNonSubscriptionPurchases = activeNonSubscriptionPurchases
+    }
+
+    func loadActiveSubscriptions(customerInfo: CustomerInfo) async {
+        var activeSubscriptionPurchases: [PurchaseInformation] = []
         for subscription in customerInfo.activeSubscriptions
             .compactMap({ id in customerInfo.subscriptionsByProductIdentifier[id] })
             .sorted(by: {
@@ -222,9 +262,10 @@ private extension CustomerCenterViewModel {
                 customerInfo: customerInfo
             )
 
-            activePurchases.append(purchaseInfo)
+            activeSubscriptionPurchases.append(purchaseInfo)
         }
-        self.activePurchases = activePurchases
+
+        self.activeSubscriptionPurchases = activeSubscriptionPurchases
     }
 
     func loadCustomerCenterConfig() async throws {
