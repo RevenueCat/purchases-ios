@@ -215,7 +215,7 @@ private extension CustomerCenterView {
                         }
                     }
                 )
-            } else if viewModel.activeSubscriptionPurchases.count > 1 {
+            } else if viewModel.shouldShowList {
                 listView(screen)
             } else {
                 singlePurchaseView(screen)

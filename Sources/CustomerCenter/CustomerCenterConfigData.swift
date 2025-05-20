@@ -154,6 +154,9 @@ public struct CustomerCenterConfigData: Equatable {
             case badgeCancelled = "badge_cancelled"
             case badgeFreeTrial = "free_trial"
             case refundSuccess = "refund_success"
+            case actionsSectionTitle = "actions_section_title"
+            case subscriptionsSectionTitle = "subscriptions_section_title"
+            case purchasesSectionTitle = "purchases_section_title"
 
             var defaultValue: String {
                 switch self {
@@ -364,6 +367,12 @@ public struct CustomerCenterConfigData: Equatable {
                     return "Free trial"
                 case .refundSuccess:
                     return "Apple has received the refund request"
+                case .actionsSectionTitle:
+                    return "Actions"
+                case .subscriptionsSectionTitle:
+                    return "Subscriptions"
+                case .purchasesSectionTitle:
+                    return "Purchases"
                 }
             }
         }
