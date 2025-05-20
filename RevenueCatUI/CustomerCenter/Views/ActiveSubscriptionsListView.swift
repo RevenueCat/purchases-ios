@@ -146,6 +146,7 @@ struct ActiveSubscriptionsListView: View {
                             .padding(.top, 16)
                     }
 
+<<<<<<< HEAD
                     if !viewModel.nonSubscriptionPurchases.isEmpty {
                         otherPurchasesView
                             .padding(.top, 16)
@@ -154,6 +155,41 @@ struct ActiveSubscriptionsListView: View {
                     if support?.displayPurchaseHistoryLink == true {
                         seeAllSubscriptionsButton
                             .padding(.top, 16)
+=======
+                    ForEach(viewModel.activePurchases) { purchase in
+                        Section {
+                            Button {
+                                viewModel.purchaseInformation = purchase
+                            } label: {
+                                PurchaseInformationCardView(
+                                    purchaseInformation: purchase,
+                                    localization: localization
+                                )
+                                .cornerRadius(10)
+                                .padding(.horizontal)
+                            }
+                            .tint(colorScheme == .dark ? .white : .black)
+                        }
+                    }
+
+                    if support?.displayPurchaseHistoryLink == true {
+                        Button {
+                            viewModel.showAllPurchases = true
+                        } label: {
+                            CompatibilityLabeledContent(localization[.seeAllPurchases]) {
+                                Image(systemName: "chevron.forward")
+                            }
+                            .padding(.horizontal)
+                            .padding(.vertical, 12)
+                            .background(Color(colorScheme == .light
+                                              ? UIColor.systemBackground
+                                              : UIColor.secondarySystemBackground))
+                            .cornerRadius(10)
+                            .padding(.horizontal)
+                        }
+                        .tint(colorScheme == .dark ? .white : .black)
+                        .padding(.top, 8)
+>>>>>>> main
                     }
 
                     accountDetailsView
@@ -272,7 +308,7 @@ struct ActiveSubscriptionsListView: View {
             AsyncButton(action: {
                 await self.viewModel.handleHelpPath(
                     path,
-                    wihtActiveProductId: viewModel.purchaseInformation?.productIdentifier
+                    withActiveProductId: viewModel.purchaseInformation?.productIdentifier
                 )
             }, label: {
                 Group {
@@ -330,7 +366,7 @@ struct ActiveSubscriptionsListView_Previews: PreviewProvider {
                 ActiveSubscriptionsListView(
                     viewModel: ActiveSubscriptionsListViewModel(
                         screen: warningOffMock.screens[.management]!,
-                        originalAppUserId: UUID().uuidString,
+                        originalAppUserId: "originalAppUserId",
                         activePurchases: purchases
                     )
                 )
@@ -357,7 +393,7 @@ struct ActiveSubscriptionsListView_Previews: PreviewProvider {
                 ActiveSubscriptionsListView(
                     viewModel: ActiveSubscriptionsListViewModel(
                         screen: warningOnMock.screens[.management]!,
-                        originalAppUserId: UUID().uuidString,
+                        originalAppUserId: "originalAppUserId",
                         activePurchases: []
                     )
                 )

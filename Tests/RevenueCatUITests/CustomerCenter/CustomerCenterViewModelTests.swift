@@ -247,10 +247,6 @@ final class CustomerCenterViewModelTests: TestCase {
                 expect(purchaseInformation.renewalPrice).to(beNil()) // no renewal info
             }
 
-            let expirationOrRenewal = try XCTUnwrap(purchaseInformation.expirationOrRenewal)
-            expect(expirationOrRenewal.label) == .nextBillingDate
-            expect(expirationOrRenewal.date) == .date(reformat(ISO8601Date: expirationDate))
-
             expect(purchaseInformation.productIdentifier) == productId
         }
     }
@@ -301,10 +297,6 @@ final class CustomerCenterViewModelTests: TestCase {
 
         expect(purchaseInformation.pricePaid) == .nonFree(formatted(price: 3.99, currencyCode: currency))
         expect(purchaseInformation.renewalPrice).to(beNil())
-
-        let expirationOrRenewal = try XCTUnwrap(purchaseInformation.expirationOrRenewal)
-        expect(expirationOrRenewal.label) == .nextBillingDate
-        expect(expirationOrRenewal.date) == .date(reformat(ISO8601Date: expirationDate))
 
         expect(purchaseInformation.productIdentifier) == productId
     }
@@ -387,10 +379,6 @@ final class CustomerCenterViewModelTests: TestCase {
             expect(purchaseInformation.durationTitle) == yearlyProduct.duration
 
             expect(purchaseInformation.pricePaid) == .nonFree(formatted(price: 29.99))
-
-            let expirationOrRenewal = try XCTUnwrap(purchaseInformation.expirationOrRenewal)
-            expect(expirationOrRenewal.label) == .nextBillingDate
-            expect(expirationOrRenewal.date) == .date(reformat(ISO8601Date: yearlyProduct.exp))
 
             expect(purchaseInformation.productIdentifier) == yearlyProduct.id
         }
@@ -483,8 +471,6 @@ final class CustomerCenterViewModelTests: TestCase {
             expect(purchaseInformation.renewalPrice).to(beNil())
 
             expect(purchaseInformation.productIdentifier) == productIdMonthly
-
-            expect(purchaseInformation.expirationOrRenewal?.date) == .date(reformat(ISO8601Date: expirationDateMonthly))
         }
     }
 
@@ -538,8 +524,6 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(purchaseInformation.durationTitle).to(beNil())
         expect(purchaseInformation.pricePaid) == .unknown // no info about non-subscriptions in customer info
         expect(purchaseInformation.productIdentifier) == productIdLifetime
-
-        expect(purchaseInformation.expirationOrRenewal?.date) == .never
     }
 
     func testShouldShowEarliestExpiration_whenUserHasTwoActiveSubscriptionsTwoEntitlements() async throws {
@@ -619,10 +603,6 @@ final class CustomerCenterViewModelTests: TestCase {
             expect(purchaseInformation.title) == yearlyProduct.title
             expect(purchaseInformation.durationTitle) == yearlyProduct.duration
             expect(purchaseInformation.pricePaid) == .nonFree(formatted(price: 29.99))
-
-            let expirationOrRenewal = try XCTUnwrap(purchaseInformation.expirationOrRenewal)
-            expect(expirationOrRenewal.label) == .nextBillingDate
-            expect(expirationOrRenewal.date) == .date(reformat(ISO8601Date: yearlyProduct.exp))
 
             expect(purchaseInformation.productIdentifier) == yearlyProduct.id
         }
@@ -708,10 +688,6 @@ final class CustomerCenterViewModelTests: TestCase {
             expect(purchaseInformation.durationTitle) == appleProduct.duration
             expect(purchaseInformation.pricePaid) == .nonFree(formatted(price: appleProduct.price))
 
-            let expirationOrRenewal = try XCTUnwrap(purchaseInformation.expirationOrRenewal)
-            expect(expirationOrRenewal.label) == .nextBillingDate
-            expect(expirationOrRenewal.date) == .date(reformat(ISO8601Date: appleProduct.exp))
-
             expect(purchaseInformation.productIdentifier) == appleProduct.id
         }
     }
@@ -759,13 +735,8 @@ final class CustomerCenterViewModelTests: TestCase {
 
         expect(purchaseInformation.title) == "com.revenuecat.product" // product identifier
         expect(purchaseInformation.durationTitle).to(beNil())
-        expect(purchaseInformation.explanation) == .earliestRenewal
         expect(purchaseInformation.store) == .appStore
         expect(purchaseInformation.pricePaid) == .nonFree(formatted(price: 1.99)) // from transaction
-
-        let expirationOrRenewal = try XCTUnwrap(purchaseInformation.expirationOrRenewal)
-        expect(expirationOrRenewal.label) == .nextBillingDate
-        expect(expirationOrRenewal.date) == .date(reformat(ISO8601Date: expirationDate))
 
         expect(purchaseInformation.productIdentifier) == productId
     }
@@ -997,11 +968,6 @@ final class CustomerCenterViewModelTests: TestCase {
         // Wait for the task to complete
         await viewModel.currentTask?.value
         expect(viewModel.state) == .success
-
-        // Wait for state to change to success
-        expect(viewModel.activePurchase).toNot(beNil())
-        expect(viewModel.activePurchase?.expirationOrRenewal?.label).to(equal(.expires))
-        expect(viewModel.activePurchase?.expirationOrRenewal?.date).to(equal(.never))
 
         // Verify screen was reloaded
         expect(viewModel.configuration).toNot(beNil())
