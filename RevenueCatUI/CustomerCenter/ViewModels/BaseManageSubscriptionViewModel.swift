@@ -83,7 +83,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
         }
 
 #if os(iOS) || targetEnvironment(macCatalyst)
-    func handleHelpPath(_ path: CustomerCenterConfigData.HelpPath, wihtActiveProductId: String? = nil) async {
+    func handleHelpPath(_ path: CustomerCenterConfigData.HelpPath, withActiveProductId: String? = nil) async {
         // Convert the path to an appropriate action using the extension
         if let action = path.asAction() {
             // Send the action through the action wrapper
@@ -113,7 +113,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
                 }
             } else {
                 Logger.debug(Strings.promo_offer_not_eligible_for_product(
-                    promotionalOffer.iosOfferId, wihtActiveProductId ?? ""
+                    promotionalOffer.iosOfferId, withActiveProductId ?? ""
                 ))
                 await self.onPathSelected(path: path)
             }
