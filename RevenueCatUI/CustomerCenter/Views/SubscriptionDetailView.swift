@@ -125,35 +125,23 @@ struct SubscriptionDetailView: View {
     @ViewBuilder
     var content: some View {
         ScrollViewWithOSBackground {
-            LazyVStack {
+            LazyVStack(spacing: 0) {
                 if let purchaseInformation = self.viewModel.purchaseInformation {
-                    PurchaseInformationCardView(
-                        purchaseInformation: purchaseInformation,
-                        localization: localization,
-                        refundStatus: viewModel.refundRequestStatus,
-                        showChevron: false
-                    )
-                    .background(Color(colorScheme == .light
-                                      ? UIColor.systemBackground
-                                      : UIColor.secondarySystemBackground))
-                    .cornerRadius(10)
-                    .shadow(radius: 0.5)
-                    .padding(.horizontal)
+                    ScrollViewSection(title: "SUBSCRIPTIONS") {
+                        PurchaseInformationCardView(
+                            purchaseInformation: purchaseInformation,
+                            localization: localization,
+                            refundStatus: viewModel.refundRequestStatus,
+                            showChevron: false
+                        )
+                        .cornerRadius(10)
+                        .padding(.horizontal)
+                        .padding(.top, 16)
+                    }
 
                     if viewModel.showPurchaseHistory {
-                        Button {
-                            viewModel.showAllPurchases = true
-                        } label: {
-                            CompatibilityLabeledContent(localization[.seeAllPurchases]) {
-                                Image(systemName: "chevron.forward")
-                            }
-                            .padding()
-                            .background(Color(colorScheme == .light
-                                              ? UIColor.systemBackground
-                                              : UIColor.secondarySystemBackground))
-                            .cornerRadius(10)
-                            .padding(.horizontal)
-                        }
+                        seeAllSubscriptionsButton
+                            .padding(.top, 16)
                     }
 
                 } else {
@@ -172,8 +160,11 @@ struct SubscriptionDetailView: View {
                     .padding(.horizontal)
                 }
 
-                ActiveSubscriptionButtonsView(viewModel: viewModel)
-                    .padding(.horizontal)
+                ScrollViewSection(title: "ACTIONS") {
+                    ActiveSubscriptionButtonsView(viewModel: viewModel)
+                        .padding(.top, 16)
+                        .padding(.horizontal)
+                }
 
                 if let url = support?.supportURL(
                     localization: localization,
@@ -210,6 +201,24 @@ struct SubscriptionDetailView: View {
          })
     }
 
+    private var seeAllSubscriptionsButton: some View {
+        Button {
+            viewModel.showAllPurchases = true
+        } label: {
+            CompatibilityLabeledContent(localization[.seeAllPurchases]) {
+                Image(systemName: "chevron.forward")
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 12)
+            .background(Color(colorScheme == .light
+                              ? UIColor.systemBackground
+                              : UIColor.secondarySystemBackground))
+            .cornerRadius(10)
+            .padding(.horizontal)
+        }
+        .tint(colorScheme == .dark ? .white : .black)
+    }
+
 }
 
  #if DEBUG
@@ -226,7 +235,7 @@ struct SubscriptionDetailView: View {
                 SubscriptionDetailView(
                     viewModel: SubscriptionDetailViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
-                        showPurchaseHistory: false,
+                        showPurchaseHistory: true,
                         purchaseInformation: .yearlyExpiring(),
                         refundRequestStatus: .success
                     )

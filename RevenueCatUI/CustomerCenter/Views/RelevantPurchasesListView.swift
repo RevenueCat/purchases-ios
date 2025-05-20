@@ -142,10 +142,6 @@ struct RelevantPurchasesListView: View {
                             .padding(.horizontal)
                             .padding(.top)
                     )
-
-                    ActiveSubscriptionButtonsView(viewModel: viewModel)
-                        .padding(.top, 16)
-                        .padding(.horizontal)
                 } else {
                     if !viewModel.activeSubscriptionPurchases.isEmpty {
                         activeSubscriptionsView
@@ -155,12 +151,19 @@ struct RelevantPurchasesListView: View {
                         otherPurchasesView
                             .padding(.top, 16)
                     }
-
-                    if support?.displayPurchaseHistoryLink == true {
-                        seeAllSubscriptionsButton
-                            .padding(.top, 16)
-                    }
                 }
+
+                ScrollViewSection(title: "ACTIONS") {
+                    ActiveSubscriptionButtonsView(viewModel: viewModel)
+                        .padding(.top, 16)
+                        .padding(.horizontal)
+                }
+
+                if support?.displayPurchaseHistoryLink == true {
+                    seeAllSubscriptionsButton
+                        .padding(.top, 16)
+                }
+
                 accountDetailsView
             }
         }
@@ -168,7 +171,7 @@ struct RelevantPurchasesListView: View {
 
     @ViewBuilder
     private var activeSubscriptionsView: some View {
-        ScrollViewSection(title: localization[.activeSubscriptions]) {
+        ScrollViewSection(title: "SUBSCRIPTIONS") {
             ForEach(viewModel.activeSubscriptionPurchases) { purchase in
                 Button {
                     viewModel.purchaseInformation = purchase
@@ -211,7 +214,7 @@ struct RelevantPurchasesListView: View {
                 Image(systemName: "chevron.forward")
             }
             .padding(.horizontal)
-            .padding(.vertical, 16)
+            .padding(.vertical, 12)
             .background(Color(colorScheme == .light
                               ? UIColor.systemBackground
                               : UIColor.secondarySystemBackground))
