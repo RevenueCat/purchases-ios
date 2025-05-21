@@ -48,9 +48,8 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
 
     var relativePath: String {
         switch self {
-        case let .getWebProducts(appUserId, productIds):
-            let productIdsQuery = productIds.map(\.trimmedAndEscaped).joined(separator: "&id=")
-            return "/rcbilling/v1/subscribers/\(appUserId.trimmedAndEscaped))/products?id=\(productIdsQuery)"
+        case let .getWebProducts(appUserID):
+            return "/rcbilling/v1/subscribers/\(appUserID.trimmedAndEscaped)/offering_products"
         }
     }
 

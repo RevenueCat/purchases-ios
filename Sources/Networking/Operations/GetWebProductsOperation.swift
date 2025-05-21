@@ -17,17 +17,14 @@ final class GetWebProductsOperation: CacheableNetworkOperation {
 
     private let webProductsCallbackCache: CallbackCache<WebProductsCallback>
     private let configuration: AppUserConfiguration
-    private let productIds: Set<String>
 
     static func createFactory(
         configuration: UserSpecificConfiguration,
-        productIds: Set<String>,
         webProductsCallbackCache: CallbackCache<WebProductsCallback>
     ) -> CacheableNetworkOperationFactory<GetWebProductsOperation> {
         return .init({ cacheKey in
                     .init(
                         configuration: configuration,
-                        productIds: productIds,
                         webProductsCallbackCache: webProductsCallbackCache,
                         cacheKey: cacheKey
                     )
@@ -36,18 +33,16 @@ final class GetWebProductsOperation: CacheableNetworkOperation {
     }
 
     private init(configuration: UserSpecificConfiguration,
-                 productIds: Set<String>,
                  webProductsCallbackCache: CallbackCache<WebProductsCallback>,
                  cacheKey: String) {
         self.configuration = configuration
-        self.productIds = productIds
         self.webProductsCallbackCache = webProductsCallbackCache
 
         super.init(configuration: configuration, cacheKey: cacheKey)
     }
 
     override func begin(completion: @escaping () -> Void) {
-        self.getWebProducts(productIds: productIds, completion: completion)
+        self.getWebProducts(completion: completion)
     }
 
 }
@@ -57,10 +52,10 @@ extension GetWebProductsOperation: @unchecked Sendable {}
 
 private extension GetWebProductsOperation {
 
-    func getWebProducts(productIds: Set<String>, completion: @escaping () -> Void) {
+    func getWebProducts(completion: @escaping () -> Void) {
         let appUserID = self.configuration.appUserID
 
-        guard appUserID.isNotEmpty, !productIds.isEmpty else {
+        guard appUserID.isNotEmpty else {
             self.webProductsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 callback.completion(.failure(.missingAppUserID()))
             }
@@ -69,7 +64,7 @@ private extension GetWebProductsOperation {
             return
         }
 
-        let request = HTTPRequest(method: .get, path: .getWebProducts(appUserId: appUserID, productIds: productIds))
+        let request = HTTPRequest(method: .get, path: .getWebProducts(appUserID: appUserID))
 
         httpClient.perform(request) { (response: VerifiedHTTPResponse<WebProductsResponse>.Result) in
             defer {
