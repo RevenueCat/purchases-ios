@@ -74,7 +74,7 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
         activePurchases: [PurchaseInformation] = [],
         nonSubscriptionPurchases: [PurchaseInformation] = [],
         shouldShowSeeAllPurchases: Bool,
-        originalPurchaseDate: Date? = nil,
+        originalPurchaseDate: Date? = nil
     ) {
         self.init(
             screen: screen,
