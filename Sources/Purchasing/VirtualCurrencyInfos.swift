@@ -21,7 +21,7 @@ import Foundation
     /// `virtualCurrencyInfos["VC_CODE"]`.
     @objc public let all: [String: VirtualCurrencyInfo]
 
-    internal init(virtualCurrencies: [String : VirtualCurrencyInfo]) {
+    internal init(virtualCurrencies: [String: VirtualCurrencyInfo]) {
         self.all = virtualCurrencies
     }
 
