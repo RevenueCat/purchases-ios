@@ -318,7 +318,7 @@ struct RelevantPurchasesListView: View {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-struct ActiveSubscriptionsListView_Previews: PreviewProvider {
+struct RelevantPurchasesListView_Previews: PreviewProvider {
 
     // swiftlint:disable force_unwrapping
     static var previews: some View {
@@ -383,6 +383,7 @@ struct ActiveSubscriptionsListView_Previews: PreviewProvider {
         }
         .environment(\.localization, CustomerCenterConfigData.default.localization)
         .environment(\.appearance, CustomerCenterConfigData.default.appearance)
+        .environmentObject(CustomerCenterViewModel())
     }
 
 }

@@ -134,7 +134,7 @@ import RevenueCat
         self.customerInfo = nil
     }
 
-    convenience init(uiPreviewPurchaseProvider: CustomerCenterPurchasesType) {
+    convenience init(uiPreviewPurchaseProvider: CustomerCenterPurchasesType = MockCustomerCenterPurchases()) {
         self.init(actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil),
                   purchasesProvider: uiPreviewPurchaseProvider)
     }
