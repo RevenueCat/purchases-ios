@@ -108,7 +108,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         expect(viewModel.relevantPathsForPurchase.first(where: { $0.type == .refundRequest })).toNot(beNil())
     }
 
-    func () {
+    func testLifetimeSubscriptionDoesNotShowCancel() {
         let purchase = PurchaseInformation.mockLifetime()
 
         let viewModel = BaseManageSubscriptionViewModel(
