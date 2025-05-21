@@ -91,7 +91,8 @@ final class PurchaseInformationTests: TestCase {
                 isActive: true,
                 willRenew: true,
                 expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
-                isTrial: false
+                isTrial: false,
+                ownershipType: PurchaseOwnershipType.unknown
             ),
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
@@ -145,7 +146,8 @@ final class PurchaseInformationTests: TestCase {
                 isActive: true,
                 willRenew: true,
                 expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
-                isTrial: false
+                isTrial: false,
+                ownershipType: PurchaseOwnershipType.unknown
             ),
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
@@ -200,7 +202,8 @@ final class PurchaseInformationTests: TestCase {
                 isActive: true,
                 willRenew: true,
                 expiresDate: nil,
-                isTrial: false
+                isTrial: false,
+                ownershipType: PurchaseOwnershipType.unknown
             ),
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
@@ -256,7 +259,8 @@ final class PurchaseInformationTests: TestCase {
                 isActive: true,
                 willRenew: false,
                 expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
-                isTrial: false
+                isTrial: false,
+                ownershipType: PurchaseOwnershipType.unknown
             ),
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
@@ -310,7 +314,8 @@ final class PurchaseInformationTests: TestCase {
                 isActive: false,
                 willRenew: false,
                 expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2000"),
-                isTrial: false
+                isTrial: false,
+                ownershipType: PurchaseOwnershipType.unknown
             ),
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
@@ -352,7 +357,8 @@ final class PurchaseInformationTests: TestCase {
                 isActive: true,
                 willRenew: true,
                 expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
-                isTrial: false
+                isTrial: false,
+                ownershipType: PurchaseOwnershipType.unknown
             ),
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
@@ -393,7 +399,8 @@ final class PurchaseInformationTests: TestCase {
                 isActive: true,
                 willRenew: false,
                 expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
-                isTrial: false
+                isTrial: false,
+                ownershipType: PurchaseOwnershipType.unknown
             ),
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
@@ -434,7 +441,8 @@ final class PurchaseInformationTests: TestCase {
                 isActive: false,
                 willRenew: false,
                 expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2000"),
-                isTrial: false
+                isTrial: false,
+                ownershipType: PurchaseOwnershipType.unknown
             ),
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
@@ -475,7 +483,8 @@ final class PurchaseInformationTests: TestCase {
                 isActive: true,
                 willRenew: false,
                 expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
-                isTrial: false
+                isTrial: false,
+                ownershipType: PurchaseOwnershipType.unknown
             ),
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
@@ -516,7 +525,8 @@ final class PurchaseInformationTests: TestCase {
                 isActive: true,
                 willRenew: false,
                 expiresDate: nil,
-                isTrial: false
+                isTrial: false,
+                ownershipType: PurchaseOwnershipType.unknown
             ),
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
@@ -558,7 +568,8 @@ final class PurchaseInformationTests: TestCase {
                 isActive: true,
                 willRenew: true,
                 expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
-                isTrial: false
+                isTrial: false,
+                ownershipType: PurchaseOwnershipType.unknown
             ),
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
@@ -599,7 +610,8 @@ final class PurchaseInformationTests: TestCase {
                 isActive: true,
                 willRenew: false,
                 expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
-                isTrial: false
+                isTrial: false,
+                ownershipType: PurchaseOwnershipType.unknown
             ),
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
@@ -640,7 +652,8 @@ final class PurchaseInformationTests: TestCase {
                 isActive: false,
                 willRenew: false,
                 expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2000"),
-                isTrial: false
+                isTrial: false,
+                ownershipType: PurchaseOwnershipType.unknown
             ),
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
@@ -681,7 +694,8 @@ final class PurchaseInformationTests: TestCase {
                 isActive: true,
                 willRenew: true,
                 expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
-                isTrial: false
+                isTrial: false,
+                ownershipType: PurchaseOwnershipType.unknown
             ),
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
@@ -722,7 +736,8 @@ final class PurchaseInformationTests: TestCase {
                 isActive: true,
                 willRenew: false,
                 expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
-                isTrial: false
+                isTrial: false,
+                ownershipType: PurchaseOwnershipType.unknown
             ),
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
@@ -763,7 +778,8 @@ final class PurchaseInformationTests: TestCase {
                 isActive: false,
                 willRenew: false,
                 expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2000"),
-                isTrial: false
+                isTrial: false,
+                ownershipType: PurchaseOwnershipType.unknown
             ),
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
@@ -801,7 +817,8 @@ final class PurchaseInformationTests: TestCase {
                 isActive: false,
                 willRenew: false,
                 expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2000"),
-                isTrial: false
+                isTrial: false,
+                ownershipType: PurchaseOwnershipType.unknown
             ),
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
