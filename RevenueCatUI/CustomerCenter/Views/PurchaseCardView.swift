@@ -75,7 +75,7 @@ struct PurchaseInformationCardView: View {
                 localizations: localization
             )
         } else {
-            self.subtitle = nil
+            self.subtitle = purchaseInformation.pricePaidString(localizations: localization)
         }
 
         if let refundStatus, let message = refundStatus.subtitle(localization: localization) {

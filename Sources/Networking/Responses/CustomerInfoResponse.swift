@@ -142,7 +142,7 @@ extension CustomerInfoResponse.Transaction: Codable, Hashable {
         case store
         case isSandbox
         case displayName
-
+        case price
     }
 
 }

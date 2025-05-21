@@ -170,7 +170,7 @@ struct SubscriptionDetailView: View {
                     localization: localization,
                     purchasesProvider: viewModel.purchasesProvider
                 ), viewModel.shouldShowContactSupport,
-                    URLUtilities.canOpenURL(url) || RuntimeUtils.isSimulator {
+                   URLUtilities.canOpenURL(url) || RuntimeUtils.isSimulator {
                     contactSupportView(url)
                         .padding(.top)
                 }
@@ -185,7 +185,7 @@ struct SubscriptionDetailView: View {
         .applyIf(self.viewModel.screen.type == .management, apply: {
             $0.navigationTitle(self.viewModel.screen.title)
                 .navigationBarTitleDisplayMode(.inline)
-         })
+        })
     }
 
     @ViewBuilder
@@ -236,12 +236,12 @@ struct SubscriptionDetailView: View {
     }
 }
 
- #if DEBUG
- @available(iOS 15.0, *)
- @available(macOS, unavailable)
- @available(tvOS, unavailable)
- @available(watchOS, unavailable)
- struct SubscriptionDetailView_Previews: PreviewProvider {
+#if DEBUG
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+struct SubscriptionDetailView_Previews: PreviewProvider {
 
     // swiftlint:disable force_unwrapping
     static var previews: some View {
@@ -311,8 +311,8 @@ struct SubscriptionDetailView: View {
         .environment(\.appearance, CustomerCenterConfigData.default.appearance)
     }
 
- }
+}
 
- #endif
+#endif
 
 #endif
