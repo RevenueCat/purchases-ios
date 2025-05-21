@@ -274,6 +274,11 @@ private extension Array<CustomerCenterConfigData.HelpPath> {
                  return false
             }
 
+            // can't change plans if it's not a subscription
+            if $0.type == .changePlans && purchaseInformation.isLifetime {
+                return false
+            }
+
             return (!isCancel || isEligibleCancel) &&
                     (!isRefund || isRefundEligible) &&
                     refundWindowIsValid

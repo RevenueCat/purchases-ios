@@ -204,34 +204,34 @@ private extension CustomerCenterView {
     func destinationContent(configuration: CustomerCenterConfigData) -> some View {
         if viewModel.hasPurchases,
            let screen = configuration.screens[.management] {
-            if let onUpdateAppClick = viewModel.onUpdateAppClick,
-               !ignoreAppUpdateWarning
-                && viewModel.shouldShowAppUpdateWarnings {
-                AppUpdateWarningView(
-                    onUpdateAppClick: onUpdateAppClick,
-                    onContinueAnywayClick: {
-                        withAnimation {
-                            ignoreAppUpdateWarning = true
-                        }
-                    }
-                )
-            } else if viewModel.activeSubscriptionPurchases.count > 1 {
+//            if let onUpdateAppClick = viewModel.onUpdateAppClick,
+//               !ignoreAppUpdateWarning
+//                && viewModel.shouldShowAppUpdateWarnings {
+//                AppUpdateWarningView(
+//                    onUpdateAppClick: onUpdateAppClick,
+//                    onContinueAnywayClick: {
+//                        withAnimation {
+//                            ignoreAppUpdateWarning = true
+//                        }
+//                    }
+//                )
+//            } else if viewModel.shouldShowList {
                 listView(screen)
-            } else {
-                singlePurchaseView(screen)
-            }
-        } else {
-            if let screen = configuration.screens[.noActive] {
-                singlePurchaseView(screen)
-            } else {
-                // Fallback with a restore button
-                NoSubscriptionsView(
-                    configuration: configuration,
-                    actionWrapper: self.viewModel.actionWrapper,
-                    purchasesProvider: self.viewModel.purchasesProvider,
-                    virtualCurrencies: self.viewModel.virtualCurrencies
-                )
-            }
+//            } else {
+//                singlePurchaseView(screen)
+//            }
+//        } else {
+//        if let screen = configuration.screens[.noActive] {
+//            singlePurchaseView(screen)
+//            } else {
+//                // Fallback with a restore button
+//                NoSubscriptionsView(
+//                    configuration: configuration,
+//                    actionWrapper: self.viewModel.actionWrapper,
+//                    purchasesProvider: self.viewModel.purchasesProvider,
+//                    virtualCurrencies: self.viewModel.virtualCurrencies
+//                )
+//            }
         }
     }
 
@@ -252,6 +252,7 @@ private extension CustomerCenterView {
             virtualCurrencies: self.viewModel.virtualCurrencies,
             originalAppUserId: viewModel.originalAppUserId,
             originalPurchaseDate: viewModel.originalPurchaseDate,
+            shouldShowSeeAllPurchases: viewModel.shouldShowSeeAllPurchases,
             purchasesProvider: self.viewModel.purchasesProvider,
             actionWrapper: self.viewModel.actionWrapper
         )

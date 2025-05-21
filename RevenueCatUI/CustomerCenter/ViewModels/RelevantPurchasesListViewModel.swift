@@ -24,6 +24,8 @@ import SwiftUI
 @MainActor
 final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
 
+    static let maxNonSubscriptionsToShow = 2
+
     @Published
     private(set) var activeSubscriptionPurchases: [PurchaseInformation] = []
 
@@ -41,6 +43,7 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
 
     let originalAppUserId: String
     let originalPurchaseDate: Date?
+    let shouldShowSeeAllPurchases: Bool
 
     init(
         screen: CustomerCenterConfigData.Screen,
@@ -50,6 +53,7 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
         virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]? = nil,
         originalAppUserId: String,
         originalPurchaseDate: Date?,
+        shouldShowSeeAllPurchases: Bool,
         refundRequestStatus: RefundRequestStatus? = nil,
         purchasesProvider: CustomerCenterPurchasesType,
         loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
@@ -57,6 +61,7 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
             self.activeNonSubscriptionPurchases = nonSubscriptionPurchases
             self.originalAppUserId = originalAppUserId
             self.originalPurchaseDate = originalPurchaseDate
+            self.shouldShowSeeAllPurchases = shouldShowSeeAllPurchases
 
             super.init(
                 screen: screen,
@@ -76,6 +81,7 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
         activePurchases: [PurchaseInformation] = [],
         nonSubscriptionPurchases: [PurchaseInformation] = [],
         virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]? = nil,
+        shouldShowSeeAllPurchases: Bool,
         originalPurchaseDate: Date? = nil
     ) {
         self.init(
@@ -86,6 +92,7 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
             virtualCurrencies: virtualCurrencies,
             originalAppUserId: originalAppUserId,
             originalPurchaseDate: originalPurchaseDate,
+            shouldShowSeeAllPurchases: shouldShowSeeAllPurchases,
             purchasesProvider: MockCustomerCenterPurchases()
         )
     }

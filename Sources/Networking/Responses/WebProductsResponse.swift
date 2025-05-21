@@ -23,7 +23,7 @@ struct WebProductsResponse {
 
     struct PricingPhase {
         let periodDuration: String?
-        let price: Price
+        let price: Price?
         let cycleCount: Int
     }
 
@@ -48,10 +48,24 @@ struct WebProductsResponse {
         let purchaseOptions: [String: PurchaseOption]
     }
 
-    let productDetails: [Product]
+    struct Package {
+        let identifier: String
+        let webCheckoutUrl: String
+        let productDetails: Product
+    }
+
+    struct Offering {
+        let identifier: String
+        let description: String?
+        let packages: [String: Package]
+    }
+
+    let offerings: [String: Offering]
 
 }
 
+extension WebProductsResponse.Offering: Codable, Equatable {}
+extension WebProductsResponse.Package: Codable, Equatable {}
 extension WebProductsResponse.Product: Codable, Equatable {}
 extension WebProductsResponse.PurchaseOption: Codable, Equatable {}
 extension WebProductsResponse.PricingPhase: Codable, Equatable {}

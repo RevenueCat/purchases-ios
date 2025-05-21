@@ -20,6 +20,7 @@ import SwiftUI
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
+// swiftlint:disable:next type_body_length
 struct RelevantPurchasesListView: View {
 
     @Environment(\.appearance)
@@ -27,9 +28,6 @@ struct RelevantPurchasesListView: View {
 
     @Environment(\.colorScheme)
     private var colorScheme
-
-    @Environment(\.supportInformation)
-    private var support
 
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
@@ -54,6 +52,7 @@ struct RelevantPurchasesListView: View {
          virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]?,
          originalAppUserId: String,
          originalPurchaseDate: Date?,
+         shouldShowSeeAllPurchases: Bool,
          purchasesProvider: CustomerCenterPurchasesType,
          actionWrapper: CustomerCenterActionWrapper) {
         let viewModel = RelevantPurchasesListViewModel(
@@ -64,6 +63,7 @@ struct RelevantPurchasesListView: View {
             virtualCurrencies: virtualCurrencies,
             originalAppUserId: originalAppUserId,
             originalPurchaseDate: originalPurchaseDate,
+            shouldShowSeeAllPurchases: shouldShowSeeAllPurchases,
             purchasesProvider: purchasesProvider
         )
 
@@ -121,6 +121,12 @@ struct RelevantPurchasesListView: View {
             .onChangeOf(activePurchases) { _ in
                 viewModel.updatePurchases(activePurchases)
             }
+            .overlay {
+                RestorePurchasesAlert(
+                    isPresented: self.$viewModel.showRestoreAlert,
+                    actionWrapper: self.viewModel.actionWrapper
+                )
+            }
     }
 
     @ViewBuilder
@@ -169,7 +175,7 @@ struct RelevantPurchasesListView: View {
                         .padding(.horizontal)
                 }
 
-                if support?.displayPurchaseHistoryLink == true {
+                if viewModel.shouldShowSeeAllPurchases {
                     seeAllSubscriptionsButton
                         .padding(.top, 16)
                 }
@@ -199,8 +205,10 @@ struct RelevantPurchasesListView: View {
     }
 
     private var otherPurchasesView: some View {
-        ScrollViewSection(title: localization[.purchasesSectionTitle]) {
-            ForEach(viewModel.activeNonSubscriptionPurchases.suffix(3)) { purchase in
+        let prefix = RelevantPurchasesListViewModel.maxNonSubscriptionsToShow
+
+        return ScrollViewSection(title: localization[.purchasesSectionTitle]) {
+            ForEach(viewModel.activeNonSubscriptionPurchases.prefix(prefix)) { purchase in
                 Button {
                     viewModel.purchaseInformation = purchase
                 } label: {
@@ -340,7 +348,8 @@ struct ActiveSubscriptionsListView_Previews: PreviewProvider {
                     viewModel: RelevantPurchasesListViewModel(
                         screen: warningOffMock.screens[.management]!,
                         originalAppUserId: "originalAppUserId",
-                        activePurchases: purchases
+                        activePurchases: purchases,
+                        shouldShowSeeAllPurchases: false
                     )
                 )
                 .environment(\.supportInformation, warningOffMock.support)
@@ -352,9 +361,10 @@ struct ActiveSubscriptionsListView_Previews: PreviewProvider {
                 RelevantPurchasesListView(
                     viewModel: RelevantPurchasesListViewModel(
                         screen: warningOffMock.screens[.management]!,
-                        originalAppUserId: UUID().uuidString,
+                        originalAppUserId: "originalAppUserId",
                         activePurchases: purchases,
-                        nonSubscriptionPurchases: [.consumable, .lifetime]
+                        nonSubscriptionPurchases: [.consumable, .lifetime],
+                        shouldShowSeeAllPurchases: false
                     )
                 )
                 .environment(\.supportInformation, warningOffMock.support)
@@ -367,7 +377,8 @@ struct ActiveSubscriptionsListView_Previews: PreviewProvider {
                     viewModel: RelevantPurchasesListViewModel(
                         screen: warningOnMock.screens[.management]!,
                         originalAppUserId: "originalAppUserId",
-                        activePurchases: []
+                        activePurchases: [],
+                        shouldShowSeeAllPurchases: false
                     )
                 )
                 .environment(\.supportInformation, warningOnMock.support)

@@ -769,6 +769,7 @@ final class CustomerCenterViewModelTests: TestCase {
         await viewModel.loadScreen()
 
         expect(viewModel.state) == .success
+        expect(viewModel.shouldShowList).to(beFalse())
 
         let purchaseInformation = try XCTUnwrap(viewModel.activePurchase)
         expect(viewModel.activeSubscriptionPurchases.count) == 1
@@ -792,6 +793,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         expect(viewModel.activePurchase).to(beNil())
         expect(viewModel.state) == .success
+        expect(viewModel.shouldShowList).to(beFalse())
     }
 
     func testLoadScreenFailure() async throws {
@@ -803,7 +805,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         expect(viewModel.activePurchase).to(beNil())
         expect(viewModel.activeSubscriptionPurchases).to(beEmpty())
-
+        expect(viewModel.shouldShowList).to(beFalse())
         expect(viewModel.state) == .error(error)
     }
 
@@ -957,6 +959,7 @@ final class CustomerCenterViewModelTests: TestCase {
         await viewModel.loadScreen()
 
         expect(viewModel.activePurchase).toNot(beNil())
+        expect(viewModel.shouldShowList).to(beFalse())
         expect(mockStoreKitUtilities.renewalPriceFromRenewalInfoCallCount).to(equal(2))
     }
 
@@ -976,6 +979,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         await viewModel.loadScreen()
 
+        expect(viewModel.shouldShowList).to(beFalse())
         expect(viewModel.activePurchase?.pricePaid).to(equal(.nonFree(formatted(price: 4.99))))
         expect(viewModel.activePurchase?.renewalPrice).to(equal(.nonFree(formatted(price: 5.0))))
         expect(mockStoreKitUtilities.renewalPriceFromRenewalInfoCallCount).to(equal(2))
@@ -1013,6 +1017,47 @@ final class CustomerCenterViewModelTests: TestCase {
         // Verify screen was reloaded
         expect(viewModel.configuration).toNot(beNil())
         expect(mockPurchases.loadCustomerCenterCallCount) == 2
+    }
+
+    func testMultiplePurchases() {
+        var viewModel = CustomerCenterViewModel(
+            activeSubscriptionPurchases: [],
+            activeNonSubscriptionPurchases: [],
+            configuration: CustomerCenterConfigData.default
+        )
+
+        expect(viewModel.shouldShowList).to(beFalse())
+
+        viewModel = CustomerCenterViewModel(
+            activeSubscriptionPurchases: [.yearlyExpiring()],
+            activeNonSubscriptionPurchases: [],
+            configuration: CustomerCenterConfigData.default
+        )
+
+        expect(viewModel.shouldShowList).to(beFalse())
+
+        viewModel = CustomerCenterViewModel(
+            activeSubscriptionPurchases: [
+                .yearlyExpiring(productIdentifier: "1"),
+                    .yearlyExpiring(productIdentifier: "2")
+            ],
+            activeNonSubscriptionPurchases: [],
+            configuration: CustomerCenterConfigData.default
+        )
+
+        expect(viewModel.shouldShowList).to(beTrue())
+
+        viewModel = CustomerCenterViewModel(
+            activeSubscriptionPurchases: [
+                .yearlyExpiring(productIdentifier: "1")
+            ],
+            activeNonSubscriptionPurchases: [
+                .consumable
+            ],
+            configuration: CustomerCenterConfigData.default
+        )
+
+        expect(viewModel.shouldShowList).to(beTrue())
     }
 
     private func formatted(price: Decimal, currencyCode: String = "USD") -> String {

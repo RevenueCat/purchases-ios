@@ -80,12 +80,23 @@ import RevenueCat
         !activeSubscriptionPurchases.isEmpty || activePurchase != nil || !activeNonSubscriptionPurchases.isEmpty
     }
 
+    var shouldShowList: Bool {
+        activeSubscriptionPurchases.count + activeNonSubscriptionPurchases.count > 1
+    }
+
     var  originalAppUserId: String {
         customerInfo?.originalAppUserId ?? ""
     }
 
     var originalPurchaseDate: Date? {
         customerInfo?.originalPurchaseDate
+    }
+
+    var shouldShowSeeAllPurchases: Bool {
+        configuration?.support.displayPurchaseHistoryLink == true
+        && customerInfo?.shouldShowSeeAllPurchasesButton(
+            maxNonSubscriptions: RelevantPurchasesListViewModel.maxNonSubscriptionsToShow
+        ) ?? false
     }
 
     @Published
@@ -139,6 +150,18 @@ import RevenueCat
     ) {
         self.init(actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil))
         self.activePurchase = purchaseInformation
+        self.configuration = configuration
+        self.state = .success
+    }
+
+    convenience init(
+        activeSubscriptionPurchases: [PurchaseInformation],
+        activeNonSubscriptionPurchases: [PurchaseInformation],
+        configuration: CustomerCenterConfigData
+    ) {
+        self.init(actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil))
+        self.activeSubscriptionPurchases = activeSubscriptionPurchases
+        self.activeNonSubscriptionPurchases = activeNonSubscriptionPurchases
         self.configuration = configuration
         self.state = .success
     }
