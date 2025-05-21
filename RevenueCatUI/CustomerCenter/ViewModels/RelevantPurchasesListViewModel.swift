@@ -24,6 +24,8 @@ import SwiftUI
 @MainActor
 final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
 
+    static let maxNonSubscriptionsToShow = 2
+
     @Published
     private(set) var activeSubscriptionPurchases: [PurchaseInformation] = []
 

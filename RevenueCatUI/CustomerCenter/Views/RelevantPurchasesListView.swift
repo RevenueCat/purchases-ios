@@ -195,8 +195,10 @@ struct RelevantPurchasesListView: View {
     }
 
     private var otherPurchasesView: some View {
-        ScrollViewSection(title: localization[.purchasesSectionTitle]) {
-            ForEach(viewModel.activeNonSubscriptionPurchases.prefix(2)) { purchase in
+        let prefix = RelevantPurchasesListViewModel.maxNonSubscriptionsToShow
+
+        return ScrollViewSection(title: localization[.purchasesSectionTitle]) {
+            ForEach(viewModel.activeNonSubscriptionPurchases.prefix(prefix)) { purchase in
                 Button {
                     viewModel.purchaseInformation = purchase
                 } label: {

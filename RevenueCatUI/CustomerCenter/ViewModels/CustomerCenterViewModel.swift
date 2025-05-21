@@ -91,7 +91,9 @@ import RevenueCat
 
     var shouldShowSeeAllPurchases: Bool {
         configuration?.support.displayPurchaseHistoryLink == true
-            && customerInfo?.shouldShowSeeAllPurchasesButton(maxNonSubscriptions: 2) ?? false
+        && customerInfo?.shouldShowSeeAllPurchasesButton(
+            maxNonSubscriptions: RelevantPurchasesListViewModel.maxNonSubscriptionsToShow
+        ) ?? false
     }
 
     @Published
