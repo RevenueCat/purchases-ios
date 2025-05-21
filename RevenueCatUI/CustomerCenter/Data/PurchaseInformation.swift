@@ -81,6 +81,8 @@ struct PurchaseInformation {
 
     let periodType: PeriodType
 
+    let ownershipType: PurchaseOwnershipType?
+
     private let dateFormatter: DateFormatter
     private let numberFormatter: NumberFormatter
 
@@ -100,7 +102,8 @@ struct PurchaseInformation {
          managementURL: URL?,
          expirationDate: Date? = nil,
          renewalDate: Date? = nil,
-         periodType: PeriodType = .normal
+         periodType: PeriodType = .normal,
+         ownershipType: PurchaseOwnershipType? = nil
     ) {
         self.title = title
         self.durationTitle = durationTitle
@@ -119,6 +122,7 @@ struct PurchaseInformation {
         self.dateFormatter = dateFormatter
         self.periodType = periodType
         self.numberFormatter = numberFormatter
+        self.ownershipType = ownershipType
     }
 
     init(entitlement: EntitlementInfo? = nil,
@@ -151,14 +155,16 @@ struct PurchaseInformation {
             self.expirationDate = entitlement.expirationDate
             self.renewalDate = entitlement.willRenew ? entitlement.expirationDate : nil
             self.periodType = entitlement.periodType
+            self.ownershipType = entitlement.ownershipType
         } else {
             switch transaction.type {
-            case let .subscription(_, willRenew, expiresDate, isTrial):
+            case let .subscription(_, willRenew, expiresDate, isTrial, ownershipType):
                 self.isLifetime = false
                 self.isTrial = isTrial
                 self.latestPurchaseDate = (transaction as? RevenueCat.SubscriptionInfo)?.purchaseDate
                 self.expirationDate = expiresDate
                 self.renewalDate = willRenew ? expiresDate : nil
+                self.ownershipType = ownershipType
 
             case .nonSubscription:
                 self.isLifetime = true
@@ -166,6 +172,7 @@ struct PurchaseInformation {
                 self.latestPurchaseDate = (transaction as? NonSubscriptionTransaction)?.purchaseDate
                 self.renewalDate = nil
                 self.expirationDate = nil
+                self.ownershipType = nil
             }
 
             self.productIdentifier = transaction.productIdentifier
@@ -348,7 +355,7 @@ private extension Transaction {
     }
 
     var unableToInferRenewalPrice: Bool {
-        if case let .subscription(_, willRenew, _, isTrial) = self.type {
+        if case let .subscription(_, willRenew, _, isTrial, _) = self.type {
             return !willRenew || isTrial
         }
 
