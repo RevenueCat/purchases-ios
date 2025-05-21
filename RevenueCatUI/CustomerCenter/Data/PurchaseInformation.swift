@@ -61,7 +61,7 @@ struct PurchaseInformation {
     /// Note: `false` for non-subscriptions
     let isCancelled: Bool
 
-    let latestPurchaseDate: Date?
+    let latestPurchaseDate: Date
 
     /// The fetch date of this CustomerInfo. (a.k.a. CustomerInfo.requestedDate)
     let customerInfoRequestedDate: Date
@@ -93,7 +93,7 @@ struct PurchaseInformation {
          isLifetime: Bool,
          isTrial: Bool,
          isCancelled: Bool,
-         latestPurchaseDate: Date?,
+         latestPurchaseDate: Date,
          customerInfoRequestedDate: Date,
          dateFormatter: DateFormatter = Self.defaultDateFormatter,
          numberFormatter: NumberFormatter = Self.defaultNumberFormatter,
@@ -147,7 +147,7 @@ struct PurchaseInformation {
             self.isLifetime = entitlement.expirationDate == nil
             self.isTrial = entitlement.periodType == .trial
             self.isCancelled = entitlement.isCancelled
-            self.latestPurchaseDate = entitlement.latestPurchaseDate
+            self.latestPurchaseDate = entitlement.latestPurchaseDate ?? transaction.purchaseDate
             self.expirationDate = entitlement.expirationDate
             self.renewalDate = entitlement.willRenew ? entitlement.expirationDate : nil
             self.periodType = entitlement.periodType
@@ -156,18 +156,17 @@ struct PurchaseInformation {
             case let .subscription(_, willRenew, expiresDate, isTrial):
                 self.isLifetime = false
                 self.isTrial = isTrial
-                self.latestPurchaseDate = (transaction as? RevenueCat.SubscriptionInfo)?.purchaseDate
                 self.expirationDate = expiresDate
                 self.renewalDate = willRenew ? expiresDate : nil
 
             case .nonSubscription:
                 self.isLifetime = true
                 self.isTrial = false
-                self.latestPurchaseDate = (transaction as? NonSubscriptionTransaction)?.purchaseDate
                 self.renewalDate = nil
                 self.expirationDate = nil
             }
 
+            self.latestPurchaseDate = transaction.purchaseDate
             self.productIdentifier = transaction.productIdentifier
             self.store = transaction.store
             self.isCancelled = transaction.isCancelled

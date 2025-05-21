@@ -518,7 +518,7 @@ private extension PurchaseInformation {
             isLifetime: true,
             isTrial: false,
             isCancelled: false,
-            latestPurchaseDate: nil,
+            latestPurchaseDate: Date(),
             customerInfoRequestedDate: customerInfoRequestedDate,
             managementURL: URL(string: "https://www.revenuecat.com")!
         )
