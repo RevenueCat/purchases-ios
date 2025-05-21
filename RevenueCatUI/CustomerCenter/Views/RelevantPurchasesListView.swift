@@ -105,6 +105,7 @@ struct RelevantPurchasesListView: View {
                 .environment(\.appearance, appearance)
                 .environment(\.localization, localization)
                 .environment(\.navigationOptions, navigationOptions)
+                .environmentObject(customerCenterViewModel)
             }
             .compatibleNavigation(
                 isPresented: $viewModel.showAllPurchases,
@@ -116,6 +117,7 @@ struct RelevantPurchasesListView: View {
                 .environment(\.appearance, appearance)
                 .environment(\.localization, localization)
                 .environment(\.navigationOptions, navigationOptions)
+                .environmentObject(customerCenterViewModel)
             }
             .onChangeOf(activePurchases) { _ in
                 viewModel.updatePurchases(activePurchases)

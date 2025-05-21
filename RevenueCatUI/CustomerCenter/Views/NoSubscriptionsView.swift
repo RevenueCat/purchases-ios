@@ -74,7 +74,6 @@ struct NoSubscriptionsView: View {
                 isPresented: $showRestoreAlert,
                 actionWrapper: actionWrapper
             )
-            .environmentObject(customerCenterViewModel)
         }
     }
 
