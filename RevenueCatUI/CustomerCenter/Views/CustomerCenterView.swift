@@ -152,6 +152,7 @@ private extension CustomerCenterView {
                         .environment(\.customerCenterPresentationMode, self.mode)
                         .environment(\.navigationOptions, self.navigationOptions)
                         .environment(\.supportInformation, configuration.support)
+                        .environmentObject(viewModel)
                 } else {
                     TintedProgressView()
                 }

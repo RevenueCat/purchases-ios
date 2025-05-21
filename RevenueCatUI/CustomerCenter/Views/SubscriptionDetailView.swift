@@ -37,6 +37,8 @@ struct SubscriptionDetailView: View {
     @Environment(\.supportInformation)
     private var support
 
+    @EnvironmentObject private var customerCenterViewModel: CustomerCenterViewModel
+
     @StateObject
     private var viewModel: SubscriptionDetailViewModel
 
@@ -181,6 +183,7 @@ struct SubscriptionDetailView: View {
                 isPresented: self.$viewModel.showRestoreAlert,
                 actionWrapper: self.viewModel.actionWrapper
             )
+            .environmentObject(customerCenterViewModel)
         }
         .applyIf(self.viewModel.screen.type == .management, apply: {
             $0.navigationTitle(self.viewModel.screen.title)

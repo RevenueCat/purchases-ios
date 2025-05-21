@@ -36,6 +36,8 @@ struct NoSubscriptionsView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    @EnvironmentObject private var customerCenterViewModel: CustomerCenterViewModel
+
     @State
     private var showRestoreAlert: Bool = false
 
@@ -72,6 +74,7 @@ struct NoSubscriptionsView: View {
                 isPresented: $showRestoreAlert,
                 actionWrapper: actionWrapper
             )
+            .environmentObject(customerCenterViewModel)
         }
     }
 

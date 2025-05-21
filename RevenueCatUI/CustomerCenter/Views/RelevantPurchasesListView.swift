@@ -35,6 +35,8 @@ struct RelevantPurchasesListView: View {
     @Environment(\.navigationOptions)
     var navigationOptions
 
+    @EnvironmentObject private var customerCenterViewModel: CustomerCenterViewModel
+
     @StateObject
     private var viewModel: RelevantPurchasesListViewModel
 
@@ -123,6 +125,7 @@ struct RelevantPurchasesListView: View {
                     isPresented: self.$viewModel.showRestoreAlert,
                     actionWrapper: self.viewModel.actionWrapper
                 )
+                .environmentObject(customerCenterViewModel)
             }
     }
 
