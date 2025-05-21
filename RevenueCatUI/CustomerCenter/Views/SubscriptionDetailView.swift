@@ -312,6 +312,7 @@ struct SubscriptionDetailView_Previews: PreviewProvider {
         }
         .environment(\.localization, CustomerCenterConfigData.default.localization)
         .environment(\.appearance, CustomerCenterConfigData.default.appearance)
+        .environmentObject(CustomerCenterViewModel())
     }
 
 }
