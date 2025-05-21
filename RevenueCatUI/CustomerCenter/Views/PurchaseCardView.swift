@@ -90,7 +90,7 @@ struct PurchaseInformationCardView: View {
             self.badge = .cancelled(localization[.badgeCancelled])
         } else if purchaseInformation.isTrial, purchaseInformation.pricePaid == .free {
             self.badge = .freeTrial(localization[.badgeFreeTrial])
-        } else if purchaseInformation.expirationDate != nil {
+        } else if purchaseInformation.isActive {
             self.badge = .active(localization[.active])
         } else {
             self.badge = nil
