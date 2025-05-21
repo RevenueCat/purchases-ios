@@ -31,7 +31,6 @@ struct PurchaseInformationCardView: View {
 
     private let storeTitle: String
 
-    private let additionalInfoTitle: String?
     private let additionalInfoSubtitle: String?
 
     private let paidPrice: String
@@ -42,7 +41,6 @@ struct PurchaseInformationCardView: View {
         storeTitle: String,
         paidPrice: String,
         badge: PurchaseInformationCardView.Badge? = nil,
-        additionalInfoTitle: String? = nil,
         additionalInfoSubtitle: String? = nil,
         subtitle: String? = nil,
         showChevron: Bool = true
@@ -51,7 +49,6 @@ struct PurchaseInformationCardView: View {
         self.paidPrice = paidPrice
         self.subtitle = subtitle
         self.badge = badge
-        self.additionalInfoTitle = additionalInfoTitle
         self.additionalInfoSubtitle = additionalInfoSubtitle
         self.storeTitle = storeTitle
         self.showChevron = showChevron
@@ -78,13 +75,7 @@ struct PurchaseInformationCardView: View {
             self.subtitle = purchaseInformation.pricePaidString(localizations: localization)
         }
 
-        if let refundStatus, let message = refundStatus.subtitle(localization: localization) {
-            self.additionalInfoTitle = localization[.refundStatus]
-            self.additionalInfoSubtitle = message
-        } else {
-            self.additionalInfoTitle = nil
-            self.additionalInfoSubtitle = nil
-        }
+        self.additionalInfoSubtitle = refundStatus?.subtitle(localization: localization)
 
         switch purchaseInformation.pricePaid {
         case .free, .unknown:
@@ -99,6 +90,8 @@ struct PurchaseInformationCardView: View {
             self.badge = .cancelled(localization[.badgeCancelled])
         } else if purchaseInformation.isTrial, purchaseInformation.pricePaid == .free {
             self.badge = .freeTrial(localization[.badgeFreeTrial])
+        } else if purchaseInformation.expirationDate != nil {
+            self.badge = .active(localization[.active])
         } else {
             self.badge = nil
         }
@@ -160,23 +153,14 @@ struct PurchaseInformationCardView: View {
                               ? UIColor.systemBackground
                               : UIColor.secondarySystemBackground))
 
-            if let additionalInfoTitle, let additionalInfoSubtitle {
-                VStack(alignment: .leading) {
-                    Text(additionalInfoTitle)
-                        .font(.footnote)
-                        .foregroundStyle(.primary)
-                        .lineLimit(1)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.bottom, 2)
-
-                    Text(additionalInfoSubtitle)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .padding(.bottom, 4)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .multilineTextAlignment(.leading)
-                }
-                .padding()
+            if let additionalInfoSubtitle {
+                Text(additionalInfoSubtitle)
+                    .font(.caption)
+                    .foregroundStyle(.primary)
+                    .padding(.bottom, 4)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .multilineTextAlignment(.leading)
+                    .padding()
             }
         }
         .background(Color(colorScheme == .light
@@ -208,13 +192,15 @@ private extension RefundRequestStatus {
 @available(watchOS, unavailable)
 extension PurchaseInformationCardView {
     enum Badge {
-        case cancelled(String), freeTrial(String)
+        case cancelled(String), freeTrial(String), active(String)
 
         var title: String {
             switch self {
             case let .cancelled(title):
                 return title
             case let .freeTrial(title):
+                return title
+            case let .active(title):
                 return title
             }
         }
@@ -225,6 +211,8 @@ extension PurchaseInformationCardView {
                 return Color(red: 242 / 256, green: 84 / 256, blue: 91 / 256, opacity: 0.15)
             case .freeTrial:
                 return Color(red: 245 / 256, green: 202 / 256, blue: 92 / 256, opacity: 0.2)
+            case .active:
+                return Color(red: 52 / 256, green: 199 / 256, blue: 89 / 256, opacity: 0.2)
             }
         }
     }
@@ -264,7 +252,7 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                     title: "Product name",
                     storeTitle: Store.playStore.localizationKey.rawValue,
                     paidPrice: "$19.99",
-                    additionalInfoTitle: "Refund status",
+                    badge: .active("Active"),
                     additionalInfoSubtitle: "Apple has received it!",
                     subtitle: "Renews 24 May for $19.99"
                 )
