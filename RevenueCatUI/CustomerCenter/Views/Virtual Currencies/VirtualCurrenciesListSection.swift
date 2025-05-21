@@ -29,18 +29,13 @@ struct VirtualCurrenciesListSection: View {
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
 
-    @Environment(\.navigationOptions)
-    var navigationOptions
-
-    @State private var showVirtualCurrenciesListScreen = false
-
     private let virtualCurrencies: [VirtualCurrencyBalanceListRow.RowData]
     private let displayShowAllButton: Bool
-    private let purchasesProvider: CustomerCenterPurchasesType
+    private let onSeeAllInAppCurrenciesButtonTapped: () -> Void
 
     init(
         virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo],
-        purchasesProvider: CustomerCenterPurchasesType
+        onSeeAllInAppCurrenciesButtonTapped: @escaping () -> Void
     ) {
         let sortedCurrencies = virtualCurrencies.map {
             VirtualCurrencyBalanceListRow.RowData(
@@ -60,7 +55,7 @@ struct VirtualCurrenciesListSection: View {
             self.virtualCurrencies = Array(sortedCurrencies.prefix(3))
             self.displayShowAllButton = true
         }
-        self.purchasesProvider = purchasesProvider
+        self.onSeeAllInAppCurrenciesButtonTapped = onSeeAllInAppCurrenciesButtonTapped
     }
 
     var body: some View {
@@ -72,21 +67,13 @@ struct VirtualCurrenciesListSection: View {
 
                 if displayShowAllButton {
                     Button {
-                        self.showVirtualCurrenciesListScreen = true
+                        self.onSeeAllInAppCurrenciesButtonTapped()
                     } label: {
                         CompatibilityLabeledContent(localization[.seeAllVirtualCurrencies].localizedCapitalized) {
                             Image(systemName: "chevron.forward")
                         }
                     }
                     .buttonStyle(.plain)
-                    .compatibleNavigation(
-                        isPresented: $showVirtualCurrenciesListScreen,
-                        usesNavigationStack: navigationOptions.usesNavigationStack
-                    ) {
-                        VirtualCurrencyBalancesScreen(
-                            viewModel: VirtualCurrencyBalancesScreenViewModel(purchasesProvider: self.purchasesProvider)
-                        )
-                    }
                 }
             }
         }
@@ -106,7 +93,7 @@ struct VirtualCurrenciesListSection_Previews: PreviewProvider {
         List {
             VirtualCurrenciesListSection(
                 virtualCurrencies: CustomerCenterConfigData.fourVirtualCurrencies,
-                purchasesProvider: CustomerCenterPurchases()
+                onSeeAllInAppCurrenciesButtonTapped: { }
             )
         }
         .previewDisplayName("4 Virtual Currencies")
@@ -114,7 +101,7 @@ struct VirtualCurrenciesListSection_Previews: PreviewProvider {
         List {
             VirtualCurrenciesListSection(
                 virtualCurrencies: CustomerCenterConfigData.fiveVirtualCurrencies,
-                purchasesProvider: CustomerCenterPurchases()
+                onSeeAllInAppCurrenciesButtonTapped: { }
             )
         }
         .previewDisplayName("5 Virtual Currencies")

@@ -39,18 +39,13 @@ struct VirtualCurrenciesScrollViewWithOSBackgroundSection: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
-    @Environment(\.navigationOptions)
-    var navigationOptions
-
-    @State private var showVirtualCurrenciesListScreen = false
-
     private let virtualCurrencies: [VirtualCurrencyBalanceListRow.RowData]
     private let displayShowAllButton: Bool
-    private let purchasesProvider: CustomerCenterPurchasesType
+    private let onSeeAllInAppCurrenciesButtonTapped: () -> Void
 
     init(
         virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo],
-        purchasesProvider: CustomerCenterPurchasesType
+        onSeeAllInAppCurrenciesButtonTapped: @escaping () -> Void
     ) {
         let sortedCurrencies = virtualCurrencies.map {
             VirtualCurrencyBalanceListRow.RowData(
@@ -70,7 +65,7 @@ struct VirtualCurrenciesScrollViewWithOSBackgroundSection: View {
             self.virtualCurrencies = Array(sortedCurrencies.prefix(3))
             self.displayShowAllButton = true
         }
-        self.purchasesProvider = purchasesProvider
+        self.onSeeAllInAppCurrenciesButtonTapped = onSeeAllInAppCurrenciesButtonTapped
     }
 
     var body: some View {
@@ -87,7 +82,6 @@ struct VirtualCurrenciesScrollViewWithOSBackgroundSection: View {
                                 .padding(.vertical, 12)
                             if index < virtualCurrencies.count - 1 {
                                 Divider()
-                                    .padding(.vertical, 4)
                             }
                         }
 
@@ -95,7 +89,7 @@ struct VirtualCurrenciesScrollViewWithOSBackgroundSection: View {
                             Divider()
                                 .padding(.vertical, 4)
                             Button {
-                                self.showVirtualCurrenciesListScreen = true
+                                self.onSeeAllInAppCurrenciesButtonTapped()
                             } label: {
                                 CompatibilityLabeledContent(
                                     localization[.seeAllVirtualCurrencies].localizedCapitalized
@@ -106,16 +100,6 @@ struct VirtualCurrenciesScrollViewWithOSBackgroundSection: View {
                             .buttonStyle(.plain)
                             .padding(.horizontal)
                             .padding(.vertical, 12)
-                            .compatibleNavigation(
-                                isPresented: $showVirtualCurrenciesListScreen,
-                                usesNavigationStack: navigationOptions.usesNavigationStack
-                            ) {
-                                VirtualCurrencyBalancesScreen(
-                                    viewModel: VirtualCurrencyBalancesScreenViewModel(
-                                        purchasesProvider: self.purchasesProvider
-                                    )
-                                )
-                            }
                         }
                     }
                     .background(Color(colorScheme == .light
@@ -144,7 +128,7 @@ struct VirtualCurrenciesScrollViewWithOSBackgroundSection_Previews: PreviewProvi
         ScrollViewWithOSBackground {
             VirtualCurrenciesScrollViewWithOSBackgroundSection(
                 virtualCurrencies: CustomerCenterConfigData.fourVirtualCurrencies,
-                purchasesProvider: CustomerCenterPurchases()
+                onSeeAllInAppCurrenciesButtonTapped: { }
             )
         }
         .previewDisplayName("4 Virtual Currencies")
@@ -152,7 +136,7 @@ struct VirtualCurrenciesScrollViewWithOSBackgroundSection_Previews: PreviewProvi
         ScrollViewWithOSBackground {
             VirtualCurrenciesScrollViewWithOSBackgroundSection(
                 virtualCurrencies: CustomerCenterConfigData.fiveVirtualCurrencies,
-                purchasesProvider: CustomerCenterPurchases()
+                onSeeAllInAppCurrenciesButtonTapped: { }
             )
         }
         .previewDisplayName("5 Virtual Currencies")

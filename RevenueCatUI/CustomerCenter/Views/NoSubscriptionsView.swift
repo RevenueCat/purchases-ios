@@ -39,8 +39,14 @@ struct NoSubscriptionsView: View {
     @Environment(\.supportInformation)
     private var support
 
+    @Environment(\.navigationOptions)
+    var navigationOptions
+
     @State
     private var showRestoreAlert: Bool = false
+
+    @State
+    private var showAllInAppCurrenciesScreen: Bool = false
 
     private let virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]?
     private let purchasesProvider: CustomerCenterPurchasesType
@@ -72,7 +78,7 @@ struct NoSubscriptionsView: View {
             if let virtualCurrencies, !virtualCurrencies.isEmpty {
                 VirtualCurrenciesListSection(
                     virtualCurrencies: virtualCurrencies,
-                    purchasesProvider: self.purchasesProvider
+                    onSeeAllInAppCurrenciesButtonTapped: { self.showAllInAppCurrenciesScreen = true }
                 )
             }
 
@@ -84,6 +90,17 @@ struct NoSubscriptionsView: View {
 
         }
         .dismissCircleButtonToolbarIfNeeded()
+        .compatibleNavigation(
+            isPresented: $showAllInAppCurrenciesScreen,
+            usesNavigationStack: navigationOptions.usesNavigationStack
+        ) {
+            VirtualCurrencyBalancesScreen(
+                viewModel: VirtualCurrencyBalancesScreenViewModel(purchasesProvider: self.purchasesProvider)
+            )
+            .environment(\.appearance, appearance)
+            .environment(\.localization, localization)
+            .environment(\.navigationOptions, navigationOptions)
+        }
         .overlay {
             RestorePurchasesAlert(
                 isPresented: $showRestoreAlert,
