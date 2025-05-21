@@ -11,7 +11,6 @@
 //
 //  Created by Will Taylor on 2/27/25.
 
-#if ENABLE_VIRTUAL_CURRENCIES
 import Foundation
 
 /// A class representing information about a virtual currency in the app.
@@ -33,5 +32,3 @@ public final class VirtualCurrencyInfo: NSObject {
 
 extension VirtualCurrencyInfo: Codable {}
 extension VirtualCurrencyInfo: Sendable {}
-
-#endif
