@@ -68,6 +68,12 @@ extension OfferingsResponse {
         )
     }
 
+    var hasAnyWebCheckoutUrl: Bool {
+        return self.offerings
+            .lazy
+            .contains { $0.webCheckoutUrl != nil }
+    }
+
     var packages: [Offering.Package] {
         return self.offerings.flatMap { $0.packages }
     }
