@@ -26,32 +26,33 @@ import RevenueCat
 @available(watchOS, unavailable)
 final class PurchaseHistoryViewModel: ObservableObject {
 
-    @Published var selectedPurchase: PurchaseInfo?
+    @Published var selectedPurchase: PurchaseInformation?
 
     @Published var customerInfo: CustomerInfo? {
         didSet {
             isLoading = false
-            updateActiveAndNonActiveSubscriptions()
         }
     }
     @Published var errorMessage: String?
     @Published var isLoading: Bool = true
 
-    var activeSubscriptions: [PurchaseInfo] = []
-    var inactiveSubscriptions: [PurchaseInfo] = []
-    var nonSubscriptions: [PurchaseInfo] = []
+    var activeSubscriptions: [PurchaseInformation] = []
+    var inactiveSubscriptions: [PurchaseInformation] = []
+    var nonSubscriptions: [PurchaseInformation] = []
 
-    let purchasesProvider: CustomerCenterPurchasesType
+    private(set) var purchasesProvider: CustomerCenterPurchasesType
+    private let customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
 
     init(
-        selectedPurchase: PurchaseInfo? = nil,
+        selectedPurchase: PurchaseInformation? = nil,
         customerInfo: CustomerInfo? = nil,
         errorMessage: String? = nil,
         isLoading: Bool = true,
-        activeSubscriptions: [PurchaseInfo] = [],
-        inactiveSubscriptions: [PurchaseInfo] = [],
-        nonSubscriptions: [PurchaseInfo] = [],
-        purchasesProvider: CustomerCenterPurchasesType
+        activeSubscriptions: [PurchaseInformation] = [],
+        inactiveSubscriptions: [PurchaseInformation] = [],
+        nonSubscriptions: [PurchaseInformation] = [],
+        purchasesProvider: CustomerCenterPurchasesType,
+        customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType = CustomerCenterStoreKitUtilities()
     ) {
         self.selectedPurchase = selectedPurchase
         self.customerInfo = customerInfo
@@ -61,10 +62,15 @@ final class PurchaseHistoryViewModel: ObservableObject {
         self.inactiveSubscriptions = inactiveSubscriptions
         self.nonSubscriptions = nonSubscriptions
         self.purchasesProvider = purchasesProvider
+        self.customerCenterStoreKitUtilities = customerCenterStoreKitUtilities
     }
 
     func didAppear() async {
-        await fetchCustomerInfo()
+        guard customerInfo == nil else {
+            await fetchCustomerInfo()
+            return
+        }
+
     }
 }
 
@@ -73,44 +79,73 @@ private extension PurchaseHistoryViewModel {
     func fetchCustomerInfo() async {
         do {
             let customerInfo = try await self.purchasesProvider.customerInfo()
+            await updateActiveAndNonActiveSubscriptions(customerInfo: customerInfo)
             await MainActor.run {
                 self.customerInfo = customerInfo
             }
         } catch {
+            self.activeSubscriptions = []
+            self.inactiveSubscriptions = []
+            self.nonSubscriptions = []
+
             await MainActor.run {
                 self.errorMessage = error.localizedDescription
             }
         }
     }
 
-    func updateActiveAndNonActiveSubscriptions() {
-        activeSubscriptions = customerInfo.map {
-            $0.subscriptionsByProductIdentifier
-                .filter { $0.value.isActive }
-                .values
-                .sorted(by: { sub1, sub2 in
-                    sub1.purchaseDate < sub2.purchaseDate
-                })
-                .map {
-                    PurchaseInfo.subscription($0)
-                }
-        } ?? []
+    func updateActiveAndNonActiveSubscriptions(customerInfo: CustomerInfo) async {
+        var activeSubscriptions: [PurchaseInformation] = []
+        var inactiveSubscriptions: [PurchaseInformation] = []
+        var nonSubscriptions: [PurchaseInformation] = []
 
-        inactiveSubscriptions = customerInfo.map {
-            $0.subscriptionsByProductIdentifier
-                .filter { !$0.value.isActive }
-                .values
-                .sorted(by: { sub1, sub2 in
-                    sub1.purchaseDate < sub2.purchaseDate
-                })
-                .map {
-                    PurchaseInfo.subscription($0)
-                }
-        } ?? []
+        for subscription in customerInfo.subscriptionsByProductIdentifier where subscription.value.isActive {
+            let entitlement = customerInfo.entitlements.all.values
+                .first(where: { $0.productIdentifier == subscription.value.productIdentifier })
 
-        nonSubscriptions = customerInfo?.nonSubscriptions.map {
-            .nonSubscription($0)
-        } ?? []
+            activeSubscriptions.append(await .from(
+                transaction: subscription.value,
+                entitlement: entitlement,
+                customerInfo: customerInfo,
+                purchasesProvider: purchasesProvider,
+                customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
+            ))
+        }
+        self.activeSubscriptions = activeSubscriptions.sorted(by: { sub1, sub2 in
+            sub1.latestPurchaseDate < sub2.latestPurchaseDate
+        })
+
+        for subscription in customerInfo.subscriptionsByProductIdentifier where !subscription.value.isActive {
+            let entitlement = customerInfo.entitlements.all.values
+                .first(where: { $0.productIdentifier == subscription.value.productIdentifier })
+
+            inactiveSubscriptions.append(await .from(
+                transaction: subscription.value,
+                entitlement: entitlement,
+                customerInfo: customerInfo,
+                purchasesProvider: purchasesProvider,
+                customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
+            ))
+        }
+        self.inactiveSubscriptions = inactiveSubscriptions.sorted(by: { sub1, sub2 in
+            sub1.latestPurchaseDate < sub2.latestPurchaseDate
+        })
+
+        for purchase in customerInfo.nonSubscriptions {
+            let entitlement = customerInfo.entitlements.all.values
+                .first(where: { $0.productIdentifier == purchase.productIdentifier })
+
+            nonSubscriptions.append(await .from(
+                transaction: purchase,
+                entitlement: entitlement,
+                customerInfo: customerInfo,
+                purchasesProvider: purchasesProvider,
+                customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
+            ))
+        }
+        self.nonSubscriptions = nonSubscriptions.sorted(by: { sub1, sub2 in
+            sub1.latestPurchaseDate < sub2.latestPurchaseDate
+        })
     }
 }
 

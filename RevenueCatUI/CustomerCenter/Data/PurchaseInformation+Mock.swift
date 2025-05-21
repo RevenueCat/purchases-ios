@@ -26,11 +26,12 @@ extension PurchaseInformation {
         isLifetime: false,
         isTrial: false,
         isCancelled: false,
-        latestPurchaseDate: nil,
+        latestPurchaseDate: Date(),
         customerInfoRequestedDate: Date(),
         managementURL: URL(string: "https://www.revenuecat.com")!,
         expirationDate: nil,
-        renewalDate: nil
+        renewalDate: nil,
+        ownershipType: .purchased
     )
 
     static let lifetime = PurchaseInformation(
@@ -43,11 +44,12 @@ extension PurchaseInformation {
         isLifetime: true,
         isTrial: false,
         isCancelled: false,
-        latestPurchaseDate: nil,
+        latestPurchaseDate: Date(),
         customerInfoRequestedDate: Date(),
         managementURL: URL(string: "https://www.revenuecat.com")!,
         expirationDate: nil,
-        renewalDate: nil
+        renewalDate: nil,
+        ownershipType: .purchased
     )
 
     static let free = PurchaseInformation(
@@ -60,11 +62,12 @@ extension PurchaseInformation {
         isLifetime: false,
         isTrial: true,
         isCancelled: false,
-        latestPurchaseDate: nil,
+        latestPurchaseDate: Date(),
         customerInfoRequestedDate: Date(),
         managementURL: URL(string: "https://www.revenuecat.com")!,
         expirationDate: nil,
-        renewalDate: nil
+        renewalDate: nil,
+        ownershipType: .purchased
     )
 
     static func yearlyExpiring(
@@ -86,11 +89,12 @@ extension PurchaseInformation {
             isLifetime: false,
             isTrial: false,
             isCancelled: false,
-            latestPurchaseDate: nil,
+            latestPurchaseDate: Date(),
             customerInfoRequestedDate: Date(),
             managementURL: URL(string: "https://www.revenuecat.com")!,
             expirationDate: expirationDate,
-            renewalDate: renewalDate
+            renewalDate: renewalDate,
+            ownershipType: .purchased
         )
     }
 
@@ -108,6 +112,7 @@ extension PurchaseInformation {
         customerInfoRequestedDate: Date(),
         managementURL: URL(string: "https://www.revenuecat.com")!,
         expirationDate: nil,
-        renewalDate: nil
+        renewalDate: nil,
+        ownershipType: .purchased
     )
 }

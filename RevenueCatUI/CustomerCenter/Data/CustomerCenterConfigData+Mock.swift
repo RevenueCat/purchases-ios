@@ -148,11 +148,12 @@ extension CustomerCenterConfigData {
         isLifetime: false,
         isTrial: false,
         isCancelled: false,
-        latestPurchaseDate: nil,
+        latestPurchaseDate: Date(),
         customerInfoRequestedDate: Date(),
         managementURL: URL(string: "https://www.revenuecat.com")!,
         expirationDate: nil,
-        renewalDate: nil
+        renewalDate: nil,
+        ownershipType: .purchased
     )
 
     static let subscriptionInformationFree = PurchaseInformation(
@@ -165,11 +166,12 @@ extension CustomerCenterConfigData {
         isLifetime: false,
         isTrial: false,
         isCancelled: false,
-        latestPurchaseDate: nil,
+        latestPurchaseDate: Date(),
         customerInfoRequestedDate: Date(),
         managementURL: URL(string: "https://www.revenuecat.com")!,
         expirationDate: nil,
-        renewalDate: nil
+        renewalDate: nil,
+        ownershipType: .purchased
     )
 
     static let consumable = PurchaseInformation(
@@ -186,7 +188,8 @@ extension CustomerCenterConfigData {
         customerInfoRequestedDate: Date(),
         managementURL: URL(string: "https://www.revenuecat.com")!,
         expirationDate: nil,
-        renewalDate: nil
+        renewalDate: nil,
+        ownershipType: .purchased
     )
 
     static let standardAppearance = CustomerCenterConfigData.Appearance(

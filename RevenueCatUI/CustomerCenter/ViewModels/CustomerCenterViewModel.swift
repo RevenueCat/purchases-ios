@@ -226,10 +226,12 @@ private extension CustomerCenterViewModel {
         let entitlement = customerInfo.entitlements.all.values
             .first(where: { $0.productIdentifier == activeTransaction.productIdentifier })
 
-        self.activePurchase = await createPurchaseInformation(
-            for: activeTransaction,
+        self.activePurchase = await .from(
+            transaction: activeTransaction,
             entitlement: entitlement,
-            customerInfo: customerInfo
+            customerInfo: customerInfo,
+            purchasesProvider: purchasesProvider,
+            customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
         )
 
         await loadActiveSubscriptions(customerInfo: customerInfo)
@@ -242,10 +244,12 @@ private extension CustomerCenterViewModel {
             let entitlement = customerInfo.entitlements.all.values
                 .first(where: { $0.productIdentifier == subscription.productIdentifier })
 
-            let purchaseInfo = await createPurchaseInformation(
-                for: subscription,
+            let purchaseInfo: PurchaseInformation = await .from(
+                transaction: subscription,
                 entitlement: entitlement,
-                customerInfo: customerInfo
+                customerInfo: customerInfo,
+                purchasesProvider: purchasesProvider,
+                customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
             )
 
             activeNonSubscriptionPurchases.append(purchaseInfo)
@@ -268,10 +272,12 @@ private extension CustomerCenterViewModel {
             let entitlement = customerInfo.entitlements.all.values
                 .first(where: { $0.productIdentifier == subscription.productIdentifier })
 
-            let purchaseInfo = await createPurchaseInformation(
-                for: subscription,
+            let purchaseInfo: PurchaseInformation = await .from(
+                transaction: subscription,
                 entitlement: entitlement,
-                customerInfo: customerInfo
+                customerInfo: customerInfo,
+                purchasesProvider: purchasesProvider,
+                customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
             )
 
             activeSubscriptionPurchases.append(purchaseInfo)
@@ -289,43 +295,6 @@ private extension CustomerCenterViewModel {
                 URLUtilities.openURLIfNotAppExtension(url)
             }
         }
-    }
-
-    func createPurchaseInformation(for transaction: RevenueCatUI.Transaction,
-                                   entitlement: EntitlementInfo?,
-                                   customerInfo: CustomerInfo) async -> PurchaseInformation {
-        if transaction.store == .appStore {
-            if let product = await purchasesProvider.products([transaction.productIdentifier]).first {
-                return await PurchaseInformation.purchaseInformationUsingRenewalInfo(
-                    entitlement: entitlement,
-                    subscribedProduct: product,
-                    transaction: transaction,
-                    customerCenterStoreKitUtilities: customerCenterStoreKitUtilities,
-                    customerInfoRequestedDate: customerInfo.requestDate,
-                    managementURL: transaction.managementURL
-                )
-            } else {
-                Logger.warning(
-                    Strings.could_not_find_product_loading_without_product_information(transaction.productIdentifier)
-                )
-
-                return PurchaseInformation(
-                    entitlement: entitlement,
-                    transaction: transaction,
-                    customerInfoRequestedDate: customerInfo.requestDate,
-                    managementURL: transaction.managementURL
-                )
-            }
-        }
-
-        Logger.warning(Strings.active_product_is_not_apple_loading_without_product_information(transaction.store))
-
-        return PurchaseInformation(
-            entitlement: entitlement,
-            transaction: transaction,
-            customerInfoRequestedDate: customerInfo.requestDate,
-            managementURL: transaction.managementURL
-        )
     }
 }
 
