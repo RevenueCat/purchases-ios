@@ -42,13 +42,13 @@ struct NoSubscriptionsView: View {
     @State
     private var showRestoreAlert: Bool = false
 
-    private let virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]
+    private let virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]?
     private let purchasesProvider: CustomerCenterPurchasesType
 
     init(configuration: CustomerCenterConfigData,
-         virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo],
+         actionWrapper: CustomerCenterActionWrapper,
          purchasesProvider: CustomerCenterPurchasesType,
-         actionWrapper: CustomerCenterActionWrapper) {
+         virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]?) {
         self.configuration = configuration
         self.actionWrapper = actionWrapper
         self.virtualCurrencies = virtualCurrencies
@@ -69,9 +69,9 @@ struct NoSubscriptionsView: View {
                 )
             }
 
-            if support?.displayVirtualCurrencies == true {
+            if let virtualCurrencies, !virtualCurrencies.isEmpty {
                 VirtualCurrenciesListSection(
-                    virtualCurrencies: self.virtualCurrencies,
+                    virtualCurrencies: virtualCurrencies,
                     purchasesProvider: self.purchasesProvider
                 )
             }
@@ -104,23 +104,23 @@ struct NoSubscriptionsView_Previews: PreviewProvider {
 
     static var previews: some View {
         NoSubscriptionsView(configuration: CustomerCenterConfigData.default,
-                            virtualCurrencies: [:],
+                            actionWrapper: CustomerCenterActionWrapper(),
                             purchasesProvider: CustomerCenterPurchases(),
-                            actionWrapper: CustomerCenterActionWrapper())
+                            virtualCurrencies: nil)
         .previewDisplayName("No Subscriptions View")
 
         NoSubscriptionsView(configuration: CustomerCenterConfigData.default,
-                            virtualCurrencies: CustomerCenterConfigData.fourVirtualCurrencies,
+                            actionWrapper: CustomerCenterActionWrapper(),
                             purchasesProvider: CustomerCenterPurchases(),
-                            actionWrapper: CustomerCenterActionWrapper())
-        .environment(\.supportInformation, CustomerCenterConfigData.default.support)
+                            virtualCurrencies: CustomerCenterConfigData.fourVirtualCurrencies)
+        .environment(\.supportInformation, CustomerCenterConfigData.mock(displayVirtualCurrencies: true).support)
         .previewDisplayName("4 Virtual Currencies")
 
         NoSubscriptionsView(configuration: CustomerCenterConfigData.default,
-                            virtualCurrencies: CustomerCenterConfigData.fiveVirtualCurrencies,
+                            actionWrapper: CustomerCenterActionWrapper(),
                             purchasesProvider: CustomerCenterPurchases(),
-                            actionWrapper: CustomerCenterActionWrapper())
-        .environment(\.supportInformation, CustomerCenterConfigData.default.support)
+                            virtualCurrencies: CustomerCenterConfigData.fiveVirtualCurrencies)
+        .environment(\.supportInformation, CustomerCenterConfigData.mock(displayVirtualCurrencies: true).support)
         .previewDisplayName("5 Virtual Currencies")
     }
 

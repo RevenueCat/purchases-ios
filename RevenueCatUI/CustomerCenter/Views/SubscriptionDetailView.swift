@@ -46,11 +46,13 @@ struct SubscriptionDetailView: View {
     init(screen: CustomerCenterConfigData.Screen,
          purchaseInformation: PurchaseInformation?,
          showPurchaseHistory: Bool,
+         virtualCurrencies: [String: VirtualCurrencyInfo]?,
          purchasesProvider: CustomerCenterPurchasesType,
          actionWrapper: CustomerCenterActionWrapper) {
         let viewModel = SubscriptionDetailViewModel(
             screen: screen,
             showPurchaseHistory: showPurchaseHistory,
+            virtualCurrencies: virtualCurrencies,
             actionWrapper: actionWrapper,
             purchaseInformation: purchaseInformation,
             purchasesProvider: purchasesProvider)
@@ -160,6 +162,13 @@ struct SubscriptionDetailView: View {
                     .padding(.horizontal)
                 }
 
+                if let virtualCurrencies = viewModel.virtualCurrencies, !virtualCurrencies.isEmpty {
+                    VirtualCurrenciesScrollViewWithOSBackgroundSection(
+                        virtualCurrencies: virtualCurrencies,
+                        purchasesProvider: self.viewModel.purchasesProvider
+                    )
+                }
+
                 ScrollViewSection(title: localization[.actionsSectionTitle]) {
                     ActiveSubscriptionButtonsView(viewModel: viewModel)
                         .padding(.top, 16)
@@ -244,6 +253,7 @@ struct SubscriptionDetailView: View {
                     viewModel: SubscriptionDetailViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
+                        virtualCurrencies: nil,
                         purchaseInformation: .yearlyExpiring(),
                         refundRequestStatus: .success
                     )
@@ -257,6 +267,7 @@ struct SubscriptionDetailView: View {
                     viewModel: SubscriptionDetailViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: false,
+                        virtualCurrencies: nil,
                         purchaseInformation: .free
                     )
                 )
@@ -269,6 +280,7 @@ struct SubscriptionDetailView: View {
                     viewModel: SubscriptionDetailViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: false,
+                        virtualCurrencies: nil,
                         purchaseInformation: .consumable
                     )
                 )
@@ -281,6 +293,7 @@ struct SubscriptionDetailView: View {
                     viewModel: SubscriptionDetailViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: false,
+                        virtualCurrencies: nil,
                         purchaseInformation: nil
                     )
                 )
@@ -293,12 +306,39 @@ struct SubscriptionDetailView: View {
                     viewModel: SubscriptionDetailViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
+                        virtualCurrencies: nil,
                         purchaseInformation: .yearlyExpiring(store: .playStore)
                     )
                 )
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Play Store - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                SubscriptionDetailView(
+                    viewModel: SubscriptionDetailViewModel(
+                        screen: CustomerCenterConfigData.default.screens[.management]!,
+                        showPurchaseHistory: true,
+                        virtualCurrencies: CustomerCenterConfigData.fourVirtualCurrencies,
+                        purchaseInformation: .yearlyExpiring(store: .playStore)
+                    )
+                )
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("4 VCs - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                SubscriptionDetailView(
+                    viewModel: SubscriptionDetailViewModel(
+                        screen: CustomerCenterConfigData.default.screens[.management]!,
+                        showPurchaseHistory: true,
+                        virtualCurrencies: CustomerCenterConfigData.fiveVirtualCurrencies,
+                        purchaseInformation: .yearlyExpiring(store: .playStore)
+                    )
+                )
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("5 VCs - \(colorScheme)")
         }
         .environment(\.localization, CustomerCenterConfigData.default.localization)
         .environment(\.appearance, CustomerCenterConfigData.default.appearance)

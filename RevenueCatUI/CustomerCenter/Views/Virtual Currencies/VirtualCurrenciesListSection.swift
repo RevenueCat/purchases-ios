@@ -1,15 +1,9 @@
 //
-//  Copyright RevenueCat Inc. All Rights Reserved.
-//
-//  Licensed under the MIT License (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//      https://opensource.org/licenses/MIT
-//
 //  VirtualCurrenciesListSection.swift
+//  RevenueCat
 //
-//  Created by Will Taylor on 4/22/25.
+//  Created by Will Taylor on 5/21/25.
+//
 
 #if os(iOS)
 
@@ -22,6 +16,8 @@ import SwiftUI
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 /// A SwiftUI view that displays a list of virtual currency balances in a section format.
+///
+/// Designed for use in a SwiftUI ``List`` view.
 ///
 /// This view shows up to three virtual currencies sorted by balance in descending order.
 /// If there are more than three currencies, a "See All" button is displayed that navigates
@@ -78,10 +74,11 @@ struct VirtualCurrenciesListSection: View {
                     Button {
                         self.showVirtualCurrenciesListScreen = true
                     } label: {
-                        Text(localization[.seeAllVirtualCurrencies])
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .contentShape(Rectangle())
+                        CompatibilityLabeledContent(localization[.seeAllVirtualCurrencies].localizedCapitalized) {
+                            Image(systemName: "chevron.forward")
+                        }
                     }
+                    .buttonStyle(.plain)
                     .compatibleNavigation(
                         isPresented: $showVirtualCurrenciesListScreen,
                         usesNavigationStack: navigationOptions.usesNavigationStack
@@ -91,8 +88,6 @@ struct VirtualCurrenciesListSection: View {
                         )
                     }
                 }
-            } header: {
-                Text(localization[.virtualCurrencyBalancesScreenHeader])
             }
         }
     }

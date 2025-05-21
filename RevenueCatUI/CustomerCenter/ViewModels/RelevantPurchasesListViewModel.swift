@@ -31,7 +31,12 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
     private(set) var activeNonSubscriptionPurchases: [PurchaseInformation] = []
 
     var isEmpty: Bool {
-        activeSubscriptionPurchases.isEmpty && activeNonSubscriptionPurchases.isEmpty
+        let hasVirtualCurrencyBalances = virtualCurrencies?.filter {
+            $0.value.balance > 0
+        }
+            .count ?? 0 > 0
+
+        return activeSubscriptionPurchases.isEmpty && activeNonSubscriptionPurchases.isEmpty && !hasVirtualCurrencyBalances
     }
 
     let originalAppUserId: String
@@ -42,6 +47,7 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
         actionWrapper: CustomerCenterActionWrapper,
         activePurchases: [PurchaseInformation] = [],
         nonSubscriptionPurchases: [PurchaseInformation] = [],
+        virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]? = nil,
         originalAppUserId: String,
         originalPurchaseDate: Date?,
         refundRequestStatus: RefundRequestStatus? = nil,
@@ -56,6 +62,7 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
                 screen: screen,
                 actionWrapper: actionWrapper,
                 purchaseInformation: nil,
+                virtualCurrencies: virtualCurrencies,
                 refundRequestStatus: refundRequestStatus,
                 purchasesProvider: purchasesProvider,
                 loadPromotionalOfferUseCase: loadPromotionalOfferUseCase
@@ -68,6 +75,7 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
         originalAppUserId: String,
         activePurchases: [PurchaseInformation] = [],
         nonSubscriptionPurchases: [PurchaseInformation] = [],
+        virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]? = nil,
         originalPurchaseDate: Date? = nil
     ) {
         self.init(
@@ -75,6 +83,7 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
             actionWrapper: CustomerCenterActionWrapper(),
             activePurchases: activePurchases,
             nonSubscriptionPurchases: nonSubscriptionPurchases,
+            virtualCurrencies: virtualCurrencies,
             originalAppUserId: originalAppUserId,
             originalPurchaseDate: originalPurchaseDate,
             purchasesProvider: MockCustomerCenterPurchases()

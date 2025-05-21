@@ -46,6 +46,7 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(viewModel.activePurchase).to(beNil())
         expect(viewModel.activeSubscriptionPurchases).to(beEmpty())
         expect(viewModel.state) == .notLoaded
+        expect(viewModel.virtualCurrencies).to(beNil())
     }
 
     func testStateChangeToError() {
@@ -164,6 +165,46 @@ final class CustomerCenterViewModelTests: TestCase {
         default:
             fail("Expected state to be .error")
         }
+    }
+
+    func testLoadLoadsVirtualCurrenciesWhenDisplayVirtualCurrenciesIsTrue() async throws {
+        let mockPurchases = MockCustomerCenterPurchases(
+            customerInfo: CustomerInfoFixtures.customerInfoWithVirtualCurrencies,
+            customerCenterConfigData: CustomerCenterConfigData.mock(displayVirtualCurrencies: true)
+        )
+
+        let viewModel = CustomerCenterViewModel(
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchasesProvider: mockPurchases,
+        )
+
+        await viewModel.loadScreen()
+        expect(viewModel.virtualCurrencies).toNot(beNil())
+        guard let virtualCurrencies = viewModel.virtualCurrencies else {
+            fail("Virtual currencies should not be nil")
+            return
+        }
+
+        expect(virtualCurrencies.count).to(equal(4))
+        expect(virtualCurrencies["GLD"]).toNot(beNil())
+        expect(virtualCurrencies["SLV"]).toNot(beNil())
+        expect(virtualCurrencies["BRNZ"]).toNot(beNil())
+        expect(virtualCurrencies["PLTNM"]).toNot(beNil())
+    }
+
+    func testLoadDoesNotLoadVirtualCurrenciesWhenDisplayVirtualCurrenciesIsFalse() async throws {
+        let mockPurchases = MockCustomerCenterPurchases(
+            customerInfo: CustomerInfoFixtures.customerInfoWithVirtualCurrencies,
+            customerCenterConfigData: CustomerCenterConfigData.mock(displayVirtualCurrencies: false)
+        )
+
+        let viewModel = CustomerCenterViewModel(
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchasesProvider: mockPurchases,
+        )
+
+        await viewModel.loadScreen()
+        expect(viewModel.virtualCurrencies).to(beNil())
     }
 
     func testShouldShowActiveSubscription_whenUserHasOneActiveSubscriptionOneEntitlement() async throws {

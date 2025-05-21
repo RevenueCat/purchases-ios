@@ -59,6 +59,10 @@ class BaseManageSubscriptionViewModel: ObservableObject {
     @Published
     private(set) var refundRequestStatus: RefundRequestStatus?
 
+    /// Virtual currencies to display. If it is set to nil, nothing will be displayed.
+    @Published
+    private(set) var virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]?
+
     private var error: Error?
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
     private let paths: [CustomerCenterConfigData.HelpPath]
@@ -68,6 +72,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
         screen: CustomerCenterConfigData.Screen,
         actionWrapper: CustomerCenterActionWrapper,
         purchaseInformation: PurchaseInformation? = nil,
+        virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]?,
         refundRequestStatus: RefundRequestStatus? = nil,
         purchasesProvider: CustomerCenterPurchasesType,
         loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
@@ -80,6 +85,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
             self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase
             ?? LoadPromotionalOfferUseCase(purchasesProvider: purchasesProvider)
             self.restoreAlertType = .loading
+            self.virtualCurrencies = virtualCurrencies
         }
 
 #if os(iOS) || targetEnvironment(macCatalyst)

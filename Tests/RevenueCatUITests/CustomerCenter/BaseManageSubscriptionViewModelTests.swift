@@ -45,10 +45,12 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             screen: BaseManageSubscriptionViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: nil,
+            virtualCurrencies: nil,
             purchasesProvider: MockCustomerCenterPurchases()
         )
 
         expect(viewModel.purchaseInformation).to(beNil())
+        expect(viewModel.virtualCurrencies).to(beNil())
         expect(viewModel.refundRequestStatus).to(beNil())
         expect(viewModel.screen).toNot(beNil())
         expect(viewModel.showRestoreAlert) == false
@@ -59,6 +61,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             screen: BaseManageSubscriptionViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: nil,
+            virtualCurrencies: nil,
             purchasesProvider: MockCustomerCenterPurchases()
         )
 
@@ -73,6 +76,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             screen: BaseManageSubscriptionViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
+            virtualCurrencies: nil,
             purchasesProvider: MockCustomerCenterPurchases()
         )
 
@@ -87,8 +91,8 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             screen: BaseManageSubscriptionViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
-            purchasesProvider: MockCustomerCenterPurchases(),
-            virtualCurrencies: [:]
+            virtualCurrencies: nil,
+            purchasesProvider: MockCustomerCenterPurchases()
         )
 
         expect(viewModel.relevantPathsForPurchase.count) == 0
@@ -101,6 +105,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             screen: BaseManageSubscriptionViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
+            virtualCurrencies: nil,
             purchasesProvider: MockCustomerCenterPurchases())
 
         expect(viewModel.relevantPathsForPurchase.count) == 3
@@ -116,6 +121,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             screen: BaseManageSubscriptionViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
+            virtualCurrencies: nil,
             purchasesProvider: MockCustomerCenterPurchases())
 
         expect(viewModel.relevantPathsForPurchase.count) == 2
@@ -130,6 +136,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             screen: BaseManageSubscriptionViewModelTests.managementScreen(refundWindowDuration: .forever),
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
+            virtualCurrencies: nil,
             purchasesProvider: MockCustomerCenterPurchases())
 
         expect(viewModel.relevantPathsForPurchase.count) == 4
@@ -157,6 +164,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             screen: BaseManageSubscriptionViewModelTests.managementScreen(refundWindowDuration: .duration(oneDay)),
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
+            virtualCurrencies: nil,
             purchasesProvider: MockCustomerCenterPurchases()
         )
 
@@ -176,6 +184,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             screen: BaseManageSubscriptionViewModelTests.managementScreen(refundWindowDuration: .forever),
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
+            virtualCurrencies: nil,
             purchasesProvider: MockCustomerCenterPurchases())
 
         expect(viewModel.relevantPathsForPurchase.count) == 3
@@ -195,6 +204,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             screen: BaseManageSubscriptionViewModelTests.managementScreen(refundWindowDuration: .forever),
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
+            virtualCurrencies: nil,
             purchasesProvider: MockCustomerCenterPurchases())
 
         expect(viewModel.relevantPathsForPurchase.count) == 3
@@ -222,6 +232,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             screen: BaseManageSubscriptionViewModelTests.managementScreen(refundWindowDuration: .duration(oneDay)),
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
+            virtualCurrencies: nil,
             purchasesProvider: MockCustomerCenterPurchases())
 
         expect(viewModel.relevantPathsForPurchase.count) == 4
@@ -346,12 +357,12 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
                 screen: PurchaseInformationFixtures.screenWithIneligiblePromo,
                 actionWrapper: CustomerCenterActionWrapper(),
                 purchaseInformation: nil,
+                virtualCurrencies: nil,
                 purchasesProvider: MockCustomerCenterPurchases(
                     customerInfo: customerInfo,
                     products: products
                 ),
-                loadPromotionalOfferUseCase: loadPromotionalOfferUseCase,
-                virtualCurrencies: [:])
+                loadPromotionalOfferUseCase: loadPromotionalOfferUseCase)
 
             let screen = try XCTUnwrap(viewModel.screen)
 
@@ -449,6 +460,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         let viewModel = BaseManageSubscriptionViewModel(screen: screen,
                                                         actionWrapper: CustomerCenterActionWrapper(),
                                                         purchaseInformation: .yearlyExpiring(store: .appStore),
+                                                        virtualCurrencies: nil,
                                                         purchasesProvider: MockCustomerCenterPurchases(
                                                             customerInfo: customerInfo,
                                                             products: products

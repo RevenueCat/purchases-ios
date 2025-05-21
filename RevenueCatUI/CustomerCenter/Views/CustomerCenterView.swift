@@ -227,7 +227,9 @@ private extension CustomerCenterView {
                 // Fallback with a restore button
                 NoSubscriptionsView(
                     configuration: configuration,
-                    actionWrapper: self.viewModel.actionWrapper
+                    actionWrapper: self.viewModel.actionWrapper,
+                    purchasesProvider: self.viewModel.purchasesProvider,
+                    virtualCurrencies: self.viewModel.virtualCurrencies
                 )
             }
         }
@@ -247,6 +249,7 @@ private extension CustomerCenterView {
             screen: screen,
             activePurchases: $viewModel.activeSubscriptionPurchases,
             nonSubscriptionPurchases: $viewModel.activeNonSubscriptionPurchases,
+            virtualCurrencies: self.viewModel.virtualCurrencies,
             originalAppUserId: viewModel.originalAppUserId,
             originalPurchaseDate: viewModel.originalPurchaseDate,
             purchasesProvider: self.viewModel.purchasesProvider,
@@ -260,6 +263,7 @@ private extension CustomerCenterView {
             screen: screen,
             purchaseInformation: viewModel.activePurchase,
             showPurchaseHistory: viewModel.configuration?.support.displayPurchaseHistoryLink == true,
+            virtualCurrencies: self.viewModel.virtualCurrencies,
             purchasesProvider: self.viewModel.purchasesProvider,
             actionWrapper: self.viewModel.actionWrapper
         )

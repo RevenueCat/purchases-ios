@@ -51,6 +51,7 @@ struct RelevantPurchasesListView: View {
     init(screen: CustomerCenterConfigData.Screen,
          activePurchases: Binding<[PurchaseInformation]>,
          nonSubscriptionPurchases: Binding<[PurchaseInformation]>,
+         virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]?,
          originalAppUserId: String,
          originalPurchaseDate: Date?,
          purchasesProvider: CustomerCenterPurchasesType,
@@ -60,6 +61,7 @@ struct RelevantPurchasesListView: View {
             actionWrapper: actionWrapper,
             activePurchases: activePurchases.wrappedValue,
             nonSubscriptionPurchases: nonSubscriptionPurchases.wrappedValue,
+            virtualCurrencies: virtualCurrencies,
             originalAppUserId: originalAppUserId,
             originalPurchaseDate: originalPurchaseDate,
             purchasesProvider: purchasesProvider
@@ -97,6 +99,7 @@ struct RelevantPurchasesListView: View {
                     screen: viewModel.screen,
                     purchaseInformation: viewModel.purchaseInformation,
                     showPurchaseHistory: false,
+                    virtualCurrencies: nil, // Don't show virtual currencies when navigated to from here
                     purchasesProvider: self.viewModel.purchasesProvider,
                     actionWrapper: self.viewModel.actionWrapper
                 )
@@ -150,6 +153,13 @@ struct RelevantPurchasesListView: View {
                     if !viewModel.activeNonSubscriptionPurchases.isEmpty {
                         otherPurchasesView
                             .padding(.top, 16)
+                    }
+
+                    if let virtualCurrencies = viewModel.virtualCurrencies, !virtualCurrencies.isEmpty {
+                        VirtualCurrenciesScrollViewWithOSBackgroundSection(
+                            virtualCurrencies: virtualCurrencies,
+                            purchasesProvider: self.viewModel.purchasesProvider
+                        )
                     }
                 }
 
@@ -364,6 +374,34 @@ struct ActiveSubscriptionsListView_Previews: PreviewProvider {
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Empty - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                RelevantPurchasesListView(
+                    viewModel: RelevantPurchasesListViewModel(
+                        screen: warningOnMock.screens[.management]!,
+                        originalAppUserId: "originalAppUserId",
+                        activePurchases: purchases,
+                        virtualCurrencies: CustomerCenterConfigData.fourVirtualCurrencies
+                    )
+                )
+                .environment(\.supportInformation, warningOnMock.support)
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("4 VCs - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                RelevantPurchasesListView(
+                    viewModel: RelevantPurchasesListViewModel(
+                        screen: warningOnMock.screens[.management]!,
+                        originalAppUserId: "originalAppUserId",
+                        activePurchases: purchases,
+                        virtualCurrencies: CustomerCenterConfigData.fiveVirtualCurrencies
+                    )
+                )
+                .environment(\.supportInformation, warningOnMock.support)
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("5 VCs - \(colorScheme)")
         }
         .environment(\.localization, CustomerCenterConfigData.default.localization)
         .environment(\.appearance, CustomerCenterConfigData.default.appearance)
