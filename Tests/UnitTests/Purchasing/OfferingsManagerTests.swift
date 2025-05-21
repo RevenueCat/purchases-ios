@@ -718,7 +718,8 @@ private extension OfferingsManagerTests {
                       packages: [
                         .init(identifier: "$rc_monthly",
                               platformProductIdentifier: "monthly_freetrial",
-                              webCheckoutUrl: nil)
+                              webCheckoutUrl: nil,
+                              productIdByStoreType: [Store.appStore: "monthly_freetrial"])
                       ],
                       webCheckoutUrl: nil)
             ],
@@ -734,10 +735,12 @@ private extension OfferingsManagerTests {
                       packages: [
                         .init(identifier: "$rc_monthly",
                               platformProductIdentifier: "monthly_freetrial",
-                              webCheckoutUrl: nil),
+                              webCheckoutUrl: nil,
+                              productIdByStoreType: [Store.appStore: "monthly_freetrial"]),
                         .init(identifier: "$rc_yearly",
                               platformProductIdentifier: "yearly_freetrial",
-                              webCheckoutUrl: nil)
+                              webCheckoutUrl: nil,
+                              productIdByStoreType: [Store.appStore: "yearly_freetrial"])
                       ],
                       webCheckoutUrl: nil)
             ],

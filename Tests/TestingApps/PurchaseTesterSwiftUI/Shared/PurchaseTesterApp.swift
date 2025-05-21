@@ -134,6 +134,7 @@ struct PurchaseTesterApp: App {
         ConfigurationView { data in
             self.configuration = .init(
                 apiKey: data.apiKey,
+                webApiKey: data.webApiKey.nonEmpty,
                 proxyURL: data.proxy.nonEmpty,
                 useStoreKit2: data.storeKit2Enabled,
                 observerMode: data.observerMode,
