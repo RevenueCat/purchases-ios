@@ -249,6 +249,7 @@ private extension CustomerCenterView {
             nonSubscriptionPurchases: $viewModel.activeNonSubscriptionPurchases,
             originalAppUserId: viewModel.originalAppUserId,
             originalPurchaseDate: viewModel.originalPurchaseDate,
+            shouldShowSeeAllPurchases: viewModel.shouldShowSeeAllPurchases,
             purchasesProvider: self.viewModel.purchasesProvider,
             actionWrapper: self.viewModel.actionWrapper
         )
@@ -259,7 +260,7 @@ private extension CustomerCenterView {
         SubscriptionDetailView(
             screen: screen,
             purchaseInformation: viewModel.activePurchase,
-            showPurchaseHistory: viewModel.configuration?.support.displayPurchaseHistoryLink == true,
+            showPurchaseHistory: viewModel.shouldShowSeeAllPurchases,
             purchasesProvider: self.viewModel.purchasesProvider,
             actionWrapper: self.viewModel.actionWrapper
         )

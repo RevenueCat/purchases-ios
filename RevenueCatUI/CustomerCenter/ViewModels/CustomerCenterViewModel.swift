@@ -89,6 +89,11 @@ import RevenueCat
         customerInfo?.originalPurchaseDate
     }
 
+    var shouldShowSeeAllPurchases: Bool {
+        configuration?.support.displayPurchaseHistoryLink == true
+            && customerInfo?.shouldShowSeeAllPurchasesButton(maxNonSubscriptions: 2) ?? false
+    }
+
     @Published
     var activeSubscriptionPurchases: [PurchaseInformation] = []
 
