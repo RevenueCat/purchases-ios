@@ -207,7 +207,7 @@ struct SubscriptionDetailView: View {
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .padding(.horizontal)
     }
-  
+
     private var seeAllSubscriptionsButton: some View {
         Button {
             viewModel.showAllPurchases = true
