@@ -349,7 +349,7 @@ struct ActiveSubscriptionsListView_Previews: PreviewProvider {
                 RelevantPurchasesListView(
                     viewModel: RelevantPurchasesListViewModel(
                         screen: warningOffMock.screens[.management]!,
-                        originalAppUserId: UUID().uuidString,
+                        originalAppUserId: "originalAppUserId",
                         activePurchases: purchases,
                         nonSubscriptionPurchases: [.consumable, .lifetime]
                     )
