@@ -38,7 +38,9 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
         }
             .count ?? 0 > 0
 
-        return activeSubscriptionPurchases.isEmpty && activeNonSubscriptionPurchases.isEmpty && !hasVirtualCurrencyBalances
+        return activeSubscriptionPurchases.isEmpty
+            && activeNonSubscriptionPurchases.isEmpty
+            && !hasVirtualCurrencyBalances
     }
 
     let originalAppUserId: String

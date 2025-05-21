@@ -175,7 +175,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         let viewModel = CustomerCenterViewModel(
             actionWrapper: CustomerCenterActionWrapper(),
-            purchasesProvider: mockPurchases,
+            purchasesProvider: mockPurchases
         )
 
         await viewModel.loadScreen()
@@ -200,7 +200,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         let viewModel = CustomerCenterViewModel(
             actionWrapper: CustomerCenterActionWrapper(),
-            purchasesProvider: mockPurchases,
+            purchasesProvider: mockPurchases
         )
 
         await viewModel.loadScreen()

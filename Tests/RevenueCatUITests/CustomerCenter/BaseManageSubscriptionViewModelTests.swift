@@ -105,6 +105,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             screen: BaseManageSubscriptionViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
+            virtualCurrencies: nil,
             purchasesProvider: MockCustomerCenterPurchases()
         )
 

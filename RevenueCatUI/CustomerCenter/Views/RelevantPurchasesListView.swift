@@ -20,6 +20,7 @@ import SwiftUI
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
+// swiftlint:disable file_length
 // swiftlint:disable:next type_body_length
 struct RelevantPurchasesListView: View {
 
@@ -392,7 +393,8 @@ struct ActiveSubscriptionsListView_Previews: PreviewProvider {
                         screen: warningOnMock.screens[.management]!,
                         originalAppUserId: "originalAppUserId",
                         activePurchases: purchases,
-                        virtualCurrencies: CustomerCenterConfigData.fourVirtualCurrencies
+                        virtualCurrencies: CustomerCenterConfigData.fourVirtualCurrencies,
+                        shouldShowSeeAllPurchases: false
                     )
                 )
                 .environment(\.supportInformation, warningOnMock.support)
@@ -406,7 +408,8 @@ struct ActiveSubscriptionsListView_Previews: PreviewProvider {
                         screen: warningOnMock.screens[.management]!,
                         originalAppUserId: "originalAppUserId",
                         activePurchases: purchases,
-                        virtualCurrencies: CustomerCenterConfigData.fiveVirtualCurrencies
+                        virtualCurrencies: CustomerCenterConfigData.fiveVirtualCurrencies,
+                        shouldShowSeeAllPurchases: false
                     )
                 )
                 .environment(\.supportInformation, warningOnMock.support)

@@ -28,6 +28,7 @@ import SwiftUI
 /// This view shows up to three virtual currencies sorted by balance in descending order.
 /// If there are more than three currencies, a "See All" button is displayed that navigates
 /// to a full list of virtual currencies.
+// swiftlint:disable:next type_name
 struct VirtualCurrenciesScrollViewWithOSBackgroundSection: View {
 
     private static let maxNumberOfRows = 4
@@ -77,7 +78,10 @@ struct VirtualCurrenciesScrollViewWithOSBackgroundSection: View {
             VStack(alignment: .leading, spacing: 0) {
                 ScrollViewSection(title: localization[.virtualCurrencyBalancesScreenHeader]) {
                     VStack(alignment: .leading, spacing: 0) {
-                        ForEach(Array(virtualCurrencies.enumerated()), id: \.element.id) { index, virtualCurrencyRowData in
+                        ForEach(
+                            Array(virtualCurrencies.enumerated()),
+                            id: \.element.id
+                        ) { index, virtualCurrencyRowData in
                             VirtualCurrencyBalanceListRow(rowData: virtualCurrencyRowData)
                                 .padding(.horizontal)
                                 .padding(.vertical, 12)
@@ -93,7 +97,9 @@ struct VirtualCurrenciesScrollViewWithOSBackgroundSection: View {
                             Button {
                                 self.showVirtualCurrenciesListScreen = true
                             } label: {
-                                CompatibilityLabeledContent(localization[.seeAllVirtualCurrencies].localizedCapitalized) {
+                                CompatibilityLabeledContent(
+                                    localization[.seeAllVirtualCurrencies].localizedCapitalized
+                                ) {
                                     Image(systemName: "chevron.forward")
                                 }
                             }
@@ -105,7 +111,9 @@ struct VirtualCurrenciesScrollViewWithOSBackgroundSection: View {
                                 usesNavigationStack: navigationOptions.usesNavigationStack
                             ) {
                                 VirtualCurrencyBalancesScreen(
-                                    viewModel: VirtualCurrencyBalancesScreenViewModel(purchasesProvider: self.purchasesProvider)
+                                    viewModel: VirtualCurrencyBalancesScreenViewModel(
+                                        purchasesProvider: self.purchasesProvider
+                                    )
                                 )
                             }
                         }
@@ -128,6 +136,7 @@ struct VirtualCurrenciesScrollViewWithOSBackgroundSection: View {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
+// swiftlint:disable:next type_name
 struct VirtualCurrenciesScrollViewWithOSBackgroundSection_Previews: PreviewProvider {
 
     static var previews: some View {
