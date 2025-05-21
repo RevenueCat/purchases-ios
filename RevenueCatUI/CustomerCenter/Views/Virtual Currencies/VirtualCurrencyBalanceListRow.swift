@@ -77,6 +77,7 @@ struct VirtualCurrencyBalanceListRow: View {
                 )
             )
         }
+        .previewDisplayName("VirtualCurrencyBalanceListRow")
     } else {
         Text("Unavailable on iOS <15.0")
     }
