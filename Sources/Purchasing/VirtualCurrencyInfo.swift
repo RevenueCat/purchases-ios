@@ -26,8 +26,8 @@ public final class VirtualCurrencyInfo: NSObject {
     /// The customer's current balance of the virtual currency.
     @objc public let balance: Int
 
-    init(with virtualCurrencyInfo: CustomerInfoResponse.VirtualCurrencyInfo) {
-        self.balance = virtualCurrencyInfo.balance
+    internal init(balance: Int) {
+        self.balance = balance
     }
 }
 
