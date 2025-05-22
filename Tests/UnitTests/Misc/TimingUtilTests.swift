@@ -24,6 +24,7 @@ class TimingUtilAsyncTests: TestCase {
         try super.setUpWithError()
 
         self.clock = TestClock()
+        self.logger.clearMessages()
     }
 
     func testMeasureNonThrowingBlockReturnsValueAndDuration() async {
