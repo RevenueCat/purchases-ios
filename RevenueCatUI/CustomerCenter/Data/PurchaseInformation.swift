@@ -62,8 +62,6 @@ struct PurchaseInformation {
     let isCancelled: Bool
 
     /// Indicates whether the purchased subscription is active
-    /// - `true` if the subscription is active
-    /// - `false` if the subscription is not active
     ///
     /// Note: `false` for non-subscriptions
     let isActive: Bool

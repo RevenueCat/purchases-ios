@@ -31,7 +31,7 @@ struct PurchaseInformationCardView: View {
 
     private let storeTitle: String
 
-    private let additionalInfoSubtitle: String?
+    private let additionalInfo: String?
 
     private let paidPrice: String
     private let showChevron: Bool
@@ -49,7 +49,7 @@ struct PurchaseInformationCardView: View {
         self.paidPrice = paidPrice
         self.subtitle = subtitle
         self.badge = badge
-        self.additionalInfoSubtitle = additionalInfoSubtitle
+        self.additionalInfo = additionalInfoSubtitle
         self.storeTitle = storeTitle
         self.showChevron = showChevron
     }
@@ -75,7 +75,7 @@ struct PurchaseInformationCardView: View {
             self.subtitle = purchaseInformation.pricePaidString(localizations: localization)
         }
 
-        self.additionalInfoSubtitle = refundStatus?.subtitle(localization: localization)
+        self.additionalInfo = refundStatus?.subtitle(localization: localization)
 
         switch purchaseInformation.pricePaid {
         case .free, .unknown:
@@ -153,7 +153,7 @@ struct PurchaseInformationCardView: View {
                               ? UIColor.systemBackground
                               : UIColor.secondarySystemBackground))
 
-            if let additionalInfoSubtitle {
+            if let additionalInfo {
                 Text(additionalInfoSubtitle)
                     .font(.caption)
                     .foregroundStyle(.primary)
