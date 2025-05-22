@@ -220,15 +220,6 @@ struct SubscriptionDetailView: View {
         }
         .tint(colorScheme == .dark ? .white : .black)
     }
-
-    var sectionTitle: String {
-        if viewModel.purchaseInformation?.expirationDate == nil
-            && viewModel.purchaseInformation?.renewalDate == nil {
-            return localization[.purchasesSectionTitle]
-        } else {
-            return localization[.subscriptionsSectionTitle]
-        }
-    }
 }
 
 #if DEBUG

@@ -246,32 +246,6 @@ struct RelevantPurchasesListView: View {
         }
     }
 
-    private var buttonsView: some View {
-        ForEach(self.viewModel.relevantPathsForPurchase, id: \.id) { path in
-            AsyncButton(action: {
-                await self.viewModel.handleHelpPath(
-                    path,
-                    withActiveProductId: viewModel.purchaseInformation?.productIdentifier
-                )
-            }, label: {
-                Group {
-                    if self.viewModel.loadingPath?.id == path.id {
-                        TintedProgressView()
-                    } else {
-                        Text(path.title)
-                    }
-                }
-                .padding()
-                .background(Color(colorScheme == .light
-                                  ? UIColor.systemBackground
-                                  : UIColor.secondarySystemBackground))
-                .cornerRadius(10)
-                .padding([.leading, .trailing])
-            })
-            .disabled(self.viewModel.loadingPath != nil)
-        }
-    }
-
     private var dateFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium

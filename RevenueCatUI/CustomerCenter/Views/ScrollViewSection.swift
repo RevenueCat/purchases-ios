@@ -46,9 +46,6 @@ struct ScrollViewSection<Content: View>: View {
 @available(watchOS, unavailable)
 struct PurchasesInformationSection: View {
 
-    @Environment(\.colorScheme)
-    private var colorScheme
-
     let items: [PurchaseInformation]
     let localization: CustomerCenterConfigData.Localization
     let action: (PurchaseInformation) -> Void
