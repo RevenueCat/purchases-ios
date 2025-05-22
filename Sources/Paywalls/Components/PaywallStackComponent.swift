@@ -20,7 +20,7 @@ public extension PaywallComponent {
 
         public enum Overflow: String, PaywallComponentBase {
             case `default`
-            case scroll
+            case scroll = "scrolllable"
 
             public init(from decoder: Decoder) throws {
                 let container = try decoder.singleValueContainer()
