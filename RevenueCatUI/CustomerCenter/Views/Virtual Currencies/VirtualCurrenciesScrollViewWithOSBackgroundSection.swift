@@ -124,7 +124,7 @@ struct VirtualCurrenciesScrollViewWithOSBackgroundSection: View {
 
                         if displayShowAllButton {
                             Divider()
-                                .padding(.vertical, 4)
+
                             Button {
                                 self.onSeeAllInAppCurrenciesButtonTapped()
                             } label: {
@@ -143,7 +143,6 @@ struct VirtualCurrenciesScrollViewWithOSBackgroundSection: View {
                                       ? UIColor.systemBackground
                                       : UIColor.secondarySystemBackground))
                     .clipShape(RoundedRectangle(cornerRadius: 10))
-                    .padding(.top, 16)
                     .padding(.horizontal)
                 }
             }

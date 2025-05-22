@@ -207,6 +207,7 @@ struct SubscriptionDetailView: View {
                         virtualCurrencies: virtualCurrencies,
                         onSeeAllInAppCurrenciesButtonTapped: self.viewModel.displayAllInAppCurrenciesScreen
                     )
+                     Spacer().frame(height: 32)
                 }
 
                 ActiveSubscriptionButtonsView(viewModel: viewModel)
@@ -377,6 +378,10 @@ struct SubscriptionDetailView: View {
 
             CompatibilityNavigationStack {
                 SubscriptionDetailView(
+                    customerInfoViewModel: CustomerCenterViewModel(
+                        purchaseInformation: .yearlyExpiring(),
+                        configuration: .default
+                    ),
                     viewModel: SubscriptionDetailViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
@@ -390,6 +395,10 @@ struct SubscriptionDetailView: View {
 
             CompatibilityNavigationStack {
                 SubscriptionDetailView(
+                    customerInfoViewModel: CustomerCenterViewModel(
+                        purchaseInformation: .yearlyExpiring(),
+                        configuration: .default
+                    ),
                     viewModel: SubscriptionDetailViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,

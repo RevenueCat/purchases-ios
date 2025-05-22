@@ -225,10 +225,10 @@ private extension CustomerCenterView {
         RelevantPurchasesListView(
             customerInfoViewModel: viewModel,
             screen: screen,
-            virtualCurrencies: self.viewModel.virtualCurrencies,
             originalAppUserId: viewModel.originalAppUserId,
             originalPurchaseDate: viewModel.originalPurchaseDate,
             shouldShowSeeAllPurchases: viewModel.shouldShowSeeAllPurchases,
+            virtualCurrencies: self.viewModel.virtualCurrencies,
             purchasesProvider: self.viewModel.purchasesProvider,
             actionWrapper: self.viewModel.actionWrapper
         )

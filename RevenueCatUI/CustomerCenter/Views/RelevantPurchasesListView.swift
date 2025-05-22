@@ -55,7 +55,7 @@ struct RelevantPurchasesListView: View {
         let viewModel = RelevantPurchasesListViewModel(
             screen: screen,
             actionWrapper: actionWrapper,
-            virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]?,
+            virtualCurrencies: virtualCurrencies,
             originalAppUserId: originalAppUserId,
             originalPurchaseDate: originalPurchaseDate,
             shouldShowSeeAllPurchases: shouldShowSeeAllPurchases,
@@ -124,9 +124,6 @@ struct RelevantPurchasesListView: View {
                 .environment(\.localization, localization)
                 .environment(\.navigationOptions, navigationOptions)
             }
-            .onChangeOf(activePurchases) { _ in
-                viewModel.updatePurchases(activePurchases)
-            }
             .overlay {
                 RestorePurchasesAlert(
                     isPresented: self.$viewModel.showRestoreAlert,
@@ -185,6 +182,8 @@ struct RelevantPurchasesListView: View {
                             virtualCurrencies: virtualCurrencies,
                             onSeeAllInAppCurrenciesButtonTapped: self.viewModel.displayAllInAppCurrenciesScreen
                         )
+
+                        Spacer().frame(height: 16)
                     }
                 }
 
@@ -357,6 +356,11 @@ struct RelevantPurchasesListView: View {
 
             CompatibilityNavigationStack {
                 RelevantPurchasesListView(
+                    customerInfoViewModel: CustomerCenterViewModel(
+                        activeSubscriptionPurchases: purchases,
+                        activeNonSubscriptionPurchases: [],
+                        configuration: .default
+                    ),
                     viewModel: RelevantPurchasesListViewModel(
                         screen: warningOnMock.screens[.management]!,
                         originalAppUserId: "originalAppUserId",
@@ -372,6 +376,11 @@ struct RelevantPurchasesListView: View {
 
             CompatibilityNavigationStack {
                 RelevantPurchasesListView(
+                    customerInfoViewModel: CustomerCenterViewModel(
+                        activeSubscriptionPurchases: purchases,
+                        activeNonSubscriptionPurchases: [],
+                        configuration: .default
+                    ),
                     viewModel: RelevantPurchasesListViewModel(
                         screen: warningOnMock.screens[.management]!,
                         originalAppUserId: "originalAppUserId",

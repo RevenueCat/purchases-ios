@@ -56,11 +56,12 @@ struct NoSubscriptionsView: View {
         actionWrapper: CustomerCenterActionWrapper,
         purchasesProvider: CustomerCenterPurchasesType,
         virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]?
-    )
+    ) {
+        self.customerCenterViewModel = customerCenterViewModel
         self.configuration = configuration
         self.actionWrapper = actionWrapper
-        self.virtualCurrencies = virtualCurrencies
         self.purchasesProvider = purchasesProvider
+        self.virtualCurrencies = virtualCurrencies
     }
 
     var body: some View {
