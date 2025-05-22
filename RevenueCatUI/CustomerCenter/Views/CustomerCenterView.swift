@@ -157,30 +157,7 @@ private extension CustomerCenterView {
                 }
             }
         }
-        // This is needed because `CustomerCenterViewModel` is isolated to @MainActor
-        // A bigger refactor is needed, but its already throwing a warning.
-        .modifier(self.viewModel.purchasesProvider.manageSubscriptionsSheetViewModifier(isPresented: .init(
-            get: { viewModel.manageSubscriptionsSheet },
-            set: { manage in DispatchQueue.main.async { viewModel.manageSubscriptionsSheet = manage } }
-        )))
         .modifier(CustomerCenterActionViewModifier(actionWrapper: viewModel.actionWrapper))
-        .onCustomerCenterPromotionalOfferSuccess {
-            Task {
-                await viewModel.loadScreen(shouldSync: true)
-            }
-        }
-        .onCustomerCenterShowingManageSubscriptions {
-            Task { @MainActor in
-                viewModel.manageSubscriptionsSheet = true
-            }
-        }
-        .onChangeOf(viewModel.manageSubscriptionsSheet) { manageSubscriptionsSheet in
-            if !manageSubscriptionsSheet {
-                Task {
-                    await viewModel.loadScreen(shouldSync: true)
-                }
-            }
-        }
     }
 
     @ViewBuilder
@@ -244,9 +221,8 @@ private extension CustomerCenterView {
 
     func listView(_ screen: CustomerCenterConfigData.Screen) -> some View {
         RelevantPurchasesListView(
+            customerInfoViewModel: viewModel,
             screen: screen,
-            activePurchases: $viewModel.activeSubscriptionPurchases,
-            nonSubscriptionPurchases: $viewModel.activeNonSubscriptionPurchases,
             originalAppUserId: viewModel.originalAppUserId,
             originalPurchaseDate: viewModel.originalPurchaseDate,
             shouldShowSeeAllPurchases: viewModel.shouldShowSeeAllPurchases,
@@ -258,6 +234,7 @@ private extension CustomerCenterView {
 
     func singlePurchaseView(_ screen: CustomerCenterConfigData.Screen) -> some View {
         SubscriptionDetailView(
+            customerInfoViewModel: viewModel,
             screen: screen,
             purchaseInformation: viewModel.activePurchase,
             showPurchaseHistory: viewModel.shouldShowSeeAllPurchases,
