@@ -30,6 +30,7 @@ final class SubscriptionDetailViewModelTests: TestCase {
         let viewModelAppStore = SubscriptionDetailViewModel(
             screen: CustomerCenterConfigData.default.screens[.management]!,
             showPurchaseHistory: false,
+            virtualCurrencies: nil,
             purchaseInformation: .yearlyExpiring(store: .appStore)
         )
 
@@ -50,6 +51,7 @@ final class SubscriptionDetailViewModelTests: TestCase {
             let viewModelOther = SubscriptionDetailViewModel(
                 screen: CustomerCenterConfigData.default.screens[.management]!,
                 showPurchaseHistory: false,
+                virtualCurrencies: nil,
                 purchaseInformation: .yearlyExpiring(store: $0)
             )
 

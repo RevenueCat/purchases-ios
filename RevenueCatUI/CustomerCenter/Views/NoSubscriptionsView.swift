@@ -36,19 +36,32 @@ struct NoSubscriptionsView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    @Environment(\.navigationOptions)
+    var navigationOptions
     @ObservedObject
     private var customerCenterViewModel: CustomerCenterViewModel
 
     @State
     private var showRestoreAlert: Bool = false
 
+    @State
+    private var showAllInAppCurrenciesScreen: Bool = false
+
+    private let virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]?
+    private let purchasesProvider: CustomerCenterPurchasesType
+
     init(
         customerCenterViewModel: CustomerCenterViewModel,
         configuration: CustomerCenterConfigData,
-        actionWrapper: CustomerCenterActionWrapper) {
+        actionWrapper: CustomerCenterActionWrapper,
+        purchasesProvider: CustomerCenterPurchasesType,
+        virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]?
+    ) {
         self.customerCenterViewModel = customerCenterViewModel
         self.configuration = configuration
         self.actionWrapper = actionWrapper
+        self.purchasesProvider = purchasesProvider
+        self.virtualCurrencies = virtualCurrencies
     }
 
     var body: some View {
@@ -65,6 +78,13 @@ struct NoSubscriptionsView: View {
                 )
             }
 
+            if let virtualCurrencies, !virtualCurrencies.isEmpty {
+                VirtualCurrenciesListSection(
+                    virtualCurrencies: virtualCurrencies,
+                    onSeeAllInAppCurrenciesButtonTapped: { self.showAllInAppCurrenciesScreen = true }
+                )
+            }
+
             Section {
                 Button(localization[.restorePurchases]) {
                     showRestoreAlert = true
@@ -73,6 +93,17 @@ struct NoSubscriptionsView: View {
 
         }
         .dismissCircleButtonToolbarIfNeeded()
+        .compatibleNavigation(
+            isPresented: $showAllInAppCurrenciesScreen,
+            usesNavigationStack: navigationOptions.usesNavigationStack
+        ) {
+            VirtualCurrencyBalancesScreen(
+                viewModel: VirtualCurrencyBalancesScreenViewModel(purchasesProvider: self.purchasesProvider)
+            )
+            .environment(\.appearance, appearance)
+            .environment(\.localization, localization)
+            .environment(\.navigationOptions, navigationOptions)
+        }
         .overlay {
             RestorePurchasesAlert(
                 isPresented: $showRestoreAlert,
@@ -96,8 +127,31 @@ struct NoSubscriptionsView_Previews: PreviewProvider {
         NoSubscriptionsView(
             customerCenterViewModel: CustomerCenterViewModel(uiPreviewPurchaseProvider: MockCustomerCenterPurchases()),
             configuration: CustomerCenterConfigData.default,
-            actionWrapper: CustomerCenterActionWrapper()
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchasesProvider: CustomerCenterPurchases(),
+            virtualCurrencies: nil
         )
+        .previewDisplayName("No Subscriptions View")
+
+        NoSubscriptionsView(
+            customerCenterViewModel: CustomerCenterViewModel(uiPreviewPurchaseProvider: MockCustomerCenterPurchases()),
+            configuration: CustomerCenterConfigData.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchasesProvider: CustomerCenterPurchases(),
+            virtualCurrencies: CustomerCenterConfigData.fourVirtualCurrencies
+        )
+        .environment(\.supportInformation, CustomerCenterConfigData.mock(displayVirtualCurrencies: true).support)
+        .previewDisplayName("4 Virtual Currencies")
+
+        NoSubscriptionsView(
+            customerCenterViewModel: CustomerCenterViewModel(uiPreviewPurchaseProvider: MockCustomerCenterPurchases()),
+            configuration: CustomerCenterConfigData.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchasesProvider: CustomerCenterPurchases(),
+            virtualCurrencies: CustomerCenterConfigData.fiveVirtualCurrencies
+        )
+        .environment(\.supportInformation, CustomerCenterConfigData.mock(displayVirtualCurrencies: true).support)
+        .previewDisplayName("5 Virtual Currencies")
     }
 
 }

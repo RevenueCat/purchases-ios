@@ -35,6 +35,7 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
     init(
         screen: CustomerCenterConfigData.Screen,
         showPurchaseHistory: Bool,
+        virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]?,
         actionWrapper: CustomerCenterActionWrapper,
         purchaseInformation: PurchaseInformation? = nil,
         refundRequestStatus: RefundRequestStatus? = nil,
@@ -46,6 +47,7 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
             screen: screen,
             actionWrapper: actionWrapper,
             purchaseInformation: purchaseInformation,
+            virtualCurrencies: virtualCurrencies,
             refundRequestStatus: refundRequestStatus,
             purchasesProvider: purchasesProvider,
             loadPromotionalOfferUseCase: loadPromotionalOfferUseCase
@@ -60,12 +62,14 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
     convenience init(
         screen: CustomerCenterConfigData.Screen,
         showPurchaseHistory: Bool,
+        virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]?,
         purchaseInformation: PurchaseInformation? = nil,
         refundRequestStatus: RefundRequestStatus? = nil
     ) {
         self.init(
             screen: screen,
             showPurchaseHistory: showPurchaseHistory,
+            virtualCurrencies: virtualCurrencies,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchaseInformation,
             refundRequestStatus: refundRequestStatus,

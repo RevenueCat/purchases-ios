@@ -204,7 +204,9 @@ private extension CustomerCenterView {
                 NoSubscriptionsView(
                     customerCenterViewModel: viewModel,
                     configuration: configuration,
-                    actionWrapper: self.viewModel.actionWrapper
+                    actionWrapper: self.viewModel.actionWrapper,
+                    purchasesProvider: self.viewModel.purchasesProvider,
+                    virtualCurrencies: self.viewModel.virtualCurrencies
                 )
             }
         }
@@ -226,6 +228,7 @@ private extension CustomerCenterView {
             originalAppUserId: viewModel.originalAppUserId,
             originalPurchaseDate: viewModel.originalPurchaseDate,
             shouldShowSeeAllPurchases: viewModel.shouldShowSeeAllPurchases,
+            virtualCurrencies: self.viewModel.virtualCurrencies,
             purchasesProvider: self.viewModel.purchasesProvider,
             actionWrapper: self.viewModel.actionWrapper
         )
@@ -237,7 +240,8 @@ private extension CustomerCenterView {
             customerInfoViewModel: viewModel,
             screen: screen,
             purchaseInformation: viewModel.activePurchase,
-            showPurchaseHistory: viewModel.shouldShowSeeAllPurchases,
+            showPurchaseHistory: viewModel.configuration?.support.displayPurchaseHistoryLink == true,
+            virtualCurrencies: self.viewModel.virtualCurrencies,
             purchasesProvider: self.viewModel.purchasesProvider,
             actionWrapper: self.viewModel.actionWrapper
         )
