@@ -71,7 +71,7 @@ class TimingUtilAsyncTests: TestCase {
         }
 
         expect(result) == expectedResult
-        expect(self.logger.messages).to(beEmpty())
+        self.logger.verifyMessageWasNotLogged("Too slow", allowNoMessages: true)
     }
 
     func testMeasureAndLogWithResult() async {
@@ -118,7 +118,7 @@ class TimingUtilAsyncTests: TestCase {
             expect(error).to(matchError(expectedError))
         }
 
-        expect(self.logger.messages).to(beEmpty())
+        self.logger.verifyMessageWasNotLogged("Too slow", allowNoMessages: true)
     }
 
     func testMeasureSyncAndLogDoesNotLogIfLowerThanThreshold() {
@@ -134,7 +134,7 @@ class TimingUtilAsyncTests: TestCase {
         }
 
         expect(result) == expectedResult
-        expect(self.logger.messages).to(beEmpty())
+        self.logger.verifyMessageWasNotLogged("Too slow", allowNoMessages: true)
     }
 
     func testMeasureSyncAndLogThrowsError() {
@@ -151,7 +151,7 @@ class TimingUtilAsyncTests: TestCase {
             expect(error).to(matchError(expectedError))
         }
 
-        expect(self.logger.messages).to(beEmpty())
+        self.logger.verifyMessageWasNotLogged("Too slow", allowNoMessages: true)
     }
 
     func testMeasureSyncAndLogWithResult() {
@@ -238,7 +238,7 @@ class TimingUtilCompletionBlockTests: TestCase {
 
         expect(result).toEventuallyNot(beNil())
         expect(result) == expectedResult
-        expect(self.logger.messages).to(beEmpty())
+        self.logger.verifyMessageWasNotLogged("Too slow", allowNoMessages: true)
     }
 
     func testMeasureAndLogWithResult() {
