@@ -37,6 +37,8 @@ struct ImageComponentView: View {
 
     let viewModel: ImageComponentViewModel
 
+    @State var maxWidth: CGFloat = 0
+
     var body: some View {
         viewModel.styles(
             state: self.componentViewState,
@@ -46,24 +48,34 @@ struct ImageComponentView: View {
             )
         ) { style in
             if style.visible {
-                RemoteImage(
-                    url: style.url,
-                    lowResUrl: style.lowResUrl,
-                    darkUrl: style.darkUrl,
-                    darkLowResUrl: style.darkLowResUrl
-                ) { (image, size) in
-                    self.renderImage(image, size, with: style)
+                VStack(spacing: 0) {
+                    RemoteImage(
+                        url: style.url,
+                        lowResUrl: style.lowResUrl,
+                        darkUrl: style.darkUrl,
+                        darkLowResUrl: style.darkLowResUrl
+                    ) { (image, size) in
+                        self.renderImage(image, size, maxWidth: maxWidth, with: style)
+                    }
+                    .size(style.size)
+                    .clipped()
+                    .padding(style.padding.extend(by: style.border?.width ?? 0))
+                    .shape(border: style.border,
+                           shape: style.shape)
+                    .shadow(shadow: style.shadow,
+                            shape: style.shape?.toInsettableShape())
+                    .padding(style.margin)
                 }
-                .size(style.size)
-                .clipped()
-                .padding(style.padding.extend(by: style.border?.width ?? 0))
-                .shape(border: style.border,
-                       shape: style.shape)
-                .shadow(shadow: style.shadow,
-                        shape: style.shape?.toInsettableShape())
-                .padding(style.margin)
+                .onWidthChange { width in
+                    self.maxWidth = self.calculateMaxWidth(parentWidth: width, style: style)
+                }
             }
         }
+    }
+
+    private func calculateMaxWidth(parentWidth: CGFloat, style: ImageComponentStyle) -> CGFloat {
+        let totalBorderWidth = (style.border?.width ?? 0) * 2
+        return parentWidth - totalBorderWidth - style.margin.leading - style.margin.trailing
     }
 
     private func aspectRatio(style: ImageComponentStyle) -> Double {
@@ -82,14 +94,19 @@ struct ImageComponentView: View {
         }
     }
 
-    private func renderImage(_ image: Image, _ size: CGSize, with style: ImageComponentStyle) -> some View {
+    private func renderImage(
+        _ image: Image,
+        _ size: CGSize,
+        maxWidth: CGFloat,
+        with style: ImageComponentStyle,
+    ) -> some View {
         image
             .fitToAspect(
                 self.aspectRatio(style: style),
                 contentMode: style.contentMode,
                 containerContentMode: style.contentMode
             )
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: maxWidth)
             // WIP: Fix this later when accessibility info is available
             .accessibilityHidden(true)
             .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
