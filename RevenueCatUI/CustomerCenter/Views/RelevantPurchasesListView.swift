@@ -245,7 +245,6 @@ struct RelevantPurchasesListView: View {
     }
 }
 
-
  #if DEBUG
  @available(iOS 15.0, *)
  @available(macOS, unavailable)

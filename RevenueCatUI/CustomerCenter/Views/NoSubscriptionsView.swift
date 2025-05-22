@@ -45,8 +45,7 @@ struct NoSubscriptionsView: View {
     init(
         customerCenterViewModel: CustomerCenterViewModel,
         configuration: CustomerCenterConfigData,
-        actionWrapper: CustomerCenterActionWrapper)
-    {
+        actionWrapper: CustomerCenterActionWrapper) {
         self.customerCenterViewModel = customerCenterViewModel
         self.configuration = configuration
         self.actionWrapper = actionWrapper
