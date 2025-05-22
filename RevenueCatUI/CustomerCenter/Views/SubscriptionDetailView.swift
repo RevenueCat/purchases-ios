@@ -208,7 +208,8 @@ struct SubscriptionDetailView: View {
         .overlay {
             RestorePurchasesAlert(
                 isPresented: self.$viewModel.showRestoreAlert,
-                actionWrapper: self.viewModel.actionWrapper
+                actionWrapper: self.viewModel.actionWrapper,
+                customerCenterViewModel: customerInfoViewModel
             )
         }
         .applyIf(self.viewModel.screen.type == .management, apply: {
