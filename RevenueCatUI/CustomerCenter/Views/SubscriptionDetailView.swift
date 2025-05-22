@@ -239,14 +239,14 @@ struct SubscriptionDetailView: View {
     }
 }
 
-#if DEBUG
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-struct SubscriptionDetailView_Previews: PreviewProvider {
+ #if DEBUG
+ @available(iOS 15.0, *)
+ @available(macOS, unavailable)
+ @available(tvOS, unavailable)
+ @available(watchOS, unavailable)
+ struct SubscriptionDetailView_Previews: PreviewProvider {
 
-    // swiftlint:disable force_unwrapping
+     // swiftlint:disable force_unwrapping
     static var previews: some View {
         ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
             CompatibilityNavigationStack {
@@ -334,8 +334,8 @@ struct SubscriptionDetailView_Previews: PreviewProvider {
         .environment(\.appearance, CustomerCenterConfigData.default.appearance)
     }
 
-}
+ }
 
-#endif
+ #endif
 
 #endif
