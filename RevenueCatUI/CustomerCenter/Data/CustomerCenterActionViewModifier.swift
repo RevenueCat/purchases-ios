@@ -8,9 +8,10 @@
 //      https://opensource.org/licenses/MIT
 //
 //  CustomerCenterActionPreferencesViewModifier.swift
-//  
+//
 //  Created by Cesar de la Vega on 2024-06-17.
 
+import Combine
 import RevenueCat
 import SwiftUI
 
@@ -28,7 +29,7 @@ extension UniqueWrapper: Equatable {
     }
 }
 
-/// A view modifier that connects CustomerCenterViewModel actions to the SwiftUI preference system
+/// A view modifier that connects CustomerCenterViewModel actions to the SwiftUI preference system using Combine
 @available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
@@ -47,10 +48,12 @@ struct CustomerCenterActionViewModifier: ViewModifier {
     @State private var managementOptionSelected: UniqueWrapper<CustomerCenterActionable>?
     @State private var promotionalOfferSuccess: UniqueWrapper<Void>?
 
+    @State private var cancellables = Set<AnyCancellable>()
+
     func body(content: Content) -> some View {
         content
             .onAppear {
-                setUpActionWrappers()
+                subscribeToActionWrapper()
             }
             // Apply preferences based on state
             .preference(key: CustomerCenterView.RestoreStartedPreferenceKey.self,
@@ -73,44 +76,61 @@ struct CustomerCenterActionViewModifier: ViewModifier {
                         value: promotionalOfferSuccess)
     }
 
-    // Set up direct binding to the state variables
     @MainActor
-    private func setUpActionWrappers() {
-        actionWrapper.onRestoreStarted {
-            restoreStarted = UniqueWrapper(value: ())
-        }
+    private func subscribeToActionWrapper() {
+        actionWrapper.restoreStarted
+            .sink { _ in
+                restoreStarted = UniqueWrapper(value: ())
+            }
+            .store(in: &cancellables)
 
-        actionWrapper.onRestoreFailed { error in
-            restoreFailed = UniqueWrapper(value: error)
-        }
+        actionWrapper.restoreFailed
+            .sink { error in
+                restoreFailed = UniqueWrapper(value: error)
+            }
+            .store(in: &cancellables)
 
-        actionWrapper.onRestoreCompleted { info in
-            restoreCompleted = UniqueWrapper(value: info)
-        }
+        actionWrapper.restoreCompleted
+            .sink { info in
+                restoreCompleted = UniqueWrapper(value: info)
+            }
+            .store(in: &cancellables)
 
-        actionWrapper.onShowingManageSubscriptions {
-            showingManageSubscriptions = UniqueWrapper(value: ())
-        }
+        actionWrapper.showingManageSubscriptions
+            .sink { _ in
+                showingManageSubscriptions = UniqueWrapper(value: ())
+            }
+            .store(in: &cancellables)
 
-        actionWrapper.onRefundRequestStarted { productId in
-            refundRequestStarted = UniqueWrapper(value: productId)
-        }
+        actionWrapper.refundRequestStarted
+            .sink { productId in
+                refundRequestStarted = UniqueWrapper(value: productId)
+            }
+            .store(in: &cancellables)
 
-        actionWrapper.onRefundRequestCompleted { productId, status in
-            refundRequestCompleted = UniqueWrapper(value: (productId, status))
-        }
+        actionWrapper.refundRequestCompleted
+            .sink { productId, status in
+                refundRequestCompleted = UniqueWrapper(value: (productId, status))
+            }
+            .store(in: &cancellables)
 
-        actionWrapper.onFeedbackSurveyCompleted { reason in
-            feedbackSurveyCompleted = UniqueWrapper(value: reason)
-        }
+        actionWrapper.feedbackSurveyCompleted
+            .sink { reason in
+                feedbackSurveyCompleted = UniqueWrapper(value: reason)
+            }
+            .store(in: &cancellables)
 
-        actionWrapper.onManagementOptionSelected { action in
-            managementOptionSelected = UniqueWrapper(value: action)
-        }
+        actionWrapper.managementOptionSelected
+            .sink { action in
+                managementOptionSelected = UniqueWrapper(value: action)
+            }
+            .store(in: &cancellables)
 
-        actionWrapper.onPromotionalOfferSuccess {
-            promotionalOfferSuccess = UniqueWrapper(value: ())
-        }
+        actionWrapper.promotionalOfferSuccess
+            .sink { _ in
+                promotionalOfferSuccess = UniqueWrapper(value: ())
+            }
+            .store(in: &cancellables)
     }
 }
 
