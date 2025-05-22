@@ -114,7 +114,6 @@ public struct CustomerCenterView: View {
             .task {
                 await loadInformationIfNeeded()
             }
-            .environmentObject(self.viewModel)
             .onAppear {
 #if DEBUG
                 guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else { return }
@@ -152,7 +151,6 @@ private extension CustomerCenterView {
                         .environment(\.customerCenterPresentationMode, self.mode)
                         .environment(\.navigationOptions, self.navigationOptions)
                         .environment(\.supportInformation, configuration.support)
-                        .environmentObject(viewModel)
                 } else {
                     TintedProgressView()
                 }
