@@ -61,6 +61,11 @@ struct PurchaseInformation {
     /// Note: `false` for non-subscriptions
     let isCancelled: Bool
 
+    /// Indicates whether the purchased subscription is active
+    ///
+    /// Note: `false` for non-subscriptions
+    let isActive: Bool
+
     let latestPurchaseDate: Date?
 
     /// The fetch date of this CustomerInfo. (a.k.a. CustomerInfo.requestedDate)
@@ -95,6 +100,7 @@ struct PurchaseInformation {
          isLifetime: Bool,
          isTrial: Bool,
          isCancelled: Bool,
+         isActive: Bool,
          latestPurchaseDate: Date?,
          customerInfoRequestedDate: Date,
          dateFormatter: DateFormatter = Self.defaultDateFormatter,
@@ -114,6 +120,7 @@ struct PurchaseInformation {
         self.isLifetime = isLifetime
         self.isTrial = isTrial
         self.isCancelled = isCancelled
+        self.isActive = isActive
         self.latestPurchaseDate = latestPurchaseDate
         self.customerInfoRequestedDate = customerInfoRequestedDate
         self.managementURL = managementURL
@@ -156,15 +163,17 @@ struct PurchaseInformation {
             self.renewalDate = entitlement.willRenew ? entitlement.expirationDate : nil
             self.periodType = entitlement.periodType
             self.ownershipType = entitlement.ownershipType
+            self.isActive = entitlement.isActive
         } else {
             switch transaction.type {
-            case let .subscription(_, willRenew, expiresDate, isTrial, ownershipType):
+            case let .subscription(isActive, willRenew, expiresDate, isTrial, ownershipType):
                 self.isLifetime = false
                 self.isTrial = isTrial
                 self.latestPurchaseDate = (transaction as? RevenueCat.SubscriptionInfo)?.purchaseDate
                 self.expirationDate = expiresDate
                 self.renewalDate = willRenew ? expiresDate : nil
                 self.ownershipType = ownershipType
+                self.isActive = isActive
 
             case .nonSubscription:
                 self.isLifetime = true
@@ -173,6 +182,7 @@ struct PurchaseInformation {
                 self.renewalDate = nil
                 self.expirationDate = nil
                 self.ownershipType = nil
+                self.isActive = false
             }
 
             self.productIdentifier = transaction.productIdentifier
