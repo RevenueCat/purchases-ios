@@ -42,34 +42,68 @@ struct SubscriptionDetailView: View {
     @StateObject
     private var viewModel: SubscriptionDetailViewModel
 
+    @ObservedObject
+    private var customerInfoViewModel: CustomerCenterViewModel
+
     @State
     private var showSimulatorAlert: Bool = false
 
-    init(screen: CustomerCenterConfigData.Screen,
-         purchaseInformation: PurchaseInformation?,
-         showPurchaseHistory: Bool,
-         purchasesProvider: CustomerCenterPurchasesType,
-         actionWrapper: CustomerCenterActionWrapper) {
-        let viewModel = SubscriptionDetailViewModel(
-            screen: screen,
-            showPurchaseHistory: showPurchaseHistory,
-            actionWrapper: actionWrapper,
-            purchaseInformation: purchaseInformation,
-            purchasesProvider: purchasesProvider)
+    init(
+        customerInfoViewModel: CustomerCenterViewModel,
+        screen: CustomerCenterConfigData.Screen,
+        purchaseInformation: PurchaseInformation?,
+        showPurchaseHistory: Bool,
+        purchasesProvider: CustomerCenterPurchasesType,
+        actionWrapper: CustomerCenterActionWrapper) {
+            let viewModel = SubscriptionDetailViewModel(
+                screen: screen,
+                showPurchaseHistory: showPurchaseHistory,
+                actionWrapper: actionWrapper,
+                purchaseInformation: purchaseInformation,
+                purchasesProvider: purchasesProvider)
 
-        self.init(
-            viewModel: viewModel
-        )
-    }
+            self.init(
+                customerInfoViewModel: customerInfoViewModel,
+                viewModel: viewModel
+            )
+        }
 
     fileprivate init(
+        customerInfoViewModel: CustomerCenterViewModel,
         viewModel: SubscriptionDetailViewModel
     ) {
+        self.customerInfoViewModel = customerInfoViewModel
         self._viewModel = .init(wrappedValue: viewModel)
     }
 
     var body: some View {
         content
+            .modifier(CustomerCenterActionViewModifier(actionWrapper: viewModel.actionWrapper))
+        // This is needed because `CustomerCenterViewModel` is isolated to @MainActor
+        // A bigger refactor is needed, but its already throwing a warning.
+            .modifier(self.customerInfoViewModel.purchasesProvider
+                .manageSubscriptionsSheetViewModifier(isPresented: .init(
+                    get: { customerInfoViewModel.manageSubscriptionsSheet },
+                    set: { manage in DispatchQueue.main.async {
+                        customerInfoViewModel.manageSubscriptionsSheet = manage } }
+                )))
+            .onCustomerCenterPromotionalOfferSuccess {
+                Task {
+                    await customerInfoViewModel.loadScreen(shouldSync: true)
+                }
+            }
+            .onCustomerCenterShowingManageSubscriptions {
+                Task { @MainActor in
+                    customerInfoViewModel.manageSubscriptionsSheet = true
+                }
+            }
+            .onChangeOf(customerInfoViewModel.manageSubscriptionsSheet) { manageSubscriptionsSheet in
+                if !manageSubscriptionsSheet {
+                    Task {
+                        await customerInfoViewModel.loadScreen(shouldSync: true)
+                    }
+                }
+            }
             .compatibleNavigation(
                 item: $viewModel.feedbackSurveyData,
                 usesNavigationStack: navigationOptions.usesNavigationStack
@@ -225,18 +259,22 @@ struct SubscriptionDetailView: View {
     }
 }
 
-#if DEBUG
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-struct SubscriptionDetailView_Previews: PreviewProvider {
+ #if DEBUG
+ @available(iOS 15.0, *)
+ @available(macOS, unavailable)
+ @available(tvOS, unavailable)
+ @available(watchOS, unavailable)
+ struct SubscriptionDetailView_Previews: PreviewProvider {
 
-    // swiftlint:disable force_unwrapping
+     // swiftlint:disable force_unwrapping
     static var previews: some View {
         ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
             CompatibilityNavigationStack {
                 SubscriptionDetailView(
+                    customerInfoViewModel: CustomerCenterViewModel(
+                        purchaseInformation: .yearlyExpiring(),
+                        configuration: .default
+                    ),
                     viewModel: SubscriptionDetailViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
@@ -250,6 +288,10 @@ struct SubscriptionDetailView_Previews: PreviewProvider {
 
             CompatibilityNavigationStack {
                 SubscriptionDetailView(
+                    customerInfoViewModel: CustomerCenterViewModel(
+                        purchaseInformation: .free,
+                        configuration: .default
+                    ),
                     viewModel: SubscriptionDetailViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
@@ -262,6 +304,10 @@ struct SubscriptionDetailView_Previews: PreviewProvider {
 
             CompatibilityNavigationStack {
                 SubscriptionDetailView(
+                    customerInfoViewModel: CustomerCenterViewModel(
+                        purchaseInformation: .consumable,
+                        configuration: .default
+                    ),
                     viewModel: SubscriptionDetailViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: false,
@@ -274,6 +320,10 @@ struct SubscriptionDetailView_Previews: PreviewProvider {
 
             CompatibilityNavigationStack {
                 SubscriptionDetailView(
+                    customerInfoViewModel: CustomerCenterViewModel(
+                        purchaseInformation: nil,
+                        configuration: .default
+                    ),
                     viewModel: SubscriptionDetailViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
@@ -286,6 +336,10 @@ struct SubscriptionDetailView_Previews: PreviewProvider {
 
             CompatibilityNavigationStack {
                 SubscriptionDetailView(
+                    customerInfoViewModel: CustomerCenterViewModel(
+                        purchaseInformation: .yearlyExpiring(store: .playStore),
+                        configuration: .default
+                    ),
                     viewModel: SubscriptionDetailViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
@@ -301,8 +355,8 @@ struct SubscriptionDetailView_Previews: PreviewProvider {
         .environmentObject(CustomerCenterViewModel())
     }
 
-}
+ }
 
-#endif
+ #endif
 
 #endif
