@@ -37,27 +37,21 @@ struct RelevantPurchasesListView: View {
     @StateObject
     private var viewModel: RelevantPurchasesListViewModel
 
-    /// Used to reload the viewModel
-    @Binding
-    var activePurchases: [PurchaseInformation]
+    @ObservedObject
+    private var customerInfoViewModel: CustomerCenterViewModel
 
-    /// Used to reload the viewModel
-    @Binding
-    var nonSubscriptionPurchases: [PurchaseInformation]
-
-    init(screen: CustomerCenterConfigData.Screen,
-         activePurchases: Binding<[PurchaseInformation]>,
-         nonSubscriptionPurchases: Binding<[PurchaseInformation]>,
-         originalAppUserId: String,
-         originalPurchaseDate: Date?,
-         shouldShowSeeAllPurchases: Bool,
-         purchasesProvider: CustomerCenterPurchasesType,
-         actionWrapper: CustomerCenterActionWrapper) {
+    init(
+        customerInfoViewModel: CustomerCenterViewModel,
+        screen: CustomerCenterConfigData.Screen,
+        originalAppUserId: String,
+        originalPurchaseDate: Date?,
+        shouldShowSeeAllPurchases: Bool,
+        purchasesProvider: CustomerCenterPurchasesType,
+        actionWrapper: CustomerCenterActionWrapper
+    ) {
         let viewModel = RelevantPurchasesListViewModel(
             screen: screen,
             actionWrapper: actionWrapper,
-            activePurchases: activePurchases.wrappedValue,
-            nonSubscriptionPurchases: nonSubscriptionPurchases.wrappedValue,
             originalAppUserId: originalAppUserId,
             originalPurchaseDate: originalPurchaseDate,
             shouldShowSeeAllPurchases: shouldShowSeeAllPurchases,
@@ -65,20 +59,17 @@ struct RelevantPurchasesListView: View {
         )
 
         self.init(
-            activePurchases: activePurchases,
-            nonSubscriptionPurchases: nonSubscriptionPurchases,
+            customerInfoViewModel: customerInfoViewModel,
             viewModel: viewModel
         )
     }
 
     // Used for Previews
     fileprivate init(
-        activePurchases: Binding<[PurchaseInformation]> = .constant([]),
-        nonSubscriptionPurchases: Binding<[PurchaseInformation]> = .constant([]),
+        customerInfoViewModel: CustomerCenterViewModel,
         viewModel: RelevantPurchasesListViewModel
     ) {
-        self._activePurchases = activePurchases
-        self._nonSubscriptionPurchases = nonSubscriptionPurchases
+        self.customerInfoViewModel = customerInfoViewModel
         self._viewModel = .init(wrappedValue: viewModel)
     }
 
@@ -93,6 +84,7 @@ struct RelevantPurchasesListView: View {
                 usesNavigationStack: navigationOptions.usesNavigationStack
             ) { _ in
                 SubscriptionDetailView(
+                    customerInfoViewModel: customerInfoViewModel,
                     screen: viewModel.screen,
                     purchaseInformation: viewModel.purchaseInformation,
                     showPurchaseHistory: false,
@@ -114,9 +106,6 @@ struct RelevantPurchasesListView: View {
                 .environment(\.localization, localization)
                 .environment(\.navigationOptions, navigationOptions)
             }
-            .onChangeOf(activePurchases) { _ in
-                viewModel.updatePurchases(activePurchases)
-            }
             .overlay {
                 RestorePurchasesAlert(
                     isPresented: self.$viewModel.showRestoreAlert,
@@ -129,7 +118,7 @@ struct RelevantPurchasesListView: View {
     var content: some View {
         ScrollViewWithOSBackground {
             LazyVStack(spacing: 0) {
-                if viewModel.isEmpty {
+                if !customerInfoViewModel.hasPurchases {
                     CompatibilityContentUnavailableView(
                         self.viewModel.screen.title,
                         systemImage: "exclamationmark.triangle.fill",
@@ -149,9 +138,9 @@ struct RelevantPurchasesListView: View {
                     )
                     .padding(.bottom, 32)
                 } else {
-                    if !viewModel.activeSubscriptionPurchases.isEmpty {
+                    if !customerInfoViewModel.activeSubscriptionPurchases.isEmpty {
                         PurchasesInformationSection(
-                            items: viewModel.activeSubscriptionPurchases,
+                            items: customerInfoViewModel.activeSubscriptionPurchases,
                             localization: localization
                         ) {
                             viewModel.purchaseInformation = $0
@@ -159,7 +148,7 @@ struct RelevantPurchasesListView: View {
                         .tint(colorScheme == .dark ? .white : .black)
                     }
 
-                    if !viewModel.activeNonSubscriptionPurchases.isEmpty {
+                    if !customerInfoViewModel.activeNonSubscriptionPurchases.isEmpty {
                         PurchasesInformationSection(
                             items: activeNonSubscriptionPurchasesToShow,
                             localization: localization
@@ -190,7 +179,8 @@ struct RelevantPurchasesListView: View {
     }
 
     private var activeNonSubscriptionPurchasesToShow: [PurchaseInformation] {
-        Array(viewModel.activeNonSubscriptionPurchases.prefix(RelevantPurchasesListViewModel.maxNonSubscriptionsToShow))
+        Array(customerInfoViewModel.activeNonSubscriptionPurchases
+            .prefix(RelevantPurchasesListViewModel.maxNonSubscriptionsToShow))
     }
 
     private var seeAllSubscriptionsButton: some View {
@@ -254,14 +244,14 @@ struct RelevantPurchasesListView: View {
     }
 }
 
-#if DEBUG
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-struct ActiveSubscriptionsListView_Previews: PreviewProvider {
+ #if DEBUG
+ @available(iOS 15.0, *)
+ @available(macOS, unavailable)
+ @available(tvOS, unavailable)
+ @available(watchOS, unavailable)
+ struct RelevantPurchasesListView_Previews: PreviewProvider {
 
-    // swiftlint:disable force_unwrapping
+     // swiftlint:disable force_unwrapping
     static var previews: some View {
         let purchases = [
             PurchaseInformation.yearlyExpiring(store: .amazon, renewalDate: Date()),
@@ -281,10 +271,14 @@ struct ActiveSubscriptionsListView_Previews: PreviewProvider {
         ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
             CompatibilityNavigationStack {
                 RelevantPurchasesListView(
+                    customerInfoViewModel: CustomerCenterViewModel(
+                        activeSubscriptionPurchases: purchases,
+                        activeNonSubscriptionPurchases: [],
+                        configuration: .default
+                    ),
                     viewModel: RelevantPurchasesListViewModel(
                         screen: warningOffMock.screens[.management]!,
                         originalAppUserId: "originalAppUserId",
-                        activePurchases: purchases,
                         shouldShowSeeAllPurchases: true
                     )
                 )
@@ -295,6 +289,11 @@ struct ActiveSubscriptionsListView_Previews: PreviewProvider {
 
             CompatibilityNavigationStack {
                 RelevantPurchasesListView(
+                    customerInfoViewModel: CustomerCenterViewModel(
+                        activeSubscriptionPurchases: purchases,
+                        activeNonSubscriptionPurchases: [],
+                        configuration: .default
+                    ),
                     viewModel: RelevantPurchasesListViewModel(
                         screen: warningOffMock.screens[.management]!,
                         originalAppUserId: "originalAppUserId",
@@ -310,6 +309,11 @@ struct ActiveSubscriptionsListView_Previews: PreviewProvider {
 
             CompatibilityNavigationStack {
                 RelevantPurchasesListView(
+                    customerInfoViewModel: CustomerCenterViewModel(
+                        activeSubscriptionPurchases: [],
+                        activeNonSubscriptionPurchases: [],
+                        configuration: .default
+                    ),
                     viewModel: RelevantPurchasesListViewModel(
                         screen: warningOnMock.screens[.management]!,
                         originalAppUserId: "originalAppUserId",
@@ -326,8 +330,8 @@ struct ActiveSubscriptionsListView_Previews: PreviewProvider {
         .environment(\.appearance, CustomerCenterConfigData.default.appearance)
     }
 
-}
+ }
 
-#endif
+ #endif
 
 #endif

@@ -36,6 +36,9 @@ struct FeedbackSurveyView: View {
     @Environment(\.customerCenterPresentationMode)
     private var mode: CustomerCenterPresentationMode
 
+    @Environment(\.navigationOptions)
+    var navigationOptions
+
     @StateObject
     private var viewModel: FeedbackSurveyViewModel
 
@@ -56,43 +59,48 @@ struct FeedbackSurveyView: View {
         self._isPresented = isPresented
     }
 
-    var body: some View {
-        ZStack {
-            List {
-                FeedbackSurveyButtonsView(
-                    options: self.viewModel.feedbackSurveyData.configuration.options,
-                    onOptionSelected: { option in
-                        await self.viewModel.handleAction(
-                            for: option,
-                            darkMode: self.colorScheme == .dark,
-                            displayMode: self.mode,
-                            dismissView: self.dismissView
-                        )
-                    },
-                    loadingOption: self.$viewModel.loadingOption
+    @ViewBuilder
+    var content: some View {
+        FeedbackSurveyButtonsView(
+            options: self.viewModel.feedbackSurveyData.configuration.options,
+            onOptionSelected: { option in
+                await self.viewModel.handleAction(
+                    for: option,
+                    darkMode: self.colorScheme == .dark,
+                    displayMode: self.mode,
+                    dismissView: self.dismissView
                 )
-            }
-            .sheet(
-                item: self.$viewModel.promotionalOfferData,
-                content: { promotionalOfferData in
-                    PromotionalOfferView(
-                        promotionalOffer: promotionalOfferData.promotionalOffer,
-                        product: promotionalOfferData.product,
-                        promoOfferDetails: promotionalOfferData.promoOfferDetails,
-                        purchasesProvider: self.viewModel.purchasesProvider,
-                        onDismissPromotionalOfferView: { userAction in
-                            Task(priority: .userInitiated) {
-                                await viewModel.handleDismissPromotionalOfferView(
-                                    userAction,
-                                    dismissView: self.dismissView
-                                )
-                            }
+            },
+            loadingOption: self.$viewModel.loadingOption
+        )
+    }
+
+    var body: some View {
+        CompatibilityNavigationStack {
+            List {
+                content
+                    .compatibleNavigation(
+                        item: $viewModel.promotionalOfferData,
+                        usesNavigationStack: navigationOptions.usesNavigationStack) { promotionalOfferData in
+                            PromotionalOfferView(
+                                promotionalOffer: promotionalOfferData.promotionalOffer,
+                                product: promotionalOfferData.product,
+                                promoOfferDetails: promotionalOfferData.promoOfferDetails,
+                                purchasesProvider: self.viewModel.purchasesProvider,
+                                onDismissPromotionalOfferView: { userAction in
+                                    Task(priority: .userInitiated) {
+                                        await viewModel.handleDismissPromotionalOfferView(
+                                            userAction,
+                                            dismissView: self.dismissView
+                                        )
+                                    }
+                                }
+                            )
+                            .interactiveDismissDisabled()
+                            .environment(\.appearance, appearance)
+                            .environment(\.localization, localization)
                         }
-                    )
-                    .interactiveDismissDisabled()
-                    .environment(\.appearance, appearance)
-                    .environment(\.localization, localization)
-                })
+            }
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(content: {
@@ -125,29 +133,29 @@ struct FeedbackSurveyButtonsView: View {
     var loadingOption: String?
 
     var body: some View {
-        ForEach(options, id: \.id) { option in
-            AsyncButton {
-                await self.onOptionSelected(option)
-            } label: {
-                if self.loadingOption == option.id {
-                    TintedProgressView()
-                } else {
-                    Text(option.title)
+        LazyVStack(spacing: 0) {
+            ForEach(options, id: \.id) { option in
+                AsyncButton {
+                    await self.onOptionSelected(option)
+                } label: {
+                    if self.loadingOption == option.id {
+                        TintedProgressView()
+                    } else {
+                        Text(option.title)
+                    }
                 }
+                .disabled(self.loadingOption != nil)
             }
-            .disabled(self.loadingOption != nil)
         }
-
     }
-
 }
 
 #if DEBUG
- @available(iOS 15.0, *)
- @available(macOS, unavailable)
- @available(tvOS, unavailable)
- @available(watchOS, unavailable)
- struct FeedbackSurveyView_Previews: PreviewProvider {
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+struct FeedbackSurveyView_Previews: PreviewProvider {
 
     static let title = "really long tile that should go to multiple lines but its getting clipped and now it does not"
 
@@ -184,7 +192,7 @@ struct FeedbackSurveyButtonsView: View {
         }
     }
 
- }
+}
 
 #endif
 
