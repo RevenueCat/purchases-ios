@@ -67,7 +67,7 @@ struct VirtualCurrencyBalanceListRow: View {
     }
 }
 
-#Preview {
+#Preview("VirtualCurrencyBalanceListRow") {
     if #available(iOS 15.0, *) {
         List {
             VirtualCurrencyBalanceListRow(

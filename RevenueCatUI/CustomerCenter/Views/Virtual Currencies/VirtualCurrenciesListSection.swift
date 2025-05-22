@@ -88,6 +88,8 @@ struct VirtualCurrenciesListSection: View {
                         )
                     }
                 }
+            } header: {
+                Text(localization[.virtualCurrencyBalancesScreenHeader])
             }
         }
     }
