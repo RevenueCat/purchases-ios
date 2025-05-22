@@ -242,6 +242,11 @@ private extension Array<CustomerCenterConfigData.HelpPath> {
         }
 
         return filter {
+            // we don't show missing purchase when a purchase is selected
+            if $0.type == .missingPurchase {
+                return false
+            }
+
             let isNonAppStorePurchase = purchaseInformation.store != .appStore
             let isAppStoreOnlyPath = $0.type.isAppStoreOnly
 

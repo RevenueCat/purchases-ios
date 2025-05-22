@@ -127,23 +127,15 @@ struct SubscriptionDetailView: View {
         ScrollViewWithOSBackground {
             LazyVStack(spacing: 0) {
                 if let purchaseInformation = self.viewModel.purchaseInformation {
-                    ScrollViewSection(title: sectionTitle) {
-                        PurchaseInformationCardView(
-                            purchaseInformation: purchaseInformation,
-                            localization: localization,
-                            refundStatus: viewModel.refundRequestStatus,
-                            showChevron: false
-                        )
-                        .cornerRadius(10)
-                        .padding(.horizontal)
-                        .padding(.top, 16)
-                    }
-
-                    if viewModel.showPurchaseHistory {
-                        seeAllSubscriptionsButton
-                            .padding(.top, 16)
-                    }
-
+                    PurchaseInformationCardView(
+                        purchaseInformation: purchaseInformation,
+                        localization: localization,
+                        refundStatus: viewModel.refundRequestStatus,
+                        showChevron: false
+                    )
+                    .cornerRadius(10)
+                    .padding(.horizontal)
+                    .padding(.vertical, 32)
                 } else {
                     let fallbackDescription = localization[.tryCheckRestore]
 
@@ -158,12 +150,15 @@ struct SubscriptionDetailView: View {
                                       : UIColor.secondarySystemBackground))
                     .cornerRadius(10)
                     .padding(.horizontal)
+                    .padding(.vertical, 32)
                 }
 
-                ScrollViewSection(title: localization[.actionsSectionTitle]) {
-                    ActiveSubscriptionButtonsView(viewModel: viewModel)
+                ActiveSubscriptionButtonsView(viewModel: viewModel)
+                    .padding(.horizontal)
+
+                if viewModel.showPurchaseHistory {
+                    seeAllSubscriptionsButton
                         .padding(.top, 16)
-                        .padding(.horizontal)
                 }
 
                 if let url = support?.supportURL(
@@ -225,15 +220,6 @@ struct SubscriptionDetailView: View {
         }
         .tint(colorScheme == .dark ? .white : .black)
     }
-
-    var sectionTitle: String {
-        if viewModel.purchaseInformation?.expirationDate == nil
-            && viewModel.purchaseInformation?.renewalDate == nil {
-            return localization[.purchasesSectionTitle]
-        } else {
-            return localization[.subscriptionsSectionTitle]
-        }
-    }
 }
 
 #if DEBUG
@@ -263,7 +249,7 @@ struct SubscriptionDetailView_Previews: PreviewProvider {
                 SubscriptionDetailView(
                     viewModel: SubscriptionDetailViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
-                        showPurchaseHistory: false,
+                        showPurchaseHistory: true,
                         purchaseInformation: .free
                     )
                 )
@@ -287,7 +273,7 @@ struct SubscriptionDetailView_Previews: PreviewProvider {
                 SubscriptionDetailView(
                     viewModel: SubscriptionDetailViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
-                        showPurchaseHistory: false,
+                        showPurchaseHistory: true,
                         purchaseInformation: nil
                     )
                 )
