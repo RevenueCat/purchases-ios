@@ -26,23 +26,6 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
 
     static let maxNonSubscriptionsToShow = 2
 
-    @Published
-    private(set) var activeSubscriptionPurchases: [PurchaseInformation] = []
-
-    @Published
-    private(set) var activeNonSubscriptionPurchases: [PurchaseInformation] = []
-
-    var isEmpty: Bool {
-        let hasVirtualCurrencyBalances = virtualCurrencies?.filter {
-            $0.value.balance > 0
-        }
-            .count ?? 0 > 0
-
-        return activeSubscriptionPurchases.isEmpty
-            && activeNonSubscriptionPurchases.isEmpty
-            && !hasVirtualCurrencyBalances
-    }
-
     let originalAppUserId: String
     let originalPurchaseDate: Date?
     let shouldShowSeeAllPurchases: Bool
@@ -50,8 +33,6 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
     init(
         screen: CustomerCenterConfigData.Screen,
         actionWrapper: CustomerCenterActionWrapper,
-        activePurchases: [PurchaseInformation] = [],
-        nonSubscriptionPurchases: [PurchaseInformation] = [],
         virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]? = nil,
         originalAppUserId: String,
         originalPurchaseDate: Date?,
@@ -59,8 +40,6 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
         refundRequestStatus: RefundRequestStatus? = nil,
         purchasesProvider: CustomerCenterPurchasesType,
         loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
-            self.activeSubscriptionPurchases = activePurchases
-            self.activeNonSubscriptionPurchases = nonSubscriptionPurchases
             self.originalAppUserId = originalAppUserId
             self.originalPurchaseDate = originalPurchaseDate
             self.shouldShowSeeAllPurchases = shouldShowSeeAllPurchases
@@ -89,20 +68,12 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
         self.init(
             screen: screen,
             actionWrapper: CustomerCenterActionWrapper(),
-            activePurchases: activePurchases,
-            nonSubscriptionPurchases: nonSubscriptionPurchases,
             virtualCurrencies: virtualCurrencies,
             originalAppUserId: originalAppUserId,
             originalPurchaseDate: originalPurchaseDate,
             shouldShowSeeAllPurchases: shouldShowSeeAllPurchases,
             purchasesProvider: MockCustomerCenterPurchases()
         )
-    }
-
-    func updatePurchases(_ activeSubscriptionPurchases: [PurchaseInformation]) {
-        self.activeSubscriptionPurchases = activeSubscriptionPurchases
-        // go back to the list
-        self.purchaseInformation = nil
     }
 }
 

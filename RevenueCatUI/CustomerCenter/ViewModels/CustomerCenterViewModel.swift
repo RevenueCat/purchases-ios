@@ -137,15 +137,19 @@ import RevenueCat
         self.customerInfo = nil
     }
 
-    convenience init(uiPreviewPurchaseProvider: CustomerCenterPurchasesType) {
-        self.init(actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil),
-                  purchasesProvider: uiPreviewPurchaseProvider)
+    convenience init(
+        uiPreviewPurchaseProvider: CustomerCenterPurchasesType
+    ) {
+        self.init(
+            actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil),
+            purchasesProvider: uiPreviewPurchaseProvider
+        )
     }
 
     #if DEBUG
 
     convenience init(
-        purchaseInformation: PurchaseInformation,
+        purchaseInformation: PurchaseInformation?,
         configuration: CustomerCenterConfigData
     ) {
         self.init(actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil))

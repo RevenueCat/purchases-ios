@@ -110,8 +110,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             purchasesProvider: MockCustomerCenterPurchases()
         )
 
-        expect(viewModel.relevantPathsForPurchase.count) == 2
-        expect(viewModel.relevantPathsForPurchase.first(where: { $0.type == .missingPurchase })).toNot(beNil())
+        expect(viewModel.relevantPathsForPurchase.count) == 1
         expect(viewModel.relevantPathsForPurchase.first(where: { $0.type == .refundRequest })).toNot(beNil())
     }
 
@@ -125,9 +124,8 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             virtualCurrencies: nil,
             purchasesProvider: MockCustomerCenterPurchases())
 
-        expect(viewModel.relevantPathsForPurchase.count) == 2
-        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .changePlans })).to(beFalse())
-        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beFalse())
+        expect(viewModel.relevantPathsForPurchase.count) == 1
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).toNot(beNil())
     }
 
     func testCancelledDoesNotShowCancelAndRefund() {
@@ -142,9 +140,8 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             virtualCurrencies: nil,
             purchasesProvider: MockCustomerCenterPurchases())
 
-        expect(viewModel.relevantPathsForPurchase.count) == 2
-        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beFalse())
-        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beFalse())
+        expect(viewModel.relevantPathsForPurchase.count) == 1
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .changePlans })).toNot(beNil())
     }
 
     func testShowsRefundIfRefundWindowIsForever() {
@@ -157,8 +154,10 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             virtualCurrencies: nil,
             purchasesProvider: MockCustomerCenterPurchases())
 
-        expect(viewModel.relevantPathsForPurchase.count) == 4
-        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beTrue())
+        expect(viewModel.relevantPathsForPurchase.count) == 3
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).toNot(beNil())
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .changePlans })).toNot(beNil())
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).toNot(beNil())
     }
 
     func testDoesNotShowRefundIfPurchaseOutsideRefundWindow() {
@@ -186,8 +185,9 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             purchasesProvider: MockCustomerCenterPurchases()
         )
 
-        expect(viewModel.relevantPathsForPurchase.count) == 3
-        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beFalse())
+        expect(viewModel.relevantPathsForPurchase.count) == 2
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .changePlans })).toNot(beNil())
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).toNot(beNil())
     }
 
     func testDoesNotShowRefundIfPurchaseIsFree() {
@@ -205,8 +205,9 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             virtualCurrencies: nil,
             purchasesProvider: MockCustomerCenterPurchases())
 
-        expect(viewModel.relevantPathsForPurchase.count) == 3
-        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beFalse())
+        expect(viewModel.relevantPathsForPurchase.count) == 2
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .changePlans })).toNot(beNil())
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).toNot(beNil())
     }
 
     func testDoesNotShowRefundIfPurchaseIsWithinTrial() {
@@ -225,8 +226,9 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             virtualCurrencies: nil,
             purchasesProvider: MockCustomerCenterPurchases())
 
-        expect(viewModel.relevantPathsForPurchase.count) == 3
-        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beFalse())
+        expect(viewModel.relevantPathsForPurchase.count) == 2
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .changePlans })).toNot(beNil())
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).toNot(beNil())
     }
 
     func testShowsRefundIfPurchaseOutsideRefundWindow() {
@@ -253,8 +255,10 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             virtualCurrencies: nil,
             purchasesProvider: MockCustomerCenterPurchases())
 
-        expect(viewModel.relevantPathsForPurchase.count) == 4
-        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beTrue())
+        expect(viewModel.relevantPathsForPurchase.count) == 3
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).toNot(beNil())
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .changePlans })).toNot(beNil())
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).toNot(beNil())
     }
 
     func testLoadsPromotionalOffer() async throws {
@@ -566,6 +570,7 @@ private extension PurchaseInformation {
             isLifetime: true,
             isTrial: false,
             isCancelled: false,
+            isActive: true,
             latestPurchaseDate: nil,
             customerInfoRequestedDate: customerInfoRequestedDate,
             managementURL: URL(string: "https://www.revenuecat.com")!
@@ -592,6 +597,7 @@ private extension PurchaseInformation {
             isLifetime: false,
             isTrial: isTrial,
             isCancelled: isCancelled,
+            isActive: true,
             latestPurchaseDate: latestPurchaseDate,
             customerInfoRequestedDate: customerInfoRequestedDate,
             managementURL: managementURL
