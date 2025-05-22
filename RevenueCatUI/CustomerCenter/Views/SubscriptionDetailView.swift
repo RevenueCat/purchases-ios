@@ -228,14 +228,9 @@ struct SubscriptionDetailView: View {
             }
         } label: {
             CompatibilityLabeledContent(localization[.contactSupport])
-                .padding(.horizontal)
-                .padding(.vertical, 12)
         }
-        .background(Color(colorScheme == .light
-                          ? UIColor.systemBackground
-                          : UIColor.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
         .padding(.horizontal)
+        .buttonStyle(.customerCenterScrollView(for: colorScheme))
     }
 
     private var seeAllSubscriptionsButton: some View {
@@ -245,14 +240,9 @@ struct SubscriptionDetailView: View {
             CompatibilityLabeledContent(localization[.seeAllPurchases]) {
                 Image(systemName: "chevron.forward")
             }
-            .padding(.horizontal)
-            .padding(.vertical, 12)
-            .background(Color(colorScheme == .light
-                              ? UIColor.systemBackground
-                              : UIColor.secondarySystemBackground))
-            .cornerRadius(10)
-            .padding(.horizontal)
         }
+        .padding(.horizontal)
+        .buttonStyle(.customerCenterScrollView(for: colorScheme))
         .tint(colorScheme == .dark ? .white : .black)
     }
 }
