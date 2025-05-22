@@ -230,7 +230,7 @@ extension StoreKitStrings: LogMessage {
 
         case .sk2_sync_purchases_no_transaction_or_apptransaction_found:
             return "syncPurchases was called, but we were unable to fetch any transactions or an AppTransaction " +
-            "from StoreKit 2. This seems to occur occassionally in sandbox."
+            "from StoreKit 2."
         }
     }
 
