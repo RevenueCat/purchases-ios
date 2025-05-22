@@ -36,13 +36,18 @@ struct NoSubscriptionsView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
-    @EnvironmentObject private var customerCenterViewModel: CustomerCenterViewModel
+    @ObservedObject
+    private var customerCenterViewModel: CustomerCenterViewModel
 
     @State
     private var showRestoreAlert: Bool = false
 
-    init(configuration: CustomerCenterConfigData,
-         actionWrapper: CustomerCenterActionWrapper) {
+    init(
+        customerCenterViewModel: CustomerCenterViewModel,
+        configuration: CustomerCenterConfigData,
+        actionWrapper: CustomerCenterActionWrapper)
+    {
+        self.customerCenterViewModel = customerCenterViewModel
         self.configuration = configuration
         self.actionWrapper = actionWrapper
     }
@@ -72,7 +77,8 @@ struct NoSubscriptionsView: View {
         .overlay {
             RestorePurchasesAlert(
                 isPresented: $showRestoreAlert,
-                actionWrapper: actionWrapper
+                actionWrapper: actionWrapper,
+                customerCenterViewModel: customerCenterViewModel
             )
         }
     }
@@ -88,8 +94,11 @@ struct NoSubscriptionsView: View {
 struct NoSubscriptionsView_Previews: PreviewProvider {
 
     static var previews: some View {
-        NoSubscriptionsView(configuration: CustomerCenterConfigData.default,
-                            actionWrapper: CustomerCenterActionWrapper())
+        NoSubscriptionsView(
+            customerCenterViewModel: CustomerCenterViewModel(uiPreviewPurchaseProvider: MockCustomerCenterPurchases()),
+            configuration: CustomerCenterConfigData.default,
+            actionWrapper: CustomerCenterActionWrapper()
+        )
     }
 
 }

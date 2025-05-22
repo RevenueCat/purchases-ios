@@ -34,8 +34,6 @@ struct RelevantPurchasesListView: View {
     @Environment(\.navigationOptions)
     var navigationOptions
 
-    @EnvironmentObject private var customerCenterViewModel: CustomerCenterViewModel
-
     @StateObject
     private var viewModel: RelevantPurchasesListViewModel
 
@@ -96,7 +94,6 @@ struct RelevantPurchasesListView: View {
                 .environment(\.appearance, appearance)
                 .environment(\.localization, localization)
                 .environment(\.navigationOptions, navigationOptions)
-                .environmentObject(customerCenterViewModel)
             }
             .compatibleNavigation(
                 isPresented: $viewModel.showAllPurchases,
@@ -108,14 +105,13 @@ struct RelevantPurchasesListView: View {
                 .environment(\.appearance, appearance)
                 .environment(\.localization, localization)
                 .environment(\.navigationOptions, navigationOptions)
-                .environmentObject(customerCenterViewModel)
             }
             .overlay {
                 RestorePurchasesAlert(
                     isPresented: self.$viewModel.showRestoreAlert,
-                    actionWrapper: self.viewModel.actionWrapper
+                    actionWrapper: self.viewModel.actionWrapper,
+                    customerCenterViewModel: customerInfoViewModel
                 )
-                .environmentObject(customerCenterViewModel)
             }
     }
 
@@ -334,7 +330,6 @@ struct RelevantPurchasesListView: View {
         }
         .environment(\.localization, CustomerCenterConfigData.default.localization)
         .environment(\.appearance, CustomerCenterConfigData.default.appearance)
-        .environmentObject(CustomerCenterViewModel())
     }
 
  }

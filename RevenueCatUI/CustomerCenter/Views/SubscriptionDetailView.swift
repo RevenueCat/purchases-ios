@@ -210,7 +210,8 @@ struct SubscriptionDetailView: View {
         .overlay {
             RestorePurchasesAlert(
                 isPresented: self.$viewModel.showRestoreAlert,
-                actionWrapper: self.viewModel.actionWrapper
+                actionWrapper: self.viewModel.actionWrapper,
+                customerCenterViewModel: customerCenterViewModel
             )
             .environmentObject(customerCenterViewModel)
         }
@@ -352,7 +353,7 @@ struct SubscriptionDetailView: View {
         }
         .environment(\.localization, CustomerCenterConfigData.default.localization)
         .environment(\.appearance, CustomerCenterConfigData.default.appearance)
-        .environmentObject(CustomerCenterViewModel())
+        .environmentObject(CustomerCenterViewModel(uiPreviewPurchaseProvider: MockCustomerCenterPurchases()))
     }
 
  }
