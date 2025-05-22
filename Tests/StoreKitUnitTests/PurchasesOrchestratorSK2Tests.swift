@@ -909,6 +909,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.customerInfoManager.invokedCachedCustomerInfoCount) == 1
         expect(self.customerInfoManager.invokedCustomerInfo).to(beTrue())
         expect(self.customerInfoManager.invokedCustomerInfoCount).to(equal(1))
+        expect(self.customerInfoManager.invokedCustomerInfoParameters?.fetchPolicy).to(equal(.fetchCurrent))
 
         expect(customerInfo) == mockCustomerInfo
     }
@@ -931,6 +932,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.customerInfoManager.invokedCachedCustomerInfoCount) == 1
         expect(self.customerInfoManager.invokedCustomerInfo).to(beTrue())
         expect(self.customerInfoManager.invokedCustomerInfoCount).to(equal(1))
+        expect(self.customerInfoManager.invokedCustomerInfoParameters?.fetchPolicy).to(equal(.fetchCurrent))
 
         expect(customerInfo) == CustomerInfo.missingOriginalApplicationVersion
     }
@@ -953,6 +955,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.customerInfoManager.invokedCachedCustomerInfoCount) == 1
         expect(self.customerInfoManager.invokedCustomerInfo).to(beTrue())
         expect(self.customerInfoManager.invokedCustomerInfoCount).to(equal(1))
+        expect(self.customerInfoManager.invokedCustomerInfoParameters?.fetchPolicy).to(equal(.fetchCurrent))
 
         expect(customerInfo) == CustomerInfo.missingOriginalPurchaseDate
     }
@@ -986,6 +989,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.customerInfoManager.invokedCachedCustomerInfoCount) == 1
         expect(self.customerInfoManager.invokedCustomerInfo).to(beTrue())
         expect(self.customerInfoManager.invokedCustomerInfoCount).to(equal(1))
+        expect(self.customerInfoManager.invokedCustomerInfoParameters?.fetchPolicy).to(equal(.fetchCurrent))
     }
 
     func testSyncPurchasesCallsSuccessDelegateMethod() async throws {
