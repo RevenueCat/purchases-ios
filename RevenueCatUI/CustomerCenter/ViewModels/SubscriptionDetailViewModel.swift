@@ -28,8 +28,6 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
 
     let showPurchaseHistory: Bool
 
-    var allowsMissingPurchaseAction: Bool = true
-
     var shouldShowContactSupport: Bool {
         purchaseInformation?.store != .appStore
     }
@@ -37,6 +35,8 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
     override var allowMissingPurchase: Bool {
         allowsMissingPurchaseAction
     }
+
+    private var allowsMissingPurchaseAction: Bool = true
 
     init(
         screen: CustomerCenterConfigData.Screen,
