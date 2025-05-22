@@ -114,7 +114,6 @@ public struct CustomerCenterView: View {
             .task {
                 await loadInformationIfNeeded()
             }
-            .environmentObject(self.viewModel)
             .onAppear {
 #if DEBUG
                 guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else { return }
@@ -203,6 +202,7 @@ private extension CustomerCenterView {
             } else {
                 // Fallback with a restore button
                 NoSubscriptionsView(
+                    customerCenterViewModel: viewModel,
                     configuration: configuration,
                     actionWrapper: self.viewModel.actionWrapper
                 )
