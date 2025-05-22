@@ -41,7 +41,7 @@ struct PurchaseInformationCardView: View {
         storeTitle: String,
         paidPrice: String,
         badge: PurchaseInformationCardView.Badge? = nil,
-        additionalInfoSubtitle: String? = nil,
+        additionalInfo: String? = nil,
         subtitle: String? = nil,
         showChevron: Bool = true
     ) {
@@ -49,7 +49,7 @@ struct PurchaseInformationCardView: View {
         self.paidPrice = paidPrice
         self.subtitle = subtitle
         self.badge = badge
-        self.additionalInfo = additionalInfoSubtitle
+        self.additionalInfo = additionalInfo
         self.storeTitle = storeTitle
         self.showChevron = showChevron
     }
@@ -154,7 +154,7 @@ struct PurchaseInformationCardView: View {
                               : UIColor.secondarySystemBackground))
 
             if let additionalInfo {
-                Text(additionalInfoSubtitle)
+                Text(additionalInfo)
                     .font(.caption)
                     .foregroundStyle(.primary)
                     .padding(.bottom, 4)
@@ -253,7 +253,7 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                     storeTitle: Store.playStore.localizationKey.rawValue,
                     paidPrice: "$19.99",
                     badge: .active("Active"),
-                    additionalInfoSubtitle: "Apple has received it!",
+                    additionalInfo: "Apple has received it!",
                     subtitle: "Renews 24 May for $19.99"
                 )
                 .cornerRadius(10)
