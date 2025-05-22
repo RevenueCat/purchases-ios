@@ -98,7 +98,7 @@ struct ImageComponentView: View {
         _ image: Image,
         _ size: CGSize,
         maxWidth: CGFloat,
-        with style: ImageComponentStyle,
+        with style: ImageComponentStyle
     ) -> some View {
         image
             .fitToAspect(
