@@ -37,8 +37,6 @@ struct SubscriptionDetailView: View {
     @Environment(\.supportInformation)
     private var support
 
-    @EnvironmentObject private var customerCenterViewModel: CustomerCenterViewModel
-
     @StateObject
     private var viewModel: SubscriptionDetailViewModel
 
@@ -211,9 +209,8 @@ struct SubscriptionDetailView: View {
             RestorePurchasesAlert(
                 isPresented: self.$viewModel.showRestoreAlert,
                 actionWrapper: self.viewModel.actionWrapper,
-                customerCenterViewModel: customerCenterViewModel
+                customerCenterViewModel: customerInfoViewModel
             )
-            .environmentObject(customerCenterViewModel)
         }
         .applyIf(self.viewModel.screen.type == .management, apply: {
             $0.navigationTitle(self.viewModel.screen.title)
@@ -353,7 +350,6 @@ struct SubscriptionDetailView: View {
         }
         .environment(\.localization, CustomerCenterConfigData.default.localization)
         .environment(\.appearance, CustomerCenterConfigData.default.appearance)
-        .environmentObject(CustomerCenterViewModel(uiPreviewPurchaseProvider: MockCustomerCenterPurchases()))
     }
 
  }
