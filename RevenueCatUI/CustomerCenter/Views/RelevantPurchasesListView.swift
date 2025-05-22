@@ -109,7 +109,8 @@ struct RelevantPurchasesListView: View {
             .overlay {
                 RestorePurchasesAlert(
                     isPresented: self.$viewModel.showRestoreAlert,
-                    actionWrapper: self.viewModel.actionWrapper
+                    actionWrapper: self.viewModel.actionWrapper,
+                    customerCenterViewModel: customerInfoViewModel
                 )
             }
     }
