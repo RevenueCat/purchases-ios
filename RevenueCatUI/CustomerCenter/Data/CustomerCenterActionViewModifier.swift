@@ -76,39 +76,39 @@ struct CustomerCenterActionViewModifier: ViewModifier {
     // Set up direct binding to the state variables
     @MainActor
     private func setUpActionWrappers() {
-        actionWrapper.setRestoreStarted = {
+        actionWrapper.onRestoreStarted {
             restoreStarted = UniqueWrapper(value: ())
         }
 
-        actionWrapper.setRestoreFailed = { error in
-            restoreFailed = UniqueWrapper(value: error as NSError)
+        actionWrapper.onRestoreFailed { error in
+            restoreFailed = UniqueWrapper(value: error)
         }
 
-        actionWrapper.setRestoreCompleted = { info in
+        actionWrapper.onRestoreCompleted { info in
             restoreCompleted = UniqueWrapper(value: info)
         }
 
-        actionWrapper.setShowingManageSubscriptions = {
+        actionWrapper.onShowingManageSubscriptions {
             showingManageSubscriptions = UniqueWrapper(value: ())
         }
 
-        actionWrapper.setRefundRequestStarted = { productId in
+        actionWrapper.onRefundRequestStarted { productId in
             refundRequestStarted = UniqueWrapper(value: productId)
         }
 
-        actionWrapper.setRefundRequestCompleted = { productId, status in
+        actionWrapper.onRefundRequestCompleted { productId, status in
             refundRequestCompleted = UniqueWrapper(value: (productId, status))
         }
 
-        actionWrapper.setFeedbackSurveyCompleted = { reason in
+        actionWrapper.onFeedbackSurveyCompleted { reason in
             feedbackSurveyCompleted = UniqueWrapper(value: reason)
         }
 
-        actionWrapper.setManagementOptionSelected = { action in
+        actionWrapper.onManagementOptionSelected { action in
             managementOptionSelected = UniqueWrapper(value: action)
         }
 
-        actionWrapper.setPromotionalOfferSuccess = {
+        actionWrapper.onPromotionalOfferSuccess {
             promotionalOfferSuccess = UniqueWrapper(value: ())
         }
     }

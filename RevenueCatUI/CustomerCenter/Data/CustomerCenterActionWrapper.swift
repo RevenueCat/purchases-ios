@@ -62,57 +62,96 @@ internal enum CustomerCenterInternalAction {
 @MainActor
 final class CustomerCenterActionWrapper {
 
-    // Direct setter closures that will be set by the preference connector
-    var setRestoreStarted: () -> Void = {}
-    var setRestoreFailed: (Error) -> Void = { _ in }
-    var setRestoreCompleted: (CustomerInfo) -> Void = { _ in }
-    var setShowingManageSubscriptions: () -> Void = {}
-    var setRefundRequestStarted: (String) -> Void = { _ in }
-    var setRefundRequestCompleted: (String, RefundRequestStatus) -> Void = { _, _ in }
-    var setFeedbackSurveyCompleted: (String) -> Void = { _ in }
-    var setManagementOptionSelected: (CustomerCenterActionable) -> Void = { _ in }
-    var setPromotionalOfferSuccess: () -> Void = { }
-
-    // The handler for legacy actions
     private let legacyActionHandler: DeprecatedCustomerCenterActionHandler?
+
+    private var restoreStartedCallbacks: [() -> Void] = []
+    private var restoreFailedCallbacks: [(NSError) -> Void] = []
+    private var restoreCompletedCallbacks: [(CustomerInfo) -> Void] = []
+    private var showingManageSubscriptionsCallbacks: [() -> Void] = []
+    private var refundRequestStartedCallbacks: [(String) -> Void] = []
+    private var refundRequestCompletedCallbacks: [(String, RefundRequestStatus) -> Void] = []
+    private var feedbackSurveyCompletedCallbacks: [(String) -> Void] = []
+    private var managementOptionSelectedCallbacks: [(CustomerCenterActionable) -> Void] = []
+    private var promotionalOfferSuccessCallbacks: [() -> Void] = []
 
     init(legacyActionHandler: DeprecatedCustomerCenterActionHandler? = nil) {
         self.legacyActionHandler = legacyActionHandler
     }
 
+    /// Registers a new callback for each supported action
+    func onRestoreStarted(_ callback: @escaping () -> Void) {
+        restoreStartedCallbacks.append(callback)
+    }
+
+    func onRestoreFailed(_ callback: @escaping (NSError) -> Void) {
+        restoreFailedCallbacks.append(callback)
+    }
+
+    func onRestoreCompleted(_ callback: @escaping (CustomerInfo) -> Void) {
+        restoreCompletedCallbacks.append(callback)
+    }
+
+    func onShowingManageSubscriptions(_ callback: @escaping () -> Void) {
+        showingManageSubscriptionsCallbacks.append(callback)
+    }
+
+    func onRefundRequestStarted(_ callback: @escaping (String) -> Void) {
+        refundRequestStartedCallbacks.append(callback)
+    }
+
+    func onRefundRequestCompleted(_ callback: @escaping (String, RefundRequestStatus) -> Void) {
+        refundRequestCompletedCallbacks.append(callback)
+    }
+
+    func onFeedbackSurveyCompleted(_ callback: @escaping (String) -> Void) {
+        feedbackSurveyCompletedCallbacks.append(callback)
+    }
+
+    func onManagementOptionSelected(_ callback: @escaping (CustomerCenterActionable) -> Void) {
+        managementOptionSelectedCallbacks.append(callback)
+    }
+
+    func onPromotionalOfferSuccess(_ callback: @escaping () -> Void) {
+        promotionalOfferSuccessCallbacks.append(callback)
+    }
+
     /// Main entry point for handling all actions
-    /// For legacy CustomerCenterAction, calls the legacy handler and triggers callbacks
-    /// For non-legacy actions, only triggers callbacks
     func handleAction(_ action: CustomerCenterInternalAction) {
-        // For actions with a legacy equivalent, call the legacy handler
         if let legacyAction = action.asLegacyAction {
             legacyActionHandler?(legacyAction)
         }
 
-        // Trigger callbacks for all actions
         triggerCallbacks(for: action)
     }
 
     private func triggerCallbacks(for action: CustomerCenterInternalAction) {
         switch action {
         case .restoreStarted:
-            setRestoreStarted()
+            restoreStartedCallbacks.forEach { $0() }
+
         case .restoreFailed(let error):
-            setRestoreFailed(error)
-        case .restoreCompleted(let customerInfo):
-            setRestoreCompleted(customerInfo)
+            restoreFailedCallbacks.forEach { $0(error as NSError) }
+
+        case .restoreCompleted(let info):
+            restoreCompletedCallbacks.forEach { $0(info) }
+
         case .showingManageSubscriptions:
-            setShowingManageSubscriptions()
+            showingManageSubscriptionsCallbacks.forEach { $0() }
+
         case .refundRequestStarted(let productId):
-            setRefundRequestStarted(productId)
+            refundRequestStartedCallbacks.forEach { $0(productId) }
+
         case .refundRequestCompleted(let productId, let status):
-            setRefundRequestCompleted(productId, status)
-        case .feedbackSurveyCompleted(let optionId):
-            setFeedbackSurveyCompleted(optionId)
+            refundRequestCompletedCallbacks.forEach { $0(productId, status) }
+
+        case .feedbackSurveyCompleted(let reason):
+            feedbackSurveyCompletedCallbacks.forEach { $0(reason) }
+
         case .buttonTapped(let action):
-            setManagementOptionSelected(action)
+            managementOptionSelectedCallbacks.forEach { $0(action) }
+
         case .promotionalOfferSuccess:
-            setPromotionalOfferSuccess()
+            promotionalOfferSuccessCallbacks.forEach { $0() }
         }
     }
 }

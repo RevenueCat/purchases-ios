@@ -70,25 +70,39 @@ public class CustomerCenterViewController: UIHostingController<CustomerCenterVie
 
         let actionWrapper = CustomerCenterActionWrapper()
         if let restoreStarted {
-            actionWrapper.setRestoreStarted = restoreStarted
+            actionWrapper.onRestoreStarted {
+                restoreStarted()
+            }
         }
         if let restoreCompleted {
-            actionWrapper.setRestoreCompleted = restoreCompleted
+            actionWrapper.onRestoreCompleted({ customerInfo in
+                restoreCompleted(customerInfo)
+            })
         }
         if let restoreFailed {
-            actionWrapper.setRestoreFailed = restoreFailed
+            actionWrapper.onRestoreFailed({ error in
+                restoreFailed(error)
+            })
         }
         if let showingManageSubscriptions {
-            actionWrapper.setShowingManageSubscriptions = showingManageSubscriptions
+            actionWrapper.onShowingManageSubscriptions {
+                showingManageSubscriptions()
+            }
         }
         if let refundRequestStarted {
-            actionWrapper.setRefundRequestStarted = refundRequestStarted
+            actionWrapper.onRefundRequestStarted({ id in
+                refundRequestStarted(id)
+            })
         }
         if let refundRequestCompleted {
-            actionWrapper.setRefundRequestCompleted = refundRequestCompleted
+            actionWrapper.onRefundRequestCompleted({ id, status in
+                refundRequestCompleted(id, status)
+            })
         }
         if let feedbackSurveyCompleted {
-            actionWrapper.setFeedbackSurveyCompleted = feedbackSurveyCompleted
+            actionWrapper.onFeedbackSurveyCompleted({ id in
+                feedbackSurveyCompleted(id)
+            })
         }
 
         let view = CustomerCenterView(actionWrapper: actionWrapper, mode: .default, navigationOptions: .default)
