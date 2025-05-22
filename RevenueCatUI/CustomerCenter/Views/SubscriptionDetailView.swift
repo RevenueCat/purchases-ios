@@ -57,6 +57,7 @@ struct SubscriptionDetailView: View {
             let viewModel = SubscriptionDetailViewModel(
                 screen: screen,
                 showPurchaseHistory: showPurchaseHistory,
+                allowsMissingPurchaseAction: allowsMissingPurchaseAction,
                 actionWrapper: actionWrapper,
                 purchaseInformation: purchaseInformation,
                 purchasesProvider: purchasesProvider)
@@ -250,6 +251,7 @@ struct SubscriptionDetailView: View {
                     viewModel: SubscriptionDetailViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
+                        allowsMissingPurchaseAction: false,
                         purchaseInformation: .yearlyExpiring(),
                         refundRequestStatus: .success
                     )
@@ -267,6 +269,7 @@ struct SubscriptionDetailView: View {
                     viewModel: SubscriptionDetailViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
+                        allowsMissingPurchaseAction: false,
                         purchaseInformation: .free
                     )
                 )
@@ -283,6 +286,7 @@ struct SubscriptionDetailView: View {
                     viewModel: SubscriptionDetailViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: false,
+                        allowsMissingPurchaseAction: false,
                         purchaseInformation: .consumable
                     )
                 )
@@ -299,6 +303,7 @@ struct SubscriptionDetailView: View {
                     viewModel: SubscriptionDetailViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
+                        allowsMissingPurchaseAction: false,
                         purchaseInformation: nil
                     )
                 )
@@ -315,6 +320,7 @@ struct SubscriptionDetailView: View {
                     viewModel: SubscriptionDetailViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
+                        allowsMissingPurchaseAction: false,
                         purchaseInformation: .yearlyExpiring(store: .playStore)
                     )
                 )
