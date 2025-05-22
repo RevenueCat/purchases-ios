@@ -1492,7 +1492,9 @@ workflows:
         - equal:
             ["load_shedder_integration_tests", << pipeline.schedule.name >>]
     jobs:
-      - loadshedder-integration-tests-v3
+      - loadshedder-integration-tests-v3:
+          context:
+            - slack-secrets       
       - integration-tests-all
 
   manual-trigger-bump:
