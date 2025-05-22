@@ -88,6 +88,7 @@ struct RelevantPurchasesListView: View {
                     screen: viewModel.screen,
                     purchaseInformation: viewModel.purchaseInformation,
                     showPurchaseHistory: false,
+                    allowsMissingPurchaseAction: false,
                     purchasesProvider: self.viewModel.purchasesProvider,
                     actionWrapper: self.viewModel.actionWrapper
                 )
@@ -141,6 +142,7 @@ struct RelevantPurchasesListView: View {
                 } else {
                     if !customerInfoViewModel.activeSubscriptionPurchases.isEmpty {
                         PurchasesInformationSection(
+                            title: localization[.actionsSectionTitle],
                             items: customerInfoViewModel.activeSubscriptionPurchases,
                             localization: localization
                         ) {
@@ -151,6 +153,7 @@ struct RelevantPurchasesListView: View {
 
                     if !customerInfoViewModel.activeNonSubscriptionPurchases.isEmpty {
                         PurchasesInformationSection(
+                            title: localization[.purchasesSectionTitle],
                             items: activeNonSubscriptionPurchasesToShow,
                             localization: localization
                         ) {

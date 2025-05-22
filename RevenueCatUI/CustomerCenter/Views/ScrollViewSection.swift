@@ -46,12 +46,13 @@ struct ScrollViewSection<Content: View>: View {
 @available(watchOS, unavailable)
 struct PurchasesInformationSection: View {
 
+    let title: String
     let items: [PurchaseInformation]
     let localization: CustomerCenterConfigData.Localization
     let action: (PurchaseInformation) -> Void
 
     var body: some View {
-        ScrollViewSection(title: localization[.purchasesSectionTitle]) {
+        ScrollViewSection(title: title) {
             ForEach(items) { purchase in
                 Button {
                     action(purchase)
