@@ -157,7 +157,6 @@ private extension CustomerCenterView {
                 }
             }
         }
-        .modifier(CustomerCenterActionViewModifier(actionWrapper: viewModel.actionWrapper))
     }
 
     @ViewBuilder
