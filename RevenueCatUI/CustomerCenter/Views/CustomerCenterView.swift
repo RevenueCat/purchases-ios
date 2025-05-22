@@ -238,6 +238,7 @@ private extension CustomerCenterView {
             screen: screen,
             purchaseInformation: viewModel.activePurchase,
             showPurchaseHistory: viewModel.shouldShowSeeAllPurchases,
+            allowsMissingPurchaseAction: true,
             purchasesProvider: self.viewModel.purchasesProvider,
             actionWrapper: self.viewModel.actionWrapper
         )

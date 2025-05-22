@@ -27,7 +27,14 @@ class BaseManageSubscriptionViewModel: ObservableObject {
     let screen: CustomerCenterConfigData.Screen
 
     var relevantPathsForPurchase: [CustomerCenterConfigData.HelpPath] {
-        paths.relevantPahts(for: purchaseInformation)
+        paths.relevantPahts(for: purchaseInformation, allowMissingPurchase: allowMissingPurchase)
+    }
+
+    /// Used to exclude .missingPurchase path
+    ///
+    /// If the detail screen is the root of the stack, then we should show it. Otherwise, it should be excluded
+    var allowMissingPurchase: Bool {
+        false
     }
 
     @Published
@@ -233,7 +240,8 @@ private extension CustomerCenterConfigData.Screen {
 
 private extension Array<CustomerCenterConfigData.HelpPath> {
     func relevantPahts(
-        for purchaseInformation: PurchaseInformation?
+        for purchaseInformation: PurchaseInformation?,
+        allowMissingPurchase: Bool
     ) -> [CustomerCenterConfigData.HelpPath] {
         guard let purchaseInformation else {
             return filter {
@@ -243,7 +251,7 @@ private extension Array<CustomerCenterConfigData.HelpPath> {
 
         return filter {
             // we don't show missing purchase when a purchase is selected
-            if $0.type == .missingPurchase {
+            if !allowMissingPurchase && $0.type == .missingPurchase {
                 return false
             }
 
