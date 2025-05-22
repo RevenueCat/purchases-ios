@@ -43,8 +43,6 @@ struct RelevantPurchasesListView: View {
     init(
         customerInfoViewModel: CustomerCenterViewModel,
         screen: CustomerCenterConfigData.Screen,
-        activePurchases: Binding<[PurchaseInformation]>,
-        nonSubscriptionPurchases: Binding<[PurchaseInformation]>,
         originalAppUserId: String,
         originalPurchaseDate: Date?,
         shouldShowSeeAllPurchases: Bool,
@@ -54,8 +52,6 @@ struct RelevantPurchasesListView: View {
         let viewModel = RelevantPurchasesListViewModel(
             screen: screen,
             actionWrapper: actionWrapper,
-            activePurchases: activePurchases.wrappedValue,
-            nonSubscriptionPurchases: nonSubscriptionPurchases.wrappedValue,
             originalAppUserId: originalAppUserId,
             originalPurchaseDate: originalPurchaseDate,
             shouldShowSeeAllPurchases: shouldShowSeeAllPurchases,
@@ -248,79 +244,94 @@ struct RelevantPurchasesListView: View {
     }
 }
 
-// #if DEBUG
-// @available(iOS 15.0, *)
-// @available(macOS, unavailable)
-// @available(tvOS, unavailable)
-// @available(watchOS, unavailable)
-// struct ActiveSubscriptionsListView_Previews: PreviewProvider {
-//
-//    static var previews: some View {
-//        let purchases = [
-//            PurchaseInformation.yearlyExpiring(store: .amazon, renewalDate: Date()),
-//            PurchaseInformation.yearlyExpiring(store: .appStore),
-//            .free
-//        ]
-//
-//        let warningOffMock = CustomerCenterConfigData.mock(
-//            displayPurchaseHistoryLink: true
-//        )
-//
-//        let warningOnMock = CustomerCenterConfigData.mock(
-//            displayPurchaseHistoryLink: true,
-//            shouldWarnCustomersAboutMultipleSubscriptions: true
-//        )
-//
-//        ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
-//            CompatibilityNavigationStack {
-//                RelevantPurchasesListView(
-//                    viewModel: RelevantPurchasesListViewModel(
-//                        screen: warningOffMock.screens[.management]!,
-//                        originalAppUserId: "originalAppUserId",
-//                        activePurchases: purchases,
-//                        shouldShowSeeAllPurchases: true
-//                    )
-//                )
-//                .environment(\.supportInformation, warningOffMock.support)
-//            }
-//            .preferredColorScheme(colorScheme)
-//            .previewDisplayName("Active subs - \(colorScheme)")
-//
-//            CompatibilityNavigationStack {
-//                RelevantPurchasesListView(
-//                    viewModel: RelevantPurchasesListViewModel(
-//                        screen: warningOffMock.screens[.management]!,
-//                        originalAppUserId: "originalAppUserId",
-//                        activePurchases: purchases,
-//                        nonSubscriptionPurchases: [.consumable, .lifetime],
-//                        shouldShowSeeAllPurchases: false
-//                    )
-//                )
-//                .environment(\.supportInformation, warningOffMock.support)
-//            }
-//            .preferredColorScheme(colorScheme)
-//            .previewDisplayName("Active subs & other - \(colorScheme)")
-//
-//            CompatibilityNavigationStack {
-//                RelevantPurchasesListView(
-//                    viewModel: RelevantPurchasesListViewModel(
-//                        screen: warningOnMock.screens[.management]!,
-//                        originalAppUserId: "originalAppUserId",
-//                        activePurchases: [],
-//                        shouldShowSeeAllPurchases: false
-//                    )
-//                )
-//                .environment(\.supportInformation, warningOnMock.support)
-//            }
-//            .preferredColorScheme(colorScheme)
-//            .previewDisplayName("Empty - \(colorScheme)")
-//        }
-//        .environment(\.localization, CustomerCenterConfigData.default.localization)
-//        .environment(\.appearance, CustomerCenterConfigData.default.appearance)
-//    }
-//
-// }
-//
-// #endif
+ #if DEBUG
+ @available(iOS 15.0, *)
+ @available(macOS, unavailable)
+ @available(tvOS, unavailable)
+ @available(watchOS, unavailable)
+ struct RelevantPurchasesListView_Previews: PreviewProvider {
+
+     // swiftlint:disable force_unwrapping
+    static var previews: some View {
+        let purchases = [
+            PurchaseInformation.yearlyExpiring(store: .amazon, renewalDate: Date()),
+            PurchaseInformation.yearlyExpiring(store: .appStore),
+            .free
+        ]
+
+        let warningOffMock = CustomerCenterConfigData.mock(
+            displayPurchaseHistoryLink: true
+        )
+
+        let warningOnMock = CustomerCenterConfigData.mock(
+            displayPurchaseHistoryLink: true,
+            shouldWarnCustomersAboutMultipleSubscriptions: true
+        )
+
+        ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
+            CompatibilityNavigationStack {
+                RelevantPurchasesListView(
+                    customerInfoViewModel: CustomerCenterViewModel(
+                        activeSubscriptionPurchases: purchases,
+                        activeNonSubscriptionPurchases: [],
+                        configuration: .default
+                    ),
+                    viewModel: RelevantPurchasesListViewModel(
+                        screen: warningOffMock.screens[.management]!,
+                        originalAppUserId: "originalAppUserId",
+                        shouldShowSeeAllPurchases: true
+                    )
+                )
+                .environment(\.supportInformation, warningOffMock.support)
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Active subs - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                RelevantPurchasesListView(
+                    customerInfoViewModel: CustomerCenterViewModel(
+                        activeSubscriptionPurchases: purchases,
+                        activeNonSubscriptionPurchases: [],
+                        configuration: .default
+                    ),
+                    viewModel: RelevantPurchasesListViewModel(
+                        screen: warningOffMock.screens[.management]!,
+                        originalAppUserId: "originalAppUserId",
+                        activePurchases: purchases,
+                        nonSubscriptionPurchases: [.consumable, .lifetime],
+                        shouldShowSeeAllPurchases: false
+                    )
+                )
+                .environment(\.supportInformation, warningOffMock.support)
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Active subs & other - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                RelevantPurchasesListView(
+                    customerInfoViewModel: CustomerCenterViewModel(
+                        activeSubscriptionPurchases: [],
+                        activeNonSubscriptionPurchases: [],
+                        configuration: .default
+                    ),
+                    viewModel: RelevantPurchasesListViewModel(
+                        screen: warningOnMock.screens[.management]!,
+                        originalAppUserId: "originalAppUserId",
+                        activePurchases: [],
+                        shouldShowSeeAllPurchases: false
+                    )
+                )
+                .environment(\.supportInformation, warningOnMock.support)
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Empty - \(colorScheme)")
+        }
+        .environment(\.localization, CustomerCenterConfigData.default.localization)
+        .environment(\.appearance, CustomerCenterConfigData.default.appearance)
+    }
+
+ }
+
+ #endif
 
 #endif

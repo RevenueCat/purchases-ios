@@ -33,8 +33,6 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
     init(
         screen: CustomerCenterConfigData.Screen,
         actionWrapper: CustomerCenterActionWrapper,
-        activePurchases: [PurchaseInformation] = [],
-        nonSubscriptionPurchases: [PurchaseInformation] = [],
         originalAppUserId: String,
         originalPurchaseDate: Date?,
         shouldShowSeeAllPurchases: Bool,
@@ -67,8 +65,6 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
         self.init(
             screen: screen,
             actionWrapper: CustomerCenterActionWrapper(),
-            activePurchases: activePurchases,
-            nonSubscriptionPurchases: nonSubscriptionPurchases,
             originalAppUserId: originalAppUserId,
             originalPurchaseDate: originalPurchaseDate,
             shouldShowSeeAllPurchases: shouldShowSeeAllPurchases,

@@ -223,8 +223,6 @@ private extension CustomerCenterView {
         RelevantPurchasesListView(
             customerInfoViewModel: viewModel,
             screen: screen,
-            activePurchases: $viewModel.activeSubscriptionPurchases,
-            nonSubscriptionPurchases: $viewModel.activeNonSubscriptionPurchases,
             originalAppUserId: viewModel.originalAppUserId,
             originalPurchaseDate: viewModel.originalPurchaseDate,
             shouldShowSeeAllPurchases: viewModel.shouldShowSeeAllPurchases,

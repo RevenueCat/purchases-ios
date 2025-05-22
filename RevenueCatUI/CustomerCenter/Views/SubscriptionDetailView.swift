@@ -256,82 +256,103 @@ struct SubscriptionDetailView: View {
     }
 }
 
-// #if DEBUG
-// @available(iOS 15.0, *)
-// @available(macOS, unavailable)
-// @available(tvOS, unavailable)
-// @available(watchOS, unavailable)
-// struct SubscriptionDetailView_Previews: PreviewProvider {
-//
-//    static var previews: some View {
-//        ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
-//            CompatibilityNavigationStack {
-//                SubscriptionDetailView(
-//                    viewModel: SubscriptionDetailViewModel(
-//                        screen: CustomerCenterConfigData.default.screens[.management]!,
-//                        showPurchaseHistory: true,
-//                        purchaseInformation: .yearlyExpiring(),
-//                        refundRequestStatus: .success
-//                    )
-//                )
-//            }
-//            .preferredColorScheme(colorScheme)
-//            .previewDisplayName("Yearly expiring - \(colorScheme)")
-//
-//            CompatibilityNavigationStack {
-//                SubscriptionDetailView(
-//                    viewModel: SubscriptionDetailViewModel(
-//                        screen: CustomerCenterConfigData.default.screens[.management]!,
-//                        showPurchaseHistory: true,
-//                        purchaseInformation: .free
-//                    )
-//                )
-//            }
-//            .preferredColorScheme(colorScheme)
-//            .previewDisplayName("Free subscription - \(colorScheme)")
-//
-//            CompatibilityNavigationStack {
-//                SubscriptionDetailView(
-//                    viewModel: SubscriptionDetailViewModel(
-//                        screen: CustomerCenterConfigData.default.screens[.management]!,
-//                        showPurchaseHistory: false,
-//                        purchaseInformation: .consumable
-//                    )
-//                )
-//            }
-//            .preferredColorScheme(colorScheme)
-//            .previewDisplayName("Consumable - \(colorScheme)")
-//
-//            CompatibilityNavigationStack {
-//                SubscriptionDetailView(
-//                    viewModel: SubscriptionDetailViewModel(
-//                        screen: CustomerCenterConfigData.default.screens[.management]!,
-//                        showPurchaseHistory: true,
-//                        purchaseInformation: nil
-//                    )
-//                )
-//            }
-//            .preferredColorScheme(colorScheme)
-//            .previewDisplayName("Emtpy state - \(colorScheme)")
-//
-//            CompatibilityNavigationStack {
-//                SubscriptionDetailView(
-//                    viewModel: SubscriptionDetailViewModel(
-//                        screen: CustomerCenterConfigData.default.screens[.management]!,
-//                        showPurchaseHistory: true,
-//                        purchaseInformation: .yearlyExpiring(store: .playStore)
-//                    )
-//                )
-//            }
-//            .preferredColorScheme(colorScheme)
-//            .previewDisplayName("Play Store - \(colorScheme)")
-//        }
-//        .environment(\.localization, CustomerCenterConfigData.default.localization)
-//        .environment(\.appearance, CustomerCenterConfigData.default.appearance)
-//    }
-//
-// }
-//
-// #endif
+ #if DEBUG
+ @available(iOS 15.0, *)
+ @available(macOS, unavailable)
+ @available(tvOS, unavailable)
+ @available(watchOS, unavailable)
+ struct SubscriptionDetailView_Previews: PreviewProvider {
+
+     // swiftlint:disable force_unwrapping
+    static var previews: some View {
+        ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
+            CompatibilityNavigationStack {
+                SubscriptionDetailView(
+                    customerInfoViewModel: CustomerCenterViewModel(
+                        purchaseInformation: .yearlyExpiring(),
+                        configuration: .default
+                    ),
+                    viewModel: SubscriptionDetailViewModel(
+                        screen: CustomerCenterConfigData.default.screens[.management]!,
+                        showPurchaseHistory: true,
+                        purchaseInformation: .yearlyExpiring(),
+                        refundRequestStatus: .success
+                    )
+                )
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Yearly expiring - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                SubscriptionDetailView(
+                    customerInfoViewModel: CustomerCenterViewModel(
+                        purchaseInformation: .free,
+                        configuration: .default
+                    ),
+                    viewModel: SubscriptionDetailViewModel(
+                        screen: CustomerCenterConfigData.default.screens[.management]!,
+                        showPurchaseHistory: true,
+                        purchaseInformation: .free
+                    )
+                )
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Free subscription - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                SubscriptionDetailView(
+                    customerInfoViewModel: CustomerCenterViewModel(
+                        purchaseInformation: .consumable,
+                        configuration: .default
+                    ),
+                    viewModel: SubscriptionDetailViewModel(
+                        screen: CustomerCenterConfigData.default.screens[.management]!,
+                        showPurchaseHistory: false,
+                        purchaseInformation: .consumable
+                    )
+                )
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Consumable - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                SubscriptionDetailView(
+                    customerInfoViewModel: CustomerCenterViewModel(
+                        purchaseInformation: nil,
+                        configuration: .default
+                    ),
+                    viewModel: SubscriptionDetailViewModel(
+                        screen: CustomerCenterConfigData.default.screens[.management]!,
+                        showPurchaseHistory: true,
+                        purchaseInformation: nil
+                    )
+                )
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Emtpy state - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                SubscriptionDetailView(
+                    customerInfoViewModel: CustomerCenterViewModel(
+                        purchaseInformation: .yearlyExpiring(store: .playStore),
+                        configuration: .default
+                    ),
+                    viewModel: SubscriptionDetailViewModel(
+                        screen: CustomerCenterConfigData.default.screens[.management]!,
+                        showPurchaseHistory: true,
+                        purchaseInformation: .yearlyExpiring(store: .playStore)
+                    )
+                )
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Play Store - \(colorScheme)")
+        }
+        .environment(\.localization, CustomerCenterConfigData.default.localization)
+        .environment(\.appearance, CustomerCenterConfigData.default.appearance)
+    }
+
+ }
+
+ #endif
 
 #endif
