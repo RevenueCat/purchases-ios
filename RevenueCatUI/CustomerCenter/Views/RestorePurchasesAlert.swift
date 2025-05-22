@@ -313,10 +313,9 @@ private struct PreviewContainer: View {
         RestorePurchasesAlert(
             isPresented: $isPresented,
             viewModel: MockRestorePurchasesAlertViewModel(alertType: alertType),
-            customerCenterViewModel: CustomerCenterViewModel(uiPreviewPurchaseProvider: MockCustomerCenterPurchases())
+            customerCenterViewModel: viewModelApple
         )
         .environment(\.localization, CustomerCenterConfigData.default.localization)
-        .environmentObject(viewModelApple)
         .emergeRenderingMode(.window)
     }
 
