@@ -94,6 +94,19 @@ struct SubscriptionDetailView: View {
                 .environment(\.localization, localization)
                 .environment(\.navigationOptions, navigationOptions)
             }
+            .compatibleNavigation(
+                isPresented: $viewModel.showAllInAppCurrenciesScreen,
+                usesNavigationStack: navigationOptions.usesNavigationStack
+            ) {
+                VirtualCurrencyBalancesScreen(
+                    viewModel: VirtualCurrencyBalancesScreenViewModel(
+                        purchasesProvider: self.viewModel.purchasesProvider
+                    )
+                )
+                .environment(\.appearance, appearance)
+                .environment(\.localization, localization)
+                .environment(\.navigationOptions, navigationOptions)
+            }
             .sheet(item: self.$viewModel.promotionalOfferData) { promotionalOfferData in
                 PromotionalOfferView(
                     promotionalOffer: promotionalOfferData.promotionalOffer,
@@ -165,7 +178,7 @@ struct SubscriptionDetailView: View {
                 if let virtualCurrencies = viewModel.virtualCurrencies, !virtualCurrencies.isEmpty {
                     VirtualCurrenciesScrollViewWithOSBackgroundSection(
                         virtualCurrencies: virtualCurrencies,
-                        purchasesProvider: self.viewModel.purchasesProvider
+                        onSeeAllInAppCurrenciesButtonTapped: self.viewModel.displayAllInAppCurrenciesScreen
                     )
                 }
 

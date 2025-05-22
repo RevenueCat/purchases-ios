@@ -57,6 +57,9 @@ class BaseManageSubscriptionViewModel: ObservableObject {
     var purchaseInformation: PurchaseInformation?
 
     @Published
+    var showAllInAppCurrenciesScreen: Bool = false
+
+    @Published
     private(set) var refundRequestStatus: RefundRequestStatus?
 
     /// Virtual currencies to display. If it is set to nil, nothing will be displayed.
@@ -131,6 +134,10 @@ class BaseManageSubscriptionViewModel: ObservableObject {
 
     func onDismissInAppBrowser() {
         self.inAppBrowserURL = nil
+    }
+
+    func displayAllInAppCurrenciesScreen() {
+        self.showAllInAppCurrenciesScreen = true
     }
 
 #endif

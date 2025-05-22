@@ -119,6 +119,19 @@ struct RelevantPurchasesListView: View {
                 .environment(\.localization, localization)
                 .environment(\.navigationOptions, navigationOptions)
             }
+            .compatibleNavigation(
+                isPresented: $viewModel.showAllInAppCurrenciesScreen,
+                usesNavigationStack: navigationOptions.usesNavigationStack
+            ) {
+                VirtualCurrencyBalancesScreen(
+                    viewModel: VirtualCurrencyBalancesScreenViewModel(
+                        purchasesProvider: self.viewModel.purchasesProvider
+                    )
+                )
+                .environment(\.appearance, appearance)
+                .environment(\.localization, localization)
+                .environment(\.navigationOptions, navigationOptions)
+            }
             .onChangeOf(activePurchases) { _ in
                 viewModel.updatePurchases(activePurchases)
             }
@@ -165,7 +178,7 @@ struct RelevantPurchasesListView: View {
                     if let virtualCurrencies = viewModel.virtualCurrencies, !virtualCurrencies.isEmpty {
                         VirtualCurrenciesScrollViewWithOSBackgroundSection(
                             virtualCurrencies: virtualCurrencies,
-                            purchasesProvider: self.viewModel.purchasesProvider
+                            onSeeAllInAppCurrenciesButtonTapped: self.viewModel.displayAllInAppCurrenciesScreen
                         )
                     }
                 }

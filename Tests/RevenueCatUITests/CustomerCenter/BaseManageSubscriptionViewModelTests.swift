@@ -54,6 +54,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         expect(viewModel.refundRequestStatus).to(beNil())
         expect(viewModel.screen).toNot(beNil())
         expect(viewModel.showRestoreAlert) == false
+        expect(viewModel.showAllInAppCurrenciesScreen).to(equal(false))
     }
 
     func testNoPurchaseOnlyMissingPurchasePath() {
@@ -396,6 +397,22 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
 
             expect(loadPromotionalOfferUseCase.offerToLoadPromoFor).to(beNil())
         }
+    }
+
+    func testDisplayAllInAppCurrenciesScreen() async throws {
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: nil,
+            virtualCurrencies: nil,
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        expect(viewModel.showAllInAppCurrenciesScreen).to(equal(false))
+
+        viewModel.displayAllInAppCurrenciesScreen()
+
+        expect(viewModel.showAllInAppCurrenciesScreen).to(equal(true))
     }
 
     // Helper methods

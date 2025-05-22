@@ -11,17 +11,44 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
+/// A SwiftUI view that displays a list of virtual currency balances in a section format.
+///
+/// This view shows up to three virtual currencies sorted by balance in descending order.
+/// If there are more than three currencies, a "See All" button is displayed that navigates
+/// to a full list of virtual currencies. Designed for use in a SwiftUI ``List`` view.
+///
+/// ## Navigation Considerations
+///
+/// Due to SwiftUI's limitations with placing navigation destinations inside ``List`` and ``LazyVStack`` views,
+/// it is the responsibility of the parent view to implement the `onSeeAllInAppCurrenciesButtonTapped`
+/// closure to present the ``VirtualCurrencyBalancesScreen``. This closure is called when the user
+/// taps the "See All In-App Currencies" button.
+///
+/// > SwiftUI will print the following warning if navigation destinations are used inside ``List`` or ``LazyVStack``:
+/// > ```
+/// > Do not put a navigation destination modifier inside a "lazy" container, like `List` or `LazyVStack`.
+/// > These containers create child views only when needed to render on screen. Add the navigation destination
+/// > modifier outside these containers so that the navigation stack can always see the destination.
+/// > There's a misplaced `navigationDestination(isPresented:destination:)` modifier presenting
+/// > `VirtualCurrencyBalancesScreen`. It will be ignored in a future release.
+/// > ```
+/// >
+/// > The extraction of the navigation logic to the parent view circumvents this warning.
+///
+/// Example implementation:
+/// ```swift
+/// VirtualCurrenciesListSection(
+///     virtualCurrencies: virtualCurrencies,
+///     onSeeAllInAppCurrenciesButtonTapped: {
+///         // Present VirtualCurrencyBalancesScreen here
+///         // For example, using NavigationLink or sheet presentation
+///     }
+/// )
+/// ```
 @available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-/// A SwiftUI view that displays a list of virtual currency balances in a section format.
-///
-/// Designed for use in a SwiftUI ``List`` view.
-///
-/// This view shows up to three virtual currencies sorted by balance in descending order.
-/// If there are more than three currencies, a "See All" button is displayed that navigates
-/// to a full list of virtual currencies.
 struct VirtualCurrenciesListSection: View {
 
     private static let maxNumberOfRows = 4
@@ -29,18 +56,23 @@ struct VirtualCurrenciesListSection: View {
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
 
-    @Environment(\.navigationOptions)
-    var navigationOptions
-
-    @State private var showVirtualCurrenciesListScreen = false
-
     private let virtualCurrencies: [VirtualCurrencyBalanceListRow.RowData]
     private let displayShowAllButton: Bool
-    private let purchasesProvider: CustomerCenterPurchasesType
 
+    /// Closure called when the user taps the "See All In-App Currencies" button.
+    /// The parent view should implement this to present the ``VirtualCurrencyBalancesScreen``
+    /// since navigation destinations cannot be nested inside ``List`` or ``LazyVStack``.
+    private let onSeeAllInAppCurrenciesButtonTapped: () -> Void
+
+    /// Creates a new virtual currencies list section.
+    /// - Parameters:
+    ///   - virtualCurrencies: Dictionary of virtual currency codes to their balance information
+    ///   - onSeeAllInAppCurrenciesButtonTapped: Closure to handle navigation to the full list screen.
+    ///     Must be implemented by the parent view to present ``VirtualCurrencyBalancesScreen``
+    ///     since navigation destinations cannot be nested inside ``List`` or ``LazyVStack``.
     init(
         virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo],
-        purchasesProvider: CustomerCenterPurchasesType
+        onSeeAllInAppCurrenciesButtonTapped: @escaping () -> Void
     ) {
         let sortedCurrencies = virtualCurrencies.map {
             VirtualCurrencyBalanceListRow.RowData(
@@ -60,7 +92,7 @@ struct VirtualCurrenciesListSection: View {
             self.virtualCurrencies = Array(sortedCurrencies.prefix(3))
             self.displayShowAllButton = true
         }
-        self.purchasesProvider = purchasesProvider
+        self.onSeeAllInAppCurrenciesButtonTapped = onSeeAllInAppCurrenciesButtonTapped
     }
 
     var body: some View {
@@ -72,21 +104,13 @@ struct VirtualCurrenciesListSection: View {
 
                 if displayShowAllButton {
                     Button {
-                        self.showVirtualCurrenciesListScreen = true
+                        self.onSeeAllInAppCurrenciesButtonTapped()
                     } label: {
                         CompatibilityLabeledContent(localization[.seeAllVirtualCurrencies].localizedCapitalized) {
                             Image(systemName: "chevron.forward")
                         }
                     }
                     .buttonStyle(.plain)
-                    .compatibleNavigation(
-                        isPresented: $showVirtualCurrenciesListScreen,
-                        usesNavigationStack: navigationOptions.usesNavigationStack
-                    ) {
-                        VirtualCurrencyBalancesScreen(
-                            viewModel: VirtualCurrencyBalancesScreenViewModel(purchasesProvider: self.purchasesProvider)
-                        )
-                    }
                 }
             } header: {
                 Text(localization[.virtualCurrencyBalancesScreenHeader])
@@ -108,7 +132,7 @@ struct VirtualCurrenciesListSection_Previews: PreviewProvider {
         List {
             VirtualCurrenciesListSection(
                 virtualCurrencies: CustomerCenterConfigData.fourVirtualCurrencies,
-                purchasesProvider: CustomerCenterPurchases()
+                onSeeAllInAppCurrenciesButtonTapped: { }
             )
         }
         .previewDisplayName("4 Virtual Currencies")
@@ -116,7 +140,7 @@ struct VirtualCurrenciesListSection_Previews: PreviewProvider {
         List {
             VirtualCurrenciesListSection(
                 virtualCurrencies: CustomerCenterConfigData.fiveVirtualCurrencies,
-                purchasesProvider: CustomerCenterPurchases()
+                onSeeAllInAppCurrenciesButtonTapped: { }
             )
         }
         .previewDisplayName("5 Virtual Currencies")
