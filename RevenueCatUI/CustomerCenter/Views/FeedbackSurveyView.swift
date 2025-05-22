@@ -81,36 +81,37 @@ struct FeedbackSurveyView: View {
                 content
                     .compatibleNavigation(
                         item: $viewModel.promotionalOfferData,
-                        usesNavigationStack: navigationOptions.usesNavigationStack) { promotionalOfferData in
-                            PromotionalOfferView(
-                                promotionalOffer: promotionalOfferData.promotionalOffer,
-                                product: promotionalOfferData.product,
-                                promoOfferDetails: promotionalOfferData.promoOfferDetails,
-                                purchasesProvider: self.viewModel.purchasesProvider,
-                                onDismissPromotionalOfferView: { userAction in
-                                    Task(priority: .userInitiated) {
-                                        await viewModel.handleDismissPromotionalOfferView(
-                                            userAction,
-                                            dismissView: self.dismissView
-                                        )
-                                    }
+                        usesNavigationStack: navigationOptions.usesNavigationStack
+                    ) { promotionalOfferData in
+                        PromotionalOfferView(
+                            promotionalOffer: promotionalOfferData.promotionalOffer,
+                            product: promotionalOfferData.product,
+                            promoOfferDetails: promotionalOfferData.promoOfferDetails,
+                            purchasesProvider: self.viewModel.purchasesProvider,
+                            onDismissPromotionalOfferView: { userAction in
+                                Task(priority: .userInitiated) {
+                                    await viewModel.handleDismissPromotionalOfferView(
+                                        userAction,
+                                        dismissView: self.dismissView
+                                    )
                                 }
-                            )
-                            .interactiveDismissDisabled()
-                            .environment(\.appearance, appearance)
-                            .environment(\.localization, localization)
-                        }
+                            }
+                        )
+                        .interactiveDismissDisabled()
+                        .environment(\.appearance, appearance)
+                        .environment(\.localization, localization)
+                    }
             }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar(content: {
+                ToolbarItem(placement: .principal) {
+                    Text(self.viewModel.feedbackSurveyData.configuration.title)
+                        .font(.headline)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                }
+            })
         }
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar(content: {
-            ToolbarItem(placement: .principal) {
-                Text(self.viewModel.feedbackSurveyData.configuration.title)
-                    .font(.headline)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(2)
-            }
-        })
     }
 
     private func dismissView() {
@@ -133,19 +134,17 @@ struct FeedbackSurveyButtonsView: View {
     var loadingOption: String?
 
     var body: some View {
-        LazyVStack(spacing: 0) {
-            ForEach(options, id: \.id) { option in
-                AsyncButton {
-                    await self.onOptionSelected(option)
-                } label: {
-                    if self.loadingOption == option.id {
-                        TintedProgressView()
-                    } else {
-                        Text(option.title)
-                    }
+        ForEach(options, id: \.id) { option in
+            AsyncButton {
+                await self.onOptionSelected(option)
+            } label: {
+                if self.loadingOption == option.id {
+                    TintedProgressView()
+                } else {
+                    Text(option.title)
                 }
-                .disabled(self.loadingOption != nil)
             }
+            .disabled(self.loadingOption != nil)
         }
     }
 }
