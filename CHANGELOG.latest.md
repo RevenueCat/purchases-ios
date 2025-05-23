@@ -1,44 +1,48 @@
 ## RevenueCat SDK
 ### 🐞 Bugfixes
-* Fix offerings not being returned in the `offerings` property of the SDK Health Report (#5043) via Pol Piella Abadia (@polpielladev)
+* reload customer center after re-syncing customer info (#5166) via Facundo Menzella (@facumenzella)
 ### Customer Center
 #### ✨ New Features
-* Add management URL to PurchaseInformation (#5080) via Facundo Menzella (@facumenzella)
-* feat: Show subscription list instead of only the active subscription (#5050) via Facundo Menzella (@facumenzella)
+* Add price to NonSubscriptionTransaction (#5131) via Facundo Menzella (@facumenzella)
+* Show other purchases in Purchases List (#5126) via Facundo Menzella (@facumenzella)
+* Include PurchaseInformationCardView in SubscriptionDetail (#5121) via Facundo Menzella (@facumenzella)
 #### 🐞 Bugfixes
-* Split `PurchaseInformation.price` into `pricePaid` and `renewalPrice` (#5069) via Cesar de la Vega (@vegaro)
-### Paywallv2
-#### 🐞 Bugfixes
-* Fix sheet view in v2 paywall not covering bottom safe area (#5064) via Antonio Pallares (@ajpallares)
+* fix: Do not reload actions when selecting purchase (#5164) via Facundo Menzella (@facumenzella)
+* Show feedback for as a sheet instead of a push (#5156) via Facundo Menzella (@facumenzella)
+* Introduce CustomerCenterButtonStyle to highlight CustomerCenter buttons (#5158) via Facundo Menzella (@facumenzella)
+* Minor UI tweaks for CustomerCenter 2.0 (#5159) via Facundo Menzella (@facumenzella)
+* Pass CustomerCenterViewModel as observed object to RestoreAlert (#5146) via Facundo Menzella (@facumenzella)
+* Pass CustomerCenterViewModel as a ObservedObject to the detail screen (#5154) via Facundo Menzella (@facumenzella)
+* Add isActive to PurchaseInformation for CustomerCenter (#5152) via Facundo Menzella (@facumenzella)
+* Minor UI tweaks for Customer Center subscription list (#5150) via Facundo Menzella (@facumenzella)
+* Dont show `see all purchases` button if there's nothing else to show (#5134) via Facundo Menzella (@facumenzella)
+* Filter changePlans path for lifetime purchases in CustomerCenter (#5133) via Facundo Menzella (@facumenzella)
+* Add restore overlay to RelevantPurchasesListView (#5130) via Facundo Menzella (@facumenzella)
 
 ## RevenueCatUI SDK
-### Paywallv2
-#### ✨ New Features
-* Allow custom url on purchase button (#5092) via Josh Holtz (@joshdholtz)
 ### Customer Center
 #### ✨ New Features
-* Add support for cross product promotional offers (#5031) via Cesar de la Vega (@vegaro)
-* feat: Introducing billing information for PurchaseInformation in CustomerCenter (#5066) via Facundo Menzella (@facumenzella)
+* Introduce purchase card badges (#5118) via Facundo Menzella (@facumenzella)
+* Show account details in active subscription list (#5115) via Facundo Menzella (@facumenzella)
+* Deprecate ManageSubscriptionView in favor of ActiveSubscriptionList (#5101) via Facundo Menzella (@facumenzella)
+#### 🐞 Bugfixes
+* Fix contact support button UI to match ButtonsView (#5129) via Facundo Menzella (@facumenzella)
+* Show list if all purchases together are more than one (#5128) via Facundo Menzella (@facumenzella)
+* Update margins and copies for SubscriptionList (#5127) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Move RevenueCatUI CustomerCenter mocks from test target to RevenueCatUI (#5103) via Facundo Menzella (@facumenzella)
-* Bump fastlane-plugin-emerge from 0.10.6 to 0.10.8 (#5099) via dependabot[bot] (@dependabot[bot])
-* Introduce ScrollViewWithOSBackground to reuse in Customer Center Views (#5102) via Facundo Menzella (@facumenzella)
-* Add billingInformation for PurchaseInformation (#5100) via Facundo Menzella (@facumenzella)
-* Fix watchOS tests (#5098) via Cesar de la Vega (@vegaro)
-* PurchaseInformation conforms to Identifiable & Hashable (#5095) via Facundo Menzella (@facumenzella)
-* Introduce SubscriptionDetailViewModel & BaseManageSubscriptionViewModel (#5091) via Facundo Menzella (@facumenzella)
-* Fix some flaky tests (#5082) via Antonio Pallares (@ajpallares)
-* Allow previews of paywalls without offerings previews (#4968) via Antonio Pallares (@ajpallares)
-* Introduce PurchaseInformationCardView (#5090) via Facundo Menzella (@facumenzella)
-* Compute active subscriptions for CustomerCenter (#5089) via Facundo Menzella (@facumenzella)
-* Fix build issue of PaywallsTester app in visionOS (#5087) via Antonio Pallares (@ajpallares)
-* Use dateFormatter inside PurchaseInformation (#5088) via Facundo Menzella (@facumenzella)
-* Add expirationDate and renewalDate to PurchaseInformation (#5085) via Facundo Menzella (@facumenzella)
-* Improve mock interface for CustomerCenterConfigData (#5079) via Facundo Menzella (@facumenzella)
-* Fix build of RevenueCatUI from Xcode workspace (#5075) via Antonio Pallares (@ajpallares)
-* Fix flakiness of `uuid` implementation (#5074) via Antonio Pallares (@ajpallares)
-* revert 4087a9c (#5078) via Facundo Menzella (@facumenzella)
-* Fix build issue in Xcode 14.3 (#5071) via Antonio Pallares (@ajpallares)
-* Revert CircleCI machine type to medium (#5065) via Mark Villacampa (@MarkVillacampa)
-* Split logic between webBilling and stripe (#5057) via Cesar de la Vega (@vegaro)
+* Make latestPurchaseDate non-optional in PurchaseInformation (#5144) via Facundo Menzella (@facumenzella)
+* CircleCI: save Ruby 3.2.0 installation in cache (#5163) via Antonio Pallares (@ajpallares)
+* Add README to Maestro app (#5165) via Facundo Menzella (@facumenzella)
+* Fix some flaky tests (Part 3) (#5155) via Antonio Pallares (@ajpallares)
+* Send slack message for load shedder v3 tests report (#5145) via Antonio Pallares (@ajpallares)
+* Add ownership type to PurchaseInformation (#5143) via Facundo Menzella (@facumenzella)
+* Change to use new endpoint to fetch web product info (#5135) via Toni Rico (@tonidero)
+* Fixed locale in RevenueCatUI test data (#5125) via Antonio Pallares (@ajpallares)
+* Introduce ActiveSubscriptionButtonsView to use it inside a scrollview (#5123) via Facundo Menzella (@facumenzella)
+* Add DEBUG check to SDK Health API tests (#5122) via Antonio Pallares (@ajpallares)
+* [DX-404] Adds API Tests for SDK Health Report (#5117) via Pol Piella Abadia (@polpielladev)
+* Fix some flaky tests (Part 2) (#5104) via Antonio Pallares (@ajpallares)
+* add missing files to Xcode workspace (#5116) via Antonio Pallares (@ajpallares)
+* Remove ObservableObject from FeedbackSurveyData (#5106) via Facundo Menzella (@facumenzella)
+* Update Nimble dependency to v13.7.1 (#5096) via Antonio Pallares (@ajpallares)
