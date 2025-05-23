@@ -51,11 +51,13 @@ struct SubscriptionDetailView: View {
         screen: CustomerCenterConfigData.Screen,
         purchaseInformation: PurchaseInformation?,
         showPurchaseHistory: Bool,
+        allowsMissingPurchaseAction: Bool,
         purchasesProvider: CustomerCenterPurchasesType,
         actionWrapper: CustomerCenterActionWrapper) {
             let viewModel = SubscriptionDetailViewModel(
                 screen: screen,
                 showPurchaseHistory: showPurchaseHistory,
+                allowsMissingPurchaseAction: allowsMissingPurchaseAction,
                 actionWrapper: actionWrapper,
                 purchaseInformation: purchaseInformation,
                 purchasesProvider: purchasesProvider)
@@ -211,14 +213,9 @@ struct SubscriptionDetailView: View {
             }
         } label: {
             CompatibilityLabeledContent(localization[.contactSupport])
-                .padding(.horizontal)
-                .padding(.vertical, 12)
         }
-        .background(Color(colorScheme == .light
-                          ? UIColor.systemBackground
-                          : UIColor.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
         .padding(.horizontal)
+        .buttonStyle(.customerCenterButtonStyle(for: colorScheme))
     }
 
     private var seeAllSubscriptionsButton: some View {
@@ -228,14 +225,9 @@ struct SubscriptionDetailView: View {
             CompatibilityLabeledContent(localization[.seeAllPurchases]) {
                 Image(systemName: "chevron.forward")
             }
-            .padding(.horizontal)
-            .padding(.vertical, 12)
-            .background(Color(colorScheme == .light
-                              ? UIColor.systemBackground
-                              : UIColor.secondarySystemBackground))
-            .cornerRadius(10)
-            .padding(.horizontal)
         }
+        .padding(.horizontal)
+        .buttonStyle(.customerCenterButtonStyle(for: colorScheme))
         .tint(colorScheme == .dark ? .white : .black)
     }
 }
@@ -259,6 +251,7 @@ struct SubscriptionDetailView: View {
                     viewModel: SubscriptionDetailViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
+                        allowsMissingPurchaseAction: false,
                         purchaseInformation: .yearlyExpiring(),
                         refundRequestStatus: .success
                     )
@@ -276,6 +269,7 @@ struct SubscriptionDetailView: View {
                     viewModel: SubscriptionDetailViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
+                        allowsMissingPurchaseAction: false,
                         purchaseInformation: .free
                     )
                 )
@@ -292,6 +286,7 @@ struct SubscriptionDetailView: View {
                     viewModel: SubscriptionDetailViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: false,
+                        allowsMissingPurchaseAction: false,
                         purchaseInformation: .consumable
                     )
                 )
@@ -308,6 +303,7 @@ struct SubscriptionDetailView: View {
                     viewModel: SubscriptionDetailViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
+                        allowsMissingPurchaseAction: false,
                         purchaseInformation: nil
                     )
                 )
@@ -324,6 +320,7 @@ struct SubscriptionDetailView: View {
                     viewModel: SubscriptionDetailViewModel(
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
+                        allowsMissingPurchaseAction: false,
                         purchaseInformation: .yearlyExpiring(store: .playStore)
                     )
                 )

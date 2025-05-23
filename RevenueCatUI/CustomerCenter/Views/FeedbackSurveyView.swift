@@ -123,12 +123,17 @@ struct FeedbackSurveyView: View {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
+// This is a duplicate of ActiveSubscriptionButtonsView. It should be unified in the near future.
 struct FeedbackSurveyButtonsView: View {
 
     let options: [CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option]
     let onOptionSelected: (_ optionSelected: CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option) async -> Void
 
-    @Environment(\.appearance) private var appearance: CustomerCenterConfigData.Appearance
+    @Environment(\.appearance)
+    private var appearance: CustomerCenterConfigData.Appearance
+
+    @Environment(\.colorScheme)
+    private var colorScheme
 
     @Binding
     var loadingOption: String?
@@ -146,6 +151,11 @@ struct FeedbackSurveyButtonsView: View {
             }
             .disabled(self.loadingOption != nil)
         }
+        .applyIf(tintColor != nil, apply: { $0.tint(tintColor) })
+    }
+
+    private var tintColor: Color? {
+        Color.from(colorInformation: appearance.accentColor, for: self.colorScheme)
     }
 }
 
