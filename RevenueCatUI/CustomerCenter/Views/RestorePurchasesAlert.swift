@@ -305,10 +305,9 @@ private struct PreviewContainer: View {
     @State private var isPresented = true
 
     var body: some View {
-        let purchaseInformationApple =
-        CustomerCenterConfigData.subscriptionInformationMonthlyRenewing
-        let viewModelApple = CustomerCenterViewModel(purchaseInformation: purchaseInformationApple,
-                                                     configuration: CustomerCenterConfigData.default)
+        let viewModelApple = CustomerCenterViewModel(
+            purchaseInformation: .subscriptionInformationMonthlyRenewing,
+            configuration: CustomerCenterConfigData.default)
 
         RestorePurchasesAlert(
             isPresented: $isPresented,
