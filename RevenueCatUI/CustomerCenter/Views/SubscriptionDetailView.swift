@@ -104,6 +104,9 @@ struct SubscriptionDetailView: View {
                     }
                 }
             }
+            .onChangeOf(customerInfoViewModel.customerInfo, perform: { _ in
+                viewModel.reloadPurchaseInformation(from: customerInfoViewModel)
+            })
             .compatibleNavigation(
                 isPresented: $viewModel.showAllPurchases,
                 usesNavigationStack: navigationOptions.usesNavigationStack

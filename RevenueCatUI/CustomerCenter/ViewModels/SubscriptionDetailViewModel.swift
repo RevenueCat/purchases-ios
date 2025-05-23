@@ -59,8 +59,14 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
             )
         }
 
-    func reloadPurchaseInformation(_ purchaseInformation: PurchaseInformation?) {
-        self.purchaseInformation = purchaseInformation
+    func reloadPurchaseInformation(from customerInfoViewModel: CustomerCenterViewModel) {
+        guard let productIdentifier = purchaseInformation?.productIdentifier else {
+            return
+        }
+        self.purchaseInformation = customerInfoViewModel.activeSubscriptionPurchases
+            .first(where: { $0.productIdentifier == productIdentifier })
+        ?? customerInfoViewModel.activeNonSubscriptionPurchases
+            .first(where: { $0.productIdentifier == productIdentifier })
     }
 
     // Previews
