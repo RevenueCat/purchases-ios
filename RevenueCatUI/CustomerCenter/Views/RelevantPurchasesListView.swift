@@ -258,7 +258,7 @@ struct RelevantPurchasesListView: View {
      // swiftlint:disable force_unwrapping
     static var previews: some View {
         let purchases = [
-            PurchaseInformation.yearlyExpiring(store: .amazon, renewalDate: Date()),
+            PurchaseInformation.yearlyExpiring(store: .amazon, renewalDate: PurchaseInfo.defaulRenewalDate),
             PurchaseInformation.yearlyExpiring(store: .appStore),
             .free
         ]

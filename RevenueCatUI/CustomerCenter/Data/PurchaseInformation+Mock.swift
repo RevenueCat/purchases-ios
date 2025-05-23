@@ -16,6 +16,7 @@ import Foundation
 
 // swiftlint:disable force_unwrapping
 extension PurchaseInformation {
+    static let defaulRenewalDate = Date(timeIntervalSince1970: 1747876800)
     static let defaultLatestPurchaseDate = Date(timeIntervalSince1970: 1747862400)
     static let defaultCustomerInfoRequestedDate = Date(timeIntervalSince1970: 1747862400)
 
