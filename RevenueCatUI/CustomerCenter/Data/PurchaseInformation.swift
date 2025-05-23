@@ -68,7 +68,6 @@ struct PurchaseInformation {
     /// Note: `false` for non-subscriptions
     let isActive: Bool
 
-
     /// The fetch date of this CustomerInfo. (a.k.a. CustomerInfo.requestedDate)
     let customerInfoRequestedDate: Date
 
