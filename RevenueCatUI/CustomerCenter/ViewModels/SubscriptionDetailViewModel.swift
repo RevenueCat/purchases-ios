@@ -26,6 +26,9 @@ import SwiftUI
 @MainActor
 final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
 
+    @Published
+    var isRefreshing: Bool = false
+
     let showPurchaseHistory: Bool
 
     var shouldShowContactSupport: Bool {
@@ -60,6 +63,10 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
         }
 
     func reloadPurchaseInformation(from customerInfoViewModel: CustomerCenterViewModel) {
+        defer {
+            isRefreshing = false
+        }
+
         guard let productIdentifier = purchaseInformation?.productIdentifier else {
             return
         }

@@ -46,9 +46,6 @@ struct SubscriptionDetailView: View {
     @State
     private var showSimulatorAlert: Bool = false
 
-    @State
-    private var isRefreshing: Bool = false
-
     init(
         customerInfoViewModel: CustomerCenterViewModel,
         screen: CustomerCenterConfigData.Screen,
@@ -91,13 +88,10 @@ struct SubscriptionDetailView: View {
                         customerInfoViewModel.manageSubscriptionsSheet = manage } }
                 )))
             .onCustomerCenterPromotionalOfferSuccess {
-                isRefreshing = true
+                viewModel.isRefreshing = true
                 Task {
-                    await customerInfoViewModel.loadScreen(shouldSync: true)
+                    await reloadPurchases()
 
-                    await MainActor.run {
-                        isRefreshing = false
-                    }
                 }
             }
             .onCustomerCenterShowingManageSubscriptions {
@@ -107,12 +101,9 @@ struct SubscriptionDetailView: View {
             }
             .onChangeOf(customerInfoViewModel.manageSubscriptionsSheet) { manageSubscriptionsSheet in
                 if !manageSubscriptionsSheet {
-                    isRefreshing = true
+                    viewModel.isRefreshing = true
                     Task {
-                        await customerInfoViewModel.loadScreen(shouldSync: true)
-                        await MainActor.run {
-                            isRefreshing = false
-                        }
+                        await reloadPurchases()
                     }
                 }
             }
@@ -160,7 +151,7 @@ struct SubscriptionDetailView: View {
     var content: some View {
         ScrollViewWithOSBackground {
             LazyVStack(spacing: 0) {
-                if isRefreshing {
+                if viewModel.isRefreshing {
                     ProgressView()
                         .padding(.vertical)
                 }
@@ -248,6 +239,14 @@ struct SubscriptionDetailView: View {
         .padding(.horizontal)
         .buttonStyle(.customerCenterButtonStyle(for: colorScheme))
         .tint(colorScheme == .dark ? .white : .black)
+    }
+
+    // Note that we set refreshing to false, in case loadScreen does not trigger a new update (error)
+    private func reloadPurchases() async {
+        await customerInfoViewModel.loadScreen(shouldSync: true)
+        await MainActor.run {
+            viewModel.isRefreshing = false
+        }
     }
 }
 
