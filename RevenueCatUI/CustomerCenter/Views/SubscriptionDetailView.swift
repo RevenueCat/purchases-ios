@@ -55,6 +55,7 @@ struct SubscriptionDetailView: View {
         purchasesProvider: CustomerCenterPurchasesType,
         actionWrapper: CustomerCenterActionWrapper) {
             let viewModel = SubscriptionDetailViewModel(
+                customerInfoViewModel: customerInfoViewModel,
                 screen: screen,
                 showPurchaseHistory: showPurchaseHistory,
                 allowsMissingPurchaseAction: allowsMissingPurchaseAction,
@@ -88,11 +89,7 @@ struct SubscriptionDetailView: View {
                         customerInfoViewModel.manageSubscriptionsSheet = manage } }
                 )))
             .onCustomerCenterPromotionalOfferSuccess {
-                viewModel.isRefreshing = true
-                Task {
-                    await reloadPurchases()
-
-                }
+                viewModel.refreshPurchase()
             }
             .onCustomerCenterShowingManageSubscriptions {
                 Task { @MainActor in
@@ -101,15 +98,9 @@ struct SubscriptionDetailView: View {
             }
             .onChangeOf(customerInfoViewModel.manageSubscriptionsSheet) { manageSubscriptionsSheet in
                 if !manageSubscriptionsSheet {
-                    viewModel.isRefreshing = true
-                    Task {
-                        await reloadPurchases()
-                    }
+                    viewModel.refreshPurchase()
                 }
             }
-            .onChangeOf(customerInfoViewModel.customerInfo, perform: { _ in
-                viewModel.reloadPurchaseInformation(from: customerInfoViewModel)
-            })
             .compatibleNavigation(
                 isPresented: $viewModel.showAllPurchases,
                 usesNavigationStack: navigationOptions.usesNavigationStack
@@ -240,14 +231,6 @@ struct SubscriptionDetailView: View {
         .buttonStyle(.customerCenterButtonStyle(for: colorScheme))
         .tint(colorScheme == .dark ? .white : .black)
     }
-
-    // Note that we set refreshing to false, in case loadScreen does not trigger a new update (error)
-    private func reloadPurchases() async {
-        await customerInfoViewModel.loadScreen(shouldSync: true)
-        await MainActor.run {
-            viewModel.isRefreshing = false
-        }
-    }
 }
 
  #if DEBUG
@@ -267,6 +250,9 @@ struct SubscriptionDetailView: View {
                         configuration: .default
                     ),
                     viewModel: SubscriptionDetailViewModel(
+                        customerInfoViewModel: CustomerCenterViewModel(
+                            uiPreviewPurchaseProvider: MockCustomerCenterPurchases()
+                        ),
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
                         allowsMissingPurchaseAction: false,
@@ -285,6 +271,9 @@ struct SubscriptionDetailView: View {
                         configuration: .default
                     ),
                     viewModel: SubscriptionDetailViewModel(
+                        customerInfoViewModel: CustomerCenterViewModel(
+                            uiPreviewPurchaseProvider: MockCustomerCenterPurchases()
+                        ),
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
                         allowsMissingPurchaseAction: false,
@@ -302,6 +291,9 @@ struct SubscriptionDetailView: View {
                         configuration: .default
                     ),
                     viewModel: SubscriptionDetailViewModel(
+                        customerInfoViewModel: CustomerCenterViewModel(
+                            uiPreviewPurchaseProvider: MockCustomerCenterPurchases()
+                        ),
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: false,
                         allowsMissingPurchaseAction: false,
@@ -319,6 +311,9 @@ struct SubscriptionDetailView: View {
                         configuration: .default
                     ),
                     viewModel: SubscriptionDetailViewModel(
+                        customerInfoViewModel: CustomerCenterViewModel(
+                            uiPreviewPurchaseProvider: MockCustomerCenterPurchases()
+                        ),
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
                         allowsMissingPurchaseAction: false,
@@ -336,6 +331,9 @@ struct SubscriptionDetailView: View {
                         configuration: .default
                     ),
                     viewModel: SubscriptionDetailViewModel(
+                        customerInfoViewModel: CustomerCenterViewModel(
+                            uiPreviewPurchaseProvider: MockCustomerCenterPurchases()
+                        ),
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
                         allowsMissingPurchaseAction: false,

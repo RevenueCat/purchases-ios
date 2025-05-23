@@ -13,6 +13,7 @@
 //  Created by Facundo Menzella on 3/5/25.
 //
 
+import Combine
 import Foundation
 @_spi(Internal) import RevenueCat
 import SwiftUI
@@ -41,7 +42,11 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
 
     private var allowsMissingPurchaseAction: Bool = true
 
+    private var cancellable: AnyCancellable?
+    private let customerInfoViewModel: CustomerCenterViewModel
+
     init(
+        customerInfoViewModel: CustomerCenterViewModel,
         screen: CustomerCenterConfigData.Screen,
         showPurchaseHistory: Bool,
         allowsMissingPurchaseAction: Bool,
@@ -52,6 +57,8 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
         loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
             self.showPurchaseHistory = showPurchaseHistory
             self.allowsMissingPurchaseAction = allowsMissingPurchaseAction
+            self.customerInfoViewModel = customerInfoViewModel
+
             super.init(
                 screen: screen,
                 actionWrapper: actionWrapper,
@@ -62,22 +69,26 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
             )
         }
 
-    func reloadPurchaseInformation(from customerInfoViewModel: CustomerCenterViewModel) {
-        defer {
+    func refreshPurchase() {
+        cancellable = customerInfoViewModel.publisher(for: purchaseInformation)?
+            .sink(receiveValue: { [weak self] in
+                defer { self?.isRefreshing = false }
+
+                self?.purchaseInformation = $0
+            })
+
+        isRefreshing = true
+
+        Task {
+            await customerInfoViewModel.loadScreen(shouldSync: true)
+            // In case loadScreen does not trigger a new update (error)
             isRefreshing = false
         }
-
-        guard let productIdentifier = purchaseInformation?.productIdentifier else {
-            return
-        }
-        self.purchaseInformation = customerInfoViewModel.activeSubscriptionPurchases
-            .first(where: { $0.productIdentifier == productIdentifier })
-        ?? customerInfoViewModel.activeNonSubscriptionPurchases
-            .first(where: { $0.productIdentifier == productIdentifier })
     }
 
     // Previews
     convenience init(
+        customerInfoViewModel: CustomerCenterViewModel,
         screen: CustomerCenterConfigData.Screen,
         showPurchaseHistory: Bool,
         allowsMissingPurchaseAction: Bool,
@@ -85,6 +96,7 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
         refundRequestStatus: RefundRequestStatus? = nil
     ) {
         self.init(
+            customerInfoViewModel: customerInfoViewModel,
             screen: screen,
             showPurchaseHistory: showPurchaseHistory,
             allowsMissingPurchaseAction: allowsMissingPurchaseAction,
