@@ -28,6 +28,9 @@ final class SubscriptionDetailViewModelTests: TestCase {
 
     func testShouldShowContactSupport() {
         let viewModelAppStore = SubscriptionDetailViewModel(
+            customerInfoViewModel: CustomerCenterViewModel(
+                uiPreviewPurchaseProvider: MockCustomerCenterPurchases()
+            ),
             screen: CustomerCenterConfigData.default.screens[.management]!,
             showPurchaseHistory: false,
             allowsMissingPurchaseAction: false,
@@ -50,6 +53,9 @@ final class SubscriptionDetailViewModelTests: TestCase {
 
         otherStores.forEach {
             let viewModelOther = SubscriptionDetailViewModel(
+                customerInfoViewModel: CustomerCenterViewModel(
+                    uiPreviewPurchaseProvider: MockCustomerCenterPurchases()
+                ),
                 screen: CustomerCenterConfigData.default.screens[.management]!,
                 showPurchaseHistory: false,
                 allowsMissingPurchaseAction: true,
