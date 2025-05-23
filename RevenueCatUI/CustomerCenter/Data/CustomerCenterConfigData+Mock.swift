@@ -16,7 +16,6 @@
 import Foundation
 import RevenueCat
 
-// swiftlint:disable force_unwrapping
 extension CustomerCenterConfigData {
 
     @available(iOS 14.0, *)
@@ -137,57 +136,6 @@ extension CustomerCenterConfigData {
 
     @available(iOS 14.0, *)
     static let `default` = mock()
-
-    static let subscriptionInformationMonthlyRenewing = PurchaseInformation(
-        title: "Basic",
-        durationTitle: "Monthly",
-        pricePaid: .nonFree("$4.99"),
-        renewalPrice: .nonFree("$4.99"),
-        productIdentifier: "product_id",
-        store: .appStore,
-        isLifetime: false,
-        isTrial: false,
-        isCancelled: false,
-        latestPurchaseDate: Date(),
-        customerInfoRequestedDate: Date(),
-        managementURL: URL(string: "https://www.revenuecat.com")!,
-        expirationDate: nil,
-        renewalDate: nil
-    )
-
-    static let subscriptionInformationFree = PurchaseInformation(
-        title: "Basic",
-        durationTitle: "Monthly",
-        pricePaid: .free,
-        renewalPrice: .nonFree("$4.99"),
-        productIdentifier: "product_id",
-        store: .appStore,
-        isLifetime: false,
-        isTrial: false,
-        isCancelled: false,
-        latestPurchaseDate: Date(),
-        customerInfoRequestedDate: Date(),
-        managementURL: URL(string: "https://www.revenuecat.com")!,
-        expirationDate: nil,
-        renewalDate: nil
-    )
-
-    static let consumable = PurchaseInformation(
-        title: "Basic",
-        durationTitle: nil,
-        pricePaid: .nonFree("$49.99"),
-        renewalPrice: nil,
-        productIdentifier: "product_id",
-        store: .appStore,
-        isLifetime: true,
-        isTrial: false,
-        isCancelled: false,
-        latestPurchaseDate: Date(),
-        customerInfoRequestedDate: Date(),
-        managementURL: URL(string: "https://www.revenuecat.com")!,
-        expirationDate: nil,
-        renewalDate: nil
-    )
 
     static let standardAppearance = CustomerCenterConfigData.Appearance(
         accentColor: .init(light: "#007AFF", dark: "#007AFF"),

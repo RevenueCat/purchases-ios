@@ -147,6 +147,8 @@ struct PurchaseInformation {
             self.isLifetime = entitlement.expirationDate == nil
             self.isTrial = entitlement.periodType == .trial
             self.isCancelled = entitlement.isCancelled
+            // entitlement.latestPurchaseDate is optional, but it shouldn't.
+            // date will be the one from the entitlement
             self.latestPurchaseDate = entitlement.latestPurchaseDate ?? transaction.purchaseDate
             self.expirationDate = entitlement.expirationDate
             self.renewalDate = entitlement.willRenew ? entitlement.expirationDate : nil
