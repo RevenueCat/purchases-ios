@@ -44,6 +44,7 @@ struct SheetViewModel: Equatable {
 struct BottomSheetOverlayModifier: ViewModifier {
     @Binding var sheetViewModel: SheetViewModel?
     let safeAreaInsets: EdgeInsets
+    let onDismiss: (() -> Void)?
 
     @State private var parentHeight: CGFloat?
 
@@ -100,6 +101,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         viewModel: sheetViewModel.sheetStackViewModel,
                         onDismiss: {
                             self.sheetViewModel = nil
+                            onDismiss?()
                         },
                         additionalPadding: self.safeAreaInsets
                     )
@@ -139,10 +141,11 @@ extension View {
     /// - Returns: A view that presents the sheet when `isPresented` is true.
     func bottomSheet(
         sheet: Binding<SheetViewModel?>,
-        safeAreaInsets: EdgeInsets
+        safeAreaInsets: EdgeInsets,
+        onDismiss: (() -> Void)?
     ) -> some View {
         modifier(
-            BottomSheetOverlayModifier(sheetViewModel: sheet, safeAreaInsets: safeAreaInsets)
+            BottomSheetOverlayModifier(sheetViewModel: sheet, safeAreaInsets: safeAreaInsets, onDismiss: onDismiss)
         )
     }
 }
@@ -193,7 +196,7 @@ struct BottomSheetViewTestView: View {
             VStack {
                 Text("This view will have a sheet over it")
                     .bottomSheet(sheet: $sheetViewModel,
-                                 safeAreaInsets: .init(top: 0, leading: 0, bottom: 0, trailing: 0))
+                                 safeAreaInsets: .init(top: 0, leading: 0, bottom: 0, trailing: 0), onDismiss: nil)
             }
         }
         .edgesIgnoringSafeArea(.all)
