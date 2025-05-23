@@ -227,6 +227,8 @@ import RevenueCat
 private extension CustomerCenterViewModel {
 
     func loadPurchases(customerInfo: CustomerInfo) async throws {
+        self.customerInfo = customerInfo
+
         let hasActiveProducts =  !customerInfo.activeSubscriptions.isEmpty || !customerInfo.nonSubscriptions.isEmpty
 
         if !hasActiveProducts {
@@ -234,7 +236,6 @@ private extension CustomerCenterViewModel {
             self.activeNonSubscriptionPurchases = []
             self.activePurchase = nil
             self.state = .success
-            self.customerInfo = customerInfo
             return
         }
 
@@ -242,7 +243,6 @@ private extension CustomerCenterViewModel {
             self.activePurchase = nil
             self.activeSubscriptionPurchases = []
             self.activeNonSubscriptionPurchases = []
-            self.customerInfo = customerInfo
 
             Logger.warning(Strings.could_not_find_subscription_information)
             throw CustomerCenterError.couldNotFindSubscriptionInformation
@@ -260,7 +260,6 @@ private extension CustomerCenterViewModel {
 
         await loadActiveSubscriptions(customerInfo: customerInfo)
         await loadActiveNonSubscriptionPurchases(customerInfo: customerInfo)
-        self.customerInfo = customerInfo
     }
 
     func loadActiveNonSubscriptionPurchases(customerInfo: CustomerInfo) async {
