@@ -122,9 +122,84 @@ struct ImageComponentView: View {
 // swiftlint:disable:next type_body_length
 struct ImageComponentView_Previews: PreviewProvider {
     static let catUrl = URL(string: "https://assets.pawwalls.com/954459_1701163461.jpg")!
+    static let bigImageUrl = URL(string: "https://assets.pawwalls.com/1172568_1741034533.heic")!
+    static let smallImage = URL(string: "https://assets.pawwalls.com/1172568_1734493671.heic")!
+
+    @ViewBuilder
+    static func imageView(
+        url: URL,
+        size: PaywallComponent.Size,
+        fitMode: PaywallComponent.FitMode,
+        width: Int,
+        height: Int
+    ) -> some View {
+        ImageComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [:]
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(
+                    source: .init(
+                        light: .init(
+                            width: width,
+                            height: height,
+                            original: url,
+                            heic: url,
+                            heicLowRes: url
+                        )
+                    ),
+                    size: size,
+                    fitMode: fitMode,
+                    border: .init(color: .init(light: .hex("#ff0000")), width: 4)
+                )
+            )
+        )
+        Text(.init("width: **\(size.width)** height: **\(size.height)**\n" +
+                   "fitMode: **\(fitMode)**\n" +
+                   "width: **\(width)** height: **\(height)**"))
+    }
+
+    static var fixedHeight: UInt = 360
 
     // Need to wrap in VStack otherwise preview rerenders and images won't show
     static var previews: some View {
+
+        ScrollView {
+            VStack {
+                imageView(url: bigImageUrl,
+                          size: .init(width: .fit, height: .fixed(fixedHeight)),
+                          fitMode: .fit, width: 1080, height: 500)
+                imageView(url: bigImageUrl,
+                          size: .init(width: .fill, height: .fixed(fixedHeight)),
+                          fitMode: .fit, width: 1080, height: 500)
+                imageView(url: bigImageUrl,
+                          size: .init(width: .fit, height: .fixed(fixedHeight)),
+                          fitMode: .fill, width: 1080, height: 500)
+                imageView(url: bigImageUrl,
+                          size: .init(width: .fill, height: .fixed(fixedHeight)),
+                          fitMode: .fill, width: 1080, height: 500)
+
+                imageView(url: smallImage,
+                          size: .init(width: .fit, height: .fixed(fixedHeight)),
+                          fitMode: .fit, width: 22, height: 21)
+                imageView(url: smallImage,
+                          size: .init(width: .fill, height: .fixed(fixedHeight)),
+                          fitMode: .fit, width: 22, height: 21)
+                imageView(url: smallImage,
+                          size: .init(width: .fill, height: .fixed(fixedHeight)),
+                          fitMode: .fill, width: 22, height: 21)
+                imageView(url: smallImage,
+                          size: .init(width: .fit, height: .fixed(fixedHeight)),
+                          fitMode: .fill, width: 22, height: 21)
+            }
+        }
+        .previewRequiredEnvironmentProperties()
+        .previewLayout(.fixed(width: 400, height: 400))
+        .previewDisplayName("Bug - Image stretching beyond bounds")
+
         // Light - Fit
         VStack {
             ImageComponentView(
