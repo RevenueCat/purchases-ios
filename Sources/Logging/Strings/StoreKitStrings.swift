@@ -229,8 +229,7 @@ extension StoreKitStrings: LogMessage {
             return "Unrecognized Product.PurchaseResult: \(name)"
 
         case .sk2_sync_purchases_no_transaction_or_apptransaction_found:
-            return "syncPurchases was called, but we were unable to fetch any transactions or an AppTransaction " +
-            "from StoreKit 2."
+            return "Couldn't find previous transactions or an AppTransaction."
         }
     }
 
