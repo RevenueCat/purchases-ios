@@ -91,7 +91,6 @@ struct SubscriptionDetailView: View {
                 viewModel.isRefreshing = true
                 Task {
                     await reloadPurchases()
-
                 }
             }
             .onCustomerCenterShowingManageSubscriptions {
@@ -107,9 +106,6 @@ struct SubscriptionDetailView: View {
                     }
                 }
             }
-            .onChangeOf(customerInfoViewModel.customerInfo, perform: { _ in
-                viewModel.reloadPurchaseInformation(from: customerInfoViewModel)
-            })
             .compatibleNavigation(
                 isPresented: $viewModel.showAllPurchases,
                 usesNavigationStack: navigationOptions.usesNavigationStack

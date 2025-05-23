@@ -13,6 +13,7 @@
 //  Created by Facundo Menzella on 3/5/25.
 //
 
+import Combine
 import Foundation
 @_spi(Internal) import RevenueCat
 import SwiftUI
@@ -41,7 +42,10 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
 
     private var allowsMissingPurchaseAction: Bool = true
 
+    private var cancellable: AnyCancellable?
+
     init(
+        customerInfoViewModel: CustomerCenterViewModel,
         screen: CustomerCenterConfigData.Screen,
         showPurchaseHistory: Bool,
         allowsMissingPurchaseAction: Bool,
@@ -52,6 +56,7 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
         loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
             self.showPurchaseHistory = showPurchaseHistory
             self.allowsMissingPurchaseAction = allowsMissingPurchaseAction
+
             super.init(
                 screen: screen,
                 actionWrapper: actionWrapper,
@@ -60,9 +65,18 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
                 purchasesProvider: purchasesProvider,
                 loadPromotionalOfferUseCase: loadPromotionalOfferUseCase
             )
+
+            let activeSubsPublisher = customerInfoViewModel.$activeNonSubscriptionPurchases
+            let nonSubsPublisher = customerInfoViewModel.$activeNonSubscriptionPurchases
+            cancellable = activeSubsPublisher.combineLatest(nonSubsPublisher)
+                .debounce(for: .milliseconds(100), scheduler: DispatchQueue.main)
+                .eraseToAnyPublisher()
+                .sink(receiveValue: { [weak self] activeSubs, nonSubs in
+                    self?.reloadPurchaseInformation(with: activeSubs + nonSubs)
+                })
         }
 
-    func reloadPurchaseInformation(from customerInfoViewModel: CustomerCenterViewModel) {
+    func reloadPurchaseInformation(with purchases: [PurchaseInformation]) {
         defer {
             isRefreshing = false
         }
@@ -70,10 +84,8 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
         guard let productIdentifier = purchaseInformation?.productIdentifier else {
             return
         }
-        self.purchaseInformation = customerInfoViewModel.activeSubscriptionPurchases
-            .first(where: { $0.productIdentifier == productIdentifier })
-        ?? customerInfoViewModel.activeNonSubscriptionPurchases
-            .first(where: { $0.productIdentifier == productIdentifier })
+
+        self.purchaseInformation = purchases.first(where: { $0.productIdentifier == productIdentifier })
     }
 
     // Previews
