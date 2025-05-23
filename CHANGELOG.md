@@ -1,3 +1,8 @@
+## 5.25.1
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Use correct title for section (#5168) via Facundo Menzella (@facumenzella)
+
 ## 5.25.0
 ## RevenueCat SDK
 ### 🐞 Bugfixes
