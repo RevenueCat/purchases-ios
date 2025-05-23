@@ -46,6 +46,9 @@ struct SubscriptionDetailView: View {
     @State
     private var showSimulatorAlert: Bool = false
 
+    @State
+    private var isRefreshing: Bool = false
+
     init(
         customerInfoViewModel: CustomerCenterViewModel,
         screen: CustomerCenterConfigData.Screen,
@@ -88,8 +91,13 @@ struct SubscriptionDetailView: View {
                         customerInfoViewModel.manageSubscriptionsSheet = manage } }
                 )))
             .onCustomerCenterPromotionalOfferSuccess {
+                isRefreshing = true
                 Task {
                     await customerInfoViewModel.loadScreen(shouldSync: true)
+
+                    await MainActor.run {
+                        isRefreshing = false
+                    }
                 }
             }
             .onCustomerCenterShowingManageSubscriptions {
@@ -99,8 +107,12 @@ struct SubscriptionDetailView: View {
             }
             .onChangeOf(customerInfoViewModel.manageSubscriptionsSheet) { manageSubscriptionsSheet in
                 if !manageSubscriptionsSheet {
+                    isRefreshing = true
                     Task {
                         await customerInfoViewModel.loadScreen(shouldSync: true)
+                        await MainActor.run {
+                            isRefreshing = false
+                        }
                     }
                 }
             }
@@ -148,6 +160,10 @@ struct SubscriptionDetailView: View {
     var content: some View {
         ScrollViewWithOSBackground {
             LazyVStack(spacing: 0) {
+                if isRefreshing {
+                    ProgressView()
+                        .padding(.vertical)
+                }
                 if let purchaseInformation = self.viewModel.purchaseInformation {
                     PurchaseInformationCardView(
                         purchaseInformation: purchaseInformation,
