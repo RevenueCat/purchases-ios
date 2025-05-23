@@ -134,7 +134,7 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - v3-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}
+            - v4.alpha.1-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}
       # CircleCI images fail on Ruby 3.3
       # https://github.com/fastlane/fastlane/issues/21794#issuecomment-2021331335
       # Also, not using macos/switch-ruby because its broken
@@ -157,7 +157,7 @@ commands:
             bundle config set --local path 'vendor/bundle'
             bundle install
       - save_cache:
-          key: v3-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}
+          key: v4.alpha.1-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}
           paths:
             - vendor/bundle
             - ~/.rbenv/versions/3.2.0
