@@ -744,7 +744,7 @@ func stackAlignmentAndDistributionPreviews(dimensions: [PaywallComponent.Dimensi
                     component: PaywallComponent.StackComponent(
                         components: innerStacks(dimension: dimension),
                         dimension: dimension,
-                        size: .init(width: .fill, height: .fixed(150)),
+                        size: .init(width: .fill, height: .fixed(170)),
                         spacing: 10,
                         backgroundColor: .init(light: .hex("#ff0000")),
                         padding: .init(top: 10, bottom: 10, leading: 10, trailing: 10),
