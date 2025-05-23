@@ -32,25 +32,32 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
         purchaseInformation?.store != .appStore
     }
 
+    override var allowMissingPurchase: Bool {
+        allowsMissingPurchaseAction
+    }
+
+    private var allowsMissingPurchaseAction: Bool = true
+
     init(
         screen: CustomerCenterConfigData.Screen,
         showPurchaseHistory: Bool,
+        allowsMissingPurchaseAction: Bool,
         actionWrapper: CustomerCenterActionWrapper,
         purchaseInformation: PurchaseInformation? = nil,
         refundRequestStatus: RefundRequestStatus? = nil,
         purchasesProvider: CustomerCenterPurchasesType,
         loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
-        self.showPurchaseHistory = showPurchaseHistory
-
-        super.init(
-            screen: screen,
-            actionWrapper: actionWrapper,
-            purchaseInformation: purchaseInformation,
-            refundRequestStatus: refundRequestStatus,
-            purchasesProvider: purchasesProvider,
-            loadPromotionalOfferUseCase: loadPromotionalOfferUseCase
-        )
-    }
+            self.showPurchaseHistory = showPurchaseHistory
+            self.allowsMissingPurchaseAction = allowsMissingPurchaseAction
+            super.init(
+                screen: screen,
+                actionWrapper: actionWrapper,
+                purchaseInformation: purchaseInformation,
+                refundRequestStatus: refundRequestStatus,
+                purchasesProvider: purchasesProvider,
+                loadPromotionalOfferUseCase: loadPromotionalOfferUseCase
+            )
+        }
 
     func reloadPurchaseInformation(_ purchaseInformation: PurchaseInformation?) {
         self.purchaseInformation = purchaseInformation
@@ -60,12 +67,14 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
     convenience init(
         screen: CustomerCenterConfigData.Screen,
         showPurchaseHistory: Bool,
+        allowsMissingPurchaseAction: Bool,
         purchaseInformation: PurchaseInformation? = nil,
         refundRequestStatus: RefundRequestStatus? = nil
     ) {
         self.init(
             screen: screen,
             showPurchaseHistory: showPurchaseHistory,
+            allowsMissingPurchaseAction: allowsMissingPurchaseAction,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchaseInformation,
             refundRequestStatus: refundRequestStatus,
