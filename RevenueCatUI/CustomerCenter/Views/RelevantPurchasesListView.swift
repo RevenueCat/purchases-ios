@@ -142,7 +142,7 @@ struct RelevantPurchasesListView: View {
                 } else {
                     if !customerInfoViewModel.activeSubscriptionPurchases.isEmpty {
                         PurchasesInformationSection(
-                            title: localization[.actionsSectionTitle],
+                            title: localization[.subscriptionsSectionTitle],
                             items: customerInfoViewModel.activeSubscriptionPurchases,
                             localization: localization
                         ) {
