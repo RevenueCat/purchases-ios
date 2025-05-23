@@ -68,7 +68,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
 
     private var error: Error?
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
-    private(set) var paths: [CustomerCenterConfigData.HelpPath]
+    let paths: [CustomerCenterConfigData.HelpPath]
     private(set) var purchasesProvider: CustomerCenterPurchasesType
 
     init(
