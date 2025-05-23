@@ -105,19 +105,6 @@ struct SubscriptionDetailView: View {
                 }
             }
             .compatibleNavigation(
-                item: $viewModel.feedbackSurveyData,
-                usesNavigationStack: navigationOptions.usesNavigationStack
-            ) { feedbackSurveyData in
-                FeedbackSurveyView(
-                    feedbackSurveyData: feedbackSurveyData,
-                    purchasesProvider: self.viewModel.purchasesProvider,
-                    actionWrapper: self.viewModel.actionWrapper,
-                    isPresented: .isNotNil(self.$viewModel.feedbackSurveyData))
-                .environment(\.appearance, appearance)
-                .environment(\.localization, localization)
-                .environment(\.navigationOptions, navigationOptions)
-            }
-            .compatibleNavigation(
                 isPresented: $viewModel.showAllPurchases,
                 usesNavigationStack: navigationOptions.usesNavigationStack
             ) {
@@ -128,21 +115,17 @@ struct SubscriptionDetailView: View {
                 .environment(\.localization, localization)
                 .environment(\.navigationOptions, navigationOptions)
             }
-            .sheet(item: self.$viewModel.promotionalOfferData) { promotionalOfferData in
-                PromotionalOfferView(
-                    promotionalOffer: promotionalOfferData.promotionalOffer,
-                    product: promotionalOfferData.product,
-                    promoOfferDetails: promotionalOfferData.promoOfferDetails,
-                    purchasesProvider: self.viewModel.purchasesProvider,
-                    onDismissPromotionalOfferView: { userAction in
-                        Task(priority: .userInitiated) {
-                            await self.viewModel.handleDismissPromotionalOfferView(userAction)
-                        }
-                    }
-                )
-                .environment(\.appearance, appearance)
-                .environment(\.localization, localization)
-                .interactiveDismissDisabled()
+            .sheet(isPresented: .isNotNil(self.$viewModel.feedbackSurveyData)) {
+                if let feedback = viewModel.feedbackSurveyData {
+                    FeedbackSurveyView(
+                        feedbackSurveyData: feedback,
+                        purchasesProvider: self.viewModel.purchasesProvider,
+                        actionWrapper: self.viewModel.actionWrapper,
+                        isPresented: .isNotNil(self.$viewModel.feedbackSurveyData))
+                    .environment(\.appearance, appearance)
+                    .environment(\.localization, localization)
+                    .environment(\.navigationOptions, navigationOptions)
+                }
             }
             .sheet(item: self.$viewModel.inAppBrowserURL,
                    onDismiss: {
@@ -230,14 +213,9 @@ struct SubscriptionDetailView: View {
             }
         } label: {
             CompatibilityLabeledContent(localization[.contactSupport])
-                .padding(.horizontal)
-                .padding(.vertical, 12)
         }
-        .background(Color(colorScheme == .light
-                          ? UIColor.systemBackground
-                          : UIColor.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
         .padding(.horizontal)
+        .buttonStyle(.customerCenterButtonStyle(for: colorScheme))
     }
 
     private var seeAllSubscriptionsButton: some View {
@@ -247,14 +225,9 @@ struct SubscriptionDetailView: View {
             CompatibilityLabeledContent(localization[.seeAllPurchases]) {
                 Image(systemName: "chevron.forward")
             }
-            .padding(.horizontal)
-            .padding(.vertical, 12)
-            .background(Color(colorScheme == .light
-                              ? UIColor.systemBackground
-                              : UIColor.secondarySystemBackground))
-            .cornerRadius(10)
-            .padding(.horizontal)
         }
+        .padding(.horizontal)
+        .buttonStyle(.customerCenterButtonStyle(for: colorScheme))
         .tint(colorScheme == .dark ? .white : .black)
     }
 }
