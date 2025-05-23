@@ -30,90 +30,90 @@ extension CustomerCenterConfigData {
         CustomerCenterConfigData(
             screens: [
                 .management:
-                    .init(
-                        type: .management,
-                        title: "Manage Subscription",
-                        subtitle: "Manage your subscription details here",
-                        paths: [
-                            .init(
-                                id: "1",
-                                title: "Didn't receive purchase",
-                                url: nil,
-                                openMethod: nil,
-                                type: .missingPurchase,
-                                detail: nil,
-                                refundWindowDuration: nil
-                            ),
-                            .init(
-                                id: "2",
-                                title: "Request a refund",
-                                url: nil,
-                                openMethod: nil,
-                                type: .refundRequest,
-                                detail: .promotionalOffer(CustomerCenterConfigData.HelpPath.PromotionalOffer(
-                                    iosOfferId: "offer_id",
-                                    eligible: true,
-                                    title: "title",
-                                    subtitle: "subtitle",
-                                    productMapping: ["monthly": "offer_id"]
-                                )),
-                                refundWindowDuration: refundWindowDuration
-                            ),
-                            .init(
-                                id: "3",
-                                title: "Change plans",
-                                url: nil,
-                                openMethod: nil,
-                                type: .changePlans,
-                                detail: nil,
-                                refundWindowDuration: nil
-                            ),
-                            .init(
-                                id: "4",
-                                title: "Cancel subscription",
-                                url: nil,
-                                openMethod: nil,
-                                type: .cancel,
-                                detail: .feedbackSurvey(.init(
-                                    title: "Why are you cancelling?",
-                                    options: [
-                                        .init(
-                                            id: "1",
-                                            title: "Too expensive",
-                                            promotionalOffer: nil
-                                        ),
-                                        .init(
-                                            id: "2",
-                                            title: "Don't use the app",
-                                            promotionalOffer: nil
-                                        ),
-                                        .init(
-                                            id: "3",
-                                            title: "Bought by mistake",
-                                            promotionalOffer: nil
-                                        )
-                                    ]
-                                )),
-                                refundWindowDuration: nil
-                            )
-                        ]
-                    ),
-                      .noActive: .init(
-                        type: .noActive,
-                        title: "No Active Subscription",
-                        subtitle: "You currently have no active subscriptions",
-                        paths: [
-                            .init(
-                                id: "9q9719171o",
-                                title: "Check purchases",
-                                url: nil,
-                                openMethod: nil,
-                                type: .missingPurchase,
-                                detail: nil,
-                                refundWindowDuration: nil
-                            )
-                        ]
-                      )
+                        .init(
+                            type: .management,
+                            title: "Manage Subscription",
+                            subtitle: "Manage your subscription details here",
+                            paths: [
+                                .init(
+                                    id: "1",
+                                    title: "Didn't receive purchase",
+                                    url: nil,
+                                    openMethod: nil,
+                                    type: .missingPurchase,
+                                    detail: nil,
+                                    refundWindowDuration: nil
+                                ),
+                                .init(
+                                    id: "2",
+                                    title: "Request a refund",
+                                    url: nil,
+                                    openMethod: nil,
+                                    type: .refundRequest,
+                                    detail: .promotionalOffer(CustomerCenterConfigData.HelpPath.PromotionalOffer(
+                                        iosOfferId: "offer_id",
+                                        eligible: true,
+                                        title: "title",
+                                        subtitle: "subtitle",
+                                        productMapping: ["monthly": "offer_id"]
+                                    )),
+                                    refundWindowDuration: refundWindowDuration
+                                ),
+                                .init(
+                                    id: "3",
+                                    title: "Change plans",
+                                    url: nil,
+                                    openMethod: nil,
+                                    type: .changePlans,
+                                    detail: nil,
+                                    refundWindowDuration: nil
+                                ),
+                                .init(
+                                    id: "4",
+                                    title: "Cancel subscription",
+                                    url: nil,
+                                    openMethod: nil,
+                                    type: .cancel,
+                                    detail: .feedbackSurvey(.init(
+                                        title: "Why are you cancelling?",
+                                        options: [
+                                            .init(
+                                                id: "1",
+                                                title: "Too expensive",
+                                                promotionalOffer: nil
+                                            ),
+                                            .init(
+                                                id: "2",
+                                                title: "Don't use the app",
+                                                promotionalOffer: nil
+                                            ),
+                                            .init(
+                                                id: "3",
+                                                title: "Bought by mistake",
+                                                promotionalOffer: nil
+                                            )
+                                        ]
+                                    )),
+                                    refundWindowDuration: nil
+                                )
+                            ]
+                        ),
+                .noActive: .init(
+                    type: .noActive,
+                    title: "No Active Subscription",
+                    subtitle: "You currently have no active subscriptions",
+                    paths: [
+                        .init(
+                            id: "9q9719171o",
+                            title: "Check purchases",
+                            url: nil,
+                            openMethod: nil,
+                            type: .missingPurchase,
+                            detail: nil,
+                            refundWindowDuration: nil
+                        )
+                    ]
+                )
             ],
             appearance: standardAppearance,
             localization: .init(
@@ -136,7 +136,7 @@ extension CustomerCenterConfigData {
 
     @available(iOS 14.0, *)
     static let `default` = mock()
-    
+
     static let standardAppearance = CustomerCenterConfigData.Appearance(
         accentColor: .init(light: "#007AFF", dark: "#007AFF"),
         textColor: .init(light: "#000000", dark: "#ffffff"),
