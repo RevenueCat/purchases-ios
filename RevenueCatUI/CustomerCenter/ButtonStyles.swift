@@ -66,7 +66,7 @@ struct CustomerCenterButtonStyle: ButtonStyle {
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 extension ButtonStyle where Self == CustomerCenterButtonStyle {
-    static func customerCenterScrollView(for colorScheme: ColorScheme) -> CustomerCenterButtonStyle {
+    static func customerCenterButtonStyle(for colorScheme: ColorScheme) -> CustomerCenterButtonStyle {
         CustomerCenterButtonStyle(
             normalColor: Color(colorScheme == .light
                                ? UIColor.systemBackground

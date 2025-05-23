@@ -230,7 +230,7 @@ struct SubscriptionDetailView: View {
             CompatibilityLabeledContent(localization[.contactSupport])
         }
         .padding(.horizontal)
-        .buttonStyle(.customerCenterScrollView(for: colorScheme))
+        .buttonStyle(.customerCenterButtonStyle(for: colorScheme))
     }
 
     private var seeAllSubscriptionsButton: some View {
@@ -242,7 +242,7 @@ struct SubscriptionDetailView: View {
             }
         }
         .padding(.horizontal)
-        .buttonStyle(.customerCenterScrollView(for: colorScheme))
+        .buttonStyle(.customerCenterButtonStyle(for: colorScheme))
         .tint(colorScheme == .dark ? .white : .black)
     }
 }
