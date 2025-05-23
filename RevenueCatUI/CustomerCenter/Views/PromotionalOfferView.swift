@@ -95,6 +95,7 @@ struct PromotionalOfferView: View {
                 }
             }
         }
+        .navigationBarBackButtonHidden(true)
         .applyIf(tintColor != nil, apply: { $0.tint(tintColor) })
         .onAppear {
             self.viewModel.onPromotionalOfferPurchaseFlowComplete = self.dismissPromotionalOfferView
