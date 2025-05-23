@@ -612,6 +612,7 @@
 		574BA26B2D3E762E009B8EA6 /* PurchaseInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 574BA2662D3E762E009B8EA6 /* PurchaseInfo.swift */; };
 		574CBC842D944D7100B8B9FA /* CustomerCenterView+Actions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 574CBC822D944D7100B8B9FA /* CustomerCenterView+Actions.swift */; };
 		574CBC852D944D7100B8B9FA /* CustomerCenter+PreferenceKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 574CBC812D944D7100B8B9FA /* CustomerCenter+PreferenceKeys.swift */; };
+		5751186F2DE06650001F3153 /* CustomerCenterConfigData.HelpPath+PurchaseInformation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5751186E2DE06649001F3153 /* CustomerCenterConfigData.HelpPath+PurchaseInformation.swift */; };
 		5751379527F4C4D80064AB2C /* Optional+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5751379427F4C4D80064AB2C /* Optional+Extensions.swift */; };
 		575137CF27F50D2F0064AB2C /* HTTPResponseBody.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575137CE27F50D2F0064AB2C /* HTTPResponseBody.swift */; };
 		5752E8482892DC500069281E /* ErrorUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5752E8472892DC500069281E /* ErrorUtilsTests.swift */; };
@@ -2004,6 +2005,7 @@
 		574BA2662D3E762E009B8EA6 /* PurchaseInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseInfo.swift; sourceTree = "<group>"; };
 		574CBC812D944D7100B8B9FA /* CustomerCenter+PreferenceKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CustomerCenter+PreferenceKeys.swift"; sourceTree = "<group>"; };
 		574CBC822D944D7100B8B9FA /* CustomerCenterView+Actions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CustomerCenterView+Actions.swift"; sourceTree = "<group>"; };
+		5751186E2DE06649001F3153 /* CustomerCenterConfigData.HelpPath+PurchaseInformation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CustomerCenterConfigData.HelpPath+PurchaseInformation.swift"; sourceTree = "<group>"; };
 		5751379427F4C4D80064AB2C /* Optional+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Optional+Extensions.swift"; sourceTree = "<group>"; };
 		575137CE27F50D2F0064AB2C /* HTTPResponseBody.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPResponseBody.swift; sourceTree = "<group>"; };
 		5752E8472892DC500069281E /* ErrorUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorUtilsTests.swift; sourceTree = "<group>"; };
@@ -4519,6 +4521,7 @@
 		574CBC832D944D7100B8B9FA /* Actions */ = {
 			isa = PBXGroup;
 			children = (
+				5751186E2DE06649001F3153 /* CustomerCenterConfigData.HelpPath+PurchaseInformation.swift */,
 				574CBC812D944D7100B8B9FA /* CustomerCenter+PreferenceKeys.swift */,
 				574CBC822D944D7100B8B9FA /* CustomerCenterView+Actions.swift */,
 			);
@@ -7141,6 +7144,7 @@
 				2C7457422CE81107004ACE52 /* IntroOfferEligibilityContext.swift in Sources */,
 				2C08B3072CD55D660024857B /* FlexHStack.swift in Sources */,
 				35F249CC2C493DCC0058993A /* CustomerCenterPurchasesType.swift in Sources */,
+				5751186F2DE06650001F3153 /* CustomerCenterConfigData.HelpPath+PurchaseInformation.swift in Sources */,
 				887A60672C1D037000E1A461 /* PaywallError.swift in Sources */,
 				57B179D32DAE4C9A009A5CFE /* CustomerInfo+ActiveTransaction.swift in Sources */,
 				2C74574B2CEA6B80004ACE52 /* LocalizationProvider.swift in Sources */,
