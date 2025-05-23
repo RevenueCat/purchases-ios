@@ -364,7 +364,7 @@ struct BadgePreviews: View {
                         ))
                     ],
                     dimension: .horizontal(.center, .center),
-                    size: .init(width: .fill, height: .fixed(120)),
+                    size: .init(width: .fill, height: .fixed(140)),
                     spacing: 10,
                     backgroundColor: .init(light: .hex("#ffffff")),
                     padding: .init(top: 10, bottom: 10, leading: 10, trailing: 10),
