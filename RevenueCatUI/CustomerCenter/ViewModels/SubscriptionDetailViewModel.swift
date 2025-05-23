@@ -38,6 +38,8 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
         allowsMissingPurchaseAction
     }
 
+    private var allowsMissingPurchaseAction: Bool = true
+
     init(
         screen: CustomerCenterConfigData.Screen,
         showPurchaseHistory: Bool,

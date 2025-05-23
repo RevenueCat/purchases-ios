@@ -79,28 +79,28 @@ struct FeedbackSurveyView: View {
         CompatibilityNavigationStack {
             List {
                 content
-                    .compatibleNavigation(
-                        item: $viewModel.promotionalOfferData,
-                        usesNavigationStack: navigationOptions.usesNavigationStack
-                    ) { promotionalOfferData in
-                        PromotionalOfferView(
-                            promotionalOffer: promotionalOfferData.promotionalOffer,
-                            product: promotionalOfferData.product,
-                            promoOfferDetails: promotionalOfferData.promoOfferDetails,
-                            purchasesProvider: self.viewModel.purchasesProvider,
-                            onDismissPromotionalOfferView: { userAction in
-                                Task(priority: .userInitiated) {
-                                    await viewModel.handleDismissPromotionalOfferView(
-                                        userAction,
-                                        dismissView: self.dismissView
-                                    )
-                                }
-                            }
-                        )
-                        .interactiveDismissDisabled()
-                        .environment(\.appearance, appearance)
-                        .environment(\.localization, localization)
+            }
+            .compatibleNavigation(
+                item: $viewModel.promotionalOfferData,
+                usesNavigationStack: navigationOptions.usesNavigationStack
+            ) { promotionalOfferData in
+                PromotionalOfferView(
+                    promotionalOffer: promotionalOfferData.promotionalOffer,
+                    product: promotionalOfferData.product,
+                    promoOfferDetails: promotionalOfferData.promoOfferDetails,
+                    purchasesProvider: self.viewModel.purchasesProvider,
+                    onDismissPromotionalOfferView: { userAction in
+                        Task(priority: .userInitiated) {
+                            await viewModel.handleDismissPromotionalOfferView(
+                                userAction,
+                                dismissView: self.dismissView
+                            )
+                        }
                     }
+                )
+                .interactiveDismissDisabled()
+                .environment(\.appearance, appearance)
+                .environment(\.localization, localization)
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar(content: {
