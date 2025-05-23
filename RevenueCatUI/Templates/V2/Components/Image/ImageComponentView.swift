@@ -48,24 +48,22 @@ struct ImageComponentView: View {
             )
         ) { style in
             if style.visible {
-                VStack(spacing: 0) {
-                    RemoteImage(
-                        url: style.url,
-                        lowResUrl: style.lowResUrl,
-                        darkUrl: style.darkUrl,
-                        darkLowResUrl: style.darkLowResUrl
-                    ) { (image, size) in
-                        self.renderImage(image, size, maxWidth: maxWidth, with: style)
-                    }
-                    .size(style.size)
-                    .clipped()
-                    .padding(style.padding.extend(by: style.border?.width ?? 0))
-                    .shape(border: style.border,
-                           shape: style.shape)
-                    .shadow(shadow: style.shadow,
-                            shape: style.shape?.toInsettableShape())
-                    .padding(style.margin)
+                RemoteImage(
+                    url: style.url,
+                    lowResUrl: style.lowResUrl,
+                    darkUrl: style.darkUrl,
+                    darkLowResUrl: style.darkLowResUrl
+                ) { (image, size) in
+                    self.renderImage(image, size, maxWidth: maxWidth, with: style)
                 }
+                .size(style.size)
+                .clipped()
+                .padding(style.padding.extend(by: style.border?.width ?? 0))
+                .shape(border: style.border,
+                       shape: style.shape)
+                .shadow(shadow: style.shadow,
+                        shape: style.shape?.toInsettableShape())
+                .padding(style.margin)
                 .onWidthChange { width in
                     self.maxWidth = self.calculateMaxWidth(parentWidth: width, style: style)
                 }
