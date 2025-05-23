@@ -28,17 +28,26 @@ protocol Transaction {
 
 enum TransactionType {
 
-    case subscription(isActive: Bool, willRenew: Bool, expiresDate: Date?, isTrial: Bool)
+    case subscription(
+        isActive: Bool,
+        willRenew: Bool,
+        expiresDate: Date?,
+        isTrial: Bool,
+        ownershipType: PurchaseOwnershipType
+    )
     case nonSubscription
 }
 
 @_spi(Internal) extension RevenueCat.SubscriptionInfo: Transaction {
 
     var type: TransactionType {
-        .subscription(isActive: isActive,
-                      willRenew: willRenew,
-                      expiresDate: expiresDate,
-                      isTrial: periodType == .trial)
+        .subscription(
+            isActive: isActive,
+            willRenew: willRenew,
+            expiresDate: expiresDate,
+            isTrial: periodType == .trial,
+            ownershipType: ownershipType
+        )
     }
 
     var isCancelled: Bool {

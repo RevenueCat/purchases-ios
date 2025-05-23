@@ -56,12 +56,11 @@ class OfferingsAPI {
         )
     }
 
-    func getWebProducts(appUserID: String, productIDs: Set<String>, completion: @escaping WebProductsResponseHandler) {
+    func getWebProducts(appUserID: String, completion: @escaping WebProductsResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)
         let factory = GetWebProductsOperation.createFactory(
             configuration: config,
-            productIds: productIDs,
             webProductsCallbackCache: self.webProductsCallbacksCache
         )
 

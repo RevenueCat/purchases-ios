@@ -136,7 +136,7 @@ extension CustomerCenterConfigData {
 
     @available(iOS 14.0, *)
     static let `default` = mock()
-
+    
     static let standardAppearance = CustomerCenterConfigData.Appearance(
         accentColor: .init(light: "#007AFF", dark: "#007AFF"),
         textColor: .init(light: "#000000", dark: "#ffffff"),
