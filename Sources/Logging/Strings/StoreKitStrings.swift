@@ -95,6 +95,8 @@ enum StoreKitStrings {
 
     case skunknown_purchase_result(String)
 
+    case sk2_sync_purchases_no_transaction_or_apptransaction_found
+
 }
 
 extension StoreKitStrings: LogMessage {
@@ -225,6 +227,9 @@ extension StoreKitStrings: LogMessage {
 
         case let .skunknown_purchase_result(name):
             return "Unrecognized Product.PurchaseResult: \(name)"
+
+        case .sk2_sync_purchases_no_transaction_or_apptransaction_found:
+            return "Couldn't find previous transactions or an AppTransaction."
         }
     }
 

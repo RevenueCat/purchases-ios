@@ -1598,6 +1598,28 @@ private extension PurchasesOrchestrator {
                     return
                 }
 
+                guard let appTransactionJWS else {
+                    // The AppTransaction is not present, and the cached CustomerInfo is either nil
+                    // or is missing the originalPurchaseDate and/or originalApplicationVersion.
+                    Logger.warn(Strings.storeKit.sk2_sync_purchases_no_transaction_or_apptransaction_found)
+
+                    self.customerInfoManager.customerInfo(
+                        appUserID: currentAppUserID,
+                        fetchPolicy: .fetchCurrent
+                    ) { result in
+                        switch result {
+                        case .success(let customerInfo):
+                            completion?(.success(customerInfo))
+                            return
+                        case .failure(let backendError):
+                            completion?(.failure(backendError.asPurchasesError))
+                            return
+                        }
+                    }
+
+                    return
+                }
+
                 let transactionData: PurchasedTransactionData = .init(
                     appUserID: currentAppUserID,
                     presentedOfferingContext: nil,
