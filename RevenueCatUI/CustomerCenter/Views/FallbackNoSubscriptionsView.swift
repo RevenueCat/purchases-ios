@@ -72,7 +72,7 @@ struct FallbackNoSubscriptionsView: View {
                 )
                 .padding(.bottom, 32)
 
-                restorePurchasesView
+                restorePurchasesButton
             }
         }
         .dismissCircleButtonToolbarIfNeeded()
@@ -85,7 +85,7 @@ struct FallbackNoSubscriptionsView: View {
         }
     }
 
-    private var restorePurchasesView: some View {
+    private var restorePurchasesButton: some View {
         Button {
             showRestoreAlert = true
         } label: {
