@@ -27,7 +27,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
     let screen: CustomerCenterConfigData.Screen
 
     var relevantPathsForPurchase: [CustomerCenterConfigData.HelpPath] {
-        paths.relevantPahts(for: purchaseInformation, allowMissingPurchase: allowMissingPurchase)
+        paths.relevantPaths(for: purchaseInformation, allowMissingPurchase: allowMissingPurchase)
     }
 
     /// Used to exclude .missingPurchase path

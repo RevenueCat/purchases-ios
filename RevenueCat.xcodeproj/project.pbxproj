@@ -735,6 +735,7 @@
 		57A0FBF22749CF66009E2FC3 /* SynchronizedUserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A0FBF12749CF66009E2FC3 /* SynchronizedUserDefaults.swift */; };
 		57A17727276A721D0052D3A8 /* Set+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A17726276A721D0052D3A8 /* Set+Extensions.swift */; };
 		57A1772B276A726C0052D3A8 /* SetExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1772A276A726C0052D3A8 /* SetExtensionsTests.swift */; };
+		57A325142DE4773F0030E463 /* CustomerCenterConfigData.HelpPath+PurchaseInformation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A325132DE4773F0030E463 /* CustomerCenterConfigData.HelpPath+PurchaseInformation.swift */; };
 		57A9AFE02DDC716100F77341 /* ScrollViewSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A9AFDF2DDC715900F77341 /* ScrollViewSection.swift */; };
 		57ABA76D28F08DDA003D9181 /* Either.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57ABA76C28F08DDA003D9181 /* Either.swift */; };
 		57AC4C182770F55C00DDE30F /* SK2StoreProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57AC4C172770F55C00DDE30F /* SK2StoreProduct.swift */; };
@@ -2118,6 +2119,7 @@
 		57A0FBF12749CF66009E2FC3 /* SynchronizedUserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynchronizedUserDefaults.swift; sourceTree = "<group>"; };
 		57A17726276A721D0052D3A8 /* Set+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Set+Extensions.swift"; sourceTree = "<group>"; };
 		57A1772A276A726C0052D3A8 /* SetExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetExtensionsTests.swift; sourceTree = "<group>"; };
+		57A325132DE4773F0030E463 /* CustomerCenterConfigData.HelpPath+PurchaseInformation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CustomerCenterConfigData.HelpPath+PurchaseInformation.swift"; sourceTree = "<group>"; };
 		57A9AFDF2DDC715900F77341 /* ScrollViewSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollViewSection.swift; sourceTree = "<group>"; };
 		57ABA76C28F08DDA003D9181 /* Either.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Either.swift; sourceTree = "<group>"; };
 		57AC4C172770F55C00DDE30F /* SK2StoreProduct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SK2StoreProduct.swift; sourceTree = "<group>"; };
@@ -4519,6 +4521,7 @@
 		574CBC832D944D7100B8B9FA /* Actions */ = {
 			isa = PBXGroup;
 			children = (
+				57A325132DE4773F0030E463 /* CustomerCenterConfigData.HelpPath+PurchaseInformation.swift */,
 				574CBC812D944D7100B8B9FA /* CustomerCenter+PreferenceKeys.swift */,
 				574CBC822D944D7100B8B9FA /* CustomerCenterView+Actions.swift */,
 			);
@@ -7141,6 +7144,7 @@
 				2C7457422CE81107004ACE52 /* IntroOfferEligibilityContext.swift in Sources */,
 				2C08B3072CD55D660024857B /* FlexHStack.swift in Sources */,
 				35F249CC2C493DCC0058993A /* CustomerCenterPurchasesType.swift in Sources */,
+				57A325142DE4773F0030E463 /* CustomerCenterConfigData.HelpPath+PurchaseInformation.swift in Sources */,
 				887A60672C1D037000E1A461 /* PaywallError.swift in Sources */,
 				57B179D32DAE4C9A009A5CFE /* CustomerInfo+ActiveTransaction.swift in Sources */,
 				2C74574B2CEA6B80004ACE52 /* LocalizationProvider.swift in Sources */,
