@@ -684,7 +684,7 @@
 		57740F572DD6460F00585B5A /* PurchaseHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57740F3F2DD6460F00585B5A /* PurchaseHistoryView.swift */; };
 		57740F582DD6460F00585B5A /* CompatibilityNavigationStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57740F332DD6460F00585B5A /* CompatibilityNavigationStack.swift */; };
 		57740F592DD6460F00585B5A /* ManageSubscriptionsButtonsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57740F3A2DD6460F00585B5A /* ManageSubscriptionsButtonsView.swift */; };
-		57740F5A2DD6460F00585B5A /* NoSubscriptionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57740F3B2DD6460F00585B5A /* NoSubscriptionsView.swift */; };
+		57740F5A2DD6460F00585B5A /* FallbackNoSubscriptionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57740F3B2DD6460F00585B5A /* FallbackNoSubscriptionsView.swift */; };
 		57740F5B2DD6460F00585B5A /* PromotionalOfferView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57740F3C2DD6460F00585B5A /* PromotionalOfferView.swift */; };
 		57740F5D2DD6460F00585B5A /* CompatibilityContentUnavailableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57740F312DD6460F00585B5A /* CompatibilityContentUnavailableView.swift */; };
 		57740F5E2DD6460F00585B5A /* PurchaseLinkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57740F402DD6460F00585B5A /* PurchaseLinkView.swift */; };
@@ -2065,7 +2065,7 @@
 		57740F382DD6460F00585B5A /* ErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorView.swift; sourceTree = "<group>"; };
 		57740F392DD6460F00585B5A /* FeedbackSurveyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackSurveyView.swift; sourceTree = "<group>"; };
 		57740F3A2DD6460F00585B5A /* ManageSubscriptionsButtonsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageSubscriptionsButtonsView.swift; sourceTree = "<group>"; };
-		57740F3B2DD6460F00585B5A /* NoSubscriptionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoSubscriptionsView.swift; sourceTree = "<group>"; };
+		57740F3B2DD6460F00585B5A /* FallbackNoSubscriptionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackNoSubscriptionsView.swift; sourceTree = "<group>"; };
 		57740F3C2DD6460F00585B5A /* PromotionalOfferView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromotionalOfferView.swift; sourceTree = "<group>"; };
 		57740F3D2DD6460F00585B5A /* PurchaseCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseCardView.swift; sourceTree = "<group>"; };
 		57740F3E2DD6460F00585B5A /* PurchaseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseDetailView.swift; sourceTree = "<group>"; };
@@ -3894,7 +3894,7 @@
 				57740F382DD6460F00585B5A /* ErrorView.swift */,
 				57740F392DD6460F00585B5A /* FeedbackSurveyView.swift */,
 				57740F3A2DD6460F00585B5A /* ManageSubscriptionsButtonsView.swift */,
-				57740F3B2DD6460F00585B5A /* NoSubscriptionsView.swift */,
+				57740F3B2DD6460F00585B5A /* FallbackNoSubscriptionsView.swift */,
 				57740F3C2DD6460F00585B5A /* PromotionalOfferView.swift */,
 				57740F3D2DD6460F00585B5A /* PurchaseCardView.swift */,
 				57740F422DD6460F00585B5A /* RestorePurchasesAlert.swift */,
@@ -7012,7 +7012,7 @@
 				57A9AFE02DDC716100F77341 /* ScrollViewSection.swift in Sources */,
 				57740F582DD6460F00585B5A /* CompatibilityNavigationStack.swift in Sources */,
 				57740F592DD6460F00585B5A /* ManageSubscriptionsButtonsView.swift in Sources */,
-				57740F5A2DD6460F00585B5A /* NoSubscriptionsView.swift in Sources */,
+				57740F5A2DD6460F00585B5A /* FallbackNoSubscriptionsView.swift in Sources */,
 				75F660192DDB2EBE00DBED1C /* RelevantPurchasesListViewModel.swift in Sources */,
 				57740F5B2DD6460F00585B5A /* PromotionalOfferView.swift in Sources */,
 				57740F5D2DD6460F00585B5A /* CompatibilityContentUnavailableView.swift in Sources */,

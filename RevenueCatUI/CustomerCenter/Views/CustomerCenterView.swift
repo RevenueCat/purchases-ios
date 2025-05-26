@@ -200,8 +200,7 @@ private extension CustomerCenterView {
             if let screen = configuration.screens[.noActive] {
                 singlePurchaseView(screen)
             } else {
-                // Fallback with a restore button
-                NoSubscriptionsView(
+                FallbackNoSubscriptionsView(
                     customerCenterViewModel: viewModel,
                     configuration: configuration,
                     actionWrapper: self.viewModel.actionWrapper
