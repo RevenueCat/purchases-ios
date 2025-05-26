@@ -28,7 +28,7 @@ class MockLoadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType {
 
     func execute(
         promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer,
-        forProductId: String
+        forProductId: String?
     ) async -> Result<PromotionalOfferData, Error> {
         self.offerToLoadPromoFor = promoOfferDetails
         if let mockedProduct = mockedProduct,

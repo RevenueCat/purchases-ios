@@ -24,7 +24,7 @@ import RevenueCat
 protocol LoadPromotionalOfferUseCaseType {
     func execute(
         promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer,
-        forProductId productIdentifier: String
+        forProductId productIdentifier: String?
     ) async -> Result<PromotionalOfferData, Error>
 }
 
@@ -45,9 +45,13 @@ final class LoadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType {
 
     func execute(
         promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer,
-        forProductId productIdentifier: String
+        forProductId productIdentifier: String?
     ) async -> Result<PromotionalOfferData, Error> {
         do {
+            guard let productIdentifier else {
+                return .failure(CustomerCenterError.couldNotFindOfferForActiveProducts)
+            }
+
             let subscribedProduct = try await getActiveSubscription(productIdentifier)
 
             let discountFinder = DiscountsHandler(purchasesProvider: self.purchasesProvider)

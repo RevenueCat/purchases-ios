@@ -24,13 +24,13 @@ import RevenueCat
 @available(watchOS, unavailable)
 struct FeedbackSurveyData: Equatable {
 
-    let productIdentifier: String
+    let productIdentifier: String?
     let configuration: CustomerCenterConfigData.HelpPath.FeedbackSurvey
     let path: CustomerCenterConfigData.HelpPath
     let onOptionSelected: (() -> Void)
 
     init(
-        productIdentifier: String,
+        productIdentifier: String?,
         configuration: CustomerCenterConfigData.HelpPath.FeedbackSurvey,
         path: CustomerCenterConfigData.HelpPath,
         onOptionSelected: @escaping (() -> Void
@@ -44,7 +44,8 @@ struct FeedbackSurveyData: Equatable {
 
     static func == (lhs: FeedbackSurveyData, rhs: FeedbackSurveyData) -> Bool {
         return lhs.configuration == rhs.configuration &&
-        lhs.path == rhs.path
+        lhs.path == rhs.path &&
+        lhs.productIdentifier == rhs.productIdentifier
     }
 }
 

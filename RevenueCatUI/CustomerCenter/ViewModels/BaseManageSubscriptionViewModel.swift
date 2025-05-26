@@ -100,7 +100,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
         switch path.detail {
         case let .feedbackSurvey(feedbackSurvey):
             self.feedbackSurveyData = FeedbackSurveyData(
-                productIdentifier: purchaseInformation?.productIdentifier ?? "-",
+                productIdentifier: purchaseInformation?.productIdentifier,
                 configuration: feedbackSurvey,
                 path: path) { [weak self] in
                     Task {
