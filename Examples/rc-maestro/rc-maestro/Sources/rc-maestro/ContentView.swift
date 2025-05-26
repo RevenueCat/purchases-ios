@@ -5,6 +5,8 @@ import StoreKit
 
 public struct ContentView: View {
     @State private var presentCustomerCenter = false
+    @State private var pushCustomerCenter = false
+
     @State private var manageSubscriptions = false
     @State private var actionSheetIsPresented = false
 
@@ -13,36 +15,53 @@ public struct ContentView: View {
     public init() { }
 
     public var body: some View {
-        VStack {
-            Spacer()
-            Button("Present Customer Center") {
-                presentCustomerCenter = true
-            }
-            .buttonStyle(.borderedProminent)
-            Spacer()
-        }
-        .ignoresSafeArea(.all)
-        .presentCustomerCenter(isPresented: $presentCustomerCenter)
-        .manageSubscriptionsSheet(isPresented: $manageSubscriptions)
-        .confirmationDialog(
-            "Buy something",
-            isPresented: $actionSheetIsPresented
-        ) {
-            buttonsView
-        }
-        .safeAreaInset(edge: .bottom, content: {
-            HStack {
-                Button("Buy something") {
-                    actionSheetIsPresented = true
+        NavigationStack {
+            VStack {
+                Spacer()
+                Button("Present Customer Center") {
+                    presentCustomerCenter = true
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(.borderedProminent)
 
-                Button("Manage subscriptions") {
-                    manageSubscriptions = true
+                Button("Push Customer Center") {
+                    pushCustomerCenter = true
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(.borderedProminent)
+
+                Spacer()
             }
-        })
+            .navigationDestination(isPresented: $pushCustomerCenter, destination: {
+                CustomerCenterView(
+                    navigationOptions: .init(
+                        usesNavigationStack: true,
+                        usesExistingNavigation: true,
+                        shouldShowCloseButton: false
+                    )
+                )
+            })
+            .ignoresSafeArea(.all)
+            .presentCustomerCenter(isPresented: $presentCustomerCenter)
+            .manageSubscriptionsSheet(isPresented: $manageSubscriptions)
+            .confirmationDialog(
+                "Buy something",
+                isPresented: $actionSheetIsPresented
+            ) {
+                buttonsView
+            }
+            .safeAreaInset(edge: .bottom, content: {
+                HStack {
+                    Button("Buy something") {
+                        actionSheetIsPresented = true
+                    }
+                    .buttonStyle(.bordered)
+
+                    Button("Manage subscriptions") {
+                        manageSubscriptions = true
+                    }
+                    .buttonStyle(.bordered)
+                }
+            })
+        }
     }
 
     @ViewBuilder
@@ -81,7 +100,9 @@ public struct ContentView: View {
          [
              "maestro.weekly.tests.01",
              "maestro.monthly.tests.02",
-             "maestro.weekly2.tests.01"
+             "maestro.weekly2.tests.01",
+             "maestro.nonconsumable.tests.01",
+             "maestro.consumable.tests.01"
          ]
      }
 }
