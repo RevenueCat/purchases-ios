@@ -7,6 +7,7 @@ name: See purchase details
     file: "../../utils/buy_product.yaml"
     env:
         PRODUCT_ID: "maestro.weekly.tests.01"
+# more than 2 consumables to enable see all
 - runFlow: 
     file: "../../utils/buy_product.yaml"
     env:
