@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  NoSubscriptionsView.swift
+//  FallbackNoSubscriptionsView.swift
 //
 //
 //  Created by Andrés Boedo on 5/3/24.
@@ -18,13 +18,13 @@ import SwiftUI
 
 #if os(iOS)
 
+/// If fetching the configuration fails (NO_ACTIVE screen is not present) we display this
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-struct NoSubscriptionsView: View {
+struct FallbackNoSubscriptionsView: View {
 
-    let configuration: CustomerCenterConfigData
     let actionWrapper: CustomerCenterActionWrapper
 
     @Environment(\.appearance)
@@ -44,33 +44,22 @@ struct NoSubscriptionsView: View {
 
     init(
         customerCenterViewModel: CustomerCenterViewModel,
-        configuration: CustomerCenterConfigData,
-        actionWrapper: CustomerCenterActionWrapper) {
+        actionWrapper: CustomerCenterActionWrapper
+    ) {
         self.customerCenterViewModel = customerCenterViewModel
-        self.configuration = configuration
         self.actionWrapper = actionWrapper
     }
 
     var body: some View {
-        let fallbackDescription = localization[.tryCheckRestore]
-        let fallbackTitle = localization[.noSubscriptionsFound]
+        ScrollViewWithOSBackground {
+            LazyVStack(spacing: 0) {
+                NoSubscriptionsCardView(localization: localization)
+                    .cornerRadius(10)
+                    .padding(.horizontal)
+                    .padding(.bottom, 32)
 
-        List {
-            Section {
-                CompatibilityContentUnavailableView(
-                    self.configuration.screens[.noActive]?.title ?? fallbackTitle,
-                    systemImage: "exclamationmark.triangle.fill",
-                    description:
-                        Text(self.configuration.screens[.noActive]?.subtitle ?? fallbackDescription)
-                )
+                restorePurchasesButton
             }
-
-            Section {
-                Button(localization[.restorePurchases]) {
-                    showRestoreAlert = true
-                }
-            }
-
         }
         .dismissCircleButtonToolbarIfNeeded()
         .overlay {
@@ -80,6 +69,22 @@ struct NoSubscriptionsView: View {
                 customerCenterViewModel: customerCenterViewModel
             )
         }
+    }
+
+    private var restorePurchasesButton: some View {
+        Button {
+            showRestoreAlert = true
+        } label: {
+            CompatibilityLabeledContent(localization[.restorePurchases])
+            .padding(.horizontal)
+            .padding(.vertical, 12)
+            .background(Color(colorScheme == .light
+                              ? UIColor.systemBackground
+                              : UIColor.secondarySystemBackground))
+            .cornerRadius(10)
+            .padding(.horizontal)
+        }
+        .tint(colorScheme == .dark ? .white : .black)
     }
 
 }
@@ -93,9 +98,8 @@ struct NoSubscriptionsView: View {
 struct NoSubscriptionsView_Previews: PreviewProvider {
 
     static var previews: some View {
-        NoSubscriptionsView(
+        FallbackNoSubscriptionsView(
             customerCenterViewModel: CustomerCenterViewModel(uiPreviewPurchaseProvider: MockCustomerCenterPurchases()),
-            configuration: CustomerCenterConfigData.default,
             actionWrapper: CustomerCenterActionWrapper()
         )
     }
