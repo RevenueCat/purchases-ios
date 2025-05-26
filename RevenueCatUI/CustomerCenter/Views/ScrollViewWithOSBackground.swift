@@ -33,6 +33,7 @@ struct ScrollViewWithOSBackground<Content: View>: View {
             ScrollView {
                 content()
             }
+            .scrollBounceBehaviorBasedOnSize()
         }
     }
 }

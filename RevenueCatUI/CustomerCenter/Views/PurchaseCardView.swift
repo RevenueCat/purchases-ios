@@ -66,7 +66,7 @@ struct PurchaseInformationCardView: View {
         localization: CustomerCenterConfigData.Localization,
         identifier: String,
         refundStatus: RefundRequestStatus? = nil,
-        showChevron: Bool = true,
+        showChevron: Bool = true
     ) {
         self.title = purchaseInformation.title
         self.identifier = identifier

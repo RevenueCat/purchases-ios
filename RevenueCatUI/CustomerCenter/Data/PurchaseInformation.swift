@@ -337,8 +337,12 @@ private extension Transaction {
             return nil
         }
 
-        guard let price = self.price, price.amount != 0 else {
+        guard let price = self.price else {
             return nil
+        }
+
+        if price.amount.isZero {
+            return .free
         }
 
         numberFormatter.currencyCode = price.currency
@@ -349,7 +353,7 @@ private extension Transaction {
     }
 
     func paidPrice(numberFormatter: NumberFormatter) -> PurchaseInformation.PricePaid {
-        if self.store == .promotional || self.price?.amount == 0 {
+        if self.store == .promotional || self.price?.amount.isZero == true {
             return .free
         }
 
@@ -426,8 +430,9 @@ extension PurchaseInformation {
 
         switch renewalPrice {
         case .free:
-            return localizations[.renewsOnDate]
+            return localizations[.renewsOnDateForPrice]
                 .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: date))
+                .replacingOccurrences(of: "{{ price }}", with: localizations[.free].lowercased())
         case .nonFree(let priceString):
             return localizations[.renewsOnDateForPrice]
                 .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: date))
