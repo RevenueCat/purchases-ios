@@ -254,9 +254,11 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             offerIdentifierInProduct: offerIdentifierInJSON
         )
 
-        try await verifyPromotionalOfferLoading(viewModel: viewModel,
-                                                loadPromotionalOfferUseCase: loadPromotionalOfferUseCase,
-                                                expectedOfferIdentifierInJSON: offerIdentifierInJSON)
+        try await verifyPromotionalOfferLoading(
+            viewModel: viewModel,
+            loadPromotionalOfferUseCase: loadPromotionalOfferUseCase,
+            expectedOfferIdentifierInJSON: offerIdentifierInJSON
+        )
     }
 
     func testLoadsPromotionalOfferWithSuffix() async throws {
@@ -472,8 +474,21 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
                                                             products: products
                                                         ),
                                                         loadPromotionalOfferUseCase: loadPromotionalOfferUseCase)
-
-        return (viewModel, loadPromotionalOfferUseCase)
+        viewModel.feedbackSurveyData = FeedbackSurveyData(
+            productIdentifier: viewModel.purchaseInformation!.productIdentifier,
+            configuration: CustomerCenterConfigData.HelpPath.FeedbackSurvey(
+                title: "title",
+                options: []
+                ),
+                path: CustomerCenterConfigData.HelpPath(
+                    id: "id",
+                    title: "title",
+                    type: .cancel,
+                    detail: nil
+                ),
+                onOptionSelected: {}
+            )
+            return (viewModel, loadPromotionalOfferUseCase)
     }
 
     private func verifyPromotionalOfferLoading(viewModel: BaseManageSubscriptionViewModel,
