@@ -234,7 +234,8 @@ private extension CustomerCenterView {
         SubscriptionDetailView(
             customerInfoViewModel: viewModel,
             screen: screen,
-            purchaseInformation: viewModel.activePurchase,
+            purchaseInformation: viewModel.activeSubscriptionPurchases.first
+                ?? viewModel.activeNonSubscriptionPurchases.first,
             showPurchaseHistory: viewModel.shouldShowSeeAllPurchases,
             allowsMissingPurchaseAction: true,
             purchasesProvider: self.viewModel.purchasesProvider,
