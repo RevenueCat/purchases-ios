@@ -430,10 +430,11 @@ extension PurchaseInformation {
 
         switch renewalPrice {
         case .free:
-            return localizations[.renewsOnDate]
+            return localizations[.renewsOnDateForPrice]
                 .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: date))
+                .replacingOccurrences(of: "{{ price }}", with: localizations[.free].lowercased())
         case .nonFree(let priceString):
-            return "Your next charge is {{ price }} on {{ date }}."
+            return localizations[.renewsOnDateForPrice]
                 .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: date))
                 .replacingOccurrences(of: "{{ price }}", with: priceString)
         }
