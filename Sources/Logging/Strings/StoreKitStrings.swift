@@ -95,6 +95,8 @@ enum StoreKitStrings {
 
     case skunknown_purchase_result(String)
 
+    case skconfig_file_detected
+
 }
 
 extension StoreKitStrings: LogMessage {
@@ -225,6 +227,10 @@ extension StoreKitStrings: LogMessage {
 
         case let .skunknown_purchase_result(name):
             return "Unrecognized Product.PurchaseResult: \(name)"
+
+        case .skconfig_file_detected:
+            return "Using StoreKit Configuration file. Running in Xcode's local test environment. " +
+            "In-app purchases are simulated and not connected to App Store or Sandbox. Use for local testing only."
         }
     }
 
