@@ -25,7 +25,6 @@ import SwiftUI
 @available(watchOS, unavailable)
 struct FallbackNoSubscriptionsView: View {
 
-    let configuration: CustomerCenterConfigData
     let actionWrapper: CustomerCenterActionWrapper
 
     @Environment(\.appearance)
@@ -45,23 +44,19 @@ struct FallbackNoSubscriptionsView: View {
 
     init(
         customerCenterViewModel: CustomerCenterViewModel,
-        configuration: CustomerCenterConfigData,
-        actionWrapper: CustomerCenterActionWrapper) {
+        actionWrapper: CustomerCenterActionWrapper
+    ) {
         self.customerCenterViewModel = customerCenterViewModel
-        self.configuration = configuration
         self.actionWrapper = actionWrapper
     }
 
     var body: some View {
-        let fallbackDescription = localization[.tryCheckRestore]
-        let fallbackTitle = localization[.noSubscriptionsFound]
-
         ScrollViewWithOSBackground {
             LazyVStack(spacing: 0) {
                 CompatibilityContentUnavailableView(
-                    configuration.screens[.noActive]?.title ?? fallbackTitle,
+                    localization[.noSubscriptionsFound],
                     systemImage: "exclamationmark.triangle.fill",
-                    description: Text(self.configuration.screens[.noActive]?.subtitle ?? fallbackDescription)
+                    description: Text(localization[.tryCheckRestore])
                 )
                 .padding()
                 .fixedSize(horizontal: false, vertical: true)
@@ -119,7 +114,6 @@ struct NoSubscriptionsView_Previews: PreviewProvider {
     static var previews: some View {
         FallbackNoSubscriptionsView(
             customerCenterViewModel: CustomerCenterViewModel(uiPreviewPurchaseProvider: MockCustomerCenterPurchases()),
-            configuration: CustomerCenterConfigData.default,
             actionWrapper: CustomerCenterActionWrapper()
         )
     }

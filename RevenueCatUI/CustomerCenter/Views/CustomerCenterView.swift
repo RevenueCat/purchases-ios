@@ -202,7 +202,6 @@ private extension CustomerCenterView {
             } else {
                 FallbackNoSubscriptionsView(
                     customerCenterViewModel: viewModel,
-                    configuration: configuration,
                     actionWrapper: self.viewModel.actionWrapper
                 )
             }
