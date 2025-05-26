@@ -142,7 +142,7 @@ struct RelevantPurchasesListView: View {
                 } else {
                     if !customerInfoViewModel.activeSubscriptionPurchases.isEmpty {
                         PurchasesInformationSection(
-                            title: localization[.actionsSectionTitle],
+                            title: localization[.subscriptionsSectionTitle],
                             items: customerInfoViewModel.activeSubscriptionPurchases,
                             localization: localization
                         ) {
@@ -258,7 +258,7 @@ struct RelevantPurchasesListView: View {
      // swiftlint:disable force_unwrapping
     static var previews: some View {
         let purchases = [
-            PurchaseInformation.yearlyExpiring(store: .amazon, renewalDate: Date()),
+            PurchaseInformation.yearlyExpiring(store: .amazon, renewalDate: PurchaseInformation.defaulRenewalDate),
             PurchaseInformation.yearlyExpiring(store: .appStore),
             .free
         ]

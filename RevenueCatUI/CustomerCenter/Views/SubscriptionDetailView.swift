@@ -55,6 +55,7 @@ struct SubscriptionDetailView: View {
         purchasesProvider: CustomerCenterPurchasesType,
         actionWrapper: CustomerCenterActionWrapper) {
             let viewModel = SubscriptionDetailViewModel(
+                customerInfoViewModel: customerInfoViewModel,
                 screen: screen,
                 showPurchaseHistory: showPurchaseHistory,
                 allowsMissingPurchaseAction: allowsMissingPurchaseAction,
@@ -88,9 +89,7 @@ struct SubscriptionDetailView: View {
                         customerInfoViewModel.manageSubscriptionsSheet = manage } }
                 )))
             .onCustomerCenterPromotionalOfferSuccess {
-                Task {
-                    await customerInfoViewModel.loadScreen(shouldSync: true)
-                }
+                viewModel.refreshPurchase()
             }
             .onCustomerCenterShowingManageSubscriptions {
                 Task { @MainActor in
@@ -99,9 +98,7 @@ struct SubscriptionDetailView: View {
             }
             .onChangeOf(customerInfoViewModel.manageSubscriptionsSheet) { manageSubscriptionsSheet in
                 if !manageSubscriptionsSheet {
-                    Task {
-                        await customerInfoViewModel.loadScreen(shouldSync: true)
-                    }
+                    viewModel.refreshPurchase()
                 }
             }
             .compatibleNavigation(
@@ -145,6 +142,10 @@ struct SubscriptionDetailView: View {
     var content: some View {
         ScrollViewWithOSBackground {
             LazyVStack(spacing: 0) {
+                if viewModel.isRefreshing {
+                    ProgressView()
+                        .padding(.vertical)
+                }
                 if let purchaseInformation = self.viewModel.purchaseInformation {
                     PurchaseInformationCardView(
                         purchaseInformation: purchaseInformation,
@@ -249,6 +250,9 @@ struct SubscriptionDetailView: View {
                         configuration: .default
                     ),
                     viewModel: SubscriptionDetailViewModel(
+                        customerInfoViewModel: CustomerCenterViewModel(
+                            uiPreviewPurchaseProvider: MockCustomerCenterPurchases()
+                        ),
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
                         allowsMissingPurchaseAction: false,
@@ -267,6 +271,9 @@ struct SubscriptionDetailView: View {
                         configuration: .default
                     ),
                     viewModel: SubscriptionDetailViewModel(
+                        customerInfoViewModel: CustomerCenterViewModel(
+                            uiPreviewPurchaseProvider: MockCustomerCenterPurchases()
+                        ),
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
                         allowsMissingPurchaseAction: false,
@@ -284,6 +291,9 @@ struct SubscriptionDetailView: View {
                         configuration: .default
                     ),
                     viewModel: SubscriptionDetailViewModel(
+                        customerInfoViewModel: CustomerCenterViewModel(
+                            uiPreviewPurchaseProvider: MockCustomerCenterPurchases()
+                        ),
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: false,
                         allowsMissingPurchaseAction: false,
@@ -301,6 +311,9 @@ struct SubscriptionDetailView: View {
                         configuration: .default
                     ),
                     viewModel: SubscriptionDetailViewModel(
+                        customerInfoViewModel: CustomerCenterViewModel(
+                            uiPreviewPurchaseProvider: MockCustomerCenterPurchases()
+                        ),
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
                         allowsMissingPurchaseAction: false,
@@ -318,6 +331,9 @@ struct SubscriptionDetailView: View {
                         configuration: .default
                     ),
                     viewModel: SubscriptionDetailViewModel(
+                        customerInfoViewModel: CustomerCenterViewModel(
+                            uiPreviewPurchaseProvider: MockCustomerCenterPurchases()
+                        ),
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
                         allowsMissingPurchaseAction: false,
