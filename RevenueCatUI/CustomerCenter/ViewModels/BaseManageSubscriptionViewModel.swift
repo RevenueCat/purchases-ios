@@ -100,6 +100,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
         switch path.detail {
         case let .feedbackSurvey(feedbackSurvey):
             self.feedbackSurveyData = FeedbackSurveyData(
+                productIdentifier: purchaseInformation?.productIdentifier,
                 configuration: feedbackSurvey,
                 path: path) { [weak self] in
                     Task {
@@ -108,9 +109,12 @@ class BaseManageSubscriptionViewModel: ObservableObject {
                 }
 
         case let .promotionalOffer(promotionalOffer) where purchaseInformation?.store == .appStore:
-            if promotionalOffer.eligible {
+            if promotionalOffer.eligible, let productIdentifier = feedbackSurveyData?.productIdentifier {
                 self.loadingPath = path
-                let result = await loadPromotionalOfferUseCase.execute(promoOfferDetails: promotionalOffer)
+                let result = await loadPromotionalOfferUseCase.execute(
+                    promoOfferDetails: promotionalOffer,
+                    forProductId: productIdentifier
+                )
                 switch result {
                 case .success(let promotionalOfferData):
                     self.promotionalOfferData = promotionalOfferData

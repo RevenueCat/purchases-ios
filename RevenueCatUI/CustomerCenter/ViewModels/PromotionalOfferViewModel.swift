@@ -25,10 +25,11 @@ import RevenueCat
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @MainActor
-class PromotionalOfferViewModel: ObservableObject {
+final class PromotionalOfferViewModel: ObservableObject {
 
     @Published
     private(set) var promotionalOfferData: PromotionalOfferData?
+
     @Published
     private(set) var error: Error?
 
@@ -71,17 +72,6 @@ class PromotionalOfferViewModel: ObservableObject {
             self.onPromotionalOfferPurchaseFlowComplete?(.promotionalCodeRedemptionFailed(error))
         }
     }
-
-    func loadPromo(promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer) async {
-        let result = await loadPromotionalOfferUseCase.execute(promoOfferDetails: promoOfferDetails)
-        switch result {
-        case .success(let promotionalOfferData):
-            self.promotionalOfferData = promotionalOfferData
-        case .failure(let error):
-            self.error = error
-        }
-    }
-
 }
 
 #endif
