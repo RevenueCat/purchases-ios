@@ -150,6 +150,7 @@ struct SubscriptionDetailView: View {
                     PurchaseInformationCardView(
                         purchaseInformation: purchaseInformation,
                         localization: localization,
+                        identifier: "0",
                         refundStatus: viewModel.refundRequestStatus,
                         showChevron: false
                     )
