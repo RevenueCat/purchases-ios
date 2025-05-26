@@ -28,7 +28,8 @@ struct PurchaseInformationCardView: View {
     private let title: String
     private let subtitle: String?
     private let badge: Badge?
-    private let identifier: String?
+    /// accessibility identifier
+    private let identifier: String
 
     private let storeTitle: String
 
@@ -42,12 +43,12 @@ struct PurchaseInformationCardView: View {
         title: String,
         storeTitle: String,
         paidPrice: String,
+        identifier: String,
         badge: PurchaseInformationCardView.Badge? = nil,
         additionalIcon: Image? = nil,
         additionalInfo: String? = nil,
         subtitle: String? = nil,
-        showChevron: Bool = true,
-        identifier: String? = nil
+        showChevron: Bool = true
     ) {
         self.title = title
         self.paidPrice = paidPrice
@@ -127,7 +128,7 @@ struct PurchaseInformationCardView: View {
                                 .padding(.horizontal, 4)
                                 .background(badge.backgroundColor)
                                 .clipShape(RoundedRectangle(cornerRadius: 4))
-                                .accessibilityIdentifier(badge.id)
+                                .accessibilityIdentifier([identifier, badge.id].joined(separator: "_"))
                         }
                     }
                     .padding(.bottom, 8)
@@ -277,6 +278,7 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                     title: "Product name",
                     storeTitle: Store.appStore.localizationKey.rawValue,
                     paidPrice: "$19.99",
+                    identifier: "identifier",
                     badge: .cancelled(CustomerCenterConfigData.default.localization),
                     subtitle: "Renews 24 May for $19.99"
                 )
@@ -287,6 +289,7 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                     title: "Product name",
                     storeTitle: Store.playStore.localizationKey.rawValue,
                     paidPrice: "$19.99",
+                    identifier: "identifier",
                     badge: .freeTrial(CustomerCenterConfigData.default.localization),
                     subtitle: "Renews 24 May for $19.99"
                 )
@@ -297,6 +300,7 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                     title: "Product name",
                     storeTitle: Store.playStore.localizationKey.rawValue,
                     paidPrice: "$19.99",
+                    identifier: "identifier",
                     badge: .active(CustomerCenterConfigData.default.localization),
                     additionalIcon: Image(systemName: "exclamationmark.triangle.fill"),
                     additionalInfo: "Apple has received the refund request Apple has received the refund request",
@@ -309,6 +313,7 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                     title: "Product name",
                     storeTitle: Store.playStore.localizationKey.rawValue,
                     paidPrice: "$19.99",
+                    identifier: "identifier",
                     badge: .active(CustomerCenterConfigData.default.localization),
                     additionalIcon: Image(systemName: "info.circle.fill"),
                     additionalInfo: "An error occurred while processing the refund request. Please try again.",

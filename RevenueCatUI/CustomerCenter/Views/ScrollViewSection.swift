@@ -67,7 +67,6 @@ struct PurchasesInformationSection: View {
                     )
                     .cornerRadius(10)
                     .padding(.horizontal)
-                    .accessibilityIdentifier("title_\(id)")
                 }
                 .padding(.bottom, 16)
             }
