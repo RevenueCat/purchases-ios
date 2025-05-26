@@ -7,6 +7,18 @@ name: See purchase details
     file: "../../utils/buy_product.yaml"
     env:
         PRODUCT_ID: "maestro.weekly.tests.01"
+- runFlow: 
+    file: "../../utils/buy_product.yaml"
+    env:
+        PRODUCT_ID: "maestro.consumable.tests.01"
+- runFlow: 
+    file: "../../utils/buy_product.yaml"
+    env:
+        PRODUCT_ID: "maestro.consumable.tests.01"
+- runFlow: 
+    file: "../../utils/buy_product.yaml"
+    env:
+        PRODUCT_ID: "maestro.consumable.tests.01"
 - runFlow: "../../utils/open_customer_center.yaml"
 - tapOn: "See all purchases"
 - assertVisible: "ACTIVE SUBSCRIPTIONS"

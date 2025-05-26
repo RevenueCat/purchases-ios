@@ -5,7 +5,6 @@ onFlowComplete:
   - runFlow: ../../utils/cancel_subscription.yaml
 
 ---
-- clearState
 - launchApp
 - runFlow: 
     file: "../../utils/buy_product.yaml"
