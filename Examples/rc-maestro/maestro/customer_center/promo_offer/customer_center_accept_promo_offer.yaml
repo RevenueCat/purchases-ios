@@ -5,18 +5,13 @@ onFlowComplete:
   - runFlow: ../../utils/cancel_subscription.yaml
 
 ---
+- clearState
 - launchApp
 - runFlow: 
     file: "../../utils/buy_product.yaml"
     env:
         PRODUCT_ID: "maestro.weekly.tests.01"
 - runFlow: "../../utils/open_customer_center.yaml"
-- tapOn: "Cancel Subscription"
-- tapOn: "Too expensive"
-- tapOn:
-    id: "promo-offer-primary-button"
-- tapOn: Subscribe
-- tapOn: Ok
-- tapOn: Cancel
+- runFlow: "../../utils/promo_offer_accept.yaml"
 - tapOn:
     id: "xmark"
