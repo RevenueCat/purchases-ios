@@ -109,11 +109,11 @@ class BaseManageSubscriptionViewModel: ObservableObject {
                 }
 
         case let .promotionalOffer(promotionalOffer) where purchaseInformation?.store == .appStore:
-            if promotionalOffer.eligible {
+            if promotionalOffer.eligible, let productIdentifier = feedbackSurveyData?.productIdentifier {
                 self.loadingPath = path
                 let result = await loadPromotionalOfferUseCase.execute(
                     promoOfferDetails: promotionalOffer,
-                    forProductId: feedbackSurveyData?.productIdentifier ?? "-"
+                    forProductId: productIdentifier
                 )
                 switch result {
                 case .success(let promotionalOfferData):
