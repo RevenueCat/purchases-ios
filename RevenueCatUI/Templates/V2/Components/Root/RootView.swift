@@ -58,7 +58,7 @@ struct RootView: View {
         .environment(\.openSheet, { sheet in
             self.sheetViewModel = sheet
         })
-        .bottomSheet(sheet: $sheetViewModel, safeAreaInsets: self.safeAreaInsets)
+        .bottomSheet(sheet: $sheetViewModel, safeAreaInsets: self.safeAreaInsets, onDismiss: onDismiss)
     }
 
 }
