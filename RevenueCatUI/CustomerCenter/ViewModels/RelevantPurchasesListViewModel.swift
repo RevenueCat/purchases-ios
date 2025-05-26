@@ -31,7 +31,7 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
     let shouldShowSeeAllPurchases: Bool
 
     override var relevantPathsForPurchase: [CustomerCenterConfigData.HelpPath] {
-        paths.relevantPahts(for: nil, allowMissingPurchase: allowMissingPurchase)
+        paths.relevantPaths(for: nil, allowMissingPurchase: allowMissingPurchase)
     }
 
     init(
