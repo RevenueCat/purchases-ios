@@ -36,18 +36,28 @@ struct FallbackNoSubscriptionsView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    @Environment(\.navigationOptions)
+    var navigationOptions
+
     @ObservedObject
     private var customerCenterViewModel: CustomerCenterViewModel
 
     @State
     private var showRestoreAlert: Bool = false
 
+    @State
+    private var showAllInAppCurrenciesScreen: Bool = false
+
+    private let virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]?
+
     init(
         customerCenterViewModel: CustomerCenterViewModel,
-        actionWrapper: CustomerCenterActionWrapper
+        actionWrapper: CustomerCenterActionWrapper,
+        virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]?
     ) {
         self.customerCenterViewModel = customerCenterViewModel
         self.actionWrapper = actionWrapper
+        self.virtualCurrencies = virtualCurrencies
     }
 
     var body: some View {
@@ -72,10 +82,32 @@ struct FallbackNoSubscriptionsView: View {
                 )
                 .padding(.bottom, 32)
 
+                if let virtualCurrencies, !virtualCurrencies.isEmpty {
+                    VirtualCurrenciesScrollViewWithOSBackgroundSection(
+                        virtualCurrencies: virtualCurrencies,
+                        onSeeAllInAppCurrenciesButtonTapped: { self.showAllInAppCurrenciesScreen = true }
+                    )
+
+                    Spacer().frame(height: 16)
+                }
+
                 restorePurchasesButton
             }
         }
         .dismissCircleButtonToolbarIfNeeded()
+        .compatibleNavigation(
+                        isPresented: $showAllInAppCurrenciesScreen,
+                        usesNavigationStack: navigationOptions.usesNavigationStack
+                    ) {
+                        VirtualCurrencyBalancesScreen(
+                            viewModel: VirtualCurrencyBalancesScreenViewModel(
+                                purchasesProvider: customerCenterViewModel.purchasesProvider
+                            )
+                        )
+                        .environment(\.appearance, appearance)
+                        .environment(\.localization, localization)
+                        .environment(\.navigationOptions, navigationOptions)
+                    }
         .overlay {
             RestorePurchasesAlert(
                 isPresented: $showRestoreAlert,
@@ -90,13 +122,13 @@ struct FallbackNoSubscriptionsView: View {
             showRestoreAlert = true
         } label: {
             CompatibilityLabeledContent(localization[.restorePurchases])
-            .padding(.horizontal)
-            .padding(.vertical, 12)
-            .background(Color(colorScheme == .light
-                              ? UIColor.systemBackground
-                              : UIColor.secondarySystemBackground))
-            .cornerRadius(10)
-            .padding(.horizontal)
+                .padding(.horizontal)
+                .padding(.vertical, 12)
+                .background(Color(colorScheme == .light
+                                  ? UIColor.systemBackground
+                                  : UIColor.secondarySystemBackground))
+                .cornerRadius(10)
+                .padding(.horizontal)
         }
         .tint(colorScheme == .dark ? .white : .black)
     }
@@ -114,8 +146,26 @@ struct NoSubscriptionsView_Previews: PreviewProvider {
     static var previews: some View {
         FallbackNoSubscriptionsView(
             customerCenterViewModel: CustomerCenterViewModel(uiPreviewPurchaseProvider: MockCustomerCenterPurchases()),
-            actionWrapper: CustomerCenterActionWrapper()
+            actionWrapper: CustomerCenterActionWrapper(),
+            virtualCurrencies: nil
         )
+        .previewDisplayName("No Subscriptions View")
+
+        FallbackNoSubscriptionsView(
+            customerCenterViewModel: CustomerCenterViewModel(uiPreviewPurchaseProvider: MockCustomerCenterPurchases()),
+            actionWrapper: CustomerCenterActionWrapper(),
+            virtualCurrencies: CustomerCenterConfigData.fourVirtualCurrencies
+        )
+        .environment(\.supportInformation, CustomerCenterConfigData.mock(displayVirtualCurrencies: true).support)
+        .previewDisplayName("4 Virtual Currencies")
+
+        FallbackNoSubscriptionsView(
+            customerCenterViewModel: CustomerCenterViewModel(uiPreviewPurchaseProvider: MockCustomerCenterPurchases()),
+            actionWrapper: CustomerCenterActionWrapper(),
+            virtualCurrencies: CustomerCenterConfigData.fiveVirtualCurrencies
+        )
+        .environment(\.supportInformation, CustomerCenterConfigData.mock(displayVirtualCurrencies: true).support)
+        .previewDisplayName("5 Virtual Currencies")
     }
 
 }

@@ -131,6 +131,7 @@ class CustomerCenterConfigDataTests: TestCase {
                     email: "support@example.com",
                     shouldWarnCustomerToUpdate: false,
                     displayPurchaseHistoryLink: true,
+                    displayVirtualCurrencies: true,
                     shouldWarnCustomersAboutMultipleSubscriptions: false
                 )
             ),

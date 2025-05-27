@@ -37,6 +37,7 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
     init(
         screen: CustomerCenterConfigData.Screen,
         actionWrapper: CustomerCenterActionWrapper,
+        virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]? = nil,
         originalAppUserId: String,
         originalPurchaseDate: Date?,
         shouldShowSeeAllPurchases: Bool,
@@ -51,6 +52,7 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
                 screen: screen,
                 actionWrapper: actionWrapper,
                 purchaseInformation: nil,
+                virtualCurrencies: virtualCurrencies,
                 refundRequestStatus: refundRequestStatus,
                 purchasesProvider: purchasesProvider,
                 loadPromotionalOfferUseCase: loadPromotionalOfferUseCase
@@ -63,12 +65,14 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
         originalAppUserId: String,
         activePurchases: [PurchaseInformation] = [],
         nonSubscriptionPurchases: [PurchaseInformation] = [],
+        virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]? = nil,
         shouldShowSeeAllPurchases: Bool,
         originalPurchaseDate: Date? = nil
     ) {
         self.init(
             screen: screen,
             actionWrapper: CustomerCenterActionWrapper(),
+            virtualCurrencies: virtualCurrencies,
             originalAppUserId: originalAppUserId,
             originalPurchaseDate: originalPurchaseDate,
             shouldShowSeeAllPurchases: shouldShowSeeAllPurchases,
