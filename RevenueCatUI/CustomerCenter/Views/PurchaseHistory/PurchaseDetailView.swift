@@ -53,9 +53,7 @@ struct PurchaseDetailView: View {
         .listStyle(.insetGrouped)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
-            Task {
-                await viewModel.didAppear()
-            }
+            viewModel.didAppear(localization: localization)
         }
     }
 

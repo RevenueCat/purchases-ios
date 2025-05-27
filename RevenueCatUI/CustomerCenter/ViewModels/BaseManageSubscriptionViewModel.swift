@@ -27,7 +27,14 @@ class BaseManageSubscriptionViewModel: ObservableObject {
     let screen: CustomerCenterConfigData.Screen
 
     var relevantPathsForPurchase: [CustomerCenterConfigData.HelpPath] {
-        paths.relevantPahts(for: purchaseInformation)
+        paths.relevantPaths(for: purchaseInformation, allowMissingPurchase: allowMissingPurchase)
+    }
+
+    /// Used to exclude .missingPurchase path
+    ///
+    /// If the detail screen is the root of the stack, then we should show it. Otherwise, it should be excluded
+    var allowMissingPurchase: Bool {
+        false
     }
 
     @Published
@@ -61,7 +68,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
 
     private var error: Error?
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
-    private let paths: [CustomerCenterConfigData.HelpPath]
+    let paths: [CustomerCenterConfigData.HelpPath]
     private(set) var purchasesProvider: CustomerCenterPurchasesType
 
     init(
@@ -93,6 +100,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
         switch path.detail {
         case let .feedbackSurvey(feedbackSurvey):
             self.feedbackSurveyData = FeedbackSurveyData(
+                productIdentifier: purchaseInformation?.productIdentifier,
                 configuration: feedbackSurvey,
                 path: path) { [weak self] in
                     Task {
@@ -101,9 +109,12 @@ class BaseManageSubscriptionViewModel: ObservableObject {
                 }
 
         case let .promotionalOffer(promotionalOffer) where purchaseInformation?.store == .appStore:
-            if promotionalOffer.eligible {
+            if promotionalOffer.eligible, let productIdentifier = feedbackSurveyData?.productIdentifier {
                 self.loadingPath = path
-                let result = await loadPromotionalOfferUseCase.execute(promoOfferDetails: promotionalOffer)
+                let result = await loadPromotionalOfferUseCase.execute(
+                    promoOfferDetails: promotionalOffer,
+                    forProductId: productIdentifier
+                )
                 switch result {
                 case .success(let promotionalOfferData):
                     self.promotionalOfferData = promotionalOfferData
@@ -229,106 +240,6 @@ private extension CustomerCenterConfigData.Screen {
         }
     }
 
-}
-
-private extension Array<CustomerCenterConfigData.HelpPath> {
-    func relevantPahts(
-        for purchaseInformation: PurchaseInformation?
-    ) -> [CustomerCenterConfigData.HelpPath] {
-        guard let purchaseInformation else {
-            return filter {
-                $0.type == .missingPurchase
-            }
-        }
-
-        return filter {
-            let isNonAppStorePurchase = purchaseInformation.store != .appStore
-            let isAppStoreOnlyPath = $0.type.isAppStoreOnly
-
-            let isCancel = $0.type == .cancel
-            // if it's cancel, it cannot be a lifetime subscription
-            let isEligibleCancel = !purchaseInformation.isLifetime && !purchaseInformation.isCancelled
-
-            // if it's refundRequest, it cannot be free nor within trial period
-            let isRefund = $0.type == .refundRequest
-            let isRefundEligible = purchaseInformation.pricePaid != .free
-                                    && !purchaseInformation.isTrial
-                                    && !purchaseInformation.isCancelled
-
-            // if it has a refundDuration, check it's still valid
-            let refundWindowIsValid = $0.refundWindowDuration?.isWithin(purchaseInformation) ?? true
-
-            // skip AppStore only paths if the purchase is not from App Store
-            if isNonAppStorePurchase && isAppStoreOnlyPath {
-                return false
-            }
-
-            // don't show cancel if there's no URL
-            if isCancel && isNonAppStorePurchase && purchaseInformation.managementURL == nil {
-                 return false
-            }
-
-            return (!isCancel || isEligibleCancel) &&
-                    (!isRefund || isRefundEligible) &&
-                    refundWindowIsValid
-        }
-    }
-}
-
-private extension CustomerCenterConfigData.HelpPath.PathType {
-
-    var isAppStoreOnly: Bool {
-        switch self {
-        case .cancel, .customUrl:
-            return false
-
-        case .changePlans, .refundRequest, .missingPurchase, .unknown:
-            return true
-
-        @unknown default:
-            return false
-        }
-    }
-}
-
-private extension CustomerCenterConfigData.HelpPath.RefundWindowDuration {
-    func isWithin(_ purchaseInformation: PurchaseInformation) -> Bool {
-        switch self {
-        case .forever:
-            return true
-
-        case let .duration(duration):
-            return duration.isWithin(
-                from: purchaseInformation.latestPurchaseDate,
-                now: purchaseInformation.customerInfoRequestedDate
-            )
-
-        @unknown default:
-            return true
-        }
-    }
-}
-
-private extension ISODuration {
-    func isWithin(from startDate: Date?, now: Date) -> Bool {
-        guard let startDate else {
-            return true
-        }
-
-        var dateComponents = DateComponents()
-        dateComponents.year = self.years
-        dateComponents.month = self.months
-        dateComponents.weekOfYear = self.weeks
-        dateComponents.day = self.days
-        dateComponents.hour = self.hours
-        dateComponents.minute = self.minutes
-        dateComponents.second = self.seconds
-
-        let calendar = Calendar.current
-        let endDate = calendar.date(byAdding: dateComponents, to: startDate) ?? startDate
-
-        return startDate < endDate && now <= endDate
-    }
 }
 
 #endif

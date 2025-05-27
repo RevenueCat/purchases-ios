@@ -13,6 +13,7 @@
 //  Created by Cesar de la Vega on 27/5/24.
 //
 
+import Combine
 import Foundation
 import RevenueCat
 
@@ -89,6 +90,13 @@ import RevenueCat
         customerInfo?.originalPurchaseDate
     }
 
+    var shouldShowSeeAllPurchases: Bool {
+        configuration?.support.displayPurchaseHistoryLink == true
+        && customerInfo?.shouldShowSeeAllPurchasesButton(
+            maxNonSubscriptions: RelevantPurchasesListViewModel.maxNonSubscriptionsToShow
+        ) ?? false
+    }
+
     @Published
     var activeSubscriptionPurchases: [PurchaseInformation] = []
 
@@ -127,15 +135,19 @@ import RevenueCat
         self.customerInfo = nil
     }
 
-    convenience init(uiPreviewPurchaseProvider: CustomerCenterPurchasesType) {
-        self.init(actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil),
-                  purchasesProvider: uiPreviewPurchaseProvider)
+    convenience init(
+        uiPreviewPurchaseProvider: CustomerCenterPurchasesType
+    ) {
+        self.init(
+            actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil),
+            purchasesProvider: uiPreviewPurchaseProvider
+        )
     }
 
     #if DEBUG
 
     convenience init(
-        purchaseInformation: PurchaseInformation,
+        purchaseInformation: PurchaseInformation?,
         configuration: CustomerCenterConfigData
     ) {
         self.init(actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil))
@@ -157,6 +169,20 @@ import RevenueCat
     }
 
     #endif
+
+    func publisher(for purchase: PurchaseInformation?) -> AnyPublisher<PurchaseInformation, Never>? {
+        guard let productIdentifier = purchase?.productIdentifier else {
+            return nil
+        }
+
+        return $activeSubscriptionPurchases.combineLatest($activeNonSubscriptionPurchases)
+            .throttle(for: .seconds(0.3), scheduler: DispatchQueue.main, latest: true)
+            .compactMap {
+                $0.first(where: { $0.productIdentifier == productIdentifier })
+                ?? $1.first(where: { $0.productIdentifier == productIdentifier })
+            }
+            .eraseToAnyPublisher()
+    }
 
     func loadScreen(shouldSync: Bool = false) async {
         do {

@@ -29,14 +29,12 @@ extension PurchaseInformation {
     }
 
     @available(iOS 15.0, *)
-    var purchaseDetailItems: [PurchaseDetailItem] {
+    func purchaseDetailItems(localization: CustomerCenterConfigData.Localization) -> [PurchaseDetailItem] {
         var items: [PurchaseDetailItem] = []
-
-//        items.append(.paidPrice(pricePaidString(localizations: <#T##CustomerCenterConfigData.Localization#>)))
-
-        //            items.append(.status(
-        //                purchaseInfo.isActive ? .active : .inactive
-        //            ))
+        items.append(.paidPrice(pricePaidString(localizations: localization)))
+        items.append(.status(
+            isActive ? .active : .inactive
+        ))
 
         let dateFormatter = PurchaseInformation.defaultDateFormatter
         if let expirationDate = expirationDate {
@@ -57,11 +55,11 @@ extension PurchaseInformation {
         //                items.append(.gracePeriodExpiresDate(formattedDate(gracePeriodExpiresDate)))
         //            }
 
-        //            if purchaseInfo.periodType != .normal {
-        //                items.append(.periodType(
-        //                    purchaseInfo.periodType == .intro ? .introductoryPrice : .trialPeriod
-        //                ))
-        //            }
+        if periodType != .normal {
+            items.append(.periodType(
+                periodType == .intro ? .introductoryPrice : .trialPeriod
+            ))
+        }
 
         //            if let refundedAt = purchaseInfo.refundedAt {
         //                items.append(.refundedAtDate(formattedDate(refundedAt)))

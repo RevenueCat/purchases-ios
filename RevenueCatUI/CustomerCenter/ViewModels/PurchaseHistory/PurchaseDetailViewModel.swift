@@ -42,39 +42,20 @@ final class PurchaseDetailViewModel: ObservableObject {
         self.purchasesProvider = purchasesProvider
     }
 
-    func didAppear() async {
-        await fetchProduct()
+    func didAppear(localization: CustomerCenterConfigData.Localization) {
+        var items: [PurchaseDetailItem] = [
+            .productName(purchaseInfo.title)
+        ]
+
+        items.append(contentsOf: purchaseInfo.purchaseDetailItems(localization))
+        self.debugItems = purchaseInfo.purchaseDetailDebugItems
+        self.items = items
     }
 
     // MARK: - Private
 
     private let purchaseInfo: PurchaseInformation
     private let purchasesProvider: CustomerCenterPurchasesType
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-private extension PurchaseDetailViewModel {
-
-    func fetchProduct() async {
-        guard
-            let product = await self.purchasesProvider.products([purchaseInfo.productIdentifier]).first
-        else {
-            return
-        }
-
-        await MainActor.run {
-            var items: [PurchaseDetailItem] = [
-                .productName(product.localizedTitle)
-            ]
-
-            items.append(contentsOf: purchaseInfo.purchaseDetailItems)
-            self.debugItems = purchaseInfo.purchaseDetailDebugItems
-            self.items = items
-        }
-    }
 }
 
 #endif

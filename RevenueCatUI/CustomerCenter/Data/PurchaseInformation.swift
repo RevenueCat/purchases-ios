@@ -63,6 +63,11 @@ struct PurchaseInformation {
 
     let latestPurchaseDate: Date
 
+    /// Indicates whether the purchased subscription is active
+    ///
+    /// Note: `false` for non-subscriptions
+    let isActive: Bool
+
     /// The fetch date of this CustomerInfo. (a.k.a. CustomerInfo.requestedDate)
     let customerInfoRequestedDate: Date
 
@@ -95,6 +100,7 @@ struct PurchaseInformation {
          isLifetime: Bool,
          isTrial: Bool,
          isCancelled: Bool,
+         isActive: Bool,
          latestPurchaseDate: Date,
          customerInfoRequestedDate: Date,
          dateFormatter: DateFormatter = Self.defaultDateFormatter,
@@ -103,7 +109,7 @@ struct PurchaseInformation {
          expirationDate: Date? = nil,
          renewalDate: Date? = nil,
          periodType: PeriodType = .normal,
-         ownershipType: PurchaseOwnershipType
+         ownershipType: PurchaseOwnershipType? = nil
     ) {
         self.title = title
         self.durationTitle = durationTitle
@@ -114,6 +120,7 @@ struct PurchaseInformation {
         self.isLifetime = isLifetime
         self.isTrial = isTrial
         self.isCancelled = isCancelled
+        self.isActive = isActive
         self.latestPurchaseDate = latestPurchaseDate
         self.customerInfoRequestedDate = customerInfoRequestedDate
         self.managementURL = managementURL
@@ -151,19 +158,23 @@ struct PurchaseInformation {
             self.isLifetime = entitlement.expirationDate == nil
             self.isTrial = entitlement.periodType == .trial
             self.isCancelled = entitlement.isCancelled
+            // entitlement.latestPurchaseDate is optional, but it shouldn't.
+            // date will be the one from the entitlement
             self.latestPurchaseDate = entitlement.latestPurchaseDate ?? transaction.purchaseDate
             self.expirationDate = entitlement.expirationDate
             self.renewalDate = entitlement.willRenew ? entitlement.expirationDate : nil
             self.periodType = entitlement.periodType
             self.ownershipType = entitlement.ownershipType
+            self.isActive = entitlement.isActive
         } else {
             switch transaction.type {
-            case let .subscription(_, willRenew, expiresDate, isTrial, ownershipType):
+            case let .subscription(isActive, willRenew, expiresDate, isTrial, ownershipType):
                 self.isLifetime = false
                 self.isTrial = isTrial
                 self.expirationDate = expiresDate
                 self.renewalDate = willRenew ? expiresDate : nil
                 self.ownershipType = ownershipType
+                self.isActive = isActive
 
             case .nonSubscription:
                 self.isLifetime = true
@@ -171,6 +182,7 @@ struct PurchaseInformation {
                 self.renewalDate = nil
                 self.expirationDate = nil
                 self.ownershipType = nil
+                self.isActive = false
             }
 
             self.latestPurchaseDate = transaction.purchaseDate
@@ -325,8 +337,12 @@ private extension Transaction {
             return nil
         }
 
-        guard let price = self.price, price.amount != 0 else {
+        guard let price = self.price else {
             return nil
+        }
+
+        if price.amount.isZero {
+            return .free
         }
 
         numberFormatter.currencyCode = price.currency
@@ -337,7 +353,7 @@ private extension Transaction {
     }
 
     func paidPrice(numberFormatter: NumberFormatter) -> PurchaseInformation.PricePaid {
-        if self.store == .promotional || self.price?.amount == 0 {
+        if self.store == .promotional || self.price?.amount.isZero == true {
             return .free
         }
 
@@ -414,8 +430,9 @@ extension PurchaseInformation {
 
         switch renewalPrice {
         case .free:
-            return localizations[.renewsOnDate]
+            return localizations[.renewsOnDateForPrice]
                 .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: date))
+                .replacingOccurrences(of: "{{ price }}", with: localizations[.free].lowercased())
         case .nonFree(let priceString):
             return localizations[.renewsOnDateForPrice]
                 .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: date))

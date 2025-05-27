@@ -26,21 +26,35 @@ import RevenueCat
 @available(watchOS, unavailable)
 final class PurchaseHistoryViewModel: ObservableObject {
 
-    @Published var selectedPurchase: PurchaseInformation?
+    @Published
+    var selectedPurchase: PurchaseInformation?
 
-    @Published var customerInfo: CustomerInfo? {
+    @Published
+    var errorMessage: String?
+
+    @Published
+    var isLoading: Bool = true
+
+    @Published
+    var activeSubscriptions: [PurchaseInformation] = []
+
+    @Published
+    var inactiveSubscriptions: [PurchaseInformation] = []
+
+    @Published
+    var nonSubscriptions: [PurchaseInformation] = []
+
+    var isEmpty: Bool {
+        activeSubscriptions.isEmpty && inactiveSubscriptions.isEmpty && nonSubscriptions.isEmpty
+    }
+
+    var customerInfo: CustomerInfo? {
         didSet {
             isLoading = false
         }
     }
-    @Published var errorMessage: String?
-    @Published var isLoading: Bool = true
 
-    var activeSubscriptions: [PurchaseInformation] = []
-    var inactiveSubscriptions: [PurchaseInformation] = []
-    var nonSubscriptions: [PurchaseInformation] = []
-
-    private(set) var purchasesProvider: CustomerCenterPurchasesType
+    let purchasesProvider: CustomerCenterPurchasesType
     private let customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
 
     init(
@@ -111,6 +125,7 @@ private extension PurchaseHistoryViewModel {
                 customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
             ))
         }
+
         self.activeSubscriptions = activeSubscriptions.sorted(by: { sub1, sub2 in
             sub1.latestPurchaseDate < sub2.latestPurchaseDate
         })
@@ -127,6 +142,7 @@ private extension PurchaseHistoryViewModel {
                 customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
             ))
         }
+
         self.inactiveSubscriptions = inactiveSubscriptions.sorted(by: { sub1, sub2 in
             sub1.latestPurchaseDate < sub2.latestPurchaseDate
         })

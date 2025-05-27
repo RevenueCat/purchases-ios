@@ -31,8 +31,11 @@ struct RestorePurchasesAlert: View {
     @Binding
     private var isPresented: Bool
 
-    @EnvironmentObject private var customerCenterViewModel: CustomerCenterViewModel
-    @StateObject private var viewModel: RestorePurchasesAlertViewModel
+    @ObservedObject
+    private var customerCenterViewModel: CustomerCenterViewModel
+
+    @StateObject
+    private var viewModel: RestorePurchasesAlertViewModel
 
     @Environment(\.localization)
     private var localization
@@ -42,20 +45,24 @@ struct RestorePurchasesAlert: View {
 
     init(
         isPresented: Binding<Bool>,
-        actionWrapper: CustomerCenterActionWrapper
+        actionWrapper: CustomerCenterActionWrapper,
+        customerCenterViewModel: CustomerCenterViewModel
     ) {
         self.init(
             isPresented: isPresented,
-            viewModel: RestorePurchasesAlertViewModel(actionWrapper: actionWrapper)
+            viewModel: RestorePurchasesAlertViewModel(actionWrapper: actionWrapper),
+            customerCenterViewModel: customerCenterViewModel
         )
     }
 
     fileprivate init(
         isPresented: Binding<Bool>,
-        viewModel: RestorePurchasesAlertViewModel
+        viewModel: RestorePurchasesAlertViewModel,
+        customerCenterViewModel: CustomerCenterViewModel
     ) {
         self._isPresented = isPresented
         self._viewModel = StateObject(wrappedValue: viewModel)
+        self.customerCenterViewModel = customerCenterViewModel
     }
 
     private var supportURL: URL? {
@@ -298,17 +305,16 @@ private struct PreviewContainer: View {
     @State private var isPresented = true
 
     var body: some View {
-        let purchaseInformationApple =
-        CustomerCenterConfigData.subscriptionInformationMonthlyRenewing
-        let viewModelApple = CustomerCenterViewModel(purchaseInformation: purchaseInformationApple,
-                                                     configuration: CustomerCenterConfigData.default)
+        let viewModelApple = CustomerCenterViewModel(
+            purchaseInformation: .subscriptionInformationMonthlyRenewing,
+            configuration: CustomerCenterConfigData.default)
 
         RestorePurchasesAlert(
             isPresented: $isPresented,
-            viewModel: MockRestorePurchasesAlertViewModel(alertType: alertType)
+            viewModel: MockRestorePurchasesAlertViewModel(alertType: alertType),
+            customerCenterViewModel: viewModelApple
         )
         .environment(\.localization, CustomerCenterConfigData.default.localization)
-        .environmentObject(viewModelApple)
         .emergeRenderingMode(.window)
     }
 
