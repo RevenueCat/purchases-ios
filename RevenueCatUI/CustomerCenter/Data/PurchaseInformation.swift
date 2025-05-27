@@ -293,6 +293,14 @@ extension PurchaseInformation: Hashable {
         hasher.combine(expirationDate)
         hasher.combine(renewalDate)
         hasher.combine(managementURL)
+        hasher.combine(unsubscribeDetectedAt)
+        hasher.combine(billingIssuesDetectedAt)
+        hasher.combine(gracePeriodExpiresDate)
+        hasher.combine(refundedAtDate)
+        hasher.combine(transactionIdentifier)
+        hasher.combine(storeTransactionIdentifier)
+        hasher.combine(ownershipType)
+        hasher.combine(periodType)
     }
  }
 
