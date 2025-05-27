@@ -25,28 +25,34 @@ struct FullScreenErrorView: View {
     }
 
     var body: some View {
-        ScrollView {
+        VStack {
             ConceptIntroductionView(imageName: "visual-products",
                                     title: title,
                                     description: error.localizedDescription)
+
+            Spacer()
 
             Button(action: {
                 Task {
                     await healthViewModel.fetchHealthReport()
                 }
             }, label: {
-                if healthViewModel.isfetchingHealthReport {
-                    Text("Retrying...")
-                } else {
-                    Text("Try Again")
-                }
+                Text(healthViewModel.isfetchingHealthReport ? "Retrying..." : "Try again")
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
             })
+            .padding(.horizontal)
             .buttonStyle(.borderedProminent)
             .tint(.accent)
         }
+        .background(.red.opacity(0.1))
+        .animation(.default, value: healthViewModel.isfetchingHealthReport)
         .scrollBounceBehavior(.basedOnSize)
         .frame(maxWidth: .infinity)
         .scrollContentBackground(.hidden)
+        .safeAreaPadding()
         .background {
             ContentBackgroundView(color: .accent)
         }
