@@ -95,9 +95,15 @@ struct PromotionalOfferView: View {
                 }
             }
         }
+        .navigationBarBackButtonHidden(true)
+        .applyIf(tintColor != nil, apply: { $0.tint(tintColor) })
         .onAppear {
             self.viewModel.onPromotionalOfferPurchaseFlowComplete = self.dismissPromotionalOfferView
         }
+    }
+
+    private var tintColor: Color? {
+        Color.from(colorInformation: appearance.accentColor, for: self.colorScheme)
     }
 
     // Called when the promotional offer flow is purchased, successfully or not

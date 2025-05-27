@@ -522,7 +522,8 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(
             Self.create(
                 purchasesAreCompletedBy: .revenueCat,
-                dangerousSettings: .init(customEntitlementComputation: true)
+                dangerousSettings: .init(customEntitlementComputation: true),
+                appUserID: "MockUserID"
             ).offlineCustomerInfoEnabled
         ) == false
     }
@@ -569,12 +570,14 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
   private static func create(
       purchasesAreCompletedBy: PurchasesAreCompletedBy,
-      dangerousSettings: DangerousSettings = .init()
+      dangerousSettings: DangerousSettings = .init(),
+      appUserID: String? = nil
   ) -> Purchases {
         return Purchases.configure(
             with: .init(withAPIKey: "")
                 .with(purchasesAreCompletedBy: purchasesAreCompletedBy, storeKitVersion: .storeKit1)
                 .with(dangerousSettings: dangerousSettings)
+                .with(appUserID: appUserID)
         )
     }
 

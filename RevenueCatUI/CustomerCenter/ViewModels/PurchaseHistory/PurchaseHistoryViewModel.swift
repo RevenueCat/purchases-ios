@@ -41,6 +41,10 @@ final class PurchaseHistoryViewModel: ObservableObject {
     var inactiveSubscriptions: [PurchaseInfo] = []
     var nonSubscriptions: [PurchaseInfo] = []
 
+    var isEmpty: Bool {
+        activeSubscriptions.isEmpty && inactiveSubscriptions.isEmpty && nonSubscriptions.isEmpty
+    }
+
     let purchasesProvider: CustomerCenterPurchasesType
 
     init(

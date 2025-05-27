@@ -259,7 +259,7 @@ private extension PaywallDataValidationTests {
     static func verifyPackages(
         in paywall: PaywallData,
         match other: PaywallData?,
-        file: StaticString = #file,
+        file: FileString = #filePath,
         line: UInt = #line
     ) {
         expect(
@@ -271,7 +271,7 @@ private extension PaywallDataValidationTests {
     static func verifyPackages(
         in paywall: PaywallData,
         match packages: [Package],
-        file: StaticString = #file,
+        file: FileString = #filePath,
         line: UInt = #line
     ) {
         expect(

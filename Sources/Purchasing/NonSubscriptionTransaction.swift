@@ -34,10 +34,11 @@ public final class NonSubscriptionTransaction: NSObject {
     /// The unique identifier for the transaction created by the Store.
     @objc public let storeTransactionIdentifier: String
 
-    /**
-     * The ``Store`` where this transaction was performed.
-     */
+    /// The ``Store`` where this transaction was performed.
     @objc public let store: Store
+
+    /// Paid price for the subscription
+    @objc public let price: ProductPaidPrice?
 
     init?(with transaction: CustomerInfoResponse.Transaction, productID: String) {
         guard let transactionIdentifier = transaction.transactionIdentifier,
@@ -52,6 +53,7 @@ public final class NonSubscriptionTransaction: NSObject {
         self.purchaseDate = transaction.purchaseDate
         self.productIdentifier = productID
         self.store = transaction.store
+        self.price = transaction.price.map { ProductPaidPrice(currency: $0.currency, amount: $0.amount) }
     }
 
     public override var description: String {

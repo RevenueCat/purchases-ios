@@ -131,8 +131,8 @@ extension TestLogHandler {
         _ message: CustomStringConvertible,
         level: LogLevel? = nil,
         expectedCount: Int? = nil,
-        timeout: DispatchTimeInterval = AsyncDefaults.timeout,
-        pollInterval: DispatchTimeInterval = AsyncDefaults.pollInterval,
+        timeout: NimbleTimeInterval = PollingDefaults.timeout,
+        pollInterval: NimbleTimeInterval = PollingDefaults.pollInterval,
         file: FileString = #file,
         line: UInt = #line
     ) async throws {

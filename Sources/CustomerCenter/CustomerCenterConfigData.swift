@@ -150,6 +150,13 @@ public struct CustomerCenterConfigData: Equatable {
             case renewsOnDate = "renews_on_date"
             case priceAfterwards = "price_afterwards"
             case freeTrialUntilDate = "free_trial_until_date"
+            case priceExpiresOnDateWithoutChanges = "price_expires_on_date_without_changes"
+            case badgeCancelled = "badge_cancelled"
+            case badgeFreeTrial = "free_trial"
+            case refundSuccess = "refund_success"
+            case actionsSectionTitle = "actions_section_title"
+            case subscriptionsSectionTitle = "subscriptions_section_title"
+            case purchasesSectionTitle = "purchases_section_title"
 
             var defaultValue: String {
                 switch self {
@@ -352,6 +359,20 @@ public struct CustomerCenterConfigData: Equatable {
                     return "{{ price }} afterwards."
                 case .freeTrialUntilDate:
                     return "Free trial until {{ date }}."
+                case .priceExpiresOnDateWithoutChanges:
+                     return "{{ price }}. Expires on {{ date }} without changes."
+                case .badgeCancelled:
+                    return "Cancelled"
+                case .badgeFreeTrial:
+                    return "Free trial"
+                case .refundSuccess:
+                    return "Apple has received the refund request"
+                case .actionsSectionTitle:
+                    return "Actions"
+                case .subscriptionsSectionTitle:
+                    return "Subscriptions"
+                case .purchasesSectionTitle:
+                    return "Purchases"
                 }
             }
         }
@@ -452,17 +473,33 @@ public struct CustomerCenterConfigData: Equatable {
             public let title: String
             public let subtitle: String
             public let productMapping: [String: String]
+            public let crossProductPromotions: [String: CrossProductPromotion]
+
+            public struct CrossProductPromotion: Equatable {
+                public let storeOfferIdentifier: String
+                public let targetProductId: String
+
+                public init(
+                    storeofferingidentifier: String,
+                    targetproductid: String
+                ) {
+                    self.storeOfferIdentifier = storeofferingidentifier
+                    self.targetProductId = targetproductid
+                }
+            }
 
             public init(iosOfferId: String,
                         eligible: Bool,
                         title: String,
                         subtitle: String,
-                        productMapping: [String: String]) {
+                        productMapping: [String: String],
+                        crossProductPromotions: [String: CrossProductPromotion] = [:]) {
                 self.iosOfferId = iosOfferId
                 self.eligible = eligible
                 self.title = title
                 self.subtitle = subtitle
                 self.productMapping = productMapping
+                self.crossProductPromotions = crossProductPromotions
             }
 
         }
@@ -708,6 +745,17 @@ extension CustomerCenterConfigData.HelpPath.PromotionalOffer {
         self.title = response.title
         self.subtitle = response.subtitle
         self.productMapping = response.productMapping
+        self.crossProductPromotions = response.crossProductPromotions?.mapValues { CrossProductPromotion(from: $0) }
+            ?? [:]
+    }
+
+}
+
+extension CustomerCenterConfigData.HelpPath.PromotionalOffer.CrossProductPromotion {
+
+    init(from response: CustomerCenterConfigResponse.HelpPath.PromotionalOffer.CrossProductPromotion) {
+        self.storeOfferIdentifier = response.storeOfferIdentifier
+        self.targetProductId = response.targetProductId
     }
 
 }

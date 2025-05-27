@@ -1411,6 +1411,7 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCLogLevel, "LogLevel", open) {
 
 
 
+@class RCProductPaidPrice;
 
 /// Information that represents a non-subscription purchase made by a user.
 /// This can be one of these types of product:
@@ -1437,6 +1438,8 @@ SWIFT_CLASS_NAMED("NonSubscriptionTransaction")
 @property (nonatomic, readonly, copy) NSString * _Nonnull storeTransactionIdentifier;
 /// The <code>Store</code> where this transaction was performed.
 @property (nonatomic, readonly) enum RCStore store;
+/// Paid price for the subscription
+@property (nonatomic, readonly, strong) RCProductPaidPrice * _Nullable price;
 @property (nonatomic, readonly, copy) NSString * _Nonnull description;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");

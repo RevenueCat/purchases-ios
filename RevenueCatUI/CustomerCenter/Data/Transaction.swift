@@ -9,7 +9,7 @@
 //
 //  Transaction.swift
 //
-//  Created by Facundo Menzella on 5/5/25.
+//  Created by Facundo Menzella on 12/5/25.
 
 import Foundation
 @_spi(Internal) import RevenueCat
@@ -21,26 +21,39 @@ protocol Transaction {
     var type: TransactionType { get }
     var isCancelled: Bool { get }
     var managementURL: URL? { get }
+    var price: ProductPaidPrice? { get }
+    var periodType: PeriodType { get }
+    var purchaseDate: Date { get }
 }
 
 enum TransactionType {
 
-    case subscription(isActive: Bool, willRenew: Bool, expiresDate: Date?, isTrial: Bool)
+    case subscription(
+        isActive: Bool,
+        willRenew: Bool,
+        expiresDate: Date?,
+        isTrial: Bool,
+        ownershipType: PurchaseOwnershipType
+    )
     case nonSubscription
 }
 
 @_spi(Internal) extension RevenueCat.SubscriptionInfo: Transaction {
 
     var type: TransactionType {
-        .subscription(isActive: isActive,
-                      willRenew: willRenew,
-                      expiresDate: expiresDate,
-                      isTrial: periodType == .trial)
+        .subscription(
+            isActive: isActive,
+            willRenew: willRenew,
+            expiresDate: expiresDate,
+            isTrial: periodType == .trial,
+            ownershipType: ownershipType
+        )
     }
 
     var isCancelled: Bool {
         unsubscribeDetectedAt != nil && !willRenew
     }
+
 }
 
 extension NonSubscriptionTransaction: Transaction {
@@ -56,4 +69,9 @@ extension NonSubscriptionTransaction: Transaction {
     var managementURL: URL? {
         nil
     }
+
+    var periodType: PeriodType {
+        .normal
+    }
+
 }
