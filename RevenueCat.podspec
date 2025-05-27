@@ -24,9 +24,8 @@ Pod::Spec.new do |s|
   
   s.pod_target_xcconfig = {
     'DEFINES_MODULE' => 'YES',
-    'SWIFT_ACTIVE_COMPILATION_CONDITIONS' => 'ENABLE_VIRTUAL_CURRENCIES',
     'SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=xros*]' => '$(inherited) VISION_OS',
-    'SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=xrsimulator*]' => '$(inherited) VISION_OS',
+    'SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=xrsimulator*]' => '$(inherited) VISION_OS'
   }
 
   s.source_files = 'Sources/**/*.swift'

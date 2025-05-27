@@ -56,7 +56,6 @@ if shouldIncludeDocCPlugin {
 // See https://github.com/RevenueCat/purchases-ios/pull/2989
 // #if os(visionOS) can't really be used in Xcode 13, so we use this instead.
 let visionOSSetting: SwiftSetting = .define("VISION_OS", .when(platforms: [.visionOS]))
-let virtualCurrenciesSetting: SwiftSetting = .define("ENABLE_VIRTUAL_CURRENCIES")
 
 let package = Package(
     name: "RevenueCat",
@@ -86,7 +85,7 @@ let package = Package(
                 resources: [
                     .copy("../Sources/PrivacyInfo.xcprivacy")
                 ],
-                swiftSettings: [visionOSSetting, virtualCurrenciesSetting] + ciCompilerFlags + additionalCompilerFlags),
+                swiftSettings: [visionOSSetting] + ciCompilerFlags + additionalCompilerFlags),
         .target(name: "RevenueCat_CustomEntitlementComputation",
                 path: "CustomEntitlementComputation",
                 exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"],
@@ -115,7 +114,7 @@ let package = Package(
                     .copy("Resources/background.jpg"),
                     .process("Resources/icons.xcassets")
                 ],
-                swiftSettings: [virtualCurrenciesSetting] + ciCompilerFlags + additionalCompilerFlags),
+                swiftSettings: ciCompilerFlags + additionalCompilerFlags),
         .testTarget(name: "RevenueCatUITests",
                     dependencies: [
                         "RevenueCatUI",

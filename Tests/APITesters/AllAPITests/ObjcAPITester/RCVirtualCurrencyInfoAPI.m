@@ -5,7 +5,6 @@
 //  Created by Will Taylor on 2/28/25.
 //
 
-#if ENABLE_VIRTUAL_CURRENCIES
 @import RevenueCat;
 #import "RCVirtualCurrencyInfoAPI.h"
 
@@ -17,5 +16,3 @@
 }
 
 @end
-
-#endif

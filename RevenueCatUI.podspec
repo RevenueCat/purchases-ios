@@ -26,8 +26,7 @@ Pod::Spec.new do |s|
   s.visionos.deployment_target = '1.0'
   
   s.pod_target_xcconfig = { 
-    'DEFINES_MODULE' => 'YES',
-    'SWIFT_ACTIVE_COMPILATION_CONDITIONS' => 'ENABLE_VIRTUAL_CURRENCIES'
+    'DEFINES_MODULE' => 'YES'
   }
 
   s.source_files = 'RevenueCatUI/**/*.swift'
