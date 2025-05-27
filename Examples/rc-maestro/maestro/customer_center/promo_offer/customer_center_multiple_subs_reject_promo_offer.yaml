@@ -27,4 +27,4 @@ onFlowComplete:
 - waitForAnimationToEnd
 - tapOn: How can we help? # goes back
 - tapOn:
-    id: "xmark"
+    id: "circled_close_button"

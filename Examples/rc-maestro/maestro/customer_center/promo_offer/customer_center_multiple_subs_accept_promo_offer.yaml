@@ -26,4 +26,4 @@ onFlowComplete:
 - runFlow: "../../utils/promo_offer_accept.yaml"
 - tapOn: How can we help? # goes back
 - tapOn:
-    id: "xmark"
+    id: "circled_close_button"

@@ -17,4 +17,4 @@ onFlowComplete:
 - tapOn: \b[Oo][Kk]\b
 - tapOn: Cancel
 - tapOn:
-    id: "xmark"
+    id: "circled_close_button"
