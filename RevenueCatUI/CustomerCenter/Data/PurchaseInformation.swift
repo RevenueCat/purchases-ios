@@ -27,10 +27,6 @@ struct PurchaseInformation {
     /// If neither the title or the display name are available, the product identifier will be used as a fallback.
     let title: String
 
-    /// The duration of the product, if applicable.
-    /// - Note: See `StoreProduct.localizedDetails` for more details.
-    let durationTitle: String?
-
     /// Pricing details of the latest purchase.
     let pricePaid: PricePaid
 
@@ -94,7 +90,6 @@ struct PurchaseInformation {
     private let numberFormatter: NumberFormatter
 
     init(title: String,
-         durationTitle: String?,
          pricePaid: PricePaid,
          renewalPrice: RenewalPrice?,
          productIdentifier: String,
@@ -115,7 +110,6 @@ struct PurchaseInformation {
          subscriptionGroupID: String? = nil
     ) {
         self.title = title
-        self.durationTitle = durationTitle
         self.pricePaid = pricePaid
         self.renewalPrice = renewalPrice
         self.productIdentifier = productIdentifier
@@ -150,8 +144,8 @@ struct PurchaseInformation {
 
         // Title and duration from product if available
         self.title = subscribedProduct?.localizedTitle ?? transaction.productIdentifier
-        self.durationTitle = subscribedProduct?.subscriptionPeriod?.durationTitle
         self.subscriptionGroupID = subscribedProduct?.subscriptionGroupIdentifier
+
         self.customerInfoRequestedDate = customerInfoRequestedDate
         self.managementURL = managementURL
 
@@ -235,7 +229,6 @@ extension PurchaseInformation: Hashable {
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(title)
-        hasher.combine(durationTitle)
         hasher.combine(pricePaid)
         hasher.combine(renewalPrice)
         hasher.combine(renewalDate)
@@ -387,20 +380,6 @@ private extension EntitlementInfo {
 
     var isCancelled: Bool {
         unsubscribeDetectedAt != nil && !willRenew
-    }
-
-    func durationTitleBestEffort(productIdentifier: String) -> String? {
-        switch self.store {
-        case .promotional:
-            if productIdentifier.isPromotionalLifetime(store: store) {
-                return "Lifetime"
-            }
-        case .appStore, .macAppStore, .playStore, .stripe, .unknownStore, .amazon, .rcBilling, .external:
-            return nil
-        @unknown default:
-            return nil
-        }
-        return nil
     }
 }
 
