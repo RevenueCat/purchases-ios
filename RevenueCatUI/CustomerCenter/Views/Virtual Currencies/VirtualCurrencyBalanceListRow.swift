@@ -67,18 +67,21 @@ struct VirtualCurrencyBalanceListRow: View {
     }
 }
 
-#Preview("VirtualCurrencyBalanceListRow") {
-    if #available(iOS 15.0, *) {
-        List {
-            VirtualCurrencyBalanceListRow(
-                rowData: .init(
-                    virtualCurrencyCode: "GLD",
-                    balance: 100
+struct VirtualCurrencyBalanceListRow_Previews: PreviewProvider {
+
+    static var previews: some View {
+        if #available(iOS 15.0, *) {
+            List {
+                VirtualCurrencyBalanceListRow(
+                    rowData: .init(
+                        virtualCurrencyCode: "GLD",
+                        balance: 100
+                    )
                 )
-            )
+            }
+        } else {
+            Text("Unavailable on iOS <15.0")
         }
-    } else {
-        Text("Unavailable on iOS <15.0")
     }
 }
 

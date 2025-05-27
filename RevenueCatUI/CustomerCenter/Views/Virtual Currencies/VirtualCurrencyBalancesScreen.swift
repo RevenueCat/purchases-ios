@@ -98,31 +98,11 @@ struct VirtualCurrencyBalancesScreen: View {
     }
 }
 
-#Preview("Loading") {
-    if #available(iOS 14.0, *) {
-        NavigationView {
-            if #available(iOS 15.0, *) {
-                VirtualCurrencyBalancesScreen(
-                    viewModel: VirtualCurrencyBalancesScreenViewModel(
-                        viewState: .loading,
-                        purchasesProvider: CustomerCenterPurchases()
-                    )
-                )
-                .environment(\.localization, CustomerCenterConfigData.Localization.default)
-                .navigationBarTitleDisplayMode(.inline)
-            } else {
-                Text("VirtualCurrencyBalancesSectionView is not available on this platform")
-            }
-        }
-    } else {
-        Text("VirtualCurrencyBalancesSectionView is not available on this OS version")
-    }
-}
+struct VirtualCurrencyBalancesScreen_Previews: PreviewProvider {
 
-#Preview("Loaded With 0 VC Balances") {
-    if #available(iOS 14.0, *) {
-        NavigationView {
-            if #available(iOS 15.0, *) {
+    static var previews: some View {
+        if #available(iOS 15.0, *) {
+            NavigationView {
                 VirtualCurrencyBalancesScreen(
                     viewModel: VirtualCurrencyBalancesScreenViewModel(
                         viewState: .loaded([]),
@@ -131,19 +111,11 @@ struct VirtualCurrencyBalancesScreen: View {
                 )
                 .environment(\.localization, CustomerCenterConfigData.Localization.default)
                 .navigationBarTitleDisplayMode(.inline)
-            } else {
-                Text("VirtualCurrencyBalancesSectionView is not available on this platform")
+                .previewDisplayName("Loaded With 0 VC Balances")
             }
-        }
-    } else {
-        Text("VirtualCurrencyBalancesSectionView is not available on this OS version")
-    }
-}
+            .previewDisplayName("Loaded With 0 VC Balances")
 
-#Preview("Loaded with 4 VC Balances") {
-    if #available(iOS 14.0, *) {
-        NavigationView {
-            if #available(iOS 15.0, *) {
+            NavigationView {
                 VirtualCurrencyBalancesScreen(
                     viewModel: VirtualCurrencyBalancesScreenViewModel(
                         viewState: .loaded([
@@ -158,19 +130,10 @@ struct VirtualCurrencyBalancesScreen: View {
                 )
                 .environment(\.localization, CustomerCenterConfigData.Localization.default)
                 .navigationBarTitleDisplayMode(.inline)
-            } else {
-                Text("VirtualCurrencyBalancesSectionView is not available on this platform")
             }
-        }
-    } else {
-        Text("VirtualCurrencyBalancesSectionView is not available on this OS version")
-    }
-}
+            .previewDisplayName("Loaded with 4 VC Balances")
 
-#Preview("Error") {
-    if #available(iOS 14.0, *) {
-        NavigationView {
-            if #available(iOS 15.0, *) {
+            NavigationView {
                 VirtualCurrencyBalancesScreen(
                     viewModel: VirtualCurrencyBalancesScreenViewModel(
                         viewState: .error,
@@ -179,12 +142,11 @@ struct VirtualCurrencyBalancesScreen: View {
                 )
                 .environment(\.localization, CustomerCenterConfigData.Localization.default)
                 .navigationBarTitleDisplayMode(.inline)
-            } else {
-                Text("VirtualCurrencyBalancesSectionView is not available on this platform")
             }
+            .previewDisplayName("Error")
+        } else {
+            Text("VirtualCurrencyBalancesSectionView is not available on this platform")
         }
-    } else {
-        Text("VirtualCurrencyBalancesSectionView is not available on this OS version")
     }
 }
 
