@@ -44,6 +44,7 @@ struct FullScreenErrorView: View {
             .buttonStyle(.borderedProminent)
             .tint(.accent)
         }
+        .scrollBounceBehavior(.basedOnSize)
         .frame(maxWidth: .infinity)
         .scrollContentBackground(.hidden)
         .background {
