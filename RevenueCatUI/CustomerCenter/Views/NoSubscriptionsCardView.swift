@@ -30,7 +30,7 @@ struct NoSubscriptionsCardView: View {
 
     init(
         title: String,
-        subtitle: String,
+        subtitle: String
     ) {
         self.title = title
         self.subtitle = subtitle
