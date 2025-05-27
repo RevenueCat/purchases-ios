@@ -88,6 +88,8 @@ struct PurchaseInformation {
 
     let ownershipType: PurchaseOwnershipType?
 
+    let subscriptionGroupID: String?
+
     private let dateFormatter: DateFormatter
     private let numberFormatter: NumberFormatter
 
@@ -109,7 +111,8 @@ struct PurchaseInformation {
          expirationDate: Date? = nil,
          renewalDate: Date? = nil,
          periodType: PeriodType = .normal,
-         ownershipType: PurchaseOwnershipType? = nil
+         ownershipType: PurchaseOwnershipType? = nil,
+         subscriptionGroupID: String? = nil
     ) {
         self.title = title
         self.durationTitle = durationTitle
@@ -130,6 +133,7 @@ struct PurchaseInformation {
         self.periodType = periodType
         self.numberFormatter = numberFormatter
         self.ownershipType = ownershipType
+        self.subscriptionGroupID = subscriptionGroupID
     }
 
     init(entitlement: EntitlementInfo? = nil,
@@ -147,7 +151,7 @@ struct PurchaseInformation {
         // Title and duration from product if available
         self.title = subscribedProduct?.localizedTitle ?? transaction.productIdentifier
         self.durationTitle = subscribedProduct?.subscriptionPeriod?.durationTitle
-
+        self.subscriptionGroupID = subscribedProduct?.subscriptionGroupIdentifier
         self.customerInfoRequestedDate = customerInfoRequestedDate
         self.managementURL = managementURL
 
@@ -179,10 +183,10 @@ struct PurchaseInformation {
             case .nonSubscription:
                 self.isLifetime = true
                 self.isTrial = false
+                self.isActive = false
                 self.renewalDate = nil
                 self.expirationDate = nil
                 self.ownershipType = nil
-                self.isActive = false
             }
 
             self.latestPurchaseDate = transaction.purchaseDate
