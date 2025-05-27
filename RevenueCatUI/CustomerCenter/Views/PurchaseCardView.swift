@@ -28,8 +28,8 @@ struct PurchaseInformationCardView: View {
     private let title: String
     private let subtitle: String?
     private let badge: Badge?
-    /// accessibility identifier
-    private let identifier: String
+
+    private let accessibilityIdentifier: String
 
     private let storeTitle: String
 
@@ -43,7 +43,7 @@ struct PurchaseInformationCardView: View {
         title: String,
         storeTitle: String,
         paidPrice: String,
-        identifier: String,
+        accessibilityIdentifier: String,
         badge: PurchaseInformationCardView.Badge? = nil,
         additionalIcon: Image? = nil,
         additionalInfo: String? = nil,
@@ -58,18 +58,18 @@ struct PurchaseInformationCardView: View {
         self.additionalInfo = additionalInfo
         self.storeTitle = storeTitle
         self.showChevron = showChevron
-        self.identifier = identifier
+        self.accessibilityIdentifier = accessibilityIdentifier
     }
 
     init(
         purchaseInformation: PurchaseInformation,
         localization: CustomerCenterConfigData.Localization,
-        identifier: String,
+        accessibilityIdentifier: String,
         refundStatus: RefundRequestStatus? = nil,
         showChevron: Bool = true
     ) {
         self.title = purchaseInformation.title
-        self.identifier = identifier
+        self.accessibilityIdentifier = accessibilityIdentifier
 
         if let renewalDate = purchaseInformation.renewalDate {
             self.subtitle = purchaseInformation.priceRenewalString(
@@ -128,7 +128,7 @@ struct PurchaseInformationCardView: View {
                                 .padding(.horizontal, 4)
                                 .background(badge.backgroundColor)
                                 .clipShape(RoundedRectangle(cornerRadius: 4))
-                                .accessibilityIdentifier([identifier, badge.id].joined(separator: "_"))
+                                .accessibilityIdentifier([accessibilityIdentifier, badge.id].joined(separator: "_"))
                         }
                     }
                     .padding(.bottom, 8)
@@ -278,7 +278,7 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                     title: "Product name",
                     storeTitle: Store.appStore.localizationKey.rawValue,
                     paidPrice: "$19.99",
-                    identifier: "identifier",
+                    accessibilityIdentifier: "accessibilityIdentifier",
                     badge: .cancelled(CustomerCenterConfigData.default.localization),
                     subtitle: "Renews 24 May for $19.99"
                 )
@@ -289,7 +289,7 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                     title: "Product name",
                     storeTitle: Store.playStore.localizationKey.rawValue,
                     paidPrice: "$19.99",
-                    identifier: "identifier",
+                    accessibilityIdentifier: "accessibilityIdentifier",
                     badge: .freeTrial(CustomerCenterConfigData.default.localization),
                     subtitle: "Renews 24 May for $19.99"
                 )
@@ -300,7 +300,7 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                     title: "Product name",
                     storeTitle: Store.playStore.localizationKey.rawValue,
                     paidPrice: "$19.99",
-                    identifier: "identifier",
+                    accessibilityIdentifier: "accessibilityIdentifier",
                     badge: .active(CustomerCenterConfigData.default.localization),
                     additionalIcon: Image(systemName: "exclamationmark.triangle.fill"),
                     additionalInfo: "Apple has received the refund request Apple has received the refund request",
@@ -313,7 +313,7 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                     title: "Product name",
                     storeTitle: Store.playStore.localizationKey.rawValue,
                     paidPrice: "$19.99",
-                    identifier: "identifier",
+                    accessibilityIdentifier: "accessibilityIdentifier",
                     badge: .active(CustomerCenterConfigData.default.localization),
                     additionalIcon: Image(systemName: "info.circle.fill"),
                     additionalInfo: "An error occurred while processing the refund request. Please try again.",
@@ -325,7 +325,7 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                 PurchaseInformationCardView(
                     purchaseInformation: .consumable,
                     localization: CustomerCenterConfigData.default.localization,
-                    identifier: "1"
+                    accessibilityIdentifier: "accessibilityIdentifier"
                 )
                 .cornerRadius(10)
                 .padding([.leading, .trailing])

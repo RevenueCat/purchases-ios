@@ -63,7 +63,7 @@ struct PurchasesInformationSection: View {
                     PurchaseInformationCardView(
                         purchaseInformation: purchase,
                         localization: localization,
-                        identifier: id
+                        accessibilityIdentifier: id
                     )
                     .cornerRadius(10)
                     .padding(.horizontal)
