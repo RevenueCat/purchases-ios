@@ -122,7 +122,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
     func testLoadHasSubscriptionsGoogle() async throws {
         let mockPurchases = MockCustomerCenterPurchases(
-            customerInfo: CustomerCenterViewModelTests.customerInfoWithAppleSubscriptions
+            customerInfo: CustomerCenterViewModelTests.customerInfoWithGoogleSubscriptions
         )
 
         let viewModel = CustomerCenterViewModel(
@@ -133,11 +133,11 @@ final class CustomerCenterViewModelTests: TestCase {
         await viewModel.loadScreen()
 
         expect(viewModel.hasPurchases).to(beTrue())
-//        let purchaseInformation = try XCTUnwrap(viewModel.activeSubscriptionPurchases.first?)
-//        expect(purchaseInformation.productIdentifier) == product.productIdentifier
-//        expect(viewModel.activeNonSubscriptionPurchases).to(beEmpty())
+        let purchaseInformation = try XCTUnwrap(viewModel.activeSubscriptionPurchases.first)
+        expect(purchaseInformation.productIdentifier) == "com.revenuecat.product"
 
-//        expect(purchaseInformation.store) == .playStore
+        expect(viewModel.activeNonSubscriptionPurchases).to(beEmpty())
+        expect(purchaseInformation.store) == .playStore
         expect(viewModel.state) == .success
     }
 
@@ -936,7 +936,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         expect(viewModel.activeSubscriptionPurchases.first).toNot(beNil())
         expect(viewModel.shouldShowList).to(beFalse())
-        expect(mockStoreKitUtilities.renewalPriceFromRenewalInfoCallCount).to(equal(2))
+        expect(mockStoreKitUtilities.renewalPriceFromRenewalInfoCallCount).to(equal(1))
     }
 
     func testPurchaseInformationUsesInfoFromRenewalInfoWhenAvailable() async {
@@ -958,7 +958,7 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(viewModel.shouldShowList).to(beFalse())
         expect(viewModel.activeSubscriptionPurchases.first?.pricePaid).to(equal(.nonFree(formatted(price: 4.99))))
         expect(viewModel.activeSubscriptionPurchases.first?.renewalPrice).to(equal(.nonFree(formatted(price: 5.0))))
-        expect(mockStoreKitUtilities.renewalPriceFromRenewalInfoCallCount).to(equal(2))
+        expect(mockStoreKitUtilities.renewalPriceFromRenewalInfoCallCount).to(equal(1))
     }
 
     func testOnDismissRestorePurchasesAlertReloadsScreen() async {
