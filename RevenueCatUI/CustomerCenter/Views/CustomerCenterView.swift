@@ -95,9 +95,13 @@ public struct CustomerCenterView: View {
     @_spi(Internal) public init(
         uiPreviewPurchaseProvider: CustomerCenterPurchasesType,
         navigationOptions: CustomerCenterNavigationOptions) {
-        self.init(viewModel: CustomerCenterViewModel(uiPreviewPurchaseProvider: uiPreviewPurchaseProvider),
-                  navigationOptions: navigationOptions)
-    }
+            self.init(
+                viewModel: CustomerCenterViewModel(
+                    uiPreviewPurchaseProvider: uiPreviewPurchaseProvider
+                ),
+                navigationOptions: navigationOptions
+            )
+        }
 
     fileprivate init(
         viewModel: CustomerCenterViewModel,

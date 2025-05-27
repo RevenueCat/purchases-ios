@@ -132,8 +132,6 @@ import RevenueCat
         self.customerInfo = nil
     }
 
-    #if DEBUG
-
     convenience init(
         uiPreviewPurchaseProvider: CustomerCenterPurchasesType
     ) {
@@ -142,6 +140,8 @@ import RevenueCat
             purchasesProvider: uiPreviewPurchaseProvider
         )
     }
+
+    #if DEBUG
 
     convenience init(
         configuration: CustomerCenterConfigData
