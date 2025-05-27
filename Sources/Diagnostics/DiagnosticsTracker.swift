@@ -37,6 +37,7 @@ protocol DiagnosticsTrackerType: Sendable {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func trackHttpRequestPerformed(endpointName: String,
+                                   host: String?,
                                    responseTime: TimeInterval,
                                    wasSuccessful: Bool,
                                    responseCode: Int,
@@ -171,7 +172,9 @@ protocol DiagnosticsTrackerType: Sendable {
                                              reason: String?)
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func trackAppleAppTransactionError(errorMessage: String)
+    func trackAppleAppTransactionError(errorMessage: String,
+                                       errorCode: Int?,
+                                       storeKitErrorDescription: String?)
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -235,6 +238,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
     }
 
     func trackHttpRequestPerformed(endpointName: String,
+                                   host: String?,
                                    responseTime: TimeInterval,
                                    wasSuccessful: Bool,
                                    responseCode: Int,
@@ -246,6 +250,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                         properties: DiagnosticsEvent.Properties(
                             verificationResult: verificationResult.name,
                             endpointName: endpointName,
+                            host: host,
                             responseTime: responseTime,
                             successful: wasSuccessful,
                             responseCode: responseCode,
@@ -505,10 +510,14 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                         ))
     }
 
-    func trackAppleAppTransactionError(errorMessage: String) {
+    func trackAppleAppTransactionError(errorMessage: String,
+                                       errorCode: Int?,
+                                       storeKitErrorDescription: String?) {
         self.trackEvent(name: .appleAppTransactionError,
                         properties: DiagnosticsEvent.Properties(
-                            errorMessage: errorMessage
+                            errorMessage: errorMessage,
+                            errorCode: errorCode,
+                            skErrorDescription: storeKitErrorDescription
                         ))
     }
 

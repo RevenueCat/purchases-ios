@@ -91,7 +91,8 @@ class StoreProductTests: StoreKitConfigTestCase {
             result = products
         }
 
-        expect(result).toEventuallyNot(beNil(), timeout: Self.requestDispatchTimeout + .seconds(5))
+        let timeout = Self.requestTimeout + 5
+        expect(result).toEventuallyNot(beNil(), timeout: timeout.nimbleInterval)
 
         let products = try result.get()
 

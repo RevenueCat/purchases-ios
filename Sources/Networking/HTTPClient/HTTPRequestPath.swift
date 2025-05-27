@@ -18,6 +18,11 @@ protocol HTTPRequestPath {
     /// The base URL for requests to this path.
     static var serverHostURL: URL { get }
 
+    /// The fallback hosts to use when the main server is down.
+    ///
+    /// Not all endpoints have a fallback host, but some do.
+    var fallbackHosts: [URL] { get }
+
     /// Whether requests to this path are authenticated.
     var authenticated: Bool { get }
 
@@ -30,27 +35,35 @@ protocol HTTPRequestPath {
     /// Whether endpoint requires a nonce for signature verification.
     var needsNonceForSigning: Bool { get }
 
-    /// The path component for this endpoint.
-    var pathComponent: String { get }
-
     /// The name of the endpoint.
     var name: String { get }
 
+    /// The full relative path for this endpoint.
+    var relativePath: String { get }
 }
 
 extension HTTPRequestPath {
 
-    /// The full relative path for this endpoint.
-    var relativePath: String {
-        return "/v1/\(self.pathComponent)"
+    var fallbackHosts: [URL] {
+        return []
     }
 
     var url: URL? { return self.url(proxyURL: nil) }
 
-    func url(proxyURL: URL? = nil) -> URL? {
-        return URL(string: self.relativePath, relativeTo: proxyURL ?? Self.serverHostURL)
+    func url(proxyURL: URL? = nil, fallbackHostIndex: Int? = nil) -> URL? {
+        let baseURL: URL
+        if let proxyURL {
+            baseURL = proxyURL
+        } else if let fallbackHostIndex {
+            guard let fallbackHost = self.fallbackHosts[safe: fallbackHostIndex] else {
+                return nil
+            }
+            baseURL = fallbackHost
+        } else {
+            baseURL = Self.serverHostURL
+        }
+        return URL(string: self.relativePath, relativeTo: baseURL)
     }
-
 }
 
 // MARK: - Main paths
@@ -70,6 +83,7 @@ extension HTTPRequest {
         case postAdServicesToken(appUserID: String)
         case health
         case appHealth(appUserID: String)
+        case appHealthReport(appUserID: String)
         case getProductEntitlementMapping
         case getCustomerCenterConfig(appUserID: String)
         case postRedeemWebPurchase
@@ -88,12 +102,28 @@ extension HTTPRequest {
 
     }
 
+    enum WebBillingPath: Hashable {
+
+        case getWebProducts(appUserID: String)
+
+    }
+
 }
 
 extension HTTPRequest.Path: HTTPRequestPath {
 
     // swiftlint:disable:next force_unwrapping
     static let serverHostURL = URL(string: "https://api.revenuecat.com")!
+
+    var fallbackHosts: [URL] {
+        switch self {
+        case .getOfferings, .getProductEntitlementMapping:
+            // swiftlint:disable:next force_unwrapping
+            return [URL(string: "https://api-production.8-lives-cat.io")!]
+        default:
+            return []
+        }
+    }
 
     var authenticated: Bool {
         switch self {
@@ -110,6 +140,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .appHealth:
+                .appHealthReport:
             return true
 
         case .health:
@@ -132,6 +163,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .appHealth:
+                .appHealthReport:
             return true
         case .health:
             return false
@@ -145,7 +177,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postReceiptData,
                 .health,
                 .getOfferings,
-                .getProductEntitlementMapping:
+                .getProductEntitlementMapping,
+                .appHealthReport:
             return true
         case .getIntroEligibility,
                 .postSubscriberAttributes,
@@ -176,8 +209,13 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .appHealth:
+                .appHealthReport:
             return false
         }
+    }
+
+    var relativePath: String {
+        return "/v1/\(self.pathComponent)"
     }
 
     var pathComponent: String {
@@ -193,6 +231,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
             
         case let .appHealth(appUserID):
             return "subscribers/\(Self.escape(appUserID))/health"
+
+        case let .appHealthReport(appUserID):
+            return "subscribers/\(Self.escape(appUserID))/health_report"
 
         case .logIn:
             return "subscribers/identify"
@@ -270,6 +311,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
             
         case .appHealth:
             return "get_app_health"
+
+        case .appHealthReport:
+            return "get_app_health_report"
 
         }
     }

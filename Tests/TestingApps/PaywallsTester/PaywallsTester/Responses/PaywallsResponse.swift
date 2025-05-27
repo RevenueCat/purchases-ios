@@ -105,9 +105,11 @@ extension PaywallsResponse.Paywall {
                             type: .introductory
                         )
                     ).toStoreProduct(),
-                    offeringIdentifier: offering.identifier
+                    offeringIdentifier: offering.identifier,
+                    webCheckoutUrl: nil
                 )
-            }
+            },
+            webCheckoutUrl: nil
         )
     }
 

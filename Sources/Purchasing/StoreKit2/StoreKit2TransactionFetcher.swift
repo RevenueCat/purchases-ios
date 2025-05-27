@@ -122,7 +122,7 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
                 do {
                     return try await AppTransaction.shared.jwsRepresentation
                 } catch {
-                    self.diagnosticsTracker?.trackAppleAppTransactionError(errorMessage: error.localizedDescription)
+                    self.trackAppleAppTransactionError(error)
                     return nil
                 }
             } else {
@@ -147,7 +147,7 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
                 do {
                     return try await AppTransaction.shared.jwsRepresentation
                 } catch {
-                    self.diagnosticsTracker?.trackAppleAppTransactionError(errorMessage: error.localizedDescription)
+                    self.trackAppleAppTransactionError(error)
                     return nil
                 }
             } else {
@@ -307,11 +307,22 @@ extension StoreKit2TransactionFetcher {
                     return nil
                 }
             } catch {
-                self.diagnosticsTracker?.trackAppleAppTransactionError(errorMessage: error.localizedDescription)
-                Logger.warn(Strings.storeKit.sk2_error_fetching_app_transaction(error))
+                self.trackAppleAppTransactionError(error)
                 return nil
             }
         }
     }
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    private func trackAppleAppTransactionError(_ error: Error) {
+        let purchasesError = ErrorUtils.purchasesError(withStoreKitError: error)
+        let errorMessage: String = (purchasesError.userInfo[NSUnderlyingErrorKey] as? Error)?.localizedDescription
+            ?? purchasesError.localizedDescription
+        let errorCode = purchasesError.errorCode
+        let storeKitErrorDescription = StoreKitErrorUtils.extractStoreKitErrorDescription(from: error)
+        self.diagnosticsTracker?.trackAppleAppTransactionError(errorMessage: errorMessage,
+                                                               errorCode: errorCode,
+                                                               storeKitErrorDescription: storeKitErrorDescription)
+        Logger.warn(Strings.storeKit.sk2_error_fetching_app_transaction(error))
+    }
 }

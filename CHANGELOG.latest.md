@@ -1,11 +1,11 @@
-## RevenueCatUI SDK
-### Paywallv2
+## RevenueCat SDK
+### Customer Center
 #### 🐞 Bugfixes
-* Make Paywalls v2 Text use verbatim (#4975) via Josh Holtz (@joshdholtz)
+* Pass productIdentifier for promo offer flow (#5179) via Facundo Menzella (@facumenzella)
+* return .free for CustomerCenterStoreKitUtilities if price.isZero (#5174) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* New APIs to CustomEntitlementsComputationMode SDK (#4972) via Toni Rico (@tonidero)
-* Updates the changelog for hotfix 4.43.5. (#4980) via JayShortway (@JayShortway)
-* Fixes unit tests compilation on Xcode 16.3/iOS 18.4 (#4977) via Antonio Pallares (@ajpallares)
-* Remove preprocessor script for PaywallsTester (#4969) via Antonio Pallares (@ajpallares)
-* [Customer center] unify and propagate Purchases provider (#4957) via Antonio Pallares (@ajpallares)
+* Use scrollBounceBehaviorBasedOnSize for CustomerCenter scrollview (#5175) via Facundo Menzella (@facumenzella)
+* Refactor NoSubscriptionsView in CustomerCenter (#5173) via Facundo Menzella (@facumenzella)
+* Add consumable and non consumable for Customer Center test app (#5172) via Facundo Menzella (@facumenzella)
+* Add a push navigation to Customer Center maestro app (#5157) via Facundo Menzella (@facumenzella)

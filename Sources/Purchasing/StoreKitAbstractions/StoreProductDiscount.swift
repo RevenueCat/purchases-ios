@@ -27,7 +27,7 @@ public typealias SK2ProductDiscount = StoreKit.Product.SubscriptionOffer
 /// and provides access to their properties.
 /// Information about a subscription offer that you configured in App Store Connect.
 @objc(RCStoreProductDiscount)
-public final class StoreProductDiscount: NSObject, StoreProductDiscountType {
+public final class StoreProductDiscount: NSObject {
 
     /// The payment mode for a `StoreProductDiscount`
     /// Indicates how the product discount price is charged.
@@ -114,6 +114,9 @@ public final class StoreProductDiscount: NSObject, StoreProductDiscountType {
     }
 
 }
+
+@_spi(Internal) extension StoreProductDiscount: StoreProductDiscountType { }
+
 extension StoreProductDiscount {
     // swiftlint:disable:next missing_docs
     @_spi(Internal) public func promotionalOffer(withSignedDataIdentifier identifier: String,
@@ -172,7 +175,7 @@ extension StoreProductDiscount {
 }
 
 /// The details of an introductory offer or a promotional offer for an auto-renewable subscription.
-internal protocol StoreProductDiscountType: Sendable {
+@_spi(Internal) public protocol StoreProductDiscountType: Sendable {
 
     // Note: this is only `nil` for SK1 products.
     // It can become `String` once it's not longer supported.
