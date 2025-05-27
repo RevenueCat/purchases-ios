@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  VirtualCurrenciesViewModel.swift
+//  VirtualCurrencyBalancesScreenViewModel.swift
 //
 //  Created by Will Taylor on 4/21/25.
 
