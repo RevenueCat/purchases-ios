@@ -115,7 +115,6 @@ final class PurchaseInformationTests: TestCase {
             )
         )
         expect(subscriptionInfo.title) == "Monthly Product"
-        expect(subscriptionInfo.durationTitle) == "1 month"
         expect(subscriptionInfo.pricePaid) == .nonFree("$6.99")
         expect(subscriptionInfo.renewalPrice).to(beNil())
         expect(subscriptionInfo.isLifetime).to(beFalse())
@@ -172,7 +171,6 @@ final class PurchaseInformationTests: TestCase {
 
         let subscriptionInfo = try XCTUnwrap(subscriptionInfoNullable)
         expect(subscriptionInfo.title) == "Monthly Product"
-        expect(subscriptionInfo.durationTitle) == "1 month"
         expect(subscriptionInfo.pricePaid) == .nonFree("$6.99")
         expect(subscriptionInfo.renewalPrice) == .nonFree("$7.99")
         expect(subscriptionInfo.isLifetime).to(beFalse())
@@ -230,7 +228,6 @@ final class PurchaseInformationTests: TestCase {
         let subscriptionInfo = try XCTUnwrap(subscriptionInfoNullable)
 
         expect(subscriptionInfo.title) == "Monthly Product"
-        expect(subscriptionInfo.durationTitle) == "1 month"
         expect(subscriptionInfo.pricePaid) == .nonFree("$6.99")
         expect(subscriptionInfo.renewalPrice).to(beNil())
         expect(subscriptionInfo.isLifetime).to(beTrue())
@@ -287,7 +284,6 @@ final class PurchaseInformationTests: TestCase {
 
         let subscriptionInfo = try XCTUnwrap(subscriptionInfoNullable)
         expect(subscriptionInfo.title) == "Monthly Product"
-        expect(subscriptionInfo.durationTitle) == "1 month"
         expect(subscriptionInfo.pricePaid) == .nonFree("$6.99")
         expect(subscriptionInfo.isLifetime).to(beFalse())
 
@@ -343,7 +339,6 @@ final class PurchaseInformationTests: TestCase {
 
         let subscriptionInfo = try XCTUnwrap(subscriptionInfoNullable)
         expect(subscriptionInfo.title) == "Monthly Product"
-        expect(subscriptionInfo.durationTitle) == "1 month"
         expect(subscriptionInfo.pricePaid) == .nonFree("$6.99")
         expect(subscriptionInfo.renewalPrice).to(beNil())
         expect(subscriptionInfo.isLifetime).to(beFalse())
@@ -386,7 +381,6 @@ final class PurchaseInformationTests: TestCase {
         )
 
         expect(subscriptionInfo.title) == "com.revenuecat.product"
-        expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.pricePaid) == .nonFree("$6.99")
         expect(subscriptionInfo.renewalPrice).to(beNil())
         expect(subscriptionInfo.isLifetime).to(beFalse())
@@ -429,7 +423,6 @@ final class PurchaseInformationTests: TestCase {
         )
 
         expect(subscriptionInfo.title) == "com.revenuecat.product"
-        expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.pricePaid) == .nonFree("$6.99")
         expect(subscriptionInfo.renewalPrice).to(beNil())
         expect(subscriptionInfo.isLifetime).to(beFalse())
@@ -472,7 +465,6 @@ final class PurchaseInformationTests: TestCase {
         )
 
         expect(subscriptionInfo.title) == "com.revenuecat.product"
-        expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.pricePaid) == .nonFree("$6.99")
         expect(subscriptionInfo.renewalPrice).to(beNil())
         expect(subscriptionInfo.isLifetime).to(beFalse())
@@ -515,7 +507,6 @@ final class PurchaseInformationTests: TestCase {
         )
 
         expect(subscriptionInfo.title) == "rc_promo_pro_cat_yearly"
-        expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.pricePaid) == .free
         expect(subscriptionInfo.renewalPrice).to(beNil())
         expect(subscriptionInfo.isLifetime).to(beFalse())
@@ -558,7 +549,6 @@ final class PurchaseInformationTests: TestCase {
         )
 
         expect(subscriptionInfo.title) == "rc_promo_pro_cat_lifetime"
-        expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.pricePaid) == .free
         expect(subscriptionInfo.renewalPrice).to(beNil())
         // false - no way to know if its lifetime
@@ -602,7 +592,6 @@ final class PurchaseInformationTests: TestCase {
         )
 
         expect(subscriptionInfo.title) == "com.revenuecat.product"
-        expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
         expect(subscriptionInfo.renewalPrice).to(beNil())
         expect(subscriptionInfo.isLifetime).to(beFalse())
@@ -645,7 +634,6 @@ final class PurchaseInformationTests: TestCase {
         )
 
         expect(subscriptionInfo.title) == "com.revenuecat.product"
-        expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
         expect(subscriptionInfo.renewalPrice).to(beNil())
         expect(subscriptionInfo.isLifetime).to(beFalse())
@@ -688,7 +676,6 @@ final class PurchaseInformationTests: TestCase {
         )
 
         expect(subscriptionInfo.title) == "com.revenuecat.product"
-        expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
         expect(subscriptionInfo.renewalPrice).to(beNil())
         expect(subscriptionInfo.isLifetime).to(beFalse())
@@ -731,7 +718,6 @@ final class PurchaseInformationTests: TestCase {
         )
 
         expect(subscriptionInfo.title) == "com.revenuecat.product"
-        expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
         expect(subscriptionInfo.renewalPrice) == .nonFree("$1.99")
         expect(subscriptionInfo.isLifetime).to(beFalse())
@@ -774,7 +760,6 @@ final class PurchaseInformationTests: TestCase {
         )
 
         expect(subscriptionInfo.title) == "com.revenuecat.product"
-        expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
         expect(subscriptionInfo.renewalPrice).to(beNil())
         expect(subscriptionInfo.isLifetime).to(beFalse())
@@ -817,7 +802,6 @@ final class PurchaseInformationTests: TestCase {
         )
 
         expect(subscriptionInfo.title) == "com.revenuecat.product"
-        expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
         expect(subscriptionInfo.renewalPrice).to(beNil())
         expect(subscriptionInfo.isLifetime).to(beFalse())
@@ -857,7 +841,6 @@ final class PurchaseInformationTests: TestCase {
             )
         )
         expect(subscriptionInfo.title) == "product_id"
-        expect(subscriptionInfo.durationTitle).to(beNil())
         expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
         expect(subscriptionInfo.isLifetime).to(beFalse())
 
