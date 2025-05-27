@@ -418,14 +418,14 @@ private final class WebBillingStoreProduct: StoreProductType {
 
     var currencyCode: String? {
         return self.defaultPurchaseOption?.basePrice?.currency ??
-            self.defaultPurchaseOption?.base?.price.currency
+            self.defaultPurchaseOption?.base?.price?.currency
     }
 
     var price: Decimal {
         if let basePrice = self.defaultPurchaseOption?.basePrice {
             return Decimal(basePrice.amountMicros) / 1_000_000
         } else if let base = self.defaultPurchaseOption?.base {
-            return Decimal(base.price.amountMicros) / 1_000_000
+            return Decimal(base.price?.amountMicros ?? 0) / 1_000_000
         }
         return 0
     }

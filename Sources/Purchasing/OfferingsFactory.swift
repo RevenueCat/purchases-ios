@@ -18,13 +18,13 @@ import StoreKit
 class OfferingsFactory {
 
     func createOfferings(from storeProductsByID: [String: StoreProduct],
-                         webProductsByID: [String: StoreProduct],
+                         webProductsResponse: WebProductsResponse?,
                          data: OfferingsResponse) -> Offerings? {
         let offerings: [String: Offering] = data
             .offerings
             .compactMap { offeringData in
                 createOffering(from: storeProductsByID,
-                               webProductsById: webProductsByID,
+                               webProductsOffering: webProductsResponse?.offerings[offeringData.identifier],
                                offering: offeringData,
                                uiConfig: data.uiConfig)
             }
@@ -43,14 +43,19 @@ class OfferingsFactory {
 
     func createOffering(
         from storeProductsByID: [String: StoreProduct],
-        webProductsById: [String: StoreProduct],
+        webProductsOffering: WebProductsResponse.Offering?,
         offering: OfferingsResponse.Offering,
         uiConfig: UIConfig?
     ) -> Offering? {
-        let availablePackages: [Package] = offering.packages.compactMap { package in
-            createPackage(with: package,
+        var packageIds = Set(offering.packages.map(\.identifier))
+        let packagesById = offering.packages.dictionaryWithKeys(\.identifier)
+        if let webProductsOffering = webProductsOffering {
+            packageIds.formUnion(webProductsOffering.packages.keys)
+        }
+        let availablePackages: [Package] = packageIds.compactMap { packageId in
+            createPackage(with: packagesById[packageId],
                           productsByID: storeProductsByID,
-                          webProductsById: webProductsById,
+                          webProductsPackage: webProductsOffering?.packages[packageId],
                           offeringIdentifier: offering.identifier)
         }
 
@@ -90,17 +95,24 @@ class OfferingsFactory {
     }
 
     func createPackage(
-        with data: OfferingsResponse.Offering.Package,
+        with data: OfferingsResponse.Offering.Package?,
         productsByID: [String: StoreProduct],
-        webProductsById: [String: StoreProduct],
+        webProductsPackage: WebProductsResponse.Package?,
         offeringIdentifier: String
     ) -> Package? {
-        let webProductId = data.productIdByStoreType?["rc_billing"]
-        var webProduct: StoreProduct?
-        if let webProductId = webProductId {
-            webProduct = webProductsById[webProductId]
+        guard let packageIdentifier = data?.identifier ?? webProductsPackage?.identifier else {
+            return nil
         }
-        let iosProduct = productsByID[data.platformProductIdentifier]
+        var webProduct: StoreProduct?
+        var webCheckoutUrl = webProductsPackage?.webCheckoutUrl
+
+        if let webProductsPackage = webProductsPackage {
+            webProduct = StoreProduct.from(webBillingProduct: webProductsPackage.productDetails)
+        }
+        var iosProduct: StoreProduct?
+        if let data = data {
+            iosProduct = productsByID[data.platformProductIdentifier]
+        }
         guard let product = iosProduct ?? webProduct else {
             return nil
         }
@@ -113,11 +125,11 @@ class OfferingsFactory {
             storeProductByStoreRawValue[Store.rcBilling.rawValue] = webProduct
         }
 
-        return .init(package: data,
+        return .init(packageIdentifier: packageIdentifier,
                      product: product,
                      packageProducts: PackageProducts(nativeProduct: iosProduct, webBillingProduct: webProduct),
                      offeringIdentifier: offeringIdentifier,
-                     webCheckoutUrl: data.webCheckoutUrl)
+                     webCheckoutUrl: webCheckoutUrl)
     }
 
     func createPlacement(
@@ -141,14 +153,14 @@ extension OfferingsFactory: @unchecked Sendable {}
 private extension Package {
 
     convenience init(
-        package: OfferingsResponse.Offering.Package,
+        packageIdentifier: String,
         product: StoreProduct,
         packageProducts: PackageProducts,
         offeringIdentifier: String,
         webCheckoutUrl: URL?
     ) {
-        self.init(identifier: package.identifier,
-                  packageType: Package.packageType(from: package.identifier),
+        self.init(identifier: packageIdentifier,
+                  packageType: Package.packageType(from: packageIdentifier),
                   storeProduct: product,
                   packageProducts: packageProducts,
                   presentedOfferingContext: .init(offeringIdentifier: offeringIdentifier),

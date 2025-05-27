@@ -139,7 +139,7 @@ class HTTPClient {
             RequestHeader.sandbox.rawValue: "\(self.systemInfo.isSandbox)",
             "X-Is-Backgrounded": "\(self.systemInfo.isAppBackgroundedState)",
             "X-Is-Debug-Build": "\(self.systemInfo.isDebugBuild)",
-            "X-RC-Canary": "mappings" // TODO: To remove
+            "X-RC-Canary": "app2web" // TODO: To remove
         ]
 
         if let storefront = self.systemInfo.storefront {

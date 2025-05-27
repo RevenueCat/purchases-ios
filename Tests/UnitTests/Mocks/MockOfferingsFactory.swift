@@ -56,8 +56,7 @@ class MockOfferingsFactory: OfferingsFactory {
                       packages: [
                         .init(identifier: "",
                               platformProductIdentifier: "$rc_monthly",
-                              webCheckoutUrl: nil,
-                              productIdByStoreType: [:])
+                              webCheckoutUrl: nil)
                       ], webCheckoutUrl: nil)
             ], placements: nil, targeting: nil, uiConfig: nil)
 
@@ -77,8 +76,7 @@ extension OfferingsResponse {
                   packages: [
                     .init(identifier: "$rc_monthly",
                           platformProductIdentifier: "monthly_freetrial",
-                          webCheckoutUrl: nil,
-                          productIdByStoreType: [:])
+                          webCheckoutUrl: nil)
                   ], webCheckoutUrl: nil)
         ],
         placements: nil,
