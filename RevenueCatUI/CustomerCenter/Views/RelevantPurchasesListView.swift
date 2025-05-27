@@ -91,9 +91,9 @@ struct RelevantPurchasesListView: View {
                     customerInfoViewModel: customerInfoViewModel,
                     screen: viewModel.screen,
                     purchaseInformation: viewModel.purchaseInformation,
+                    virtualCurrencies: nil, // Don't show virtual currencies when navigated to from here
                     showPurchaseHistory: false,
                     allowsMissingPurchaseAction: false,
-                    virtualCurrencies: nil, // Don't show virtual currencies when navigated to from here
                     purchasesProvider: self.viewModel.purchasesProvider,
                     actionWrapper: self.viewModel.actionWrapper
                 )

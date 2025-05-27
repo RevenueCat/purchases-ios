@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  VirtualCurrenciesListSection.swift
+//  VirtualCurrenciesScrollViewWithOSBackgroundSection.swift
 //
 //  Created by Will Taylor on 4/22/25.
 
@@ -43,7 +43,7 @@ import SwiftUI
 ///
 /// Example implementation:
 /// ```swift
-/// VirtualCurrenciesListSection(
+/// VirtualCurrenciesScrollViewWithOSBackgroundSection(
 ///     virtualCurrencies: virtualCurrencies,
 ///     onSeeAllInAppCurrenciesButtonTapped: {
 ///         // Present VirtualCurrencyBalancesScreen here
