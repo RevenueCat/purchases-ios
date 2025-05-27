@@ -6,7 +6,7 @@
 //
 
 import Foundation
-@testable import RevenueCat
+import RevenueCat
 
 func checkVirtualCurrencyInfo(virtualCurrencyInfo: VirtualCurrencyInfo) {
     let balance: Int = virtualCurrencyInfo.balance
