@@ -15,7 +15,7 @@ import Foundation
 import RevenueCat
 
 extension Array<CustomerCenterConfigData.HelpPath> {
-    func relevantPahts(
+    func relevantPaths(
         for purchaseInformation: PurchaseInformation?,
         allowMissingPurchase: Bool
     ) -> [CustomerCenterConfigData.HelpPath] {
