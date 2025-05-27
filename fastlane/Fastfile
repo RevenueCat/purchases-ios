@@ -644,17 +644,25 @@ platform :ios do
   desc "Run LoadShedder tests"
   lane :v3_loadshedder_integration_tests do |options|
     replace_api_key_integration_tests
-    scan(
-      project: "./Tests/v3LoadShedderIntegration/v3LoadShedderIntegration.xcodeproj",
-      scheme: "v3LoadShedderIntegration",
-      ensure_devices_found: true,
-      derived_data_path: "scan_derived_data",
-      output_types: 'junit',
-      output_style: 'raw',
-      result_bundle: true,
-      configuration: 'Debug',
-      output_directory: "fastlane/test_output/xctest/ios"
-    )
+    success = false
+    begin
+      scan(
+        project: "./Tests/v3LoadShedderIntegration/v3LoadShedderIntegration.xcodeproj",
+        scheme: "v3LoadShedderIntegration",
+        ensure_devices_found: true,
+        derived_data_path: "scan_derived_data",
+        output_types: 'junit',
+        output_style: 'raw',
+        result_bundle: true,
+        configuration: 'Debug',
+        output_directory: "fastlane/test_output/xctest/ios"
+      )
+      success = true
+    rescue => exception
+      raise exception
+    ensure
+      send_slack_load_shedder_integration_test_v3(success: success)
+    end
   end
 
 
@@ -1129,3 +1137,20 @@ def update_snapshots_commit(hash)
   File.write(snapshots_commit_file, hash)
 end
 
+# Slack
+
+lane :send_slack_load_shedder_integration_test_v3 do |options|
+  success = options[:success] || false
+  message =
+      if success
+          "iOS load shedder integration tests V3 finished successfully"
+      else
+          "iOS load shedder integration tests V3 failed"
+      end
+  slack(
+    message: message,
+    slack_url: ENV["SLACK_URL_LOAD_SHEDDER_INTEGRATION_TESTS"],
+    success: success,
+    default_payloads: [:git_branch]
+  )
+end

@@ -11,6 +11,7 @@
 //
 //  Created by Facundo Menzella on 20/5/25.
 
+import RevenueCat
 import SwiftUI
 
 #if os(iOS)
@@ -33,9 +34,41 @@ struct ScrollViewSection<Content: View>: View {
             .padding(.horizontal, 32)
             .frame(maxWidth: .infinity, alignment: .leading)
             .multilineTextAlignment(.leading)
-            .padding(.top, 16)
+            .padding(.bottom, 12)
 
         content()
+    }
+}
+
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+struct PurchasesInformationSection: View {
+
+    let title: String
+    let items: [PurchaseInformation]
+    let localization: CustomerCenterConfigData.Localization
+    let action: (PurchaseInformation) -> Void
+
+    var body: some View {
+        ScrollViewSection(title: title) {
+            ForEach(items) { purchase in
+                Button {
+                    action(purchase)
+                } label: {
+                    PurchaseInformationCardView(
+                        purchaseInformation: purchase,
+                        localization: localization
+                    )
+                    .cornerRadius(10)
+                    .padding(.horizontal)
+                }
+                .padding(.bottom, 16)
+            }
+
+            Spacer().frame(height: 16)
+        }
     }
 }
 

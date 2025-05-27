@@ -16,9 +16,12 @@ import Foundation
 
 // swiftlint:disable force_unwrapping
 extension PurchaseInformation {
+    static let defaulRenewalDate = Date(timeIntervalSince1970: 1747876800)
+    static let defaultLatestPurchaseDate = Date(timeIntervalSince1970: 1747862400)
+    static let defaultCustomerInfoRequestedDate = Date(timeIntervalSince1970: 1747862400)
+
     static let monthlyRenewing = PurchaseInformation(
         title: "Basic",
-        durationTitle: "Monthly",
         pricePaid: .nonFree("$4.99"),
         renewalPrice: .nonFree("$4.99"),
         productIdentifier: "product_id5",
@@ -26,8 +29,9 @@ extension PurchaseInformation {
         isLifetime: false,
         isTrial: false,
         isCancelled: false,
-        latestPurchaseDate: nil,
-        customerInfoRequestedDate: Date(),
+        isActive: true,
+        latestPurchaseDate: Self.defaultLatestPurchaseDate,
+        customerInfoRequestedDate: Self.defaultCustomerInfoRequestedDate,
         managementURL: URL(string: "https://www.revenuecat.com")!,
         expirationDate: nil,
         renewalDate: nil
@@ -35,7 +39,6 @@ extension PurchaseInformation {
 
     static let lifetime = PurchaseInformation(
         title: "Lifetime",
-        durationTitle: "Lifetime",
         pricePaid: .nonFree("$4.99"),
         renewalPrice: .nonFree("$4.99"),
         productIdentifier: "product_id5",
@@ -43,8 +46,9 @@ extension PurchaseInformation {
         isLifetime: true,
         isTrial: false,
         isCancelled: false,
-        latestPurchaseDate: nil,
-        customerInfoRequestedDate: Date(),
+        isActive: true,
+        latestPurchaseDate: Self.defaultLatestPurchaseDate,
+        customerInfoRequestedDate: Self.defaultCustomerInfoRequestedDate,
         managementURL: URL(string: "https://www.revenuecat.com")!,
         expirationDate: nil,
         renewalDate: nil
@@ -52,7 +56,6 @@ extension PurchaseInformation {
 
     static let free = PurchaseInformation(
         title: "Basic",
-        durationTitle: "Monthly",
         pricePaid: .free,
         renewalPrice: .nonFree("$4.99"),
         productIdentifier: "product_id2",
@@ -60,8 +63,9 @@ extension PurchaseInformation {
         isLifetime: false,
         isTrial: true,
         isCancelled: false,
-        latestPurchaseDate: nil,
-        customerInfoRequestedDate: Date(),
+        isActive: true,
+        latestPurchaseDate: Self.defaultLatestPurchaseDate,
+        customerInfoRequestedDate: Self.defaultCustomerInfoRequestedDate,
         managementURL: URL(string: "https://www.revenuecat.com")!,
         expirationDate: nil,
         renewalDate: nil
@@ -72,13 +76,12 @@ extension PurchaseInformation {
         productIdentifier: String = "productIdentifier3",
         store: Store = .appStore,
         isCancelled: Bool = false,
-        expirationDate: Date = Date(),
+        expirationDate: Date = Self.defaultCustomerInfoRequestedDate,
         renewalDate: Date? = nil,
         introductoryDiscount: StoreProductDiscountType? = nil
     ) -> PurchaseInformation {
         PurchaseInformation(
             title: title,
-            durationTitle: "Yearly",
             pricePaid: .nonFree("$49.99"),
             renewalPrice: .nonFree("$49.99"),
             productIdentifier: productIdentifier,
@@ -86,8 +89,9 @@ extension PurchaseInformation {
             isLifetime: false,
             isTrial: false,
             isCancelled: false,
-            latestPurchaseDate: nil,
-            customerInfoRequestedDate: Date(),
+            isActive: true,
+            latestPurchaseDate: Self.defaultLatestPurchaseDate,
+            customerInfoRequestedDate: Self.defaultCustomerInfoRequestedDate,
             managementURL: URL(string: "https://www.revenuecat.com")!,
             expirationDate: expirationDate,
             renewalDate: renewalDate
@@ -96,7 +100,6 @@ extension PurchaseInformation {
 
     static let consumable: PurchaseInformation = PurchaseInformation(
         title: "Basic",
-        durationTitle: nil,
         pricePaid: .nonFree("$49.99"),
         renewalPrice: nil,
         productIdentifier: "product_id",
@@ -104,8 +107,43 @@ extension PurchaseInformation {
         isLifetime: true,
         isTrial: false,
         isCancelled: false,
-        latestPurchaseDate: Date(),
-        customerInfoRequestedDate: Date(),
+        isActive: true,
+        latestPurchaseDate: Self.defaultLatestPurchaseDate,
+        customerInfoRequestedDate: Self.defaultCustomerInfoRequestedDate,
+        managementURL: URL(string: "https://www.revenuecat.com")!,
+        expirationDate: nil,
+        renewalDate: nil
+    )
+
+    static let subscriptionInformationMonthlyRenewing = PurchaseInformation(
+        title: "Basic",
+        pricePaid: .nonFree("$4.99"),
+        renewalPrice: .nonFree("$4.99"),
+        productIdentifier: "product_id",
+        store: .appStore,
+        isLifetime: false,
+        isTrial: false,
+        isCancelled: false,
+        isActive: true,
+        latestPurchaseDate: Self.defaultLatestPurchaseDate,
+        customerInfoRequestedDate: Self.defaultCustomerInfoRequestedDate,
+        managementURL: URL(string: "https://www.revenuecat.com")!,
+        expirationDate: nil,
+        renewalDate: nil
+    )
+
+    static let subscriptionInformationFree = PurchaseInformation(
+        title: "Basic",
+        pricePaid: .free,
+        renewalPrice: .nonFree("$4.99"),
+        productIdentifier: "product_id",
+        store: .appStore,
+        isLifetime: false,
+        isTrial: false,
+        isCancelled: false,
+        isActive: true,
+        latestPurchaseDate: Self.defaultLatestPurchaseDate,
+        customerInfoRequestedDate: Self.defaultCustomerInfoRequestedDate,
         managementURL: URL(string: "https://www.revenuecat.com")!,
         expirationDate: nil,
         renewalDate: nil
