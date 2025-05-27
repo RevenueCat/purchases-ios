@@ -25,7 +25,10 @@ Pod::Spec.new do |s|
   s.osx.deployment_target = '10.15'
   s.visionos.deployment_target = '1.0'
   
-  s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
+  s.pod_target_xcconfig = { 
+    'DEFINES_MODULE' => 'YES',
+    'SWIFT_ACTIVE_COMPILATION_CONDITIONS' => 'ENABLE_VIRTUAL_CURRENCIES'
+  }
 
   s.source_files = 'RevenueCatUI/**/*.swift'
 

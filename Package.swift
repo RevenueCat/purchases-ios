@@ -115,7 +115,7 @@ let package = Package(
                     .copy("Resources/background.jpg"),
                     .process("Resources/icons.xcassets")
                 ],
-                swiftSettings: ciCompilerFlags + additionalCompilerFlags),
+                swiftSettings: [virtualCurrenciesSetting] + ciCompilerFlags + additionalCompilerFlags),
         .testTarget(name: "RevenueCatUITests",
                     dependencies: [
                         "RevenueCatUI",
