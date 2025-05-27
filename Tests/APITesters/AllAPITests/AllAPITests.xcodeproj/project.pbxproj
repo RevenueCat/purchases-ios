@@ -127,9 +127,9 @@
 		35370AC52CFF8304004F0A64 /* RCSubscriptionInfoAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = 35370AC42CFF82F8004F0A64 /* RCSubscriptionInfoAPI.h */; };
 		35370AC82CFF8317004F0A64 /* RCSubscriptionInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 35370AC72CFF8312004F0A64 /* RCSubscriptionInfoAPI.m */; };
 		75C1B6AD2D48D4550011512D /* DangerousSettingsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C1B6AC2D48D4550011512D /* DangerousSettingsAPI.swift */; };
-		FD181EF12D72451000A8EBE2 /* VirtualCurrencyInfoAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD181EF02D72451000A8EBE2 /* VirtualCurrencyInfoAPI.swift */; };
-		FD2A4F982D721D2100ED3367 /* RCVirtualCurrencyInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = FD2A4F972D721D2100ED3367 /* RCVirtualCurrencyInfoAPI.m */; };
-		FD2A4F9A2D721D3D00ED3367 /* RCVirtualCurrencyInfoAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = FD2A4F992D721D3D00ED3367 /* RCVirtualCurrencyInfoAPI.h */; };
+		FD181EF12D72451000A8EBE2 /* VirtualCurrencyAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD181EF02D72451000A8EBE2 /* VirtualCurrencyAPI.swift */; };
+		FD2A4F982D721D2100ED3367 /* RCVirtualCurrencyAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = FD2A4F972D721D2100ED3367 /* RCVirtualCurrencyAPI.m */; };
+		FD2A4F9A2D721D3D00ED3367 /* RCVirtualCurrencyAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = FD2A4F992D721D3D00ED3367 /* RCVirtualCurrencyAPI.h */; };
 		FD33CD732D03587E000D13A4 /* CustomerCenterViewControllerAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD33CD722D035876000D13A4 /* CustomerCenterViewControllerAPI.swift */; };
 		FDCC983A2D0A0FD500F5854B /* CustomerCenterViewAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDCC98392D0A0FD500F5854B /* CustomerCenterViewAPI.swift */; };
 /* End PBXBuildFile section */
@@ -360,9 +360,9 @@
 		35370AC72CFF8312004F0A64 /* RCSubscriptionInfoAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCSubscriptionInfoAPI.m; sourceTree = "<group>"; };
 		75C1B6AC2D48D4550011512D /* DangerousSettingsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DangerousSettingsAPI.swift; sourceTree = "<group>"; };
 		75C1B6AE2D48D4DB0011512D /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		FD181EF02D72451000A8EBE2 /* VirtualCurrencyInfoAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyInfoAPI.swift; sourceTree = "<group>"; };
-		FD2A4F972D721D2100ED3367 /* RCVirtualCurrencyInfoAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCVirtualCurrencyInfoAPI.m; sourceTree = "<group>"; };
-		FD2A4F992D721D3D00ED3367 /* RCVirtualCurrencyInfoAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCVirtualCurrencyInfoAPI.h; sourceTree = "<group>"; };
+		FD181EF02D72451000A8EBE2 /* VirtualCurrencyAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyAPI.swift; sourceTree = "<group>"; };
+		FD2A4F972D721D2100ED3367 /* RCVirtualCurrencyAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCVirtualCurrencyAPI.m; sourceTree = "<group>"; };
+		FD2A4F992D721D3D00ED3367 /* RCVirtualCurrencyAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCVirtualCurrencyAPI.h; sourceTree = "<group>"; };
 		FD33CD722D035876000D13A4 /* CustomerCenterViewControllerAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterViewControllerAPI.swift; sourceTree = "<group>"; };
 		FDCC98392D0A0FD500F5854B /* CustomerCenterViewAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterViewAPI.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -535,8 +535,8 @@
 				2D4C61782C5AD31A00A29FD2 /* RCStoreKitVersionAPI.h */,
 				2D4C61562C5AD31600A29FD2 /* RCStoreKitVersionAPI.m */,
 				2D4C613F2C5AD30400A29FD2 /* ObjcAPITester.h */,
-				FD2A4F972D721D2100ED3367 /* RCVirtualCurrencyInfoAPI.m */,
-				FD2A4F992D721D3D00ED3367 /* RCVirtualCurrencyInfoAPI.h */,
+				FD2A4F972D721D2100ED3367 /* RCVirtualCurrencyAPI.m */,
+				FD2A4F992D721D3D00ED3367 /* RCVirtualCurrencyAPI.h */,
 			);
 			path = ObjcAPITester;
 			sourceTree = "<group>";
@@ -593,7 +593,7 @@
 				2D4C61BA2C5AD62700A29FD2 /* VerificationResultAPI.swift */,
 				2D4C61C32C5AD62800A29FD2 /* StoreKitVersionAPI.swift */,
 				2D4C61B52C5AD61800A29FD2 /* SwiftAPITester.h */,
-				FD181EF02D72451000A8EBE2 /* VirtualCurrencyInfoAPI.swift */,
+				FD181EF02D72451000A8EBE2 /* VirtualCurrencyAPI.swift */,
 			);
 			path = SwiftAPITester;
 			sourceTree = "<group>";
@@ -672,7 +672,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2D4C61402C5AD30400A29FD2 /* ObjcAPITester.h in Headers */,
-				FD2A4F9A2D721D3D00ED3367 /* RCVirtualCurrencyInfoAPI.h in Headers */,
+				FD2A4F9A2D721D3D00ED3367 /* RCVirtualCurrencyAPI.h in Headers */,
 				35370AC52CFF8304004F0A64 /* RCSubscriptionInfoAPI.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -989,7 +989,7 @@
 				2D4C617D2C5AD31A00A29FD2 /* RCConfigurationAPI.m in Sources */,
 				2D4C617E2C5AD31A00A29FD2 /* RCPromotionalOfferAPI.m in Sources */,
 				2D4C61912C5AD31A00A29FD2 /* RCIntroEligibilityAPI.m in Sources */,
-				FD2A4F982D721D2100ED3367 /* RCVirtualCurrencyInfoAPI.m in Sources */,
+				FD2A4F982D721D2100ED3367 /* RCVirtualCurrencyAPI.m in Sources */,
 				2D4C61882C5AD31A00A29FD2 /* RCTransactionAPI.m in Sources */,
 				2D4C617F2C5AD31A00A29FD2 /* RCEntitlementInfoAPI.m in Sources */,
 				2D4C61812C5AD31A00A29FD2 /* RCAttributionAPI.m in Sources */,
@@ -1044,7 +1044,7 @@
 				2D4C61DF2C5AD62A00A29FD2 /* OfferingAPI.swift in Sources */,
 				2D4C61F22C5AD62A00A29FD2 /* PurchasesAPI.swift in Sources */,
 				2D4C61F12C5AD62A00A29FD2 /* PresentedOfferingContextAPI.swift in Sources */,
-				FD181EF12D72451000A8EBE2 /* VirtualCurrencyInfoAPI.swift in Sources */,
+				FD181EF12D72451000A8EBE2 /* VirtualCurrencyAPI.swift in Sources */,
 				2D4C61D92C5AD62A00A29FD2 /* TestStoreProductAPI.swift in Sources */,
 				1EB697C22CD26218003000FC /* WebPurchaseRedemptionResultAPI.swift in Sources */,
 				2D4C61F32C5AD62A00A29FD2 /* VerificationResultAPI.swift in Sources */,

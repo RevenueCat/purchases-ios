@@ -48,12 +48,12 @@ struct FallbackNoSubscriptionsView: View {
     @State
     private var showAllInAppCurrenciesScreen: Bool = false
 
-    private let virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]?
+    private let virtualCurrencies: [String: RevenueCat.VirtualCurrency]?
 
     init(
         customerCenterViewModel: CustomerCenterViewModel,
         actionWrapper: CustomerCenterActionWrapper,
-        virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]?
+        virtualCurrencies: [String: RevenueCat.VirtualCurrency]?
     ) {
         self.customerCenterViewModel = customerCenterViewModel
         self.actionWrapper = actionWrapper

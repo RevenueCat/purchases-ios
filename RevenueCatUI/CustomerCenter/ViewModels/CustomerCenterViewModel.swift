@@ -35,7 +35,7 @@ import RevenueCat
     private(set) var appIsLatestVersion: Bool = defaultAppIsLatestVersion
 
     @Published
-    private(set) var virtualCurrencies: [String: VirtualCurrencyInfo]?
+    private(set) var virtualCurrencies: [String: VirtualCurrency]?
 
     @Published
     private(set) var onUpdateAppClick: (() -> Void)?

@@ -147,7 +147,7 @@ extension CustomerCenterConfigData {
         buttonBackgroundColor: .init(light: "#287aff", dark: "#287aff")
     )
 
-    static var fourVirtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo] {
+    static var fourVirtualCurrencies: [String: RevenueCat.VirtualCurrency] {
         let jsonData = """
                 {
                   "GLD": {
@@ -170,13 +170,13 @@ extension CustomerCenterConfigData {
         }
 
         do {
-            return try JSONDecoder().decode([String: VirtualCurrencyInfo].self, from: data)
+            return try JSONDecoder().decode([String: VirtualCurrency].self, from: data)
         } catch {
             return [:]
         }
     }
 
-    static var fiveVirtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo] {
+    static var fiveVirtualCurrencies: [String: RevenueCat.VirtualCurrency] {
         let jsonData = """
                 {
                   "GLD": {
@@ -202,7 +202,7 @@ extension CustomerCenterConfigData {
         }
 
         do {
-            return try JSONDecoder().decode([String: VirtualCurrencyInfo].self, from: data)
+            return try JSONDecoder().decode([String: VirtualCurrency].self, from: data)
         } catch {
             return [:]
         }

@@ -88,7 +88,7 @@ final class VirtualCurrencyBalancesScreenViewModel: ObservableObject {
     /// - Parameter customerInfo: The customer information containing virtual currency data.
     /// - Returns: An array of row data objects sorted by balance in descending order.
     private func extractVirtualCurrencyBalanceData(
-        from virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]
+        from virtualCurrencies: [String: RevenueCat.VirtualCurrency]
     ) -> [VirtualCurrencyBalanceListRow.RowData] {
         return virtualCurrencies
             .map {

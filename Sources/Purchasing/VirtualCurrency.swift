@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  VirtualCurrencyInfo.swift
+//  VirtualCurrency.swift
 //
 //  Created by Will Taylor on 2/27/25.
 
@@ -19,8 +19,8 @@ import Foundation
 ///
 /// - Warning: This feature is currently in beta and is subject to change.
 ///
-@objc(RCVirtualCurrencyInfo)
-public final class VirtualCurrencyInfo: NSObject {
+@objc(RCVirtualCurrency)
+public final class VirtualCurrency: NSObject {
 
     /// The customer's current balance of the virtual currency.
     @objc public let balance: Int
@@ -30,5 +30,5 @@ public final class VirtualCurrencyInfo: NSObject {
     }
 }
 
-extension VirtualCurrencyInfo: Codable {}
-extension VirtualCurrencyInfo: Sendable {}
+extension VirtualCurrency: Codable {}
+extension VirtualCurrency: Sendable {}

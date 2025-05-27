@@ -51,7 +51,7 @@ struct SubscriptionDetailView: View {
         customerInfoViewModel: CustomerCenterViewModel,
         screen: CustomerCenterConfigData.Screen,
         purchaseInformation: PurchaseInformation?,
-        virtualCurrencies: [String: VirtualCurrencyInfo]?,
+        virtualCurrencies: [String: VirtualCurrency]?,
         showPurchaseHistory: Bool,
         allowsMissingPurchaseAction: Bool,
         purchasesProvider: CustomerCenterPurchasesType,

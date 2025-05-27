@@ -18,9 +18,9 @@ import XCTest
 final class VirtualCurrencyInfosTests: TestCase {
 
     private static let mockVirtualCurrencyDictionary = [
-        "GLD": VirtualCurrencyInfo(balance: 100),
-        "SLV": VirtualCurrencyInfo(balance: 0),
-        "COIN": VirtualCurrencyInfo(balance: 500)
+        "GLD": VirtualCurrency(balance: 100),
+        "SLV": VirtualCurrency(balance: 0),
+        "COIN": VirtualCurrency(balance: 500)
     ]
 
     // MARK: - all Property Tests
@@ -75,9 +75,9 @@ final class VirtualCurrencyInfosTests: TestCase {
 
     func testVirtualCurrenciesWithNonZeroBalanceWithAllZeroBalances() throws {
         let zeroBalances = [
-            "GLD": VirtualCurrencyInfo(balance: 0),
-            "SLV": VirtualCurrencyInfo(balance: 0),
-            "COIN": VirtualCurrencyInfo(balance: 0)
+            "GLD": VirtualCurrency(balance: 0),
+            "SLV": VirtualCurrency(balance: 0),
+            "COIN": VirtualCurrency(balance: 0)
         ]
         let vcInfos = VirtualCurrencyInfos(virtualCurrencies: zeroBalances)
 
@@ -94,9 +94,9 @@ final class VirtualCurrencyInfosTests: TestCase {
     // a good thing to test here anyways
     func testVirtualCurrenciesWithNonZeroBalanceWithNegativeBalances() throws {
         let negativeBalances = [
-            "GLD": VirtualCurrencyInfo(balance: -100),
-            "SLV": VirtualCurrencyInfo(balance: -50),
-            "COIN": VirtualCurrencyInfo(balance: 0)
+            "GLD": VirtualCurrency(balance: -100),
+            "SLV": VirtualCurrency(balance: -50),
+            "COIN": VirtualCurrency(balance: 0)
         ]
         let vcInfos = VirtualCurrencyInfos(virtualCurrencies: negativeBalances)
 
@@ -128,9 +128,9 @@ final class VirtualCurrencyInfosTests: TestCase {
 
     func testVirtualCurrenciesWithZeroBalanceWithAllNonZeroBalances() throws {
         let nonZeroBalances = [
-            "GLD": VirtualCurrencyInfo(balance: 100),
-            "SLV": VirtualCurrencyInfo(balance: 50),
-            "COIN": VirtualCurrencyInfo(balance: 200)
+            "GLD": VirtualCurrency(balance: 100),
+            "SLV": VirtualCurrency(balance: 50),
+            "COIN": VirtualCurrency(balance: 200)
         ]
         let vcInfos = VirtualCurrencyInfos(virtualCurrencies: nonZeroBalances)
 
@@ -147,9 +147,9 @@ final class VirtualCurrencyInfosTests: TestCase {
     // a good thing to test here anyways
     func testVirtualCurrenciesWithZeroBalanceWithNegativeBalances() throws {
         let negativeBalances = [
-            "GLD": VirtualCurrencyInfo(balance: -100),
-            "SLV": VirtualCurrencyInfo(balance: -50),
-            "COIN": VirtualCurrencyInfo(balance: 0)
+            "GLD": VirtualCurrency(balance: -100),
+            "SLV": VirtualCurrency(balance: -50),
+            "COIN": VirtualCurrency(balance: 0)
         ]
         let vcInfos = VirtualCurrencyInfos(virtualCurrencies: negativeBalances)
 

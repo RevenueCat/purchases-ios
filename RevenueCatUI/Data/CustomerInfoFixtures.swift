@@ -105,7 +105,7 @@ class CustomerInfoFixtures {
         subscriptions: [Subscription],
         entitlements: [Entitlement],
         nonSubscriptions: [NonSubscriptionTransaction] = [],
-        virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo] = [:]
+        virtualCurrencies: [String: RevenueCat.VirtualCurrency] = [:]
     ) -> CustomerInfo {
         let subscriptionsJson = subscriptions.map { subscription in
             """
@@ -128,10 +128,10 @@ class CustomerInfoFixtures {
             """
         }.joined(separator: ",\n")
 
-        let virtualCurrenciesJson = virtualCurrencies.map { vcCode, virtualCurrencyInfo in
+        let virtualCurrenciesJson = virtualCurrencies.map { vcCode, virtualCurrency in
             """
             "\(vcCode)": {
-                "balance": \(virtualCurrencyInfo.balance)
+                "balance": \(virtualCurrency.balance)
             }
             """
         }.joined(separator: ",\n")
@@ -175,7 +175,7 @@ class CustomerInfoFixtures {
         purchaseDate: String = "2022-04-12T00:03:28Z",
         expirationDate: String? = "2062-04-12T00:03:35Z",
         unsubscribeDetectedAt: String? = nil,
-        virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo] = [:],
+        virtualCurrencies: [String: RevenueCat.VirtualCurrency] = [:],
         periodType: PeriodType = .normal
     ) -> CustomerInfo {
         return customerInfo(
