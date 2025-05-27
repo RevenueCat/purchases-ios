@@ -1601,25 +1601,35 @@ private extension PurchasesOrchestrator {
                 guard let appTransactionJWS else {
                     // The AppTransaction is not present, and the cached CustomerInfo is either nil
                     // or is missing the originalPurchaseDate and/or originalApplicationVersion.
+                    //
+                    // In this scenario, we don't want to POST a receipt to the backend since we are missing
+                    // both a receipt and an AppTransaction.
                     Logger.warn(Strings.storeKit.sk2_sync_purchases_no_transaction_or_apptransaction_found)
 
-                    // Refresh the CustomerInfo in case we have gotten originalPurchaseDate or
-                    // originalApplicationVersion in the backend or on another device.
-                    self.customerInfoManager.customerInfo(
-                        appUserID: currentAppUserID,
-                        fetchPolicy: .fetchCurrent
-                    ) { result in
-                        switch result {
-                        case .success(let customerInfo):
-                            completion?(.success(customerInfo))
-                            return
-                        case .failure(let backendError):
-                            completion?(.failure(backendError.asPurchasesError))
-                            return
+                    if let cachedCustomerInfo {
+                        // If we have a cached CustomerInfo, it's unlikely that the backend has received
+                        // originalPurchaseDate or originalApplicationVersion since the cache was last
+                        // updated, so return the cached copy.
+                        self.operationDispatcher.dispatchOnMainActor {
+                            completion?(.success(cachedCustomerInfo))
                         }
+                        return
+                    } else {
+                        self.customerInfoManager.customerInfo(
+                            appUserID: currentAppUserID,
+                            fetchPolicy: .fetchCurrent
+                        ) { result in
+                            switch result {
+                            case .success(let customerInfo):
+                                completion?(.success(customerInfo))
+                                return
+                            case .failure(let backendError):
+                                completion?(.failure(backendError.asPurchasesError))
+                                return
+                            }
+                        }
+                        return
                     }
-
-                    return
                 }
 
                 let transactionData: PurchasedTransactionData = .init(

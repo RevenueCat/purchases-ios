@@ -892,11 +892,11 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(customerInfo) == mockCustomerInfo
     }
 
-    func testSyncPurchasesDoesntPostReceiptIfNoTransactionsAndNoAppTransactionAndNoCustomerInfo() async throws {
+    func testSyncPurchasesDoesntPostReceiptIfNoTransactionsAndNoAppTransactionAndCachedCustomerInfoPresent()
+    async throws {
         self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = nil
-        self.customerInfoManager.stubbedCachedCustomerInfoResult = nil
-        self.customerInfoManager.stubbedCustomerInfoResult = .success(mockCustomerInfo)
         self.mockTransactionFetcher.stubbedAppTransactionJWS = nil
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
 
         let customerInfo = try await self.orchestrator.syncPurchases(
             receiptRefreshPolicy: .always,
@@ -907,9 +907,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.backend.invokedPostReceiptData).to(beFalse())
         expect(self.customerInfoManager.invokedCachedCustomerInfo).to(beTrue())
         expect(self.customerInfoManager.invokedCachedCustomerInfoCount) == 1
-        expect(self.customerInfoManager.invokedCustomerInfo).to(beTrue())
-        expect(self.customerInfoManager.invokedCustomerInfoCount).to(equal(1))
-        expect(self.customerInfoManager.invokedCustomerInfoParameters?.fetchPolicy).to(equal(.fetchCurrent))
+        expect(self.customerInfoManager.invokedCustomerInfo).to(beFalse())
+        expect(self.customerInfoManager.invokedCustomerInfoCount).to(equal(0))
 
         expect(customerInfo) == mockCustomerInfo
     }
@@ -917,9 +916,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     func testSyncPurchasesDoesntPostReceiptIfNoTransactionsNoAppTransactionAndNoCustomerInfoOriginalApplicationVersion()
     async throws {
         self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = nil
-        self.customerInfoManager.stubbedCachedCustomerInfoResult = nil
-        self.customerInfoManager.stubbedCustomerInfoResult = .success(CustomerInfo.missingOriginalApplicationVersion)
         self.mockTransactionFetcher.stubbedAppTransactionJWS = nil
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = CustomerInfo.missingOriginalApplicationVersion
 
         let customerInfo = try await self.orchestrator.syncPurchases(
             receiptRefreshPolicy: .always,
@@ -930,9 +928,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.backend.invokedPostReceiptData).to(beFalse())
         expect(self.customerInfoManager.invokedCachedCustomerInfo).to(beTrue())
         expect(self.customerInfoManager.invokedCachedCustomerInfoCount) == 1
-        expect(self.customerInfoManager.invokedCustomerInfo).to(beTrue())
-        expect(self.customerInfoManager.invokedCustomerInfoCount).to(equal(1))
-        expect(self.customerInfoManager.invokedCustomerInfoParameters?.fetchPolicy).to(equal(.fetchCurrent))
+        expect(self.customerInfoManager.invokedCustomerInfo).to(beFalse())
+        expect(self.customerInfoManager.invokedCustomerInfoCount).to(equal(0))
 
         expect(customerInfo) == CustomerInfo.missingOriginalApplicationVersion
     }
@@ -940,9 +937,30 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     func testSyncPurchasesDoesntPostReceiptIfNoTransactionsNoAppTransactionAndNoCustomerInfoOriginalPurchaseDate()
     async throws {
         self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = nil
-        self.customerInfoManager.stubbedCachedCustomerInfoResult = nil
-        self.customerInfoManager.stubbedCustomerInfoResult = .success(CustomerInfo.missingOriginalPurchaseDate)
         self.mockTransactionFetcher.stubbedAppTransactionJWS = nil
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = CustomerInfo.missingOriginalPurchaseDate
+
+        let customerInfo = try await self.orchestrator.syncPurchases(
+            receiptRefreshPolicy: .always,
+            isRestore: true,
+            initiationSource: .restore
+        )
+
+        expect(self.backend.invokedPostReceiptData).to(beFalse())
+        expect(self.customerInfoManager.invokedCachedCustomerInfo).to(beTrue())
+        expect(self.customerInfoManager.invokedCachedCustomerInfoCount) == 1
+        expect(self.customerInfoManager.invokedCustomerInfo).to(beFalse())
+        expect(self.customerInfoManager.invokedCustomerInfoCount).to(equal(0))
+
+        expect(customerInfo) == CustomerInfo.missingOriginalPurchaseDate
+    }
+
+    func testSyncPurchasesFetchesCustomerInfoFromNetworkWhenMissingTransactionAndAppTransactionAndCachedCustomerInfo()
+    async throws {
+        self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = nil
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = nil
+        self.mockTransactionFetcher.stubbedAppTransactionJWS = nil
+        self.customerInfoManager.stubbedCustomerInfoResult = .success(CustomerInfo.emptyInfo)
 
         let customerInfo = try await self.orchestrator.syncPurchases(
             receiptRefreshPolicy: .always,
@@ -957,7 +975,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.customerInfoManager.invokedCustomerInfoCount).to(equal(1))
         expect(self.customerInfoManager.invokedCustomerInfoParameters?.fetchPolicy).to(equal(.fetchCurrent))
 
-        expect(customerInfo) == CustomerInfo.missingOriginalPurchaseDate
+        expect(customerInfo) == CustomerInfo.emptyInfo
     }
 
     func testSyncPurchasesThrowsIfFetchingCustomerInfoErrorsWhenMissingTransactionAndAppTransactionAndCustomerInfo()
