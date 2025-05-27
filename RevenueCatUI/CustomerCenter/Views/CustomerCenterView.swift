@@ -200,12 +200,9 @@ private extension CustomerCenterView {
             if let screen = configuration.screens[.noActive] {
                 singlePurchaseView(screen)
             } else {
-                // Fallback with a restore button
-                NoSubscriptionsView(
+                FallbackNoSubscriptionsView(
                     customerCenterViewModel: viewModel,
-                    configuration: configuration,
                     actionWrapper: self.viewModel.actionWrapper,
-                    purchasesProvider: self.viewModel.purchasesProvider,
                     virtualCurrencies: self.viewModel.virtualCurrencies
                 )
             }
@@ -240,7 +237,8 @@ private extension CustomerCenterView {
             customerInfoViewModel: viewModel,
             screen: screen,
             purchaseInformation: viewModel.activePurchase,
-            showPurchaseHistory: viewModel.configuration?.support.displayPurchaseHistoryLink == true,
+            showPurchaseHistory: viewModel.shouldShowSeeAllPurchases,
+            allowsMissingPurchaseAction: true,
             virtualCurrencies: self.viewModel.virtualCurrencies,
             purchasesProvider: self.viewModel.purchasesProvider,
             actionWrapper: self.viewModel.actionWrapper

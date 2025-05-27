@@ -92,6 +92,7 @@ struct RelevantPurchasesListView: View {
                     screen: viewModel.screen,
                     purchaseInformation: viewModel.purchaseInformation,
                     showPurchaseHistory: false,
+                    allowsMissingPurchaseAction: false,
                     virtualCurrencies: nil, // Don't show virtual currencies when navigated to from here
                     purchasesProvider: self.viewModel.purchasesProvider,
                     actionWrapper: self.viewModel.actionWrapper
@@ -159,6 +160,7 @@ struct RelevantPurchasesListView: View {
                 } else {
                     if !customerInfoViewModel.activeSubscriptionPurchases.isEmpty {
                         PurchasesInformationSection(
+                            title: localization[.subscriptionsSectionTitle],
                             items: customerInfoViewModel.activeSubscriptionPurchases,
                             localization: localization
                         ) {
@@ -169,6 +171,7 @@ struct RelevantPurchasesListView: View {
 
                     if !customerInfoViewModel.activeNonSubscriptionPurchases.isEmpty {
                         PurchasesInformationSection(
+                            title: localization[.purchasesSectionTitle],
                             items: activeNonSubscriptionPurchasesToShow,
                             localization: localization
                         ) {
@@ -282,7 +285,7 @@ struct RelevantPurchasesListView: View {
      // swiftlint:disable force_unwrapping
     static var previews: some View {
         let purchases = [
-            PurchaseInformation.yearlyExpiring(store: .amazon, renewalDate: Date()),
+            PurchaseInformation.yearlyExpiring(store: .amazon, renewalDate: PurchaseInformation.defaulRenewalDate),
             PurchaseInformation.yearlyExpiring(store: .appStore),
             .free
         ]

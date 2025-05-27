@@ -14,7 +14,36 @@
 
   ],
   "products" : [
-
+    {
+      "displayPrice" : "3.99",
+      "familyShareable" : false,
+      "internalID" : "8D0DA65C",
+      "localizations" : [
+        {
+          "description" : "Non consumable 01",
+          "displayName" : "Non consumable 01",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "maestro.nonconsumable.tests.01",
+      "referenceName" : "Non consumable 01",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "0.99",
+      "familyShareable" : false,
+      "internalID" : "A714FBF4",
+      "localizations" : [
+        {
+          "description" : "Consumable 01",
+          "displayName" : "Consumable 01",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "maestro.consumable.tests.01",
+      "referenceName" : "Consumable 01",
+      "type" : "Consumable"
+    }
   ],
   "settings" : {
     "_failTransactionsEnabled" : false,

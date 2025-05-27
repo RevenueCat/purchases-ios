@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  NoSubscriptionsView.swift
+//  FallbackNoSubscriptionsView.swift
 //
 //
 //  Created by Andrés Boedo on 5/3/24.
@@ -18,13 +18,13 @@ import SwiftUI
 
 #if os(iOS)
 
+/// If fetching the configuration fails (NO_ACTIVE screen is not present) we display this
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-struct NoSubscriptionsView: View {
+struct FallbackNoSubscriptionsView: View {
 
-    let configuration: CustomerCenterConfigData
     let actionWrapper: CustomerCenterActionWrapper
 
     @Environment(\.appearance)
@@ -52,45 +52,46 @@ struct NoSubscriptionsView: View {
 
     init(
         customerCenterViewModel: CustomerCenterViewModel,
-        configuration: CustomerCenterConfigData,
         actionWrapper: CustomerCenterActionWrapper,
         purchasesProvider: CustomerCenterPurchasesType,
         virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]?
     ) {
         self.customerCenterViewModel = customerCenterViewModel
-        self.configuration = configuration
         self.actionWrapper = actionWrapper
         self.purchasesProvider = purchasesProvider
         self.virtualCurrencies = virtualCurrencies
     }
 
     var body: some View {
-        let fallbackDescription = localization[.tryCheckRestore]
-        let fallbackTitle = localization[.noSubscriptionsFound]
-
-        List {
-            Section {
+        ScrollViewWithOSBackground {
+            LazyVStack(spacing: 0) {
                 CompatibilityContentUnavailableView(
-                    self.configuration.screens[.noActive]?.title ?? fallbackTitle,
+                    localization[.noSubscriptionsFound],
                     systemImage: "exclamationmark.triangle.fill",
-                    description:
-                        Text(self.configuration.screens[.noActive]?.subtitle ?? fallbackDescription)
+                    description: Text(localization[.tryCheckRestore])
                 )
-            }
-
-            if let virtualCurrencies, !virtualCurrencies.isEmpty {
-                VirtualCurrenciesListSection(
-                    virtualCurrencies: virtualCurrencies,
-                    onSeeAllInAppCurrenciesButtonTapped: { self.showAllInAppCurrenciesScreen = true }
+                .padding()
+                .fixedSize(horizontal: false, vertical: true)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(
+                            Color(colorScheme == .light
+                                  ? UIColor.systemBackground
+                                  : UIColor.secondarySystemBackground)
+                        )
+                        .padding(.horizontal)
+                        .padding(.top)
                 )
-            }
+                .padding(.bottom, 32)
 
-            Section {
-                Button(localization[.restorePurchases]) {
-                    showRestoreAlert = true
+                if let virtualCurrencies, !virtualCurrencies.isEmpty {
+                    VirtualCurrenciesListSection(
+                        virtualCurrencies: virtualCurrencies,
+                        onSeeAllInAppCurrenciesButtonTapped: { self.showAllInAppCurrenciesScreen = true }
+                    )
                 }
-            }
-
+                
+                restorePurchasesButton
         }
         .dismissCircleButtonToolbarIfNeeded()
         .compatibleNavigation(
@@ -113,6 +114,22 @@ struct NoSubscriptionsView: View {
         }
     }
 
+    private var restorePurchasesButton: some View {
+        Button {
+            showRestoreAlert = true
+        } label: {
+            CompatibilityLabeledContent(localization[.restorePurchases])
+            .padding(.horizontal)
+            .padding(.vertical, 12)
+            .background(Color(colorScheme == .light
+                              ? UIColor.systemBackground
+                              : UIColor.secondarySystemBackground))
+            .cornerRadius(10)
+            .padding(.horizontal)
+        }
+        .tint(colorScheme == .dark ? .white : .black)
+    }
+
 }
 
 #if DEBUG
@@ -124,9 +141,8 @@ struct NoSubscriptionsView: View {
 struct NoSubscriptionsView_Previews: PreviewProvider {
 
     static var previews: some View {
-        NoSubscriptionsView(
+        FallbackNoSubscriptionsView(
             customerCenterViewModel: CustomerCenterViewModel(uiPreviewPurchaseProvider: MockCustomerCenterPurchases()),
-            configuration: CustomerCenterConfigData.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchasesProvider: CustomerCenterPurchases(),
             virtualCurrencies: nil
@@ -135,7 +151,6 @@ struct NoSubscriptionsView_Previews: PreviewProvider {
 
         NoSubscriptionsView(
             customerCenterViewModel: CustomerCenterViewModel(uiPreviewPurchaseProvider: MockCustomerCenterPurchases()),
-            configuration: CustomerCenterConfigData.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchasesProvider: CustomerCenterPurchases(),
             virtualCurrencies: CustomerCenterConfigData.fourVirtualCurrencies
@@ -145,7 +160,6 @@ struct NoSubscriptionsView_Previews: PreviewProvider {
 
         NoSubscriptionsView(
             customerCenterViewModel: CustomerCenterViewModel(uiPreviewPurchaseProvider: MockCustomerCenterPurchases()),
-            configuration: CustomerCenterConfigData.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchasesProvider: CustomerCenterPurchases(),
             virtualCurrencies: CustomerCenterConfigData.fiveVirtualCurrencies
@@ -153,7 +167,6 @@ struct NoSubscriptionsView_Previews: PreviewProvider {
         .environment(\.supportInformation, CustomerCenterConfigData.mock(displayVirtualCurrencies: true).support)
         .previewDisplayName("5 Virtual Currencies")
     }
-
 }
 
 #endif

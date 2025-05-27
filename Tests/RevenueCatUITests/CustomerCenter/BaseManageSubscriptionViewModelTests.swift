@@ -268,9 +268,11 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             offerIdentifierInProduct: offerIdentifierInJSON
         )
 
-        try await verifyPromotionalOfferLoading(viewModel: viewModel,
-                                                loadPromotionalOfferUseCase: loadPromotionalOfferUseCase,
-                                                expectedOfferIdentifierInJSON: offerIdentifierInJSON)
+        try await verifyPromotionalOfferLoading(
+            viewModel: viewModel,
+            loadPromotionalOfferUseCase: loadPromotionalOfferUseCase,
+            expectedOfferIdentifierInJSON: offerIdentifierInJSON
+        )
     }
 
     func testLoadsPromotionalOfferWithSuffix() async throws {
@@ -504,8 +506,21 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
                                                             products: products
                                                         ),
                                                         loadPromotionalOfferUseCase: loadPromotionalOfferUseCase)
-
-        return (viewModel, loadPromotionalOfferUseCase)
+        viewModel.feedbackSurveyData = FeedbackSurveyData(
+            productIdentifier: viewModel.purchaseInformation!.productIdentifier,
+            configuration: CustomerCenterConfigData.HelpPath.FeedbackSurvey(
+                title: "title",
+                options: []
+                ),
+                path: CustomerCenterConfigData.HelpPath(
+                    id: "id",
+                    title: "title",
+                    type: .cancel,
+                    detail: nil
+                ),
+                onOptionSelected: {}
+            )
+            return (viewModel, loadPromotionalOfferUseCase)
     }
 
     private func verifyPromotionalOfferLoading(viewModel: BaseManageSubscriptionViewModel,
@@ -562,7 +577,6 @@ private extension PurchaseInformation {
     ) -> PurchaseInformation {
         PurchaseInformation(
             title: "",
-            durationTitle: "",
             pricePaid: .nonFree(""),
             renewalPrice: nil,
             productIdentifier: "",
@@ -571,7 +585,7 @@ private extension PurchaseInformation {
             isTrial: false,
             isCancelled: false,
             isActive: true,
-            latestPurchaseDate: nil,
+            latestPurchaseDate: Date(),
             customerInfoRequestedDate: customerInfoRequestedDate,
             managementURL: URL(string: "https://www.revenuecat.com")!
         )
@@ -589,7 +603,6 @@ private extension PurchaseInformation {
     ) -> PurchaseInformation {
         PurchaseInformation(
             title: "",
-            durationTitle: "",
             pricePaid: pricePaid,
             renewalPrice: renewalPrice,
             productIdentifier: "",

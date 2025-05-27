@@ -279,7 +279,6 @@ final class CustomerCenterViewModelTests: TestCase {
                 == purchaseInformation.productIdentifier
 
             expect(purchaseInformation.title) == "title"
-            expect(purchaseInformation.durationTitle) == "1 month"
 
             expect(purchaseInformation.pricePaid) == .nonFree(formatted(price: 4.99))
             if let renewalPrice {
@@ -334,8 +333,6 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(viewModel.activeSubscriptionPurchases.first?.productIdentifier) == purchaseInformation.productIdentifier
 
         expect(purchaseInformation.title) == "title"
-        expect(purchaseInformation.durationTitle) == "1 month"
-
         expect(purchaseInformation.pricePaid) == .nonFree(formatted(price: 3.99, currencyCode: currency))
         expect(purchaseInformation.renewalPrice).to(beNil())
 
@@ -417,7 +414,6 @@ final class CustomerCenterViewModelTests: TestCase {
 
             // Should always show yearly subscription since it expires first
             expect(purchaseInformation.title) == yearlyProduct.title
-            expect(purchaseInformation.durationTitle) == yearlyProduct.duration
 
             expect(purchaseInformation.pricePaid) == .nonFree(formatted(price: 29.99))
 
@@ -507,7 +503,6 @@ final class CustomerCenterViewModelTests: TestCase {
                 == purchaseInformation.productIdentifier
 
             expect(purchaseInformation.title) == "monthly"
-            expect(purchaseInformation.durationTitle) == "1 month"
             expect(purchaseInformation.pricePaid) == .nonFree(formatted(price: 1.99, currencyCode: "USD"))
             expect(purchaseInformation.renewalPrice).to(beNil())
 
@@ -562,7 +557,6 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(viewModel.activeSubscriptionPurchases.count) == 0
 
         expect(purchaseInformation.title) == "lifetime"
-        expect(purchaseInformation.durationTitle).to(beNil())
         expect(purchaseInformation.pricePaid) == .unknown // no info about non-subscriptions in customer info
         expect(purchaseInformation.productIdentifier) == productIdLifetime
     }
@@ -642,7 +636,6 @@ final class CustomerCenterViewModelTests: TestCase {
 
             // Should always show yearly subscription since it expires first
             expect(purchaseInformation.title) == yearlyProduct.title
-            expect(purchaseInformation.durationTitle) == yearlyProduct.duration
             expect(purchaseInformation.pricePaid) == .nonFree(formatted(price: 29.99))
 
             expect(purchaseInformation.productIdentifier) == yearlyProduct.id
@@ -726,7 +719,6 @@ final class CustomerCenterViewModelTests: TestCase {
 
             // We expect to see the monthly one, because the yearly one is a Google subscription
             expect(purchaseInformation.title) == appleProduct.title
-            expect(purchaseInformation.durationTitle) == appleProduct.duration
             expect(purchaseInformation.pricePaid) == .nonFree(formatted(price: appleProduct.price))
 
             expect(purchaseInformation.productIdentifier) == appleProduct.id
@@ -776,7 +768,6 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(viewModel.activeSubscriptionPurchases.first?.productIdentifier) == purchaseInformation.productIdentifier
 
         expect(purchaseInformation.title) == "com.revenuecat.product" // product identifier
-        expect(purchaseInformation.durationTitle).to(beNil())
         expect(purchaseInformation.store) == .appStore
         expect(purchaseInformation.pricePaid) == .nonFree(formatted(price: 1.99)) // from transaction
 

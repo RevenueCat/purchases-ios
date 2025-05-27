@@ -50,13 +50,16 @@ struct SubscriptionDetailView: View {
         customerInfoViewModel: CustomerCenterViewModel,
         screen: CustomerCenterConfigData.Screen,
         purchaseInformation: PurchaseInformation?,
-        showPurchaseHistory: Bool,
         virtualCurrencies: [String: VirtualCurrencyInfo]?,
+        showPurchaseHistory: Bool,
+        allowsMissingPurchaseAction: Bool,
         purchasesProvider: CustomerCenterPurchasesType,
         actionWrapper: CustomerCenterActionWrapper) {
             let viewModel = SubscriptionDetailViewModel(
+                customerInfoViewModel: customerInfoViewModel,
                 screen: screen,
                 showPurchaseHistory: showPurchaseHistory,
+                allowsMissingPurchaseAction: allowsMissingPurchaseAction,
                 virtualCurrencies: virtualCurrencies,
                 actionWrapper: actionWrapper,
                 purchaseInformation: purchaseInformation,
@@ -88,9 +91,7 @@ struct SubscriptionDetailView: View {
                         customerInfoViewModel.manageSubscriptionsSheet = manage } }
                 )))
             .onCustomerCenterPromotionalOfferSuccess {
-                Task {
-                    await customerInfoViewModel.loadScreen(shouldSync: true)
-                }
+                viewModel.refreshPurchase()
             }
             .onCustomerCenterShowingManageSubscriptions {
                 Task { @MainActor in
@@ -99,23 +100,8 @@ struct SubscriptionDetailView: View {
             }
             .onChangeOf(customerInfoViewModel.manageSubscriptionsSheet) { manageSubscriptionsSheet in
                 if !manageSubscriptionsSheet {
-                    Task {
-                        await customerInfoViewModel.loadScreen(shouldSync: true)
-                    }
+                    viewModel.refreshPurchase()
                 }
-            }
-            .compatibleNavigation(
-                item: $viewModel.feedbackSurveyData,
-                usesNavigationStack: navigationOptions.usesNavigationStack
-            ) { feedbackSurveyData in
-                FeedbackSurveyView(
-                    feedbackSurveyData: feedbackSurveyData,
-                    purchasesProvider: self.viewModel.purchasesProvider,
-                    actionWrapper: self.viewModel.actionWrapper,
-                    isPresented: .isNotNil(self.$viewModel.feedbackSurveyData))
-                .environment(\.appearance, appearance)
-                .environment(\.localization, localization)
-                .environment(\.navigationOptions, navigationOptions)
             }
             .compatibleNavigation(
                 isPresented: $viewModel.showAllPurchases,
@@ -141,21 +127,17 @@ struct SubscriptionDetailView: View {
                 .environment(\.localization, localization)
                 .environment(\.navigationOptions, navigationOptions)
             }
-            .sheet(item: self.$viewModel.promotionalOfferData) { promotionalOfferData in
-                PromotionalOfferView(
-                    promotionalOffer: promotionalOfferData.promotionalOffer,
-                    product: promotionalOfferData.product,
-                    promoOfferDetails: promotionalOfferData.promoOfferDetails,
-                    purchasesProvider: self.viewModel.purchasesProvider,
-                    onDismissPromotionalOfferView: { userAction in
-                        Task(priority: .userInitiated) {
-                            await self.viewModel.handleDismissPromotionalOfferView(userAction)
-                        }
-                    }
-                )
-                .environment(\.appearance, appearance)
-                .environment(\.localization, localization)
-                .interactiveDismissDisabled()
+            .sheet(isPresented: .isNotNil(self.$viewModel.feedbackSurveyData)) {
+                if let feedback = viewModel.feedbackSurveyData {
+                    FeedbackSurveyView(
+                        feedbackSurveyData: feedback,
+                        purchasesProvider: self.viewModel.purchasesProvider,
+                        actionWrapper: self.viewModel.actionWrapper,
+                        isPresented: .isNotNil(self.$viewModel.feedbackSurveyData))
+                    .environment(\.appearance, appearance)
+                    .environment(\.localization, localization)
+                    .environment(\.navigationOptions, navigationOptions)
+                }
             }
             .sheet(item: self.$viewModel.inAppBrowserURL,
                    onDismiss: {
@@ -175,6 +157,10 @@ struct SubscriptionDetailView: View {
     var content: some View {
         ScrollViewWithOSBackground {
             LazyVStack(spacing: 0) {
+                if viewModel.isRefreshing {
+                    ProgressView()
+                        .padding(.vertical)
+                }
                 if let purchaseInformation = self.viewModel.purchaseInformation {
                     PurchaseInformationCardView(
                         purchaseInformation: purchaseInformation,
@@ -251,14 +237,9 @@ struct SubscriptionDetailView: View {
             }
         } label: {
             CompatibilityLabeledContent(localization[.contactSupport])
-                .padding(.horizontal)
-                .padding(.vertical, 12)
         }
-        .background(Color(colorScheme == .light
-                          ? UIColor.systemBackground
-                          : UIColor.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
         .padding(.horizontal)
+        .buttonStyle(.customerCenterButtonStyle(for: colorScheme))
     }
 
     private var seeAllSubscriptionsButton: some View {
@@ -268,14 +249,9 @@ struct SubscriptionDetailView: View {
             CompatibilityLabeledContent(localization[.seeAllPurchases]) {
                 Image(systemName: "chevron.forward")
             }
-            .padding(.horizontal)
-            .padding(.vertical, 12)
-            .background(Color(colorScheme == .light
-                              ? UIColor.systemBackground
-                              : UIColor.secondarySystemBackground))
-            .cornerRadius(10)
-            .padding(.horizontal)
         }
+        .padding(.horizontal)
+        .buttonStyle(.customerCenterButtonStyle(for: colorScheme))
         .tint(colorScheme == .dark ? .white : .black)
     }
 }
@@ -297,8 +273,12 @@ struct SubscriptionDetailView: View {
                         configuration: .default
                     ),
                     viewModel: SubscriptionDetailViewModel(
+                        customerInfoViewModel: CustomerCenterViewModel(
+                            uiPreviewPurchaseProvider: MockCustomerCenterPurchases()
+                        ),
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
+                        allowsMissingPurchaseAction: false,
                         virtualCurrencies: nil,
                         purchaseInformation: .yearlyExpiring(),
                         refundRequestStatus: .success
@@ -315,8 +295,12 @@ struct SubscriptionDetailView: View {
                         configuration: .default
                     ),
                     viewModel: SubscriptionDetailViewModel(
+                        customerInfoViewModel: CustomerCenterViewModel(
+                            uiPreviewPurchaseProvider: MockCustomerCenterPurchases()
+                        ),
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
+                        allowsMissingPurchaseAction: false,
                         virtualCurrencies: nil,
                         purchaseInformation: .free
                     )
@@ -332,8 +316,12 @@ struct SubscriptionDetailView: View {
                         configuration: .default
                     ),
                     viewModel: SubscriptionDetailViewModel(
+                        customerInfoViewModel: CustomerCenterViewModel(
+                            uiPreviewPurchaseProvider: MockCustomerCenterPurchases()
+                        ),
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: false,
+                        allowsMissingPurchaseAction: false,
                         virtualCurrencies: nil,
                         purchaseInformation: .consumable
                     )
@@ -349,8 +337,12 @@ struct SubscriptionDetailView: View {
                         configuration: .default
                     ),
                     viewModel: SubscriptionDetailViewModel(
+                        customerInfoViewModel: CustomerCenterViewModel(
+                            uiPreviewPurchaseProvider: MockCustomerCenterPurchases()
+                        ),
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
+                        allowsMissingPurchaseAction: false,
                         virtualCurrencies: nil,
                         purchaseInformation: nil
                     )
@@ -366,8 +358,12 @@ struct SubscriptionDetailView: View {
                         configuration: .default
                     ),
                     viewModel: SubscriptionDetailViewModel(
+                        customerInfoViewModel: CustomerCenterViewModel(
+                            uiPreviewPurchaseProvider: MockCustomerCenterPurchases()
+                        ),
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
+                        allowsMissingPurchaseAction: false,
                         virtualCurrencies: nil,
                         purchaseInformation: .yearlyExpiring(store: .playStore)
                     )

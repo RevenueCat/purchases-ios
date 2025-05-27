@@ -23,6 +23,7 @@ protocol Transaction {
     var managementURL: URL? { get }
     var price: ProductPaidPrice? { get }
     var periodType: PeriodType { get }
+    var purchaseDate: Date { get }
 }
 
 enum TransactionType {
