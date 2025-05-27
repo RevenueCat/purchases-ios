@@ -53,17 +53,14 @@ struct PurchasesInformationSection: View {
 
     var body: some View {
         ScrollViewSection(title: title) {
-            ForEach(items) { purchase in
-                // only a few active subscriptions
-                let id = items.firstIndex(of: purchase)?.description ?? "0"
-
+            ForEach(Array(items.enumerated()), id: \.element) { (offset, purchase) in
                 Button {
                     action(purchase)
                 } label: {
                     PurchaseInformationCardView(
                         purchaseInformation: purchase,
                         localization: localization,
-                        accessibilityIdentifier: id
+                        accessibilityIdentifier: "purchase_card_\(offset)"
                     )
                     .cornerRadius(10)
                     .padding(.horizontal)
