@@ -8,4 +8,4 @@ name: Manage Subscriptions Restore Purchases
 - assertVisible: "No past purchases"
 - tapOn: "Dismiss"
 - tapOn:
-    id: "xmark"
+    id: "circled_close_button"
