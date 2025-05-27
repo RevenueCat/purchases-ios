@@ -21,7 +21,6 @@ import SwiftUI
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 // swiftlint:disable file_length
-// swiftlint:disable:next type_body_length
 struct RelevantPurchasesListView: View {
 
     @Environment(\.appearance)
