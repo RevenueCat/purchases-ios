@@ -7,18 +7,18 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  VirtualCurrencyInfos.swift
+//  VirtualCurrencies.swift
 //
 //  Created by Will Taylor on 5/21/25.
 
 import Foundation
 
 /// This class contains all the virtual currencies associated to the user.
-@objc(RCVirtualCurrencyInfos) public final class VirtualCurrencyInfos: NSObject {
+@objc(RCVirtualCurrencies) public final class VirtualCurrencies: NSObject {
 
     /// Dictionary of all VirtualCurrency(``VirtualCurrency``) objects keyed by virtual currency code.
-    /// This dictionary can also be access through an index subscript on ``VirtualCurrencyInfos``, e.g.
-    /// `virtualCurrencyInfos["VC_CODE"]`.
+    /// This dictionary can also be access through an index subscript on ``VirtualCurrencies``, e.g.
+    /// `virtualCurrencies["VC_CODE"]`.
     @objc public let all: [String: VirtualCurrency]
 
     internal init(virtualCurrencies: [String: VirtualCurrency]) {
@@ -32,7 +32,7 @@ import Foundation
     }
 }
 
-public extension VirtualCurrencyInfos {
+public extension VirtualCurrencies {
     /// Returns a dictionary containing only the virtual currencies that have a balance greater than zero.
     /// - Returns: A dictionary of virtual currency codes to their corresponding info objects,
     ///     filtered to only include those with non-zero balances.

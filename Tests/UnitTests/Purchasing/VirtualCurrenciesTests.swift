@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  VirtualCurrencyInfosTests.swift
+//  VirtualCurrenciesTests.swift
 //
 //  Created by Will Taylor on 5/21/25.
 
@@ -15,7 +15,7 @@ import Foundation
 @testable import RevenueCat
 import XCTest
 
-final class VirtualCurrencyInfosTests: TestCase {
+final class VirtualCurrenciesTests: TestCase {
 
     private static let mockVirtualCurrencyDictionary = [
         "GLD": VirtualCurrency(balance: 100),
@@ -25,26 +25,26 @@ final class VirtualCurrencyInfosTests: TestCase {
 
     // MARK: - all Property Tests
     func testAllProperty() throws {
-        let vcInfos = VirtualCurrencyInfos(virtualCurrencies: Self.mockVirtualCurrencyDictionary)
+        let vcInfos = VirtualCurrencies(virtualCurrencies: Self.mockVirtualCurrencyDictionary)
 
         XCTAssertEqual(vcInfos.all, Self.mockVirtualCurrencyDictionary)
     }
 
     // MARK: - Subscript Tests
-    func testSubscriptForVCInVirtualCurrencyInfos() throws {
-        let vcInfos = VirtualCurrencyInfos(virtualCurrencies: Self.mockVirtualCurrencyDictionary)
+    func testSubscriptForVCInVirtualCurrencies() throws {
+        let vcInfos = VirtualCurrencies(virtualCurrencies: Self.mockVirtualCurrencyDictionary)
 
-        let gold = try XCTUnwrap(vcInfos["GLD"], "VirtualCurrencyInfos is missing GLD")
-        let silver = try XCTUnwrap(vcInfos["SLV"], "VirtualCurrencyInfos is missing SLV")
-        let coin = try XCTUnwrap(vcInfos["COIN"], "VirtualCurrencyInfos is missing COIN")
+        let gold = try XCTUnwrap(vcInfos["GLD"], "VirtualCurrencies is missing GLD")
+        let silver = try XCTUnwrap(vcInfos["SLV"], "VirtualCurrencies is missing SLV")
+        let coin = try XCTUnwrap(vcInfos["COIN"], "VirtualCurrencies is missing COIN")
 
         XCTAssertEqual(gold.balance, Self.mockVirtualCurrencyDictionary["GLD"]!.balance)
         XCTAssertEqual(silver.balance, Self.mockVirtualCurrencyDictionary["SLV"]!.balance)
         XCTAssertEqual(coin.balance, Self.mockVirtualCurrencyDictionary["COIN"]!.balance)
     }
 
-    func testSubscriptReturnsNilForVCNotInVirtualCurrencyInfos() throws {
-        let vcInfos = VirtualCurrencyInfos(virtualCurrencies: Self.mockVirtualCurrencyDictionary)
+    func testSubscriptReturnsNilForVCNotInVirtualCurrencies() throws {
+        let vcInfos = VirtualCurrencies(virtualCurrencies: Self.mockVirtualCurrencyDictionary)
 
         let missingVC = vcInfos["NON_EXISTENT_VC"]
 
@@ -53,7 +53,7 @@ final class VirtualCurrencyInfosTests: TestCase {
 
     // MARK: - virtualCurrenciesWithNonZeroBalance Tests
     func testVirtualCurrenciesWithNonZeroBalance() throws {
-        let vcInfos = VirtualCurrencyInfos(virtualCurrencies: Self.mockVirtualCurrencyDictionary)
+        let vcInfos = VirtualCurrencies(virtualCurrencies: Self.mockVirtualCurrencyDictionary)
 
         XCTAssertTrue(vcInfos.all.contains(where: { $0.key == "GLD" }))
         XCTAssertTrue(vcInfos.all.contains(where: { $0.key == "SLV" }))
@@ -63,8 +63,8 @@ final class VirtualCurrencyInfosTests: TestCase {
 
         XCTAssertTrue(nonZeroBalanceVCs.contains(where: { $0.key == "GLD" }))
         XCTAssertTrue(nonZeroBalanceVCs.contains(where: { $0.key == "COIN" }))
-        let gold = try XCTUnwrap(vcInfos["GLD"], "VirtualCurrencyInfos is missing GLD")
-        let coin = try XCTUnwrap(vcInfos["COIN"], "VirtualCurrencyInfos is missing COIN")
+        let gold = try XCTUnwrap(vcInfos["GLD"], "VirtualCurrencies is missing GLD")
+        let coin = try XCTUnwrap(vcInfos["COIN"], "VirtualCurrencies is missing COIN")
         XCTAssertEqual(gold.balance, Self.mockVirtualCurrencyDictionary["GLD"]!.balance)
         XCTAssertEqual(coin.balance, Self.mockVirtualCurrencyDictionary["COIN"]!.balance)
 
@@ -79,13 +79,13 @@ final class VirtualCurrencyInfosTests: TestCase {
             "SLV": VirtualCurrency(balance: 0),
             "COIN": VirtualCurrency(balance: 0)
         ]
-        let vcInfos = VirtualCurrencyInfos(virtualCurrencies: zeroBalances)
+        let vcInfos = VirtualCurrencies(virtualCurrencies: zeroBalances)
 
         XCTAssertTrue(vcInfos.virtualCurrenciesWithNonZeroBalance.isEmpty)
     }
 
     func testVirtualCurrenciesWithNonZeroBalanceWithEmptyDictionary() throws {
-        let vcInfos = VirtualCurrencyInfos(virtualCurrencies: [:])
+        let vcInfos = VirtualCurrencies(virtualCurrencies: [:])
 
         XCTAssertTrue(vcInfos.virtualCurrenciesWithNonZeroBalance.isEmpty)
     }
@@ -98,7 +98,7 @@ final class VirtualCurrencyInfosTests: TestCase {
             "SLV": VirtualCurrency(balance: -50),
             "COIN": VirtualCurrency(balance: 0)
         ]
-        let vcInfos = VirtualCurrencyInfos(virtualCurrencies: negativeBalances)
+        let vcInfos = VirtualCurrencies(virtualCurrencies: negativeBalances)
 
         XCTAssertTrue(vcInfos.virtualCurrenciesWithNonZeroBalance.isEmpty)
     }
@@ -106,7 +106,7 @@ final class VirtualCurrencyInfosTests: TestCase {
     // MARK: - virtualCurrenciesWithZeroBalance Tests
 
     func testVirtualCurrenciesWithZeroBalance() throws {
-        let vcInfos = VirtualCurrencyInfos(virtualCurrencies: Self.mockVirtualCurrencyDictionary)
+        let vcInfos = VirtualCurrencies(virtualCurrencies: Self.mockVirtualCurrencyDictionary)
 
         XCTAssertTrue(vcInfos.all.contains(where: { $0.key == "GLD" }))
         XCTAssertTrue(vcInfos.all.contains(where: { $0.key == "SLV" }))
@@ -115,7 +115,7 @@ final class VirtualCurrencyInfosTests: TestCase {
         let zeroBalanceVCs = vcInfos.virtualCurrenciesWithZeroBalance
 
         XCTAssertTrue(zeroBalanceVCs.contains(where: { $0.key == "SLV" }))
-        let silver = try XCTUnwrap(zeroBalanceVCs["SLV"], "VirtualCurrencyInfos is missing SLV")
+        let silver = try XCTUnwrap(zeroBalanceVCs["SLV"], "VirtualCurrencies is missing SLV")
         XCTAssertEqual(silver.balance, Self.mockVirtualCurrencyDictionary["SLV"]!.balance)
 
         XCTAssertFalse(zeroBalanceVCs.contains(where: { $0.key == "GLD" }))
@@ -132,13 +132,13 @@ final class VirtualCurrencyInfosTests: TestCase {
             "SLV": VirtualCurrency(balance: 50),
             "COIN": VirtualCurrency(balance: 200)
         ]
-        let vcInfos = VirtualCurrencyInfos(virtualCurrencies: nonZeroBalances)
+        let vcInfos = VirtualCurrencies(virtualCurrencies: nonZeroBalances)
 
         XCTAssertTrue(vcInfos.virtualCurrenciesWithZeroBalance.isEmpty)
     }
 
     func testVirtualCurrenciesWithZeroBalanceWithEmptyDictionary() throws {
-        let vcInfos = VirtualCurrencyInfos(virtualCurrencies: [:])
+        let vcInfos = VirtualCurrencies(virtualCurrencies: [:])
 
         XCTAssertTrue(vcInfos.virtualCurrenciesWithZeroBalance.isEmpty)
     }
@@ -151,7 +151,7 @@ final class VirtualCurrencyInfosTests: TestCase {
             "SLV": VirtualCurrency(balance: -50),
             "COIN": VirtualCurrency(balance: 0)
         ]
-        let vcInfos = VirtualCurrencyInfos(virtualCurrencies: negativeBalances)
+        let vcInfos = VirtualCurrencies(virtualCurrencies: negativeBalances)
 
         let zeroBalanceVCs = vcInfos.virtualCurrenciesWithZeroBalance
         XCTAssertTrue(zeroBalanceVCs.contains(where: { $0.key == "COIN" }))
