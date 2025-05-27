@@ -1603,6 +1603,8 @@ private extension PurchasesOrchestrator {
                     // or is missing the originalPurchaseDate and/or originalApplicationVersion.
                     Logger.warn(Strings.storeKit.sk2_sync_purchases_no_transaction_or_apptransaction_found)
 
+                    // Refresh the CustomerInfo in case we have gotten originalPurchaseDate or
+                    // originalApplicationVersion in the backend or on another device.
                     self.customerInfoManager.customerInfo(
                         appUserID: currentAppUserID,
                         fetchPolicy: .fetchCurrent
