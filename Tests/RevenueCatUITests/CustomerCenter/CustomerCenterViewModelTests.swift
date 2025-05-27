@@ -694,7 +694,8 @@ final class CustomerCenterViewModelTests: TestCase {
             // Assert
             expect(viewModel.state) == .success
 
-            let purchaseInformation = try XCTUnwrap(viewModel.activeSubscriptionPurchases.first)
+            let purchaseInformation = try XCTUnwrap(viewModel.activeSubscriptionPurchases.last)
+
             expect(viewModel.activeSubscriptionPurchases.count) == 2
             expect(viewModel.activeSubscriptionPurchases.last?.productIdentifier)
                 == purchaseInformation.productIdentifier
