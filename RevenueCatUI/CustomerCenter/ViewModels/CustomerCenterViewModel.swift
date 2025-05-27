@@ -132,6 +132,8 @@ import RevenueCat
         self.customerInfo = nil
     }
 
+    #if DEBUG
+
     convenience init(
         uiPreviewPurchaseProvider: CustomerCenterPurchasesType
     ) {
@@ -141,10 +143,7 @@ import RevenueCat
         )
     }
 
-    #if DEBUG
-
     convenience init(
-        purchaseInformation: PurchaseInformation?,
         configuration: CustomerCenterConfigData
     ) {
         self.init(actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil))
