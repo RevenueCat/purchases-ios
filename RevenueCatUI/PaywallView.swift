@@ -456,6 +456,8 @@ struct LoadedOfferingPaywallView: View {
     @Environment(\.dismiss)
     private var dismiss
 
+    private var fallbackReason: PaywallEvent.Data.FallbackReason?
+
     init(
         offering: Offering,
         activelySubscribedProductIdentifiers: Set<String>,
@@ -467,7 +469,8 @@ struct LoadedOfferingPaywallView: View {
         introEligibility: TrialOrIntroEligibilityChecker,
         purchaseHandler: PurchaseHandler,
         locale: Locale,
-        showZeroDecimalPlacePrices: Bool
+        showZeroDecimalPlacePrices: Bool,
+        fallbackReason: PaywallEvent.Data.FallbackReason? = nil
     ) {
         self.offering = offering
         self.activelySubscribedProductIdentifiers = activelySubscribedProductIdentifiers
@@ -482,6 +485,7 @@ struct LoadedOfferingPaywallView: View {
         self._purchaseHandler = .init(initialValue: purchaseHandler)
         self.locale = locale
         self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
+        self.fallbackReason = fallbackReason
     }
 
     var body: some View {
@@ -521,7 +525,12 @@ struct LoadedOfferingPaywallView: View {
             .environmentObject(self.introEligibility)
             .environmentObject(self.purchaseHandler)
             .disabled(self.purchaseHandler.actionInProgress)
-            .onAppear { self.purchaseHandler.trackPaywallImpression(self.createEventData()) }
+            .onAppear {
+                self.purchaseHandler.trackPaywallImpression(
+                    self.createEventData(),
+                    fallbackReason: self.fallbackReason
+                )
+            }
             .onDisappear { self.purchaseHandler.trackPaywallClose() }
             .onChangeOf(self.purchaseHandler.purchased) { purchased in
                 if purchased {
@@ -569,7 +578,9 @@ struct LoadedOfferingPaywallView: View {
             sessionID: .init(),
             displayMode: self.mode,
             locale: .current,
-            darkMode: self.colorScheme == .dark
+            darkMode: self.colorScheme == .dark,
+            storeTransactionID: nil,
+            fallbackReason: self.fallbackReason
         )
     }
 
