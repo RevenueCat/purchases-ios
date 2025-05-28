@@ -93,6 +93,9 @@ struct PurchaseInformation {
     /// Note: `nil` for non-subscriptions, and for expiring subscriptions
     let gracePeriodExpiresDate: Date?
 
+    /// Date when RevenueCat detected a refund of this subscription.
+    ///
+    /// Note: `nil` for non-subscriptions
     let refundedAtDate: Date?
 
     /// Product specific management URL
