@@ -26,9 +26,16 @@ struct FullScreenErrorView: View {
 
     var body: some View {
         VStack {
-            ConceptIntroductionView(imageName: "visual-products",
-                                    title: title,
-                                    description: error.localizedDescription)
+            ScrollView {
+                ConceptIntroductionView(
+                    imageName: "visual-products",
+                    title: title,
+                    description: error.localizedDescription
+                )
+                .frame(maxWidth: .infinity)
+            }
+            .scrollBounceBehavior(.basedOnSize)
+
 
             Spacer()
 
