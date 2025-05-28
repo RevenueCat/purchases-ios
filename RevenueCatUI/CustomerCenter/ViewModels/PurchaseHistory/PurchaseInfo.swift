@@ -43,17 +43,17 @@ extension PurchaseInformation {
             items.append(.nextRenewalDate(dateFormatter.string(from: renewalDate)))
         }
 
-//        if let unsubscribeDetectedAt = purchaseInfo.unsubscribeDetectedAt {
-//            items.append(.unsubscribeDetectedAt(formattedDate(unsubscribeDetectedAt)))
-//        }
+        if let unsubscribeDetectedAt = unsubscribeDetectedAt {
+            items.append(.unsubscribeDetectedAt(dateFormatter.string(from: unsubscribeDetectedAt)))
+        }
 
-        //            if let billingIssuesDetectedAt = purchaseInfo.billingIssuesDetectedAt {
-        //                items.append(.billingIssuesDetectedAt(formattedDate(billingIssuesDetectedAt)))
-        //            }
+        if let billingIssuesDetectedAt = billingIssuesDetectedAt {
+            items.append(.billingIssuesDetectedAt(dateFormatter.string(from: billingIssuesDetectedAt)))
+        }
 
-        //            if let gracePeriodExpiresDate = purchaseInfo.gracePeriodExpiresDate {
-        //                items.append(.gracePeriodExpiresDate(formattedDate(gracePeriodExpiresDate)))
-        //            }
+        if let gracePeriodExpiresDate = gracePeriodExpiresDate {
+            items.append(.gracePeriodExpiresDate(dateFormatter.string(from: gracePeriodExpiresDate)))
+        }
 
         if periodType != .normal {
             items.append(.periodType(
@@ -61,11 +61,11 @@ extension PurchaseInformation {
             ))
         }
 
-        //            if let refundedAt = purchaseInfo.refundedAt {
-        //                items.append(.refundedAtDate(formattedDate(refundedAt)))
-        //            }
+        if let refundedAt = refundedAtDate {
+            items.append(.refundedAtDate(dateFormatter.string(from: refundedAt)))
+        }
 
-        //            items.append(.purchaseDate(formattedDate(transaction.purchaseDate)))
+        items.append(.purchaseDate(dateFormatter.string(from: latestPurchaseDate)))
 
         return items
     }
@@ -74,7 +74,19 @@ extension PurchaseInformation {
 @available(iOS 15.0, *)
 private extension PurchaseInformation {
     var debugItems: [PurchaseDetailItem] {
-        []
+        var items: [PurchaseDetailItem] = [
+            .store(store.localizationKey),
+            .productID(productIdentifier)
+
+//            .sandbox(isSandbox)
+        ]
+
+        if let storeTransactionIdentifier {
+            items.append(.transactionID(storeTransactionIdentifier))
+        }
+
+        return items
+
 //        switch self {
 //        case .subscription(let purchaseInfo):
 //            var items: [PurchaseDetailItem] = [
@@ -88,19 +100,8 @@ private extension PurchaseInformation {
 //                    items.append(.purchaseDate(formattedDate(originalPurchaseDate)))
 //                }
 //            }
-//
-//            if let storeTransactionId = purchaseInfo.storeTransactionId {
-//                items.append(.transactionID(storeTransactionId))
-//            }
 //            return items
-//
-//        case .nonSubscription(let transaction):
-//            return [
-//                .store(transaction.store.localizationKey),
-//                .productID(transaction.productIdentifier),
-//                .transactionID(transaction.storeTransactionIdentifier)
-//            ]
-//        }
+
     }
 }
 

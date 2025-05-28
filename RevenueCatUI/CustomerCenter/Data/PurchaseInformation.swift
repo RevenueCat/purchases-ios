@@ -81,12 +81,36 @@ struct PurchaseInformation {
     /// Note: `nil` for non-subscriptions, and for expiring subscriptions
      let renewalDate: Date?
 
+    /// The date an unsubscribe was detected.
+    ///
+    /// Note: `nil` for non-subscriptions, and for expiring subscriptions
+    let unsubscribeDetectedAt: Date?
+
+    /// Date when RevenueCat detected any billing issues with this subscription.
+    ///
+    /// Note: `nil` for non-subscriptions, and for expiring subscriptions
+    let billingIssuesDetectedAt: Date?
+
+    /// Date when any grace period for this subscription expires/expired.
+    /// nil if the customer has never been in a grace period.
+    ///
+    /// Note: `nil` for non-subscriptions, and for expiring subscriptions
+    let gracePeriodExpiresDate: Date?
+
+    let refundedAtDate: Date?
+
     /// Product specific management URL
     let managementURL: URL?
 
     let periodType: PeriodType
 
     let ownershipType: PurchaseOwnershipType?
+
+    /// The unique identifier for the transaction created by RevenueCat.
+    let transactionIdentifier: String?
+
+    /// The unique identifier for the transaction created by the Store.
+    let storeTransactionIdentifier: String?
 
     private let dateFormatter: DateFormatter
     private let numberFormatter: NumberFormatter
@@ -109,7 +133,13 @@ struct PurchaseInformation {
          expirationDate: Date? = nil,
          renewalDate: Date? = nil,
          periodType: PeriodType = .normal,
-         ownershipType: PurchaseOwnershipType? = nil
+         ownershipType: PurchaseOwnershipType? = nil,
+         unsubscribeDetectedAt: Date? = nil,
+         billingIssuesDetectedAt: Date? = nil,
+         gracePeriodExpiresDate: Date? = nil,
+         refundedAtDate: Date? = nil,
+         transactionIdentifier: String? = nil,
+         storeTransactionIdentifier: String? = nil
     ) {
         self.title = title
         self.durationTitle = durationTitle
@@ -130,8 +160,15 @@ struct PurchaseInformation {
         self.periodType = periodType
         self.numberFormatter = numberFormatter
         self.ownershipType = ownershipType
+        self.unsubscribeDetectedAt = unsubscribeDetectedAt
+        self.billingIssuesDetectedAt = billingIssuesDetectedAt
+        self.gracePeriodExpiresDate = gracePeriodExpiresDate
+        self.refundedAtDate = refundedAtDate
+        self.transactionIdentifier = transactionIdentifier
+        self.storeTransactionIdentifier = storeTransactionIdentifier
     }
 
+    // swiftlint:disable:next function_body_length
     init(entitlement: EntitlementInfo? = nil,
          subscribedProduct: StoreProduct? = nil,
          transaction: Transaction,
@@ -166,6 +203,12 @@ struct PurchaseInformation {
             self.periodType = entitlement.periodType
             self.ownershipType = entitlement.ownershipType
             self.isActive = entitlement.isActive
+            self.unsubscribeDetectedAt = entitlement.unsubscribeDetectedAt
+            self.billingIssuesDetectedAt = entitlement.billingIssueDetectedAt
+            self.gracePeriodExpiresDate = nil
+            self.refundedAtDate = nil
+            self.transactionIdentifier = nil
+            self.storeTransactionIdentifier = nil
         } else {
             switch transaction.type {
             case let .subscription(isActive, willRenew, expiresDate, isTrial, ownershipType):
@@ -190,6 +233,12 @@ struct PurchaseInformation {
             self.store = transaction.store
             self.isCancelled = transaction.isCancelled
             self.periodType = transaction.periodType
+            self.unsubscribeDetectedAt = transaction.unsubscribeDetectedAt
+            self.billingIssuesDetectedAt = transaction.billingIssuesDetectedAt
+            self.gracePeriodExpiresDate = transaction.gracePeriodExpiresDate
+            self.refundedAtDate = transaction.refundedAtDate
+            self.transactionIdentifier = transaction.identifier
+            self.storeTransactionIdentifier = transaction.storeIdentifier
         }
 
         if self.expirationDate == nil {
@@ -244,6 +293,14 @@ extension PurchaseInformation: Hashable {
         hasher.combine(expirationDate)
         hasher.combine(renewalDate)
         hasher.combine(managementURL)
+        hasher.combine(unsubscribeDetectedAt)
+        hasher.combine(billingIssuesDetectedAt)
+        hasher.combine(gracePeriodExpiresDate)
+        hasher.combine(refundedAtDate)
+        hasher.combine(transactionIdentifier)
+        hasher.combine(storeTransactionIdentifier)
+        hasher.combine(ownershipType)
+        hasher.combine(periodType)
     }
  }
 

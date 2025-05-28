@@ -47,7 +47,7 @@ final class PurchaseDetailViewModel: ObservableObject {
             .productName(purchaseInfo.title)
         ]
 
-        items.append(contentsOf: purchaseInfo.purchaseDetailItems(localization))
+        items.append(contentsOf: purchaseInfo.purchaseDetailItems(localization: localization))
         self.debugItems = purchaseInfo.purchaseDetailDebugItems
         self.items = items
     }

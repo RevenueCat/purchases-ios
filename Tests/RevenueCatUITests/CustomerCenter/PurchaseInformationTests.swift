@@ -66,6 +66,12 @@ final class PurchaseInformationTests: TestCase {
         let displayName: String?
         let periodType: RevenueCat.PeriodType
         let purchaseDate: Date
+        var unsubscribeDetectedAt: Date?
+        var billingIssuesDetectedAt: Date?
+        var gracePeriodExpiresDate: Date?
+        var refundedAtDate: Date?
+        var storeIdentifier: String?
+        var identifier: String?
     }
 
     func testAppleEntitlementAndSubscribedProductWithoutRenewalInfo() throws {
