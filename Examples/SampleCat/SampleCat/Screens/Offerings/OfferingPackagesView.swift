@@ -1,5 +1,5 @@
-import SwiftUI
 import RevenueCat
+import SwiftUI
 
 struct OfferingPackagesView: View {
     @State var offering: OfferingViewModel
@@ -23,4 +23,3 @@ struct OfferingPackagesView: View {
         }
     }
 }
-

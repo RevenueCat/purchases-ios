@@ -16,7 +16,7 @@ struct Spinner: View {
             YarnShape()
                 .stroke(tint, lineWidth: 2)
                 .rotationEffect(.degrees(yarnAngle), anchor: .trailing)
-            
+
             BallShape()
                 .fill(tint)
                 .rotationEffect(.degrees(ballRotation), anchor: UnitPoint(x: 0.5, y: 0.51))
@@ -26,7 +26,7 @@ struct Spinner: View {
             withAnimation(.linear(duration: 0.8).repeatForever(autoreverses: false)) {
                 ballRotation = 360
             }
-            
+
             Timer.scheduledTimer(withTimeInterval: 1.0 / 60.0, repeats: true) { _ in
                 Task {
                     await MainActor.run {

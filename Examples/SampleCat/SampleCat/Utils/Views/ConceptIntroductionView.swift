@@ -11,14 +11,14 @@ struct ConceptIntroductionView: View {
     let imageName: String
     let title: String
     let description: String
-    
+
     var body: some View {
         VStack(spacing: 32) {
             Image(imageName)
                 .resizable()
                 .frame(width: 280, height: 280)
                 .accessibilityHidden(true)
-            
+
             VStack(spacing: 8) {
                 Text(title)
                     .font(.largeTitle)

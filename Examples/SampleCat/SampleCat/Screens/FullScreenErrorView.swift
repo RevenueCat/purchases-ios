@@ -1,5 +1,5 @@
-import SwiftUI
 import RevenueCat
+import SwiftUI
 
 struct FullScreenErrorView: View {
     @Environment(HealthViewModel.self) var healthViewModel
@@ -35,7 +35,6 @@ struct FullScreenErrorView: View {
                 .frame(maxWidth: .infinity)
             }
             .scrollBounceBehavior(.basedOnSize)
-
 
             Spacer()
 

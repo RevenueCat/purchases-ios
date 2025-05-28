@@ -1,10 +1,10 @@
-import SwiftUI
 import RevenueCat
+import SwiftUI
 
 struct OfferingsView: View {
     @Environment(UserViewModel.self) private var userViewModel
     @Environment(HealthViewModel.self) private var healthViewModel
-    
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -39,6 +39,5 @@ struct OfferingsView: View {
             }
             .refreshable(action: healthViewModel.fetchHealthReport)
         }
-
     }
 }

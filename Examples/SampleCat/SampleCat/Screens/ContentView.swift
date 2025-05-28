@@ -11,7 +11,7 @@ struct ContentView: View {
                 .tabItem {
                     Label("Offerings", systemImage: "dollarsign")
                 }
-            
+
             ProductsView()
                 .tabItem {
                     Label("Products", systemImage: "shippingbox.fill")

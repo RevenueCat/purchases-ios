@@ -12,7 +12,7 @@ struct ContentBackgroundView: View {
     var body: some View {
         ZStack {
             LinearGradient(colors: [
-                color.opacity(0.15   ),
+                color.opacity(0.15),
                 color.opacity(0)
             ], startPoint: .top, endPoint: .bottom)
             PatternBackground()
@@ -26,12 +26,11 @@ struct ContentBackgroundView: View {
 }
 
 struct PatternBackground: UIViewRepresentable {
-    func makeUIView(context: Context) -> UIView {
+    func makeUIView(context _: Context) -> UIView {
         let view = UIView()
         view.backgroundColor = UIColor(patternImage: UIImage(named: "noise-pattern")!)
         return view
     }
 
-    func updateUIView(_ uiView: UIView, context: Context) {}
+    func updateUIView(_: UIView, context _: Context) {}
 }
-

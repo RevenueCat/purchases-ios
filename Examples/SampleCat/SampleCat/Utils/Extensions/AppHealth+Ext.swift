@@ -5,8 +5,8 @@
 //  Created by Hidde van der Ploeg on 7/4/25.
 //
 
-import SwiftUI
 import RevenueCat
+import SwiftUI
 
 extension PurchasesDiagnostics.ProductStatus {
     var color: Color {
@@ -17,7 +17,7 @@ extension PurchasesDiagnostics.ProductStatus {
         case .needsAction, .actionInProgress: .yellow
         }
     }
-    
+
     var icon: String {
         switch self {
         case .valid: "checkmark.circle.fill"
