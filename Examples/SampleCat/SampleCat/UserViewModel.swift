@@ -36,7 +36,7 @@ import SwiftUI
         defer { isPurchasing = false }
 
         do {
-            let (transaction, customerInfo, userCancelled) = try await Purchases.shared.purchase(product: product)
+            let (_, customerInfo, userCancelled) = try await Purchases.shared.purchase(product: product)
 
             guard !userCancelled else { return }
 
