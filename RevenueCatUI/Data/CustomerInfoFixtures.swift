@@ -11,10 +11,11 @@
 //
 //  Created by Cesar de la Vega on 28/10/24.
 
+import Foundation
 import RevenueCat
 
 // swiftlint:disable force_unwrapping
-
+// swiftlint:disable:next type_body_length
 class CustomerInfoFixtures {
 
     private init() {}
@@ -28,7 +29,10 @@ class CustomerInfoFixtures {
              store: String,
              purchaseDate: String,
              expirationDate: String?,
-             unsubscribeDetectedAt: String? = nil) {
+             priceAmount: Decimal = 4.99,
+             currency: String = "USD",
+             unsubscribeDetectedAt: String? = nil,
+             periodType: PeriodType = .normal) {
             self.id = id
             self.json = """
             {
@@ -39,12 +43,17 @@ class CustomerInfoFixtures {
                 "is_sandbox": true,
                 "original_purchase_date": "\(purchaseDate)",
                 "ownership_type": "PURCHASED",
-                "period_type": "intro",
+                "period_type": "\(periodType.stringValue)",
                 "purchase_date": "\(purchaseDate)",
                 "refunded_at": null,
                 "store": "\(store)",
                 "store_transaction_id": "0",
-                "unsubscribe_detected_at": \(unsubscribeDetectedAt != nil ? "\"\(unsubscribeDetectedAt!)\"" : "null")
+                "unsubscribe_detected_at": \(unsubscribeDetectedAt != nil ? "\"\(unsubscribeDetectedAt!)\"" : "null"),
+                "display_name": "Weekly Scratched Sofa",
+                "price": {
+                  "amount": \(periodType == .trial ? 0 : priceAmount),
+                  "currency": \"\(currency)\"
+                }
             }
             """
         }
@@ -91,10 +100,12 @@ class CustomerInfoFixtures {
         }
     }
 
+    // swiftlint:disable:next function_body_length
     static func customerInfo(
         subscriptions: [Subscription],
         entitlements: [Entitlement],
-        nonSubscriptions: [NonSubscriptionTransaction] = []
+        nonSubscriptions: [NonSubscriptionTransaction] = [],
+        virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo] = [:]
     ) -> CustomerInfo {
         let subscriptionsJson = subscriptions.map { subscription in
             """
@@ -114,6 +125,14 @@ class CustomerInfoFixtures {
             "\(productId)": [
                 \(purchases.map { $0.json }.joined(separator: ",\n"))
             ]
+            """
+        }.joined(separator: ",\n")
+
+        let virtualCurrenciesJson = virtualCurrencies.map { vcCode, virtualCurrencyInfo in
+            """
+            "\(vcCode)": {
+                "balance": \(virtualCurrencyInfo.balance)
+            }
             """
         }.joined(separator: ",\n")
 
@@ -140,6 +159,9 @@ class CustomerInfoFixtures {
                 },
                 "entitlements": {
                     \(entitlementsJson)
+                },
+                "virtual_currencies": {
+                    \(virtualCurrenciesJson)
                 }
             }
         }
@@ -152,7 +174,9 @@ class CustomerInfoFixtures {
         productId: String = "com.revenuecat.product",
         purchaseDate: String = "2022-04-12T00:03:28Z",
         expirationDate: String? = "2062-04-12T00:03:35Z",
-        unsubscribeDetectedAt: String? = nil
+        unsubscribeDetectedAt: String? = nil,
+        virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo] = [:],
+        periodType: PeriodType = .normal
     ) -> CustomerInfo {
         return customerInfo(
             subscriptions: [
@@ -161,7 +185,8 @@ class CustomerInfoFixtures {
                     store: store,
                     purchaseDate: purchaseDate,
                     expirationDate: expirationDate,
-                    unsubscribeDetectedAt: unsubscribeDetectedAt
+                    unsubscribeDetectedAt: unsubscribeDetectedAt,
+                    periodType: periodType
                 )
             ],
             entitlements: [
@@ -171,7 +196,8 @@ class CustomerInfoFixtures {
                     purchaseDate: purchaseDate,
                     expirationDate: expirationDate
                 )
-            ]
+            ],
+            virtualCurrencies: virtualCurrencies
         )
     }
 
@@ -236,17 +262,6 @@ class CustomerInfoFixtures {
         )
     }()
 
-    static let customerInfoWithRCBillingSubscriptions: CustomerInfo = {
-        makeCustomerInfo(store: "rc_billing")
-    }()
-
-    static let customerInfoWithNonRenewingRCBillingSubscriptions: CustomerInfo = {
-        makeCustomerInfo(
-            store: "stripe",
-            unsubscribeDetectedAt: "2023-04-12T00:03:35Z"
-        )
-    }()
-
     static let customerInfoWithExpiredStripeSubscriptions: CustomerInfo = {
         makeCustomerInfo(
             store: "stripe",
@@ -255,8 +270,35 @@ class CustomerInfoFixtures {
         )
     }()
 
+    static let customerInfoWithRCBillingSubscriptions: CustomerInfo = {
+        makeCustomerInfo(store: "rc_billing")
+    }()
+
+    static let customerInfoWithNonRenewingRCBillingSubscriptions: CustomerInfo = {
+        makeCustomerInfo(
+            store: "rc_billing",
+            unsubscribeDetectedAt: "2023-04-12T00:03:35Z"
+        )
+    }()
+
+    static let customerInfoWithExpiredRCBillingSubscriptions: CustomerInfo = {
+        makeCustomerInfo(
+            store: "rc_billing",
+            purchaseDate: "1999-04-12T00:03:28Z",
+            expirationDate: "2000-04-12T00:03:35Z"
+        )
+    }()
+
     static let customerInfoWithPromotional: CustomerInfo = {
         makeCustomerInfo(store: "promotional", productId: "rc_promo_pro_cat_yearly")
+    }()
+
+    static let customerInfoWithVirtualCurrencies: CustomerInfo = {
+        makeCustomerInfo(
+            store: "promotional",
+            productId: "rc_promo_pro_cat_yearly",
+            virtualCurrencies: CustomerCenterConfigData.fourVirtualCurrencies
+        )
     }()
 
     static let customerInfoWithLifetimePromotional: CustomerInfo = {

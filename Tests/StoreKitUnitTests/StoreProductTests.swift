@@ -91,7 +91,8 @@ class StoreProductTests: StoreKitConfigTestCase {
             result = products
         }
 
-        expect(result).toEventuallyNot(beNil(), timeout: Self.requestDispatchTimeout + .seconds(5))
+        let timeout = Self.requestTimeout + 5
+        expect(result).toEventuallyNot(beNil(), timeout: timeout.nimbleInterval)
 
         let products = try result.get()
 
@@ -380,7 +381,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         let type: StoreProduct.ProductType = .autoRenewableSubscription
         let description = "Description"
         let subscriptionGroup = "group"
-        let period: SubscriptionPeriod = .init(value: 1, unit: .month)
+        let period: RevenueCat.SubscriptionPeriod = .init(value: 1, unit: .month)
         let isFamilyShareable = Bool.random()
         let expectedLocale: Locale = .current
 

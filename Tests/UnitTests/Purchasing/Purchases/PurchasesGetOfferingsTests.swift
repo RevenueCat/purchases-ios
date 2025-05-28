@@ -127,7 +127,8 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
             identifier: "offering",
             serverDescription: "",
             paywall: nil,
-            availablePackages: []
+            availablePackages: [],
+            webCheckoutUrl: nil
         )
         let offerings = Offerings(
             offerings: [

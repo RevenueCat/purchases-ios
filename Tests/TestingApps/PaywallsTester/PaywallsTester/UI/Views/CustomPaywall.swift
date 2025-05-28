@@ -5,16 +5,14 @@
 //  Created by Nacho Soto on 8/9/23.
 //
 
-#if !os(watchOS)
+
+#if DEBUG && !os(watchOS)
 
 import RevenueCat
 
-#if DEBUG
+
 // this @testable access should used for the SwiftUI previews only
 @testable import RevenueCatUI
-#else
-import RevenueCatUI
-#endif
 import SwiftUI
 
 struct CustomPaywall: View {
@@ -48,8 +46,6 @@ struct CustomPaywall: View {
     }
 
 }
-
-#if DEBUG
 
 struct CustomPaywall_Previews: PreviewProvider {
     
@@ -94,7 +90,5 @@ struct CustomPaywall_Previews: PreviewProvider {
     ]
 
 }
-
-#endif
 
 #endif

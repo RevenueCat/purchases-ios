@@ -20,8 +20,10 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ButtonComponentView: View {
     @Environment(\.openURL) private var openURL
+    @Environment(\.openSheet) private var openSheet
     @State private var inAppBrowserURL: URL?
     @State private var showCustomerCenter = false
+    @State private var showingWebPaywallLinkAlert = false
 
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
@@ -55,30 +57,32 @@ struct ButtonComponentView: View {
     }
 
     var body: some View {
-        AsyncButton {
-            try await performAction()
-        } label: {
-            StackComponentView(
-                viewModel: self.viewModel.stackViewModel,
-                onDismiss: self.onDismiss,
-                showActivityIndicatorOverContent: self.showActivityIndicatorOverContent
-            )
+        if !self.viewModel.hasUnknownAction {
+            AsyncButton {
+                try await performAction()
+            } label: {
+                StackComponentView(
+                    viewModel: self.viewModel.stackViewModel,
+                    onDismiss: self.onDismiss,
+                    showActivityIndicatorOverContent: self.showActivityIndicatorOverContent
+                )
+            }
+            .applyIf(self.shouldBeDisabled, apply: { view in
+                view
+                    .disabled(true)
+                    .opacity(0.35)
+            })
+            #if canImport(SafariServices) && canImport(UIKit)
+            .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
+                SafariView(url: self.inAppBrowserURL!)
+            }
+            #if os(iOS)
+            .presentCustomerCenter(isPresented: self.$showCustomerCenter, onDismiss: {
+                self.showCustomerCenter = false
+            })
+            #endif
+            #endif
         }
-        .applyIf(self.shouldBeDisabled, apply: { view in
-            view
-                .disabled(true)
-                .opacity(0.35)
-        })
-        #if canImport(SafariServices) && canImport(UIKit)
-        .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
-            SafariView(url: self.inAppBrowserURL!)
-        }
-        #if os(iOS)
-        .presentCustomerCenter(isPresented: self.$showCustomerCenter, onDismiss: {
-            self.showCustomerCenter = false
-        })
-        #endif
-        #endif
     }
 
     private func performAction() async throws {
@@ -89,6 +93,16 @@ struct ButtonComponentView: View {
             navigateTo(destination: destination)
         case .navigateBack:
             onDismiss()
+        case .unknown:
+            break
+        case .sheet(let sheet):
+            if let sheetStackViewModel = self.viewModel.sheetStackViewModel {
+                let sheetViewModel = SheetViewModel(
+                    sheet: sheet,
+                    sheetStackViewModel: sheetStackViewModel
+                )
+                openSheet(sheetViewModel)
+            }
         }
     }
 
@@ -113,26 +127,33 @@ struct ButtonComponentView: View {
         case .url(let url, let method),
                 .privacyPolicy(let url, let method),
                 .terms(let url, let method):
-            navigateToUrl(url: url, method: method)
+            Browser.navigateTo(url: url,
+                               method: method,
+                               openURL: self.openURL,
+                               inAppBrowserURL: self.$inAppBrowserURL)
+        case .unknown:
+            break
+        case .webPaywallLink(url: let url, method: let method):
+            openWebPaywallLink(url: url, method: method)
         }
     }
 
-    private func navigateToUrl(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) {
-        switch method {
-        case .inAppBrowser:
-#if os(tvOS)
-            // There's no SafariServices on tvOS, so we're falling back to opening in an external browser.
-            Logger.warning(Strings.no_in_app_browser_tvos)
-            openURL(url)
+    private func openWebPaywallLink(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) {
+        Purchases.shared.invalidateCustomerInfoCache()
+#if os(watchOS)
+        // watchOS doesn't support openURL with a completion handler, so we're just opening the URL.
+        openURL(url)
 #else
-            inAppBrowserURL = url
-#endif
-        case .externalBrowser,
-                .deepLink:
-            openURL(url)
+        openURL(url) { success in
+            if success {
+                Logger.debug(Strings.successfully_opened_url_external_browser(url.absoluteString))
+            } else {
+                Logger.error(Strings.failed_to_open_url_external_browser(url.absoluteString))
+            }
         }
+#endif
+        onDismiss()
     }
-
 }
 
 #if DEBUG
@@ -165,7 +186,12 @@ struct ButtonComponentView_Previews: PreviewProvider {
                             "buttonText": PaywallComponentsData.LocalizationData.string("Do something")
                         ]
                     ),
-                    offering: Offering(identifier: "", serverDescription: "", availablePackages: [])
+                    offering: Offering(
+                        identifier: "",
+                        serverDescription: "",
+                        availablePackages: [],
+                        webCheckoutUrl: nil
+                    )
                 ),
                 onDismiss: { }
             )

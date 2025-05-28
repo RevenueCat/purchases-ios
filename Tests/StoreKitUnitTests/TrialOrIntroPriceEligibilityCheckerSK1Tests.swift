@@ -267,6 +267,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK1Tests {
                                   "com.revenuecat.annual_39.99.2_week_intro": IntroEligibilityStatus.ineligible,
                                   "lifetime": IntroEligibilityStatus.noIntroOfferExists]
         mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroDiscountEligibilityResult = .success(stubbedEligibility)
+        mockSystemInfo.stubbedStorefront = MockStorefront(countryCode: "USA")
 
         waitUntil { completion in
             self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIds) { _ in
@@ -287,6 +288,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK1Tests {
         expect(params.eligibilityNoIntroOfferCount) == 1
         expect(params.errorMessage).to(beNil())
         expect(params.errorCode).to(beNil())
+        expect(params.storefront) == "USA"
         expect(params.responseTime) == Self.eventTimestamp2.timeIntervalSince(Self.eventTimestamp1)
     }
 
@@ -324,6 +326,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK1Tests {
         expect(params.eligibilityNoIntroOfferCount).to(beNil())
         expect(params.errorMessage) == receiptError.errorDescription
         expect(params.errorCode) == ErrorCode.invalidReceiptError.errorCode
+        expect(params.storefront).to(beNil())
         expect(params.responseTime) == Self.eventTimestamp2.timeIntervalSince(Self.eventTimestamp1)
     }
 
@@ -367,6 +370,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK1Tests {
         expect(params.eligibilityNoIntroOfferCount) == 1
         expect(params.errorMessage) == expectedError.localizedDescription
         expect(params.errorCode) == expectedError.errorCode
+        expect(params.storefront).to(beNil())
         expect(params.responseTime) == Self.eventTimestamp2.timeIntervalSince(Self.eventTimestamp1)
     }
 
@@ -409,6 +413,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK1Tests {
         expect(params.eligibilityNoIntroOfferCount) == 1
         expect(params.errorMessage) == receiptError.errorDescription
         expect(params.errorCode) == ErrorCode.invalidReceiptError.errorCode
+        expect(params.storefront).to(beNil())
         expect(params.responseTime) == Self.eventTimestamp2.timeIntervalSince(Self.eventTimestamp1)
     }
 

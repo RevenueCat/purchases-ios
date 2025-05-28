@@ -23,9 +23,9 @@ import RevenueCat
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @MainActor
-class FeedbackSurveyViewModel: ObservableObject {
+final class FeedbackSurveyViewModel: ObservableObject {
 
-    var feedbackSurveyData: FeedbackSurveyData
+    let feedbackSurveyData: FeedbackSurveyData
 
     @Published
     var loadingOption: String?
@@ -33,15 +33,16 @@ class FeedbackSurveyViewModel: ObservableObject {
     @Published
     var promotionalOfferData: PromotionalOfferData?
 
-    private var purchasesProvider: CustomerCenterPurchasesType
+    private(set) var purchasesProvider: CustomerCenterPurchasesType
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
     private let actionWrapper: CustomerCenterActionWrapper
 
     convenience init(feedbackSurveyData: FeedbackSurveyData,
+                     purchasesProvider: CustomerCenterPurchasesType,
                      actionWrapper: CustomerCenterActionWrapper) {
         self.init(feedbackSurveyData: feedbackSurveyData,
-                  purchasesProvider: CustomerCenterPurchases(),
-                  loadPromotionalOfferUseCase: LoadPromotionalOfferUseCase(),
+                  purchasesProvider: purchasesProvider,
+                  loadPromotionalOfferUseCase: LoadPromotionalOfferUseCase(purchasesProvider: purchasesProvider),
                   actionWrapper: actionWrapper)
     }
 
@@ -69,13 +70,17 @@ class FeedbackSurveyViewModel: ObservableObject {
         if let promotionalOffer = option.promotionalOffer,
            promotionalOffer.eligible {
             self.loadingOption = option.id
-            let result = await loadPromotionalOfferUseCase.execute(promoOfferDetails: promotionalOffer)
+            let result = await loadPromotionalOfferUseCase.execute(
+                promoOfferDetails: promotionalOffer,
+                forProductId: feedbackSurveyData.productIdentifier
+            )
+            self.loadingOption = nil
             switch result {
             case .success(let promotionalOfferData):
                 self.promotionalOfferData = promotionalOfferData
             case .failure:
                 self.feedbackSurveyData.onOptionSelected()
-                self.loadingOption = nil
+                dismissView()
             }
         } else {
             self.feedbackSurveyData.onOptionSelected()
@@ -96,10 +101,6 @@ extension FeedbackSurveyViewModel {
         _ userAction: PromotionalOfferViewAction,
         dismissView: () -> Void
     ) async {
-        // Clear the promotional offer data to dismiss the sheet
-        self.promotionalOfferData = nil
-        self.loadingOption = nil
-
         if !userAction.shouldTerminateCurrentPathFlow {
             self.feedbackSurveyData.onOptionSelected()
         }

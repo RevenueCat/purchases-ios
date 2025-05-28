@@ -236,7 +236,11 @@ private extension OfferingsManager {
             let products = result.value ?? []
 
             guard products.isEmpty == false else {
-                completion(.failure(Self.createErrorForEmptyResult(result.error)))
+                // Check if empty products is likely caused by https://github.com/RevenueCat/purchases-ios/issues/4954
+                // There is a widely reported bug in the iOS 18.4 Simulator affecting some HTTP requests
+                let showSimulatorWarning = self.systemInfo.isSubjectToKnownIssue_18_4_sim()
+                completion(.failure(Self.createErrorForEmptyResult(result.error,
+                                                                   showSimulatorWarning: showSimulatorWarning)))
                 return
             }
 
@@ -287,10 +291,14 @@ private extension OfferingsManager {
         }
     }
 
-    private static func createErrorForEmptyResult(_ error: PurchasesError?) -> OfferingsManager.Error {
+    private static func createErrorForEmptyResult(_ error: PurchasesError?,
+                                                  showSimulatorWarning: Bool = false) -> OfferingsManager.Error {
         if let purchasesError = error,
            case ErrorCode.productRequestTimedOut = purchasesError.error {
             return .timeout(purchasesError)
+        } else if showSimulatorWarning {
+            return .configurationError(Strings.offering.known_issue_ios_18_4_simulator_products_not_found.description,
+                                       underlyingError: error?.asPublicError)
         } else {
             return .configurationError(Strings.offering.configuration_error_products_not_found.description,
                                        underlyingError: error?.asPublicError)

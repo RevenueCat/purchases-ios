@@ -99,10 +99,8 @@ public typealias ProductIdentifier = String
     /// Dictionary of all subscription product identifiers and their subscription info
     @objc public let subscriptionsByProductIdentifier: [ProductIdentifier: SubscriptionInfo]
 
-    #if ENABLE_VIRTUAL_CURRENCIES
     /// Dictionary of all virtual currency codes to their info
     @objc public let virtualCurrencies: [String: VirtualCurrencyInfo]
-    #endif
 
     /// Get the expiration date for a given product identifier. You should use Entitlements though!
     /// - Parameter productIdentifier: Product identifier for product
@@ -228,9 +226,7 @@ public typealias ProductIdentifier = String
         self.allPurchasedProductIdentifiers = Set(self.expirationDatesByProductId.keys)
             .union(self.nonSubscriptions.map { $0.productIdentifier })
 
-        #if ENABLE_VIRTUAL_CURRENCIES
         self.virtualCurrencies = Self.convertVirtualCurrenciesResponse(subscriber.virtualCurrencies)
-        #endif
 
         self.subscriptionsByProductIdentifier =
         Dictionary(uniqueKeysWithValues: subscriber.subscriptions.map { (key, subscriptionData) in
@@ -249,7 +245,8 @@ public typealias ProductIdentifier = String
                 refundedAt: subscriptionData.refundedAt,
                 storeTransactionId: subscriptionData.storeTransactionId,
                 requestDate: response.requestDate,
-                price: subscriptionData.price.map { ProductPaidPrice(currency: $0.currency, amount: $0.amount) }
+                price: subscriptionData.price.map { ProductPaidPrice(currency: $0.currency, amount: $0.amount) },
+                managementURL: subscriptionData.managementUrl
             ))
         })
     }
@@ -378,7 +375,6 @@ private extension CustomerInfo {
 
 }
 
-#if ENABLE_VIRTUAL_CURRENCIES
 internal extension CustomerInfo {
     static func convertVirtualCurrenciesResponse(
         _ values: [String: CustomerInfoResponse.VirtualCurrencyInfo]
@@ -388,7 +384,6 @@ internal extension CustomerInfo {
         }
     }
 }
-#endif
 
 /// `Codable` implementation that puts the content of`response` and `schemaVersion`
 /// at the same level instead of nested.

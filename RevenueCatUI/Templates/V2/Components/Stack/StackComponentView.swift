@@ -117,7 +117,7 @@ struct StackComponentView: View {
             }
         }
         .hidden(if: self.showActivityIndicatorOverContent)
-        .padding(style.padding)
+        .padding(style.padding.extend(by: style.border?.width ?? 0))
         .padding(additionalPadding)
         .applyIf(self.showActivityIndicatorOverContent, apply: { view in
             view.progressOverlay(for: style.backgroundStyle)
@@ -151,7 +151,6 @@ private extension Axis {
 fileprivate extension View {
 
     @ViewBuilder
-    // @PublicForExternalTesting
     func scrollableIfEnabled(
         _ dimension: PaywallComponent.Dimension,
         enabled: Bool = true
@@ -627,27 +626,45 @@ struct StackComponentView_Previews: PreviewProvider {
         .previewRequiredEnvironmentProperties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Fits don't expand")
-
-        stackAlignmentAndDistributionPreviews()
     }
+}
 
-    @ViewBuilder
-    static func stackAlignmentAndDistributionPreviews() -> some View {
-        let dimensions: [PaywallComponent.Dimension] = [
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+// swiftlint:disable:next type_body_length
+struct StackComponentViewHorizontal_Previews: PreviewProvider {
+    static var previews: some View {
+        stackAlignmentAndDistributionPreviews(dimensions: [
             .horizontal(.top, .start),
             .horizontal(.center, .center),
             .horizontal(.bottom, .end),
             .horizontal(.top, .spaceAround),
             .horizontal(.center, .spaceBetween),
-            .horizontal(.bottom, .spaceEvenly),
+            .horizontal(.bottom, .spaceEvenly)
+        ])
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+// swiftlint:disable:next type_body_length
+struct StackComponentViewVertical_Previews: PreviewProvider {
+    static var previews: some View {
+        stackAlignmentAndDistributionPreviews(dimensions: [
             .vertical(.leading, .start),
             .vertical(.center, .center),
             .vertical(.trailing, .end),
             .vertical(.leading, .spaceAround),
             .vertical(.center, .spaceBetween),
             .vertical(.trailing, .spaceEvenly)
-        ]
-        ForEach(dimensions, id: \.self) { dimension in
+        ])
+    }
+}
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@ViewBuilder
+func stackAlignmentAndDistributionPreviews(dimensions: [PaywallComponent.Dimension]) -> some View {
+    ForEach(dimensions, id: \.self) { dimension in
+        let overflows: [PaywallComponent.StackComponent.Overflow] = [.default, .scroll]
+
+        ForEach(overflows, id: \.self) { overflow in
             StackComponentView(
                 // swiftlint:disable:next force_try
                 viewModel: try! StackComponentViewModel(
@@ -657,7 +674,8 @@ struct StackComponentView_Previews: PreviewProvider {
                         size: .init(width: .fill, height: .fixed(150)),
                         spacing: 10,
                         backgroundColor: .init(light: .hex("#ff0000")),
-                        padding: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
+                        padding: .init(top: 10, bottom: 10, leading: 10, trailing: 10),
+                        overflow: overflow
                     ),
                     localizationProvider: .init(
                         locale: Locale.current,
@@ -668,48 +686,52 @@ struct StackComponentView_Previews: PreviewProvider {
             )
             .previewRequiredEnvironmentProperties()
             .previewLayout(.sizeThatFits)
-            .previewDisplayName(displayName(dimension: dimension))
+            .previewDisplayName(displayName(dimension: dimension,
+                                            overflow: overflow))
         }
     }
+}
 
-    static func displayName(dimension: PaywallComponent.Dimension) -> String {
-        switch dimension {
-        case .vertical(let horizontalAlignment, let flexDistribution):
-            return "Vertical (\(horizontalAlignment.rawValue), \(flexDistribution.rawValue))"
-        case .horizontal(let verticalAlignment, let flexDistribution):
-            return "Horizontal (\(verticalAlignment.rawValue), \(flexDistribution.rawValue))"
-        case .zlayer:
-            return ""
-        @unknown default:
-            return ""
-        }
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+func displayName(dimension: PaywallComponent.Dimension, overflow: PaywallComponent.StackComponent.Overflow) -> String {
+    switch dimension {
+    case .vertical(let horizontalAlignment, let flexDistribution):
+        // swiftlint:disable:next line_length
+        return "Vertical (\(horizontalAlignment.rawValue), \(flexDistribution.rawValue)) - Overflow (\(overflow.rawValue))"
+    case .horizontal(let verticalAlignment, let flexDistribution):
+        // swiftlint:disable:next line_length
+        return "Horizontal (\(verticalAlignment.rawValue), \(flexDistribution.rawValue)) - Overflow (\(overflow.rawValue))"
+    case .zlayer:
+        return ""
+    @unknown default:
+        return ""
     }
+}
 
-    static func innerStacks(dimension: PaywallComponent.Dimension) -> [PaywallComponent] {
-        var sizes: [PaywallComponent.Size]
-        switch dimension {
-        case .vertical:
-            sizes = [
-                .init(width: .fixed(100), height: .fixed(20)),
-                .init(width: .fixed(50), height: .fixed(20)),
-                .init(width: .fixed(70), height: .fixed(20))
-            ]
-        case .horizontal:
-            sizes = [
-                .init(width: .fixed(20), height: .fixed(100)),
-                .init(width: .fixed(20), height: .fixed(50)),
-                .init(width: .fixed(20), height: .fixed(70))
-            ]
-        case .zlayer:
-            sizes = []
-        @unknown default:
-            sizes = []
-        }
-        return sizes.map { size in
-            .stack(.init(components: [], size: size, backgroundColor: .init(light: .hex("#ffcc00"))))
-        }
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+func innerStacks(dimension: PaywallComponent.Dimension) -> [PaywallComponent] {
+    var sizes: [PaywallComponent.Size]
+    switch dimension {
+    case .vertical:
+        sizes = [
+            .init(width: .fixed(100), height: .fixed(20)),
+            .init(width: .fixed(50), height: .fixed(20)),
+            .init(width: .fixed(70), height: .fixed(20))
+        ]
+    case .horizontal:
+        sizes = [
+            .init(width: .fixed(20), height: .fixed(100)),
+            .init(width: .fixed(20), height: .fixed(50)),
+            .init(width: .fixed(20), height: .fixed(70))
+        ]
+    case .zlayer:
+        sizes = []
+    @unknown default:
+        sizes = []
     }
-
+    return sizes.map { size in
+        .stack(.init(components: [], size: size, backgroundColor: .init(light: .hex("#ffcc00"))))
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -721,7 +743,10 @@ extension StackComponentViewModel {
     ) throws {
         let validator = PackageValidator()
         let factory = ViewModelFactory()
-        let offering = Offering(identifier: "", serverDescription: "", availablePackages: [])
+        let offering = Offering(identifier: "",
+                                serverDescription: "",
+                                availablePackages: [],
+                                webCheckoutUrl: nil)
         let uiConfigProvider = UIConfigProvider(uiConfig: PreviewUIConfig.make())
 
         let viewModels = try component.components.map { component in

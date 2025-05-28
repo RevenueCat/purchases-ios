@@ -125,6 +125,7 @@ class DiagnosticsTrackerTests: TestCase {
 
     func testTracksHttpRequestPerformedWithExpectedParameters() async {
         self.tracker.trackHttpRequestPerformed(endpointName: "mock_endpoint",
+                                               host: "api.revenuecat.com",
                                                responseTime: 50,
                                                wasSuccessful: true,
                                                responseCode: 200,
@@ -138,6 +139,7 @@ class DiagnosticsTrackerTests: TestCase {
                   properties: DiagnosticsEvent.Properties(
                     verificationResult: "VERIFIED",
                     endpointName: "mock_endpoint",
+                    host: "api.revenuecat.com",
                     responseTime: 50,
                     successful: true,
                     responseCode: 200,
@@ -158,6 +160,7 @@ class DiagnosticsTrackerTests: TestCase {
                                           errorMessage: "test error message",
                                           errorCode: 1234,
                                           storeKitErrorDescription: "store_kit_error_type",
+                                          storefront: "USA",
                                           requestedProductIds: ["test_product_id_1", "test_product_id_2"],
                                           notFoundProductIds: ["test_product_id_2"],
                                           responseTime: 50)
@@ -169,6 +172,7 @@ class DiagnosticsTrackerTests: TestCase {
                                           errorMessage: emptyErrorMessage,
                                           errorCode: emptyErrorCode,
                                           storeKitErrorDescription: emptySkErrorDescription,
+                                          storefront: "USA",
                                           requestedProductIds: ["test_product_id_3", "test_product_id_4"],
                                           notFoundProductIds: [],
                                           responseTime: 20)
@@ -184,7 +188,8 @@ class DiagnosticsTrackerTests: TestCase {
                     errorCode: 1234,
                     skErrorDescription: "store_kit_error_type",
                     requestedProductIds: ["test_product_id_1", "test_product_id_2"],
-                    notFoundProductIds: ["test_product_id_2"]
+                    notFoundProductIds: ["test_product_id_2"],
+                    storefront: "USA"
                   ),
                   timestamp: Self.eventTimestamp1,
                   appSessionId: SystemInfo.appSessionID),
@@ -197,7 +202,8 @@ class DiagnosticsTrackerTests: TestCase {
                     errorCode: emptyErrorCode,
                     skErrorDescription: emptySkErrorDescription,
                     requestedProductIds: ["test_product_id_3", "test_product_id_4"],
-                    notFoundProductIds: []
+                    notFoundProductIds: [],
+                    storefront: "USA"
                   ),
                   timestamp: Self.eventTimestamp2,
                   appSessionId: SystemInfo.appSessionID)
@@ -212,6 +218,7 @@ class DiagnosticsTrackerTests: TestCase {
                                           errorMessage: nil,
                                           errorCode: nil,
                                           storeKitErrorDescription: nil,
+                                          storefront: "USA",
                                           productId: "com.revenuecat.product1",
                                           promotionalOfferId: nil,
                                           winBackOfferApplied: false,
@@ -235,7 +242,8 @@ class DiagnosticsTrackerTests: TestCase {
                     productId: "com.revenuecat.product1",
                     promotionalOfferId: emptyPromotionalOfferId,
                     winBackOfferApplied: false,
-                    purchaseResult: .verified
+                    purchaseResult: .verified,
+                    storefront: "USA"
                   ),
                   timestamp: Self.eventTimestamp1,
                   appSessionId: SystemInfo.appSessionID)
@@ -248,6 +256,7 @@ class DiagnosticsTrackerTests: TestCase {
                                           errorMessage: "purchase failed",
                                           errorCode: 5678,
                                           storeKitErrorDescription: "payment_cancelled",
+                                          storefront: "USA",
                                           productId: "com.revenuecat.premium",
                                           promotionalOfferId: "summer_discount_2023",
                                           winBackOfferApplied: true,
@@ -267,7 +276,8 @@ class DiagnosticsTrackerTests: TestCase {
                     productId: "com.revenuecat.premium",
                     promotionalOfferId: "summer_discount_2023",
                     winBackOfferApplied: true,
-                    purchaseResult: .userCancelled
+                    purchaseResult: .userCancelled,
+                    storefront: "USA"
                   ),
                   timestamp: Self.eventTimestamp1,
                   appSessionId: SystemInfo.appSessionID)
@@ -480,6 +490,7 @@ class DiagnosticsTrackerTests: TestCase {
             productId: "test.product",
             paymentDiscountId: "discount_123",
             transactionState: "purchased",
+            storefront: "USA",
             errorMessage: "error message"
         )
 
@@ -490,7 +501,8 @@ class DiagnosticsTrackerTests: TestCase {
                     errorMessage: "error message",
                     skErrorDescription: "purchased",
                     productId: "test.product",
-                    promotionalOfferId: "discount_123"
+                    promotionalOfferId: "discount_123",
+                    storefront: "USA"
                   ),
                   timestamp: Self.eventTimestamp1,
                   appSessionId: SystemInfo.appSessionID)
@@ -525,6 +537,28 @@ class DiagnosticsTrackerTests: TestCase {
                     reason: "purchase"                  ),
                   timestamp: Self.eventTimestamp1,
                   appSessionId: SystemInfo.appSessionID)
+        ])
+    }
+
+    // MARK: - App Transaction Error
+
+    func testTrackingAppleAppTransactionError() async throws {
+        self.tracker.trackAppleAppTransactionError(errorMessage: "error message",
+                                                   errorCode: 0,
+                                                   storeKitErrorDescription: "storekit error description")
+
+        let entries = await self.handler.getEntries()
+        Self.expectEventArrayWithoutId(entries, [
+            .init(
+                name: .appleAppTransactionError,
+                properties: DiagnosticsEvent.Properties(
+                    errorMessage: "error message",
+                    errorCode: 0,
+                    skErrorDescription: "storekit error description"
+                ),
+                timestamp: Self.eventTimestamp1,
+                appSessionId: SystemInfo.appSessionID
+            )
         ])
     }
 

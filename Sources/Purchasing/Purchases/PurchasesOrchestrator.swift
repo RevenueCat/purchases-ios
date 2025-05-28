@@ -391,7 +391,6 @@ final class PurchasesOrchestrator {
         }
     }
 
-    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func purchase(params: PurchaseParams, trackDiagnostics: Bool, completion: @escaping PurchaseCompletedBlock) {
         var product = params.product
         if product == nil {
@@ -402,15 +401,26 @@ final class PurchasesOrchestrator {
             fatalError("Missing product in PurchaseParams")
         }
 
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
+        let winBackOffer = params.winBackOffer
+        let metadata = params.metadata
+
+        #else
+
+        let winBackOffer: WinBackOffer? = nil
+        let metadata: [String: String]? = nil
+
+        #endif
+
         purchase(product: product,
                  package: params.package,
                  promotionalOffer: params.promotionalOffer?.signedData,
-                 winBackOffer: params.winBackOffer,
-                 metadata: params.metadata,
+                 winBackOffer: winBackOffer,
+                 metadata: metadata,
                  trackDiagnostics: trackDiagnostics,
                  completion: completion)
     }
-    #endif
 
     func purchase(product: StoreProduct,
                   package: Package?,
@@ -1118,6 +1128,7 @@ private extension PurchasesOrchestrator {
                                                     errorMessage: errorMessage,
                                                     errorCode: errorCode,
                                                     storeKitErrorDescription: storeKitErrorDescription,
+                                                    storefront: self.systemInfo.storefront?.countryCode,
                                                     productId: productId,
                                                     promotionalOfferId: promotionalOfferId,
                                                     winBackOfferApplied: winBackOfferApplied,
@@ -1585,6 +1596,40 @@ private extension PurchasesOrchestrator {
                         completion?(.success(cachedCustomerInfo))
                     }
                     return
+                }
+
+                guard let appTransactionJWS else {
+                    // The AppTransaction is not present, and the cached CustomerInfo is either nil
+                    // or is missing the originalPurchaseDate and/or originalApplicationVersion.
+                    //
+                    // In this scenario, we don't want to POST a receipt to the backend since we are missing
+                    // both a receipt and an AppTransaction.
+                    Logger.warn(Strings.storeKit.sk2_sync_purchases_no_transaction_or_apptransaction_found)
+
+                    if let cachedCustomerInfo {
+                        // If we have a cached CustomerInfo, it's unlikely that the backend has received
+                        // originalPurchaseDate or originalApplicationVersion since the cache was last
+                        // updated, so return the cached copy.
+                        self.operationDispatcher.dispatchOnMainActor {
+                            completion?(.success(cachedCustomerInfo))
+                        }
+                        return
+                    } else {
+                        self.customerInfoManager.customerInfo(
+                            appUserID: currentAppUserID,
+                            fetchPolicy: .fetchCurrent
+                        ) { result in
+                            switch result {
+                            case .success(let customerInfo):
+                                completion?(.success(customerInfo))
+                                return
+                            case .failure(let backendError):
+                                completion?(.failure(backendError.asPurchasesError))
+                                return
+                            }
+                        }
+                        return
+                    }
                 }
 
                 let transactionData: PurchasedTransactionData = .init(

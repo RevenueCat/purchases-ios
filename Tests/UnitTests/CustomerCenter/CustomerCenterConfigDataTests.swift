@@ -66,6 +66,10 @@ class CustomerCenterConfigDataTests: TestCase {
                                                         subtitle: "Before you go",
                                                         productMapping: [
                                                             "product_id": "offer_id"
+                                                        ],
+                                                        crossProductPromotions: [
+                                                            "monthly": .init(storeOfferIdentifier: "offer_id",
+                                                                             targetProductId: "annual")
                                                         ]),
                                 feedbackSurvey: nil,
                                 refundWindow: nil
@@ -86,9 +90,16 @@ class CustomerCenterConfigDataTests: TestCase {
                                                                                       title: "Wait!",
                                                                                       subtitle: "Before you go",
                                                                                       productMapping: [
-                                                                                          "product_id": "offer_id"
-                                                                                      ]))
-                                                      ]),
+                                                                                        "product_id": "offer_id"
+                                                                                      ],
+                                                                                      crossProductPromotions: [
+                                                                                        "monthly": .init(
+                                                                                            storeOfferIdentifier:
+                                                                                                "offer_id",
+                                                                                            targetProductId: "annual"
+                                                                                        )
+                                                                                      ])
+                                                             )]),
                                 refundWindow: nil
                             ),
                             .init(
@@ -103,18 +114,25 @@ class CustomerCenterConfigDataTests: TestCase {
                                                         subtitle: "Before you go",
                                                         productMapping: [
                                                             "product_id": "offer_id"
-                                                        ]),
+                                                        ],
+                                                        crossProductPromotions: [
+                                                            "monthly": .init(storeOfferIdentifier: "offer_id",
+                                                                             targetProductId: "annual")]),
                                 feedbackSurvey: nil,
                                 refundWindow: nil
                             )
                         ]
                     )
                 ],
-                localization: .init(locale: "en_US", localizedStrings: ["key": "value"]),
-                support: .init(
+                localization: CustomerCenterConfigResponse.Localization(
+                    locale: "en_US",
+                    localizedStrings: ["key": "value"]),
+                support: CustomerCenterConfigResponse.Support(
                     email: "support@example.com",
                     shouldWarnCustomerToUpdate: false,
-                    displayPurchaseHistoryLink: true
+                    displayPurchaseHistoryLink: true,
+                    displayVirtualCurrencies: true,
+                    shouldWarnCustomersAboutMultipleSubscriptions: false
                 )
             ),
             lastPublishedAppVersion: "1.2.3",

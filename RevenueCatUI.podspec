@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = "RevenueCatUI"
-  s.version          = "5.21.0-SNAPSHOT"
+  s.version          = "5.26.0-SNAPSHOT"
   s.summary          = "UI library for RevenueCat paywalls."
 
   s.description      = <<-DESC
@@ -25,7 +25,9 @@ Pod::Spec.new do |s|
   s.osx.deployment_target = '10.15'
   s.visionos.deployment_target = '1.0'
   
-  s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
+  s.pod_target_xcconfig = { 
+    'DEFINES_MODULE' => 'YES'
+  }
 
   s.source_files = 'RevenueCatUI/**/*.swift'
 

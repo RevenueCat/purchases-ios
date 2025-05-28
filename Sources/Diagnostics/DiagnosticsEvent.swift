@@ -62,6 +62,7 @@ struct DiagnosticsEvent: Codable, Equatable {
         case appleTrialOrIntroEligibilityRequest = "apple_trial_or_intro_eligibility_request"
         case appleTransactionQueueReceived = "apple_transaction_queue_received"
         case appleTransactionUpdateReceived = "apple_transaction_update_received"
+        case appleAppTransactionError = "apple_app_transaction_error"
     }
 
     enum PurchaseResult: String, Codable, Equatable {
@@ -80,6 +81,7 @@ struct DiagnosticsEvent: Codable, Equatable {
     struct Properties: Codable, Equatable {
         let verificationResult: String?
         let endpointName: String?
+        let host: String?
         let responseTimeMillis: Int?
         let storeKitVersion: String?
         let successful: Bool?
@@ -100,7 +102,7 @@ struct DiagnosticsEvent: Codable, Equatable {
         let winBackOfferApplied: Bool?
         let purchaseResult: PurchaseResult?
         let cacheStatus: CacheStatus?
-        let cacheFetchPolicy: String?
+        let fetchPolicy: String?
         let hadUnsyncedPurchasesBefore: Bool?
         let isRetry: Bool?
         let eligibilityUnknownCount: Int?
@@ -118,6 +120,7 @@ struct DiagnosticsEvent: Codable, Equatable {
 
         init(verificationResult: String? = nil,
              endpointName: String? = nil,
+             host: String? = nil,
              responseTime: TimeInterval? = nil,
              storeKitVersion: StoreKitVersion? = nil,
              successful: Bool? = nil,
@@ -155,6 +158,7 @@ struct DiagnosticsEvent: Codable, Equatable {
              reason: String? = nil) {
             self.verificationResult = verificationResult
             self.endpointName = endpointName
+            self.host = host
             self.responseTimeMillis = responseTime.map { Int($0 * 1000) }
             self.storeKitVersion = storeKitVersion.map { "store_kit_\($0.debugDescription)" }
             self.successful = successful
@@ -175,7 +179,7 @@ struct DiagnosticsEvent: Codable, Equatable {
             self.winBackOfferApplied = winBackOfferApplied
             self.purchaseResult = purchaseResult
             self.cacheStatus = cacheStatus
-            self.cacheFetchPolicy = cacheFetchPolicy.map { $0.diagnosticsName }
+            self.fetchPolicy = cacheFetchPolicy.map { $0.diagnosticsName }
             self.hadUnsyncedPurchasesBefore = hadUnsyncedPurchasesBefore
             self.isRetry = isRetry
             self.eligibilityUnknownCount = eligibilityUnknownCount

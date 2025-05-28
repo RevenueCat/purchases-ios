@@ -293,6 +293,18 @@ class DiagnosticsSynchronizerTests: TestCase {
         await self.verifyEmptyStore()
     }
 
+    func testOnFileSizeIncreasedBeyondAutomaticSyncLimitSyncsEvents() async throws {
+        let event1 = await self.storeEvent()
+        let event2 = await self.storeEvent(timestamp: Self.eventTimestamp2)
+
+        await self.synchronizer.onFileSizeIncreasedBeyondAutomaticSyncLimit()
+
+        expect(self.api.invokedPostDiagnosticsEvents) == true
+        expect(self.api.invokedPostDiagnosticsEventsParameters) == [[ event1, event2 ]]
+
+        await self.verifyEmptyStore()
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -323,19 +335,19 @@ private extension DiagnosticsSynchronizerTests {
         return try FileHandler(Self.temporaryFileURL())
     }
 
-    func verifyEmptyStore(file: StaticString = #file, line: UInt = #line) async {
+    func verifyEmptyStore(file: FileString = #filePath, line: UInt = #line) async {
         let events = await self.handler.getEntries()
         expect(file: file, line: line, events).to(beEmpty())
     }
 
-    func verifyNonEmptyStore(file: StaticString = #file, line: UInt = #line) async {
+    func verifyNonEmptyStore(file: FileString = #filePath, line: UInt = #line) async {
         let events = await self.handler.getEntries()
         expect(file: file, line: line, events).toNot(beEmpty())
     }
 
     func verifyEvents(
         _ expected: [DiagnosticsEvent],
-        file: StaticString = #file,
+        file: FileString = #filePath,
         line: UInt = #line
     ) async {
         let events = await self.handler.getEntries()

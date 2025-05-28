@@ -26,6 +26,7 @@ class DiagnosticsEventEncodingTests: TestCase {
         properties: DiagnosticsEvent.Properties(
             verificationResult: "FAILED",
             endpointName: HTTPRequest.Path.logIn.name,
+            host: "api.revenuecat.com",
             responseTime: 3,
             storeKitVersion: .storeKit1,
             successful: true,
@@ -45,6 +46,7 @@ class DiagnosticsEventEncodingTests: TestCase {
             promotionalOfferId: "promotionalOfferId",
             winBackOfferApplied: false,
             purchaseResult: .userCancelled,
+            cacheFetchPolicy: .cachedOrFetched,
             isRetry: true
         ),
         timestamp: dateFormatter.date(from: "2022-03-08T17:42:58Z")!,

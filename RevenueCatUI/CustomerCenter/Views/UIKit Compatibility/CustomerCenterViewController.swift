@@ -11,6 +11,7 @@
 //
 //  Created by Will Taylor on 12/6/24.
 
+import Combine
 import RevenueCat
 import SwiftUI
 
@@ -33,14 +34,7 @@ import SwiftUI
 @available(watchOS, unavailable)
 public class CustomerCenterViewController: UIHostingController<CustomerCenterView> {
 
-    // Stored handlers for later updating if needed
-    private var restoreStartedHandler: CustomerCenterView.RestoreStartedHandler?
-    private var restoreCompletedHandler: CustomerCenterView.RestoreCompletedHandler?
-    private var restoreFailedHandler: CustomerCenterView.RestoreFailedHandler?
-    private var showingManageSubscriptionsHandler: CustomerCenterView.ShowingManageSubscriptionsHandler?
-    private var refundRequestStartedHandler: CustomerCenterView.RefundRequestStartedHandler?
-    private var refundRequestCompletedHandler: CustomerCenterView.RefundRequestCompletedHandler?
-    private var feedbackSurveyCompletedHandler: CustomerCenterView.FeedbackSurveyCompletedHandler?
+    private var cancellables: Set<AnyCancellable> = []
 
     // MARK: - Initialization
 
@@ -53,22 +47,8 @@ public class CustomerCenterViewController: UIHostingController<CustomerCenterVie
         customerCenterActionHandler: CustomerCenterActionHandler?
     ) {
         // Initialize with a basic view first
-        let view = CustomerCenterView()
+        let view = CustomerCenterView(customerCenterActionHandler: customerCenterActionHandler)
         super.init(rootView: view)
-
-        // Map the legacy handler to individual handlers
-        if let handler = customerCenterActionHandler {
-            self.restoreStartedHandler = { handler(.restoreStarted) }
-            self.restoreCompletedHandler = { handler(.restoreCompleted($0)) }
-            self.restoreFailedHandler = { handler(.restoreFailed($0)) }
-            self.showingManageSubscriptionsHandler = { handler(.showingManageSubscriptions) }
-            self.refundRequestStartedHandler = { handler(.refundRequestStarted($0)) }
-            self.refundRequestCompletedHandler = { handler(.refundRequestCompleted($1)) }
-            self.feedbackSurveyCompletedHandler = { handler(.feedbackSurveyCompleted($0)) }
-        }
-
-        // Update the view after init
-        updateRootView()
     }
 
     /// Create a view controller to handle common customer support tasks with individual action handlers
@@ -89,80 +69,63 @@ public class CustomerCenterViewController: UIHostingController<CustomerCenterVie
         refundRequestCompleted: CustomerCenterView.RefundRequestCompletedHandler? = nil,
         feedbackSurveyCompleted: CustomerCenterView.FeedbackSurveyCompletedHandler? = nil
     ) {
-        // Initialize with a basic view first
-        let view = CustomerCenterView()
+        let actionWrapper = CustomerCenterActionWrapper()
+
+        // Set up Combine subscriptions to emit handler calls
+        if let restoreStarted {
+            actionWrapper.restoreStarted
+                .sink { _ in restoreStarted() }
+                .store(in: &cancellables)
+        }
+
+        if let restoreCompleted {
+            actionWrapper.restoreCompleted
+                .sink { restoreCompleted($0) }
+                .store(in: &cancellables)
+        }
+
+        if let restoreFailed {
+            actionWrapper.restoreFailed
+                .sink { restoreFailed($0) }
+                .store(in: &cancellables)
+        }
+
+        if let showingManageSubscriptions {
+            actionWrapper.showingManageSubscriptions
+                .sink { _ in showingManageSubscriptions() }
+                .store(in: &cancellables)
+        }
+
+        if let refundRequestStarted {
+            actionWrapper.refundRequestStarted
+                .sink { refundRequestStarted($0) }
+                .store(in: &cancellables)
+        }
+
+        if let refundRequestCompleted {
+            actionWrapper.refundRequestCompleted
+                .sink { refundRequestCompleted($0.0, $0.1) }
+                .store(in: &cancellables)
+        }
+
+        if let feedbackSurveyCompleted {
+            actionWrapper.feedbackSurveyCompleted
+                .sink { feedbackSurveyCompleted($0) }
+                .store(in: &cancellables)
+        }
+
+        let view = CustomerCenterView(
+            actionWrapper: actionWrapper,
+            mode: .default,
+            navigationOptions: .default
+        )
+
         super.init(rootView: view)
-
-        // Store all handlers
-        self.restoreStartedHandler = restoreStarted
-        self.restoreCompletedHandler = restoreCompleted
-        self.restoreFailedHandler = restoreFailed
-        self.showingManageSubscriptionsHandler = showingManageSubscriptions
-        self.refundRequestStartedHandler = refundRequestStarted
-        self.refundRequestCompletedHandler = refundRequestCompleted
-        self.feedbackSurveyCompletedHandler = feedbackSurveyCompleted
-
-        // Update the view after init
-        updateRootView()
     }
 
     @available(*, unavailable, message: "Use init with handlers instead.")
     required dynamic init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-
-}
-
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-private extension CustomerCenterViewController {
-
-    func updateRootView() {
-        let childView = CustomerCenterView()
-            .applyIfLet(self.restoreStartedHandler) { view, handler in
-                view.onCustomerCenterRestoreStarted(handler)
-            }
-            .applyIfLet(self.restoreCompletedHandler) { view, handler in
-                view.onCustomerCenterRestoreCompleted(handler)
-            }
-            .applyIfLet(self.restoreFailedHandler) { view, handler in
-                view.onCustomerCenterRestoreFailed(handler)
-            }
-            .applyIfLet(self.showingManageSubscriptionsHandler) { view, handler in
-                view.onCustomerCenterShowingManageSubscriptions(handler)
-            }
-            .applyIfLet(self.refundRequestStartedHandler) { view, handler in
-                view.onCustomerCenterRefundRequestStarted(handler)
-            }
-            .applyIfLet(self.refundRequestCompletedHandler) { view, handler in
-                view.onCustomerCenterRefundRequestCompleted(handler)
-            }
-            .applyIfLet(self.feedbackSurveyCompletedHandler) { view, handler in
-                view.onCustomerCenterFeedbackSurveyCompleted(handler)
-            }
-
-        addViewAsChild(childView)
-    }
-
-    func addViewAsChild<Content: View>(_ content: Content) {
-        // Create a hosting controller for the modified view
-        let wrapper = UIHostingController(rootView: content)
-
-        // Add hosting controller as child view controller
-        addChild(wrapper)
-        view.addSubview(wrapper.view)
-        wrapper.didMove(toParent: self)
-
-        // Make it fill the parent view
-        wrapper.view.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            wrapper.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            wrapper.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            wrapper.view.topAnchor.constraint(equalTo: view.topAnchor),
-            wrapper.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
     }
 
 }

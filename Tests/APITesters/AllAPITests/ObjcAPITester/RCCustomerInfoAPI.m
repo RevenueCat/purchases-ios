@@ -38,9 +38,7 @@
 
     NSDictionary<NSString *, id> *rawData = [ci rawData];
 
-    #if ENABLE_VIRTUAL_CURRENCIES
     NSDictionary<NSString *, RCVirtualCurrencyInfo *> *vci = ci.virtualCurrencies;
-    #endif
 
     NSLog(ci, ei, as, appis, led, ncp, ns, nst, oav, opd, rd, fs, oaud, murl, edfpi, pdfpi, exdf, pdfe, d, rawData);
 }

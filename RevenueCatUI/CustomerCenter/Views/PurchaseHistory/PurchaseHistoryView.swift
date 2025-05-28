@@ -42,7 +42,8 @@ struct PurchaseHistoryView: View {
                             Button {
                                 viewModel.selectedPurchase = activeSubscription
                             } label: {
-                                PurchaseLinkView(purchaseInfo: activeSubscription)
+                                PurchaseLinkView(purchaseInfo: activeSubscription,
+                                                 purchasesProvider: viewModel.purchasesProvider)
                             }
                         }
                     }
@@ -56,7 +57,8 @@ struct PurchaseHistoryView: View {
                             Button {
                                 viewModel.selectedPurchase = inactiveSubscription
                             } label: {
-                                PurchaseLinkView(purchaseInfo: inactiveSubscription)
+                                PurchaseLinkView(purchaseInfo: inactiveSubscription,
+                                                 purchasesProvider: viewModel.purchasesProvider)
                             }
                         }
                     }
@@ -71,34 +73,9 @@ struct PurchaseHistoryView: View {
                             Button {
                                 viewModel.selectedPurchase = inactiveSubscription
                             } label: {
-                                PurchaseLinkView(purchaseInfo: inactiveSubscription)
+                                PurchaseLinkView(purchaseInfo: inactiveSubscription,
+                                                 purchasesProvider: viewModel.purchasesProvider)
                             }
-                        }
-                    }
-                }
-
-                // Account Details Section
-
-                Section(header: Text(
-                    localization[.accountDetails]
-                )) {
-                    if let originalPurchaseDate = info.originalPurchaseDate {
-                        CompatibilityLabeledContent(
-                            localization[.dateWhenAppWasPurchased],
-                            content: dateFormatter.string(from: originalPurchaseDate)
-                        )
-                    }
-
-                    CompatibilityLabeledContent(
-                        localization[.userId],
-                        content: info.originalAppUserId
-                    )
-                    .contextMenu {
-                        Button {
-                            UIPasteboard.general.string = info.originalAppUserId
-                        } label: {
-                            Text(localization[.copy])
-                            Image(systemName: "doc.on.clipboard")
                         }
                     }
                 }
@@ -109,7 +86,8 @@ struct PurchaseHistoryView: View {
             usesNavigationStack: navigationOptions.usesNavigationStack
         ) {
             PurchaseDetailView(
-                viewModel: PurchaseDetailViewModel(purchaseInfo: $0))
+                viewModel: PurchaseDetailViewModel(purchaseInfo: $0,
+                                                   purchasesProvider: self.viewModel.purchasesProvider))
             .environment(\.localization, localization)
         }
         .navigationTitle(localization[.purchaseHistory])
@@ -134,7 +112,7 @@ struct PurchaseHistoryView: View {
 struct PurchaseHistoryView_Previews: PreviewProvider {
     static var previews: some View {
         CompatibilityNavigationStack {
-            PurchaseHistoryView(viewModel: PurchaseHistoryViewModel())
+            PurchaseHistoryView(viewModel: PurchaseHistoryViewModel(purchasesProvider: CustomerCenterPurchases()))
         }
     }
 }

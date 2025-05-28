@@ -5,6 +5,7 @@
 //  Created by Will Taylor on 12/6/24.
 //
 
+#if canImport(UIKit) && os(iOS)
 
 import SwiftUI
 import RevenueCat
@@ -25,3 +26,5 @@ struct CustomerCenterUIKitView: UIViewControllerRepresentable {
         // No updates needed
     }
 }
+
+#endif

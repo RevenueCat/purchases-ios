@@ -1,0 +1,29 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  MockStoreProductDiscount.swift
+//
+//  Created by Facundo Menzella on 1/5/25.
+
+import Foundation
+@_spi(Internal) @testable import RevenueCat
+
+struct MockStoreProductDiscount {
+
+    let offerIdentifier: String?
+    let currencyCode: String?
+    let price: Decimal
+    let localizedPriceString: String
+    let paymentMode: StoreProductDiscount.PaymentMode
+    let subscriptionPeriod: SubscriptionPeriod
+    let numberOfPeriods: Int
+    let type: StoreProductDiscount.DiscountType
+}
+
+@_spi(Internal) extension MockStoreProductDiscount: StoreProductDiscountType {}

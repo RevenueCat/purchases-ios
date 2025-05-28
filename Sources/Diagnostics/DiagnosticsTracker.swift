@@ -30,12 +30,14 @@ protocol DiagnosticsTrackerType: Sendable {
                               errorMessage: String?,
                               errorCode: Int?,
                               storeKitErrorDescription: String?,
+                              storefront: String?,
                               requestedProductIds: Set<String>,
                               notFoundProductIds: Set<String>,
                               responseTime: TimeInterval)
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func trackHttpRequestPerformed(endpointName: String,
+                                   host: String?,
                                    responseTime: TimeInterval,
                                    wasSuccessful: Bool,
                                    responseCode: Int,
@@ -50,6 +52,7 @@ protocol DiagnosticsTrackerType: Sendable {
                               errorMessage: String?,
                               errorCode: Int?,
                               storeKitErrorDescription: String?,
+                              storefront: String?,
                               productId: String,
                               promotionalOfferId: String?,
                               winBackOfferApplied: Bool,
@@ -147,12 +150,14 @@ protocol DiagnosticsTrackerType: Sendable {
                                                   eligibilityNoIntroOfferCount: Int?,
                                                   errorMessage: String?,
                                                   errorCode: Int?,
+                                                  storefront: String?,
                                                   responseTime: TimeInterval)
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func trackAppleTransactionQueueReceived(productId: String?,
                                             paymentDiscountId: String?,
                                             transactionState: String,
+                                            storefront: String?,
                                             errorMessage: String?)
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -165,6 +170,11 @@ protocol DiagnosticsTrackerType: Sendable {
                                              price: Float?,
                                              currency: String?,
                                              reason: String?)
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackAppleAppTransactionError(errorMessage: String,
+                                       errorCode: Int?,
+                                       storeKitErrorDescription: String?)
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -209,6 +219,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                               errorMessage: String?,
                               errorCode: Int?,
                               storeKitErrorDescription: String?,
+                              storefront: String?,
                               requestedProductIds: Set<String>,
                               notFoundProductIds: Set<String>,
                               responseTime: TimeInterval) {
@@ -221,11 +232,13 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                             errorCode: errorCode,
                             skErrorDescription: storeKitErrorDescription,
                             requestedProductIds: requestedProductIds,
-                            notFoundProductIds: notFoundProductIds
+                            notFoundProductIds: notFoundProductIds,
+                            storefront: storefront
                         ))
     }
 
     func trackHttpRequestPerformed(endpointName: String,
+                                   host: String?,
                                    responseTime: TimeInterval,
                                    wasSuccessful: Bool,
                                    responseCode: Int,
@@ -237,6 +250,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                         properties: DiagnosticsEvent.Properties(
                             verificationResult: verificationResult.name,
                             endpointName: endpointName,
+                            host: host,
                             responseTime: responseTime,
                             successful: wasSuccessful,
                             responseCode: responseCode,
@@ -251,6 +265,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                               errorMessage: String?,
                               errorCode: Int?,
                               storeKitErrorDescription: String?,
+                              storefront: String?,
                               productId: String,
                               promotionalOfferId: String?,
                               winBackOfferApplied: Bool,
@@ -267,7 +282,8 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                             productId: productId,
                             promotionalOfferId: promotionalOfferId,
                             winBackOfferApplied: winBackOfferApplied,
-                            purchaseResult: purchaseResult
+                            purchaseResult: purchaseResult,
+                            storefront: storefront
                         ))
     }
 
@@ -462,6 +478,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                                   eligibilityNoIntroOfferCount: Int?,
                                                   errorMessage: String?,
                                                   errorCode: Int?,
+                                                  storefront: String?,
                                                   responseTime: TimeInterval) {
         self.trackEvent(name: .appleTrialOrIntroEligibilityRequest,
                         properties: DiagnosticsEvent.Properties(
@@ -473,20 +490,34 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                             eligibilityUnknownCount: eligibilityUnknownCount,
                             eligibilityIneligibleCount: eligibilityIneligibleCount,
                             eligibilityEligibleCount: eligibilityEligibleCount,
-                            eligibilityNoIntroOfferCount: eligibilityNoIntroOfferCount
+                            eligibilityNoIntroOfferCount: eligibilityNoIntroOfferCount,
+                            storefront: storefront
                         ))
     }
 
     func trackAppleTransactionQueueReceived(productId: String?,
                                             paymentDiscountId: String?,
                                             transactionState: String,
+                                            storefront: String?,
                                             errorMessage: String?) {
         self.trackEvent(name: .appleTransactionQueueReceived,
                         properties: DiagnosticsEvent.Properties(
                             errorMessage: errorMessage,
                             skErrorDescription: transactionState,
                             productId: productId,
-                            promotionalOfferId: paymentDiscountId
+                            promotionalOfferId: paymentDiscountId,
+                            storefront: storefront
+                        ))
+    }
+
+    func trackAppleAppTransactionError(errorMessage: String,
+                                       errorCode: Int?,
+                                       storeKitErrorDescription: String?) {
+        self.trackEvent(name: .appleAppTransactionError,
+                        properties: DiagnosticsEvent.Properties(
+                            errorMessage: errorMessage,
+                            errorCode: errorCode,
+                            skErrorDescription: storeKitErrorDescription
                         ))
     }
 

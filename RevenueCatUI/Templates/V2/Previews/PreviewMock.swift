@@ -116,7 +116,8 @@ enum PreviewMock {
             unit: .week,
             localizedTitle: "Weekly Standard"
         )),
-        offeringIdentifier: "default"
+        offeringIdentifier: "default",
+        webCheckoutUrl: nil
     )
 
     static var monthlyStandardPackage: Package = .init(
@@ -127,7 +128,8 @@ enum PreviewMock {
             unit: .month,
             localizedTitle: "Monthly Standard"
         )),
-        offeringIdentifier: "default"
+        offeringIdentifier: "default",
+        webCheckoutUrl: nil
     )
 
     static var annualStandardPackage: Package = .init(
@@ -138,7 +140,8 @@ enum PreviewMock {
             unit: .year,
             localizedTitle: "Annual Standard"
         )),
-        offeringIdentifier: "default"
+        offeringIdentifier: "default",
+        webCheckoutUrl: nil
     )
 
     static var weeklyPremiumPackage: Package = .init(
@@ -149,7 +152,8 @@ enum PreviewMock {
             unit: .week,
             localizedTitle: "Weekly Premium"
         )),
-        offeringIdentifier: "default"
+        offeringIdentifier: "default",
+        webCheckoutUrl: nil
     )
 
     static var monthlyPremiumPackage: Package = .init(
@@ -160,7 +164,8 @@ enum PreviewMock {
             unit: .month,
             localizedTitle: "Monthly Premium"
         )),
-        offeringIdentifier: "default"
+        offeringIdentifier: "default",
+        webCheckoutUrl: nil
     )
 
     static var annualPremiumPackage: Package = .init(
@@ -171,7 +176,8 @@ enum PreviewMock {
             unit: .year,
             localizedTitle: "Annual Premium"
         )),
-        offeringIdentifier: "default"
+        offeringIdentifier: "default",
+        webCheckoutUrl: nil
     )
 
     static var uiConfig: UIConfig = .init(

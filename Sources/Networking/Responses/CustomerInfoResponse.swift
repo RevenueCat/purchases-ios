@@ -43,10 +43,8 @@ extension CustomerInfoResponse {
         @DefaultDecodable.EmptyDictionary
         var entitlements: [String: Entitlement]
 
-        #if ENABLE_VIRTUAL_CURRENCIES
         @DefaultDecodable.EmptyDictionary
         var virtualCurrencies: [String: VirtualCurrencyInfo]
-        #endif
 
     }
 
@@ -75,6 +73,9 @@ extension CustomerInfoResponse {
 
         /// Price paid for the subscription
         var price: PurchasePaidPrice?
+
+        /// Management URL for the purchase
+        var managementUrl: URL?
     }
 
     struct PurchasePaidPrice {
@@ -91,7 +92,9 @@ extension CustomerInfoResponse {
         @IgnoreDecodeErrors<Store>
         var store: Store
         var isSandbox: Bool
-
+        var displayName: String?
+        /// Price paid for the subscription
+        var price: PurchasePaidPrice?
     }
 
     struct Entitlement {
@@ -105,11 +108,9 @@ extension CustomerInfoResponse {
 
     }
 
-    #if ENABLE_VIRTUAL_CURRENCIES
     internal struct VirtualCurrencyInfo {
-        let balance: Int64
+        let balance: Int
     }
-    #endif
 
 }
 
@@ -119,9 +120,7 @@ extension CustomerInfoResponse.Subscriber: Codable, Hashable {}
 extension CustomerInfoResponse.Subscription: Codable, Hashable {}
 extension CustomerInfoResponse.PurchasePaidPrice: Codable, Hashable {}
 
-#if ENABLE_VIRTUAL_CURRENCIES
 extension CustomerInfoResponse.VirtualCurrencyInfo: Codable, Hashable {}
-#endif
 
 extension CustomerInfoResponse.Entitlement: Hashable {}
 extension CustomerInfoResponse.Entitlement: Encodable {}
@@ -151,7 +150,8 @@ extension CustomerInfoResponse.Transaction: Codable, Hashable {
         case storeTransactionIdentifier = "storeTransactionId"
         case store
         case isSandbox
-
+        case displayName
+        case price
     }
 
 }

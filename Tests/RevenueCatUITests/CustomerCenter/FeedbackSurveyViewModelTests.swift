@@ -14,7 +14,7 @@
 // swiftlint:disable type_body_length file_length
 
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 @testable import RevenueCatUI
 import XCTest
 
@@ -32,12 +32,14 @@ class FeedbackSurveyViewModelTests: TestCase {
 
     func testInitialState() {
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: Self.path,
             onOptionSelected: {}
         )
 
         let viewModel = FeedbackSurveyViewModel(feedbackSurveyData: data,
+                                                purchasesProvider: MockCustomerCenterPurchases(),
                                                 actionWrapper: CustomerCenterActionWrapper())
 
         expect(viewModel.feedbackSurveyData).to(equal(data))
@@ -47,6 +49,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let option = Self.option
 
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: Self.path,
             onOptionSelected: {}
@@ -74,6 +77,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let option = Self.option
 
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: Self.path,
             onOptionSelected: {}
@@ -100,6 +104,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let onOptionSelectedExpectation = expectation(description: "OnOptionSelected should be called")
 
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: Self.path,
             onOptionSelected: {
@@ -126,6 +131,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let option = Self.option
         let path = Self.path
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: path,
             onOptionSelected: {}
@@ -161,6 +167,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let option = Self.option
         let path = Self.path
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: path,
             onOptionSelected: {}
@@ -196,6 +203,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let option = Self.option
         let path = Self.path
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: path,
             onOptionSelected: {}
@@ -232,6 +240,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let option = Self.optionWithPromo
         let path = Self.path
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: path,
             onOptionSelected: {}
@@ -267,6 +276,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let option = Self.optionWithPromo
         let path = Self.path
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: path,
             onOptionSelected: {}
@@ -302,6 +312,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let option = Self.optionWithPromo
         let path = Self.path
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: path,
             onOptionSelected: {}
@@ -339,6 +350,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let path = Self.path
         var optionCalled: Bool = false
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: path,
             onOptionSelected: {
@@ -391,6 +403,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let path = Self.path
         var optionCalled: Bool = false
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: path,
             onOptionSelected: {
@@ -483,19 +496,6 @@ private extension FeedbackSurveyViewModelTests {
         type: .cancel,
         detail: .feedbackSurvey(feedbackSurvey),
         refundWindowDuration: .forever)
-
-}
-
-private struct MockStoreProductDiscount: StoreProductDiscountType {
-
-    let offerIdentifier: String?
-    let currencyCode: String?
-    let price: Decimal
-    let localizedPriceString: String
-    let paymentMode: StoreProductDiscount.PaymentMode
-    let subscriptionPeriod: SubscriptionPeriod
-    let numberOfPeriods: Int
-    let type: StoreProductDiscount.DiscountType
 
 }
 
