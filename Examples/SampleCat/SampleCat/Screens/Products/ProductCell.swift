@@ -40,11 +40,16 @@ struct ProductCell: View {
             }) {
                 Text(isPurchasing ? "Purchasing..." : "Purchase")
                     .font(.footnote)
+                    .fontWeight(.semibold)
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 16)
+                    .background(Color.accent)
+                    .foregroundStyle(.white)
+                    .clipShape(Capsule())
             }
-            .buttonStyle(.borderedProminent)
-            .padding(.top, 8)
+            .buttonStyle(.plain)
+            .padding(.top, 16)
             .disabled(product.storeProduct == nil || userViewModel.isPurchasing)
-            .tint(.accentColor)
 
             if product.storeProduct == nil {
                 Text("StoreKit did not return a product and no purchase can be made.")
