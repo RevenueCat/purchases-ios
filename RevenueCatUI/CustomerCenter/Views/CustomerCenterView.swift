@@ -95,9 +95,13 @@ public struct CustomerCenterView: View {
     @_spi(Internal) public init(
         uiPreviewPurchaseProvider: CustomerCenterPurchasesType,
         navigationOptions: CustomerCenterNavigationOptions) {
-        self.init(viewModel: CustomerCenterViewModel(uiPreviewPurchaseProvider: uiPreviewPurchaseProvider),
-                  navigationOptions: navigationOptions)
-    }
+            self.init(
+                viewModel: CustomerCenterViewModel(
+                    uiPreviewPurchaseProvider: uiPreviewPurchaseProvider
+                ),
+                navigationOptions: navigationOptions
+            )
+        }
 
     fileprivate init(
         viewModel: CustomerCenterViewModel,
@@ -234,7 +238,8 @@ private extension CustomerCenterView {
         SubscriptionDetailView(
             customerInfoViewModel: viewModel,
             screen: screen,
-            purchaseInformation: viewModel.activePurchase,
+            purchaseInformation: viewModel.activeSubscriptionPurchases.first
+                ?? viewModel.activeNonSubscriptionPurchases.first,
             showPurchaseHistory: viewModel.shouldShowSeeAllPurchases,
             allowsMissingPurchaseAction: true,
             purchasesProvider: self.viewModel.purchasesProvider,
@@ -261,7 +266,8 @@ struct CustomerCenterView_Previews: PreviewProvider {
     static var previews: some View {
         CustomerCenterView(
             viewModel: CustomerCenterViewModel(
-                purchaseInformation: .yearlyExpiring(),
+                activeSubscriptionPurchases: [.yearlyExpiring()],
+                activeNonSubscriptionPurchases: [],
                 configuration: CustomerCenterConfigData.default
             )
         )
