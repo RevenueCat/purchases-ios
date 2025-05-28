@@ -28,7 +28,7 @@ struct FullScreenErrorView: View {
         VStack {
             ScrollView {
                 ConceptIntroductionView(
-                    imageName: "visual-products",
+                    imageName: "visual-error",
                     title: title,
                     description: error.localizedDescription
                 )
