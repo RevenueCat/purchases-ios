@@ -1297,6 +1297,44 @@ public extension Purchases {
     }
 }
 
+// MARK: - Virtual Currencies
+#if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+public extension Purchases {
+
+    @objc func virtualCurrencies(
+        completion: @escaping (VirtualCurrencies?, PublicError?) -> Void
+    ) {
+        self.virtualCurrencies(
+            forceRefresh: false
+        ) { (virtualCurrencies: VirtualCurrencies?, error: PublicError?) in
+            completion(virtualCurrencies, error)
+            return
+        }
+    }
+
+    @objc func virtualCurrencies(
+        forceRefresh: Bool,
+        completion: @escaping (VirtualCurrencies?, PublicError?) -> Void
+    ) {
+        OperationDispatcher.dispatchOnMainActor {
+            #warning("TODO: Implement virtualCurrencies()")
+            completion(nil, nil)
+        }
+    }
+
+    func virtualCurrencies() async throws -> VirtualCurrencies {
+        return try await self.virtualCurrencies(forceRefresh: false)
+    }
+
+    func virtualCurrencies(
+        forceRefresh: Bool,
+    ) async throws -> VirtualCurrencies {
+        #warning("TODO: Implement virtualCurrencies()")
+        throw NSError(domain: "", code: -1)
+    }
+}
+#endif
+
 // swiftlint:enable missing_docs
 
 // MARK: - Paywalls & Customer Center
