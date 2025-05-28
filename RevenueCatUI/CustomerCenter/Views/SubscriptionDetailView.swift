@@ -246,7 +246,8 @@ struct SubscriptionDetailView: View {
             CompatibilityNavigationStack {
                 SubscriptionDetailView(
                     customerInfoViewModel: CustomerCenterViewModel(
-                        purchaseInformation: .yearlyExpiring(),
+                        activeSubscriptionPurchases: [.yearlyExpiring()],
+                        activeNonSubscriptionPurchases: [],
                         configuration: .default
                     ),
                     viewModel: SubscriptionDetailViewModel(
@@ -267,7 +268,8 @@ struct SubscriptionDetailView: View {
             CompatibilityNavigationStack {
                 SubscriptionDetailView(
                     customerInfoViewModel: CustomerCenterViewModel(
-                        purchaseInformation: .free,
+                        activeSubscriptionPurchases: [.free],
+                        activeNonSubscriptionPurchases: [],
                         configuration: .default
                     ),
                     viewModel: SubscriptionDetailViewModel(
@@ -287,7 +289,8 @@ struct SubscriptionDetailView: View {
             CompatibilityNavigationStack {
                 SubscriptionDetailView(
                     customerInfoViewModel: CustomerCenterViewModel(
-                        purchaseInformation: .consumable,
+                        activeSubscriptionPurchases: [.consumable],
+                        activeNonSubscriptionPurchases: [],
                         configuration: .default
                     ),
                     viewModel: SubscriptionDetailViewModel(
@@ -307,7 +310,8 @@ struct SubscriptionDetailView: View {
             CompatibilityNavigationStack {
                 SubscriptionDetailView(
                     customerInfoViewModel: CustomerCenterViewModel(
-                        purchaseInformation: nil,
+                        activeSubscriptionPurchases: [],
+                        activeNonSubscriptionPurchases: [],
                         configuration: .default
                     ),
                     viewModel: SubscriptionDetailViewModel(
@@ -327,7 +331,8 @@ struct SubscriptionDetailView: View {
             CompatibilityNavigationStack {
                 SubscriptionDetailView(
                     customerInfoViewModel: CustomerCenterViewModel(
-                        purchaseInformation: .yearlyExpiring(store: .playStore),
+                        activeSubscriptionPurchases: [.yearlyExpiring(store: .playStore)],
+                        activeNonSubscriptionPurchases: [],
                         configuration: .default
                     ),
                     viewModel: SubscriptionDetailViewModel(
