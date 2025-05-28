@@ -521,7 +521,9 @@ private struct PresentingPaywallModifier: ViewModifier {
         .onRestoreFailure {
             self.restoreFailure?($0)
         }
-        .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
+        .applyIf(self.purchaseHandler.actionInProgress, apply: { view in
+            view.interactiveDismissDisabled()
+        })
     }
 
     private func close() {

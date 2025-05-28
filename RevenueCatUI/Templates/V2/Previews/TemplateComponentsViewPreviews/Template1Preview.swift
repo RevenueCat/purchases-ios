@@ -182,7 +182,8 @@ private enum Template1Preview {
                 stickyFooter: nil,
                 background: .color(.init(
                     light: .hex("#ffffff")
-                ))
+                )),
+                isHard: false
             )
         ),
         componentsLocalizations: ["en_US": [

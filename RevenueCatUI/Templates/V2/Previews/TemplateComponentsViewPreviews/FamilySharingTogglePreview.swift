@@ -338,7 +338,8 @@ private enum FamilySharingTogglePreview {
                     ]
                 ),
                 stickyFooter: nil,
-                background: .color(.init(light: .hex("#ffffff")))
+                background: .color(.init(light: .hex("#ffffff"))),
+                isHard: false
             )
         ),
         componentsLocalizations: ["en_US": [

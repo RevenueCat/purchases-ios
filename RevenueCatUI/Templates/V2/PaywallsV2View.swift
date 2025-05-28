@@ -258,6 +258,9 @@ private struct LoadedPaywallsV2View: View {
                     onDismiss: self.onDismiss
                 )
             }
+            .applyIf(paywallState.componentsConfig.isHard ?? false, apply: { view in
+                view.interactiveDismissDisabled()
+            })
             // Used for header image and sticky footer
             .environment(\.safeAreaInsets, proxy.safeAreaInsets)
             // If the first view in the first stack is an image,
