@@ -246,13 +246,13 @@ extension PurchaseInformationCardView {
         var backgroundColor: Color {
             switch self {
             case .cancelled:
-                return Color(red: 242 / 256, green: 84 / 256, blue: 91 / 256, opacity: 0.15)
+                return Color(red: 242 / 256, green: 84 / 256, blue: 91 / 256, opacity: 0.2)
             case .freeTrial:
                 return Color(red: 245 / 256, green: 202 / 256, blue: 92 / 256, opacity: 0.2)
             case .active:
                 return Color(red: 52 / 256, green: 199 / 256, blue: 89 / 256, opacity: 0.2)
             case .expired:
-                return Color(red: 242 / 256, green: 242 / 256, blue: 247 / 256, opacity: 1)
+                return Color(red: 242 / 256, green: 242 / 256, blue: 247 / 256, opacity: 0.2)
             }
         }
     }
