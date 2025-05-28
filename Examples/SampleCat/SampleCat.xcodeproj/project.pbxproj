@@ -346,7 +346,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/RevenueCat/purchases-ios";
 			requirement = {
-				branch = "bugfix/return-offerings-data-with-health-report";
+				branch = main;
 				kind = branch;
 			};
 		};
