@@ -473,6 +473,14 @@ extension MockPurchases: PurchasesType {
     ) {
         self.unimplemented()
     }
+
+    func virtualCurrencies(completion: @escaping (RevenueCat.VirtualCurrencies?, RevenueCat.PublicError?) -> Void) {
+        self.unimplemented()
+    }
+
+    func virtualCurrencies(forceRefresh: Bool, completion: @escaping (RevenueCat.VirtualCurrencies?, RevenueCat.PublicError?) -> Void) {
+        self.unimplemented()
+    }
 }
 
 extension MockPurchases: PurchasesSwiftType {
@@ -550,6 +558,14 @@ extension MockPurchases: PurchasesSwiftType {
       func redeemWebPurchase(
         _ webPurchaseRedemption: WebPurchaseRedemption
     ) async -> WebPurchaseRedemptionResult {
+        self.unimplemented()
+    }
+
+    func virtualCurrencies() async throws -> RevenueCat.VirtualCurrencies {
+        self.unimplemented()
+    }
+
+    func virtualCurrencies(forceRefresh: Bool) async throws -> RevenueCat.VirtualCurrencies {
         self.unimplemented()
     }
 }

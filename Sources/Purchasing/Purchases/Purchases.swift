@@ -277,6 +277,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
     private let syncAttributesAndOfferingsIfNeededRateLimiter = RateLimiter(maxCalls: 5, period: 60)
     private let diagnosticsTracker: DiagnosticsTrackerType?
+    private let virtualCurrencyManager: VirtualCurrencyManagerType
 
     // swiftlint:disable:next function_body_length cyclomatic_complexity
     convenience init(apiKey: String,
@@ -696,6 +697,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.trialOrIntroPriceEligibilityChecker = trialOrIntroPriceEligibilityChecker
         self.storeMessagesHelper = storeMessagesHelper
         self.diagnosticsTracker = diagnosticsTracker
+        self.virtualCurrencyManager = VirtualCurrencyManager(deviceCache: deviceCache)
 
         super.init()
 
@@ -1314,11 +1316,17 @@ public extension Purchases {
 
     @objc func virtualCurrencies(
         forceRefresh: Bool,
-        completion: @escaping (VirtualCurrencies?, PublicError?) -> Void
+        completion: @escaping @Sendable (VirtualCurrencies?, PublicError?) -> Void
     ) {
         OperationDispatcher.dispatchOnMainActor {
-            #warning("TODO: Implement virtualCurrencies()")
-            completion(nil, nil)
+            Task {
+                do {
+                    let virtualCurrencies = try await self.virtualCurrencies(forceRefresh: forceRefresh)
+                    completion(virtualCurrencies, nil)
+                } catch {
+                    #warning("TODO: Handle error")
+                }
+            }
         }
     }
 
@@ -1329,8 +1337,7 @@ public extension Purchases {
     func virtualCurrencies(
         forceRefresh: Bool,
     ) async throws -> VirtualCurrencies {
-        #warning("TODO: Implement virtualCurrencies()")
-        throw NSError(domain: "", code: -1)
+        return try await self.virtualCurrencyManager.virtualCurrencies(forceRefresh: forceRefresh)
     }
 }
 #endif

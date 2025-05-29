@@ -378,8 +378,31 @@ class DeviceCache {
         }
     }
 
-    // MARK: - Helper functions
+    // MARK: - Virtual Currencies
+    private let virtualCurrenciesLock = Lock(.nonRecursive)
 
+    func cache(
+        virtualCurrencies: VirtualCurrencies,
+        appUserID: String
+    ) {
+        virtualCurrenciesLock.perform {
+            self.userDefaults.write {
+                $0.set(virtualCurrencies, forKey: CacheKey.virtualCurrencies(appUserID))
+            }
+        }
+    }
+
+    func cachedVirtualCurrenciesData(forAppUserID appUserID: String) -> Data? {
+        virtualCurrenciesLock.perform {
+
+            return self.userDefaults.read {
+                $0.object(forKey: <#T##String#>)
+                $0.data(forKey: CacheKey.virtualCurrencies(appUserID))
+            }
+        }
+    }
+
+    // MARK: - Helper functions
     internal enum CacheKeys: String, DeviceCacheKeyType {
 
         case legacyGeneratedAppUserDefaults = "com.revenuecat.userdefaults.appUserID"
@@ -401,6 +424,7 @@ class DeviceCache {
         case legacySubscriberAttributes(String)
         case attributionDataDefaults(String)
         case syncedSK2ObserverModeTransactionIDs
+        case virtualCurrencies(String)
 
         var rawValue: String {
             switch self {
@@ -411,6 +435,7 @@ class DeviceCache {
             case let .attributionDataDefaults(userID): return "\(Self.base)attribution.\(userID)"
             case .syncedSK2ObserverModeTransactionIDs:
                 return "\(Self.base)syncedSK2ObserverModeTransactionIDs"
+            case let .virtualCurrencies(userID): return "\(Self.base)virtualCurrencies.\(userID)"
             }
         }
 

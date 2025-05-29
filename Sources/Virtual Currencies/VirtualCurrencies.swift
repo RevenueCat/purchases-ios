@@ -47,3 +47,6 @@ public extension VirtualCurrencies {
         return Dictionary(uniqueKeysWithValues: self.all.filter { $1.balance == 0 })
     }
 }
+
+extension VirtualCurrencies: Sendable {}
+extension VirtualCurrencies: Codable {}
