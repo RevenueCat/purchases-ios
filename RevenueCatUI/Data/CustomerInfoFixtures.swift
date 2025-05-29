@@ -14,7 +14,7 @@
 import RevenueCat
 
 // swiftlint:disable force_unwrapping
-
+// swiftlint:disable type_body_length
 import Foundation
 
 class CustomerInfoFixtures {
