@@ -277,6 +277,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
     private let syncAttributesAndOfferingsIfNeededRateLimiter = RateLimiter(maxCalls: 5, period: 60)
     private let diagnosticsTracker: DiagnosticsTrackerType?
+    private let virtualCurrencyManager: VirtualCurrencyManagerType
 
     // swiftlint:disable:next function_body_length cyclomatic_complexity
     convenience init(apiKey: String,
@@ -696,6 +697,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.trialOrIntroPriceEligibilityChecker = trialOrIntroPriceEligibilityChecker
         self.storeMessagesHelper = storeMessagesHelper
         self.diagnosticsTracker = diagnosticsTracker
+        self.virtualCurrencyManager = VirtualCurrencyManager(deviceCache: deviceCache)
 
         super.init()
 
@@ -1296,6 +1298,49 @@ public extension Purchases {
         return await self.purchasesOrchestrator.redeemWebPurchase(webPurchaseRedemption)
     }
 }
+
+// MARK: - Virtual Currencies
+#if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+public extension Purchases {
+
+    @objc func virtualCurrencies(
+        completion: @escaping (VirtualCurrencies?, PublicError?) -> Void
+    ) {
+        self.virtualCurrencies(
+            forceRefresh: false
+        ) { (virtualCurrencies: VirtualCurrencies?, error: PublicError?) in
+            completion(virtualCurrencies, error)
+            return
+        }
+    }
+
+    @objc func virtualCurrencies(
+        forceRefresh: Bool,
+        completion: @escaping @Sendable (VirtualCurrencies?, PublicError?) -> Void
+    ) {
+        OperationDispatcher.dispatchOnMainActor {
+            Task {
+                do {
+                    let virtualCurrencies = try await self.virtualCurrencies(forceRefresh: forceRefresh)
+                    completion(virtualCurrencies, nil)
+                } catch {
+                    #warning("TODO: Handle error")
+                }
+            }
+        }
+    }
+
+    func virtualCurrencies() async throws -> VirtualCurrencies {
+        return try await self.virtualCurrencies(forceRefresh: false)
+    }
+
+    func virtualCurrencies(
+        forceRefresh: Bool,
+    ) async throws -> VirtualCurrencies {
+        return try await self.virtualCurrencyManager.virtualCurrencies(forceRefresh: forceRefresh)
+    }
+}
+#endif
 
 // swiftlint:enable missing_docs
 

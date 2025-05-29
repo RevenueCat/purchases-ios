@@ -81,7 +81,7 @@ struct VirtualCurrenciesScrollViewWithOSBackgroundSection: View {
     ///     Must be implemented by the parent view to present ``VirtualCurrencyBalancesScreen``
     ///     since navigation destinations cannot be nested inside ``List`` or ``LazyVStack``.
     init(
-        virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo],
+        virtualCurrencies: [String: RevenueCat.VirtualCurrency],
         onSeeAllInAppCurrenciesButtonTapped: @escaping () -> Void
     ) {
         let sortedCurrencies = virtualCurrencies.map {

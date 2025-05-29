@@ -47,7 +47,7 @@ struct RelevantPurchasesListView: View {
         originalAppUserId: String,
         originalPurchaseDate: Date?,
         shouldShowSeeAllPurchases: Bool,
-        virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]?,
+        virtualCurrencies: [String: RevenueCat.VirtualCurrency]?,
         purchasesProvider: CustomerCenterPurchasesType,
         actionWrapper: CustomerCenterActionWrapper
     ) {

@@ -474,6 +474,106 @@ class DeviceCacheTests: TestCase {
         expect(self.deviceCache.isProductEntitlementMappingCacheStale) == true
     }
 
+    // MARK: - Virtual Currencies
+    func testCacheVirtualCurrenciesStoresCorrectData() throws {
+        let appUserID = "test-user"
+
+        let mockVirtualCurrencies = VirtualCurrencies(virtualCurrencies: [
+            "USD": VirtualCurrency(balance: 100),
+            "EUR": VirtualCurrency(balance: 200)
+        ])
+
+        self.deviceCache.cache(virtualCurrencies: mockVirtualCurrencies, appUserID: appUserID)
+        let cachedVCs = self.mockUserDefaults.mockValues[
+            "com.revenuecat.userdefaults.virtualCurrencies.\(appUserID)"
+        ] as? VirtualCurrencies
+
+        let cachedVirtualCurrencies = try XCTUnwrap(
+            cachedVCs,
+            "Cached VirtualCurrencies should not be nil."
+        )
+
+        for (key, virtualCurrency) in mockVirtualCurrencies.all {
+            let cachedVC = try XCTUnwrap(
+                cachedVirtualCurrencies.all[key],
+                "Cached virtual currencies is missing \(key)."
+            )
+            expect(cachedVC.balance).to(equal(virtualCurrency.balance))
+        }
+    }
+
+    func testCachedVirtualCurrenciesDataReturnsCorrectData() throws {
+        let appUserID = "test-user"
+        let mockVirtualCurrencies = VirtualCurrencies(virtualCurrencies: [
+            "USD": VirtualCurrency(balance: 100),
+            "EUR": VirtualCurrency(balance: 200)
+        ])
+
+        self.deviceCache.cache(virtualCurrencies: mockVirtualCurrencies, appUserID: appUserID)
+
+        let cachedVirtualCurrencies = self.deviceCache.cachedVirtualCurrenciesData(forAppUserID: appUserID)
+    }
+//
+//    func testCachedVirtualCurrenciesDataReturnsNilForNonExistentData() {
+//        let appUserID = "test-user"
+//        
+//        let cachedData = self.deviceCache.cachedVirtualCurrenciesData(forAppUserID: appUserID)
+//        expect(cachedData).to(beNil())
+//    }
+//
+//    func testCacheVirtualCurrenciesIsThreadSafe() {
+//        let appUserID = "test-user"
+//        let virtualCurrencies = VirtualCurrencies(virtualCurrencies: [
+//            "USD": VirtualCurrency(balance: 100),
+//            "EUR": VirtualCurrency(balance: 200)
+//        ])
+//        
+//        // Create multiple concurrent operations
+//        let concurrentOperations = 10
+//        let expectation = XCTestExpectation(description: "Concurrent operations completed")
+//        expectation.expectedFulfillmentCount = concurrentOperations
+//        
+//        for _ in 0..<concurrentOperations {
+//            DispatchQueue.global().async {
+//                self.deviceCache.cache(virtualCurrencies: virtualCurrencies, appUserID: appUserID)
+//                expectation.fulfill()
+//            }
+//        }
+//        
+//        wait(for: [expectation], timeout: 5.0)
+//        
+//        // Verify the data was stored correctly
+//        let expectedKey = "com.revenuecat.userdefaults.virtualCurrencies.\(appUserID)"
+//        expect(self.mockUserDefaults.mockValues[expectedKey] as? Data).toNot(beNil())
+//    }
+//
+//    func testCachedVirtualCurrenciesDataIsThreadSafe() throws {
+//        let appUserID = "test-user"
+//        let virtualCurrencies = VirtualCurrencies(virtualCurrencies: [
+//            "USD": VirtualCurrency(balance: 100),
+//            "EUR": VirtualCurrency(balance: 200)
+//        ])
+//        let encodedData = try JSONEncoder.default.encode(virtualCurrencies)
+//        
+//        let expectedKey = "com.revenuecat.userdefaults.virtualCurrencies.\(appUserID)"
+//        self.mockUserDefaults.mockValues[expectedKey] = encodedData
+//        
+//        // Create multiple concurrent operations
+//        let concurrentOperations = 10
+//        let expectation = XCTestExpectation(description: "Concurrent operations completed")
+//        expectation.expectedFulfillmentCount = concurrentOperations
+//        
+//        for _ in 0..<concurrentOperations {
+//            DispatchQueue.global().async {
+//                let cachedData = self.deviceCache.cachedVirtualCurrenciesData(forAppUserID: appUserID)
+//                expect(cachedData) == encodedData
+//                expectation.fulfill()
+//            }
+//        }
+//        
+//        wait(for: [expectation], timeout: 5.0)
+//    }
+
 }
 
 private extension DeviceCacheTests {
