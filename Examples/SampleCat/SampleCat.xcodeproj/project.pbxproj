@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		532C3C3D2DE8875800EBF618 /* SampleCatStoreKitConfiguration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 532C3C3C2DE8875800EBF618 /* SampleCatStoreKitConfiguration.storekit */; };
 		53DA4F9E2D9D8DA500D0CB3A /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 53DA4F9D2D9D8DA500D0CB3A /* RevenueCat */; };
 		53DA4FA02D9D8DA500D0CB3A /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 53DA4F9F2D9D8DA500D0CB3A /* RevenueCatUI */; };
 		53E9CF9A2DAD41F5000285C6 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 53E9CF992DAD41F5000285C6 /* RevenueCat */; };
@@ -14,6 +15,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		532C3C3C2DE8875800EBF618 /* SampleCatStoreKitConfiguration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = SampleCatStoreKitConfiguration.storekit; sourceTree = "<group>"; };
 		5342D9652D802CD70082128A /* SampleCat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SampleCat.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -43,6 +45,7 @@
 		5342D95C2D802CD60082128A = {
 			isa = PBXGroup;
 			children = (
+				532C3C3C2DE8875800EBF618 /* SampleCatStoreKitConfiguration.storekit */,
 				5342D9672D802CD70082128A /* SampleCat */,
 				5342D9662D802CD70082128A /* Products */,
 			);
@@ -127,6 +130,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				532C3C3D2DE8875800EBF618 /* SampleCatStoreKitConfiguration.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
