@@ -122,6 +122,10 @@ let package = Package(
                         .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
                     ],
                     exclude: ["Templates/__Snapshots__", "Data/__Snapshots__", "TestPlans"],
-                    resources: [.copy("Resources/header.heic"), .copy("Resources/background.heic"), .copy("PaywallsV2/__PreviewResources__")])
+                    resources: [
+                        .copy("Resources/header.heic"),
+                            .copy("Resources/background.heic"),
+                            .copy("PaywallsV2/__PreviewResources__")
+                    ])
     ]
 )
