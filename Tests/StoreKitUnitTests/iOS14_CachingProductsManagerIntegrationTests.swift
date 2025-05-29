@@ -17,7 +17,7 @@ import StoreKitTest
 import XCTest
 
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
-class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
+class iOS14_CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
 
     func testFetchProductsWithIdentifiersSK1() throws {
         let manager = Self.createManager(.storeKit1)
@@ -126,7 +126,7 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
 }
 
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
-private extension CachingProductsManagerIntegrationTests {
+private extension iOS14_CachingProductsManagerIntegrationTests {
 
     static func createManager(_ storeKitVersion: StoreKitVersion) -> ProductsManagerType {
         return CachingProductsManager(

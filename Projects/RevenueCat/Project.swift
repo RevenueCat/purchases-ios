@@ -39,7 +39,8 @@ let project = Project(
             deploymentTargets: .iOS("15.0"),
             infoPlist: .default,
             sources: [
-                "../../Tests/UnitTests/**/*.swift"
+                "../../Tests/UnitTests/**/*.swift",
+                "../../Tests/StoreKitUnitTests/**/*.swift"
             ],
             dependencies: [
                 .target(name: "RevenueCat"),
