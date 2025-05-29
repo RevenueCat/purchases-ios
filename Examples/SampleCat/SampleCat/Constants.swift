@@ -3,9 +3,7 @@ import Foundation
 /*
  Configuration file for your app's RevenueCat settings.
  */
-
-struct Constants {
-    
+enum Constants {
     /*
      The API key for your app from the RevenueCat dashboard: https://app.revenuecat.com
      */
@@ -15,7 +13,6 @@ struct Constants {
     /*
      The entitlement ID from the RevenueCat dashboard that is activated upon successful in-app purchase for the duration of the purchase.
      */
-    #error("Modify this property to reflect your app's entitlement identifier, then comment this line out.")
-    static let entitlementID = "premium"
-    
+    #error("Modify this property to reflect your app's entitlement identifier, then comment this line out. If you do not use entitlements, you can set this property to nil.")
+    static let entitlementIdentifier: String? = "premium"
 }
