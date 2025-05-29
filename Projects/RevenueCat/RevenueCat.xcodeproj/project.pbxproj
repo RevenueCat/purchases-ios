@@ -508,6 +508,7 @@
 		BA3CEC6A3FDF28DFF83CEBAD /* PromotionalOffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8279290E806C747BEAAB1305 /* PromotionalOffer.swift */; };
 		BA5F604E9C56FD46C38F54E2 /* DiagnosticsFileHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF23E67C1CC6BF03773E6A9D /* DiagnosticsFileHandler.swift */; };
 		BABD76652F296C0E79CF8667 /* SK2StoreProductDiscount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44A5DFC5568078B339543687 /* SK2StoreProductDiscount.swift */; };
+		BB8FD78BD7AF13B53BF4DE55 /* MockBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC86E6099DA9BECA936307B9 /* MockBundle.swift */; };
 		BBCC76CA25AC71CC9FBA4173 /* BackendPostSubscriberAttributesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38895E913694EC156849DA5C /* BackendPostSubscriberAttributesTests.swift */; };
 		BDC909D04E531F2E8599B06F /* PaywallComponentPropertyTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 019561C1FC674321DB9BEBCA /* PaywallComponentPropertyTypes.swift */; };
 		BE83F9952DBD542D2608BC12 /* ConfigureStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADA3B439E9243AC74CC86DE4 /* ConfigureStrings.swift */; };
@@ -1225,6 +1226,7 @@
 		CBAAA23CB2FE485F2D8F82FB /* PurchaseOwnershipType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseOwnershipType.swift; sourceTree = "<group>"; };
 		CC5C7302C6E641E0AA92CB41 /* Dictionary+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Dictionary+Extensions.swift"; sourceTree = "<group>"; };
 		CC64513AC4BB1A0EADA91369 /* BeginRefundRequestHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeginRefundRequestHelperTests.swift; sourceTree = "<group>"; };
+		CC86E6099DA9BECA936307B9 /* MockBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockBundle.swift; sourceTree = "<group>"; };
 		CD88E4F89A065C26EE888728 /* MockTransactionsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockTransactionsManager.swift; sourceTree = "<group>"; };
 		CDFB6CA76F52885869812E31 /* StoreKit2PurchaseIntentListenerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2PurchaseIntentListenerTests.swift; sourceTree = "<group>"; };
 		CE060A38884DD1C32E839193 /* Array+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Extensions.swift"; sourceTree = "<group>"; };
@@ -1885,6 +1887,7 @@
 		6321FDB6C61828A14A9A9C12 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				9CF91B07ECCC3F2965FE52AD /* ReceiptParserTests */,
 				FA8623CE1B6A63825E84446E /* StoreKitUnitTests */,
 				2D981758B431756F78572FD9 /* UnitTests */,
 			);
@@ -1991,6 +1994,14 @@
 				F233108CF0A6C920B88A5CF5 /* WinBackOfferEligibilityCalculatorType.swift */,
 			);
 			path = "Win-Back Offers";
+			sourceTree = "<group>";
+		};
+		7A6D16A81196D93AD53CD083 /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				CC86E6099DA9BECA936307B9 /* MockBundle.swift */,
+			);
+			path = Helpers;
 			sourceTree = "<group>";
 		};
 		7B8540FFE8239A10953FDCCE /* Diagnostics */ = {
@@ -2221,6 +2232,14 @@
 				1B68D5B17848A74D120EB1D7 /* RevenueCatTests-Info.plist */,
 			);
 			path = InfoPlists;
+			sourceTree = "<group>";
+		};
+		9CF91B07ECCC3F2965FE52AD /* ReceiptParserTests */ = {
+			isa = PBXGroup;
+			children = (
+				7A6D16A81196D93AD53CD083 /* Helpers */,
+			);
+			path = ReceiptParserTests;
 			sourceTree = "<group>";
 		};
 		9E9DE2823E8665EF1AA61FD0 /* Support */ = {
@@ -2914,6 +2933,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BB8FD78BD7AF13B53BF4DE55 /* MockBundle.swift in Sources */,
 				1634EF4725249502620D0427 /* BasePurchasesOrchestratorTests.swift in Sources */,
 				F000A43B825B95CEFBAE3933 /* BeginRefundRequestHelperTests.swift in Sources */,
 				AB694D4E83507D3745655103 /* LocalReceiptParserStoreKitTests.swift in Sources */,

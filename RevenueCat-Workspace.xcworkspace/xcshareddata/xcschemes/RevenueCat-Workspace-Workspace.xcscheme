@@ -70,6 +70,48 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "09B2FB1F180FFA8838DFB2AE"
+               BuildableName = "Maestro_Debug.app"
+               BlueprintName = "Maestro-Debug"
+               ReferencedContainer = "container:Examples/rc-maestro/Maestro.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "8CA00CCCA2D8A3F7370C14CB"
+               BuildableName = "MagicWeather.app"
+               BlueprintName = "MagicWeather"
+               ReferencedContainer = "container:Examples/MagicWeather/MagicWeather.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "5DD5A4C077703FC8545081DE"
+               BuildableName = "MagicWeatherSwiftUI.app"
+               BlueprintName = "MagicWeatherSwiftUI"
+               ReferencedContainer = "container:Examples/MagicWeatherSwiftUI/MagicWeatherSwiftUI.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "FDFE4AA35E6F8AB96174A3E5"
                BuildableName = "Nimble.framework"
                BlueprintName = "Nimble"
@@ -140,10 +182,38 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "4032744BB5037ACB9D6D0258"
+               BuildableName = "libRevenueCatUI.a"
+               BlueprintName = "RevenueCatUI"
+               ReferencedContainer = "container:Projects/RevenueCatUI/RevenueCatUI.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "608DF951F407192647E6C7EC"
                BuildableName = "SnapshotTesting.framework"
                BlueprintName = "SnapshotTesting"
                ReferencedContainer = "container:Tuist/.build/tuist-derived/swift-snapshot-testing/swift-snapshot-testing.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "A87D977F7D7103389A52F6AC"
+               BuildableName = "testCustomEntitlementsComputation.app"
+               BlueprintName = "testCustomEntitlementsComputation"
+               ReferencedContainer = "container:Examples/testCustomEntitlementsComputation/testCustomEntitlementsComputation.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>

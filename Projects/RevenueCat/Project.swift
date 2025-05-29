@@ -12,14 +12,7 @@ let project = Project(
             product: .staticLibrary,
             bundleId: "com.revenuecat.sampleapp",
             deploymentTargets: .iOS("15.0"),
-            infoPlist: .extendingDefault(
-                with: [
-                    "UILaunchScreen": [
-                        "UIColorName": "",
-                        "UIImageName": ""
-                    ]
-                ]
-            ),
+            infoPlist: .default,
             sources: [
                 .glob(
                     "../../Sources/**/*.swift",
@@ -40,7 +33,8 @@ let project = Project(
             infoPlist: .default,
             sources: [
                 "../../Tests/UnitTests/**/*.swift",
-                "../../Tests/StoreKitUnitTests/**/*.swift"
+                "../../Tests/StoreKitUnitTests/**/*.swift",
+                "../../Tests/ReceiptParserTests/Helpers/**/*.swift"
             ],
             dependencies: [
                 .target(name: "RevenueCat"),
