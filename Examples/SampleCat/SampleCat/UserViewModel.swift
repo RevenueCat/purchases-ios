@@ -6,7 +6,8 @@ import SwiftUI
     /* The latest CustomerInfo from RevenueCat. Updated by the `customerInfoStream` in the initializer. */
     var customerInfo: CustomerInfo? {
         didSet {
-            subscriptionActive = customerInfo?.entitlements[Constants.entitlementID]?.isActive == true
+            guard let entitlementIdentifier = Constants.entitlementIdentifier else { return }
+            subscriptionActive = customerInfo?.entitlements[entitlementIdentifier]?.isActive == true
         }
     }
 

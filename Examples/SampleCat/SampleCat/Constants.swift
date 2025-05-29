@@ -11,7 +11,7 @@ enum Constants {
     static let apiKey = "REVENUECAT_API_KEY"
     
     /*
-     The entitlement ID from the RevenueCat dashboard that is activated upon successful in-app purchase for the duration of the purchase.
+     The entitlement identifier from the RevenueCat dashboard that is activated upon successful in-app purchase for the duration of the purchase.
      */
     #error("Modify this property to reflect your app's entitlement identifier, then comment this line out. If you do not use entitlements, you can set this property to nil.")
     static let entitlementIdentifier: String? = "premium"
