@@ -20,20 +20,6 @@
                ReferencedContainer = "container:Projects/RevenueCat/RevenueCat.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "21ACE72DE79281C9B6CD27E0"
-               BuildableName = "RevenueCat.framework"
-               BlueprintName = "RevenueCat"
-               ReferencedContainer = "container:Tuist/.build/tuist-derived/RevenueCat/RevenueCat.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction

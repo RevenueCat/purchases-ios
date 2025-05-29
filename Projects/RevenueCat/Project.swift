@@ -4,6 +4,7 @@ let project = Project(
     name: "RevenueCat",
     organizationName: "RevenueCat, Inc.",
     targets: [
+        // MARK: – Main library
         .target(
             name: "RevenueCat",
             destinations: .iOS,
@@ -25,7 +26,6 @@ let project = Project(
                         "../../Sources/LocalReceiptParsing/ReceiptParser-only-files/**/*.swift"
                     ]
                 )
-
             ]
         )
     ]

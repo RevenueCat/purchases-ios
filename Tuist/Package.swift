@@ -6,8 +6,8 @@
 
     let packageSettings = PackageSettings(
         productTypes: [
-            "RevenueCat": .framework,
-            "RevenueCatUI": .framework // default is .staticFramework
+            "Nimble": .framework,
+            "SnapshotTesting": .framework // default is .staticFramework
         ]
     )
 
@@ -17,8 +17,12 @@ let package = Package(
     name: "Dependencies",
     dependencies: [
         .package(
-            url: "https://github.com/RevenueCat/purchases-ios",
-            branch: "main"
+            url: "https://github.com/quick/nimble",
+            exact: "13.7.1"
+        ),
+        .package(
+            url: "https://github.com/pointfreeco/swift-snapshot-testing",
+            revision: "26ed3a2b4a2df47917ca9b790a57f91285b923fb"
         )
     ]
 )

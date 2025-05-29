@@ -8,11 +8,4 @@
          location = "group:RevenueCat/RevenueCat.xcodeproj">
       </FileRef>
    </Group>
-   <Group
-      location = "container:"
-      name = "Dependencies">
-      <FileRef
-         location = "group:Tuist/.build/tuist-derived/RevenueCat/RevenueCat.xcodeproj">
-      </FileRef>
-   </Group>
 </Workspace>
