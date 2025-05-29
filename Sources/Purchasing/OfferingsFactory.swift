@@ -41,7 +41,7 @@ class OfferingsFactory {
     func createOffering(
         from storeProductsByID: [String: StoreProduct],
         offering: OfferingsResponse.Offering,
-        uiConfig: UIConfig?
+        uiConfig: UIConfig?,
     ) -> Offering? {
         let availablePackages: [Package] = offering.packages.compactMap { package in
             createPackage(with: package, productsByID: storeProductsByID, offeringIdentifier: offering.identifier)

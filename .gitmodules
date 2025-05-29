@@ -1,0 +1,3 @@
+[submodule "upstream/paywall-preview-resources"]
+	path = upstream/paywall-preview-resources
+	url = git@github.com:RevenueCat/paywall-preview-resources.git

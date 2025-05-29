@@ -130,6 +130,33 @@ platform :ios do
     end
   end
 
+  desc "Updates paywall-preview-resources submodule and creates/updates PR"
+  lane :update_paywall_preview_resources_submodule do |options|
+    branch_name = "pw2-update-paywall-preview-resources-submodule"
+    submodule_dir = "../upstream/paywall-preview-resources"
+
+    # Ensure we're starting from an up-to-date main.
+    sh("git", "fetch", "origin")
+
+    create_or_checkout_branch(branch_name: branch_name)
+
+    Dir.chdir(submodule_dir) do
+      sh("git", "fetch")
+      sh("git", "checkout", "main")
+      sh("git", "pull")
+    end
+
+    commit_push_and_create_pr_if_necessary(
+      repo: repo_name,
+      branch_name: branch_name,
+      commit_message: "[Automated] Updates paywall-preview-resources submodule.",
+      title: "[AUTOMATIC][Paywalls V2] Updates paywall-preview-resources submodule",
+      body: "This is an automatic update of the paywall-preview-resources submodule.",
+      labels: ["pr:other"],
+      team_reviewers: ["coresdk", "monetization"]
+    )
+  end
+
   desc "Build the Paywalls Test app for Emerge Snapshots"
   lane :build_paywalls_tester_for_emerge do |options|
     scan(
