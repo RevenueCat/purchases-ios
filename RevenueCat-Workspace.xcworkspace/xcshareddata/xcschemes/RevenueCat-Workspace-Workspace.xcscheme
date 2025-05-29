@@ -42,6 +42,20 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "5DD5A4C077703FC8545081DE"
+               BuildableName = "MagicWeatherSwiftUI.app"
+               BlueprintName = "MagicWeatherSwiftUI"
+               ReferencedContainer = "container:Examples/MagicWeatherSwiftUI/MagicWeatherSwiftUI.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "21ACE72DE79281C9B6CD27E0"
                BuildableName = "RevenueCat.framework"
                BlueprintName = "RevenueCat"
@@ -60,6 +74,20 @@
                BuildableName = "RevenueCatUI.framework"
                BlueprintName = "RevenueCatUI"
                ReferencedContainer = "container:Tuist/.build/tuist-derived/RevenueCat/RevenueCat.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "A87D977F7D7103389A52F6AC"
+               BuildableName = "testCustomEntitlementsComputation.app"
+               BlueprintName = "testCustomEntitlementsComputation"
+               ReferencedContainer = "container:Examples/testCustomEntitlementsComputation/testCustomEntitlementsComputation.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>

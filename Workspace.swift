@@ -4,6 +4,8 @@ let workspace = Workspace(
     name: "RevenueCat-Workspace",
     projects: [
         "./Examples/rc-maestro/",
-        "./Examples/MagicWeather/"
+        "./Examples/MagicWeather/",
+        "./Examples/MagicWeatherSwiftUI/",
+        "./Examples/testCustomEntitlementsComputation/"
     ]
 )

@@ -8,7 +8,13 @@
          location = "group:MagicWeather/MagicWeather.xcodeproj">
       </FileRef>
       <FileRef
+         location = "group:MagicWeatherSwiftUI/MagicWeatherSwiftUI.xcodeproj">
+      </FileRef>
+      <FileRef
          location = "group:rc-maestro/Maestro.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:testCustomEntitlementsComputation/testCustomEntitlementsComputation.xcodeproj">
       </FileRef>
    </Group>
    <Group
