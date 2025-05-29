@@ -2,19 +2,10 @@
 <Workspace
    version = "1.0">
    <Group
-      location = "group:Examples"
-      name = "Examples">
+      location = "group:Projects"
+      name = "Projects">
       <FileRef
-         location = "group:MagicWeather/MagicWeather.xcodeproj">
-      </FileRef>
-      <FileRef
-         location = "group:MagicWeatherSwiftUI/MagicWeatherSwiftUI.xcodeproj">
-      </FileRef>
-      <FileRef
-         location = "group:rc-maestro/Maestro.xcodeproj">
-      </FileRef>
-      <FileRef
-         location = "group:testCustomEntitlementsComputation/testCustomEntitlementsComputation.xcodeproj">
+         location = "group:RevenueCat/RevenueCat.xcodeproj">
       </FileRef>
    </Group>
    <Group

@@ -6,6 +6,8 @@ let workspace = Workspace(
         "./Examples/rc-maestro/",
         "./Examples/MagicWeather/",
         "./Examples/MagicWeatherSwiftUI/",
-        "./Examples/testCustomEntitlementsComputation/"
+        "./Examples/testCustomEntitlementsComputation/",
+        "./Projects/RevenueCat",
+        "./Projects/RevenueCatUI"
     ]
 )

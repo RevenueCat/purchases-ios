@@ -14,38 +14,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "09B2FB1F180FFA8838DFB2AE"
-               BuildableName = "Maestro_Debug.app"
-               BlueprintName = "Maestro-Debug"
-               ReferencedContainer = "container:Examples/rc-maestro/Maestro.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "8CA00CCCA2D8A3F7370C14CB"
-               BuildableName = "MagicWeather.app"
-               BlueprintName = "MagicWeather"
-               ReferencedContainer = "container:Examples/MagicWeather/MagicWeather.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "5DD5A4C077703FC8545081DE"
-               BuildableName = "MagicWeatherSwiftUI.app"
-               BlueprintName = "MagicWeatherSwiftUI"
-               ReferencedContainer = "container:Examples/MagicWeatherSwiftUI/MagicWeatherSwiftUI.xcodeproj">
+               BlueprintIdentifier = "21ACE72DE79281C9B6CD27E0"
+               BuildableName = "libRevenueCat.a"
+               BlueprintName = "RevenueCat"
+               ReferencedContainer = "container:Projects/RevenueCat/RevenueCat.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry
@@ -60,34 +32,6 @@
                BuildableName = "RevenueCat.framework"
                BlueprintName = "RevenueCat"
                ReferencedContainer = "container:Tuist/.build/tuist-derived/RevenueCat/RevenueCat.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "44AFEA04B5A773F7F7ABF378"
-               BuildableName = "RevenueCatUI.framework"
-               BlueprintName = "RevenueCatUI"
-               ReferencedContainer = "container:Tuist/.build/tuist-derived/RevenueCat/RevenueCat.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "A87D977F7D7103389A52F6AC"
-               BuildableName = "testCustomEntitlementsComputation.app"
-               BlueprintName = "testCustomEntitlementsComputation"
-               ReferencedContainer = "container:Examples/testCustomEntitlementsComputation/testCustomEntitlementsComputation.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -110,39 +54,37 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "09B2FB1F180FFA8838DFB2AE"
-            BuildableName = "Maestro_Debug.app"
-            BlueprintName = "Maestro-Debug"
-            ReferencedContainer = "container:Examples/rc-maestro/Maestro.xcodeproj">
+            BlueprintIdentifier = "21ACE72DE79281C9B6CD27E0"
+            BuildableName = "libRevenueCat.a"
+            BlueprintName = "RevenueCat"
+            ReferencedContainer = "container:Projects/RevenueCat/RevenueCat.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
    </LaunchAction>
    <ProfileAction
-      buildConfiguration = "Debug"
+      buildConfiguration = "Release"
       shouldUseLaunchSchemeArgsEnv = "YES"
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "09B2FB1F180FFA8838DFB2AE"
-            BuildableName = "Maestro_Debug.app"
-            BlueprintName = "Maestro-Debug"
-            ReferencedContainer = "container:Examples/rc-maestro/Maestro.xcodeproj">
+            BlueprintIdentifier = "21ACE72DE79281C9B6CD27E0"
+            BuildableName = "libRevenueCat.a"
+            BlueprintName = "RevenueCat"
+            ReferencedContainer = "container:Projects/RevenueCat/RevenueCat.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">
    </AnalyzeAction>
    <ArchiveAction
-      buildConfiguration = "Debug"
+      buildConfiguration = "Release"
       revealArchiveInOrganizer = "YES">
    </ArchiveAction>
 </Scheme>
