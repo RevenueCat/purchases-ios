@@ -2,7 +2,7 @@ import ProjectDescription
 
 let project = Project(
     name: "Maestro",
-    organizationName: "RevenueCat",
+    organizationName: "RevenueCat, Inc.",
     settings: .settings(
         configurations: [
             .debug(name: "Debug", xcconfig: .relativeToManifest("rc-maestro/Resources/Local.xcconfig"))
