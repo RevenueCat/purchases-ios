@@ -73,7 +73,9 @@ struct ImageComponentView: View {
 
     private func calculateMaxWidth(parentWidth: CGFloat, style: ImageComponentStyle) -> CGFloat {
         let totalBorderWidth = (style.border?.width ?? 0) * 2
-        return parentWidth - totalBorderWidth - style.margin.leading - style.margin.trailing
+        return parentWidth - totalBorderWidth
+            - style.margin.leading - style.margin.trailing
+            - style.padding.leading - style.padding.trailing
     }
 
     private func aspectRatio(style: ImageComponentStyle) -> Double {
