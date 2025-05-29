@@ -401,7 +401,16 @@ private extension BaseCustomerInfoResponseHandlerTests {
     static let sampleCustomerInfo: CustomerInfo = .init(testData: [
         "request_date": "2019-08-16T10:30:42Z",
         "subscriber": [
-            "subscriptions": [:] as [String: Any],
+            "subscriptions": [
+                "non_subscriptions": [
+                    "onetime": [
+                        "id": "cadba0c81b",
+                        "is_sandbox": true,
+                        "purchase_date": "2019-04-05T21:52:45Z",
+                        "store": "app_store"
+                    ]
+                ]
+            ] as [String: Any],
             "first_seen": "2019-07-17T00:05:54Z",
             "original_app_user_id": "nacho",
             "other_purchases": [:]  as [String: Any]
