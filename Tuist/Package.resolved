@@ -1,5 +1,5 @@
 {
-  "originHash" : "70b971339ba268c4bbcb20562a5cd527a2f18b6460cc4cac51d131262e22ca13",
+  "originHash" : "d966436ac151fc517477f8e81e59f568d3720f1df976640308c24967500a0fa3",
   "pins" : [
     {
       "identity" : "cwlcatchexception",
@@ -26,6 +26,24 @@
       "state" : {
         "revision" : "7795df4fff1a9cd231fe4867ae54f4dc5f5734f9",
         "version" : "13.7.1"
+      }
+    },
+    {
+      "identity" : "ohhttpstubs",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/AliSoftware/OHHTTPStubs",
+      "state" : {
+        "branch" : "9.1.0",
+        "revision" : "12f19662426d0434d6c330c6974d53e2eb10ecd9"
+      }
+    },
+    {
+      "identity" : "purchases-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/RevenueCat/purchases-ios",
+      "state" : {
+        "branch" : "main",
+        "revision" : "9009e923dd844b835e6c7c2169b8d4034f586594"
       }
     },
     {

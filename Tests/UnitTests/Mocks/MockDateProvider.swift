@@ -3,6 +3,7 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
+import Foundation
 @testable import RevenueCat
 
 class MockDateProvider: DateProvider {

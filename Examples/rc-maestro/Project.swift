@@ -1,4 +1,5 @@
 import ProjectDescription
+import ProjectDescriptionHelpers
 
 let project = Project(
     name: "Maestro",
@@ -30,8 +31,8 @@ let project = Project(
                 "rc-maestro/Resources/**/*.xcassets",
             ],
             dependencies: [
-                .external(name: "RevenueCat"),
-                .external(name: "RevenueCatUI"),
+                .revenueCat(local: true),
+                .revenueCatUI(local: true),
                 .sdk(name: "StoreKit", type: .framework, status: .required)
             ]
         )

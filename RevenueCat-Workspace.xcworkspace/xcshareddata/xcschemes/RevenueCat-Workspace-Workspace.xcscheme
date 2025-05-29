@@ -14,10 +14,136 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "B703431663C6BFFD913AFDD3"
+               BuildableName = "CwlCatchException.framework"
+               BlueprintName = "CwlCatchException"
+               ReferencedContainer = "container:Tuist/.build/tuist-derived/CwlCatchException/CwlCatchException.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "3F22134F100971F40E590EEE"
+               BuildableName = "CwlCatchExceptionSupport.framework"
+               BlueprintName = "CwlCatchExceptionSupport"
+               ReferencedContainer = "container:Tuist/.build/tuist-derived/CwlCatchException/CwlCatchException.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "A9EFAE096F48975ABD891A7C"
+               BuildableName = "CwlMachBadInstructionHandler.framework"
+               BlueprintName = "CwlMachBadInstructionHandler"
+               ReferencedContainer = "container:Tuist/.build/tuist-derived/CwlPreconditionTesting/CwlPreconditionTesting.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "348E9D95506E8F146AAF9BB0"
+               BuildableName = "CwlPreconditionTesting.framework"
+               BlueprintName = "CwlPreconditionTesting"
+               ReferencedContainer = "container:Tuist/.build/tuist-derived/CwlPreconditionTesting/CwlPreconditionTesting.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "FDFE4AA35E6F8AB96174A3E5"
+               BuildableName = "Nimble.framework"
+               BlueprintName = "Nimble"
+               ReferencedContainer = "container:Tuist/.build/tuist-derived/Nimble/Nimble.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "E2422A308E81F018A6B17A5F"
+               BuildableName = "NimbleObjectiveC.framework"
+               BlueprintName = "NimbleObjectiveC"
+               ReferencedContainer = "container:Tuist/.build/tuist-derived/Nimble/Nimble.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "3C049438BB3BF57FE539ECAA"
+               BuildableName = "OHHTTPStubs.framework"
+               BlueprintName = "OHHTTPStubs"
+               ReferencedContainer = "container:Tuist/.build/tuist-derived/OHHTTPStubs/OHHTTPStubs.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "21ACE72DE79281C9B6CD27E0"
                BuildableName = "libRevenueCat.a"
                BlueprintName = "RevenueCat"
                ReferencedContainer = "container:Projects/RevenueCat/RevenueCat.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "087FD8AC3FD8626456BD117E"
+               BuildableName = "RevenueCatTests.xctest"
+               BlueprintName = "RevenueCatTests"
+               ReferencedContainer = "container:Projects/RevenueCat/RevenueCat.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "608DF951F407192647E6C7EC"
+               BuildableName = "SnapshotTesting.framework"
+               BlueprintName = "SnapshotTesting"
+               ReferencedContainer = "container:Tuist/.build/tuist-derived/swift-snapshot-testing/swift-snapshot-testing.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -28,6 +154,17 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "087FD8AC3FD8626456BD117E"
+               BuildableName = "RevenueCatTests.xctest"
+               BlueprintName = "RevenueCatTests"
+               ReferencedContainer = "container:Projects/RevenueCat/RevenueCat.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
@@ -43,10 +180,10 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "21ACE72DE79281C9B6CD27E0"
-            BuildableName = "libRevenueCat.a"
-            BlueprintName = "RevenueCat"
-            ReferencedContainer = "container:Projects/RevenueCat/RevenueCat.xcodeproj">
+            BlueprintIdentifier = "B703431663C6BFFD913AFDD3"
+            BuildableName = "CwlCatchException.framework"
+            BlueprintName = "CwlCatchException"
+            ReferencedContainer = "container:Tuist/.build/tuist-derived/CwlCatchException/CwlCatchException.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </LaunchAction>
@@ -59,10 +196,10 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "21ACE72DE79281C9B6CD27E0"
-            BuildableName = "libRevenueCat.a"
-            BlueprintName = "RevenueCat"
-            ReferencedContainer = "container:Projects/RevenueCat/RevenueCat.xcodeproj">
+            BlueprintIdentifier = "B703431663C6BFFD913AFDD3"
+            BuildableName = "CwlCatchException.framework"
+            BlueprintName = "CwlCatchException"
+            ReferencedContainer = "container:Tuist/.build/tuist-derived/CwlCatchException/CwlCatchException.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </ProfileAction>

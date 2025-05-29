@@ -1,4 +1,5 @@
 import ProjectDescription
+import ProjectDescriptionHelpers
 
 let project = Project(
     name: "MagicWeatherSwiftUI",
@@ -26,8 +27,8 @@ let project = Project(
                 "MagicWeatherSwiftUI/Resources/**/*.xcassets",
             ],
             dependencies: [
-                .external(name: "RevenueCat"),
-                .external(name: "RevenueCatUI"),
+                .revenueCat(local: true),
+                .revenueCatUI(local: true),
             ]
         )
     ]

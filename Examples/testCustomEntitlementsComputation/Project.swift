@@ -1,4 +1,5 @@
 import ProjectDescription
+import ProjectDescriptionHelpers
 
 let project = Project(
     name: "testCustomEntitlementsComputation",
@@ -26,8 +27,8 @@ let project = Project(
                 "testCustomEntitlementsComputation/Resources/**/*.xcassets",
             ],
             dependencies: [
-                .external(name: "RevenueCat"),
-                .external(name: "RevenueCatUI"),
+                .revenueCat(local: true),
+                .revenueCatUI(local: true),
             ]
         )
     ]

@@ -10,13 +10,11 @@
 		08925B4E584FC5D20CA59FBE /* TuistBundle+TestCustomEntitlementsComputation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B279D5A7966CB41CCBF05D66 /* TuistBundle+TestCustomEntitlementsComputation.swift */; };
 		165EA4DBD39926FC9A7FF580 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AE116B293A2B413F35DFEAD /* Constants.swift */; };
 		2185E8F026F4ED75FACD2635 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2B97AF29CED8B6B137A91DBC /* Assets.xcassets */; };
-		2451FCD2806B9E943175C4C6 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DBA5CC143913C7C0176E9BC0 /* RevenueCat.framework */; };
 		372A6651DC7ABDE7AA4C0DB8 /* TuistAssets+TestCustomEntitlementsComputation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F7B3A4A14B2E020B9CE706B /* TuistAssets+TestCustomEntitlementsComputation.swift */; };
-		4BE4152BEE86A9A5B28D9F9C /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DBA5CC143913C7C0176E9BC0 /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		682A311FBF1D51A8F99BB80B /* RevenueCatUI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7B56A335C3599AE98135A29B /* RevenueCatUI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		79DD0CAC414770F68698A198 /* libRevenueCatUI.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 282D960353C2FF17391EEFD1 /* libRevenueCatUI.a */; };
 		934F4A57DA874AB9FEC7DEAE /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4299FA8156FAC6F41B1D3E2E /* ContentView.swift */; };
 		988FDB03EA1FAA46FD5D4060 /* testCustomEntitlementsComputationApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE9B635F241F5E679A0AA70 /* testCustomEntitlementsComputationApp.swift */; };
-		C5E7710847748C154EF4D353 /* RevenueCatUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B56A335C3599AE98135A29B /* RevenueCatUI.framework */; };
+		D68506D994F50E1DA7EB8A1A /* libRevenueCat.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 51568D943C1531410C0A30B1 /* libRevenueCat.a */; };
 		F060823B8F8D63C71CEED067 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5D3D43B0F1902135F3556572 /* Preview Assets.xcassets */; };
 /* End PBXBuildFile section */
 
@@ -27,8 +25,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				4BE4152BEE86A9A5B28D9F9C /* RevenueCat.framework in Embed Frameworks */,
-				682A311FBF1D51A8F99BB80B /* RevenueCatUI.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -37,16 +33,16 @@
 
 /* Begin PBXFileReference section */
 		1AE9B635F241F5E679A0AA70 /* testCustomEntitlementsComputationApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = testCustomEntitlementsComputationApp.swift; sourceTree = "<group>"; };
+		282D960353C2FF17391EEFD1 /* libRevenueCatUI.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRevenueCatUI.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		2AE116B293A2B413F35DFEAD /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		2B97AF29CED8B6B137A91DBC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2F7B3A4A14B2E020B9CE706B /* TuistAssets+TestCustomEntitlementsComputation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TuistAssets+TestCustomEntitlementsComputation.swift"; sourceTree = "<group>"; };
 		4299FA8156FAC6F41B1D3E2E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		51568D943C1531410C0A30B1 /* libRevenueCat.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRevenueCat.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		57BE31076EE78CAC5D802898 /* testCustomEntitlementsComputation-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "testCustomEntitlementsComputation-Info.plist"; sourceTree = "<group>"; };
 		5D3D43B0F1902135F3556572 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		7B56A335C3599AE98135A29B /* RevenueCatUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RevenueCatUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		ABECB7BAA86F9315475B0DC4 /* testCustomEntitlementsComputation.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testCustomEntitlementsComputation.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B279D5A7966CB41CCBF05D66 /* TuistBundle+TestCustomEntitlementsComputation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TuistBundle+TestCustomEntitlementsComputation.swift"; sourceTree = "<group>"; };
-		DBA5CC143913C7C0176E9BC0 /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,8 +50,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2451FCD2806B9E943175C4C6 /* RevenueCat.framework in Frameworks */,
-				C5E7710847748C154EF4D353 /* RevenueCatUI.framework in Frameworks */,
+				D68506D994F50E1DA7EB8A1A /* libRevenueCat.a in Frameworks */,
+				79DD0CAC414770F68698A198 /* libRevenueCatUI.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -99,8 +95,8 @@
 		40E598C55A2D32212EB03801 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				DBA5CC143913C7C0176E9BC0 /* RevenueCat.framework */,
-				7B56A335C3599AE98135A29B /* RevenueCatUI.framework */,
+				51568D943C1531410C0A30B1 /* libRevenueCat.a */,
+				282D960353C2FF17391EEFD1 /* libRevenueCatUI.a */,
 				ABECB7BAA86F9315475B0DC4 /* testCustomEntitlementsComputation.app */,
 			);
 			name = Products;
