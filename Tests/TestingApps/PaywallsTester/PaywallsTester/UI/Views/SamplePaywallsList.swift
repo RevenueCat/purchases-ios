@@ -73,7 +73,7 @@ struct SamplePaywallsList: View {
                 )
             )
 
-        #if !os(watchOS)
+        #if os(iOS)
         case let .customPaywall(mode):
             CustomPaywall(customerInfo: Self.loader.customerInfo,
                           condensed: mode == .condensedFooter)
@@ -105,7 +105,7 @@ struct SamplePaywallsList: View {
                 introEligibility: Self.introEligibility
             ))
         #endif
-        #if !os(watchOS)
+        #if canImport(UIKit) && os(iOS)
         case .customerCenterSheet,
                 .customerCenterFullScreen,
                 .customerCenterNavigationView:

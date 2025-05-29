@@ -1,16 +1,12 @@
 ## RevenueCat SDK
 ### 🐞 Bugfixes
-* Remove Identifiable conformance from StoreKit2PurchaseIntentListenerType (#4964) via Will Taylor (@fire-at-will)
-* Fix `CustomerCenterViewController` view (#4960) via Antonio Pallares (@ajpallares)
-
-## RevenueCatUI SDK
-### Customer Center
-#### ✨ New Features
-* feat: Don't hide contact support on simulator (#4951) via Facundo Menzella (@facumenzella)
-* feat: Change default copy for web_subscription_manage (#4921) via Facundo Menzella (@facumenzella)
-#### 🐞 Bugfixes
-* Update strings for restore purchases alerts (#4933) via Cesar de la Vega (@vegaro)
-* Replace initial alert dialog with a progress view when restoring in Customer Center (#4930) via Cesar de la Vega (@vegaro)
+* CAT-1975: Dont Call POST Receipt with No Receipt or AppTransaction when Syncing Purchases with SK2 (#5161) via Will Taylor (@fire-at-will)
 
 ### 🔄 Other Changes
-* feat: Add log for promo offer eligibility (#4949) via Facundo Menzella (@facumenzella)
+* Add isSanbox to NonSubscriptionTransaction (#5199) via Facundo Menzella (@facumenzella)
+* Add missing fields to PurchaseInformation (#5184) via Facundo Menzella (@facumenzella)
+* Improve descriptions for SDK Health errors (#5185) via Pol Piella Abadia (@polpielladev)
+* fix pre-commit hook to lint files with spaces in the path (#5186) via Facundo Menzella (@facumenzella)
+* Delete earliestExpiringTransaction from Customer Center code (#5183) via Facundo Menzella (@facumenzella)
+* Remove unused durationTitle from PurchaseInformation (#5181) via Facundo Menzella (@facumenzella)
+* Add new test cases for maestro + customer center (#5177) via Facundo Menzella (@facumenzella)

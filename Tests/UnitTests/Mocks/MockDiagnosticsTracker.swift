@@ -32,10 +32,11 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
 
     let trackedHttpRequestPerformedParams: Atomic<[
         // swiftlint:disable:next large_tuple
-        (String, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult, Bool)
+        (String, String?, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult, Bool)
     ]> = .init([])
     // swiftlint:disable:next function_parameter_count
     func trackHttpRequestPerformed(endpointName: String,
+                                   host: String?,
                                    responseTime: TimeInterval,
                                    wasSuccessful: Bool,
                                    responseCode: Int,
@@ -46,6 +47,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         self.trackedHttpRequestPerformedParams.modify {
             $0.append(
                 (endpointName,
+                 host,
                  responseTime,
                  wasSuccessful,
                  responseCode,
@@ -441,11 +443,21 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         }
     }
 
-    let trackedAppleAppTransactionErrorReceivedParams: Atomic<[String]> = .init([])
+    let trackedAppleAppTransactionErrorReceivedParams: Atomic<[
+        (errorMessage: String,
+        errorCode: Int?,
+        storeKitErrorDescription: String?)
+    ]> = .init([])
 
-    func trackAppleAppTransactionError(errorMessage: String) {
+    func trackAppleAppTransactionError(errorMessage: String,
+                                       errorCode: Int?,
+                                       storeKitErrorDescription: String?) {
         self.trackedAppleAppTransactionErrorReceivedParams.modify {
-            $0.append(errorMessage)
+            $0.append((
+                errorMessage: errorMessage,
+                errorCode: errorCode,
+                storeKitErrorDescription: storeKitErrorDescription
+            ))
         }
     }
 

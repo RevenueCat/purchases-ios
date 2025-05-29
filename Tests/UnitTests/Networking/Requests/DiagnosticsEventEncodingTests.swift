@@ -26,6 +26,7 @@ class DiagnosticsEventEncodingTests: TestCase {
         properties: DiagnosticsEvent.Properties(
             verificationResult: "FAILED",
             endpointName: HTTPRequest.Path.logIn.name,
+            host: "api.revenuecat.com",
             responseTime: 3,
             storeKitVersion: .storeKit1,
             successful: true,
