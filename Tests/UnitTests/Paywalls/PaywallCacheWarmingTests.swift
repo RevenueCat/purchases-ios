@@ -16,7 +16,7 @@ import Nimble
 import XCTest
 
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-class PaywallCacheWarmingTests: TestCase {
+final class PaywallCacheWarmingTests: TestCase {
 
     private var eligibilityChecker: MockTrialOrIntroPriceEligibilityChecker!
     private var imageFetcher: MockPaywallImageFetcher!
@@ -175,6 +175,47 @@ class PaywallCacheWarmingTests: TestCase {
         expect(self.imageFetcher.imageDownloadRequestCount.value) == 3
     }
 
+    @available(iOS 15.0, *)
+    func testDownloadFont_PerformsExpectedActions() async throws {
+        let mockSession = MockSession()
+        let mockFileManager = MockFileManager()
+        let mockRegistrar = MockRegistrar()
+
+        let sut = DefaultPaywallFontsFetcher(
+            fileManager: mockFileManager,
+            session: mockSession,
+            registrar: mockRegistrar,
+            tempDirectory: URL(fileURLWithPath: "/tmp")
+        )
+
+        let url = URL(string: "https://example.com/font.ttf")!
+        try await sut.downloadFont(from: url, familyName: "testFont.ttf")
+
+        XCTAssertTrue(mockSession.didCall, "Expected session to be used")
+        XCTAssertTrue(mockFileManager.didCopy, "Expected font file to be copied")
+        XCTAssertTrue(mockRegistrar.didRegister, "Expected font to be registered")
+    }
+
+    @available(iOS 15.0, *)
+    func testDownloadFont_SkipsCopyIfFileExists() async throws {
+        let mockSession = MockSession()
+        let mockFileManager = MockFileManager()
+        mockFileManager.fileExistsAtPath = true
+        let mockRegistrar = MockRegistrar()
+
+        let sut = DefaultPaywallFontsFetcher(
+            fileManager: mockFileManager,
+            session: mockSession,
+            registrar: mockRegistrar,
+            tempDirectory: URL(fileURLWithPath: "/tmp")
+        )
+
+        let url = URL(string: "https://example.com/font.ttf")!
+        try await sut.downloadFont(from: url, familyName: "testFont.ttf")
+
+        XCTAssertFalse(mockFileManager.didCopy, "Should not copy file if it already exists")
+        XCTAssertFalse(mockRegistrar.didRegister, "Should not register if file exists")
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
@@ -246,4 +287,32 @@ private final class MockPaywallImageFetcher: PaywallImageFetcherType {
         self.imageDownloadRequestCount.modify { $0 += 1 }
     }
 
+}
+
+private final class MockSession: FontDownloadSession {
+    var didCall = false
+    func data(from url: URL) async throws -> (Data, URLResponse) {
+        didCall = true
+        return (Data(), URLResponse())
+    }
+}
+
+private final class MockFileManager: FileManaging {
+    var fileExistsAtPath = false
+    var didCopy = false
+
+    func fileExists(atPath path: String) -> Bool {
+        return fileExistsAtPath
+    }
+
+    func copyItem(at srcURL: URL, to dstURL: URL) throws {
+        didCopy = true
+    }
+}
+
+private final class MockRegistrar: FontRegistrar {
+    var didRegister = false
+    func registerFont(at url: URL) throws {
+        didRegister = true
+    }
 }
