@@ -201,9 +201,9 @@ platform :ios do
       commit_push_and_create_pr_if_necessary(
         repo: target_repository_name,
         branch_name: target_repository_branch,
-        commit_message: "[Automated] Updates Android template screenshots.",
-        title: "[AUTOMATIC] Updates Android template screenshots",
-        body: "This is an automatic update of the Android template screenshots.",
+        commit_message: "[Automated] Updates iOS template screenshots.",
+        title: "[AUTOMATIC] Updates iOS template screenshots",
+        body: "This is an automatic update of the iOS template screenshots.",
         team_reviewers: ["coresdk", "monetization", "bab-s"]
       )
     end
