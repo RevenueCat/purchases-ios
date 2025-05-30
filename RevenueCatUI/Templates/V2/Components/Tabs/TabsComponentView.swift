@@ -85,7 +85,7 @@ struct LoadedTabsComponentView: View {
 
     var activeTabViewModel: TabViewModel? {
         return self.viewModel.tabViewModels[self.tabControlContext.selectedTabId] ??
-            self.viewModel.tabViewModels.values.first { $0.defaultSelectedPackage != nil }
+            self.viewModel.tabViewModels.values.first
     }
 
     init(viewModel: TabsComponentViewModel,
