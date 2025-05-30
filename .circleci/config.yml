@@ -10,7 +10,14 @@ version: 2.1
 parameters:
   action:
     type: enum
-    enum: [default, bump, run-manual-tests, run-manual-docs-deploy]
+    enum:
+      [
+        default,
+        bump,
+        run-manual-tests,
+        run-manual-docs-deploy,
+        update_paywall_templates,
+      ]
     default: default
   generate_snapshots:
     default: false
@@ -1399,6 +1406,20 @@ jobs:
           environment:
             SCAN_DEVICE: iPhone 16
 
+  update-paywall-preview-resources-submodule:
+    docker:
+      - image: cimg/ruby:3.2.0
+    steps:
+      - checkout
+      - checkout-submodule:
+          path: upstream/paywall-preview-resources
+      - revenuecat/install-gem-unix-dependencies:
+          cache-version: v1
+      - revenuecat/setup-git-credentials
+      - run:
+          name: Update paywall templates
+          command: bundle exec fastlane ios update_paywall_preview_resources_submodule
+
   deploy-to-spm:
     docker:
       - image: cimg/base:stable
@@ -1556,6 +1577,12 @@ workflows:
       - record-and-push-paywall-template-screenshots:
           context:
             - paywall-rendering-validation-pr-rw
+
+  update-paywall-templates:
+    when:
+      equal: [update_paywall_templates, << pipeline.parameters.action >>]
+    jobs:
+      - update-paywall-preview-resources-submodule
 
   manual-trigger-docs-deploy:
     when:
