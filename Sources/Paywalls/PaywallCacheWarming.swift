@@ -284,7 +284,7 @@ private extension UIConfig.FontInfo {
             if let url = URL(string: name) {
                 return url
             } else {
-                Logger.error(Strings.error_prefetching_font_invalid_url(name))
+                Logger.error(PaywallsStrings.error_prefetching_font_invalid_url(name))
                 return nil
             }
         }

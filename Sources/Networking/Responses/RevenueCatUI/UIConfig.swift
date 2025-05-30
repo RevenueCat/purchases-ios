@@ -39,7 +39,7 @@ public struct UIConfig: Codable, Equatable, Sendable {
         public init(
             ios: FontInfo,
             web: FontInfo? = nil,
-            family: String? = nil,
+            family: String? = nil
         ) {
             self.ios = ios
             self.web = web
