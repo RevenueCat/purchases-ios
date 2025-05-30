@@ -1553,7 +1553,7 @@ workflows:
     #     - equal: ["main", << pipeline.git.branch >>]
     #     - equal: ["default", << pipeline.parameters.action >>]
     jobs:
-      - record-and-push-paywall-template-screenshots
+      - record-and-push-paywall-template-screenshots:
           context:
             - paywall-rendering-validation-pr-rw
 
