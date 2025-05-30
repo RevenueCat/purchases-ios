@@ -21,6 +21,8 @@ protocol PaywallCacheWarmingType: Sendable {
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func warmUpPaywallImagesCache(offerings: Offerings) async
 
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+    func warmUpPaywallFontsCache(offerings: Offerings) async
 }
 
 protocol PaywallImageFetcherType: Sendable {
@@ -84,7 +86,9 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
                 Logger.error(Strings.paywalls.error_prefetching_image(url, error))
             }
         }
+    }
 
+    func warmUpPaywallFontsCache(offerings: Offerings) async {
         let allFontsInPaywallsNamed = offerings.allFontsInPaywallsNamed
         let allFontURLs = Set(allFontsInPaywallsNamed.map(\.1))
         Logger.verbose(Strings.paywalls.warming_up_fonts(fontsURLS: allFontURLs))
@@ -98,7 +102,6 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
             }
         }
     }
-
 }
 
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
@@ -253,9 +256,13 @@ private extension PaywallData.Configuration.Images {
 
 private extension UIConfig.AppConfig {
     var allFonts: [(String, URL)] {
-        let names = fonts.values.compactMap(\.ios.iOSName)
-        let urls = fonts.values.compactMap(\.web?.url)
-        return Array(zip(names, urls))
+        fonts.values.compactMap {
+            if let iOSName = $0.ios.iOSName,
+               let url = $0.web?.url {
+                return (iOSName, url)
+            }
+            return nil
+        }
     }
 }
 

@@ -2057,6 +2057,7 @@ private extension Purchases {
                 self.operationDispatcher.dispatchOnWorkerThread {
                     await cache.warmUpEligibilityCache(offerings: offerings)
                     await cache.warmUpPaywallImagesCache(offerings: offerings)
+                    await cache.warmUpPaywallFontsCache(offerings: offerings)
                 }
             }
         }
