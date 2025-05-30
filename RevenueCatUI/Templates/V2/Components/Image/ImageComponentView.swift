@@ -221,16 +221,16 @@ struct ImageComponentView_Previews: PreviewProvider {
             VStack {
                 imageView(url: bigImageUrl,
                           size: .init(width: .fit, height: .fixed(fixedHeight)),
-                          fitMode: .fit, width: 1080, height: 500)
+                          fitMode: .fit, width: 1080, height: 599)
                 imageView(url: bigImageUrl,
                           size: .init(width: .fill, height: .fixed(fixedHeight)),
-                          fitMode: .fit, width: 1080, height: 500)
+                          fitMode: .fit, width: 1080, height: 599)
                 imageView(url: bigImageUrl,
                           size: .init(width: .fit, height: .fixed(fixedHeight)),
-                          fitMode: .fill, width: 1080, height: 500)
+                          fitMode: .fill, width: 1080, height: 599)
                 imageView(url: bigImageUrl,
                           size: .init(width: .fill, height: .fixed(fixedHeight)),
-                          fitMode: .fill, width: 1080, height: 500)
+                          fitMode: .fill, width: 1080, height: 599)
 
                 imageView(url: smallImage,
                           size: .init(width: .fit, height: .fixed(fixedHeight)),
@@ -244,11 +244,42 @@ struct ImageComponentView_Previews: PreviewProvider {
                 imageView(url: smallImage,
                           size: .init(width: .fit, height: .fixed(fixedHeight)),
                           fitMode: .fill, width: 22, height: 21)
-            }
+            }.background(.blue)
         }
         .previewRequiredEnvironmentProperties()
         .previewLayout(.fixed(width: 400, height: 400))
-        .previewDisplayName("Bug - Image stretching beyond bounds")
+        .previewDisplayName("Image stretching horizontally beyond bounds")
+
+        ScrollView {
+            VStack {
+                VStack {
+                    imageView(url: smallImage,
+                              size: .init(width: .fixed(32), height: .fit),
+                              fitMode: .fill, width: 22, height: 21)
+                }.frame(width: 300, height: 300).border(.green)
+
+                VStack {
+                    imageView(url: smallImage,
+                              size: .init(width: .fixed(32), height: .fit),
+                              fitMode: .fit, width: 22, height: 21)
+                }.frame(width: 300, height: 300).border(.green)
+
+                VStack {
+                    imageView(url: smallImage,
+                              size: .init(width: .fixed(32), height: .fill),
+                              fitMode: .fill, width: 22, height: 21)
+                }.frame(width: 300, height: 300).border(.green)
+
+                VStack {
+                    imageView(url: smallImage,
+                              size: .init(width: .fixed(32), height: .fill),
+                              fitMode: .fit, width: 22, height: 21)
+                }.frame(width: 300, height: 300).border(.green)
+            }.background(.blue)
+        }
+        .previewRequiredEnvironmentProperties()
+        .previewLayout(.fixed(width: 400, height: 400))
+        .previewDisplayName("Image streching vertically when height=fit")
 
         // Light - Fit
         VStack {
