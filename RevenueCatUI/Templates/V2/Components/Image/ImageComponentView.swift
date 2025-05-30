@@ -56,7 +56,8 @@ struct ImageComponentView: View {
                 ) { (image, size) in
                     self.renderImage(image, size, maxWidth: maxWidth, with: style)
                 }
-                .size(style.size)
+                .applyImageWidth(size: style.size)
+                .applyImageHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
                 .clipped()
                 .padding(style.padding.extend(by: style.border?.width ?? 0))
                 .shape(border: style.border,
@@ -114,6 +115,53 @@ struct ImageComponentView: View {
                     Color.clear.backgroundStyle(.color(colorOverlay))
                 )
             })
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+fileprivate extension View {
+
+    @ViewBuilder
+    func applyImageWidth(size: PaywallComponent.Size) -> some View {
+        switch size.width {
+        case .fit:
+            self
+        case .fill:
+            self.frame(maxWidth: .infinity)
+        case .fixed(let value):
+            self.frame(width: Double(value))
+        case .relative:
+            self
+        }
+    }
+
+    @ViewBuilder
+    func applyImageHeight(size: PaywallComponent.Size, aspectRatio: Double) -> some View {
+        switch size.height {
+        case .fit:
+            switch size.width {
+            case .fit:
+                self
+            case .fill:
+                self
+            case .fixed(let value):
+                // This is the only change versus the regular .size() modifier.
+                // When the image has height=fit and fixed width, we manually set a
+                // fixed height according to the aspect ratio.
+                // Otherwise the image would grow vertically to occupy available space.
+                // See "Image streching vertically" preview
+                self.frame(height: Double(value) / aspectRatio)
+            case .relative:
+                self
+            }
+        case .fill:
+            self.frame(maxHeight: .infinity)
+        case .fixed(let value):
+            self.frame(height: Double(value))
+        case .relative:
+            self
+        }
     }
 
 }
