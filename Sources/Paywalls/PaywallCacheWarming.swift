@@ -30,21 +30,31 @@ protocol PaywallImageFetcherType: Sendable {
 
 }
 
+protocol PaywallFontFetcherType: Sendable {
+
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+    func downloadFont(from url: URL, familyName: String) async throws
+
+}
+
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 actor PaywallCacheWarming: PaywallCacheWarmingType {
 
     private let introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType
     private let imageFetcher: PaywallImageFetcherType
+    private let fontsFetcher: PaywallFontFetcherType
 
     private var hasLoadedEligibility = false
     private var hasLoadedImages = false
 
     init(
         introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType,
-        imageFetcher: PaywallImageFetcherType = DefaultPaywallImageFetcher()
+        imageFetcher: PaywallImageFetcherType = DefaultPaywallImageFetcher(),
+        fontsFetcher: PaywallFontFetcherType = DefaultPaywallFontsFetcher(session: PaywallCacheWarming.downloadSession)
     ) {
         self.introEligibiltyChecker = introEligibiltyChecker
         self.imageFetcher = imageFetcher
+        self.fontsFetcher = fontsFetcher
     }
 
     func warmUpEligibilityCache(offerings: Offerings) {
@@ -75,6 +85,18 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
             }
         }
 
+        let allFontsInPaywallsNamed = offerings.allFontsInPaywallsNamed
+        let allFontURLs = Set(allFontsInPaywallsNamed.map(\.1))
+        Logger.verbose(Strings.paywalls.warming_up_fonts(fontsURLS: allFontURLs))
+
+        for (name, url) in allFontsInPaywallsNamed {
+            do {
+                // WIP: Maybe rename to cacheFontIfNeeded
+                try await self.fontsFetcher.downloadFont(from: url, familyName: name)
+            } catch {
+                Logger.error(Strings.paywalls.error_prefetching_image(url, error))
+            }
+        }
     }
 
 }
@@ -157,6 +179,10 @@ private extension Offerings {
         return self.allImagesInPaywallsV1 + self.allImagesInPaywallsV2
     }
 
+    var allFontsInPaywallsNamed: [(String, URL)] {
+        response.uiConfig?.app.allFonts ?? []
+    }
+
     #else
 
     var allImagesInPaywalls: Set<URL> {
@@ -223,4 +249,32 @@ private extension PaywallData.Configuration.Images {
             .compactMap { $0 }
     }
 
+}
+
+private extension UIConfig.AppConfig {
+    var allFonts: [(String, URL)] {
+        let names = fonts.values.compactMap(\.ios.iOSName)
+        let urls = fonts.values.compactMap(\.web?.url)
+        return Array(zip(names, urls))
+    }
+}
+
+private extension UIConfig.FontInfo {
+    var iOSName: String? {
+        switch self {
+        case .googleFonts:
+            return nil
+        case let .name(name):
+            return name
+        }
+    }
+
+    var url: URL? {
+        switch self {
+        case .googleFonts:
+            return nil
+        case let .name(name):
+            return URL(string: name)
+        }
+    }
 }

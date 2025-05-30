@@ -19,7 +19,9 @@ enum PaywallsStrings {
 
     case warming_up_eligibility_cache(products: Set<String>)
     case warming_up_images(imageURLs: Set<URL>)
+    case warming_up_fonts(fontsURLS: Set<URL>)
     case error_prefetching_image(URL, Error)
+    case error_prefetching_font(URL, Error)
 
     case caching_presented_paywall
     case clearing_presented_paywall
@@ -59,8 +61,14 @@ extension PaywallsStrings: LogMessage {
         case let .warming_up_images(imageURLs):
             return "Warming up paywall images cache: \(imageURLs)"
 
+        case let .warming_up_fonts(fontsURLS):
+            return "Warming up paywall fonts cache: \(fontsURLS)"
+
         case let .error_prefetching_image(url, error):
             return "Error pre-fetching paywall image '\(url)': \((error as NSError).description)"
+
+        case let .error_prefetching_font(url, error):
+            return "Error pre-fetching paywall font '\(url)': \((error as NSError).description)"
 
         case .caching_presented_paywall:
             return "PurchasesOrchestrator: caching presented paywall"

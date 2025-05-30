@@ -32,13 +32,38 @@ public struct UIConfig: Codable, Equatable, Sendable {
     }
 
     public struct FontsConfig: Codable, Equatable, Sendable {
-
         public var ios: FontInfo
+        public var android: FontInfo?
+        public var web: FontInfo?
+        public var family: String?
+        public var weight: FontWeight?
+        public var style: FontStyle?
 
-        public init(ios: FontInfo) {
+        public init(
+            ios: FontInfo,
+            android: FontInfo? = nil,
+            web: FontInfo? = nil,
+            family: String? = nil,
+            weight: FontWeight? = nil,
+            style: FontStyle? = nil
+        ) {
             self.ios = ios
+            self.android = android
+            self.web = web
+            self.family = family
+            self.weight = weight
+            self.style = style
         }
+    }
 
+    public enum FontWeight: String, Codable, Sendable {
+        case thin, extraLight = "extra_light", light, regular, medium, semiBold = "semi_bold"
+        case bold, extraBold = "extra_bold", black
+    }
+
+    public enum FontStyle: String, Codable, Sendable {
+        case normal
+        case italic
     }
 
     public enum FontInfo: Codable, Sendable, Hashable {
