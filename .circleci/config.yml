@@ -752,6 +752,8 @@ jobs:
 
     steps:
       - checkout
+      - checkout-submodule:
+          path: upstream/paywall-preview-resources
       - install-dependencies:
           install_swiftlint: false
       - run:
@@ -780,6 +782,8 @@ jobs:
 
     steps:
       - checkout
+      - checkout-submodule:
+          path: upstream/paywall-preview-resources
       - install-dependencies:
           install_swiftlint: false
       - update-spm-installation-commit
@@ -814,6 +818,8 @@ jobs:
 
     steps:
       - checkout
+      - checkout-submodule:
+          path: upstream/paywall-preview-resources
       - install-dependencies:
           install_swiftlint: false
       - update-spm-installation-commit
@@ -1395,7 +1401,7 @@ jobs:
           command: bundle exec fastlane record_paywall_screenshots
           no_output_timeout: 15m
           environment:
-            SCAN_DEVICE: iPhone 16 (18.0)
+            SCAN_DEVICE: iPhone 16
 
   deploy-to-spm:
     docker:
