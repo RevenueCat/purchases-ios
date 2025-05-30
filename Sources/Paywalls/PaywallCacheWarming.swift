@@ -176,14 +176,14 @@ private extension Offerings {
         )
     }
 
+    var allFontsInPaywallsNamed: [(String, URL)] {
+        response.uiConfig?.app.allFonts ?? []
+    }
+
     #if !os(macOS) && !os(tvOS) // For Paywalls V2
 
     var allImagesInPaywalls: Set<URL> {
         return self.allImagesInPaywallsV1 + self.allImagesInPaywallsV2
-    }
-
-    var allFontsInPaywallsNamed: [(String, URL)] {
-        response.uiConfig?.app.allFonts ?? []
     }
 
     #else
