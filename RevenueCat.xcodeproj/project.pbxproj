@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 55;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -2371,7 +2371,7 @@
 		887A62102C1D168B00E1A461 /* PaywallViewDynamicTypeTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallViewDynamicTypeTests.swift; sourceTree = "<group>"; };
 		887A62112C1D168B00E1A461 /* PaywallViewLocalizationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallViewLocalizationTests.swift; sourceTree = "<group>"; };
 		887A62122C1D168B00E1A461 /* Template1ViewTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Template1ViewTests.swift; sourceTree = "<group>"; };
-		887A62132C1D168B00E1A461 /* Template2ViewTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Template2ViewTests.swift; sourceTree = "<group>"; };
+		887A62132C1D168B00E1A461 /* Template2ViewTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Template2ViewTests.swift; path = Tests/RevenueCatUITests/Templates/Template2ViewTests.swift; sourceTree = SOURCE_ROOT; };
 		887A62142C1D168B00E1A461 /* Template3ViewTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Template3ViewTests.swift; sourceTree = "<group>"; };
 		887A62152C1D168B00E1A461 /* Template4ViewTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Template4ViewTests.swift; sourceTree = "<group>"; };
 		887A62162C1D168B00E1A461 /* Template5ViewTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Template5ViewTests.swift; sourceTree = "<group>"; };
@@ -2538,10 +2538,6 @@
 		FECF627761D375C8431EB866 /* StoreProduct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreProduct.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		03CCFC812DE958E30052B764 /* __PreviewResources__ */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = __PreviewResources__; sourceTree = "<group>"; };
-/* End PBXFileSystemSynchronizedRootGroup section */
-
 /* Begin PBXFrameworksBuildPhase section */
 		2DAC5F6F26F13C9800C5258F /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
@@ -2674,7 +2670,7 @@
 		030890822D2B77DD0069677B /* PaywallsV2 */ = {
 			isa = PBXGroup;
 			children = (
-				03CCFC812DE958E30052B764 /* __PreviewResources__ */,
+				03CCFCE12DE9638F0052B764 /* __PreviewResources__ */,
 				038EC8222DE7A8AC00786C42 /* TakeScreenshot.swift */,
 				030F918B2D55C9D80085103F /* LocaleFinderTests.swift */,
 				03C06FC42D4553BB00600693 /* PresentedPartialsTests.swift */,
@@ -2733,6 +2729,13 @@
 				03C72FC02D349BAE00297FEC /* IconComponentViewModel.swift */,
 			);
 			path = Icon;
+			sourceTree = "<group>";
+		};
+		03CCFCE12DE9638F0052B764 /* __PreviewResources__ */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = __PreviewResources__;
 			sourceTree = "<group>";
 		};
 		03F446222D2FE0B90046129A /* Properties */ = {
@@ -5715,9 +5718,6 @@
 			buildRules = (
 			);
 			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				03CCFC812DE958E30052B764 /* __PreviewResources__ */,
 			);
 			name = RevenueCatUITestsDev;
 			packageProductDependencies = (
