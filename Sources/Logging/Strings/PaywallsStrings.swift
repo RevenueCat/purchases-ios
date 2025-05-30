@@ -22,6 +22,7 @@ enum PaywallsStrings {
     case warming_up_fonts(fontsURLS: Set<URL>)
     case error_prefetching_image(URL, Error)
     case error_prefetching_font(URL, Error)
+    case error_prefetching_font_invalid_url(String)
 
     case caching_presented_paywall
     case clearing_presented_paywall
@@ -69,6 +70,9 @@ extension PaywallsStrings: LogMessage {
 
         case let .error_prefetching_font(url, error):
             return "Error pre-fetching paywall font '\(url)': \((error as NSError).description)"
+
+        case let .error_prefetching_font_invalid_url(urlString):
+            return "Error pre-fetching font with url: \(urlString)"
 
         case .caching_presented_paywall:
             return "PurchasesOrchestrator: caching presented paywall"

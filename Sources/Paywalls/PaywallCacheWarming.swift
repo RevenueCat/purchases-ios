@@ -281,7 +281,12 @@ private extension UIConfig.FontInfo {
         case .googleFonts:
             return nil
         case let .name(name):
-            return URL(string: name)
+            if let url = URL(string: name) {
+                return url
+            } else {
+                Logger.error(Strings.error_prefetching_font_invalid_url(name))
+                return nil
+            }
         }
     }
 }
