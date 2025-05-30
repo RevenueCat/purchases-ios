@@ -1,6 +1,7 @@
 orbs:
   macos: circleci/macos@2.5.1
   slack: circleci/slack@5.0.0
+  revenuecat: revenuecat/sdks-common-config@3.0.0
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -1385,6 +1386,7 @@ jobs:
       - run:
           name: Clone paywall-rendering-validation repository
           command: git clone git@github.com:RevenueCat/paywall-rendering-validation.git ../paywall-rendering-validation
+      - revenuecat/setup-git-credentials
       - run:
           name: Set GitHub token environment variable
           command: |
