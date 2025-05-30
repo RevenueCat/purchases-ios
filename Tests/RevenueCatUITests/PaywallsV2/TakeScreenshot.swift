@@ -119,12 +119,14 @@ class TakeScreenshotTests: BaseSnapshotTest {
         for offeringId in offerings!.all.keys {
             let offering = offerings!.all[offeringId]!
 
-            let view = Self.createPaywall(offering: offering)
-                .frame(width: 450, height: 1000)
-            self.snapshotAndSave(view: view,
-                                 size: CGSize(width: 450, height: 1000),
-                                 filename: "\(offeringId)__END.png",
-                                 template: offeringId)
+            if offering.paywallComponents != nil {
+                let view = Self.createPaywall(offering: offering)
+                    .frame(width: 450, height: 1000)
+                self.snapshotAndSave(view: view,
+                                     size: CGSize(width: 450, height: 1000),
+                                     filename: "\(offeringId)__END.png",
+                                     template: offeringId)
+            }
         }
     }
 

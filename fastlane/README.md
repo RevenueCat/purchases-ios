@@ -90,6 +90,14 @@ Setup development environment
 
 Updates paywall-preview-resources submodule and creates/updates PR
 
+### ios record_and_push_paywall_template_screenshots
+
+```sh
+[bundle exec] fastlane ios record_and_push_paywall_template_screenshots
+```
+
+Records Paywall template screenshots and pushes them to the repository at target_repository_path
+
 ### ios record_paywall_screenshots
 
 ```sh
@@ -97,14 +105,6 @@ Updates paywall-preview-resources submodule and creates/updates PR
 ```
 
 Records screenshots for paywalls
-
-### ios extract_all_xcresult_images
-
-```sh
-[bundle exec] fastlane ios extract_all_xcresult_images
-```
-
-
 
 ### ios build_paywalls_tester_for_emerge
 
