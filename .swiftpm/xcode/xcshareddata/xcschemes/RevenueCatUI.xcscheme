@@ -42,7 +42,7 @@
             reference = "container:Tests/RevenueCatUITests/TestPlans/RevenueCatUI-UnitTests.xctestplan">
          </TestPlanReference>
          <TestPlanReference
-            reference = "container:Paywall-Screenshots.xctestplan">
+            reference = "container:Tests/RevenueCatUITests/TestPlans/Paywall-Screenshots.xctestplan">
          </TestPlanReference>
       </TestPlans>
       <Testables>
