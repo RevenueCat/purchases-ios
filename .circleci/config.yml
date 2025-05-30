@@ -1554,6 +1554,8 @@ workflows:
     #     - equal: ["default", << pipeline.parameters.action >>]
     jobs:
       - record-and-push-paywall-template-screenshots
+          context:
+            - paywall-rendering-validation-pr-rw
 
   manual-trigger-docs-deploy:
     when:
