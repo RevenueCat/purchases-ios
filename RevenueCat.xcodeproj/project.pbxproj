@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 55;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -28,101 +28,6 @@
 		038213602DCAF6BE003C02C3 /* OpenSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0382135F2DCAF6BE003C02C3 /* OpenSheet.swift */; };
 		038213DB2DD4979A003C02C3 /* PurchaseButtonComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 038213DA2DD4979A003C02C3 /* PurchaseButtonComponentTests.swift */; };
 		038EC8232DE7A8B300786C42 /* TakeScreenshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 038EC8222DE7A8AC00786C42 /* TakeScreenshot.swift */; };
-		038ECAE92DE7F08300786C42 /* yoga.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECADB2DE7F08300786C42 /* yoga.webp */; };
-		038ECAEA2DE7F08300786C42 /* 1181742_1741295015.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAAB2DE7F08300786C42 /* 1181742_1741295015.webp */; };
-		038ECAEB2DE7F08300786C42 /* 1181742_1741100817.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAA92DE7F08300786C42 /* 1181742_1741100817.webp */; };
-		038ECAEC2DE7F08300786C42 /* 1181742_1738248446.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECA9D2DE7F08300786C42 /* 1181742_1738248446.webp */; };
-		038ECAED2DE7F08300786C42 /* filled-circle.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAC72DE7F08300786C42 /* filled-circle.webp */; };
-		038ECAEE2DE7F08300786C42 /* packages.json in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAE12DE7F08300786C42 /* packages.json */; };
-		038ECAEF2DE7F08300786C42 /* 1181742_1738874945.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAA12DE7F08300786C42 /* 1181742_1738874945.webp */; };
-		038ECAF02DE7F08300786C42 /* 1181742_1744019256.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAB12DE7F08300786C42 /* 1181742_1744019256.webp */; };
-		038ECAF12DE7F08300786C42 /* arrow-big-right-line.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECABC2DE7F08300786C42 /* arrow-big-right-line.webp */; };
-		038ECAF22DE7F08300786C42 /* 1181742_1734623909.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECA982DE7F08300786C42 /* 1181742_1734623909.webp */; };
-		038ECAF32DE7F08300786C42 /* walk.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAD82DE7F08300786C42 /* walk.webp */; };
-		038ECAF42DE7F08300786C42 /* 1181742_1740739796.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAA52DE7F08300786C42 /* 1181742_1740739796.webp */; };
-		038ECAF52DE7F08300786C42 /* 1181742_1734603177.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECA952DE7F08300786C42 /* 1181742_1734603177.webp */; };
-		038ECAF62DE7F08300786C42 /* 1181742_1744019195.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAB02DE7F08300786C42 /* 1181742_1744019195.webp */; };
-		038ECAF72DE7F08300786C42 /* 1181742_1741100805.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAA72DE7F08300786C42 /* 1181742_1741100805.webp */; };
-		038ECAF82DE7F08300786C42 /* Fastfile in Resources */ = {isa = PBXBuildFile; fileRef = 038ECA882DE7F08300786C42 /* Fastfile */; };
-		038ECAF92DE7F08300786C42 /* 1181742_1741100811.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAA82DE7F08300786C42 /* 1181742_1741100811.webp */; };
-		038ECAFA2DE7F08300786C42 /* 1181742_1740728865.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAA32DE7F08300786C42 /* 1181742_1740728865.webp */; };
-		038ECAFB2DE7F08300786C42 /* 1181742_1744047087.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAB42DE7F08300786C42 /* 1181742_1744047087.webp */; };
-		038ECAFC2DE7F08300786C42 /* 1181742_1741346328.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAAE2DE7F08300786C42 /* 1181742_1741346328.webp */; };
-		038ECAFD2DE7F08300786C42 /* 1181742_1734632487.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECA992DE7F08300786C42 /* 1181742_1734632487.webp */; };
-		038ECAFE2DE7F08300786C42 /* 1181742_1738317461.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECA9E2DE7F08300786C42 /* 1181742_1738317461.webp */; };
-		038ECAFF2DE7F08300786C42 /* star.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAD52DE7F08300786C42 /* star.webp */; };
-		038ECB002DE7F08300786C42 /* 1181742_1734393045.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECA8C2DE7F08300786C42 /* 1181742_1734393045.webp */; };
-		038ECB012DE7F08300786C42 /* comet.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAC12DE7F08300786C42 /* comet.webp */; };
-		038ECB022DE7F08300786C42 /* 1181742_1738080963.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECA9B2DE7F08300786C42 /* 1181742_1738080963.webp */; };
-		038ECB032DE7F08300786C42 /* dependabot.yml in Resources */ = {isa = PBXBuildFile; fileRef = 038ECA852DE7F08300786C42 /* dependabot.yml */; };
-		038ECB042DE7F08300786C42 /* 1181742_1740739788.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAA42DE7F08300786C42 /* 1181742_1740739788.webp */; };
-		038ECB052DE7F08300786C42 /* 1181742_1734689045.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECA9A2DE7F08300786C42 /* 1181742_1734689045.webp */; };
-		038ECB062DE7F08300786C42 /* weight.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAD92DE7F08300786C42 /* weight.webp */; };
-		038ECB072DE7F08300786C42 /* 1181742_1734556334.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECA942DE7F08300786C42 /* 1181742_1734556334.webp */; };
-		038ECB082DE7F08300786C42 /* viewfinder.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAD72DE7F08300786C42 /* viewfinder.webp */; };
-		038ECB092DE7F08300786C42 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 038ECA8A2DE7F08300786C42 /* README.md */; };
-		038ECB0A2DE7F08300786C42 /* headset.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECACC2DE7F08300786C42 /* headset.webp */; };
-		038ECB0B2DE7F08300786C42 /* 1181742_1741049061.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAA62DE7F08300786C42 /* 1181742_1741049061.webp */; };
-		038ECB0C2DE7F08300786C42 /* telescope.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAD62DE7F08300786C42 /* telescope.webp */; };
-		038ECB0D2DE7F08300786C42 /* planet.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAD22DE7F08300786C42 /* planet.webp */; };
-		038ECB0E2DE7F08300786C42 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAE72DE7F08300786C42 /* README.md */; };
-		038ECB0F2DE7F08300786C42 /* archive.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECABB2DE7F08300786C42 /* archive.webp */; };
-		038ECB102DE7F08300786C42 /* filled-circle-check.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAC82DE7F08300786C42 /* filled-circle-check.webp */; };
-		038ECB112DE7F08300786C42 /* PULL_REQUEST_TEMPLATE.md in Resources */ = {isa = PBXBuildFile; fileRef = 038ECA862DE7F08300786C42 /* PULL_REQUEST_TEMPLATE.md */; };
-		038ECB122DE7F08300786C42 /* feature_request.md in Resources */ = {isa = PBXBuildFile; fileRef = 038ECA832DE7F08300786C42 /* feature_request.md */; };
-		038ECB132DE7F08300786C42 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAE32DE7F08300786C42 /* .gitignore */; };
-		038ECB142DE7F08300786C42 /* 1181742_1748364488.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAB62DE7F08300786C42 /* 1181742_1748364488.webp */; };
-		038ECB152DE7F08300786C42 /* clock.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAC02DE7F08300786C42 /* clock.webp */; };
-		038ECB162DE7F08300786C42 /* filled-shield-lock.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECACA2DE7F08300786C42 /* filled-shield-lock.webp */; };
-		038ECB172DE7F08300786C42 /* Gemfile.lock in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAE52DE7F08300786C42 /* Gemfile.lock */; };
-		038ECB182DE7F08300786C42 /* filled-bell.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAC52DE7F08300786C42 /* filled-bell.webp */; };
-		038ECB192DE7F08300786C42 /* 1181742_1741100822.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAAA2DE7F08300786C42 /* 1181742_1741100822.webp */; };
-		038ECB1A2DE7F08300786C42 /* 1181742_1744914111.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAB52DE7F08300786C42 /* 1181742_1744914111.webp */; };
-		038ECB1B2DE7F08300786C42 /* filled-star.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECACB2DE7F08300786C42 /* filled-star.webp */; };
-		038ECB1C2DE7F08300786C42 /* map.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAD12DE7F08300786C42 /* map.webp */; };
-		038ECB1D2DE7F08300786C42 /* 1181742_1734394151.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECA8D2DE7F08300786C42 /* 1181742_1734394151.webp */; };
-		038ECB1E2DE7F08300786C42 /* 1181742_1734460636.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECA922DE7F08300786C42 /* 1181742_1734460636.webp */; };
-		038ECB1F2DE7F08300786C42 /* ad-circle-off.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAB92DE7F08300786C42 /* ad-circle-off.webp */; };
-		038ECB202DE7F08300786C42 /* bug_report.md in Resources */ = {isa = PBXBuildFile; fileRef = 038ECA812DE7F08300786C42 /* bug_report.md */; };
-		038ECB212DE7F08300786C42 /* offerings_paywalls_v2_templates.json in Resources */ = {isa = PBXBuildFile; fileRef = 038ECADF2DE7F08300786C42 /* offerings_paywalls_v2_templates.json */; };
-		038ECB222DE7F08300786C42 /* database.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAC32DE7F08300786C42 /* database.webp */; };
-		038ECB232DE7F08300786C42 /* check.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECABD2DE7F08300786C42 /* check.webp */; };
-		038ECB242DE7F08300786C42 /* circle.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECABE2DE7F08300786C42 /* circle.webp */; };
-		038ECB252DE7F08300786C42 /* 1181742_1734515710.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECA932DE7F08300786C42 /* 1181742_1734515710.webp */; };
-		038ECB262DE7F08300786C42 /* 1181742_1738326556.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECA9F2DE7F08300786C42 /* 1181742_1738326556.webp */; };
-		038ECB272DE7F08300786C42 /* api.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECABA2DE7F08300786C42 /* api.webp */; };
-		038ECB282DE7F08300786C42 /* 1181742_1734614032.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECA962DE7F08300786C42 /* 1181742_1734614032.webp */; };
-		038ECB292DE7F08300786C42 /* 1181742_1740728845.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAA22DE7F08300786C42 /* 1181742_1740728845.webp */; };
-		038ECB2A2DE7F08300786C42 /* icons.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECACE2DE7F08300786C42 /* icons.webp */; };
-		038ECB2B2DE7F08300786C42 /* config.yml in Resources */ = {isa = PBXBuildFile; fileRef = 038ECA7F2DE7F08300786C42 /* config.yml */; };
-		038ECB2C2DE7F08300786C42 /* 1181742_1741295020.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAAC2DE7F08300786C42 /* 1181742_1741295020.webp */; };
-		038ECB2D2DE7F08300786C42 /* download.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAC42DE7F08300786C42 /* download.webp */; };
-		038ECB2E2DE7F08300786C42 /* rocket.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAD32DE7F08300786C42 /* rocket.webp */; };
-		038ECB2F2DE7F08300786C42 /* Pluginfile in Resources */ = {isa = PBXBuildFile; fileRef = 038ECA892DE7F08300786C42 /* Pluginfile */; };
-		038ECB302DE7F08300786C42 /* 1181742_1734394157.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECA8E2DE7F08300786C42 /* 1181742_1734394157.webp */; };
-		038ECB312DE7F08300786C42 /* infinity.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECACF2DE7F08300786C42 /* infinity.webp */; };
-		038ECB322DE7F08300786C42 /* Gemfile in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAE42DE7F08300786C42 /* Gemfile */; };
-		038ECB332DE7F08300786C42 /* 1181742_1743788737.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAAF2DE7F08300786C42 /* 1181742_1743788737.webp */; };
-		038ECB342DE7F08300786C42 /* filled-lock.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAC92DE7F08300786C42 /* filled-lock.webp */; };
-		038ECB352DE7F08300786C42 /* 1181742_1738343604.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAA02DE7F08300786C42 /* 1181742_1738343604.webp */; };
-		038ECB362DE7F08300786C42 /* 1181742_1734394164.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECA8F2DE7F08300786C42 /* 1181742_1734394164.webp */; };
-		038ECB372DE7F08300786C42 /* filled-caret-right.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAC62DE7F08300786C42 /* filled-caret-right.webp */; };
-		038ECB382DE7F08300786C42 /* help.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECACD2DE7F08300786C42 /* help.webp */; };
-		038ECB392DE7F08300786C42 /* link.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAD02DE7F08300786C42 /* link.webp */; };
-		038ECB3A2DE7F08300786C42 /* 1181742_1738081702.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECA9C2DE7F08300786C42 /* 1181742_1738081702.webp */; };
-		038ECB3B2DE7F08300786C42 /* circle-check.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECABF2DE7F08300786C42 /* circle-check.webp */; };
-		038ECB3C2DE7F08300786C42 /* cpu.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAC22DE7F08300786C42 /* cpu.webp */; };
-		038ECB3D2DE7F08300786C42 /* 1181742_1741345684.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAAD2DE7F08300786C42 /* 1181742_1741345684.webp */; };
-		038ECB3E2DE7F08300786C42 /* 1181742_1734623881.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECA972DE7F08300786C42 /* 1181742_1734623881.webp */; };
-		038ECB3F2DE7F08300786C42 /* x.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECADA2DE7F08300786C42 /* x.webp */; };
-		038ECB402DE7F08300786C42 /* settings-cog.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAD42DE7F08300786C42 /* settings-cog.webp */; };
-		038ECB412DE7F08300786C42 /* 1181742_1734394169.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECA902DE7F08300786C42 /* 1181742_1734394169.webp */; };
-		038ECB422DE7F08300786C42 /* 1181742_1744019533.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAB22DE7F08300786C42 /* 1181742_1744019533.webp */; };
-		038ECB432DE7F08300786C42 /* 1181742_1734452671.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECA912DE7F08300786C42 /* 1181742_1734452671.webp */; };
-		038ECB442DE7F08300786C42 /* 1181742_1744021735.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAB32DE7F08300786C42 /* 1181742_1744021735.webp */; };
-		038ECB452DE7F08300786C42 /* activity.webp in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAB82DE7F08300786C42 /* activity.webp */; };
-		038ECB462DE7F08300786C42 /* config.yml in Resources */ = {isa = PBXBuildFile; fileRef = 038ECA822DE7F08300786C42 /* config.yml */; };
-		038ECB472DE7F08300786C42 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 038ECAE62DE7F08300786C42 /* LICENSE */; };
 		03A98CEF2D1EE048009BCA61 /* FallbackComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98CEE2D1EE040009BCA61 /* FallbackComponentTests.swift */; };
 		03A98CF12D222F5F009BCA61 /* FallbackComponentPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98CF02D222F53009BCA61 /* FallbackComponentPreview.swift */; };
 		03A98D302D240C41009BCA61 /* UIConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98D2F2D240C3E009BCA61 /* UIConfig.swift */; };
@@ -1463,101 +1368,6 @@
 		0382135F2DCAF6BE003C02C3 /* OpenSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenSheet.swift; sourceTree = "<group>"; };
 		038213DA2DD4979A003C02C3 /* PurchaseButtonComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseButtonComponentTests.swift; sourceTree = "<group>"; };
 		038EC8222DE7A8AC00786C42 /* TakeScreenshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TakeScreenshot.swift; sourceTree = "<group>"; };
-		038ECA7F2DE7F08300786C42 /* config.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = config.yml; sourceTree = "<group>"; };
-		038ECA812DE7F08300786C42 /* bug_report.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = bug_report.md; sourceTree = "<group>"; };
-		038ECA822DE7F08300786C42 /* config.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = config.yml; sourceTree = "<group>"; };
-		038ECA832DE7F08300786C42 /* feature_request.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = feature_request.md; sourceTree = "<group>"; };
-		038ECA852DE7F08300786C42 /* dependabot.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = dependabot.yml; sourceTree = "<group>"; };
-		038ECA862DE7F08300786C42 /* PULL_REQUEST_TEMPLATE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PULL_REQUEST_TEMPLATE.md; sourceTree = "<group>"; };
-		038ECA882DE7F08300786C42 /* Fastfile */ = {isa = PBXFileReference; lastKnownFileType = text; path = Fastfile; sourceTree = "<group>"; };
-		038ECA892DE7F08300786C42 /* Pluginfile */ = {isa = PBXFileReference; lastKnownFileType = text; path = Pluginfile; sourceTree = "<group>"; };
-		038ECA8A2DE7F08300786C42 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		038ECA8C2DE7F08300786C42 /* 1181742_1734393045.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1734393045.webp; sourceTree = "<group>"; };
-		038ECA8D2DE7F08300786C42 /* 1181742_1734394151.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1734394151.webp; sourceTree = "<group>"; };
-		038ECA8E2DE7F08300786C42 /* 1181742_1734394157.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1734394157.webp; sourceTree = "<group>"; };
-		038ECA8F2DE7F08300786C42 /* 1181742_1734394164.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1734394164.webp; sourceTree = "<group>"; };
-		038ECA902DE7F08300786C42 /* 1181742_1734394169.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1734394169.webp; sourceTree = "<group>"; };
-		038ECA912DE7F08300786C42 /* 1181742_1734452671.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1734452671.webp; sourceTree = "<group>"; };
-		038ECA922DE7F08300786C42 /* 1181742_1734460636.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1734460636.webp; sourceTree = "<group>"; };
-		038ECA932DE7F08300786C42 /* 1181742_1734515710.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1734515710.webp; sourceTree = "<group>"; };
-		038ECA942DE7F08300786C42 /* 1181742_1734556334.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1734556334.webp; sourceTree = "<group>"; };
-		038ECA952DE7F08300786C42 /* 1181742_1734603177.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1734603177.webp; sourceTree = "<group>"; };
-		038ECA962DE7F08300786C42 /* 1181742_1734614032.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1734614032.webp; sourceTree = "<group>"; };
-		038ECA972DE7F08300786C42 /* 1181742_1734623881.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1734623881.webp; sourceTree = "<group>"; };
-		038ECA982DE7F08300786C42 /* 1181742_1734623909.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1734623909.webp; sourceTree = "<group>"; };
-		038ECA992DE7F08300786C42 /* 1181742_1734632487.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1734632487.webp; sourceTree = "<group>"; };
-		038ECA9A2DE7F08300786C42 /* 1181742_1734689045.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1734689045.webp; sourceTree = "<group>"; };
-		038ECA9B2DE7F08300786C42 /* 1181742_1738080963.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1738080963.webp; sourceTree = "<group>"; };
-		038ECA9C2DE7F08300786C42 /* 1181742_1738081702.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1738081702.webp; sourceTree = "<group>"; };
-		038ECA9D2DE7F08300786C42 /* 1181742_1738248446.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1738248446.webp; sourceTree = "<group>"; };
-		038ECA9E2DE7F08300786C42 /* 1181742_1738317461.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1738317461.webp; sourceTree = "<group>"; };
-		038ECA9F2DE7F08300786C42 /* 1181742_1738326556.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1738326556.webp; sourceTree = "<group>"; };
-		038ECAA02DE7F08300786C42 /* 1181742_1738343604.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1738343604.webp; sourceTree = "<group>"; };
-		038ECAA12DE7F08300786C42 /* 1181742_1738874945.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1738874945.webp; sourceTree = "<group>"; };
-		038ECAA22DE7F08300786C42 /* 1181742_1740728845.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1740728845.webp; sourceTree = "<group>"; };
-		038ECAA32DE7F08300786C42 /* 1181742_1740728865.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1740728865.webp; sourceTree = "<group>"; };
-		038ECAA42DE7F08300786C42 /* 1181742_1740739788.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1740739788.webp; sourceTree = "<group>"; };
-		038ECAA52DE7F08300786C42 /* 1181742_1740739796.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1740739796.webp; sourceTree = "<group>"; };
-		038ECAA62DE7F08300786C42 /* 1181742_1741049061.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1741049061.webp; sourceTree = "<group>"; };
-		038ECAA72DE7F08300786C42 /* 1181742_1741100805.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1741100805.webp; sourceTree = "<group>"; };
-		038ECAA82DE7F08300786C42 /* 1181742_1741100811.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1741100811.webp; sourceTree = "<group>"; };
-		038ECAA92DE7F08300786C42 /* 1181742_1741100817.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1741100817.webp; sourceTree = "<group>"; };
-		038ECAAA2DE7F08300786C42 /* 1181742_1741100822.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1741100822.webp; sourceTree = "<group>"; };
-		038ECAAB2DE7F08300786C42 /* 1181742_1741295015.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1741295015.webp; sourceTree = "<group>"; };
-		038ECAAC2DE7F08300786C42 /* 1181742_1741295020.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1741295020.webp; sourceTree = "<group>"; };
-		038ECAAD2DE7F08300786C42 /* 1181742_1741345684.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1741345684.webp; sourceTree = "<group>"; };
-		038ECAAE2DE7F08300786C42 /* 1181742_1741346328.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1741346328.webp; sourceTree = "<group>"; };
-		038ECAAF2DE7F08300786C42 /* 1181742_1743788737.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1743788737.webp; sourceTree = "<group>"; };
-		038ECAB02DE7F08300786C42 /* 1181742_1744019195.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1744019195.webp; sourceTree = "<group>"; };
-		038ECAB12DE7F08300786C42 /* 1181742_1744019256.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1744019256.webp; sourceTree = "<group>"; };
-		038ECAB22DE7F08300786C42 /* 1181742_1744019533.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1744019533.webp; sourceTree = "<group>"; };
-		038ECAB32DE7F08300786C42 /* 1181742_1744021735.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1744021735.webp; sourceTree = "<group>"; };
-		038ECAB42DE7F08300786C42 /* 1181742_1744047087.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1744047087.webp; sourceTree = "<group>"; };
-		038ECAB52DE7F08300786C42 /* 1181742_1744914111.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1744914111.webp; sourceTree = "<group>"; };
-		038ECAB62DE7F08300786C42 /* 1181742_1748364488.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = 1181742_1748364488.webp; sourceTree = "<group>"; };
-		038ECAB82DE7F08300786C42 /* activity.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = activity.webp; sourceTree = "<group>"; };
-		038ECAB92DE7F08300786C42 /* ad-circle-off.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = "ad-circle-off.webp"; sourceTree = "<group>"; };
-		038ECABA2DE7F08300786C42 /* api.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = api.webp; sourceTree = "<group>"; };
-		038ECABB2DE7F08300786C42 /* archive.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = archive.webp; sourceTree = "<group>"; };
-		038ECABC2DE7F08300786C42 /* arrow-big-right-line.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = "arrow-big-right-line.webp"; sourceTree = "<group>"; };
-		038ECABD2DE7F08300786C42 /* check.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = check.webp; sourceTree = "<group>"; };
-		038ECABE2DE7F08300786C42 /* circle.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = circle.webp; sourceTree = "<group>"; };
-		038ECABF2DE7F08300786C42 /* circle-check.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = "circle-check.webp"; sourceTree = "<group>"; };
-		038ECAC02DE7F08300786C42 /* clock.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = clock.webp; sourceTree = "<group>"; };
-		038ECAC12DE7F08300786C42 /* comet.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = comet.webp; sourceTree = "<group>"; };
-		038ECAC22DE7F08300786C42 /* cpu.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = cpu.webp; sourceTree = "<group>"; };
-		038ECAC32DE7F08300786C42 /* database.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = database.webp; sourceTree = "<group>"; };
-		038ECAC42DE7F08300786C42 /* download.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = download.webp; sourceTree = "<group>"; };
-		038ECAC52DE7F08300786C42 /* filled-bell.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = "filled-bell.webp"; sourceTree = "<group>"; };
-		038ECAC62DE7F08300786C42 /* filled-caret-right.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = "filled-caret-right.webp"; sourceTree = "<group>"; };
-		038ECAC72DE7F08300786C42 /* filled-circle.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = "filled-circle.webp"; sourceTree = "<group>"; };
-		038ECAC82DE7F08300786C42 /* filled-circle-check.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = "filled-circle-check.webp"; sourceTree = "<group>"; };
-		038ECAC92DE7F08300786C42 /* filled-lock.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = "filled-lock.webp"; sourceTree = "<group>"; };
-		038ECACA2DE7F08300786C42 /* filled-shield-lock.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = "filled-shield-lock.webp"; sourceTree = "<group>"; };
-		038ECACB2DE7F08300786C42 /* filled-star.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = "filled-star.webp"; sourceTree = "<group>"; };
-		038ECACC2DE7F08300786C42 /* headset.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = headset.webp; sourceTree = "<group>"; };
-		038ECACD2DE7F08300786C42 /* help.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = help.webp; sourceTree = "<group>"; };
-		038ECACE2DE7F08300786C42 /* icons.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = icons.webp; sourceTree = "<group>"; };
-		038ECACF2DE7F08300786C42 /* infinity.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = infinity.webp; sourceTree = "<group>"; };
-		038ECAD02DE7F08300786C42 /* link.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = link.webp; sourceTree = "<group>"; };
-		038ECAD12DE7F08300786C42 /* map.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = map.webp; sourceTree = "<group>"; };
-		038ECAD22DE7F08300786C42 /* planet.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = planet.webp; sourceTree = "<group>"; };
-		038ECAD32DE7F08300786C42 /* rocket.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = rocket.webp; sourceTree = "<group>"; };
-		038ECAD42DE7F08300786C42 /* settings-cog.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = "settings-cog.webp"; sourceTree = "<group>"; };
-		038ECAD52DE7F08300786C42 /* star.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = star.webp; sourceTree = "<group>"; };
-		038ECAD62DE7F08300786C42 /* telescope.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = telescope.webp; sourceTree = "<group>"; };
-		038ECAD72DE7F08300786C42 /* viewfinder.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = viewfinder.webp; sourceTree = "<group>"; };
-		038ECAD82DE7F08300786C42 /* walk.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = walk.webp; sourceTree = "<group>"; };
-		038ECAD92DE7F08300786C42 /* weight.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = weight.webp; sourceTree = "<group>"; };
-		038ECADA2DE7F08300786C42 /* x.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = x.webp; sourceTree = "<group>"; };
-		038ECADB2DE7F08300786C42 /* yoga.webp */ = {isa = PBXFileReference; lastKnownFileType = file; path = yoga.webp; sourceTree = "<group>"; };
-		038ECADF2DE7F08300786C42 /* offerings_paywalls_v2_templates.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = offerings_paywalls_v2_templates.json; sourceTree = "<group>"; };
-		038ECAE12DE7F08300786C42 /* packages.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = packages.json; sourceTree = "<group>"; };
-		038ECAE32DE7F08300786C42 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
-		038ECAE42DE7F08300786C42 /* Gemfile */ = {isa = PBXFileReference; lastKnownFileType = text; path = Gemfile; sourceTree = "<group>"; };
-		038ECAE52DE7F08300786C42 /* Gemfile.lock */ = {isa = PBXFileReference; lastKnownFileType = text; path = Gemfile.lock; sourceTree = "<group>"; };
-		038ECAE62DE7F08300786C42 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
-		038ECAE72DE7F08300786C42 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		03A98CEE2D1EE040009BCA61 /* FallbackComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackComponentTests.swift; sourceTree = "<group>"; };
 		03A98CF02D222F53009BCA61 /* FallbackComponentPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackComponentPreview.swift; sourceTree = "<group>"; };
 		03A98D2F2D240C3E009BCA61 /* UIConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIConfig.swift; sourceTree = "<group>"; };
@@ -2728,6 +2538,10 @@
 		FECF627761D375C8431EB866 /* StoreProduct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreProduct.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		03CCFC812DE958E30052B764 /* __PreviewResources__ */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = __PreviewResources__; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXFrameworksBuildPhase section */
 		2DAC5F6F26F13C9800C5258F /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
@@ -2860,7 +2674,7 @@
 		030890822D2B77DD0069677B /* PaywallsV2 */ = {
 			isa = PBXGroup;
 			children = (
-				038ECAE82DE7F08300786C42 /* __PreviewResources__ */,
+				03CCFC812DE958E30052B764 /* __PreviewResources__ */,
 				038EC8222DE7A8AC00786C42 /* TakeScreenshot.swift */,
 				030F918B2D55C9D80085103F /* LocaleFinderTests.swift */,
 				03C06FC42D4553BB00600693 /* PresentedPartialsTests.swift */,
@@ -2892,188 +2706,6 @@
 				0354AA442D4029C300F9E330 /* TabsComponentViewModel.swift */,
 			);
 			path = Tabs;
-			sourceTree = "<group>";
-		};
-		038ECA802DE7F08300786C42 /* .circleci */ = {
-			isa = PBXGroup;
-			children = (
-				038ECA7F2DE7F08300786C42 /* config.yml */,
-			);
-			path = .circleci;
-			sourceTree = "<group>";
-		};
-		038ECA842DE7F08300786C42 /* ISSUE_TEMPLATE */ = {
-			isa = PBXGroup;
-			children = (
-				038ECA812DE7F08300786C42 /* bug_report.md */,
-				038ECA822DE7F08300786C42 /* config.yml */,
-				038ECA832DE7F08300786C42 /* feature_request.md */,
-			);
-			path = ISSUE_TEMPLATE;
-			sourceTree = "<group>";
-		};
-		038ECA872DE7F08300786C42 /* .github */ = {
-			isa = PBXGroup;
-			children = (
-				038ECA842DE7F08300786C42 /* ISSUE_TEMPLATE */,
-				038ECA852DE7F08300786C42 /* dependabot.yml */,
-				038ECA862DE7F08300786C42 /* PULL_REQUEST_TEMPLATE.md */,
-			);
-			path = .github;
-			sourceTree = "<group>";
-		};
-		038ECA8B2DE7F08300786C42 /* fastlane */ = {
-			isa = PBXGroup;
-			children = (
-				038ECA882DE7F08300786C42 /* Fastfile */,
-				038ECA892DE7F08300786C42 /* Pluginfile */,
-				038ECA8A2DE7F08300786C42 /* README.md */,
-			);
-			path = fastlane;
-			sourceTree = "<group>";
-		};
-		038ECAB72DE7F08300786C42 /* assets */ = {
-			isa = PBXGroup;
-			children = (
-				038ECA8C2DE7F08300786C42 /* 1181742_1734393045.webp */,
-				038ECA8D2DE7F08300786C42 /* 1181742_1734394151.webp */,
-				038ECA8E2DE7F08300786C42 /* 1181742_1734394157.webp */,
-				038ECA8F2DE7F08300786C42 /* 1181742_1734394164.webp */,
-				038ECA902DE7F08300786C42 /* 1181742_1734394169.webp */,
-				038ECA912DE7F08300786C42 /* 1181742_1734452671.webp */,
-				038ECA922DE7F08300786C42 /* 1181742_1734460636.webp */,
-				038ECA932DE7F08300786C42 /* 1181742_1734515710.webp */,
-				038ECA942DE7F08300786C42 /* 1181742_1734556334.webp */,
-				038ECA952DE7F08300786C42 /* 1181742_1734603177.webp */,
-				038ECA962DE7F08300786C42 /* 1181742_1734614032.webp */,
-				038ECA972DE7F08300786C42 /* 1181742_1734623881.webp */,
-				038ECA982DE7F08300786C42 /* 1181742_1734623909.webp */,
-				038ECA992DE7F08300786C42 /* 1181742_1734632487.webp */,
-				038ECA9A2DE7F08300786C42 /* 1181742_1734689045.webp */,
-				038ECA9B2DE7F08300786C42 /* 1181742_1738080963.webp */,
-				038ECA9C2DE7F08300786C42 /* 1181742_1738081702.webp */,
-				038ECA9D2DE7F08300786C42 /* 1181742_1738248446.webp */,
-				038ECA9E2DE7F08300786C42 /* 1181742_1738317461.webp */,
-				038ECA9F2DE7F08300786C42 /* 1181742_1738326556.webp */,
-				038ECAA02DE7F08300786C42 /* 1181742_1738343604.webp */,
-				038ECAA12DE7F08300786C42 /* 1181742_1738874945.webp */,
-				038ECAA22DE7F08300786C42 /* 1181742_1740728845.webp */,
-				038ECAA32DE7F08300786C42 /* 1181742_1740728865.webp */,
-				038ECAA42DE7F08300786C42 /* 1181742_1740739788.webp */,
-				038ECAA52DE7F08300786C42 /* 1181742_1740739796.webp */,
-				038ECAA62DE7F08300786C42 /* 1181742_1741049061.webp */,
-				038ECAA72DE7F08300786C42 /* 1181742_1741100805.webp */,
-				038ECAA82DE7F08300786C42 /* 1181742_1741100811.webp */,
-				038ECAA92DE7F08300786C42 /* 1181742_1741100817.webp */,
-				038ECAAA2DE7F08300786C42 /* 1181742_1741100822.webp */,
-				038ECAAB2DE7F08300786C42 /* 1181742_1741295015.webp */,
-				038ECAAC2DE7F08300786C42 /* 1181742_1741295020.webp */,
-				038ECAAD2DE7F08300786C42 /* 1181742_1741345684.webp */,
-				038ECAAE2DE7F08300786C42 /* 1181742_1741346328.webp */,
-				038ECAAF2DE7F08300786C42 /* 1181742_1743788737.webp */,
-				038ECAB02DE7F08300786C42 /* 1181742_1744019195.webp */,
-				038ECAB12DE7F08300786C42 /* 1181742_1744019256.webp */,
-				038ECAB22DE7F08300786C42 /* 1181742_1744019533.webp */,
-				038ECAB32DE7F08300786C42 /* 1181742_1744021735.webp */,
-				038ECAB42DE7F08300786C42 /* 1181742_1744047087.webp */,
-				038ECAB52DE7F08300786C42 /* 1181742_1744914111.webp */,
-				038ECAB62DE7F08300786C42 /* 1181742_1748364488.webp */,
-			);
-			path = assets;
-			sourceTree = "<group>";
-		};
-		038ECADC2DE7F08300786C42 /* icons */ = {
-			isa = PBXGroup;
-			children = (
-				038ECAB82DE7F08300786C42 /* activity.webp */,
-				038ECAB92DE7F08300786C42 /* ad-circle-off.webp */,
-				038ECABA2DE7F08300786C42 /* api.webp */,
-				038ECABB2DE7F08300786C42 /* archive.webp */,
-				038ECABC2DE7F08300786C42 /* arrow-big-right-line.webp */,
-				038ECABD2DE7F08300786C42 /* check.webp */,
-				038ECABE2DE7F08300786C42 /* circle.webp */,
-				038ECABF2DE7F08300786C42 /* circle-check.webp */,
-				038ECAC02DE7F08300786C42 /* clock.webp */,
-				038ECAC12DE7F08300786C42 /* comet.webp */,
-				038ECAC22DE7F08300786C42 /* cpu.webp */,
-				038ECAC32DE7F08300786C42 /* database.webp */,
-				038ECAC42DE7F08300786C42 /* download.webp */,
-				038ECAC52DE7F08300786C42 /* filled-bell.webp */,
-				038ECAC62DE7F08300786C42 /* filled-caret-right.webp */,
-				038ECAC72DE7F08300786C42 /* filled-circle.webp */,
-				038ECAC82DE7F08300786C42 /* filled-circle-check.webp */,
-				038ECAC92DE7F08300786C42 /* filled-lock.webp */,
-				038ECACA2DE7F08300786C42 /* filled-shield-lock.webp */,
-				038ECACB2DE7F08300786C42 /* filled-star.webp */,
-				038ECACC2DE7F08300786C42 /* headset.webp */,
-				038ECACD2DE7F08300786C42 /* help.webp */,
-				038ECACE2DE7F08300786C42 /* icons.webp */,
-				038ECACF2DE7F08300786C42 /* infinity.webp */,
-				038ECAD02DE7F08300786C42 /* link.webp */,
-				038ECAD12DE7F08300786C42 /* map.webp */,
-				038ECAD22DE7F08300786C42 /* planet.webp */,
-				038ECAD32DE7F08300786C42 /* rocket.webp */,
-				038ECAD42DE7F08300786C42 /* settings-cog.webp */,
-				038ECAD52DE7F08300786C42 /* star.webp */,
-				038ECAD62DE7F08300786C42 /* telescope.webp */,
-				038ECAD72DE7F08300786C42 /* viewfinder.webp */,
-				038ECAD82DE7F08300786C42 /* walk.webp */,
-				038ECAD92DE7F08300786C42 /* weight.webp */,
-				038ECADA2DE7F08300786C42 /* x.webp */,
-				038ECADB2DE7F08300786C42 /* yoga.webp */,
-			);
-			path = icons;
-			sourceTree = "<group>";
-		};
-		038ECADD2DE7F08300786C42 /* icons */ = {
-			isa = PBXGroup;
-			children = (
-				038ECADC2DE7F08300786C42 /* icons */,
-			);
-			path = icons;
-			sourceTree = "<group>";
-		};
-		038ECADE2DE7F08300786C42 /* pawwalls */ = {
-			isa = PBXGroup;
-			children = (
-				038ECAB72DE7F08300786C42 /* assets */,
-				038ECADD2DE7F08300786C42 /* icons */,
-			);
-			path = pawwalls;
-			sourceTree = "<group>";
-		};
-		038ECAE02DE7F08300786C42 /* paywall-templates */ = {
-			isa = PBXGroup;
-			children = (
-				038ECADE2DE7F08300786C42 /* pawwalls */,
-				038ECADF2DE7F08300786C42 /* offerings_paywalls_v2_templates.json */,
-			);
-			path = "paywall-templates";
-			sourceTree = "<group>";
-		};
-		038ECAE22DE7F08300786C42 /* resources */ = {
-			isa = PBXGroup;
-			children = (
-				038ECAE02DE7F08300786C42 /* paywall-templates */,
-				038ECAE12DE7F08300786C42 /* packages.json */,
-			);
-			path = resources;
-			sourceTree = "<group>";
-		};
-		038ECAE82DE7F08300786C42 /* __PreviewResources__ */ = {
-			isa = PBXGroup;
-			children = (
-				038ECA802DE7F08300786C42 /* .circleci */,
-				038ECA872DE7F08300786C42 /* .github */,
-				038ECA8B2DE7F08300786C42 /* fastlane */,
-				038ECAE22DE7F08300786C42 /* resources */,
-				038ECAE32DE7F08300786C42 /* .gitignore */,
-				038ECAE42DE7F08300786C42 /* Gemfile */,
-				038ECAE52DE7F08300786C42 /* Gemfile.lock */,
-				038ECAE62DE7F08300786C42 /* LICENSE */,
-				038ECAE72DE7F08300786C42 /* README.md */,
-			);
-			path = __PreviewResources__;
 			sourceTree = "<group>";
 		};
 		03A98D2E2D240C2D009BCA61 /* RevenueCatUI */ = {
@@ -6084,6 +5716,9 @@
 			);
 			dependencies = (
 			);
+			fileSystemSynchronizedGroups = (
+				03CCFC812DE958E30052B764 /* __PreviewResources__ */,
+			);
 			name = RevenueCatUITestsDev;
 			packageProductDependencies = (
 				887A63492C1D17EF00E1A461 /* Nimble */,
@@ -6451,101 +6086,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				038ECAE92DE7F08300786C42 /* yoga.webp in Resources */,
-				038ECAEA2DE7F08300786C42 /* 1181742_1741295015.webp in Resources */,
-				038ECAEB2DE7F08300786C42 /* 1181742_1741100817.webp in Resources */,
-				038ECAEC2DE7F08300786C42 /* 1181742_1738248446.webp in Resources */,
-				038ECAED2DE7F08300786C42 /* filled-circle.webp in Resources */,
-				038ECAEE2DE7F08300786C42 /* packages.json in Resources */,
-				038ECAEF2DE7F08300786C42 /* 1181742_1738874945.webp in Resources */,
-				038ECAF02DE7F08300786C42 /* 1181742_1744019256.webp in Resources */,
-				038ECAF12DE7F08300786C42 /* arrow-big-right-line.webp in Resources */,
-				038ECAF22DE7F08300786C42 /* 1181742_1734623909.webp in Resources */,
-				038ECAF32DE7F08300786C42 /* walk.webp in Resources */,
-				038ECAF42DE7F08300786C42 /* 1181742_1740739796.webp in Resources */,
-				038ECAF52DE7F08300786C42 /* 1181742_1734603177.webp in Resources */,
-				038ECAF62DE7F08300786C42 /* 1181742_1744019195.webp in Resources */,
-				038ECAF72DE7F08300786C42 /* 1181742_1741100805.webp in Resources */,
-				038ECAF82DE7F08300786C42 /* Fastfile in Resources */,
-				038ECAF92DE7F08300786C42 /* 1181742_1741100811.webp in Resources */,
-				038ECAFA2DE7F08300786C42 /* 1181742_1740728865.webp in Resources */,
-				038ECAFB2DE7F08300786C42 /* 1181742_1744047087.webp in Resources */,
-				038ECAFC2DE7F08300786C42 /* 1181742_1741346328.webp in Resources */,
-				038ECAFD2DE7F08300786C42 /* 1181742_1734632487.webp in Resources */,
-				038ECAFE2DE7F08300786C42 /* 1181742_1738317461.webp in Resources */,
-				038ECAFF2DE7F08300786C42 /* star.webp in Resources */,
-				038ECB002DE7F08300786C42 /* 1181742_1734393045.webp in Resources */,
-				038ECB012DE7F08300786C42 /* comet.webp in Resources */,
-				038ECB022DE7F08300786C42 /* 1181742_1738080963.webp in Resources */,
-				038ECB032DE7F08300786C42 /* dependabot.yml in Resources */,
-				038ECB042DE7F08300786C42 /* 1181742_1740739788.webp in Resources */,
-				038ECB052DE7F08300786C42 /* 1181742_1734689045.webp in Resources */,
-				038ECB062DE7F08300786C42 /* weight.webp in Resources */,
-				038ECB072DE7F08300786C42 /* 1181742_1734556334.webp in Resources */,
-				038ECB082DE7F08300786C42 /* viewfinder.webp in Resources */,
-				038ECB092DE7F08300786C42 /* README.md in Resources */,
-				038ECB0A2DE7F08300786C42 /* headset.webp in Resources */,
-				038ECB0B2DE7F08300786C42 /* 1181742_1741049061.webp in Resources */,
-				038ECB0C2DE7F08300786C42 /* telescope.webp in Resources */,
-				038ECB0D2DE7F08300786C42 /* planet.webp in Resources */,
-				038ECB0E2DE7F08300786C42 /* README.md in Resources */,
-				038ECB0F2DE7F08300786C42 /* archive.webp in Resources */,
-				038ECB102DE7F08300786C42 /* filled-circle-check.webp in Resources */,
-				038ECB112DE7F08300786C42 /* PULL_REQUEST_TEMPLATE.md in Resources */,
-				038ECB122DE7F08300786C42 /* feature_request.md in Resources */,
-				038ECB132DE7F08300786C42 /* .gitignore in Resources */,
-				038ECB142DE7F08300786C42 /* 1181742_1748364488.webp in Resources */,
-				038ECB152DE7F08300786C42 /* clock.webp in Resources */,
-				038ECB162DE7F08300786C42 /* filled-shield-lock.webp in Resources */,
-				038ECB172DE7F08300786C42 /* Gemfile.lock in Resources */,
-				038ECB182DE7F08300786C42 /* filled-bell.webp in Resources */,
-				038ECB192DE7F08300786C42 /* 1181742_1741100822.webp in Resources */,
-				038ECB1A2DE7F08300786C42 /* 1181742_1744914111.webp in Resources */,
-				038ECB1B2DE7F08300786C42 /* filled-star.webp in Resources */,
-				038ECB1C2DE7F08300786C42 /* map.webp in Resources */,
-				038ECB1D2DE7F08300786C42 /* 1181742_1734394151.webp in Resources */,
-				038ECB1E2DE7F08300786C42 /* 1181742_1734460636.webp in Resources */,
-				038ECB1F2DE7F08300786C42 /* ad-circle-off.webp in Resources */,
-				038ECB202DE7F08300786C42 /* bug_report.md in Resources */,
-				038ECB212DE7F08300786C42 /* offerings_paywalls_v2_templates.json in Resources */,
-				038ECB222DE7F08300786C42 /* database.webp in Resources */,
-				038ECB232DE7F08300786C42 /* check.webp in Resources */,
-				038ECB242DE7F08300786C42 /* circle.webp in Resources */,
-				038ECB252DE7F08300786C42 /* 1181742_1734515710.webp in Resources */,
-				038ECB262DE7F08300786C42 /* 1181742_1738326556.webp in Resources */,
-				038ECB272DE7F08300786C42 /* api.webp in Resources */,
-				038ECB282DE7F08300786C42 /* 1181742_1734614032.webp in Resources */,
-				038ECB292DE7F08300786C42 /* 1181742_1740728845.webp in Resources */,
-				038ECB2A2DE7F08300786C42 /* icons.webp in Resources */,
-				038ECB2B2DE7F08300786C42 /* config.yml in Resources */,
-				038ECB2C2DE7F08300786C42 /* 1181742_1741295020.webp in Resources */,
-				038ECB2D2DE7F08300786C42 /* download.webp in Resources */,
-				038ECB2E2DE7F08300786C42 /* rocket.webp in Resources */,
-				038ECB2F2DE7F08300786C42 /* Pluginfile in Resources */,
-				038ECB302DE7F08300786C42 /* 1181742_1734394157.webp in Resources */,
-				038ECB312DE7F08300786C42 /* infinity.webp in Resources */,
-				038ECB322DE7F08300786C42 /* Gemfile in Resources */,
-				038ECB332DE7F08300786C42 /* 1181742_1743788737.webp in Resources */,
-				038ECB342DE7F08300786C42 /* filled-lock.webp in Resources */,
-				038ECB352DE7F08300786C42 /* 1181742_1738343604.webp in Resources */,
-				038ECB362DE7F08300786C42 /* 1181742_1734394164.webp in Resources */,
-				038ECB372DE7F08300786C42 /* filled-caret-right.webp in Resources */,
-				038ECB382DE7F08300786C42 /* help.webp in Resources */,
-				038ECB392DE7F08300786C42 /* link.webp in Resources */,
-				038ECB3A2DE7F08300786C42 /* 1181742_1738081702.webp in Resources */,
-				038ECB3B2DE7F08300786C42 /* circle-check.webp in Resources */,
-				038ECB3C2DE7F08300786C42 /* cpu.webp in Resources */,
-				038ECB3D2DE7F08300786C42 /* 1181742_1741345684.webp in Resources */,
-				038ECB3E2DE7F08300786C42 /* 1181742_1734623881.webp in Resources */,
-				038ECB3F2DE7F08300786C42 /* x.webp in Resources */,
-				038ECB402DE7F08300786C42 /* settings-cog.webp in Resources */,
-				038ECB412DE7F08300786C42 /* 1181742_1734394169.webp in Resources */,
-				038ECB422DE7F08300786C42 /* 1181742_1744019533.webp in Resources */,
-				038ECB432DE7F08300786C42 /* 1181742_1734452671.webp in Resources */,
-				038ECB442DE7F08300786C42 /* 1181742_1744021735.webp in Resources */,
-				038ECB452DE7F08300786C42 /* activity.webp in Resources */,
-				038ECB462DE7F08300786C42 /* config.yml in Resources */,
-				038ECB472DE7F08300786C42 /* LICENSE in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
