@@ -179,8 +179,7 @@ platform :ios do
     UI.user_error!("Failed to determine target repository name") if target_repository_name.nil? || target_repository_name.empty?
 
     # Loop over all PNG files in the tmp_dir, parse the offering ID from the file names, and move them into the target repository
-    # output_dir = record_paywall_screenshots
-    output_dir = File.absolute_path("../fastlane/test_output/xctest/paywall-screenshots")
+    output_dir = record_paywall_screenshots
 
     UI.message("Output directory: #{output_dir}")
     
