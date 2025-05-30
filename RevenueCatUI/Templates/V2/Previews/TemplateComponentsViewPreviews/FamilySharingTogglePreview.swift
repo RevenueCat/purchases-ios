@@ -226,7 +226,7 @@ private enum FamilySharingTogglePreview {
             ),
             tabs: [
                 // Tab 1
-                .init(stack: .init(
+                .init(id: "1", stack: .init(
                     components: [
                         .image(catImage),
                         .stack(.init(
@@ -252,7 +252,7 @@ private enum FamilySharingTogglePreview {
                     spacing: 0
                 )),
                 // Tab 2
-                .init(stack: .init(
+                .init(id: "2", stack: .init(
                     components: [
                         .image(catFamilyImage),
                         .stack(.init(

@@ -26,7 +26,8 @@ class TabsComponentViewModel {
     private let presentedOverrides: PresentedOverrides<PresentedTabsPartial>?
 
     let controlStackViewModel: StackComponentViewModel
-    let tabViewModels: [TabViewModel]
+    let tabViewModels: [String: TabViewModel]
+    let tabIds: [String]
 
     init(
         component: PaywallComponent.TabsComponent,
@@ -36,7 +37,10 @@ class TabsComponentViewModel {
     ) throws {
         self.component = component
         self.controlStackViewModel = controlStackViewModel
-        self.tabViewModels = tabViewModels
+        self.tabViewModels = Dictionary(uniqueKeysWithValues: tabViewModels.map { tabViewModel in
+            return (tabViewModel.tab.id, tabViewModel)
+        })
+        self.tabIds = tabViewModels.map(\.tab.id)
         self.uiConfigProvider = uiConfigProvider
 
         self.presentedOverrides = try self.component.overrides?.toPresentedOverrides { $0 }
@@ -76,7 +80,7 @@ class TabsComponentViewModel {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class TabViewModel {
 
-    private let tab: PaywallComponent.TabsComponent.Tab
+    let tab: PaywallComponent.TabsComponent.Tab
     let uiConfigProvider: UIConfigProvider
     let stackViewModel: StackComponentViewModel
     let defaultSelectedPackage: Package?

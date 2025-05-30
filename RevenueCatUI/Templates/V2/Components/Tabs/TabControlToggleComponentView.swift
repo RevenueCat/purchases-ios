@@ -59,7 +59,8 @@ struct TabControlToggleComponentView: View {
             )
             .labelsHidden()
         .onChangeOf(self.isOn) { newValue in
-            self.tabControlContext.selectedIndex = newValue ? 1 : 0
+            self.tabControlContext.selectedTabId =
+                newValue ? self.tabControlContext.tabIds[1] : self.tabControlContext.tabIds[0]
         }
     }
 
