@@ -142,7 +142,7 @@ class TakeScreenshotTests: BaseSnapshotTest {
     func snapshotAndSave<V: View>(view: V, size: CGSize, filename: String, template: String) {
         // Waiting for 3 for image loading (for now)
         // SOON: Replace with local images
-        let image = view.asImage(wait: 3)
+        let image = view.asImage(wait: 3).resized(toWidth: size.width)
 
         // Save PNG data
         if let pngData = image.pngData() {
@@ -157,6 +157,22 @@ class TakeScreenshotTests: BaseSnapshotTest {
         }
     }
 
+}
+
+extension UIImage {
+    func resized(toWidth width: CGFloat) -> UIImage {
+        let scale = width / self.size.width
+        let height = self.size.height * scale
+        let newSize = CGSize(width: width, height: height)
+
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1  // Force actual pixel size
+        let renderer = UIGraphicsImageRenderer(size: newSize, format: format)
+
+        return renderer.image { _ in
+            self.draw(in: CGRect(origin: .zero, size: newSize))
+        }
+    }
 }
 
 extension View {
