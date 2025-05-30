@@ -338,6 +338,8 @@ platform :ios do
     image_output_dir = "#{output_dir}/images"
     FileUtils.mkdir_p(image_output_dir)
     extract_all_xcresult_images(xcresult_path: result_bundle_path, output_dir: image_output_dir)
+
+    output_dir
   end
 
   private_lane :extract_all_xcresult_images do |options|
