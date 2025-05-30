@@ -157,6 +157,159 @@ platform :ios do
     )
   end
 
+  # desc "Records Paywall template screenshots and pushes them to the repository at target_repository_path"
+  # lane :record_and_push_paywall_template_screenshots do |options|
+  #   UI.user_error!("Please provide the target_repository_path, and make sure it is cloned.") unless options[:target_repository_path]
+  #   target_repository_path = Dir.chdir("..") do
+  #     File.expand_path(options[:target_repository_path])
+  #   end
+  #   target_repository_branch = "update-android-template-screenshots"
+  #   target_repository_name = nil
+  #   tmp_dir = ".tmp-paywall-template-screenshots"
+
+  #   # Update the target repository and create a new branch
+  #   Dir.chdir(target_repository_path) do
+  #     UI.user_error!("Target repository (#{target_repository_path}) is not clean.") unless sh("git", "status", "--porcelain").empty?
+  #     sh("git", "fetch")
+  #     sh("git", "checkout", "main")
+  #     sh("git", "pull")
+  #     create_or_checkout_branch(branch_name: target_repository_branch)
+  #     target_repository_name = sh("basename -s .git \"$(git config --get remote.origin.url)\"").strip
+  #   end
+  #   UI.user_error!("Failed to determine target repository name") if target_repository_name.nil? || target_repository_name.empty?
+
+  #   # Prepare the tmp directory
+  #   sh("rm -rf #{tmp_dir}")
+  #   sh("mkdir -p #{tmp_dir}")
+
+  #   begin
+  #     record_paparazzi_screenshots(gradle_module: ":ui:revenuecatui", tests: "PaywallComponentsTemplatePreviewRecorder", output_dir: tmp_dir)
+  #     # Loop over all PNG files in the tmp_dir, parse the offering ID from the file names, and move them into the target repository.
+  #     sh("find #{tmp_dir} -name '*.png'").split("\n").each do |file_path|
+  #       if file_path =~ /\>\>(.*?)\<\</
+  #         offering_id = $1
+  #         target_dir = "#{target_repository_path}/screenshots/templates/#{offering_id}"
+  #         sh("mkdir -p #{target_dir}")
+  #         sh("mv \"#{file_path}\" \"#{target_dir}/android.png\"")
+  #       else
+  #         UI.user_error!("No offering ID found in file: #{File.basename(file_path)}")
+  #       end
+  #     end
+  #   ensure
+  #     sh("rm -rf #{tmp_dir}")
+  #   end
+
+  #   # Commit, push, and create a PR in the target repository
+  #   Dir.chdir(target_repository_path) do
+  #     commit_push_and_create_pr_if_necessary(
+  #       repo: target_repository_name,
+  #       branch_name: target_repository_branch,
+  #       commit_message: "[Automated] Updates Android template screenshots.",
+  #       title: "[AUTOMATIC] Updates Android template screenshots",
+  #       body: "This is an automatic update of the Android template screenshots.",
+  #       team_reviewers: ["coresdk", "monetization", "bab-s"]
+  #     )
+  #   end
+  # end
+
+  desc "Records screenshots for paywalls"
+  lane :record_paywall_screenshots do |options|
+    output_dir = File.absolute_path("../fastlane/test_output/xctest/paywall-screenshots")
+    FileUtils.rm_rf(output_dir)
+    FileUtils.mkdir_p(output_dir)
+
+    device = ENV['SCAN_DEVICE'] || "iPhone 12 (15.2)"
+    result_bundle_path = "#{output_dir}/RevenueCatUITests.xcresult"
+
+    # Using xcodebuild because scan couldn't find RevenueCatUI scheme locally (even though shared)
+    # This is due to RevenueCatUI scheme belonging to purchases-ios and not an actual project
+    xcodebuild(
+      workspace: '.',
+      scheme: 'RevenueCatUI',
+      destination: "platform=iOS Simulator,name=#{device}",
+      sdk: 'iphonesimulator',
+      test: true,
+      xcargs: "-testPlan Paywall-Screenshots -resultBundlePath #{result_bundle_path}"
+    )
+
+    image_output_dir = "#{output_dir}/images"
+    FileUtils.mkdir_p(image_output_dir)
+    extract_all_xcresult_images(xcresult_path: result_bundle_path, output_dir: image_output_dir)
+  end
+
+  lane :extract_all_xcresult_images do |options|
+    require 'json'
+    xcresult_path = options[:xcresult_path]
+    output_dir = options[:output_dir]
+    FileUtils.mkdir_p(output_dir)
+
+
+    # Export all attachments
+    command = [
+      "xcrun", 
+      "xcresulttool", 
+      "export attachments",
+      "--path '#{xcresult_path}'",
+      "--test-id \"TakeScreenshotTests/testPaywallValidationScreenshots()\"",
+      "--output-path #{output_dir}"
+    ].join(" ")
+    sh(command)
+
+    command = [
+      "xcrun",
+      "xcresulttool",
+      "get", 
+      "test-results", 
+      "activities", 
+      "--path #{xcresult_path}",
+      "--test-id \"TakeScreenshotTests/testPaywallValidationScreenshots()\""
+    ].join(" ")
+  
+    # Fetch the root XCResult JSON
+    json = sh(command)
+    data = JSON.parse(json)
+
+    uuid_map = {}
+  
+    # Recursive method to collect all attachments from nested activities
+    def collect_attachments(activities, uuid_map)
+      activities&.each do |activity|
+        if activity["attachments"]
+          activity["attachments"].each do |attachment|
+            uuid = attachment["uuid"]
+            name = attachment["name"]
+            uuid_map[uuid] = name if uuid && name
+          end
+        end
+
+        # Recurse into childActivities
+        if activity["childActivities"]
+          collect_attachments(activity["childActivities"], uuid_map)
+        end
+      end
+    end
+
+    data["testRuns"]&.each do |run|
+      collect_attachments(run["activities"], uuid_map)
+    end
+
+    uuid_map.each do |uuid, name|
+      Dir.glob("#{output_dir}/#{uuid}.*").each do |file|
+        extension = File.extname(file)
+
+        # Only keep the part of name before __END if it exists
+        name = name.split("__END").first if name.include?("__END")
+
+        File.rename(file, "#{output_dir}/#{name}#{extension}")
+      end
+    end
+
+    FileUtils.rm_rf("#{output_dir}/manifest.json")
+    
+  end
+  
+
+
   desc "Build the Paywalls Test app for Emerge Snapshots"
   lane :build_paywalls_tester_for_emerge do |options|
     scan(

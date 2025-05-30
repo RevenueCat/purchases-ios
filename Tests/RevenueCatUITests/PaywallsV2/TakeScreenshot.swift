@@ -17,6 +17,7 @@ import Nimble
 @testable import RevenueCatUI
 import SnapshotTesting
 import SwiftUI
+import XCTest
 
 #if !os(watchOS) && !os(macOS)
 
@@ -28,6 +29,33 @@ class TakeScreenshotTests: BaseSnapshotTest {
     }
 
     func testPaywallValidationScreenshots() {
+        
+
+//        // Resolve output path from build environment or fallback
+//        guard let outputDirectory = ProcessInfo.processInfo.environment["PAYWALL_SCREENSHOTS_PATH"]
+//            .map( { URL(fileURLWithPath: $0) })
+//                //                .appendingPathComponent("TestScreenshots")
+//            else {
+//                fatalError("No output directory specified for snapshots")
+//            }
+//
+//        do {
+//            try FileManager.default.createDirectory(
+//                at: outputDirectory,
+//                withIntermediateDirectories: true,
+//                attributes: nil
+//            )
+//            print("✅ Created or verified directory at \(outputDirectory.path)")
+//        } catch {
+//            print("❌ Failed to create directory: \(error)")
+//        }
+//
+//        do {
+//            try self.clearContentsOfDirectory(at: outputDirectory)
+//        } catch {
+//            fatalError("Failed to delete contents")
+//        }
+
         let bundle = Bundle(for: Self.self)
 
         guard let resourceBundleURL = bundle.url(
@@ -120,17 +148,40 @@ class TakeScreenshotTests: BaseSnapshotTest {
 
             let view = Self.createPaywall(offering: offering)
                 .frame(width: 450, height: 1000)
-            self.snapshotAndSave(view: view, size: CGSize(width: 450, height: 1000), filename: "\(offeringId).png")
+            self.snapshotAndSave(view: view,
+                                 size: CGSize(width: 450, height: 1000),
+                                 filename: "\(offeringId)__END.png",
+                                 template: offeringId)
         }
     }
 
-    func snapshotAndSave<V: View>(view: V, size: CGSize, filename: String) {
+    func clearContentsOfDirectory(at url: URL) throws {
+        let fileManager = FileManager.default
+        let contents = try fileManager.contentsOfDirectory(at: url, includingPropertiesForKeys: nil)
+
+        for item in contents {
+            try fileManager.removeItem(at: item)
+        }
+    }
+
+
+    func snapshotAndSave<V: View>(view: V, size: CGSize, filename: String, template: String) {
         let image = view.asImage(wait: 0.5)
 
-        let url = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
-        try? image.pngData()?.write(to: url)
-        print("Saved screenshot to: \(url)")
+        // Save PNG data
+        if let pngData = image.pngData() {
+            // 📎 Attach to test
+            let attachment = XCTAttachment(data: pngData, uniformTypeIdentifier: "public.png")
+            attachment.name = filename
+            attachment.userInfo = ["template": template]
+            attachment.lifetime = .keepAlways
+            self.add(attachment)
+        } else {
+            print("❌ Failed to generate PNG data from image")
+        }
     }
+
+
 
 }
 
