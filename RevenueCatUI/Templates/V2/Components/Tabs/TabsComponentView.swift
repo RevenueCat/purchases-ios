@@ -112,28 +112,18 @@ struct LoadedTabsComponentView: View {
     }
 
     var body: some View {
-        self.viewModel.styles(
-            state: self.componentViewState,
-            condition: self.screenCondition,
-            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
-                package: self.packageContext.package
-            )
-        ) { style in
-            if style.visible {
-                LoadedTabComponentView(
-                    stackViewModel: self.activeTabViewModel.stackViewModel,
-                    onChange: { context in
-                        self.packageContext.update(
-                            package: context.package,
-                            variableContext: context.variableContext
-                        )
-                    },
-                    onDismiss: self.onDismiss
+        LoadedTabComponentView(
+            stackViewModel: self.activeTabViewModel.stackViewModel,
+            onChange: { context in
+                self.packageContext.update(
+                    package: context.package,
+                    variableContext: context.variableContext
                 )
-                .environmentObject(self.tabControlContext)
-                .environmentObject(self.tierPackageContexts[self.tabControlContext.selectedIndex])
-            }
-        }
+            },
+            onDismiss: self.onDismiss
+        )
+        .environmentObject(self.tabControlContext)
+        .environmentObject(self.tierPackageContexts[self.tabControlContext.selectedIndex])
     }
 
 }

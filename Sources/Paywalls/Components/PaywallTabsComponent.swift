@@ -147,7 +147,7 @@ public extension PaywallComponent {
         public let size: Size
         public let padding: Padding
         public let margin: Padding
-        public let backgroundColor: ColorScheme?
+        public let background: Background?
         public let shape: Shape?
         public let border: Border?
         public let shadow: Shadow?
@@ -162,7 +162,7 @@ public extension PaywallComponent {
             size: Size = .init(width: .fill, height: .fit),
             padding: Padding = .zero,
             margin: Padding = .zero,
-            backgroundColor: ColorScheme? = nil,
+            background: Background? = nil,
             shape: Shape? = nil,
             border: Border? = nil,
             shadow: Shadow? = nil,
@@ -177,7 +177,7 @@ public extension PaywallComponent {
             self.size = size
             self.padding = padding
             self.margin = margin
-            self.backgroundColor = backgroundColor
+            self.background = background
             self.shape = shape
             self.border = border
             self.shadow = shadow
@@ -194,7 +194,7 @@ public extension PaywallComponent {
             hasher.combine(size)
             hasher.combine(padding)
             hasher.combine(margin)
-            hasher.combine(backgroundColor)
+            hasher.combine(background)
             hasher.combine(shape)
             hasher.combine(border)
             hasher.combine(shadow)
@@ -209,7 +209,7 @@ public extension PaywallComponent {
                    lhs.size == rhs.size &&
                    lhs.padding == rhs.padding &&
                    lhs.margin == rhs.margin &&
-                   lhs.backgroundColor == rhs.backgroundColor &&
+                   lhs.background == rhs.background &&
                    lhs.shape == rhs.shape &&
                    lhs.border == rhs.border &&
                    lhs.shadow == rhs.shadow &&
@@ -225,7 +225,7 @@ public extension PaywallComponent {
         public let size: Size?
         public let padding: Padding?
         public let margin: Padding?
-        public let backgroundColor: ColorScheme?
+        public let background: Background?
         public let shape: Shape?
         public let border: Border?
         public let shadow: Shadow?
@@ -235,7 +235,7 @@ public extension PaywallComponent {
             size: Size? = nil,
             padding: Padding? = nil,
             margin: Padding? = nil,
-            backgroundColor: ColorScheme? = nil,
+            background: Background? = nil,
             shape: Shape? = nil,
             border: Border? = nil,
             shadow: Shadow? = nil
@@ -244,7 +244,7 @@ public extension PaywallComponent {
             self.size = size
             self.padding = padding
             self.margin = margin
-            self.backgroundColor = backgroundColor
+            self.background = background
             self.shape = shape
             self.border = border
             self.shadow = shadow
@@ -255,7 +255,7 @@ public extension PaywallComponent {
             hasher.combine(size)
             hasher.combine(padding)
             hasher.combine(margin)
-            hasher.combine(backgroundColor)
+            hasher.combine(background)
             hasher.combine(shape)
             hasher.combine(border)
             hasher.combine(shadow)
@@ -266,7 +266,7 @@ public extension PaywallComponent {
                    lhs.size == rhs.size &&
                    lhs.padding == rhs.padding &&
                    lhs.margin == rhs.margin &&
-                   lhs.backgroundColor == rhs.backgroundColor &&
+                   lhs.background == rhs.background &&
                    lhs.shape == rhs.shape &&
                    lhs.border == rhs.border &&
                    lhs.shadow == rhs.shadow
