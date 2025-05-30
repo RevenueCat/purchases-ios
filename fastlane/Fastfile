@@ -197,7 +197,7 @@ platform :ios do
   #     end
   #   ensure
   #     sh("rm -rf #{tmp_dir}")
-  #   end
+    # end
 
   #   # Commit, push, and create a PR in the target repository
   #   Dir.chdir(target_repository_path) do
@@ -237,7 +237,7 @@ platform :ios do
     extract_all_xcresult_images(xcresult_path: result_bundle_path, output_dir: image_output_dir)
   end
 
-  lane :extract_all_xcresult_images do |options|
+  private_lane :extract_all_xcresult_images do |options|
     require 'json'
     xcresult_path = options[:xcresult_path]
     output_dir = options[:output_dir]
