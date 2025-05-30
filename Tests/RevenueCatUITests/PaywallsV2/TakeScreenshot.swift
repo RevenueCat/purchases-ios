@@ -87,7 +87,7 @@ class TakeScreenshotTests: BaseSnapshotTest {
             "com.revenuecat.lifetime_product": .init(sk1Product: PreviewMock.Product(
                 price: 1.99,
                 unit: .week,
-                localizedTitle: "Liftime"
+                localizedTitle: "Lifetime"
             )),
             "com.revenuecat.annual_product": .init(sk1Product: PreviewMock.Product(
                 price: 1.99,
