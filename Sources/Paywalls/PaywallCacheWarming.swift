@@ -176,9 +176,21 @@ private extension Offerings {
         )
     }
 
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
+
     var allFontsInPaywallsNamed: [(String, URL)] {
-        response.uiConfig?.app.allFonts ?? []
+        response.uiConfig?
+            .app
+            .allFonts ?? []
     }
+
+#else
+
+    var allFontsInPaywallsNamed: [(String, URL)] {
+        [ ]
+    }
+
+#endif
 
     #if !os(macOS) && !os(tvOS) // For Paywalls V2
 
@@ -254,6 +266,8 @@ private extension PaywallData.Configuration.Images {
 
 }
 
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
+
 private extension UIConfig.AppConfig {
     var allFonts: [(String, URL)] {
         fonts.values.compactMap {
@@ -290,3 +304,5 @@ private extension UIConfig.FontInfo {
         }
     }
 }
+
+#endif
