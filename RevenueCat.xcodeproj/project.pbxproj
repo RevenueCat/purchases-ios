@@ -1575,7 +1575,7 @@
 		03C72FC02D349BAE00297FEC /* IconComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconComponentViewModel.swift; sourceTree = "<group>"; };
 		03C7305A2D35985500297FEC /* TextComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextComponentTests.swift; sourceTree = "<group>"; };
 		03C730F22D35F13F00297FEC /* PaywallV2CacheWarming.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallV2CacheWarming.swift; sourceTree = "<group>"; };
-		03CCFBF82DE8D84B0052B764 /* Paywall-Screenshots.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Paywall-Screenshots.xctestplan"; sourceTree = "<group>"; };
+		03CCFC172DE94FF70052B764 /* Paywall-Screenshots.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Paywall-Screenshots.xctestplan"; sourceTree = "<group>"; };
 		03E37BE92D30B32200CD9678 /* PaywallTabsComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallTabsComponent.swift; sourceTree = "<group>"; };
 		03F0B6502DD5700D00E82199 /* LocalizationDictionaryExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationDictionaryExtensions.swift; sourceTree = "<group>"; };
 		03F0B6702DD6363B00E82199 /* NavigatetoURL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigatetoURL.swift; sourceTree = "<group>"; };
@@ -5039,7 +5039,6 @@
 		57B425A3275800B60075BDC4 /* Test Plans */ = {
 			isa = PBXGroup;
 			children = (
-				03CCFBF82DE8D84B0052B764 /* Paywall-Screenshots.xctestplan */,
 				570896B227595C8100296F1C /* AllTests.xctestplan */,
 				4FE3A57A2B4C6B1B0006A7FC /* BackendIntegrationTests */,
 				B3DB3EA5288627D7008EB151 /* CI-AllTests.xctestplan */,
@@ -5521,6 +5520,7 @@
 		887A621C2C1D168B00E1A461 /* TestPlans */ = {
 			isa = PBXGroup;
 			children = (
+				03CCFC172DE94FF70052B764 /* Paywall-Screenshots.xctestplan */,
 				887A62182C1D168B00E1A461 /* CI-RevenueCatUI.xctestplan */,
 				887A62192C1D168B00E1A461 /* CI-Snapshots.xctestplan */,
 				887A621A2C1D168B00E1A461 /* RevenueCatUI-UnitTests.xctestplan */,
