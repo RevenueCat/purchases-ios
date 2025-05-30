@@ -92,6 +92,18 @@ aliases:
         only: main
 
 commands:
+  checkout-submodule:
+    description: "Checks out a git submodule."
+    parameters:
+      path:
+        type: string
+        default: ""
+    steps:
+      - run:
+          name: Check out submodule << parameters.path >>
+          command: |
+            git submodule init << parameters.path >>
+            git submodule update << parameters.path >>
   slack-notify-on-fail:
     steps:
       - slack/notify:
