@@ -724,6 +724,8 @@ jobs:
 
     steps:
       - checkout
+      - checkout-submodule:
+          path: upstream/paywall-preview-resources
       - install-dependencies:
           install_swiftlint: false
       - run:
@@ -752,6 +754,8 @@ jobs:
 
     steps:
       - checkout
+      - checkout-submodule:
+          path: upstream/paywall-preview-resources
       - install-dependencies:
           install_swiftlint: false
       - run:
