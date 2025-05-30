@@ -124,8 +124,8 @@ let package = Package(
                     exclude: ["Templates/__Snapshots__", "Data/__Snapshots__", "TestPlans"],
                     resources: [
                         .copy("Resources/header.heic"),
-                            .copy("Resources/background.heic"),
-                            .copy("PaywallsV2/__PreviewResources__")
+                        .copy("Resources/background.heic"),
+                        .copy("PaywallsV2/__PreviewResources__")
                     ])
     ]
 )

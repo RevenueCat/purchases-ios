@@ -34,7 +34,8 @@ class TakeScreenshotTests: BaseSnapshotTest {
         guard let resourceBundleURL = bundle.url(
             forResource: "RevenueCat_RevenueCatUITests", withExtension: "bundle"
         ) else {
-            fatalError("Could not locate RevenueCat_RevenueCatUITests.bundle")
+            XCTFail("Could not locate RevenueCat_RevenueCatUITests.bundle")
+            return
         }
 
         let packagesPath = resourceBundleURL
@@ -50,18 +51,22 @@ class TakeScreenshotTests: BaseSnapshotTest {
 
         // Read and decode or print contents
         guard let packagesData = try? Data(contentsOf: packagesPath) else {
-            fatalError("Couldn't parse packages data")
+            XCTFail("Couldn't parse packages data")
+            return
         }
         guard let packages = try? JSONDecoder.default.decode(PackageData.self, from: packagesData) else {
-            fatalError("Failed to decode packages data")
+            XCTFail("Failed to decode packages data")
+            return
         }
         guard let offeringsData = try? Data(contentsOf: offeringsPath) else {
-            fatalError("Couldn't parse offerings data")
+            XCTFail("Couldn't parse offerings data")
+            return
         }
         guard let offeringsResponse = try? JSONDecoder.default.decode(
             OfferingsResponse.self, from: offeringsData
         ) else {
-            fatalError("Failed to decode offerings data")
+            XCTFail("Failed to decode offerings data")
+            return
         }
 
         let offeringsWithPackages = offeringsResponse.offerings.map { offering in
@@ -87,7 +92,7 @@ class TakeScreenshotTests: BaseSnapshotTest {
             "com.revenuecat.lifetime_product": .init(sk1Product: PreviewMock.Product(
                 price: 1.99,
                 unit: .week,
-                localizedTitle: "Liftime"
+                localizedTitle: "Lifeime"
             )),
             "com.revenuecat.annual_product": .init(sk1Product: PreviewMock.Product(
                 price: 1.99,
