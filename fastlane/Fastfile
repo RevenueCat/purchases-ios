@@ -248,6 +248,7 @@ platform :ios do
         repo_name: repo,
         base_branch: "main",
         head_branch: branch_name,
+        github_pr_token: ENV["GITHUB_TOKEN"],
         title: title,
         body: body,
         labels: labels,
@@ -709,7 +710,7 @@ platform :ios do
         title: "Generating new test snapshots for `#{base_branch}` - #{version}",
         body: body,
         base: base_branch,
-        github_pr_token: ENV["GITHUB_TOKEN"],
+        api_token: ENV["GITHUB_TOKEN"],
         head: branch_name,
         labels: ["test"]
       )
