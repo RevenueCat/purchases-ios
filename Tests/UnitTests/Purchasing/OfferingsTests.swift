@@ -25,6 +25,7 @@ class OfferingsTests: TestCase {
             productsByID: [
                 "com.myproduct.annual": StoreProduct(sk1Product: SK1Product())
             ],
+            webProductsById: [:],
             offeringIdentifier: "offering"
         )
 
@@ -43,6 +44,7 @@ class OfferingsTests: TestCase {
                 productsByID: [
                     productIdentifier: StoreProduct(sk1Product: product)
                 ],
+                webProductsById: [:],
                 offeringIdentifier: "offering"
             )
         )
@@ -58,6 +60,7 @@ class OfferingsTests: TestCase {
         let products = ["com.myproduct.bad": StoreProduct(sk1Product: SK1Product())]
         let offering = self.offeringsFactory.createOffering(
             from: products,
+            webProductsById: [:],
             offering: .init(
                 identifier: "offering_a",
                 description: "This is the base offering",
@@ -88,6 +91,7 @@ class OfferingsTests: TestCase {
         let offering = try XCTUnwrap(
             self.offeringsFactory.createOffering(
                 from: products,
+                webProductsById: [:],
                 offering: .init(
                     identifier: offeringIdentifier,
                     description: serverDescription,
@@ -118,6 +122,7 @@ class OfferingsTests: TestCase {
     func testListOfOfferingsIsNilIfNoValidOffering() {
         let offerings = self.offeringsFactory.createOfferings(
             from: [:],
+            webProductsByID: [:],
             data: .init(
                 currentOfferingId: "offering_a",
                 offerings: [
@@ -159,6 +164,7 @@ class OfferingsTests: TestCase {
         let offerings = try XCTUnwrap(
             self.offeringsFactory.createOfferings(
                 from: products,
+                webProductsByID: [:],
                 data: .init(
                     currentOfferingId: "offering_a",
                     offerings: [
@@ -215,6 +221,7 @@ class OfferingsTests: TestCase {
         let offerings = try XCTUnwrap(
             self.offeringsFactory.createOfferings(
                 from: products,
+                webProductsByID: [:],
                 data: .init(
                     currentOfferingId: "offering_a",
                     offerings: [
@@ -304,6 +311,7 @@ class OfferingsTests: TestCase {
         let offerings = try XCTUnwrap(
             self.offeringsFactory.createOfferings(
                 from: products,
+                webProductsByID: [:],
                 data: .init(
                     currentOfferingId: "offering_a",
                     offerings: [
@@ -358,6 +366,7 @@ class OfferingsTests: TestCase {
         let offerings = try XCTUnwrap(
             self.offeringsFactory.createOfferings(
                 from: products,
+                webProductsByID: [:],
                 data: .init(
                     currentOfferingId: "offering_a",
                     offerings: [
@@ -425,6 +434,7 @@ class OfferingsTests: TestCase {
         let offerings = try XCTUnwrap(
             self.offeringsFactory.createOfferings(
                 from: products,
+                webProductsByID: [:],
                 data: .init(
                     currentOfferingId: "offering_a",
                     offerings: [
@@ -566,7 +576,7 @@ class OfferingsTests: TestCase {
         """.asData
 
         let offeringsResponse: OfferingsResponse = try JSONDecoder.default.decode(jsonData: json)
-        let offerings = self.offeringsFactory.createOfferings(from: [:], data: offeringsResponse)
+        let offerings = self.offeringsFactory.createOfferings(from: [:], webProductsByID: [:], data: offeringsResponse)
 
         expect(offerings).to(beNil())
     }
@@ -595,7 +605,7 @@ class OfferingsTests: TestCase {
             uiConfig: nil
         )
         let offerings = try XCTUnwrap(
-            self.offeringsFactory.createOfferings(from: storeProductsByID, data: response)
+            self.offeringsFactory.createOfferings(from: storeProductsByID, webProductsByID: [:], data: response)
         )
 
         expect(offerings.current).to(beNil())
@@ -621,6 +631,7 @@ class OfferingsTests: TestCase {
 
         let offering = try XCTUnwrap(
             self.offeringsFactory.createOffering(from: products,
+                                                 webProductsById: [:],
                                                  offering: offeringResponse0,
                                                  uiConfig: uiConfig)
             )
@@ -649,6 +660,7 @@ class OfferingsTests: TestCase {
 
         let offering = try XCTUnwrap(
             self.offeringsFactory.createOffering(from: products,
+                                                 webProductsById: [:],
                                                  offering: offeringResponse0,
                                                  uiConfig: uiConfig)
             )
@@ -675,6 +687,7 @@ class OfferingsTests: TestCase {
 
         let offering = try XCTUnwrap(
             self.offeringsFactory.createOffering(from: products,
+                                                 webProductsById: [:],
                                                  offering: offeringResponse0,
                                                  uiConfig: uiConfig)
             )
@@ -701,6 +714,7 @@ class OfferingsTests: TestCase {
 
         let offering = try XCTUnwrap(
             self.offeringsFactory.createOffering(from: products,
+                                                 webProductsById: [:],
                                                  offering: offeringResponse0,
                                                  uiConfig: uiConfig)
             )
@@ -727,6 +741,7 @@ class OfferingsTests: TestCase {
 
         let offering = try XCTUnwrap(
             self.offeringsFactory.createOffering(from: products,
+                                                 webProductsById: [:],
                                                  offering: offeringResponse0,
                                                  uiConfig: uiConfig)
             )
@@ -759,6 +774,7 @@ private extension OfferingsTests {
         let offerings = try XCTUnwrap(
             offeringsFactory.createOfferings(
                 from: products,
+                webProductsByID: [:],
                 data: .init(
                     currentOfferingId: "offering_a",
                     offerings: [

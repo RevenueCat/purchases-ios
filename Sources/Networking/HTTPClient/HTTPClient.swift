@@ -23,8 +23,7 @@ class HTTPClient {
 
     let systemInfo: SystemInfo
     let timeout: TimeInterval
-    let apiKey: String
-    let authHeaders: RequestHeaders
+    let apiKeys: Purchases.APIKeys
 
     private let session: URLSession
     private let state: Atomic<State> = .init(.initial)
@@ -42,7 +41,7 @@ class HTTPClient {
         TimeInterval(3)
     ]
 
-    init(apiKey: String,
+    init(apiKeys: Purchases.APIKeys,
          systemInfo: SystemInfo,
          eTagManager: ETagManager,
          signing: SigningType,
@@ -67,8 +66,7 @@ class HTTPClient {
         self.dnsChecker = dnsChecker
         self.retriableStatusCodes = retriableStatusCodes
         self.timeout = requestTimeout
-        self.apiKey = apiKey
-        self.authHeaders = HTTPClient.authorizationHeader(withAPIKey: apiKey)
+        self.apiKeys = apiKeys
         self.dateProvider = dateProvider
         self.operationDispatcher = operationDispatcher
     }
@@ -96,8 +94,14 @@ class HTTPClient {
         }
         #endif
 
+        let apiKeyToUseInRequest = request.path.apiKeyToUseInRequest
+        guard let apiKey = apiKeyToUseInRequest.getAPIKey(from: self.apiKeys) else {
+            completionHandler?(.failure(.apiKeyMissing(apiKeyToUseInRequest)))
+            return
+        }
+
         self.perform(request: .init(httpRequest: request,
-                                    authHeaders: self.authHeaders,
+                                    authHeaders: Self.authorizationHeader(withAPIKey: apiKey),
                                     defaultHeaders: self.defaultHeaders,
                                     verificationMode: verificationMode ?? self.systemInfo.responseVerificationMode,
                                     internalSettings: self.systemInfo.dangerousSettings.internalSettings,
@@ -134,7 +138,8 @@ class HTTPClient {
             RequestHeader.retryCount.rawValue: "0",
             RequestHeader.sandbox.rawValue: "\(self.systemInfo.isSandbox)",
             "X-Is-Backgrounded": "\(self.systemInfo.isAppBackgroundedState)",
-            "X-Is-Debug-Build": "\(self.systemInfo.isDebugBuild)"
+            "X-Is-Debug-Build": "\(self.systemInfo.isDebugBuild)",
+            "X-RC-Canary": "app2web" // TODO: To remove
         ]
 
         if let storefront = self.systemInfo.storefront {
@@ -410,6 +415,7 @@ private extension HTTPClient {
                     signing: self.signing(for: request.httpRequest),
                     request: request.httpRequest,
                     requestHeaders: requestHeaders,
+                    apiKeys: self.apiKeys,
                     publicKey: request.verificationMode.publicKey
                 )
             }

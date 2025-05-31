@@ -12,6 +12,7 @@ class MockOfferingsFactory: OfferingsFactory {
 
     override func createOfferings(
         from storeProductsByID: [String: StoreProduct],
+        webProductsByID: [String: StoreProduct],
         data: OfferingsResponse
     ) -> Offerings? {
         if emptyOfferings {
@@ -53,7 +54,9 @@ class MockOfferingsFactory: OfferingsFactory {
             response: .init(currentOfferingId: "base", offerings: [
                 .init(identifier: "base", description: "This is the base offering",
                       packages: [
-                        .init(identifier: "", platformProductIdentifier: "$rc_monthly", webCheckoutUrl: nil)
+                        .init(identifier: "",
+                              platformProductIdentifier: "$rc_monthly",
+                              webCheckoutUrl: nil)
                       ], webCheckoutUrl: nil)
             ], placements: nil, targeting: nil, uiConfig: nil)
 

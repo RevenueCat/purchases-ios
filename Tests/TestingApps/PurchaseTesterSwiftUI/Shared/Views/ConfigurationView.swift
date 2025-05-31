@@ -14,6 +14,7 @@ struct ConfigurationView: View {
 
     struct Data: Equatable, Codable {
         var apiKey: String = Constants.apiKey
+        var webApiKey: String = ""
         var proxy: String = ""
         var storeKit2Enabled: Bool = true
         var verificationMode: Configuration.EntitlementVerificationMode = .disabled
@@ -43,6 +44,8 @@ struct ConfigurationView: View {
         Form {
             Section(header: Text("Configuration")) {
                 TextField("API Key (required)", text: self.$data.apiKey)
+
+                TextField("Web API Key (optional)", text: self.$data.webApiKey)
 
                 TextField("Proxy URL (optional)", text: self.$data.proxy)
             }

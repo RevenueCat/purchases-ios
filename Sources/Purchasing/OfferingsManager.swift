@@ -116,13 +116,32 @@ class OfferingsManager {
         fetchPolicy: FetchPolicy = .default,
         completion: (@MainActor @Sendable (Result<OfferingsResultData, Error>) -> Void)?
     ) {
-        self.backend.offerings.getOfferings(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded) { result in
-            switch result {
-            case let .success(response):
-                self.handleOfferingsBackendResult(with: response,
-                                                  appUserID: appUserID,
-                                                  fetchPolicy: fetchPolicy,
-                                                  completion: completion)
+        self.backend.offerings.getOfferings(appUserID: appUserID,
+                                            isAppBackgrounded: isAppBackgrounded) { offeringsResult in
+            switch offeringsResult {
+            case let .success(offeringsResponse):
+                if offeringsResponse.hasAnyWebCheckoutUrl {
+                    self.backend.offerings.getWebProducts(appUserID: appUserID) { webProductsResult in
+                        var webProductsResponse: WebProductsResponse?
+                        switch webProductsResult {
+                        case let .success(response):
+                            webProductsResponse = response
+                        case .failure(_):
+                            webProductsResponse = nil
+                        }
+                        self.handleOfferingsBackendResult(with: offeringsResponse,
+                                                          webProductsResponse: webProductsResponse,
+                                                          appUserID: appUserID,
+                                                          fetchPolicy: fetchPolicy,
+                                                          completion: completion)
+                    }
+                } else {
+                    self.handleOfferingsBackendResult(with: offeringsResponse,
+                                                      webProductsResponse: nil,
+                                                      appUserID: appUserID,
+                                                      fetchPolicy: fetchPolicy,
+                                                      completion: completion)
+                }
 
             case let .failure(.networkError(networkError)) where networkError.isServerDown:
                 Logger.warn(Strings.offering.fetching_offerings_failed_server_down)
@@ -200,6 +219,8 @@ private extension OfferingsManager {
 
         self.createOfferings(
             from: response,
+            webProductsResponse: nil,
+            appUserID: appUserID,
             fetchPolicy: fetchPolicy,
             completion: { [cache = self.deviceCache] result in
                 switch result {
@@ -221,12 +242,15 @@ private extension OfferingsManager {
 
     func createOfferings(
         from response: OfferingsResponse,
+        webProductsResponse: WebProductsResponse?,
+        appUserID: String,
         fetchPolicy: FetchPolicy,
         completion: @escaping (@Sendable (Result<OfferingsResultData, Error>) -> Void)
     ) {
         let productIdentifiers = response.productIdentifiers
+        let hasAnyWebCheckoutUrl = response.hasAnyWebCheckoutUrl
 
-        guard !productIdentifiers.isEmpty else {
+        guard !productIdentifiers.isEmpty || hasAnyWebCheckoutUrl else {
             let errorMessage = Strings.offering.configuration_error_no_products_for_offering.description
             completion(.failure(.configurationError(errorMessage, underlyingError: nil)))
             return
@@ -235,9 +259,10 @@ private extension OfferingsManager {
         self.fetchProducts(withIdentifiers: productIdentifiers, fromResponse: response) { result in
             let products = result.value ?? []
 
-            guard products.isEmpty == false else {
-                // Check if empty products is likely caused by https://github.com/RevenueCat/purchases-ios/issues/4954
-                // There is a widely reported bug in the iOS 18.4 Simulator affecting some HTTP requests
+            guard !products.isEmpty || hasAnyWebCheckoutUrl else {
+                // Check if empty products is likely caused by
+                // https://github.com/RevenueCat/purchases-ios/issues/4954. There is a widely reported bug in
+                // the iOS 18.4 Simulator affecting some HTTP requests
                 let showSimulatorWarning = self.systemInfo.isSubjectToKnownIssue_18_4_sim()
                 completion(.failure(Self.createErrorForEmptyResult(result.error,
                                                                    showSimulatorWarning: showSimulatorWarning)))
@@ -261,7 +286,9 @@ private extension OfferingsManager {
                 }
             }
 
-            if let createdOfferings = self.offeringsFactory.createOfferings(from: productsByID, data: response) {
+            if let createdOfferings = self.offeringsFactory.createOfferings(from: productsByID,
+                                                                            webProductsResponse: webProductsResponse,
+                                                                            data: response) {
                 completion(.success(OfferingsResultData(offerings: createdOfferings,
                                                         requestedProductIds: productIdentifiers,
                                                         notFoundProductIds: missingProductIDs)))
@@ -273,11 +300,15 @@ private extension OfferingsManager {
 
     func handleOfferingsBackendResult(
         with response: OfferingsResponse,
+        webProductsResponse: WebProductsResponse?,
         appUserID: String,
         fetchPolicy: FetchPolicy,
         completion: (@MainActor @Sendable (Result<OfferingsResultData, Error>) -> Void)?
     ) {
-        self.createOfferings(from: response, fetchPolicy: fetchPolicy) { result in
+        self.createOfferings(from: response,
+                             webProductsResponse: webProductsResponse,
+                             appUserID: appUserID,
+                             fetchPolicy: fetchPolicy) { result in
             switch result {
             case let .success(offeringsResultData):
                 Logger.rcSuccess(Strings.offering.offerings_stale_updated_from_network)
