@@ -709,7 +709,7 @@ platform :ios do
         title: "Generating new test snapshots for `#{base_branch}` - #{version}",
         body: body,
         base: base_branch,
-        api_token: ENV["GITHUB_TOKEN"],
+        github_pr_token: ENV["GITHUB_TOKEN"],
         head: branch_name,
         labels: ["test"]
       )
