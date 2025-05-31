@@ -140,10 +140,10 @@ struct RelevantPurchasesListView: View {
                     )
                     .padding(.bottom, 32)
                 } else {
-                    if !customerInfoViewModel.activeSubscriptionPurchases.isEmpty {
+                    if !customerInfoViewModel.subscriptionsSection.isEmpty {
                         PurchasesInformationSection(
                             title: localization[.subscriptionsSectionTitle],
-                            items: customerInfoViewModel.activeSubscriptionPurchases,
+                            items: customerInfoViewModel.subscriptionsSection,
                             localization: localization
                         ) {
                             viewModel.purchaseInformation = $0
@@ -151,7 +151,7 @@ struct RelevantPurchasesListView: View {
                         .tint(colorScheme == .dark ? .white : .black)
                     }
 
-                    if !customerInfoViewModel.activeNonSubscriptionPurchases.isEmpty {
+                    if !customerInfoViewModel.nonSubscriptionsSection.isEmpty {
                         PurchasesInformationSection(
                             title: localization[.purchasesSectionTitle],
                             items: activeNonSubscriptionPurchasesToShow,
@@ -183,7 +183,7 @@ struct RelevantPurchasesListView: View {
     }
 
     private var activeNonSubscriptionPurchasesToShow: [PurchaseInformation] {
-        Array(customerInfoViewModel.activeNonSubscriptionPurchases
+        Array(customerInfoViewModel.nonSubscriptionsSection
             .prefix(RelevantPurchasesListViewModel.maxNonSubscriptionsToShow))
     }
 

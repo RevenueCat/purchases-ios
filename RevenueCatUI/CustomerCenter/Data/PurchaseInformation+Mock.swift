@@ -37,6 +37,23 @@ extension PurchaseInformation {
         renewalDate: nil
     )
 
+    static let expired = PurchaseInformation(
+        title: "Basic",
+        pricePaid: .nonFree("$4.99"),
+        renewalPrice: .nonFree("$4.99"),
+        productIdentifier: "product_id5",
+        store: .appStore,
+        isLifetime: false,
+        isTrial: false,
+        isCancelled: false,
+        isActive: false,
+        latestPurchaseDate: Self.defaultLatestPurchaseDate,
+        customerInfoRequestedDate: Self.defaultCustomerInfoRequestedDate,
+        managementURL: URL(string: "https://www.revenuecat.com")!,
+        expirationDate: nil,
+        renewalDate: nil
+    )
+
     static let lifetime = PurchaseInformation(
         title: "Lifetime",
         pricePaid: .nonFree("$4.99"),
