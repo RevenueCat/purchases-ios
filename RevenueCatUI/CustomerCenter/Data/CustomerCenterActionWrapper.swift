@@ -66,15 +66,17 @@ final class CustomerCenterActionWrapper {
     private let legacyActionHandler: DeprecatedCustomerCenterActionHandler?
 
     // Combine publishers for each action
-    let restoreStarted = PassthroughSubject<Void, Never>()
-    let restoreFailed = PassthroughSubject<NSError, Never>()
-    let restoreCompleted = PassthroughSubject<CustomerInfo, Never>()
-    let showingManageSubscriptions = PassthroughSubject<Void, Never>()
-    let refundRequestStarted = PassthroughSubject<String, Never>()
-    let refundRequestCompleted = PassthroughSubject<(String, RefundRequestStatus), Never>()
-    let feedbackSurveyCompleted = PassthroughSubject<String, Never>()
-    let managementOptionSelected = PassthroughSubject<CustomerCenterActionable, Never>()
-    let promotionalOfferSuccess = PassthroughSubject<Void, Never>()
+    private let restoreStarted = PassthroughSubject<Void, Never>()
+    private let restoreFailed = PassthroughSubject<NSError, Never>()
+    private let restoreCompleted = PassthroughSubject<CustomerInfo, Never>()
+    private let showingManageSubscriptions = PassthroughSubject<Void, Never>()
+    private let refundRequestStarted = PassthroughSubject<String, Never>()
+    private let refundRequestCompleted = PassthroughSubject<(String, RefundRequestStatus), Never>()
+    private let feedbackSurveyCompleted = PassthroughSubject<String, Never>()
+    private let managementOptionSelected = PassthroughSubject<CustomerCenterActionable, Never>()
+    private let promotionalOfferSuccess = PassthroughSubject<Void, Never>()
+
+    private var cancellables: Set<AnyCancellable> = []
 
     init(legacyActionHandler: DeprecatedCustomerCenterActionHandler? = nil) {
         self.legacyActionHandler = legacyActionHandler
@@ -150,4 +152,82 @@ extension CustomerCenterConfigData.HelpPath {
         return nil
     }
 
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+/// Internal Combine-based wiring for handling `CustomerCenterInternalAction` events.
+/// These methods attach handlers to internal publishers and are used internally
+/// by any ViewModel to bridge actions to business logic.
+///
+/// - Important: This API is intended **for internal use only** within the SDK.
+extension CustomerCenterActionWrapper {
+
+    func onCustomerCenterRestoreStarted(
+        _ handler: @escaping () -> Void
+    ) {
+        restoreStarted.sink(receiveValue: handler)
+            .store(in: &cancellables)
+    }
+
+    func onCustomerCenterRestoreFailed(
+        _ handler: @escaping CustomerCenterView.RestoreFailedHandler
+    ) {
+        restoreFailed.sink(receiveValue: handler)
+            .store(in: &cancellables)
+    }
+
+    func onCustomerCenterRestoreCompleted(
+        _ handler: @escaping (CustomerInfo) -> Void
+    ) {
+        restoreCompleted.sink(receiveValue: handler)
+            .store(in: &cancellables)
+    }
+
+    func onCustomerCenterShowingManageSubscriptions(
+        _ handler: @escaping () -> Void
+    ) {
+        showingManageSubscriptions.sink(receiveValue: handler)
+            .store(in: &cancellables)
+    }
+
+    func onCustomerCenterRefundRequestStarted(
+        _ handler: @escaping (String) -> Void
+    ) {
+        refundRequestStarted.sink(receiveValue: handler)
+            .store(in: &cancellables)
+    }
+
+    func onCustomerCenterRefundRequestCompleted(
+        _ handler: @escaping (String, RefundRequestStatus) -> Void
+    ) {
+        refundRequestCompleted
+            .sink { (productId, status) in
+                handler(productId, status)
+            }
+            .store(in: &cancellables)
+    }
+
+    func onCustomerCenterFeedbackSurveyCompleted(
+        _ handler: @escaping (String) -> Void
+    ) {
+        feedbackSurveyCompleted.sink(receiveValue: handler)
+            .store(in: &cancellables)
+    }
+
+    func onCustomerCenterManagementOptionSelected(
+        _ handler: @escaping (CustomerCenterActionable) -> Void
+    ) {
+        managementOptionSelected.sink(receiveValue: handler)
+            .store(in: &cancellables)
+    }
+
+    func onCustomerCenterPromotionalOfferSuccess(
+        _ handler: @escaping () -> Void
+    ) {
+        promotionalOfferSuccess.sink(receiveValue: handler)
+            .store(in: &cancellables)
+    }
 }
