@@ -29,6 +29,8 @@ struct PurchaseInformationCardView: View {
     private let subtitle: String?
     private let badge: Badge?
 
+    private let accessibilityIdentifier: String
+
     private let storeTitle: String
 
     private let additionalIcon: Image?
@@ -41,6 +43,7 @@ struct PurchaseInformationCardView: View {
         title: String,
         storeTitle: String,
         paidPrice: String,
+        accessibilityIdentifier: String,
         badge: PurchaseInformationCardView.Badge? = nil,
         additionalIcon: Image? = nil,
         additionalInfo: String? = nil,
@@ -55,15 +58,18 @@ struct PurchaseInformationCardView: View {
         self.additionalInfo = additionalInfo
         self.storeTitle = storeTitle
         self.showChevron = showChevron
+        self.accessibilityIdentifier = accessibilityIdentifier
     }
 
     init(
         purchaseInformation: PurchaseInformation,
         localization: CustomerCenterConfigData.Localization,
+        accessibilityIdentifier: String,
         refundStatus: RefundRequestStatus? = nil,
         showChevron: Bool = true
     ) {
         self.title = purchaseInformation.title
+        self.accessibilityIdentifier = accessibilityIdentifier
 
         if let renewalDate = purchaseInformation.renewalDate {
             self.subtitle = purchaseInformation.priceRenewalString(
@@ -93,11 +99,11 @@ struct PurchaseInformationCardView: View {
         self.showChevron = showChevron
 
         if purchaseInformation.isCancelled {
-            self.badge = .cancelled(localization[.badgeCancelled])
+            self.badge = .cancelled(localization)
         } else if purchaseInformation.isTrial, purchaseInformation.pricePaid == .free {
-            self.badge = .freeTrial(localization[.badgeFreeTrial])
+            self.badge = .freeTrial(localization)
         } else if purchaseInformation.isActive {
-            self.badge = .active(localization[.active])
+            self.badge = .active(localization)
         } else {
             self.badge = nil
         }
@@ -122,6 +128,7 @@ struct PurchaseInformationCardView: View {
                                 .padding(.horizontal, 4)
                                 .background(badge.backgroundColor)
                                 .clipShape(RoundedRectangle(cornerRadius: 4))
+                                .accessibilityIdentifier([accessibilityIdentifier, badge.id].joined(separator: "_"))
                         }
                     }
                     .padding(.bottom, 8)
@@ -225,29 +232,34 @@ private extension RefundRequestStatus {
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 extension PurchaseInformationCardView {
-    enum Badge {
-        case cancelled(String), freeTrial(String), active(String)
 
-        var title: String {
-            switch self {
-            case let .cancelled(title):
-                return title
-            case let .freeTrial(title):
-                return title
-            case let .active(title):
-                return title
-            }
+    struct Badge {
+        let title: String
+        let id: String
+        let backgroundColor: Color
+
+        static func cancelled(_ localizations: CustomerCenterConfigData.Localization) -> Badge {
+            Badge(
+                title: localizations[.badgeCancelled],
+                id: CCLocalizedString.badgeCancelled.rawValue,
+                backgroundColor: Color(red: 242 / 256, green: 84 / 256, blue: 91 / 256, opacity: 0.15)
+            )
         }
 
-        var backgroundColor: Color {
-            switch self {
-            case .cancelled:
-                return Color(red: 242 / 256, green: 84 / 256, blue: 91 / 256, opacity: 0.15)
-            case .freeTrial:
-                return Color(red: 245 / 256, green: 202 / 256, blue: 92 / 256, opacity: 0.2)
-            case .active:
-                return Color(red: 52 / 256, green: 199 / 256, blue: 89 / 256, opacity: 0.2)
-            }
+        static func freeTrial(_ localizations: CustomerCenterConfigData.Localization) -> Badge {
+            Badge(
+                title: localizations[.badgeFreeTrial],
+                id: CCLocalizedString.badgeFreeTrial.rawValue,
+                backgroundColor: Color(red: 245 / 256, green: 202 / 256, blue: 92 / 256, opacity: 0.2)
+            )
+        }
+
+        static func active(_ localizations: CustomerCenterConfigData.Localization) -> Badge {
+            Badge(
+                title: localizations[.active],
+                id: CCLocalizedString.active.rawValue,
+                backgroundColor: Color(red: 52 / 256, green: 199 / 256, blue: 89 / 256, opacity: 0.2)
+            )
         }
     }
 }
@@ -266,7 +278,8 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                     title: "Product name",
                     storeTitle: Store.appStore.localizationKey.rawValue,
                     paidPrice: "$19.99",
-                    badge: .cancelled("Cancelled"),
+                    accessibilityIdentifier: "accessibilityIdentifier",
+                    badge: .cancelled(CustomerCenterConfigData.default.localization),
                     subtitle: "Renews 24 May for $19.99"
                 )
                 .cornerRadius(10)
@@ -276,7 +289,8 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                     title: "Product name",
                     storeTitle: Store.playStore.localizationKey.rawValue,
                     paidPrice: "$19.99",
-                    badge: .freeTrial("Free Trial"),
+                    accessibilityIdentifier: "accessibilityIdentifier",
+                    badge: .freeTrial(CustomerCenterConfigData.default.localization),
                     subtitle: "Renews 24 May for $19.99"
                 )
                 .cornerRadius(10)
@@ -286,7 +300,8 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                     title: "Product name",
                     storeTitle: Store.playStore.localizationKey.rawValue,
                     paidPrice: "$19.99",
-                    badge: .active("Active"),
+                    accessibilityIdentifier: "accessibilityIdentifier",
+                    badge: .active(CustomerCenterConfigData.default.localization),
                     additionalIcon: Image(systemName: "exclamationmark.triangle.fill"),
                     additionalInfo: "Apple has received the refund request Apple has received the refund request",
                     subtitle: "Renews 24 May for $19.99"
@@ -298,7 +313,8 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                     title: "Product name",
                     storeTitle: Store.playStore.localizationKey.rawValue,
                     paidPrice: "$19.99",
-                    badge: .active("Active"),
+                    accessibilityIdentifier: "accessibilityIdentifier",
+                    badge: .active(CustomerCenterConfigData.default.localization),
                     additionalIcon: Image(systemName: "info.circle.fill"),
                     additionalInfo: "An error occurred while processing the refund request. Please try again.",
                     subtitle: "Renews 24 May for $19.99"
@@ -308,7 +324,8 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
 
                 PurchaseInformationCardView(
                     purchaseInformation: .consumable,
-                    localization: CustomerCenterConfigData.default.localization
+                    localization: CustomerCenterConfigData.default.localization,
+                    accessibilityIdentifier: "accessibilityIdentifier"
                 )
                 .cornerRadius(10)
                 .padding([.leading, .trailing])
