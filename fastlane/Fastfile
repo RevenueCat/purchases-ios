@@ -245,8 +245,9 @@ platform :ios do
       )
 
       create_pr_if_necessary(
-        repo: repo,
-        branch_name: branch_name,
+        repo_name: repo,
+        base_branch: "main",
+        head_branch: branch_name,
         title: title,
         body: body,
         labels: labels,
@@ -280,41 +281,6 @@ platform :ios do
     end
   end
 
-  private_lane :create_pr_if_necessary do |options|
-    branch_name = options[:branch_name] || UI.user_error!("No branch_name provided")
-    title = options[:title] || UI.user_error!("No title provided")
-    body = options[:body] || UI.user_error!("No body provided")
-    repo = options[:repo] || repo_name
-    repo_with_owner = "RevenueCat/#{repo}"
-    base = options[:base] || "main"
-    labels = options[:labels] || []
-    team_reviewers = options[:team_reviewers] || []
-
-    existing_pr = github_api(
-      api_token: ENV["GITHUB_TOKEN"],
-      path: "/repos/#{repo_with_owner}/pulls?head=RevenueCat:#{branch_name}&state=open"
-    )
-
-    if existing_pr[:json].length == 0
-      pr_url = create_pull_request(
-        repo: repo_with_owner,
-        title: title,
-        body: body,
-        base: base,
-        head: branch_name,
-        api_token: ENV["GITHUB_TOKEN"],
-        labels: labels,
-        team_reviewers: team_reviewers
-      )
-      
-      if pr_url.nil?
-        UI.user_error!("Failed to create pull request.")
-      end
-    else
-      UI.message("PR already exists.")
-    end
-  end
-
   desc "Records screenshots for paywalls"
   lane :record_paywall_screenshots do |options|
     output_dir = File.absolute_path("../fastlane/test_output/xctest/paywall-screenshots")
@@ -337,83 +303,13 @@ platform :ios do
 
     image_output_dir = "#{output_dir}/images"
     FileUtils.mkdir_p(image_output_dir)
-    extract_all_xcresult_images(xcresult_path: result_bundle_path, output_dir: image_output_dir)
+    extract_xcresult_images(
+      xcresult_path: result_bundle_path, 
+      output_dir: image_output_dir
+    )
 
     output_dir
   end
-
-  private_lane :extract_all_xcresult_images do |options|
-    require 'json'
-    xcresult_path = options[:xcresult_path]
-    output_dir = options[:output_dir]
-    FileUtils.mkdir_p(output_dir)
-
-
-    # Export all attachments
-    command = [
-      "xcrun", 
-      "xcresulttool", 
-      "export attachments",
-      "--path '#{xcresult_path}'",
-      "--test-id \"TakeScreenshotTests/testPaywallValidationScreenshots()\"",
-      "--output-path #{output_dir}"
-    ].join(" ")
-    sh(command)
-
-    command = [
-      "xcrun",
-      "xcresulttool",
-      "get", 
-      "test-results", 
-      "activities", 
-      "--path #{xcresult_path}",
-      "--test-id \"TakeScreenshotTests/testPaywallValidationScreenshots()\""
-    ].join(" ")
-  
-    # Fetch the root XCResult JSON
-    json = sh(command)
-    data = JSON.parse(json)
-
-    uuid_map = {}
-  
-    # Recursive method to collect all attachments from nested activities
-    def collect_attachments(activities, uuid_map)
-      activities&.each do |activity|
-        if activity["attachments"]
-          activity["attachments"].each do |attachment|
-            uuid = attachment["uuid"]
-            name = attachment["name"]
-            uuid_map[uuid] = name if uuid && name
-          end
-        end
-
-        # Recurse into childActivities
-        if activity["childActivities"]
-          collect_attachments(activity["childActivities"], uuid_map)
-        end
-      end
-    end
-
-    data["testRuns"]&.each do |run|
-      collect_attachments(run["activities"], uuid_map)
-    end
-
-    uuid_map.each do |uuid, name|
-      Dir.glob("#{output_dir}/#{uuid}.*").each do |file|
-        extension = File.extname(file)
-
-        # Only keep the part of name before __END if it exists
-        name = name.split("__END").first if name.include?("__END")
-
-        File.rename(file, "#{output_dir}/#{name}#{extension}")
-      end
-    end
-
-    FileUtils.rm_rf("#{output_dir}/manifest.json")
-    
-  end
-  
-
 
   desc "Build the Paywalls Test app for Emerge Snapshots"
   lane :build_paywalls_tester_for_emerge do |options|
