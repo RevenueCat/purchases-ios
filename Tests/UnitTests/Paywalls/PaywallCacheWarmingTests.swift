@@ -189,9 +189,10 @@ final class PaywallCacheWarmingTests: TestCase {
         )
 
         let url = URL(string: "https://example.com/font.ttf")!
-        try await sut.downloadFont(from: url, familyName: "testFont.ttf")
+        try await sut.downloadFont(from: url, hash: "abc123")
 
         XCTAssertTrue(mockSession.didCall, "Expected session to be used")
+        XCTAssertFalse(mockFileManager.fileExistsAtPath, "File should not exist")
         XCTAssertTrue(mockFileManager.didCopy, "Expected font file to be copied")
         XCTAssertTrue(mockRegistrar.didRegister, "Expected font to be registered")
     }
@@ -211,10 +212,10 @@ final class PaywallCacheWarmingTests: TestCase {
         )
 
         let url = URL(string: "https://example.com/font.ttf")!
-        try await sut.downloadFont(from: url, familyName: "testFont.ttf")
+        try await sut.downloadFont(from: url, hash: "abc123")
 
         XCTAssertFalse(mockFileManager.didCopy, "Should not copy file if it already exists")
-        XCTAssertFalse(mockRegistrar.didRegister, "Should not register if file exists")
+        XCTAssertTrue(mockRegistrar.didRegister, "Should register font if file exists")
     }
 }
 
