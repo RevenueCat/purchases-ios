@@ -43,7 +43,11 @@ class TakeScreenshotTests: BaseSnapshotTest {
             .appendingPathComponent("resources")
 
         let fileManager = FileManager.default
-        guard let resourceDirectories = try? fileManager.contentsOfDirectory(at: baseResourcesURL, includingPropertiesForKeys: [.isDirectoryKey], options: .skipsHiddenFiles) else {
+        guard let resourceDirectories = try? fileManager.contentsOfDirectory(
+            at: baseResourcesURL,
+            includingPropertiesForKeys: [.isDirectoryKey],
+            options: .skipsHiddenFiles
+        ) else {
             XCTFail("Failed to list directories in resources")
             return
         }
