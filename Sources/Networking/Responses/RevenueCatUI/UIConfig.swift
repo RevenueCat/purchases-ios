@@ -47,20 +47,11 @@ public struct UIConfig: Codable, Equatable, Sendable {
         }
     }
 
-    public enum FontWeight: String, Codable, Sendable {
-        case thin, extraLight = "extra_light", light, regular, medium, semiBold = "semi_bold"
-        case bold, extraBold = "extra_bold", black
-    }
-
-    public enum FontStyle: String, Codable, Sendable {
-        case normal
-        case italic
-    }
-
     public enum FontInfo: Codable, Sendable, Hashable {
 
         case name(String)
         case googleFonts(String)
+        case custom(CustomFont)
 
         public func encode(to encoder: any Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
@@ -72,6 +63,9 @@ public struct UIConfig: Codable, Equatable, Sendable {
             case .googleFonts(let name):
                 try container.encode(FontInfoTypes.googleFonts.rawValue, forKey: .type)
                 try container.encode(name, forKey: .value)
+            case .custom(let webFont):
+                try container.encode(FontInfoTypes.custom.rawValue, forKey: .type)
+                try container.encode(webFont, forKey: .value)
             }
         }
 
@@ -86,6 +80,9 @@ public struct UIConfig: Codable, Equatable, Sendable {
             case .googleFonts:
                 let value = try container.decode(String.self, forKey: .value)
                 self = .googleFonts(value)
+            case .custom:
+                let value = try container.decode(CustomFont.self, forKey: .value)
+                self = .custom(value)
             }
         }
 
@@ -102,9 +99,22 @@ public struct UIConfig: Codable, Equatable, Sendable {
 
             case name
             case googleFonts = "google_fonts"
+            case custom
 
         }
 
+    }
+
+    public struct CustomFont: Codable, Sendable, Hashable {
+        public var value: String
+        public var hash: String
+        public var type: String
+
+        public init(value: String, hash: String, type: String) {
+            self.value = value
+            self.hash = hash
+            self.type = type
+        }
     }
 
     public struct VariableConfig: Codable, Equatable, Sendable {

@@ -90,15 +90,15 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
     func warmUpPaywallFontsCache(offerings: Offerings) async {
         let allFontsInPaywallsNamed = offerings.allFontsInPaywallsNamed
-        let allFontURLs = Set(allFontsInPaywallsNamed.map(\.1))
+        let allFontURLs = Set(allFontsInPaywallsNamed.map(\.url))
         Logger.verbose(Strings.paywalls.warming_up_fonts(fontsURLS: allFontURLs))
 
-        for (name, url) in allFontsInPaywallsNamed {
+        for font in allFontsInPaywallsNamed {
             do {
                 // WIP: Maybe rename to cacheFontIfNeeded
-                try await self.fontsFetcher.downloadFont(from: url, familyName: name)
+                try await self.fontsFetcher.downloadFont(from: font.url, familyName: font.name)
             } catch {
-                Logger.error(Strings.paywalls.error_prefetching_image(url, error))
+                Logger.error(Strings.paywalls.error_prefetching_image(font.url, error))
             }
         }
     }
@@ -178,15 +178,15 @@ private extension Offerings {
 
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
 
-    var allFontsInPaywallsNamed: [(String, URL)] {
+    var allFontsInPaywallsNamed: [DownloadableFont] {
         response.uiConfig?
             .app
-            .allFonts ?? []
+            .allDownloadableFonts ?? []
     }
 
 #else
 
-    var allFontsInPaywallsNamed: [(String, URL)] {
+    var allFontsInPaywallsNamed: [DownloadableFont] {
         [ ]
     }
 
@@ -268,39 +268,55 @@ private extension PaywallData.Configuration.Images {
 
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
 
+private struct DownloadableFont {
+    let name: String
+    let url: URL
+    let hash: String
+}
+
 private extension UIConfig.AppConfig {
-    var allFonts: [(String, URL)] {
+    var allDownloadableFonts: [DownloadableFont] {
         fonts.values.compactMap {
-            if let iOSName = $0.ios.iOSName,
-               let url = $0.web?.url {
-                return (iOSName, url)
-            }
-            return nil
+            $0.downloadableFont
         }
     }
 }
 
-private extension UIConfig.FontInfo {
+private extension UIConfig.FontsConfig {
+    var downloadableFont: DownloadableFont? {
+        if let iOSName = self.iOSName,
+           let (url, hash) = self.downloadURLAndHash {
+            return DownloadableFont(
+                name: iOSName,
+                url: url,
+                hash: hash
+            )
+        }
+        return nil
+    }
+
     var iOSName: String? {
-        switch self {
-        case .googleFonts:
+        switch ios {
+        case .googleFonts, .custom:
             return nil
         case let .name(name):
             return name
         }
     }
 
-    var url: URL? {
-        switch self {
-        case .googleFonts:
+    var downloadURLAndHash: (URL, String)? {
+        switch web {
+        case .googleFonts, .name:
             return nil
-        case let .name(name):
-            if let url = URL(string: name) {
-                return url
+        case let .custom(font):
+            if let url = URL(string: font.value) {
+                return (url, font.hash)
             } else {
-                Logger.error(PaywallsStrings.error_prefetching_font_invalid_url(name))
+                Logger.error(PaywallsStrings.error_prefetching_font_invalid_url(font.value))
                 return nil
             }
+        case .none:
+            return nil
         }
     }
 }
