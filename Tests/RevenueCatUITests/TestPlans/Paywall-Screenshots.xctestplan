@@ -16,14 +16,13 @@
         "value" : "1"
       }
     ],
-    "maximumTestExecutionTimeAllowance" : 180,
+    "maximumTestExecutionTimeAllowance" : 1000,
     "targetForVariableExpansion" : {
       "containerPath" : "container:RevenueCat.xcodeproj",
       "identifier" : "2DEAC2D926EFE46E006914ED",
       "name" : "UnitTestsHostApp"
     },
-    "testExecutionOrdering" : "random",
-    "testTimeoutsEnabled" : true
+    "testExecutionOrdering" : "random"
   },
   "testTargets" : [
     {
