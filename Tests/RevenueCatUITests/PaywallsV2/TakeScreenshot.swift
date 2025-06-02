@@ -175,8 +175,6 @@ class TakeScreenshotTests: BaseSnapshotTest {
     }
 
     func snapshotAndSave<V: View>(view: V, size: CGSize, filename: String, template: String) {
-        // Waiting for 3 for image loading (for now)
-        // SOON: Replace with local images
         let image = view.asImage(wait: 1).resized(toWidth: size.width)
 
         // Save PNG data
