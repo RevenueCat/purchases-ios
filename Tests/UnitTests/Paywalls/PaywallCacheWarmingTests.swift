@@ -190,7 +190,7 @@ final class PaywallCacheWarmingTests: TestCase {
         let url = URL(string: "https://example.com/font.ttf")!
         mockFileManager.fileExistsAtPath = false
 
-        try await sut.downloadFont(from: url, hash: "abc123")
+        try await sut.installFont(from: url, hash: "abc123")
 
         expect(mockSession.didCallDataFrom).to(beTrue())
         expect(mockFileManager.didWriteData).to(beTrue())
@@ -211,7 +211,7 @@ final class PaywallCacheWarmingTests: TestCase {
         )
 
         let url = URL(string: "https://example.com/font.ttf")!
-        try await sut.downloadFont(from: url, hash: "abc123")
+        try await sut.installFont(from: url, hash: "abc123")
 
         expect(mockSession.didCallDataFrom).to(beFalse())
         expect(mockFileManager.didWriteData).to(beFalse())
