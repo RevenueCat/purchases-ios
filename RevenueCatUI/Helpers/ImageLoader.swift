@@ -68,7 +68,8 @@ final class ImageLoader: ObservableObject {
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func load(url: URL) async {
-        if url.isFileURL{
+        #if canImport(UIKit)
+        if url.isFileURL {
             if let image = UIImage(contentsOfFile: url.path) {
                 self.resultWithURL = .success((image: Image(uiImage: image), size: image.size, url: url))
                 return
@@ -77,6 +78,7 @@ final class ImageLoader: ObservableObject {
                 return
             }
         }
+        #endif
 
         // Only reload if the new URL is different from the current one.
         if case let .success((_, _, currentUrl))? = resultWithURL,
