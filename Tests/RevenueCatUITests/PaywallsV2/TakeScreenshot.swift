@@ -28,10 +28,6 @@ class TakeScreenshotTests: BaseSnapshotTest {
         let packages: [OfferingsResponse.Offering.Package]
     }
 
-    override func setUp() {
-        super.setUp()
-    }
-
     func testPaywallValidationScreenshots() {
         let bundle = Bundle(for: Self.self)
 
@@ -157,12 +153,6 @@ class TakeScreenshotTests: BaseSnapshotTest {
 
         for offeringId in offerings!.all.keys {
             let offering = offerings!.all[offeringId]!
-
-            var count = 0
-            if count > 0 {
-                break
-            }
-            count += 1
 
             if offering.paywallComponents != nil {
                 let view = Self.createPaywall(offering: offering)
