@@ -202,7 +202,6 @@ final class PaywallCacheWarmingTests: TestCase {
         expect(mockRegistrar.didRegister).to(beTrue())
     }
 
-    @available(iOS 15.0, *)
     func testInstallFontError() async throws {
         let mockSession = MockSession()
         let mockFileManager = MockFileManager()
@@ -232,7 +231,6 @@ final class PaywallCacheWarmingTests: TestCase {
         }
     }
 
-    @available(iOS 15.0, *)
     func testInstallFontSkipsInstallIfFileExists() async throws {
         let mockSession = MockSession()
         let mockFileManager = MockFileManager()
