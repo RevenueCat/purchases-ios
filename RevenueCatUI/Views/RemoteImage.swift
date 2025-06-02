@@ -129,9 +129,13 @@ struct RemoteImage<Content: View>: View {
         }
         .transition(self.transition)
         .task(id: self.url) { // This cancels the previous task when the URL changes.
+            #if DEBUG
+            // Don't attempt to load if local image
+            // This is used for paywall screenshot validation
             guard self.localImage == nil else {
                 return
             }
+            #endif
 
             switch self.colorScheme {
             case .dark:
