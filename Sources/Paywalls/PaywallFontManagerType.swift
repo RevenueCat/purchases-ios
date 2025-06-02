@@ -122,7 +122,6 @@ actor DefaultPaywallFontsManager: PaywallFontManagerType {
 
 }
 
-
 extension DefaultPaywallFontsManager.FontsManagerError: CustomStringConvertible {
 
     var description: String {
