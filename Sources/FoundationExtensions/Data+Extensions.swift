@@ -58,6 +58,11 @@ extension Data {
         return self.hash(with: &sha1)
     }
 
+    var md5String: String {
+        var md5 = Insecure.MD5()
+        return self.hashString(with: &md5)
+    }
+
     fileprivate static func hexString(_ iterator: Array<UInt8>.Iterator) -> String {
         return iterator
             .lazy

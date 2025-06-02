@@ -32,10 +32,10 @@ protocol PaywallImageFetcherType: Sendable {
 
 }
 
-protocol PaywallFontFetcherType: Sendable {
+protocol PaywallFontManagerType: Sendable {
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    func downloadFont(from url: URL, hash: String) async throws
+    func installFont(from remoteURL: URL, hash: String) async throws
 
 }
 
@@ -44,7 +44,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
     private let introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType
     private let imageFetcher: PaywallImageFetcherType
-    private let fontsFetcher: PaywallFontFetcherType
+    private let fontsManager: PaywallFontManagerType
 
     private var hasLoadedEligibility = false
     private var hasLoadedImages = false
@@ -52,11 +52,11 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     init(
         introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType,
         imageFetcher: PaywallImageFetcherType = DefaultPaywallImageFetcher(),
-        fontsFetcher: PaywallFontFetcherType = DefaultPaywallFontsFetcher(session: PaywallCacheWarming.downloadSession)
+        fontsManager: PaywallFontManagerType = DefaultPaywallFontsManager(session: PaywallCacheWarming.downloadSession)
     ) {
         self.introEligibiltyChecker = introEligibiltyChecker
         self.imageFetcher = imageFetcher
-        self.fontsFetcher = fontsFetcher
+        self.fontsManager = fontsManager
     }
 
     func warmUpEligibilityCache(offerings: Offerings) {
@@ -93,12 +93,15 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         let allFontURLs = Set(allFontsInPaywallsNamed.map(\.url))
         Logger.verbose(Strings.paywalls.warming_up_fonts(fontsURLS: allFontURLs))
 
-        for font in allFontsInPaywallsNamed {
-            do {
-                // WIP: Maybe rename to cacheFontIfNeeded
-                try await self.fontsFetcher.downloadFont(from: font.url, hash: font.hash)
-            } catch {
-                Logger.error(Strings.paywalls.error_prefetching_image(font.url, error))
+        await withTaskGroup(of: Void.self) { group in
+            for font in allFontsInPaywallsNamed {
+                group.addTask {
+                    do {
+                        try await self.fontsManager.installFont(from: font.url, hash: font.hash)
+                    } catch {
+                        Logger.error(Strings.paywalls.error_prefetching_image(font.url, error))
+                    }
+                }
             }
         }
     }

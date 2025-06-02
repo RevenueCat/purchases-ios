@@ -181,7 +181,7 @@ final class PaywallCacheWarmingTests: TestCase {
         let mockFileManager = MockFileManager()
         let mockRegistrar = MockRegistrar()
 
-        let sut = DefaultPaywallFontsFetcher(
+        let sut = DefaultPaywallFontsManager(
             fileManager: mockFileManager,
             session: mockSession,
             registrar: mockRegistrar
@@ -204,7 +204,7 @@ final class PaywallCacheWarmingTests: TestCase {
         mockFileManager.fileExistsAtPath = true
         let mockRegistrar = MockRegistrar()
 
-        let sut = DefaultPaywallFontsFetcher(
+        let sut = DefaultPaywallFontsManager(
             fileManager: mockFileManager,
             session: mockSession,
             registrar: mockRegistrar
@@ -299,7 +299,10 @@ private final class MockSession: FontDownloadSession {
     }
 }
 
-private final class MockFileManager: FileManaging {
+private final class MockFileManager: FontsFileManaging {
+    func cachesDirectory() throws -> URL {
+        return URL(fileURLWithPath: "/tmp/RevenueCatTestSupport", isDirectory: true)
+    }
 
     var fileExistsAtPath = false
     func fileExists(atPath path: String) -> Bool {
@@ -313,10 +316,6 @@ private final class MockFileManager: FileManaging {
     func write(_ data: Data, to url: URL) throws {
         didWriteData = true
         didWriteDataToURL = url
-    }
-
-    func applicationSupportDirectory() throws -> URL {
-        return URL(fileURLWithPath: "/tmp/RevenueCatTestSupport", isDirectory: true)
     }
 }
 

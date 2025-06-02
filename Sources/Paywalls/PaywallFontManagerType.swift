@@ -26,7 +26,7 @@ struct SystemFontRegistry: FontRegistrar {
         // WIP: Check if already registered??
 
         if !CTFontManagerRegisterFontsForURL(url as CFURL, .process, &errorRef) {
-            throw errorRef?.takeUnretainedValue() ?? DefaultPaywallFontsFetcher.UnknownError()
+            throw DefaultPaywallFontsManager.FontsManagerError.registrationError(errorRef?.takeUnretainedValue())
         }
     }
 }
@@ -35,7 +35,7 @@ protocol FontsFileManaging {
     func fileExists(atPath path: String) -> Bool
     func createDirectory(at url: URL) throws
     func write(_ data: Data, to url: URL) throws
-    func applicationSupportDirectory() throws -> URL
+    func cachesDirectory() throws -> URL
 }
 
 struct DefaultFontFileManager: FontsFileManaging {
@@ -53,8 +53,8 @@ struct DefaultFontFileManager: FontsFileManaging {
         try data.write(to: url, options: .atomic)
     }
 
-    func applicationSupportDirectory() throws -> URL {
-        guard let url = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
+    func cachesDirectory() throws -> URL {
+        guard let url = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first else {
             throw CocoaError(.fileNoSuchFile)
         }
         return url
@@ -67,9 +67,12 @@ protocol FontDownloadSession {
 
 extension URLSession: FontDownloadSession {}
 
-actor DefaultPaywallFontsFetcher: PaywallFontFetcherType {
+actor DefaultPaywallFontsManager: PaywallFontManagerType {
 
-    struct UnknownError: Error { }
+    enum FontsManagerError: Error {
+        case registrationError(Error?)
+        case hashValidationError(expected: String, actual: String)
+    }
 
     private let fileManager: FontsFileManaging
     private let session: FontDownloadSession
@@ -85,21 +88,49 @@ actor DefaultPaywallFontsFetcher: PaywallFontFetcherType {
         self.registrar = registrar
     }
 
-    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    func downloadFont(from url: URL, hash: String) async throws {
-        let fontsDirectory = try fileManager
-            .applicationSupportDirectory()
-            .appendingPathComponent("RevenueCatFonts", isDirectory: true)
-
-        try fileManager.createDirectory(at: fontsDirectory)
-
-        let destination = fontsDirectory.appendingPathComponent(hash)
+    func installFont(from remoteURL: URL, hash: String) async throws {
+        let destination = try self.fileURLForFontAtRemoteURL(remoteURL)
 
         if !fileManager.fileExists(atPath: destination.path) {
-            let (data, _) = try await session.data(from: url)
+            let (data, _) = try await session.data(from: remoteURL)
+            let dataHash = data.md5String
+            guard dataHash == hash else {
+                throw FontsManagerError.hashValidationError(expected: hash, actual: dataHash)
+            }
+
             try fileManager.write(data, to: destination)
         }
 
         try registrar.registerFont(at: destination)
+    }
+
+    // MARK: - Private
+
+    private func fontsDirectory() throws -> URL {
+        let fontsDirectory = try fileManager
+            .cachesDirectory()
+            .appendingPathComponent("RevenueCatFonts", isDirectory: true)
+        try fileManager.createDirectory(at: fontsDirectory)
+        return fontsDirectory
+    }
+
+    private func fileURLForFontAtRemoteURL(_ remoteURL: URL) throws -> URL {
+        let fontsDirectory = try fontsDirectory()
+        let fileName = remoteURL.lastPathComponent
+        return fontsDirectory.appendingPathComponent(fileName, isDirectory: false)
+    }
+
+}
+
+
+extension DefaultPaywallFontsManager.FontsManagerError: CustomStringConvertible {
+
+    var description: String {
+        switch self {
+        case let .registrationError(error):
+            return "Font registration error: \(error?.localizedDescription ?? "Unknown error")"
+        case let .hashValidationError(expected, actual):
+            return "Font hash validation failed. Expected: \(expected), Actual: \(actual)"
+        }
     }
 }
