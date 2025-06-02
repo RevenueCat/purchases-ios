@@ -42,13 +42,16 @@ class TakeScreenshotTests: BaseSnapshotTest {
             .appendingPathComponent("__PreviewResources__")
             .appendingPathComponent("resources")
 
-        let fileManager = FileManager.default
-        guard let resourceDirectories = try? fileManager.contentsOfDirectory(
+        let resourceDirectories = (try? FileManager.default.contentsOfDirectory(
             at: baseResourcesURL,
             includingPropertiesForKeys: [.isDirectoryKey],
             options: .skipsHiddenFiles
-        ) else {
-            XCTFail("Failed to list directories in resources")
+        ))?.filter { url in
+            (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
+        } ?? []
+
+        if resourceDirectories.isEmpty {
+            XCTFail("No valid resource directories found")
             return
         }
 
