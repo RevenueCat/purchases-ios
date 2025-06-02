@@ -184,16 +184,16 @@ final class PaywallCacheWarmingTests: TestCase {
         let sut = DefaultPaywallFontsFetcher(
             fileManager: mockFileManager,
             session: mockSession,
-            registrar: mockRegistrar,
-            tempDirectory: URL(fileURLWithPath: "/tmp")
+            registrar: mockRegistrar
         )
 
         let url = URL(string: "https://example.com/font.ttf")!
+        mockFileManager.fileExistsAtPath = false
+
         try await sut.downloadFont(from: url, hash: "abc123")
 
-        XCTAssertTrue(mockSession.didCall, "Expected session to be used")
-        XCTAssertFalse(mockFileManager.fileExistsAtPath, "File should not exist")
-        XCTAssertTrue(mockFileManager.didCopy, "Expected font file to be copied")
+        XCTAssertTrue(mockSession.didCallDataFrom, "Expected session to be used")
+        XCTAssertTrue(mockFileManager.didWriteData, "Expected font file to be written")
         XCTAssertTrue(mockRegistrar.didRegister, "Expected font to be registered")
     }
 
@@ -207,15 +207,15 @@ final class PaywallCacheWarmingTests: TestCase {
         let sut = DefaultPaywallFontsFetcher(
             fileManager: mockFileManager,
             session: mockSession,
-            registrar: mockRegistrar,
-            tempDirectory: URL(fileURLWithPath: "/tmp")
+            registrar: mockRegistrar
         )
 
         let url = URL(string: "https://example.com/font.ttf")!
         try await sut.downloadFont(from: url, hash: "abc123")
 
-        XCTAssertFalse(mockFileManager.didCopy, "Should not copy file if it already exists")
-        XCTAssertTrue(mockRegistrar.didRegister, "Should register font if file exists")
+        XCTAssertFalse(mockSession.didCallDataFrom, "Should not download data if file exists")
+        XCTAssertFalse(mockFileManager.didWriteData, "Should not write file if it already exists")
+        XCTAssertTrue(mockRegistrar.didRegister, "Should register existing font file")
     }
 }
 
@@ -291,27 +291,37 @@ private final class MockPaywallImageFetcher: PaywallImageFetcherType {
 }
 
 private final class MockSession: FontDownloadSession {
-    var didCall = false
+
+    var didCallDataFrom = false
     func data(from url: URL) async throws -> (Data, URLResponse) {
-        didCall = true
+        didCallDataFrom = true
         return (Data(), URLResponse())
     }
 }
 
 private final class MockFileManager: FileManaging {
-    var fileExistsAtPath = false
-    var didCopy = false
 
+    var fileExistsAtPath = false
     func fileExists(atPath path: String) -> Bool {
-        return fileExistsAtPath
+        fileExistsAtPath
     }
 
-    func copyItem(at srcURL: URL, to dstURL: URL) throws {
-        didCopy = true
+    func createDirectory(at url: URL) throws {}
+
+    var didWriteData = false
+    var didWriteDataToURL: URL?
+    func write(_ data: Data, to url: URL) throws {
+        didWriteData = true
+        didWriteDataToURL = url
+    }
+
+    func applicationSupportDirectory() throws -> URL {
+        return URL(fileURLWithPath: "/tmp/RevenueCatTestSupport", isDirectory: true)
     }
 }
 
 private final class MockRegistrar: FontRegistrar {
+
     var didRegister = false
     func registerFont(at url: URL) throws {
         didRegister = true

@@ -31,14 +31,14 @@ struct SystemFontRegistry: FontRegistrar {
     }
 }
 
-protocol FileManaging {
+protocol FontsFileManaging {
     func fileExists(atPath path: String) -> Bool
     func createDirectory(at url: URL) throws
     func write(_ data: Data, to url: URL) throws
     func applicationSupportDirectory() throws -> URL
 }
 
-struct DefaultFileManager: FileManaging {
+struct DefaultFontFileManager: FontsFileManaging {
     private let fileManager = FileManager.default
 
     func fileExists(atPath path: String) -> Bool {
@@ -71,21 +71,18 @@ actor DefaultPaywallFontsFetcher: PaywallFontFetcherType {
 
     struct UnknownError: Error { }
 
-    private let fileManager: FileManaging
+    private let fileManager: FontsFileManaging
     private let session: FontDownloadSession
     private let registrar: FontRegistrar
-    private let tempDirectory: URL
 
     init(
-        fileManager: FileManaging = DefaultFileManager(),
+        fileManager: FontsFileManaging = DefaultFontFileManager(),
         session: FontDownloadSession = URLSession.shared,
-        registrar: FontRegistrar = SystemFontRegistry(),
-        tempDirectory: URL = FileManager.default.temporaryDirectory
+        registrar: FontRegistrar = SystemFontRegistry()
     ) {
         self.fileManager = fileManager
         self.session = session
         self.registrar = registrar
-        self.tempDirectory = tempDirectory
     }
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
