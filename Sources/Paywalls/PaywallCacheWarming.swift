@@ -269,13 +269,13 @@ private extension PaywallData.Configuration.Images {
 
 }
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
-
 private struct DownloadableFont {
     let name: String
     let url: URL
     let hash: String
 }
+
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 private extension UIConfig.AppConfig {
     var allDownloadableFonts: [DownloadableFont] {
