@@ -192,9 +192,9 @@ final class PaywallCacheWarmingTests: TestCase {
 
         try await sut.downloadFont(from: url, hash: "abc123")
 
-        XCTAssertTrue(mockSession.didCallDataFrom, "Expected session to be used")
-        XCTAssertTrue(mockFileManager.didWriteData, "Expected font file to be written")
-        XCTAssertTrue(mockRegistrar.didRegister, "Expected font to be registered")
+        expect(mockSession.didCallDataFrom).to(beTrue())
+        expect(mockFileManager.didWriteData).to(beTrue())
+        expect(mockRegistrar.didRegister).to(beTrue())
     }
 
     @available(iOS 15.0, *)
@@ -213,9 +213,9 @@ final class PaywallCacheWarmingTests: TestCase {
         let url = URL(string: "https://example.com/font.ttf")!
         try await sut.downloadFont(from: url, hash: "abc123")
 
-        XCTAssertFalse(mockSession.didCallDataFrom, "Should not download data if file exists")
-        XCTAssertFalse(mockFileManager.didWriteData, "Should not write file if it already exists")
-        XCTAssertTrue(mockRegistrar.didRegister, "Should register existing font file")
+        expect(mockSession.didCallDataFrom).to(beFalse())
+        expect(mockFileManager.didWriteData).to(beFalse())
+        expect(mockRegistrar.didRegister).to(beTrue())
     }
 }
 
