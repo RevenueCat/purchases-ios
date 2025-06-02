@@ -23,6 +23,8 @@ struct SystemFontRegistry: FontRegistrar {
     func registerFont(at url: URL) throws {
         var errorRef: Unmanaged<CFError>?
 
+        // WIP: Check if already registered??
+
         if !CTFontManagerRegisterFontsForURL(url as CFURL, .process, &errorRef) {
             throw errorRef?.takeUnretainedValue() ?? DefaultPaywallFontsFetcher.UnknownError()
         }
@@ -87,23 +89,17 @@ actor DefaultPaywallFontsFetcher: PaywallFontFetcherType {
     }
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    func downloadFont(from url: URL, familyName: String) async throws {
+    func downloadFont(from url: URL, hash: String) async throws {
         let fontsDirectory = try fileManager
             .applicationSupportDirectory()
             .appendingPathComponent("RevenueCatFonts", isDirectory: true)
 
         try fileManager.createDirectory(at: fontsDirectory)
 
-        let destination = fontsDirectory.appendingPathComponent(familyName)
-
-        let families = CTFontManagerCopyAvailableFontFamilyNames() as? [String] ?? []
-        if families.contains(familyName) {
-            return
-        }
-
-        let (data, _) = try await session.data(from: url)
+        let destination = fontsDirectory.appendingPathComponent(hash)
 
         if !fileManager.fileExists(atPath: destination.path) {
+            let (data, _) = try await session.data(from: url)
             try fileManager.write(data, to: destination)
         }
 

@@ -33,12 +33,12 @@ public struct UIConfig: Codable, Equatable, Sendable {
 
     public struct FontsConfig: Codable, Equatable, Sendable {
         public var ios: FontInfo
-        public var web: FontInfo?
+        public var web: WebFontInfo?
         public var family: String?
 
         public init(
             ios: FontInfo,
-            web: FontInfo? = nil,
+            web: WebFontInfo? = nil,
             family: String? = nil
         ) {
             self.ios = ios
@@ -51,7 +51,6 @@ public struct UIConfig: Codable, Equatable, Sendable {
 
         case name(String)
         case googleFonts(String)
-        case custom(CustomFont)
 
         public func encode(to encoder: any Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
@@ -63,9 +62,6 @@ public struct UIConfig: Codable, Equatable, Sendable {
             case .googleFonts(let name):
                 try container.encode(FontInfoTypes.googleFonts.rawValue, forKey: .type)
                 try container.encode(name, forKey: .value)
-            case .custom(let webFont):
-                try container.encode(FontInfoTypes.custom.rawValue, forKey: .type)
-                try container.encode(webFont, forKey: .value)
             }
         }
 
@@ -80,9 +76,6 @@ public struct UIConfig: Codable, Equatable, Sendable {
             case .googleFonts:
                 let value = try container.decode(String.self, forKey: .value)
                 self = .googleFonts(value)
-            case .custom:
-                let value = try container.decode(CustomFont.self, forKey: .value)
-                self = .custom(value)
             }
         }
 
@@ -99,13 +92,12 @@ public struct UIConfig: Codable, Equatable, Sendable {
 
             case name
             case googleFonts = "google_fonts"
-            case custom
 
         }
 
     }
 
-    public struct CustomFont: Codable, Sendable, Hashable {
+    public struct WebFontInfo: Codable, Sendable, Hashable {
         public var value: String
         public var hash: String
         public var type: String

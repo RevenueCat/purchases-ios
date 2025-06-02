@@ -35,7 +35,7 @@ protocol PaywallImageFetcherType: Sendable {
 protocol PaywallFontFetcherType: Sendable {
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    func downloadFont(from url: URL, familyName: String) async throws
+    func downloadFont(from url: URL, hash: String) async throws
 
 }
 
@@ -96,7 +96,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         for font in allFontsInPaywallsNamed {
             do {
                 // WIP: Maybe rename to cacheFontIfNeeded
-                try await self.fontsFetcher.downloadFont(from: font.url, familyName: font.name)
+                try await self.fontsFetcher.downloadFont(from: font.url, hash: font.hash)
             } catch {
                 Logger.error(Strings.paywalls.error_prefetching_image(font.url, error))
             }
@@ -297,7 +297,7 @@ private extension UIConfig.FontsConfig {
 
     var iOSName: String? {
         switch ios {
-        case .googleFonts, .custom:
+        case .googleFonts:
             return nil
         case let .name(name):
             return name
@@ -305,19 +305,15 @@ private extension UIConfig.FontsConfig {
     }
 
     var downloadURLAndHash: (URL, String)? {
-        switch web {
-        case .googleFonts, .name:
-            return nil
-        case let .custom(font):
-            if let url = URL(string: font.value) {
-                return (url, font.hash)
-            } else {
-                Logger.error(PaywallsStrings.error_prefetching_font_invalid_url(font.value))
-                return nil
-            }
-        case .none:
+        guard let web else {
             return nil
         }
+
+        guard let url = URL(string: web.value) else {
+            Logger.error(PaywallsStrings.error_prefetching_font_invalid_url(web.value))
+            return nil
+        }
+        return (url, web.hash)
     }
 }
 
