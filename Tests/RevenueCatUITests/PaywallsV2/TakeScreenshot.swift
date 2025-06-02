@@ -28,6 +28,10 @@ class TakeScreenshotTests: BaseSnapshotTest {
         let packages: [OfferingsResponse.Offering.Package]
     }
 
+    override func setUp() {
+        super.setUp()
+    }
+
     func testPaywallValidationScreenshots() {
         let bundle = Bundle(for: Self.self)
 
@@ -49,6 +53,46 @@ class TakeScreenshotTests: BaseSnapshotTest {
             .appendingPathComponent("paywall-templates")
             .appendingPathComponent("offerings_paywalls_v2_templates.json")
 
+        let originalImagesURL = "https://assets.pawwalls.com"
+        let replacementImagesURL = resourceBundleURL
+            .appendingPathComponent("__PreviewResources__")
+            .appendingPathComponent("resources")
+            .appendingPathComponent("paywall-templates")
+            .appendingPathComponent("pawwalls")
+            .appendingPathComponent("assets")
+            .absoluteString
+        let originalIconsURL = "https://icons.pawwalls.com"
+        let replacementIconsURL = resourceBundleURL
+            .appendingPathComponent("__PreviewResources__")
+            .appendingPathComponent("resources")
+            .appendingPathComponent("paywall-templates")
+            .appendingPathComponent("pawwalls")
+            .appendingPathComponent("icons")
+            .absoluteString
+
+        // Read original file as String
+        guard let offeringsRawString = try? String(contentsOf: offeringsPath) else {
+            XCTFail("Couldn't read offerings file as String")
+            return
+        }
+
+        // Replace URLs
+        let modifiedJSON = offeringsRawString
+            .replacingOccurrences(of: originalImagesURL, with: replacementImagesURL)
+            .replacingOccurrences(of: originalIconsURL, with: replacementIconsURL)
+
+        // Decode updated JSON
+        guard let modifiedData = modifiedJSON.data(using: .utf8) else {
+            XCTFail("Failed to convert modified JSON to Data")
+            return
+        }
+        guard let offeringsResponse = try? JSONDecoder.default.decode(
+            OfferingsResponse.self, from: modifiedData
+        ) else {
+            XCTFail("Failed to decode modified offerings data")
+            return
+        }
+
         // Read and decode or print contents
         guard let packagesData = try? Data(contentsOf: packagesPath) else {
             XCTFail("Couldn't parse packages data")
@@ -56,16 +100,6 @@ class TakeScreenshotTests: BaseSnapshotTest {
         }
         guard let packages = try? JSONDecoder.default.decode(PackageData.self, from: packagesData) else {
             XCTFail("Failed to decode packages data")
-            return
-        }
-        guard let offeringsData = try? Data(contentsOf: offeringsPath) else {
-            XCTFail("Couldn't parse offerings data")
-            return
-        }
-        guard let offeringsResponse = try? JSONDecoder.default.decode(
-            OfferingsResponse.self, from: offeringsData
-        ) else {
-            XCTFail("Failed to decode offerings data")
             return
         }
 
@@ -123,6 +157,12 @@ class TakeScreenshotTests: BaseSnapshotTest {
 
         for offeringId in offerings!.all.keys {
             let offering = offerings!.all[offeringId]!
+
+            var count = 0
+            if count > 0 {
+                break
+            }
+            count += 1
 
             if offering.paywallComponents != nil {
                 let view = Self.createPaywall(offering: offering)
