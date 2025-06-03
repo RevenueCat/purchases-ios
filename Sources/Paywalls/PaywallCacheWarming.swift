@@ -358,7 +358,7 @@ private extension UIConfig.FontsConfig {
            let (url, hash) = self.downloadURLAndHash {
             return DownloadableFont(
                 name: iOSName,
-                fontFamily: self.fontFamily,
+                fontFamily: self.family,
                 url: url,
                 hash: hash
             )
