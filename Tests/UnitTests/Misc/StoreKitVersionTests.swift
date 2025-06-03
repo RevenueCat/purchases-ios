@@ -16,7 +16,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class StoreKitVersionTests: TestCase {
+final class StoreKitVersionTests: TestCase {
 
     func testDefaultIsStoreKit2() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
@@ -27,17 +27,17 @@ class StoreKitVersionTests: TestCase {
     func testVersionStringIsStoreKit1IfStoreKit2EnabledButNotAvailable() throws {
         try AvailabilityChecks.iOS15APINotAvailableOrSkipTest()
 
-        expect(StoreKitVersion.storeKit2.versionString) == "1"
+        expect(StoreKitVersion.storeKit2.effectiveVersion.debugDescription) == "1"
     }
 
     func testVersionStringIsStoreKit2IfStoreKit2EnabledAndAvailable() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        expect(StoreKitVersion.storeKit2.versionString) == "2"
+        expect(StoreKitVersion.storeKit2.effectiveVersion.debugDescription) == "2"
     }
 
     func testVersionStringIsStoreKit1IfStoreKit2NotEnabled() {
-        expect(StoreKitVersion.storeKit1.versionString) == "1"
+        expect(StoreKitVersion.storeKit1.effectiveVersion.debugDescription) == "1"
     }
 
     func testStoreKit2EnabledButNotAvailable() throws {
