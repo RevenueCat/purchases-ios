@@ -182,6 +182,10 @@ func checkNonAsyncMethods(_ purchases: Purchases) {
 }
 
 private func checkConfigure() -> Purchases! {
+	    Purchases.configureInCustomEntitlementsComputationMode(
+        apiKey: "",
+        appUserID: ""
+    )
     Purchases.configureInCustomEntitlementsComputationMode(
         apiKey: "",
         appUserID: "",

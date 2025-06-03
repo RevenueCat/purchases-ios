@@ -1454,11 +1454,11 @@ public extension Purchases {
     @objc(configureInCustomEntitlementsModeWithApiKey:appUserID:)
     @discardableResult static func configureInCustomEntitlementsComputationMode(apiKey: String,
                                                                                 appUserID: String) -> Purchases {
-        Self.configure(
-            with: .builder(withAPIKey: apiKey)
-                .with(appUserID: appUserID)
-                .with(dangerousSettings: DangerousSettings(customEntitlementComputation: true))
-                .build())
+        Self.configureInCustomEntitlementsComputationMode(
+            apiKey: apiKey,
+            appUserID: appUserID,
+            showStoreMessagesAutomatically: true
+        )
     }
 
     /**
