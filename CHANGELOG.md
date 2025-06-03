@@ -1274,6 +1274,10 @@ The RevenueCat iOS SDK v5 is here!! Version 5.0 of the RevenueCat SDK enables fu
 
 See our [RevenueCat v5 Migration Guide](Sources/DocCDocumentation/DocCDocumentation.docc/V5_API_Migration_guide.md) for all the details.
 
+## 4.43.6
+### 🔄 Other Changes
+* Adds `showStoreMessagesAutomatically` parameter to CEC mode (#5222) via JayShortway (@JayShortway)
+
 ## 4.43.5
 ### Other Changes
 * v4: Add promotional offer APIs to CustomEntitlementComputation V4 SDK (#4973) via Toni Rico (@tonidero)
