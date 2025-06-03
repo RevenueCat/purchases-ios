@@ -14,7 +14,7 @@ onFlowComplete:
 - tapOn: "Change plans"
 - tapOn: "Product 1 [Monthly] (1 month)"
 - tapOn: Subscribe
-- tapOn: Ok
+- tapOn: \b[Oo][Kk]\b
 - tapOn: Cancel
 - tapOn:
-    id: "xmark"
+    id: "circled_close_button"

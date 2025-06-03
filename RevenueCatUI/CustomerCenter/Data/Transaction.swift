@@ -23,6 +23,13 @@ protocol Transaction {
     var managementURL: URL? { get }
     var price: ProductPaidPrice? { get }
     var periodType: PeriodType { get }
+    var purchaseDate: Date { get }
+    var unsubscribeDetectedAt: Date? { get }
+    var billingIssuesDetectedAt: Date? { get }
+    var gracePeriodExpiresDate: Date? { get }
+    var refundedAtDate: Date? { get }
+    var storeIdentifier: String? { get }
+    var identifier: String? { get }
 }
 
 enum TransactionType {
@@ -53,6 +60,17 @@ enum TransactionType {
         unsubscribeDetectedAt != nil && !willRenew
     }
 
+    var refundedAtDate: Date? {
+        refundedAt
+    }
+
+    var storeIdentifier: String? {
+        storeTransactionId
+    }
+
+    var identifier: String? {
+        nil
+    }
 }
 
 extension NonSubscriptionTransaction: Transaction {
@@ -73,4 +91,27 @@ extension NonSubscriptionTransaction: Transaction {
         .normal
     }
 
+    var unsubscribeDetectedAt: Date? {
+        nil
+    }
+
+    var billingIssuesDetectedAt: Date? {
+        nil
+    }
+
+    var gracePeriodExpiresDate: Date? {
+        nil
+    }
+
+    var refundedAtDate: Date? {
+        nil
+    }
+
+    var storeIdentifier: String? {
+        storeTransactionIdentifier
+    }
+
+    var identifier: String? {
+        transactionIdentifier
+    }
 }

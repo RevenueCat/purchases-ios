@@ -28,12 +28,17 @@ final class SubscriptionDetailViewModelTests: TestCase {
 
     func testShouldShowContactSupport() {
         let viewModelAppStore = SubscriptionDetailViewModel(
+            customerInfoViewModel: CustomerCenterViewModel(
+                uiPreviewPurchaseProvider: MockCustomerCenterPurchases()
+            ),
             screen: CustomerCenterConfigData.default.screens[.management]!,
             showPurchaseHistory: false,
+            allowsMissingPurchaseAction: false,
             purchaseInformation: .yearlyExpiring(store: .appStore)
         )
 
         expect(viewModelAppStore.shouldShowContactSupport).to(beFalse())
+        expect(viewModelAppStore.allowMissingPurchase).to(beFalse())
 
         let otherStores = [
             Store.macAppStore,
@@ -48,12 +53,17 @@ final class SubscriptionDetailViewModelTests: TestCase {
 
         otherStores.forEach {
             let viewModelOther = SubscriptionDetailViewModel(
+                customerInfoViewModel: CustomerCenterViewModel(
+                    uiPreviewPurchaseProvider: MockCustomerCenterPurchases()
+                ),
                 screen: CustomerCenterConfigData.default.screens[.management]!,
                 showPurchaseHistory: false,
+                allowsMissingPurchaseAction: true,
                 purchaseInformation: .yearlyExpiring(store: $0)
             )
 
             expect(viewModelOther.shouldShowContactSupport).to(beTrue())
+            expect(viewModelOther.allowMissingPurchase).to(beTrue())
         }
     }
 }

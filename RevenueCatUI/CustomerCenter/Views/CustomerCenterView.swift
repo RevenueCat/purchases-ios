@@ -95,9 +95,13 @@ public struct CustomerCenterView: View {
     @_spi(Internal) public init(
         uiPreviewPurchaseProvider: CustomerCenterPurchasesType,
         navigationOptions: CustomerCenterNavigationOptions) {
-        self.init(viewModel: CustomerCenterViewModel(uiPreviewPurchaseProvider: uiPreviewPurchaseProvider),
-                  navigationOptions: navigationOptions)
-    }
+            self.init(
+                viewModel: CustomerCenterViewModel(
+                    uiPreviewPurchaseProvider: uiPreviewPurchaseProvider
+                ),
+                navigationOptions: navigationOptions
+            )
+        }
 
     fileprivate init(
         viewModel: CustomerCenterViewModel,
@@ -200,10 +204,8 @@ private extension CustomerCenterView {
             if let screen = configuration.screens[.noActive] {
                 singlePurchaseView(screen)
             } else {
-                // Fallback with a restore button
-                NoSubscriptionsView(
+                FallbackNoSubscriptionsView(
                     customerCenterViewModel: viewModel,
-                    configuration: configuration,
                     actionWrapper: self.viewModel.actionWrapper
                 )
             }
@@ -236,8 +238,10 @@ private extension CustomerCenterView {
         SubscriptionDetailView(
             customerInfoViewModel: viewModel,
             screen: screen,
-            purchaseInformation: viewModel.activePurchase,
+            purchaseInformation: viewModel.activeSubscriptionPurchases.first
+                ?? viewModel.activeNonSubscriptionPurchases.first,
             showPurchaseHistory: viewModel.shouldShowSeeAllPurchases,
+            allowsMissingPurchaseAction: true,
             purchasesProvider: self.viewModel.purchasesProvider,
             actionWrapper: self.viewModel.actionWrapper
         )
@@ -262,7 +266,8 @@ struct CustomerCenterView_Previews: PreviewProvider {
     static var previews: some View {
         CustomerCenterView(
             viewModel: CustomerCenterViewModel(
-                purchaseInformation: .yearlyExpiring(),
+                activeSubscriptionPurchases: [.yearlyExpiring()],
+                activeNonSubscriptionPurchases: [],
                 configuration: CustomerCenterConfigData.default
             )
         )

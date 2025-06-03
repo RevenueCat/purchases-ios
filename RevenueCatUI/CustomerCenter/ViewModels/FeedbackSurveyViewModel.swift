@@ -25,7 +25,7 @@ import RevenueCat
 @MainActor
 final class FeedbackSurveyViewModel: ObservableObject {
 
-    var feedbackSurveyData: FeedbackSurveyData
+    let feedbackSurveyData: FeedbackSurveyData
 
     @Published
     var loadingOption: String?
@@ -70,14 +70,17 @@ final class FeedbackSurveyViewModel: ObservableObject {
         if let promotionalOffer = option.promotionalOffer,
            promotionalOffer.eligible {
             self.loadingOption = option.id
-            let result = await loadPromotionalOfferUseCase.execute(promoOfferDetails: promotionalOffer)
+            let result = await loadPromotionalOfferUseCase.execute(
+                promoOfferDetails: promotionalOffer,
+                forProductId: feedbackSurveyData.productIdentifier
+            )
+            self.loadingOption = nil
             switch result {
             case .success(let promotionalOfferData):
                 self.promotionalOfferData = promotionalOfferData
             case .failure:
                 self.feedbackSurveyData.onOptionSelected()
                 dismissView()
-                self.loadingOption = nil
             }
         } else {
             self.feedbackSurveyData.onOptionSelected()
@@ -98,10 +101,6 @@ extension FeedbackSurveyViewModel {
         _ userAction: PromotionalOfferViewAction,
         dismissView: () -> Void
     ) async {
-        // Clear the promotional offer data to dismiss the sheet
-        self.promotionalOfferData = nil
-        self.loadingOption = nil
-
         if !userAction.shouldTerminateCurrentPathFlow {
             self.feedbackSurveyData.onOptionSelected()
         }
