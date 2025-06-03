@@ -55,7 +55,13 @@ struct ImageComponentView: View {
                         darkUrl: style.darkUrl,
                         darkLowResUrl: style.darkLowResUrl
                     ) { (image, size) in
-                        self.renderImage(image, size, maxWidth: maxWidth, with: style)
+                        self.renderImage(
+                            image,
+                            size,
+                            maxWidth: self.calculateMaxWidth(parentWidth: maxWidth,
+                                                             style: style),
+                            with: style
+                        )
                     }
                     .applyImageWidth(size: style.size)
                     .applyImageHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
