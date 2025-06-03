@@ -4,7 +4,7 @@ enum ProductCellState {
     case readyToPurchase
     case purchasing
     case purchased
-    case canNotPurchase
+    case cannotPurchase
     case purchasingOtherProduct
 }
 
@@ -16,7 +16,7 @@ struct ProductCell: View {
 
     var state: ProductCellState {
         guard let storeProduct = product.storeProduct else {
-            return .canNotPurchase
+            return .cannotPurchase
         }
 
         if userViewModel.customerInfo?.allPurchasedProductIdentifiers.contains(storeProduct.productIdentifier) == true {
@@ -34,7 +34,7 @@ struct ProductCell: View {
 
     var purchaseButtonTitle: LocalizedStringKey {
         switch state {
-        case .readyToPurchase, .canNotPurchase, .purchasingOtherProduct: "Purchase"
+        case .readyToPurchase, .cannotPurchase, .purchasingOtherProduct: "Purchase"
         case .purchasing: "Purchasing..."
         case .purchased: "Purchased"
         }
