@@ -202,7 +202,7 @@ class TakeScreenshotTests: BaseSnapshotTest {
     }
 
     func snapshotAndSave<V: View>(view: V, size: CGSize, filename: String, template: String) {
-        let image = view.asImage(wait: 1).resized(toWidth: size.width)
+        let image = view.asImage(wait: 2).resized(toWidth: size.width)
 
         // Save PNG data
         if let pngData = image.pngData() {
