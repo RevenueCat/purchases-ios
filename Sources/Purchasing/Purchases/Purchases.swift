@@ -1622,11 +1622,10 @@ public extension Purchases {
         showStoreMessagesAutomatically: Bool = true
     ) -> Purchases {
         Self.configure(
-            with: .builder(withAPIKey: apiKey)
-                .with(appUserID: appUserID)
+            with: Configuration.Builder(withAPIKey: apiKey, appUserID: appUserID)
                 .with(showStoreMessagesAutomatically: showStoreMessagesAutomatically)
-                .with(dangerousSettings: DangerousSettings(customEntitlementComputation: true))
-                .build())
+                .build()
+        )
     }
 
     #endif

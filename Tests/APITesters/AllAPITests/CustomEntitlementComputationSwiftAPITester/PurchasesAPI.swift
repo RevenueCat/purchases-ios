@@ -223,7 +223,7 @@ func checkNonAsyncMethods(_ purchases: Purchases) {
 }
 
 private func checkConfigure() -> Purchases! {
-	    Purchases.configureInCustomEntitlementsComputationMode(
+    Purchases.configureInCustomEntitlementsComputationMode(
         apiKey: "",
         appUserID: ""
     )
@@ -232,8 +232,8 @@ private func checkConfigure() -> Purchases! {
         appUserID: "",
         showStoreMessagesAutomatically: false
     )
-        let configuration = Configuration.Builder(withAPIKey: "", appUserID: "").build()
-
+    
+    let configuration = Configuration.Builder(withAPIKey: "", appUserID: "").build()
     Purchases.configure(with: configuration)
 
     return nil
