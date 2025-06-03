@@ -1449,6 +1449,49 @@ public extension Purchases {
      * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
      * to generate this for you.
      *
+     * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
+     */
+    @objc(configureInCustomEntitlementsModeWithApiKey:appUserID:)
+    @discardableResult static func configureInCustomEntitlementsComputationMode(apiKey: String,
+                                                                                appUserID: String) -> Purchases {
+        Self.configure(
+            with: .builder(withAPIKey: apiKey)
+                .with(appUserID: appUserID)
+                .with(dangerousSettings: DangerousSettings(customEntitlementComputation: true))
+                .build())
+    }
+
+    /**
+     * Configures an instance of the Purchases SDK with a specified API key and
+     * app user ID in Custom Entitlements Computation mode.
+
+     * - Warning: Configuring in Custom Entitlements Computation mode should only be enabled after
+     * being instructed to do so by the RevenueCat team.
+     * Apps configured in this mode will not have anonymous IDs, will not be able to use logOut methods,
+     * and will not have their CustomerInfo cache refreshed automatically.
+     *
+     * ## Custom Entitlements Computation mode
+     * This mode is intended for apps that will use RevenueCat to manage payment flows,
+     * but **will not** use RevenueCat's SDK to compute entitlements.
+     * Apps using this mode will instead rely on webhooks to get notified when purchases go through
+     * and to merge information between RevenueCat's servers
+     * and their own.
+     *
+     * In this mode, the RevenueCat SDK will never generate anonymous IDs. Instead, it can only be configured
+     * with a known appUserID, and the logOut methods
+     * will return an error if called. To change users, call ``logIn(_:)-arja``.
+     *
+     * The instance will be set as a singleton.
+     * You should access the singleton instance using ``Purchases/shared``.
+     *
+     * - Note: Best practice is to use a salted hash of your unique app user ids.
+     *
+     * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
+     *
+     * - Parameter appUserID: The unique app user id for this user. This user id will allow users to share their
+     * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
+     * to generate this for you.
+     *
      * - Parameter showStoreMessagesAutomatically: Enabled by default. If enabled, if the user has
      * billing issues, has yet to accept a price increase consent or there are other messages from StoreKit, they will
      * be displayed automatically when the app is initialized.
