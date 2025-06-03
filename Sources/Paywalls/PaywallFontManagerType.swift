@@ -114,7 +114,7 @@ actor DefaultPaywallFontsManager: PaywallFontManagerType {
 
     private func fileURLForFontAtRemoteURL(_ remoteURL: URL) throws -> URL {
         let fontsDirectory = try fontsDirectory()
-        let fileName = Data(remoteURL.absoluteString.utf8).md5String + remoteURL.pathExtension
+        let fileName = Data(remoteURL.absoluteString.utf8).md5String + "." + remoteURL.pathExtension
         return fontsDirectory.appendingPathComponent(fileName, isDirectory: false)
     }
 
