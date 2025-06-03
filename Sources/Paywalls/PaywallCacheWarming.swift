@@ -23,6 +23,9 @@ protocol PaywallCacheWarmingType: Sendable {
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func warmUpPaywallFontsCache(offerings: Offerings) async
+
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+    func triggerFontDownloadIfNeeded(fontsConfig: UIConfig.FontsConfig) async
 }
 
 protocol PaywallImageFetcherType: Sendable {
@@ -48,6 +51,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
     private var hasLoadedEligibility = false
     private var hasLoadedImages = false
+    private var ongoingFontDownloads: [DownloadableFont: Task<Void, Never>] = [:]
 
     init(
         introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType,
@@ -96,14 +100,39 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         await withTaskGroup(of: Void.self) { group in
             for font in allFontsInPaywallsNamed {
                 group.addTask {
-                    do {
-                        try await self.fontsManager.installFont(from: font.url, hash: font.hash)
-                    } catch {
-                        Logger.error(Strings.paywalls.error_prefetching_image(font.url, error))
-                    }
+                    await self.installFont(from: font)
                 }
             }
         }
+    }
+
+    func triggerFontDownloadIfNeeded(fontsConfig: UIConfig.FontsConfig) async {
+        guard let downloadableFont = fontsConfig.downloadableFont else { return }
+        
+        await self.installFont(from: downloadableFont)
+    }
+
+    private func installFont(from font: DownloadableFont) async {
+        if let existingTask = ongoingFontDownloads[font] {
+            // Already downloading, await the existing task.
+            await existingTask.value
+            return
+        }
+
+        let task = Task {
+            do {
+                try await self.fontsManager.installFont(from: font.url, hash: font.hash)
+            } catch {
+                Logger.error(Strings.paywalls.error_prefetching_image(font.url, error))
+            }
+        }
+
+        ongoingFontDownloads[font] = task
+        defer {
+            ongoingFontDownloads[font] = nil
+        }
+
+        await task.value
     }
 }
 
@@ -269,7 +298,7 @@ private extension PaywallData.Configuration.Images {
 
 }
 
-private struct DownloadableFont {
+private struct DownloadableFont: Hashable, Sendable {
     let name: String
     let url: URL
     let hash: String

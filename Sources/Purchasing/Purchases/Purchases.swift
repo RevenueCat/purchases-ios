@@ -1333,7 +1333,9 @@ public extension Purchases {
 
     /// Used by `RevenueCatUI` to notify `RevenueCat` when a font in a paywall fails to load.
     @_spi(Internal) func failedToLoadFontWithConfig(_ fontConfig: UIConfig.FontsConfig) {
-        
+        self.operationDispatcher.dispatchOnWorkerThread {
+            await self.paywallCache?.triggerFontDownloadIfNeeded(fontsConfig: fontConfig)
+        }
     }
 
     /// Used by `RevenueCatUI` to download and cache paywall images.
