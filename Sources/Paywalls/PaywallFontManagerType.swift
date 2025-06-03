@@ -23,8 +23,6 @@ struct SystemFontRegistry: FontRegistrar {
     func registerFont(at url: URL) throws {
         var errorRef: Unmanaged<CFError>?
 
-        // WIP: Check if already registered??
-
         if !CTFontManagerRegisterFontsForURL(url as CFURL, .process, &errorRef) {
             throw DefaultPaywallFontsManager.FontsManagerError.registrationError(errorRef?.takeUnretainedValue())
         }
@@ -116,7 +114,7 @@ actor DefaultPaywallFontsManager: PaywallFontManagerType {
 
     private func fileURLForFontAtRemoteURL(_ remoteURL: URL) throws -> URL {
         let fontsDirectory = try fontsDirectory()
-        let fileName = remoteURL.lastPathComponent
+        let fileName = Data(remoteURL.absoluteString.utf8).md5String + remoteURL.pathExtension
         return fontsDirectory.appendingPathComponent(fileName, isDirectory: false)
     }
 
