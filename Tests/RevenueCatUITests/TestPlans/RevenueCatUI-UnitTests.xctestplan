@@ -21,6 +21,10 @@
   },
   "testTargets" : [
     {
+      "skippedTests" : [
+        "TakeScreenshotTests",
+        "TakeScreenshotTests\/testPaywallValidationScreenshots()"
+      ],
       "target" : {
         "containerPath" : "container:",
         "identifier" : "RevenueCatUITests",
