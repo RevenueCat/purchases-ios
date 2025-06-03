@@ -40,10 +40,6 @@ struct ProductCell: View {
         }
     }
 
-    var purchaseButtonIcon: String {
-        "checkmark.circle.fill"
-    }
-
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(alignment: .firstTextBaseline) {
@@ -71,7 +67,7 @@ struct ProductCell: View {
             }) {
                 Group {
                     if state == .purchased {
-                        Label(purchaseButtonTitle, systemImage: purchaseButtonIcon)
+                        Label(purchaseButtonTitle, systemImage: "checkmark.circle.fill")
                     } else {
                         Text(purchaseButtonTitle)
                     }
