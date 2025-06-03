@@ -1567,12 +1567,12 @@ workflows:
       - release-train
 
   record-and-push-paywall-template-screenshots:
-    when:
-      and:
-        - not:
-            equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-        - equal: ["main", << pipeline.git.branch >>]
-        - equal: ["default", << pipeline.parameters.action >>]
+    # when:
+    #   and:
+    #     - not:
+    #         equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+    #     - equal: ["main", << pipeline.git.branch >>]
+    #     - equal: ["default", << pipeline.parameters.action >>]
     jobs:
       - record-and-push-paywall-template-screenshots:
           context:
