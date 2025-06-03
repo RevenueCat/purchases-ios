@@ -48,32 +48,30 @@ struct ImageComponentView: View {
             )
         ) { style in
             if style.visible {
-                ZStack {
+                if let maxWidth = self.maxWidth {
+                    RemoteImage(
+                        url: style.url,
+                        lowResUrl: style.lowResUrl,
+                        darkUrl: style.darkUrl,
+                        darkLowResUrl: style.darkLowResUrl
+                    ) { (image, size) in
+                        self.renderImage(image, size, maxWidth: maxWidth, with: style)
+                    }
+                    .applyImageWidth(size: style.size)
+                    .applyImageHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
+                    .clipped()
+                    .padding(style.padding.extend(by: style.border?.width ?? 0))
+                    .shape(border: style.border,
+                           shape: style.shape)
+                    .shadow(shadow: style.shadow,
+                            shape: style.shape?.toInsettableShape())
+                    .padding(style.margin)
+                } else {
                     GeometryReader { proxy in
                         Color.clear
                             .onAppear {
                                 self.maxWidth = proxy.size.width
                             }
-                    }
-
-                    if let maxWidth = self.maxWidth {
-                        RemoteImage(
-                            url: style.url,
-                            lowResUrl: style.lowResUrl,
-                            darkUrl: style.darkUrl,
-                            darkLowResUrl: style.darkLowResUrl
-                        ) { (image, size) in
-                            self.renderImage(image, size, maxWidth: maxWidth, with: style)
-                        }
-                        .applyImageWidth(size: style.size)
-                        .applyImageHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
-                        .clipped()
-                        .padding(style.padding.extend(by: style.border?.width ?? 0))
-                        .shape(border: style.border,
-                               shape: style.shape)
-                        .shadow(shadow: style.shadow,
-                                shape: style.shape?.toInsettableShape())
-                        .padding(style.margin)
                     }
                 }
             }
