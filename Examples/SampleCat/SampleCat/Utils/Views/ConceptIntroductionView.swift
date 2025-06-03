@@ -1,10 +1,3 @@
-//
-//  ConceptIntroductionView.swift
-//  SampleCat
-//
-//  Created by Hidde van der Ploeg on 15/4/25.
-//
-
 import SwiftUI
 
 struct ConceptIntroductionView: View {
