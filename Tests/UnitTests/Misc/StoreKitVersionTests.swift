@@ -16,7 +16,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class StoreKitVersionTests: TestCase {
+final class StoreKitVersionTests: TestCase {
 
     func testDefaultIsStoreKit2() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()

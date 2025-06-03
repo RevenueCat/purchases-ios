@@ -154,6 +154,20 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "EBFB67ED0BEBF3713CD2A97E"
+               BuildableName = "OHHTTPStubsSwift.framework"
+               BlueprintName = "OHHTTPStubsSwift"
+               ReferencedContainer = "container:Tuist/.build/tuist-derived/OHHTTPStubs/OHHTTPStubs.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "21ACE72DE79281C9B6CD27E0"
                BuildableName = "libRevenueCat.a"
                BlueprintName = "RevenueCat"

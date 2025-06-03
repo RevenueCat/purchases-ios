@@ -15,7 +15,7 @@ import Nimble
 @_spi(Internal) @testable import RevenueCat
 import XCTest
 
-class ClockTests: TestCase {
+final class ClockTests: TestCase {
 
     private var startDate: Date!
     private var startTime: DispatchTime!

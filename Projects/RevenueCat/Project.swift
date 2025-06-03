@@ -9,7 +9,7 @@ let project = Project(
         .target(
             name: "RevenueCat",
             destinations: .iOS,
-            product: .staticLibrary,
+            product: .framework,
             bundleId: "com.revenuecat.sampleapp",
             deploymentTargets: .iOS("15.0"),
             infoPlist: .default,
@@ -20,7 +20,10 @@ let project = Project(
                         "../../Sources/LocalReceiptParsing/ReceiptParser-only-files/**/*.swift"
                     ]
                 )
-            ]
+            ],
+            headers: .headers(
+               public: ["../../Sources/RevenueCat.h"]
+            )
         ),
 
         // MARK: – Tests
@@ -40,7 +43,7 @@ let project = Project(
                 .target(name: "RevenueCat"),
                 .nimble,
                 .snapshotTesting,
-                .ohHTTPStubs
+                .ohHTTPStubsSwift
             ]
         )
     ],

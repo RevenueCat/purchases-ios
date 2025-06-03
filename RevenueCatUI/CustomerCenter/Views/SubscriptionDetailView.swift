@@ -34,6 +34,9 @@ struct SubscriptionDetailView: View {
     @Environment(\.navigationOptions)
     var navigationOptions
 
+    @Environment(\.openURL)
+    var openURL
+
     @Environment(\.supportInformation)
     private var support
 
@@ -184,7 +187,8 @@ struct SubscriptionDetailView: View {
                 if let url = support?.supportURL(
                     localization: localization,
                     purchasesProvider: viewModel.purchasesProvider
-                ), viewModel.shouldShowContactSupport,
+                ),
+                   viewModel.shouldShowContactSupport,
                    URLUtilities.canOpenURL(url) || RuntimeUtils.isSimulator {
                     contactSupportView(url)
                         .padding(.top)
@@ -210,7 +214,7 @@ struct SubscriptionDetailView: View {
             if RuntimeUtils.isSimulator {
                 self.showSimulatorAlert = true
             } else {
-                viewModel.inAppBrowserURL = IdentifiableURL(url: url)
+                openURL(url)
             }
         } label: {
             CompatibilityLabeledContent(localization[.contactSupport])
