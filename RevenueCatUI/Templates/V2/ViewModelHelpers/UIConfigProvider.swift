@@ -51,10 +51,10 @@ final class UIConfigProvider: Sendable {
             return nil
         }
 
-        let familyName: String
+        let fontName: String
         switch fontsConfig.ios {
-        case .name(let fontFamilyName):
-            familyName = fontFamilyName
+        case .name(let name):
+            fontName = name
         case .googleFonts:
             // Not supported on this platform (yet)
             Logger.warning("Google Fonts are not supported on this platform")
@@ -63,13 +63,13 @@ final class UIConfigProvider: Sendable {
             return nil
         }
 
-        // Check if the family name is a generic font (serif, sans-serif, monospace)
-        if let genericFont = GenericFont(rawValue: familyName) {
+        // Check if the font name is a generic font (serif, sans-serif, monospace)
+        if let genericFont = GenericFont(rawValue: fontName) {
             return genericFont.makeFont(fontSize: fontSize)
         }
 
-        guard let customFont = UIFont(name: familyName, size: fontSize) else {
-            Logger.warning("Custom font '\(familyName)' could not be loaded. Falling back to system font.")
+        guard let customFont = UIFont(name: fontName, size: fontSize) else {
+            Logger.warning("Custom font '\(fontName)' could not be loaded. Falling back to system font.")
             self.purchases.failedToLoadFontWithConfig(fontsConfig)
             return nil
         }

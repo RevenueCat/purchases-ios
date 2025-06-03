@@ -31,8 +31,12 @@ protocol PaywallPurchasesType: Sendable {
     @Sendable
     func track(paywallEvent: PaywallEvent) async
 
+#if !os(macOS) && !os(tvOS)
+
     @Sendable
     func failedToLoadFontWithConfig(_ fontConfig: UIConfig.FontsConfig)
+
+#endif
 
 }
 

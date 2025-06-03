@@ -1331,12 +1331,16 @@ public extension Purchases {
         return CustomerCenterConfigData(from: response)
     }
 
+#if !os(macOS) && !os(tvOS)
+
     /// Used by `RevenueCatUI` to notify `RevenueCat` when a font in a paywall fails to load.
     @_spi(Internal) func failedToLoadFontWithConfig(_ fontConfig: UIConfig.FontsConfig) {
         self.operationDispatcher.dispatchOnWorkerThread {
             await self.paywallCache?.triggerFontDownloadIfNeeded(fontsConfig: fontConfig)
         }
     }
+
+#endif
 
     /// Used by `RevenueCatUI` to download and cache paywall images.
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)

@@ -32,15 +32,18 @@ public struct UIConfig: Codable, Equatable, Sendable {
     }
 
     public struct FontsConfig: Codable, Equatable, Sendable {
+        public var family: String?
         public var ios: FontInfo
         public var web: WebFontInfo?
 
         public init(
             ios: FontInfo,
-            web: WebFontInfo? = nil
+            web: WebFontInfo? = nil,
+            family: String? = nil
         ) {
             self.ios = ios
             self.web = web
+            self.family = family
         }
     }
 
