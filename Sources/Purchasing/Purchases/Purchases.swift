@@ -1449,14 +1449,22 @@ public extension Purchases {
      * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
      * to generate this for you.
      *
+     * - Parameter showStoreMessagesAutomatically: Enabled by default. If enabled, if the user has
+     * billing issues, has yet to accept a price increase consent or there are other messages from StoreKit, they will
+     * be displayed automatically when the app is initialized.
+     *
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      */
-    @objc(configureInCustomEntitlementsModeWithApiKey:appUserID:)
-    @discardableResult static func configureInCustomEntitlementsComputationMode(apiKey: String,
-                                                                                appUserID: String) -> Purchases {
+    @objc(configureInCustomEntitlementsModeWithApiKey:appUserID:showStoreMessagesAutomatically:)
+    @discardableResult static func configureInCustomEntitlementsComputationMode(
+        apiKey: String,
+        appUserID: String,
+        showStoreMessagesAutomatically: Bool = true
+    ) -> Purchases {
         Self.configure(
             with: .builder(withAPIKey: apiKey)
                 .with(appUserID: appUserID)
+                .with(showStoreMessagesAutomatically: showStoreMessagesAutomatically)
                 .with(dangerousSettings: DangerousSettings(customEntitlementComputation: true))
                 .build())
     }
