@@ -19,8 +19,10 @@ import StoreKit
 enum OfferingStrings {
 
     case cannot_find_product_configuration_error(identifiers: Set<String>)
+    case cannot_find_web_products(missingWebProductIDs: Set<String>)
     case fetching_offerings_error(error: OfferingsManager.Error, underlyingError: Error?)
     case fetching_offerings_failed_server_down
+    case fetching_web_products_failed(error: Error?)
     case found_existing_product_request(identifiers: Set<String>)
     case no_cached_offerings_fetching_from_network
     case offerings_stale_updated_from_network
@@ -56,6 +58,9 @@ extension OfferingStrings: LogMessage {
                 "\nThere is a problem with your configuration in App Store Connect. " +
                 "\nMore info here: https://errors.rev.cat/configuring-products"
 
+        case let .cannot_find_web_products(missingWebProductIDs):
+            return "Could not find web product for IDs: \(missingWebProductIDs)"
+
         case let .fetching_offerings_error(error, underlyingError):
             var result = "Error fetching offerings - \(error.localizedDescription)"
 
@@ -68,6 +73,8 @@ extension OfferingStrings: LogMessage {
             }
 
             return result
+        case let .fetching_web_products_failed(error):
+            return "Error fetching web products: \(error?.localizedDescription ?? "Unknown error")."
 
         case .fetching_offerings_failed_server_down:
             return "Error fetching offerings: server appears down"

@@ -403,17 +403,26 @@ final class PurchasesOrchestrator {
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
+        let packageStoreProduct = params.packageStoreProduct
         let winBackOffer = params.winBackOffer
         let metadata = params.metadata
 
         #else
 
+        let packageStoreProduct: StoreProduct? = nil
         let winBackOffer: WinBackOffer? = nil
         let metadata: [String: String]? = nil
 
         #endif
 
-        purchase(product: product,
+        let productToBuy: StoreProduct
+        if params.package != nil {
+            productToBuy = packageStoreProduct ?? product
+        } else {
+            productToBuy = product
+        }
+
+        purchase(product: productToBuy,
                  package: params.package,
                  promotionalOffer: params.promotionalOffer?.signedData,
                  winBackOffer: winBackOffer,
@@ -463,11 +472,57 @@ final class PurchasesOrchestrator {
                           winBackOffer: winBackOffer,
                           metadata: metadata,
                           completion: completionWithTracking)
+        } else if product.isWebBillingProduct {
+            self.purchase(webBillingCheckoutURL: package?.webCheckoutUrl,
+                          completion: completionWithTracking)
         } else if product.isTestProduct {
             self.handleTestProduct(completionWithTracking)
         } else {
             fatalError("Unrecognized product: \(product)")
         }
+    }
+
+    func purchase(webBillingCheckoutURL: URL?, completion: @escaping PurchaseCompletedBlock) {
+        Task {
+            guard let webBillingCheckoutURL = webBillingCheckoutURL else {
+                await completion(nil,
+                                 nil,
+                                 ErrorUtils.unsupportedError(
+                                    "Purchasing web product without a package is not supported"
+                                 ).asPublicError,
+                                 false)
+                return
+            }
+            #if os(iOS) || os(tvOS) || VISION_OS
+            if let application = self.systemInfo.sharedUIApplication {
+                guard await application.open(webBillingCheckoutURL) else {
+                    await completion(nil,
+                                     nil,
+                                     ErrorUtils.unsupportedError("Error opening web payment link").asPublicError,
+                                     false)
+                    return
+                }
+                let customerInfo = try await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
+                                                                                   fetchPolicy: .cachedOrFetched)
+                await completion(nil, customerInfo, nil, false)
+            } else {
+                await completion(nil,
+                                 nil,
+                                 ErrorUtils.unsupportedError(
+                                    "Could not obtain application to open web payment link"
+                                 ).asPublicError,
+                                 false)
+            }
+            #else
+            await completion(nil,
+                             nil,
+                             ErrorUtils.unsupportedError(
+                                  "Opening web payment links not supported in this platform"
+                             ).asPublicError,
+                             false)
+            #endif
+        }
+
     }
 
     func purchase(sk1Product: SK1Product,

@@ -26,7 +26,7 @@ class Backend {
     private let config: BackendConfiguration
 
     convenience init(
-        apiKey: String,
+        apiKeys: Purchases.APIKeys,
         systemInfo: SystemInfo,
         httpClientTimeout: TimeInterval = Configuration.networkTimeoutDefault,
         eTagManager: ETagManager,
@@ -36,10 +36,10 @@ class Backend {
         diagnosticsTracker: DiagnosticsTrackerType?,
         dateProvider: DateProvider = DateProvider()
     ) {
-        let httpClient = HTTPClient(apiKey: apiKey,
+        let httpClient = HTTPClient(apiKeys: apiKeys,
                                     systemInfo: systemInfo,
                                     eTagManager: eTagManager,
-                                    signing: Signing(apiKey: apiKey, clock: systemInfo.clock),
+                                    signing: Signing(clock: systemInfo.clock),
                                     diagnosticsTracker: diagnosticsTracker,
                                     requestTimeout: httpClientTimeout,
                                     operationDispatcher: OperationDispatcher.default)

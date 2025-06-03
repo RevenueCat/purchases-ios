@@ -410,7 +410,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
     #if !os(watchOS)
     func testConfigureWithCustomEntitlementComputationFatalErrorIfNoAppUserID() throws {
         expect {
-            _ = Purchases(apiKey: "",
+            _ = Purchases(apiKeys: Purchases.APIKeys(apiKey: "", webBillingAPIKey: ""),
                           appUserID: nil,
                           userDefaults: .emptyNewUserDefaults(),
                           observerMode: false,

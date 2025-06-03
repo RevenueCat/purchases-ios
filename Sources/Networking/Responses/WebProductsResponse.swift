@@ -50,7 +50,7 @@ struct WebProductsResponse {
 
     struct Package {
         let identifier: String
-        let webCheckoutUrl: String
+        let webCheckoutUrl: URL
         let productDetails: Product
     }
 
