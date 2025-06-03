@@ -177,6 +177,17 @@ class TakeScreenshotTests: BaseSnapshotTest {
                 ))
             ], data: offeringsResponseWithPackages)
 
+            // Preload images for less flakyness
+            let imagePreloadDirectory = resourceBundleURL
+                .appendingPathComponent("__PreviewResources__")
+                .appendingPathComponent("resources")
+                .appendingPathComponent(resource)
+                .appendingPathComponent("pawwalls")
+                .appendingPathComponent("assets")
+
+            self.preloadImages(in: imagePreloadDirectory)
+
+
             for offeringId in offerings!.all.keys {
                 let offering = offerings!.all[offeringId]!
 
@@ -192,6 +203,25 @@ class TakeScreenshotTests: BaseSnapshotTest {
         }
     }
 
+    func preloadImages(in directory: URL) {
+        let fileManager = FileManager.default
+
+        guard let imageFiles = try? fileManager.contentsOfDirectory(
+            at: directory,
+            includingPropertiesForKeys: nil,
+            options: [.skipsHiddenFiles]
+        ) else {
+            print("⚠️ No image files found for preloading at \(directory.path)")
+            return
+        }
+
+        for imageFile in imageFiles where imageFile.pathExtension.lowercased() == "png" {
+            _ = UIImage(contentsOfFile: imageFile.path)
+        }
+    }
+
+
+
     func clearContentsOfDirectory(at url: URL) throws {
         let fileManager = FileManager.default
         let contents = try fileManager.contentsOfDirectory(at: url, includingPropertiesForKeys: nil)
@@ -202,7 +232,7 @@ class TakeScreenshotTests: BaseSnapshotTest {
     }
 
     func snapshotAndSave<V: View>(view: V, size: CGSize, filename: String, template: String) {
-        let image = view.asImage(wait: 3).resized(toWidth: size.width)
+        let image = view.asImage(wait: 1.5).resized(toWidth: size.width)
 
         // Save PNG data
         if let pngData = image.pngData() {
