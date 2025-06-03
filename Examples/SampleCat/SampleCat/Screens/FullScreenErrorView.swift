@@ -55,7 +55,6 @@ struct FullScreenErrorView: View {
         }
         .background(.red.opacity(0.1))
         .animation(.default, value: healthViewModel.isfetchingHealthReport)
-        .scrollBounceBehavior(.basedOnSize)
         .frame(maxWidth: .infinity)
         .scrollContentBackground(.hidden)
         .safeAreaPadding()
