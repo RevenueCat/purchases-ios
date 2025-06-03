@@ -140,6 +140,10 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         #if canImport(UIKit)
         if let fontFamily = font.fontFamily {
             availableFontNames = UIFont.fontNames(forFamilyName: fontFamily)
+        } else {
+            availableFontNames = UIFont.familyNames.flatMap {
+                UIFont.fontNames(forFamilyName: $0)
+            }
         }
         #elseif canImport(AppKit)
         availableFontNames = NSFontManager.shared.availableFonts
