@@ -11,7 +11,7 @@ struct OfferingPackagesView: View {
                                     description: "Packages are a representation of the products that you “offer” to customers on your paywall.")
 
             VStack {
-                ForEach(offering.products) { product in
+                ForEach(offering.packages) { product in
                     ProductCell(product: product)
                 }
             }

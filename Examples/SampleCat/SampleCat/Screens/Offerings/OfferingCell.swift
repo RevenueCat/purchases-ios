@@ -15,12 +15,12 @@ struct OfferingCell: View {
             .font(.headline)
             .symbolRenderingMode(.hierarchical)
 
-            if offering.products.isEmpty {
+            if offering.packages.isEmpty {
                 Text("No packages")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             } else {
-                Text("\(offering.products.count) package\(offering.products.count > 1 ? "s" : "")")
+                Text("\(offering.packages.count) package\(offering.packages.count > 1 ? "s" : "")")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }

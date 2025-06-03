@@ -53,7 +53,7 @@ extension PurchasesDiagnostics.SDKHealthError: @retroactive Identifiable {
                 OfferingViewModel(
                     identifier: offering.identifier,
                     status: offering.status,
-                    products: offering.packages.map { package in
+                    packages: offering.packages.map { package in
                         ProductViewModel(
                             id: package.identifier,
                             status: package.status,
