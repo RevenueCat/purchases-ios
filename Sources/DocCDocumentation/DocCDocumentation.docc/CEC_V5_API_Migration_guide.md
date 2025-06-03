@@ -1,6 +1,6 @@
 # RevenueCat Custom Entitlements Computation Mode 4.x to 5.x Migration Guide
 
-> Note: This migration guide is only applicable if you're using RevenueCat in Custom Entitlements Computation mode. If that's not the case, or you don't know what that is, please use the regular [4.x to 5.x Migration guide](https://github.com/RevenueCat/purchases-ios/blob/main/Sources/DocCDocumentation/DocCDocumentation.docc/V5_API_Migration_guide.md).
+> Note: This migration guide is only applicable if you're using RevenueCat in Custom Entitlements Computation mode. If that's not the case, or you don't know what that is, please use the regular [4.x to 5.x Migration guide](/V5_API_Migration_guide.md).
 
 ## StoreKit 2
 
