@@ -18,7 +18,7 @@ import SwiftUI
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-final class UIConfigProvider: Sendable {
+struct UIConfigProvider {
     private let uiConfig: UIConfig
     private let purchases: PaywallPurchasesType
 
