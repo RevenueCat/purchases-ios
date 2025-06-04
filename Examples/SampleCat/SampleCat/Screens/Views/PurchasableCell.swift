@@ -1,6 +1,6 @@
 import SwiftUI
 
-enum ProductCellState {
+enum PurchasableCellState {
     case readyToPurchase
     case purchasing
     case purchased
@@ -8,7 +8,7 @@ enum ProductCellState {
     case purchasingOtherProduct
 }
 
-struct ProductCell: View {
+struct PurchasableCell: View {
     @Environment(\.colorScheme) private var scheme
     let purchasable: any PurchasableViewModel
     @State private var isPurchasing = false
@@ -22,7 +22,7 @@ struct ProductCell: View {
         }
     }
 
-    var state: ProductCellState {
+    var state: PurchasableCellState {
         if purchasable.isPurchased() {
             return .purchased
         }

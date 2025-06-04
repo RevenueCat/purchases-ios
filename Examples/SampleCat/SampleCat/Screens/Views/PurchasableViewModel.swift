@@ -38,23 +38,3 @@ extension PurchasableViewModel {
         hasher.combine(id)
     }
 }
-
-struct ProductViewModel: PurchasableViewModel {
-    let id: String
-    let status: PurchasesDiagnostics.ProductStatus
-    let title: String?
-    let description: String
-    let purchasable: StoreProduct?
-    let isPurchased: () -> Bool
-    let purchase: () async -> Void
-}
-
-struct PackageViewModel: PurchasableViewModel {
-    let id: String
-    let status: PurchasesDiagnostics.ProductStatus
-    let title: String?
-    let description: String
-    let purchasable: Package?
-    let isPurchased: () -> Bool
-    let purchase: () async -> Void
-}
