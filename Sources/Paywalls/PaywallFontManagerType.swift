@@ -68,6 +68,8 @@ extension URLSession: FontDownloadSession {}
 actor DefaultPaywallFontsManager: PaywallFontManagerType {
 
     enum FontsManagerError: Error {
+        case invalidResponse
+        case downloadError(HTTPStatusCode)
         case registrationError(Error?)
         case hashValidationError(expected: String, actual: String)
     }
@@ -90,12 +92,23 @@ actor DefaultPaywallFontsManager: PaywallFontManagerType {
         let destination = try self.fileURLForFontAtRemoteURL(remoteURL)
 
         if !fileManager.fileExists(atPath: destination.path) {
-            let (data, _) = try await session.data(from: remoteURL)
+            let (data, urlResponse) = try await session.data(from: remoteURL)
+
+            guard let httpResponse = urlResponse as? HTTPURLResponse else {
+                throw FontsManagerError.invalidResponse
+            }
+
+            let httpStatusCode = HTTPStatusCode(rawValue: httpResponse.statusCode)
+            guard httpStatusCode.isSuccessfulResponse else {
+                throw FontsManagerError.downloadError(httpStatusCode)
+            }
+
             let dataHash = data.md5String
             guard dataHash == hash else {
                 throw FontsManagerError.hashValidationError(expected: hash, actual: dataHash)
             }
 
+            print("Font: valid hash for \(remoteURL). Installing to \(destination.path)")
             try fileManager.write(data, to: destination)
         }
 
@@ -124,6 +137,10 @@ extension DefaultPaywallFontsManager.FontsManagerError: CustomStringConvertible 
 
     var description: String {
         switch self {
+        case .invalidResponse:
+            return "Font download failed with an invalid response"
+        case .downloadError(let statusCode):
+            return "Font download failed with status code: \(statusCode.rawValue)"
         case let .registrationError(error):
             return "Font registration error: \(error?.localizedDescription ?? "Unknown error")"
         case let .hashValidationError(expected, actual):
