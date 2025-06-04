@@ -9,9 +9,17 @@
 //
 //  PaywallCacheWarming.swift
 //
+
 //  Created by Nacho Soto on 8/7/23.
 
 import Foundation
+#if canImport(UIKit)
+import UIKit
+#endif
+
+#if canImport(AppKit)
+import AppKit
+#endif
 
 protocol PaywallCacheWarmingType: Sendable {
 
@@ -23,6 +31,13 @@ protocol PaywallCacheWarmingType: Sendable {
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func warmUpPaywallFontsCache(offerings: Offerings) async
+
+#if !os(macOS) && !os(tvOS) // For Paywalls
+
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+    func triggerFontDownloadIfNeeded(fontsConfig: UIConfig.FontsConfig) async
+
+#endif
 }
 
 protocol PaywallImageFetcherType: Sendable {
@@ -48,6 +63,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
     private var hasLoadedEligibility = false
     private var hasLoadedImages = false
+    private var ongoingFontDownloads: [DownloadableFont: Task<Void, Never>] = [:]
 
     init(
         introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType,
@@ -96,15 +112,60 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         await withTaskGroup(of: Void.self) { group in
             for font in allFontsInPaywallsNamed {
                 group.addTask {
-                    do {
-                        try await self.fontsManager.installFont(from: font.url, hash: font.hash)
-                    } catch {
-                        Logger.error(Strings.paywalls.error_prefetching_image(font.url, error))
-                    }
+                    await self.installFont(from: font)
                 }
             }
         }
     }
+
+#if !os(macOS) && !os(tvOS)
+
+    /// Downloads and installs the font if it is not already installed.
+    func triggerFontDownloadIfNeeded(fontsConfig: UIConfig.FontsConfig) async {
+        guard let downloadableFont = fontsConfig.downloadableFont else { return }
+        await self.installFont(from: downloadableFont)
+    }
+
+#endif
+
+    private func installFont(from font: DownloadableFont) async {
+        if let existingTask = ongoingFontDownloads[font] {
+            // Already downloading, await the existing task.
+            await existingTask.value
+            return
+        }
+
+        var availableFontNames: [String] = []
+        #if canImport(UIKit)
+        if let fontFamily = font.fontFamily {
+            availableFontNames = UIFont.fontNames(forFamilyName: fontFamily)
+        } else {
+            availableFontNames = UIFont.familyNames.flatMap {
+                UIFont.fontNames(forFamilyName: $0)
+            }
+        }
+        #elseif canImport(AppKit)
+        availableFontNames = NSFontManager.shared.availableFonts
+        #endif
+
+        if availableFontNames.contains(font.name) {
+            // Font already available, no need to download.
+            return
+        }
+
+        let task = Task {
+            do {
+                try await self.fontsManager.installFont(from: font.url, hash: font.hash)
+            } catch {
+                Logger.error(Strings.paywalls.error_installing_font(font.url, error))
+            }
+        }
+
+        ongoingFontDownloads[font] = task
+        await task.value
+        ongoingFontDownloads[font] = nil
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
@@ -253,7 +314,6 @@ private extension Offering {
                 .map(\.storeProduct.productIdentifier)
         )
     }
-
 }
 
 private extension PaywallData.Configuration.Images {
@@ -263,14 +323,18 @@ private extension PaywallData.Configuration.Images {
             self.header,
             self.background,
             self.icon
-        ]
-            .compactMap { $0 }
+        ].compactMap { $0 }
     }
-
 }
 
-private struct DownloadableFont {
+private struct DownloadableFont: Hashable, Sendable {
+
+    /// The font name.
     let name: String
+
+    /// The font family name, if available.
+    let fontFamily: String?
+
     let url: URL
     let hash: String
 }
@@ -291,6 +355,7 @@ private extension UIConfig.FontsConfig {
            let (url, hash) = self.downloadURLAndHash {
             return DownloadableFont(
                 name: iOSName,
+                fontFamily: self.family,
                 url: url,
                 hash: hash
             )
@@ -298,8 +363,8 @@ private extension UIConfig.FontsConfig {
         return nil
     }
 
-    var iOSName: String? {
-        switch ios {
+    private var iOSName: String? {
+        switch self.ios {
         case .googleFonts:
             return nil
         case let .name(name):
@@ -307,16 +372,28 @@ private extension UIConfig.FontsConfig {
         }
     }
 
+    private var nameForError: String {
+        switch self.ios {
+        case .googleFonts(let name), .name(let name):
+            return name
+        }
+    }
+
     var downloadURLAndHash: (URL, String)? {
-        guard let web else {
+        guard let web = self.web else { return nil }
+
+        guard let url = URL(string: web.value) else {
+            Logger.error(PaywallsStrings.error_prefetching_font_invalid_url(name: self.nameForError,
+                                                                            invalidURLString: web.value))
             return nil
         }
 
-        guard let url = URL(string: web.value) else {
-            Logger.error(PaywallsStrings.error_prefetching_font_invalid_url(web.value))
+        guard let hash = web.hash else {
+            Logger.error(PaywallsStrings.error_prefetching_font_missing_hash(name: self.nameForError))
             return nil
         }
-        return (url, web.hash)
+
+        return (url, hash)
     }
 }
 

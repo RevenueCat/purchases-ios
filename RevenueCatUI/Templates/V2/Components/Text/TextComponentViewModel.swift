@@ -43,6 +43,7 @@ class TextComponentViewModel {
     }
 
     @ViewBuilder
+    @MainActor
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
@@ -213,6 +214,7 @@ extension LocalizedTextPartial {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@MainActor
 struct TextComponentStyle {
 
     let visible: Bool
@@ -280,39 +282,15 @@ enum GenericFont: String {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension TextComponentStyle {
 
+    @MainActor
     static func makeFont(size fontSize: CGFloat, name: String?, uiConfigProvider: UIConfigProvider) -> Font {
         // Use default font if no name given
         guard let name = name else {
             return GenericFont.sansSerif.makeFont(fontSize: fontSize)
         }
 
-        let customFont = self.resolveFont(size: fontSize, name: name, uiConfigProvider: uiConfigProvider)
+        let customFont = uiConfigProvider.resolveFont(size: fontSize, name: name)
         return customFont ?? GenericFont.sansSerif.makeFont(fontSize: fontSize)
-    }
-
-    static private func resolveFont(
-        size fontSize: CGFloat,
-        name: String,
-        uiConfigProvider: UIConfigProvider
-    ) -> Font? {
-        guard let familyName = uiConfigProvider.getFontFamily(for: name)  else {
-            Logger.warning("Mapping for '\(name)' could not be found. Falling back to system font.")
-            return nil
-        }
-
-        // Check if the family name is a generic font (serif, sans-serif, monospace)
-        if let genericFont = GenericFont(rawValue: familyName) {
-            return genericFont.makeFont(fontSize: fontSize)
-        }
-
-        guard let customFont = UIFont(name: familyName, size: fontSize) else {
-            Logger.warning("Custom font '\(familyName)' could not be loaded. Falling back to system font.")
-            return nil
-        }
-
-        // Apply dynamic type scaling
-        let uiFont = UIFontMetrics.default.scaledFont(for: customFont)
-        return Font(uiFont)
     }
 
 }

@@ -32,15 +32,18 @@ public struct UIConfig: Codable, Equatable, Sendable {
     }
 
     public struct FontsConfig: Codable, Equatable, Sendable {
+        public var family: String?
         public var ios: FontInfo
         public var web: WebFontInfo?
 
         public init(
             ios: FontInfo,
-            web: WebFontInfo? = nil
+            web: WebFontInfo? = nil,
+            family: String? = nil
         ) {
             self.ios = ios
             self.web = web
+            self.family = family
         }
     }
 
@@ -96,13 +99,16 @@ public struct UIConfig: Codable, Equatable, Sendable {
 
     public struct WebFontInfo: Codable, Sendable, Hashable {
         public var value: String
-        public var hash: String
-        public var type: String
 
-        public init(value: String, hash: String, type: String) {
+        /// MD5 hash of the font file.
+        ///
+        /// Should never be `nil`, but it is optional to prevent potential decoding errors if, for some reason,
+        /// the hash is not provided from the server.
+        public var hash: String?
+
+        public init(value: String, hash: String?) {
             self.value = value
             self.hash = hash
-            self.type = type
         }
     }
 

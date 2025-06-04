@@ -421,6 +421,12 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
 
     func track(paywallEvent: PaywallEvent) async {}
 
+#if !os(macOS) && !os(tvOS)
+
+    func failedToLoadFontWithConfig(_ fontConfig: UIConfig.FontsConfig) {}
+
+#endif
+
 }
 
 // MARK: - Preference Keys

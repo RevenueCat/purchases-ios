@@ -13,15 +13,18 @@
 
 import Foundation
 import RevenueCat
+import SwiftUI
 
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct UIConfigProvider {
-
     private let uiConfig: UIConfig
+    private let purchases: PaywallPurchasesType
 
-    init(uiConfig: UIConfig) {
+    init(uiConfig: UIConfig, purchases: PaywallPurchasesType = Purchases.shared) {
         self.uiConfig = uiConfig
+        self.purchases = purchases
     }
 
     var variableConfig: UIConfig.VariableConfig {
@@ -30,23 +33,6 @@ struct UIConfigProvider {
 
     func getColor(for name: String) -> PaywallComponent.ColorScheme? {
         return self.uiConfig.app.colors[name]
-    }
-
-    func getFontFamily(for name: String?) -> String? {
-        guard let name, let fontInfo = self.uiConfig.app.fonts[name]?.ios else {
-            return nil
-        }
-
-        switch fontInfo {
-        case .name(let fontFamily):
-            return fontFamily
-        case .googleFonts:
-            // Not supported on this platform (yet)
-            Logger.warning("Google Fonts are not supported on this platform")
-            return nil
-        @unknown default:
-            return nil
-        }
     }
 
     func getLocalizations(for locale: Locale) -> [String: String] {
@@ -58,6 +44,41 @@ struct UIConfigProvider {
         return localizations
     }
 
+    @MainActor
+    func resolveFont(size fontSize: CGFloat, name: String) -> Font? {
+
+        guard let fontsConfig = self.uiConfig.app.fonts[name] else {
+            Logger.warning("Mapping for '\(name)' could not be found. Falling back to system font.")
+            return nil
+        }
+
+        let fontName: String
+        switch fontsConfig.ios {
+        case .name(let name):
+            fontName = name
+        case .googleFonts:
+            // Not supported on this platform (yet)
+            Logger.warning("Google Fonts are not supported on this platform")
+            return nil
+        @unknown default:
+            return nil
+        }
+
+        // Check if the font name is a generic font (serif, sans-serif, monospace)
+        if let genericFont = GenericFont(rawValue: fontName) {
+            return genericFont.makeFont(fontSize: fontSize)
+        }
+
+        guard let customFont = UIFont(name: fontName, size: fontSize) else {
+            Logger.warning("Custom font '\(fontName)' could not be loaded. Falling back to system font.")
+            self.purchases.failedToLoadFontWithConfig(fontsConfig)
+            return nil
+        }
+
+        // Apply dynamic type scaling
+        let uiFont = UIFontMetrics.default.scaledFont(for: customFont)
+        return Font(uiFont)
+    }
 }
 
 #endif

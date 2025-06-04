@@ -22,7 +22,8 @@ enum PaywallsStrings {
     case warming_up_fonts(fontsURLS: Set<URL>)
     case error_prefetching_image(URL, Error)
     case error_installing_font(URL, Error)
-    case error_prefetching_font_invalid_url(String)
+    case error_prefetching_font_invalid_url(name: String, invalidURLString: String)
+    case error_prefetching_font_missing_hash(name: String)
 
     case caching_presented_paywall
     case clearing_presented_paywall
@@ -69,10 +70,14 @@ extension PaywallsStrings: LogMessage {
             return "Error pre-fetching paywall image '\(url)': \((error as NSError).description)"
 
         case let .error_installing_font(url, error):
-            return "Error pre-fetching paywall font '\(url)': \((error as NSError).description)"
+            return "Error installing font with url: '\(url)': \((error as NSError).description)"
 
-        case let .error_prefetching_font_invalid_url(urlString):
-            return "Error pre-fetching font with url: \(urlString)"
+        case let .error_prefetching_font_invalid_url(name, invalidURLString):
+            return "Error installing font \(name). Invalid url: \(invalidURLString)"
+
+        case let .error_prefetching_font_missing_hash(name):
+            return "Font \(name) does not have a validation hash. " +
+            "Please try to re-upload the font in the RevenueCat dashboard."
 
         case .caching_presented_paywall:
             return "PurchasesOrchestrator: caching presented paywall"
