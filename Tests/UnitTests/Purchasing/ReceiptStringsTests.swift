@@ -212,16 +212,6 @@ final class ReceiptStringsTests: TestCase {
         expect(subject.description).to(equal(expectedDescription))
     }
 
-    func testReceiptRetryingMechanismNotAvailable() {
-        let subject = ReceiptStrings
-            .receipt_retrying_mechanism_not_available
-        let expectedDescription = "Receipt retrying mechanism is not available in iOS 12. " +
-        "Will only attempt to fetch once."
-
-        expect(subject.category).to(equal("receipt"))
-        expect(subject.description).to(equal(expectedDescription))
-    }
-
     func testLocalReceiptMissingPurchase() {
         let receipt = AppleReceipt(
             environment: .unknown,
