@@ -76,7 +76,7 @@ extension PaywallsStrings: LogMessage {
             return "Error installing font \(name). Invalid url: \(invalidURLString)"
 
         case let .error_prefetching_font_missing_hash(name):
-            return "Font \(name) does not have a validation hash. " +
+            return "Font \(name) does not have a validation hash. Skipping download. " +
             "Please try to re-upload the font in the RevenueCat dashboard."
 
         case .caching_presented_paywall:
