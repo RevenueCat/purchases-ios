@@ -26,5 +26,9 @@ struct ConceptIntroductionView: View {
 }
 
 #Preview {
-    ConceptIntroductionView(imageName: "visual-products", title: "Products", description: "Products are the individual in-app purchases and subscriptions that you have set up on the App Store.")
+    ConceptIntroductionView(
+        imageName: "visual-products",
+        title: "Products",
+        description: "Products are the individual in-app purchases and subscriptions that you have set up on the App Store."
+    )
 }

@@ -40,7 +40,3 @@ struct ProductsView: View {
         .refreshable(action: healthViewModel.fetchHealthReport)
     }
 }
-
-#Preview {
-    ProductsView()
-}
