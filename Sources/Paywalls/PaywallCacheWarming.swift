@@ -333,6 +333,7 @@ private extension PaywallData.Configuration.Images {
     }
 }
 
+/// Business logic object to easily manage the download of fonts.
 struct DownloadableFont: Hashable, Sendable {
 
     /// The font name.
@@ -343,6 +344,11 @@ struct DownloadableFont: Hashable, Sendable {
 
     let url: URL
     let hash: String
+
+    func hash(into hasher: inout Hasher) {
+        // Purposedly only hash the url, as two fonts with the same remote URL should only downloaded once
+        hasher.combine(url)
+    }
 }
 
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
@@ -357,49 +363,21 @@ private extension UIConfig.AppConfig {
 
 private extension UIConfig.FontsConfig {
     var downloadableFont: DownloadableFont? {
-        if let iOSName = self.iOSName,
-           let (url, hash) = self.downloadURLAndHash {
+        if let webFontInfo = self.ios.webFontInfo {
+            guard let url = URL(string: webFontInfo.url) else {
+                Logger.error(PaywallsStrings.error_prefetching_font_invalid_url(name: self.ios.value,
+                                                                                invalidURLString: webFontInfo.url))
+                return nil
+            }
+            
             return DownloadableFont(
-                name: iOSName,
-                fontFamily: self.family,
+                name: self.ios.value,
+                fontFamily: webFontInfo.family,
                 url: url,
-                hash: hash
+                hash: webFontInfo.hash
             )
         }
         return nil
-    }
-
-    private var iOSName: String? {
-        switch self.ios {
-        case .googleFonts:
-            return nil
-        case let .name(name):
-            return name
-        }
-    }
-
-    private var nameForError: String {
-        switch self.ios {
-        case .googleFonts(let name), .name(let name):
-            return name
-        }
-    }
-
-    var downloadURLAndHash: (URL, String)? {
-        guard let web = self.web else { return nil }
-
-        guard let url = URL(string: web.value) else {
-            Logger.error(PaywallsStrings.error_prefetching_font_invalid_url(name: self.nameForError,
-                                                                            invalidURLString: web.value))
-            return nil
-        }
-
-        guard let hash = web.hash else {
-            Logger.error(PaywallsStrings.error_prefetching_font_missing_hash(name: self.nameForError))
-            return nil
-        }
-
-        return (url, hash)
     }
 }
 

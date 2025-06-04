@@ -118,7 +118,6 @@ actor DefaultPaywallFontsManager: PaywallFontManagerType {
                 throw FontsManagerError.hashValidationError(expected: hash, actual: dataHash)
             }
 
-            print("Font: valid hash for \(remoteURL). Installing to \(destination.path)")
             try fileManager.write(data, to: destination)
         }
 
