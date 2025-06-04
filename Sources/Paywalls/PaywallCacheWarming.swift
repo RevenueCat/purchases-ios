@@ -327,7 +327,7 @@ private extension PaywallData.Configuration.Images {
     }
 }
 
-private struct DownloadableFont: Hashable, Sendable {
+struct DownloadableFont: Hashable, Sendable {
 
     /// The font name.
     let name: String

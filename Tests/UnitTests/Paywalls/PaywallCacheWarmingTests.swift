@@ -175,8 +175,43 @@ final class PaywallCacheWarmingTests: TestCase {
         expect(self.imageFetcher.imageDownloadRequestCount.value) == 3
     }
 
+    func testTriggerFontDownload_DeduplicatesConcurrentDownloads() async throws {
+        let font = DownloadableFont(
+            name: "MockFont",
+            fontFamily: "fontFamily",
+            url: URL(string: "https://example.com/font.ttf")!,
+            hash: "abc123"
+        )
+
+        let fontsManager = MockFontsManager()
+        let cache = PaywallCacheWarming(
+            introEligibiltyChecker: self.eligibilityChecker,
+            imageFetcher: self.imageFetcher,
+            fontsManager: fontsManager
+        )
+
+        // Launch two tasks installing the same font concurrently
+        let fontsConfig = UIConfig.FontsConfig(
+            ios: .name("MockFont"),
+            web: UIConfig.WebFontInfo(value: "https://example.com/font.ttf", hash: "abc123")
+        )
+        async let first = cache.triggerFontDownloadIfNeeded(fontsConfig: fontsConfig)
+        async let second = cache.triggerFontDownloadIfNeeded(fontsConfig: fontsConfig)
+
+        _ = await (first, second)
+
+        let callCount = await fontsManager.installCallCount
+        XCTAssertEqual(callCount, 1, "Expected only one font installation")
+    }
+
     func testDownloadFont_PerformsExpectedActions() async throws {
         let mockSession = MockSession()
+        mockSession.urlResponse = HTTPURLResponse(
+            url: URL(string: "https://example.com/font.ttf")!,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: nil
+        )
         let mockFileManager = MockFileManager()
         let mockRegistrar = MockRegistrar()
 
@@ -203,6 +238,12 @@ final class PaywallCacheWarmingTests: TestCase {
 
     func testDownloadFont_ThrowsHashValidationError() async {
         let mockSession = MockSession()
+        mockSession.urlResponse = HTTPURLResponse(
+            url: URL(string: "https://example.com/font.ttf")!,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: nil
+        )
         mockSession.dataFromURL = Data("bad font".utf8)
 
         let mockFileManager = MockFileManager()
@@ -238,6 +279,12 @@ final class PaywallCacheWarmingTests: TestCase {
 
         let session = MockSession()
         session.dataFromURL = fontData
+        session.urlResponse = HTTPURLResponse(
+            url: URL(string: "https://example.com/font.ttf")!,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: nil
+        )
 
         let fileManager = MockFileManager()
         let registrar = MockRegistrar()
@@ -336,12 +383,16 @@ private final class MockPaywallImageFetcher: PaywallImageFetcherType {
 private final class MockSession: FontDownloadSession {
 
     var didCallDataFrom = false
+
     var dataFromURL: Data?
     var dataFromURLCallCount = 0
+
+    var urlResponse: URLResponse?
+
     func data(from url: URL) async throws -> (Data, URLResponse) {
         didCallDataFrom = true
         dataFromURLCallCount += 1
-        return (dataFromURL ?? Data(), URLResponse())
+        return (dataFromURL ?? Data(), urlResponse ?? URLResponse())
     }
 }
 
@@ -376,5 +427,15 @@ private final class MockRegistrar: FontRegistrar {
             throw DefaultPaywallFontsManager.FontsManagerError.registrationError(NSError(domain: "", code: 0))
         }
         didRegister = true
+    }
+}
+
+final actor MockFontsManager: PaywallFontManagerType {
+    private(set) var installCallCount = 0
+
+    func installFont(from remoteURL: URL, hash: String) async throws {
+        installCallCount += 1
+        // Simulate async delay to make deduplication visible
+        try await Task.sleep(nanoseconds: 100_000_000) // 0.1s
     }
 }
