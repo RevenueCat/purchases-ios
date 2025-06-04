@@ -99,6 +99,11 @@ public struct UIConfig: Codable, Equatable, Sendable {
 
     public struct WebFontInfo: Codable, Sendable, Hashable {
         public var value: String
+
+        /// MD5 hash of the font file.
+        ///
+        /// Should never be `nil`, but it is optional to prevent potential decoding errors if, for some reason,
+        /// the hash is not provided from the server.
         public var hash: String?
 
         public init(value: String, hash: String?) {
