@@ -16,38 +16,39 @@ import XCTest
 
 @testable import RevenueCat
 
-class StoreKitVersionTests: TestCase {
+final class StoreKitVersionTests: TestCase {
 
     func testDefaultIsStoreKit2() throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         expect(StoreKitVersion.default) == .storeKit2
     }
 
     func testVersionStringIsStoreKit1IfStoreKit2EnabledButNotAvailable() throws {
-        try AvailabilityChecks.iOS15APINotAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APINotAvailableOrSkipTest()
 
-        expect(StoreKitVersion.storeKit2.versionString) == "1"
+        expect(StoreKitVersion.storeKit2.effectiveVersion.debugDescription) == "1"
     }
 
     func testVersionStringIsStoreKit2IfStoreKit2EnabledAndAvailable() throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
-        expect(StoreKitVersion.storeKit2.versionString) == "2"
+        expect(StoreKitVersion.storeKit2.effectiveVersion.debugDescription) == "2"
     }
 
     func testVersionStringIsStoreKit1IfStoreKit2NotEnabled() {
-        expect(StoreKitVersion.storeKit1.versionString) == "1"
+        expect(StoreKitVersion.storeKit1.effectiveVersion.debugDescription) == "1"
     }
 
     func testStoreKit2EnabledButNotAvailable() throws {
-        try AvailabilityChecks.iOS15APINotAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APINotAvailableOrSkipTest()
 
         expect(StoreKitVersion.storeKit2.isStoreKit2EnabledAndAvailable) == false
     }
 
     func testStoreKit2EnabledAndAvailable() throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         expect(StoreKitVersion.storeKit2.isStoreKit2EnabledAndAvailable) == true
     }
@@ -57,13 +58,13 @@ class StoreKitVersionTests: TestCase {
     }
 
     func testStoreKit2NotAvailableOnOlderDevices() throws {
-        try AvailabilityChecks.iOS15APINotAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APINotAvailableOrSkipTest()
 
         expect(StoreKitVersion.isStoreKit2Available) == false
     }
 
     func testStoreKit2AvailableOnNewerDevices() throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         expect(StoreKitVersion.isStoreKit2Available) == true
     }

@@ -3573,6 +3573,8 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStore, "Store", open) {
   RCBilling SWIFT_COMPILE_NAME("rcBilling") = 7,
 /// For entitlements granted via RevenueCat’s External Purchases API.
   RCExternal SWIFT_COMPILE_NAME("external") = 8,
+/// For entitlements granted via Paddle.
+  RCPaddle SWIFT_COMPILE_NAME("paddle") = 9,
 };
 
 
