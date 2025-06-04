@@ -21,19 +21,27 @@ protocol VirtualCurrencyManagerType {
 
 actor VirtualCurrencyManager: VirtualCurrencyManagerType, Sendable {
 
+    private let identityManager: IdentityManager
     private let deviceCache: DeviceCache
+    private let systemInfo: SystemInfo
 
     init(
-        deviceCache: DeviceCache
+        identityManager: IdentityManager,
+        deviceCache: DeviceCache,
+        systemInfo: SystemInfo
     ) {
+        self.identityManager = identityManager
         self.deviceCache = deviceCache
+        self.systemInfo = systemInfo
     }
 
     func virtualCurrencies(
         forceRefresh: Bool,
     ) async throws -> VirtualCurrencies {
+        let appUserID = identityManager.currentAppUserID
+
         if !forceRefresh {
-            if let cachedVirtualCurrencies = fetchCachedVirtualCurrencies() {
+            if let cachedVirtualCurrencies = await fetchCachedVirtualCurrencies(appUserID: appUserID) {
                 return cachedVirtualCurrencies
             }
         }
@@ -41,14 +49,39 @@ actor VirtualCurrencyManager: VirtualCurrencyManagerType, Sendable {
         return try await fetchVirtualCurrenciesFromBackend()
     }
 
-    private func fetchCachedVirtualCurrencies() -> VirtualCurrencies? {
-        #warning("TODO: Implement fetchCachedVirtualCurrencies")
-        return nil
+    private func fetchCachedVirtualCurrencies(
+        appUserID: String
+    ) async -> VirtualCurrencies? {
+        return await withCheckedContinuation { continuation in
+            self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+                if self.deviceCache.isVirtualCurrenciesCacheStale(
+                    appUserID: appUserID,
+                    isAppBackgrounded: isAppBackgrounded
+                ) {
+                    // The virtual currencies cache is stale, so
+                    // return no cached virtual currencies.
+                    continuation.resume(returning: nil)
+                    return
+                }
+
+                let cachedVirtualCurrenciesData = self.deviceCache.cachedVirtualCurrenciesData(
+                    forAppUserID: appUserID
+                )
+
+                guard let data = cachedVirtualCurrenciesData,
+                      let virtualCurrencies = try? JSONDecoder().decode(VirtualCurrencies.self, from: data) else {
+                    continuation.resume(returning: nil)
+                    return
+                }
+
+                continuation.resume(returning: virtualCurrencies)
+            }
+        }
     }
 
     private func fetchVirtualCurrenciesFromBackend() async throws -> VirtualCurrencies {
         #warning("TODO: implement fetchVirtualCurrenciesFromBackend")
-        throw NSError(domain: "", code: -1)
+        return VirtualCurrencies(virtualCurrencies: [:])
     }
 
 }

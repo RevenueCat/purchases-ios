@@ -50,3 +50,13 @@ public extension VirtualCurrencies {
 
 extension VirtualCurrencies: Sendable {}
 extension VirtualCurrencies: Codable {}
+
+extension VirtualCurrencies {
+    /// Compares two VirtualCurrencies objects for equality by comparing their underlying dictionaries.
+    /// - Parameter object: The object to compare against
+    /// - Returns: `true` if the objects are equal, `false` otherwise
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? VirtualCurrencies else { return false }
+        return self.all == other.all
+    }
+}

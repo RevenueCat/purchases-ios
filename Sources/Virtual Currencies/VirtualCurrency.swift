@@ -32,3 +32,13 @@ public final class VirtualCurrency: NSObject {
 
 extension VirtualCurrency: Codable {}
 extension VirtualCurrency: Sendable {}
+
+extension VirtualCurrency {
+    /// Compares this virtual currency with another one.
+    /// - Parameter object: The other object to compare with
+    /// - Returns: `true` if both objects are virtual currencies with the same balance, `false` otherwise
+    @objc public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? VirtualCurrency else { return false }
+        return self.balance == other.balance
+    }
+}
