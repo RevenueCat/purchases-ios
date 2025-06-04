@@ -123,7 +123,6 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     /// Downloads and installs the font if it is not already installed.
     func triggerFontDownloadIfNeeded(fontsConfig: UIConfig.FontsConfig) async {
         guard let downloadableFont = fontsConfig.downloadableFont else { return }
-        
         await self.installFont(from: downloadableFont)
     }
 
@@ -163,11 +162,8 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         }
 
         ongoingFontDownloads[font] = task
-        defer {
-            ongoingFontDownloads[font] = nil
-        }
-
         await task.value
+        ongoingFontDownloads[font] = nil
     }
 
 }
@@ -318,7 +314,6 @@ private extension Offering {
                 .map(\.storeProduct.productIdentifier)
         )
     }
-
 }
 
 private extension PaywallData.Configuration.Images {
@@ -328,10 +323,8 @@ private extension PaywallData.Configuration.Images {
             self.header,
             self.background,
             self.icon
-        ]
-            .compactMap { $0 }
+        ].compactMap { $0 }
     }
-
 }
 
 private struct DownloadableFont: Hashable, Sendable {
@@ -384,13 +377,10 @@ private extension UIConfig.FontsConfig {
         case .googleFonts(let name), .name(let name):
             return name
         }
-
     }
 
     var downloadURLAndHash: (URL, String)? {
-        guard let web = self.web else {
-            return nil
-        }
+        guard let web = self.web else { return nil }
 
         guard let url = URL(string: web.value) else {
             Logger.error(PaywallsStrings.error_prefetching_font_invalid_url(name: self.nameForError,
@@ -402,6 +392,7 @@ private extension UIConfig.FontsConfig {
             Logger.error(PaywallsStrings.error_prefetching_font_missing_hash(name: self.nameForError))
             return nil
         }
+
         return (url, hash)
     }
 }
