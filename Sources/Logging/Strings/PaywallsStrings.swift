@@ -69,10 +69,10 @@ extension PaywallsStrings: LogMessage {
             return "Error pre-fetching paywall image '\(url)': \((error as NSError).description)"
 
         case let .error_installing_font(url, error):
-            return "Error pre-fetching paywall font '\(url)': \((error as NSError).description)"
+            return "Error installing font with url: '\(url)': \((error as NSError).description)"
 
         case let .error_prefetching_font_invalid_url(urlString):
-            return "Error pre-fetching font with url: \(urlString)"
+            return "Error installing font. Invalid url: \(urlString)"
 
         case .caching_presented_paywall:
             return "PurchasesOrchestrator: caching presented paywall"

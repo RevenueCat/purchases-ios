@@ -158,7 +158,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
             do {
                 try await self.fontsManager.installFont(from: font.url, hash: font.hash)
             } catch {
-                Logger.error(Strings.paywalls.error_prefetching_image(font.url, error))
+                Logger.error(Strings.paywalls.error_installing_font(font.url, error))
             }
         }
 
