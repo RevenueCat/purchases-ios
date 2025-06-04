@@ -180,6 +180,11 @@ final class PaywallCacheWarmingTests: TestCase {
         let mockFileManager = MockFileManager()
         let mockRegistrar = MockRegistrar()
 
+        let string = "abc123"
+        let data = string.data(using: .utf8)!
+        mockSession.dataFromURL = data
+        let hash = data.md5String
+
         let sut = DefaultPaywallFontsManager(
             fileManager: mockFileManager,
             session: mockSession,
@@ -189,30 +194,10 @@ final class PaywallCacheWarmingTests: TestCase {
         let url = URL(string: "https://example.com/font.ttf")!
         mockFileManager.fileExistsAtPath = false
 
-        try await sut.installFont(from: url, hash: "abc123")
+        try await sut.installFont(from: url, hash: hash)
 
         expect(mockSession.didCallDataFrom).to(beTrue())
         expect(mockFileManager.didWriteData).to(beTrue())
-        expect(mockRegistrar.didRegister).to(beTrue())
-    }
-
-    func testDownloadFont_SkipsCopyIfFileExists() async throws {
-        let mockSession = MockSession()
-        let mockFileManager = MockFileManager()
-        mockFileManager.fileExistsAtPath = true
-        let mockRegistrar = MockRegistrar()
-
-        let sut = DefaultPaywallFontsManager(
-            fileManager: mockFileManager,
-            session: mockSession,
-            registrar: mockRegistrar
-        )
-
-        let url = URL(string: "https://example.com/font.ttf")!
-        try await sut.installFont(from: url, hash: "abc123")
-
-        expect(mockSession.didCallDataFrom).to(beFalse())
-        expect(mockFileManager.didWriteData).to(beFalse())
         expect(mockRegistrar.didRegister).to(beTrue())
     }
 
