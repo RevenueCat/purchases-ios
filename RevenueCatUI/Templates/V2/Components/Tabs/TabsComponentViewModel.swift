@@ -46,35 +46,6 @@ class TabsComponentViewModel {
         self.presentedOverrides = try self.component.overrides?.toPresentedOverrides { $0 }
     }
 
-    @ViewBuilder
-    func styles(
-        state: ComponentViewState,
-        condition: ScreenCondition,
-        isEligibleForIntroOffer: Bool,
-        @ViewBuilder apply: @escaping (TabsComponentStyle) -> some View
-    ) -> some View {
-        let partial = PresentedTabsPartial.buildPartial(
-            state: state,
-            condition: condition,
-            isEligibleForIntroOffer: isEligibleForIntroOffer,
-            with: self.presentedOverrides
-        )
-
-        let style = TabsComponentStyle(
-            uiConfigProvider: self.uiConfigProvider,
-            visible: partial?.visible ?? self.component.visible ?? true,
-            size: partial?.size ?? self.component.size,
-            padding: partial?.padding ?? self.component.padding,
-            margin: partial?.margin ?? self.component.margin,
-            backgroundColor: partial?.backgroundColor ?? self.component.backgroundColor,
-            shape: partial?.shape ?? self.component.shape,
-            border: partial?.border ?? self.component.border,
-            shadow: partial?.shadow ?? self.component.shadow
-        )
-
-        apply(style)
-    }
-
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -111,7 +82,7 @@ extension PresentedTabsPartial: PresentedPartial {
 
         let visible = other?.visible ?? base?.visible
         let size = other?.size ?? base?.size
-        let backgroundColor = other?.backgroundColor ?? base?.backgroundColor
+        let background = other?.background ?? base?.background
         let padding = other?.padding ?? base?.padding
         let margin = other?.margin ?? base?.margin
         let shape = other?.shape ?? base?.shape
@@ -123,7 +94,7 @@ extension PresentedTabsPartial: PresentedPartial {
             size: size,
             padding: padding,
             margin: margin,
-            backgroundColor: backgroundColor,
+            background: background,
             shape: shape,
             border: border,
             shadow: shadow
