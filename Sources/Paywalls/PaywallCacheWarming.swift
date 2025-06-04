@@ -21,7 +21,6 @@ import UIKit
 import AppKit
 #endif
 
-// swiftlint:disable file_length
 protocol PaywallCacheWarmingType: Sendable {
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
@@ -369,7 +368,7 @@ private extension UIConfig.FontsConfig {
                                                                                 invalidURLString: webFontInfo.url))
                 return nil
             }
-            
+
             return DownloadableFont(
                 name: self.ios.value,
                 fontFamily: webFontInfo.family,

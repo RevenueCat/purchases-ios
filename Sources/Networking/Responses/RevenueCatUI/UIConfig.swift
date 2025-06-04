@@ -50,6 +50,7 @@ public struct UIConfig: Codable, Equatable, Sendable {
             self.webFontInfo = nil
         }
 
+        // swiftlint:disable:next nesting
         enum CodingKeys: String, CodingKey {
             case type
             case value
@@ -69,7 +70,7 @@ public struct UIConfig: Codable, Equatable, Sendable {
         }
 
         // swiftlint:disable:next nesting
-        @_spi(Internal) public enum FontInfoType: String, Codable, Sendable{
+        @_spi(Internal) public enum FontInfoType: String, Codable, Sendable {
             case name
             case googleFonts = "google_fonts"
         }
