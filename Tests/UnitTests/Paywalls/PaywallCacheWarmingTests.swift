@@ -183,7 +183,8 @@ final class PaywallCacheWarmingTests: TestCase {
             hash: "abc123"
         )
 
-        let fontsManager = MockFontsManager()
+        let fontsManager = MockFontsManager(installDelayInSeconds: 1.0)
+
         let cache = PaywallCacheWarming(
             introEligibiltyChecker: self.eligibilityChecker,
             imageFetcher: self.imageFetcher,
@@ -192,16 +193,28 @@ final class PaywallCacheWarmingTests: TestCase {
 
         // Launch two tasks installing the same font concurrently
         let fontsConfig = UIConfig.FontsConfig(
-            ios: .name("MockFont"),
-            web: UIConfig.WebFontInfo(value: "https://example.com/font.ttf", hash: "abc123")
+            ios: .name(font.name),
+            web: UIConfig.WebFontInfo(value: font.url.absoluteString, hash: font.hash)
         )
-        async let first = cache.triggerFontDownloadIfNeeded(fontsConfig: fontsConfig)
-        async let second = cache.triggerFontDownloadIfNeeded(fontsConfig: fontsConfig)
 
-        _ = await (first, second)
+        async let firstCall: () = cache.triggerFontDownloadIfNeeded(fontsConfig: fontsConfig)
+        async let secondCall: () = cache.triggerFontDownloadIfNeeded(fontsConfig: fontsConfig)
+        _ = await (firstCall, secondCall)
 
         let callCount = await fontsManager.installCallCount
         XCTAssertEqual(callCount, 1, "Expected only one font installation")
+
+        self.logger.verifyMessageWasLogged(
+            PaywallsStrings.font_downloaded_sucessfully(name: font.name, fontURL: font.url),
+            level: .debug,
+            expectedCount: 1
+        )
+
+        self.logger.verifyMessageWasLogged(
+            PaywallsStrings.font_download_already_in_progress(name: font.name, fontURL: font.url),
+            level: .debug,
+            expectedCount: 1
+        )
     }
 
     func testDownloadFont_PerformsExpectedActions() async throws {
@@ -432,10 +445,16 @@ private final class MockRegistrar: FontRegistrar {
 
 final actor MockFontsManager: PaywallFontManagerType {
     private(set) var installCallCount = 0
+    var installDelayInSeconds: TimeInterval = 0
+
+    init(installDelayInSeconds: TimeInterval) {
+        self.installDelayInSeconds = installDelayInSeconds
+    }
 
     func installFont(from remoteURL: URL, hash: String) async throws {
         installCallCount += 1
-        // Simulate async delay to make deduplication visible
-        try await Task.sleep(nanoseconds: 100_000_000) // 0.1s
+
+        let duration = UInt64(installDelayInSeconds * 1_000_000_000)
+        try await Task.sleep(nanoseconds: duration)
     }
 }

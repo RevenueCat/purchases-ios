@@ -21,6 +21,7 @@ import UIKit
 import AppKit
 #endif
 
+// swiftlint:disable file_length
 protocol PaywallCacheWarmingType: Sendable {
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
@@ -131,8 +132,10 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     private func installFont(from font: DownloadableFont) async {
         if let existingTask = ongoingFontDownloads[font] {
             // Already downloading, await the existing task.
-            Logger.verbose(Strings.paywalls.font_download_already_in_progress(name: font.name,
-                                                                              fontURL: font.url))
+            Logger.debug(Strings.paywalls.font_download_already_in_progress(
+                name: font.name,
+                fontURL: font.url)
+            )
             await existingTask.value
             return
         }
