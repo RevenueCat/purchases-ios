@@ -232,7 +232,7 @@ final class PaywallCacheWarmingTests: TestCase {
         }
     }
 
-    func testDownloadFont_ThrowsRegistrationError() async {
+    func testDownloadFont_InvalidHash_ThrowsHashValidationError() async {
         let validData = Data("valid data".utf8)
         let mockSession = MockSession()
         mockSession.dataFromURL = validData
@@ -251,14 +251,15 @@ final class PaywallCacheWarmingTests: TestCase {
 
         let url = URL(string: "https://example.com/font.ttf")!
         do {
-            try await sut.installFont(from: url, hash: validData.md5String)
+            try await sut.installFont(from: url, hash: "invalid hash")
             fail("Expected to throw registrationError")
         } catch let error as DefaultPaywallFontsManager.FontsManagerError {
-            guard case .registrationError(let innerError) = error else {
+            guard case let .hashValidationError(expected, actual) = error else {
                 fail("Expected registrationError, got \(error)")
                 return
             }
-            expect(innerError?.localizedDescription).to(equal("registration failed"))
+            expect(expected).to(equal("invalid hash"))
+            expect(actual).to(equal("b332c73d949b831312b2f947bf8674a9"))
         } catch {
             fail("Unexpected error: \(error)")
         }
@@ -272,8 +273,6 @@ final class PaywallCacheWarmingTests: TestCase {
         session.dataFromURL = fontData
 
         let fileManager = MockFileManager()
-        fileManager.fileExistsAtPath = false
-
         let registrar = MockRegistrar()
 
         let sut = DefaultPaywallFontsManager(
@@ -286,6 +285,7 @@ final class PaywallCacheWarmingTests: TestCase {
 
         // First install: should download, write, register
         try await sut.installFont(from: url, hash: hash)
+        fileManager.fileExistsAtPath = true
 
         // Second install: should skip download/write, but still register
         try await sut.installFont(from: url, hash: hash)
@@ -406,7 +406,7 @@ private final class MockRegistrar: FontRegistrar {
     func registerFont(at url: URL) throws {
         registerFontCallCount += 1
         guard !shouldThrow else {
-            throw NSError(domain: "mock", code: 42, userInfo: [NSLocalizedDescriptionKey: "registration failed"])
+            throw DefaultPaywallFontsManager.FontsManagerError.registrationError(NSError(domain: "", code: 0))
         }
         didRegister = true
     }
