@@ -84,17 +84,17 @@ import SwiftUI
         private func buildOfferingViewModels(from reportOfferings: [PurchasesDiagnostics.OfferingDiagnosticsPayload]) async -> [OfferingViewModel] {
             await userViewModel.fetchOfferings()
 
-            let sdkOfferings = userViewModel.offerings?.all
+            let loadedOfferings = userViewModel.offerings?.all
 
             return reportOfferings.map { offering in
-                let sdkOffering = sdkOfferings?[offering.identifier]
+                let loadedOffering = loadedOfferings?[offering.identifier]
 
                 return OfferingViewModel(
                     identifier: offering.identifier,
                     status: offering.status,
                     packages: offering.packages.map { package in
-                        let sdkPackage = sdkOffering?.availablePackages.first(where: { sdkPackageToMatch in
-                            sdkPackageToMatch.storeProduct.productIdentifier == package.productIdentifier
+                        let loadedPackage = loadedOffering?.availablePackages.first(where: {
+                            $0.storeProduct.productIdentifier == package.productIdentifier
                         })
 
                         return PackageViewModel(
@@ -102,16 +102,16 @@ import SwiftUI
                             status: package.status,
                             title: package.productIdentifier,
                             description: package.description,
-                            purchasable: sdkPackage,
+                            purchasable: loadedPackage,
                             isPurchased: {
-                                guard let sdkPackage else { return false }
+                                guard let loadedPackage else { return false }
 
-                                return self.userViewModel.customerInfo?.allPurchasedProductIdentifiers.contains(sdkPackage.storeProduct.productIdentifier) == true
+                                return self.userViewModel.customerInfo?.allPurchasedProductIdentifiers.contains(loadedPackage.storeProduct.productIdentifier) == true
                             },
                             purchase: {
-                                guard let sdkPackage else { return }
+                                guard let loadedPackage else { return }
 
-                                await self.userViewModel.purchase(sdkPackage)
+                                await self.userViewModel.purchase(loadedPackage)
                             },
                         )
                     }
