@@ -99,9 +99,9 @@ public struct UIConfig: Codable, Equatable, Sendable {
 
     public struct WebFontInfo: Codable, Sendable, Hashable {
         public var value: String
-        public var hash: String
+        public var hash: String?
 
-        public init(value: String, hash: String) {
+        public init(value: String, hash: String?) {
             self.value = value
             self.hash = hash
         }

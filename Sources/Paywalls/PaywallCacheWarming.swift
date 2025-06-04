@@ -370,7 +370,7 @@ private extension UIConfig.FontsConfig {
         return nil
     }
 
-    var iOSName: String? {
+    private var iOSName: String? {
         switch self.ios {
         case .googleFonts:
             return nil
@@ -379,16 +379,30 @@ private extension UIConfig.FontsConfig {
         }
     }
 
+    private var nameForError: String {
+        switch self.ios {
+        case .googleFonts(let name), .name(let name):
+            return name
+        }
+
+    }
+
     var downloadURLAndHash: (URL, String)? {
         guard let web = self.web else {
             return nil
         }
 
         guard let url = URL(string: web.value) else {
-            Logger.error(PaywallsStrings.error_prefetching_font_invalid_url(web.value))
+            Logger.error(PaywallsStrings.error_prefetching_font_invalid_url(name: self.nameForError,
+                                                                            invalidURLString: web.value))
             return nil
         }
-        return (url, web.hash)
+
+        guard let hash = web.hash else {
+            Logger.error(PaywallsStrings.error_prefetching_font_missing_hash(name: self.nameForError))
+            return nil
+        }
+        return (url, hash)
     }
 }
 
