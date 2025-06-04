@@ -278,6 +278,36 @@ final class PaywallCacheWarmingTests: TestCase {
             fail("Unexpected error: \(error)")
         }
     }
+
+    func testInstallFont_DownloadsOnce_RegistersTwice() async throws {
+        let fontData = Data("valid font".utf8)
+        let hash = fontData.md5String
+
+        let session = MockSession()
+        session.dataFromURL = fontData
+
+        let fileManager = MockFileManager()
+        fileManager.fileExistsAtPath = false
+
+        let registrar = MockRegistrar()
+
+        let sut = DefaultPaywallFontsManager(
+            fileManager: fileManager,
+            session: session,
+            registrar: registrar
+        )
+
+        let url = URL(string: "https://example.com/font.ttf")!
+
+        // First install: should download, write, register
+        try await sut.installFont(from: url, hash: hash)
+
+        // Second install: should skip download/write, but still register
+        try await sut.installFont(from: url, hash: hash)
+
+        expect(session.dataFromURLCallCount).to(equal(1))
+        expect(registrar.registerFontCallCount).to(equal(2))
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
@@ -355,8 +385,10 @@ private final class MockSession: FontDownloadSession {
 
     var didCallDataFrom = false
     var dataFromURL: Data?
+    var dataFromURLCallCount = 0
     func data(from url: URL) async throws -> (Data, URLResponse) {
         didCallDataFrom = true
+        dataFromURLCallCount += 1
         return (dataFromURL ?? Data(), URLResponse())
     }
 }
@@ -385,7 +417,9 @@ private final class MockRegistrar: FontRegistrar {
 
     var didRegister = false
     var shouldThrow = false
+    var registerFontCallCount = 0
     func registerFont(at url: URL) throws {
+        registerFontCallCount += 1
         guard !shouldThrow else {
             throw NSError(domain: "mock", code: 42, userInfo: [NSLocalizedDescriptionKey: "registration failed"])
         }
