@@ -10,16 +10,20 @@ enum ProductCellState {
 
 struct ProductCell: View {
     @Environment(\.colorScheme) private var scheme
-    let product: ProductViewModel
+    let purchasable: any PurchasableViewModel
     @State private var isPurchasing = false
     @Environment(UserViewModel.self) private var userViewModel
 
-    var state: ProductCellState {
-        guard let storeProduct = product.storeProduct else {
-            return .cannotPurchase
+    var purchaseButtonTitle: LocalizedStringKey {
+        switch state {
+        case .readyToPurchase, .cannotPurchase, .purchasingOtherProduct: "Purchase"
+        case .purchasing: "Purchasing..."
+        case .purchased: "Purchased"
         }
+    }
 
-        if userViewModel.customerInfo?.allPurchasedProductIdentifiers.contains(storeProduct.productIdentifier) == true {
+    var state: ProductCellState {
+        if purchasable.isPurchased() {
             return .purchased
         }
 
@@ -32,36 +36,26 @@ struct ProductCell: View {
         return .readyToPurchase
     }
 
-    var purchaseButtonTitle: LocalizedStringKey {
-        switch state {
-        case .readyToPurchase, .cannotPurchase, .purchasingOtherProduct: "Purchase"
-        case .purchasing: "Purchasing..."
-        case .purchased: "Purchased"
-        }
-    }
-
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(alignment: .firstTextBaseline) {
-                Text(product.title ?? "")
+                Text(purchasable.title ?? "")
                 Spacer()
-                Image(systemName: product.icon)
-                    .foregroundStyle(product.color)
+                Image(systemName: purchasable.icon)
+                    .foregroundStyle(purchasable.color)
             }
             .font(.headline)
             .symbolRenderingMode(.hierarchical)
-            Text(product.id)
+            Text(purchasable.id)
                 .font(.footnote)
                 .foregroundStyle(.secondary)
-            Text(product.description)
+            Text(purchasable.description)
                 .font(.caption)
 
             Button(action: {
-                guard let storeProduct = self.product.storeProduct else { return }
-
                 Task {
                     isPurchasing = true
-                    await userViewModel.purchase(storeProduct)
+                    await purchasable.purchase()
                     isPurchasing = false
                 }
             }) {
@@ -84,7 +78,7 @@ struct ProductCell: View {
             .padding(.top, 16)
             .disabled(state != .readyToPurchase)
 
-            if product.storeProduct == nil {
+            if purchasable.purchasable == nil {
                 Text("StoreKit did not return a product and no purchase can be made.")
                     .font(.caption2)
                     .foregroundStyle(.secondary)

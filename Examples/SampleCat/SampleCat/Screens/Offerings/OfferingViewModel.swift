@@ -5,7 +5,7 @@ struct OfferingViewModel: Identifiable, Equatable {
     var id: String { identifier }
     let identifier: String
     let status: PurchasesDiagnostics.SDKHealthCheckStatus
-    let packages: [ProductViewModel]
+    let packages: [PackageViewModel]
 
     var icon: String {
         status.icon

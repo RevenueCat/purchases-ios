@@ -47,6 +47,21 @@ import SwiftUI
         }
     }
 
+    func purchase(_ package: Package) async {
+        isPurchasing = true
+        defer { isPurchasing = false }
+
+        do {
+            let (_, customerInfo, userCancelled) = try await Purchases.shared.purchase(package: package)
+
+            guard !userCancelled else { return }
+
+            self.customerInfo = customerInfo
+        } catch {
+            print("Failed to purchase package with error: \(error)")
+        }
+    }
+
     func fetchOfferings() async {
         isFetchingOfferings = true
         do {

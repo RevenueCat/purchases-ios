@@ -12,7 +12,7 @@ struct OfferingPackagesView: View {
 
             VStack {
                 ForEach(offering.packages) { product in
-                    ProductCell(product: product)
+                    ProductCell(purchasable: product)
                 }
             }
             .padding()

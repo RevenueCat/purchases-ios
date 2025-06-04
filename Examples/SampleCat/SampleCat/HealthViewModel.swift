@@ -32,6 +32,12 @@ extension PurchasesDiagnostics.SDKHealthError: @retroactive Identifiable {
 
         var blockingError: PurchasesDiagnostics.SDKHealthError?
 
+        let userViewModel: UserViewModel
+
+        init(userViewModel: UserViewModel) {
+            self.userViewModel = userViewModel
+        }
+
         func fetchHealthReport() async {
             defer { isfetchingHealthReport = false }
             isfetchingHealthReport = true
@@ -42,35 +48,71 @@ extension PurchasesDiagnostics.SDKHealthError: @retroactive Identifiable {
                 return
             }
             blockingError = nil
-            let reportProducts = report.products
-            let identifiers = Set(reportProducts.map(\.identifier) + report.offerings.flatMap { $0.packages.map(\.productIdentifier) })
+        }
+
+        private func buildProductViewModels(from reportProducts: [PurchasesDiagnostics.ProductDiagnosticsPayload]) async -> [ProductViewModel] {
+            let identifiers = Set(reportProducts.map(\.identifier))
             let storeProducts = await Purchases.shared.products(Array(identifiers))
                 .reduce(into: [String: StoreProduct]()) { partialResult, storeProduct in
                     partialResult[storeProduct.productIdentifier] = storeProduct
                 }
 
-            offerings = report.offerings.map { offering in
-                OfferingViewModel(
-                    identifier: offering.identifier,
-                    status: offering.status,
-                    packages: offering.packages.map { package in
-                        ProductViewModel(
-                            id: package.identifier,
-                            status: package.status,
-                            title: package.productIdentifier,
-                            description: package.description,
-                            storeProduct: storeProducts[package.productIdentifier]
-                        )
-                    }
-                )
-            }
-            products = reportProducts.map { product in
-                ProductViewModel(
+            return reportProducts.map { product in
+                let storeProduct = storeProducts[product.identifier]
+                return ProductViewModel(
                     id: product.identifier,
                     status: product.status,
                     title: product.title,
                     description: product.description,
-                    storeProduct: storeProducts[product.identifier]
+                    purchasable: storeProduct,
+                    isPurchased: {
+                        guard let storeProduct else { return false }
+
+                        return self.userViewModel.customerInfo?.allPurchasedProductIdentifiers.contains(storeProduct.productIdentifier) == true
+                    },
+                    purchase: {
+                        guard let storeProduct else { return }
+
+                        await self.userViewModel.purchase(storeProduct)
+                    }
+                )
+            }
+        }
+
+        private func buildOfferingViewModels(from reportOfferings: [PurchasesDiagnostics.OfferingDiagnosticsPayload]) async -> [OfferingViewModel] {
+            await userViewModel.fetchOfferings()
+
+            let sdkOfferings = userViewModel.offerings?.all
+
+            return reportOfferings.map { offering in
+                let sdkOffering = sdkOfferings?[offering.identifier]
+
+                return OfferingViewModel(
+                    identifier: offering.identifier,
+                    status: offering.status,
+                    packages: offering.packages.map { package in
+                        let sdkPackage = sdkOffering?.availablePackages.first(where: { sdkPackageToMatch in
+                            sdkPackageToMatch.storeProduct.productIdentifier == package.productIdentifier
+                        })
+
+                        return PackageViewModel(
+                            id: package.identifier,
+                            status: package.status,
+                            title: package.productIdentifier,
+                            description: package.description,
+                            purchasable: sdkPackage,
+                            isPurchased: {
+                                guard let sdkPackage else { return false }
+
+                                return self.userViewModel.customerInfo?.allPurchasedProductIdentifiers.contains(sdkPackage.storeProduct.productIdentifier) == true
+                            },
+                            purchase: {
+                                guard let sdkPackage else { return }
+
+                                await self.userViewModel.purchase(sdkPackage)
+                            },
+                        )
+                    }
                 )
             }
         }
