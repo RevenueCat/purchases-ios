@@ -175,15 +175,14 @@ final class PaywallCacheWarmingTests: TestCase {
         expect(self.imageFetcher.imageDownloadRequestCount.value) == 3
     }
 
-    @available(iOS 15.0, *)
-    func testInstallFontSuccess() async throws {
+    func testDownloadFont_PerformsExpectedActions() async throws {
         let mockSession = MockSession()
         let mockFileManager = MockFileManager()
         let mockRegistrar = MockRegistrar()
 
         let string = "abc123"
         let data = string.data(using: .utf8)!
-        mockSession.data = data
+        mockSession.dataFromURL = data
         let hash = data.md5String
 
         let sut = DefaultPaywallFontsManager(
@@ -202,16 +201,14 @@ final class PaywallCacheWarmingTests: TestCase {
         expect(mockRegistrar.didRegister).to(beTrue())
     }
 
-    @available(iOS 15.0, *)
-    func testInstallFontError() async throws {
+    func testDownloadFont_ThrowsHashValidationError() async {
         let mockSession = MockSession()
-        let mockFileManager = MockFileManager()
-        let mockRegistrar = MockRegistrar()
+        mockSession.dataFromURL = Data("bad font".utf8)
 
-        let string = "abc123"
-        let data = string.data(using: .utf8)!
-        mockSession.data = data
-        let hash = string
+        let mockFileManager = MockFileManager()
+        mockFileManager.fileExistsAtPath = false
+
+        let mockRegistrar = MockRegistrar()
 
         let sut = DefaultPaywallFontsManager(
             fileManager: mockFileManager,
@@ -220,29 +217,31 @@ final class PaywallCacheWarmingTests: TestCase {
         )
 
         let url = URL(string: "https://example.com/font.ttf")!
-        mockFileManager.fileExistsAtPath = false
-
         do {
-            try await sut.installFont(from: url, hash: hash)
-            XCTFail("FontsManagerError should be thrown")
+            try await sut.installFont(from: url, hash: "expectedhash")
+            fail("Expected to throw hashValidationError")
+        } catch let error as DefaultPaywallFontsManager.FontsManagerError {
+            guard case .hashValidationError(let expected, let actual) = error else {
+                fail("Expected hashValidationError, got \(error)")
+                return
+            }
+            expect(expected).to(equal("expectedhash"))
+            expect(actual).to(equal(mockSession.dataFromURL!.md5String))
         } catch {
-            expect(mockSession.didCallDataFrom).to(beTrue())
-            expect(mockFileManager.didWriteData).to(beFalse())
-            expect(mockRegistrar.didRegister).to(beFalse())
+            fail("Unexpected error: \(error)")
         }
     }
 
-    @available(iOS 15.0, *)
-    func testInstallFontSkipsInstallIfFileExists() async throws {
+    func testDownloadFont_ThrowsRegistrationError() async {
+        let validData = Data("valid data".utf8)
         let mockSession = MockSession()
-        let mockFileManager = MockFileManager()
-        mockFileManager.fileExistsAtPath = true
-        let mockRegistrar = MockRegistrar()
+        mockSession.dataFromURL = validData
 
-        let string = "abc123"
-        let data = string.data(using: .utf8)!
-        mockSession.data = data
-        let hash = data.md5String
+        let mockFileManager = MockFileManager()
+        mockFileManager.fileExistsAtPath = false
+
+        let mockRegistrar = MockRegistrar()
+        mockRegistrar.shouldThrow = true
 
         let sut = DefaultPaywallFontsManager(
             fileManager: mockFileManager,
@@ -251,11 +250,48 @@ final class PaywallCacheWarmingTests: TestCase {
         )
 
         let url = URL(string: "https://example.com/font.ttf")!
+        do {
+            try await sut.installFont(from: url, hash: validData.md5String)
+            fail("Expected to throw registrationError")
+        } catch let error as DefaultPaywallFontsManager.FontsManagerError {
+            guard case .registrationError(let innerError) = error else {
+                fail("Expected registrationError, got \(error)")
+                return
+            }
+            expect(innerError?.localizedDescription).to(equal("registration failed"))
+        } catch {
+            fail("Unexpected error: \(error)")
+        }
+    }
+
+    func testInstallFont_DownloadsOnce_RegistersTwice() async throws {
+        let fontData = Data("valid font".utf8)
+        let hash = fontData.md5String
+
+        let session = MockSession()
+        session.dataFromURL = fontData
+
+        let fileManager = MockFileManager()
+        fileManager.fileExistsAtPath = false
+
+        let registrar = MockRegistrar()
+
+        let sut = DefaultPaywallFontsManager(
+            fileManager: fileManager,
+            session: session,
+            registrar: registrar
+        )
+
+        let url = URL(string: "https://example.com/font.ttf")!
+
+        // First install: should download, write, register
         try await sut.installFont(from: url, hash: hash)
 
-        expect(mockSession.didCallDataFrom).to(beFalse())
-        expect(mockFileManager.didWriteData).to(beFalse())
-        expect(mockRegistrar.didRegister).to(beTrue())
+        // Second install: should skip download/write, but still register
+        try await sut.installFont(from: url, hash: hash)
+
+        expect(session.dataFromURLCallCount).to(equal(1))
+        expect(registrar.registerFontCallCount).to(equal(2))
     }
 }
 
@@ -333,10 +369,12 @@ private final class MockPaywallImageFetcher: PaywallImageFetcherType {
 private final class MockSession: FontDownloadSession {
 
     var didCallDataFrom = false
-    var data: Data?
+    var dataFromURL: Data?
+    var dataFromURLCallCount = 0
     func data(from url: URL) async throws -> (Data, URLResponse) {
         didCallDataFrom = true
-        return (data ?? Data(), URLResponse())
+        dataFromURLCallCount += 1
+        return (dataFromURL ?? Data(), URLResponse())
     }
 }
 
@@ -363,7 +401,13 @@ private final class MockFileManager: FontsFileManaging {
 private final class MockRegistrar: FontRegistrar {
 
     var didRegister = false
+    var shouldThrow = false
+    var registerFontCallCount = 0
     func registerFont(at url: URL) throws {
+        registerFontCallCount += 1
+        guard !shouldThrow else {
+            throw NSError(domain: "mock", code: 42, userInfo: [NSLocalizedDescriptionKey: "registration failed"])
+        }
         didRegister = true
     }
 }
