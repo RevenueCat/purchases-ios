@@ -478,7 +478,10 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
-    func virtualCurrencies(forceRefresh: Bool, completion: @escaping (RevenueCat.VirtualCurrencies?, RevenueCat.PublicError?) -> Void) {
+    func virtualCurrencies(
+        forceRefresh: Bool,
+        completion: @escaping (RevenueCat.VirtualCurrencies?, RevenueCat.PublicError?) -> Void
+    ) {
         self.unimplemented()
     }
 }
