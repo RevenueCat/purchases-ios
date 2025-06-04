@@ -14,10 +14,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "4032744BB5037ACB9D6D0258"
-               BuildableName = "RevenueCatUI.framework"
-               BlueprintName = "RevenueCatUI"
-               ReferencedContainer = "container:RevenueCatUI.xcodeproj">
+               BlueprintIdentifier = "575B47EDE51D476EF9DD7E41"
+               BuildableName = "BackendIntegrationTestsHostApp.app"
+               BlueprintName = "BackendIntegrationTestsHostApp"
+               ReferencedContainer = "container:RevenueCat.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -26,19 +26,9 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      shouldUseLaunchSchemeArgsEnv = "YES">
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      disableMainThreadChecker = "YES">
       <Testables>
-         <TestableReference
-            skipped = "NO"
-            parallelizable = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "0DE4BAB4F414F0FBB9433C9D"
-               BuildableName = "RevenueCatUITests.xctest"
-               BlueprintName = "RevenueCatUITests"
-               ReferencedContainer = "container:RevenueCatUI.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
@@ -51,15 +41,16 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <MacroExpansion>
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "4032744BB5037ACB9D6D0258"
-            BuildableName = "RevenueCatUI.framework"
-            BlueprintName = "RevenueCatUI"
-            ReferencedContainer = "container:RevenueCatUI.xcodeproj">
+            BlueprintIdentifier = "575B47EDE51D476EF9DD7E41"
+            BuildableName = "BackendIntegrationTestsHostApp.app"
+            BlueprintName = "BackendIntegrationTestsHostApp"
+            ReferencedContainer = "container:RevenueCat.xcodeproj">
          </BuildableReference>
-      </MacroExpansion>
+      </BuildableProductRunnable>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -67,15 +58,16 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <MacroExpansion>
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "4032744BB5037ACB9D6D0258"
-            BuildableName = "RevenueCatUI.framework"
-            BlueprintName = "RevenueCatUI"
-            ReferencedContainer = "container:RevenueCatUI.xcodeproj">
+            BlueprintIdentifier = "575B47EDE51D476EF9DD7E41"
+            BuildableName = "BackendIntegrationTestsHostApp.app"
+            BlueprintName = "BackendIntegrationTestsHostApp"
+            ReferencedContainer = "container:RevenueCat.xcodeproj">
          </BuildableReference>
-      </MacroExpansion>
+      </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

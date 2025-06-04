@@ -1,4 +1,24 @@
 import ProjectDescription
+import ProjectDescriptionHelpers
+
+let allDestinations: Destinations = [
+    .iPhone,
+    .iPad,
+    .mac,
+    .macWithiPadDesign,
+    .macCatalyst,
+    .appleWatch,
+    .appleTv,
+    .appleVision,
+    .appleVisionWithiPadDesign
+]
+
+let allDeploymentTargets: DeploymentTargets = .multiplatform(
+    iOS: "15.0",
+    macOS: "11.0",
+    watchOS: "7.0",
+    tvOS: "14.0"
+)
 
 let project = Project(
     name: "RevenueCatUI",
@@ -6,24 +26,50 @@ let project = Project(
     targets: [
         .target(
             name: "RevenueCatUI",
-            destinations: .iOS,
-            product: .staticLibrary,
+            destinations: allDestinations,
+            product: .framework,
             bundleId: "com.revenuecat.sampleapp",
             deploymentTargets: .iOS("15.0"),
-            infoPlist: .extendingDefault(
-                with: [
-                    "UILaunchScreen": [
-                        "UIColorName": "",
-                        "UIImageName": ""
-                    ]
-                ]
-            ),
+            infoPlist: .default,
             sources: [
                 "../../RevenueCatUI/**/*.swift"
             ],
             dependencies: [
-                .project(target: "RevenueCat", path: "../RevenueCat")
+                .revenueCat(local: true)
             ]
+        ),
+
+                // MARK: – RevenueCat Tests
+        .target(
+            name: "RevenueCatUITests",
+            destinations: allDestinations,
+            product: .unitTests,
+            bundleId: "com.revenuecat.sampleapp.tests",
+            deploymentTargets: allDeploymentTargets,
+            infoPlist: .default,
+            sources: [
+                "../../Tests/RevenueCatUITests/**/*.swift"
+            ],
+            dependencies: [
+                .target(name: "RevenueCatUI"),
+                .nimble,
+                .snapshotTesting,
+                .ohHTTPStubsSwift
+            ]
+        )
+    ],
+    schemes: [
+        .scheme(
+            name: "RevenueCatUI",
+            shared: true,
+            buildAction: .buildAction(targets: ["RevenueCatUI"]),
+            testAction: .targets([
+                .testableTarget(target: .init(stringLiteral: "RevenueCatUITests"))
+            ]),
+            runAction: .runAction(configuration: "Debug"),
+            archiveAction: .archiveAction(configuration: "Release"),
+            profileAction: .profileAction(configuration: "Release"),
+            analyzeAction: .analyzeAction(configuration: "Debug")
         )
     ]
 )

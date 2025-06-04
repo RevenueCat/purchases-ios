@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "4032744BB5037ACB9D6D0258"
-               BuildableName = "RevenueCatUI.framework"
-               BlueprintName = "RevenueCatUI"
+               BlueprintIdentifier = "0DE4BAB4F414F0FBB9433C9D"
+               BuildableName = "RevenueCatUITests.xctest"
+               BlueprintName = "RevenueCatUITests"
                ReferencedContainer = "container:RevenueCatUI.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -54,9 +54,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "4032744BB5037ACB9D6D0258"
-            BuildableName = "RevenueCatUI.framework"
-            BlueprintName = "RevenueCatUI"
+            BlueprintIdentifier = "0DE4BAB4F414F0FBB9433C9D"
+            BuildableName = "RevenueCatUITests.xctest"
+            BlueprintName = "RevenueCatUITests"
             ReferencedContainer = "container:RevenueCatUI.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -70,9 +70,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "4032744BB5037ACB9D6D0258"
-            BuildableName = "RevenueCatUI.framework"
-            BlueprintName = "RevenueCatUI"
+            BlueprintIdentifier = "0DE4BAB4F414F0FBB9433C9D"
+            BuildableName = "RevenueCatUITests.xctest"
+            BlueprintName = "RevenueCatUITests"
             ReferencedContainer = "container:RevenueCatUI.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
