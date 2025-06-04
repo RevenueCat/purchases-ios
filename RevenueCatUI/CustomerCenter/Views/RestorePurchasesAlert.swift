@@ -171,6 +171,7 @@ struct RestorePurchasesAlert: View {
     private func dismissAlert() {
         self.customerCenterViewModel.onDismissRestorePurchasesAlert()
         self.isPresented = false
+        self.viewModel.alertType = .loading
     }
 }
 
