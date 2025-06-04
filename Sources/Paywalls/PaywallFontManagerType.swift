@@ -74,6 +74,7 @@ actor DefaultPaywallFontsManager: PaywallFontManagerType {
         case hashValidationError(expected: String, actual: String)
     }
 
+    private let fontsDirectory: URL?
     private let fileManager: FontsFileManaging
     private let session: FontDownloadSession
     private let registrar: FontRegistrar
@@ -86,12 +87,21 @@ actor DefaultPaywallFontsManager: PaywallFontManagerType {
         self.fileManager = fileManager
         self.session = session
         self.registrar = registrar
+        do {
+            self.fontsDirectory = try DefaultPaywallFontsManager.fontsDirectory(fileManager: fileManager)
+        } catch {
+            Logger.error(Strings.paywalls.error_creating_fonts_directory(error))
+            self.fontsDirectory = nil
+        }
     }
 
     func installFont(from remoteURL: URL, hash: String) async throws {
-        let destination = try self.fileURLForFontAtRemoteURL(remoteURL)
+        guard let destination = self.fileURLForFontAtRemoteURL(remoteURL) else {
+            return
+        }
 
         if !fileManager.fileExists(atPath: destination.path) {
+            Logger.verbose(Strings.paywalls.triggering_font_download(fontURL: remoteURL))
             let (data, urlResponse) = try await session.data(from: remoteURL)
 
             guard let httpResponse = urlResponse as? HTTPURLResponse else {
@@ -117,7 +127,7 @@ actor DefaultPaywallFontsManager: PaywallFontManagerType {
 
     // MARK: - Private
 
-    private func fontsDirectory() throws -> URL {
+    private static func fontsDirectory(fileManager: FontsFileManaging) throws -> URL {
         let fontsDirectory = try fileManager
             .cachesDirectory()
             .appendingPathComponent("RevenueCatFonts", isDirectory: true)
@@ -125,8 +135,10 @@ actor DefaultPaywallFontsManager: PaywallFontManagerType {
         return fontsDirectory
     }
 
-    private func fileURLForFontAtRemoteURL(_ remoteURL: URL) throws -> URL {
-        let fontsDirectory = try fontsDirectory()
+    private func fileURLForFontAtRemoteURL(_ remoteURL: URL) -> URL? {
+        guard let fontsDirectory = self.fontsDirectory else {
+            return nil
+        }
         let fileName = Data(remoteURL.absoluteString.utf8).md5String + "." + remoteURL.pathExtension
         return fontsDirectory.appendingPathComponent(fileName, isDirectory: false)
     }
@@ -144,7 +156,7 @@ extension DefaultPaywallFontsManager.FontsManagerError: CustomStringConvertible 
         case let .registrationError(error):
             return "Font registration error: \(error?.localizedDescription ?? "Unknown error")"
         case let .hashValidationError(expected, actual):
-            return "Font hash validation failed. Expected: \(expected), Actual: \(actual)"
+            return "Font download MD5 mismatch. Expected: \(expected), Actual: \(actual)"
         }
     }
 }

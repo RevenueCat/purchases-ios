@@ -131,6 +131,8 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     private func installFont(from font: DownloadableFont) async {
         if let existingTask = ongoingFontDownloads[font] {
             // Already downloading, await the existing task.
+            Logger.verbose(Strings.paywalls.font_download_already_in_progress(name: font.name,
+                                                                              fontURL: font.url))
             await existingTask.value
             return
         }
@@ -156,6 +158,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         let task = Task {
             do {
                 try await self.fontsManager.installFont(from: font.url, hash: font.hash)
+                Logger.debug(Strings.paywalls.font_downloaded_sucessfully(name: font.name, fontURL: font.url))
             } catch {
                 Logger.error(Strings.paywalls.error_installing_font(font.url, error))
             }

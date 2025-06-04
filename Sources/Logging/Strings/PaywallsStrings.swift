@@ -21,6 +21,10 @@ enum PaywallsStrings {
     case warming_up_images(imageURLs: Set<URL>)
     case warming_up_fonts(fontsURLS: Set<URL>)
     case error_prefetching_image(URL, Error)
+    case font_download_already_in_progress(name: String, fontURL: URL)
+    case font_downloaded_sucessfully(name: String, fontURL: URL)
+    case triggering_font_download(fontURL: URL)
+    case error_creating_fonts_directory(Error)
     case error_installing_font(URL, Error)
     case error_prefetching_font_invalid_url(name: String, invalidURLString: String)
     case error_prefetching_font_missing_hash(name: String)
@@ -69,11 +73,23 @@ extension PaywallsStrings: LogMessage {
         case let .error_prefetching_image(url, error):
             return "Error pre-fetching paywall image '\(url)': \((error as NSError).description)"
 
+        case let .font_download_already_in_progress(fontName, fontURL):
+            return "Font '\(fontName)' download already in progress with url: \(fontURL.absoluteString)"
+
+        case let .font_downloaded_sucessfully(fontName, fontURL):
+            return "Successfully downloaded and cached font '\(fontName)' from url: \(fontURL.absoluteString)"
+
+        case let .triggering_font_download(fontURL):
+            return "Downloading remote font from url: \(fontURL.absoluteString)"
+
+        case let .error_creating_fonts_directory(error):
+            return "Failed to create fonts directory: \((error as NSError).description)"
+            
         case let .error_installing_font(url, error):
             return "Error installing font with url: '\(url)': \((error as NSError).description)"
 
         case let .error_prefetching_font_invalid_url(name, invalidURLString):
-            return "Error installing font \(name). Invalid url: \(invalidURLString)"
+            return "Error installing font \(name). Malformed url: \(invalidURLString)"
 
         case let .error_prefetching_font_missing_hash(name):
             return "Font \(name) does not have a validation hash. Skipping download. " +
