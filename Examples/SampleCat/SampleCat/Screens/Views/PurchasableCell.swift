@@ -10,7 +10,7 @@ enum PurchasableCellState {
 
 struct PurchasableCell: View {
     @Environment(\.colorScheme) private var scheme
-    let purchasable: any PurchasableViewModel
+    let viewModel: any PurchasableViewModel
     @State private var isPurchasing = false
     @Environment(UserViewModel.self) private var userViewModel
 
@@ -23,7 +23,7 @@ struct PurchasableCell: View {
     }
 
     var state: PurchasableCellState {
-        if purchasable.isPurchased() {
+        if viewModel.isPurchased() {
             return .purchased
         }
 
@@ -39,23 +39,23 @@ struct PurchasableCell: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(alignment: .firstTextBaseline) {
-                Text(purchasable.title ?? "")
+                Text(viewModel.title ?? "")
                 Spacer()
-                Image(systemName: purchasable.icon)
-                    .foregroundStyle(purchasable.color)
+                Image(systemName: viewModel.icon)
+                    .foregroundStyle(viewModel.color)
             }
             .font(.headline)
             .symbolRenderingMode(.hierarchical)
-            Text(purchasable.id)
+            Text(viewModel.id)
                 .font(.footnote)
                 .foregroundStyle(.secondary)
-            Text(purchasable.description)
+            Text(viewModel.description)
                 .font(.caption)
 
             Button(action: {
                 Task {
                     isPurchasing = true
-                    await purchasable.purchase()
+                    await viewModel.purchase()
                     isPurchasing = false
                 }
             }) {
@@ -78,7 +78,7 @@ struct PurchasableCell: View {
             .padding(.top, 16)
             .disabled(state != .readyToPurchase)
 
-            if purchasable.purchasable == nil {
+            if viewModel.purchasable == nil {
                 Text("StoreKit did not return a product and no purchase can be made.")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
