@@ -84,7 +84,7 @@ extension PaywallsStrings: LogMessage {
 
         case let .error_creating_fonts_directory(error):
             return "Failed to create fonts directory: \((error as NSError).description)"
-            
+
         case let .error_installing_font(url, error):
             return "Error installing font with url: '\(url)': \((error as NSError).description)"
 
