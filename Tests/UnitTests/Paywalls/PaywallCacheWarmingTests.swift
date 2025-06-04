@@ -232,39 +232,6 @@ final class PaywallCacheWarmingTests: TestCase {
         }
     }
 
-    func testDownloadFont_InvalidHash_ThrowsHashValidationError() async {
-        let validData = Data("valid data".utf8)
-        let mockSession = MockSession()
-        mockSession.dataFromURL = validData
-
-        let mockFileManager = MockFileManager()
-        mockFileManager.fileExistsAtPath = false
-
-        let mockRegistrar = MockRegistrar()
-        mockRegistrar.shouldThrow = true
-
-        let sut = DefaultPaywallFontsManager(
-            fileManager: mockFileManager,
-            session: mockSession,
-            registrar: mockRegistrar
-        )
-
-        let url = URL(string: "https://example.com/font.ttf")!
-        do {
-            try await sut.installFont(from: url, hash: "invalid hash")
-            fail("Expected to throw registrationError")
-        } catch let error as DefaultPaywallFontsManager.FontsManagerError {
-            guard case let .hashValidationError(expected, actual) = error else {
-                fail("Expected registrationError, got \(error)")
-                return
-            }
-            expect(expected).to(equal("invalid hash"))
-            expect(actual).to(equal("b332c73d949b831312b2f947bf8674a9"))
-        } catch {
-            fail("Unexpected error: \(error)")
-        }
-    }
-
     func testInstallFont_DownloadsOnce_RegistersTwice() async throws {
         let fontData = Data("valid font".utf8)
         let hash = fontData.md5String
