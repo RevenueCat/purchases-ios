@@ -175,7 +175,6 @@ final class PaywallCacheWarmingTests: TestCase {
         expect(self.imageFetcher.imageDownloadRequestCount.value) == 3
     }
 
-    @available(iOS 15.0, *)
     func testDownloadFont_PerformsExpectedActions() async throws {
         let mockSession = MockSession()
         let mockFileManager = MockFileManager()
@@ -197,7 +196,6 @@ final class PaywallCacheWarmingTests: TestCase {
         expect(mockRegistrar.didRegister).to(beTrue())
     }
 
-    @available(iOS 15.0, *)
     func testDownloadFont_SkipsCopyIfFileExists() async throws {
         let mockSession = MockSession()
         let mockFileManager = MockFileManager()
@@ -216,6 +214,69 @@ final class PaywallCacheWarmingTests: TestCase {
         expect(mockSession.didCallDataFrom).to(beFalse())
         expect(mockFileManager.didWriteData).to(beFalse())
         expect(mockRegistrar.didRegister).to(beTrue())
+    }
+
+    func testDownloadFont_ThrowsHashValidationError() async {
+        let mockSession = MockSession()
+        mockSession.dataFromURL = Data("bad font".utf8)
+
+        let mockFileManager = MockFileManager()
+        mockFileManager.fileExistsAtPath = false
+
+        let mockRegistrar = MockRegistrar()
+
+        let sut = DefaultPaywallFontsManager(
+            fileManager: mockFileManager,
+            session: mockSession,
+            registrar: mockRegistrar
+        )
+
+        let url = URL(string: "https://example.com/font.ttf")!
+        do {
+            try await sut.installFont(from: url, hash: "expectedhash")
+            fail("Expected to throw hashValidationError")
+        } catch let error as DefaultPaywallFontsManager.FontsManagerError {
+            guard case .hashValidationError(let expected, let actual) = error else {
+                fail("Expected hashValidationError, got \(error)")
+                return
+            }
+            expect(expected).to(equal("expectedhash"))
+            expect(actual).to(equal(mockSession.dataFromURL!.md5String))
+        } catch {
+            fail("Unexpected error: \(error)")
+        }
+    }
+
+    func testDownloadFont_ThrowsRegistrationError() async {
+        let validData = Data("valid data".utf8)
+        let mockSession = MockSession()
+        mockSession.dataFromURL = validData
+
+        let mockFileManager = MockFileManager()
+        mockFileManager.fileExistsAtPath = false
+
+        let mockRegistrar = MockRegistrar()
+        mockRegistrar.shouldThrow = true
+
+        let sut = DefaultPaywallFontsManager(
+            fileManager: mockFileManager,
+            session: mockSession,
+            registrar: mockRegistrar
+        )
+
+        let url = URL(string: "https://example.com/font.ttf")!
+        do {
+            try await sut.installFont(from: url, hash: validData.md5String)
+            fail("Expected to throw registrationError")
+        } catch let error as DefaultPaywallFontsManager.FontsManagerError {
+            guard case .registrationError(let innerError) = error else {
+                fail("Expected registrationError, got \(error)")
+                return
+            }
+            expect(innerError?.localizedDescription).to(equal("registration failed"))
+        } catch {
+            fail("Unexpected error: \(error)")
+        }
     }
 }
 
@@ -293,9 +354,10 @@ private final class MockPaywallImageFetcher: PaywallImageFetcherType {
 private final class MockSession: FontDownloadSession {
 
     var didCallDataFrom = false
+    var dataFromURL: Data?
     func data(from url: URL) async throws -> (Data, URLResponse) {
         didCallDataFrom = true
-        return (Data(), URLResponse())
+        return (dataFromURL ?? Data(), URLResponse())
     }
 }
 
@@ -322,7 +384,11 @@ private final class MockFileManager: FontsFileManaging {
 private final class MockRegistrar: FontRegistrar {
 
     var didRegister = false
+    var shouldThrow = false
     func registerFont(at url: URL) throws {
+        guard !shouldThrow else {
+            throw NSError(domain: "mock", code: 42, userInfo: [NSLocalizedDescriptionKey: "registration failed"])
+        }
         didRegister = true
     }
 }
