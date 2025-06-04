@@ -978,6 +978,37 @@ public protocol PurchasesType: AnyObject {
         completion: @escaping (CustomerInfo?, PublicError?) -> Void
     )
 
+    /**
+     * Fetches the virtual currencies for the current subscriber.
+     *
+     * - Parameter completion: The callback that is called when the request is complete with a ``VirtualCurrencies``
+     * object containing the subscriber's virtual currencies.
+     *
+     * #### Related Articles
+     * -  [Virtual Currencies](https://www.revenuecat.com/docs/offerings/virtual-currency)
+     */
+    @objc(virtualCurrenciesWithCompletion:)
+    func virtualCurrencies(
+        completion: @escaping (VirtualCurrencies?, PublicError?) -> Void
+    )
+
+    /**
+     * Fetches the virtual currencies for the current subscriber.
+     *
+     * - Parameter forceRefresh: Whether or not the SDK can use cached responses for this request.
+     * Pass in `true` to force the SDK to fetch the most recent value from the RevenueCat backend.
+     * - Parameter completion: The callback that is called when the request is complete with a ``VirtualCurrencies``
+     * object containing the subscriber's virtual currencies.
+     *
+     * #### Related Articles
+     * -  [Virtual Currencies](https://www.revenuecat.com/docs/offerings/virtual-currency)
+     */
+    @objc(virtualCurrenciesWithForceRefresh:completion:)
+    func virtualCurrencies(
+        forceRefresh: Bool,
+        completion: @escaping (VirtualCurrencies?, PublicError?) -> Void
+    )
+
     // MARK: - Deprecated
 
     // swiftlint:disable missing_docs
@@ -1233,6 +1264,30 @@ public protocol PurchasesSwiftType: AnyObject {
     func eligibleWinBackOffers(
         forPackage package: Package
     ) async throws -> [WinBackOffer]
+
+    /**
+     * Fetches the virtual currencies for the current subscriber.
+     *
+     * - Returns: The ``VirtualCurrencies`` object containing the virtual currencies for the subscriber.
+     *
+     * #### Related Articles
+     * -  [Virtual Currencies](https://www.revenuecat.com/docs/offerings/virtual-currency)
+     */
+    func virtualCurrencies() async throws -> VirtualCurrencies
+
+    /**
+     * Fetches the virtual currencies for the current subscriber.
+     *
+     * - Parameter forceRefresh: Whether or not the SDK can use cached responses for this request.
+     * Pass in `true` to force the SDK to fetch the most recent value from the RevenueCat backend.
+     * - Returns: The ``VirtualCurrencies`` object containing the virtual currencies for the subscriber.
+     *
+     * #### Related Articles
+     * -  [Virtual Currencies](https://www.revenuecat.com/docs/offerings/virtual-currency)
+     */
+    func virtualCurrencies(
+        forceRefresh: Bool,
+    ) async throws -> VirtualCurrencies
     #endif
 
 }

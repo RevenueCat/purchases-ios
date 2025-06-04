@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  VirtualCurrencyInfo.swift
+//  VirtualCurrency.swift
 //
 //  Created by Will Taylor on 2/27/25.
 
@@ -19,16 +19,26 @@ import Foundation
 ///
 /// - Warning: This feature is currently in beta and is subject to change.
 ///
-@objc(RCVirtualCurrencyInfo)
-public final class VirtualCurrencyInfo: NSObject {
+@objc(RCVirtualCurrency)
+public final class VirtualCurrency: NSObject {
 
     /// The customer's current balance of the virtual currency.
     @objc public let balance: Int
 
-    init(with virtualCurrencyInfo: CustomerInfoResponse.VirtualCurrencyInfo) {
-        self.balance = virtualCurrencyInfo.balance
+    internal init(balance: Int) {
+        self.balance = balance
     }
 }
 
-extension VirtualCurrencyInfo: Codable {}
-extension VirtualCurrencyInfo: Sendable {}
+extension VirtualCurrency: Codable {}
+extension VirtualCurrency: Sendable {}
+
+extension VirtualCurrency {
+    /// Compares this virtual currency with another one.
+    /// - Parameter object: The other object to compare with
+    /// - Returns: `true` if both objects are virtual currencies with the same balance, `false` otherwise
+    @objc public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? VirtualCurrency else { return false }
+        return self.balance == other.balance
+    }
+}
