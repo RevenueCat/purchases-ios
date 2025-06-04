@@ -7,6 +7,6 @@ struct PackageViewModel: PurchasableViewModel {
     let title: String?
     let description: String
     let purchasable: Package?
-    let isPurchased: () -> Bool
-    let purchase: () async -> Void
+    let isPurchased: @MainActor @Sendable () -> Bool
+    let purchase: @MainActor @Sendable () async -> Void
 }

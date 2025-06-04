@@ -50,6 +50,14 @@ import SwiftUI
                 return
             }
             blockingError = nil
+
+            async let productViewModels = buildProductViewModels(from: report.products)
+            async let offeringViewModels = buildOfferingViewModels(from: report.offerings)
+
+            let (products, offerings) = await (productViewModels, offeringViewModels)
+
+            self.products = products
+            self.offerings = offerings
         }
 
         private func buildProductViewModels(from reportProducts: [PurchasesDiagnostics.ProductDiagnosticsPayload]) async -> [ProductViewModel] {

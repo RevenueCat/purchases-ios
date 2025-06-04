@@ -9,7 +9,7 @@ enum PurchasableState {
     case purchasingOtherProduct
 }
 
-protocol PurchasableViewModel: Hashable, Equatable, Identifiable {
+protocol PurchasableViewModel: Hashable, Equatable, Identifiable, Sendable {
     associatedtype UnderlyingPurchasable
 
     var id: String { get }
@@ -17,8 +17,8 @@ protocol PurchasableViewModel: Hashable, Equatable, Identifiable {
     var title: String? { get }
     var description: String { get }
     var purchasable: UnderlyingPurchasable? { get }
-    var isPurchased: () -> Bool { get }
-    var purchase: () async -> Void { get }
+    var isPurchased: @MainActor @Sendable () -> Bool { get }
+    var purchase: @MainActor @Sendable () async -> Void { get }
 }
 
 extension PurchasableViewModel {
