@@ -43,6 +43,7 @@ class TextComponentViewModel {
     }
 
     @ViewBuilder
+    @MainActor
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
@@ -213,6 +214,7 @@ extension LocalizedTextPartial {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@MainActor
 struct TextComponentStyle {
 
     let visible: Bool
@@ -280,6 +282,7 @@ enum GenericFont: String {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension TextComponentStyle {
 
+    @MainActor
     static func makeFont(size fontSize: CGFloat, name: String?, uiConfigProvider: UIConfigProvider) -> Font {
         // Use default font if no name given
         guard let name = name else {

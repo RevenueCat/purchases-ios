@@ -44,6 +44,7 @@ struct UIConfigProvider {
         return localizations
     }
 
+    @MainActor
     func resolveFont(size fontSize: CGFloat, name: String) -> Font? {
 
         guard let fontsConfig = self.uiConfig.app.fonts[name] else {
