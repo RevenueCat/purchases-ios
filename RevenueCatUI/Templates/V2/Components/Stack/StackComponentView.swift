@@ -775,8 +775,7 @@ extension StackComponentViewModel {
             component: component,
             viewModels: viewModels,
             badgeViewModels: badgeViewModels ?? [],
-            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-            localizationProvider: localizationProvider
+            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
         )
     }
 
