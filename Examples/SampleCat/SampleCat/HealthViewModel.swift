@@ -2,28 +2,30 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-extension PurchasesDiagnostics.SDKHealthError: @retroactive Identifiable {
-    public var id: String {
-        switch self {
-        case .notAuthorizedToMakePayments:
-            return "notAuthorizedToMakePayments"
-        case .invalidAPIKey:
-            return "invalidAPIKey"
-        case .noOfferings:
-            return "noOfferings"
-        case .offeringConfiguration:
-            return "offeringConfiguration"
-        case .invalidBundleId:
-            return "invalidBundleId"
-        case .invalidProducts:
-            return "invalidProducts"
-        case let .unknown(error):
-            return "unknown-\(error.localizedDescription)"
+#if DEBUG
+    extension PurchasesDiagnostics.SDKHealthError: @retroactive Identifiable {
+        public var id: String {
+            switch self {
+            case .notAuthorizedToMakePayments:
+                return "notAuthorizedToMakePayments"
+            case .invalidAPIKey:
+                return "invalidAPIKey"
+            case .noOfferings:
+                return "noOfferings"
+            case .offeringConfiguration:
+                return "offeringConfiguration"
+            case .invalidBundleId:
+                return "invalidBundleId"
+            case .invalidProducts:
+                return "invalidProducts"
+            case let .unknown(error):
+                return "unknown-\(error.localizedDescription)"
+            }
         }
     }
-}
 
-#if DEBUG
+    /// `HealthViewModel` is used by the SampleCat app to validate your SDK configuration.
+    /// If you are looking for an example of how to use RevenueCat in production, check out ``UserViewModel``.
     @MainActor @Observable final class HealthViewModel {
         var products = [ProductViewModel]()
         var offerings = [OfferingViewModel]()
@@ -52,7 +54,7 @@ extension PurchasesDiagnostics.SDKHealthError: @retroactive Identifiable {
 
         private func buildProductViewModels(from reportProducts: [PurchasesDiagnostics.ProductDiagnosticsPayload]) async -> [ProductViewModel] {
             let identifiers = Set(reportProducts.map(\.identifier))
-            let storeProducts = await Purchases.shared.products(Array(identifiers))
+            let storeProducts = await userViewModel.fetchStoreProducts(withIdentifiers: Array(identifiers))
                 .reduce(into: [String: StoreProduct]()) { partialResult, storeProduct in
                     partialResult[storeProduct.productIdentifier] = storeProduct
                 }

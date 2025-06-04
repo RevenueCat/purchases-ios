@@ -2,6 +2,8 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
+/// `UserViewModel` contains all the logic to fetch and purchase products and keep track of the user's subscription status.
+/// This class follows RevenueCat's best practices, and you can use it as a reference for you own app's implemenation.
 @MainActor @Observable final class UserViewModel {
     /* The latest CustomerInfo from RevenueCat. Updated by the `customerInfoStream` in the initializer. */
     var customerInfo: CustomerInfo? {
@@ -70,6 +72,10 @@ import SwiftUI
             print(error)
         }
         isFetchingOfferings = false
+    }
+
+    func fetchStoreProducts(withIdentifiers productIdentifiers: [String]) async -> [StoreProduct] {
+        await Purchases.shared.products(productIdentifiers)
     }
 
     /*
