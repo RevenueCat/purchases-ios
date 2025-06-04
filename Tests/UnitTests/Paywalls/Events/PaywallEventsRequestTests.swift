@@ -62,7 +62,9 @@ class PaywallEventsRequestTests: TestCase {
             sessionID: .init(uuidString: "73616D70-6C65-2073-7472-696E67000000")!,
             displayMode: .fullScreen,
             localeIdentifier: "en_US",
-            darkMode: true
+            darkMode: true,
+            storeTransactionID: nil,
+            fallbackReason: nil
         )
         let paywallEvent = PaywallEvent.impression(paywallEventCreationData, paywallEventData)
 
@@ -107,7 +109,9 @@ private extension PaywallEventsRequestTests {
         sessionID: .init(uuidString: "98CC0F1D-7665-4093-9624-1D7308FFF4DB")!,
         displayMode: .fullScreen,
         localeIdentifier: "es_ES",
-        darkMode: true
+        darkMode: true,
+        storeTransactionID: nil,
+        fallbackReason: nil
     )
 
     static let userID = "Jack Shepard"

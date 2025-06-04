@@ -134,7 +134,9 @@ class HTTPClient {
             RequestHeader.retryCount.rawValue: "0",
             RequestHeader.sandbox.rawValue: "\(self.systemInfo.isSandbox)",
             "X-Is-Backgrounded": "\(self.systemInfo.isAppBackgroundedState)",
-            "X-Is-Debug-Build": "\(self.systemInfo.isDebugBuild)"
+            "X-Is-Debug-Build": "\(self.systemInfo.isDebugBuild)",
+
+            "X-RC-Canary": "pwlevent"
         ]
 
         if let storefront = self.systemInfo.storefront {
