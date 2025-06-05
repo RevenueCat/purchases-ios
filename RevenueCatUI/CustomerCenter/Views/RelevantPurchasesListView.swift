@@ -280,6 +280,42 @@ struct RelevantPurchasesListView: View {
             CompatibilityNavigationStack {
                 RelevantPurchasesListView(
                     customerInfoViewModel: CustomerCenterViewModel(
+                        activeSubscriptionPurchases: [],
+                        activeNonSubscriptionPurchases: [],
+                        configuration: .default
+                    ),
+                    viewModel: RelevantPurchasesListViewModel(
+                        screen: warningOffMock.screens[.management]!,
+                        originalAppUserId: "originalAppUserId",
+                        shouldShowSeeAllPurchases: true
+                    )
+                )
+                .environment(\.supportInformation, warningOffMock.support)
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Empty - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                RelevantPurchasesListView(
+                    customerInfoViewModel: CustomerCenterViewModel(
+                        activeSubscriptionPurchases: [],
+                        activeNonSubscriptionPurchases: [.consumable, .lifetime],
+                        configuration: .default
+                    ),
+                    viewModel: RelevantPurchasesListViewModel(
+                        screen: warningOffMock.screens[.management]!,
+                        originalAppUserId: "originalAppUserId",
+                        shouldShowSeeAllPurchases: true
+                    )
+                )
+                .environment(\.supportInformation, warningOffMock.support)
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("No subscriptions - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                RelevantPurchasesListView(
+                    customerInfoViewModel: CustomerCenterViewModel(
                         activeSubscriptionPurchases: purchases,
                         activeNonSubscriptionPurchases: [],
                         configuration: .default
