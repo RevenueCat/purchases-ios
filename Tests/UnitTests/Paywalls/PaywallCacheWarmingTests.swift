@@ -12,7 +12,7 @@
 //  Created by Nacho Soto on 8/7/23.
 
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import XCTest
 
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
@@ -193,8 +193,10 @@ final class PaywallCacheWarmingTests: TestCase {
 
         // Launch two tasks installing the same font concurrently
         let fontsConfig = UIConfig.FontsConfig(
-            ios: .name(font.name),
-            web: UIConfig.WebFontInfo(value: font.url.absoluteString, hash: font.hash)
+            ios: UIConfig.FontInfo(
+                name: font.name,
+                webFontInfo: UIConfig.WebFontInfo(url: font.url.absoluteString, hash: font.hash)
+            )
         )
 
         async let firstCall: () = cache.triggerFontDownloadIfNeeded(fontsConfig: fontsConfig)
@@ -203,12 +205,6 @@ final class PaywallCacheWarmingTests: TestCase {
 
         let callCount = await fontsManager.installCallCount
         XCTAssertEqual(callCount, 1, "Expected only one font installation")
-
-        self.logger.verifyMessageWasLogged(
-            PaywallsStrings.font_downloaded_sucessfully(name: font.name, fontURL: font.url),
-            level: .debug,
-            expectedCount: 1
-        )
 
         self.logger.verifyMessageWasLogged(
             PaywallsStrings.font_download_already_in_progress(name: font.name, fontURL: font.url),
@@ -241,8 +237,9 @@ final class PaywallCacheWarmingTests: TestCase {
 
         let url = URL(string: "https://example.com/font.ttf")!
         mockFileManager.fileExistsAtPath = false
+        let font = DownloadableFont(name: "font-bold", fontFamily: "font", url: url, hash: hash)
 
-        try await sut.installFont(from: url, hash: hash)
+        try await sut.installFont(font)
 
         expect(mockSession.didCallDataFrom).to(beTrue())
         expect(mockFileManager.didWriteData).to(beTrue())
@@ -271,8 +268,9 @@ final class PaywallCacheWarmingTests: TestCase {
         )
 
         let url = URL(string: "https://example.com/font.ttf")!
+        let font = DownloadableFont(name: "font-bold", fontFamily: "font", url: url, hash: "expectedhash")
         do {
-            try await sut.installFont(from: url, hash: "expectedhash")
+            try await sut.installFont(font)
             fail("Expected to throw hashValidationError")
         } catch let error as DefaultPaywallFontsManager.FontsManagerError {
             guard case .hashValidationError(let expected, let actual) = error else {
@@ -309,13 +307,14 @@ final class PaywallCacheWarmingTests: TestCase {
         )
 
         let url = URL(string: "https://example.com/font.ttf")!
+        let font = DownloadableFont(name: "font-bold", fontFamily: "font", url: url, hash: hash)
 
         // First install: should download, write, register
-        try await sut.installFont(from: url, hash: hash)
+        try await sut.installFont(font)
         fileManager.fileExistsAtPath = true
 
         // Second install: should skip download/write, but still register
-        try await sut.installFont(from: url, hash: hash)
+        try await sut.installFont(font)
 
         expect(session.dataFromURLCallCount).to(equal(1))
         expect(registrar.registerFontCallCount).to(equal(2))
@@ -451,7 +450,7 @@ final actor MockFontsManager: PaywallFontManagerType {
         self.installDelayInSeconds = installDelayInSeconds
     }
 
-    func installFont(from remoteURL: URL, hash: String) async throws {
+    func installFont(_ font: RevenueCat.DownloadableFont) async throws {
         installCallCount += 1
 
         let duration = UInt64(installDelayInSeconds * 1_000_000_000)

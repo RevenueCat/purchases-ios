@@ -44,10 +44,10 @@ public struct UIConfig: Codable, Equatable, Sendable {
         @_spi(Internal) public let value: String
         let webFontInfo: WebFontInfo?
 
-        @_spi(Internal) public init(name: String) {
+        @_spi(Internal) public init(name: String, webFontInfo: WebFontInfo? = nil) {
             self.type = .name
             self.value = name
-            self.webFontInfo = nil
+            self.webFontInfo = webFontInfo
         }
 
         // swiftlint:disable:next nesting
@@ -89,6 +89,12 @@ public struct UIConfig: Codable, Equatable, Sendable {
         /// Should never be `nil`, but it is optional to prevent potential decoding errors if, for some reason,
         /// the hash is not provided from the server.
         internal let hash: String
+
+        @_spi(Internal) public init(url: String, hash: String) {
+            self.family = nil
+            self.url = url
+            self.hash = hash
+        }
     }
 
     public struct VariableConfig: Codable, Equatable, Sendable {
