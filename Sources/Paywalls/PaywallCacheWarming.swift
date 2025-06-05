@@ -50,7 +50,7 @@ protocol PaywallImageFetcherType: Sendable {
 protocol PaywallFontManagerType: Sendable {
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    func installFont(from remoteURL: URL, hash: String) async throws
+    func installFont(_ font: DownloadableFont) async throws
 
 }
 
@@ -159,8 +159,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
         let task = Task {
             do {
-                try await self.fontsManager.installFont(from: font.url, hash: font.hash)
-                Logger.debug(Strings.paywalls.font_downloaded_sucessfully(name: font.name, fontURL: font.url))
+                try await self.fontsManager.installFont(font)
             } catch {
                 Logger.error(Strings.paywalls.error_installing_font(font.url, error))
             }

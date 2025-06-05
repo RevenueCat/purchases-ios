@@ -55,6 +55,7 @@ struct DefaultFontFileManager: FontsFileManaging {
         guard let url = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first else {
             throw CocoaError(.fileNoSuchFile)
         }
+        print("cache directory: \(url)")
         return url
     }
 }
@@ -95,7 +96,8 @@ actor DefaultPaywallFontsManager: PaywallFontManagerType {
         }
     }
 
-    func installFont(from remoteURL: URL, hash: String) async throws {
+    func installFont(_ font: DownloadableFont) async throws {
+        let remoteURL = font.url
         guard let destination = self.fileURLForFontAtRemoteURL(remoteURL) else {
             return
         }
@@ -113,12 +115,14 @@ actor DefaultPaywallFontsManager: PaywallFontManagerType {
                 throw FontsManagerError.downloadError(httpStatusCode)
             }
 
-            let dataHash = data.md5String
-            guard dataHash == hash else {
-                throw FontsManagerError.hashValidationError(expected: hash, actual: dataHash)
+            let expectedHash = font.hash
+            let actualHash = data.md5String
+            guard actualHash == expectedHash else {
+                throw FontsManagerError.hashValidationError(expected: expectedHash, actual: actualHash)
             }
 
             try fileManager.write(data, to: destination)
+            Logger.debug(Strings.paywalls.font_downloaded_sucessfully(name: font.name, fontURL: remoteURL))
         }
 
         try registrar.registerFont(at: destination)
@@ -155,7 +159,7 @@ extension DefaultPaywallFontsManager.FontsManagerError: CustomStringConvertible 
         case let .registrationError(error):
             return "Font registration error: \(error?.localizedDescription ?? "Unknown error")"
         case let .hashValidationError(expected, actual):
-            return "Font download MD5 mismatch. Expected: \(expected), Actual: \(actual)"
+            return "Downloaded font file is corrupt. Hash mismatch. Expected: \(expected), Actual: \(actual)"
         }
     }
 }
