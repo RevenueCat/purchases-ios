@@ -76,7 +76,7 @@ extension PaywallsStrings: LogMessage {
             return "Font '\(fontName)' download already in progress with url: \(fontURL.absoluteString)"
 
         case let .font_downloaded_sucessfully(fontName, fontURL):
-             return "Successfully downloaded and cached font '\(fontName)' from url: \(fontURL.absoluteString)"
+            return "Successfully downloaded and cached font '\(fontName)' from url: \(fontURL.absoluteString)"
 
         case let .triggering_font_download(fontURL):
             return "Downloading remote font from url: \(fontURL.absoluteString)"
