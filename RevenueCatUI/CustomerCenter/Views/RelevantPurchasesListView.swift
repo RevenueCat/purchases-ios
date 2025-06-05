@@ -148,7 +148,6 @@ struct RelevantPurchasesListView: View {
                     }
                     .tint(colorScheme == .dark ? .white : .black)
 
-
                     ScrollViewSection(title: localization[.actionsSectionTitle]) {
                         ActiveSubscriptionButtonsView(viewModel: viewModel)
                             .padding(.horizontal)
