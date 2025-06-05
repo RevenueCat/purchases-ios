@@ -63,7 +63,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
     private var hasLoadedEligibility = false
     private var hasLoadedImages = false
-    private var ongoingFontDownloads: [DownloadableFont: Task<Void, Never>] = [:]
+    private var ongoingFontDownloads: [URL: Task<Void, Never>] = [:]
 
     init(
         introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType,
@@ -129,7 +129,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 #endif
 
     private func installFont(from font: DownloadableFont) async {
-        if let existingTask = ongoingFontDownloads[font] {
+        if let existingTask = ongoingFontDownloads[font.url] {
             // Already downloading, await the existing task.
             Logger.debug(Strings.paywalls.font_download_already_in_progress(
                 name: font.name,
@@ -165,9 +165,9 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
             }
         }
 
-        ongoingFontDownloads[font] = task
+        ongoingFontDownloads[font.url] = task
         await task.value
-        ongoingFontDownloads[font] = nil
+        ongoingFontDownloads[font.url] = nil
     }
 
 }
@@ -332,7 +332,7 @@ private extension PaywallData.Configuration.Images {
 }
 
 /// Business logic object to easily manage the download of fonts.
-struct DownloadableFont: Hashable, Sendable {
+struct DownloadableFont: Sendable {
 
     /// The font name.
     let name: String
@@ -342,11 +342,6 @@ struct DownloadableFont: Hashable, Sendable {
 
     let url: URL
     let hash: String
-
-    func hash(into hasher: inout Hasher) {
-        // Purposedly only hash the url, as two fonts with the same remote URL should only downloaded once
-        hasher.combine(url)
-    }
 }
 
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
