@@ -156,7 +156,8 @@ public extension PaywallComponent {
                    lhs.size == rhs.size &&
                    lhs.padding == rhs.padding &&
                    lhs.margin == rhs.margin &&
-                   lhs.overrides == rhs.overrides
+                   lhs.overrides == rhs.overrides &&
+                    lhs.fontWeightInt == rhs.fontWeightInt
         }
     }
 
@@ -173,6 +174,7 @@ public extension PaywallComponent {
         public let size: Size?
         public let padding: Padding?
         public let margin: Padding?
+        public let fontWeightInt: Int?
 
         public init(
             visible: Bool? = true,
@@ -185,7 +187,8 @@ public extension PaywallComponent {
             padding: Padding? = nil,
             margin: Padding? = nil,
             fontSize: CGFloat? = nil,
-            horizontalAlignment: HorizontalAlignment? = nil
+            horizontalAlignment: HorizontalAlignment? = nil,
+            fontWeightInt: Int? = nil
         ) {
             self.visible = visible
             self.text = text
@@ -198,6 +201,7 @@ public extension PaywallComponent {
             self.margin = margin
             self.fontSize = fontSize
             self.horizontalAlignment = horizontalAlignment
+            self.fontWeightInt = fontWeightInt
         }
 
         private enum CodingKeys: String, CodingKey {
@@ -212,6 +216,7 @@ public extension PaywallComponent {
             case size
             case padding
             case margin
+            case fontWeightInt
         }
 
         public func hash(into hasher: inout Hasher) {
@@ -226,6 +231,7 @@ public extension PaywallComponent {
             hasher.combine(size)
             hasher.combine(padding)
             hasher.combine(margin)
+            hasher.combine(fontWeightInt)
         }
 
         public static func == (lhs: PartialTextComponent, rhs: PartialTextComponent) -> Bool {
@@ -239,7 +245,8 @@ public extension PaywallComponent {
                    lhs.backgroundColor == rhs.backgroundColor &&
                    lhs.size == rhs.size &&
                    lhs.padding == rhs.padding &&
-                   lhs.margin == rhs.margin
+                   lhs.margin == rhs.margin &&
+                    lhs.fontWeightInt == rhs.fontWeightInt
         }
     }
 
