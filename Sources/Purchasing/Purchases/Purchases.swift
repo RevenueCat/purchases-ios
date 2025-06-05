@@ -2118,9 +2118,17 @@ private extension Purchases {
             if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *),
                let cache = cache, let offerings = offeringsResultData.value?.offerings {
                 self.operationDispatcher.dispatchOnWorkerThread {
-                    await cache.warmUpEligibilityCache(offerings: offerings)
-                    await cache.warmUpPaywallImagesCache(offerings: offerings)
-                    await cache.warmUpPaywallFontsCache(offerings: offerings)
+                    await withTaskGroup(of: Void.self) { group in
+                        group.addTask {
+                            await cache.warmUpEligibilityCache(offerings: offerings)
+                        }
+                        group.addTask {
+                            await cache.warmUpPaywallImagesCache(offerings: offerings)
+                        }
+						group.addTask {
+                            await cache.warmUpPaywallFontsCache(offerings: offerings)
+                        }
+                    }
                 }
             }
         }
