@@ -60,6 +60,10 @@ class TextComponentViewModel {
         let partial = localizedPartial?.partial
         let text = localizedPartial?.text ?? self.text
 
+        let componentTextFontWeight: PaywallComponent.FontWeight? = self.component.fontWeightInt.map {
+            Self.fontWeightFrom(integer: $0)
+        }
+
         let style = TextComponentStyle(
             uiConfigProvider: self.uiConfigProvider,
             visible: partial?.visible ?? self.component.visible ?? true,
@@ -71,7 +75,7 @@ class TextComponentViewModel {
                 localizations: self.uiConfigProvider.getLocalizations(for: self.localizationProvider.locale)
             ),
             fontName: partial?.fontName ?? self.component.fontName,
-            fontWeight: partial?.fontWeight ?? self.component.fontWeight,
+            fontWeight: partial?.fontWeight ?? componentTextFontWeight ?? self.component.fontWeight,
             color: partial?.color ?? self.component.color,
             backgroundColor: partial?.backgroundColor ?? self.component.backgroundColor,
             size: partial?.size ?? self.component.size,
@@ -82,6 +86,29 @@ class TextComponentViewModel {
         )
 
         apply(style)
+    }
+
+    private static func fontWeightFrom(integer weight: Int) -> PaywallComponent.FontWeight {
+        let clampedWeight = max(100, min(weight, 900))
+
+        switch clampedWeight {
+        case 100: return .thin
+        case 200: return .extraLight
+        case 300: return .light
+        case 400: return .regular
+        case 500: return .medium
+        case 600: return .semibold
+        case 700: return .bold
+        case 800: return .extraBold
+        case 900: return .black
+
+        default:
+            let availableWeights = [100, 200, 300, 400, 500, 600, 700, 800, 900]
+            let closest = availableWeights.reduce(availableWeights.first!) { currentClosest, candidate in
+                abs(candidate - weight) < abs(currentClosest - weight) ? candidate : currentClosest
+            }
+            return Self.fontWeightFrom(integer: closest)
+        }
     }
 
     private static func processText(_ text: String,

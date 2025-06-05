@@ -22,7 +22,7 @@ enum PaywallsStrings {
     case warming_up_fonts(fontsURLS: Set<URL>)
     case error_prefetching_image(URL, Error)
     case font_download_already_in_progress(name: String, fontURL: URL)
-    case font_downloaded_sucessfully(name: String, fontURL: URL)
+    case font_installed_sucessfully(name: String, fontURL: URL)
     case triggering_font_download(fontURL: URL)
     case error_creating_fonts_directory(Error)
     case error_installing_font(URL, Error)
@@ -75,8 +75,8 @@ extension PaywallsStrings: LogMessage {
         case let .font_download_already_in_progress(fontName, fontURL):
             return "Font '\(fontName)' download already in progress with url: \(fontURL.absoluteString)"
 
-        case let .font_downloaded_sucessfully(fontName, fontURL):
-            return "Successfully downloaded and cached font '\(fontName)' from url: \(fontURL.absoluteString)"
+        case let .font_installed_sucessfully(fontName, fontURL):
+            return "Successfully installed and cached font '\(fontName)' from url: \(fontURL.absoluteString)"
 
         case let .triggering_font_download(fontURL):
             return "Downloading remote font from url: \(fontURL.absoluteString)"

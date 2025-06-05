@@ -24,6 +24,7 @@ public extension PaywallComponent {
         public let size: Size
         public let padding: Padding
         public let margin: Padding
+        public let fontWeightInt: Int?
 
         public let overrides: ComponentOverrides<PartialTextComponent>?
 
@@ -39,7 +40,8 @@ public extension PaywallComponent {
             margin: Padding = .zero,
             fontSize: CGFloat = 16,
             horizontalAlignment: HorizontalAlignment = .center,
-            overrides: ComponentOverrides<PartialTextComponent>? = nil
+            overrides: ComponentOverrides<PartialTextComponent>? = nil,
+            fontWeightInt: Int? = nil
         ) {
             self.type = .text
             self.visible = visible
@@ -54,6 +56,7 @@ public extension PaywallComponent {
             self.fontSize = fontSize
             self.horizontalAlignment = horizontalAlignment
             self.overrides = overrides
+            self.fontWeightInt = fontWeightInt
         }
 
         private enum CodingKeys: String, CodingKey {
@@ -70,6 +73,7 @@ public extension PaywallComponent {
             case padding
             case margin
             case overrides
+            case fontWeightInt
         }
 
         required public init(from decoder: Decoder) throws {
@@ -90,6 +94,7 @@ public extension PaywallComponent {
                 ComponentOverrides<PartialTextComponent>.self,
                 forKey: .overrides
             )
+            self.fontWeightInt = try container.decodeIfPresent(Int.self, forKey: .fontWeightInt)
 
             if let rawFontSize = try? container.decode(CGFloat.self, forKey: .fontSize) {
                 self.fontSize = rawFontSize
@@ -117,7 +122,7 @@ public extension PaywallComponent {
             try container.encode(padding, forKey: .padding)
             try container.encode(margin, forKey: .margin)
             try container.encodeIfPresent(overrides, forKey: .overrides)
-
+            try container.encodeIfPresent(fontWeightInt, forKey: .fontWeightInt)
             try container.encode(fontSize, forKey: .fontSize)
         }
 
@@ -135,6 +140,7 @@ public extension PaywallComponent {
             hasher.combine(padding)
             hasher.combine(margin)
             hasher.combine(overrides)
+            hasher.combine(fontWeightInt)
         }
 
         public static func == (lhs: TextComponent, rhs: TextComponent) -> Bool {
