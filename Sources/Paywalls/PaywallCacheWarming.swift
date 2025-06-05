@@ -13,13 +13,6 @@
 //  Created by Nacho Soto on 8/7/23.
 
 import Foundation
-#if canImport(UIKit)
-import UIKit
-#endif
-
-#if canImport(AppKit)
-import AppKit
-#endif
 
 protocol PaywallCacheWarmingType: Sendable {
 
@@ -48,6 +41,8 @@ protocol PaywallImageFetcherType: Sendable {
 }
 
 protocol PaywallFontManagerType: Sendable {
+
+    func fontIsAlreadyInstalled(fontName: String, fontFamily: String?) -> Bool
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func installFont(_ font: DownloadableFont) async throws
@@ -139,20 +134,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
             return
         }
 
-        var availableFontNames: [String] = []
-        #if canImport(UIKit)
-        if let fontFamily = font.fontFamily {
-            availableFontNames = UIFont.fontNames(forFamilyName: fontFamily)
-        } else {
-            availableFontNames = UIFont.familyNames.flatMap {
-                UIFont.fontNames(forFamilyName: $0)
-            }
-        }
-        #elseif canImport(AppKit)
-        availableFontNames = NSFontManager.shared.availableFonts
-        #endif
-
-        if availableFontNames.contains(font.name) {
+        if self.fontsManager.fontIsAlreadyInstalled(fontName: font.name, fontFamily: font.fontFamily) {
             // Font already available, no need to download.
             return
         }

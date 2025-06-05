@@ -13,6 +13,13 @@
 
 import CoreText
 import Foundation
+#if canImport(UIKit)
+import UIKit
+#endif
+
+#if canImport(AppKit)
+import AppKit
+#endif
 
 protocol FontRegistrar {
     func registerFont(at url: URL) throws
@@ -93,6 +100,23 @@ actor DefaultPaywallFontsManager: PaywallFontManagerType {
             Logger.error(Strings.paywalls.error_creating_fonts_directory(error))
             self.fontsDirectory = nil
         }
+    }
+
+    nonisolated func fontIsAlreadyInstalled(fontName: String, fontFamily: String?) -> Bool {
+        var availableFontNames: [String] = []
+        #if canImport(UIKit)
+        if let fontFamily = fontFamily {
+            availableFontNames = UIFont.fontNames(forFamilyName: fontFamily)
+        } else {
+            availableFontNames = UIFont.familyNames.flatMap {
+                UIFont.fontNames(forFamilyName: $0)
+            }
+        }
+        #elseif canImport(AppKit)
+        availableFontNames = NSFontManager.shared.availableFonts
+        #endif
+
+        return availableFontNames.contains(fontName)
     }
 
     func installFont(_ font: DownloadableFont) async throws {
