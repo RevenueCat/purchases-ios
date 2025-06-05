@@ -175,6 +175,8 @@ final class PaywallCacheWarmingTests: TestCase {
         expect(self.imageFetcher.imageDownloadRequestCount.value) == 3
     }
 
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
+
     func testTriggerFontDownload_DeduplicatesConcurrentDownloads() async throws {
         let font = DownloadableFont(
             name: "MockFont",
@@ -212,6 +214,8 @@ final class PaywallCacheWarmingTests: TestCase {
             expectedCount: 1
         )
     }
+
+#endif
 
     func testDownloadFont_PerformsExpectedActions() async throws {
         let mockSession = MockSession()
