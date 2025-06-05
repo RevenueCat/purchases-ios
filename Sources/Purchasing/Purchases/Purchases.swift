@@ -1331,6 +1331,17 @@ public extension Purchases {
         return CustomerCenterConfigData(from: response)
     }
 
+#if !os(macOS) && !os(tvOS)
+
+    /// Used by `RevenueCatUI` to notify `RevenueCat` when a font in a paywall fails to load.
+    @_spi(Internal) func failedToLoadFontWithConfig(_ fontConfig: UIConfig.FontsConfig) {
+        self.operationDispatcher.dispatchOnWorkerThread {
+            await self.paywallCache?.triggerFontDownloadIfNeeded(fontsConfig: fontConfig)
+        }
+    }
+
+#endif
+
     /// Used by `RevenueCatUI` to download and cache paywall images.
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     static let paywallImageDownloadSession: URLSession = PaywallCacheWarming.downloadSession
@@ -2021,11 +2032,6 @@ private extension Purchases {
     }
 
     func updateCachesIfInForeground() {
-        guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
-            // No need to update caches when in UI preview mode
-            return
-        }
-
         self.systemInfo.isApplicationBackgrounded { isBackgrounded in
             if !isBackgrounded {
                 self.operationDispatcher.dispatchOnWorkerThread {
@@ -2037,7 +2043,8 @@ private extension Purchases {
 
     func updateAllCachesIfNeeded(isAppBackgrounded: Bool) {
         guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
-            // No need to update caches when in UI preview mode
+            // No need to update caches every time when in UI preview mode.
+            // Only needed at configuration time
             return
         }
 
@@ -2069,7 +2076,8 @@ private extension Purchases {
     ) {
         Logger.verbose(Strings.purchase.updating_all_caches)
 
-        if self.systemInfo.dangerousSettings.customEntitlementComputation {
+        if self.systemInfo.dangerousSettings.customEntitlementComputation ||
+            self.systemInfo.dangerousSettings.uiPreviewMode {
             if let completion = completion {
                 let error = NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError()
                 completion(.failure(error.asPublicError))
@@ -2107,8 +2115,17 @@ private extension Purchases {
             if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *),
                let cache = cache, let offerings = offeringsResultData.value?.offerings {
                 self.operationDispatcher.dispatchOnWorkerThread {
-                    await cache.warmUpEligibilityCache(offerings: offerings)
-                    await cache.warmUpPaywallImagesCache(offerings: offerings)
+                    await withTaskGroup(of: Void.self) { group in
+                        group.addTask {
+                            await cache.warmUpEligibilityCache(offerings: offerings)
+                        }
+                        group.addTask {
+                            await cache.warmUpPaywallImagesCache(offerings: offerings)
+                        }
+						group.addTask {
+                            await cache.warmUpPaywallFontsCache(offerings: offerings)
+                        }
+                    }
                 }
             }
         }

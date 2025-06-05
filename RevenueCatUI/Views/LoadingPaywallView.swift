@@ -171,6 +171,10 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
         // Ignoring events from loading paywall view
     }
 
+    func failedToLoadFontWithConfig(_ fontConfig: RevenueCat.UIConfig.FontsConfig) {
+        // Ignoring font loading errors from paywall view
+    }
+
 }
 
 // MARK: - Shimmer
