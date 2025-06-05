@@ -2048,8 +2048,7 @@ private extension Purchases {
             return
         }
 
-        if !self.systemInfo.dangerousSettings.customEntitlementComputation &&
-            !self.systemInfo.dangerousSettings.uiPreviewMode {
+        if !self.systemInfo.dangerousSettings.customEntitlementComputation {
             self.customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: self.appUserID,
                                                                       isAppBackgrounded: isAppBackgrounded,
                                                                       completion: nil)
@@ -2077,7 +2076,7 @@ private extension Purchases {
     ) {
         Logger.verbose(Strings.purchase.updating_all_caches)
 
-        if self.systemInfo.dangerousSettings.customEntitlementComputation {
+        if self.systemInfo.dangerousSettings.customEntitlementComputation || self.systemInfo.dangerousSettings.uiPreviewMode {
             if let completion = completion {
                 let error = NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError()
                 completion(.failure(error.asPublicError))
