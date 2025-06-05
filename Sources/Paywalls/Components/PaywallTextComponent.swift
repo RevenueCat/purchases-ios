@@ -28,6 +28,10 @@ public extension PaywallComponent {
 
         public let overrides: ComponentOverrides<PartialTextComponent>?
 
+        var fontWeightResolved: FontWeight {
+            fontWeightInt.map { PaywallComponent.fontWeightFrom(integer: $0) } ?? fontWeight
+        }
+
         public init(
             visible: Bool? = nil,
             text: String,
@@ -176,6 +180,9 @@ public extension PaywallComponent {
         public let margin: Padding?
         public let fontWeightInt: Int?
 
+        var fontWeightResolved: FontWeight? {
+            fontWeightInt.map { PaywallComponent.fontWeightFrom(integer: $0) } ?? fontWeight
+        }
         public init(
             visible: Bool? = true,
             text: LocalizationKey? = nil,
@@ -269,4 +276,31 @@ private extension PaywallComponent.FontSize {
         }
     }
 
+}
+
+private extension PaywallComponent {
+
+    static func fontWeightFrom(integer weight: Int) -> PaywallComponent.FontWeight {
+        let clampedWeight = max(100, min(weight, 900))
+
+        switch clampedWeight {
+        case 100: return .thin
+        case 200: return .extraLight
+        case 300: return .light
+        case 400: return .regular
+        case 500: return .medium
+        case 600: return .semibold
+        case 700: return .bold
+        case 800: return .extraBold
+        case 900: return .black
+
+        default:
+            let availableWeights = [100, 200, 300, 400, 500, 600, 700, 800, 900]
+            // swiftlint:disable:next force_unwrapping
+            let closest = availableWeights.reduce(availableWeights.first!) { currentClosest, candidate in
+                abs(candidate - weight) < abs(currentClosest - weight) ? candidate : currentClosest
+            }
+            return Self.fontWeightFrom(integer: closest)
+        }
+    }
 }
