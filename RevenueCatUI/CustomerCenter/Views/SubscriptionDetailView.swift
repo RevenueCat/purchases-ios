@@ -89,8 +89,11 @@ struct SubscriptionDetailView: View {
                 .manageSubscriptionsSheetViewModifier(isPresented: .init(
                     get: { customerInfoViewModel.manageSubscriptionsSheet },
                     set: { manage in DispatchQueue.main.async {
-                        customerInfoViewModel.manageSubscriptionsSheet = manage } }
-                )))
+                        customerInfoViewModel.manageSubscriptionsSheet = manage }
+                    }
+                ), subscriptionGroupID: viewModel.purchaseInformation?.subscriptionGroupID
+                )
+            )
             .onCustomerCenterPromotionalOfferSuccess {
                 viewModel.refreshPurchase()
             }
