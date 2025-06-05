@@ -12,7 +12,7 @@
 //  Created by Nacho Soto on 8/7/23.
 
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import XCTest
 
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
@@ -193,8 +193,10 @@ final class PaywallCacheWarmingTests: TestCase {
 
         // Launch two tasks installing the same font concurrently
         let fontsConfig = UIConfig.FontsConfig(
-            ios: .name(font.name),
-            web: UIConfig.WebFontInfo(value: font.url.absoluteString, hash: font.hash)
+            ios: UIConfig.FontInfo(
+                name: font.name,
+                webFontInfo: UIConfig.WebFontInfo(url: font.url.absoluteString, hash: font.hash)
+            )
         )
 
         async let firstCall: () = cache.triggerFontDownloadIfNeeded(fontsConfig: fontsConfig)
