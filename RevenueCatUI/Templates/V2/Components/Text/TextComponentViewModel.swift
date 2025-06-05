@@ -71,7 +71,7 @@ class TextComponentViewModel {
                 localizations: self.uiConfigProvider.getLocalizations(for: self.localizationProvider.locale)
             ),
             fontName: partial?.fontName ?? self.component.fontName,
-            fontWeight: partial?.fontWeight ?? self.component.fontWeight,
+            fontWeight: partial?.fontWeightResolved ?? self.component.fontWeightResolved,
             color: partial?.color ?? self.component.color,
             backgroundColor: partial?.backgroundColor ?? self.component.backgroundColor,
             size: partial?.size ?? self.component.size,
@@ -184,7 +184,7 @@ struct LocalizedTextPartial: PresentedPartial {
                 visible: otherPartial?.visible ?? basePartial?.visible,
                 text: otherPartial?.text ?? basePartial?.text,
                 fontName: otherPartial?.fontName ?? basePartial?.fontName,
-                fontWeight: otherPartial?.fontWeight ?? basePartial?.fontWeight,
+                fontWeight: otherPartial?.fontWeightResolved ?? basePartial?.fontWeightResolved,
                 color: otherPartial?.color ?? basePartial?.color,
                 backgroundColor: otherPartial?.backgroundColor ?? basePartial?.backgroundColor,
                 padding: otherPartial?.padding ?? basePartial?.padding,

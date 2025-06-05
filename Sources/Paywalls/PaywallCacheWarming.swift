@@ -21,7 +21,6 @@ import UIKit
 import AppKit
 #endif
 
-// swiftlint:disable file_length
 protocol PaywallCacheWarmingType: Sendable {
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
@@ -51,7 +50,7 @@ protocol PaywallImageFetcherType: Sendable {
 protocol PaywallFontManagerType: Sendable {
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    func installFont(from remoteURL: URL, hash: String) async throws
+    func installFont(_ font: DownloadableFont) async throws
 
 }
 
@@ -64,7 +63,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
     private var hasLoadedEligibility = false
     private var hasLoadedImages = false
-    private var ongoingFontDownloads: [DownloadableFont: Task<Void, Never>] = [:]
+    private var ongoingFontDownloads: [URL: Task<Void, Never>] = [:]
 
     init(
         introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType,
@@ -130,7 +129,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 #endif
 
     private func installFont(from font: DownloadableFont) async {
-        if let existingTask = ongoingFontDownloads[font] {
+        if let existingTask = ongoingFontDownloads[font.url] {
             // Already downloading, await the existing task.
             Logger.debug(Strings.paywalls.font_download_already_in_progress(
                 name: font.name,
@@ -160,16 +159,15 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
         let task = Task {
             do {
-                try await self.fontsManager.installFont(from: font.url, hash: font.hash)
-                Logger.debug(Strings.paywalls.font_downloaded_sucessfully(name: font.name, fontURL: font.url))
+                try await self.fontsManager.installFont(font)
             } catch {
                 Logger.error(Strings.paywalls.error_installing_font(font.url, error))
             }
         }
 
-        ongoingFontDownloads[font] = task
+        ongoingFontDownloads[font.url] = task
         await task.value
-        ongoingFontDownloads[font] = nil
+        ongoingFontDownloads[font.url] = nil
     }
 
 }
@@ -333,7 +331,8 @@ private extension PaywallData.Configuration.Images {
     }
 }
 
-struct DownloadableFont: Hashable, Sendable {
+/// Business logic object to easily manage the download of fonts.
+struct DownloadableFont: Sendable {
 
     /// The font name.
     let name: String
@@ -357,49 +356,21 @@ private extension UIConfig.AppConfig {
 
 private extension UIConfig.FontsConfig {
     var downloadableFont: DownloadableFont? {
-        if let iOSName = self.iOSName,
-           let (url, hash) = self.downloadURLAndHash {
+        if let webFontInfo = self.ios.webFontInfo {
+            guard let url = URL(string: webFontInfo.url) else {
+                Logger.error(PaywallsStrings.error_prefetching_font_invalid_url(name: self.ios.value,
+                                                                                invalidURLString: webFontInfo.url))
+                return nil
+            }
+
             return DownloadableFont(
-                name: iOSName,
-                fontFamily: self.family,
+                name: self.ios.value,
+                fontFamily: webFontInfo.family,
                 url: url,
-                hash: hash
+                hash: webFontInfo.hash
             )
         }
         return nil
-    }
-
-    private var iOSName: String? {
-        switch self.ios {
-        case .googleFonts:
-            return nil
-        case let .name(name):
-            return name
-        }
-    }
-
-    private var nameForError: String {
-        switch self.ios {
-        case .googleFonts(let name), .name(let name):
-            return name
-        }
-    }
-
-    var downloadURLAndHash: (URL, String)? {
-        guard let web = self.web else { return nil }
-
-        guard let url = URL(string: web.value) else {
-            Logger.error(PaywallsStrings.error_prefetching_font_invalid_url(name: self.nameForError,
-                                                                            invalidURLString: web.value))
-            return nil
-        }
-
-        guard let hash = web.hash else {
-            Logger.error(PaywallsStrings.error_prefetching_font_missing_hash(name: self.nameForError))
-            return nil
-        }
-
-        return (url, hash)
     }
 }
 

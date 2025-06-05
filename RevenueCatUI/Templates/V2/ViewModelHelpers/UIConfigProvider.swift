@@ -12,7 +12,7 @@
 //  Created by Josh Holtz on 1/5/25.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
@@ -53,9 +53,9 @@ struct UIConfigProvider {
         }
 
         let fontName: String
-        switch fontsConfig.ios {
-        case .name(let name):
-            fontName = name
+        switch fontsConfig.ios.type {
+        case .name:
+            fontName = fontsConfig.ios.value
         case .googleFonts:
             // Not supported on this platform (yet)
             Logger.warning("Google Fonts are not supported on this platform")
