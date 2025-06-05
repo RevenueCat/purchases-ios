@@ -28,7 +28,7 @@ public extension PaywallComponent {
 
         public let overrides: ComponentOverrides<PartialTextComponent>?
 
-        var fontWeightResolved: FontWeight {
+        public var fontWeightResolved: FontWeight {
             fontWeightInt.map { PaywallComponent.fontWeightFrom(integer: $0) } ?? fontWeight
         }
 
@@ -180,7 +180,7 @@ public extension PaywallComponent {
         public let margin: Padding?
         public let fontWeightInt: Int?
 
-        var fontWeightResolved: FontWeight? {
+        public var fontWeightResolved: FontWeight? {
             fontWeightInt.map { PaywallComponent.fontWeightFrom(integer: $0) } ?? fontWeight
         }
         public init(
