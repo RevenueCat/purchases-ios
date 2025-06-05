@@ -163,20 +163,10 @@ struct SubscriptionDetailView: View {
                     .padding(.horizontal)
                     .padding(.vertical, 32)
                 } else {
-                    let fallbackDescription = localization[.tryCheckRestore]
-
-                    CompatibilityContentUnavailableView(
-                        self.viewModel.screen.title,
-                        systemImage: "exclamationmark.triangle.fill",
-                        description: Text(self.viewModel.screen.subtitle ?? fallbackDescription)
-                    )
-                    .padding()
-                    .background(Color(colorScheme == .light
-                                      ? UIColor.systemBackground
-                                      : UIColor.secondarySystemBackground))
-                    .cornerRadius(10)
-                    .padding(.horizontal)
-                    .padding(.vertical, 32)
+                    NoSubscriptionsCardView(localization: localization)
+                        .cornerRadius(10)
+                        .padding(.horizontal)
+                        .padding(.vertical, 32)
                 }
 
                 ActiveSubscriptionButtonsView(viewModel: viewModel)
