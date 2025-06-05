@@ -2043,7 +2043,8 @@ private extension Purchases {
 
     func updateAllCachesIfNeeded(isAppBackgrounded: Bool) {
         guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
-            // No need to update caches when in UI preview mode
+            // No need to update caches every time when in UI preview mode.
+            // Only needed at configuration time
             return
         }
 
