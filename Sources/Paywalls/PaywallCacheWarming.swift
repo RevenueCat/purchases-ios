@@ -160,7 +160,9 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         let task = Task {
             do {
                 try await self.fontsManager.installFont(from: font.url, hash: font.hash)
-                Logger.debug(Strings.paywalls.font_installed_sucessfully(name: font.name, fontURL: font.url))
+                Logger.debug(Strings.paywalls.font_downloaded_sucessfully(name: font.name, fontURL: font.url))
+
+
             } catch {
                 Logger.error(Strings.paywalls.error_installing_font(font.url, error))
             }
