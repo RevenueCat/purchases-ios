@@ -446,8 +446,15 @@ final actor MockFontsManager: PaywallFontManagerType {
     private(set) var installCallCount = 0
     var installDelayInSeconds: TimeInterval = 0
 
-    init(installDelayInSeconds: TimeInterval) {
+    init(installDelayInSeconds: TimeInterval, fontIsAlreadyInstalled: Bool = false) {
         self.installDelayInSeconds = installDelayInSeconds
+        self.fontIsAlreadyInstalled = fontIsAlreadyInstalled
+    }
+
+    let fontIsAlreadyInstalled: Bool
+
+    nonisolated func fontIsAlreadyInstalled(fontName: String, fontFamily: String?) -> Bool {
+        return self.fontIsAlreadyInstalled
     }
 
     func installFont(_ font: RevenueCat.DownloadableFont) async throws {
