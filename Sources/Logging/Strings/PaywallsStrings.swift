@@ -22,7 +22,7 @@ enum PaywallsStrings {
     case warming_up_fonts(fontsURLS: Set<URL>)
     case error_prefetching_image(URL, Error)
     case font_download_already_in_progress(name: String, fontURL: URL)
-    case font_installed_sucessfully(name: String, fontURL: URL)
+    case font_downloaded_sucessfully(name: String, fontURL: URL)
     case triggering_font_download(fontURL: URL)
     case error_creating_fonts_directory(Error)
     case error_installing_font(URL, Error)
