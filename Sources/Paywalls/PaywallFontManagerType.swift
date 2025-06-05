@@ -55,7 +55,6 @@ struct DefaultFontFileManager: FontsFileManaging {
         guard let url = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first else {
             throw CocoaError(.fileNoSuchFile)
         }
-        print("cache directory: \(url)")
         return url
     }
 }
