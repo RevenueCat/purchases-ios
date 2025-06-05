@@ -173,6 +173,7 @@ struct FeedbackSurveyView_Previews: PreviewProvider {
             CompatibilityNavigationStack {
                 FeedbackSurveyView(
                     feedbackSurveyData: FeedbackSurveyData(
+                        productIdentifier: "",
                         configuration: CustomerCenterConfigData.HelpPath.FeedbackSurvey(
                             title: Self.title,
                             options: [

@@ -11,6 +11,7 @@
 //
 //  Created by Nacho Soto on 1/10/23.
 
+import Foundation
 @testable import RevenueCat
 
 final class MockFileReader: FileReader {

@@ -1440,6 +1440,8 @@ SWIFT_CLASS_NAMED("NonSubscriptionTransaction")
 @property (nonatomic, readonly) enum RCStore store;
 /// Paid price for the subscription
 @property (nonatomic, readonly, strong) RCProductPaidPrice * _Nullable price;
+/// Whether or not the purchase was made in sandbox mode.
+@property (nonatomic, readonly) BOOL isSandbox;
 @property (nonatomic, readonly, copy) NSString * _Nonnull description;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
@@ -3571,6 +3573,8 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStore, "Store", open) {
   RCBilling SWIFT_COMPILE_NAME("rcBilling") = 7,
 /// For entitlements granted via RevenueCat’s External Purchases API.
   RCExternal SWIFT_COMPILE_NAME("external") = 8,
+/// For entitlements granted via Paddle.
+  RCPaddle SWIFT_COMPILE_NAME("paddle") = 9,
 };
 
 

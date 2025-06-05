@@ -27,10 +27,6 @@ struct PurchaseInformation {
     /// If neither the title or the display name are available, the product identifier will be used as a fallback.
     let title: String
 
-    /// The duration of the product, if applicable.
-    /// - Note: See `StoreProduct.localizedDetails` for more details.
-    let durationTitle: String?
-
     /// Pricing details of the latest purchase.
     let pricePaid: PricePaid
 
@@ -81,6 +77,27 @@ struct PurchaseInformation {
     /// Note: `nil` for non-subscriptions, and for expiring subscriptions
      let renewalDate: Date?
 
+    /// The date an unsubscribe was detected.
+    ///
+    /// Note: `nil` for non-subscriptions, and for expiring subscriptions
+    let unsubscribeDetectedAt: Date?
+
+    /// Date when RevenueCat detected any billing issues with this subscription.
+    ///
+    /// Note: `nil` for non-subscriptions, and for expiring subscriptions
+    let billingIssuesDetectedAt: Date?
+
+    /// Date when any grace period for this subscription expires/expired.
+    /// nil if the customer has never been in a grace period.
+    ///
+    /// Note: `nil` for non-subscriptions, and for expiring subscriptions
+    let gracePeriodExpiresDate: Date?
+
+    /// Date when RevenueCat detected a refund of this subscription.
+    ///
+    /// Note: `nil` for non-subscriptions
+    let refundedAtDate: Date?
+
     /// Product specific management URL
     let managementURL: URL?
 
@@ -88,11 +105,18 @@ struct PurchaseInformation {
 
     let ownershipType: PurchaseOwnershipType?
 
+    let subscriptionGroupID: String?
+
+    /// The unique identifier for the transaction created by RevenueCat.
+    let transactionIdentifier: String?
+
+    /// The unique identifier for the transaction created by the Store.
+    let storeTransactionIdentifier: String?
+
     private let dateFormatter: DateFormatter
     private let numberFormatter: NumberFormatter
 
     init(title: String,
-         durationTitle: String?,
          pricePaid: PricePaid,
          renewalPrice: RenewalPrice?,
          productIdentifier: String,
@@ -109,10 +133,16 @@ struct PurchaseInformation {
          expirationDate: Date? = nil,
          renewalDate: Date? = nil,
          periodType: PeriodType = .normal,
-         ownershipType: PurchaseOwnershipType? = nil
+         ownershipType: PurchaseOwnershipType? = nil,
+         subscriptionGroupID: String? = nil,
+         unsubscribeDetectedAt: Date? = nil,
+         billingIssuesDetectedAt: Date? = nil,
+         gracePeriodExpiresDate: Date? = nil,
+         refundedAtDate: Date? = nil,
+         transactionIdentifier: String? = nil,
+         storeTransactionIdentifier: String? = nil
     ) {
         self.title = title
-        self.durationTitle = durationTitle
         self.pricePaid = pricePaid
         self.renewalPrice = renewalPrice
         self.productIdentifier = productIdentifier
@@ -130,8 +160,16 @@ struct PurchaseInformation {
         self.periodType = periodType
         self.numberFormatter = numberFormatter
         self.ownershipType = ownershipType
+        self.subscriptionGroupID = subscriptionGroupID
+        self.unsubscribeDetectedAt = unsubscribeDetectedAt
+        self.billingIssuesDetectedAt = billingIssuesDetectedAt
+        self.gracePeriodExpiresDate = gracePeriodExpiresDate
+        self.refundedAtDate = refundedAtDate
+        self.transactionIdentifier = transactionIdentifier
+        self.storeTransactionIdentifier = storeTransactionIdentifier
     }
 
+    // swiftlint:disable:next function_body_length
     init(entitlement: EntitlementInfo? = nil,
          subscribedProduct: StoreProduct? = nil,
          transaction: Transaction,
@@ -146,7 +184,7 @@ struct PurchaseInformation {
 
         // Title and duration from product if available
         self.title = subscribedProduct?.localizedTitle ?? transaction.productIdentifier
-        self.durationTitle = subscribedProduct?.subscriptionPeriod?.durationTitle
+        self.subscriptionGroupID = subscribedProduct?.subscriptionGroupIdentifier
 
         self.customerInfoRequestedDate = customerInfoRequestedDate
         self.managementURL = managementURL
@@ -166,6 +204,12 @@ struct PurchaseInformation {
             self.periodType = entitlement.periodType
             self.ownershipType = entitlement.ownershipType
             self.isActive = entitlement.isActive
+            self.unsubscribeDetectedAt = entitlement.unsubscribeDetectedAt
+            self.billingIssuesDetectedAt = entitlement.billingIssueDetectedAt
+            self.gracePeriodExpiresDate = nil
+            self.refundedAtDate = nil
+            self.transactionIdentifier = nil
+            self.storeTransactionIdentifier = nil
         } else {
             switch transaction.type {
             case let .subscription(isActive, willRenew, expiresDate, isTrial, ownershipType):
@@ -179,10 +223,10 @@ struct PurchaseInformation {
             case .nonSubscription:
                 self.isLifetime = true
                 self.isTrial = false
+                self.isActive = false
                 self.renewalDate = nil
                 self.expirationDate = nil
                 self.ownershipType = nil
-                self.isActive = false
             }
 
             self.latestPurchaseDate = transaction.purchaseDate
@@ -190,6 +234,12 @@ struct PurchaseInformation {
             self.store = transaction.store
             self.isCancelled = transaction.isCancelled
             self.periodType = transaction.periodType
+            self.unsubscribeDetectedAt = transaction.unsubscribeDetectedAt
+            self.billingIssuesDetectedAt = transaction.billingIssuesDetectedAt
+            self.gracePeriodExpiresDate = transaction.gracePeriodExpiresDate
+            self.refundedAtDate = transaction.refundedAtDate
+            self.transactionIdentifier = transaction.identifier
+            self.storeTransactionIdentifier = transaction.storeIdentifier
         }
 
         if self.expirationDate == nil {
@@ -231,7 +281,6 @@ extension PurchaseInformation: Hashable {
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(title)
-        hasher.combine(durationTitle)
         hasher.combine(pricePaid)
         hasher.combine(renewalPrice)
         hasher.combine(renewalDate)
@@ -244,6 +293,14 @@ extension PurchaseInformation: Hashable {
         hasher.combine(expirationDate)
         hasher.combine(renewalDate)
         hasher.combine(managementURL)
+        hasher.combine(unsubscribeDetectedAt)
+        hasher.combine(billingIssuesDetectedAt)
+        hasher.combine(gracePeriodExpiresDate)
+        hasher.combine(refundedAtDate)
+        hasher.combine(transactionIdentifier)
+        hasher.combine(storeTransactionIdentifier)
+        hasher.combine(ownershipType)
+        hasher.combine(periodType)
     }
  }
 
@@ -383,20 +440,6 @@ private extension EntitlementInfo {
 
     var isCancelled: Bool {
         unsubscribeDetectedAt != nil && !willRenew
-    }
-
-    func durationTitleBestEffort(productIdentifier: String) -> String? {
-        switch self.store {
-        case .promotional:
-            if productIdentifier.isPromotionalLifetime(store: store) {
-                return "Lifetime"
-            }
-        case .appStore, .macAppStore, .playStore, .stripe, .unknownStore, .amazon, .rcBilling, .external:
-            return nil
-        @unknown default:
-            return nil
-        }
-        return nil
     }
 }
 
