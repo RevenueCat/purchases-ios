@@ -2032,11 +2032,6 @@ private extension Purchases {
     }
 
     func updateCachesIfInForeground() {
-        guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
-            // No need to update caches when in UI preview mode
-            return
-        }
-
         self.systemInfo.isApplicationBackgrounded { isBackgrounded in
             if !isBackgrounded {
                 self.operationDispatcher.dispatchOnWorkerThread {
@@ -2052,7 +2047,8 @@ private extension Purchases {
             return
         }
 
-        if !self.systemInfo.dangerousSettings.customEntitlementComputation {
+        if !self.systemInfo.dangerousSettings.customEntitlementComputation &&
+            !self.systemInfo.dangerousSettings.uiPreviewMode {
             self.customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: self.appUserID,
                                                                       isAppBackgrounded: isAppBackgrounded,
                                                                       completion: nil)
