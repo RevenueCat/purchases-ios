@@ -1,10 +1,10 @@
 # RevenueCat Custom Entitlements Computation Mode 4.x to 5.x Migration Guide
 
-> Note: This migration guide is only applicable if you're using RevenueCat in Custom Entitlements Computation mode. If that's not the case, or you don't know what that is, please use the regular [4.x to 5.x Migration guide](v5_api_migration_guide).
+> Note: This migration guide is only applicable if you're using RevenueCat in Custom Entitlements Computation mode. If that's not the case, or you don't know what that is, please use the regular [4.x to 5.x Migration guide](V5_API_Migration_guide.md).
 
 ## StoreKit 2
 
-> Warning: When upgrading to v5, you **must** configure your [In-App Purchase Key](/service-credentials/itunesconnect-app-specific-shared-secret/in-app-purchase-key-configuration) in the RevenueCat dashboard. **Purchases will fail if the key is not configured**.
+> Warning: When upgrading to v5, you **must** configure your [In-App Purchase Key](https://www.revenuecat.com/docs/service-credentials/itunesconnect-app-specific-shared-secret/in-app-purchase-key-configuration) in the RevenueCat dashboard. **Purchases will fail if the key is not configured**.
 
 Version 5.0 of the RevenueCat SDK enables full StoreKit 2 flow on the SDK and the RevenueCat backend by default.
 

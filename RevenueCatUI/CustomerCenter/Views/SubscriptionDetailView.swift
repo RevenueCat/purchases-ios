@@ -34,6 +34,9 @@ struct SubscriptionDetailView: View {
     @Environment(\.navigationOptions)
     var navigationOptions
 
+    @Environment(\.openURL)
+    var openURL
+
     @Environment(\.supportInformation)
     private var support
 
@@ -187,7 +190,8 @@ struct SubscriptionDetailView: View {
                 if let url = support?.supportURL(
                     localization: localization,
                     purchasesProvider: viewModel.purchasesProvider
-                ), viewModel.shouldShowContactSupport,
+                ),
+                   viewModel.shouldShowContactSupport,
                    URLUtilities.canOpenURL(url) || RuntimeUtils.isSimulator {
                     contactSupportView(url)
                         .padding(.top)
@@ -213,7 +217,7 @@ struct SubscriptionDetailView: View {
             if RuntimeUtils.isSimulator {
                 self.showSimulatorAlert = true
             } else {
-                viewModel.inAppBrowserURL = IdentifiableURL(url: url)
+                openURL(url)
             }
         } label: {
             CompatibilityLabeledContent(localization[.contactSupport])
@@ -249,7 +253,8 @@ struct SubscriptionDetailView: View {
             CompatibilityNavigationStack {
                 SubscriptionDetailView(
                     customerInfoViewModel: CustomerCenterViewModel(
-                        purchaseInformation: .yearlyExpiring(),
+                        activeSubscriptionPurchases: [.yearlyExpiring()],
+                        activeNonSubscriptionPurchases: [],
                         configuration: .default
                     ),
                     viewModel: SubscriptionDetailViewModel(
@@ -270,7 +275,8 @@ struct SubscriptionDetailView: View {
             CompatibilityNavigationStack {
                 SubscriptionDetailView(
                     customerInfoViewModel: CustomerCenterViewModel(
-                        purchaseInformation: .free,
+                        activeSubscriptionPurchases: [.free],
+                        activeNonSubscriptionPurchases: [],
                         configuration: .default
                     ),
                     viewModel: SubscriptionDetailViewModel(
@@ -290,7 +296,8 @@ struct SubscriptionDetailView: View {
             CompatibilityNavigationStack {
                 SubscriptionDetailView(
                     customerInfoViewModel: CustomerCenterViewModel(
-                        purchaseInformation: .consumable,
+                        activeSubscriptionPurchases: [.consumable],
+                        activeNonSubscriptionPurchases: [],
                         configuration: .default
                     ),
                     viewModel: SubscriptionDetailViewModel(
@@ -310,7 +317,8 @@ struct SubscriptionDetailView: View {
             CompatibilityNavigationStack {
                 SubscriptionDetailView(
                     customerInfoViewModel: CustomerCenterViewModel(
-                        purchaseInformation: nil,
+                        activeSubscriptionPurchases: [],
+                        activeNonSubscriptionPurchases: [],
                         configuration: .default
                     ),
                     viewModel: SubscriptionDetailViewModel(
@@ -330,7 +338,8 @@ struct SubscriptionDetailView: View {
             CompatibilityNavigationStack {
                 SubscriptionDetailView(
                     customerInfoViewModel: CustomerCenterViewModel(
-                        purchaseInformation: .yearlyExpiring(store: .playStore),
+                        activeSubscriptionPurchases: [.yearlyExpiring(store: .playStore)],
+                        activeNonSubscriptionPurchases: [],
                         configuration: .default
                     ),
                     viewModel: SubscriptionDetailViewModel(

@@ -1,11 +1,15 @@
 ## RevenueCat SDK
+### ✨ New Features
+* Add Paddle Store enum case (#4981) via Will Taylor (@fire-at-will)
 ### Customer Center
 #### 🐞 Bugfixes
-* Pass productIdentifier for promo offer flow (#5179) via Facundo Menzella (@facumenzella)
-* return .free for CustomerCenterStoreKitUtilities if price.isZero (#5174) via Facundo Menzella (@facumenzella)
+* Use env openURL instead of SFSafariVC to open mailto (#5221) via Facundo Menzella (@facumenzella)
+### Paywall Components
+#### 🐞 Bugfixes
+* [Paywalls] do not ignore all safe areas when applying the zstack in bottom sheet (#5201) via Mark Villacampa (@MarkVillacampa)
 
 ### 🔄 Other Changes
-* Use scrollBounceBehaviorBasedOnSize for CustomerCenter scrollview (#5175) via Facundo Menzella (@facumenzella)
-* Refactor NoSubscriptionsView in CustomerCenter (#5173) via Facundo Menzella (@facumenzella)
-* Add consumable and non consumable for Customer Center test app (#5172) via Facundo Menzella (@facumenzella)
-* Add a push navigation to Customer Center maestro app (#5157) via Facundo Menzella (@facumenzella)
+* Fix StoreKitVersionTests on iOS 15 (#5226) via Will Taylor (@fire-at-will)
+* Add @_spi(Internal) to ClockTests (#5212) via Facundo Menzella (@facumenzella)
+* Use effectiveVersion.debugDescription in StoreKitVersionTests (#5213) via Facundo Menzella (@facumenzella)
+* add missing import Foundation in Tests (#5206) via Facundo Menzella (@facumenzella)

@@ -66,6 +66,12 @@ final class PurchaseInformationTests: TestCase {
         let displayName: String?
         let periodType: RevenueCat.PeriodType
         let purchaseDate: Date
+        var unsubscribeDetectedAt: Date?
+        var billingIssuesDetectedAt: Date?
+        var gracePeriodExpiresDate: Date?
+        var refundedAtDate: Date?
+        var storeIdentifier: String?
+        var identifier: String?
     }
 
     func testAppleEntitlementAndSubscribedProductWithoutRenewalInfo() throws {
@@ -808,6 +814,132 @@ final class PurchaseInformationTests: TestCase {
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
         expect(subscriptionInfo.store) == .rcBilling
+    }
+
+    func testInitWithPaddleEntitlement() throws {
+        let customerInfo = CustomerInfoFixtures.customerInfoWithPaddleSubscriptions
+        let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
+
+        let mockTransaction = MockTransaction(
+            productIdentifier: entitlement.productIdentifier,
+            store: .paddle,
+            type: .subscription(
+                isActive: true,
+                willRenew: true,
+                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
+                isTrial: false,
+                ownershipType: PurchaseOwnershipType.unknown
+            ),
+            isCancelled: false,
+            managementURL: URL(string: "https://www.revenuecat.com")!,
+            price: .init(currency: "USD", amount: 1.99),
+            displayName: "A product",
+            periodType: .normal,
+            purchaseDate: Date()
+        )
+
+        let subscriptionInfo = try XCTUnwrap(
+            PurchaseInformation(
+                entitlement: entitlement,
+                transaction: mockTransaction,
+                customerInfoRequestedDate: Date(),
+                dateFormatter: Self.mockDateFormatter,
+                numberFormatter: Self.mockNumberFormatter,
+                managementURL: URL(string: "https://www.revenuecat.com")!
+            )
+        )
+
+        expect(subscriptionInfo.title) == "com.revenuecat.product"
+        expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
+        expect(subscriptionInfo.renewalPrice).to(beNil())
+        expect(subscriptionInfo.isLifetime).to(beFalse())
+
+        expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
+        expect(subscriptionInfo.store) == .paddle
+    }
+
+    func testInitWithPaddleEntitlementNonRenewing() throws {
+        let customerInfo = CustomerInfoFixtures.customerInfoWithNonRenewingPaddleSubscriptions
+        let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
+
+        let mockTransaction = MockTransaction(
+            productIdentifier: entitlement.productIdentifier,
+            store: .paddle,
+            type: .subscription(
+                isActive: true,
+                willRenew: false,
+                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
+                isTrial: false,
+                ownershipType: PurchaseOwnershipType.unknown
+            ),
+            isCancelled: false,
+            managementURL: URL(string: "https://www.revenuecat.com")!,
+            price: .init(currency: "USD", amount: 1.99),
+            displayName: "A product",
+            periodType: .normal,
+            purchaseDate: Date()
+        )
+
+        let subscriptionInfo = try XCTUnwrap(
+            PurchaseInformation(
+                entitlement: entitlement,
+                transaction: mockTransaction,
+                customerInfoRequestedDate: Date(),
+                dateFormatter: Self.mockDateFormatter,
+                numberFormatter: Self.mockNumberFormatter,
+                managementURL: URL(string: "https://www.revenuecat.com")!
+            )
+        )
+
+        expect(subscriptionInfo.title) == "com.revenuecat.product"
+        expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
+        expect(subscriptionInfo.renewalPrice).to(beNil())
+        expect(subscriptionInfo.isLifetime).to(beFalse())
+
+        expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
+        expect(subscriptionInfo.store) == .paddle
+    }
+
+    func testInitWithPaddleEntitlementExpired() throws {
+        let customerInfo = CustomerInfoFixtures.customerInfoWithExpiredPaddleSubscriptions
+        let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
+
+        let mockTransaction = MockTransaction(
+            productIdentifier: entitlement.productIdentifier,
+            store: .paddle,
+            type: .subscription(
+                isActive: false,
+                willRenew: false,
+                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2000"),
+                isTrial: false,
+                ownershipType: PurchaseOwnershipType.unknown
+            ),
+            isCancelled: false,
+            managementURL: URL(string: "https://www.revenuecat.com")!,
+            price: .init(currency: "USD", amount: 1.99),
+            displayName: "A product",
+            periodType: .normal,
+            purchaseDate: Date()
+        )
+
+        let subscriptionInfo = try XCTUnwrap(
+            PurchaseInformation(
+                entitlement: entitlement,
+                transaction: mockTransaction,
+                customerInfoRequestedDate: Date(),
+                dateFormatter: Self.mockDateFormatter,
+                numberFormatter: Self.mockNumberFormatter,
+                managementURL: URL(string: "https://www.revenuecat.com")!
+            )
+        )
+
+        expect(subscriptionInfo.title) == "com.revenuecat.product"
+        expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
+        expect(subscriptionInfo.renewalPrice).to(beNil())
+        expect(subscriptionInfo.isLifetime).to(beFalse())
+
+        expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
+        expect(subscriptionInfo.store) == .paddle
     }
 
     func testLoadingOnlyWithOnlyPurchaseInformation() throws {

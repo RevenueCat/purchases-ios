@@ -25,9 +25,9 @@ import RevenueCat
 @available(watchOS, unavailable)
 @MainActor class CustomerCenterViewModel: ObservableObject {
 
-    private static let defaultAppIsLatestVersion = true
-
     typealias CurrentVersionFetcher = () -> String?
+
+    private static let defaultAppIsLatestVersion = true
 
     private lazy var currentAppVersion: String? = currentVersionFetcher()
 
@@ -39,14 +39,6 @@ import RevenueCat
 
     @Published
     var manageSubscriptionsSheet = false
-
-    private(set) var purchasesProvider: CustomerCenterPurchasesType
-    private(set) var customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
-
-    /// Whether or not the Customer Center should warn the customer that they're on an outdated version of the app.
-    var shouldShowAppUpdateWarnings: Bool {
-        return !appIsLatestVersion && (configuration?.support.shouldWarnCustomerToUpdate ?? true)
-    }
 
     @Published
     var state: CustomerCenterViewState {
@@ -74,8 +66,22 @@ import RevenueCat
         }
     }
 
+    @Published
+    var activeSubscriptionPurchases: [PurchaseInformation] = []
+
+    @Published
+    var activeNonSubscriptionPurchases: [PurchaseInformation] = []
+
+    private(set) var purchasesProvider: CustomerCenterPurchasesType
+    private(set) var customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
+
+    /// Whether or not the Customer Center should warn the customer that they're on an outdated version of the app.
+    var shouldShowAppUpdateWarnings: Bool {
+        return !appIsLatestVersion && (configuration?.support.shouldWarnCustomerToUpdate ?? true)
+    }
+
     var hasPurchases: Bool {
-        !activeSubscriptionPurchases.isEmpty || activePurchase != nil || !activeNonSubscriptionPurchases.isEmpty
+        !activeSubscriptionPurchases.isEmpty || !activeNonSubscriptionPurchases.isEmpty
     }
 
     var shouldShowList: Bool {
@@ -96,15 +102,6 @@ import RevenueCat
             maxNonSubscriptions: RelevantPurchasesListViewModel.maxNonSubscriptionsToShow
         ) ?? false
     }
-
-    @Published
-    var activeSubscriptionPurchases: [PurchaseInformation] = []
-
-    @Published
-    var activeNonSubscriptionPurchases: [PurchaseInformation] = []
-
-    @Published
-    var activePurchase: PurchaseInformation?
 
     private let currentVersionFetcher: CurrentVersionFetcher
 
@@ -147,11 +144,9 @@ import RevenueCat
     #if DEBUG
 
     convenience init(
-        purchaseInformation: PurchaseInformation?,
         configuration: CustomerCenterConfigData
     ) {
         self.init(actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil))
-        self.activePurchase = purchaseInformation
         self.configuration = configuration
         self.state = .success
     }
@@ -234,29 +229,9 @@ private extension CustomerCenterViewModel {
         if !hasActiveProducts {
             self.activeSubscriptionPurchases = []
             self.activeNonSubscriptionPurchases = []
-            self.activePurchase = nil
             self.state = .success
             return
         }
-
-        guard let activeTransaction = customerInfo.earliestExpiringTransaction() else {
-            self.activePurchase = nil
-            self.activeSubscriptionPurchases = []
-            self.activeNonSubscriptionPurchases = []
-
-            Logger.warning(Strings.could_not_find_subscription_information)
-            throw CustomerCenterError.couldNotFindSubscriptionInformation
-        }
-
-        // get the active non-subscription transaction
-        let entitlement = customerInfo.entitlements.all.values
-            .first(where: { $0.productIdentifier == activeTransaction.productIdentifier })
-
-        self.activePurchase = await createPurchaseInformation(
-            for: activeTransaction,
-            entitlement: entitlement,
-            customerInfo: customerInfo
-        )
 
         await loadActiveSubscriptions(customerInfo: customerInfo)
         await loadActiveNonSubscriptionPurchases(customerInfo: customerInfo)
