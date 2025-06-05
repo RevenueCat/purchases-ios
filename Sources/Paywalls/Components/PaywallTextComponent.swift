@@ -253,7 +253,7 @@ public extension PaywallComponent {
                    lhs.size == rhs.size &&
                    lhs.padding == rhs.padding &&
                    lhs.margin == rhs.margin &&
-                    lhs.fontWeightInt == rhs.fontWeightInt
+                   lhs.fontWeightInt == rhs.fontWeightInt
         }
     }
 
