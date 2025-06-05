@@ -134,7 +134,7 @@ struct PurchaseInformation {
          renewalDate: Date? = nil,
          periodType: PeriodType = .normal,
          ownershipType: PurchaseOwnershipType? = nil,
-         subscriptionGroupID: String? = nil
+         subscriptionGroupID: String? = nil,
          unsubscribeDetectedAt: Date? = nil,
          billingIssuesDetectedAt: Date? = nil,
          gracePeriodExpiresDate: Date? = nil,
