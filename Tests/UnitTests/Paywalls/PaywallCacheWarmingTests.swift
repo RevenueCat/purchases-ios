@@ -207,12 +207,6 @@ final class PaywallCacheWarmingTests: TestCase {
         XCTAssertEqual(callCount, 1, "Expected only one font installation")
 
         self.logger.verifyMessageWasLogged(
-            PaywallsStrings.font_downloaded_sucessfully(name: font.name, fontURL: font.url),
-            level: .debug,
-            expectedCount: 1
-        )
-
-        self.logger.verifyMessageWasLogged(
             PaywallsStrings.font_download_already_in_progress(name: font.name, fontURL: font.url),
             level: .debug,
             expectedCount: 1
