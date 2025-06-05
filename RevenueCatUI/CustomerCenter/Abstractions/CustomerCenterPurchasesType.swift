@@ -100,10 +100,14 @@ extension CustomerCenterPurchasesType {
     }
 
     @_spi(Internal) public func body(content: Content) -> some View {
+        #if swift(>=5.9)
         if #available(iOS 17.0, *), let subscriptionGroupID {
             content.manageSubscriptionsSheet(isPresented: isPresented, subscriptionGroupID: subscriptionGroupID)
         } else {
             content.manageSubscriptionsSheet(isPresented: isPresented)
         }
+        #else
+        content.manageSubscriptionsSheet(isPresented: isPresented)
+        #endif
     }
 }
