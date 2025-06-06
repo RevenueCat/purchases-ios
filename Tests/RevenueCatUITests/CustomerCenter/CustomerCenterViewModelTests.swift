@@ -44,8 +44,8 @@ final class CustomerCenterViewModelTests: TestCase {
 
         expect(viewModel.state) == .notLoaded
         expect(viewModel.hasPurchases).to(beFalse())
-        expect(viewModel.activeSubscriptionPurchases).to(beEmpty())
-        expect(viewModel.activeNonSubscriptionPurchases).to(beEmpty())
+        expect(viewModel.subscriptionsSection).to(beEmpty())
+        expect(viewModel.nonSubscriptionsSection).to(beEmpty())
         expect(viewModel.state) == .notLoaded
     }
 
@@ -61,7 +61,7 @@ final class CustomerCenterViewModelTests: TestCase {
             fail("Expected state to be .error")
         }
 
-        expect(viewModel.activeSubscriptionPurchases).to(beEmpty())
+        expect(viewModel.subscriptionsSection).to(beEmpty())
     }
 
     func testIsLoaded() {
@@ -110,11 +110,11 @@ final class CustomerCenterViewModelTests: TestCase {
 
         await viewModel.loadScreen()
 
-        expect(viewModel.activeSubscriptionPurchases.count) == 1
+        expect(viewModel.subscriptionsSection.count) == 1
 
-        let purchaseInformation = try XCTUnwrap(viewModel.activeSubscriptionPurchases.first)
+        let purchaseInformation = try XCTUnwrap(viewModel.subscriptionsSection.first)
         expect(purchaseInformation.productIdentifier) == product.productIdentifier
-        expect(viewModel.activeNonSubscriptionPurchases).to(beEmpty())
+        expect(viewModel.nonSubscriptionsSection).to(beEmpty())
 
         expect(purchaseInformation.store) == .appStore
         expect(viewModel.state) == .success
@@ -133,10 +133,10 @@ final class CustomerCenterViewModelTests: TestCase {
         await viewModel.loadScreen()
 
         expect(viewModel.hasPurchases).to(beTrue())
-        let purchaseInformation = try XCTUnwrap(viewModel.activeSubscriptionPurchases.first)
+        let purchaseInformation = try XCTUnwrap(viewModel.subscriptionsSection.first)
         expect(purchaseInformation.productIdentifier) == "com.revenuecat.product"
 
-        expect(viewModel.activeNonSubscriptionPurchases).to(beEmpty())
+        expect(viewModel.nonSubscriptionsSection).to(beEmpty())
         expect(purchaseInformation.store) == .playStore
         expect(viewModel.state) == .success
     }
@@ -154,8 +154,8 @@ final class CustomerCenterViewModelTests: TestCase {
         await viewModel.loadScreen()
 
         expect(viewModel.hasPurchases).to(beFalse())
-        expect(viewModel.activeSubscriptionPurchases).to(beEmpty())
-        expect(viewModel.activeNonSubscriptionPurchases).to(beEmpty())
+        expect(viewModel.subscriptionsSection).to(beEmpty())
+        expect(viewModel.nonSubscriptionsSection).to(beEmpty())
 
         expect(viewModel.state) == .success
     }
@@ -170,8 +170,8 @@ final class CustomerCenterViewModelTests: TestCase {
 
         await viewModel.loadScreen()
 
-        expect(viewModel.activeSubscriptionPurchases).to(beEmpty())
-        expect(viewModel.activeNonSubscriptionPurchases).to(beEmpty())
+        expect(viewModel.subscriptionsSection).to(beEmpty())
+        expect(viewModel.nonSubscriptionsSection).to(beEmpty())
 
         switch viewModel.state {
         case .error(let stateError):
@@ -247,9 +247,9 @@ final class CustomerCenterViewModelTests: TestCase {
 
             expect(viewModel.state) == .success
 
-            let purchaseInformation = try XCTUnwrap(viewModel.activeSubscriptionPurchases.first)
-            expect(viewModel.activeSubscriptionPurchases.count) == 1
-            expect(viewModel.activeSubscriptionPurchases.first?.productIdentifier)
+            let purchaseInformation = try XCTUnwrap(viewModel.subscriptionsSection.first)
+            expect(viewModel.subscriptionsSection.count) == 1
+            expect(viewModel.subscriptionsSection.first?.productIdentifier)
                 == purchaseInformation.productIdentifier
 
             expect(purchaseInformation.title) == "title"
@@ -302,9 +302,9 @@ final class CustomerCenterViewModelTests: TestCase {
         // Assert
         expect(viewModel.state) == .success
 
-        let purchaseInformation = try XCTUnwrap(viewModel.activeSubscriptionPurchases.first)
-        expect(viewModel.activeSubscriptionPurchases.count) == 1
-        expect(viewModel.activeSubscriptionPurchases.first?.productIdentifier) == purchaseInformation.productIdentifier
+        let purchaseInformation = try XCTUnwrap(viewModel.subscriptionsSection.first)
+        expect(viewModel.subscriptionsSection.count) == 1
+        expect(viewModel.subscriptionsSection.first?.productIdentifier) == purchaseInformation.productIdentifier
 
         expect(purchaseInformation.title) == "title"
         expect(purchaseInformation.pricePaid) == .nonFree(formatted(price: 3.99, currencyCode: currency))
@@ -381,9 +381,9 @@ final class CustomerCenterViewModelTests: TestCase {
             // Assert
             expect(viewModel.state) == .success
 
-            let purchaseInformation = try XCTUnwrap(viewModel.activeSubscriptionPurchases.first)
-            expect(viewModel.activeSubscriptionPurchases.count) == 2
-            expect(viewModel.activeSubscriptionPurchases.first?.productIdentifier)
+            let purchaseInformation = try XCTUnwrap(viewModel.subscriptionsSection.first)
+            expect(viewModel.subscriptionsSection.count) == 2
+            expect(viewModel.subscriptionsSection.first?.productIdentifier)
                 == purchaseInformation.productIdentifier
 
             // Should always show yearly subscription since it expires first
@@ -471,9 +471,9 @@ final class CustomerCenterViewModelTests: TestCase {
 
             expect(viewModel.state) == .success
 
-            let purchaseInformation = try XCTUnwrap(viewModel.activeSubscriptionPurchases.first)
-            expect(viewModel.activeSubscriptionPurchases.count) == 2
-            expect(viewModel.activeSubscriptionPurchases.first?.productIdentifier)
+            let purchaseInformation = try XCTUnwrap(viewModel.subscriptionsSection.first)
+            expect(viewModel.subscriptionsSection.count) == 2
+            expect(viewModel.subscriptionsSection.first?.productIdentifier)
                 == purchaseInformation.productIdentifier
 
             expect(purchaseInformation.title) == "monthly"
@@ -527,9 +527,9 @@ final class CustomerCenterViewModelTests: TestCase {
 
         expect(viewModel.state) == .success
 
-        expect(viewModel.activeSubscriptionPurchases.count) == 0
-        let purchaseInformation = try XCTUnwrap(viewModel.activeNonSubscriptionPurchases.first)
-        expect(viewModel.activeNonSubscriptionPurchases.count) == 1
+        expect(viewModel.subscriptionsSection.count) == 0
+        let purchaseInformation = try XCTUnwrap(viewModel.nonSubscriptionsSection.first)
+        expect(viewModel.nonSubscriptionsSection.count) == 1
 
         expect(purchaseInformation.title) == "lifetime"
         expect(purchaseInformation.pricePaid) == .unknown // no info about non-subscriptions in customer info
@@ -604,9 +604,9 @@ final class CustomerCenterViewModelTests: TestCase {
             // Assert
             expect(viewModel.state) == .success
 
-            let purchaseInformation = try XCTUnwrap(viewModel.activeSubscriptionPurchases.first)
-            expect(viewModel.activeSubscriptionPurchases.count) == 2
-            expect(viewModel.activeSubscriptionPurchases.first?.productIdentifier)
+            let purchaseInformation = try XCTUnwrap(viewModel.subscriptionsSection.first)
+            expect(viewModel.subscriptionsSection.count) == 2
+            expect(viewModel.subscriptionsSection.first?.productIdentifier)
                 == purchaseInformation.productIdentifier
 
             // Should always show yearly subscription since it expires first
@@ -687,10 +687,10 @@ final class CustomerCenterViewModelTests: TestCase {
             // Assert
             expect(viewModel.state) == .success
 
-            let purchaseInformation = try XCTUnwrap(viewModel.activeSubscriptionPurchases.last)
+            let purchaseInformation = try XCTUnwrap(viewModel.subscriptionsSection.last)
 
-            expect(viewModel.activeSubscriptionPurchases.count) == 2
-            expect(viewModel.activeSubscriptionPurchases.last?.productIdentifier)
+            expect(viewModel.subscriptionsSection.count) == 2
+            expect(viewModel.subscriptionsSection.last?.productIdentifier)
                 == purchaseInformation.productIdentifier
 
             // We expect to see the monthly one, because the yearly one is a Google subscription
@@ -739,9 +739,9 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(viewModel.state) == .success
         expect(viewModel.shouldShowList).to(beFalse())
 
-        let purchaseInformation = try XCTUnwrap(viewModel.activeSubscriptionPurchases.first)
-        expect(viewModel.activeSubscriptionPurchases.count) == 1
-        expect(viewModel.activeSubscriptionPurchases.first?.productIdentifier) == purchaseInformation.productIdentifier
+        let purchaseInformation = try XCTUnwrap(viewModel.subscriptionsSection.first)
+        expect(viewModel.subscriptionsSection.count) == 1
+        expect(viewModel.subscriptionsSection.first?.productIdentifier) == purchaseInformation.productIdentifier
 
         expect(purchaseInformation.title) == "com.revenuecat.product" // product identifier
         expect(purchaseInformation.store) == .appStore
@@ -758,7 +758,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         await viewModel.loadScreen()
 
-        expect(viewModel.activeSubscriptionPurchases.first).to(beNil())
+        expect(viewModel.subscriptionsSection.first).to(beNil())
         expect(viewModel.state) == .success
         expect(viewModel.shouldShowList).to(beFalse())
     }
@@ -770,8 +770,8 @@ final class CustomerCenterViewModelTests: TestCase {
 
         await viewModel.loadScreen()
 
-        expect(viewModel.activeSubscriptionPurchases.first).to(beNil())
-        expect(viewModel.activeSubscriptionPurchases).to(beEmpty())
+        expect(viewModel.subscriptionsSection.first).to(beNil())
+        expect(viewModel.subscriptionsSection).to(beEmpty())
         expect(viewModel.shouldShowList).to(beFalse())
         expect(viewModel.state) == .error(error)
     }
@@ -925,7 +925,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         await viewModel.loadScreen()
 
-        expect(viewModel.activeSubscriptionPurchases.first).toNot(beNil())
+        expect(viewModel.subscriptionsSection.first).toNot(beNil())
         expect(viewModel.shouldShowList).to(beFalse())
         expect(mockStoreKitUtilities.renewalPriceFromRenewalInfoCallCount).to(equal(1))
     }
@@ -947,8 +947,8 @@ final class CustomerCenterViewModelTests: TestCase {
         await viewModel.loadScreen()
 
         expect(viewModel.shouldShowList).to(beFalse())
-        expect(viewModel.activeSubscriptionPurchases.first?.pricePaid).to(equal(.nonFree(formatted(price: 4.99))))
-        expect(viewModel.activeSubscriptionPurchases.first?.renewalPrice).to(equal(.nonFree(formatted(price: 5.0))))
+        expect(viewModel.subscriptionsSection.first?.pricePaid).to(equal(.nonFree(formatted(price: 4.99))))
+        expect(viewModel.subscriptionsSection.first?.renewalPrice).to(equal(.nonFree(formatted(price: 5.0))))
         expect(mockStoreKitUtilities.renewalPriceFromRenewalInfoCallCount).to(equal(1))
     }
 
@@ -987,6 +987,7 @@ final class CustomerCenterViewModelTests: TestCase {
     }
 
     func testMultiplePurchases() {
+        // empty
         var viewModel = CustomerCenterViewModel(
             activeSubscriptionPurchases: [],
             activeNonSubscriptionPurchases: [],
@@ -995,6 +996,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         expect(viewModel.shouldShowList).to(beFalse())
 
+        // one active subscription
         viewModel = CustomerCenterViewModel(
             activeSubscriptionPurchases: [.yearlyExpiring()],
             activeNonSubscriptionPurchases: [],
@@ -1003,6 +1005,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         expect(viewModel.shouldShowList).to(beFalse())
 
+        // two active subscription
         viewModel = CustomerCenterViewModel(
             activeSubscriptionPurchases: [
                 .yearlyExpiring(productIdentifier: "1"),
@@ -1014,6 +1017,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         expect(viewModel.shouldShowList).to(beTrue())
 
+        // one active subscription and one purchase
         viewModel = CustomerCenterViewModel(
             activeSubscriptionPurchases: [
                 .yearlyExpiring(productIdentifier: "1")
@@ -1024,6 +1028,23 @@ final class CustomerCenterViewModelTests: TestCase {
             configuration: CustomerCenterConfigData.default
         )
 
+        expect(viewModel.shouldShowList).to(beTrue())
+
+        // one expired subscription
+        viewModel = CustomerCenterViewModel(
+            activeSubscriptionPurchases: [.expired],
+            activeNonSubscriptionPurchases: [],
+            configuration: CustomerCenterConfigData.default
+        )
+
+        expect(viewModel.shouldShowList).to(beFalse())
+
+        // one expired subscription and one purchase
+        viewModel = CustomerCenterViewModel(
+            activeSubscriptionPurchases: [.expired],
+            activeNonSubscriptionPurchases: [.consumable],
+            configuration: CustomerCenterConfigData.default
+        )
         expect(viewModel.shouldShowList).to(beTrue())
     }
 
