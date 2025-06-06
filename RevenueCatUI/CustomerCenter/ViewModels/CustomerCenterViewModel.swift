@@ -303,7 +303,6 @@ private extension CustomerCenterViewModel {
         }
 
         if activeSubscriptionPurchases.isEmpty {
-            // load most recent expired
             await loadMostRecentExpiredTransaction(customerInfo: customerInfo)
         } else {
             self.subscriptionsSection = activeSubscriptionPurchases
