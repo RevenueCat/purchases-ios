@@ -74,7 +74,6 @@ struct UIConfigProvider {
         guard let customFont = UIFont(name: fontName, size: fontSize) else {
             Logger.warning("Custom font '\(fontName)' could not be loaded. Falling back to system font.")
             self.failedToLoadFont?(fontsConfig)
-//            self.purchases.failedToLoadFontWithConfig(fontsConfig)
             return nil
         }
 
