@@ -1177,7 +1177,6 @@ jobs:
       name: macos-executor
     steps:
       - checkout
-      - trust-github-key
       - install-dependencies
       - update-spm-installation-commit
       - install-dependencies:
