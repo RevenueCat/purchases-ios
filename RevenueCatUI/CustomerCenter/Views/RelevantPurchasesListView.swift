@@ -281,24 +281,6 @@ struct RelevantPurchasesListView_Previews: PreviewProvider {
                 RelevantPurchasesListView(
                     customerInfoViewModel: CustomerCenterViewModel(
                         activeSubscriptionPurchases: [],
-                        activeNonSubscriptionPurchases: [],
-                        configuration: .default
-                    ),
-                    viewModel: RelevantPurchasesListViewModel(
-                        screen: warningOffMock.screens[.management]!,
-                        originalAppUserId: "originalAppUserId",
-                        shouldShowSeeAllPurchases: true
-                    )
-                )
-                .environment(\.supportInformation, warningOffMock.support)
-            }
-            .preferredColorScheme(colorScheme)
-            .previewDisplayName("Empty - \(colorScheme)")
-
-            CompatibilityNavigationStack {
-                RelevantPurchasesListView(
-                    customerInfoViewModel: CustomerCenterViewModel(
-                        activeSubscriptionPurchases: [],
                         activeNonSubscriptionPurchases: [.consumable, .lifetime],
                         configuration: .default
                     ),
@@ -368,25 +350,6 @@ struct RelevantPurchasesListView_Previews: PreviewProvider {
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Active subs & other - \(colorScheme)")
-
-            CompatibilityNavigationStack {
-                RelevantPurchasesListView(
-                    customerInfoViewModel: CustomerCenterViewModel(
-                        activeSubscriptionPurchases: [],
-                        activeNonSubscriptionPurchases: [],
-                        configuration: .default
-                    ),
-                    viewModel: RelevantPurchasesListViewModel(
-                        screen: warningOnMock.screens[.management]!,
-                        originalAppUserId: "originalAppUserId",
-                        activePurchases: [],
-                        shouldShowSeeAllPurchases: false
-                    )
-                )
-                .environment(\.supportInformation, warningOnMock.support)
-            }
-            .preferredColorScheme(colorScheme)
-            .previewDisplayName("Empty - \(colorScheme)")
         }
         .environment(\.localization, CustomerCenterConfigData.default.localization)
         .environment(\.appearance, CustomerCenterConfigData.default.appearance)
