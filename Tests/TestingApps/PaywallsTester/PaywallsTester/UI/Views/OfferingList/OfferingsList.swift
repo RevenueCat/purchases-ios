@@ -11,7 +11,7 @@ import SwiftUI
 
 struct OfferingsList: View {
 
-    @Binding 
+    @Binding
     private var introEligility: IntroEligibilityStatus
 
     var body: some View {
@@ -75,7 +75,7 @@ struct OfferingsList: View {
             #endif
         }
     }
-    
+
     @ViewBuilder
     private func offeringsList(with data: PaywallsData) -> some View {
         List {
