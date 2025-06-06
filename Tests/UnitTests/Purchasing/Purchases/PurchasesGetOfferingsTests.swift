@@ -160,7 +160,7 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
 
     // MARK: - UI preview mode
 
-    func testFirstInitializationInUIPreviewModeDoesNotGetOfferingsIfAppActive() {
+    func testFirstInitializationInUIPreviewModeDoesGetOfferingsIfAppActive() {
         self.systemInfo = MockSystemInfo(finishTransactions: true,
                                          uiPreviewMode: true,
                                          storeKitVersion: self.storeKitVersion,
@@ -168,7 +168,7 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
         self.systemInfo.stubbedIsApplicationBackgrounded = false
         self.setupPurchases()
 
-        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toAlways(equal(0))
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toEventually(equal(1))
     }
 
     func testFirstInitializationInUIPreviewModeDoesNotGetOfferingsIfAppBackgrounded() {
