@@ -249,7 +249,7 @@ private extension CustomerCenterViewModel {
         self.nonSubscriptionsSection = activeNonSubscriptionPurchases
     }
 
-    func loadFirstExpirenTransaction(customerInfo: CustomerInfo) async {
+    func loadMostRecentExpiredTransaction(customerInfo: CustomerInfo) async {
         let inactive = customerInfo.subscriptionsByProductIdentifier
             .filter { !$0.value.isActive }
             .sorted { sub1, sub2 in
@@ -303,8 +303,8 @@ private extension CustomerCenterViewModel {
         }
 
         if activeSubscriptionPurchases.isEmpty {
-            // load last expired
-            await loadFirstExpirenTransaction(customerInfo: customerInfo)
+            // load most recent expired
+            await loadMostRecentExpiredTransaction(customerInfo: customerInfo)
         } else {
             self.subscriptionsSection = activeSubscriptionPurchases
         }
