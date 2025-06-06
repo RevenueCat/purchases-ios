@@ -327,16 +327,6 @@ private extension CustomerCenterViewModel {
         let entitlement = customerInfo.entitlements.all.values
             .first(where: { $0.productIdentifier == transaction.productIdentifier })
 
-        return await createPurchaseInformation(
-            for: transaction,
-            entitlement: entitlement,
-            customerInfo: customerInfo
-        )
-    }
-
-    func createPurchaseInformation(for transaction: RevenueCatUI.Transaction,
-                                   entitlement: EntitlementInfo?,
-                                   customerInfo: CustomerInfo) async -> PurchaseInformation {
         if transaction.store == .appStore {
             if let product = await purchasesProvider.products([transaction.productIdentifier]).first {
                 return await PurchaseInformation.purchaseInformationUsingRenewalInfo(
