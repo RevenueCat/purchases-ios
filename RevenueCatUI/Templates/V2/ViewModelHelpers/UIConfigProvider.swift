@@ -19,12 +19,14 @@ import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct UIConfigProvider {
-    private let uiConfig: UIConfig
-    private let purchases: PaywallPurchasesType
+    typealias FailedToLoadFont = (_ fontConfig: UIConfig.FontsConfig) -> Void
 
-    init(uiConfig: UIConfig, purchases: PaywallPurchasesType = Purchases.shared) {
+    private let uiConfig: UIConfig
+    private let failedToLoadFont: FailedToLoadFont?
+
+    init(uiConfig: UIConfig, failedToLoadFont: FailedToLoadFont? = nil) {
         self.uiConfig = uiConfig
-        self.purchases = purchases
+        self.failedToLoadFont = failedToLoadFont
     }
 
     var variableConfig: UIConfig.VariableConfig {
@@ -71,7 +73,7 @@ struct UIConfigProvider {
 
         guard let customFont = UIFont(name: fontName, size: fontSize) else {
             Logger.warning("Custom font '\(fontName)' could not be loaded. Falling back to system font.")
-            self.purchases.failedToLoadFontWithConfig(fontsConfig)
+            self.failedToLoadFont?(fontsConfig)
             return nil
         }
 
