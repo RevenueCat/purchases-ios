@@ -395,7 +395,8 @@ struct FamilySharingTogglePreview_Previews: PreviewProvider {
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,
             onDismiss: { },
-            fallbackContent: .customView(AnyView(Text("Fallback paywall")))
+            fallbackContent: .customView(AnyView(Text("Fallback paywall"))),
+            failedToLoadFont: { _ in }
         )
         .previewRequiredEnvironmentProperties()
         .previewLayout(.fixed(width: 400, height: 800))
