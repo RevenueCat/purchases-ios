@@ -111,6 +111,7 @@ struct DismissCircleButton: View {
                 )
             }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("circled_close_button")
         .accessibilityLabel(Text(localization[.dismiss]))
     }
 

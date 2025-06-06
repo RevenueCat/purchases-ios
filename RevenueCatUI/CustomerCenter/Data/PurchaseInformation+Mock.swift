@@ -22,7 +22,6 @@ extension PurchaseInformation {
 
     static let monthlyRenewing = PurchaseInformation(
         title: "Basic",
-        durationTitle: "Monthly",
         pricePaid: .nonFree("$4.99"),
         renewalPrice: .nonFree("$4.99"),
         productIdentifier: "product_id5",
@@ -41,7 +40,6 @@ extension PurchaseInformation {
 
     static let lifetime = PurchaseInformation(
         title: "Lifetime",
-        durationTitle: "Lifetime",
         pricePaid: .nonFree("$4.99"),
         renewalPrice: .nonFree("$4.99"),
         productIdentifier: "product_id5",
@@ -60,7 +58,6 @@ extension PurchaseInformation {
 
     static let free = PurchaseInformation(
         title: "Basic",
-        durationTitle: "Monthly",
         pricePaid: .free,
         renewalPrice: .nonFree("$4.99"),
         productIdentifier: "product_id2",
@@ -88,7 +85,6 @@ extension PurchaseInformation {
     ) -> PurchaseInformation {
         PurchaseInformation(
             title: title,
-            durationTitle: "Yearly",
             pricePaid: .nonFree("$49.99"),
             renewalPrice: .nonFree("$49.99"),
             productIdentifier: productIdentifier,
@@ -108,7 +104,6 @@ extension PurchaseInformation {
 
     static let consumable: PurchaseInformation = PurchaseInformation(
         title: "Basic",
-        durationTitle: nil,
         pricePaid: .nonFree("$49.99"),
         renewalPrice: nil,
         productIdentifier: "product_id",
@@ -126,7 +121,6 @@ extension PurchaseInformation {
 
     static let subscriptionInformationMonthlyRenewing = PurchaseInformation(
         title: "Basic",
-        durationTitle: "Monthly",
         pricePaid: .nonFree("$4.99"),
         renewalPrice: .nonFree("$4.99"),
         productIdentifier: "product_id",
@@ -144,7 +138,6 @@ extension PurchaseInformation {
 
     static let subscriptionInformationFree = PurchaseInformation(
         title: "Basic",
-        durationTitle: "Monthly",
         pricePaid: .free,
         renewalPrice: .nonFree("$4.99"),
         productIdentifier: "product_id",

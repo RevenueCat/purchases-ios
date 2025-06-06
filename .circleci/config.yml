@@ -1,6 +1,7 @@
 orbs:
   macos: circleci/macos@2.5.1
   slack: circleci/slack@5.0.0
+  revenuecat: revenuecat/sdks-common-config@3.0.0
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -9,7 +10,14 @@ version: 2.1
 parameters:
   action:
     type: enum
-    enum: [default, bump, run-manual-tests, run-manual-docs-deploy]
+    enum:
+      [
+        default,
+        bump,
+        run-manual-tests,
+        run-manual-docs-deploy,
+        update_paywall_templates,
+      ]
     default: default
   generate_snapshots:
     default: false
@@ -18,7 +26,7 @@ parameters:
     default: false
     type: boolean
 
-# params used by the trigger CircleCI Pipeline GitHub Action: https://github.com/marketplace/actions/trigger-circleci-pipeline
+  # params used by the trigger CircleCI Pipeline GitHub Action: https://github.com/marketplace/actions/trigger-circleci-pipeline
   GHA_Event:
     type: string
     default: ""
@@ -37,7 +45,7 @@ executors:
     parameters:
       xcode_version:
         type: string
-        default: '16.0'
+        default: "16.0"
     macos:
       xcode: << parameters.xcode_version >>
     resource_class: macos.m1.medium.gen1
@@ -50,7 +58,7 @@ executors:
     parameters:
       xcode_version:
         type: string
-        default: '16.0'
+        default: "16.0"
     macos:
       xcode: << parameters.xcode_version >>
     resource_class: macos.m1.large.gen1
@@ -92,11 +100,23 @@ aliases:
         only: main
 
 commands:
+  checkout-submodule:
+    description: "Checks out a git submodule."
+    parameters:
+      path:
+        type: string
+        default: ""
+    steps:
+      - run:
+          name: Check out submodule << parameters.path >>
+          command: |
+            git submodule init << parameters.path >>
+            git submodule update << parameters.path >>
   slack-notify-on-fail:
     steps:
       - slack/notify:
           branch_pattern: main
-          channel: 'feed-circleci-ios-failures'
+          channel: "feed-circleci-ios-failures"
           event: fail
           template: basic_fail_1
   set-maximum-duration:
@@ -118,13 +138,13 @@ commands:
       runtime-name:
         type: string
     steps:
-       - install-brew-dependency:
-           dependency_name: 'xcodes'
-       - run:
-           name: Install simulator
-           command: | # Print all available simulators and install required one
-               xcodes runtimes
-               sudo xcodes runtimes install "<< parameters.runtime-name >>"
+      - install-brew-dependency:
+          dependency_name: "xcodes"
+      - run:
+          name: Install simulator
+          command: | # Print all available simulators and install required one
+            xcodes runtimes
+            sudo xcodes runtimes install "<< parameters.runtime-name >>"
 
   install-bundle-dependencies:
     parameters:
@@ -163,8 +183,7 @@ commands:
           paths:
             - vendor/bundle
             - ~/.rbenv/versions/3.2.0
-            
-            
+
   install-dependencies:
     parameters:
       directory:
@@ -411,14 +430,13 @@ commands:
           destination: scan-test-output
 
 jobs:
-
   validate-package-swift:
     parameters:
-       xcode_version:
-         type: string
+      xcode_version:
+        type: string
     executor:
       name: macos-executor
-      xcode_version: << parameters.xcode_version >> 
+      xcode_version: << parameters.xcode_version >>
     steps:
       - checkout
       - run:
@@ -428,7 +446,7 @@ jobs:
   spm-release-build-xcode-14:
     executor:
       name: macos-executor
-      xcode_version: '14.3.0'
+      xcode_version: "14.3.0"
 
     steps:
       - checkout
@@ -441,7 +459,7 @@ jobs:
   spm-release-build-xcode-16:
     executor:
       name: macos-executor
-      xcode_version: '16.0.0'
+      xcode_version: "16.0.0"
 
     steps:
       - checkout
@@ -454,7 +472,7 @@ jobs:
   spm-release-build-xcode-15:
     executor:
       name: macos-executor
-      xcode_version: '15.2.0'
+      xcode_version: "15.2.0"
 
     steps:
       - checkout
@@ -467,7 +485,7 @@ jobs:
   spm-xcode-14-1:
     executor:
       name: macos-executor
-      xcode_version: '14.1.0'
+      xcode_version: "14.1.0"
 
     steps:
       - checkout
@@ -531,7 +549,7 @@ jobs:
   spm-revenuecat-ui-ios-15:
     executor:
       name: macos-executor
-      xcode_version: '14.3.0'
+      xcode_version: "14.3.0"
 
     steps:
       - checkout
@@ -561,7 +579,7 @@ jobs:
   spm-revenuecat-ui-ios-16:
     executor:
       name: macos-executor
-      xcode_version: '15.4.0'
+      xcode_version: "15.4.0"
 
     steps:
       - checkout
@@ -595,7 +613,7 @@ jobs:
   run-revenuecat-ui-ios-17:
     executor:
       name: macos-executor
-      xcode_version: '15.2.0'
+      xcode_version: "15.2.0"
 
     steps:
       - checkout
@@ -628,7 +646,7 @@ jobs:
   run-revenuecat-ui-ios-18:
     executor:
       name: macos-executor
-      xcode_version: '16.0'
+      xcode_version: "16.0"
 
     steps:
       - checkout
@@ -710,7 +728,7 @@ jobs:
   run-test-ios-18:
     executor:
       name: macos-executor
-      xcode_version: '16.0'
+      xcode_version: "16.0"
 
     steps:
       - checkout
@@ -738,7 +756,7 @@ jobs:
   run-test-ios-17:
     executor:
       name: macos-executor
-      xcode_version: '15.2.0'
+      xcode_version: "15.2.0"
 
     steps:
       - checkout
@@ -766,7 +784,7 @@ jobs:
   run-test-ios-16:
     executor:
       name: macos-executor
-      xcode_version: '15.4.0'
+      xcode_version: "15.4.0"
 
     steps:
       - checkout
@@ -800,7 +818,7 @@ jobs:
     executor:
       name: macos-executor
       # Needs to be 15.2.0 because if not running on Swift 5.9, the tests fail
-      xcode_version: '15.2.0'
+      xcode_version: "15.2.0"
 
     steps:
       - checkout
@@ -880,9 +898,9 @@ jobs:
   run-test-ios-14:
     executor:
       name: macos-executor
-    # Pre-iOS 15 requires macOS 12 which requires Xcode 14.2
-    # See https://circleci.com/docs/using-macos/#supported-xcode-versions
-      xcode_version: '14.2.0'
+      # Pre-iOS 15 requires macOS 12 which requires Xcode 14.2
+      # See https://circleci.com/docs/using-macos/#supported-xcode-versions
+      xcode_version: "14.2.0"
 
     steps:
       - checkout
@@ -917,7 +935,7 @@ jobs:
   run-test-ios-13:
     executor:
       name: macos-executor
-      xcode_version: '14.2.0'
+      xcode_version: "14.2.0"
 
     steps:
       - checkout
@@ -1055,7 +1073,7 @@ jobs:
       name: macos-executor
       # needs to be xcode 14 since we couldn't get xcode 15 to get along with --additional-symbol-graph-dir
       # https://github.com/RevenueCat/purchases-ios/pull/1997
-      xcode_version: '14.3.0'
+      xcode_version: "14.3.0"
     steps:
       - setup-git-credentials
       - checkout
@@ -1072,7 +1090,7 @@ jobs:
       name: macos-executor
       # needs to be xcode 14 since we couldn't get xcode 15 to get along with --additional-symbol-graph-dir
       # https://github.com/RevenueCat/purchases-ios/pull/1997
-      xcode_version: '14.3.0'
+      xcode_version: "14.3.0"
     steps:
       - setup-git-credentials
       - checkout
@@ -1360,6 +1378,54 @@ jobs:
           name: Build Paywalls Tester
           command: bundle exec fastlane build_paywalls_tester_for_emerge
 
+  record-and-push-paywall-template-screenshots:
+    description: "Record new paywall template screenshots with Paparazzi and push them to the paywall-rendering-validation repository"
+    executor:
+      name: macos-executor
+      xcode_version: "16.0"
+
+    steps:
+      - run:
+          name: Temporarily failing job until we fix issues with SPM and submodules.
+          command: exit 1
+      # - checkout
+      # - checkout-submodule:
+      #     path: upstream/paywall-preview-resources
+      # - install-dependencies:
+      #     install_swiftlint: false
+      # - run:
+      #     name: Clone paywall-rendering-validation repository
+      #     command: git clone git@github.com:RevenueCat/paywall-rendering-validation.git ../paywall-rendering-validation
+      # - revenuecat/setup-git-credentials
+      # - run:
+      #     name: Set GitHub token environment variable
+      #     command: |
+      #       echo "export GITHUB_TOKEN=$GH_TOKEN_PAYWALL_RENDERING_VALIDATION_PR_RW" >> $BASH_ENV
+      #       source $BASH_ENV
+      # - run:
+      #     name: Run tests
+      #     command: bundle exec fastlane record_and_push_paywall_template_screenshots target_repository_path:../paywall-rendering-validation
+      #     no_output_timeout: 15m
+      #     environment:
+      #       SCAN_DEVICE: iPhone 16
+
+  update-paywall-preview-resources-submodule:
+    docker:
+      - image: cimg/ruby:3.2.0
+    steps:
+      - run:
+          name: Temporarily failing job until we fix issues with SPM and submodules.
+          command: exit 1
+      # - checkout
+      # - checkout-submodule:
+      #     path: upstream/paywall-preview-resources
+      # - revenuecat/install-gem-unix-dependencies:
+      #     cache-version: v1
+      # - revenuecat/setup-git-credentials
+      # - run:
+      #     name: Update paywall templates
+      #     command: bundle exec fastlane ios update_paywall_preview_resources_submodule
+
   deploy-to-spm:
     docker:
       - image: cimg/base:stable
@@ -1497,7 +1563,7 @@ workflows:
     jobs:
       - loadshedder-integration-tests-v3:
           context:
-            - slack-secrets       
+            - slack-secrets
       - integration-tests-all
 
   manual-trigger-bump:
@@ -1505,6 +1571,24 @@ workflows:
       equal: [bump, << pipeline.parameters.action >>]
     jobs:
       - release-train
+
+  record-and-push-paywall-template-screenshots:
+    when:
+      and:
+        - not:
+            equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+        - equal: ["main", << pipeline.git.branch >>]
+        - equal: ["default", << pipeline.parameters.action >>]
+    jobs:
+      - record-and-push-paywall-template-screenshots:
+          context:
+            - paywall-rendering-validation-pr-rw
+
+  update-paywall-templates:
+    when:
+      equal: [update_paywall_templates, << pipeline.parameters.action >>]
+    jobs:
+      - update-paywall-preview-resources-submodule
 
   manual-trigger-docs-deploy:
     when:
@@ -1525,7 +1609,8 @@ workflows:
             pattern: "^(release/.*|main)$"
             value: << pipeline.git.branch >>
         - equal: ["run-manual-tests", << pipeline.parameters.action >>]
-        - equal: ["run-from-github-comments", << pipeline.parameters.GHA_Meta >>]
+        - equal:
+            ["run-from-github-comments", << pipeline.parameters.GHA_Meta >>]
     jobs:
       - backend-integration-tests-SK1:
           context:
@@ -1615,4 +1700,3 @@ workflows:
           dry_run: true
           context:
             - slack-secrets-ios
-

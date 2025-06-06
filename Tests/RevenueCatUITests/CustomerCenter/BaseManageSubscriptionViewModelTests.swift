@@ -545,7 +545,6 @@ private extension PurchaseInformation {
     ) -> PurchaseInformation {
         PurchaseInformation(
             title: "",
-            durationTitle: "",
             pricePaid: .nonFree(""),
             renewalPrice: nil,
             productIdentifier: "",
@@ -572,7 +571,6 @@ private extension PurchaseInformation {
     ) -> PurchaseInformation {
         PurchaseInformation(
             title: "",
-            durationTitle: "",
             pricePaid: pricePaid,
             renewalPrice: renewalPrice,
             productIdentifier: "",

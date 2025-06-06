@@ -90,7 +90,8 @@ struct PurchaseHistoryView: View {
                 } label: {
                     PurchaseInformationCardView(
                         purchaseInformation: purchase,
-                        localization: localization
+                        localization: localization,
+                        accessibilityIdentifier: ""
                     )
                     .cornerRadius(10)
                     .padding(.horizontal)
@@ -109,7 +110,8 @@ struct PurchaseHistoryView: View {
                 } label: {
                     PurchaseInformationCardView(
                         purchaseInformation: purchase,
-                        localization: localization
+                        localization: localization,
+                        accessibilityIdentifier: ""
                     )
                     .cornerRadius(10)
                     .padding(.horizontal)
@@ -127,7 +129,8 @@ struct PurchaseHistoryView: View {
                 } label: {
                     PurchaseInformationCardView(
                         purchaseInformation: purchase,
-                        localization: localization
+                        localization: localization,
+                        accessibilityIdentifier: ""
                     )
                     .cornerRadius(10)
                     .padding(.horizontal)

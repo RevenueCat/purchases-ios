@@ -27,10 +27,6 @@ struct PurchaseInformation {
     /// If neither the title or the display name are available, the product identifier will be used as a fallback.
     let title: String
 
-    /// The duration of the product, if applicable.
-    /// - Note: See `StoreProduct.localizedDetails` for more details.
-    let durationTitle: String?
-
     /// Pricing details of the latest purchase.
     let pricePaid: PricePaid
 
@@ -97,6 +93,9 @@ struct PurchaseInformation {
     /// Note: `nil` for non-subscriptions, and for expiring subscriptions
     let gracePeriodExpiresDate: Date?
 
+    /// Date when RevenueCat detected a refund of this subscription.
+    ///
+    /// Note: `nil` for non-subscriptions
     let refundedAtDate: Date?
 
     /// Product specific management URL
@@ -105,6 +104,8 @@ struct PurchaseInformation {
     let periodType: PeriodType
 
     let ownershipType: PurchaseOwnershipType?
+
+    let subscriptionGroupID: String?
 
     /// The unique identifier for the transaction created by RevenueCat.
     let transactionIdentifier: String?
@@ -116,7 +117,6 @@ struct PurchaseInformation {
     private let numberFormatter: NumberFormatter
 
     init(title: String,
-         durationTitle: String?,
          pricePaid: PricePaid,
          renewalPrice: RenewalPrice?,
          productIdentifier: String,
@@ -134,6 +134,7 @@ struct PurchaseInformation {
          renewalDate: Date? = nil,
          periodType: PeriodType = .normal,
          ownershipType: PurchaseOwnershipType? = nil,
+         subscriptionGroupID: String? = nil,
          unsubscribeDetectedAt: Date? = nil,
          billingIssuesDetectedAt: Date? = nil,
          gracePeriodExpiresDate: Date? = nil,
@@ -142,7 +143,6 @@ struct PurchaseInformation {
          storeTransactionIdentifier: String? = nil
     ) {
         self.title = title
-        self.durationTitle = durationTitle
         self.pricePaid = pricePaid
         self.renewalPrice = renewalPrice
         self.productIdentifier = productIdentifier
@@ -160,6 +160,7 @@ struct PurchaseInformation {
         self.periodType = periodType
         self.numberFormatter = numberFormatter
         self.ownershipType = ownershipType
+        self.subscriptionGroupID = subscriptionGroupID
         self.unsubscribeDetectedAt = unsubscribeDetectedAt
         self.billingIssuesDetectedAt = billingIssuesDetectedAt
         self.gracePeriodExpiresDate = gracePeriodExpiresDate
@@ -183,7 +184,7 @@ struct PurchaseInformation {
 
         // Title and duration from product if available
         self.title = subscribedProduct?.localizedTitle ?? transaction.productIdentifier
-        self.durationTitle = subscribedProduct?.subscriptionPeriod?.durationTitle
+        self.subscriptionGroupID = subscribedProduct?.subscriptionGroupIdentifier
 
         self.customerInfoRequestedDate = customerInfoRequestedDate
         self.managementURL = managementURL
@@ -222,10 +223,10 @@ struct PurchaseInformation {
             case .nonSubscription:
                 self.isLifetime = true
                 self.isTrial = false
+                self.isActive = false
                 self.renewalDate = nil
                 self.expirationDate = nil
                 self.ownershipType = nil
-                self.isActive = false
             }
 
             self.latestPurchaseDate = transaction.purchaseDate
@@ -280,7 +281,6 @@ extension PurchaseInformation: Hashable {
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(title)
-        hasher.combine(durationTitle)
         hasher.combine(pricePaid)
         hasher.combine(renewalPrice)
         hasher.combine(renewalDate)
@@ -440,20 +440,6 @@ private extension EntitlementInfo {
 
     var isCancelled: Bool {
         unsubscribeDetectedAt != nil && !willRenew
-    }
-
-    func durationTitleBestEffort(productIdentifier: String) -> String? {
-        switch self.store {
-        case .promotional:
-            if productIdentifier.isPromotionalLifetime(store: store) {
-                return "Lifetime"
-            }
-        case .appStore, .macAppStore, .playStore, .stripe, .unknownStore, .amazon, .rcBilling, .external:
-            return nil
-        @unknown default:
-            return nil
-        }
-        return nil
     }
 }
 

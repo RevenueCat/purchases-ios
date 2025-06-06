@@ -171,7 +171,7 @@ private enum MultiTierPreview {
                         // Tab 1
                         .tabControlButton(
                             .init(
-                                tabIndex: 0,
+                                tabId: "1",
                                 stack: .init(
                                     components: [
                                         .text(.init(
@@ -203,7 +203,7 @@ private enum MultiTierPreview {
                         // Tab 2
                         .tabControlButton(
                             .init(
-                                tabIndex: 1,
+                                tabId: "2",
                                 stack: .init(
                                     components: [
                                         .text(.init(
@@ -242,7 +242,7 @@ private enum MultiTierPreview {
             ),
             tabs: [
                 // Tab 1
-                .init(stack: .init(
+                .init(id: "1", stack: .init(
                     components: [
                         .tabControl(.init()),
                         .stack(makePackagesStack(
@@ -255,7 +255,7 @@ private enum MultiTierPreview {
                     ]
                 )),
                 // Tab 2
-                .init(stack: .init(
+                .init(id: "2", stack: .init(
                     components: [
                         .tabControl(.init()),
                         .stack(makePackagesStack(
@@ -402,7 +402,8 @@ struct MultiTierPreview_Previews: PreviewProvider {
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,
             onDismiss: { },
-            fallbackContent: .customView(AnyView(Text("Fallback paywall")))
+            fallbackContent: .customView(AnyView(Text("Fallback paywall"))),
+            failedToLoadFont: { _ in }
         )
         .previewRequiredEnvironmentProperties()
         .previewLayout(.fixed(width: 400, height: 800))

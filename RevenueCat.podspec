@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = "RevenueCat"
-  s.version          = "5.25.2"
+  s.version          = "5.27.1"
   s.summary          = "Subscription and in-app-purchase backend service."
 
   s.description      = <<-DESC
