@@ -147,22 +147,22 @@ struct RelevantPurchasesListView: View {
                         viewModel.purchaseInformation = $0
                     }
                     .tint(colorScheme == .dark ? .white : .black)
-
-                    ScrollViewSection(title: localization[.actionsSectionTitle]) {
-                        ActiveSubscriptionButtonsView(viewModel: viewModel)
-                            .padding(.horizontal)
-                            .padding(.bottom, 16)
-                    }
-
-                    if viewModel.shouldShowSeeAllPurchases {
-                        seeAllSubscriptionsButton
-                            .padding(.bottom, 32)
-                    } else {
-                        Spacer().frame(height: 16)
-                    }
-
-                    accountDetailsView
                 }
+
+                ScrollViewSection(title: localization[.actionsSectionTitle]) {
+                    ActiveSubscriptionButtonsView(viewModel: viewModel)
+                        .padding(.horizontal)
+                        .padding(.bottom, 16)
+                }
+
+                if viewModel.shouldShowSeeAllPurchases {
+                    seeAllSubscriptionsButton
+                        .padding(.bottom, 32)
+                } else {
+                    Spacer().frame(height: 16)
+                }
+
+                accountDetailsView
             }
             .padding(.top, 16)
         }
