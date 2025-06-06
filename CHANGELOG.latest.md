@@ -1,15 +1,24 @@
 ## RevenueCat SDK
-### ✨ New Features
-* Add Paddle Store enum case (#4981) via Will Taylor (@fire-at-will)
 ### Customer Center
+#### ✨ New Features
+* Introduce NoSubscriptions card view for empty states (#5178) via Facundo Menzella (@facumenzella)
+* Use groupID to present manageSubscriptions sheet (#5182) via Facundo Menzella (@facumenzella)
 #### 🐞 Bugfixes
-* Use env openURL instead of SFSafariVC to open mailto (#5221) via Facundo Menzella (@facumenzella)
-### Paywall Components
+* Reset alertType state for RestorePurchasesAlertViewModel before dismissing (#5224) via Facundo Menzella (@facumenzella)
+
+## RevenueCatUI SDK
+### Paywallv2
 #### 🐞 Bugfixes
-* [Paywalls] do not ignore all safe areas when applying the zstack in bottom sheet (#5201) via Mark Villacampa (@MarkVillacampa)
+* Fixed overflowing images (#5162) via Josh Holtz (@joshdholtz)
 
 ### 🔄 Other Changes
-* Fix StoreKitVersionTests on iOS 15 (#5226) via Will Taylor (@fire-at-will)
-* Add @_spi(Internal) to ClockTests (#5212) via Facundo Menzella (@facumenzella)
-* Use effectiveVersion.debugDescription in StoreKitVersionTests (#5213) via Facundo Menzella (@facumenzella)
-* add missing import Foundation in Tests (#5206) via Facundo Menzella (@facumenzella)
+* Remove dependency of Purchases.shared from UIConfigProvider (#5242) via Josh Holtz (@joshdholtz)
+* Update offerings cache in UI preview mode (#5241) via Antonio Pallares (@ajpallares)
+* Introduce PaywallFontManagerType to handle custom fonts in the paywall editor (#5208) via Facundo Menzella (@facumenzella)
+* Warm up caches in parallel (#5240) via Antonio Pallares (@ajpallares)
+* SampleCat: A new iOS Sample app that guides users through any configuration issues (#5200) via Pol Piella Abadia (@polpielladev)
+* [Paywalls] Render top level tabs component stack properties (#5210) via Mark Villacampa (@MarkVillacampa)
+* [Paywalls] Use tab id instead of tab index to select tab (#5209) via Mark Villacampa (@MarkVillacampa)
+* Paywall screenshots for cross platform validation (#5205) via Josh Holtz (@joshdholtz)
+* Fix broken URLs in 4 -> 5 Migration Guides (#5229) via Will Taylor (@fire-at-will)
+* Adds `showStoreMessagesAutomatically` parameter to CEC mode (#5230) via JayShortway (@JayShortway)
