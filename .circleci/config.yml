@@ -195,6 +195,9 @@ commands:
       install_mint:
         type: boolean
         default: false
+      install_mint_0_17_5:
+        type: boolean
+        default: false
       install_swiftlint:
         type: boolean
         default: true
@@ -214,6 +217,11 @@ commands:
           steps:
             - install-brew-dependency:
                 dependency_name: "mint"
+      - when:
+          condition: << parameters.install_mint_0_17_5 >>
+          steps:
+            - install-brew-dependency:
+                dependency_name: "mint@0.17.5"
       - when:
           condition: << parameters.install_swiftlint >>
           steps:
@@ -906,7 +914,8 @@ jobs:
       - checkout
       - install-dependencies:
           install_xcbeautify: false
-          install_mint: true
+          # Mint 0.17.5 is required here as newer versions of Mint don't support macOS 12.
+          install_mint_0_17_5: true
           install_swiftlint: false
       - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
