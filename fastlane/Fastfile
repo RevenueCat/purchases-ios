@@ -38,6 +38,7 @@ files_to_update_on_latest_stable_releases = {
 
 repo_name = 'purchases-ios'
 snapshots_repo_name = 'purchases-ios-snapshots'
+paywall_preview_resources_repo_name = 'paywall-preview-resources'
 changelog_latest_path = './CHANGELOG.latest.md'
 changelog_path = './CHANGELOG.md'
 
@@ -130,28 +131,25 @@ platform :ios do
     end
   end
 
-  desc "Updates paywall-preview-resources submodule and creates/updates PR"
-  lane :update_paywall_preview_resources_submodule do |options|
-    branch_name = "pw2-update-paywall-preview-resources-submodule"
-    submodule_dir = "../upstream/paywall-preview-resources"
-
+  desc "Updates paywall-preview-resources-commit to point to latest commit on main and creates/updates PR"
+  lane :update_paywall_preview_resources_commit do |options|
+    branch_name = "pw2-update-paywall-preview-resources-commit"
+    
     # Ensure we're starting from an up-to-date main.
     sh("git", "fetch", "origin")
 
     create_or_checkout_branch(branch_name: branch_name)
 
-    Dir.chdir(submodule_dir) do
-      sh("git", "fetch")
-      sh("git", "checkout", "main")
-      sh("git", "pull")
-    end
+    new_hash = sh("git", "ls-remote", "git@github.com:RevenueCat/#{paywall_preview_resources_repo_name}.git", "refs/heads/main").split("\t").first
+    UI.important("Updating paywall preview resources commit to #{new_hash}")
+    update_paywall_preview_resources_commit(new_hash)
 
     commit_push_and_create_pr_if_necessary(
       repo: repo_name,
       branch_name: branch_name,
-      commit_message: "[Automated] Updates paywall-preview-resources submodule.",
-      title: "[AUTOMATIC][Paywalls V2] Updates paywall-preview-resources submodule",
-      body: "This is an automatic update of the paywall-preview-resources submodule.",
+      commit_message: "[Automated] Updates commit hash of paywall-preview-resources.",
+      title: "[AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources",
+      body: "This is an automatic update of the commit hash of paywall-preview-resources.",
       labels: ["pr:other"],
       team_reviewers: ["coresdk", "monetization"]
     )
@@ -1152,6 +1150,23 @@ platform :ios do
     end
   end
 
+  desc "Clones or updates paywall-preview-resources repo"
+  lane :fetch_paywall_preview_resources do
+    Dir.chdir("../Tests") do
+      if !File.directory?(paywall_preview_resources_repo_name)
+        UI.important("Cloning paywall-preview-resources repo")
+        sh "git", "clone", "git@github.com:RevenueCat/#{paywall_preview_resources_repo_name}.git"
+      end
+
+      commit = current_paywall_preview_resources_commit
+      UI.message("Updating paywall-preview-resources repo to #{commit}")
+      Dir.chdir(paywall_preview_resources_repo_name) do
+        sh "git", "fetch", "origin"
+        sh "git", "checkout", commit
+      end
+    end
+  end
+
   desc "Updates purchases-ios-snapshots-commit to point to latest commit on main"
   lane :update_snapshots_repo do
     new_hash = ""
@@ -1343,7 +1358,7 @@ end
 # Snapshots
 
 def snapshots_commit_file
-  "#{File.dirname(__FILE__)}/../Tests/purchases-ios-snapshots-commit"
+  "#{File.dirname(__FILE__)}/../Tests/#{snapshots_repo_name}-commit"
 end
 
 def current_snapshots_commit
@@ -1351,6 +1366,16 @@ def current_snapshots_commit
 end
 def update_snapshots_commit(hash)
   File.write(snapshots_commit_file, hash)
+end
+
+def paywall_preview_resources_commit_file
+  "#{File.dirname(__FILE__)}/../Tests/#{paywall_preview_resources_repo_name}-commit"
+end
+def current_paywall_preview_resources_commit
+  File.read(paywall_preview_resources_commit_file).strip
+end
+def update_paywall_preview_resources_commit(hash)
+  File.write(paywall_preview_resources_commit_file, hash)
 end
 
 # Slack

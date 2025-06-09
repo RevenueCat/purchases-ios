@@ -100,18 +100,6 @@ aliases:
         only: main
 
 commands:
-  checkout-submodule:
-    description: "Checks out a git submodule."
-    parameters:
-      path:
-        type: string
-        default: ""
-    steps:
-      - run:
-          name: Check out submodule << parameters.path >>
-          command: |
-            git submodule init << parameters.path >>
-            git submodule update << parameters.path >>
   slack-notify-on-fail:
     steps:
       - slack/notify:
@@ -1385,46 +1373,39 @@ jobs:
       xcode_version: "16.0"
 
     steps:
+      - checkout
       - run:
-          name: Temporarily failing job until we fix issues with SPM and submodules.
-          command: exit 1
-      # - checkout
-      # - checkout-submodule:
-      #     path: upstream/paywall-preview-resources
-      # - install-dependencies:
-      #     install_swiftlint: false
-      # - run:
-      #     name: Clone paywall-rendering-validation repository
-      #     command: git clone git@github.com:RevenueCat/paywall-rendering-validation.git ../paywall-rendering-validation
-      # - revenuecat/setup-git-credentials
-      # - run:
-      #     name: Set GitHub token environment variable
-      #     command: |
-      #       echo "export GITHUB_TOKEN=$GH_TOKEN_PAYWALL_RENDERING_VALIDATION_PR_RW" >> $BASH_ENV
-      #       source $BASH_ENV
-      # - run:
-      #     name: Run tests
-      #     command: bundle exec fastlane record_and_push_paywall_template_screenshots target_repository_path:../paywall-rendering-validation
-      #     no_output_timeout: 15m
-      #     environment:
-      #       SCAN_DEVICE: iPhone 16
+          name: Fetch paywall-preview-resources
+          command: bundle exec fastlane ios fetch_paywall_preview_resources
+      - install-dependencies:
+          install_swiftlint: false
+      - run:
+          name: Clone paywall-rendering-validation repository
+          command: git clone git@github.com:RevenueCat/paywall-rendering-validation.git ../Tests/paywall-rendering-validation
+      - revenuecat/setup-git-credentials
+      - run:
+          name: Set GitHub token environment variable
+          command: |
+            echo "export GITHUB_TOKEN=$GH_TOKEN_PAYWALL_RENDERING_VALIDATION_PR_RW" >> $BASH_ENV
+            source $BASH_ENV
+      - run:
+          name: Run tests
+          command: bundle exec fastlane record_and_push_paywall_template_screenshots target_repository_path:../Tests/paywall-rendering-validation
+          no_output_timeout: 15m
+          environment:
+            SCAN_DEVICE: iPhone 16
 
-  update-paywall-preview-resources-submodule:
+  update-paywall-preview-resources-commit:
     docker:
       - image: cimg/ruby:3.2.0
     steps:
+      - checkout
+      - revenuecat/install-gem-unix-dependencies:
+          cache-version: v1
+      - revenuecat/setup-git-credentials
       - run:
-          name: Temporarily failing job until we fix issues with SPM and submodules.
-          command: exit 1
-      # - checkout
-      # - checkout-submodule:
-      #     path: upstream/paywall-preview-resources
-      # - revenuecat/install-gem-unix-dependencies:
-      #     cache-version: v1
-      # - revenuecat/setup-git-credentials
-      # - run:
-      #     name: Update paywall templates
-      #     command: bundle exec fastlane ios update_paywall_preview_resources_submodule
+          name: Update paywall templates
+          command: bundle exec fastlane ios update_paywall_preview_resources_commit
 
   deploy-to-spm:
     docker:
@@ -1588,7 +1569,7 @@ workflows:
     when:
       equal: [update_paywall_templates, << pipeline.parameters.action >>]
     jobs:
-      - update-paywall-preview-resources-submodule
+      - update-paywall-preview-resources-commit
 
   manual-trigger-docs-deploy:
     when:
