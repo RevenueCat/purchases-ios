@@ -143,6 +143,7 @@ struct StorePurchaseIntent: Sendable, Equatable {
     #endif
 
     static func == (lhs: StorePurchaseIntent, rhs: StorePurchaseIntent) -> Bool {
+        // See comment in `StoreKit2PurchaseIntentType`'s `id` property below
     #if compiler(>=6.2) && !os(tvOS) && !os(watchOS) && !os(visionOS)
         if #available(iOS 18.0, macOS 15.0, *) {
             return lhs.purchaseIntent?.id == rhs.purchaseIntent?.id
@@ -181,6 +182,10 @@ protocol StoreKit2PurchaseIntentType: Equatable, Sendable {
     var offer: StoreKit.Product.SubscriptionOffer? { get }
     #endif
 
+    // Xcode 26 changed the minimum versions where StoreKit.PurchaseIntent id property is available.
+    // In Xcode 16, it was available in iOS 16.4+, macOS 14.4+
+    // In Xcode 26, it was available in iOS 18.0+, macOS 15.0+
+    // That's why we need the following workaround:
     #if compiler(>=6.2)
     @available(iOS 18.0, macOS 15.0, *)
     var id: StoreKit.Product.ID { get }
