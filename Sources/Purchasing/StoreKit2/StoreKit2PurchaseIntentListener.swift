@@ -154,6 +154,7 @@ struct StorePurchaseIntent: Sendable, Equatable {
     #elseif compiler(>=5.10) && !os(tvOS) && !os(watchOS) && !os(visionOS)
         return lhs.purchaseIntent?.id == rhs.purchaseIntent?.id
     #else
+        // purchaseIntent is not available in compiler < 5.10
         return true
     #endif
     }
