@@ -122,7 +122,7 @@ actor StoreKit2PurchaseIntentListener: StoreKit2PurchaseIntentListenerType {
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @available(visionOS, unavailable)
-struct StorePurchaseIntent: Sendable, Equatable {
+struct StorePurchaseIntent: Sendable {
 
     #if compiler(>=5.10) && !os(tvOS) && !os(watchOS) && !os(visionOS)
     init(purchaseIntent: (any StoreKit2PurchaseIntentType)?) {
@@ -141,15 +141,19 @@ struct StorePurchaseIntent: Sendable, Equatable {
     @available(visionOS, unavailable)
     let purchaseIntent: (any StoreKit2PurchaseIntentType)?
     #endif
-
-    static func == (lhs: StorePurchaseIntent, rhs: StorePurchaseIntent) -> Bool {
-    #if compiler(>=5.10) && !os(tvOS) && !os(watchOS) && !os(visionOS)
-        return lhs.purchaseIntent?.id == rhs.purchaseIntent?.id
-    #else
-        return true
-    #endif
-    }
 }
+
+//#if compiler(<6.2)
+//extension StorePurchaseIntent: Equatable {
+//    static func == (lhs: StorePurchaseIntent, rhs: StorePurchaseIntent) -> Bool {
+//        #if compiler(>=5.10) && !os(tvOS) && !os(watchOS) && !os(visionOS)
+//        return lhs.purchaseIntent?.id == rhs.purchaseIntent?.id
+//        #else
+//        return true
+//        #endif
+//    }
+//}
+//#endif
 
 #if compiler(>=5.10) && !os(tvOS) && !os(watchOS) && !os(visionOS)
 
@@ -157,7 +161,7 @@ struct StorePurchaseIntent: Sendable, Equatable {
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @available(visionOS, unavailable)
-protocol StoreKit2PurchaseIntentType: Equatable, Sendable {
+protocol StoreKit2PurchaseIntentType: Sendable {
 
     // WARNING: **DO NOT** make this type conform to Identifiable!!!
     // While StoreKit.PurchaseIntent conforms to Identifiable in iOS 18+,
@@ -175,10 +179,17 @@ protocol StoreKit2PurchaseIntentType: Equatable, Sendable {
     var offer: StoreKit.Product.SubscriptionOffer? { get }
     #endif
 
+//    #if compiler(<6.2)
     var id: StoreKit.Product.ID { get }
+//    #endif
 }
 
+#if compiler(<6.2)
 @available(iOS 16.4, macOS 14.4, *)
-extension StoreKit.PurchaseIntent: StoreKit2PurchaseIntentType { }
+extension StoreKit.PurchaseIntent: StoreKit2PurchaseIntentType {}
+#else
+@available(iOS 18.0, macOS 15.0, *)
+extension StoreKit.PurchaseIntent: StoreKit2PurchaseIntentType {}
+#endif
 
 #endif
