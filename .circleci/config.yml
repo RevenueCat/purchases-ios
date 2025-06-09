@@ -220,8 +220,7 @@ commands:
       - when:
           condition: << parameters.install_mint_0_17_5 >>
           steps:
-            - install-brew-dependency:
-                dependency_name: "mint@0.17.5"
+            - install-mint-0_17_5
       - when:
           condition: << parameters.install_swiftlint >>
           steps:
@@ -253,6 +252,16 @@ commands:
             brew install << parameters.dependency_name >>
           environment:
             HOMEBREW_NO_INSTALL_CLEANUP: 1
+
+  install-mint-0_17_5:
+    steps:
+      - run:
+          name: Install Mint 0.17.5
+          command: |
+            git clone https://github.com/yonaskolb/Mint.git
+            cd Mint
+            git checkout 0.17.5
+            make
 
   install-xcbeautify-for-xcode14:
     description: "Installs xcbeautify using Mint"
