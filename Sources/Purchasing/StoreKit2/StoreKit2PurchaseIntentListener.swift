@@ -143,10 +143,16 @@ struct StorePurchaseIntent: Sendable, Equatable {
     #endif
 
     static func == (lhs: StorePurchaseIntent, rhs: StorePurchaseIntent) -> Bool {
-    #if compiler(>=5.10) && !os(tvOS) && !os(watchOS) && !os(visionOS)
+    #if compiler(>=6.2) && !os(tvOS) && !os(watchOS) && !os(visionOS)
+        if #available(iOS 18.0, macOS 15.0, *) {
+            return lhs.purchaseIntent?.id == rhs.purchaseIntent?.id
+        } else {
+            return lhs.purchaseIntent?.product.id == rhs.purchaseIntent?.product.id
+        }
+    #elseif compiler(>=5.10) && !os(tvOS) && !os(watchOS) && !os(visionOS)
         return lhs.purchaseIntent?.id == rhs.purchaseIntent?.id
     #else
-        return true
+        return lhs.purchaseIntent?.product.id == rhs.purchaseIntent?.product.id
     #endif
     }
 }
@@ -175,7 +181,12 @@ protocol StoreKit2PurchaseIntentType: Equatable, Sendable {
     var offer: StoreKit.Product.SubscriptionOffer? { get }
     #endif
 
+    #if compiler(>=6.2)
+    @available(iOS 18.0, macOS 15.0, *)
     var id: StoreKit.Product.ID { get }
+    #else
+    var id: StoreKit.Product.ID { get }
+    #endif
 }
 
 @available(iOS 16.4, macOS 14.4, *)
