@@ -171,6 +171,7 @@ struct RestorePurchasesAlert: View {
     private func dismissAlert() {
         self.customerCenterViewModel.onDismissRestorePurchasesAlert()
         self.isPresented = false
+        self.viewModel.alertType = .loading
     }
 }
 
@@ -306,8 +307,10 @@ private struct PreviewContainer: View {
 
     var body: some View {
         let viewModelApple = CustomerCenterViewModel(
-            purchaseInformation: .subscriptionInformationMonthlyRenewing,
-            configuration: CustomerCenterConfigData.default)
+            activeSubscriptionPurchases: [.subscriptionInformationMonthlyRenewing],
+            activeNonSubscriptionPurchases: [],
+            configuration: CustomerCenterConfigData.default
+        )
 
         RestorePurchasesAlert(
             isPresented: $isPresented,

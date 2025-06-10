@@ -330,7 +330,12 @@ public struct PaywallView: View {
                         }
                         onRequestedDismissal()
                     },
-                    fallbackContent: .paywallV1View(dataForV1DefaultPaywall)
+                    fallbackContent: .paywallV1View(dataForV1DefaultPaywall),
+                    failedToLoadFont: { fontConfig in
+                        if Purchases.isConfigured {
+                            Purchases.shared.failedToLoadFontWithConfig(fontConfig)
+                        }
+                    }
                 )
             }
         } else {

@@ -3,6 +3,7 @@
 //  Copyright © 2020 RevenueCat. All rights reserved.
 //
 
+import Foundation
 @testable import RevenueCat
 
 class MockDeviceCache: DeviceCache {

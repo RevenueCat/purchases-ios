@@ -814,6 +814,7 @@ SWIFT_CLASS_NAMED("Configuration")
 
 
 
+
 @interface RCConfiguration (SWIFT_EXTENSION(RevenueCat))
 @end
 
@@ -849,7 +850,6 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCEntitlementVerificationMode, "EntitlementV
 /// <code>ErrorCode/signatureVerificationFailed</code> will be thrown.
   RCEntitlementVerificationModeEnforced = 2,
 };
-
 
 
 @class RCEntitlementInfos;
@@ -1440,6 +1440,8 @@ SWIFT_CLASS_NAMED("NonSubscriptionTransaction")
 @property (nonatomic, readonly) enum RCStore store;
 /// Paid price for the subscription
 @property (nonatomic, readonly, strong) RCProductPaidPrice * _Nullable price;
+/// Whether or not the purchase was made in sandbox mode.
+@property (nonatomic, readonly) BOOL isSandbox;
 @property (nonatomic, readonly, copy) NSString * _Nonnull description;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
@@ -3499,12 +3501,11 @@ SWIFT_CLASS("_TtC10RevenueCat22PurchasesReceiptParser")
 
 
 
+
+
 @interface PurchasesReceiptParser (SWIFT_EXTENSION(RevenueCat))
 - (BOOL)receiptHasTransactionsWithReceiptData:(NSData * _Nonnull)receiptData SWIFT_WARN_UNUSED_RESULT;
 @end
-
-
-
 
 
 @interface PurchasesReceiptParser (SWIFT_EXTENSION(RevenueCat))
@@ -3512,6 +3513,7 @@ SWIFT_CLASS("_TtC10RevenueCat22PurchasesReceiptParser")
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong, getter=default) PurchasesReceiptParser * _Nonnull default_;)
 + (PurchasesReceiptParser * _Nonnull)default SWIFT_WARN_UNUSED_RESULT;
 @end
+
 
 
 
@@ -3571,6 +3573,8 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStore, "Store", open) {
   RCBilling SWIFT_COMPILE_NAME("rcBilling") = 7,
 /// For entitlements granted via RevenueCat’s External Purchases API.
   RCExternal SWIFT_COMPILE_NAME("external") = 8,
+/// For entitlements granted via Paddle.
+  RCPaddle SWIFT_COMPILE_NAME("paddle") = 9,
 };
 
 
@@ -4092,11 +4096,11 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCSubscriptionPeriodUnit, "Unit", open) {
 @end
 
 
+
 @interface RCSubscriptionPeriod (SWIFT_EXTENSION(RevenueCat))
 /// The number of units per subscription period
 @property (nonatomic, readonly) NSInteger numberOfUnits SWIFT_AVAILABILITY(macos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(watchos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(tvos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(ios,unavailable,message="'numberOfUnits' has been renamed to 'value'");
 @end
-
 
 
 
@@ -4113,6 +4117,7 @@ SWIFT_CLASS_NAMED("Transaction") SWIFT_AVAILABILITY(macos,obsoleted=1,message="'
 @interface RCTransaction : NSObject
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
+
 
 
 

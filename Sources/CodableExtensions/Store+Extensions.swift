@@ -65,6 +65,7 @@ private extension Store {
         case .unknownStore: return nil
         case .rcBilling: return "rc_billing"
         case .external: return "external"
+        case .paddle: return "paddle"
         }
     }
 

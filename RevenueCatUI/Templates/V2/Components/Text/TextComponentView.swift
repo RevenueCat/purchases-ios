@@ -14,7 +14,7 @@
 // swiftlint:disable file_length
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
@@ -239,7 +239,7 @@ struct TextComponentView_Previews: PreviewProvider {
                     ),
                     uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
                         fonts: [
-                            "primary": .init(ios: .name("Chalkduster"))
+                            "primary": UIConfig.FontsConfig(ios: UIConfig.FontInfo(name: "Chalkduster"))
                         ]
                     )),
                     component: .init(
@@ -262,7 +262,7 @@ struct TextComponentView_Previews: PreviewProvider {
                     ),
                     uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
                         fonts: [
-                            "primary": .init(ios: .name("Chalkduster"))
+                            "primary": UIConfig.FontsConfig(ios: UIConfig.FontInfo(name: "Chalkduster"))
                         ]
                     )),
                     component: .init(
@@ -285,7 +285,7 @@ struct TextComponentView_Previews: PreviewProvider {
                     ),
                     uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
                         fonts: [
-                            "primary": .init(ios: .name("This Font Does Not Exist"))
+                            "primary": UIConfig.FontsConfig(ios: UIConfig.FontInfo(name: "This Font Does Not Exist"))
                         ]
                     )),
                     component: .init(
@@ -314,7 +314,7 @@ struct TextComponentView_Previews: PreviewProvider {
                     ),
                     uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
                         fonts: [
-                            "generic": .init(ios: .name("serif"))
+                            "generic": UIConfig.FontsConfig(ios: UIConfig.FontInfo(name: "serif"))
                         ]
                     )),
                     component: .init(
@@ -337,7 +337,7 @@ struct TextComponentView_Previews: PreviewProvider {
                     ),
                     uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
                         fonts: [
-                            "generic": .init(ios: .name("sans-serif"))
+                            "generic": UIConfig.FontsConfig(ios: UIConfig.FontInfo(name: "sans-serif"))
                         ]
                     )),
                     component: .init(
@@ -360,7 +360,7 @@ struct TextComponentView_Previews: PreviewProvider {
                     ),
                     uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
                         fonts: [
-                            "generic": .init(ios: .name("monospace"))
+                            "generic": UIConfig.FontsConfig(ios: UIConfig.FontInfo(name: "monospace"))
                         ]
                     )),
                     component: .init(

@@ -105,9 +105,13 @@ struct PaywallsV2View: View {
         introEligibilityChecker: TrialOrIntroEligibilityChecker,
         showZeroDecimalPlacePrices: Bool,
         onDismiss: @escaping () -> Void,
-        fallbackContent: FallbackContent
+        fallbackContent: FallbackContent,
+        failedToLoadFont: @escaping UIConfigProvider.FailedToLoadFont
     ) {
-        let uiConfigProvider = UIConfigProvider(uiConfig: paywallComponents.uiConfig)
+        let uiConfigProvider = UIConfigProvider(
+            uiConfig: paywallComponents.uiConfig,
+            failedToLoadFont: failedToLoadFont
+        )
 
         self.paywallComponentsData = paywallComponents.data
         self.uiConfigProvider = uiConfigProvider

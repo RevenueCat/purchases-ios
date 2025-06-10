@@ -40,6 +40,9 @@ public final class NonSubscriptionTransaction: NSObject {
     /// Paid price for the subscription
     @objc public let price: ProductPaidPrice?
 
+    /// Whether or not the purchase was made in sandbox mode.
+    @objc public let isSandbox: Bool
+
     init?(with transaction: CustomerInfoResponse.Transaction, productID: String) {
         guard let transactionIdentifier = transaction.transactionIdentifier,
               let storeTransactionIdentifier = transaction.storeTransactionIdentifier else {
@@ -54,6 +57,7 @@ public final class NonSubscriptionTransaction: NSObject {
         self.productIdentifier = productID
         self.store = transaction.store
         self.price = transaction.price.map { ProductPaidPrice(currency: $0.currency, amount: $0.amount) }
+        self.isSandbox = transaction.isSandbox
     }
 
     public override var description: String {
