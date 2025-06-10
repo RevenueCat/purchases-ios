@@ -13,6 +13,9 @@
 + (void)checkAPI {
     RCVirtualCurrency *virtualCurrency = nil;
     NSInteger balance = virtualCurrency.balance;
+    NSString *name = virtualCurrency.name;
+    NSString *code = virtualCurrency.code;
+    NSString * _Nullable serverDescription = virtualCurrency.serverDescription;
 }
 
 @end

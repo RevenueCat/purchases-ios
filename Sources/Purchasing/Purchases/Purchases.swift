@@ -596,6 +596,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let virtualCurrencyManager = VirtualCurrencyManager(
             identityManager: identityManager,
             deviceCache: deviceCache,
+            backend: backend,
             systemInfo: systemInfo
         )
 

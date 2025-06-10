@@ -23,15 +23,18 @@ actor VirtualCurrencyManager: VirtualCurrencyManagerType, Sendable {
 
     private let identityManager: IdentityManager
     private let deviceCache: DeviceCache
+    private let backend: Backend
     private let systemInfo: SystemInfo
 
     init(
         identityManager: IdentityManager,
         deviceCache: DeviceCache,
+        backend: Backend,
         systemInfo: SystemInfo
     ) {
         self.identityManager = identityManager
         self.deviceCache = deviceCache
+        self.backend = backend
         self.systemInfo = systemInfo
     }
 
@@ -39,49 +42,59 @@ actor VirtualCurrencyManager: VirtualCurrencyManagerType, Sendable {
         forceRefresh: Bool,
     ) async throws -> VirtualCurrencies {
         let appUserID = identityManager.currentAppUserID
+        let isAppBackgrounded = await systemInfo.isApplicationBackgrounded()
 
         if !forceRefresh {
-            if let cachedVirtualCurrencies = await fetchCachedVirtualCurrencies(appUserID: appUserID) {
+            if let cachedVirtualCurrencies = await fetchCachedVirtualCurrencies(
+                appUserID: appUserID,
+                isAppBackgrounded: isAppBackgrounded
+            ) {
                 return cachedVirtualCurrencies
             }
         }
 
-        return try await fetchVirtualCurrenciesFromBackend()
+        return try await fetchVirtualCurrenciesFromBackend(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded)
     }
 
     private func fetchCachedVirtualCurrencies(
-        appUserID: String
+        appUserID: String,
+        isAppBackgrounded: Bool
     ) async -> VirtualCurrencies? {
-        return await withCheckedContinuation { continuation in
-            self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
-                if self.deviceCache.isVirtualCurrenciesCacheStale(
-                    appUserID: appUserID,
-                    isAppBackgrounded: isAppBackgrounded
-                ) {
-                    // The virtual currencies cache is stale, so
-                    // return no cached virtual currencies.
-                    continuation.resume(returning: nil)
-                    return
-                }
+        if self.deviceCache.isVirtualCurrenciesCacheStale(
+            appUserID: appUserID,
+            isAppBackgrounded: isAppBackgrounded
+        ) {
+            // The virtual currencies cache is stale, so
+            // return no cached virtual currencies.
+            return nil
+        }
 
-                let cachedVirtualCurrenciesData = self.deviceCache.cachedVirtualCurrenciesData(
-                    forAppUserID: appUserID
-                )
+        let cachedVirtualCurrenciesData = self.deviceCache.cachedVirtualCurrenciesData(
+            forAppUserID: appUserID
+        )
 
-                guard let data = cachedVirtualCurrenciesData,
-                      let virtualCurrencies = try? JSONDecoder().decode(VirtualCurrencies.self, from: data) else {
-                    continuation.resume(returning: nil)
-                    return
-                }
+        guard let data = cachedVirtualCurrenciesData,
+              let virtualCurrencies = try? JSONDecoder().decode(VirtualCurrencies.self, from: data) else {
+            // We can't decode the cached virtual currencies, so return nil
+            return nil
+        }
 
-                continuation.resume(returning: virtualCurrencies)
+        return virtualCurrencies
+    }
+
+    private func fetchVirtualCurrenciesFromBackend(
+        appUserID: String,
+        isAppBackgrounded: Bool
+    ) async throws -> VirtualCurrencies {
+        let virtualCurrenciesResponse = try await Async.call { completion in
+            backend.virtualCurrenciesAPI.getVirtualCurrencies(
+                appUserID: appUserID,
+                isAppBackgrounded: isAppBackgrounded
+            ) { result in
+                completion(result.mapError(\.asPurchasesError))
             }
         }
-    }
 
-    private func fetchVirtualCurrenciesFromBackend() async throws -> VirtualCurrencies {
-        #warning("TODO: implement fetchVirtualCurrenciesFromBackend")
-        return VirtualCurrencies(virtualCurrencies: [:])
+        return VirtualCurrencies(from: virtualCurrenciesResponse)
     }
-
 }

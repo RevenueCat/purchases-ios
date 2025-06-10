@@ -1155,6 +1155,7 @@
 		FD18BF492DF0D9C100140FD6 /* VirtualCurrencyManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD18BF482DF0D9C100140FD6 /* VirtualCurrencyManagerTests.swift */; };
 		FD18BF4B2DF0DA5400140FD6 /* MockVirtualCurrencyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD18BF4A2DF0DA5400140FD6 /* MockVirtualCurrencyManager.swift */; };
 		FD18BF4C2DF0DA5400140FD6 /* MockVirtualCurrencyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD18BF4A2DF0DA5400140FD6 /* MockVirtualCurrencyManager.swift */; };
+		FD18BF4E2DF7670200140FD6 /* GetVirtualCurrenciesOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD18BF4D2DF7670200140FD6 /* GetVirtualCurrenciesOperation.swift */; };
 		FD18ED4E2837F89200C5AA4F /* StoreKitWorkaroundsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD18ED4D2837F89200C5AA4F /* StoreKitWorkaroundsTests.swift */; };
 		FD20467F2CB82F2000166727 /* StoreKit2PurchaseIntentListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD20467E2CB82F1700166727 /* StoreKit2PurchaseIntentListener.swift */; };
 		FD2046812CB8333A00166727 /* StoreKit2PurchaseIntentListenerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2046802CB8333200166727 /* StoreKit2PurchaseIntentListenerTests.swift */; };
@@ -1189,6 +1190,12 @@
 		FDC892D12CCAD0EE000AEB9F /* MockStoreKit2PurchaseIntentListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDC892D02CCAD0EE000AEB9F /* MockStoreKit2PurchaseIntentListener.swift */; };
 		FDC892D22CCAD0EE000AEB9F /* MockStoreKit2PurchaseIntentListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDC892D02CCAD0EE000AEB9F /* MockStoreKit2PurchaseIntentListener.swift */; };
 		FDC892FE2CD157F1000AEB9F /* WinBackOffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDC892FD2CD157F1000AEB9F /* WinBackOffer.swift */; };
+		FDE57A9E2DF8783000101CE2 /* VirtualCurrenciesCallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDE57A9D2DF8783000101CE2 /* VirtualCurrenciesCallback.swift */; };
+		FDE57AA02DF8785000101CE2 /* VirtualCurrenciesResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDE57A9F2DF8785000101CE2 /* VirtualCurrenciesResponse.swift */; };
+		FDE57AA22DF88ACA00101CE2 /* VirtualCurrenciesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDE57AA12DF88ACA00101CE2 /* VirtualCurrenciesAPI.swift */; };
+		FDE57AA42DF8919600101CE2 /* VirtualCurrencyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDE57AA32DF8919600101CE2 /* VirtualCurrencyTests.swift */; };
+		FDE57AA72DF892C900101CE2 /* MockVirtualCurrenciesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDE57AA62DF892C900101CE2 /* MockVirtualCurrenciesAPI.swift */; };
+		FDE57AA82DF892C900101CE2 /* MockVirtualCurrenciesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDE57AA62DF892C900101CE2 /* MockVirtualCurrenciesAPI.swift */; };
 		FDEE6C8B2DA5BC4100DD6A29 /* VirtualCurrencyBalancesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDEE6C8A2DA5BC4100DD6A29 /* VirtualCurrencyBalancesScreen.swift */; };
 /* End PBXBuildFile section */
 
@@ -2529,6 +2536,7 @@
 		FD0C24692D70CA5800B81D74 /* VirtualCurrency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrency.swift; sourceTree = "<group>"; };
 		FD18BF482DF0D9C100140FD6 /* VirtualCurrencyManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyManagerTests.swift; sourceTree = "<group>"; };
 		FD18BF4A2DF0DA5400140FD6 /* MockVirtualCurrencyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockVirtualCurrencyManager.swift; sourceTree = "<group>"; };
+		FD18BF4D2DF7670200140FD6 /* GetVirtualCurrenciesOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetVirtualCurrenciesOperation.swift; sourceTree = "<group>"; };
 		FD18ED4D2837F89200C5AA4F /* StoreKitWorkaroundsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitWorkaroundsTests.swift; sourceTree = "<group>"; };
 		FD20467E2CB82F1700166727 /* StoreKit2PurchaseIntentListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2PurchaseIntentListener.swift; sourceTree = "<group>"; };
 		FD2046802CB8333200166727 /* StoreKit2PurchaseIntentListenerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2PurchaseIntentListenerTests.swift; sourceTree = "<group>"; };
@@ -2556,6 +2564,11 @@
 		FDAD6AC82D132E6500FB047E /* CustomerCenterStoreKitUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterStoreKitUtilities.swift; sourceTree = "<group>"; };
 		FDC892D02CCAD0EE000AEB9F /* MockStoreKit2PurchaseIntentListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreKit2PurchaseIntentListener.swift; sourceTree = "<group>"; };
 		FDC892FD2CD157F1000AEB9F /* WinBackOffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WinBackOffer.swift; sourceTree = "<group>"; };
+		FDE57A9D2DF8783000101CE2 /* VirtualCurrenciesCallback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrenciesCallback.swift; sourceTree = "<group>"; };
+		FDE57A9F2DF8785000101CE2 /* VirtualCurrenciesResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrenciesResponse.swift; sourceTree = "<group>"; };
+		FDE57AA12DF88ACA00101CE2 /* VirtualCurrenciesAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrenciesAPI.swift; sourceTree = "<group>"; };
+		FDE57AA32DF8919600101CE2 /* VirtualCurrencyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyTests.swift; sourceTree = "<group>"; };
+		FDE57AA62DF892C900101CE2 /* MockVirtualCurrenciesAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockVirtualCurrenciesAPI.swift; sourceTree = "<group>"; };
 		FDEE6C8A2DA5BC4100DD6A29 /* VirtualCurrencyBalancesScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyBalancesScreen.swift; sourceTree = "<group>"; };
 		FECF627761D375C8431EB866 /* StoreProduct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreProduct.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -3724,6 +3737,7 @@
 				FDAC7B562CD3FD8500DFC0D9 /* MockWinBackOfferEligibilityCalculator.swift */,
 				1EFA95142CDBAB7500CA5951 /* MockWebPurchaseRedemptionHelper.swift */,
 				FD18BF4A2DF0DA5400140FD6 /* MockVirtualCurrencyManager.swift */,
+				FDE57AA62DF892C900101CE2 /* MockVirtualCurrenciesAPI.swift */,
 			);
 			path = Mocks;
 			sourceTree = "<group>";
@@ -4155,6 +4169,7 @@
 				57488BC529CB7BDC0000EE7E /* OfflineEntitlementsAPI.swift */,
 				5723FBBD28EDE1360003BA16 /* InternalAPI.swift */,
 				1ED4CA542CC157A20021AB8F /* RedeemWebPurchaseAPI.swift */,
+				FDE57AA12DF88ACA00101CE2 /* VirtualCurrenciesAPI.swift */,
 				1EDB6AA92DC95AB400C771A4 /* WebBillingHTTPRequestPath.swift */,
 			);
 			path = Networking;
@@ -4722,6 +4737,7 @@
 				574A2F4A282D7AEA00150D40 /* PostOfferResponse.swift */,
 				57488A7E29CA145B0000EE7E /* ProductEntitlementMappingResponse.swift */,
 				537B4B2D2DA9662700CEFF4C /* HealthReportResponse.swift */,
+				FDE57A9F2DF8785000101CE2 /* VirtualCurrenciesResponse.swift */,
 			);
 			path = Responses;
 			sourceTree = "<group>";
@@ -5305,6 +5321,7 @@
 				B34605A5279A6E380031CA74 /* OfferingsCallback.swift */,
 				1EDB6AA52DC9517300C771A4 /* WebProductsCallback.swift */,
 				57045B3B29C51AF7001A5417 /* ProductEntitlementMappingCallback.swift */,
+				FDE57A9D2DF8783000101CE2 /* VirtualCurrenciesCallback.swift */,
 			);
 			path = Caching;
 			sourceTree = "<group>";
@@ -5317,6 +5334,7 @@
 				B34605B5279A6E380031CA74 /* GetCustomerInfoOperation.swift */,
 				B34605B4279A6E380031CA74 /* GetIntroEligibilityOperation.swift */,
 				B34605BA279A6E380031CA74 /* GetOfferingsOperation.swift */,
+				FD18BF4D2DF7670200140FD6 /* GetVirtualCurrenciesOperation.swift */,
 				1EDB6AA32DC9514300C771A4 /* GetWebProductsOperation.swift */,
 				57045B3929C51751001A5417 /* GetProductEntitlementMappingOperation.swift */,
 				4F5F47072AA91F8A005649D8 /* HealthOperation.swift */,
@@ -5490,6 +5508,7 @@
 			children = (
 				FD3A85FD2DDE76CD005F3C79 /* VirtualCurrenciesTests.swift */,
 				FD18BF482DF0D9C100140FD6 /* VirtualCurrencyManagerTests.swift */,
+				FDE57AA32DF8919600101CE2 /* VirtualCurrencyTests.swift */,
 			);
 			path = "Virtual Currencies";
 			sourceTree = "<group>";
@@ -6192,6 +6211,7 @@
 				5738F46E278CAC520096D623 /* StoreTransactionTests.swift in Sources */,
 				3543914226F911F300E669DF /* MockSK1Product.swift in Sources */,
 				57FFD2522922DBED00A9A878 /* MockStoreTransaction.swift in Sources */,
+				FDE57AA82DF892C900101CE2 /* MockVirtualCurrenciesAPI.swift in Sources */,
 				3543913826F90FE100E669DF /* MockIntroEligibilityCalculator.swift in Sources */,
 				FD2046842CB833CD00166727 /* MockStoreKit2PurchaseIntentListenerDelegate.swift in Sources */,
 				3543914126F911CC00E669DF /* MockDeviceCache.swift in Sources */,
@@ -6304,6 +6324,7 @@
 				2DD58DD827F240EB000FDFE3 /* EmptyFile.swift in Sources */,
 				2CD72942268A823900BFC976 /* Data+Extensions.swift in Sources */,
 				88AD010F2C740CF400AA1F2B /* PaywallImageComponent.swift in Sources */,
+				FD18BF4E2DF7670200140FD6 /* GetVirtualCurrenciesOperation.swift in Sources */,
 				4FD3688B2AA7C12600F63354 /* PaywallEvent.swift in Sources */,
 				5766AA3E283C750300FA6091 /* Operators+Extensions.swift in Sources */,
 				1ED4CA532CC154E00021AB8F /* WebPurchaseRedemptionHelper.swift in Sources */,
@@ -6475,6 +6496,7 @@
 				2C2AEB3F2CA7235300A50F38 /* PaywallPurchaseButtonComponent.swift in Sources */,
 				4FC883812AA7A2BD00A3DE03 /* ProcessInfo+Extensions.swift in Sources */,
 				57488B7F29CB70E50000EE7E /* ProductEntitlementMapping.swift in Sources */,
+				FDE57A9E2DF8783000101CE2 /* VirtualCurrenciesCallback.swift in Sources */,
 				B34605CF279A6E380031CA74 /* GetOfferingsOperation.swift in Sources */,
 				2DDF41AC24F6F37C005BC22D /* ASN1Container.swift in Sources */,
 				35AB6D3A2BBEE3150076B103 /* DiagnosticsTracker.swift in Sources */,
@@ -6583,6 +6605,7 @@
 				B372EC54268FEDC60099171E /* StoreProductDiscount.swift in Sources */,
 				4F7D8E562A56290100F17FFC /* HTTPRequestBody.swift in Sources */,
 				B34605BE279A6E380031CA74 /* OfferingsCallback.swift in Sources */,
+				FDE57AA22DF88ACA00101CE2 /* VirtualCurrenciesAPI.swift in Sources */,
 				4FFCED8A2AA941D200118EF4 /* PostPaywallEventsOperation.swift in Sources */,
 				B34605BF279A6E380031CA74 /* LogInCallback.swift in Sources */,
 				9A65DFDE258AD60A00DE00B0 /* LogIntent.swift in Sources */,
@@ -6628,6 +6651,7 @@
 				4F6BEDE02A26B65900CD9322 /* DebugViewSheetPresentation.swift in Sources */,
 				4F6BEDD92A26B55C00CD9322 /* DebugViewModel.swift in Sources */,
 				FDAC7B552CD3D7A500DFC0D9 /* WinBackOfferEligibilityCalculator.swift in Sources */,
+				FDE57AA02DF8785000101CE2 /* VirtualCurrenciesResponse.swift in Sources */,
 				1EDB6AA82DC9519D00C771A4 /* WebProductsResponse.swift in Sources */,
 				5766C622282DAA700067D886 /* GetIntroEligibilityResponse.swift in Sources */,
 				35E840CC270FB70D00899AE2 /* ManageSubscriptionsHelper.swift in Sources */,
@@ -6723,6 +6747,7 @@
 				57ACB12428174B9F000DCC9F /* CustomerInfo+TestExtensions.swift in Sources */,
 				357349012C3BEB5C000EEB86 /* CustomerCenterConfigDataTests.swift in Sources */,
 				FD3A85FE2DDE76CD005F3C79 /* VirtualCurrenciesTests.swift in Sources */,
+				FDE57AA72DF892C900101CE2 /* MockVirtualCurrenciesAPI.swift in Sources */,
 				FDAC7B5B2CD4085800DFC0D9 /* PurchasesWinBackOfferTests.swift in Sources */,
 				351B51B926D450E800BD2BD7 /* TransactionsFactoryTests.swift in Sources */,
 				FD43D2FE2C41867600077235 /* TimeInterval+ExtensionsTests.swift in Sources */,
@@ -6818,6 +6843,7 @@
 				4FFFE6C82AA9467800B2955C /* PaywallEventsManagerTests.swift in Sources */,
 				03A98D362D244329009BCA61 /* UIConfigDecodingTests.swift in Sources */,
 				351B515626D44B2300BD2BD7 /* MockNotificationCenter.swift in Sources */,
+				FDE57AA42DF8919600101CE2 /* VirtualCurrencyTests.swift in Sources */,
 				351B515226D44AF000BD2BD7 /* MockReceiptFetcher.swift in Sources */,
 				351B51C226D450E800BD2BD7 /* ProductRequestDataTests.swift in Sources */,
 				4F54DF422A1D8D0700FD72BF /* MockTransactionPoster.swift in Sources */,

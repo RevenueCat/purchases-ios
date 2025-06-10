@@ -10,4 +10,7 @@ import RevenueCat
 
 func checkVirtualCurrency(virtualCurrency: VirtualCurrency) {
     let balance: Int = virtualCurrency.balance
+    let name: String = virtualCurrency.name
+    let code: String = virtualCurrency.code
+    let serverDescription: String? = virtualCurrency.serverDescription
 }

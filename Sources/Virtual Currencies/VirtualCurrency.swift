@@ -25,8 +25,25 @@ public final class VirtualCurrency: NSObject {
     /// The customer's current balance of the virtual currency.
     @objc public let balance: Int
 
-    internal init(balance: Int) {
+    /// The virtual currency's name defined in the RevenueCat dashboard.
+    @objc public let name: String
+
+    /// The virtual currency's code defined in the RevenueCat dashboard.
+    @objc public let code: String
+
+    /// Virtual currency description defined in the RevenueCat dashboard.
+    @objc public let serverDescription: String?
+
+    internal init(
+        balance: Int,
+        name: String,
+        code: String,
+        serverDescription: String?
+    ) {
         self.balance = balance
+        self.name = name
+        self.code = code
+        self.serverDescription = serverDescription
     }
 }
 
@@ -40,5 +57,16 @@ extension VirtualCurrency {
     @objc public override func isEqual(_ object: Any?) -> Bool {
         guard let other = object as? VirtualCurrency else { return false }
         return self.balance == other.balance
+    }
+}
+
+extension VirtualCurrency {
+    internal convenience init(from response: VirtualCurrenciesResponse.VirtualCurrencyResponse) {
+        self.init(
+            balance: response.balance,
+            name: response.name,
+            code: response.code,
+            serverDescription: response.description
+        )
     }
 }

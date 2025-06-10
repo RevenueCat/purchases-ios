@@ -22,8 +22,8 @@ class DeviceCacheTests: TestCase {
         self.mockUserDefaults = MockUserDefaults()
 
         let mockVirtualCurrencies = VirtualCurrencies(virtualCurrencies: [
-            "USD": VirtualCurrency(balance: 100),
-            "EUR": VirtualCurrency(balance: 200)
+            "USD": VirtualCurrency(balance: 100, name: "US Dollar", code: "USD", serverDescription: "dollar"),
+            "EUR": VirtualCurrency(balance: 200, name: "Euro", code: "EUR", serverDescription: "euro")
         ])
         // swiftlint:disable:next force_try
         self.mockVirtualCurrenciesData = try! JSONEncoder().encode(mockVirtualCurrencies)

@@ -60,3 +60,13 @@ extension VirtualCurrencies {
         return self.all == other.all
     }
 }
+
+extension VirtualCurrencies {
+    internal convenience init(from response: VirtualCurrenciesResponse) {
+        let convertedVCMap = response.virtualCurrencies.mapValues({ virtualCurrencyResponse in
+            return VirtualCurrency(from: virtualCurrencyResponse)
+        })
+
+        self.init(virtualCurrencies: convertedVCMap)
+    }
+}
