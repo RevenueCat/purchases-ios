@@ -67,7 +67,7 @@ private extension GetVirtualCurrenciesOperation {
             return
         }
 
-        let request = HTTPRequest(method: .get, path: .getCustomerCenterConfig(appUserID: appUserID))
+        let request = HTTPRequest(method: .get, path: .getVirtualCurrencies(appUserID: appUserID))
 
         httpClient.perform(request) { (response: VerifiedHTTPResponse<VirtualCurrenciesResponse>.Result) in
             defer {

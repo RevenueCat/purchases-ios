@@ -266,6 +266,32 @@ class VirtualCurrencyManagerTests: TestCase {
         )
     }
 
+    func testCachesVirtualCurrenciesFetchedFromNetwork() async throws {
+        self.mockDeviceCache.stubbedCachedVirtualCurrenciesDataForAppUserID = nil
+        self.mockDeviceCache.stubbedIsVirtualCurrenciesCacheStale = false
+        self.mockVirtualCurrenciesAPI.stubbedGetVirtualCurrenciesResult = .success(self.mockVirtualCurrenciesResponse)
+
+        let expectedVirtualCurrenciesToBeCached = VirtualCurrencies(from: self.mockVirtualCurrenciesResponse)
+
+        let virtualCurrencies: VirtualCurrencies = try await virtualCurrencyManager.virtualCurrencies(
+            forceRefresh: false
+        )
+
+        XCTAssertEqual(virtualCurrencies, expectedVirtualCurrenciesToBeCached)
+        XCTAssertFalse(
+            self.mockDeviceCache.isVirtualCurrenciesCacheStale(appUserID: self.appUserID, isAppBackgrounded: false)
+        )
+        XCTAssertTrue(self.mockDeviceCache.invokedCacheVirtualCurrencies)
+        XCTAssertEqual(self.mockDeviceCache.invokedCacheVirtualCurrenciesCount, 1)
+        XCTAssertEqual(
+            self.mockDeviceCache.invokedCacheVirtualCurrenciesParametersList[0].0,
+            try JSONEncoder().encode(expectedVirtualCurrenciesToBeCached)
+        )
+        XCTAssertEqual(
+            self.mockDeviceCache.invokedCacheVirtualCurrenciesParametersList[0].1, self.appUserID
+        )
+    }
+
     // MARK: - Network Error Handling Tests
     func testVirtualCurrenciesProperlyHandlesNetworkErrors() async throws {
         self.mockDeviceCache.stubbedCachedVirtualCurrenciesDataForAppUserID = nil

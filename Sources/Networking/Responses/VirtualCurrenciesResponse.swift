@@ -26,6 +26,14 @@ struct VirtualCurrenciesResponse {
 }
 
 extension VirtualCurrenciesResponse.VirtualCurrencyResponse: Codable, Equatable {}
-extension VirtualCurrenciesResponse: Codable, Equatable {}
+extension VirtualCurrenciesResponse: Codable, Equatable {
+    enum CodingKeys: String, CodingKey {
+        case virtualCurrencies = "virtual_currencies"
+    }
+}
 
-extension VirtualCurrenciesResponse: HTTPResponseBody {}
+extension VirtualCurrenciesResponse: HTTPResponseBody {
+    static func create(with data: Data) throws -> Self {
+        return try JSONDecoder.default.decode(Self.self, from: data)
+    }
+}

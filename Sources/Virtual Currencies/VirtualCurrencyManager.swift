@@ -53,7 +53,25 @@ actor VirtualCurrencyManager: VirtualCurrencyManagerType, Sendable {
             }
         }
 
-        return try await fetchVirtualCurrenciesFromBackend(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded)
+        let virtualCurrencies = try await fetchVirtualCurrenciesFromBackend(
+            appUserID: appUserID,
+            isAppBackgrounded: isAppBackgrounded
+        )
+
+        cacheVirtualCurrencies(virtualCurrencies, appUserID: appUserID)
+
+        return virtualCurrencies
+    }
+
+    private func cacheVirtualCurrencies(
+        _ virtualCurrencies: VirtualCurrencies,
+        appUserID: String
+    ) {
+        guard let virtualCurrenciesData = try? JSONEncoder().encode(virtualCurrencies) else {
+            return
+        }
+
+        self.deviceCache.cache(virtualCurrencies: virtualCurrenciesData, appUserID: appUserID)
     }
 
     private func fetchCachedVirtualCurrencies(
