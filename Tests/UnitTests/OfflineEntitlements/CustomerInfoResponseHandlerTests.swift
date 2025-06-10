@@ -402,11 +402,20 @@ private extension BaseCustomerInfoResponseHandlerTests {
         "request_date": "2019-08-16T10:30:42Z",
         "subscriber": [
             "subscriptions": [:] as [String: Any],
+            "non_subscriptions": [
+                "onetime": [[
+                    "id": "cadba0c81b",
+                    "is_sandbox": true,
+                    "purchase_date": "2019-04-05T21:52:45Z",
+                    "store": "app_store"
+                ]]
+            ] as [String: Any],
             "first_seen": "2019-07-17T00:05:54Z",
             "original_app_user_id": "nacho",
-            "other_purchases": [:]  as [String: Any]
-        ]  as [String: Any]
+            "other_purchases": [:] as [String: Any]
+        ] as [String: Any]
     ])!
+
     static let offlineCustomerInfo: CustomerInfo = .init(testData: [
         "request_date": "2023-08-16T10:30:42Z",
         "subscriber": [
@@ -420,9 +429,9 @@ private extension BaseCustomerInfoResponseHandlerTests {
                     "purchase_date": "2019-07-26T23:45:40Z",
                     "store": "app_store",
                     "unsubscribe_detected_at": nil
-                ]  as [String: Any?]
+                ] as [String: Any?]
             ],
-            "non_subscriptions": [:]  as [String: Any],
+            "non_subscriptions": [:] as [String: Any],
             "entitlements": [
                 "pro": [
                     "product_identifier": "monthly_freetrial",
@@ -432,8 +441,8 @@ private extension BaseCustomerInfoResponseHandlerTests {
             ],
             "first_seen": "2023-07-17T00:05:54Z",
             "original_app_user_id": "nacho2",
-            "other_purchases": [:]  as [String: Any]
-        ]  as [String: Any]
+            "other_purchases": [:] as [String: Any]
+        ] as [String: Any]
     ])!
 
 }
