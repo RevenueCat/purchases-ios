@@ -252,8 +252,8 @@ extension PurchaseInformationCardView {
 
         static func cancelledTrial(_ localizations: CustomerCenterConfigData.Localization) -> Badge {
             Badge(
-                title: localizations[.badgeFreeTrialCancelled],
-                id: CCLocalizedString.badgeFreeTrialCancelled.rawValue,
+                title: localizations[.badgeTrialCancelled],
+                id: CCLocalizedString.badgeTrialCancelled.rawValue,
                 backgroundColor: Color(red: 242 / 256, green: 84 / 256, blue: 91 / 256, opacity: 0.15)
             )
         }
