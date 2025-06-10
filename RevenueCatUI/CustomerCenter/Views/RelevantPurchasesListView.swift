@@ -253,11 +253,6 @@ struct RelevantPurchasesListView_Previews: PreviewProvider {
             displayPurchaseHistoryLink: true
         )
 
-        let warningOnMock = CustomerCenterConfigData.mock(
-            displayPurchaseHistoryLink: true,
-            shouldWarnCustomersAboutMultipleSubscriptions: true
-        )
-
         ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
             CompatibilityNavigationStack {
                 RelevantPurchasesListView(
