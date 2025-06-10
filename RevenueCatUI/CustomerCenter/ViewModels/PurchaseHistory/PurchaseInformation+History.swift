@@ -33,7 +33,7 @@ extension PurchaseInformation {
         var items: [PurchaseDetailItem] = []
         items.append(.paidPrice(pricePaidString(localizations: localization)))
         items.append(.status(
-            isActive ? .active : .inactive
+            isExpired ? .inactive : .active
         ))
 
         let dateFormatter = PurchaseInformation.defaultDateFormatter

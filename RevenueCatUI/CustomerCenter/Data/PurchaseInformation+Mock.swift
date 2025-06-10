@@ -31,7 +31,7 @@ extension PurchaseInformation {
         isLifetime: Bool = false,
         isTrial: Bool = false,
         isCancelled: Bool = false,
-        isActive: Bool = true,
+        isExpired: Bool = false,
         isSandbox: Bool = true,
         latestPurchaseDate: Date = Self.defaultLatestPurchaseDate,
         originalPurchaseDate: Date? = Self.defaultOriginalPurchaseDate,
@@ -58,7 +58,7 @@ extension PurchaseInformation {
             isLifetime: isLifetime,
             isTrial: isTrial,
             isCancelled: isCancelled,
-            isActive: isActive,
+            isExpired: isExpired,
             isSandbox: isSandbox,
             latestPurchaseDate: latestPurchaseDate,
             originalPurchaseDate: originalPurchaseDate,
@@ -92,7 +92,7 @@ extension PurchaseInformation {
         productIdentifier: "product_id_expired",
         store: .appStore,
         isLifetime: false,
-        isActive: false,
+        isExpired: true,
         expirationDate: nil,
         renewalDate: nil
     )
@@ -112,7 +112,7 @@ extension PurchaseInformation {
         renewalPrice: .nonFree("$4.99"),
         productIdentifier: "product_id_free",
         isTrial: true,
-        isActive: true,
+        isExpired: false,
         expirationDate: nil,
         renewalDate: nil
     )
@@ -124,7 +124,7 @@ extension PurchaseInformation {
         productIdentifier: "product_id",
         store: .appStore,
         isLifetime: true,
-        isActive: true,
+        isExpired: false,
         isSandbox: false,
         managementURL: URL(string: "https://www.revenuecat.com"),
         expirationDate: nil,

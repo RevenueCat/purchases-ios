@@ -468,7 +468,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         let screen = PurchaseInformationFixtures.screenWithPromo(offerID: offerIdentifierInJSON)
         let viewModel = BaseManageSubscriptionViewModel(screen: screen,
                                                         actionWrapper: CustomerCenterActionWrapper(),
-                                                        purchaseInformation: .mock(store: .appStore, isActive: true),
+                                                        purchaseInformation: .mock(store: .appStore, isExpired: false),
                                                         purchasesProvider: MockCustomerCenterPurchases(
                                                             customerInfo: customerInfo,
                                                             products: products

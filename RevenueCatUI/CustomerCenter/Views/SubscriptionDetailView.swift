@@ -329,7 +329,7 @@ struct SubscriptionDetailView: View {
             CompatibilityNavigationStack {
                 SubscriptionDetailView(
                     customerInfoViewModel: CustomerCenterViewModel(
-                        activeSubscriptionPurchases: [.mock(store: .playStore, isActive: true)],
+                        activeSubscriptionPurchases: [.mock(store: .playStore, isExpired: false)],
                         activeNonSubscriptionPurchases: [],
                         configuration: .default
                     ),
@@ -340,7 +340,7 @@ struct SubscriptionDetailView: View {
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
                         allowsMissingPurchaseAction: false,
-                        purchaseInformation: .mock(store: .playStore, isActive: true)
+                        purchaseInformation: .mock(store: .playStore, isExpired: false)
                     )
                 )
             }
