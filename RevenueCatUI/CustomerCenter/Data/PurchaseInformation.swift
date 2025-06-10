@@ -65,7 +65,7 @@ struct PurchaseInformation {
     /// Date when this subscription first started.
     ///
     /// Note: This property does not update with renewals, nor for product changes within a subscription group or
-    /// resubscriptions by lapsed subscribers.
+    /// resubscriptions by lapsed subscribers. `nil` for non-subscriptions
     let originalPurchaseDate: Date?
 
     /// Indicates whether the purchased subscription is active
