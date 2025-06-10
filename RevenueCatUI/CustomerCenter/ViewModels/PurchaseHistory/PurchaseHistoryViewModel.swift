@@ -15,7 +15,6 @@
 
 import Foundation
 import SwiftUI
-
 import RevenueCat
 
 #if os(iOS)
@@ -114,12 +113,8 @@ private extension PurchaseHistoryViewModel {
         var nonSubscriptions: [PurchaseInformation] = []
 
         for subscription in customerInfo.subscriptionsByProductIdentifier where subscription.value.isActive {
-            let entitlement = customerInfo.entitlements.all.values
-                .first(where: { $0.productIdentifier == subscription.value.productIdentifier })
-
-            activeSubscriptions.append(await .from(
+            await activeSubscriptions.append(.from(
                 transaction: subscription.value,
-                entitlement: entitlement,
                 customerInfo: customerInfo,
                 purchasesProvider: purchasesProvider,
                 customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
@@ -131,12 +126,8 @@ private extension PurchaseHistoryViewModel {
         })
 
         for subscription in customerInfo.subscriptionsByProductIdentifier where !subscription.value.isActive {
-            let entitlement = customerInfo.entitlements.all.values
-                .first(where: { $0.productIdentifier == subscription.value.productIdentifier })
-
-            inactiveSubscriptions.append(await .from(
+            await inactiveSubscriptions.append(.from(
                 transaction: subscription.value,
-                entitlement: entitlement,
                 customerInfo: customerInfo,
                 purchasesProvider: purchasesProvider,
                 customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
@@ -148,12 +139,8 @@ private extension PurchaseHistoryViewModel {
         })
 
         for purchase in customerInfo.nonSubscriptions {
-            let entitlement = customerInfo.entitlements.all.values
-                .first(where: { $0.productIdentifier == purchase.productIdentifier })
-
-            nonSubscriptions.append(await .from(
+            await nonSubscriptions.append(.from(
                 transaction: purchase,
-                entitlement: entitlement,
                 customerInfo: customerInfo,
                 purchasesProvider: purchasesProvider,
                 customerCenterStoreKitUtilities: customerCenterStoreKitUtilities

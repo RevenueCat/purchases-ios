@@ -21,11 +21,13 @@ extension PurchaseInformation {
     @available(watchOS, unavailable)
     static func from(
         transaction: RevenueCatUI.Transaction,
-        entitlement: EntitlementInfo?,
         customerInfo: CustomerInfo,
         purchasesProvider: CustomerCenterPurchasesType,
         customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
     ) async -> PurchaseInformation {
+        let entitlement = customerInfo.entitlements.all.values
+            .first(where: { $0.productIdentifier == transaction.productIdentifier })
+
         if transaction.store == .appStore {
             if let product = await purchasesProvider.products([transaction.productIdentifier]).first {
                 return await PurchaseInformation.purchaseInformationUsingRenewalInfo(

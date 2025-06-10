@@ -98,7 +98,9 @@ struct PurchaseInformationCardView: View {
         self.storeTitle = localization[purchaseInformation.store.localizationKey]
         self.showChevron = showChevron
 
-        if purchaseInformation.isCancelled {
+        if !purchaseInformation.isActive {
+            self.badge = .expired(localization)
+        } else if purchaseInformation.isCancelled {
             self.badge = .cancelled(localization)
         } else if purchaseInformation.isTrial, purchaseInformation.pricePaid == .free {
             self.badge = .freeTrial(localization)
@@ -261,6 +263,14 @@ extension PurchaseInformationCardView {
                 backgroundColor: Color(red: 52 / 256, green: 199 / 256, blue: 89 / 256, opacity: 0.2)
             )
         }
+
+        static func expired(_ localizations: CustomerCenterConfigData.Localization) -> Badge {
+            Badge(
+                title: localizations[.expired],
+                id: CCLocalizedString.expired.rawValue,
+                backgroundColor: Color(red: 242 / 256, green: 242 / 256, blue: 247 / 256, opacity: 0.2)
+            )
+        }
     }
 }
 
@@ -324,6 +334,14 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
 
                 PurchaseInformationCardView(
                     purchaseInformation: .consumable,
+                    localization: CustomerCenterConfigData.default.localization,
+                    accessibilityIdentifier: "accessibilityIdentifier"
+                )
+                .cornerRadius(10)
+                .padding([.leading, .trailing])
+
+                PurchaseInformationCardView(
+                    purchaseInformation: .expired,
                     localization: CustomerCenterConfigData.default.localization,
                     accessibilityIdentifier: "accessibilityIdentifier"
                 )

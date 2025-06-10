@@ -76,8 +76,7 @@ private extension PurchaseInformation {
     var debugItems: [PurchaseDetailItem] {
         var items: [PurchaseDetailItem] = [
             .store(store.localizationKey),
-            .productID(productIdentifier)
-
+            .productID(productIdentifier),
 //            .sandbox(isSandbox)
         ]
 
@@ -90,8 +89,6 @@ private extension PurchaseInformation {
 //        switch self {
 //        case .subscription(let purchaseInfo):
 //            var items: [PurchaseDetailItem] = [
-//                .store(purchaseInfo.store.localizationKey),
-//                .productID(purchaseInfo.productIdentifier),
 //                .sandbox(purchaseInfo.isSandbox)
 //            ]
 //            if purchaseInfo.isActive {
