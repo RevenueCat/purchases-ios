@@ -104,7 +104,7 @@ extension PurchaseInformation {
         productIdentifier: String = "productIdentifier3",
         store: Store = .appStore,
         isCancelled: Bool = false,
-        expirationDate: Date = Self.defaultCustomerInfoRequestedDate,
+        expirationDate: Date? = Self.defaultCustomerInfoRequestedDate,
         renewalDate: Date? = nil,
         introductoryDiscount: StoreProductDiscountType? = nil
     ) -> PurchaseInformation {
@@ -117,7 +117,7 @@ extension PurchaseInformation {
             isLifetime: false,
             isTrial: false,
             isCancelled: false,
-            isActive: true,
+            isActive: expirationDate == nil,
             isSandbox: false,
             latestPurchaseDate: Self.defaultLatestPurchaseDate,
             originalPurchaseDate: nil,

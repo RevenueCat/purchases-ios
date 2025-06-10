@@ -70,7 +70,7 @@ struct PurchaseInformation {
 
     /// Indicates whether the purchased subscription is active
     ///
-    /// Note: `false` for non-subscriptions
+    /// Note: `true` for non-subscriptions
     let isActive: Bool
 
     /// The fetch date of this CustomerInfo. (a.k.a. CustomerInfo.requestedDate)
@@ -238,7 +238,7 @@ struct PurchaseInformation {
             case .nonSubscription:
                 self.isLifetime = true
                 self.isTrial = false
-                self.isActive = false
+                self.isActive = true
                 self.renewalDate = nil
                 self.expirationDate = nil
                 self.ownershipType = nil
