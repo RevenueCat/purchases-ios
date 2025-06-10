@@ -35,6 +35,7 @@ final class PromotionalOfferViewModel: ObservableObject {
 
     private var purchasesProvider: CustomerCenterPurchasesType
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCase
+    private let actionWrapper: CustomerCenterActionWrapper
 
     /// Callback to be called when the promotional offer is  purchased
     internal var onPromotionalOfferPurchaseFlowComplete: ((PromotionalOfferViewAction) -> Void)?
@@ -42,10 +43,12 @@ final class PromotionalOfferViewModel: ObservableObject {
     init(
         promotionalOfferData: PromotionalOfferData?,
         purchasesProvider: CustomerCenterPurchasesType,
+        actionWrapper: CustomerCenterActionWrapper,
         onPromotionalOfferPurchaseFlowComplete: ((PromotionalOfferViewAction) -> Void)? = nil
     ) {
         self.promotionalOfferData = promotionalOfferData
         self.purchasesProvider = purchasesProvider
+        self.actionWrapper = actionWrapper
         self.loadPromotionalOfferUseCase = LoadPromotionalOfferUseCase(purchasesProvider: purchasesProvider)
         self.onPromotionalOfferPurchaseFlowComplete = onPromotionalOfferPurchaseFlowComplete
     }
@@ -64,6 +67,7 @@ final class PromotionalOfferViewModel: ObservableObject {
             )
 
             Logger.debug("Purchased promotional offer: \(result)")
+            self.actionWrapper.handleAction(.promotionalOfferSuccess)
             self.onPromotionalOfferPurchaseFlowComplete?(.successfullyRedeemedPromotionalOffer(result))
         } catch {
             // swiftlint:disable:next todo

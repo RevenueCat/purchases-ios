@@ -4626,13 +4626,6 @@
 			path = Utilities;
 			sourceTree = "<group>";
 		};
-		5798C9052DF1985700F44400 /* ManageSubscriptions */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = ManageSubscriptions;
-			sourceTree = "<group>";
-		};
 		5798C90A2DF1985700F44400 /* PurchaseHistory */ = {
 			isa = PBXGroup;
 			children = (
@@ -4647,7 +4640,6 @@
 		5798C9132DF1985700F44400 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
-				5798C9052DF1985700F44400 /* ManageSubscriptions */,
 				5798C90A2DF1985700F44400 /* PurchaseHistory */,
 				5798C90B2DF1985700F44400 /* BaseManageSubscriptionViewModel.swift */,
 				5798C90C2DF1985700F44400 /* CustomerCenterViewModel.swift */,
