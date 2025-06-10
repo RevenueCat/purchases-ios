@@ -30,7 +30,9 @@ extension PurchaseInformation {
         isTrial: false,
         isCancelled: false,
         isActive: true,
+        isSandbox: false,
         latestPurchaseDate: Self.defaultLatestPurchaseDate,
+        originalPurchaseDate: nil,
         customerInfoRequestedDate: Self.defaultCustomerInfoRequestedDate,
         managementURL: URL(string: "https://www.revenuecat.com")!,
         expirationDate: nil,
@@ -47,7 +49,9 @@ extension PurchaseInformation {
         isTrial: false,
         isCancelled: false,
         isActive: false,
+        isSandbox: false,
         latestPurchaseDate: Self.defaultLatestPurchaseDate,
+        originalPurchaseDate: nil,
         customerInfoRequestedDate: Self.defaultCustomerInfoRequestedDate,
         managementURL: URL(string: "https://www.revenuecat.com")!,
         expirationDate: nil,
@@ -64,7 +68,9 @@ extension PurchaseInformation {
         isTrial: false,
         isCancelled: false,
         isActive: true,
+        isSandbox: false,
         latestPurchaseDate: Self.defaultLatestPurchaseDate,
+        originalPurchaseDate: nil,
         customerInfoRequestedDate: Self.defaultCustomerInfoRequestedDate,
         managementURL: URL(string: "https://www.revenuecat.com")!,
         expirationDate: nil,
@@ -81,7 +87,9 @@ extension PurchaseInformation {
         isTrial: true,
         isCancelled: false,
         isActive: true,
+        isSandbox: false,
         latestPurchaseDate: Self.defaultLatestPurchaseDate,
+        originalPurchaseDate: nil,
         customerInfoRequestedDate: Self.defaultCustomerInfoRequestedDate,
         managementURL: URL(string: "https://www.revenuecat.com")!,
         expirationDate: nil,
@@ -107,7 +115,9 @@ extension PurchaseInformation {
             isTrial: false,
             isCancelled: false,
             isActive: true,
+            isSandbox: false,
             latestPurchaseDate: Self.defaultLatestPurchaseDate,
+            originalPurchaseDate: nil,
             customerInfoRequestedDate: Self.defaultCustomerInfoRequestedDate,
             managementURL: URL(string: "https://www.revenuecat.com")!,
             expirationDate: expirationDate,
@@ -125,7 +135,9 @@ extension PurchaseInformation {
         isTrial: false,
         isCancelled: false,
         isActive: true,
+        isSandbox: false,
         latestPurchaseDate: Self.defaultLatestPurchaseDate,
+        originalPurchaseDate: nil,
         customerInfoRequestedDate: Self.defaultCustomerInfoRequestedDate,
         managementURL: URL(string: "https://www.revenuecat.com")!,
         expirationDate: nil,
@@ -142,7 +154,9 @@ extension PurchaseInformation {
         isTrial: false,
         isCancelled: false,
         isActive: true,
+        isSandbox: false,
         latestPurchaseDate: Self.defaultLatestPurchaseDate,
+        originalPurchaseDate: nil,
         customerInfoRequestedDate: Self.defaultCustomerInfoRequestedDate,
         managementURL: URL(string: "https://www.revenuecat.com")!,
         expirationDate: nil,
@@ -159,10 +173,62 @@ extension PurchaseInformation {
         isTrial: false,
         isCancelled: false,
         isActive: true,
+        isSandbox: false,
         latestPurchaseDate: Self.defaultLatestPurchaseDate,
+        originalPurchaseDate: nil,
         customerInfoRequestedDate: Self.defaultCustomerInfoRequestedDate,
         managementURL: URL(string: "https://www.revenuecat.com")!,
         expirationDate: nil,
         renewalDate: nil
     )
+
+    static func mockLifetime(
+        customerInfoRequestedDate: Date = Self.defaultCustomerInfoRequestedDate,
+        store: Store = .appStore
+    ) -> PurchaseInformation {
+        PurchaseInformation(
+            title: "",
+            pricePaid: .nonFree(""),
+            renewalPrice: nil,
+            productIdentifier: "",
+            store: store,
+            isLifetime: true,
+            isTrial: false,
+            isCancelled: false,
+            isActive: true,
+            isSandbox: false,
+            latestPurchaseDate: Self.defaultLatestPurchaseDate,
+            originalPurchaseDate: nil,
+            customerInfoRequestedDate: customerInfoRequestedDate,
+            managementURL: URL(string: "https://www.revenuecat.com")!
+        )
+    }
+
+    static func mockNonLifetime(
+        store: Store = .appStore,
+        pricePaid: PurchaseInformation.PricePaid = .nonFree("5"),
+        renewalPrice: PurchaseInformation.RenewalPrice = .nonFree("5"),
+        isTrial: Bool = false,
+        isCancelled: Bool = false,
+        latestPurchaseDate: Date = Self.defaultLatestPurchaseDate,
+        customerInfoRequestedDate: Date = Self.defaultCustomerInfoRequestedDate,
+        managementURL: URL? = URL(string: "https://www.revenuecat.com")!
+    ) -> PurchaseInformation {
+        PurchaseInformation(
+            title: "",
+            pricePaid: pricePaid,
+            renewalPrice: renewalPrice,
+            productIdentifier: "",
+            store: store,
+            isLifetime: false,
+            isTrial: isTrial,
+            isCancelled: isCancelled,
+            isActive: true,
+            isSandbox: false,
+            latestPurchaseDate: latestPurchaseDate,
+            originalPurchaseDate: nil,
+            customerInfoRequestedDate: customerInfoRequestedDate,
+            managementURL: managementURL
+        )
+    }
 }
