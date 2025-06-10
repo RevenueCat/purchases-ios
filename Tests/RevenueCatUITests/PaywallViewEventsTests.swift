@@ -54,6 +54,7 @@ class BasePaywallViewEventsTests: TestCase {
             : super.defaultTestSuite
     }
 
+    private var impressionEventExpectation: XCTestExpectation!
     private var closeEventExpectation: XCTestExpectation!
     override func setUp() {
         super.setUp()
@@ -67,11 +68,13 @@ class BasePaywallViewEventsTests: TestCase {
                     await self?.track(event)
                 }
             }
+        self.impressionEventExpectation = .init(description: "Impression event")
         self.closeEventExpectation = .init(description: "Close event")
     }
 
     func testPaywallImpressionEvent() async throws {
         try await self.runDuringViewLifetime {}
+        await self.waitForImpressionEvent()
 
         expect(self.events).to(containElementSatisfying { $0.eventType == .impression })
 
@@ -157,7 +160,7 @@ private extension BasePaywallViewEventsTests {
         self.events.append(event)
 
         switch event {
-        case .impression: break
+        case .impression: self.impressionEventExpectation.fulfill()
         case .cancel: break
         case .close: self.closeEventExpectation.fulfill()
         }
@@ -188,6 +191,9 @@ private extension BasePaywallViewEventsTests {
         await self.fulfillment(of: [self.closeEventExpectation], timeout: 3)
     }
 
+    func waitForImpressionEvent() async {
+        await self.fulfillment(of: [self.impressionEventExpectation], timeout: 1)
+    }
 }
 
 private extension PaywallViewMode {
@@ -219,3 +225,5 @@ private extension PaywallEvent {
 }
 
 #endif
+
+extension PaywallEvent: Sendable {}
