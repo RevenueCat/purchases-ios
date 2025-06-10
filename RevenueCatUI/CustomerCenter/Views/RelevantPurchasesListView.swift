@@ -251,7 +251,7 @@ struct RelevantPurchasesListView_Previews: PreviewProvider {
             ),
             PurchaseInformation.mock(
                 store: .appStore,
-                isActive: true,
+                isActive: true
             ),
             .free
         ]

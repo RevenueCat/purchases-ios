@@ -117,32 +117,6 @@ extension PurchaseInformation {
         renewalDate: nil
     )
 
-    static func yearlyExpiring(
-        title: String = "Product name",
-        productIdentifier: String = "productIdentifier3",
-        store: Store = .appStore,
-        isCancelled: Bool = false,
-        expirationDate: Date? = Self.defaultCustomerInfoRequestedDate,
-        renewalDate: Date? = nil,
-        introductoryDiscount: StoreProductDiscountType? = nil
-    ) -> PurchaseInformation {
-        PurchaseInformation.mock(
-            title: title,
-            pricePaid: .nonFree("$49.99"),
-            renewalPrice: .nonFree("$49.99"),
-            productIdentifier: productIdentifier,
-            store: store,
-            isLifetime: false,
-            isCancelled: isCancelled,
-            isActive: false,
-            isSandbox: false,
-            managementURL: URL(string: "https://www.revenuecat.com"),
-            expirationDate: expirationDate,
-            renewalDate: renewalDate,
-            ownershipType: .purchased
-        )
-    }
-
     static let consumable = PurchaseInformation.mock(
         title: "Basic",
         pricePaid: .nonFree("$49.99"),
