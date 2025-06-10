@@ -53,13 +53,14 @@ struct PurchasesInformationSection: View {
 
     var body: some View {
         ScrollViewSection(title: title) {
-            ForEach(items) { purchase in
+            ForEach(Array(items.enumerated()), id: \.element) { (offset, purchase) in
                 Button {
                     action(purchase)
                 } label: {
                     PurchaseInformationCardView(
                         purchaseInformation: purchase,
-                        localization: localization
+                        localization: localization,
+                        accessibilityIdentifier: "purchase_card_\(offset)"
                     )
                     .cornerRadius(10)
                     .padding(.horizontal)

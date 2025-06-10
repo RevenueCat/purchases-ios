@@ -1,3 +1,42 @@
+## 5.27.1
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Remove submodules temporarily to fix SPM (#5246) via Toni Rico (@tonidero)
+
+### 🔄 Other Changes
+* Add accessibility identifier to PurchaseCardView (#5176) via Facundo Menzella (@facumenzella)
+
+## 5.26.0
+## RevenueCat SDK
+### ✨ New Features
+* Add Paddle Store enum case (#4981) via Will Taylor (@fire-at-will)
+### Customer Center
+#### 🐞 Bugfixes
+* Use env openURL instead of SFSafariVC to open mailto (#5221) via Facundo Menzella (@facumenzella)
+### Paywall Components
+#### 🐞 Bugfixes
+* [Paywalls] do not ignore all safe areas when applying the zstack in bottom sheet (#5201) via Mark Villacampa (@MarkVillacampa)
+
+### 🔄 Other Changes
+* Fix StoreKitVersionTests on iOS 15 (#5226) via Will Taylor (@fire-at-will)
+* Add @_spi(Internal) to ClockTests (#5212) via Facundo Menzella (@facumenzella)
+* Use effectiveVersion.debugDescription in StoreKitVersionTests (#5213) via Facundo Menzella (@facumenzella)
+* add missing import Foundation in Tests (#5206) via Facundo Menzella (@facumenzella)
+
+## 5.25.3
+## RevenueCat SDK
+### 🐞 Bugfixes
+* CAT-1975: Dont Call POST Receipt with No Receipt or AppTransaction when Syncing Purchases with SK2 (#5161) via Will Taylor (@fire-at-will)
+
+### 🔄 Other Changes
+* Add isSanbox to NonSubscriptionTransaction (#5199) via Facundo Menzella (@facumenzella)
+* Add missing fields to PurchaseInformation (#5184) via Facundo Menzella (@facumenzella)
+* Improve descriptions for SDK Health errors (#5185) via Pol Piella Abadia (@polpielladev)
+* fix pre-commit hook to lint files with spaces in the path (#5186) via Facundo Menzella (@facumenzella)
+* Delete earliestExpiringTransaction from Customer Center code (#5183) via Facundo Menzella (@facumenzella)
+* Remove unused durationTitle from PurchaseInformation (#5181) via Facundo Menzella (@facumenzella)
+* Add new test cases for maestro + customer center (#5177) via Facundo Menzella (@facumenzella)
+
 ## 5.25.2
 ## RevenueCat SDK
 ### Customer Center
@@ -1242,6 +1281,10 @@ or if using the modifier:
 The RevenueCat iOS SDK v5 is here!! Version 5.0 of the RevenueCat SDK enables full StoreKit 2 flow on the SDK and the RevenueCat backend by default.
 
 See our [RevenueCat v5 Migration Guide](Sources/DocCDocumentation/DocCDocumentation.docc/V5_API_Migration_guide.md) for all the details.
+
+## 4.43.6
+### 🔄 Other Changes
+* Adds `showStoreMessagesAutomatically` parameter to CEC mode (#5222) via JayShortway (@JayShortway)
 
 ## 4.43.5
 ### Other Changes
