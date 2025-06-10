@@ -1576,7 +1576,7 @@ workflows:
       and:
         - not:
             equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-        - equal: ["add-commit-has-in-paywall-rendering-validation", << pipeline.git.branch >>]
+        - equal: ["main", << pipeline.git.branch >>]
         - equal: ["default", << pipeline.parameters.action >>]
     jobs:
       - record-and-push-paywall-template-screenshots:
