@@ -47,6 +47,9 @@ struct PurchaseHistoryView: View {
         .navigationTitle(localization[.purchaseHistory])
         .listStyle(.insetGrouped)
         .onAppear {
+#if DEBUG
+                guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else { return }
+#endif
             Task {
                 await viewModel.didAppear()
             }
@@ -61,8 +64,8 @@ struct PurchaseHistoryView: View {
                     ProgressView()
                 } else if viewModel.errorMessage != nil {
                     ErrorView()
-                } else if let info = viewModel.customerInfo {
-                    if !info.activeSubscriptions.isEmpty {
+                } else if !viewModel.isEmpty {
+                    if !viewModel.activeSubscriptions.isEmpty {
                         PurchasesInformationSection(
                             title: localization[.subscriptionsSectionTitle],
                             items: viewModel.activeSubscriptions,
@@ -95,72 +98,6 @@ struct PurchaseHistoryView: View {
             }
         }
     }
-
-    @ViewBuilder
-    private var activeSubscriptionsView: some View {
-        ScrollViewSection(title: localization[.subscriptionsSectionTitle]) {
-            ForEach(viewModel.activeSubscriptions) { purchase in
-                Button {
-                    viewModel.selectedPurchase = purchase
-                } label: {
-                    PurchaseInformationCardView(
-                        purchaseInformation: purchase,
-                        localization: localization,
-                        accessibilityIdentifier: ""
-                    )
-                    .cornerRadius(10)
-                    .padding(.horizontal)
-                }
-                .tint(colorScheme == .dark ? .white : .black)
-            }
-        }
-    }
-
-    @ViewBuilder
-    private var inactiveSubscriptionsView: some View {
-        ScrollViewSection(title: "INACTIVE") {
-            ForEach(viewModel.inactiveSubscriptions) { purchase in
-                Button {
-                    viewModel.selectedPurchase = purchase
-                } label: {
-                    PurchaseInformationCardView(
-                        purchaseInformation: purchase,
-                        localization: localization,
-                        accessibilityIdentifier: ""
-                    )
-                    .cornerRadius(10)
-                    .padding(.horizontal)
-                }
-                .tint(colorScheme == .dark ? .white : .black)
-            }
-        }
-    }
-
-    private var otherPurchasesView: some View {
-        ScrollViewSection(title: localization[.purchasesSectionTitle]) {
-            ForEach(viewModel.nonSubscriptions) { purchase in
-                Button {
-                    viewModel.selectedPurchase = purchase
-                } label: {
-                    PurchaseInformationCardView(
-                        purchaseInformation: purchase,
-                        localization: localization,
-                        accessibilityIdentifier: ""
-                    )
-                    .cornerRadius(10)
-                    .padding(.horizontal)
-                }
-                .tint(colorScheme == .dark ? .white : .black)
-            }
-        }
-    }
-
-    private var dateFormatter: DateFormatter {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .none
-        return formatter
-    }
 }
 
 #if DEBUG
@@ -188,11 +125,18 @@ struct PurchaseHistoryView_Previews: PreviewProvider {
         CompatibilityNavigationStack {
             PurchaseHistoryView(
                 viewModel: PurchaseHistoryViewModel(
-                    customerInfo: customerInfo,
                     isLoading: false,
-                    purchasesProvider: MockCustomerCenterPurchases(
-                        customerInfo: customerInfo
-                    )
+                    activeSubscriptions: [
+                        .monthlyRenewing,
+                        .free
+                    ],
+                    inactiveSubscriptions: [
+                        .mock(isActive: false)
+                    ],
+                    nonSubscriptions: [
+                        .consumable
+                    ],
+                    purchasesProvider: MockCustomerCenterPurchases()
                 )
             )
             .navigationBarTitleDisplayMode(.inline)

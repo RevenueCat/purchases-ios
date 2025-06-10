@@ -47,14 +47,11 @@ final class PurchaseHistoryViewModel: ObservableObject {
         activeSubscriptions.isEmpty && inactiveSubscriptions.isEmpty && nonSubscriptions.isEmpty
     }
 
-    var customerInfo: CustomerInfo?
-
     let purchasesProvider: CustomerCenterPurchasesType
     private let customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
 
     init(
         selectedPurchase: PurchaseInformation? = nil,
-        customerInfo: CustomerInfo? = nil,
         errorMessage: String? = nil,
         isLoading: Bool = true,
         activeSubscriptions: [PurchaseInformation] = [],
@@ -64,7 +61,6 @@ final class PurchaseHistoryViewModel: ObservableObject {
         customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType = CustomerCenterStoreKitUtilities()
     ) {
         self.selectedPurchase = selectedPurchase
-        self.customerInfo = customerInfo
         self.errorMessage = errorMessage
         self.isLoading = isLoading
         self.activeSubscriptions = activeSubscriptions
@@ -99,7 +95,6 @@ private extension PurchaseHistoryViewModel {
                 self.activeSubscriptions = active
                 self.inactiveSubscriptions = inactive
                 self.nonSubscriptions = nonSubscriptions
-                self.customerInfo = customerInfo
             }
         } catch {
             self.activeSubscriptions = []
