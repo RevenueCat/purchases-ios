@@ -1286,7 +1286,7 @@ public protocol PurchasesSwiftType: AnyObject {
      * -  [Virtual Currencies](https://www.revenuecat.com/docs/offerings/virtual-currency)
      */
     func virtualCurrencies(
-        forceRefresh: Bool,
+        forceRefresh: Bool
     ) async throws -> VirtualCurrencies
     #endif
 

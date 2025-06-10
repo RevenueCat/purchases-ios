@@ -1344,7 +1344,7 @@ public extension Purchases {
     }
 
     func virtualCurrencies(
-        forceRefresh: Bool,
+        forceRefresh: Bool
     ) async throws -> VirtualCurrencies {
         return try await self.virtualCurrencyManager.virtualCurrencies(forceRefresh: forceRefresh)
     }

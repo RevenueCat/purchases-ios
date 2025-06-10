@@ -15,7 +15,7 @@ import Foundation
 
 protocol VirtualCurrencyManagerType {
     func virtualCurrencies(
-        forceRefresh: Bool,
+        forceRefresh: Bool
     ) async throws -> VirtualCurrencies
 }
 
@@ -39,7 +39,7 @@ actor VirtualCurrencyManager: VirtualCurrencyManagerType, Sendable {
     }
 
     func virtualCurrencies(
-        forceRefresh: Bool,
+        forceRefresh: Bool
     ) async throws -> VirtualCurrencies {
         let appUserID = identityManager.currentAppUserID
         let isAppBackgrounded = await systemInfo.isApplicationBackgrounded()
