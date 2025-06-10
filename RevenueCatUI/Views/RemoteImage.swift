@@ -37,7 +37,16 @@ struct RemoteImage<Content: View>: View {
         lowResUrl != nil
     }
 
-    private let transition: AnyTransition = .opacity.animation(Constants.defaultAnimation)
+    private var transition: AnyTransition {
+        #if DEBUG
+        if self.url.isFileURL {
+            // No transition for the load of the local image
+            // This is used for paywall screenshot validation
+            return .identity
+        }
+        #endif
+        return .opacity.animation(Constants.defaultAnimation)
+    }
 
     init(
         url: URL,
