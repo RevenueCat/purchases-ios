@@ -1008,8 +1008,8 @@ final class CustomerCenterViewModelTests: TestCase {
         // two active subscription
         viewModel = CustomerCenterViewModel(
             activeSubscriptionPurchases: [
-                .yearlyExpiring(productIdentifier: "1"),
-                    .yearlyExpiring(productIdentifier: "2")
+                .mock(productIdentifier: "1"),
+                    .mock(productIdentifier: "2")
             ],
             activeNonSubscriptionPurchases: [],
             configuration: CustomerCenterConfigData.default
@@ -1020,7 +1020,7 @@ final class CustomerCenterViewModelTests: TestCase {
         // one active subscription and one purchase
         viewModel = CustomerCenterViewModel(
             activeSubscriptionPurchases: [
-                .yearlyExpiring(productIdentifier: "1")
+                .mock(productIdentifier: "1")
             ],
             activeNonSubscriptionPurchases: [
                 .consumable

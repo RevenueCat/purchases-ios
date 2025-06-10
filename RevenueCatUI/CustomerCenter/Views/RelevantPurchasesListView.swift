@@ -244,8 +244,15 @@ struct RelevantPurchasesListView_Previews: PreviewProvider {
     // swiftlint:disable force_unwrapping
     static var previews: some View {
         let purchases = [
-            PurchaseInformation.yearlyExpiring(store: .amazon, renewalDate: PurchaseInformation.defaulRenewalDate),
-            PurchaseInformation.yearlyExpiring(store: .appStore),
+            PurchaseInformation.mock(
+                store: .amazon,
+                isActive: true,
+                renewalDate: PurchaseInformation.defaulRenewalDate
+            ),
+            PurchaseInformation.mock(
+                store: .appStore,
+                isActive: true,
+            ),
             .free
         ]
 
