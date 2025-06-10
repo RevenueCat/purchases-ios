@@ -82,6 +82,10 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
         try await Purchases.shared.syncPurchases()
     }
 
+    func virtualCurrencies() async throws -> VirtualCurrencies {
+        return try await Purchases.shared.virtualCurrencies(forceRefresh: true)
+    }
+
     #if os(iOS) || os(visionOS)
     func beginRefundRequest(forProduct productID: String) async throws -> RefundRequestStatus {
         try await Purchases.shared.beginRefundRequest(forProduct: productID)

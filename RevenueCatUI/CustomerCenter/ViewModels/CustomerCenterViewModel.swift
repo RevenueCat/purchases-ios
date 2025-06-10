@@ -35,7 +35,7 @@ import RevenueCat
     private(set) var appIsLatestVersion: Bool = defaultAppIsLatestVersion
 
     @Published
-    private(set) var virtualCurrencies: [String: VirtualCurrency]?
+    private(set) var virtualCurrencies: VirtualCurrencies?
 
     @Published
     private(set) var onUpdateAppClick: (() -> Void)?
@@ -197,8 +197,7 @@ import RevenueCat
             try await self.loadCustomerCenterConfig()
 
             if self.configuration?.support.displayVirtualCurrencies == true {
-                #warning("TODO: Load the virtual currencies once the SDK supports it")
-                self.virtualCurrencies = [:]
+                self.virtualCurrencies = try? await purchasesProvider.virtualCurrencies()
             } else {
                 self.virtualCurrencies = nil
             }

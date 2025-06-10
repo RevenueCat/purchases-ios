@@ -47,7 +47,7 @@ struct RelevantPurchasesListView: View {
         originalAppUserId: String,
         originalPurchaseDate: Date?,
         shouldShowSeeAllPurchases: Bool,
-        virtualCurrencies: [String: RevenueCat.VirtualCurrency]?,
+        virtualCurrencies: RevenueCat.VirtualCurrencies?,
         purchasesProvider: CustomerCenterPurchasesType,
         actionWrapper: CustomerCenterActionWrapper
     ) {
@@ -179,7 +179,7 @@ struct RelevantPurchasesListView: View {
                         .tint(colorScheme == .dark ? .white : .black)
                     }
 
-                    if let virtualCurrencies = viewModel.virtualCurrencies, !virtualCurrencies.isEmpty {
+                    if let virtualCurrencies = viewModel.virtualCurrencies, !virtualCurrencies.all.isEmpty {
                         VirtualCurrenciesScrollViewWithOSBackgroundSection(
                             virtualCurrencies: virtualCurrencies,
                             onSeeAllInAppCurrenciesButtonTapped: self.viewModel.displayAllInAppCurrenciesScreen

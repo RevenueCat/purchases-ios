@@ -14,7 +14,7 @@
 //
 
 import Foundation
-import RevenueCat
+@testable import RevenueCat
 
 extension CustomerCenterConfigData {
 
@@ -147,7 +147,7 @@ extension CustomerCenterConfigData {
         buttonBackgroundColor: .init(light: "#287aff", dark: "#287aff")
     )
 
-    static var fourVirtualCurrencies: [String: RevenueCat.VirtualCurrency] {
+    static var fourVirtualCurrencies: RevenueCat.VirtualCurrencies {
         let jsonData = """
                 {
                   "GLD": {
@@ -166,17 +166,18 @@ extension CustomerCenterConfigData {
                 """.data(using: .utf8)
 
         guard let data = jsonData else {
-            return [:]
+            return VirtualCurrencies(virtualCurrencies: [:])
         }
 
         do {
-            return try JSONDecoder().decode([String: VirtualCurrency].self, from: data)
+            let vcs = try JSONDecoder().decode([String: VirtualCurrency].self, from: data)
+            return VirtualCurrencies(virtualCurrencies: vcs)
         } catch {
-            return [:]
+            return VirtualCurrencies(virtualCurrencies: [:])
         }
     }
 
-    static var fiveVirtualCurrencies: [String: RevenueCat.VirtualCurrency] {
+    static var fiveVirtualCurrencies: RevenueCat.VirtualCurrencies {
         let jsonData = """
                 {
                   "GLD": {
@@ -198,13 +199,14 @@ extension CustomerCenterConfigData {
                 """.data(using: .utf8)
 
         guard let data = jsonData else {
-            return [:]
+            return VirtualCurrencies(virtualCurrencies: [:])
         }
 
         do {
-            return try JSONDecoder().decode([String: VirtualCurrency].self, from: data)
+            let vcs = try JSONDecoder().decode([String: VirtualCurrency].self, from: data)
+            return VirtualCurrencies(virtualCurrencies: vcs)
         } catch {
-            return [:]
+            return VirtualCurrencies(virtualCurrencies: [:])
         }
     }
 }

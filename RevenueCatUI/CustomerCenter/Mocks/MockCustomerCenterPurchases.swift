@@ -12,7 +12,7 @@
 //  Created by Cesar de la Vega on 28/11/24.
 
 import Foundation
-import RevenueCat
+@testable import RevenueCat
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
@@ -116,6 +116,17 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
     func restorePurchases() async throws -> CustomerInfo {
         restorePurchasesCallCount += 1
         return try restorePurchasesResult.get()
+    }
+
+    var virtualCurrenciesCallCount = 0
+    var virtualCurrenciesResult: VirtualCurrencies?
+    func virtualCurrencies() async throws -> VirtualCurrencies {
+        virtualCurrenciesCallCount += 1
+        guard let virtualCurrenciesResult = virtualCurrenciesResult else {
+            return VirtualCurrencies(virtualCurrencies: [:])
+        }
+
+        return virtualCurrenciesResult
     }
 
     func showManageSubscriptions() async throws {

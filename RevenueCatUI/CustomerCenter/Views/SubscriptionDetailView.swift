@@ -51,7 +51,7 @@ struct SubscriptionDetailView: View {
         customerInfoViewModel: CustomerCenterViewModel,
         screen: CustomerCenterConfigData.Screen,
         purchaseInformation: PurchaseInformation?,
-        virtualCurrencies: [String: VirtualCurrency]?,
+        virtualCurrencies: RevenueCat.VirtualCurrencies?,
         showPurchaseHistory: Bool,
         allowsMissingPurchaseAction: Bool,
         purchasesProvider: CustomerCenterPurchasesType,
@@ -189,7 +189,7 @@ struct SubscriptionDetailView: View {
                     .padding(.vertical, 32)
                 }
 
-                 if let virtualCurrencies = viewModel.virtualCurrencies, !virtualCurrencies.isEmpty {
+                if let virtualCurrencies = viewModel.virtualCurrencies, !virtualCurrencies.all.isEmpty {
                     VirtualCurrenciesScrollViewWithOSBackgroundSection(
                         virtualCurrencies: virtualCurrencies,
                         onSeeAllInAppCurrenciesButtonTapped: self.viewModel.displayAllInAppCurrenciesScreen

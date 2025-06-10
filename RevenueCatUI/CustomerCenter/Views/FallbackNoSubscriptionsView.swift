@@ -48,12 +48,12 @@ struct FallbackNoSubscriptionsView: View {
     @State
     private var showAllInAppCurrenciesScreen: Bool = false
 
-    private let virtualCurrencies: [String: RevenueCat.VirtualCurrency]?
+    private let virtualCurrencies: RevenueCat.VirtualCurrencies?
 
     init(
         customerCenterViewModel: CustomerCenterViewModel,
         actionWrapper: CustomerCenterActionWrapper,
-        virtualCurrencies: [String: RevenueCat.VirtualCurrency]?
+        virtualCurrencies: RevenueCat.VirtualCurrencies?
     ) {
         self.customerCenterViewModel = customerCenterViewModel
         self.actionWrapper = actionWrapper
@@ -82,7 +82,7 @@ struct FallbackNoSubscriptionsView: View {
                 )
                 .padding(.bottom, 32)
 
-                if let virtualCurrencies, !virtualCurrencies.isEmpty {
+                if let virtualCurrencies, !virtualCurrencies.all.isEmpty {
                     VirtualCurrenciesScrollViewWithOSBackgroundSection(
                         virtualCurrencies: virtualCurrencies,
                         onSeeAllInAppCurrenciesButtonTapped: { self.showAllInAppCurrenciesScreen = true }
