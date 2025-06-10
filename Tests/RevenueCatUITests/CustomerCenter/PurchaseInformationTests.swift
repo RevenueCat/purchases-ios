@@ -109,7 +109,7 @@ final class PurchaseInformationTests: TestCase {
             displayName: "A product",
             periodType: .normal,
             purchaseDate: Date(),
-            isSandbox: false,
+            isSandbox: false
         )
 
         let subscriptionInfo = try XCTUnwrap(
