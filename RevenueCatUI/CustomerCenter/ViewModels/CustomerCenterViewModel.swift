@@ -299,7 +299,6 @@ private extension CustomerCenterViewModel {
                 return date1 < date2
             }) {
 
-
             let purchaseInfo: PurchaseInformation = await .from(
                 transaction: subscription,
                 customerInfo: customerInfo,
