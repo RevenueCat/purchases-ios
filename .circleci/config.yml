@@ -1392,11 +1392,11 @@ jobs:
 
     steps:
       - checkout
+      - install-dependencies:
+          install_swiftlint: false
       - run:
           name: Fetch paywall-preview-resources
           command: bundle exec fastlane ios fetch_paywall_preview_resources
-      - install-dependencies:
-          install_swiftlint: false
       - run:
           name: Clone paywall-rendering-validation repository
           command: git clone git@github.com:RevenueCat/paywall-rendering-validation.git ../Tests/paywall-rendering-validation
