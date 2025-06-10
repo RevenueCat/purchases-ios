@@ -185,7 +185,7 @@ struct PurchaseHistoryView_Previews: PreviewProvider {
                             CustomerInfoFixtures.NonSubscriptionTransaction(
                                 id: "id2",
                                 store: "\(Store.playStore.rawValue)",
-                                purchaseDate: "2022-03-08T17:42:58Z",
+                                purchaseDate: "2022-03-08T17:42:58Z"
                             )
                         ])
                 )
