@@ -159,6 +159,8 @@ platform :ios do
   lane :record_and_push_paywall_template_screenshots do |options|
     UI.user_error!("Please provide the target_repository_path, and make sure it is cloned.") unless options[:target_repository_path]
 
+    this_commit_hash = sh("git", "rev-parse", "HEAD").strip
+
     target_repository_path = Dir.chdir("..") do
       File.expand_path(options[:target_repository_path])
     end
@@ -199,7 +201,7 @@ platform :ios do
       commit_push_and_create_pr_if_necessary(
         repo: target_repository_name,
         branch_name: target_repository_branch,
-        commit_message: "[Automated] Updates iOS template screenshots.",
+        commit_message: "[Automated] Updates iOS template screenshots (commit: #{this_commit_hash})",
         title: "[AUTOMATIC] Updates iOS template screenshots",
         body: "This is an automatic update of the iOS template screenshots.",
         team_reviewers: ["coresdk", "monetization", "bab-s"]
