@@ -59,7 +59,7 @@ final class VirtualCurrenciesTests: TestCase {
         XCTAssertTrue(vcInfos.all.contains(where: { $0.key == "SLV" }))
         XCTAssertTrue(vcInfos.all.contains(where: { $0.key == "COIN" }))
 
-        let nonZeroBalanceVCs = vcInfos.virtualCurrenciesWithNonZeroBalance
+        let nonZeroBalanceVCs = vcInfos.withNonZeroBalance
 
         XCTAssertTrue(nonZeroBalanceVCs.contains(where: { $0.key == "GLD" }))
         XCTAssertTrue(nonZeroBalanceVCs.contains(where: { $0.key == "COIN" }))
@@ -81,13 +81,13 @@ final class VirtualCurrenciesTests: TestCase {
         ]
         let vcInfos = VirtualCurrencies(virtualCurrencies: zeroBalances)
 
-        XCTAssertTrue(vcInfos.virtualCurrenciesWithNonZeroBalance.isEmpty)
+        XCTAssertTrue(vcInfos.withNonZeroBalance.isEmpty)
     }
 
     func testVirtualCurrenciesWithNonZeroBalanceWithEmptyDictionary() throws {
         let vcInfos = VirtualCurrencies(virtualCurrencies: [:])
 
-        XCTAssertTrue(vcInfos.virtualCurrenciesWithNonZeroBalance.isEmpty)
+        XCTAssertTrue(vcInfos.withNonZeroBalance.isEmpty)
     }
 
     // Negative balances aren't supported at the product level, but it's still
@@ -100,7 +100,7 @@ final class VirtualCurrenciesTests: TestCase {
         ]
         let vcInfos = VirtualCurrencies(virtualCurrencies: negativeBalances)
 
-        XCTAssertTrue(vcInfos.virtualCurrenciesWithNonZeroBalance.isEmpty)
+        XCTAssertTrue(vcInfos.withNonZeroBalance.isEmpty)
     }
 
     // MARK: - virtualCurrenciesWithZeroBalance Tests
@@ -112,7 +112,7 @@ final class VirtualCurrenciesTests: TestCase {
         XCTAssertTrue(vcInfos.all.contains(where: { $0.key == "SLV" }))
         XCTAssertTrue(vcInfos.all.contains(where: { $0.key == "COIN" }))
 
-        let zeroBalanceVCs = vcInfos.virtualCurrenciesWithZeroBalance
+        let zeroBalanceVCs = vcInfos.withZeroBalance
 
         XCTAssertTrue(zeroBalanceVCs.contains(where: { $0.key == "SLV" }))
         let silver = try XCTUnwrap(zeroBalanceVCs["SLV"], "VirtualCurrencies is missing SLV")
@@ -134,13 +134,13 @@ final class VirtualCurrenciesTests: TestCase {
         ]
         let vcInfos = VirtualCurrencies(virtualCurrencies: nonZeroBalances)
 
-        XCTAssertTrue(vcInfos.virtualCurrenciesWithZeroBalance.isEmpty)
+        XCTAssertTrue(vcInfos.withZeroBalance.isEmpty)
     }
 
     func testVirtualCurrenciesWithZeroBalanceWithEmptyDictionary() throws {
         let vcInfos = VirtualCurrencies(virtualCurrencies: [:])
 
-        XCTAssertTrue(vcInfos.virtualCurrenciesWithZeroBalance.isEmpty)
+        XCTAssertTrue(vcInfos.withZeroBalance.isEmpty)
     }
 
     // Negative balances aren't supported at the product level, but it's still
@@ -153,7 +153,7 @@ final class VirtualCurrenciesTests: TestCase {
         ]
         let vcInfos = VirtualCurrencies(virtualCurrencies: negativeBalances)
 
-        let zeroBalanceVCs = vcInfos.virtualCurrenciesWithZeroBalance
+        let zeroBalanceVCs = vcInfos.withZeroBalance
         XCTAssertTrue(zeroBalanceVCs.contains(where: { $0.key == "COIN" }))
         XCTAssertEqual(zeroBalanceVCs.count, 1)
     }
