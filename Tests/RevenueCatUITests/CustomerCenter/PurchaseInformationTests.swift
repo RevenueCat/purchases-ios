@@ -72,6 +72,8 @@ final class PurchaseInformationTests: TestCase {
         var refundedAtDate: Date?
         var storeIdentifier: String?
         var identifier: String?
+        var originalPurchaseDate: Date?
+        var isSandbox: Bool
     }
 
     func testAppleEntitlementAndSubscribedProductWithoutRenewalInfo() throws {
@@ -106,7 +108,8 @@ final class PurchaseInformationTests: TestCase {
             price: .init(currency: "USD", amount: 6.99),
             displayName: "A product",
             periodType: .normal,
-            purchaseDate: Date()
+            purchaseDate: Date(),
+            isSandbox: false,
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -161,7 +164,8 @@ final class PurchaseInformationTests: TestCase {
             price: .init(currency: "USD", amount: 6.99),
             displayName: "A product",
             periodType: .normal,
-            purchaseDate: Date()
+            purchaseDate: Date(),
+            isSandbox: false
         )
 
         let subscriptionInfoNullable = await PurchaseInformation.purchaseInformationUsingRenewalInfo(
@@ -217,7 +221,8 @@ final class PurchaseInformationTests: TestCase {
             price: .init(currency: "USD", amount: 6.99),
             displayName: "A product",
             periodType: .normal,
-            purchaseDate: Date()
+            purchaseDate: Date(),
+            isSandbox: false
         )
 
         let subscriptionInfoNullable = await PurchaseInformation.purchaseInformationUsingRenewalInfo(
@@ -274,7 +279,8 @@ final class PurchaseInformationTests: TestCase {
             price: .init(currency: "USD", amount: 6.99),
             displayName: "A product",
             periodType: .normal,
-            purchaseDate: Date()
+            purchaseDate: Date(),
+            isSandbox: false
         )
 
         let subscriptionInfoNullable = await PurchaseInformation.purchaseInformationUsingRenewalInfo(
@@ -329,7 +335,8 @@ final class PurchaseInformationTests: TestCase {
             price: .init(currency: "USD", amount: 6.99),
             displayName: "A product",
             periodType: .normal,
-            purchaseDate: Date()
+            purchaseDate: Date(),
+            isSandbox: false
         )
 
         let subscriptionInfoNullable = await PurchaseInformation.purchaseInformationUsingRenewalInfo(
@@ -372,7 +379,8 @@ final class PurchaseInformationTests: TestCase {
             price: .init(currency: "USD", amount: 6.99),
             displayName: "A product",
             periodType: .normal,
-            purchaseDate: Date()
+            purchaseDate: Date(),
+            isSandbox: false
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -414,7 +422,8 @@ final class PurchaseInformationTests: TestCase {
             price: .init(currency: "USD", amount: 6.99),
             displayName: "A product",
             periodType: .normal,
-            purchaseDate: Date()
+            purchaseDate: Date(),
+            isSandbox: false
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -456,7 +465,8 @@ final class PurchaseInformationTests: TestCase {
             price: .init(currency: "USD", amount: 6.99),
             displayName: "A product",
             periodType: .normal,
-            purchaseDate: Date()
+            purchaseDate: Date(),
+            isSandbox: false
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -498,7 +508,8 @@ final class PurchaseInformationTests: TestCase {
             price: .init(currency: "USD", amount: 1.99),
             displayName: "A product",
             periodType: .normal,
-            purchaseDate: Date()
+            purchaseDate: Date(),
+            isSandbox: false
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -540,7 +551,8 @@ final class PurchaseInformationTests: TestCase {
             price: .init(currency: "USD", amount: 1.99),
             displayName: "A product",
             periodType: .normal,
-            purchaseDate: Date()
+            purchaseDate: Date(),
+            isSandbox: false
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -583,7 +595,8 @@ final class PurchaseInformationTests: TestCase {
             price: .init(currency: "USD", amount: 1.99),
             displayName: "A product",
             periodType: .normal,
-            purchaseDate: Date()
+            purchaseDate: Date(),
+            isSandbox: false
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -625,7 +638,8 @@ final class PurchaseInformationTests: TestCase {
             price: .init(currency: "USD", amount: 1.99),
             displayName: "A product",
             periodType: .normal,
-            purchaseDate: Date()
+            purchaseDate: Date(),
+            isSandbox: false
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -667,7 +681,8 @@ final class PurchaseInformationTests: TestCase {
             price: .init(currency: "USD", amount: 1.99),
             displayName: "A product",
             periodType: .normal,
-            purchaseDate: Date()
+            purchaseDate: Date(),
+            isSandbox: false
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -709,7 +724,8 @@ final class PurchaseInformationTests: TestCase {
             price: .init(currency: "USD", amount: 1.99),
             displayName: "A product",
             periodType: .normal,
-            purchaseDate: Date()
+            purchaseDate: Date(),
+            isSandbox: false
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -751,7 +767,8 @@ final class PurchaseInformationTests: TestCase {
             price: .init(currency: "USD", amount: 1.99),
             displayName: "A product",
             periodType: .normal,
-            purchaseDate: Date()
+            purchaseDate: Date(),
+            isSandbox: false
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -793,7 +810,8 @@ final class PurchaseInformationTests: TestCase {
             price: .init(currency: "USD", amount: 1.99),
             displayName: "A product",
             periodType: .normal,
-            purchaseDate: Date()
+            purchaseDate: Date(),
+            isSandbox: false
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -835,7 +853,8 @@ final class PurchaseInformationTests: TestCase {
             price: .init(currency: "USD", amount: 1.99),
             displayName: "A product",
             periodType: .normal,
-            purchaseDate: Date()
+            purchaseDate: Date(),
+            isSandbox: false
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -877,7 +896,8 @@ final class PurchaseInformationTests: TestCase {
             price: .init(currency: "USD", amount: 1.99),
             displayName: "A product",
             periodType: .normal,
-            purchaseDate: Date()
+            purchaseDate: Date(),
+            isSandbox: false
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -919,7 +939,8 @@ final class PurchaseInformationTests: TestCase {
             price: .init(currency: "USD", amount: 1.99),
             displayName: "A product",
             periodType: .normal,
-            purchaseDate: Date()
+            purchaseDate: Date(),
+            isSandbox: false
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -958,7 +979,8 @@ final class PurchaseInformationTests: TestCase {
             price: .init(currency: "USD", amount: 1.99),
             displayName: "A product",
             periodType: .normal,
-            purchaseDate: Date()
+            purchaseDate: Date(),
+            isSandbox: false
         )
 
         let subscriptionInfo = try XCTUnwrap(
