@@ -998,7 +998,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         // one active subscription
         viewModel = CustomerCenterViewModel(
-            activeSubscriptionPurchases: [.yearlyExpiring()],
+            activeSubscriptionPurchases: [.monthlyRenewing],
             activeNonSubscriptionPurchases: [],
             configuration: CustomerCenterConfigData.default
         )

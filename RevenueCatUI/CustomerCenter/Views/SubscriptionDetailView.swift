@@ -244,7 +244,7 @@ struct SubscriptionDetailView: View {
             CompatibilityNavigationStack {
                 SubscriptionDetailView(
                     customerInfoViewModel: CustomerCenterViewModel(
-                        activeSubscriptionPurchases: [.yearlyExpiring()],
+                        activeSubscriptionPurchases: [.monthlyRenewing],
                         activeNonSubscriptionPurchases: [],
                         configuration: .default
                     ),
@@ -255,7 +255,7 @@ struct SubscriptionDetailView: View {
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
                         allowsMissingPurchaseAction: false,
-                        purchaseInformation: .yearlyExpiring(),
+                        purchaseInformation: .monthlyRenewing,
                         refundRequestStatus: .success
                     )
                 )
