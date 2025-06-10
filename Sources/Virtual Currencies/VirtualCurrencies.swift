@@ -36,14 +36,14 @@ public extension VirtualCurrencies {
     /// Returns a dictionary containing only the virtual currencies that have a balance greater than zero.
     /// - Returns: A dictionary of virtual currency codes to their corresponding info objects,
     ///     filtered to only include those with non-zero balances.
-    var virtualCurrenciesWithNonZeroBalance: [String: VirtualCurrency] {
+    var withNonZeroBalance: [String: VirtualCurrency] {
         return Dictionary(uniqueKeysWithValues: self.all.filter { $1.balance > 0 })
     }
 
     /// Returns a dictionary containing only the virtual currencies that have a balance of zero.
     /// - Returns: A dictionary of virtual currency codes to their corresponding info objects,
     ///     filtered to only include those with zero balances.
-    var virtualCurrenciesWithZeroBalance: [String: VirtualCurrency] {
+    var withZeroBalance: [String: VirtualCurrency] {
         return Dictionary(uniqueKeysWithValues: self.all.filter { $1.balance == 0 })
     }
 }
