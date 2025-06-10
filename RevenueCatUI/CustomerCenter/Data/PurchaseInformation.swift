@@ -57,7 +57,7 @@ struct PurchaseInformation {
     /// Note: `false` for non-subscriptions
     let isCancelled: Bool
 
-    /// Indicates whether the purchased subscription is a sandbox one
+    /// Indicates whether the purchase is a sandbox one
     let isSandbox: Bool
 
     let latestPurchaseDate: Date
