@@ -22,7 +22,8 @@ import RevenueCat
 enum PurchaseDetailItem: Identifiable {
     case productName(String)
     case paidPrice(String?)
-    case purchaseDate(String)
+    case originalPurchaseDate(String)
+    case latestPurchaseDate(String)
     case status(CCLocalizedString)
 
     case nextRenewalDate(String)
@@ -43,7 +44,8 @@ enum PurchaseDetailItem: Identifiable {
         switch self {
         case .productName: return .productName
         case .paidPrice: return .paidPrice
-        case .purchaseDate: return .originalDownloadDate
+        case .originalPurchaseDate: return .originalDownloadDate
+        case .latestPurchaseDate: return .historyLatestPurchaseDate
         case .status: return .status
         case .nextRenewalDate: return .nextRenewalDate
         case .expiresDate: return .expires
@@ -61,11 +63,11 @@ enum PurchaseDetailItem: Identifiable {
 
     var isDebugOnly: Bool {
         switch self {
-        case .store, .productID, .sandbox, .transactionID:
+        case .store, .productID, .sandbox, .transactionID, .originalPurchaseDate:
             return true
         case .productName,
                 .paidPrice,
-                .purchaseDate,
+                .latestPurchaseDate,
                 .status,
                 .nextRenewalDate,
                 .expiresDate,

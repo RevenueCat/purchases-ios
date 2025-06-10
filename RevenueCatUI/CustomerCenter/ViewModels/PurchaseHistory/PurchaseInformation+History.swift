@@ -65,7 +65,7 @@ extension PurchaseInformation {
             items.append(.refundedAtDate(dateFormatter.string(from: refundedAt)))
         }
 
-        items.append(.purchaseDate(dateFormatter.string(from: latestPurchaseDate)))
+        items.append(.latestPurchaseDate(dateFormatter.string(from: latestPurchaseDate)))
 
         return items
     }
@@ -77,28 +77,19 @@ private extension PurchaseInformation {
         var items: [PurchaseDetailItem] = [
             .store(store.localizationKey),
             .productID(productIdentifier),
-//            .sandbox(isSandbox)
+            .sandbox(isSandbox)
         ]
 
         if let storeTransactionIdentifier {
             items.append(.transactionID(storeTransactionIdentifier))
         }
 
+        let dateFormatter = PurchaseInformation.defaultDateFormatter
+        if let originalPurchaseDate {
+            items.append(.originalPurchaseDate(dateFormatter.string(from: originalPurchaseDate)))
+        }
+
         return items
-
-//        switch self {
-//        case .subscription(let purchaseInfo):
-//            var items: [PurchaseDetailItem] = [
-//                .sandbox(purchaseInfo.isSandbox)
-//            ]
-//            if purchaseInfo.isActive {
-//                if let originalPurchaseDate = purchaseInfo.originalPurchaseDate,
-//                   originalPurchaseDate != purchaseInfo.purchaseDate {
-//                    items.append(.purchaseDate(formattedDate(originalPurchaseDate)))
-//                }
-//            }
-//            return items
-
     }
 }
 

@@ -98,7 +98,7 @@ struct PurchaseInformationCardView: View {
         self.storeTitle = localization[purchaseInformation.store.localizationKey]
         self.showChevron = showChevron
 
-        if !purchaseInformation.isActive {
+        if purchaseInformation.expirationDate != nil {
             self.badge = .expired(localization)
         } else if purchaseInformation.isCancelled {
             self.badge = .cancelled(localization)

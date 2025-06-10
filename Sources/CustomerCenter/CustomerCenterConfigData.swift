@@ -119,6 +119,7 @@ public struct CustomerCenterConfigData: Equatable {
             case productName = "product_name"
             case paidPrice = "paid_price"
             case originalDownloadDate = "original_download_date"
+            case historyLatestPurchaseDate = "history_latest_purchase_date"
             case status = "status"
             case nextRenewalDate = "next_renewal"
             case unsubscribedAt = "unsubscribed_at"
@@ -297,6 +298,8 @@ public struct CustomerCenterConfigData: Equatable {
                     return "Paid Price"
                 case .originalDownloadDate:
                     return "Original Download Date"
+                case .historyLatestPurchaseDate:
+                    return "Latest Purchase date"
                 case .status:
                     return "Status"
                 case .nextRenewalDate:

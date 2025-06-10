@@ -14,8 +14,8 @@
 //
 
 import Foundation
-import SwiftUI
 import RevenueCat
+import SwiftUI
 
 #if os(iOS)
 
@@ -47,11 +47,7 @@ final class PurchaseHistoryViewModel: ObservableObject {
         activeSubscriptions.isEmpty && inactiveSubscriptions.isEmpty && nonSubscriptions.isEmpty
     }
 
-    var customerInfo: CustomerInfo? {
-        didSet {
-            isLoading = false
-        }
-    }
+    var customerInfo: CustomerInfo?
 
     let purchasesProvider: CustomerCenterPurchasesType
     private let customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
@@ -79,11 +75,15 @@ final class PurchaseHistoryViewModel: ObservableObject {
     }
 
     func didAppear() async {
-        guard customerInfo == nil else {
-            await fetchCustomerInfo()
-            return
+        await MainActor.run {
+            isLoading = true
         }
 
+        await fetchCustomerInfo()
+
+        await MainActor.run {
+            isLoading = false
+        }
     }
 }
 
@@ -92,8 +92,13 @@ private extension PurchaseHistoryViewModel {
     func fetchCustomerInfo() async {
         do {
             let customerInfo = try await self.purchasesProvider.customerInfo()
-            await updateActiveAndNonActiveSubscriptions(customerInfo: customerInfo)
+            let (active, inactive, nonSubscriptions) = await updateActiveAndNonActiveSubscriptions(
+                customerInfo: customerInfo
+            )
             await MainActor.run {
+                self.activeSubscriptions = active
+                self.inactiveSubscriptions = inactive
+                self.nonSubscriptions = nonSubscriptions
                 self.customerInfo = customerInfo
             }
         } catch {
@@ -107,7 +112,11 @@ private extension PurchaseHistoryViewModel {
         }
     }
 
-    func updateActiveAndNonActiveSubscriptions(customerInfo: CustomerInfo) async {
+    func updateActiveAndNonActiveSubscriptions(customerInfo: CustomerInfo) async -> (
+        [PurchaseInformation],
+        [PurchaseInformation],
+        [PurchaseInformation]
+    ) {
         var activeSubscriptions: [PurchaseInformation] = []
         var inactiveSubscriptions: [PurchaseInformation] = []
         var nonSubscriptions: [PurchaseInformation] = []
@@ -121,7 +130,7 @@ private extension PurchaseHistoryViewModel {
             ))
         }
 
-        self.activeSubscriptions = activeSubscriptions.sorted(by: { sub1, sub2 in
+        activeSubscriptions = activeSubscriptions.sorted(by: { sub1, sub2 in
             sub1.latestPurchaseDate < sub2.latestPurchaseDate
         })
 
@@ -134,7 +143,7 @@ private extension PurchaseHistoryViewModel {
             ))
         }
 
-        self.inactiveSubscriptions = inactiveSubscriptions.sorted(by: { sub1, sub2 in
+        inactiveSubscriptions = inactiveSubscriptions.sorted(by: { sub1, sub2 in
             sub1.latestPurchaseDate < sub2.latestPurchaseDate
         })
 
@@ -146,9 +155,11 @@ private extension PurchaseHistoryViewModel {
                 customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
             ))
         }
-        self.nonSubscriptions = nonSubscriptions.sorted(by: { sub1, sub2 in
+        nonSubscriptions = nonSubscriptions.sorted(by: { sub1, sub2 in
             sub1.latestPurchaseDate < sub2.latestPurchaseDate
         })
+
+        return (activeSubscriptions, inactiveSubscriptions, nonSubscriptions)
     }
 }
 

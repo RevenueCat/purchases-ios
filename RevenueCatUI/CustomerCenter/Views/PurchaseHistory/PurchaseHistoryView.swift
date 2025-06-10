@@ -63,18 +63,33 @@ struct PurchaseHistoryView: View {
                     ErrorView()
                 } else if let info = viewModel.customerInfo {
                     if !info.activeSubscriptions.isEmpty {
-                        activeSubscriptionsView
-                            .padding(.top, 16)
+                        PurchasesInformationSection(
+                            title: localization[.subscriptionsSectionTitle],
+                            items: viewModel.activeSubscriptions,
+                            localization: localization) { purchase in
+                                viewModel.selectedPurchase = purchase
+                            }
+                            .tint(colorScheme == .dark ? .white : .black)
                     }
 
                     if !viewModel.inactiveSubscriptions.isEmpty {
-                        inactiveSubscriptionsView
-                            .padding(.top, 16)
+                        PurchasesInformationSection(
+                            title: localization[.inactive],
+                            items: viewModel.inactiveSubscriptions,
+                            localization: localization) { purchase in
+                                viewModel.selectedPurchase = purchase
+                            }
+                            .tint(colorScheme == .dark ? .white : .black)
                     }
 
                     if !viewModel.nonSubscriptions.isEmpty {
-                        otherPurchasesView
-                            .padding(.top, 16)
+                        PurchasesInformationSection(
+                            title: localization[.purchasesSectionTitle],
+                            items: viewModel.nonSubscriptions,
+                            localization: localization) { purchase in
+                                viewModel.selectedPurchase = purchase
+                            }
+                            .tint(colorScheme == .dark ? .white : .black)
                     }
                 }
             }
@@ -154,18 +169,26 @@ struct PurchaseHistoryView_Previews: PreviewProvider {
     static var previews: some View {
         PurchaseHistoryView(
             viewModel: PurchaseHistoryViewModel(
-                customerInfo: CustomerInfoFixtures.customerInfoWithAppleSubscriptions,
-                isLoading: false,
-                activeSubscriptions: [
-                    .yearlyExpiring()
-                ],
-                inactiveSubscriptions: [
-                    .monthlyRenewing
-                ],
-                nonSubscriptions: [
-                    .consumable
-                ],
-                purchasesProvider: MockCustomerCenterPurchases()
+                isLoading: true,
+                purchasesProvider: MockCustomerCenterPurchases(
+                    customerInfo: CustomerInfoFixtures.customerInfo(
+                        subscriptions: [
+                            CustomerInfoFixtures.Subscription(
+                                id: "id1",
+                                store: "\(Store.appStore.rawValue)",
+                                purchaseDate: "2022-03-08T17:42:58Z",
+                                expirationDate: nil
+                            )
+                        ],
+                        entitlements: [],
+                        nonSubscriptions: [
+                            CustomerInfoFixtures.NonSubscriptionTransaction(
+                                id: "id2",
+                                store: "\(Store.playStore.rawValue)",
+                                purchaseDate: "2022-03-08T17:42:58Z",
+                            )
+                        ])
+                )
             )
         )
     }
