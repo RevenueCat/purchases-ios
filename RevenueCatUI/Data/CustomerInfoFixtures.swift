@@ -289,6 +289,25 @@ class CustomerInfoFixtures {
         )
     }()
 
+    static let customerInfoWithPaddleSubscriptions: CustomerInfo = {
+        makeCustomerInfo(store: "paddle")
+    }()
+
+    static let customerInfoWithNonRenewingPaddleSubscriptions: CustomerInfo = {
+        makeCustomerInfo(
+            store: "paddle",
+            unsubscribeDetectedAt: "2023-04-12T00:03:35Z"
+        )
+    }()
+
+    static let customerInfoWithExpiredPaddleSubscriptions: CustomerInfo = {
+        makeCustomerInfo(
+            store: "paddle",
+            purchaseDate: "1999-04-12T00:03:28Z",
+            expirationDate: "2000-04-12T00:03:35Z"
+        )
+    }()
+
     static let customerInfoWithPromotional: CustomerInfo = {
         makeCustomerInfo(store: "promotional", productId: "rc_promo_pro_cat_yearly")
     }()

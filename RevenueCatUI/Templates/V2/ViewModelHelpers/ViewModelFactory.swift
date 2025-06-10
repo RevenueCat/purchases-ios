@@ -238,6 +238,52 @@ struct ViewModelFactory {
                 offering: offering
             )
 
+            // Fixme: use a an actual stack component returned by the backend
+            let tabsStackComponent = PaywallComponent.StackComponent(
+                visible: component.visible,
+                components: [],
+                dimension: .vertical(.center, .center),
+                size: component.size,
+                spacing: 0,
+                backgroundColor: nil,
+                background: component.background,
+                padding: component.padding,
+                margin: component.margin,
+                shape: component.shape,
+                border: component.border,
+                shadow: component.shadow,
+                badge: nil,
+                overflow: nil,
+                overrides: component.overrides.map { overrides in
+                    overrides.map { override in
+                        return .init(conditions: override.conditions, properties: .init(
+                            visible: override.properties.visible,
+                            dimension: nil,
+                            size: override.properties.size,
+                            spacing: nil,
+                            backgroundColor: nil,
+                            background: override.properties.background,
+                            padding: override.properties.padding,
+                            margin: override.properties.margin,
+                            shape: override.properties.shape,
+                            border: override.properties.border,
+                            shadow: override.properties.shadow,
+                            overflow: nil,
+                            badge: nil
+                        ))
+                    }
+                }
+            )
+
+            let tabsStackViewModel = try toStackViewModel(
+                component: tabsStackComponent,
+                packageValidator: PackageValidator(),
+                firstImageInfo: firstImageInfo,
+                localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider,
+                offering: offering
+            )
+
             let tabViewModels: [TabViewModel] = try component.tabs.map { tab in
                 let tabPackageValidator = PackageValidator()
 
@@ -257,7 +303,7 @@ struct ViewModelFactory {
 
                 return try .init(
                     tab: tab,
-                    stackViewModel: stackViewModel,
+                    stackViewModel: tabsStackViewModel.copy(withViewModels: [.stack(stackViewModel)]),
                     defaultSelectedPackage: tabPackageValidator.defaultSelectedPackage,
                     packages: tabPackageValidator.packages,
                     uiConfigProvider: uiConfigProvider
@@ -366,8 +412,7 @@ struct ViewModelFactory {
             viewModels: viewModels,
             badgeViewModels: badgeViewModels,
             shouldApplySafeAreaInset: shouldApplySafeAreaInset,
-            uiConfigProvider: uiConfigProvider,
-            localizationProvider: localizationProvider
+            uiConfigProvider: uiConfigProvider
         )
     }
 
