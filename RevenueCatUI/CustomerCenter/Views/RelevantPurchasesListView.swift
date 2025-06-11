@@ -380,13 +380,13 @@ struct RelevantPurchasesListView_Previews: PreviewProvider {
                         configuration: .default
                     ),
                     viewModel: RelevantPurchasesListViewModel(
-                        screen: warningOnMock.screens[.management]!,
+                        screen: warningOffMock.screens[.management]!,
                         originalAppUserId: "originalAppUserId",
                         activePurchases: [],
                         shouldShowSeeAllPurchases: false
                     )
                 )
-                .environment(\.supportInformation, warningOnMock.support)
+                .environment(\.supportInformation, warningOffMock.support)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Empty - \(colorScheme)")
@@ -399,14 +399,14 @@ struct RelevantPurchasesListView_Previews: PreviewProvider {
                         configuration: .default
                     ),
                     viewModel: RelevantPurchasesListViewModel(
-                        screen: warningOnMock.screens[.management]!,
+                        screen: warningOffMock.screens[.management]!,
                         originalAppUserId: "originalAppUserId",
                         activePurchases: purchases,
                         virtualCurrencies: CustomerCenterConfigData.fourVirtualCurrencies,
                         shouldShowSeeAllPurchases: false
                     )
                 )
-                .environment(\.supportInformation, warningOnMock.support)
+                .environment(\.supportInformation, warningOffMock.support)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("4 VCs - \(colorScheme)")
@@ -419,14 +419,14 @@ struct RelevantPurchasesListView_Previews: PreviewProvider {
                         configuration: .default
                     ),
                     viewModel: RelevantPurchasesListViewModel(
-                        screen: warningOnMock.screens[.management]!,
+                        screen: warningOffMock.screens[.management]!,
                         originalAppUserId: "originalAppUserId",
                         activePurchases: purchases,
                         virtualCurrencies: CustomerCenterConfigData.fiveVirtualCurrencies,
                         shouldShowSeeAllPurchases: false
                     )
                 )
-                .environment(\.supportInformation, warningOnMock.support)
+                .environment(\.supportInformation, warningOffMock.support)
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("5 VCs - \(colorScheme)")

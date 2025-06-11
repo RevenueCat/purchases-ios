@@ -1160,6 +1160,10 @@
 		F5FCD3EA27DA0D0B003BDC04 /* PriceFormatterProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5FCD3E927DA0D0B003BDC04 /* PriceFormatterProvider.swift */; };
 		F5FCD3FC27DA2034003BDC04 /* PriceFormatterProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5FCD3FB27DA2034003BDC04 /* PriceFormatterProviderTests.swift */; };
 		FD0C246A2D70CA5800B81D74 /* VirtualCurrencyInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0C24692D70CA5800B81D74 /* VirtualCurrencyInfo.swift */; };
+		FD15AF5B2DF9A8F30062467E /* VirtualCurrencyBalanceListRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD15AF582DF9A8F30062467E /* VirtualCurrencyBalanceListRow.swift */; };
+		FD15AF5C2DF9A8F30062467E /* VirtualCurrencyBalancesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD15AF592DF9A8F30062467E /* VirtualCurrencyBalancesScreen.swift */; };
+		FD15AF5D2DF9A8F30062467E /* VirtualCurrenciesScrollViewWithOSBackgroundSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD15AF572DF9A8F30062467E /* VirtualCurrenciesScrollViewWithOSBackgroundSection.swift */; };
+		FD15AF5F2DF9A91B0062467E /* VirtualCurrencyBalancesScreenViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD15AF5E2DF9A91B0062467E /* VirtualCurrencyBalancesScreenViewModel.swift */; };
 		FD18ED4E2837F89200C5AA4F /* StoreKitWorkaroundsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD18ED4D2837F89200C5AA4F /* StoreKitWorkaroundsTests.swift */; };
 		FD20467F2CB82F2000166727 /* StoreKit2PurchaseIntentListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD20467E2CB82F1700166727 /* StoreKit2PurchaseIntentListener.swift */; };
 		FD2046812CB8333A00166727 /* StoreKit2PurchaseIntentListenerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2046802CB8333200166727 /* StoreKit2PurchaseIntentListenerTests.swift */; };
@@ -1167,11 +1171,8 @@
 		FD2046842CB833CD00166727 /* MockStoreKit2PurchaseIntentListenerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2046822CB833CD00166727 /* MockStoreKit2PurchaseIntentListenerDelegate.swift */; };
 		FD2E6C9F2C480FF000CB4BD7 /* OHHTTPStubs in Frameworks */ = {isa = PBXBuildFile; productRef = FD2E6C9E2C480FF000CB4BD7 /* OHHTTPStubs */; };
 		FD2E6CA12C48100900CB4BD7 /* OHHTTPStubsSwift in Frameworks */ = {isa = PBXBuildFile; productRef = FD2E6CA02C48100900CB4BD7 /* OHHTTPStubsSwift */; };
-		FD3CD7442DE60FD700C892D8 /* VirtualCurrenciesScrollViewWithOSBackgroundSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD3CD7432DE60FD700C892D8 /* VirtualCurrenciesScrollViewWithOSBackgroundSection.swift */; };
-		FD3FB00F2DB6984800D4AEC7 /* VirtualCurrencyBalancesScreenViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD3FB00E2DB6984800D4AEC7 /* VirtualCurrencyBalancesScreenViewModel.swift */; };
 		FD43D2FC2C41864000077235 /* TimeInterval+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD43D2FA2C4185B700077235 /* TimeInterval+Extensions.swift */; };
 		FD43D2FE2C41867600077235 /* TimeInterval+ExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD43D2FD2C41867600077235 /* TimeInterval+ExtensionsTests.swift */; };
-		FD7247F22DB8358F00FA3A8D /* VirtualCurrencyBalanceListRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD7247F12DB8358F00FA3A8D /* VirtualCurrencyBalanceListRow.swift */; };
 		FD89DB872DB97D2E00A8C231 /* VirtualCurrencyBalancesScreenViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD89DB862DB97D2E00A8C231 /* VirtualCurrencyBalancesScreenViewModelTests.swift */; };
 		FD9BCEBC2DC946C400408A5D /* BottomSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD9BCEBB2DC946C400408A5D /* BottomSheetView.swift */; };
 		FD9F982D2BE28A7F0091A5BF /* MockNotificationCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B515526D44B2300BD2BD7 /* MockNotificationCenter.swift */; };
@@ -1189,7 +1190,6 @@
 		FDC892D12CCAD0EE000AEB9F /* MockStoreKit2PurchaseIntentListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDC892D02CCAD0EE000AEB9F /* MockStoreKit2PurchaseIntentListener.swift */; };
 		FDC892D22CCAD0EE000AEB9F /* MockStoreKit2PurchaseIntentListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDC892D02CCAD0EE000AEB9F /* MockStoreKit2PurchaseIntentListener.swift */; };
 		FDC892FE2CD157F1000AEB9F /* WinBackOffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDC892FD2CD157F1000AEB9F /* WinBackOffer.swift */; };
-		FDEE6C8B2DA5BC4100DD6A29 /* VirtualCurrencyBalancesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDEE6C8A2DA5BC4100DD6A29 /* VirtualCurrencyBalancesScreen.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -2536,16 +2536,17 @@
 		F5FCD3E927DA0D0B003BDC04 /* PriceFormatterProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PriceFormatterProvider.swift; sourceTree = "<group>"; };
 		F5FCD3FB27DA2034003BDC04 /* PriceFormatterProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PriceFormatterProviderTests.swift; sourceTree = "<group>"; };
 		FD0C24692D70CA5800B81D74 /* VirtualCurrencyInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyInfo.swift; sourceTree = "<group>"; };
+		FD15AF572DF9A8F30062467E /* VirtualCurrenciesScrollViewWithOSBackgroundSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrenciesScrollViewWithOSBackgroundSection.swift; sourceTree = "<group>"; };
+		FD15AF582DF9A8F30062467E /* VirtualCurrencyBalanceListRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyBalanceListRow.swift; sourceTree = "<group>"; };
+		FD15AF592DF9A8F30062467E /* VirtualCurrencyBalancesScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyBalancesScreen.swift; sourceTree = "<group>"; };
+		FD15AF5E2DF9A91B0062467E /* VirtualCurrencyBalancesScreenViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyBalancesScreenViewModel.swift; sourceTree = "<group>"; };
 		FD18ED4D2837F89200C5AA4F /* StoreKitWorkaroundsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitWorkaroundsTests.swift; sourceTree = "<group>"; };
 		FD20467E2CB82F1700166727 /* StoreKit2PurchaseIntentListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2PurchaseIntentListener.swift; sourceTree = "<group>"; };
 		FD2046802CB8333200166727 /* StoreKit2PurchaseIntentListenerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2PurchaseIntentListenerTests.swift; sourceTree = "<group>"; };
 		FD2046822CB833CD00166727 /* MockStoreKit2PurchaseIntentListenerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreKit2PurchaseIntentListenerDelegate.swift; sourceTree = "<group>"; };
 		FD33CD5F2D03500C000D13A4 /* CustomerCenterUIKitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterUIKitView.swift; sourceTree = "<group>"; };
-		FD3CD7432DE60FD700C892D8 /* VirtualCurrenciesScrollViewWithOSBackgroundSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrenciesScrollViewWithOSBackgroundSection.swift; sourceTree = "<group>"; };
-		FD3FB00E2DB6984800D4AEC7 /* VirtualCurrencyBalancesScreenViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyBalancesScreenViewModel.swift; sourceTree = "<group>"; };
 		FD43D2FA2C4185B700077235 /* TimeInterval+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TimeInterval+Extensions.swift"; sourceTree = "<group>"; };
 		FD43D2FD2C41867600077235 /* TimeInterval+ExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TimeInterval+ExtensionsTests.swift"; sourceTree = "<group>"; };
-		FD7247F12DB8358F00FA3A8D /* VirtualCurrencyBalanceListRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyBalanceListRow.swift; sourceTree = "<group>"; };
 		FD89DB862DB97D2E00A8C231 /* VirtualCurrencyBalancesScreenViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyBalancesScreenViewModelTests.swift; sourceTree = "<group>"; };
 		FD9BCEBB2DC946C400408A5D /* BottomSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomSheetView.swift; sourceTree = "<group>"; };
 		FDAADFCA2BE2A5BF00BD1659 /* MockAllTransactionsProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAllTransactionsProvider.swift; sourceTree = "<group>"; };
@@ -2558,7 +2559,6 @@
 		FDAC7B5A2CD4085800DFC0D9 /* PurchasesWinBackOfferTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesWinBackOfferTests.swift; sourceTree = "<group>"; };
 		FDC892D02CCAD0EE000AEB9F /* MockStoreKit2PurchaseIntentListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreKit2PurchaseIntentListener.swift; sourceTree = "<group>"; };
 		FDC892FD2CD157F1000AEB9F /* WinBackOffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WinBackOffer.swift; sourceTree = "<group>"; };
-		FDEE6C8A2DA5BC4100DD6A29 /* VirtualCurrencyBalancesScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyBalancesScreen.swift; sourceTree = "<group>"; };
 		FECF627761D375C8431EB866 /* StoreProduct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreProduct.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -3871,79 +3871,6 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		353756562C382C2800A1B8D6 /* Data */ = {
-			isa = PBXGroup;
-			children = (
-				570A671D2DD2026500DEBABE /* Transaction.swift */,
-				570A671B2DD2021000DEBABE /* PurchaseInformation+Mock.swift */,
-				3563EB932DCAA37A0061E058 /* EntitlementInfo+Extensions.swift */,
-				57BAF6C72DD4AACF00CFECFF /* DiscountsHandler.swift */,
-				357C43AE2D80510400B96769 /* CustomerCenterManagementOption.swift */,
-				355FDB5A2D783FC400D20E65 /* CustomerCenterActionWrapper.swift */,
-				752F94912DD21A1300ED7DFE /* CustomerCenterConfigData+Mock.swift */,
-				355FDB5B2D783FC400D20E65 /* CustomerCenterActionViewModifier.swift */,
-				77791ECE2C6B851F00BCEF03 /* SemanticVersion.swift */,
-				3525D8A32C4AB3D500C21D99 /* CustomerCenterEnvironment.swift */,
-				353756542C382C2800A1B8D6 /* CustomerCenterError.swift */,
-				35C200AE2C39252D00B9778B /* FeedbackSurveyData.swift */,
-				353756552C382C2800A1B8D6 /* PurchaseInformation.swift */,
-				1E5F8F772C46BBD90041EECD /* CustomerCenterAction.swift */,
-				35C496052C482ACC0023E924 /* PromotionalOfferData.swift */,
-				35F249C92C493D970058993A /* LoadPromotionalOfferUseCase.swift */,
-				35F249CD2C493E3D0058993A /* CustomerCenterPurchases.swift */,
-			);
-			path = Data;
-			sourceTree = "<group>";
-		};
-		3537565A2C382C2800A1B8D6 /* ViewModels */ = {
-			isa = PBXGroup;
-			children = (
-				75F660182DDB2EBE00DBED1C /* RelevantPurchasesListViewModel.swift */,
-				57BB08652DD3D9AC007493E1 /* SubscriptionDetailViewModel.swift */,
-				57FE3A592DD3BD9700868DEF /* BaseManageSubscriptionViewModel.swift */,
-				35724B402D96DB1700332612 /* RestorePurchasesAlertViewModel.swift */,
-				574BA2672D3E762E009B8EA6 /* PurchaseHistory */,
-				353756572C382C2800A1B8D6 /* CustomerCenterViewModel.swift */,
-				353756582C382C2800A1B8D6 /* CustomerCenterViewState.swift */,
-				3546355A2C391F38001D7E85 /* FeedbackSurveyViewModel.swift */,
-				3546355B2C391F38001D7E85 /* PromotionalOfferViewModel.swift */,
-				FD3FB00E2DB6984800D4AEC7 /* VirtualCurrencyBalancesScreenViewModel.swift */,
-			);
-			path = ViewModels;
-			sourceTree = "<group>";
-		};
-		353756602C382C2800A1B8D6 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				FD7247F02DB8356F00FA3A8D /* Virtual Currencies */,
-				FD33CD4B2D034CA6000D13A4 /* UIKit Compatibility */,
-				5712120E2DDC957200A792C7 /* RelevantPurchasesListView.swift */,
-				57A9AFDF2DDC715900F77341 /* ScrollViewSection.swift */,
-				570305092DDB7DF300393089 /* ActiveSubscriptionButtonsView.swift */,
-				57740F412DD6460F00585B5A /* PurchaseHistory */,
-				75F660162DDB2E7B00DBED1C /* UIKit Compatibility */,
-				57740F302DD6460F00585B5A /* AppUpdateWarningView.swift */,
-				57740F312DD6460F00585B5A /* CompatibilityContentUnavailableView.swift */,
-				57740F322DD6460F00585B5A /* CompatibilityLabeledContent.swift */,
-				57740F332DD6460F00585B5A /* CompatibilityNavigationStack.swift */,
-				57740F342DD6460F00585B5A /* CompatibilityTopBarTrailing.swift */,
-				57740F352DD6460F00585B5A /* CustomerCenterNavigationLink.swift */,
-				57740F362DD6460F00585B5A /* CustomerCenterNavigationOptions.swift */,
-				57740F372DD6460F00585B5A /* CustomerCenterView.swift */,
-				57740F382DD6460F00585B5A /* ErrorView.swift */,
-				57740F392DD6460F00585B5A /* FeedbackSurveyView.swift */,
-				57740F3A2DD6460F00585B5A /* ManageSubscriptionsButtonsView.swift */,
-				57740F3B2DD6460F00585B5A /* FallbackNoSubscriptionsView.swift */,
-				57740F3C2DD6460F00585B5A /* PromotionalOfferView.swift */,
-				57740F3D2DD6460F00585B5A /* PurchaseCardView.swift */,
-				57740F422DD6460F00585B5A /* RestorePurchasesAlert.swift */,
-				57740F432DD6460F00585B5A /* ScrollViewWithOSBackground.swift */,
-				57740F452DD6460F00585B5A /* SubscriptionDetailView.swift */,
-				57740F462DD6460F00585B5A /* TintedProgressView.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
 		353756642C382C2800A1B8D6 /* CustomerCenter */ = {
 			isa = PBXGroup;
 			children = (
@@ -4742,6 +4669,7 @@
 				5798C9102DF1985700F44400 /* RelevantPurchasesListViewModel.swift */,
 				5798C9112DF1985700F44400 /* RestorePurchasesAlertViewModel.swift */,
 				5798C9122DF1985700F44400 /* SubscriptionDetailViewModel.swift */,
+				FD15AF5E2DF9A91B0062467E /* VirtualCurrencyBalancesScreenViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -4769,6 +4697,7 @@
 			children = (
 				5798C9172DF1985700F44400 /* PurchaseHistory */,
 				5798C9192DF1985700F44400 /* UIKit Compatibility */,
+				FD15AF5A2DF9A8F30062467E /* Virtual Currencies */,
 				5798C91A2DF1985700F44400 /* ActiveSubscriptionButtonsView.swift */,
 				5798C91B2DF1985700F44400 /* AppUpdateWarningView.swift */,
 				5798C91C2DF1985700F44400 /* CompatibilityContentUnavailableView.swift */,
@@ -5554,19 +5483,12 @@
 			path = Attribution;
 			sourceTree = "<group>";
 		};
-		FD33CD4B2D034CA6000D13A4 /* UIKit Compatibility */ = {
+		FD15AF5A2DF9A8F30062467E /* Virtual Currencies */ = {
 			isa = PBXGroup;
 			children = (
-			);
-			path = "UIKit Compatibility";
-			sourceTree = "<group>";
-		};
-		FD7247F02DB8356F00FA3A8D /* Virtual Currencies */ = {
-			isa = PBXGroup;
-			children = (
-				FD3CD7432DE60FD700C892D8 /* VirtualCurrenciesScrollViewWithOSBackgroundSection.swift */,
-				FDEE6C8A2DA5BC4100DD6A29 /* VirtualCurrencyBalancesScreen.swift */,
-				FD7247F12DB8358F00FA3A8D /* VirtualCurrencyBalanceListRow.swift */,
+				FD15AF572DF9A8F30062467E /* VirtualCurrenciesScrollViewWithOSBackgroundSection.swift */,
+				FD15AF582DF9A8F30062467E /* VirtualCurrencyBalanceListRow.swift */,
+				FD15AF592DF9A8F30062467E /* VirtualCurrencyBalancesScreen.swift */,
 			);
 			path = "Virtual Currencies";
 			sourceTree = "<group>";
@@ -7122,7 +7044,6 @@
 				88B1BB042C813A3C001B7EE5 /* StackComponentViewModel.swift in Sources */,
 				1ED4CA9F2CC25A5F0021AB8F /* SafariView.swift in Sources */,
 				887A60CC2C1D037000E1A461 /* PaywallFontProvider.swift in Sources */,
-				FD7247F22DB8358F00FA3A8D /* VirtualCurrencyBalanceListRow.swift in Sources */,
 				2C91068E2CE2481A00189565 /* SizeModifier.swift in Sources */,
 				887A60B82C1D037000E1A461 /* Template1View.swift in Sources */,
 				887A60C62C1D037000E1A461 /* LoadingPaywallView.swift in Sources */,
@@ -7131,7 +7052,6 @@
 				887A60C52C1D037000E1A461 /* IntroEligibilityStateView.swift in Sources */,
 				88A543E72C37A4C40039C6A5 /* TierSelectorView.swift in Sources */,
 				2C74571F2CE7028E004ACE52 /* ScreenCondition.swift in Sources */,
-				FD3CD7442DE60FD700C892D8 /* VirtualCurrenciesScrollViewWithOSBackgroundSection.swift in Sources */,
 				88A543E12C37A4820039C6A5 /* TemplateView+MultiTier.swift in Sources */,
 				887A60B72C1D037000E1A461 /* WatchTemplateView.swift in Sources */,
 				887A60722C1D037000E1A461 /* PaywallViewMode+Extensions.swift in Sources */,
@@ -7146,8 +7066,6 @@
 				03C72FC32D349BAE00297FEC /* IconComponentView.swift in Sources */,
 				887A60702C1D037000E1A461 /* PaywallTemplate.swift in Sources */,
 				1E8A607F2CDCE5EC0034ACF3 /* View+OnRedeemWebPurchaseAttempt.swift in Sources */,
-				FD3FB00F2DB6984800D4AEC7 /* VirtualCurrencyBalancesScreenViewModel.swift in Sources */,
-				570A671C2DD2021400DEBABE /* PurchaseInformation+Mock.swift in Sources */,
 				887A60882C1D037000E1A461 /* MockPurchases.swift in Sources */,
 				887A60BC2C1D037000E1A461 /* Template5View.swift in Sources */,
 				2C8EC7202CCF276100D6CCF8 /* PresentedPartials.swift in Sources */,
@@ -7189,6 +7107,7 @@
 				0354AA4D2D4029C300F9E330 /* TabControlComponentView.swift in Sources */,
 				887A60C22C1D037000E1A461 /* ErrorDisplay.swift in Sources */,
 				887A60692C1D037000E1A461 /* IntroEligibilityViewModel.swift in Sources */,
+				FD15AF5F2DF9A91B0062467E /* VirtualCurrencyBalancesScreenViewModel.swift in Sources */,
 				2C2AEB0F2CA64E0E00A50F38 /* Template1Preview.swift in Sources */,
 				88A543E32C37A4970039C6A5 /* Template7View.swift in Sources */,
 				2C91068C2CE22D4F00189565 /* JustifyContent.swift in Sources */,
@@ -7207,10 +7126,10 @@
 				FD9BCEBC2DC946C400408A5D /* BottomSheetView.swift in Sources */,
 				03F0B6512DD5700D00E82199 /* LocalizationDictionaryExtensions.swift in Sources */,
 				7783607B2CCA88E4000785B8 /* StickyFooterComponentView.swift in Sources */,
+				FD15AF5B2DF9A8F30062467E /* VirtualCurrencyBalanceListRow.swift in Sources */,
+				FD15AF5C2DF9A8F30062467E /* VirtualCurrencyBalancesScreen.swift in Sources */,
+				FD15AF5D2DF9A8F30062467E /* VirtualCurrenciesScrollViewWithOSBackgroundSection.swift in Sources */,
 				887A608B2C1D037000E1A461 /* PurchaseHandler+TestData.swift in Sources */,
-				FDEE6C8B2DA5BC4100DD6A29 /* VirtualCurrencyBalancesScreen.swift in Sources */,
-				35F249CE2C493E3D0058993A /* CustomerCenterPurchases.swift in Sources */,
-				353756672C382C2800A1B8D6 /* PurchaseInformation.swift in Sources */,
 				887A60682C1D037000E1A461 /* TemplateError.swift in Sources */,
 				887A60792C1D037000E1A461 /* UserInterfaceIdiom.swift in Sources */,
 				03C06FCC2D479C7C00600693 /* CarouselComponentViewModel.swift in Sources */,
