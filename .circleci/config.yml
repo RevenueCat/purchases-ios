@@ -1183,7 +1183,6 @@ jobs:
       name: macos-executor
     steps:
       - checkout
-      - trust-github-key
       - install-dependencies
       - update-spm-installation-commit
       - install-dependencies:
@@ -1197,7 +1196,6 @@ jobs:
       name: macos-executor
     steps:
       - checkout
-      - trust-github-key
       - install-dependencies
       - update-spm-installation-commit
       - install-dependencies:
@@ -1211,7 +1209,6 @@ jobs:
       name: macos-executor
     steps:
       - checkout
-      - trust-github-key
       - install-dependencies
       - update-spm-installation-commit
       - install-dependencies:
@@ -1225,7 +1222,6 @@ jobs:
       name: macos-executor-large
     steps:
       - checkout
-      - trust-github-key
       - run:
           name: Upgrade Carthage
           command: |
