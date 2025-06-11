@@ -184,9 +184,10 @@ final class CustomerCenterViewModelTests: TestCase {
 
     func testLoadLoadsVirtualCurrenciesWhenDisplayVirtualCurrenciesIsTrue() async throws {
         let mockPurchases = MockCustomerCenterPurchases(
-            customerInfo: CustomerInfoFixtures.customerInfoWithVirtualCurrencies,
+            customerInfo: CustomerInfoFixtures.customerInfoWithAppleSubscriptions,
             customerCenterConfigData: CustomerCenterConfigData.mock(displayVirtualCurrencies: true)
         )
+        mockPurchases.virtualCurrenciesResult = .success(VirtualCurrenciesFixtures.fourVirtualCurrencies)
 
         let viewModel = CustomerCenterViewModel(
             actionWrapper: CustomerCenterActionWrapper(),
@@ -200,16 +201,17 @@ final class CustomerCenterViewModelTests: TestCase {
             return
         }
 
-        expect(virtualCurrencies.count).to(equal(4))
+        expect(virtualCurrencies.all.count).to(equal(4))
         expect(virtualCurrencies["GLD"]).toNot(beNil())
         expect(virtualCurrencies["SLV"]).toNot(beNil())
         expect(virtualCurrencies["BRNZ"]).toNot(beNil())
         expect(virtualCurrencies["PLTNM"]).toNot(beNil())
+        expect(mockPurchases.virtualCurrenciesCallCount).to(equal(1))
     }
 
     func testLoadDoesNotLoadVirtualCurrenciesWhenDisplayVirtualCurrenciesIsFalse() async throws {
         let mockPurchases = MockCustomerCenterPurchases(
-            customerInfo: CustomerInfoFixtures.customerInfoWithVirtualCurrencies,
+            customerInfo: CustomerInfoFixtures.customerInfoWithAppleSubscriptions,
             customerCenterConfigData: CustomerCenterConfigData.mock(displayVirtualCurrencies: false)
         )
 
@@ -220,6 +222,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         await viewModel.loadScreen()
         expect(viewModel.virtualCurrencies).to(beNil())
+        expect(mockPurchases.virtualCurrenciesCallCount).to(equal(0))
     }
 
     func testShouldShowActiveSubscription_whenUserHasOneActiveSubscriptionOneEntitlement() async throws {

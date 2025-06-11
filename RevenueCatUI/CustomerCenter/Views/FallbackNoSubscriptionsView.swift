@@ -140,7 +140,7 @@ struct NoSubscriptionsView_Previews: PreviewProvider {
         FallbackNoSubscriptionsView(
             customerCenterViewModel: CustomerCenterViewModel(uiPreviewPurchaseProvider: MockCustomerCenterPurchases()),
             actionWrapper: CustomerCenterActionWrapper(),
-            virtualCurrencies: CustomerCenterConfigData.fourVirtualCurrencies
+            virtualCurrencies: VirtualCurrenciesFixtures.fourVirtualCurrencies
         )
         .environment(\.supportInformation, CustomerCenterConfigData.mock(displayVirtualCurrencies: true).support)
         .previewDisplayName("4 Virtual Currencies")
@@ -148,7 +148,7 @@ struct NoSubscriptionsView_Previews: PreviewProvider {
         FallbackNoSubscriptionsView(
             customerCenterViewModel: CustomerCenterViewModel(uiPreviewPurchaseProvider: MockCustomerCenterPurchases()),
             actionWrapper: CustomerCenterActionWrapper(),
-            virtualCurrencies: CustomerCenterConfigData.fiveVirtualCurrencies
+            virtualCurrencies: VirtualCurrenciesFixtures.fiveVirtualCurrencies
         )
         .environment(\.supportInformation, CustomerCenterConfigData.mock(displayVirtualCurrencies: true).support)
         .previewDisplayName("5 Virtual Currencies")

@@ -390,7 +390,7 @@ struct SubscriptionDetailView: View {
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
                         allowsMissingPurchaseAction: false,
-                        virtualCurrencies: CustomerCenterConfigData.fourVirtualCurrencies,
+                        virtualCurrencies: VirtualCurrenciesFixtures.fourVirtualCurrencies,
                         purchaseInformation: .yearlyExpiring(store: .playStore)
                     )
                 )
@@ -412,7 +412,7 @@ struct SubscriptionDetailView: View {
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
                         allowsMissingPurchaseAction: false,
-                        virtualCurrencies: CustomerCenterConfigData.fiveVirtualCurrencies,
+                        virtualCurrencies: VirtualCurrenciesFixtures.fiveVirtualCurrencies,
                         purchaseInformation: .yearlyExpiring(store: .playStore)
                     )
                 )

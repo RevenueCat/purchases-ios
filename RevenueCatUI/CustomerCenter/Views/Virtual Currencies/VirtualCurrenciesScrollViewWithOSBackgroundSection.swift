@@ -163,7 +163,7 @@ struct VirtualCurrenciesScrollViewWithOSBackgroundSection_Previews: PreviewProvi
 
         ScrollViewWithOSBackground {
             VirtualCurrenciesScrollViewWithOSBackgroundSection(
-                virtualCurrencies: CustomerCenterConfigData.fourVirtualCurrencies,
+                virtualCurrencies: VirtualCurrenciesFixtures.fourVirtualCurrencies,
                 onSeeAllInAppCurrenciesButtonTapped: { }
             )
         }
@@ -171,7 +171,7 @@ struct VirtualCurrenciesScrollViewWithOSBackgroundSection_Previews: PreviewProvi
 
         ScrollViewWithOSBackground {
             VirtualCurrenciesScrollViewWithOSBackgroundSection(
-                virtualCurrencies: CustomerCenterConfigData.fiveVirtualCurrencies,
+                virtualCurrencies: VirtualCurrenciesFixtures.fiveVirtualCurrencies,
                 onSeeAllInAppCurrenciesButtonTapped: { }
             )
         }
