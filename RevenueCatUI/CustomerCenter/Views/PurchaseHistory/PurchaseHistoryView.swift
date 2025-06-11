@@ -130,7 +130,7 @@ struct PurchaseHistoryView_Previews: PreviewProvider {
                         .free
                     ],
                     inactiveSubscriptions: [
-                        .mock(isActive: false)
+                        .mock(isExpired: true)
                     ],
                     nonSubscriptions: [
                         .consumable
