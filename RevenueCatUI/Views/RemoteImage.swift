@@ -12,6 +12,7 @@
 //  Created by Nacho Soto on 7/19/23.
 
 import SwiftUI
+@_spi(Internal) import RevenueCat
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct RemoteImage<Content: View>: View {
@@ -39,7 +40,7 @@ struct RemoteImage<Content: View>: View {
 
     private var transition: AnyTransition {
         #if DEBUG
-        if self.url.isFileURL {
+        if ProcessInfo.isRunningRevenueCatTests && self.url.isFileURL {
             // No transition for the load of the local image
             // This is used for paywall screenshot validation
             return .identity
