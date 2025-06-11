@@ -154,6 +154,7 @@ public struct CustomerCenterConfigData: Equatable {
             case freeTrialUntilDate = "free_trial_until_date"
             case priceExpiresOnDateWithoutChanges = "price_expires_on_date_without_changes"
             case badgeCancelled = "badge_cancelled"
+            case badgeTrialCancelled = "badge_free_trial_cancelled"
             case badgeFreeTrial = "free_trial"
             case refundSuccess = "refund_success"
             case actionsSectionTitle = "actions_section_title"
@@ -371,6 +372,8 @@ public struct CustomerCenterConfigData: Equatable {
                     return "Cancelled"
                 case .badgeFreeTrial:
                     return "Free trial"
+                case .badgeTrialCancelled:
+                    return "Cancelled trial"
                 case .refundSuccess:
                     return "Apple has received the refund request"
                 case .actionsSectionTitle:
