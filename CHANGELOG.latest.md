@@ -1,6 +1,9 @@
 ## RevenueCat SDK
-### 🐞 Bugfixes
-* Remove submodules temporarily to fix SPM (#5246) via Toni Rico (@tonidero)
+### Customer Center
+#### ✨ New Features
+* Show most recent expired if no active subscriptions (#5198) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Add accessibility identifier to PurchaseCardView (#5176) via Facundo Menzella (@facumenzella)
+* Use Mint 0.17.5 for `run-test-ios-14` CI job (#5256) via Antonio Pallares (@ajpallares)
+* Fix Xcode 16 compilation error (#5254) via Antonio Pallares (@ajpallares)
+* Add Danger rule to avoid submodules (#5250) via Antonio Pallares (@ajpallares)
