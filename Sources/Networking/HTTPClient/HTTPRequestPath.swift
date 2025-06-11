@@ -170,7 +170,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         }
     }
 
-    #warning("TODO: revisit this")
     var supportsSignatureVerification: Bool {
         switch self {
         case .getCustomerInfo,
@@ -179,7 +178,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .health,
                 .getOfferings,
                 .getProductEntitlementMapping,
-                .getVirtualCurrencies,
                 .appHealthReport:
             return true
         case .getIntroEligibility,
@@ -188,18 +186,17 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postAdServicesToken,
                 .postOfferForSigning,
                 .postRedeemWebPurchase,
+                .getVirtualCurrencies,
                 .getCustomerCenterConfig:
             return false
         }
     }
 
-    #warning("TODO: revisit this")
     var needsNonceForSigning: Bool {
         switch self {
         case .getCustomerInfo,
                 .logIn,
                 .postReceiptData,
-                .getVirtualCurrencies,
                 .health:
             return true
         case .getOfferings,
@@ -211,6 +208,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postRedeemWebPurchase,
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
+                .getVirtualCurrencies,
                 .appHealthReport:
             return false
         }
