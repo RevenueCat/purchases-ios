@@ -14,7 +14,7 @@
 //
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 extension CustomerCenterConfigData {
 
@@ -135,7 +135,8 @@ extension CustomerCenterConfigData {
     }
 
     @available(iOS 14.0, *)
-    static let `default` = mock()
+    // swiftlint:disable missing_docs
+    @_spi(Internal) public static let `default` = mock()
 
     static let standardAppearance = CustomerCenterConfigData.Appearance(
         accentColor: .init(light: "#007AFF", dark: "#007AFF"),
