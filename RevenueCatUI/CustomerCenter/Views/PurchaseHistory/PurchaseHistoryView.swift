@@ -38,8 +38,7 @@ struct PurchaseHistoryView: View {
         ) {
             PurchaseDetailView(
                 viewModel: PurchaseDetailViewModel(
-                    purchaseInfo: $0,
-                    purchasesProvider: self.viewModel.purchasesProvider
+                    purchaseInfo: $0
                 )
             )
             .environment(\.localization, localization)

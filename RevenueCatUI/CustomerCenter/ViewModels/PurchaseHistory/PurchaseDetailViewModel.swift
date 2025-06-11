@@ -37,9 +37,8 @@ final class PurchaseDetailViewModel: ObservableObject {
         return nil
     }
 
-    init(purchaseInfo: PurchaseInformation, purchasesProvider: CustomerCenterPurchasesType) {
+    init(purchaseInfo: PurchaseInformation) {
         self.purchaseInfo = purchaseInfo
-        self.purchasesProvider = purchasesProvider
     }
 
     func didAppear(localization: CustomerCenterConfigData.Localization) {
@@ -55,7 +54,6 @@ final class PurchaseDetailViewModel: ObservableObject {
     // MARK: - Private
 
     private let purchaseInfo: PurchaseInformation
-    private let purchasesProvider: CustomerCenterPurchasesType
 }
 
 #endif
