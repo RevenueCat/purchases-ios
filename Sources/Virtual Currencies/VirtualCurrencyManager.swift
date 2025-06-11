@@ -19,7 +19,7 @@ protocol VirtualCurrencyManagerType {
     ) async throws -> VirtualCurrencies
 }
 
-actor VirtualCurrencyManager: VirtualCurrencyManagerType, Sendable {
+actor VirtualCurrencyManager: VirtualCurrencyManagerType {
 
     private let identityManager: IdentityManager
     private let deviceCache: DeviceCache

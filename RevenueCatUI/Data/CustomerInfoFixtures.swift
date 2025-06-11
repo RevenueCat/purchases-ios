@@ -100,7 +100,6 @@ class CustomerInfoFixtures {
         }
     }
 
-    // swiftlint:disable:next function_body_length
     static func customerInfo(
         subscriptions: [Subscription],
         entitlements: [Entitlement],

@@ -14,7 +14,7 @@
 import Foundation
 import RevenueCat
 
-internal class VirtualCurrenciesFixtures {
+internal enum VirtualCurrenciesFixtures {
     static var noVirtualCurrencies: RevenueCat.VirtualCurrencies {
         let emptyJSONData = "{\"virtual_currencies\":{}}".data(using: .utf8)
         // swiftlint:disable:next force_try force_unwrapping
