@@ -16,7 +16,7 @@ import RevenueCat
 
 internal enum VirtualCurrenciesFixtures {
     static var noVirtualCurrencies: RevenueCat.VirtualCurrencies {
-        let emptyJSONData = "{\"virtual_currencies\":{}}".data(using: .utf8)
+        let emptyJSONData = "{\"all\":{}}".data(using: .utf8)
         // swiftlint:disable:next force_try force_unwrapping
         return try! JSONDecoder().decode(RevenueCat.VirtualCurrencies.self, from: emptyJSONData!)
     }
@@ -24,7 +24,7 @@ internal enum VirtualCurrenciesFixtures {
     static var fourVirtualCurrencies: RevenueCat.VirtualCurrencies {
         let jsonData = """
                 {
-                  "virtual_currencies": {
+                  "all": {
                     "GLD": {
                       "balance": 100,
                       "code": "GLD",
@@ -67,7 +67,7 @@ internal enum VirtualCurrenciesFixtures {
     static var fiveVirtualCurrencies: RevenueCat.VirtualCurrencies {
         let jsonData = """
                 {
-                  "virtual_currencies": {
+                  "all": {
                     "GLD": {
                       "balance": 100,
                       "code": "GLD",
