@@ -283,10 +283,17 @@ class VirtualCurrencyManagerTests: TestCase {
         )
         XCTAssertTrue(self.mockDeviceCache.invokedCacheVirtualCurrencies)
         XCTAssertEqual(self.mockDeviceCache.invokedCacheVirtualCurrenciesCount, 1)
-        XCTAssertEqual(
-            self.mockDeviceCache.invokedCacheVirtualCurrenciesParametersList[0].0,
-            try JSONEncoder().encode(expectedVirtualCurrenciesToBeCached)
+
+        // Comparing the Datas themselves was flaky on macOS, giving errors like
+        // XCTAssertEqual failed: ("229 bytes") is not equal to ("229 bytes")
+        // Instead we'll decode the cached data to a VirtualCurrencies object, which we
+        // can compare reliably.
+        let cachedVirtualCurrenciesData = self.mockDeviceCache.invokedCacheVirtualCurrenciesParametersList[0].0
+        let cachedVirtualCurrencies = try JSONDecoder().decode(
+            VirtualCurrencies.self,
+            from: cachedVirtualCurrenciesData
         )
+        XCTAssertEqual(cachedVirtualCurrencies, expectedVirtualCurrenciesToBeCached)
         XCTAssertEqual(
             self.mockDeviceCache.invokedCacheVirtualCurrenciesParametersList[0].1, self.appUserID
         )
