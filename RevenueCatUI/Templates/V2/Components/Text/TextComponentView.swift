@@ -75,7 +75,7 @@ private struct NonLocalizedMarkdownText: View {
 
     var markdownText: AttributedString? {
         #if swift(>=5.7)
-        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
             return try? AttributedString(
                 markdown: self.text,
                 // We want to only process inline markdown, preserving line feeds in the original text.
