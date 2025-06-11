@@ -166,11 +166,11 @@ struct RelevantPurchasesListView: View {
                     .tint(colorScheme == .dark ? .white : .black)
                 }
 
-                    if let virtualCurrencies = viewModel.virtualCurrencies, !virtualCurrencies.all.isEmpty {
-                        VirtualCurrenciesScrollViewWithOSBackgroundSection(
-                            virtualCurrencies: virtualCurrencies,
-                            onSeeAllInAppCurrenciesButtonTapped: self.viewModel.displayAllInAppCurrenciesScreen
-                        )
+                if let virtualCurrencies = viewModel.virtualCurrencies, !virtualCurrencies.all.isEmpty {
+                    VirtualCurrenciesScrollViewWithOSBackgroundSection(
+                        virtualCurrencies: virtualCurrencies,
+                        onSeeAllInAppCurrenciesButtonTapped: self.viewModel.displayAllInAppCurrenciesScreen
+                    )
 
                     Spacer().frame(height: 16)
                 }
