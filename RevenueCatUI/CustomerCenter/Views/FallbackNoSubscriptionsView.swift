@@ -82,18 +82,18 @@ struct FallbackNoSubscriptionsView: View {
         }
         .dismissCircleButtonToolbarIfNeeded()
         .compatibleNavigation(
-                        isPresented: $showAllInAppCurrenciesScreen,
-                        usesNavigationStack: navigationOptions.usesNavigationStack
-                    ) {
-                        VirtualCurrencyBalancesScreen(
-                            viewModel: VirtualCurrencyBalancesScreenViewModel(
-                                purchasesProvider: customerCenterViewModel.purchasesProvider
-                            )
-                        )
-                        .environment(\.appearance, appearance)
-                        .environment(\.localization, localization)
-                        .environment(\.navigationOptions, navigationOptions)
-                    }
+            isPresented: $showAllInAppCurrenciesScreen,
+            usesNavigationStack: navigationOptions.usesNavigationStack
+        ) {
+            VirtualCurrencyBalancesScreen(
+                viewModel: VirtualCurrencyBalancesScreenViewModel(
+                    purchasesProvider: customerCenterViewModel.purchasesProvider
+                )
+            )
+            .environment(\.appearance, appearance)
+            .environment(\.localization, localization)
+            .environment(\.navigationOptions, navigationOptions)
+        }
         .overlay {
             RestorePurchasesAlert(
                 isPresented: $showRestoreAlert,

@@ -41,7 +41,7 @@ struct SubscriptionDetailView: View {
     @Environment(\.supportInformation)
     private var support
 
-    @StateObject
+    @ObservedObject
     private var viewModel: SubscriptionDetailViewModel
 
     @ObservedObject

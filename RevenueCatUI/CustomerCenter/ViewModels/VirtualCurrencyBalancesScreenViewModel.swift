@@ -74,8 +74,8 @@ final class VirtualCurrencyBalancesScreenViewModel: ObservableObject {
         self.viewState = .loading
 
         do {
-            #warning("TODO: Load virtual currency balance data from the RevenueCat SDK once it is supported")
-            let virtualCurrencyBalanceData = self.extractVirtualCurrencyBalanceData(from: [:])
+            let virtualCurrencies = try await self.purchasesProvider.virtualCurrencies()
+            let virtualCurrencyBalanceData = self.extractVirtualCurrencyBalanceData(from: virtualCurrencies.all)
 
             self.viewState = .loaded(virtualCurrencyBalanceData)
         } catch {

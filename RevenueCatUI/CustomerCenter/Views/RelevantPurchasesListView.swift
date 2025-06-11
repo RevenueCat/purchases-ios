@@ -35,7 +35,7 @@ struct RelevantPurchasesListView: View {
     @Environment(\.navigationOptions)
     var navigationOptions
 
-    @StateObject
+    @ObservedObject
     private var viewModel: RelevantPurchasesListViewModel
 
     @ObservedObject
