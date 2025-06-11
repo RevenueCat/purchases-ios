@@ -14,7 +14,7 @@
 //
 
 import Foundation
-@testable import RevenueCat
+import RevenueCat
 
 extension CustomerCenterConfigData {
 
@@ -147,66 +147,100 @@ extension CustomerCenterConfigData {
         buttonBackgroundColor: .init(light: "#287aff", dark: "#287aff")
     )
 
+    static var emptyVirtualCurrencies: RevenueCat.VirtualCurrencies {
+        let emptyJSONData = "{\"virtual_currencies\":{}}".data(using: .utf8)!
+        return try! JSONDecoder().decode(RevenueCat.VirtualCurrencies.self, from: emptyJSONData)
+    }
+
     static var fourVirtualCurrencies: RevenueCat.VirtualCurrencies {
         let jsonData = """
                 {
-                  "GLD": {
-                    "balance": 100
-                  },
-                  "SLV": {
-                    "balance": 200
-                  },
-                  "BRNZ": {
-                    "balance": 300
-                  },
-                  "PLTNM": {
-                    "balance": 400
+                  "virtual_currencies": {
+                    "GLD": {
+                      "balance": 100,
+                      "code": "GLD",
+                      "description": "It's gold",
+                      "name": "Gold"
+                    },
+                    "SLV": {
+                      "balance": 200,
+                      "code": "SLV",
+                      "description": "It's silver",
+                      "name": "Silver"
+                    },
+                    "BRNZ": {
+                      "balance": 300,
+                      "code": "BRNZ",
+                      "description": "It's bronze",
+                      "name": "Bronze"
+                    },
+                    "PLTNM": {
+                      "balance": 400,
+                      "code": "PLTNM",
+                      "description": "It's platinum",
+                      "name": "Platinum"
+                    }
                   }
                 }
                 """.data(using: .utf8)
 
         guard let data = jsonData else {
-            return VirtualCurrencies(virtualCurrencies: [:])
+            return Self.emptyVirtualCurrencies
         }
 
-        do {
-            let vcs = try JSONDecoder().decode([String: VirtualCurrency].self, from: data)
-            return VirtualCurrencies(virtualCurrencies: vcs)
-        } catch {
-            return VirtualCurrencies(virtualCurrencies: [:])
+        guard let virtualCurrencies = try? JSONDecoder().decode(RevenueCat.VirtualCurrencies.self, from: data) else {
+            return Self.emptyVirtualCurrencies
         }
+
+        return virtualCurrencies
     }
 
     static var fiveVirtualCurrencies: RevenueCat.VirtualCurrencies {
         let jsonData = """
                 {
-                  "GLD": {
-                    "balance": 100
-                  },
-                  "SLV": {
-                    "balance": 200
-                  },
-                  "BRNZ": {
-                    "balance": 300
-                  },
-                  "PLTNM": {
-                    "balance": 400
-                  },
-                  "RC_COIN": {
-                    "balance": 1
+                  "virtual_currencies": {
+                    "GLD": {
+                      "balance": 100,
+                      "code": "GLD",
+                      "description": "It's gold",
+                      "name": "Gold"
+                    },
+                    "SLV": {
+                      "balance": 200,
+                      "code": "SLV",
+                      "description": "It's silver",
+                      "name": "Silver"
+                    },
+                    "BRNZ": {
+                      "balance": 300,
+                      "code": "BRNZ",
+                      "description": "It's bronze",
+                      "name": "Bronze"
+                    },
+                    "PLTNM": {
+                      "balance": 400,
+                      "code": "PLTNM",
+                      "description": "It's platinum",
+                      "name": "Platinum"
+                    },
+                    "RC_COIN": {
+                      "balance": 1,
+                      "code": "RC_COIN",
+                      "description": "It's RevenueCat Coin",
+                      "name": "RevenueCat Coin"
+                    }
                   }
                 }
                 """.data(using: .utf8)
 
         guard let data = jsonData else {
-            return VirtualCurrencies(virtualCurrencies: [:])
+            return Self.emptyVirtualCurrencies
         }
 
-        do {
-            let vcs = try JSONDecoder().decode([String: VirtualCurrency].self, from: data)
-            return VirtualCurrencies(virtualCurrencies: vcs)
-        } catch {
-            return VirtualCurrencies(virtualCurrencies: [:])
+        guard let virtualCurrencies = try? JSONDecoder().decode(RevenueCat.VirtualCurrencies.self, from: data) else {
+            return Self.emptyVirtualCurrencies
         }
+
+        return virtualCurrencies
     }
 }
