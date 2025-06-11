@@ -989,7 +989,7 @@ public protocol PurchasesType: AnyObject {
      */
     @objc(virtualCurrenciesWithCompletion:)
     func virtualCurrencies(
-        completion: @escaping (VirtualCurrencies?, PublicError?) -> Void
+        completion: @escaping @Sendable (VirtualCurrencies?, PublicError?) -> Void
     )
 
     /**
@@ -1006,7 +1006,7 @@ public protocol PurchasesType: AnyObject {
     @objc(virtualCurrenciesWithForceRefresh:completion:)
     func virtualCurrencies(
         forceRefresh: Bool,
-        completion: @escaping (VirtualCurrencies?, PublicError?) -> Void
+        completion: @escaping @Sendable (VirtualCurrencies?, PublicError?) -> Void
     )
 
     // MARK: - Deprecated

@@ -402,7 +402,7 @@ struct RelevantPurchasesListView_Previews: PreviewProvider {
                         screen: warningOffMock.screens[.management]!,
                         originalAppUserId: "originalAppUserId",
                         activePurchases: purchases,
-                        virtualCurrencies: CustomerCenterConfigData.fourVirtualCurrencies,
+                        virtualCurrencies: VirtualCurrenciesFixtures.fourVirtualCurrencies,
                         shouldShowSeeAllPurchases: false
                     )
                 )
@@ -422,7 +422,7 @@ struct RelevantPurchasesListView_Previews: PreviewProvider {
                         screen: warningOffMock.screens[.management]!,
                         originalAppUserId: "originalAppUserId",
                         activePurchases: purchases,
-                        virtualCurrencies: CustomerCenterConfigData.fiveVirtualCurrencies,
+                        virtualCurrencies: VirtualCurrenciesFixtures.fiveVirtualCurrencies,
                         shouldShowSeeAllPurchases: false
                     )
                 )

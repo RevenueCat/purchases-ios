@@ -1313,7 +1313,7 @@ public extension Purchases {
 public extension Purchases {
 
     @objc func virtualCurrencies(
-        completion: @escaping (VirtualCurrencies?, PublicError?) -> Void
+        completion: @escaping @Sendable (VirtualCurrencies?, PublicError?) -> Void
     ) {
         self.virtualCurrencies(
             forceRefresh: false
@@ -1333,7 +1333,8 @@ public extension Purchases {
                     let virtualCurrencies = try await self.virtualCurrencies(forceRefresh: forceRefresh)
                     completion(virtualCurrencies, nil)
                 } catch {
-                    #warning("TODO: Handle error")
+                    let publicError = NewErrorUtils.purchasesError(withUntypedError: error).asPublicError
+                    completion(nil, publicError)
                 }
             }
         }
