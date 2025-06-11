@@ -11,8 +11,8 @@
 //  
 //  Created by Nacho Soto on 7/19/23.
 
-import SwiftUI
 @_spi(Internal) import RevenueCat
+import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct RemoteImage<Content: View>: View {
