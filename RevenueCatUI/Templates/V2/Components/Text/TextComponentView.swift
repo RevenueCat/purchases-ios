@@ -75,15 +75,11 @@ private struct NonLocalizedMarkdownText: View {
 
     var markdownText: AttributedString? {
         #if swift(>=5.7)
-        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
-            return try? AttributedString(
-                markdown: self.text,
-                // We want to only process inline markdown, preserving line feeds in the original text.
-                options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnly)
-            )
-        } else {
-            return nil
-        }
+        return try? AttributedString(
+            markdown: self.text,
+            // We want to only process inline markdown, preserving line feeds in the original text.
+            options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnly)
+        )
         #else
         return nil
         #endif
