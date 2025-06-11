@@ -68,10 +68,10 @@ struct PurchaseInformation {
     /// resubscriptions by lapsed subscribers. `nil` for non-subscriptions
     let originalPurchaseDate: Date?
 
-    /// Indicates whether the purchased subscription is active
+    /// Indicates whether the purchased subscription is expired
     ///
-    /// Note: `true` for non-subscriptions
-    let isActive: Bool
+    /// Note: `false` for non-subscriptions
+    let isExpired: Bool
 
     /// The fetch date of this CustomerInfo. (a.k.a. CustomerInfo.requestedDate)
     let customerInfoRequestedDate: Date
@@ -133,7 +133,7 @@ struct PurchaseInformation {
          isLifetime: Bool,
          isTrial: Bool,
          isCancelled: Bool,
-         isActive: Bool,
+         isExpired: Bool,
          isSandbox: Bool,
          latestPurchaseDate: Date,
          originalPurchaseDate: Date?,
@@ -162,7 +162,7 @@ struct PurchaseInformation {
         self.isTrial = isTrial
         self.isCancelled = isCancelled
         self.isSandbox = isSandbox
-        self.isActive = isActive
+        self.isExpired = isExpired
         self.latestPurchaseDate = latestPurchaseDate
         self.originalPurchaseDate = originalPurchaseDate
         self.customerInfoRequestedDate = customerInfoRequestedDate
@@ -216,7 +216,7 @@ struct PurchaseInformation {
             self.renewalDate = entitlement.willRenew ? entitlement.expirationDate : nil
             self.periodType = entitlement.periodType
             self.ownershipType = entitlement.ownershipType
-            self.isActive = entitlement.isActive
+            self.isExpired = !entitlement.isActive
             self.unsubscribeDetectedAt = entitlement.unsubscribeDetectedAt
             self.billingIssuesDetectedAt = entitlement.billingIssueDetectedAt
             self.gracePeriodExpiresDate = nil
@@ -233,12 +233,12 @@ struct PurchaseInformation {
                 self.expirationDate = expiresDate
                 self.renewalDate = willRenew ? expiresDate : nil
                 self.ownershipType = ownershipType
-                self.isActive = isActive
+                self.isExpired = !isActive
 
             case .nonSubscription:
                 self.isLifetime = true
                 self.isTrial = false
-                self.isActive = true
+                self.isExpired = false
                 self.renewalDate = nil
                 self.expirationDate = nil
                 self.ownershipType = nil

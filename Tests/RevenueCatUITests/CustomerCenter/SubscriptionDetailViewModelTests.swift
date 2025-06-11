@@ -34,7 +34,7 @@ final class SubscriptionDetailViewModelTests: TestCase {
             screen: CustomerCenterConfigData.default.screens[.management]!,
             showPurchaseHistory: false,
             allowsMissingPurchaseAction: false,
-            purchaseInformation: .mock(store: .appStore, isActive: true)
+            purchaseInformation: .mock(store: .appStore, isExpired: false)
         )
 
         expect(viewModelAppStore.shouldShowContactSupport).to(beFalse())
@@ -59,7 +59,7 @@ final class SubscriptionDetailViewModelTests: TestCase {
                 screen: CustomerCenterConfigData.default.screens[.management]!,
                 showPurchaseHistory: false,
                 allowsMissingPurchaseAction: true,
-                purchaseInformation: .mock(store: $0, isActive: true)
+                purchaseInformation: .mock(store: $0, isExpired: false)
             )
 
             expect(viewModelOther.shouldShowContactSupport).to(beTrue())

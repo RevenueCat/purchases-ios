@@ -246,12 +246,12 @@ struct RelevantPurchasesListView_Previews: PreviewProvider {
         let purchases = [
             PurchaseInformation.mock(
                 store: .amazon,
-                isActive: true,
+                isExpired: false,
                 renewalDate: PurchaseInformation.defaulRenewalDate
             ),
             PurchaseInformation.mock(
                 store: .appStore,
-                isActive: true
+                isExpired: false
             ),
             .free
         ]
