@@ -87,9 +87,31 @@ struct RemoteImage<Content: View>: View {
         }
     }
 
+    var localImage: (Image, CGSize)? {
+        guard url.isFileURL else {
+            return nil
+        }
+
+        #if os(macOS)
+        if let image = NSImage(contentsOfFile: url.path) {
+            return (Image(nsImage: image), image.size)
+        } else {
+            return nil
+        }
+        #else
+        if let image = UIImage(contentsOfFile: url.path) {
+            return (Image(uiImage: image), image.size)
+        } else {
+            return nil
+        }
+        #endif
+    }
+
     var body: some View {
         Group {
-            if case let .success(result) = highResLoader.result {
+            if let imageAndSize = self.localImage {
+                content(imageAndSize.0, imageAndSize.1)
+            } else if case let .success(result) = highResLoader.result {
                 content(result.image, result.size)
             } else if case let .success(result) = lowResLoader.result {
                 content(result.image, result.size)
@@ -107,6 +129,14 @@ struct RemoteImage<Content: View>: View {
         }
         .transition(self.transition)
         .task(id: self.url) { // This cancels the previous task when the URL changes.
+            #if DEBUG
+            // Don't attempt to load if local image
+            // This is used for paywall screenshot validation
+            guard self.localImage == nil else {
+                return
+            }
+            #endif
+
             switch self.colorScheme {
             case .dark:
                 await loadImages(

@@ -89,6 +89,7 @@ struct FeedbackSurveyView: View {
                     product: promotionalOfferData.product,
                     promoOfferDetails: promotionalOfferData.promoOfferDetails,
                     purchasesProvider: self.viewModel.purchasesProvider,
+                    actionWrapper: self.viewModel.actionWrapper,
                     onDismissPromotionalOfferView: { userAction in
                         Task(priority: .userInitiated) {
                             await viewModel.handleDismissPromotionalOfferView(

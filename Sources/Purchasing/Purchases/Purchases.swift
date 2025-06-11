@@ -1385,6 +1385,17 @@ public extension Purchases {
         return CustomerCenterConfigData(from: response)
     }
 
+#if !os(macOS) && !os(tvOS)
+
+    /// Used by `RevenueCatUI` to notify `RevenueCat` when a font in a paywall fails to load.
+    @_spi(Internal) func failedToLoadFontWithConfig(_ fontConfig: UIConfig.FontsConfig) {
+        self.operationDispatcher.dispatchOnWorkerThread {
+            await self.paywallCache?.triggerFontDownloadIfNeeded(fontsConfig: fontConfig)
+        }
+    }
+
+#endif
+
     /// Used by `RevenueCatUI` to download and cache paywall images.
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     static let paywallImageDownloadSession: URLSession = PaywallCacheWarming.downloadSession
@@ -1625,9 +1636,61 @@ public extension Purchases {
     @objc(configureInCustomEntitlementsModeWithApiKey:appUserID:)
     @discardableResult static func configureInCustomEntitlementsComputationMode(apiKey: String,
                                                                                 appUserID: String) -> Purchases {
+        Self.configureInCustomEntitlementsComputationMode(
+            apiKey: apiKey,
+            appUserID: appUserID,
+            showStoreMessagesAutomatically: true
+        )
+    }
+
+    /**
+     * Configures an instance of the Purchases SDK with a specified API key and
+     * app user ID in Custom Entitlements Computation mode.
+
+     * - Warning: Configuring in Custom Entitlements Computation mode should only be enabled after
+     * being instructed to do so by the RevenueCat team.
+     * Apps configured in this mode will not have anonymous IDs, will not be able to use logOut methods,
+     * and will not have their CustomerInfo cache refreshed automatically.
+     *
+     * ## Custom Entitlements Computation mode
+     * This mode is intended for apps that will use RevenueCat to manage payment flows,
+     * but **will not** use RevenueCat's SDK to compute entitlements.
+     * Apps using this mode will instead rely on webhooks to get notified when purchases go through
+     * and to merge information between RevenueCat's servers
+     * and their own.
+     *
+     * In this mode, the RevenueCat SDK will never generate anonymous IDs. Instead, it can only be configured
+     * with a known appUserID, and the logOut methods
+     * will return an error if called. To change users, call ``logIn(_:)-arja``.
+     *
+     * The instance will be set as a singleton.
+     * You should access the singleton instance using ``Purchases/shared``.
+     *
+     * - Note: Best practice is to use a salted hash of your unique app user ids.
+     *
+     * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
+     *
+     * - Parameter appUserID: The unique app user id for this user. This user id will allow users to share their
+     * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
+     * to generate this for you.
+     *
+     * - Parameter showStoreMessagesAutomatically: Enabled by default. If enabled, if the user has
+     * billing issues, has yet to accept a price increase consent or there are other messages from StoreKit, they will
+     * be displayed automatically when the app is initialized.
+     *
+     * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
+     */
+    @objc(configureInCustomEntitlementsModeWithApiKey:appUserID:showStoreMessagesAutomatically:)
+    @discardableResult static func configureInCustomEntitlementsComputationMode(
+        apiKey: String,
+        appUserID: String,
+        showStoreMessagesAutomatically: Bool = true
+    ) -> Purchases {
         Self.configure(
-            with: .builder(withAPIKey: apiKey, appUserID: appUserID)
-                .build())
+            with: Configuration.Builder(withAPIKey: apiKey, appUserID: appUserID)
+                .with(showStoreMessagesAutomatically: showStoreMessagesAutomatically)
+                .build()
+        )
     }
 
     #endif
@@ -2023,11 +2086,6 @@ private extension Purchases {
     }
 
     func updateCachesIfInForeground() {
-        guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
-            // No need to update caches when in UI preview mode
-            return
-        }
-
         self.systemInfo.isApplicationBackgrounded { isBackgrounded in
             if !isBackgrounded {
                 self.operationDispatcher.dispatchOnWorkerThread {
@@ -2039,7 +2097,8 @@ private extension Purchases {
 
     func updateAllCachesIfNeeded(isAppBackgrounded: Bool) {
         guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
-            // No need to update caches when in UI preview mode
+            // No need to update caches every time when in UI preview mode.
+            // Only needed at configuration time
             return
         }
 
@@ -2071,7 +2130,8 @@ private extension Purchases {
     ) {
         Logger.verbose(Strings.purchase.updating_all_caches)
 
-        if self.systemInfo.dangerousSettings.customEntitlementComputation {
+        if self.systemInfo.dangerousSettings.customEntitlementComputation ||
+            self.systemInfo.dangerousSettings.uiPreviewMode {
             if let completion = completion {
                 let error = NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError()
                 completion(.failure(error.asPublicError))
@@ -2109,8 +2169,17 @@ private extension Purchases {
             if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *),
                let cache = cache, let offerings = offeringsResultData.value?.offerings {
                 self.operationDispatcher.dispatchOnWorkerThread {
-                    await cache.warmUpEligibilityCache(offerings: offerings)
-                    await cache.warmUpPaywallImagesCache(offerings: offerings)
+                    await withTaskGroup(of: Void.self) { group in
+                        group.addTask {
+                            await cache.warmUpEligibilityCache(offerings: offerings)
+                        }
+                        group.addTask {
+                            await cache.warmUpPaywallImagesCache(offerings: offerings)
+                        }
+						group.addTask {
+                            await cache.warmUpPaywallFontsCache(offerings: offerings)
+                        }
+                    }
                 }
             }
         }

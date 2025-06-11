@@ -66,7 +66,10 @@ import SwiftUI
     #endif
 
     @MainActor
-    func manageSubscriptionsSheetViewModifier(isPresented: Binding<Bool>) -> ManageSubscriptionSheetModifier
+    func manageSubscriptionsSheetViewModifier(
+        isPresented: Binding<Bool>,
+        subscriptionGroupID: String?
+    ) -> ManageSubscriptionSheetModifier
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -75,8 +78,11 @@ import SwiftUI
 @available(watchOS, unavailable)
 extension CustomerCenterPurchasesType {
 
-    func manageSubscriptionsSheetViewModifier(isPresented: Binding<Bool>) -> ManageSubscriptionSheetModifier {
-        ManageSubscriptionSheetModifier(isPresented: isPresented)
+    func manageSubscriptionsSheetViewModifier(
+        isPresented: Binding<Bool>,
+        subscriptionGroupID: String?
+    ) -> ManageSubscriptionSheetModifier {
+        ManageSubscriptionSheetModifier(isPresented: isPresented, subscriptionGroupID: subscriptionGroupID)
     }
 
 }
@@ -88,12 +94,22 @@ extension CustomerCenterPurchasesType {
 @_spi(Internal) public struct ManageSubscriptionSheetModifier: ViewModifier {
 
     let isPresented: Binding<Bool>
+    let subscriptionGroupID: String?
 
-    @_spi(Internal) public init(isPresented: Binding<Bool>) {
+    @_spi(Internal) public init(isPresented: Binding<Bool>, subscriptionGroupID: String?) {
         self.isPresented = isPresented
+        self.subscriptionGroupID = subscriptionGroupID
     }
 
     @_spi(Internal) public func body(content: Content) -> some View {
+        #if swift(>=5.9)
+        if #available(iOS 17.0, *), let subscriptionGroupID {
+            content.manageSubscriptionsSheet(isPresented: isPresented, subscriptionGroupID: subscriptionGroupID)
+        } else {
+            content.manageSubscriptionsSheet(isPresented: isPresented)
+        }
+        #else
         content.manageSubscriptionsSheet(isPresented: isPresented)
+        #endif
     }
 }
