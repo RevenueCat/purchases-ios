@@ -36,10 +36,11 @@ files_to_update_on_latest_stable_releases = {
   './scripts/docs/index.html' => ['purchases-ios-docs/{x}/documentation/revenuecat'],
 }
 
-repo_name = 'purchases-ios'
-snapshots_repo_name = 'purchases-ios-snapshots'
-changelog_latest_path = './CHANGELOG.latest.md'
-changelog_path = './CHANGELOG.md'
+REPO_NAME = 'purchases-ios'
+SNAPSHOTS_REPO_NAME = 'purchases-ios-snapshots'
+PAYWALL_PREVIEW_RESOURCES_REPO_NAME = 'paywall-preview-resources'
+CHANGELOG_LATEST_PATH = './CHANGELOG.latest.md'
+CHANGELOG_PATH = './CHANGELOG.md'
 
 platform :ios do
   before_all do
@@ -54,12 +55,12 @@ platform :ios do
   lane :bump do |options|
     bump_version_update_changelog_create_pr(
       current_version: current_version_number,
-      changelog_latest_path: changelog_latest_path,
-      changelog_path: changelog_path,
+      changelog_latest_path: CHANGELOG_LATEST_PATH,
+      changelog_path: CHANGELOG_PATH,
       files_to_update: files_with_version_number,
       files_to_update_without_prerelease_modifiers: files_with_version_number_without_prerelease_modifiers,
       files_to_update_on_latest_stable_releases: files_to_update_on_latest_stable_releases,
-      repo_name: repo_name,
+      repo_name: REPO_NAME,
       github_rate_limit: options[:github_rate_limit],
       editor: options[:editor],
       next_version: options[:next_version],
@@ -71,7 +72,7 @@ platform :ios do
   desc "Automatically bumps version, update swift header, edit changelog, and create pull request"
   lane :automatic_bump do |options|
     next_version, type_of_bump = determine_next_version_using_labels(
-      repo_name: repo_name,
+      repo_name: REPO_NAME,
       github_rate_limit: options[:github_rate_limit]
     )
     options[:next_version] = next_version
@@ -91,9 +92,9 @@ platform :ios do
   lane :github_release do |options|
     create_github_release(
       version: options[:version],
-      repo_name: repo_name,
+      repo_name: REPO_NAME,
       github_api_token: ENV["GITHUB_TOKEN"],
-      changelog_latest_path: changelog_latest_path,
+      changelog_latest_path: CHANGELOG_LATEST_PATH,
       upload_assets: ['RevenueCat.xcframework.zip', 'RevenueCatUI.xcframework.zip']
     )
   end
@@ -102,7 +103,7 @@ platform :ios do
   lane :prepare_next_version do |options|
     create_next_snapshot_version(
       current_version: current_version_number,
-      repo_name: repo_name,
+      repo_name: REPO_NAME,
       github_pr_token: ENV["GITHUB_PULL_REQUEST_API_TOKEN"],
       files_to_update: files_with_version_number,
       files_to_update_without_prerelease_modifiers: files_with_version_number_without_prerelease_modifiers
@@ -130,28 +131,25 @@ platform :ios do
     end
   end
 
-  desc "Updates paywall-preview-resources submodule and creates/updates PR"
-  lane :update_paywall_preview_resources_submodule do |options|
-    branch_name = "pw2-update-paywall-preview-resources-submodule"
-    submodule_dir = "../upstream/paywall-preview-resources"
-
+  desc "Updates paywall-preview-resources-commit to point to latest commit on main and creates/updates PR"
+  lane :update_paywall_preview_resources_commit do |options|
+    branch_name = "pw2-update-paywall-preview-resources-commit"
+    
     # Ensure we're starting from an up-to-date main.
     sh("git", "fetch", "origin")
 
     create_or_checkout_branch(branch_name: branch_name)
 
-    Dir.chdir(submodule_dir) do
-      sh("git", "fetch")
-      sh("git", "checkout", "main")
-      sh("git", "pull")
-    end
+    new_hash = sh("git", "ls-remote", "git@github.com:RevenueCat/#{PAYWALL_PREVIEW_RESOURCES_REPO_NAME}.git", "refs/heads/main").split("\t").first
+    UI.important("Updating paywall preview resources commit to #{new_hash}")
+    update_paywall_preview_resources_commit(new_hash)
 
     commit_push_and_create_pr_if_necessary(
-      repo: repo_name,
+      repo: REPO_NAME,
       branch_name: branch_name,
-      commit_message: "[Automated] Updates paywall-preview-resources submodule.",
-      title: "[AUTOMATIC][Paywalls V2] Updates paywall-preview-resources submodule",
-      body: "This is an automatic update of the paywall-preview-resources submodule.",
+      commit_message: "[Automated] Updates commit hash of paywall-preview-resources.",
+      title: "[AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources",
+      body: "This is an automatic update of the commit hash of paywall-preview-resources.",
       labels: ["pr:other"],
       team_reviewers: ["coresdk", "monetization"]
     )
@@ -160,6 +158,8 @@ platform :ios do
   desc "Records Paywall template screenshots and pushes them to the repository at target_repository_path"
   lane :record_and_push_paywall_template_screenshots do |options|
     UI.user_error!("Please provide the target_repository_path, and make sure it is cloned.") unless options[:target_repository_path]
+
+    this_commit_hash = sh("git", "rev-parse", "HEAD").strip
 
     target_repository_path = Dir.chdir("..") do
       File.expand_path(options[:target_repository_path])
@@ -201,7 +201,7 @@ platform :ios do
       commit_push_and_create_pr_if_necessary(
         repo: target_repository_name,
         branch_name: target_repository_branch,
-        commit_message: "[Automated] Updates iOS template screenshots.",
+        commit_message: "[Automated] Updates iOS template screenshots (commit: #{this_commit_hash})",
         title: "[AUTOMATIC] Updates iOS template screenshots",
         body: "This is an automatic update of the iOS template screenshots.",
         team_reviewers: ["coresdk", "monetization", "bab-s"]
@@ -233,7 +233,7 @@ platform :ios do
     commit_message = options[:commit_message] || UI.user_error!("No commit_message provided")
     title = options[:title] || commit_message
     body = options[:body] || commit_message
-    repo = options[:repo] || repo_name
+    repo = options[:repo] || REPO_NAME
     labels = options[:labels] || []
     team_reviewers = options[:team_reviewers] || []
     
@@ -284,7 +284,7 @@ platform :ios do
     branch_name = options[:branch_name] || UI.user_error!("No branch_name provided")
     title = options[:title] || UI.user_error!("No title provided")
     body = options[:body] || UI.user_error!("No body provided")
-    repo = options[:repo] || repo_name
+    repo = options[:repo] || REPO_NAME
     repo_with_owner = "RevenueCat/#{repo}"
     base = options[:base] || "main"
     labels = options[:labels] || []
@@ -616,7 +616,7 @@ platform :ios do
 
   desc "Trigger bump"
   lane :trigger_bump do
-    trigger_action_in_circle_ci(action: 'bump', repo_name: repo_name)
+    trigger_action_in_circle_ci(action: 'bump', repo_name: REPO_NAME)
   end
 
   desc "Checks whether the RevenueCat-Swift.h is up to date"
@@ -683,13 +683,13 @@ platform :ios do
     # Make request
     headers = {"Circle-Token": circle_token, "Content-Type": "application/json", "Accept": "application/json"}
     data = {parameters: {options[:pipeline] => true}, branch: branch}
-    url = "https://circleci.com/api/v2/project/github/RevenueCat/#{repo_name}/pipeline"
+    url = "https://circleci.com/api/v2/project/github/RevenueCat/#{REPO_NAME}/pipeline"
 
     resp = RestClient.post url, data.to_json, headers
 
     # Print workflow url
     number = JSON.parse(resp.body)["number"]
-    workflow_url = "https://app.circleci.com/pipelines/github/RevenueCat/#{repo_name}/#{number}"
+    workflow_url = "https://app.circleci.com/pipelines/github/RevenueCat/#{REPO_NAME}/#{number}"
 
     UI.important "Workflow: #{workflow_url}"
   end
@@ -698,7 +698,7 @@ platform :ios do
   lane :create_snapshot_pr do |options|
     push_snapshot_pr(
       version: options[:version],
-      repo: "revenuecat/#{repo_name}",
+      repo: "revenuecat/#{REPO_NAME}",
       base_branch: ENV["CIRCLE_BRANCH"],
       files_to_add: "../*/__Snapshots__/*"
      )
@@ -706,10 +706,10 @@ platform :ios do
 
   desc "Creates a new PR on purchases-ios-snapshots after new snapshot files were generated"
   lane :create_snapshots_repo_pr do |options|
-    Dir.chdir("../Tests/#{snapshots_repo_name}") { |dir|
+    Dir.chdir("../Tests/#{SNAPSHOTS_REPO_NAME}") { |dir|
      push_snapshot_pr(
       version: options[:version],
-      repo: "revenuecat/#{snapshots_repo_name}",
+      repo: "revenuecat/#{SNAPSHOTS_REPO_NAME}",
       base_branch: "main",
       files_to_add: "."
      )
@@ -1058,7 +1058,7 @@ platform :ios do
 
     project_root = File.expand_path("#{File.dirname(__FILE__)}/..")
 
-    latest_changelog = File.read("#{project_root}/#{changelog_latest_path}")
+    latest_changelog = File.read("#{project_root}/#{CHANGELOG_LATEST_PATH}")
     changelog = "Release #{current_version_number}:\n\n#{latest_changelog}"
 
     purchase_tester_root = "#{project_root}/Tests/TestingApps/PurchaseTesterSwiftUI"
@@ -1137,15 +1137,32 @@ platform :ios do
   desc "Clones or updates snapshots repo"
   lane :fetch_snapshots do
     Dir.chdir("../Tests") do
-      if !File.directory?(snapshots_repo_name)
+      if !File.directory?(SNAPSHOTS_REPO_NAME)
         UI.important("Cloning snapshots repo")
 
-        sh "git", "clone", "git@github.com:RevenueCat/#{snapshots_repo_name}.git"
+        sh "git", "clone", "git@github.com:RevenueCat/#{SNAPSHOTS_REPO_NAME}.git"
       end
 
       commit = current_snapshots_commit
       UI.message("Updating snapshots repo to #{commit}")
-      Dir.chdir(snapshots_repo_name) do
+      Dir.chdir(SNAPSHOTS_REPO_NAME) do
+        sh "git", "fetch", "origin"
+        sh "git", "checkout", commit
+      end
+    end
+  end
+
+  desc "Clones or updates paywall-preview-resources repo"
+  lane :fetch_paywall_preview_resources do
+    Dir.chdir("../Tests") do
+      if !File.directory?(PAYWALL_PREVIEW_RESOURCES_REPO_NAME)
+        UI.important("Cloning paywall-preview-resources repo")
+        sh "git", "clone", "git@github.com:RevenueCat/#{PAYWALL_PREVIEW_RESOURCES_REPO_NAME}.git"
+      end
+
+      commit = current_paywall_preview_resources_commit
+      UI.message("Updating paywall-preview-resources repo to #{commit}")
+      Dir.chdir(PAYWALL_PREVIEW_RESOURCES_REPO_NAME) do
         sh "git", "fetch", "origin"
         sh "git", "checkout", commit
       end
@@ -1156,7 +1173,7 @@ platform :ios do
   lane :update_snapshots_repo do
     new_hash = ""
 
-    Dir.chdir("../Tests/#{snapshots_repo_name}") do
+    Dir.chdir("../Tests/#{SNAPSHOTS_REPO_NAME}") do
       sh "git", "checkout", "main"
       sh "git", "pull", "--rebase", "origin"
       new_hash = sh("git", "rev-parse", "HEAD")
@@ -1167,7 +1184,7 @@ platform :ios do
   end
 
   lane :deploy_to_spm do
-    source_repo = ENV["CIRCLE_REPOSITORY_URL"] || "https://github.com/revenuecat/#{repo_name}"
+    source_repo = ENV["CIRCLE_REPOSITORY_URL"] || "https://github.com/revenuecat/#{REPO_NAME}"
     destination_repo = source_repo.sub(/\.git\z/, "-spm.git")
 
     git_clone_and_push(
@@ -1343,7 +1360,7 @@ end
 # Snapshots
 
 def snapshots_commit_file
-  "#{File.dirname(__FILE__)}/../Tests/purchases-ios-snapshots-commit"
+  "#{File.dirname(__FILE__)}/../Tests/#{SNAPSHOTS_REPO_NAME}-commit"
 end
 
 def current_snapshots_commit
@@ -1351,6 +1368,16 @@ def current_snapshots_commit
 end
 def update_snapshots_commit(hash)
   File.write(snapshots_commit_file, hash)
+end
+
+def paywall_preview_resources_commit_file
+  "#{File.dirname(__FILE__)}/../Tests/#{PAYWALL_PREVIEW_RESOURCES_REPO_NAME}-commit"
+end
+def current_paywall_preview_resources_commit
+  File.read(paywall_preview_resources_commit_file).strip
+end
+def update_paywall_preview_resources_commit(hash)
+  File.write(paywall_preview_resources_commit_file, hash)
 end
 
 # Slack

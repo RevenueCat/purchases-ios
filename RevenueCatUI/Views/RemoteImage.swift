@@ -11,6 +11,7 @@
 //  
 //  Created by Nacho Soto on 7/19/23.
 
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -37,7 +38,16 @@ struct RemoteImage<Content: View>: View {
         lowResUrl != nil
     }
 
-    private let transition: AnyTransition = .opacity.animation(Constants.defaultAnimation)
+    private var transition: AnyTransition {
+        #if DEBUG
+        if ProcessInfo.isRunningRevenueCatTests && self.url.isFileURL {
+            // No transition for the load of the local image
+            // This is used for paywall screenshot validation
+            return .identity
+        }
+        #endif
+        return .opacity.animation(Constants.defaultAnimation)
+    }
 
     init(
         url: URL,
