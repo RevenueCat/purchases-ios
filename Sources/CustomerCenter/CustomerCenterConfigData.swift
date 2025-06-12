@@ -143,6 +143,9 @@ public struct CustomerCenterConfigData: Equatable {
             case storeUnknownStore = "store_unknown"
             case storePaddle = "store_paddle"
             case debugHeaderTitle = "Debug"
+            case seeAllVirtualCurrencies = "see_all_virtual_currencies"
+            case virtualCurrencyBalancesScreenHeader = "virtual_currency_balances_screen_header"
+            case noVirtualCurrencyBalancesFound = "no_virtual_currency_balances_found"
             case youMayHaveDuplicatedSubscriptionsTitle = "you_may_have_duplicated_subscriptions_title"
             case youMayHaveDuplicatedSubscriptionsSubtitle = "you_may_have_duplicated_subscriptions_subtitle"
             case pricePaid = "price_paid"
@@ -345,6 +348,12 @@ public struct CustomerCenterConfigData: Equatable {
                     return "Paddle"
                 case .debugHeaderTitle:
                     return "Debug"
+                case .virtualCurrencyBalancesScreenHeader:
+                    return "In-App Currencies"
+                case .seeAllVirtualCurrencies:
+                    return "See all in-app currencies"
+                case .noVirtualCurrencyBalancesFound:
+                    return "It doesn't look like you've purchased any in-app currencies."
                 case .youMayHaveDuplicatedSubscriptionsTitle:
                     return "You may have duplicated subscriptions"
                 case .youMayHaveDuplicatedSubscriptionsSubtitle:
@@ -626,17 +635,20 @@ public struct CustomerCenterConfigData: Equatable {
         public let email: String
         public let shouldWarnCustomerToUpdate: Bool
         public let displayPurchaseHistoryLink: Bool
+        public let displayVirtualCurrencies: Bool
         public let shouldWarnCustomersAboutMultipleSubscriptions: Bool
 
         public init(
             email: String,
             shouldWarnCustomerToUpdate: Bool,
             displayPurchaseHistoryLink: Bool,
+            displayVirtualCurrencies: Bool,
             shouldWarnCustomersAboutMultipleSubscriptions: Bool
         ) {
             self.email = email
             self.shouldWarnCustomerToUpdate = shouldWarnCustomerToUpdate
             self.displayPurchaseHistoryLink = displayPurchaseHistoryLink
+            self.displayVirtualCurrencies = displayVirtualCurrencies
             self.shouldWarnCustomersAboutMultipleSubscriptions = shouldWarnCustomersAboutMultipleSubscriptions
         }
 
@@ -793,6 +805,7 @@ extension CustomerCenterConfigData.Support {
         self.email = response.email
         self.shouldWarnCustomerToUpdate = response.shouldWarnCustomerToUpdate ?? true
         self.displayPurchaseHistoryLink = response.displayPurchaseHistoryLink ?? false
+        self.displayVirtualCurrencies = response.displayVirtualCurrencies ?? false
         self.shouldWarnCustomersAboutMultipleSubscriptions = response.shouldWarnCustomersAboutMultipleSubscriptions
             ?? false
     }

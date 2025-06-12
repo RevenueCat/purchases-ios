@@ -34,6 +34,7 @@ final class SubscriptionDetailViewModelTests: TestCase {
             screen: CustomerCenterConfigData.default.screens[.management]!,
             showPurchaseHistory: false,
             allowsMissingPurchaseAction: false,
+            virtualCurrencies: nil,
             purchaseInformation: .yearlyExpiring(store: .appStore)
         )
 
@@ -59,6 +60,7 @@ final class SubscriptionDetailViewModelTests: TestCase {
                 screen: CustomerCenterConfigData.default.screens[.management]!,
                 showPurchaseHistory: false,
                 allowsMissingPurchaseAction: true,
+                virtualCurrencies: nil,
                 purchaseInformation: .yearlyExpiring(store: $0)
             )
 
