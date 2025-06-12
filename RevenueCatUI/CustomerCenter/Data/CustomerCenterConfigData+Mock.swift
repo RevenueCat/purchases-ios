@@ -135,8 +135,7 @@ extension CustomerCenterConfigData {
     }
 
     @available(iOS 14.0, *)
-    // swiftlint:disable missing_docs
-    @_spi(Internal) public static let `default` = mock()
+    static let `default` = mock()
 
     static let standardAppearance = CustomerCenterConfigData.Appearance(
         accentColor: .init(light: "#007AFF", dark: "#007AFF"),
