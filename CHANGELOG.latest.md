@@ -1,15 +1,14 @@
 ## RevenueCat SDK
-### ✨ New Features
-* Add Paddle Store enum case (#4981) via Will Taylor (@fire-at-will)
+### 🐞 Bugfixes
+* Enable markdown in paywalls in iOS 15 and watchOS 8 (#5267) via Antonio Pallares (@ajpallares)
 ### Customer Center
 #### 🐞 Bugfixes
-* Use env openURL instead of SFSafariVC to open mailto (#5221) via Facundo Menzella (@facumenzella)
-### Paywall Components
-#### 🐞 Bugfixes
-* [Paywalls] do not ignore all safe areas when applying the zstack in bottom sheet (#5201) via Mark Villacampa (@MarkVillacampa)
+* Trigger promotional offer callback from `PromotionalOfferViewModel` (#5263) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Fix StoreKitVersionTests on iOS 15 (#5226) via Will Taylor (@fire-at-will)
-* Add @_spi(Internal) to ClockTests (#5212) via Facundo Menzella (@facumenzella)
-* Use effectiveVersion.debugDescription in StoreKitVersionTests (#5213) via Facundo Menzella (@facumenzella)
-* add missing import Foundation in Tests (#5206) via Facundo Menzella (@facumenzella)
+* FIx image load in paywall rendering validation (#5264) via Antonio Pallares (@ajpallares)
+* Include commit hash in commit message for paywall-rendering-validation (#5265) via Antonio Pallares (@ajpallares)
+* Bring back paywall rendering validation (no submodules) (#5252) via Antonio Pallares (@ajpallares)
+* Rename duplicate CachingProductsManagerTests to CachingProductsManagerIntegrationTests (#5244) via Facundo Menzella (@facumenzella)
+* Update CustomerInfo sample with is_sandbox to make sure it works (#5203) via Facundo Menzella (@facumenzella)
+* Add originalPurchaseDate & isSandbox to PurchaseInformation (#5259) via Facundo Menzella (@facumenzella)

@@ -14,7 +14,7 @@
 //
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import StoreKit
 
 // swiftlint:disable file_length
@@ -57,7 +57,16 @@ struct PurchaseInformation {
     /// Note: `false` for non-subscriptions
     let isCancelled: Bool
 
+    /// Indicates whether the purchase is a sandbox one
+    let isSandbox: Bool
+
     let latestPurchaseDate: Date
+
+    /// Date when this subscription first started.
+    ///
+    /// Note: This property does not update with renewals, nor for product changes within a subscription group or
+    /// resubscriptions by lapsed subscribers. `nil` for non-subscriptions
+    let originalPurchaseDate: Date?
 
     /// Indicates whether the purchased subscription is active
     ///
@@ -105,6 +114,8 @@ struct PurchaseInformation {
 
     let ownershipType: PurchaseOwnershipType?
 
+    let subscriptionGroupID: String?
+
     /// The unique identifier for the transaction created by RevenueCat.
     let transactionIdentifier: String?
 
@@ -123,7 +134,9 @@ struct PurchaseInformation {
          isTrial: Bool,
          isCancelled: Bool,
          isActive: Bool,
+         isSandbox: Bool,
          latestPurchaseDate: Date,
+         originalPurchaseDate: Date?,
          customerInfoRequestedDate: Date,
          dateFormatter: DateFormatter = Self.defaultDateFormatter,
          numberFormatter: NumberFormatter = Self.defaultNumberFormatter,
@@ -132,6 +145,7 @@ struct PurchaseInformation {
          renewalDate: Date? = nil,
          periodType: PeriodType = .normal,
          ownershipType: PurchaseOwnershipType? = nil,
+         subscriptionGroupID: String? = nil,
          unsubscribeDetectedAt: Date? = nil,
          billingIssuesDetectedAt: Date? = nil,
          gracePeriodExpiresDate: Date? = nil,
@@ -147,8 +161,10 @@ struct PurchaseInformation {
         self.isLifetime = isLifetime
         self.isTrial = isTrial
         self.isCancelled = isCancelled
+        self.isSandbox = isSandbox
         self.isActive = isActive
         self.latestPurchaseDate = latestPurchaseDate
+        self.originalPurchaseDate = originalPurchaseDate
         self.customerInfoRequestedDate = customerInfoRequestedDate
         self.managementURL = managementURL
         self.expirationDate = expirationDate
@@ -157,6 +173,7 @@ struct PurchaseInformation {
         self.periodType = periodType
         self.numberFormatter = numberFormatter
         self.ownershipType = ownershipType
+        self.subscriptionGroupID = subscriptionGroupID
         self.unsubscribeDetectedAt = unsubscribeDetectedAt
         self.billingIssuesDetectedAt = billingIssuesDetectedAt
         self.gracePeriodExpiresDate = gracePeriodExpiresDate
@@ -180,6 +197,7 @@ struct PurchaseInformation {
 
         // Title and duration from product if available
         self.title = subscribedProduct?.localizedTitle ?? transaction.productIdentifier
+        self.subscriptionGroupID = subscribedProduct?.subscriptionGroupIdentifier
 
         self.customerInfoRequestedDate = customerInfoRequestedDate
         self.managementURL = managementURL
@@ -205,6 +223,8 @@ struct PurchaseInformation {
             self.refundedAtDate = nil
             self.transactionIdentifier = nil
             self.storeTransactionIdentifier = nil
+            self.isSandbox = entitlement.isSandbox
+            self.originalPurchaseDate = entitlement.originalPurchaseDate
         } else {
             switch transaction.type {
             case let .subscription(isActive, willRenew, expiresDate, isTrial, ownershipType):
@@ -218,10 +238,10 @@ struct PurchaseInformation {
             case .nonSubscription:
                 self.isLifetime = true
                 self.isTrial = false
+                self.isActive = false
                 self.renewalDate = nil
                 self.expirationDate = nil
                 self.ownershipType = nil
-                self.isActive = false
             }
 
             self.latestPurchaseDate = transaction.purchaseDate
@@ -235,6 +255,8 @@ struct PurchaseInformation {
             self.refundedAtDate = transaction.refundedAtDate
             self.transactionIdentifier = transaction.identifier
             self.storeTransactionIdentifier = transaction.storeIdentifier
+            self.isSandbox = transaction.isSandbox
+            self.originalPurchaseDate = transaction.originalPurchaseDate
         }
 
         if self.expirationDate == nil {

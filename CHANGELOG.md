@@ -1,3 +1,38 @@
+## 5.28.1
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Enable markdown in paywalls in iOS 15 and watchOS 8 (#5267) via Antonio Pallares (@ajpallares)
+### Customer Center
+#### 🐞 Bugfixes
+* Trigger promotional offer callback from `PromotionalOfferViewModel` (#5263) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* FIx image load in paywall rendering validation (#5264) via Antonio Pallares (@ajpallares)
+* Include commit hash in commit message for paywall-rendering-validation (#5265) via Antonio Pallares (@ajpallares)
+* Bring back paywall rendering validation (no submodules) (#5252) via Antonio Pallares (@ajpallares)
+* Rename duplicate CachingProductsManagerTests to CachingProductsManagerIntegrationTests (#5244) via Facundo Menzella (@facumenzella)
+* Update CustomerInfo sample with is_sandbox to make sure it works (#5203) via Facundo Menzella (@facumenzella)
+* Add originalPurchaseDate & isSandbox to PurchaseInformation (#5259) via Facundo Menzella (@facumenzella)
+
+## 5.28.0
+## RevenueCat SDK
+### Customer Center
+#### ✨ New Features
+* Show most recent expired if no active subscriptions (#5198) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Use Mint 0.17.5 for `run-test-ios-14` CI job (#5256) via Antonio Pallares (@ajpallares)
+* Fix Xcode 16 compilation error (#5254) via Antonio Pallares (@ajpallares)
+* Add Danger rule to avoid submodules (#5250) via Antonio Pallares (@ajpallares)
+
+## 5.27.1
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Remove submodules temporarily to fix SPM (#5246) via Toni Rico (@tonidero)
+
+### 🔄 Other Changes
+* Add accessibility identifier to PurchaseCardView (#5176) via Facundo Menzella (@facumenzella)
+
 ## 5.26.0
 ## RevenueCat SDK
 ### ✨ New Features

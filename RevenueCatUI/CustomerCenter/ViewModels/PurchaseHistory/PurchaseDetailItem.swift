@@ -13,7 +13,7 @@
 //  Created by Facundo Menzella on 14/1/25.
 //
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)

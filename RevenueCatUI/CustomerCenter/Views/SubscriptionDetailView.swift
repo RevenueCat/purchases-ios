@@ -11,7 +11,7 @@
 //
 //  Created by Facundo Menzella on 14/5/25.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if os(iOS)
@@ -89,8 +89,11 @@ struct SubscriptionDetailView: View {
                 .manageSubscriptionsSheetViewModifier(isPresented: .init(
                     get: { customerInfoViewModel.manageSubscriptionsSheet },
                     set: { manage in DispatchQueue.main.async {
-                        customerInfoViewModel.manageSubscriptionsSheet = manage } }
-                )))
+                        customerInfoViewModel.manageSubscriptionsSheet = manage }
+                    }
+                ), subscriptionGroupID: viewModel.purchaseInformation?.subscriptionGroupID
+                )
+            )
             .onCustomerCenterPromotionalOfferSuccess {
                 viewModel.refreshPurchase()
             }
@@ -153,6 +156,7 @@ struct SubscriptionDetailView: View {
                     PurchaseInformationCardView(
                         purchaseInformation: purchaseInformation,
                         localization: localization,
+                        accessibilityIdentifier: "0",
                         refundStatus: viewModel.refundRequestStatus,
                         showChevron: false
                     )
@@ -160,20 +164,10 @@ struct SubscriptionDetailView: View {
                     .padding(.horizontal)
                     .padding(.vertical, 32)
                 } else {
-                    let fallbackDescription = localization[.tryCheckRestore]
-
-                    CompatibilityContentUnavailableView(
-                        self.viewModel.screen.title,
-                        systemImage: "exclamationmark.triangle.fill",
-                        description: Text(self.viewModel.screen.subtitle ?? fallbackDescription)
-                    )
-                    .padding()
-                    .background(Color(colorScheme == .light
-                                      ? UIColor.systemBackground
-                                      : UIColor.secondarySystemBackground))
-                    .cornerRadius(10)
-                    .padding(.horizontal)
-                    .padding(.vertical, 32)
+                    NoSubscriptionsCardView(localization: localization)
+                        .cornerRadius(10)
+                        .padding(.horizontal)
+                        .padding(.vertical, 32)
                 }
 
                 ActiveSubscriptionButtonsView(viewModel: viewModel)

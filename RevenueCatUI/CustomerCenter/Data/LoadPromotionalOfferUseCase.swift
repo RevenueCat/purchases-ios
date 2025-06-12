@@ -19,7 +19,7 @@
 //
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 protocol LoadPromotionalOfferUseCaseType {
     func execute(

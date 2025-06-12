@@ -15,7 +15,7 @@
 
 import Combine
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 #if os(iOS)
 
@@ -67,10 +67,10 @@ import RevenueCat
     }
 
     @Published
-    var activeSubscriptionPurchases: [PurchaseInformation] = []
+    var subscriptionsSection: [PurchaseInformation] = []
 
     @Published
-    var activeNonSubscriptionPurchases: [PurchaseInformation] = []
+    var nonSubscriptionsSection: [PurchaseInformation] = []
 
     private(set) var purchasesProvider: CustomerCenterPurchasesType
     private(set) var customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
@@ -81,11 +81,11 @@ import RevenueCat
     }
 
     var hasPurchases: Bool {
-        !activeSubscriptionPurchases.isEmpty || !activeNonSubscriptionPurchases.isEmpty
+        !subscriptionsSection.isEmpty || !nonSubscriptionsSection.isEmpty
     }
 
     var shouldShowList: Bool {
-        activeSubscriptionPurchases.count + activeNonSubscriptionPurchases.count > 1
+        subscriptionsSection.count + nonSubscriptionsSection.count > 1
     }
 
     var  originalAppUserId: String {
@@ -157,8 +157,8 @@ import RevenueCat
         configuration: CustomerCenterConfigData
     ) {
         self.init(actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil))
-        self.activeSubscriptionPurchases = activeSubscriptionPurchases
-        self.activeNonSubscriptionPurchases = activeNonSubscriptionPurchases
+        self.subscriptionsSection = activeSubscriptionPurchases
+        self.nonSubscriptionsSection = activeNonSubscriptionPurchases
         self.configuration = configuration
         self.state = .success
     }
@@ -170,7 +170,7 @@ import RevenueCat
             return nil
         }
 
-        return $activeSubscriptionPurchases.combineLatest($activeNonSubscriptionPurchases)
+        return $subscriptionsSection.combineLatest($nonSubscriptionsSection)
             .throttle(for: .seconds(0.3), scheduler: DispatchQueue.main, latest: true)
             .compactMap {
                 $0.first(where: { $0.productIdentifier == productIdentifier })
@@ -227,34 +227,62 @@ private extension CustomerCenterViewModel {
         let hasActiveProducts =  !customerInfo.activeSubscriptions.isEmpty || !customerInfo.nonSubscriptions.isEmpty
 
         if !hasActiveProducts {
-            self.activeSubscriptionPurchases = []
-            self.activeNonSubscriptionPurchases = []
+            self.subscriptionsSection = []
+            self.nonSubscriptionsSection = []
             self.state = .success
             return
         }
 
-        await loadActiveSubscriptions(customerInfo: customerInfo)
-        await loadActiveNonSubscriptionPurchases(customerInfo: customerInfo)
+        await loadSubscriptionsSection(customerInfo: customerInfo)
+        await loadNonSubscriptionsSection(customerInfo: customerInfo)
     }
 
-    func loadActiveNonSubscriptionPurchases(customerInfo: CustomerInfo) async {
+    func loadNonSubscriptionsSection(customerInfo: CustomerInfo) async {
         var activeNonSubscriptionPurchases: [PurchaseInformation] = []
         for subscription in customerInfo.nonSubscriptions {
-            let entitlement = customerInfo.entitlements.all.values
-                .first(where: { $0.productIdentifier == subscription.productIdentifier })
-
             let purchaseInfo = await createPurchaseInformation(
                 for: subscription,
-                entitlement: entitlement,
                 customerInfo: customerInfo
             )
-
             activeNonSubscriptionPurchases.append(purchaseInfo)
         }
-        self.activeNonSubscriptionPurchases = activeNonSubscriptionPurchases
+        self.nonSubscriptionsSection = activeNonSubscriptionPurchases
     }
 
-    func loadActiveSubscriptions(customerInfo: CustomerInfo) async {
+    func loadMostRecentExpiredTransaction(customerInfo: CustomerInfo) async {
+        let inactive = customerInfo.subscriptionsByProductIdentifier
+            .filter { !$0.value.isActive }
+            .sorted { sub1, sub2 in
+                // most recent expired
+                let date1 = sub1.value.expiresDate
+                let date2 = sub2.value.expiresDate
+
+                switch (date1, date2) {
+                case let (date1?, date2?):
+                    return date1 > date2
+                case (nil, _?):
+                    return false
+                case (_?, nil):
+                    return true
+                case (nil, nil):
+                    return false
+                }
+            }
+            .first
+
+        guard let inactiveSub = inactive?.value else {
+            return
+        }
+
+        let purchaseInfo = await createPurchaseInformation(
+            for: inactiveSub,
+            customerInfo: customerInfo
+        )
+
+        self.subscriptionsSection = [purchaseInfo]
+    }
+
+    func loadSubscriptionsSection(customerInfo: CustomerInfo) async {
         var activeSubscriptionPurchases: [PurchaseInformation] = []
         for subscription in customerInfo.activeSubscriptions
             .compactMap({ id in customerInfo.subscriptionsByProductIdentifier[id] })
@@ -266,19 +294,19 @@ private extension CustomerCenterViewModel {
                 return date1 < date2
             }) {
 
-            let entitlement = customerInfo.entitlements.all.values
-                .first(where: { $0.productIdentifier == subscription.productIdentifier })
-
             let purchaseInfo = await createPurchaseInformation(
                 for: subscription,
-                entitlement: entitlement,
                 customerInfo: customerInfo
             )
 
             activeSubscriptionPurchases.append(purchaseInfo)
         }
 
-        self.activeSubscriptionPurchases = activeSubscriptionPurchases
+        if activeSubscriptionPurchases.isEmpty {
+            await loadMostRecentExpiredTransaction(customerInfo: customerInfo)
+        } else {
+            self.subscriptionsSection = activeSubscriptionPurchases
+        }
     }
 
     func loadCustomerCenterConfig() async throws {
@@ -292,9 +320,13 @@ private extension CustomerCenterViewModel {
         }
     }
 
-    func createPurchaseInformation(for transaction: RevenueCatUI.Transaction,
-                                   entitlement: EntitlementInfo?,
-                                   customerInfo: CustomerInfo) async -> PurchaseInformation {
+    func createPurchaseInformation(
+        for transaction: RevenueCatUI.Transaction,
+        customerInfo: CustomerInfo
+    ) async -> PurchaseInformation {
+        let entitlement = customerInfo.entitlements.all.values
+            .first(where: { $0.productIdentifier == transaction.productIdentifier })
+
         if transaction.store == .appStore {
             if let product = await purchasesProvider.products([transaction.productIdentifier]).first {
                 return await PurchaseInformation.purchaseInformationUsingRenewalInfo(

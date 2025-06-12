@@ -32,63 +32,69 @@ public struct UIConfig: Codable, Equatable, Sendable {
     }
 
     public struct FontsConfig: Codable, Equatable, Sendable {
+        @_spi(Internal) public let ios: FontInfo
 
-        public var ios: FontInfo
-
-        public init(ios: FontInfo) {
+        @_spi(Internal) public init(ios: FontInfo) {
             self.ios = ios
         }
-
     }
 
-    public enum FontInfo: Codable, Sendable, Hashable {
+    @_spi(Internal) public struct FontInfo: Codable, Sendable, Hashable {
+        @_spi(Internal) public let type: FontInfoType
+        @_spi(Internal) public let value: String
+        let webFontInfo: WebFontInfo?
 
-        case name(String)
-        case googleFonts(String)
-
-        public func encode(to encoder: any Encoder) throws {
-            var container = encoder.container(keyedBy: CodingKeys.self)
-
-            switch self {
-            case .name(let name):
-                try container.encode(FontInfoTypes.name.rawValue, forKey: .type)
-                try container.encode(name, forKey: .value)
-            case .googleFonts(let name):
-                try container.encode(FontInfoTypes.googleFonts.rawValue, forKey: .type)
-                try container.encode(name, forKey: .value)
-            }
-        }
-
-        public init(from decoder: Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
-            let type = try container.decode(FontInfoTypes.self, forKey: .type)
-
-            switch type {
-            case .name:
-                let value = try container.decode(String.self, forKey: .value)
-                self = .name(value)
-            case .googleFonts:
-                let value = try container.decode(String.self, forKey: .value)
-                self = .googleFonts(value)
-            }
+        @_spi(Internal) public init(name: String, webFontInfo: WebFontInfo? = nil) {
+            self.type = .name
+            self.value = name
+            self.webFontInfo = webFontInfo
         }
 
         // swiftlint:disable:next nesting
-        private enum CodingKeys: String, CodingKey {
-
+        enum CodingKeys: String, CodingKey {
             case type
             case value
+        }
 
+        @_spi(Internal) public init(from decoder: Decoder) throws {
+            self.webFontInfo = try? WebFontInfo(from: decoder)
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            self.type = try container.decode(FontInfoType.self, forKey: .type)
+            self.value = try container.decode(String.self, forKey: .value)
+        }
+
+        @_spi(Internal) public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: UIConfig.FontInfo.CodingKeys.self)
+            try container.encode(self.type, forKey: UIConfig.FontInfo.CodingKeys.type)
+            try container.encode(self.value, forKey: UIConfig.FontInfo.CodingKeys.value)
         }
 
         // swiftlint:disable:next nesting
-        private enum FontInfoTypes: String, Decodable {
-
+        @_spi(Internal) public enum FontInfoType: String, Codable, Sendable {
             case name
             case googleFonts = "google_fonts"
-
         }
+    }
 
+    @_spi(Internal) public struct WebFontInfo: Codable, Sendable, Hashable {
+
+        /// The font family name.
+        internal let family: String?
+
+        /// The remote URL to the font resource file.
+        internal let url: String
+
+        /// MD5 hash of the font file.
+        ///
+        /// Should never be `nil`, but it is optional to prevent potential decoding errors if, for some reason,
+        /// the hash is not provided from the server.
+        internal let hash: String
+
+        @_spi(Internal) public init(url: String, hash: String) {
+            self.family = nil
+            self.url = url
+            self.hash = hash
+        }
     }
 
     public struct VariableConfig: Codable, Equatable, Sendable {

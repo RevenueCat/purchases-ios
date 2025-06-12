@@ -13,7 +13,7 @@
 //  Created by Andrés Boedo on 5/3/24.
 //
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if os(iOS)
@@ -238,8 +238,8 @@ private extension CustomerCenterView {
         SubscriptionDetailView(
             customerInfoViewModel: viewModel,
             screen: screen,
-            purchaseInformation: viewModel.activeSubscriptionPurchases.first
-                ?? viewModel.activeNonSubscriptionPurchases.first,
+            purchaseInformation: viewModel.subscriptionsSection.first
+                ?? viewModel.nonSubscriptionsSection.first,
             showPurchaseHistory: viewModel.shouldShowSeeAllPurchases,
             allowsMissingPurchaseAction: true,
             purchasesProvider: self.viewModel.purchasesProvider,
