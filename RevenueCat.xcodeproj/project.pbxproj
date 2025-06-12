@@ -717,7 +717,6 @@
 		5798C9572DF1985700F44400 /* FeedbackSurveyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5798C90E2DF1985700F44400 /* FeedbackSurveyViewModel.swift */; };
 		5798C9582DF1985700F44400 /* PurchaseCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5798C9292DF1985700F44400 /* PurchaseCardView.swift */; };
 		5798C9592DF1985700F44400 /* CustomerCenterConfigDataSupport+URL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5798C8F52DF1985700F44400 /* CustomerCenterConfigDataSupport+URL.swift */; };
-		5798C95A2DF1985700F44400 /* PurchaseLinkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5798C9162DF1985700F44400 /* PurchaseLinkView.swift */; };
 		5798C95B2DF1985700F44400 /* CustomerCenterActionWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5798C8E52DF1985700F44400 /* CustomerCenterActionWrapper.swift */; };
 		5798C95C2DF1985700F44400 /* CustomerCenterActionViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5798C8E42DF1985700F44400 /* CustomerCenterActionViewModifier.swift */; };
 		5798C95D2DF1985700F44400 /* PromotionalOfferView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5798C9282DF1985700F44400 /* PromotionalOfferView.swift */; };
@@ -2122,7 +2121,6 @@
 		5798C9122DF1985700F44400 /* SubscriptionDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionDetailViewModel.swift; sourceTree = "<group>"; };
 		5798C9142DF1985700F44400 /* PurchaseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseDetailView.swift; sourceTree = "<group>"; };
 		5798C9152DF1985700F44400 /* PurchaseHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseHistoryView.swift; sourceTree = "<group>"; };
-		5798C9162DF1985700F44400 /* PurchaseLinkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseLinkView.swift; sourceTree = "<group>"; };
 		5798C9182DF1985700F44400 /* CustomerCenterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterViewController.swift; sourceTree = "<group>"; };
 		5798C91A2DF1985700F44400 /* ActiveSubscriptionButtonsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSubscriptionButtonsView.swift; sourceTree = "<group>"; };
 		5798C91B2DF1985700F44400 /* AppUpdateWarningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateWarningView.swift; sourceTree = "<group>"; };
@@ -4670,7 +4668,6 @@
 			children = (
 				5798C9142DF1985700F44400 /* PurchaseDetailView.swift */,
 				5798C9152DF1985700F44400 /* PurchaseHistoryView.swift */,
-				5798C9162DF1985700F44400 /* PurchaseLinkView.swift */,
 			);
 			path = PurchaseHistory;
 			sourceTree = "<group>";
@@ -7187,7 +7184,6 @@
 				5798C9572DF1985700F44400 /* FeedbackSurveyViewModel.swift in Sources */,
 				5798C9582DF1985700F44400 /* PurchaseCardView.swift in Sources */,
 				5798C9592DF1985700F44400 /* CustomerCenterConfigDataSupport+URL.swift in Sources */,
-				5798C95A2DF1985700F44400 /* PurchaseLinkView.swift in Sources */,
 				5798C95B2DF1985700F44400 /* CustomerCenterActionWrapper.swift in Sources */,
 				5798C95C2DF1985700F44400 /* CustomerCenterActionViewModifier.swift in Sources */,
 				5798C95D2DF1985700F44400 /* PromotionalOfferView.swift in Sources */,

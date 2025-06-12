@@ -24,6 +24,15 @@ import XCTest
 @available(watchOS, unavailable)
 final class PurchaseCardViewBadgeTests: TestCase {
 
+    func testPromoBadge() {
+        let badge = PurchaseInformationCardView.Badge(
+            purchaseInformation: .mock(productIdentifier: "rc_promo_asdasd", isCancelled: false, isExpired: false),
+            localization: CustomerCenterConfigData.default.localization
+        )
+
+        expect(badge?.title) == CCLocalizedString.active.defaultValue
+    }
+
     func testExpiredBadge() {
         let badge = PurchaseInformationCardView.Badge(
             purchaseInformation: .expired,
@@ -44,11 +53,11 @@ final class PurchaseCardViewBadgeTests: TestCase {
 
     func testFreeTrialBadge() {
         let badge = PurchaseInformationCardView.Badge(
-            purchaseInformation: .mock(isTrial: true, isCancelled: false),
+            purchaseInformation: .mock(pricePaid: .free, isTrial: true, isCancelled: false),
             localization: CustomerCenterConfigData.default.localization
         )
 
-        expect(badge?.title) == CCLocalizedString.badgeTrialCancelled.rawValue
+        expect(badge?.title) == CCLocalizedString.badgeFreeTrial.defaultValue
     }
 
     func testFreeTrialCancelledBadge() {
@@ -57,7 +66,7 @@ final class PurchaseCardViewBadgeTests: TestCase {
             localization: CustomerCenterConfigData.default.localization
         )
 
-        expect(badge?.title) == CCLocalizedString.badgeTrialCancelled.rawValue
+        expect(badge?.title) == CCLocalizedString.badgeTrialCancelled.defaultValue
     }
 
     func testActiveBadge() {
@@ -66,7 +75,7 @@ final class PurchaseCardViewBadgeTests: TestCase {
             localization: CustomerCenterConfigData.default.localization
         )
 
-        expect(badge?.title) == CCLocalizedString.badgeTrialCancelled.rawValue
+        expect(badge?.title) == CCLocalizedString.active.defaultValue
     }
 
 }
