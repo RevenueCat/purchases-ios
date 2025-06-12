@@ -66,8 +66,8 @@ import SwiftUI
 @available(watchOS, unavailable)
 struct CompatibilityLabeledContent<Label: View, Content: View>: View {
 
-    let label: () -> Label
-    let content: () -> Content
+    @ViewBuilder let label: () -> Label
+    @ViewBuilder let content: () -> Content
 
     var body: some View {
         if #available(iOS 16.0, *) {
@@ -96,6 +96,17 @@ extension CompatibilityLabeledContent where Label == Text {
     init(_ label: String, @ViewBuilder content: @escaping () -> Content) {
         self.label = { Text(label) }
         self.content = content
+    }
+}
+
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension CompatibilityLabeledContent where Label == Text, Content == EmptyView {
+    init(_ label: String) {
+        self.label = { Text(label) }
+        self.content = { EmptyView() }
     }
 }
 

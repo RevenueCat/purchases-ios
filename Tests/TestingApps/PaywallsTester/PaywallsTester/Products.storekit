@@ -35,7 +35,7 @@
       "internalID" : "AE159122",
       "localizations" : [
         {
-          "description" : "Liftime",
+          "description" : "Lifetime",
           "displayName" : "Lifetime Lite",
           "locale" : "en_US"
         }
@@ -163,7 +163,13 @@
         },
         {
           "adHocOffers" : [
-
+            {
+              "internalID" : "B630452E",
+              "offerID" : "rc-cancel-offer",
+              "paymentMode" : "free",
+              "referenceName" : "rc-cancel-offer",
+              "subscriptionPeriod" : "P1M"
+            }
           ],
           "codeOffers" : [
 

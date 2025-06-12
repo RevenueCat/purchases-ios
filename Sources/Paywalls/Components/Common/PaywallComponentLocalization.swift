@@ -34,6 +34,16 @@ extension PaywallComponent.LocalizationDictionary {
         return value
     }
 
+    @_spi(Internal) public func url(key: String) throws -> URL {
+        let string = try self.string(key: key)
+        guard let url = URL(string: string) else {
+            throw LocalizationValidationError.invalidUrl(
+                "Invalid URL localization for property with id: \"\(key)\": \"\(string)\""
+            )
+        }
+        return url
+    }
+
 }
 
 enum LocalizationValidationError: Error {

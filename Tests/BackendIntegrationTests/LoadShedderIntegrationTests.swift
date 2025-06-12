@@ -53,8 +53,47 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         )
     }
 
-    func testCanPurchasePackage() async throws {
+    func testCanPurchaseSubsPackage() async throws {
         try await self.purchaseMonthlyOffering()
+
+        self.logger.verifyMessageWasLogged(
+            Strings.network.request_handled_by_load_shedder(HTTPRequest.Path.postReceiptData),
+            level: .debug
+        )
+
+        self.verifyCustomerInfoWasNotComputedOffline(logger: self.logger)
+    }
+
+    func testCanPurchaseConsumablePackage() async throws {
+        // WIP: remove this check so we also verify in this case once backend supports this case
+        if disableHeaderSignatureVerification {
+            throw XCTSkip("Currently does not work with disabled header signature verification.")
+        }
+        let purchaseData = try await self.purchaseConsumablePackage()
+
+        let purchasedProductIds = purchaseData.customerInfo.allPurchasedProductIdentifiers
+        expect(purchasedProductIds.count) == 1
+
+        let purchasedProductId = try XCTUnwrap(purchasedProductIds.first)
+
+        expect(purchasedProductId) == "consumable.10_coins"
+
+        self.logger.verifyMessageWasLogged(
+            Strings.network.request_handled_by_load_shedder(HTTPRequest.Path.postReceiptData),
+            level: .debug
+        )
+
+        self.verifyCustomerInfoWasNotComputedOffline(logger: self.logger)
+    }
+
+    func testCanPurchaseNonConsumablePackage() async throws {
+        // WIP: remove this check so we also verify in this case once backend supports this case
+        if disableHeaderSignatureVerification {
+            throw XCTSkip("Currently does not work with disabled header signature verification.")
+        }
+        let purchaseData = try await self.purchaseNonConsumablePackage()
+
+        try await self.verifyEntitlementWentThrough(purchaseData.customerInfo)
 
         self.logger.verifyMessageWasLogged(
             Strings.network.request_handled_by_load_shedder(HTTPRequest.Path.postReceiptData),

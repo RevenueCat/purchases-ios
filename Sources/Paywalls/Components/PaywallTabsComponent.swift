@@ -19,23 +19,23 @@ public extension PaywallComponent {
     final class TabControlButtonComponent: Codable, Sendable, Hashable, Equatable {
 
         let type: ComponentType
-        public let tabIndex: Int
+        public let tabId: String
         public let stack: StackComponent
 
-        public init(tabIndex: Int, stack: StackComponent) {
+        public init(tabId: String, stack: StackComponent) {
             self.type = .tabControlButton
-            self.tabIndex = tabIndex
+            self.tabId = tabId
             self.stack = stack
         }
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
-            hasher.combine(tabIndex)
+            hasher.combine(tabId)
             hasher.combine(stack)
         }
 
         public static func == (lhs: TabControlButtonComponent, rhs: TabControlButtonComponent) -> Bool {
-            return lhs.type == rhs.type && lhs.tabIndex == rhs.tabIndex && lhs.stack == rhs.stack
+            return lhs.type == rhs.type && lhs.tabId == rhs.tabId && lhs.stack == rhs.stack
         }
     }
 
@@ -101,24 +101,27 @@ public extension PaywallComponent {
 
         final public class Tab: Codable, Sendable, Hashable, Equatable {
 
+            public let id: String
             public let stack: StackComponent
 
-            public init(stack: PaywallComponent.StackComponent) {
+            public init(id: String, stack: PaywallComponent.StackComponent) {
+                self.id = id
                 self.stack = stack
             }
 
             public func hash(into hasher: inout Hasher) {
+                hasher.combine(id)
                 hasher.combine(stack)
             }
 
             public static func == (lhs: Tab, rhs: Tab) -> Bool {
-                return lhs.stack == rhs.stack
+                return lhs.id == rhs.id && lhs.stack == rhs.stack
             }
         }
 
         final public class TabControl: Codable, Sendable, Hashable, Equatable {
 
-            public enum TabControlType: Codable, Sendable, Hashable, Equatable {
+            public enum TabControlType: String, Codable, Sendable, Hashable, Equatable {
                 case buttons
                 case toggle
             }
@@ -147,7 +150,7 @@ public extension PaywallComponent {
         public let size: Size
         public let padding: Padding
         public let margin: Padding
-        public let backgroundColor: ColorScheme?
+        public let background: Background?
         public let shape: Shape?
         public let border: Border?
         public let shadow: Shadow?
@@ -162,7 +165,7 @@ public extension PaywallComponent {
             size: Size = .init(width: .fill, height: .fit),
             padding: Padding = .zero,
             margin: Padding = .zero,
-            backgroundColor: ColorScheme? = nil,
+            background: Background? = nil,
             shape: Shape? = nil,
             border: Border? = nil,
             shadow: Shadow? = nil,
@@ -177,7 +180,7 @@ public extension PaywallComponent {
             self.size = size
             self.padding = padding
             self.margin = margin
-            self.backgroundColor = backgroundColor
+            self.background = background
             self.shape = shape
             self.border = border
             self.shadow = shadow
@@ -194,7 +197,7 @@ public extension PaywallComponent {
             hasher.combine(size)
             hasher.combine(padding)
             hasher.combine(margin)
-            hasher.combine(backgroundColor)
+            hasher.combine(background)
             hasher.combine(shape)
             hasher.combine(border)
             hasher.combine(shadow)
@@ -209,7 +212,7 @@ public extension PaywallComponent {
                    lhs.size == rhs.size &&
                    lhs.padding == rhs.padding &&
                    lhs.margin == rhs.margin &&
-                   lhs.backgroundColor == rhs.backgroundColor &&
+                   lhs.background == rhs.background &&
                    lhs.shape == rhs.shape &&
                    lhs.border == rhs.border &&
                    lhs.shadow == rhs.shadow &&
@@ -225,7 +228,7 @@ public extension PaywallComponent {
         public let size: Size?
         public let padding: Padding?
         public let margin: Padding?
-        public let backgroundColor: ColorScheme?
+        public let background: Background?
         public let shape: Shape?
         public let border: Border?
         public let shadow: Shadow?
@@ -235,7 +238,7 @@ public extension PaywallComponent {
             size: Size? = nil,
             padding: Padding? = nil,
             margin: Padding? = nil,
-            backgroundColor: ColorScheme? = nil,
+            background: Background? = nil,
             shape: Shape? = nil,
             border: Border? = nil,
             shadow: Shadow? = nil
@@ -244,7 +247,7 @@ public extension PaywallComponent {
             self.size = size
             self.padding = padding
             self.margin = margin
-            self.backgroundColor = backgroundColor
+            self.background = background
             self.shape = shape
             self.border = border
             self.shadow = shadow
@@ -255,7 +258,7 @@ public extension PaywallComponent {
             hasher.combine(size)
             hasher.combine(padding)
             hasher.combine(margin)
-            hasher.combine(backgroundColor)
+            hasher.combine(background)
             hasher.combine(shape)
             hasher.combine(border)
             hasher.combine(shadow)
@@ -266,7 +269,7 @@ public extension PaywallComponent {
                    lhs.size == rhs.size &&
                    lhs.padding == rhs.padding &&
                    lhs.margin == rhs.margin &&
-                   lhs.backgroundColor == rhs.backgroundColor &&
+                   lhs.background == rhs.background &&
                    lhs.shape == rhs.shape &&
                    lhs.border == rhs.border &&
                    lhs.shadow == rhs.shadow

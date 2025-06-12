@@ -32,7 +32,7 @@ extension Data {
     var uuid: UUID? {
         /// This implementation is equivalent to `return NSUUID(uuidBytes: [UInt8](self)) as UUID`
         /// but ensures that the `Data` isn't unnecessarily copied in memory.
-        return self.withUnsafeBytes {
+        return self.dataWithMinLengthForUUID.withUnsafeBytes {
             guard let baseAddress = $0.bindMemory(to: UInt8.self).baseAddress else {
                 return nil
             }
@@ -58,6 +58,11 @@ extension Data {
         return self.hash(with: &sha1)
     }
 
+    var md5String: String {
+        var md5 = Insecure.MD5()
+        return self.hashString(with: &md5)
+    }
+
     fileprivate static func hexString(_ iterator: Array<UInt8>.Iterator) -> String {
         return iterator
             .lazy
@@ -65,6 +70,13 @@ extension Data {
             .joined()
     }
 
+    private var dataWithMinLengthForUUID: Data {
+        let uuidMemorySize = MemoryLayout<UUID>.size
+        guard self.count >= uuidMemorySize else {
+            return self + Data(count: uuidMemorySize - self.count)
+        }
+        return self
+    }
 }
 
 extension Data {

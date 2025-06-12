@@ -26,6 +26,7 @@ extension Store {
         case .amazon: return .storeAmazon
         case .rcBilling: return .storeRCBilling
         case .external: return .storeExternal
+        case .paddle: return .storePaddle
         case .unknownStore: return .storeUnknownStore
         }
     }

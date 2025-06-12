@@ -1,11 +1,14 @@
-## RevenueCatUI SDK
-### Paywallv2
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Enable markdown in paywalls in iOS 15 and watchOS 8 (#5267) via Antonio Pallares (@ajpallares)
+### Customer Center
 #### 🐞 Bugfixes
-* Make Paywalls v2 Text use verbatim (#4975) via Josh Holtz (@joshdholtz)
+* Trigger promotional offer callback from `PromotionalOfferViewModel` (#5263) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* New APIs to CustomEntitlementsComputationMode SDK (#4972) via Toni Rico (@tonidero)
-* Updates the changelog for hotfix 4.43.5. (#4980) via JayShortway (@JayShortway)
-* Fixes unit tests compilation on Xcode 16.3/iOS 18.4 (#4977) via Antonio Pallares (@ajpallares)
-* Remove preprocessor script for PaywallsTester (#4969) via Antonio Pallares (@ajpallares)
-* [Customer center] unify and propagate Purchases provider (#4957) via Antonio Pallares (@ajpallares)
+* FIx image load in paywall rendering validation (#5264) via Antonio Pallares (@ajpallares)
+* Include commit hash in commit message for paywall-rendering-validation (#5265) via Antonio Pallares (@ajpallares)
+* Bring back paywall rendering validation (no submodules) (#5252) via Antonio Pallares (@ajpallares)
+* Rename duplicate CachingProductsManagerTests to CachingProductsManagerIntegrationTests (#5244) via Facundo Menzella (@facumenzella)
+* Update CustomerInfo sample with is_sandbox to make sure it works (#5203) via Facundo Menzella (@facumenzella)
+* Add originalPurchaseDate & isSandbox to PurchaseInformation (#5259) via Facundo Menzella (@facumenzella)

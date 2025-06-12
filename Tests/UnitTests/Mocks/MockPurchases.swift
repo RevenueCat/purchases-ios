@@ -48,6 +48,10 @@ final class MockPurchases {
 
     var mockedResponseVerificationMode: Signing.ResponseVerificationMode = .disabled
 
+    var mockedHealthReportRequestResponse: Result<HealthReport, PublicError> = .success(
+        HealthReport(status: .passed, projectId: nil, appId: nil, checks: [])
+    )
+
 }
 
 extension MockPurchases: InternalPurchasesType {
@@ -58,6 +62,10 @@ extension MockPurchases: InternalPurchasesType {
         } else {
             return try self.mockedHealthRequestResponse.get()
         }
+    }
+
+    func healthReportRequest() async throws -> HealthReport {
+        return try self.mockedHealthReportRequestResponse.get()
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -119,6 +127,10 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
+    var storeFrontCountryCode: String? {
+        self.unimplemented()
+    }
+
     var isAnonymous: Bool {
         self.unimplemented()
     }
@@ -139,6 +151,14 @@ extension MockPurchases: PurchasesType {
         get { self.unimplemented() }
         // swiftlint:disable:next unused_setter_value
         set { self.unimplemented() }
+    }
+
+    func getStorefront() async -> RevenueCat.Storefront? {
+        self.unimplemented()
+    }
+
+    func getStorefront(completion: @escaping GetStorefrontBlock) {
+        self.unimplemented()
     }
 
     func logIn(

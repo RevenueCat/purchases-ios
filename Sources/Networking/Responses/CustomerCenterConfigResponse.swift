@@ -76,6 +76,12 @@ struct CustomerCenterConfigResponse {
             let title: String
             let subtitle: String
             let productMapping: [String: String]
+            let crossProductPromotions: [String: CrossProductPromotion]?
+
+            struct CrossProductPromotion {
+                let storeOfferIdentifier: String
+                let targetProductId: String
+            }
 
         }
 
@@ -135,6 +141,7 @@ struct CustomerCenterConfigResponse {
         let email: String
         let shouldWarnCustomerToUpdate: Bool?
         let displayPurchaseHistoryLink: Bool?
+        let shouldWarnCustomersAboutMultipleSubscriptions: Bool?
     }
 
 }
@@ -146,6 +153,7 @@ extension CustomerCenterConfigResponse.HelpPath: Codable, Equatable {}
 extension CustomerCenterConfigResponse.HelpPath.PathType: Equatable {}
 extension CustomerCenterConfigResponse.HelpPath.OpenMethod: Equatable {}
 extension CustomerCenterConfigResponse.HelpPath.PromotionalOffer: Codable, Equatable {}
+extension CustomerCenterConfigResponse.HelpPath.PromotionalOffer.CrossProductPromotion: Codable, Equatable {}
 extension CustomerCenterConfigResponse.HelpPath.FeedbackSurvey: Codable, Equatable {}
 extension CustomerCenterConfigResponse.HelpPath.FeedbackSurvey.Option: Codable, Equatable {}
 extension CustomerCenterConfigResponse.Appearance: Codable, Equatable {}

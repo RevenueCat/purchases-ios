@@ -31,8 +31,11 @@ struct RestorePurchasesAlert: View {
     @Binding
     private var isPresented: Bool
 
-    @EnvironmentObject private var customerCenterViewModel: CustomerCenterViewModel
-    @StateObject private var viewModel: RestorePurchasesAlertViewModel
+    @ObservedObject
+    private var customerCenterViewModel: CustomerCenterViewModel
+
+    @StateObject
+    private var viewModel: RestorePurchasesAlertViewModel
 
     @Environment(\.localization)
     private var localization
@@ -42,20 +45,24 @@ struct RestorePurchasesAlert: View {
 
     init(
         isPresented: Binding<Bool>,
-        actionWrapper: CustomerCenterActionWrapper
+        actionWrapper: CustomerCenterActionWrapper,
+        customerCenterViewModel: CustomerCenterViewModel
     ) {
         self.init(
             isPresented: isPresented,
-            viewModel: RestorePurchasesAlertViewModel(actionWrapper: actionWrapper)
+            viewModel: RestorePurchasesAlertViewModel(actionWrapper: actionWrapper),
+            customerCenterViewModel: customerCenterViewModel
         )
     }
 
     fileprivate init(
         isPresented: Binding<Bool>,
-        viewModel: RestorePurchasesAlertViewModel
+        viewModel: RestorePurchasesAlertViewModel,
+        customerCenterViewModel: CustomerCenterViewModel
     ) {
         self._isPresented = isPresented
         self._viewModel = StateObject(wrappedValue: viewModel)
+        self.customerCenterViewModel = customerCenterViewModel
     }
 
     private var supportURL: URL? {
@@ -78,7 +85,7 @@ struct RestorePurchasesAlert: View {
         )
         .task(id: isPresented) {
             if isPresented {
-                await viewModel.performRestore()
+                await viewModel.performRestore(purchasesProvider: customerCenterViewModel.purchasesProvider)
             }
         }
     }
@@ -164,6 +171,7 @@ struct RestorePurchasesAlert: View {
     private func dismissAlert() {
         self.customerCenterViewModel.onDismissRestorePurchasesAlert()
         self.isPresented = false
+        self.viewModel.alertType = .loading
     }
 }
 
@@ -264,7 +272,7 @@ private class MockRestorePurchasesAlertViewModel: RestorePurchasesAlertViewModel
         self.alertType = alertType
     }
 
-    override func performRestore() async {
+    override func performRestore(purchasesProvider: CustomerCenterPurchasesType) async {
     }
 
 }
@@ -298,17 +306,18 @@ private struct PreviewContainer: View {
     @State private var isPresented = true
 
     var body: some View {
-        let purchaseInformationApple =
-        CustomerCenterConfigTestData.subscriptionInformationMonthlyRenewing
-        let viewModelApple = CustomerCenterViewModel(purchaseInformation: purchaseInformationApple,
-                                                     configuration: CustomerCenterConfigTestData.customerCenterData)
+        let viewModelApple = CustomerCenterViewModel(
+            activeSubscriptionPurchases: [.subscriptionInformationMonthlyRenewing],
+            activeNonSubscriptionPurchases: [],
+            configuration: CustomerCenterConfigData.default
+        )
 
         RestorePurchasesAlert(
             isPresented: $isPresented,
-            viewModel: MockRestorePurchasesAlertViewModel(alertType: alertType)
+            viewModel: MockRestorePurchasesAlertViewModel(alertType: alertType),
+            customerCenterViewModel: viewModelApple
         )
-        .environment(\.localization, CustomerCenterConfigTestData.customerCenterData.localization)
-        .environmentObject(viewModelApple)
+        .environment(\.localization, CustomerCenterConfigData.default.localization)
         .emergeRenderingMode(.window)
     }
 

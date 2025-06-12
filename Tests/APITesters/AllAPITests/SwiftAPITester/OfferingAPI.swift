@@ -49,25 +49,29 @@ private func checkCreateOfferingAPI(package: Package) {
     _ = Offering(
         identifier: "",
         serverDescription: "",
-        availablePackages: [package]
+        availablePackages: [package],
+        webCheckoutUrl: URL(string: "https://revenuecat.com")
     )
     _ = Offering(
         identifier: "",
         serverDescription: "",
         metadata: [String: Any](),
-        availablePackages: [package]
+        availablePackages: [package],
+        webCheckoutUrl: URL(string: "https://revenuecat.com")
     )
     _ = Offering(
         identifier: "",
         serverDescription: "",
         paywall: Optional<PaywallData>.none,
-        availablePackages: [package]
+        availablePackages: [package],
+        webCheckoutUrl: URL(string: "https://revenuecat.com")
     )
     _ = Offering(
         identifier: "",
         serverDescription: "",
         metadata: [String: Any](),
         paywall: Optional<PaywallData>.none,
-        availablePackages: [package]
+        availablePackages: [package],
+        webCheckoutUrl: URL(string: "https://revenuecat.com")
     )
 }

@@ -35,7 +35,8 @@ struct LoadingPaywallView: View {
                 serverDescription: "",
                 metadata: [:],
                 paywall: Self.paywall,
-                availablePackages: Self.packages
+                availablePackages: Self.packages,
+                webCheckoutUrl: nil
             ),
             activelySubscribedProductIdentifiers: [],
             paywall: Self.defaultPaywall,
@@ -97,19 +98,22 @@ private extension LoadingPaywallView {
         identifier: "weekly",
         packageType: .weekly,
         storeProduct: Self.weeklyProduct.toStoreProduct(),
-        offeringIdentifier: Self.offeringIdentifier
+        offeringIdentifier: Self.offeringIdentifier,
+        webCheckoutUrl: nil
     )
     static let monthlyPackage = Package(
         identifier: "monthly",
         packageType: .monthly,
         storeProduct: Self.monthlyProduct.toStoreProduct(),
-        offeringIdentifier: Self.offeringIdentifier
+        offeringIdentifier: Self.offeringIdentifier,
+        webCheckoutUrl: nil
     )
     static let annualPackage = Package(
         identifier: "annual",
         packageType: .annual,
         storeProduct: Self.annualProduct.toStoreProduct(),
-        offeringIdentifier: Self.offeringIdentifier
+        offeringIdentifier: Self.offeringIdentifier,
+        webCheckoutUrl: nil
     )
     static let weeklyProduct = TestStoreProduct(
         localizedTitle: "Weekly",
@@ -165,6 +169,10 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
 
     func track(paywallEvent: PaywallEvent) async {
         // Ignoring events from loading paywall view
+    }
+
+    func failedToLoadFontWithConfig(_ fontConfig: RevenueCat.UIConfig.FontsConfig) {
+        // Ignoring font loading errors from paywall view
     }
 
 }

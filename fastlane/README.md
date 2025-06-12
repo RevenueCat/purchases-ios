@@ -29,6 +29,14 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 
 
+### send_slack_load_shedder_integration_test_v3
+
+```sh
+[bundle exec] fastlane send_slack_load_shedder_integration_test_v3
+```
+
+
+
 ----
 
 
@@ -73,6 +81,30 @@ Creates PR changing version to next minor adding a -SNAPSHOT suffix
 ```
 
 Setup development environment
+
+### ios update_paywall_preview_resources_submodule
+
+```sh
+[bundle exec] fastlane ios update_paywall_preview_resources_submodule
+```
+
+Updates paywall-preview-resources submodule and creates/updates PR
+
+### ios record_and_push_paywall_template_screenshots
+
+```sh
+[bundle exec] fastlane ios record_and_push_paywall_template_screenshots
+```
+
+Records Paywall template screenshots and pushes them to the repository at target_repository_path
+
+### ios record_paywall_screenshots
+
+```sh
+[bundle exec] fastlane ios record_paywall_screenshots
+```
+
+Records screenshots for paywalls
 
 ### ios build_paywalls_tester_for_emerge
 

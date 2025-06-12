@@ -18,13 +18,16 @@ class OfferingsAPI {
     typealias IntroEligibilityResponseHandler = ([String: IntroEligibility], BackendError?) -> Void
     typealias OfferSigningResponseHandler = Backend.ResponseHandler<PostOfferForSigningOperation.SigningData>
     typealias OfferingsResponseHandler = Backend.ResponseHandler<OfferingsResponse>
+    typealias WebProductsResponseHandler = Backend.ResponseHandler<WebProductsResponse>
 
     private let offeringsCallbacksCache: CallbackCache<OfferingsCallback>
+    private let webProductsCallbacksCache: CallbackCache<WebProductsCallback>
     private let backendConfig: BackendConfiguration
 
     init(backendConfig: BackendConfiguration) {
         self.backendConfig = backendConfig
         self.offeringsCallbacksCache = .init()
+        self.webProductsCallbacksCache = .init()
     }
 
     func getOfferings(appUserID: String,
@@ -49,6 +52,24 @@ class OfferingsAPI {
         self.backendConfig.addCacheableOperation(
             with: factory,
             delay: .default(forBackgroundedApp: isAppBackgrounded),
+            cacheStatus: cacheStatus
+        )
+    }
+
+    func getWebProducts(appUserID: String, completion: @escaping WebProductsResponseHandler) {
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+                                                                appUserID: appUserID)
+        let factory = GetWebProductsOperation.createFactory(
+            configuration: config,
+            webProductsCallbackCache: self.webProductsCallbacksCache
+        )
+
+        let webProductsCallback = WebProductsCallback(cacheKey: factory.cacheKey, completion: completion)
+        let cacheStatus = self.webProductsCallbacksCache.add(webProductsCallback)
+
+        self.backendConfig.addCacheableOperation(
+            with: factory,
+            delay: .none,
             cacheStatus: cacheStatus
         )
     }

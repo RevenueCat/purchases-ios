@@ -226,7 +226,7 @@ private enum FamilySharingTogglePreview {
             ),
             tabs: [
                 // Tab 1
-                .init(stack: .init(
+                .init(id: "1", stack: .init(
                     components: [
                         .image(catImage),
                         .stack(.init(
@@ -252,7 +252,7 @@ private enum FamilySharingTogglePreview {
                     spacing: 0
                 )),
                 // Tab 2
-                .init(stack: .init(
+                .init(id: "2", stack: .init(
                     components: [
                         .image(catFamilyImage),
                         .stack(.init(
@@ -300,7 +300,9 @@ private enum FamilySharingTogglePreview {
                                     topTrailing: 16,
                                     bottomLeading: 16,
                                     bottomTrailing: 16))
-        )
+        ),
+        action: .inAppCheckout,
+        method: .inAppCheckout
     )
 
     static let purchaseButtonStack = PaywallComponent.StackComponent(
@@ -387,13 +389,15 @@ struct FamilySharingTogglePreview_Previews: PreviewProvider {
                                 PreviewMock.monthlyStandardPackage,
                                 PreviewMock.weeklyPremiumPackage,
                                 PreviewMock.monthlyPremiumPackage
-                               ]),
+                               ],
+                               webCheckoutUrl: nil),
             purchaseHandler: PurchaseHandler.default(),
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,
             preferredLocale: nil,
             onDismiss: { },
-            fallbackContent: .customView(AnyView(Text("Fallback paywall")))
+            fallbackContent: .customView(AnyView(Text("Fallback paywall"))),
+            failedToLoadFont: { _ in }
         )
         .previewRequiredEnvironmentProperties()
         .previewLayout(.fixed(width: 400, height: 800))

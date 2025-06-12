@@ -27,6 +27,17 @@ public protocol PurchasesType: AnyObject {
     var appUserID: String { get }
 
     /**
+     * The three-letter code representing the country or region
+     * associated with the App Store storefront.
+     * - Note: This property uses the ISO 3166-1 Alpha-3 country code representation.
+     * 
+     * #### Related articles
+     * - ``Purchases/getStorefront(completion:)``
+     * - ``Purchases/getStorefront()``
+     */
+    var storeFrontCountryCode: String? { get }
+
+    /**
      * The ``appUserID`` used by ``Purchases``.
      * If not passed on initialization this will be generated and cached by ``Purchases``.
      */
@@ -48,6 +59,28 @@ public protocol PurchasesType: AnyObject {
     var delegate: PurchasesDelegate? { get set }
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
+    /**
+     * Obtain the storefront currently used by the Apple account. This will use StoreKit 2 first,
+     * and if not possible, fallback to StoreKit 1. It will be `nil` if we can't obtain Apple's storefront.
+     *
+     * The `completion` block will be called with the latest Apple account storefront
+     *
+     * #### Related Articles
+     * - ``Purchases/storeFrontCountryCode``
+     * - ``Purchases/getStorefront()``
+     */
+    func getStorefront(completion: @escaping GetStorefrontBlock)
+
+    /**
+     * Obtain the storefront currently used by the Apple account. This will use StoreKit 2 first,
+     * and if not possible, fallback to StoreKit 1. It will be `nil` if we can't obtain Apple's storefront.
+     *
+     * #### Related Articles
+     * - ``Purchases/storeFrontCountryCode``
+     * - ``Purchases/getStorefront(completion:)``
+     */
+    func getStorefront() async -> Storefront?
 
     /**
      * This function will log in the current user with an ``appUserID``.
@@ -1212,6 +1245,11 @@ internal protocol InternalPurchasesType: AnyObject {
     /// Performs an unauthenticated request to the API to verify connectivity.
     /// - Throws: `PublicError` if request failed.
     func healthRequest(signatureVerification: Bool) async throws
+
+    /// Requests an in-depth report of the SDK's configuration from the server.
+    /// - Throws: A `BackendError` if the request fails due to an invalid API key or connectivity issues.
+    /// - Returns: A health report containing all checks performed on the server and their status.
+    func healthReportRequest() async throws -> HealthReport
 
     func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings
 

@@ -12,7 +12,9 @@
 //  Created by Cesar de la Vega on 18/7/24.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
+import StoreKit
+import SwiftUI
 
 // swiftlint:disable missing_docs
 
@@ -52,15 +54,60 @@ import RevenueCat
 
     func restorePurchases() async throws -> CustomerInfo
 
-    // MARK: - Subscription Management
+    func syncPurchases() async throws -> CustomerInfo
 
-    #if os(iOS) || os(macOS) || os(visionOS)
-    @Sendable
-    func showManageSubscriptions() async throws
-    #endif
+    // MARK: - Subscription Management
 
     #if os(iOS) || os(visionOS)
     @Sendable
     func beginRefundRequest(forProduct productID: String) async throws -> RefundRequestStatus
     #endif
+
+    @MainActor
+    func manageSubscriptionsSheetViewModifier(
+        isPresented: Binding<Bool>,
+        subscriptionGroupID: String?
+    ) -> ManageSubscriptionSheetModifier
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension CustomerCenterPurchasesType {
+
+    func manageSubscriptionsSheetViewModifier(
+        isPresented: Binding<Bool>,
+        subscriptionGroupID: String?
+    ) -> ManageSubscriptionSheetModifier {
+        ManageSubscriptionSheetModifier(isPresented: isPresented, subscriptionGroupID: subscriptionGroupID)
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@_spi(Internal) public struct ManageSubscriptionSheetModifier: ViewModifier {
+
+    let isPresented: Binding<Bool>
+    let subscriptionGroupID: String?
+
+    @_spi(Internal) public init(isPresented: Binding<Bool>, subscriptionGroupID: String?) {
+        self.isPresented = isPresented
+        self.subscriptionGroupID = subscriptionGroupID
+    }
+
+    @_spi(Internal) public func body(content: Content) -> some View {
+        #if swift(>=5.9)
+        if #available(iOS 17.0, *), let subscriptionGroupID {
+            content.manageSubscriptionsSheet(isPresented: isPresented, subscriptionGroupID: subscriptionGroupID)
+        } else {
+            content.manageSubscriptionsSheet(isPresented: isPresented)
+        }
+        #else
+        content.manageSubscriptionsSheet(isPresented: isPresented)
+        #endif
+    }
 }
