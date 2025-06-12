@@ -44,7 +44,7 @@ final class PurchaseCardViewBadgeTests: TestCase {
                 productIdentifier: "rc_promo_asdasd",
                 store: .promotional,
                 isCancelled: true,
-                isExpired: false,
+                isExpired: false
             ),
             localization: CustomerCenterConfigData.default.localization
         )
