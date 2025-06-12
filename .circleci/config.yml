@@ -1198,7 +1198,7 @@ jobs:
       - add_ssh_keys:
           fingerprints:
             - "SHA256:bp5iDmSMoWt84KNJm1P10HMzhM4NlqFQ9kkeUao/nFg"
-      - run: git clone git@github.com:RevenueCat/purchases-ios.git
+      - run: GIT_SSH_COMMAND='ssh -vvv' git clone git@github.com:RevenueCat/purchases-ios.git
       - run: pwd
       - run: ls -la
       - install-dependencies
