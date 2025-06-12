@@ -1182,6 +1182,8 @@ jobs:
     executor:
       name: macos-executor
     steps:
+      - run: echo $CIRCLE_SHA1
+      - run: echo $CIRCLE_BRANCH
       - run:
           name: List SSH Keys
           command: |
