@@ -1197,9 +1197,12 @@ jobs:
       - add_ssh_keys:
           fingerprints:
             - "SHA256:5296j4YNoPbHixYYFe7bpAWQIsm/nDwtqe7kMoyJi40"
-      - run: GIT_SSH_COMMAND='ssh -vvv' git clone git@github.com:RevenueCat/purchases-ios.git
+      - run: cd ~/ && git clone git@github.com:RevenueCat/purchases-ios.git
       - run: pwd
       - run: ls -la
+      - run:
+          name: Assert cloning paywall-preview-resources fails
+          command: git clone git@github.com:RevenueCat/paywall-preview-resources.git && exit 1 || true
       - install-dependencies
       - update-spm-installation-commit
       - install-dependencies:
