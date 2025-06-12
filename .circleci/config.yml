@@ -1192,6 +1192,8 @@ jobs:
           command: |
             rm -rf ~/.ssh/*
             ssh-add -D
+      - run: pwd
+      - run: git clone git@github.com:RevenueCat/purchases-ios.git
       - checkout
       - trust-github-key
       - install-dependencies
