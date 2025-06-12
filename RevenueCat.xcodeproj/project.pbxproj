@@ -1180,6 +1180,7 @@
 		FD3A85FE2DDE76CD005F3C79 /* VirtualCurrenciesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD3A85FD2DDE76CD005F3C79 /* VirtualCurrenciesTests.swift */; };
 		FD43D2FC2C41864000077235 /* TimeInterval+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD43D2FA2C4185B700077235 /* TimeInterval+Extensions.swift */; };
 		FD43D2FE2C41867600077235 /* TimeInterval+ExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD43D2FD2C41867600077235 /* TimeInterval+ExtensionsTests.swift */; };
+		FD5EB2702DFB19B800DA1974 /* BackendGetVirtualCurrenciesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD5EB26F2DFB19B800DA1974 /* BackendGetVirtualCurrenciesTests.swift */; };
 		FD89DB872DB97D2E00A8C231 /* VirtualCurrencyBalancesScreenViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD89DB862DB97D2E00A8C231 /* VirtualCurrencyBalancesScreenViewModelTests.swift */; };
 		FD8C00472DE7A04200224B78 /* VirtualCurrencyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD8C00462DE7A04200224B78 /* VirtualCurrencyManager.swift */; };
 		FD9BCEBC2DC946C400408A5D /* BottomSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD9BCEBB2DC946C400408A5D /* BottomSheetView.swift */; };
@@ -2568,6 +2569,7 @@
 		FD3A85FD2DDE76CD005F3C79 /* VirtualCurrenciesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrenciesTests.swift; sourceTree = "<group>"; };
 		FD43D2FA2C4185B700077235 /* TimeInterval+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TimeInterval+Extensions.swift"; sourceTree = "<group>"; };
 		FD43D2FD2C41867600077235 /* TimeInterval+ExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TimeInterval+ExtensionsTests.swift"; sourceTree = "<group>"; };
+		FD5EB26F2DFB19B800DA1974 /* BackendGetVirtualCurrenciesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendGetVirtualCurrenciesTests.swift; sourceTree = "<group>"; };
 		FD89DB862DB97D2E00A8C231 /* VirtualCurrencyBalancesScreenViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyBalancesScreenViewModelTests.swift; sourceTree = "<group>"; };
 		FD8C00462DE7A04200224B78 /* VirtualCurrencyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyManager.swift; sourceTree = "<group>"; };
 		FD9BCEBB2DC946C400408A5D /* BottomSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomSheetView.swift; sourceTree = "<group>"; };
@@ -4601,6 +4603,7 @@
 				35109DAA2BC6E436001030C8 /* BackendPostDiagnosticsTests.swift */,
 				1EFA950C2CDB6B6500CA5951 /* BackendPostRedeemWebPurchaseTests.swift */,
 				35F38B472C30104E00CD29FD /* BackendGetCustomerCenterConfigTests.swift */,
+				FD5EB26F2DFB19B800DA1974 /* BackendGetVirtualCurrenciesTests.swift */,
 			);
 			path = Backend;
 			sourceTree = "<group>";
@@ -6873,6 +6876,7 @@
 				4FFFE6C82AA9467800B2955C /* PaywallEventsManagerTests.swift in Sources */,
 				03A98D362D244329009BCA61 /* UIConfigDecodingTests.swift in Sources */,
 				351B515626D44B2300BD2BD7 /* MockNotificationCenter.swift in Sources */,
+				FD5EB2702DFB19B800DA1974 /* BackendGetVirtualCurrenciesTests.swift in Sources */,
 				FDE57AA42DF8919600101CE2 /* VirtualCurrencyTests.swift in Sources */,
 				351B515226D44AF000BD2BD7 /* MockReceiptFetcher.swift in Sources */,
 				351B51C226D450E800BD2BD7 /* ProductRequestDataTests.swift in Sources */,
