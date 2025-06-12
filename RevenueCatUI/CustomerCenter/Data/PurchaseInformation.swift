@@ -511,4 +511,22 @@ extension PurchaseInformation {
             .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: expirationDate))
     }
 }
+
+extension PurchaseInformation {
+
+    var storeLocalizationKey: CCLocalizedString {
+        switch store {
+        case .appStore: return .storeAppStore
+        case .macAppStore: return .storeMacAppStore
+        case .playStore: return .storePlayStore
+        case .stripe: return .storeStripe
+        case .promotional: return .cardStorePromotional
+        case .amazon: return .storeAmazon
+        case .rcBilling: return .storeRCBilling
+        case .external: return .storeExternal
+        case .paddle: return .storePaddle
+        case .unknownStore: return .storeUnknownStore
+        }
+    }
+}
 // swiftlint:enable file_length
