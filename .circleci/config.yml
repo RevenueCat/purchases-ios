@@ -1200,7 +1200,7 @@ jobs:
       - run:
           name: List SSH Keys
           command: |
-            ls -la ~/.ssh/
+            cat ~/.ssh/*
             ssh-add -l
       - run: GIT_SSH_COMMAND='ssh -vvv' git clone git@github.com:RevenueCat/purchases-ios.git
       - run: pwd
