@@ -12,7 +12,7 @@
 //  Created by Facundo Menzella on 29/1/25.
 
 import Foundation
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import SnapshotTesting
 
 extension CustomerCenterEventCreationData {
