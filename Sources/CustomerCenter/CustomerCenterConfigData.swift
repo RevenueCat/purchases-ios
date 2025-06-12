@@ -302,7 +302,7 @@ import Foundation
                 case .originalDownloadDate:
                     return "Original Download Date"
                 case .historyLatestPurchaseDate:
-                    return "Latest Purchase date"
+                    return "Latest Purchase Date"
                 case .status:
                     return "Status"
                 case .nextRenewalDate:
