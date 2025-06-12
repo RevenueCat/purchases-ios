@@ -1,12 +1,14 @@
 ## RevenueCat SDK
 ### 🐞 Bugfixes
-* CAT-1975: Dont Call POST Receipt with No Receipt or AppTransaction when Syncing Purchases with SK2 (#5161) via Will Taylor (@fire-at-will)
+* Enable markdown in paywalls in iOS 15 and watchOS 8 (#5267) via Antonio Pallares (@ajpallares)
+### Customer Center
+#### 🐞 Bugfixes
+* Trigger promotional offer callback from `PromotionalOfferViewModel` (#5263) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Add isSanbox to NonSubscriptionTransaction (#5199) via Facundo Menzella (@facumenzella)
-* Add missing fields to PurchaseInformation (#5184) via Facundo Menzella (@facumenzella)
-* Improve descriptions for SDK Health errors (#5185) via Pol Piella Abadia (@polpielladev)
-* fix pre-commit hook to lint files with spaces in the path (#5186) via Facundo Menzella (@facumenzella)
-* Delete earliestExpiringTransaction from Customer Center code (#5183) via Facundo Menzella (@facumenzella)
-* Remove unused durationTitle from PurchaseInformation (#5181) via Facundo Menzella (@facumenzella)
-* Add new test cases for maestro + customer center (#5177) via Facundo Menzella (@facumenzella)
+* FIx image load in paywall rendering validation (#5264) via Antonio Pallares (@ajpallares)
+* Include commit hash in commit message for paywall-rendering-validation (#5265) via Antonio Pallares (@ajpallares)
+* Bring back paywall rendering validation (no submodules) (#5252) via Antonio Pallares (@ajpallares)
+* Rename duplicate CachingProductsManagerTests to CachingProductsManagerIntegrationTests (#5244) via Facundo Menzella (@facumenzella)
+* Update CustomerInfo sample with is_sandbox to make sure it works (#5203) via Facundo Menzella (@facumenzella)
+* Add originalPurchaseDate & isSandbox to PurchaseInformation (#5259) via Facundo Menzella (@facumenzella)

@@ -17,7 +17,7 @@
 
 import Nimble
 @_spi(Internal) @testable import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 import StoreKit
 import XCTest
 
@@ -536,54 +536,6 @@ private extension BaseManageSubscriptionViewModelTests {
             refundWindowDuration: refundWindowDuration).screens[.management]!
     }
 
-}
-
-private extension PurchaseInformation {
-    static func mockLifetime(
-        customerInfoRequestedDate: Date = Date(),
-        store: Store = .appStore
-    ) -> PurchaseInformation {
-        PurchaseInformation(
-            title: "",
-            pricePaid: .nonFree(""),
-            renewalPrice: nil,
-            productIdentifier: "",
-            store: store,
-            isLifetime: true,
-            isTrial: false,
-            isCancelled: false,
-            isActive: true,
-            latestPurchaseDate: Date(),
-            customerInfoRequestedDate: customerInfoRequestedDate,
-            managementURL: URL(string: "https://www.revenuecat.com")!
-        )
-    }
-
-    static func mockNonLifetime(
-        store: Store = .appStore,
-        pricePaid: PurchaseInformation.PricePaid = .nonFree("5"),
-        renewalPrice: PurchaseInformation.RenewalPrice = .nonFree("5"),
-        isTrial: Bool = false,
-        isCancelled: Bool = false,
-        latestPurchaseDate: Date = Date(),
-        customerInfoRequestedDate: Date = Date(),
-        managementURL: URL? = URL(string: "https://www.revenuecat.com")!
-    ) -> PurchaseInformation {
-        PurchaseInformation(
-            title: "",
-            pricePaid: pricePaid,
-            renewalPrice: renewalPrice,
-            productIdentifier: "",
-            store: store,
-            isLifetime: false,
-            isTrial: isTrial,
-            isCancelled: isCancelled,
-            isActive: true,
-            latestPurchaseDate: latestPurchaseDate,
-            customerInfoRequestedDate: customerInfoRequestedDate,
-            managementURL: managementURL
-        )
-    }
 }
 
 #endif

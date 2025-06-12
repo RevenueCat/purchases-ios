@@ -14,7 +14,7 @@
 //
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if os(iOS)
@@ -171,6 +171,7 @@ struct RestorePurchasesAlert: View {
     private func dismissAlert() {
         self.customerCenterViewModel.onDismissRestorePurchasesAlert()
         self.isPresented = false
+        self.viewModel.alertType = .loading
     }
 }
 

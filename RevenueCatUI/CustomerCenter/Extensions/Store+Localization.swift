@@ -12,7 +12,7 @@
 //
 //  Created by Facundo Menzella on 14/1/25.
 //
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 extension Store {
 
@@ -26,6 +26,7 @@ extension Store {
         case .amazon: return .storeAmazon
         case .rcBilling: return .storeRCBilling
         case .external: return .storeExternal
+        case .paddle: return .storePaddle
         case .unknownStore: return .storeUnknownStore
         }
     }

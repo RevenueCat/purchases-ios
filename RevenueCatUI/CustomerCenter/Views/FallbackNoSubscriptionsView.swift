@@ -13,7 +13,7 @@
 //  Created by Andrés Boedo on 5/3/24.
 //
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if os(iOS)
@@ -53,24 +53,10 @@ struct FallbackNoSubscriptionsView: View {
     var body: some View {
         ScrollViewWithOSBackground {
             LazyVStack(spacing: 0) {
-                CompatibilityContentUnavailableView(
-                    localization[.noSubscriptionsFound],
-                    systemImage: "exclamationmark.triangle.fill",
-                    description: Text(localization[.tryCheckRestore])
-                )
-                .padding()
-                .fixedSize(horizontal: false, vertical: true)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(
-                            Color(colorScheme == .light
-                                  ? UIColor.systemBackground
-                                  : UIColor.secondarySystemBackground)
-                        )
-                        .padding(.horizontal)
-                        .padding(.top)
-                )
-                .padding(.bottom, 32)
+                NoSubscriptionsCardView(localization: localization)
+                    .cornerRadius(10)
+                    .padding(.horizontal)
+                    .padding(.bottom, 32)
 
                 restorePurchasesButton
             }
