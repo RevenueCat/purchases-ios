@@ -12,7 +12,7 @@
 //  Created by Facundo Menzella on 23/5/25.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 extension Array<CustomerCenterConfigData.HelpPath> {
     func relevantPaths(
