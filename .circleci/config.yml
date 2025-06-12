@@ -1184,6 +1184,9 @@ jobs:
     steps:
       - run: echo $CIRCLE_SHA1
       - run: echo $CIRCLE_BRANCH
+      - run: echo $CIRCLE_PROJECT_REPONAME
+      - run: echo $CIRCLE_PROJECT_USERNAME
+      - run: echo $CIRCLE_REPOSITORY_URL
       - run:
           name: List SSH Keys
           command: |
@@ -1200,7 +1203,7 @@ jobs:
           fingerprints:
             - "SHA256:5296j4YNoPbHixYYFe7bpAWQIsm/nDwtqe7kMoyJi40"
       - run: ls -la ~/purchases-ios
-      - run: cd ~/ && git clone git@github.com:RevenueCat/purchases-ios.git
+      - run: cd ~/ && git clone git@github.com:RevenueCat/purchases-ios.git && cd purchases-ios && git checkout $CIRCLE_SHA1
       - run: pwd
       - run: ls -la
       - run:
