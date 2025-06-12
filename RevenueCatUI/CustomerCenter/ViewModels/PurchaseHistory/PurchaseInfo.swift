@@ -14,7 +14,7 @@
 //
 
 #if os(iOS)
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 @available(iOS 15.0, *)

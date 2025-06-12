@@ -12,7 +12,7 @@
 //
 //  Created by Facundo Menzella on 14/1/25.
 //
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 extension Store {
 
