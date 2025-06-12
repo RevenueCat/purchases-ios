@@ -1182,6 +1182,21 @@ jobs:
     executor:
       name: macos-executor
     steps:
+      - run:
+          name: List SSH Keys
+          command: |
+            ls -la ~/.ssh/
+            ssh-add -l
+      - run:
+          name: Remove SSH Keys
+          command: |
+            rm -rf ~/.ssh/*
+            ssh-add -D
+      - run:
+          name: List SSH Keys
+          command: |
+            ls -la ~/.ssh/
+            ssh-add -l
       - checkout
       - trust-github-key
       - install-dependencies
