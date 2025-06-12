@@ -16,8 +16,8 @@
 // swiftlint:disable type_body_length function_body_length
 
 import Nimble
-import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) import RevenueCat
+@_spi(Internal) @testable import RevenueCatUI
 import XCTest
 
 #if os(iOS)

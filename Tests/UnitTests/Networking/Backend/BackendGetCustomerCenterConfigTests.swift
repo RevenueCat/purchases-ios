@@ -15,9 +15,9 @@ import Foundation
 import Nimble
 import XCTest
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
-class BackendGetCustomerCenterConfigTests: BaseBackendTests {
+final class BackendGetCustomerCenterConfigTests: BaseBackendTests {
 
     override func createClient() -> MockHTTPClient {
         super.createClient(#file)
