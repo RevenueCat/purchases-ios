@@ -281,7 +281,7 @@ extension PurchaseInformationCardView {
                 self = .expired(localization)
             } else if purchaseInformation.isCancelled, purchaseInformation.isTrial {
                 self = .cancelledTrial(localization)
-            } else if purchaseInformation.isCancelled {
+            } else if purchaseInformation.isCancelled, purchaseInformation.store != .promotional {
                 self = .cancelled(localization)
             } else if purchaseInformation.isTrial, purchaseInformation.pricePaid == .free {
                 self = .freeTrial(localization)

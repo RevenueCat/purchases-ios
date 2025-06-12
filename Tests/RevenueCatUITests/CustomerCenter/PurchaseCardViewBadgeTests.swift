@@ -26,7 +26,26 @@ final class PurchaseCardViewBadgeTests: TestCase {
 
     func testPromoBadge() {
         let badge = PurchaseInformationCardView.Badge(
-            purchaseInformation: .mock(productIdentifier: "rc_promo_asdasd", isCancelled: false, isExpired: false),
+            purchaseInformation: .mock(
+                productIdentifier: "rc_promo_asdasd",
+                store: .promotional,
+                isCancelled: false,
+                isExpired: false
+            ),
+            localization: CustomerCenterConfigData.default.localization
+        )
+
+        expect(badge?.title) == CCLocalizedString.active.defaultValue
+    }
+
+    func testPromoCancelledBadge() {
+        let badge = PurchaseInformationCardView.Badge(
+            purchaseInformation: .mock(
+                productIdentifier: "rc_promo_asdasd",
+                store: .promotional,
+                isCancelled: true,
+                isExpired: false,
+            ),
             localization: CustomerCenterConfigData.default.localization
         )
 
