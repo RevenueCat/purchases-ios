@@ -1194,8 +1194,13 @@ jobs:
             ssh-add -D
       - run: pwd
       - trust-github-key
+      # FIXME Change this to a public-only key
+      - add_ssh_keys:
+          fingerprints:
+            - "SHA256:H021E22KIjpErItiN/XjX05nOy0HfoiA8nKjeChK5BU"
       - run: git clone git@github.com:RevenueCat/purchases-ios.git
-      - checkout
+      - run: pwd
+      - run: ls -la
       - install-dependencies
       - update-spm-installation-commit
       - install-dependencies:
