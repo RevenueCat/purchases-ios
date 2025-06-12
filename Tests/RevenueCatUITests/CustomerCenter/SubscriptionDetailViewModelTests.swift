@@ -12,8 +12,8 @@
 //  Created by Facundo Menzella on 13/5/25.
 
 import Nimble
-@_spi(Internal) @testable import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) import RevenueCat
+@_spi(Internal) @testable import RevenueCatUI
 import StoreKit
 import XCTest
 

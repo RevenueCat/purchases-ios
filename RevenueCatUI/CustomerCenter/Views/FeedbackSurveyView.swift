@@ -13,7 +13,7 @@
 //  Created by Cesar de la Vega on 12/6/24.
 //
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if os(iOS)
@@ -89,6 +89,7 @@ struct FeedbackSurveyView: View {
                     product: promotionalOfferData.product,
                     promoOfferDetails: promotionalOfferData.promoOfferDetails,
                     purchasesProvider: self.viewModel.purchasesProvider,
+                    actionWrapper: self.viewModel.actionWrapper,
                     onDismissPromotionalOfferView: { userAction in
                         Task(priority: .userInitiated) {
                             await viewModel.handleDismissPromotionalOfferView(

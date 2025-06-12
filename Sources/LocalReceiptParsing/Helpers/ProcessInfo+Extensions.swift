@@ -40,7 +40,7 @@ extension ProcessInfo {
     }
 
     /// `true` when running unit or integration tests (configured in .xctestplan files).
-    static var isRunningRevenueCatTests: Bool {
+    @_spi(Internal) public static var isRunningRevenueCatTests: Bool {
         return self[.RCRunningTests] == "1"
     }
 

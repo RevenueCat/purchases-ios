@@ -16,7 +16,7 @@
 import Foundation
 import SwiftUI
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 #if os(iOS)
 

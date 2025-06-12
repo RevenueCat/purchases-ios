@@ -56,26 +56,6 @@ final class PurchaseInformationTests: TestCase {
 
     private let mockCustomerCenterStoreKitUtilities = MockCustomerCenterStoreKitUtilities()
 
-    private struct MockTransaction: Transaction {
-        let productIdentifier: String
-        let store: Store
-        let type: TransactionType
-        let isCancelled: Bool
-        let managementURL: URL?
-        let price: RevenueCat.ProductPaidPrice?
-        let displayName: String?
-        let periodType: RevenueCat.PeriodType
-        let purchaseDate: Date
-        var unsubscribeDetectedAt: Date?
-        var billingIssuesDetectedAt: Date?
-        var gracePeriodExpiresDate: Date?
-        var refundedAtDate: Date?
-        var storeIdentifier: String?
-        var identifier: String?
-        var originalPurchaseDate: Date?
-        var isSandbox: Bool
-    }
-
     func testAppleEntitlementAndSubscribedProductWithoutRenewalInfo() throws {
         let customerInfo = CustomerInfoFixtures.customerInfoWithAppleSubscriptions
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)

@@ -38,6 +38,12 @@ IntegrationTests/CarthageInstallation/Cartfile.resolved
 scan_derived_data/
 generated_docs/
 
+# Local clone of `paywall-preview-resources` repo to be available for tests.
+Tests/paywall-preview-resources
+
+# Local clone of `paywall-rendering-validation` repo to be available for tests.
+Tests/paywall-rendering-validation
+
 # Local clone of `purchases-ios-snapshots` repo to be available for tests.
 Tests/purchases-ios-snapshots
 
