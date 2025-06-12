@@ -1194,10 +1194,14 @@ jobs:
             ssh-add -D
       - run: pwd
       - trust-github-key
-      # FIXME Change this to a public-only key
       - add_ssh_keys:
           fingerprints:
             - "SHA256:bp5iDmSMoWt84KNJm1P10HMzhM4NlqFQ9kkeUao/nFg"
+      - run:
+          name: List SSH Keys
+          command: |
+            ls -la ~/.ssh/
+            ssh-add -l
       - run: GIT_SSH_COMMAND='ssh -vvv' git clone git@github.com:RevenueCat/purchases-ios.git
       - run: pwd
       - run: ls -la
