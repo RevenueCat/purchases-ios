@@ -1192,11 +1192,6 @@ jobs:
           command: |
             rm -rf ~/.ssh/*
             ssh-add -D
-      - run:
-          name: List SSH Keys
-          command: |
-            ls -la ~/.ssh/
-            ssh-add -l
       - checkout
       - trust-github-key
       - install-dependencies
