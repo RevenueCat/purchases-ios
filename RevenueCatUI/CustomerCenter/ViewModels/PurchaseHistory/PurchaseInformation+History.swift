@@ -14,7 +14,7 @@
 //
 
 #if os(iOS)
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 extension PurchaseInformation {
