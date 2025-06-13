@@ -16,17 +16,22 @@ import Foundation
 /// A type that can determine the current list of preferred locales.
 protocol PreferredLocalesProviderType {
 
+    /// Developer-set preferred locale that takes precedence over the system preferred locales.
+    var preferredLocaleOverride: String? { get set }
+
     /// Returns a list of the user's preferred languages.
-    var preferredLanguages: [String] { get }
+    var preferredLocales: [String] { get }
 
 }
 
 /// Main ``PreferredLocalesProviderType`` implementation
 final class PreferredLocalesProvider: PreferredLocalesProviderType {
 
-    var preferredLanguages: [String] { Locale.preferredLanguages }
+    var preferredLocaleOverride: String?
 
-    /// Returns the default ``PreferredLocalesProviderType``
-    static let `default`: PreferredLocalesProvider = .init()
+    var preferredLocales: [String] { Locale.preferredLanguages }
 
+    init(preferredLocaleOverride: String?) {
+        self.preferredLocaleOverride = preferredLocaleOverride
+    }
 }

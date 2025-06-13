@@ -16,26 +16,34 @@ class SystemInfoTests: TestCase {
     func testPlatformFlavor() {
         let flavor = "flavor"
         let platformInfo = Purchases.PlatformInfo(flavor: flavor, version: "foo")
-        let systemInfo = SystemInfo(platformInfo: platformInfo, finishTransactions: false)
+        let systemInfo = SystemInfo(platformInfo: platformInfo,
+                                    finishTransactions: false,
+                                    preferredLocalesProvider: MockPreferredLocalesProvider())
         expect(systemInfo.platformFlavor) == flavor
     }
 
     func testPlatformFlavorVersion() {
         let flavorVersion = "flavorVersion"
         let platformInfo = Purchases.PlatformInfo(flavor: "foo", version: flavorVersion)
-        let systemInfo = SystemInfo(platformInfo: platformInfo, finishTransactions: false)
+        let systemInfo = SystemInfo(platformInfo: platformInfo,
+                                    finishTransactions: false,
+                                    preferredLocalesProvider: MockPreferredLocalesProvider())
         expect(systemInfo.platformFlavorVersion) == flavorVersion
     }
 
     func testFinishTransactions() {
         var finishTransactions = false
-        var systemInfo = SystemInfo(platformInfo: nil, finishTransactions: finishTransactions)
+        var systemInfo = SystemInfo(platformInfo: nil,
+                                    finishTransactions: finishTransactions,
+                                    preferredLocalesProvider: MockPreferredLocalesProvider())
         expect(systemInfo.finishTransactions) == finishTransactions
         expect(systemInfo.observerMode) == !finishTransactions
 
         finishTransactions = true
 
-        systemInfo = SystemInfo(platformInfo: nil, finishTransactions: finishTransactions)
+        systemInfo = SystemInfo(platformInfo: nil,
+                                finishTransactions: finishTransactions,
+                                preferredLocalesProvider: MockPreferredLocalesProvider())
         expect(systemInfo.finishTransactions) == finishTransactions
         expect(systemInfo.observerMode) == !finishTransactions
     }
@@ -132,11 +140,14 @@ private extension SystemInfo {
         return SystemInfo(platformInfo: nil,
                           finishTransactions: false,
                           bundle: bundle,
-                          sandboxEnvironmentDetector: sandboxDetector)
+                          sandboxEnvironmentDetector: sandboxDetector,
+                          preferredLocalesProvider: MockPreferredLocalesProvider())
     }
 
     static var `default`: SystemInfo {
-        return .init(platformInfo: nil, finishTransactions: true)
+        return .init(platformInfo: nil,
+                     finishTransactions: true,
+                     preferredLocalesProvider: MockPreferredLocalesProvider())
     }
 
 }

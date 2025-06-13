@@ -173,17 +173,3 @@ final class MockStorefrontProvider: StorefrontProviderType {
     }
 
 }
-
-final class MockPreferredLocalesProvider: PreferredLocalesProviderType {
-
-    var preferredLanguages: [String] {
-        stubbedLocales
-    }
-
-    private let stubbedLocales: [String]
-
-    init(stubbedLocales: [String] = ["en_EN"]) {
-        self.stubbedLocales = stubbedLocales
-    }
-
-}

@@ -40,7 +40,7 @@ class SystemInfo {
     let responseVerificationMode: Signing.ResponseVerificationMode
     let dangerousSettings: DangerousSettings
     let clock: ClockType
-    let preferredLocalesProvider: PreferredLocalesProviderType
+    var preferredLocalesProvider: PreferredLocalesProviderType
 
     var finishTransactions: Bool {
         get { return self._finishTransactions.value }
@@ -85,8 +85,10 @@ class SystemInfo {
         return self.storefrontProvider.currentStorefront
     }
 
-    var preferredLanguages: [String] {
-        return self.preferredLocalesProvider.preferredLanguages
+    /// Returns the preferred locales, including the locale override if set.
+    var allPreferredLocales: [String] {
+        return [self.preferredLocalesProvider.preferredLocaleOverride].compactMap { $0 }
+        + self.preferredLocalesProvider.preferredLocales
     }
 
     static var frameworkVersion: String {
@@ -168,7 +170,7 @@ class SystemInfo {
          dangerousSettings: DangerousSettings? = nil,
          isAppBackgrounded: Bool? = nil,
          clock: ClockType = Clock.default,
-         preferredLocalesProvider: PreferredLocalesProviderType = PreferredLocalesProvider.default) {
+         preferredLocalesProvider: PreferredLocalesProviderType) {
         self.platformFlavor = platformInfo?.flavor ?? "native"
         self.platformFlavorVersion = platformInfo?.version
         self._bundle = .init(bundle)
