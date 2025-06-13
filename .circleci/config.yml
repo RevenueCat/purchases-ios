@@ -434,6 +434,77 @@ commands:
           path: fastlane/test_output/xctest
           destination: scan-test-output
 
+  remove-all-ssh-keys:
+    steps:
+      - run:
+          name: Remove all SSH keys
+          command: |
+            rm -rf ~/.ssh/*
+            ssh-add -D
+
+  set-ssh-key-for-git:
+    parameters:
+      fingerprint:
+        type: string
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "<< parameters.fingerprint >>"
+      - run:
+          name: Set SSH Key
+          command: |
+            key_found=false
+            for key in ~/.ssh/*; do
+                if [ -f "$key" ]; then
+                    sha256=$(ssh-keygen -lf "$key" -E sha256 | awk '{print $2}')
+                    if [ "$sha256" = "<< parameters.fingerprint >>" ]; then
+                        echo "export GIT_SSH_COMMAND=\"ssh -i $key\"" >> $BASH_ENV
+                        source $BASH_ENV
+                        key_found=true
+                        break
+                    fi
+                fi
+            done
+            if [ "$key_found" = false ]; then
+                echo "Error: SSH key with fingerprint << parameters.fingerprint >> not found"
+                exit 1
+            fi
+
+  checkout-with-key:
+    parameters:
+      fingerprint:
+        type: string
+    steps:
+      - trust-github-key
+      - run:
+          name: Remember current GIT_SSH_COMMAND
+          command: export GIT_SSH_COMMAND_BACKUP="$GIT_SSH_COMMAND"
+      - set-ssh-key-for-git:
+          fingerprint: "<< parameters.fingerprint >>"
+      - run:
+          name: Clone repository and checkout the correct commit
+          command: cd ~/ && git clone "$CIRCLE_REPOSITORY_URL" && cd "$CIRCLE_PROJECT_REPONAME" && git checkout "$CIRCLE_SHA1"
+      - run:
+          name: Restore GIT_SSH_COMMAND
+          command: |
+            export GIT_SSH_COMMAND="$GIT_SSH_COMMAND_BACKUP"
+            unset GIT_SSH_COMMAND_BACKUP
+
+  assert-git-clone-fails:
+    parameters:
+      repository:
+        type: string
+      owner:
+        type: string
+        default: RevenueCat
+      host:
+        type: string
+        default: github.com
+    steps:
+      - run:
+          name: Assert cloning << parameters.repository >> fails
+          command: git clone git@<< parameters.host >>:<< parameters.owner >>/<< parameters.repository >>.git && exit 1 || true
+
 jobs:
   validate-package-swift:
     parameters:
@@ -1182,50 +1253,22 @@ jobs:
     executor:
       name: macos-executor
     steps:
-      - run: echo $CIRCLE_SHA1
-      - run: echo $CIRCLE_BRANCH
-      - run: echo $CIRCLE_PROJECT_REPONAME
-      - run: echo $CIRCLE_PROJECT_USERNAME
-      - run: echo $CIRCLE_REPOSITORY_URL
-      - run:
-          name: List SSH Keys
-          command: |
-            ls -la ~/.ssh/
-            ssh-add -l
-      - run:
-          name: Remove SSH Keys
-          command: |
-            rm -rf ~/.ssh/*
-            ssh-add -D
-      - run: pwd
-      - trust-github-key
-      - add_ssh_keys:
-          fingerprints:
-            - "SHA256:5296j4YNoPbHixYYFe7bpAWQIsm/nDwtqe7kMoyJi40"
-      - run: ls -la ~/purchases-ios
-      - run: cd ~/ && git clone "$CIRCLE_REPOSITORY_URL" && cd "$CIRCLE_PROJECT_REPONAME" && git checkout "$CIRCLE_SHA1"
-      - run: pwd
-      - run: ls -la
-      - run:
-          name: Assert cloning paywall-preview-resources fails
-          command: git clone git@github.com:RevenueCat/paywall-preview-resources.git && exit 1 || true
+      - remove-all-ssh-keys
+      - checkout-with-key:
+          fingerprint: "SHA256:5296j4YNoPbHixYYFe7bpAWQIsm/nDwtqe7kMoyJi40"
+      - assert-git-clone-fails:
+          repository: paywall-preview-resources
+      - assert-git-clone-fails:
+          repository: paywall-rendering-validation
+      - assert-git-clone-fails:
+          repository: khepri
       - install-dependencies
       - update-spm-installation-commit
       - install-dependencies:
           directory: Tests/InstallationTests/SPMInstallation/
-      - add_ssh_keys:
-          fingerprints:
-            - "SHA256:UYi3gsOInLRPZy6MPho7Yr/YK1VmjDvPGo7sJvIcnPM"
-      - run:
-          name: List SSH Keys
-          command: |
-            ls -la ~/.ssh/
-            ssh-add -l || true
-      - run:
-          name: Increase git ssh verbosity
-          command: |
-            echo 'export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_rsa_82f13a7a3e5c4e25e5ab319ff74e587d -vvv"' >> $BASH_ENV
-            source $BASH_ENV
+      # We need to use a deploy key for the private certificates repo, which is cloned in the next step.
+      - set-ssh-key-for-git:
+          fingerprint: "SHA256:UYi3gsOInLRPZy6MPho7Yr/YK1VmjDvPGo7sJvIcnPM"
       - scan-and-archive-all-platforms:
           directory: Tests/InstallationTests/SPMInstallation/
       - slack-notify-on-fail
