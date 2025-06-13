@@ -1255,7 +1255,7 @@ jobs:
     steps:
       - remove-all-ssh-keys
       - checkout-with-key:
-          fingerprint: "SHA256:5296j4YNoPbHixYYFe7bpAWQIsm/nDwtqe7kMoyJi40"
+          fingerprint: "SHA256:TY+ziSK99HtCkgT7rILg/o2G05KSV8BxmQht0ApvYng"
       - assert-git-clone-fails:
           repository: paywall-preview-resources
       - assert-git-clone-fails:
