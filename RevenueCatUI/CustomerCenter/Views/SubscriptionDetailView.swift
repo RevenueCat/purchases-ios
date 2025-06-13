@@ -200,6 +200,9 @@ struct SubscriptionDetailView: View {
             $0.navigationTitle(self.viewModel.screen.title)
                 .navigationBarTitleDisplayMode(.inline)
         })
+        .onAppear {
+            viewModel.didAppear()
+        }
     }
 
     @ViewBuilder
