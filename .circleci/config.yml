@@ -1224,7 +1224,7 @@ jobs:
       - run:
           name: Increase git ssh verbosity
           command: |
-            echo 'export GIT_SSH_COMMAND="ssh -vvv"' >> $BASH_ENV
+            echo 'export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_rsa_82f13a7a3e5c4e25e5ab319ff74e587d -vvv"' >> $BASH_ENV
             source $BASH_ENV
       - scan-and-archive-all-platforms:
           directory: Tests/InstallationTests/SPMInstallation/
