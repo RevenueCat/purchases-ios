@@ -396,7 +396,8 @@ extension PurchaseInformation {
 private extension Transaction {
 
     func determineRenewalPrice(numberFormatter: NumberFormatter) -> PurchaseInformation.RenewalPrice? {
-        if self.productIdentifier.isPromotionalLifetime(store: self.store) {
+        if self.productIdentifier.isPromotionalLifetime(store: self.store),
+           self.productIdentifier.isPromotional(store: self.store) {
             return nil
         }
 
@@ -464,6 +465,10 @@ private extension String {
 
     func isPromotionalLifetime(store: Store) -> Bool {
         return self.hasSuffix("_lifetime") && store == .promotional
+    }
+
+    func isPromotional(store: Store) -> Bool {
+        return self.hasPrefix("rc_promo") && store == .promotional
     }
 }
 

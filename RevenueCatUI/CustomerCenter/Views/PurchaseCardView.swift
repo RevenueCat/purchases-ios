@@ -98,19 +98,7 @@ struct PurchaseInformationCardView: View {
         self.storeTitle = localization[purchaseInformation.store.localizationKey]
         self.showChevron = showChevron
 
-        if purchaseInformation.isExpired {
-            self.badge = .expired(localization)
-        } else if purchaseInformation.isCancelled, purchaseInformation.isTrial {
-            self.badge = .cancelledTrial(localization)
-        } else if purchaseInformation.isCancelled {
-            self.badge = .cancelled(localization)
-        } else if purchaseInformation.isTrial, purchaseInformation.pricePaid == .free {
-            self.badge = .freeTrial(localization)
-        } else if purchaseInformation.renewalDate != nil || purchaseInformation.expirationDate != nil {
-            self.badge = .active(localization)
-        } else {
-            self.badge = nil
-        }
+        self.badge = Badge(purchaseInformation: purchaseInformation, localization: localization)
     }
 
     var body: some View {
@@ -280,6 +268,28 @@ extension PurchaseInformationCardView {
                 id: CCLocalizedString.expired.rawValue,
                 backgroundColor: Color(red: 242 / 256, green: 242 / 256, blue: 247 / 256, opacity: 0.2)
             )
+        }
+
+        init (title: String, id: String, backgroundColor: Color) {
+            self.title = title
+            self.id = id
+            self.backgroundColor = backgroundColor
+        }
+
+        init?(purchaseInformation: PurchaseInformation, localization: CustomerCenterConfigData.Localization) {
+            if purchaseInformation.isExpired {
+                self = .expired(localization)
+            } else if purchaseInformation.isCancelled, purchaseInformation.isTrial {
+                self = .cancelledTrial(localization)
+            } else if purchaseInformation.isCancelled, purchaseInformation.store != .promotional {
+                self = .cancelled(localization)
+            } else if purchaseInformation.isTrial, purchaseInformation.pricePaid == .free {
+                self = .freeTrial(localization)
+            } else if purchaseInformation.renewalDate != nil || purchaseInformation.expirationDate != nil {
+                self = .active(localization)
+            } else {
+                return nil
+            }
         }
     }
 }

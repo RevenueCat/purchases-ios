@@ -46,6 +46,9 @@ struct PurchaseHistoryView: View {
         .navigationTitle(localization[.purchaseHistory])
         .listStyle(.insetGrouped)
         .onAppear {
+#if DEBUG
+                guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else { return }
+#endif
             Task {
                 await viewModel.didAppear()
             }
