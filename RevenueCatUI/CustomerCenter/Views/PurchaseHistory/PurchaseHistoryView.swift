@@ -121,6 +121,10 @@ struct PurchaseHistoryView_Previews: PreviewProvider {
                 )
             ])
 
+        let mock = MockCustomerCenterPurchases(
+            customerInfo: customerInfo
+        )
+
         CompatibilityNavigationStack {
             PurchaseHistoryView(
                 viewModel: PurchaseHistoryViewModel(
@@ -135,7 +139,7 @@ struct PurchaseHistoryView_Previews: PreviewProvider {
                     nonSubscriptions: [
                         .consumable
                     ],
-                    purchasesProvider: MockCustomerCenterPurchases()
+                    purchasesProvider: mock
                 )
             )
             .navigationBarTitleDisplayMode(.inline)
