@@ -164,7 +164,7 @@ import Foundation
             case subscriptionsSectionTitle = "subscriptions_section_title"
             case purchasesSectionTitle = "purchases_section_title"
 
-            var defaultValue: String {
+            @_spi(Internal) public var defaultValue: String {
                 switch self {
                 case .copy:
                     return "Copy"

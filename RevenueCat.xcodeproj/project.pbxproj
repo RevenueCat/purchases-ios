@@ -764,6 +764,7 @@
 		57ACB12428174B9F000DCC9F /* CustomerInfo+TestExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57ACB12328174B9F000DCC9F /* CustomerInfo+TestExtensions.swift */; };
 		57ACB12528174B9F000DCC9F /* CustomerInfo+TestExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57ACB12328174B9F000DCC9F /* CustomerInfo+TestExtensions.swift */; };
 		57ACB13728184CF1000DCC9F /* DecoderExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57ACB13628184CF1000DCC9F /* DecoderExtensionTests.swift */; };
+		57B0E8802DFAC2C900EB5FE1 /* PurchaseCardViewBadgeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57B0E87F2DFAC2C400EB5FE1 /* PurchaseCardViewBadgeTests.swift */; };
 		57BA943128330ACA00CD5FC5 /* ConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57BA943028330ACA00CD5FC5 /* ConfigurationTests.swift */; };
 		57BB070E28D27A2B007F5DF0 /* CachingProductsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57BB070D28D27A2B007F5DF0 /* CachingProductsManager.swift */; };
 		57BB071628D282A4007F5DF0 /* CachingProductsManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57BB071528D282A4007F5DF0 /* CachingProductsManagerTests.swift */; };
@@ -2152,6 +2153,7 @@
 		57AC4C1B2770F56200DDE30F /* SK1StoreProduct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SK1StoreProduct.swift; sourceTree = "<group>"; };
 		57ACB12328174B9F000DCC9F /* CustomerInfo+TestExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CustomerInfo+TestExtensions.swift"; sourceTree = "<group>"; };
 		57ACB13628184CF1000DCC9F /* DecoderExtensionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecoderExtensionTests.swift; sourceTree = "<group>"; };
+		57B0E87F2DFAC2C400EB5FE1 /* PurchaseCardViewBadgeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseCardViewBadgeTests.swift; sourceTree = "<group>"; };
 		57B530E52858F3FD00FA4E37 /* SwiftStyleGuide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SwiftStyleGuide.swift; path = Contributing/SwiftStyleGuide.swift; sourceTree = "<group>"; };
 		57BA943028330ACA00CD5FC5 /* ConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationTests.swift; sourceTree = "<group>"; };
 		57BB070D28D27A2B007F5DF0 /* CachingProductsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachingProductsManager.swift; sourceTree = "<group>"; };
@@ -3960,6 +3962,7 @@
 		3544DA6B2C2C848E00704E9D /* CustomerCenter */ = {
 			isa = PBXGroup;
 			children = (
+				57B0E87F2DFAC2C400EB5FE1 /* PurchaseCardViewBadgeTests.swift */,
 				577E58232DF86D390015BB60 /* PromotionalOfferViewModelTests.swift */,
 				57BB08672DD3D9EA007493E1 /* SubscriptionDetailViewModelTests.swift */,
 				57BB08632DD3BE2D007493E1 /* BaseManageSubscriptionViewModelTests.swift */,
@@ -7254,6 +7257,7 @@
 				038EC8232DE7A8B300786C42 /* TakeScreenshot.swift in Sources */,
 				887A633A2C1D177800E1A461 /* PaywallViewDynamicTypeTests.swift in Sources */,
 				887A633B2C1D177800E1A461 /* PaywallViewLocalizationTests.swift in Sources */,
+				57B0E8802DFAC2C900EB5FE1 /* PurchaseCardViewBadgeTests.swift in Sources */,
 				577E58242DF86D3C0015BB60 /* PromotionalOfferViewModelTests.swift in Sources */,
 				887A633C2C1D177800E1A461 /* Template1ViewTests.swift in Sources */,
 				35A99C842CCB95A70074AB41 /* PurchaseInformationTests.swift in Sources */,
