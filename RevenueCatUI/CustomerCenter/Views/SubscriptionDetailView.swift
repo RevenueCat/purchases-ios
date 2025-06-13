@@ -244,7 +244,7 @@ struct SubscriptionDetailView: View {
             CompatibilityNavigationStack {
                 SubscriptionDetailView(
                     customerInfoViewModel: CustomerCenterViewModel(
-                        activeSubscriptionPurchases: [.yearlyExpiring()],
+                        activeSubscriptionPurchases: [.monthlyRenewing],
                         activeNonSubscriptionPurchases: [],
                         configuration: .default
                     ),
@@ -255,7 +255,7 @@ struct SubscriptionDetailView: View {
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
                         allowsMissingPurchaseAction: false,
-                        purchaseInformation: .yearlyExpiring(),
+                        purchaseInformation: .monthlyRenewing,
                         refundRequestStatus: .success
                     )
                 )
@@ -329,7 +329,7 @@ struct SubscriptionDetailView: View {
             CompatibilityNavigationStack {
                 SubscriptionDetailView(
                     customerInfoViewModel: CustomerCenterViewModel(
-                        activeSubscriptionPurchases: [.yearlyExpiring(store: .playStore)],
+                        activeSubscriptionPurchases: [.mock(store: .playStore, isExpired: false)],
                         activeNonSubscriptionPurchases: [],
                         configuration: .default
                     ),
@@ -340,7 +340,7 @@ struct SubscriptionDetailView: View {
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
                         allowsMissingPurchaseAction: false,
-                        purchaseInformation: .yearlyExpiring(store: .playStore)
+                        purchaseInformation: .mock(store: .playStore, isExpired: false)
                     )
                 )
             }

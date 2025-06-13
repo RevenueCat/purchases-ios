@@ -121,6 +121,7 @@ import Foundation
             case productName = "product_name"
             case paidPrice = "paid_price"
             case originalDownloadDate = "original_download_date"
+            case historyLatestPurchaseDate = "history_latest_purchase_date"
             case status = "status"
             case nextRenewalDate = "next_renewal"
             case unsubscribedAt = "unsubscribed_at"
@@ -155,13 +156,14 @@ import Foundation
             case freeTrialUntilDate = "free_trial_until_date"
             case priceExpiresOnDateWithoutChanges = "price_expires_on_date_without_changes"
             case badgeCancelled = "badge_cancelled"
+            case badgeTrialCancelled = "badge_free_trial_cancelled"
             case badgeFreeTrial = "free_trial"
             case refundSuccess = "refund_success"
             case actionsSectionTitle = "actions_section_title"
             case subscriptionsSectionTitle = "subscriptions_section_title"
             case purchasesSectionTitle = "purchases_section_title"
 
-            var defaultValue: String {
+            @_spi(Internal) public var defaultValue: String {
                 switch self {
                 case .copy:
                     return "Copy"
@@ -299,6 +301,8 @@ import Foundation
                     return "Paid Price"
                 case .originalDownloadDate:
                     return "Original Download Date"
+                case .historyLatestPurchaseDate:
+                    return "Latest Purchase Date"
                 case .status:
                     return "Status"
                 case .nextRenewalDate:
@@ -370,6 +374,8 @@ import Foundation
                     return "Cancelled"
                 case .badgeFreeTrial:
                     return "Free trial"
+                case .badgeTrialCancelled:
+                    return "Cancelled trial"
                 case .refundSuccess:
                     return "Apple has received the refund request"
                 case .actionsSectionTitle:
