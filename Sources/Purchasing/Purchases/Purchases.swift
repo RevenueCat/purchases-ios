@@ -292,7 +292,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      dangerousSettings: DangerousSettings? = nil,
                      showStoreMessagesAutomatically: Bool,
                      diagnosticsEnabled: Bool = false,
-                     preferredLocale: String? = nil,
+                     preferredLocale: String?,
     ) {
         if userDefaults != nil {
             Logger.debug(Strings.configure.using_custom_user_defaults)
@@ -302,12 +302,15 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let receiptRefreshRequestFactory = ReceiptRefreshRequestFactory()
         let fetcher = StoreKitRequestFetcher(requestFactory: receiptRefreshRequestFactory,
                                              operationDispatcher: operationDispatcher)
-        let systemInfo = SystemInfo(platformInfo: platformInfo,
-                                    finishTransactions: !observerMode,
-                                    operationDispatcher: operationDispatcher,
-                                    storeKitVersion: storeKitVersion,
-                                    responseVerificationMode: responseVerificationMode,
-                                    dangerousSettings: dangerousSettings)
+        let systemInfo = SystemInfo(
+            platformInfo: platformInfo,
+            finishTransactions: !observerMode,
+            operationDispatcher: operationDispatcher,
+            storeKitVersion: storeKitVersion,
+            responseVerificationMode: responseVerificationMode,
+            dangerousSettings: dangerousSettings,
+            preferredLocalesProvider: PreferredLocalesProvider(preferredLocaleOverride: preferredLocale)
+        )
 
         let receiptFetcher = ReceiptFetcher(requestFetcher: fetcher, systemInfo: systemInfo)
         let eTagManager = ETagManager()

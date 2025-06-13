@@ -27,18 +27,11 @@ protocol PreferredLocalesProviderType {
 /// Main ``PreferredLocalesProviderType`` implementation
 final class PreferredLocalesProvider: PreferredLocalesProviderType {
 
-    var preferredLocaleOverride: String? = nil
+    var preferredLocaleOverride: String?
 
-    var preferredLocales: [String] {
-        let userPreferredLocales = Locale.preferredLanguages
-        if let preferredLocaleOverride = preferredLocaleOverride {
-            return [preferredLocaleOverride] + userPreferredLocales
-        } else {
-            return userPreferredLocales
-        }
+    var preferredLocales: [String] { Locale.preferredLanguages }
+
+    init(preferredLocaleOverride: String?) {
+        self.preferredLocaleOverride = preferredLocaleOverride
     }
-
-    /// Returns the default ``PreferredLocalesProviderType``
-    static let `default`: PreferredLocalesProvider = .init()
-
 }

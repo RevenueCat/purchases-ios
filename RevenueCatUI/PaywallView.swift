@@ -33,7 +33,7 @@ public struct PaywallView: View {
     private let paywallViewOwnsPurchaseHandler: Bool
     private let useDraftPaywall: Bool
 
-    private var preferredLocale: Locale?
+    private let preferredLocale: Locale?
 
     @StateObject
     private var internalPurchaseHandler: PurchaseHandler
@@ -125,9 +125,11 @@ public struct PaywallView: View {
         useDraftPaywall: Bool,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
-        preferredLocale: String? = nil,
+        preferredLocaleOverride: String? = nil,
     ) {
         let purchaseHandler = PurchaseHandler.default(performPurchase: performPurchase, performRestore: performRestore)
+        let preferredLocale = preferredLocaleOverride.map(Locale.init) ?? purchaseHandler.preferredLocale
+
         self.init(
             configuration: .init(
                 offering: offering,
@@ -135,7 +137,7 @@ public struct PaywallView: View {
                 displayCloseButton: displayCloseButton,
                 useDraftPaywall: useDraftPaywall,
                 purchaseHandler: purchaseHandler,
-                preferredLocale: preferredLocale.map(Locale.init)
+                preferredLocale: preferredLocale
             )
         )
     }
