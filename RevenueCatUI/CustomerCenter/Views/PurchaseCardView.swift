@@ -98,17 +98,7 @@ struct PurchaseInformationCardView: View {
         self.storeTitle = localization[purchaseInformation.store.localizationKey]
         self.showChevron = showChevron
 
-        if !purchaseInformation.isActive {
-            self.badge = .expired(localization)
-        } else if purchaseInformation.isCancelled {
-            self.badge = .cancelled(localization)
-        } else if purchaseInformation.isTrial, purchaseInformation.pricePaid == .free {
-            self.badge = .freeTrial(localization)
-        } else if purchaseInformation.isActive {
-            self.badge = .active(localization)
-        } else {
-            self.badge = nil
-        }
+        self.badge = Badge(purchaseInformation: purchaseInformation, localization: localization)
     }
 
     var body: some View {
@@ -248,6 +238,14 @@ extension PurchaseInformationCardView {
             )
         }
 
+        static func cancelledTrial(_ localizations: CustomerCenterConfigData.Localization) -> Badge {
+            Badge(
+                title: localizations[.badgeTrialCancelled],
+                id: CCLocalizedString.badgeTrialCancelled.rawValue,
+                backgroundColor: Color(red: 242 / 256, green: 84 / 256, blue: 91 / 256, opacity: 0.15)
+            )
+        }
+
         static func freeTrial(_ localizations: CustomerCenterConfigData.Localization) -> Badge {
             Badge(
                 title: localizations[.badgeFreeTrial],
@@ -271,6 +269,28 @@ extension PurchaseInformationCardView {
                 backgroundColor: Color(red: 242 / 256, green: 242 / 256, blue: 247 / 256, opacity: 0.2)
             )
         }
+
+        init (title: String, id: String, backgroundColor: Color) {
+            self.title = title
+            self.id = id
+            self.backgroundColor = backgroundColor
+        }
+
+        init?(purchaseInformation: PurchaseInformation, localization: CustomerCenterConfigData.Localization) {
+            if purchaseInformation.isExpired {
+                self = .expired(localization)
+            } else if purchaseInformation.isCancelled, purchaseInformation.isTrial {
+                self = .cancelledTrial(localization)
+            } else if purchaseInformation.isCancelled, purchaseInformation.store != .promotional {
+                self = .cancelled(localization)
+            } else if purchaseInformation.isTrial, purchaseInformation.pricePaid == .free {
+                self = .freeTrial(localization)
+            } else if purchaseInformation.renewalDate != nil || purchaseInformation.expirationDate != nil {
+                self = .active(localization)
+            } else {
+                return nil
+            }
+        }
     }
 }
 
@@ -290,6 +310,17 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                     paidPrice: "$19.99",
                     accessibilityIdentifier: "accessibilityIdentifier",
                     badge: .cancelled(CustomerCenterConfigData.default.localization),
+                    subtitle: "Renews 24 May for $19.99"
+                )
+                .cornerRadius(10)
+                .padding([.leading, .trailing])
+
+                PurchaseInformationCardView(
+                    title: "Product name",
+                    storeTitle: Store.appStore.localizationKey.rawValue,
+                    paidPrice: "$19.99",
+                    accessibilityIdentifier: "accessibilityIdentifier",
+                    badge: .cancelledTrial(CustomerCenterConfigData.default.localization),
                     subtitle: "Renews 24 May for $19.99"
                 )
                 .cornerRadius(10)
