@@ -17,7 +17,7 @@ import Foundation
 extension RevenueCat.Purchases {
 
     /// Updates the preferred locale for RevenueCatUI components.
-    /// - Parameter locale: The preferred locale string in the format "language-region" (e.g., "en-US").
+    /// - Parameter locale: The preferred locale string in the format "language_region" (e.g., "en_US").
     /// Use `nil` to reset to the default user locale.
     ///
     /// Setting this will affect the display of RevenueCat UI components, such as the Paywalls.
@@ -34,6 +34,8 @@ extension RevenueCat.Purchases {
 extension RevenueCat.Configuration.Builder {
 
     /// Sets the preferred locale for RevenueCatUI components.
+    ///
+    /// - Parameter preferredUILocale: The preferred locale string in the format "language_region" (e.g., "en_US").
     ///
     /// Defaults to `nil`, which means using the default user locale for RevenueCatUI components.
     public func with(preferredUILocale: String?) -> RevenueCat.Configuration.Builder {
