@@ -1203,7 +1203,7 @@ jobs:
           fingerprints:
             - "SHA256:5296j4YNoPbHixYYFe7bpAWQIsm/nDwtqe7kMoyJi40"
       - run: ls -la ~/purchases-ios
-      - run: cd ~/ && git clone git@github.com:RevenueCat/purchases-ios.git && cd purchases-ios && git checkout $CIRCLE_SHA1
+      - run: cd ~/ && git clone "$CIRCLE_REPOSITORY_URL" && cd "$CIRCLE_PROJECT_REPONAME" && git checkout "$CIRCLE_SHA1"
       - run: pwd
       - run: ls -la
       - run:
@@ -1213,6 +1213,19 @@ jobs:
       - update-spm-installation-commit
       - install-dependencies:
           directory: Tests/InstallationTests/SPMInstallation/
+      - add_ssh_keys:
+          fingerprints:
+            - "SHA256:UYi3gsOInLRPZy6MPho7Yr/YK1VmjDvPGo7sJvIcnPM"
+      - run:
+          name: List SSH Keys
+          command: |
+            ls -la ~/.ssh/
+            ssh-add -l || true
+      - run:
+          name: Increase git ssh verbosity
+          command: |
+            echo 'export GIT_SSH_COMMAND="ssh -vvv"' >> $BASH_ENV
+            source $BASH_ENV
       - scan-and-archive-all-platforms:
           directory: Tests/InstallationTests/SPMInstallation/
       - slack-notify-on-fail
