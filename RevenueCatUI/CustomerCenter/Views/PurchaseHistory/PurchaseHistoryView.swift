@@ -122,7 +122,7 @@ struct PurchaseHistoryView_Previews: PreviewProvider {
             customerInfo: customerInfo
         )
 
-        CompatibilityNavigationStack {
+        CompatibilityNavigationStack {+
             PurchaseHistoryView(
                 viewModel: PurchaseHistoryViewModel(
                     isLoading: false,

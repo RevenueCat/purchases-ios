@@ -114,7 +114,7 @@ extension PurchaseInformation {
         isTrial: true,
         isExpired: false,
         expirationDate: nil,
-        renewalDate: nil
+        renewalDate: Self.defaultExpirationDate
     )
 
     static let consumable = PurchaseInformation.mock(
