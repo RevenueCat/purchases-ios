@@ -1311,7 +1311,7 @@ public extension Purchases {
     }
 
     /// Used by `RevenueCatUI` to keep track of ``CustomerCenterEvent``s.
-    func track(customerCenterEvent: any CustomerCenterEventType) {
+    @_spi(Internal) func track(customerCenterEvent: any CustomerCenterEventType) {
         operationDispatcher.dispatchOnWorkerThread {
             // If we make CustomerCenterEventType implement FeatureEvent, we have to make FeatureEvent public
             guard let event = customerCenterEvent as? FeatureEvent else { return }
@@ -1320,7 +1320,7 @@ public extension Purchases {
     }
 
     /// Used by `RevenueCatUI` to download Customer Center data
-    func loadCustomerCenter() async throws -> CustomerCenterConfigData {
+    @_spi(Internal) func loadCustomerCenter() async throws -> CustomerCenterConfigData {
         let response = try await Async.call { completion in
             self.backend.customerCenterConfig.getCustomerCenterConfig(appUserID: self.appUserID,
                                                                       isAppBackgrounded: false) { result in
