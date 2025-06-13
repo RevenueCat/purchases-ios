@@ -50,7 +50,7 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
         screen: CustomerCenterConfigData.Screen,
         showPurchaseHistory: Bool,
         allowsMissingPurchaseAction: Bool,
-        virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]?,
+        virtualCurrencies: RevenueCat.VirtualCurrencies?,
         actionWrapper: CustomerCenterActionWrapper,
         purchaseInformation: PurchaseInformation? = nil,
         refundRequestStatus: RefundRequestStatus? = nil,
@@ -95,7 +95,7 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
         screen: CustomerCenterConfigData.Screen,
         showPurchaseHistory: Bool,
         allowsMissingPurchaseAction: Bool,
-        virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]?,
+        virtualCurrencies: RevenueCat.VirtualCurrencies?,
         purchaseInformation: PurchaseInformation? = nil,
         refundRequestStatus: RefundRequestStatus? = nil
     ) {

@@ -71,7 +71,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
 
     /// Virtual currencies to display. If it is set to nil, nothing will be displayed.
     @Published
-    private(set) var virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]?
+    private(set) var virtualCurrencies: RevenueCat.VirtualCurrencies?
 
     private var error: Error?
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
@@ -82,7 +82,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
         screen: CustomerCenterConfigData.Screen,
         actionWrapper: CustomerCenterActionWrapper,
         purchaseInformation: PurchaseInformation? = nil,
-        virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]?,
+        virtualCurrencies: RevenueCat.VirtualCurrencies?,
         refundRequestStatus: RefundRequestStatus? = nil,
         purchasesProvider: CustomerCenterPurchasesType,
         loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {

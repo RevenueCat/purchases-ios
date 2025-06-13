@@ -85,6 +85,7 @@ extension HTTPRequest {
         case appHealthReport(appUserID: String)
         case getProductEntitlementMapping
         case getCustomerCenterConfig(appUserID: String)
+        case getVirtualCurrencies(appUserID: String)
         case postRedeemWebPurchase
 
     }
@@ -138,6 +139,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postRedeemWebPurchase,
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
+                .getVirtualCurrencies,
                 .appHealthReport:
             return true
 
@@ -160,6 +162,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postRedeemWebPurchase,
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
+                .getVirtualCurrencies,
                 .appHealthReport:
             return true
         case .health:
@@ -183,6 +186,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postAdServicesToken,
                 .postOfferForSigning,
                 .postRedeemWebPurchase,
+                .getVirtualCurrencies,
                 .getCustomerCenterConfig:
             return false
         }
@@ -204,6 +208,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postRedeemWebPurchase,
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
+                .getVirtualCurrencies,
                 .appHealthReport:
             return false
         }
@@ -257,6 +262,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .postRedeemWebPurchase:
             return "subscribers/redeem_purchase"
 
+        case let .getVirtualCurrencies(appUserID):
+            return "subscribers/\(Self.escape(appUserID))/virtual_currencies"
         }
     }
 
@@ -303,6 +310,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .appHealthReport:
             return "get_app_health_report"
+
+        case .getVirtualCurrencies:
+            return "get_virtual_currencies"
 
         }
     }
