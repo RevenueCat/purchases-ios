@@ -2,7 +2,7 @@ orbs:
   macos: circleci/macos@2.5.1
   slack: circleci/slack@5.0.0
   # TODO: update before merging
-  revenuecat: revenuecat/sdks-common-config@dev:cb77904b63f52b0c559cc86f9d874850789e9317
+  revenuecat: revenuecat/sdks-common-config@dev:48cb6e70b9880ba5500464064e75e5bf0d3a3215
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
