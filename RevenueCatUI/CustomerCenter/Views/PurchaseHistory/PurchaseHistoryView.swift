@@ -46,9 +46,6 @@ struct PurchaseHistoryView: View {
         .navigationTitle(localization[.purchaseHistory])
         .listStyle(.insetGrouped)
         .onAppear {
-#if DEBUG
-                guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else { return }
-#endif
             Task {
                 await viewModel.didAppear()
             }
@@ -103,6 +100,27 @@ struct PurchaseHistoryView: View {
 @available(iOS 15.0, *)
 struct PurchaseHistoryView_Previews: PreviewProvider {
     static var previews: some View {
+        let customerInfo = CustomerInfoFixtures.customerInfo(
+            subscriptions: [
+                CustomerInfoFixtures.Subscription(
+                    id: "id1",
+                    store: "\(Store.appStore.rawValue)",
+                    purchaseDate: "2022-03-08T17:42:58Z",
+                    expirationDate: nil
+                )
+            ],
+            entitlements: [],
+            nonSubscriptions: [
+                CustomerInfoFixtures.NonSubscriptionTransaction(
+                    id: "id2",
+                    store: "\(Store.playStore.rawValue)",
+                    purchaseDate: "2022-03-08T17:42:58Z"
+                )
+            ])
+
+        let mock = MockCustomerCenterPurchases(
+            customerInfo: customerInfo
+        )
 
         CompatibilityNavigationStack {
             PurchaseHistoryView(
@@ -118,7 +136,7 @@ struct PurchaseHistoryView_Previews: PreviewProvider {
                     nonSubscriptions: [
                         .consumable
                     ],
-                    purchasesProvider: MockCustomerCenterPurchases()
+                    purchasesProvider: mock
                 )
             )
             .navigationBarTitleDisplayMode(.inline)
