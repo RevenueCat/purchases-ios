@@ -52,16 +52,14 @@ let project = Project(
 
         // MARK: – RevenueCat Tests
         .target(
-            name: "RevenueCatTests",
+            name: "UnitTests",
             destinations: allDestinations,
             product: .unitTests,
-            bundleId: "com.revenuecat.sampleapp.tests",
+            bundleId: "com.revenuecat.PurchasesTests",
             deploymentTargets: allDeploymentTargets,
             infoPlist: .default,
             sources: [
-                "../../Tests/UnitTests/**/*.swift",
-                "../../Tests/StoreKitUnitTests/**/*.swift",
-                "../../Tests/ReceiptParserTests/Helpers/**/*.swift"
+                "../../Tests/UnitTests/**/*.swift"
             ],
             dependencies: [
                 .target(name: "RevenueCat"),
@@ -173,6 +171,34 @@ let project = Project(
         ),
 
         .target(
+            name: "BackendCustomEntitlementsIntegrationTests",
+            destinations: allDestinations,
+            product: .unitTests,
+            bundleId: "com.revenuecat.BackendIntBackendCustomEntitlementsIntegrationTestsegrationTests",
+            deploymentTargets: .multiplatform(
+                iOS: "16.0",
+                macOS: "11.0",
+                watchOS: "7.0",
+                tvOS: "14.0"
+            ),
+            infoPlist: .default,
+            sources: [
+                "../../Tests/BackendIntegrationTests/CustomEntitlementsComputationIntegrationTests.swift",
+                "../../Tests/UnitTests/Misc/**/TestCase.swift",
+                "../../Tests/BackendIntegrationTests/BaseBackendIntegrationTests.swift",
+                "../../Tests/BackendIntegrationTests/BaseStoreKitIntegrationTests.swift"
+            ],
+            dependencies: [
+                .target(name: "RevenueCat"),
+                .target(name: "BackendIntegrationTestsHostApp"),
+                .nimble,
+                .ohHTTPStubsSwift,
+                .snapshotTesting,
+                .storeKitTests
+            ],
+        ),
+
+        .target(
             name: "BackendIntegrationTests",
             destinations: allDestinations,
             product: .unitTests,
@@ -214,7 +240,8 @@ let project = Project(
                 .storeKitTests
             ],
             additionalFiles: [
-                "../../Tests/StoreKitUnitTests/UnitTestsConfiguration.storekit"
+                "../../Tests/StoreKitUnitTests/UnitTestsConfiguration.storekit",
+                "../../BackendIntegrationTests/**.xctestplan"
             ]
         )
     ],
@@ -223,10 +250,39 @@ let project = Project(
             name: "RevenueCat",
             shared: true,
             buildAction: .buildAction(targets: ["RevenueCat"]),
-            testAction: .targets([
-                .testableTarget(target: .init(stringLiteral: "RevenueCatTests"))
-            ]),
-            runAction: .runAction(configuration: "Debug"),
+            testAction: .testPlans([
+                    .relativeToRoot("Tests/TestPlans/AllTests.xctestplan")
+                ]
+            ),
+            runAction: .runAction(
+                executable: "RevenueCat",
+                options: .options(
+                    storeKitConfigurationPath: .relativeToRoot(
+                        "Tests/StoreKitUnitTests/UnitTestsConfiguration.storekit"
+                        )
+                )
+            ),
+            archiveAction: .archiveAction(configuration: "Release"),
+            profileAction: .profileAction(configuration: "Release"),
+            analyzeAction: .analyzeAction(configuration: "Debug")
+        ),
+
+        .scheme(
+            name: "BackendIntegrationTests",
+            shared: true,
+            buildAction: .buildAction(targets: ["BackendIntegrationTests"]),
+            testAction: .testPlans([
+                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-All-CI.xctestplan")
+                ]
+            ),
+            runAction: .runAction(
+                executable: "BackendIntegrationTestsHostApp",
+                options: .options(
+                    storeKitConfigurationPath: .relativeToRoot(
+                        "Tests/BackendIntegrationTests/RevenueCat_IntegrationPurchaseTesterConfiguration.storekit"
+                        )
+                )
+            ),
             archiveAction: .archiveAction(configuration: "Release"),
             profileAction: .profileAction(configuration: "Release"),
             analyzeAction: .analyzeAction(configuration: "Debug")
