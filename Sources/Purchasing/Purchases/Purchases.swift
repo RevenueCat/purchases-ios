@@ -291,7 +291,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      networkTimeout: TimeInterval = Configuration.networkTimeoutDefault,
                      dangerousSettings: DangerousSettings? = nil,
                      showStoreMessagesAutomatically: Bool,
-                     diagnosticsEnabled: Bool = false
+                     diagnosticsEnabled: Bool = false,
+                     preferredLocale: String? = nil,
     ) {
         if userDefaults != nil {
             Logger.debug(Strings.configure.using_custom_user_defaults)
@@ -1389,7 +1390,8 @@ public extension Purchases {
                   networkTimeout: configuration.networkTimeout,
                   dangerousSettings: configuration.dangerousSettings,
                   showStoreMessagesAutomatically: configuration.showStoreMessagesAutomatically,
-                  diagnosticsEnabled: configuration.diagnosticsEnabled
+                  diagnosticsEnabled: configuration.diagnosticsEnabled,
+                  preferredLocale: configuration.preferredLocale
         )
     }
 
@@ -1655,7 +1657,8 @@ public extension Purchases {
         networkTimeout: TimeInterval,
         dangerousSettings: DangerousSettings?,
         showStoreMessagesAutomatically: Bool,
-        diagnosticsEnabled: Bool
+        diagnosticsEnabled: Bool,
+        preferredLocale: String?
     ) -> Purchases {
         return self.setDefaultInstance(
             .init(apiKey: apiKey,
@@ -1670,7 +1673,8 @@ public extension Purchases {
                   networkTimeout: networkTimeout,
                   dangerousSettings: dangerousSettings,
                   showStoreMessagesAutomatically: showStoreMessagesAutomatically,
-                  diagnosticsEnabled: diagnosticsEnabled)
+                  diagnosticsEnabled: diagnosticsEnabled,
+                  preferredLocale: preferredLocale)
         )
     }
 
@@ -1826,6 +1830,19 @@ extension Purchases {
             context,
             productIdentifier: productIdentifier
         )
+    }
+
+    // swiftlint:disable missing_docs
+    @_spi(Internal) public var preferredLocale: String? {
+        get {
+            self.systemInfo.preferredLocalesProvider.preferredLocaleOverride
+        }
+        set {
+            if newValue != self.preferredLocale {
+                self.systemInfo.preferredLocalesProvider.preferredLocaleOverride = newValue
+                // TODO: Mark as stale the caches that depened on the locale
+            }
+        }
     }
 
 }

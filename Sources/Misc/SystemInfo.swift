@@ -40,7 +40,7 @@ class SystemInfo {
     let responseVerificationMode: Signing.ResponseVerificationMode
     let dangerousSettings: DangerousSettings
     let clock: ClockType
-    let preferredLocalesProvider: PreferredLocalesProviderType
+    var preferredLocalesProvider: PreferredLocalesProviderType
 
     var finishTransactions: Bool {
         get { return self._finishTransactions.value }
@@ -86,7 +86,7 @@ class SystemInfo {
     }
 
     var preferredLanguages: [String] {
-        return self.preferredLocalesProvider.preferredLanguages
+        return self.preferredLocalesProvider.preferredLocales
     }
 
     static var frameworkVersion: String {

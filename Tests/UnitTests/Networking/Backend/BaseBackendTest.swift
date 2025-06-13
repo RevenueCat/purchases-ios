@@ -176,7 +176,7 @@ final class MockStorefrontProvider: StorefrontProviderType {
 
 final class MockPreferredLocalesProvider: PreferredLocalesProviderType {
 
-    var preferredLanguages: [String] {
+    var preferredLocales: [String] {
         stubbedLocales
     }
 
