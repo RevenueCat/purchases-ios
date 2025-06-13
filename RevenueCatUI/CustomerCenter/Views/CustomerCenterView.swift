@@ -266,7 +266,7 @@ struct CustomerCenterView_Previews: PreviewProvider {
     static var previews: some View {
         CustomerCenterView(
             viewModel: CustomerCenterViewModel(
-                activeSubscriptionPurchases: [.yearlyExpiring()],
+                activeSubscriptionPurchases: [.monthlyRenewing],
                 activeNonSubscriptionPurchases: [],
                 configuration: CustomerCenterConfigData.default
             )

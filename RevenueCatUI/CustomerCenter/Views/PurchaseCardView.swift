@@ -98,13 +98,15 @@ struct PurchaseInformationCardView: View {
         self.storeTitle = localization[purchaseInformation.store.localizationKey]
         self.showChevron = showChevron
 
-        if !purchaseInformation.isActive {
+        if purchaseInformation.isExpired {
             self.badge = .expired(localization)
+        } else if purchaseInformation.isCancelled, purchaseInformation.isTrial {
+            self.badge = .cancelledTrial(localization)
         } else if purchaseInformation.isCancelled {
             self.badge = .cancelled(localization)
         } else if purchaseInformation.isTrial, purchaseInformation.pricePaid == .free {
             self.badge = .freeTrial(localization)
-        } else if purchaseInformation.isActive {
+        } else if purchaseInformation.renewalDate != nil || purchaseInformation.expirationDate != nil {
             self.badge = .active(localization)
         } else {
             self.badge = nil
@@ -248,6 +250,14 @@ extension PurchaseInformationCardView {
             )
         }
 
+        static func cancelledTrial(_ localizations: CustomerCenterConfigData.Localization) -> Badge {
+            Badge(
+                title: localizations[.badgeTrialCancelled],
+                id: CCLocalizedString.badgeTrialCancelled.rawValue,
+                backgroundColor: Color(red: 242 / 256, green: 84 / 256, blue: 91 / 256, opacity: 0.15)
+            )
+        }
+
         static func freeTrial(_ localizations: CustomerCenterConfigData.Localization) -> Badge {
             Badge(
                 title: localizations[.badgeFreeTrial],
@@ -290,6 +300,17 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                     paidPrice: "$19.99",
                     accessibilityIdentifier: "accessibilityIdentifier",
                     badge: .cancelled(CustomerCenterConfigData.default.localization),
+                    subtitle: "Renews 24 May for $19.99"
+                )
+                .cornerRadius(10)
+                .padding([.leading, .trailing])
+
+                PurchaseInformationCardView(
+                    title: "Product name",
+                    storeTitle: Store.appStore.localizationKey.rawValue,
+                    paidPrice: "$19.99",
+                    accessibilityIdentifier: "accessibilityIdentifier",
+                    badge: .cancelledTrial(CustomerCenterConfigData.default.localization),
                     subtitle: "Renews 24 May for $19.99"
                 )
                 .cornerRadius(10)

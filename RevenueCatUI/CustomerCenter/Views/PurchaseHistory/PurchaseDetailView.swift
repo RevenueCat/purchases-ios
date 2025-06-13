@@ -53,9 +53,7 @@ struct PurchaseDetailView: View {
         .listStyle(.insetGrouped)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
-            Task {
-                await viewModel.didAppear()
-            }
+            viewModel.didAppear(localization: localization)
         }
     }
 
@@ -72,7 +70,8 @@ struct PurchaseDetailView: View {
                 .store(let value):
             return localization[value]
 
-        case .purchaseDate(let value),
+        case .latestPurchaseDate(let value),
+                .originalPurchaseDate(let value),
                 .expiresDate(let value),
                 .nextRenewalDate(let value),
                 .unsubscribeDetectedAt(let value),
