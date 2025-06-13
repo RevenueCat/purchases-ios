@@ -1553,7 +1553,6 @@
 		2DD500742C519EB4009C19B7 /* PaywallPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallPresenter.swift; sourceTree = "<group>"; };
 		2DD500752C519EB4009C19B7 /* PaywallViewMode+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PaywallViewMode+Extensions.swift"; sourceTree = "<group>"; };
 		2DD500762C519EB4009C19B7 /* SamplePaywallsList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplePaywallsList.swift; sourceTree = "<group>"; };
-		2DD500792C519EB4009C19B7 /* OfferingsList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferingsList.swift; sourceTree = "<group>"; };
 		2DD5007B2C519EB4009C19B7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2DD5007C2C519EB4009C19B7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2DD5007D2C519EB4009C19B7 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -3329,14 +3328,6 @@
 			path = UI;
 			sourceTree = "<group>";
 		};
-		2DD5007A2C519EB4009C19B7 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				2DD500792C519EB4009C19B7 /* OfferingsList.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
 		2DD5008E2C519EB4009C19B7 /* PaywallsTester */ = {
 			isa = PBXGroup;
 			children = (
@@ -3349,7 +3340,6 @@
 				2DD5005C2C519EB4009C19B7 /* Preview Content */,
 				2DD500622C519EB4009C19B7 /* Responses */,
 				2DD500782C519EB4009C19B7 /* UI */,
-				2DD5007A2C519EB4009C19B7 /* Views */,
 				2DD5007B2C519EB4009C19B7 /* Assets.xcassets */,
 				2DD5007C2C519EB4009C19B7 /* Info.plist */,
 				2DD5007E2C519EB4009C19B7 /* Localizable.strings */,

@@ -1351,6 +1351,13 @@ lane :check_pods do
   )
 end
 
+desc "Removes the Examples directory before building with Carthage to prevent unnecessary or problematic scheme resolution (e.g., Magic Weather SwiftUI.xcodeproj)"
+lane :prepare_for_carthage do
+  Dir.chdir("#{File.dirname(__FILE__)}/../") do
+    sh("rm", "-rf", "Examples")
+  end
+end
+
 lane :load_spm_dependencies do
   Dir.chdir("#{File.dirname(__FILE__)}/../") do
     sh("xcodebuild", "-list")
