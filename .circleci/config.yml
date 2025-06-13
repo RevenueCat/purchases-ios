@@ -1,7 +1,8 @@
 orbs:
   macos: circleci/macos@2.5.1
   slack: circleci/slack@5.0.0
-  revenuecat: revenuecat/sdks-common-config@3.0.0
+  # TODO: update before merging
+  revenuecat: revenuecat/sdks-common-config@dev:09d90c505721742a4ff579a934ec53391bdca9e7
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -433,6 +434,18 @@ commands:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
+
+  checkout-with-minimal-permissions:
+    steps:
+      - revenuecat/remove-all-ssh-keys
+      - revenuecat/checkout-with-key:
+          fingerprint: "SHA256:TY+ziSK99HtCkgT7rILg/o2G05KSV8BxmQht0ApvYng"
+      - revenuecat/assert-git-clone-fails:
+          repository: paywall-preview-resources
+      - revenuecat/assert-git-clone-fails:
+          repository: paywall-rendering-validation
+      - revenuecat/assert-git-clone-fails:
+          repository: khepri
 
 jobs:
   validate-package-swift:
@@ -1182,12 +1195,14 @@ jobs:
     executor:
       name: macos-executor
     steps:
-      - checkout
-      - trust-github-key
+      - checkout-with-minimal-permissions
       - install-dependencies
       - update-spm-installation-commit
       - install-dependencies:
           directory: Tests/InstallationTests/SPMInstallation/
+      # We need to use a deploy key for the private certificates repo, which is cloned in the next step.
+      - revenuecat/set-ssh-key-for-git:
+          fingerprint: "SHA256:UYi3gsOInLRPZy6MPho7Yr/YK1VmjDvPGo7sJvIcnPM"
       - scan-and-archive-all-platforms:
           directory: Tests/InstallationTests/SPMInstallation/
       - slack-notify-on-fail
@@ -1196,8 +1211,7 @@ jobs:
     executor:
       name: macos-executor
     steps:
-      - checkout
-      - trust-github-key
+      - checkout-with-minimal-permissions
       - install-dependencies
       - update-spm-installation-commit
       - install-dependencies:
