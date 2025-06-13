@@ -401,6 +401,8 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
 
     let customerInfo: CustomerInfo?
 
+    var preferredLocale: String? { nil }
+
     init(customerInfo: CustomerInfo? = nil, purchasesAreCompletedBy: PurchasesAreCompletedBy) {
         self.customerInfo = customerInfo
         self.purchasesAreCompletedBy = purchasesAreCompletedBy

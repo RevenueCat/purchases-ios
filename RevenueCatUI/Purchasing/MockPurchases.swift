@@ -29,6 +29,7 @@ final class MockPurchases: PaywallPurchasesType {
     private let restoreBlock: RestoreBlock
     private let trackEventBlock: TrackEventBlock
     private let _purchasesAreCompletedBy: PurchasesAreCompletedBy
+    private(set) var preferredLocale: String?
 
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
         get { return _purchasesAreCompletedBy }
@@ -40,13 +41,15 @@ final class MockPurchases: PaywallPurchasesType {
         purchase: @escaping PurchaseBlock,
         restorePurchases: @escaping RestoreBlock,
         trackEvent: @escaping TrackEventBlock,
-        customerInfo: @escaping CustomerInfoBlock
+        customerInfo: @escaping CustomerInfoBlock,
+        preferredLocale: String? = nil
     ) {
         self.purchaseBlock = purchase
         self.restoreBlock = restorePurchases
         self.trackEventBlock = trackEvent
         self.customerInfoBlock = customerInfo
         self._purchasesAreCompletedBy = purchasesAreCompletedBy
+        self.preferredLocale = preferredLocale
     }
 
     func customerInfo() async throws -> RevenueCat.CustomerInfo {

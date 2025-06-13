@@ -36,7 +36,7 @@ extension RevenueCat.Configuration.Builder {
     /// Sets the preferred locale for RevenueCatUI components.
     ///
     /// Defaults to `nil`, which means using the default user locale for RevenueCatUI components.
-    public func with(preferredUILocale: String?) -> Builder {
-        self.with(preferredLocale: preferredUILocale)
+    public func with(preferredUILocale: String?) -> RevenueCat.Configuration.Builder {
+        return self.with(preferredLocale: preferredUILocale)
     }
 }
