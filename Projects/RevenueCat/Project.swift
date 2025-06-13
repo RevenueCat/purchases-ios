@@ -36,7 +36,7 @@ let project = Project(
             product: .framework,
             bundleId: "com.revenuecat.Purchases",
             deploymentTargets: allDeploymentTargets,
-            infoPlist: .default,
+            infoPlist: "../../Sources/Info.plist",
             sources: [
                 .glob(
                     "../../Sources/**/*.swift",
@@ -46,7 +46,7 @@ let project = Project(
                 )
             ],
             headers: .headers(
-                public: ["../../Sources/RevenueCat.h"]
+                project: ["../../Sources/RevenueCat.h"]
             )
         ),
 
