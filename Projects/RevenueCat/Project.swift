@@ -47,6 +47,11 @@ let project = Project(
             ],
             headers: .headers(
                 project: ["../../Sources/RevenueCat.h"]
+            ),
+            settings: .settings(
+                base: [
+                    "APPLICATION_EXTENSION_API_ONLY": "YES"
+                ]
             )
         ),
 
