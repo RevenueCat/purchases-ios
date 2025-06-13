@@ -416,7 +416,8 @@ class PurchasesConfiguringTests: BasePurchasesTests {
                           observerMode: false,
                           responseVerificationMode: .default,
                           dangerousSettings: .init(customEntitlementComputation: true),
-                          showStoreMessagesAutomatically: true)
+                          showStoreMessagesAutomatically: true,
+                          preferredLocale: nil)
         }.to(throwAssertion())
     }
 
