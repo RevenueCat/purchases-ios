@@ -75,7 +75,7 @@ extension PurchaseInformation {
 private extension PurchaseInformation {
     var debugItems: [PurchaseDetailItem] {
         var items: [PurchaseDetailItem] = [
-            .store(store.localizationKey),
+            .store(storeLocalizationKey),
             .productID(productIdentifier),
             .sandbox(isSandbox)
         ]
