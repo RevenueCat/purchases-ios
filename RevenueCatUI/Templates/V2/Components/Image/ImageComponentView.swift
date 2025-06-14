@@ -72,6 +72,17 @@ struct ImageComponentView: View {
                     .shadow(shadow: style.shadow,
                             shape: style.shape?.toInsettableShape())
                     .padding(style.margin)
+                    .background(
+                        GeometryReader { proxy in
+                            Color.clear
+                                .onAppear {
+                                    self.maxWidth = proxy.size.width
+                                }
+                                .onChangeOf(proxy.size.width) { newWidth in
+                                    self.maxWidth = newWidth
+                                }
+                        }
+                    )
                 } else {
                     GeometryReader { proxy in
                         Color.clear
