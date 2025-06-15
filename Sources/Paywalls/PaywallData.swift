@@ -56,6 +56,10 @@ public struct PaywallData {
     @DefaultDecodable.EmptyDictionary
     internal private(set) var localizationByTier: [String: [String: LocalizedConfiguration]]
 
+    @_spi(Internal) public var locales: [String] {
+        Array(localization.keys)
+    }
+
 }
 
 /// Defines the necessary localized information for a paywall.
