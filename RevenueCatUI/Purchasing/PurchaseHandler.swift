@@ -85,7 +85,7 @@ final class PurchaseHandler: ObservableObject {
     @Published
     fileprivate(set) var restoreError: Error?
 
-    private var eventData: PaywallEvent.Data?
+    private var baseEventData: PaywallEvent.Data?
 
     convenience init(purchases: Purchases = .shared,
                      performPurchase: PerformPurchase? = nil,
@@ -179,6 +179,10 @@ extension PurchaseHandler {
             if result.userCancelled {
                 self.trackCancelledPurchase()
             } else {
+                // This will track both new purchases and if the user already has purchased the product
+                // This event should not get tracked alone but should be paired with the POST /receipts event as well
+                self.trackPaywallPurchase(storeTransationIdentifier: result.transaction?.transactionIdentifier)
+
                 withAnimation(Constants.defaultAnimation) {
                     self.purchased = true
                 }
@@ -227,6 +231,8 @@ extension PurchaseHandler {
         self.purchaseResult = resultInfo
 
         if !result.userCancelled && result.error == nil {
+            // Nil because we don't know about it
+            self.trackPaywallPurchase(storeTransationIdentifier: nil)
 
             withAnimation(Constants.defaultAnimation) {
                 self.purchased = true
@@ -267,6 +273,8 @@ extension PurchaseHandler {
         do {
             let customerInfo = try await self.purchases.restorePurchases()
 
+            self.trackPaywallRestore()
+
             return (info: customerInfo,
                     success: customerInfo.hasActiveSubscriptionsOrNonSubscriptions)
         } catch {
@@ -301,6 +309,8 @@ extension PurchaseHandler {
             throw error
         }
 
+        self.trackPaywallRestore()
+
         let customerInfo = try await self.purchases.customerInfo()
 
         // This is done by `RestorePurchasesButton` when using RevenueCat logic.
@@ -314,28 +324,59 @@ extension PurchaseHandler {
         self.restoredCustomerInfo = customerInfo
     }
 
-    func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
-        self.eventData = eventData
-        self.track(.impression(.init(), eventData))
+    func trackPaywallImpression(
+        _ eventData: PaywallEvent.Data,
+        fallbackReason: PaywallEvent.Data.FallbackReason?
+    ) {
+        self.baseEventData = eventData
+        self.track(.impression(.init(), eventData.toImpression(fallbackReason: fallbackReason)))
+    }
+
+    /// - Returns: whether the event was tracked
+    @discardableResult
+    func trackPaywallPurchase(
+        storeTransationIdentifier: String?
+    ) -> Bool {
+        guard let data = self.baseEventData else {
+            Logger.warning(Strings.attempted_to_track_event_with_missing_data)
+            return false
+        }
+
+        let newData = data.toPurchase(storeTransactionIdentifier: storeTransationIdentifier)
+
+        self.track(.purchase(.init(), newData))
+        return true
+    }
+
+    /// - Returns: whether the event was tracked
+    @discardableResult
+    func trackPaywallRestore() -> Bool {
+        guard let data = self.baseEventData else {
+            Logger.warning(Strings.attempted_to_track_event_with_missing_data)
+            return false
+        }
+
+        self.track(.restore(.init(), data))
+        return true
     }
 
     /// - Returns: whether the event was tracked
     @discardableResult
     func trackPaywallClose() -> Bool {
-        guard let data = self.eventData else {
+        guard let data = self.baseEventData else {
             Logger.warning(Strings.attempted_to_track_event_with_missing_data)
             return false
         }
 
         self.track(.close(.init(), data))
-        self.eventData = nil
+        self.baseEventData = nil
         return true
     }
 
     /// - Returns: whether the event was tracked
     @discardableResult
     fileprivate func trackCancelledPurchase() -> Bool {
-        guard let data = self.eventData else {
+        guard let data = self.baseEventData else {
             Logger.warning(Strings.attempted_to_track_event_with_missing_data)
             return false
         }
@@ -348,6 +389,26 @@ extension PurchaseHandler {
         withAnimation(Constants.fastAnimation) {
             self.actionTypeInProgress = type
         }
+    }
+
+}
+
+extension PaywallEvent.Data {
+
+    func toImpression(
+        fallbackReason: FallbackReason?
+    ) -> Self {
+        var result = self
+        result.fallbackReason = fallbackReason
+        return result
+    }
+
+    func toPurchase(
+        storeTransactionIdentifier: String?
+    ) -> Self {
+        var result = self
+        result.storeTransactionIdentifier = storeTransactionIdentifier
+        return result
     }
 
 }
