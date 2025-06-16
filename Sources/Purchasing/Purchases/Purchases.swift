@@ -1340,12 +1340,8 @@ public extension Purchases {
         }
     }
 
-    func virtualCurrencies() async throws -> VirtualCurrencies {
-        return try await self.virtualCurrencies(forceRefresh: false)
-    }
-
     func virtualCurrencies(
-        forceRefresh: Bool
+        forceRefresh: Bool = false
     ) async throws -> VirtualCurrencies {
         return try await self.virtualCurrencyManager.virtualCurrencies(forceRefresh: forceRefresh)
     }

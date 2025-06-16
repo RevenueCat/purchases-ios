@@ -1269,16 +1269,6 @@ public protocol PurchasesSwiftType: AnyObject {
     /**
      * Fetches the virtual currencies for the current subscriber.
      *
-     * - Returns: The ``VirtualCurrencies`` object containing the virtual currencies for the subscriber.
-     *
-     * #### Related Articles
-     * -  [Virtual Currencies](https://www.revenuecat.com/docs/offerings/virtual-currency)
-     */
-    func virtualCurrencies() async throws -> VirtualCurrencies
-
-    /**
-     * Fetches the virtual currencies for the current subscriber.
-     *
      * - Parameter forceRefresh: Whether or not the SDK must refresh virtual currencies from the backend,
      * bypassing the SDK's cache. Pass in `true` to force the SDK to fetch the most recent value
      * from the RevenueCat backend.
