@@ -54,6 +54,7 @@ class BasePaywallViewEventsTests: TestCase {
             : super.defaultTestSuite
     }
 
+    private var impressionEventExpectation: XCTestExpectation!
     private var closeEventExpectation: XCTestExpectation!
 
     override func setUp() {
@@ -68,11 +69,11 @@ class BasePaywallViewEventsTests: TestCase {
                     await self?.track(event)
                 }
             }
+        self.impressionEventExpectation = XCTestExpectation(description: "Impression event")
         self.closeEventExpectation = .init(description: "Close event")
     }
 
     func testPaywallImpressionEvent() async throws {
-        let impressionEventExpectation = XCTestExpectation(description: "Impression event")
 
         try await self.runDuringViewLifetime {
             await Task.yield()
