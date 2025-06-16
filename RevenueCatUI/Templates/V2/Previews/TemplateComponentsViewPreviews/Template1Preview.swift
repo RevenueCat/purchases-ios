@@ -222,6 +222,7 @@ struct Template1Preview_Previews: PreviewProvider {
             purchaseHandler: PurchaseHandler.default(),
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,
+            preferredLocale: nil,
             onDismiss: { },
             fallbackContent: .customView(AnyView(Text("Fallback paywall"))),
             failedToLoadFont: { _ in }

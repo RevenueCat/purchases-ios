@@ -150,6 +150,8 @@ private extension LoadingPaywallView {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private final class LoadingPaywallPurchases: PaywallPurchasesType {
 
+    var preferredLocale: String? { nil }
+
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
         get { return .myApp }
         set { _ = newValue }
