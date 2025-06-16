@@ -154,15 +154,15 @@ extension CustomerCenterConfigData.HelpPath {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
 /// Internal Combine-based wiring for handling `CustomerCenterInternalAction` events.
 /// These methods attach handlers to internal publishers and are used internally
 /// by any ViewModel to bridge actions to business logic.
 ///
 /// - Important: This API is intended **for internal use only** within the SDK.
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
 extension CustomerCenterActionWrapper {
 
     func onCustomerCenterRestoreStarted(
