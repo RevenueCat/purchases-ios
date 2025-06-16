@@ -55,7 +55,6 @@ let project = Project(
             )
         ),
 
-        // MARK: – RevenueCat Tests
         .target(
             name: "UnitTests",
             destinations: allDestinations,
@@ -72,6 +71,32 @@ let project = Project(
                 .snapshotTesting,
                 .ohHTTPStubsSwift
             ]
+        ),
+
+        .target(
+            name: "RevenueCat_CustomEntitlementComputation",
+            destinations: allDestinations,
+            product: .framework,
+            bundleId: "com.revenuecat.RevenueCatCustomEntitlementComputation",
+            deploymentTargets: allDeploymentTargets,
+            infoPlist: "../../Sources/Info.plist",
+            sources: [
+                .glob(
+                    "../../Sources/**/*.swift",
+                    excluding: [
+                        "../../Sources/LocalReceiptParsing/ReceiptParser-only-files/**/*.swift"
+                    ]
+                )
+            ],
+            headers: .headers(
+                project: ["../../Sources/RevenueCat.h"]
+            ),
+            settings: .settings(
+                base: [
+                    "APPLICATION_EXTENSION_API_ONLY": "YES",
+                    "ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION": "YES"
+                ]
+            )
         ),
 
         // MARK: – Receipt Parser
@@ -249,6 +274,7 @@ let project = Project(
                 "../../BackendIntegrationTests/**.xctestplan"
             ]
         )
+
     ],
     schemes: [
         .scheme(

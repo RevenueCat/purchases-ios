@@ -12,10 +12,25 @@ extension TargetDependency {
                 path: .relativeToRoot("Projects/RevenueCat")
             )
         } else {
-            .external(
-                name: "RevenueCat"
-            )
+            .revenueCatLocal
         }
+    }
+
+    /// Returns a local RevenueCat dependency from SPM
+    /// - Returns: A TargetDependency for RevenueCat from external source
+    public static var revenueCatLocal: TargetDependency {
+        .external(
+            name: "RevenueCat"
+        )
+    }
+
+    /// Returns a RevenueCat dependency with custom entitlement computation enabled
+    /// - Returns: A TargetDependency for RevenueCat_CustomEntitlementComputation
+    public static var revenueCatCustomEntitlementComputation: TargetDependency {
+        .project(
+            target: "RevenueCat_CustomEntitlementComputation",
+            path: .relativeToRoot("Projects/RevenueCat")
+        )
     }
 
     /// Returns a RevenueCatUI dependency that can be either local or external
@@ -29,13 +44,29 @@ extension TargetDependency {
                 path: .relativeToRoot("Projects/RevenueCatUI")
             )
         } else {
-            .external(
-                name: "RevenueCatUI"
-            )
+            .revenueCatUILocal
         }
     }
 
+    /// Returns a local RevenueCatUI dependency from SPM
+    /// - Returns: A TargetDependency for RevenueCatUI from external source
+    public static var revenueCatUILocal: TargetDependency {
+        .external(
+            name: "RevenueCatUI"
+        )
+    }
+
+    /// Returns a ReceiptParser dependency
+    /// - Returns: A TargetDependency for ReceiptParser
+    public static var receiptparser: TargetDependency {
+        .project(
+            target: "ReceiptParser",
+            path: .relativeToRoot("Projects/RevenueCat")
+        )
+    }
+
     /// Returns a dependency for the Nimble testing framework
+    /// - Returns: A TargetDependency for Nimble
     public static var nimble: TargetDependency {
         .external(
             name: "Nimble"
@@ -43,6 +74,7 @@ extension TargetDependency {
     }
 
     /// Returns a dependency for the SnapshotTesting framework
+    /// - Returns: A TargetDependency for SnapshotTesting
     public static var snapshotTesting: TargetDependency {
         .external(
             name: "SnapshotTesting"
@@ -50,21 +82,25 @@ extension TargetDependency {
     }
 
     /// Returns a dependency for the OHHTTPStubs framework
+    /// - Returns: A TargetDependency for OHHTTPStubs
     public static var ohHTTPStubs: TargetDependency {
         .external(name: "OHHTTPStubs")
     }
 
     /// Returns a dependency for the OHHTTPStubsSwift framework
+    /// - Returns: A TargetDependency for OHHTTPStubsSwift
     public static var ohHTTPStubsSwift: TargetDependency {
         .external(name: "OHHTTPStubsSwift")
     }
 
     /// Returns a dependency for the StoreKit framework
+    /// - Returns: A TargetDependency for StoreKit
     public static var storeKit: TargetDependency {
         .sdk(name: "StoreKit", type: .framework)
     }
 
     /// Returns a dependency for the StoreKitTest framework
+    /// - Returns: A TargetDependency for StoreKitTest
     public static var storeKitTests: TargetDependency {
         .sdk(name: "StoreKitTest", type: .framework)
     }
