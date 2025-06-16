@@ -80,6 +80,24 @@ class SystemInfoTests: TestCase {
         expect(SystemInfo.default.dangerousSettings.internalSettings.enableReceiptFetchRetry) == false
     }
 
+    func testAllPreferredLocalesWithLocaleOverride() {
+        let localesProvider = MockPreferredLocalesProvider(stubbedPreferredLocaleOverride: "es_ES",
+                                                           stubbedLocales: ["fr_FR", "de_DE", "en_US"])
+        let info = SystemInfo(platformInfo: nil,
+                              finishTransactions: false,
+                              preferredLocalesProvider: localesProvider)
+        expect(info.allPreferredLocales).to(equal(["es_ES", "fr_FR", "de_DE", "en_US"]))
+    }
+
+    func testAllPreferredLocalesWithoutLocaleOverride() {
+        let localesProvider = MockPreferredLocalesProvider(stubbedPreferredLocaleOverride: nil,
+                                                           stubbedLocales: ["fr_FR", "de_DE", "en_US"])
+        let info = SystemInfo(platformInfo: nil,
+                              finishTransactions: false,
+                              preferredLocalesProvider: localesProvider)
+        expect(info.allPreferredLocales).to(equal(["fr_FR", "de_DE", "en_US"]))
+    }
+
     // MARK: - identifierForVendor
 
     #if os(iOS) || os(tvOS) || VISION_OS
@@ -100,7 +118,8 @@ class SystemInfoTests: TestCase {
         let info = SystemInfo(
             platformInfo: nil,
             finishTransactions: true,
-            sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(isSandbox: true)
+            sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(isSandbox: true),
+            preferredLocalesProvider: MockPreferredLocalesProvider()
         )
 
         expect(info.identifierForVendor) == MacDevice.identifierForVendor?.uuidString
@@ -110,7 +129,8 @@ class SystemInfoTests: TestCase {
         let info = SystemInfo(
             platformInfo: nil,
             finishTransactions: true,
-            sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(isSandbox: false)
+            sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(isSandbox: false),
+            preferredLocalesProvider: MockPreferredLocalesProvider()
         )
 
         expect(info.identifierForVendor).to(beNil())
