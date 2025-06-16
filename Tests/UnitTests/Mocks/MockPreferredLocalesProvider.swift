@@ -24,7 +24,7 @@ final class MockPreferredLocalesProvider: PreferredLocalesProviderType {
     private let stubbedLocales: [String]
 
     init(stubbedPreferredLocaleOverride: String? = nil,
-         stubbedLocales: [String] = ["en_US"]) {
+         stubbedLocales: [String] = ["en_EN"]) {
         self.preferredLocaleOverride = stubbedPreferredLocaleOverride
         self.stubbedLocales = stubbedLocales
     }
