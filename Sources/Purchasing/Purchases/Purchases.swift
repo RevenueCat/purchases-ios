@@ -1843,7 +1843,7 @@ extension Purchases {
         set {
             if newValue != self.preferredLocale {
                 self.systemInfo.preferredLocalesProvider.preferredLocaleOverride = newValue
-                // TODO: Mark as stale the caches that depened on the locale
+                // WIP: Mark as stale the caches that depened on the locale
             }
         }
     }
