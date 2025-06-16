@@ -125,7 +125,7 @@ public struct PaywallView: View {
         useDraftPaywall: Bool,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
-        preferredLocaleOverride: String? = nil,
+        preferredLocaleOverride: String? = nil
     ) {
         let purchaseHandler = PurchaseHandler.default(performPurchase: performPurchase, performRestore: performRestore)
         let preferredLocale = preferredLocaleOverride.map(Locale.init) ?? purchaseHandler.preferredLocale
