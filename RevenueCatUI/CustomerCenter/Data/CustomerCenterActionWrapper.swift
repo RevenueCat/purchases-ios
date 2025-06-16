@@ -154,6 +154,8 @@ extension CustomerCenterConfigData.HelpPath {
 
 }
 
+#if os(iOS)
+
 /// Internal Combine-based wiring for handling `CustomerCenterInternalAction` events.
 /// These methods attach handlers to internal publishers and are used internally
 /// by any ViewModel to bridge actions to business logic.
@@ -231,3 +233,5 @@ extension CustomerCenterActionWrapper {
             .store(in: &cancellables)
     }
 }
+
+#endif
