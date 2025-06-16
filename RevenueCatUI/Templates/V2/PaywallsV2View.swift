@@ -104,7 +104,6 @@ struct PaywallsV2View: View {
         purchaseHandler: PurchaseHandler,
         introEligibilityChecker: TrialOrIntroEligibilityChecker,
         showZeroDecimalPlacePrices: Bool,
-        preferredLocale: Locale?,
         onDismiss: @escaping () -> Void,
         fallbackContent: FallbackContent,
         failedToLoadFont: @escaping UIConfigProvider.FailedToLoadFont
@@ -134,7 +133,6 @@ struct PaywallsV2View: View {
             wrappedValue: .init(state: Self.createPaywallState(
                 componentsConfig: componentsConfig,
                 componentsLocalizations: paywallComponents.data.componentsLocalizations,
-                preferredLocale: preferredLocale,
                 defaultLocale: paywallComponents.data.defaultLocale,
                 uiConfigProvider: uiConfigProvider,
                 offering: offering,
@@ -306,7 +304,6 @@ fileprivate extension PaywallsV2View {
     static func createPaywallState(
         componentsConfig: PaywallComponentsData.PaywallComponentsConfig,
         componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary],
-        preferredLocale: Locale?,
         defaultLocale: String,
         uiConfigProvider: UIConfigProvider,
         offering: Offering,
@@ -316,7 +313,6 @@ fileprivate extension PaywallsV2View {
         // Step 1: Get localization
         let localizationProvider = Self.chooseLocalization(
             componentsLocalizations: componentsLocalizations,
-            preferredLocale: preferredLocale,
             defaultLocale: defaultLocale
         )
 
@@ -357,7 +353,6 @@ fileprivate extension PaywallsV2View {
 
     static func chooseLocalization(
         componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary],
-        preferredLocale: Locale?,
         defaultLocale: String
     ) -> LocalizationProvider {
 
@@ -366,46 +361,23 @@ fileprivate extension PaywallsV2View {
             return .init(locale: Locale.current, localizedStrings: PaywallComponent.LocalizationDictionary())
         }
 
-        var notFoundLocales = [Locale]()
-
-        defer {
-            if !notFoundLocales.isEmpty {
-                let localeStrings = notFoundLocales.map { "\($0)" }
-                let msgFormatted = localeStrings.formatted(.list(type: .or))
-                Logger.error(Strings.paywall_could_not_find_localization(msgFormatted))
-            }
-        }
-
-        // STEP 1: Use preferred locale if available
-        if let preferredLocale {
-            if let localizedStrings = componentsLocalizations.findLocale(preferredLocale) {
-                return .init(locale: preferredLocale, localizedStrings: localizedStrings)
-            } else {
-                notFoundLocales.append(preferredLocale)
-            }
-        }
-
-        // STEP 2: Get available paywall locales
+        // STEP 1: Get available paywall locales
         let paywallLocales = componentsLocalizations.keys.map { Locale(identifier: $0) }
 
-        // use default locale as a fallback if none of the user's preferred locales are available in the paywall
+        // use default locale as a fallback if none of the user's preferred locales are not available in the paywall
         let defaultLocale = Locale(identifier: defaultLocale)
 
-        // STEP 3: choose best locale based on device's list of preferred locales.
+        // STEP 2: choose best locale based on device's list of preferred locales.
         let chosenLocale = Self.preferredLocale(from: paywallLocales) ?? defaultLocale
 
-        // STEP 4: Get localization for one of preferred locales in order
+        // STEP 3: Get localization for one of preferred locales in order
         if let localizedStrings = componentsLocalizations.findLocale(chosenLocale) {
             return .init(locale: chosenLocale, localizedStrings: localizedStrings)
         } else if let localizedStrings = componentsLocalizations.findLocale(defaultLocale) {
-            if !notFoundLocales.contains(chosenLocale) {
-                notFoundLocales.append(chosenLocale)
-            }
+            Logger.error(Strings.paywall_could_not_find_localization("\(chosenLocale)"))
             return .init(locale: defaultLocale, localizedStrings: localizedStrings)
         } else {
-            if !notFoundLocales.contains(defaultLocale) {
-                notFoundLocales.append(defaultLocale)
-            }
+            Logger.error(Strings.paywall_could_not_find_localization("\(chosenLocale) or \(defaultLocale)"))
             return .init(locale: defaultLocale, localizedStrings: PaywallComponent.LocalizationDictionary())
         }
     }

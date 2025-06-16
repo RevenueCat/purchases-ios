@@ -19,8 +19,6 @@ protocol PaywallPurchasesType: Sendable {
 
     var purchasesAreCompletedBy: PurchasesAreCompletedBy { get }
 
-    var preferredLocale: String? { get }
-
     @Sendable
     func purchase(package: Package) async throws -> PurchaseResultData
 

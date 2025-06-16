@@ -342,7 +342,7 @@ struct PurchaseButtonInPackagePreview_Previews: PreviewProvider {
                             webCheckoutUrl: nil),
             purchaseHandler: PurchaseHandler.default(),
             introEligibilityChecker: .default(),
-            showZeroDecimalPlacePrices: true, preferredLocale: nil,
+            showZeroDecimalPlacePrices: true,
             onDismiss: { },
             fallbackContent: .customView(AnyView(Text("Fallback paywall"))),
             failedToLoadFont: { _ in }
