@@ -55,6 +55,7 @@ class BasePaywallViewEventsTests: TestCase {
     }
 
     private var closeEventExpectation: XCTestExpectation!
+
     override func setUp() {
         super.setUp()
 
@@ -71,9 +72,13 @@ class BasePaywallViewEventsTests: TestCase {
     }
 
     func testPaywallImpressionEvent() async throws {
+        let impressionEventExpectation = XCTestExpectation(description: "Impression event")
+
         try await self.runDuringViewLifetime {
             await Task.yield()
         }
+
+        await self.fulfillment(of: [impressionEventExpectation], timeout: 3)
 
         expect(self.events)
             .to(containElementSatisfying { $0.eventType == .impression })
@@ -168,7 +173,7 @@ private extension BasePaywallViewEventsTests {
         self.events.append(event)
 
         switch event {
-        case .impression: break
+        case .impression: self.impressionEventExpectation.fulfill()
         case .cancel: break
         case .close: self.closeEventExpectation.fulfill()
         }
