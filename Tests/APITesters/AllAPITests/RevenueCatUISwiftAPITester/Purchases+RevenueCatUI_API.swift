@@ -10,7 +10,9 @@ import RevenueCatUI
 
 func checkPreferredUILocaleAPIs() {
     Purchases.updatePreferredUILocale("de_DE")
+    Purchases.updatePreferredUILocale(nil)
     let _: RevenueCat.Configuration.Builder = Configuration
         .builder(withAPIKey: "")
         .with(preferredUILocale: "de_DE")
+        .with(preferredUILocale: nil)
 }
