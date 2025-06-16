@@ -446,6 +446,13 @@ commands:
           repository: paywall-rendering-validation
       - revenuecat/assert-git-clone-fails:
           repository: khepri
+      - set-signing-repo-deploy-key-for-git
+
+  # Will configure git to use the deploy key for the private certificates repo from now on.
+  set-signing-repo-deploy-key-for-git:
+    steps:
+      - revenuecat/set-ssh-key-for-git:
+          fingerprint: "SHA256:UYi3gsOInLRPZy6MPho7Yr/YK1VmjDvPGo7sJvIcnPM"
 
 jobs:
   validate-package-swift:
@@ -1178,7 +1185,7 @@ jobs:
     executor:
       name: macos-executor
     steps:
-      - checkout
+      - checkout-with-minimal-permissions
       - install-dependencies
       - install-dependencies:
           directory: Tests/InstallationTests/CocoapodsInstallation
@@ -1187,6 +1194,7 @@ jobs:
           working_directory: Tests/InstallationTests/CocoapodsInstallation/
           command: |
             bundle exec pod install
+      - set-signing-repo-deploy-key-for-git
       - scan-and-archive:
           directory: Tests/InstallationTests/CocoapodsInstallation
       - slack-notify-on-fail
@@ -1200,9 +1208,7 @@ jobs:
       - update-spm-installation-commit
       - install-dependencies:
           directory: Tests/InstallationTests/SPMInstallation/
-      # We need to use a deploy key for the private certificates repo, which is cloned in the next step.
-      - revenuecat/set-ssh-key-for-git:
-          fingerprint: "SHA256:UYi3gsOInLRPZy6MPho7Yr/YK1VmjDvPGo7sJvIcnPM"
+      - set-signing-repo-deploy-key-for-git
       - scan-and-archive-all-platforms:
           directory: Tests/InstallationTests/SPMInstallation/
       - slack-notify-on-fail
@@ -1224,12 +1230,12 @@ jobs:
     executor:
       name: macos-executor
     steps:
-      - checkout
-      - trust-github-key
+      - checkout-with-minimal-permissions
       - install-dependencies
       - update-spm-installation-commit
       - install-dependencies:
           directory: Tests/InstallationTests/ReceiptParserInstallation/
+      - set-signing-repo-deploy-key-for-git
       - scan-and-archive-all-platforms:
           directory: Tests/InstallationTests/ReceiptParserInstallation/
       - slack-notify-on-fail
@@ -1238,8 +1244,7 @@ jobs:
     executor:
       name: macos-executor-large
     steps:
-      - checkout
-      - trust-github-key
+      - checkout-with-minimal-permissions
       - run:
           name: Upgrade Carthage
           command: |
@@ -1252,7 +1257,7 @@ jobs:
           working_directory: Tests/InstallationTests/CarthageInstallation/
           command: |
             bundle exec fastlane installation_tests
-
+      - set-signing-repo-deploy-key-for-git
       - install-dependencies-scan-and-archive:
           directory: Tests/InstallationTests/CarthageInstallation/
       - slack-notify-on-fail
@@ -1263,8 +1268,8 @@ jobs:
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
-      - checkout
-
+      - checkout-with-minimal-permissions
+      - set-signing-repo-deploy-key-for-git
       - install-dependencies-scan-and-archive:
           directory: Tests/InstallationTests/XcodeDirectInstallation/
       - slack-notify-on-fail
