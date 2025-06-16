@@ -85,7 +85,7 @@ public struct PaywallView: View {
                 fonts: fonts,
                 displayCloseButton: displayCloseButton,
                 purchaseHandler: purchaseHandler,
-                preferredLocale: purchaseHandler.preferredLocale,
+                preferredLocale: purchaseHandler.preferredLocale
             )
         )
     }
