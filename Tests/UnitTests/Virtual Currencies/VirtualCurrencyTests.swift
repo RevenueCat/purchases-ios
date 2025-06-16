@@ -65,10 +65,14 @@ final class VirtualCurrencyTests: TestCase {
             serverDescription: "Test Description"
         )
 
-        XCTAssertTrue(currency1.isEqual(currency2))
+        XCTAssertFalse(currency1.isEqual(currency2))
         XCTAssertFalse(currency1.isEqual(currency3))
         XCTAssertFalse(currency1.isEqual(nil))
         XCTAssertFalse(currency1.isEqual("Not a currency"))
+
+        XCTAssertTrue(currency1.isEqual(currency1))
+        XCTAssertTrue(currency2.isEqual(currency2))
+        XCTAssertTrue(currency3.isEqual(currency3))
     }
 
     func testInitializerFromResponse() {
