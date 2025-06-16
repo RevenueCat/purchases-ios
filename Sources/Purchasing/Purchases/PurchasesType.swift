@@ -995,8 +995,9 @@ public protocol PurchasesType: AnyObject {
     /**
      * Fetches the virtual currencies for the current subscriber.
      *
-     * - Parameter forceRefresh: Whether or not the SDK can use cached responses for this request.
-     * Pass in `true` to force the SDK to fetch the most recent value from the RevenueCat backend.
+     * - Parameter forceRefresh: Whether or not the SDK must refresh virtual currencies from the backend,
+     * bypassing the SDK's cache. Pass in `true` to force the SDK to fetch the most recent value
+     * from the RevenueCat backend.
      * - Parameter completion: The callback that is called when the request is complete with a ``VirtualCurrencies``
      * object containing the subscriber's virtual currencies.
      *
@@ -1278,8 +1279,9 @@ public protocol PurchasesSwiftType: AnyObject {
     /**
      * Fetches the virtual currencies for the current subscriber.
      *
-     * - Parameter forceRefresh: Whether or not the SDK can use cached responses for this request.
-     * Pass in `true` to force the SDK to fetch the most recent value from the RevenueCat backend.
+     * - Parameter forceRefresh: Whether or not the SDK must refresh virtual currencies from the backend,
+     * bypassing the SDK's cache. Pass in `true` to force the SDK to fetch the most recent value
+     * from the RevenueCat backend.
      * - Returns: The ``VirtualCurrencies`` object containing the virtual currencies for the subscriber.
      *
      * #### Related Articles
