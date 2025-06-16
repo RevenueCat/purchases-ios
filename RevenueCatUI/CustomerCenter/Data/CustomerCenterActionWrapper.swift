@@ -12,7 +12,7 @@
 //  Created by Cesar de la Vega on 2024-06-17.
 
 import Combine
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 /// Internal enum that represents all possible actions in the Customer Center

@@ -15,7 +15,7 @@
 
 import Combine
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 #if os(iOS)
 
@@ -240,9 +240,12 @@ private extension CustomerCenterViewModel {
     func loadNonSubscriptionsSection(customerInfo: CustomerInfo) async {
         var activeNonSubscriptionPurchases: [PurchaseInformation] = []
         for subscription in customerInfo.nonSubscriptions {
-            let purchaseInfo = await createPurchaseInformation(
-                for: subscription,
-                customerInfo: customerInfo
+
+            let purchaseInfo: PurchaseInformation = await .from(
+                transaction: subscription,
+                customerInfo: customerInfo,
+                purchasesProvider: purchasesProvider,
+                customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
             )
             activeNonSubscriptionPurchases.append(purchaseInfo)
         }
@@ -274,9 +277,11 @@ private extension CustomerCenterViewModel {
             return
         }
 
-        let purchaseInfo = await createPurchaseInformation(
-            for: inactiveSub,
-            customerInfo: customerInfo
+        let purchaseInfo: PurchaseInformation = await .from(
+            transaction: inactiveSub,
+            customerInfo: customerInfo,
+            purchasesProvider: purchasesProvider,
+            customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
         )
 
         self.subscriptionsSection = [purchaseInfo]
@@ -294,9 +299,11 @@ private extension CustomerCenterViewModel {
                 return date1 < date2
             }) {
 
-            let purchaseInfo = await createPurchaseInformation(
-                for: subscription,
-                customerInfo: customerInfo
+            let purchaseInfo: PurchaseInformation = await .from(
+                transaction: subscription,
+                customerInfo: customerInfo,
+                purchasesProvider: purchasesProvider,
+                customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
             )
 
             activeSubscriptionPurchases.append(purchaseInfo)
@@ -318,47 +325,6 @@ private extension CustomerCenterViewModel {
                 URLUtilities.openURLIfNotAppExtension(url)
             }
         }
-    }
-
-    func createPurchaseInformation(
-        for transaction: RevenueCatUI.Transaction,
-        customerInfo: CustomerInfo
-    ) async -> PurchaseInformation {
-        let entitlement = customerInfo.entitlements.all.values
-            .first(where: { $0.productIdentifier == transaction.productIdentifier })
-
-        if transaction.store == .appStore {
-            if let product = await purchasesProvider.products([transaction.productIdentifier]).first {
-                return await PurchaseInformation.purchaseInformationUsingRenewalInfo(
-                    entitlement: entitlement,
-                    subscribedProduct: product,
-                    transaction: transaction,
-                    customerCenterStoreKitUtilities: customerCenterStoreKitUtilities,
-                    customerInfoRequestedDate: customerInfo.requestDate,
-                    managementURL: transaction.managementURL
-                )
-            } else {
-                Logger.warning(
-                    Strings.could_not_find_product_loading_without_product_information(transaction.productIdentifier)
-                )
-
-                return PurchaseInformation(
-                    entitlement: entitlement,
-                    transaction: transaction,
-                    customerInfoRequestedDate: customerInfo.requestDate,
-                    managementURL: transaction.managementURL
-                )
-            }
-        }
-
-        Logger.warning(Strings.active_product_is_not_apple_loading_without_product_information(transaction.store))
-
-        return PurchaseInformation(
-            entitlement: entitlement,
-            transaction: transaction,
-            customerInfoRequestedDate: customerInfo.requestDate,
-            managementURL: transaction.managementURL
-        )
     }
 }
 
