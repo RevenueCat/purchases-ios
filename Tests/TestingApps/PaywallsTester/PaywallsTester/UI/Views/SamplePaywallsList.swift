@@ -50,8 +50,7 @@ struct SamplePaywallsList: View {
                     offering: Self.loader.offering(for: template),
                     customerInfo: Self.loader.customerInfo,
                     displayCloseButton: Self.displayCloseButton,
-                    introEligibility: Self.introEligibility,
-                    preferredLocale: nil
+                    introEligibility: Self.introEligibility
                 ))
 
             #if !os(watchOS)
@@ -70,8 +69,7 @@ struct SamplePaywallsList: View {
                     customerInfo: Self.loader.customerInfo,
                     fonts: Self.customFontProvider,
                     displayCloseButton: Self.displayCloseButton,
-                    introEligibility: Self.introEligibility,
-                    preferredLocale: nil
+                    introEligibility: Self.introEligibility
                 )
             )
 
@@ -86,8 +84,7 @@ struct SamplePaywallsList: View {
                 configuration: .init(
                     offering: Self.loader.offeringWithDefaultPaywall(),
                     customerInfo: Self.loader.customerInfo,
-                    introEligibility: Self.introEligibility,
-                    preferredLocale: nil
+                    introEligibility: Self.introEligibility
                 )
             )
 
@@ -96,8 +93,7 @@ struct SamplePaywallsList: View {
                 configuration: .init(
                     offering: Self.loader.offeringWithUnrecognizedPaywall(),
                     customerInfo: Self.loader.customerInfo,
-                    introEligibility: Self.introEligibility,
-                    preferredLocale: nil
+                    introEligibility: Self.introEligibility
                 )
             )
 
@@ -106,8 +102,7 @@ struct SamplePaywallsList: View {
                 offering: Self.loader.offering(with: data),
                 customerInfo: Self.loader.customerInfo,
                 displayCloseButton: Self.displayCloseButton,
-                introEligibility: Self.introEligibility,
-                preferredLocale: nil
+                introEligibility: Self.introEligibility
             ))
         #endif
         #if canImport(UIKit) && os(iOS)
