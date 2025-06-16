@@ -57,6 +57,9 @@ extension VirtualCurrency {
     @objc public override func isEqual(_ object: Any?) -> Bool {
         guard let other = object as? VirtualCurrency else { return false }
         return self.balance == other.balance
+        && self.name == other.name
+        && self.code == other.code
+        && self.serverDescription == other.serverDescription
     }
 }
 
