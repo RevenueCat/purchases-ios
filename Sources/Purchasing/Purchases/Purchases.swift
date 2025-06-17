@@ -1836,14 +1836,14 @@ extension Purchases {
     }
 
     // swiftlint:disable missing_docs
-    @_spi(Internal) public var preferredLocale: String? {
+    @_spi(Internal) public var preferredLocaleOverride: String? {
         get {
             self.systemInfo.preferredLocalesProvider.preferredLocaleOverride
         }
         set {
-            if newValue != self.preferredLocale {
+            if newValue != self.preferredLocaleOverride {
                 self.systemInfo.preferredLocalesProvider.preferredLocaleOverride = newValue
-                // WIP: Mark as stale the caches that depened on the locale
+                // WIP: Mark as stale the caches that depend on the locale
             }
         }
     }

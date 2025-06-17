@@ -19,7 +19,7 @@ class MockIdentityManager: IdentityManager {
         let mockSystemInfo = MockSystemInfo(platformInfo: nil,
                                             finishTransactions: false,
                                             dangerousSettings: nil,
-                                            preferredLocalesProvider: MockPreferredLocalesProvider())
+                                            preferredLocalesProvider: .mock())
         let mockBackend = MockBackend()
 
         self.mockAppUserID = mockAppUserID

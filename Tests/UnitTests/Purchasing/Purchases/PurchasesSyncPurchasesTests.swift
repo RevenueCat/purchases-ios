@@ -143,7 +143,7 @@ class PurchasesSyncPurchasesTests: BasePurchasesTests {
                                          finishTransactions: false,
                                          storeKitVersion: self.storeKitVersion,
                                          dangerousSettings: DangerousSettings(autoSyncPurchases: false),
-                                         preferredLocalesProvider: MockPreferredLocalesProvider())
+                                         preferredLocalesProvider: .mock())
         Purchases.clearSingleton()
         self.initializePurchasesInstance(appUserId: nil)
 
