@@ -290,7 +290,7 @@ let project = Project(
                 options: .options(
                     storeKitConfigurationPath: .relativeToRoot(
                         "Tests/StoreKitUnitTests/UnitTestsConfiguration.storekit"
-                        )
+                    )
                 )
             ),
             archiveAction: .archiveAction(configuration: "Release"),
@@ -311,7 +311,7 @@ let project = Project(
                 options: .options(
                     storeKitConfigurationPath: .relativeToRoot(
                         "Tests/BackendIntegrationTests/RevenueCat_IntegrationPurchaseTesterConfiguration.storekit"
-                        )
+                    )
                 )
             ),
             archiveAction: .archiveAction(configuration: "Release"),

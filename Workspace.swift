@@ -16,6 +16,10 @@ var projects: [Path] = [
 if Environment.local {
     projects.append("./Projects/RevenueCat")
     projects.append("./Projects/RevenueCatUI")
+} else {
+    // Needs 3.0.0 of Purchases.
+    // Only when TUIST_RC_LOCAL=false tuist generate
+    projects.append("./Projects/v3LoadShedderIntegration")
 }
 
 let workspace = Workspace(

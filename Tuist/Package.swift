@@ -10,6 +10,7 @@
             "SnapshotTesting": .framework, // default is .staticFramework,
             "RevenueCat": .framework,
             "RevenueCatUI": .framework,
+            "Purchases": .framework,
             "OHHTTPStubs": .framework,
             "OHHTTPStubsSwift": .framework
         ]
@@ -31,6 +32,10 @@ let package = Package(
         .package(
             url: "https://github.com/RevenueCat/purchases-ios",
             branch: "main"
+        ),
+        .package(
+            url: "https://github.com/RevenueCat/purchases-ios-spm",
+            revision: "3.0.0"
         ),
         .package(
             url: "https://github.com/AliSoftware/OHHTTPStubs",

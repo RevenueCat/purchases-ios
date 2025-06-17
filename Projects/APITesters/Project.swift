@@ -132,6 +132,9 @@ let project = Project(
     schemes: [],
     additionalFiles: [
         "../../Tests/APITesters/AllAPITests/ObjcAPITester/**/*.h",
-        "../../Tests/APITesters/AllAPITests/ObjcAPITester/SwiftAPITester.h"
+        "../../Tests/APITesters/AllAPITests/SwiftAPITester/SwiftAPITester.h",
+        "../../Tests/APITesters/AllAPITests/CustomEntitlementComputationSwiftAPITester/CustomEntitlementComputationSwiftAPITester.h",
+        "../../Tests/APITesters/AllAPITests/RevenueCatUISwiftAPITester/RevenueCatUISwiftAPITester.h",
+        "../../Tests/APITesters/AllAPITests/ReceiptParserAPITester/ReceiptParserAPITester.h"
     ]
 )
