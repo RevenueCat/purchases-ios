@@ -95,7 +95,7 @@ struct PurchaseInformationCardView: View {
         case .nonFree:
             self.paidPrice = ""
         }
-        self.storeTitle = localization[purchaseInformation.store.localizationKey]
+        self.storeTitle = localization[purchaseInformation.storeLocalizationKey]
         self.showChevron = showChevron
 
         self.badge = Badge(purchaseInformation: purchaseInformation, localization: localization)
@@ -306,7 +306,7 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
             ScrollViewWithOSBackground {
                 PurchaseInformationCardView(
                     title: "Product name",
-                    storeTitle: Store.appStore.localizationKey.rawValue,
+                    storeTitle: "App Store",
                     paidPrice: "$19.99",
                     accessibilityIdentifier: "accessibilityIdentifier",
                     badge: .cancelled(CustomerCenterConfigData.default.localization),
@@ -317,7 +317,7 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
 
                 PurchaseInformationCardView(
                     title: "Product name",
-                    storeTitle: Store.appStore.localizationKey.rawValue,
+                    storeTitle: "App Store",
                     paidPrice: "$19.99",
                     accessibilityIdentifier: "accessibilityIdentifier",
                     badge: .cancelledTrial(CustomerCenterConfigData.default.localization),
@@ -328,7 +328,7 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
 
                 PurchaseInformationCardView(
                     title: "Product name",
-                    storeTitle: Store.playStore.localizationKey.rawValue,
+                    storeTitle: "App Store",
                     paidPrice: "$19.99",
                     accessibilityIdentifier: "accessibilityIdentifier",
                     badge: .freeTrial(CustomerCenterConfigData.default.localization),
@@ -339,7 +339,7 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
 
                 PurchaseInformationCardView(
                     title: "Product name",
-                    storeTitle: Store.playStore.localizationKey.rawValue,
+                    storeTitle: "App Store",
                     paidPrice: "$19.99",
                     accessibilityIdentifier: "accessibilityIdentifier",
                     badge: .active(CustomerCenterConfigData.default.localization),
@@ -352,7 +352,7 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
 
                 PurchaseInformationCardView(
                     title: "Product name",
-                    storeTitle: Store.playStore.localizationKey.rawValue,
+                    storeTitle: "App Store",
                     paidPrice: "$19.99",
                     accessibilityIdentifier: "accessibilityIdentifier",
                     badge: .active(CustomerCenterConfigData.default.localization),
