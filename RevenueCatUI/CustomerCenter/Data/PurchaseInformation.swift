@@ -486,21 +486,20 @@ extension PurchaseInformation {
     }
 
     func priceRenewalString(
-        date: Date,
         localizations: CustomerCenterConfigData.Localization
     ) -> String? {
-        guard let renewalPrice else {
+        guard let renewalPrice, let renewalDate else {
             return nil
         }
 
         switch renewalPrice {
         case .free:
             return localizations[.renewsOnDateForPrice]
-                .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: date))
+                .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: renewalDate))
                 .replacingOccurrences(of: "{{ price }}", with: localizations[.free].lowercased())
         case .nonFree(let priceString):
             return localizations[.renewsOnDateForPrice]
-                .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: date))
+                .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: renewalDate))
                 .replacingOccurrences(of: "{{ price }}", with: priceString)
         }
     }
@@ -512,7 +511,12 @@ extension PurchaseInformation {
             return nil
         }
 
-        return localizations[.expiresOnDateWithoutChanges]
+        var string = localizations[.expiresOnDateWithoutChanges]
+        if isExpired {
+            string = localizations[.purchaseInfoExpiredOnDate]
+        }
+
+        return string
             .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: expirationDate))
     }
 }
