@@ -40,7 +40,7 @@ class SystemInfo {
     let responseVerificationMode: Signing.ResponseVerificationMode
     let dangerousSettings: DangerousSettings
     let clock: ClockType
-    let preferredLocalesProvider: PreferredLocalesProvider
+    private let preferredLocalesProvider: PreferredLocalesProvider
 
     var finishTransactions: Bool {
         get { return self._finishTransactions.value }
@@ -83,11 +83,6 @@ class SystemInfo {
 
     var storefront: StorefrontType? {
         return self.storefrontProvider.currentStorefront
-    }
-
-    /// Returns the preferred locales, including the locale override if set.
-    var allPreferredLocales: [String] {
-        return self.preferredLocalesProvider.preferredLocales
     }
 
     static var frameworkVersion: String {
@@ -249,6 +244,15 @@ class SystemInfo {
     static func isAppleSubscription(managementURL: URL) -> Bool {
         guard let host = managementURL.host else { return false }
         return host.contains("apple.com")
+    }
+
+    /// Returns the preferred locales, including the locale override if set.
+    var preferredLocales: [String] {
+        return self.preferredLocalesProvider.preferredLocales
+    }
+
+    func overridePreferredLocale(_ locale: String?) {
+        self.preferredLocalesProvider.overridePreferredLocale(locale)
     }
 
 }

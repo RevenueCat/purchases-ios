@@ -1837,12 +1837,12 @@ extension Purchases {
 
     // swiftlint:disable missing_docs
     @_spi(Internal) public var preferredLocales: [String] {
-        return self.systemInfo.preferredLocalesProvider.preferredLocales
+        return self.systemInfo.preferredLocales
     }
 
     // swiftlint:disable missing_docs
     @_spi(Internal) public func overridePreferredLocale(_ locale: String?) {
-        self.systemInfo.preferredLocalesProvider.overridePreferredLocale(locale)
+        self.systemInfo.overridePreferredLocale(locale)
     }
 
 }

@@ -80,22 +80,22 @@ class SystemInfoTests: TestCase {
         expect(SystemInfo.default.dangerousSettings.internalSettings.enableReceiptFetchRetry) == false
     }
 
-    func testAllPreferredLocalesWithLocaleOverride() {
+    func testPreferredLocalesWithLocaleOverride() {
         let localesProvider: PreferredLocalesProvider = .mock(stubbedPreferredLocaleOverride: "es_ES",
                                                               stubbedLocales: ["fr_FR", "de_DE", "en_US"])
         let info = SystemInfo(platformInfo: nil,
                               finishTransactions: false,
                               preferredLocalesProvider: localesProvider)
-        expect(info.allPreferredLocales).to(equal(["es_ES", "fr_FR", "de_DE", "en_US"]))
+        expect(info.preferredLocales).to(equal(["es_ES", "fr_FR", "de_DE", "en_US"]))
     }
 
-    func testAllPreferredLocalesWithoutLocaleOverride() {
+    func testPreferredLocalesWithoutLocaleOverride() {
         let localesProvider: PreferredLocalesProvider = .mock(stubbedPreferredLocaleOverride: nil,
                                                               stubbedLocales: ["fr_FR", "de_DE", "en_US"])
         let info = SystemInfo(platformInfo: nil,
                               finishTransactions: false,
                               preferredLocalesProvider: localesProvider)
-        expect(info.allPreferredLocales).to(equal(["fr_FR", "de_DE", "en_US"]))
+        expect(info.preferredLocales).to(equal(["fr_FR", "de_DE", "en_US"]))
     }
 
     // MARK: - identifierForVendor
