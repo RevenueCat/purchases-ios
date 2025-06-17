@@ -16,12 +16,12 @@ import Foundation
 
 extension RevenueCat.Purchases {
 
-    /// Updates the preferred locale for RevenueCatUI components.
-    /// - Parameter locale: The preferred locale string in the format "language_region" (e.g., "en_US").
-    /// Use `nil` to reset to the default user locale determined by the system.
+    /// Overrides the preferred locale for RevenueCatUI components.
+    /// - Parameter locale: A locale string in the format "language_region" (e.g., "en_US").
+    /// Use `nil` to remove the override and use the default user locale determined by the system.
     ///
     /// Setting this will affect the display of RevenueCat UI components, such as the Paywalls.
-    public static func updatePreferredUILocale(_ locale: String?) {
+    public static func overridePreferredUILocale()(_ locale: String?) {
         guard self.isConfigured else {
             Logger.error(Strings.failed_to_set_preferred_locale_purchases_not_configured)
             return
@@ -33,12 +33,12 @@ extension RevenueCat.Purchases {
 
 extension RevenueCat.Configuration.Builder {
 
-    /// Sets the preferred locale for RevenueCatUI components.
+    /// Overrides the preferred locale for RevenueCatUI components.
     ///
-    /// - Parameter preferredUILocale: The preferred locale string in the format "language_region" (e.g., "en_US").
+    /// - Parameter preferredUILocaleOverride: A locale string in the format "language_region" (e.g., "en_US").
     ///
     /// Defaults to `nil`, which means using the default user locale for RevenueCatUI components.
-    public func with(preferredUILocale: String?) -> RevenueCat.Configuration.Builder {
-        return self.with(preferredLocale: preferredUILocale)
+    public func with(preferredUILocaleOverride: String?) -> RevenueCat.Configuration.Builder {
+        return self.with(preferredLocale: preferredUILocaleOverride)
     }
 }
