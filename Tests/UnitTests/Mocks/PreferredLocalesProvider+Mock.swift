@@ -19,6 +19,6 @@ extension PreferredLocalesProvider {
                      stubbedLocales: [String] = ["en_EN"]) -> PreferredLocalesProvider {
         return PreferredLocalesProvider(
             preferredLocaleOverride: stubbedPreferredLocaleOverride,
-            userPreferredLocalesGetter: { return stubbedLocales })
+            systemPreferredLocalesGetter: { return stubbedLocales })
     }
 }

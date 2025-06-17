@@ -81,8 +81,8 @@ class SystemInfoTests: TestCase {
     }
 
     func testAllPreferredLocalesWithLocaleOverride() {
-        let localesProvider = .mock(stubbedPreferredLocaleOverride: "es_ES",
-                                                           stubbedLocales: ["fr_FR", "de_DE", "en_US"])
+        let localesProvider: PreferredLocalesProvider = .mock(stubbedPreferredLocaleOverride: "es_ES",
+                                                              stubbedLocales: ["fr_FR", "de_DE", "en_US"])
         let info = SystemInfo(platformInfo: nil,
                               finishTransactions: false,
                               preferredLocalesProvider: localesProvider)
@@ -90,8 +90,8 @@ class SystemInfoTests: TestCase {
     }
 
     func testAllPreferredLocalesWithoutLocaleOverride() {
-        let localesProvider = .mock(stubbedPreferredLocaleOverride: nil,
-                                                           stubbedLocales: ["fr_FR", "de_DE", "en_US"])
+        let localesProvider: PreferredLocalesProvider = .mock(stubbedPreferredLocaleOverride: nil,
+                                                              stubbedLocales: ["fr_FR", "de_DE", "en_US"])
         let info = SystemInfo(platformInfo: nil,
                               finishTransactions: false,
                               preferredLocalesProvider: localesProvider)

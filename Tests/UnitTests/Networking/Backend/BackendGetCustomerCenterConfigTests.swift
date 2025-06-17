@@ -60,8 +60,8 @@ final class BackendGetCustomerCenterConfigTests: BaseBackendTests {
     }
 
     func testGetCustomerCenterConfigPassesLocalesWithOverride() {
-        let localesProvider = .mock(stubbedPreferredLocaleOverride: "fr_FR",
-                                                           stubbedLocales: ["en_EN", "es_ES"])
+        let localesProvider: PreferredLocalesProvider = .mock(stubbedPreferredLocaleOverride: "fr_FR",
+                                                              stubbedLocales: ["en_EN", "es_ES"])
         self.createDependencies(localesProvider: localesProvider)
 
         self.httpClient.mock(
