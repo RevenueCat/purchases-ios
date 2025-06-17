@@ -48,12 +48,14 @@ class TimelineComponentViewModel {
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
         @ViewBuilder apply: @escaping (TimelineComponentStyle) -> some View
     ) -> some View {
         let partial = PresentedTimelinePartial.buildPartial(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
             with: self.presentedOverrides
         )
 
@@ -101,12 +103,14 @@ class TimelineItemViewModel {
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
         @ViewBuilder apply: @escaping (TimelineItemStyle) -> some View
     ) -> some View {
         let partial = PresentedTimelineItemPartial.buildPartial(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
             with: self.presentedOverrides
         )
 
