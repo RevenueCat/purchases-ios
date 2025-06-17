@@ -32,7 +32,7 @@ class MockSystemInfo: SystemInfo {
                   dangerousSettings: dangerousSettings,
                   isAppBackgrounded: false,
                   clock: clock,
-                  preferredLocalesProvider: MockPreferredLocalesProvider())
+                  preferredLocalesProvider: .mock())
     }
 
     convenience init(platformInfo: Purchases.PlatformInfo? = nil,

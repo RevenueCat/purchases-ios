@@ -13,25 +13,43 @@
 
 import Foundation
 
-/// A type that can determine the current list of preferred locales.
-protocol PreferredLocalesProviderType {
+final class PreferredLocalesProvider {
+
+    private static let defaultPreferredLocalesGetter = {
+        return Locale.preferredLanguages
+    }
 
     /// Developer-set preferred locale that takes precedence over the system preferred locales.
-    var preferredLocaleOverride: String? { get set }
+    private var preferredLocaleOverride: String?
 
-    /// Returns a list of the user's preferred languages.
-    var preferredLocales: [String] { get }
+    /// Closure to get the user's preferred locales, allowing for dependency injection in tests.
+    private var systemPreferredLocalesGetter: () -> [String]
 
-}
-
-/// Main ``PreferredLocalesProviderType`` implementation
-final class PreferredLocalesProvider: PreferredLocalesProviderType {
-
-    var preferredLocaleOverride: String?
-
-    var preferredLocales: [String] { Locale.preferredLanguages }
-
-    init(preferredLocaleOverride: String?) {
+    /// Initializes the provider with an optional override for the preferred locale.
+    /// - Parameters:
+    ///   - preferredLocaleOverride: The preferred locale to override the system's preferred languages, if any.
+    ///   - preferredLocalesGetter: The closure to get the preferred locales, defaults to the system's preferred
+    ///   languages.
+    init(
+        preferredLocaleOverride: String?,
+        systemPreferredLocalesGetter: @escaping () -> [String] = PreferredLocalesProvider.defaultPreferredLocalesGetter
+    ) {
         self.preferredLocaleOverride = preferredLocaleOverride
+        self.systemPreferredLocalesGetter = systemPreferredLocalesGetter
     }
+
+    /// Returns the list of the user's preferred languages, with the preferred locale override at the top.
+    var preferredLocales: [String] {
+        if let preferredLocaleOverride = self.preferredLocaleOverride {
+            return [preferredLocaleOverride] + systemPreferredLocalesGetter()
+        } else {
+            return systemPreferredLocalesGetter()
+        }
+    }
+
+    /// Sets a new preferred locale override that will take precedence over the system's preferred languages.
+    func overridePreferredLocale(_ locale: String?) {
+        self.preferredLocaleOverride = locale
+    }
+
 }

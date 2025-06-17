@@ -40,7 +40,7 @@ class SystemInfo {
     let responseVerificationMode: Signing.ResponseVerificationMode
     let dangerousSettings: DangerousSettings
     let clock: ClockType
-    var preferredLocalesProvider: PreferredLocalesProviderType
+    private let preferredLocalesProvider: PreferredLocalesProvider
 
     var finishTransactions: Bool {
         get { return self._finishTransactions.value }
@@ -83,12 +83,6 @@ class SystemInfo {
 
     var storefront: StorefrontType? {
         return self.storefrontProvider.currentStorefront
-    }
-
-    /// Returns the preferred locales, including the locale override if set.
-    var allPreferredLocales: [String] {
-        return [self.preferredLocalesProvider.preferredLocaleOverride].compactMap { $0 }
-        + self.preferredLocalesProvider.preferredLocales
     }
 
     static var frameworkVersion: String {
@@ -170,7 +164,7 @@ class SystemInfo {
          dangerousSettings: DangerousSettings? = nil,
          isAppBackgrounded: Bool? = nil,
          clock: ClockType = Clock.default,
-         preferredLocalesProvider: PreferredLocalesProviderType) {
+         preferredLocalesProvider: PreferredLocalesProvider) {
         self.platformFlavor = platformInfo?.flavor ?? "native"
         self.platformFlavorVersion = platformInfo?.version
         self._bundle = .init(bundle)
@@ -250,6 +244,15 @@ class SystemInfo {
     static func isAppleSubscription(managementURL: URL) -> Bool {
         guard let host = managementURL.host else { return false }
         return host.contains("apple.com")
+    }
+
+    /// Returns the preferred locales, including the locale override if set.
+    var preferredLocales: [String] {
+        return self.preferredLocalesProvider.preferredLocales
+    }
+
+    func overridePreferredLocale(_ locale: String?) {
+        self.preferredLocalesProvider.overridePreferredLocale(locale)
     }
 
 }

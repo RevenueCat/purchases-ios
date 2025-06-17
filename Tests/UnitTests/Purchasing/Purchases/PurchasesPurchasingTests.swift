@@ -989,7 +989,7 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
                                          finishTransactions: false,
                                          storeKitVersion: .storeKit1,
                                          dangerousSettings: DangerousSettings(autoSyncPurchases: false),
-                                         preferredLocalesProvider: MockPreferredLocalesProvider())
+                                         preferredLocalesProvider: .mock())
         self.initializePurchasesInstance(appUserId: nil)
 
         self.purchases.purchase(product: Self.mockProduct) { (_, _, _, _) in }
@@ -1015,7 +1015,7 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
                                          finishTransactions: true,
                                          storeKitVersion: .storeKit1,
                                          dangerousSettings: DangerousSettings(autoSyncPurchases: false),
-                                         preferredLocalesProvider: MockPreferredLocalesProvider())
+                                         preferredLocalesProvider: .mock())
         self.initializePurchasesInstance(appUserId: nil)
 
         self.purchases.purchase(product: Self.mockProduct) { (_, _, _, _) in }

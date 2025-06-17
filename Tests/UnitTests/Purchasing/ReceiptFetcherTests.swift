@@ -38,7 +38,7 @@ class BaseReceiptFetcherTests: TestCase {
                                              finishTransactions: false,
                                              bundle: self.mockBundle,
                                              clock: self.clock,
-                                             preferredLocalesProvider: MockPreferredLocalesProvider())
+                                             preferredLocalesProvider: .mock())
 
         self.receiptFetcher = ReceiptFetcher(requestFetcher: self.mockRequestFetcher,
                                              systemInfo: self.mockSystemInfo,

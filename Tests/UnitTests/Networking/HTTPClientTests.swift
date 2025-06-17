@@ -969,7 +969,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         let platformInfo = Purchases.PlatformInfo(flavor: "react-native", version: "3.2.1")
         let systemInfo = SystemInfo(platformInfo: platformInfo,
                                     finishTransactions: true,
-                                    preferredLocalesProvider: MockPreferredLocalesProvider())
+                                    preferredLocalesProvider: .mock())
 
         self.client = self.createClient(systemInfo)
 
@@ -1009,7 +1009,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         let platformInfo = Purchases.PlatformInfo(flavor: "react-native", version: "1.2.3")
         let systemInfo = SystemInfo(platformInfo: platformInfo,
                                     finishTransactions: true,
-                                    preferredLocalesProvider: MockPreferredLocalesProvider())
+                                    preferredLocalesProvider: .mock())
         self.client = self.createClient(systemInfo)
 
         waitUntil { completion in
@@ -1030,7 +1030,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         }
         self.client = self.createClient(SystemInfo(platformInfo: nil,
                                                    finishTransactions: true,
-                                                   preferredLocalesProvider: MockPreferredLocalesProvider()))
+                                                   preferredLocalesProvider: .mock()))
 
         waitUntil { completion in
             self.client.perform(request) { (_: DataResponse) in completion() }
@@ -1044,7 +1044,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         let systemInfo = SystemInfo(platformInfo: nil,
                                     finishTransactions: true,
                                     dangerousSettings: .init(uiPreviewMode: true),
-                                    preferredLocalesProvider: MockPreferredLocalesProvider())
+                                    preferredLocalesProvider: .mock())
         self.client = self.createClient(systemInfo)
 
         let header: Atomic<String?> = nil
@@ -1068,7 +1068,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         let systemInfo = SystemInfo(platformInfo: nil,
                                     finishTransactions: true,
                                     dangerousSettings: .init(uiPreviewMode: false),
-                                    preferredLocalesProvider: MockPreferredLocalesProvider())
+                                    preferredLocalesProvider: .mock())
         self.client = self.createClient(systemInfo)
 
         let header: Atomic<String?> = nil
@@ -1139,7 +1139,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         }
         self.client = self.createClient(SystemInfo(platformInfo: nil,
                                                    finishTransactions: false,
-                                                   preferredLocalesProvider: MockPreferredLocalesProvider()))
+                                                   preferredLocalesProvider: .mock()))
 
         waitUntil { completion in
             self.client.perform(request) { (_: DataResponse) in completion() }
@@ -1638,7 +1638,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
                     autoSyncPurchases: true,
                     internalSettings: DangerousSettings.Internal(forceServerErrors: true)
                 ),
-                preferredLocalesProvider: MockPreferredLocalesProvider()
+                preferredLocalesProvider: .mock()
             )
         )
 

@@ -27,7 +27,7 @@ class MockBackend: Backend {
         let systemInfo = MockSystemInfo(platformInfo: nil,
                                         finishTransactions: false,
                                         dangerousSettings: nil,
-                                        preferredLocalesProvider: MockPreferredLocalesProvider())
+                                        preferredLocalesProvider: .mock())
         let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                     systemInfo: systemInfo)
 
