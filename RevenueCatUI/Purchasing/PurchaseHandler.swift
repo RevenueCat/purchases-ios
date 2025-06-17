@@ -219,6 +219,7 @@ extension PurchaseHandler {
     func performExternalPurchaseLogic(package: Package, promotionalOffer: PromotionalOffer?) async throws {
         Logger.debug(Strings.executing_external_purchase_logic)
 
+        // WIP: Handle promotionalOffer in performPurchase
         guard let externalPurchaseMethod = self.performPurchase else {
             throw PaywallError.performPurchaseAndRestoreHandlersNotDefined(missingBlocks: "performPurchase is")
         }
