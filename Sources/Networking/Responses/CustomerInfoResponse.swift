@@ -264,7 +264,9 @@ extension CustomerInfoResponse.Subscriber {
     var allPurchasesByProductId: [String: CustomerInfoResponse.Subscription] {
         let subscriptions = self.subscriptions
         let latestNonSubscriptionTransactionsByProductId = self.nonSubscriptions
-            .compactMapValues { $0.last }
+			// Perhaps all non-subscription purchases should be represented in the "all purchases" result,
+			// but if we're going to default to just one, favor one that is not sandbox.
+			.compactMapValues { $0.filter { $0.isSandbox == false }.last ?? $0.last }
             .mapValues { $0.asSubscription }
 
         return subscriptions + latestNonSubscriptionTransactionsByProductId
