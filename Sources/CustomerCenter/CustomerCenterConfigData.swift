@@ -343,7 +343,7 @@ import Foundation
                 case .storeAmazon:
                     return "Amazon Store"
                 case .cardStorePromotional:
-                    return "via Support"
+                    return "Via Support"
                 case .storeRCBilling:
                     return "Web"
                 case .storeExternal:
