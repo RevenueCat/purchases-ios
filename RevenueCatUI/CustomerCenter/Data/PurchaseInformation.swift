@@ -196,7 +196,11 @@ struct PurchaseInformation {
         self.numberFormatter = numberFormatter
 
         // Title and duration from product if available
-        self.title = subscribedProduct?.localizedTitle ?? transaction.productIdentifier
+        if transaction.store == .promotional {
+            self.title = entitlement?.identifier ?? transaction.productIdentifier
+        } else {
+            self.title = subscribedProduct?.localizedTitle ?? transaction.productIdentifier
+        }
         self.subscriptionGroupID = subscribedProduct?.subscriptionGroupIdentifier
 
         self.customerInfoRequestedDate = customerInfoRequestedDate
@@ -236,7 +240,7 @@ struct PurchaseInformation {
                 self.isExpired = !isActive
 
             case .nonSubscription:
-                self.isLifetime = true
+                self.isLifetime = subscribedProduct?.productType == .nonConsumable
                 self.isTrial = false
                 self.isExpired = false
                 self.renewalDate = nil
