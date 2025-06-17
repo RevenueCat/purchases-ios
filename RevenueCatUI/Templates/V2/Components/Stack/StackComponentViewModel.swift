@@ -59,12 +59,14 @@ class StackComponentViewModel {
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
         @ViewBuilder apply: @escaping (StackComponentStyle) -> some View
     ) -> some View {
         let partial = PresentedStackPartial.buildPartial(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
             with: self.presentedOverrides
         )
 

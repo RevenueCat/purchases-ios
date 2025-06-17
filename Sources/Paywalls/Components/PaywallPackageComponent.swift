@@ -22,16 +22,19 @@ public extension PaywallComponent {
         let type: ComponentType
         public let packageID: String
         public let isSelectedByDefault: Bool
+        public let applePromoOfferProductCode: String?
         public let stack: PaywallComponent.StackComponent
 
         public init(
             packageID: String,
             isSelectedByDefault: Bool,
+            applePromoOfferProductCode: String?,
             stack: PaywallComponent.StackComponent
         ) {
             self.type = .package
             self.packageID = packageID
             self.isSelectedByDefault = isSelectedByDefault
+            self.applePromoOfferProductCode = applePromoOfferProductCode
             self.stack = stack
         }
 
@@ -39,6 +42,7 @@ public extension PaywallComponent {
             hasher.combine(type)
             hasher.combine(packageID)
             hasher.combine(isSelectedByDefault)
+            hasher.combine(applePromoOfferProductCode)
             hasher.combine(stack)
         }
 
@@ -46,6 +50,7 @@ public extension PaywallComponent {
             return lhs.type == rhs.type &&
                    lhs.packageID == rhs.packageID &&
                    lhs.isSelectedByDefault == rhs.isSelectedByDefault &&
+                   lhs.applePromoOfferProductCode == rhs.applePromoOfferProductCode &&
                    lhs.stack == rhs.stack
         }
     }
@@ -58,6 +63,7 @@ extension PaywallComponent.PackageComponent {
         case type
         case packageID = "packageId"
         case isSelectedByDefault
+        case applePromoOfferProductCode
         case stack
     }
 

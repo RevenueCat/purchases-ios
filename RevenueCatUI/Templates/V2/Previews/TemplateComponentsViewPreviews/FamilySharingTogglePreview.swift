@@ -156,6 +156,7 @@ private enum FamilySharingTogglePreview {
         return PaywallComponent.PackageComponent(
             packageID: packageID,
             isSelectedByDefault: isSelectedByDefault,
+            applePromoOfferProductCode: nil,
             stack: stack
         )
     }

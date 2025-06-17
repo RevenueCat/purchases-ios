@@ -57,6 +57,14 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
     }
 
     func purchase(
+        product: StoreProduct
+    ) async throws -> PurchaseResultData {
+        try await Purchases.shared.purchase(
+            product: product
+        )
+    }
+
+    func purchase(
         product: StoreProduct,
         promotionalOffer: PromotionalOffer
     ) async throws -> PurchaseResultData {
