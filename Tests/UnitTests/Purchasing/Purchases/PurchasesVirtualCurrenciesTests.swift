@@ -18,9 +18,9 @@ import XCTest
 @testable import RevenueCat
 
 @MainActor
-class PurchasesVirtualCurrenciesTests: BasePurchasesTests, Sendable {
+class PurchasesVirtualCurrenciesTests: BasePurchasesTests {
 
-    private let mockVirtualCurrencies = VirtualCurrencies(
+    private nonisolated static let mockVirtualCurrencies = VirtualCurrencies(
         virtualCurrencies: [
             "GLD": VirtualCurrency(balance: 100, name: "Gold", code: "GLD", serverDescription: "It's gold!"),
             "SLV": VirtualCurrency(balance: 200, name: "Silver", code: "SLV", serverDescription: "It's silver!")
@@ -35,20 +35,20 @@ class PurchasesVirtualCurrenciesTests: BasePurchasesTests, Sendable {
 
     // MARK: - virtualCurrencies() Tests
     func testVirtualCurrenciesAsyncForwardsSuccess() async throws {
-        self.mockVirtualCurrencyManager.stubbedVirtualCurrenciesResult = .success(self.mockVirtualCurrencies)
+        self.mockVirtualCurrencyManager.stubbedVirtualCurrenciesResult = .success(Self.mockVirtualCurrencies)
 
         let vcs = try await self.purchases.virtualCurrencies()
-        expect(vcs).to(equal(self.mockVirtualCurrencies))
+        expect(vcs).to(equal(Self.mockVirtualCurrencies))
         expect(self.mockVirtualCurrencyManager.virtualCurrenciesCalled).to(beTrue())
         expect(self.mockVirtualCurrencyManager.virtualCurrenciesCallCount).to(equal(1))
     }
 
     func testVirtualCurrenciesCallbackForwardsSuccess() async throws {
-        self.mockVirtualCurrencyManager.stubbedVirtualCurrenciesResult = .success(self.mockVirtualCurrencies)
+        self.mockVirtualCurrencyManager.stubbedVirtualCurrenciesResult = .success(Self.mockVirtualCurrencies)
 
         await waitUntil { completed in
             self.purchases.virtualCurrencies { vcs, error in
-                expect(vcs).to(equal(self.mockVirtualCurrencies))
+                expect(vcs).to(equal(Self.mockVirtualCurrencies))
                 expect(error).to(beNil())
                 completed()
             }
