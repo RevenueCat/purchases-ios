@@ -46,15 +46,14 @@ class PurchasesVirtualCurrenciesTests: BasePurchasesTests, Sendable {
     func testVirtualCurrenciesCallbackForwardsSuccess() async throws {
         self.mockVirtualCurrencyManager.stubbedVirtualCurrenciesResult = .success(self.mockVirtualCurrencies)
 
-        let expectation = self.expectation(description: "Wait for virtualCurrencies callback")
-
-        self.purchases.virtualCurrencies { vcs, error in
-            expect(vcs).to(equal(self.mockVirtualCurrencies))
-            expect(error).to(beNil())
-            expectation.fulfill()
+        await waitUntil { completed in
+            self.purchases.virtualCurrencies { vcs, error in
+                expect(vcs).to(equal(self.mockVirtualCurrencies))
+                expect(error).to(beNil())
+                completed()
+            }
         }
 
-        await fulfillment(of: [expectation], timeout: 1)
         expect(self.mockVirtualCurrencyManager.virtualCurrenciesCalled).to(beTrue())
         expect(self.mockVirtualCurrencyManager.virtualCurrenciesCallCount).to(equal(1))
     }
@@ -77,15 +76,14 @@ class PurchasesVirtualCurrenciesTests: BasePurchasesTests, Sendable {
         let backendError: BackendError = .networkError(.offlineConnection())
         self.mockVirtualCurrencyManager.stubbedVirtualCurrenciesResult = .failure(backendError)
 
-        let expectation = self.expectation(description: "Wait for virtualCurrencies callback")
-
-        self.purchases.virtualCurrencies { vcs, error in
-            expect(vcs).to(beNil())
-            expect(error).to(matchError(backendError.asPurchasesError))
-            expectation.fulfill()
+        await waitUntil { completed in
+            self.purchases.virtualCurrencies { vcs, error in
+                expect(vcs).to(beNil())
+                expect(error).to(matchError(backendError.asPurchasesError))
+                completed()
+            }
         }
 
-        await fulfillment(of: [expectation], timeout: 1)
         expect(self.mockVirtualCurrencyManager.virtualCurrenciesCalled).to(beTrue())
         expect(self.mockVirtualCurrencyManager.virtualCurrenciesCallCount).to(equal(1))
     }
