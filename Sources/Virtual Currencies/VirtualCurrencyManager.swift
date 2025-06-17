@@ -14,9 +14,7 @@
 import Foundation
 
 protocol VirtualCurrencyManagerType {
-    func virtualCurrencies(
-        forceRefresh: Bool
-    ) async throws -> VirtualCurrencies
+    func virtualCurrencies() async throws -> VirtualCurrencies
 }
 
 actor VirtualCurrencyManager: VirtualCurrencyManagerType {
@@ -38,19 +36,15 @@ actor VirtualCurrencyManager: VirtualCurrencyManagerType {
         self.systemInfo = systemInfo
     }
 
-    func virtualCurrencies(
-        forceRefresh: Bool
-    ) async throws -> VirtualCurrencies {
+    func virtualCurrencies() async throws -> VirtualCurrencies {
         let appUserID = identityManager.currentAppUserID
         let isAppBackgrounded = await systemInfo.isApplicationBackgrounded()
 
-        if !forceRefresh {
-            if let cachedVirtualCurrencies = await fetchCachedVirtualCurrencies(
-                appUserID: appUserID,
-                isAppBackgrounded: isAppBackgrounded
-            ) {
-                return cachedVirtualCurrencies
-            }
+        if let cachedVirtualCurrencies = await fetchCachedVirtualCurrencies(
+            appUserID: appUserID,
+            isAppBackgrounded: isAppBackgrounded
+        ) {
+            return cachedVirtualCurrencies
         }
 
         let virtualCurrencies = try await fetchVirtualCurrenciesFromBackend(

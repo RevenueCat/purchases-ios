@@ -1315,22 +1315,10 @@ public extension Purchases {
     @objc func virtualCurrencies(
         completion: @escaping @Sendable (VirtualCurrencies?, PublicError?) -> Void
     ) {
-        self.virtualCurrencies(
-            forceRefresh: false
-        ) { (virtualCurrencies: VirtualCurrencies?, error: PublicError?) in
-            completion(virtualCurrencies, error)
-            return
-        }
-    }
-
-    @objc func virtualCurrencies(
-        forceRefresh: Bool,
-        completion: @escaping @Sendable (VirtualCurrencies?, PublicError?) -> Void
-    ) {
         OperationDispatcher.dispatchOnMainActor {
             Task {
                 do {
-                    let virtualCurrencies = try await self.virtualCurrencies(forceRefresh: forceRefresh)
+                    let virtualCurrencies = try await self.virtualCurrencies()
                     completion(virtualCurrencies, nil)
                 } catch {
                     let publicError = NewErrorUtils.purchasesError(withUntypedError: error).asPublicError
@@ -1340,10 +1328,8 @@ public extension Purchases {
         }
     }
 
-    func virtualCurrencies(
-        forceRefresh: Bool = false
-    ) async throws -> VirtualCurrencies {
-        return try await self.virtualCurrencyManager.virtualCurrencies(forceRefresh: forceRefresh)
+    func virtualCurrencies() async throws -> VirtualCurrencies {
+        return try await self.virtualCurrencyManager.virtualCurrencies()
     }
 }
 #endif

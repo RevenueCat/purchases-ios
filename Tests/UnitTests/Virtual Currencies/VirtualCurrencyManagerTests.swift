@@ -75,42 +75,19 @@ class VirtualCurrencyManagerTests: TestCase {
     }
 
     // MARK: - virtualCurrencies() Cache Tests
-    func testVirtualCurrenciesWithForceRefreshTrueDoesntCheckCachedVirtualCurrencies() async throws {
-        self.mockVirtualCurrenciesAPI.stubbedGetVirtualCurrenciesResult = .success(self.mockVirtualCurrenciesResponse)
-
-        let _: VirtualCurrencies = try await virtualCurrencyManager.virtualCurrencies(forceRefresh: true)
-
-        XCTAssertFalse(
-            self.mockDeviceCache.invokedCachedVirtualCurrenciesDataForAppUserID,
-            "cachedVirtualCurrenciesData should not be called when forceTry is true"
-        )
-        XCTAssertEqual(
-            self.mockDeviceCache.invokedCachedVirtualCurrenciesDataForAppUserIDCount,
-            0,
-            "cachedVirtualCurrenciesData should not be called when forceTry is true"
-        )
-        XCTAssertEqual(
-            self.mockVirtualCurrenciesAPI.invokedGetVirtualCurrenciesCount,
-            1,
-            "virtual currencies should be fetched from the API when forceTry is true"
-        )
-    }
-
-    func testVirtualCurrenciesWithForceRefreshFalseReturnsCachedVirtualCurrenciesWhenCacheIsNotStale() async throws {
+    func testVirtualCurrenciesReturnsCachedVirtualCurrenciesWhenCacheIsNotStale() async throws {
         self.mockDeviceCache.stubbedCachedVirtualCurrenciesDataForAppUserID = self.mockVirtualCurrenciesData
         self.mockDeviceCache.stubbedIsVirtualCurrenciesCacheStale = false
 
-        let virtualCurrencies: VirtualCurrencies = try await virtualCurrencyManager.virtualCurrencies(
-            forceRefresh: false
-        )
+        let virtualCurrencies: VirtualCurrencies = try await virtualCurrencyManager.virtualCurrencies()
         XCTAssertTrue(
             self.mockDeviceCache.invokedIsVirtualCurrenciesCacheStale,
-            "isVirtualCurrenciesCacheStale should be called when forceTry is false"
+            "isVirtualCurrenciesCacheStale should be called"
         )
         XCTAssertEqual(
             self.mockDeviceCache.invokedIsVirtualCurrenciesCacheStaleCount,
             1,
-            "cachedVirtualCurrenciesData should be called once when forceTry is false"
+            "cachedVirtualCurrenciesData should be called once"
         )
         XCTAssertEqual(self.mockDeviceCache.invokedIsVirtualCurrenciesCacheStaleParametersList.count, 1)
         XCTAssertTrue(
@@ -120,12 +97,12 @@ class VirtualCurrencyManagerTests: TestCase {
         )
         XCTAssertTrue(
             self.mockDeviceCache.invokedCachedVirtualCurrenciesDataForAppUserID,
-            "cachedVirtualCurrenciesData should be called when forceTry is false"
+            "cachedVirtualCurrenciesData should be called"
         )
         XCTAssertEqual(
             self.mockDeviceCache.invokedCachedVirtualCurrenciesDataForAppUserIDCount,
             1,
-            "cachedVirtualCurrenciesData should be called when forceTry is false"
+            "cachedVirtualCurrenciesData should be called"
         )
         XCTAssertEqual(
             virtualCurrencies,
@@ -134,25 +111,23 @@ class VirtualCurrencyManagerTests: TestCase {
         )
     }
 
-    func testVirtualCurrenciesWithForceRefreshFalseReturnsNetworkVirtualCurrenciesWhenCacheIsStale() async throws {
+    func testVirtualCurrenciesReturnsNetworkVirtualCurrenciesWhenCacheIsStale() async throws {
         self.mockDeviceCache.stubbedCachedVirtualCurrenciesDataForAppUserID = self.mockVirtualCurrenciesData
         self.mockDeviceCache.stubbedIsVirtualCurrenciesCacheStale = true
         self.mockVirtualCurrenciesAPI.stubbedGetVirtualCurrenciesResult = .success(self.mockVirtualCurrenciesResponse)
 
         let expectVirtualCurrencies = VirtualCurrencies(from: self.mockVirtualCurrenciesResponse)
-        let virtualCurrencies: VirtualCurrencies = try await virtualCurrencyManager.virtualCurrencies(
-            forceRefresh: false
-        )
+        let virtualCurrencies: VirtualCurrencies = try await virtualCurrencyManager.virtualCurrencies()
 
         // Ensure that we checked to see if the cache was stale
         XCTAssertTrue(
             self.mockDeviceCache.invokedIsVirtualCurrenciesCacheStale,
-            "isVirtualCurrenciesCacheStale should be called when forceTry is false and the cache is stale"
+            "isVirtualCurrenciesCacheStale should be called"
         )
         XCTAssertEqual(
             self.mockDeviceCache.invokedIsVirtualCurrenciesCacheStaleCount,
             1,
-            "cachedVirtualCurrenciesData should be called once when forceTry is false and the cache is stale"
+            "cachedVirtualCurrenciesData should be called once"
         )
         XCTAssertEqual(self.mockDeviceCache.invokedIsVirtualCurrenciesCacheStaleParametersList.count, 1)
         XCTAssertTrue(
@@ -164,23 +139,23 @@ class VirtualCurrencyManagerTests: TestCase {
         // Ensure that we didn't load VCs from the cache
         XCTAssertFalse(
             self.mockDeviceCache.invokedCachedVirtualCurrenciesDataForAppUserID,
-            "cachedVirtualCurrenciesData should not be called when forceTry is false and the cache is stale"
+            "cachedVirtualCurrenciesData should not be called when the cache is stale"
         )
         XCTAssertEqual(
             self.mockDeviceCache.invokedCachedVirtualCurrenciesDataForAppUserIDCount,
             0,
-            "cachedVirtualCurrenciesData should not be called when forceTry is false and the cache is stale"
+            "cachedVirtualCurrenciesData should not be called when the cache is stale"
         )
 
         // Check that the virtual currencies API was called
         XCTAssertTrue(
             self.mockVirtualCurrenciesAPI.invokedGetVirtualCurrencies,
-            "getVirtualCurrencies should be called when forceRefresh is false and the cache is stale"
+            "getVirtualCurrencies should be called when the cache is stale"
         )
         XCTAssertEqual(
             self.mockVirtualCurrenciesAPI.invokedGetVirtualCurrenciesCount,
             1,
-            "getVirtualCurrencies should be called exactly once when forceRefresh is false and the cache is stale"
+            "getVirtualCurrencies should be called exactly once when the cache is stale"
         )
         XCTAssertEqual(
             self.mockVirtualCurrenciesAPI.invokedGetVirtualCurrenciesParameters!.appUserId,
@@ -200,25 +175,23 @@ class VirtualCurrencyManagerTests: TestCase {
         )
     }
 
-    func testVirtualCurrenciesWithForceRefreshFalseReturnsNetworkVirtualCurrenciesWhenCacheIsEmpty() async throws {
+    func testVirtualCurrenciesReturnsNetworkVirtualCurrenciesWhenCacheIsEmpty() async throws {
         self.mockDeviceCache.stubbedCachedVirtualCurrenciesDataForAppUserID = nil
         self.mockDeviceCache.stubbedIsVirtualCurrenciesCacheStale = false
         self.mockVirtualCurrenciesAPI.stubbedGetVirtualCurrenciesResult = .success(self.mockVirtualCurrenciesResponse)
 
         let expectVirtualCurrencies = VirtualCurrencies(from: self.mockVirtualCurrenciesResponse)
-        let virtualCurrencies: VirtualCurrencies = try await virtualCurrencyManager.virtualCurrencies(
-            forceRefresh: false
-        )
+        let virtualCurrencies: VirtualCurrencies = try await virtualCurrencyManager.virtualCurrencies()
 
         // Ensure that we checked to see if the cache was stale
         XCTAssertTrue(
             self.mockDeviceCache.invokedIsVirtualCurrenciesCacheStale,
-            "isVirtualCurrenciesCacheStale should be called when forceTry is false and the cache is empty"
+            "isVirtualCurrenciesCacheStale should be called when the cache is empty"
         )
         XCTAssertEqual(
             self.mockDeviceCache.invokedIsVirtualCurrenciesCacheStaleCount,
             1,
-            "cachedVirtualCurrenciesData should be called once when forceTry is false and the cache is empty"
+            "cachedVirtualCurrenciesData should be called once when the cache is empty"
         )
         XCTAssertEqual(self.mockDeviceCache.invokedIsVirtualCurrenciesCacheStaleParametersList.count, 1)
         XCTAssertTrue(
@@ -230,23 +203,23 @@ class VirtualCurrencyManagerTests: TestCase {
         // Ensure that we tried to load VCs from the cache (it's empty though)
         XCTAssertTrue(
             self.mockDeviceCache.invokedCachedVirtualCurrenciesDataForAppUserID,
-            "cachedVirtualCurrenciesData should be called when forceTry is false and the cache is empty"
+            "cachedVirtualCurrenciesData should be called when the cache is empty"
         )
         XCTAssertEqual(
             self.mockDeviceCache.invokedCachedVirtualCurrenciesDataForAppUserIDCount,
             1,
-            "cachedVirtualCurrenciesData should be called once when forceTry is false and the cache is empty"
+            "cachedVirtualCurrenciesData should be called once when the cache is empty"
         )
 
         // Check that the virtual currencies API was called
         XCTAssertTrue(
             self.mockVirtualCurrenciesAPI.invokedGetVirtualCurrencies,
-            "getVirtualCurrencies should be called when forceRefresh is false and the cache is empty"
+            "getVirtualCurrencies should be called when the cache is empty"
         )
         XCTAssertEqual(
             self.mockVirtualCurrenciesAPI.invokedGetVirtualCurrenciesCount,
             1,
-            "getVirtualCurrencies should be called exactly once when forceRefresh is false and the cache is empty"
+            "getVirtualCurrencies should be called exactly once when the cache is empty"
         )
         XCTAssertEqual(
             self.mockVirtualCurrenciesAPI.invokedGetVirtualCurrenciesParameters!.appUserId,
@@ -273,9 +246,7 @@ class VirtualCurrencyManagerTests: TestCase {
 
         let expectedVirtualCurrenciesToBeCached = VirtualCurrencies(from: self.mockVirtualCurrenciesResponse)
 
-        let virtualCurrencies: VirtualCurrencies = try await virtualCurrencyManager.virtualCurrencies(
-            forceRefresh: false
-        )
+        let virtualCurrencies: VirtualCurrencies = try await virtualCurrencyManager.virtualCurrencies()
 
         XCTAssertEqual(virtualCurrencies, expectedVirtualCurrenciesToBeCached)
         XCTAssertFalse(
@@ -308,9 +279,7 @@ class VirtualCurrencyManagerTests: TestCase {
         )
 
         do {
-            _ = try await virtualCurrencyManager.virtualCurrencies(
-                forceRefresh: true
-            )
+            _ = try await virtualCurrencyManager.virtualCurrencies()
 
             XCTFail("An error should have been thrown when the network call failed.")
         } catch {

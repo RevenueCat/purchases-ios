@@ -22,11 +22,9 @@ class MockVirtualCurrencyManager: VirtualCurrencyManagerType {
 
     var virtualCurrenciesCallCount = 0
     var virtualCurrenciesCalled = false
-    var virtualCurrenciesCallParameters: [Bool] = []
-    func virtualCurrencies(forceRefresh: Bool) async throws -> RevenueCat.VirtualCurrencies {
+    func virtualCurrencies() async throws -> RevenueCat.VirtualCurrencies {
         self.virtualCurrenciesCallCount += 1
         self.virtualCurrenciesCalled = true
-        self.virtualCurrenciesCallParameters.append(forceRefresh)
 
         return stubbedVirtualCurrenciesResult
     }

@@ -438,13 +438,8 @@ private func checkVirtualCurrenciesAPI(_ purchases: Purchases, forceRefresh: Boo
     // Completion Handler APIs
     purchases.virtualCurrencies() { (virtualCurrencies: VirtualCurrencies?, error: PublicError?) in }
 
-    purchases.virtualCurrencies(
-        forceRefresh: forceRefresh
-    ) { (virtualCurrencies: VirtualCurrencies?, error: PublicError?) in }
-
     // Async/await APIs
     let _: VirtualCurrencies = try await purchases.virtualCurrencies()
-    let _: VirtualCurrencies = try await purchases.virtualCurrencies(forceRefresh: forceRefresh)
 }
 
 @available(*, deprecated) // Ignore deprecation warnings

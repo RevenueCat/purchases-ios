@@ -987,26 +987,8 @@ public protocol PurchasesType: AnyObject {
      * #### Related Articles
      * -  [Virtual Currencies](https://www.revenuecat.com/docs/offerings/virtual-currency)
      */
-    @objc(virtualCurrenciesWithCompletion:)
+    @objc
     func virtualCurrencies(
-        completion: @escaping @Sendable (VirtualCurrencies?, PublicError?) -> Void
-    )
-
-    /**
-     * Fetches the virtual currencies for the current subscriber.
-     *
-     * - Parameter forceRefresh: Whether or not the SDK must refresh virtual currencies from the backend,
-     * bypassing the SDK's cache. Pass in `true` to force the SDK to fetch the most recent value
-     * from the RevenueCat backend.
-     * - Parameter completion: The callback that is called when the request is complete with a ``VirtualCurrencies``
-     * object containing the subscriber's virtual currencies.
-     *
-     * #### Related Articles
-     * -  [Virtual Currencies](https://www.revenuecat.com/docs/offerings/virtual-currency)
-     */
-    @objc(virtualCurrenciesWithForceRefresh:completion:)
-    func virtualCurrencies(
-        forceRefresh: Bool,
         completion: @escaping @Sendable (VirtualCurrencies?, PublicError?) -> Void
     )
 
@@ -1269,17 +1251,12 @@ public protocol PurchasesSwiftType: AnyObject {
     /**
      * Fetches the virtual currencies for the current subscriber.
      *
-     * - Parameter forceRefresh: Whether or not the SDK must refresh virtual currencies from the backend,
-     * bypassing the SDK's cache. Pass in `true` to force the SDK to fetch the most recent value
-     * from the RevenueCat backend.
      * - Returns: The ``VirtualCurrencies`` object containing the virtual currencies for the subscriber.
      *
      * #### Related Articles
      * -  [Virtual Currencies](https://www.revenuecat.com/docs/offerings/virtual-currency)
      */
-    func virtualCurrencies(
-        forceRefresh: Bool
-    ) async throws -> VirtualCurrencies
+    func virtualCurrencies() async throws -> VirtualCurrencies
     #endif
 
 }

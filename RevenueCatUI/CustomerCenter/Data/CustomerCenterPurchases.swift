@@ -83,7 +83,8 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
     }
 
     func virtualCurrencies() async throws -> VirtualCurrencies {
-        return try await Purchases.shared.virtualCurrencies(forceRefresh: true)
+        #warning("TODO: Invalidate VC cache here")
+        return try await Purchases.shared.virtualCurrencies()
     }
 
     #if os(iOS) || os(visionOS)
