@@ -15,6 +15,8 @@ import Foundation
 
 protocol VirtualCurrencyManagerType {
     func virtualCurrencies() async throws -> VirtualCurrencies
+
+    func invalidateVirtualCurrenciesCache() async
 }
 
 actor VirtualCurrencyManager: VirtualCurrencyManagerType {
@@ -55,6 +57,11 @@ actor VirtualCurrencyManager: VirtualCurrencyManagerType {
         cacheVirtualCurrencies(virtualCurrencies, appUserID: appUserID)
 
         return virtualCurrencies
+    }
+
+    func invalidateVirtualCurrenciesCache() async {
+        let appUserID = identityManager.currentAppUserID
+        deviceCache.clearVirtualCurrenciesCache(appUserID: appUserID)
     }
 
     private func cacheVirtualCurrencies(

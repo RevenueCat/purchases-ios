@@ -207,6 +207,7 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(virtualCurrencies["BRNZ"]).toNot(beNil())
         expect(virtualCurrencies["PLTNM"]).toNot(beNil())
         expect(mockPurchases.virtualCurrenciesCallCount).to(equal(1))
+        expect(mockPurchases.invalidateVirtualCurrenciesCacheCallCount).to(equal(1))
     }
 
     func testLoadDoesNotLoadVirtualCurrenciesWhenDisplayVirtualCurrenciesIsFalse() async throws {

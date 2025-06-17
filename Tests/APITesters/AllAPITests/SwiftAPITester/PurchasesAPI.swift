@@ -433,13 +433,15 @@ private func checkPaywallsAPI(_ purchases: Purchases, _ event: PaywallEvent) asy
     }
 }
 
-private func checkVirtualCurrenciesAPI(_ purchases: Purchases, forceRefresh: Bool) async throws {
+private func checkVirtualCurrenciesAPI(_ purchases: Purchases) async throws {
 
-    // Completion Handler APIs
+    // Fetching Virtual Currencies
     purchases.virtualCurrencies() { (virtualCurrencies: VirtualCurrencies?, error: PublicError?) in }
-
-    // Async/await APIs
     let _: VirtualCurrencies = try await purchases.virtualCurrencies()
+
+    // Invalidating Virtual Currencies Cache
+    purchases.invalidateVirtualCurrenciesCache {}
+    await purchases.invalidateVirtualCurrenciesCache()
 }
 
 @available(*, deprecated) // Ignore deprecation warnings

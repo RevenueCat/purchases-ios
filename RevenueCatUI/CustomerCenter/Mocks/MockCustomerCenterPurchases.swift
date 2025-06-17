@@ -118,6 +118,11 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
         return try restorePurchasesResult.get()
     }
 
+    var invalidateVirtualCurrenciesCacheCallCount = 0
+    func invalidateVirtualCurrenciesCache() async {
+        invalidateVirtualCurrenciesCacheCallCount += 1
+    }
+
     var virtualCurrenciesCallCount = 0
     var virtualCurrenciesResult: Result<VirtualCurrencies, Error>?
     func virtualCurrencies() async throws -> VirtualCurrencies {

@@ -16,9 +16,9 @@ import Foundation
 
 class MockVirtualCurrencyManager: VirtualCurrencyManagerType {
 
-    var stubbedVirtualCurrenciesResult: RevenueCat.VirtualCurrencies = VirtualCurrencies(
+    var stubbedVirtualCurrenciesResult: Result<RevenueCat.VirtualCurrencies, Error> = .success(VirtualCurrencies(
         virtualCurrencies: [:]
-    )
+    ))
 
     var virtualCurrenciesCallCount = 0
     var virtualCurrenciesCalled = false
@@ -26,6 +26,18 @@ class MockVirtualCurrencyManager: VirtualCurrencyManagerType {
         self.virtualCurrenciesCallCount += 1
         self.virtualCurrenciesCalled = true
 
-        return stubbedVirtualCurrenciesResult
+        switch stubbedVirtualCurrenciesResult {
+        case .success(let virtualCurrencies):
+            return virtualCurrencies
+        case .failure(let error):
+            throw error
+        }
+    }
+
+    var invalidateVirtualCurrenciesCacheCallCount = 0
+    var invalidateVirtualCurrenciesCacheCalled = false
+    func invalidateVirtualCurrenciesCache() async {
+        self.invalidateVirtualCurrenciesCacheCallCount += 1
+        self.invalidateVirtualCurrenciesCacheCalled = true
     }
 }

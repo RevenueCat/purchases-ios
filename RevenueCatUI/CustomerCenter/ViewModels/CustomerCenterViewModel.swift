@@ -192,6 +192,7 @@ import RevenueCat
             try await self.loadCustomerCenterConfig()
 
             if self.configuration?.support.displayVirtualCurrencies == true {
+                await purchasesProvider.invalidateVirtualCurrenciesCache()
                 self.virtualCurrencies = try? await purchasesProvider.virtualCurrencies()
             } else {
                 self.virtualCurrencies = nil

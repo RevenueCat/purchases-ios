@@ -687,6 +687,88 @@ class DeviceCacheTests: TestCase {
             isAppBackgrounded: true
         )) == true
     }
+
+    func testClearVirtualCurrenciesCacheWorks() {
+        let appUserID = "appUserID"
+        self.deviceCache = DeviceCache(
+            sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
+            userDefaults: self.mockUserDefaults
+        )
+
+        // Cache some virtual currencies
+        self.deviceCache.cache(virtualCurrencies: mockVirtualCurrenciesData, appUserID: appUserID)
+
+        // Ensure that the VCs and last updated date were cached
+        expect(self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.virtualCurrencies.\(appUserID)"] as? Data)
+            .to(equal(mockVirtualCurrenciesData))
+        expect(self.deviceCache.cachedVirtualCurrenciesData(forAppUserID: appUserID)) == mockVirtualCurrenciesData
+        expect(
+            self.deviceCache.isVirtualCurrenciesCacheStale(appUserID: appUserID, isAppBackgrounded: false)
+        ).to(beFalse())
+        expect(
+            self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.virtualCurrenciesLastUpdated.\(appUserID)"]
+        ).toNot(beNil())
+
+        deviceCache.clearVirtualCurrenciesCache(appUserID: appUserID)
+
+        // Ensure that cached values were removed
+        expect(self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.virtualCurrencies.\(appUserID)"] as? Data)
+            .to(beNil())
+        expect(
+            self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.virtualCurrenciesLastUpdated.\(appUserID)"]
+        ).to(beNil())
+        expect(
+            self.deviceCache.isVirtualCurrenciesCacheStale(appUserID: appUserID, isAppBackgrounded: false)
+        ).to(beTrue())
+    }
+
+    func testClearVirtualCurrenciesForOneUserDoesntClearCacheOfAnotherUser() {
+        let appUserID = "appUserID"
+        let appUserID2 = "appUserID2"
+        self.deviceCache = DeviceCache(
+            sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
+            userDefaults: self.mockUserDefaults
+        )
+
+        // Cache some virtual currencies
+        self.deviceCache.cache(virtualCurrencies: mockVirtualCurrenciesData, appUserID: appUserID)
+        self.deviceCache.cache(virtualCurrencies: mockVirtualCurrenciesData, appUserID: appUserID2)
+
+        // Ensure that the VCs and last updated date were cached for appUserID
+        expect(self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.virtualCurrencies.\(appUserID)"] as? Data)
+            .to(equal(mockVirtualCurrenciesData))
+        expect(self.deviceCache.cachedVirtualCurrenciesData(forAppUserID: appUserID)) == mockVirtualCurrenciesData
+        expect(
+            self.deviceCache.isVirtualCurrenciesCacheStale(appUserID: appUserID, isAppBackgrounded: false)
+        ).to(beFalse())
+        expect(
+            self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.virtualCurrenciesLastUpdated.\(appUserID)"]
+        ).toNot(beNil())
+
+        // Ensure that the VCs and last updated date were cached for appUserID2
+        expect(self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.virtualCurrencies.\(appUserID2)"] as? Data)
+            .to(equal(mockVirtualCurrenciesData))
+        expect(self.deviceCache.cachedVirtualCurrenciesData(forAppUserID: appUserID2)) == mockVirtualCurrenciesData
+        expect(
+            self.deviceCache.isVirtualCurrenciesCacheStale(appUserID: appUserID2, isAppBackgrounded: false)
+        ).to(beFalse())
+        expect(
+            self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.virtualCurrenciesLastUpdated.\(appUserID2)"]
+        ).toNot(beNil())
+
+        deviceCache.clearVirtualCurrenciesCache(appUserID: appUserID)
+
+        // Ensure that cached values were not removed for appUserID2
+        expect(self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.virtualCurrencies.\(appUserID2)"] as? Data)
+            .to(equal(mockVirtualCurrenciesData))
+        expect(self.deviceCache.cachedVirtualCurrenciesData(forAppUserID: appUserID2)) == mockVirtualCurrenciesData
+        expect(
+            self.deviceCache.isVirtualCurrenciesCacheStale(appUserID: appUserID2, isAppBackgrounded: false)
+        ).to(beFalse())
+        expect(
+            self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.virtualCurrenciesLastUpdated.\(appUserID2)"]
+        ).toNot(beNil())
+    }
 }
 
 private extension DeviceCacheTests {

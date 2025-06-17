@@ -370,6 +370,13 @@ class MockDeviceCache: DeviceCache {
         invokedCacheVirtualCurrenciesCount += 1
         invokedCacheVirtualCurrenciesParametersList.append((virtualCurrencies, appUserID))
     }
+
+    var invokedClearVirtualCurrenciesCache = false
+    var invokedClearVirtualCurrenciesCacheCount = 0
+    override func clearVirtualCurrenciesCache(appUserID: String) {
+        invokedClearVirtualCurrenciesCache = true
+        invokedClearVirtualCurrenciesCacheCount += 1
+    }
 }
 
 extension MockDeviceCache: @unchecked Sendable {}

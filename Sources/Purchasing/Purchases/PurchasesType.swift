@@ -992,6 +992,17 @@ public protocol PurchasesType: AnyObject {
         completion: @escaping @Sendable (VirtualCurrencies?, PublicError?) -> Void
     )
 
+    /**
+     * Invalidates the cache for virtual currencies.
+     *
+     * This is useful for cases where a virtual currency's balance might have been updated
+     * outside of the app, like if virtual currency is granted through the RevenueCat dashboard.
+     */
+    @objc
+    func invalidateVirtualCurrenciesCache(
+        completion: @escaping () -> Void
+    )
+
     // MARK: - Deprecated
 
     // swiftlint:disable missing_docs
@@ -1257,6 +1268,14 @@ public protocol PurchasesSwiftType: AnyObject {
      * -  [Virtual Currencies](https://www.revenuecat.com/docs/offerings/virtual-currency)
      */
     func virtualCurrencies() async throws -> VirtualCurrencies
+
+    /**
+     * Invalidates the cache for virtual currencies.
+     *
+     * This is useful for cases where a virtual currency's balance might have been updated
+     * outside of the app, like if virtual currency is granted through the RevenueCat dashboard.
+     */
+    func invalidateVirtualCurrenciesCache() async
     #endif
 
 }

@@ -478,10 +478,7 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
-    func virtualCurrencies(
-        forceRefresh: Bool,
-        completion: @escaping (RevenueCat.VirtualCurrencies?, RevenueCat.PublicError?) -> Void
-    ) {
+    func invalidateVirtualCurrenciesCache(completion: @escaping () -> Void) {
         self.unimplemented()
     }
 }
@@ -568,7 +565,7 @@ extension MockPurchases: PurchasesSwiftType {
         self.unimplemented()
     }
 
-    func virtualCurrencies(forceRefresh: Bool) async throws -> RevenueCat.VirtualCurrencies {
+    func invalidateVirtualCurrenciesCache() async {
         self.unimplemented()
     }
 }

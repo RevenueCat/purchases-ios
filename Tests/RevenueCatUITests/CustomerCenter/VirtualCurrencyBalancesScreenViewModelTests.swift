@@ -75,6 +75,22 @@ final class VirtualCurrencyBalancesScreenViewModelTests: TestCase {
         }
     }
 
+    func testLoadDataInvalidatesVirtualCurrencyCache() async {
+        let mockPurchases = MockCustomerCenterPurchases(
+            customerInfo: CustomerInfoFixtures.customerInfoWithAppleSubscriptions
+        )
+        mockPurchases.virtualCurrenciesResult = .success(VirtualCurrenciesFixtures.fourVirtualCurrencies)
+
+        let viewModel = VirtualCurrencyBalancesScreenViewModel(
+            purchasesProvider: mockPurchases
+        )
+
+        await viewModel.onViewAppeared()
+
+        expect(mockPurchases.invalidateVirtualCurrenciesCacheCallCount).to(equal(1))
+        expect(mockPurchases.virtualCurrenciesCallCount).to(equal(1))
+    }
+
     func testLoadDataEmptyVirtualCurrencies() async {
         let mockPurchases = MockCustomerCenterPurchases(
             customerInfo: CustomerInfoFixtures.customerInfoWithAppleSubscriptions

@@ -1329,7 +1329,26 @@ public extension Purchases {
     }
 
     func virtualCurrencies() async throws -> VirtualCurrencies {
-        return try await self.virtualCurrencyManager.virtualCurrencies()
+        do {
+            return try await self.virtualCurrencyManager.virtualCurrencies()
+        } catch {
+            let publicError = NewErrorUtils.purchasesError(withUntypedError: error).asPublicError
+            throw publicError
+        }
+    }
+
+    @objc func invalidateVirtualCurrenciesCache(
+        completion: @escaping () -> Void
+    ) {
+        OperationDispatcher.dispatchOnMainActor {
+            Task {
+                await self.invalidateVirtualCurrenciesCache()
+            }
+        }
+    }
+
+    func invalidateVirtualCurrenciesCache() async {
+        await self.virtualCurrencyManager.invalidateVirtualCurrenciesCache()
     }
 }
 #endif

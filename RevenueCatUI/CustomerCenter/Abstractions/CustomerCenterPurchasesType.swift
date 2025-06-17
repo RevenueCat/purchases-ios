@@ -56,6 +56,8 @@ import SwiftUI
 
     func syncPurchases() async throws -> CustomerInfo
 
+    func invalidateVirtualCurrenciesCache() async
+
     func virtualCurrencies() async throws -> RevenueCat.VirtualCurrencies
 
     // MARK: - Subscription Management

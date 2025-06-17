@@ -420,9 +420,16 @@ class DeviceCache {
         }
     }
 
+    func clearVirtualCurrenciesCache(appUserID: String) {
+        self.userDefaults.write {
+            Self.clearVirtualCurrenciesCacheLastUpdatedTimestamp($0, appUserID: appUserID)
+            $0.removeObject(forKey: CacheKey.virtualCurrencies(appUserID))
+        }
+    }
+
     func clearVirtualCurrenciesCacheLastUpdatedTimestamp(appUserID: String) {
         self.userDefaults.write {
-            Self.clearVirtualCurrenciesCacheLastUpdateTimestamp($0, appUserID: appUserID)
+            Self.clearVirtualCurrenciesCacheLastUpdatedTimestamp($0, appUserID: appUserID)
         }
     }
 
@@ -701,7 +708,7 @@ private extension DeviceCache {
         Self.setVirtualCurrenciesCacheLastUpdatedTimestamp(userDefaults, timestamp: Date(), appUserID: appUserID)
     }
 
-    static func clearVirtualCurrenciesCacheLastUpdateTimestamp(
+    static func clearVirtualCurrenciesCacheLastUpdatedTimestamp(
         _ userDefaults: UserDefaults,
         appUserID: String
     ) {

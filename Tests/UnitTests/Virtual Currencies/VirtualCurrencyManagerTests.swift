@@ -270,6 +270,14 @@ class VirtualCurrencyManagerTests: TestCase {
         )
     }
 
+    // MARK: - invalidateVirtualCurrenciesCache() Tests
+    func testInvalidateVirtualCurrenciesCacheCallsClearVirtualCurrenciesCache() async {
+        await virtualCurrencyManager.invalidateVirtualCurrenciesCache()
+
+        XCTAssertTrue(self.mockDeviceCache.invokedClearVirtualCurrenciesCache)
+        XCTAssertEqual(self.mockDeviceCache.invokedClearVirtualCurrenciesCacheCount, 1)
+    }
+
     // MARK: - Network Error Handling Tests
     func testVirtualCurrenciesProperlyHandlesNetworkErrors() async throws {
         self.mockDeviceCache.stubbedCachedVirtualCurrenciesDataForAppUserID = nil
