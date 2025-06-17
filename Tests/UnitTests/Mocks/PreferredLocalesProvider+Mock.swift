@@ -15,10 +15,10 @@
 
 extension PreferredLocalesProvider {
 
-    static func mock(stubbedPreferredLocaleOverride: String? = nil,
-                     stubbedLocales: [String] = ["en_EN"]) -> PreferredLocalesProvider {
+    static func mock(preferredLocaleOverride: String? = nil,
+                     locales: [String] = ["en_EN"]) -> PreferredLocalesProvider {
         return PreferredLocalesProvider(
-            preferredLocaleOverride: stubbedPreferredLocaleOverride,
+            preferredLocaleOverride: preferredLocaleOverride,
             systemPreferredLocalesGetter: { return stubbedLocales })
     }
 }
