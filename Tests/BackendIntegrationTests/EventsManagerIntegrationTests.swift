@@ -15,9 +15,9 @@ import Nimble
 import XCTest
 
 #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-@testable import RevenueCat_CustomEntitlementComputation
+@_spi(Internal) @testable import RevenueCat_CustomEntitlementComputation
 #else
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 #endif
 
 @MainActor
