@@ -27,7 +27,7 @@ class CustomerInfoManagerUIPreviewModeTests: BaseCustomerInfoManagerTests {
             platformInfo: nil,
             finishTransactions: true,
             dangerousSettings: DangerousSettings(uiPreviewMode: true),
-            preferredLocalesProvider: MockPreferredLocalesProvider()
+            preferredLocalesProvider: .mock()
         )
 
         try super.setUpWithError()

@@ -84,7 +84,7 @@ class StoreKitWorkaroundsReceiptURLTests: TestCase {
         self.mockSystemInfo = MockSystemInfo(platformInfo: nil,
                                              finishTransactions: false,
                                              bundle: self.mockBundle,
-                                             preferredLocalesProvider: MockPreferredLocalesProvider())
+                                             preferredLocalesProvider: .mock())
         self.receiptFetcher = ReceiptFetcher(requestFetcher: self.mockRequestFetcher, systemInfo: self.mockSystemInfo)
     }
 

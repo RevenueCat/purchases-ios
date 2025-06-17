@@ -51,7 +51,7 @@ class StorefrontTests: StoreKitConfigTestCase {
 
         let systemInfo = SystemInfo(platformInfo: nil,
                                     finishTransactions: false,
-                                    preferredLocalesProvider: MockPreferredLocalesProvider())
+                                    preferredLocalesProvider: .mock())
         let storefront = try XCTUnwrap(systemInfo.storefront)
 
         expect(storefront.countryCode) == expected

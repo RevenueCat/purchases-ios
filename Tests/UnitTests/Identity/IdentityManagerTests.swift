@@ -401,7 +401,7 @@ class IdentityManagerTests: TestCase {
             platformInfo: nil,
             finishTransactions: false,
             dangerousSettings: dangerousSettings,
-            preferredLocalesProvider: MockPreferredLocalesProvider()
+            preferredLocalesProvider: .mock()
         )
 
         let manager = create(appUserID: nil)
@@ -416,7 +416,7 @@ class IdentityManagerTests: TestCase {
             platformInfo: nil,
             finishTransactions: false,
             dangerousSettings: dangerousSettings,
-            preferredLocalesProvider: MockPreferredLocalesProvider()
+            preferredLocalesProvider: .mock()
         )
 
         let manager = create(appUserID: "test_user")
