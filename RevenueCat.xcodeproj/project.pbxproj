@@ -14,6 +14,7 @@
 		030F918E2D5664410085103F /* LocaleExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030F918D2D5664410085103F /* LocaleExtensions.swift */; };
 		030F93B32D5ED90B0085103F /* ProgressViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030F93B22D5ED90B0085103F /* ProgressViewModifier.swift */; };
 		0313FD41268A506400168386 /* DateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0313FD40268A506400168386 /* DateProvider.swift */; };
+		034B32232E00AC9200C9333F /* PromotionalOfferEligibilityContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 034B32222E00AC8500C9333F /* PromotionalOfferEligibilityContext.swift */; };
 		0354AA462D4029C300F9E330 /* TabControlButtonComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0354AA3E2D4029C300F9E330 /* TabControlButtonComponentViewModel.swift */; };
 		0354AA472D4029C300F9E330 /* TabControlComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0354AA402D4029C300F9E330 /* TabControlComponentViewModel.swift */; };
 		0354AA482D4029C300F9E330 /* TabsComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0354AA432D4029C300F9E330 /* TabsComponentView.swift */; };
@@ -1433,6 +1434,7 @@
 		030F918D2D5664410085103F /* LocaleExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleExtensions.swift; sourceTree = "<group>"; };
 		030F93B22D5ED90B0085103F /* ProgressViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressViewModifier.swift; sourceTree = "<group>"; };
 		0313FD40268A506400168386 /* DateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateProvider.swift; sourceTree = "<group>"; };
+		034B32222E00AC8500C9333F /* PromotionalOfferEligibilityContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromotionalOfferEligibilityContext.swift; sourceTree = "<group>"; };
 		0354AA3D2D4029C300F9E330 /* TabControlButtonComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabControlButtonComponentView.swift; sourceTree = "<group>"; };
 		0354AA3E2D4029C300F9E330 /* TabControlButtonComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabControlButtonComponentViewModel.swift; sourceTree = "<group>"; };
 		0354AA3F2D4029C300F9E330 /* TabControlComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabControlComponentView.swift; sourceTree = "<group>"; };
@@ -2969,6 +2971,7 @@
 		2C7457492CEA6B06004ACE52 /* EnvironmentObjects */ = {
 			isa = PBXGroup;
 			children = (
+				034B32222E00AC8500C9333F /* PromotionalOfferEligibilityContext.swift */,
 				2C7457412CE810FD004ACE52 /* IntroOfferEligibilityContext.swift */,
 				2C7457202CE702BB004ACE52 /* PackageContext.swift */,
 				0382135F2DCAF6BE003C02C3 /* OpenSheet.swift */,
@@ -7236,6 +7239,7 @@
 				03A98D382D2AC63B009BCA61 /* UIConfigProvider.swift in Sources */,
 				887A60C92C1D037000E1A461 /* PurchaseButton.swift in Sources */,
 				88B1BAF02C813A3C001B7EE5 /* TextComponentViewModel.swift in Sources */,
+				034B32232E00AC9200C9333F /* PromotionalOfferEligibilityContext.swift in Sources */,
 				2D2AFE912C6A9EF500D1B0B4 /* Binding+Extensions.swift in Sources */,
 				2C7457242CE713E5004ACE52 /* PreviewMock.swift in Sources */,
 				887A60812C1D037000E1A461 /* PaywallData+Default.swift in Sources */,
