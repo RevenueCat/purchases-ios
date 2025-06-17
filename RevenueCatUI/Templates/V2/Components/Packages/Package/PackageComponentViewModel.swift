@@ -20,6 +20,7 @@ import RevenueCat
 class PackageComponentViewModel {
 
     let isSelectedByDefault: Bool
+    let promotionalOfferProductCode: String?
     let package: Package?
     let stackViewModel: StackComponentViewModel
 
@@ -29,6 +30,8 @@ class PackageComponentViewModel {
         stackViewModel: StackComponentViewModel
     ) {
         self.isSelectedByDefault = component.isSelectedByDefault
+        self.promotionalOfferProductCode = component.applePromoOfferProductCode
+
         self.package = offering.package(identifier: component.packageID)
         if package == nil {
             Logger.warning(Strings.paywall_could_not_find_package(component.packageID))

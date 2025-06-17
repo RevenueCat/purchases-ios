@@ -357,7 +357,7 @@ final class PurchasesOrchestrator {
     }
 
     func promotionalOffer(forProductDiscount productDiscount: StoreProductDiscountType,
-                          product: StoreProductType,
+                          product: StoreProduct,
                           completion: @escaping @Sendable (Result<PromotionalOffer, PurchasesError>) -> Void) {
         guard let discountIdentifier = productDiscount.offerIdentifier else {
             self.operationDispatcher.dispatchOnMainActor {
@@ -762,7 +762,7 @@ final class PurchasesOrchestrator {
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func promotionalOffer(
         forProductDiscount discount: StoreProductDiscountType,
-        product: StoreProductType
+        product: StoreProduct
     ) async throws -> PromotionalOffer {
         return try await Async.call { completion in
             self.promotionalOffer(forProductDiscount: discount,
@@ -1848,7 +1848,7 @@ private extension PurchasesOrchestrator {
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func sk2PromotionalOffer(forProductDiscount productDiscount: StoreProductDiscountType,
                              discountIdentifier: String,
-                             product: StoreProductType,
+                             product: StoreProduct,
                              subscriptionGroupIdentifier: String,
                              completion: @escaping @Sendable (Result<PromotionalOffer, PurchasesError>) -> Void) {
 

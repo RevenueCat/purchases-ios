@@ -27,6 +27,9 @@ struct PurchaseButtonComponentView: View {
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
     @EnvironmentObject
+    private var promotionalOfferEligibilityContext: PromotionalOfferEligibilityContext
+
+    @EnvironmentObject
     private var packageContext: PackageContext
 
     @EnvironmentObject
@@ -107,7 +110,9 @@ struct PurchaseButtonComponentView: View {
             return
         }
 
-        _ = try await self.purchaseHandler.purchase(package: selectedPackage)
+        let promoOffer = promotionalOfferEligibilityContext.get(for: selectedPackage)
+
+        _ = try await self.purchaseHandler.purchase(package: selectedPackage, promotionalOffer: promoOffer)
     }
 
     private func purchaseInWeb() async throws {

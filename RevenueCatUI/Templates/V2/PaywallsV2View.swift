@@ -21,13 +21,19 @@ private class PaywallStateManager: ObservableObject {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct PaywallState {
+struct PaywallState {
+
+    typealias PackageInfo = (package: Package, promotionalOfferProductCode: String?)
 
     let componentsConfig: PaywallComponentsData.PaywallComponentsConfig
     let viewModelFactory: ViewModelFactory
-    let packages: [Package]
+    let packageInfos: [PackageInfo]
     let rootViewModel: RootViewModel
     let showZeroDecimalPlacePrices: Bool
+
+    var packages: [Package] {
+        self.packageInfos.map(\.package)
+    }
 
 }
 
@@ -89,6 +95,9 @@ struct PaywallsV2View: View {
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
     @StateObject
+    private var promotionalOfferEligibilityContext: PromotionalOfferEligibilityContext
+
+    @StateObject
     private var paywallStateManager: PaywallStateManager
 
     private let paywallComponentsData: PaywallComponentsData
@@ -121,6 +130,10 @@ struct PaywallsV2View: View {
         self.fallbackContent = fallbackContent
         self._introOfferEligibilityContext = .init(
             wrappedValue: .init(introEligibilityChecker: introEligibilityChecker)
+        )
+
+        self._promotionalOfferEligibilityContext = .init(
+            wrappedValue: PromotionalOfferEligibilityContext()
         )
 
         // Step 0: Decide which ComponentsConfig to use (base is default)
@@ -161,6 +174,7 @@ struct PaywallsV2View: View {
                 .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
                 .environmentObject(self.purchaseHandler)
                 .environmentObject(self.introOfferEligibilityContext)
+                .environmentObject(self.promotionalOfferEligibilityContext)
                 .disabled(self.purchaseHandler.actionInProgress)
                 .onAppear {
                     self.purchaseHandler.trackPaywallImpression(
@@ -175,6 +189,9 @@ struct PaywallsV2View: View {
                 }
                 .task {
                     await self.introOfferEligibilityContext.computeEligibility(for: paywallState.packages)
+                }
+                .task {
+                    await self.promotionalOfferEligibilityContext.computeEligibility(for: paywallState.packageInfos)
                 }
                 // Note: preferences need to be applied after `.toolbar` call
                 .preference(key: PurchaseInProgressPreferenceKey.self,
@@ -340,13 +357,15 @@ fileprivate extension PaywallsV2View {
 //                throw PackageGroupValidationError.noAvailablePackages("No available packages found")
 //            }
 
-            let packages = factory.packageValidator.packages
+            let packageInfos = factory.packageValidator.packageInfos.map { info in
+                return (package: info.package, promotionalOfferProductCode: info.promotionalOfferProductCode)
+            }
 
             return .success(
                 .init(
                     componentsConfig: componentsConfig,
                     viewModelFactory: factory,
-                    packages: packages,
+                    packageInfos: packageInfos,
                     rootViewModel: root,
                     showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
                 )

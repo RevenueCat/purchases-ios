@@ -30,6 +30,9 @@ protocol PaywallPurchasesType: Sendable {
     func purchase(package: Package) async throws -> PurchaseResultData
 
     @Sendable
+    func purchase(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData
+
+    @Sendable
     func restorePurchases() async throws -> CustomerInfo
 
     @Sendable

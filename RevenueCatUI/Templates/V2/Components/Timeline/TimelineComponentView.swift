@@ -26,6 +26,9 @@ struct TimelineComponentView: View {
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
     @EnvironmentObject
+    private var promotionalOfferEligibilityContext: PromotionalOfferEligibilityContext
+
+    @EnvironmentObject
     private var packageContext: PackageContext
 
     @Environment(\.componentViewState)
@@ -49,6 +52,9 @@ struct TimelineComponentView: View {
             condition: self.screenCondition,
             isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                 package: self.packageContext.package
+            ),
+            isEligibleForPromoOffer: self.promotionalOfferEligibilityContext.isMostLikelyEligible(
+                for: self.packageContext.package
             )
         ) { style in
             if style.visible {
@@ -68,6 +74,9 @@ struct TimelineComponentView: View {
                     condition: self.screenCondition,
                     isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                         package: self.packageContext.package
+                    ),
+                    isEligibleForPromoOffer: self.promotionalOfferEligibilityContext.isMostLikelyEligible(
+                        for: self.packageContext.package
                     )
                 ) { itemStyle in
                     if itemStyle.visible {
@@ -90,6 +99,9 @@ struct TimelineComponentView: View {
                         condition: self.screenCondition,
                         isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                             package: self.packageContext.package
+                        ),
+                        isEligibleForPromoOffer: self.promotionalOfferEligibilityContext.isMostLikelyEligible(
+                            for: self.packageContext.package
                         )
                     ) { itemStyle in
                         if itemStyle.visible {
