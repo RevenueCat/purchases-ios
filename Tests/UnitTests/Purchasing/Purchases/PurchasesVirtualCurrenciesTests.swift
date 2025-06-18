@@ -88,6 +88,29 @@ class PurchasesVirtualCurrenciesTests: BasePurchasesTests {
         expect(self.mockVirtualCurrencyManager.virtualCurrenciesCallCount).to(equal(1))
     }
 
+    func testVirtualCurrenciesCallbackCallsSuccessOnMainThread() async throws {
+        self.mockVirtualCurrencyManager.stubbedVirtualCurrenciesResult = .success(Self.mockVirtualCurrencies)
+
+        await waitUntil { completed in
+            self.purchases.virtualCurrencies { _, _ in
+                expect(Thread.isMainThread).to(beTrue())
+                completed()
+            }
+        }
+    }
+
+    func testVirtualCurrenciesCallbackCallsErrorOnMainThread() async throws {
+        let backendError: BackendError = .networkError(.offlineConnection())
+        self.mockVirtualCurrencyManager.stubbedVirtualCurrenciesResult = .failure(backendError)
+
+        await waitUntil { completed in
+            self.purchases.virtualCurrencies { _, _ in
+                expect(Thread.isMainThread).to(beTrue())
+                completed()
+            }
+        }
+    }
+
     // MARK: - invalidateVirtualCurrenciesCache() Tests
     func testInvalidateVirtualCurrenciesCacheCallsVirtualCurrencyManagerInvalidateVirtualCurrenciesCache() async {
         await self.purchases.invalidateVirtualCurrenciesCache()

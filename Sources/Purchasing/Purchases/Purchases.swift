@@ -1315,13 +1315,15 @@ public extension Purchases {
     @objc func virtualCurrencies(
         completion: @escaping @Sendable (VirtualCurrencies?, PublicError?) -> Void
     ) {
-        OperationDispatcher.dispatchOnMainActor {
-            Task {
-                do {
-                    let virtualCurrencies = try await self.virtualCurrencies()
+        Task {
+            do {
+                let virtualCurrencies = try await self.virtualCurrencies()
+                OperationDispatcher.dispatchOnMainActor {
                     completion(virtualCurrencies, nil)
-                } catch {
-                    let publicError = NewErrorUtils.purchasesError(withUntypedError: error).asPublicError
+                }
+            } catch {
+                let publicError = NewErrorUtils.purchasesError(withUntypedError: error).asPublicError
+                OperationDispatcher.dispatchOnMainActor {
                     completion(nil, publicError)
                 }
             }
