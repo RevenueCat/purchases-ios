@@ -117,8 +117,24 @@ private struct NonLocalizedMarkdownText: View {
 // swiftlint:disable type_body_length
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TextComponentView_Previews: PreviewProvider {
-
-    static var previews: some View {
+    
+    private static var isNativeMac: Bool {
+#if os(macOS)
+        return true
+#else
+        return false
+#endif
+    }
+    
+    private static var isMacCatalyst: Bool {
+        return ProcessInfo.processInfo.isMacCatalystApp && !ProcessInfo.processInfo.isiOSAppOnMac
+    }
+    
+    private static var isiOSAppOnMac: Bool {
+        return ProcessInfo.processInfo.isiOSAppOnMac
+    }
+    
+    private static var defaultPreview: some View {
         // Default
         TextComponentView(
             // swiftlint:disable:next force_try
@@ -126,7 +142,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 localizationProvider: .init(
                     locale: Locale.current,
                     localizedStrings: [
-                        "id_1": .string("Hello, world")
+                        "id_1": .string(isNativeMac ? "Native Mac" : (isMacCatalyst ? "Mac Catalyst" : (isiOSAppOnMac ? "iOS App on Mac" : "iOS")))
                     ]
                 ),
                 uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
@@ -138,50 +154,19 @@ struct TextComponentView_Previews: PreviewProvider {
         )
         .previewRequiredEnvironmentProperties()
         .previewLayout(.sizeThatFits)
+
+    }
+
+    static var previews: some View {
+        defaultPreview
         .previewDisplayName("Default")
         
-        // Default - Mac
-        TextComponentView(
-            // swiftlint:disable:next force_try
-            viewModel: try! .init(
-                localizationProvider: .init(
-                    locale: Locale.current,
-                    localizedStrings: [
-                        "id_1": .string("Hello, world")
-                    ]
-                ),
-                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-                component: .init(
-                    text: "id_1",
-                    color: .init(light: .hex("#000000"))
-                )
-            )
-        )
-        .previewRequiredEnvironmentProperties()
-        .previewLayout(.sizeThatFits)
+        defaultPreview
         .previewDisplayName("Default - Mac")
         .previewDevice("Mac")
         
-        // Default - Mac Catalyst
-        TextComponentView(
-            // swiftlint:disable:next force_try
-            viewModel: try! .init(
-                localizationProvider: .init(
-                    locale: Locale.current,
-                    localizedStrings: [
-                        "id_1": .string("Hello, world")
-                    ]
-                ),
-                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-                component: .init(
-                    text: "id_1",
-                    color: .init(light: .hex("#000000"))
-                )
-            )
-        )
-        .previewRequiredEnvironmentProperties()
-        .previewLayout(.sizeThatFits)
-        .previewDisplayName("Default-Mac Catalyst")
+        defaultPreview
+        .previewDisplayName("Default - Mac Catalyst")
         .previewDevice("Mac Catalyst")
 
         // Markdown
