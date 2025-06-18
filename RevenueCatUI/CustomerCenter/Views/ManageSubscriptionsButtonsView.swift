@@ -12,7 +12,7 @@
 //  Created by Cesar de la Vega on 2/12/24.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if os(iOS)

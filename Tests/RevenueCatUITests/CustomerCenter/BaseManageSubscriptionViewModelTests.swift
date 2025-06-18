@@ -17,7 +17,7 @@
 
 import Nimble
 @_spi(Internal) @testable import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 import StoreKit
 import XCTest
 
@@ -71,7 +71,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
     }
 
     func testNonAppStoreFiltersAppStoreOnlyPaths() {
-        let purchase = PurchaseInformation.mockNonLifetime(store: .playStore)
+        let purchase = PurchaseInformation.mock(store: .playStore)
 
         let viewModel = BaseManageSubscriptionViewModel(
             screen: BaseManageSubscriptionViewModelTests.default,
@@ -86,7 +86,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
     }
 
     func testNonAppStoreFiltersAppStoreOnlyPathsAndCancelIfNoURL() {
-        let purchase = PurchaseInformation.mockNonLifetime(store: .playStore, managementURL: nil)
+        let purchase = PurchaseInformation.mock(store: .playStore, managementURL: nil)
 
         let viewModel = BaseManageSubscriptionViewModel(
             screen: BaseManageSubscriptionViewModelTests.default,
@@ -115,7 +115,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
     }
 
     func testLifetimeSubscriptionDoesNotShowCancel() {
-        let purchase = PurchaseInformation.mockLifetime()
+        let purchase = PurchaseInformation.mock(isLifetime: true)
 
         let viewModel = BaseManageSubscriptionViewModel(
             screen: BaseManageSubscriptionViewModelTests.default,
@@ -129,7 +129,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
     }
 
     func testCancelledDoesNotShowCancelAndRefund() {
-        let purchase = PurchaseInformation.mockNonLifetime(
+        let purchase = PurchaseInformation.mock(
             isCancelled: true
         )
 
@@ -145,7 +145,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
     }
 
     func testShowsRefundIfRefundWindowIsForever() {
-        let purchase = PurchaseInformation.mockNonLifetime()
+        let purchase = PurchaseInformation.mock()
 
         let viewModel = BaseManageSubscriptionViewModel(
             screen: BaseManageSubscriptionViewModelTests.managementScreen(refundWindowDuration: .forever),
@@ -173,7 +173,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         )
 
         let twoDays: TimeInterval = 2 * 24 * 60 * 60
-        let purchase = PurchaseInformation.mockNonLifetime(
+        let purchase = PurchaseInformation.mock(
             latestPurchaseDate: latestPurchaseDate,
             customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
 
@@ -193,7 +193,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
     func testDoesNotShowRefundIfPurchaseIsFree() {
         let latestPurchaseDate = Date()
         let twoDays: TimeInterval = 2 * 24 * 60 * 60
-        let purchase = PurchaseInformation.mockNonLifetime(
+        let purchase = PurchaseInformation.mock(
             pricePaid: .free,
             latestPurchaseDate: latestPurchaseDate,
             customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
@@ -213,7 +213,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
     func testDoesNotShowRefundIfPurchaseIsWithinTrial() {
         let latestPurchaseDate = Date()
         let twoDays: TimeInterval = 2 * 24 * 60 * 60
-        let purchase = PurchaseInformation.mockNonLifetime(
+        let purchase = PurchaseInformation.mock(
             pricePaid: .nonFree(""), // just to prove price is ignored if is in trial
             isTrial: true,
             latestPurchaseDate: latestPurchaseDate,
@@ -244,7 +244,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         )
 
         let twoDays: TimeInterval = 2 * 24 * 60 * 60
-        let purchase = PurchaseInformation.mockNonLifetime(
+        let purchase = PurchaseInformation.mock(
             latestPurchaseDate: latestPurchaseDate,
             customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
 
@@ -499,7 +499,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         let screen = PurchaseInformationFixtures.screenWithPromo(offerID: offerIdentifierInJSON)
         let viewModel = BaseManageSubscriptionViewModel(screen: screen,
                                                         actionWrapper: CustomerCenterActionWrapper(),
-                                                        purchaseInformation: .yearlyExpiring(store: .appStore),
+                                                        purchaseInformation: .mock(store: .appStore, isExpired: false),
                                                         virtualCurrencies: nil,
                                                         purchasesProvider: MockCustomerCenterPurchases(
                                                             customerInfo: customerInfo,

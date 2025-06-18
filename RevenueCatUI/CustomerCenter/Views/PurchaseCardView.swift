@@ -11,7 +11,7 @@
 //
 //  Created by Facundo Menzella on 13/5/25.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if os(iOS)
@@ -95,20 +95,10 @@ struct PurchaseInformationCardView: View {
         case .nonFree:
             self.paidPrice = ""
         }
-        self.storeTitle = localization[purchaseInformation.store.localizationKey]
+        self.storeTitle = localization[purchaseInformation.storeLocalizationKey]
         self.showChevron = showChevron
 
-        if !purchaseInformation.isActive {
-            self.badge = .expired(localization)
-        } else if purchaseInformation.isCancelled {
-            self.badge = .cancelled(localization)
-        } else if purchaseInformation.isTrial, purchaseInformation.pricePaid == .free {
-            self.badge = .freeTrial(localization)
-        } else if purchaseInformation.isActive {
-            self.badge = .active(localization)
-        } else {
-            self.badge = nil
-        }
+        self.badge = Badge(purchaseInformation: purchaseInformation, localization: localization)
     }
 
     var body: some View {
@@ -248,6 +238,14 @@ extension PurchaseInformationCardView {
             )
         }
 
+        static func cancelledTrial(_ localizations: CustomerCenterConfigData.Localization) -> Badge {
+            Badge(
+                title: localizations[.badgeTrialCancelled],
+                id: CCLocalizedString.badgeTrialCancelled.rawValue,
+                backgroundColor: Color(red: 242 / 256, green: 84 / 256, blue: 91 / 256, opacity: 0.15)
+            )
+        }
+
         static func freeTrial(_ localizations: CustomerCenterConfigData.Localization) -> Badge {
             Badge(
                 title: localizations[.badgeFreeTrial],
@@ -271,6 +269,28 @@ extension PurchaseInformationCardView {
                 backgroundColor: Color(red: 242 / 256, green: 242 / 256, blue: 247 / 256, opacity: 0.2)
             )
         }
+
+        init (title: String, id: String, backgroundColor: Color) {
+            self.title = title
+            self.id = id
+            self.backgroundColor = backgroundColor
+        }
+
+        init?(purchaseInformation: PurchaseInformation, localization: CustomerCenterConfigData.Localization) {
+            if purchaseInformation.isExpired {
+                self = .expired(localization)
+            } else if purchaseInformation.isCancelled, purchaseInformation.isTrial {
+                self = .cancelledTrial(localization)
+            } else if purchaseInformation.isCancelled, purchaseInformation.store != .promotional {
+                self = .cancelled(localization)
+            } else if purchaseInformation.isTrial, purchaseInformation.pricePaid == .free {
+                self = .freeTrial(localization)
+            } else if purchaseInformation.renewalDate != nil || purchaseInformation.expirationDate != nil {
+                self = .active(localization)
+            } else {
+                return nil
+            }
+        }
     }
 }
 
@@ -286,7 +306,7 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
             ScrollViewWithOSBackground {
                 PurchaseInformationCardView(
                     title: "Product name",
-                    storeTitle: Store.appStore.localizationKey.rawValue,
+                    storeTitle: "App Store",
                     paidPrice: "$19.99",
                     accessibilityIdentifier: "accessibilityIdentifier",
                     badge: .cancelled(CustomerCenterConfigData.default.localization),
@@ -297,7 +317,18 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
 
                 PurchaseInformationCardView(
                     title: "Product name",
-                    storeTitle: Store.playStore.localizationKey.rawValue,
+                    storeTitle: "App Store",
+                    paidPrice: "$19.99",
+                    accessibilityIdentifier: "accessibilityIdentifier",
+                    badge: .cancelledTrial(CustomerCenterConfigData.default.localization),
+                    subtitle: "Renews 24 May for $19.99"
+                )
+                .cornerRadius(10)
+                .padding([.leading, .trailing])
+
+                PurchaseInformationCardView(
+                    title: "Product name",
+                    storeTitle: "App Store",
                     paidPrice: "$19.99",
                     accessibilityIdentifier: "accessibilityIdentifier",
                     badge: .freeTrial(CustomerCenterConfigData.default.localization),
@@ -308,7 +339,7 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
 
                 PurchaseInformationCardView(
                     title: "Product name",
-                    storeTitle: Store.playStore.localizationKey.rawValue,
+                    storeTitle: "App Store",
                     paidPrice: "$19.99",
                     accessibilityIdentifier: "accessibilityIdentifier",
                     badge: .active(CustomerCenterConfigData.default.localization),
@@ -321,7 +352,7 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
 
                 PurchaseInformationCardView(
                     title: "Product name",
-                    storeTitle: Store.playStore.localizationKey.rawValue,
+                    storeTitle: "App Store",
                     paidPrice: "$19.99",
                     accessibilityIdentifier: "accessibilityIdentifier",
                     badge: .active(CustomerCenterConfigData.default.localization),
