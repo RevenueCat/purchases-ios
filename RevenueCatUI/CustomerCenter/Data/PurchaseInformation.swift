@@ -196,7 +196,11 @@ struct PurchaseInformation {
         self.numberFormatter = numberFormatter
 
         // Title and duration from product if available
-        self.title = subscribedProduct?.localizedTitle ?? transaction.productIdentifier
+        if transaction.store == .promotional {
+            self.title = entitlement?.identifier ?? transaction.productIdentifier
+        } else {
+            self.title = subscribedProduct?.localizedTitle ?? transaction.productIdentifier
+        }
         self.subscriptionGroupID = subscribedProduct?.subscriptionGroupIdentifier
 
         self.customerInfoRequestedDate = customerInfoRequestedDate
@@ -236,7 +240,7 @@ struct PurchaseInformation {
                 self.isExpired = !isActive
 
             case .nonSubscription:
-                self.isLifetime = true
+                self.isLifetime = subscribedProduct?.productType == .nonConsumable
                 self.isTrial = false
                 self.isExpired = false
                 self.renewalDate = nil
@@ -486,21 +490,20 @@ extension PurchaseInformation {
     }
 
     func priceRenewalString(
-        date: Date,
         localizations: CustomerCenterConfigData.Localization
     ) -> String? {
-        guard let renewalPrice else {
+        guard let renewalPrice, let renewalDate else {
             return nil
         }
 
         switch renewalPrice {
         case .free:
             return localizations[.renewsOnDateForPrice]
-                .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: date))
+                .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: renewalDate))
                 .replacingOccurrences(of: "{{ price }}", with: localizations[.free].lowercased())
         case .nonFree(let priceString):
             return localizations[.renewsOnDateForPrice]
-                .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: date))
+                .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: renewalDate))
                 .replacingOccurrences(of: "{{ price }}", with: priceString)
         }
     }
@@ -512,7 +515,12 @@ extension PurchaseInformation {
             return nil
         }
 
-        return localizations[.expiresOnDateWithoutChanges]
+        var string = localizations[.expiresOnDateWithoutChanges]
+        if isExpired {
+            string = localizations[.purchaseInfoExpiredOnDate]
+        }
+
+        return string
             .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: expirationDate))
     }
 }

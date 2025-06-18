@@ -503,7 +503,8 @@ final class PurchaseInformationTests: TestCase {
             )
         )
 
-        expect(subscriptionInfo.title) == "rc_promo_pro_cat_yearly"
+        // title from entitlement instead of product identifier
+        expect(subscriptionInfo.title) == "premium"
         expect(subscriptionInfo.pricePaid) == .free
         expect(subscriptionInfo.renewalPrice).to(beNil())
         expect(subscriptionInfo.isLifetime).to(beFalse())
@@ -546,7 +547,7 @@ final class PurchaseInformationTests: TestCase {
             )
         )
 
-        expect(subscriptionInfo.title) == "rc_promo_pro_cat_lifetime"
+        expect(subscriptionInfo.title) == "premium"
         expect(subscriptionInfo.pricePaid) == .free
         expect(subscriptionInfo.renewalPrice).to(beNil())
         // false - no way to know if its lifetime
