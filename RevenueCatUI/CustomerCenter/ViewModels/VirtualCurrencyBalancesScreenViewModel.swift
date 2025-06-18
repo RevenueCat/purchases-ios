@@ -74,7 +74,7 @@ final class VirtualCurrencyBalancesScreenViewModel: ObservableObject {
         self.viewState = .loading
 
         do {
-            await self.purchasesProvider.invalidateVirtualCurrenciesCache()
+            self.purchasesProvider.invalidateVirtualCurrenciesCache()
             let virtualCurrencies = try await self.purchasesProvider.virtualCurrencies()
             let virtualCurrencyBalanceData = self.extractVirtualCurrencyBalanceData(from: virtualCurrencies.all)
 
