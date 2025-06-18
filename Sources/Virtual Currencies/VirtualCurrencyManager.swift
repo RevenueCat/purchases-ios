@@ -46,6 +46,7 @@ class VirtualCurrencyManager: VirtualCurrencyManagerType {
             appUserID: appUserID,
             isAppBackgrounded: isAppBackgrounded
         ) {
+            Logger.debug(Strings.virtualCurrencies.vending_from_cache)
             return cachedVirtualCurrencies
         }
 
@@ -60,6 +61,7 @@ class VirtualCurrencyManager: VirtualCurrencyManagerType {
     }
 
     func invalidateVirtualCurrenciesCache() {
+        Logger.debug(Strings.virtualCurrencies.invalidating_virtual_currencies_cache)
         let appUserID = identityManager.currentAppUserID
         deviceCache.clearVirtualCurrenciesCache(appUserID: appUserID)
     }
@@ -85,6 +87,7 @@ class VirtualCurrencyManager: VirtualCurrencyManagerType {
         ) {
             // The virtual currencies cache is stale, so
             // return no cached virtual currencies.
+            Logger.debug(Strings.virtualCurrencies.virtual_currencies_stale_updating_from_network)
             return nil
         }
 
@@ -92,28 +95,44 @@ class VirtualCurrencyManager: VirtualCurrencyManagerType {
             forAppUserID: appUserID
         )
 
-        guard let data = cachedVirtualCurrenciesData,
-              let virtualCurrencies = try? JSONDecoder().decode(VirtualCurrencies.self, from: data) else {
-            // We can't decode the cached virtual currencies, so return nil
+        guard let data = cachedVirtualCurrenciesData else {
+            Logger.debug(Strings.virtualCurrencies.no_cached_virtual_currencies)
             return nil
         }
 
-        return virtualCurrencies
+        do {
+            let virtualCurrencies = try JSONDecoder().decode(VirtualCurrencies.self, from: data)
+            return virtualCurrencies
+        } catch {
+            Logger.warn(Strings.virtualCurrencies.error_decoding_cached_virtual_currencies(error))
+            // We can't decode the cached virtual currencies, so return nil and refresh
+            // from the network.
+            return nil
+        }
+
     }
 
     private func fetchVirtualCurrenciesFromBackend(
         appUserID: String,
         isAppBackgrounded: Bool
     ) async throws -> VirtualCurrencies {
-        let virtualCurrenciesResponse = try await Async.call { completion in
-            backend.virtualCurrenciesAPI.getVirtualCurrencies(
-                appUserID: appUserID,
-                isAppBackgrounded: isAppBackgrounded
-            ) { result in
-                completion(result.mapError(\.asPurchasesError))
-            }
-        }
 
-        return VirtualCurrencies(from: virtualCurrenciesResponse)
+        do {
+            let virtualCurrenciesResponse = try await Async.call { completion in
+                backend.virtualCurrenciesAPI.getVirtualCurrencies(
+                    appUserID: appUserID,
+                    isAppBackgrounded: isAppBackgrounded
+                ) { result in
+                    completion(result.mapError(\.asPurchasesError))
+                }
+            }
+
+            Logger.debug(Strings.virtualCurrencies.virtual_currencies_updated_from_network)
+            return VirtualCurrencies(from: virtualCurrenciesResponse)
+        } catch {
+            Logger.error(Strings.virtualCurrencies.virtual_currencies_updated_from_network_error(error))
+
+            throw error
+        }
     }
 }
