@@ -36,7 +36,7 @@ class MockVirtualCurrencyManager: VirtualCurrencyManagerType {
 
     var invalidateVirtualCurrenciesCacheCallCount = 0
     var invalidateVirtualCurrenciesCacheCalled = false
-    func invalidateVirtualCurrenciesCache() async {
+    func invalidateVirtualCurrenciesCache() {
         self.invalidateVirtualCurrenciesCacheCallCount += 1
         self.invalidateVirtualCurrenciesCacheCalled = true
     }

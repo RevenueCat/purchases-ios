@@ -82,8 +82,8 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
         try await Purchases.shared.syncPurchases()
     }
 
-    func invalidateVirtualCurrenciesCache() async {
-        await Purchases.shared.invalidateVirtualCurrenciesCache()
+    func invalidateVirtualCurrenciesCache() {
+        Purchases.shared.invalidateVirtualCurrenciesCache()
     }
 
     func virtualCurrencies() async throws -> VirtualCurrencies {

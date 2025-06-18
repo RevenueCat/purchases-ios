@@ -1003,9 +1003,7 @@ public protocol PurchasesType: AnyObject {
      * -  [Virtual Currencies](https://www.revenuecat.com/docs/offerings/virtual-currency)
      */
     @objc
-    func invalidateVirtualCurrenciesCache(
-        completion: @escaping () -> Void
-    )
+    func invalidateVirtualCurrenciesCache()
 
     // MARK: - Deprecated
 
@@ -1272,20 +1270,7 @@ public protocol PurchasesSwiftType: AnyObject {
      * -  [Virtual Currencies](https://www.revenuecat.com/docs/offerings/virtual-currency)
      */
     func virtualCurrencies() async throws -> VirtualCurrencies
-
-    /**
-     * Invalidates the cache for virtual currencies.
-     *
-     * This is useful for cases where a virtual currency's balance might have been updated
-     * outside of the app, like if you decreased a user's balance from the user spending a virtual currency,
-     * or if you increased the balance from your backend using the server APIs.
-     *
-     * #### Related Articles
-     * -  [Virtual Currencies](https://www.revenuecat.com/docs/offerings/virtual-currency)
-     */
-    func invalidateVirtualCurrenciesCache() async
     #endif
-
 }
 
 // MARK: -

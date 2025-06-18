@@ -1339,18 +1339,8 @@ public extension Purchases {
         }
     }
 
-    @objc func invalidateVirtualCurrenciesCache(
-        completion: @escaping () -> Void
-    ) {
-        OperationDispatcher.dispatchOnMainActor {
-            Task {
-                await self.invalidateVirtualCurrenciesCache()
-            }
-        }
-    }
-
-    func invalidateVirtualCurrenciesCache() async {
-        await self.virtualCurrencyManager.invalidateVirtualCurrenciesCache()
+    @objc func invalidateVirtualCurrenciesCache() {
+        self.virtualCurrencyManager.invalidateVirtualCurrenciesCache()
     }
 }
 #endif

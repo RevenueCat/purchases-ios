@@ -113,8 +113,9 @@ class PurchasesVirtualCurrenciesTests: BasePurchasesTests {
 
     // MARK: - invalidateVirtualCurrenciesCache() Tests
     func testInvalidateVirtualCurrenciesCacheCallsVirtualCurrencyManagerInvalidateVirtualCurrenciesCache() async {
-        await self.purchases.invalidateVirtualCurrenciesCache()
+        self.purchases.invalidateVirtualCurrenciesCache()
         expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCalled).to(beTrue())
         expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount).to(equal(1))
+        expect(Thread.isMainThread).to(beTrue())
     }
 }

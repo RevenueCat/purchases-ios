@@ -405,25 +405,29 @@ class DeviceCache {
     }
 
     func isVirtualCurrenciesCacheStale(appUserID: String, isAppBackgrounded: Bool) -> Bool {
-        return self.userDefaults.read {
-            guard let cachesLastUpdated = Self.virtualCurrenciesLastUpdated($0, appUserID: appUserID) else {
-                return true
+        virtualCurrenciesLock.perform {
+            return self.userDefaults.read {
+                guard let cachesLastUpdated = Self.virtualCurrenciesLastUpdated($0, appUserID: appUserID) else {
+                    return true
+                }
+
+                let timeSinceLastCheck = cachesLastUpdated.timeIntervalSinceNow * -1
+                let cacheDurationInSeconds = self.cacheDurationInSeconds(
+                    isAppBackgrounded: isAppBackgrounded,
+                    isSandbox: self.sandboxEnvironmentDetector.isSandbox
+                )
+
+                return timeSinceLastCheck >= cacheDurationInSeconds
             }
-
-            let timeSinceLastCheck = cachesLastUpdated.timeIntervalSinceNow * -1
-            let cacheDurationInSeconds = self.cacheDurationInSeconds(
-                isAppBackgrounded: isAppBackgrounded,
-                isSandbox: self.sandboxEnvironmentDetector.isSandbox
-            )
-
-            return timeSinceLastCheck >= cacheDurationInSeconds
         }
     }
 
     func clearVirtualCurrenciesCache(appUserID: String) {
-        self.userDefaults.write {
-            Self.clearVirtualCurrenciesCacheLastUpdatedTimestamp($0, appUserID: appUserID)
-            $0.removeObject(forKey: CacheKey.virtualCurrencies(appUserID))
+        virtualCurrenciesLock.perform {
+            self.userDefaults.write {
+                Self.clearVirtualCurrenciesCacheLastUpdatedTimestamp($0, appUserID: appUserID)
+                $0.removeObject(forKey: CacheKey.virtualCurrencies(appUserID))
+            }
         }
     }
 

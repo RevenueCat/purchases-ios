@@ -119,7 +119,7 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
     }
 
     var invalidateVirtualCurrenciesCacheCallCount = 0
-    func invalidateVirtualCurrenciesCache() async {
+    func invalidateVirtualCurrenciesCache() {
         invalidateVirtualCurrenciesCacheCallCount += 1
     }
 

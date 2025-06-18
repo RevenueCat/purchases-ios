@@ -56,7 +56,7 @@ import SwiftUI
 
     func syncPurchases() async throws -> CustomerInfo
 
-    func invalidateVirtualCurrenciesCache() async
+    func invalidateVirtualCurrenciesCache()
 
     func virtualCurrencies() async throws -> RevenueCat.VirtualCurrencies
 
