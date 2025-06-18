@@ -206,7 +206,8 @@ private extension CustomerCenterView {
             } else {
                 FallbackNoSubscriptionsView(
                     customerCenterViewModel: viewModel,
-                    actionWrapper: self.viewModel.actionWrapper
+                    actionWrapper: self.viewModel.actionWrapper,
+                    virtualCurrencies: self.viewModel.virtualCurrencies
                 )
             }
         }
@@ -228,6 +229,7 @@ private extension CustomerCenterView {
             originalAppUserId: viewModel.originalAppUserId,
             originalPurchaseDate: viewModel.originalPurchaseDate,
             shouldShowSeeAllPurchases: viewModel.shouldShowSeeAllPurchases,
+            virtualCurrencies: self.viewModel.virtualCurrencies,
             purchasesProvider: self.viewModel.purchasesProvider,
             actionWrapper: self.viewModel.actionWrapper
         )
@@ -240,6 +242,7 @@ private extension CustomerCenterView {
             screen: screen,
             purchaseInformation: viewModel.subscriptionsSection.first
                 ?? viewModel.nonSubscriptionsSection.first,
+            virtualCurrencies: self.viewModel.virtualCurrencies,
             showPurchaseHistory: viewModel.shouldShowSeeAllPurchases,
             allowsMissingPurchaseAction: true,
             purchasesProvider: self.viewModel.purchasesProvider,
