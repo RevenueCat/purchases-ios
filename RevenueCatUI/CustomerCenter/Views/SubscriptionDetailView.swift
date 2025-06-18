@@ -379,7 +379,7 @@ struct SubscriptionDetailView: View {
             CompatibilityNavigationStack {
                 SubscriptionDetailView(
                     customerInfoViewModel: CustomerCenterViewModel(
-                        activeSubscriptionPurchases: [.yearlyExpiring(store: .playStore)],
+                        activeSubscriptionPurchases: [.mock(store: .playStore, isExpired: false)],
                         activeNonSubscriptionPurchases: [],
                         configuration: .default
                     ),
@@ -391,7 +391,7 @@ struct SubscriptionDetailView: View {
                         showPurchaseHistory: true,
                         allowsMissingPurchaseAction: false,
                         virtualCurrencies: CustomerCenterConfigData.fourVirtualCurrencies,
-                        purchaseInformation: .yearlyExpiring(store: .playStore)
+                        purchaseInformation: .mock(store: .playStore, isExpired: false)
                     )
                 )
             }
@@ -401,7 +401,7 @@ struct SubscriptionDetailView: View {
             CompatibilityNavigationStack {
                 SubscriptionDetailView(
                     customerInfoViewModel: CustomerCenterViewModel(
-                        activeSubscriptionPurchases: [.yearlyExpiring(store: .playStore)],
+                        activeSubscriptionPurchases: [.mock(store: .playStore, isExpired: false)],
                         activeNonSubscriptionPurchases: [],
                         configuration: .default
                     ),
@@ -413,7 +413,7 @@ struct SubscriptionDetailView: View {
                         showPurchaseHistory: true,
                         allowsMissingPurchaseAction: false,
                         virtualCurrencies: CustomerCenterConfigData.fiveVirtualCurrencies,
-                        purchaseInformation: .yearlyExpiring(store: .playStore)
+                        purchaseInformation: .mock(store: .playStore, isExpired: false)
                     )
                 )
             }

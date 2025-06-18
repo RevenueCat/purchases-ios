@@ -13,7 +13,7 @@
 
 #if os(iOS)
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 /// A SwiftUI view that displays a list of virtual currency balances for the current user.

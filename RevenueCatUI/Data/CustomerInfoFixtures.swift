@@ -12,7 +12,7 @@
 //  Created by Cesar de la Vega on 28/10/24.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 // swiftlint:disable force_unwrapping
 // swiftlint:disable:next type_body_length
