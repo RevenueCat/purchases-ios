@@ -65,6 +65,14 @@ final class MockPurchases: PaywallPurchasesType {
         await self.trackEventBlock(paywallEvent)
     }
 
+#if !os(macOS) && !os(tvOS)
+
+    func failedToLoadFontWithConfig(_ fontConfig: UIConfig.FontsConfig) {
+        // No-op, this is a mock implementation.
+    }
+
+#endif
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

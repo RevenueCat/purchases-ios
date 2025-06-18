@@ -12,7 +12,7 @@
 //  Created by Cesar de la Vega on 28/10/24.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 // swiftlint:disable force_unwrapping
 // swiftlint:disable:next type_body_length
@@ -284,6 +284,25 @@ class CustomerInfoFixtures {
     static let customerInfoWithExpiredRCBillingSubscriptions: CustomerInfo = {
         makeCustomerInfo(
             store: "rc_billing",
+            purchaseDate: "1999-04-12T00:03:28Z",
+            expirationDate: "2000-04-12T00:03:35Z"
+        )
+    }()
+
+    static let customerInfoWithPaddleSubscriptions: CustomerInfo = {
+        makeCustomerInfo(store: "paddle")
+    }()
+
+    static let customerInfoWithNonRenewingPaddleSubscriptions: CustomerInfo = {
+        makeCustomerInfo(
+            store: "paddle",
+            unsubscribeDetectedAt: "2023-04-12T00:03:35Z"
+        )
+    }()
+
+    static let customerInfoWithExpiredPaddleSubscriptions: CustomerInfo = {
+        makeCustomerInfo(
+            store: "paddle",
             purchaseDate: "1999-04-12T00:03:28Z",
             expirationDate: "2000-04-12T00:03:35Z"
         )

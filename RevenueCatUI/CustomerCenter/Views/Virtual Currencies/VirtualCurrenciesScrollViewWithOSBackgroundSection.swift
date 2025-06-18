@@ -14,7 +14,7 @@
 #if os(iOS)
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 /// A SwiftUI view that displays a list of virtual currency balances in a section format.
