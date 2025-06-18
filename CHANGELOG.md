@@ -1,3 +1,8 @@
+## 5.29.0-vc-beta.3
+## RevenueCat SDK
+
+- Updated underlying SDK to use version 5.29.0. This includes a fix that allows the SDK to be compiled with Xcode 26.
+
 ## 5.29.0
 ## RevenueCat SDK
 ### Customer Center
