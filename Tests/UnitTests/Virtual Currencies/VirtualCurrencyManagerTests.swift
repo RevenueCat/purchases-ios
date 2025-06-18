@@ -272,7 +272,7 @@ class VirtualCurrencyManagerTests: TestCase {
 
     // MARK: - invalidateVirtualCurrenciesCache() Tests
     func testInvalidateVirtualCurrenciesCacheCallsClearVirtualCurrenciesCache() async {
-        await virtualCurrencyManager.invalidateVirtualCurrenciesCache()
+        virtualCurrencyManager.invalidateVirtualCurrenciesCache()
 
         XCTAssertTrue(self.mockDeviceCache.invokedClearVirtualCurrenciesCache)
         XCTAssertEqual(self.mockDeviceCache.invokedClearVirtualCurrenciesCacheCount, 1)
