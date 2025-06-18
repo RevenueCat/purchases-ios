@@ -12,8 +12,8 @@
 //  Created by Facundo Menzella on 13/5/25.
 
 import Nimble
-@_spi(Internal) @testable import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) import RevenueCat
+@_spi(Internal) @testable import RevenueCatUI
 import StoreKit
 import XCTest
 
@@ -35,7 +35,7 @@ final class SubscriptionDetailViewModelTests: TestCase {
             showPurchaseHistory: false,
             allowsMissingPurchaseAction: false,
             virtualCurrencies: nil,
-            purchaseInformation: .yearlyExpiring(store: .appStore)
+            purchaseInformation: .mock(store: .appStore, isExpired: false)
         )
 
         expect(viewModelAppStore.shouldShowContactSupport).to(beFalse())
@@ -61,7 +61,7 @@ final class SubscriptionDetailViewModelTests: TestCase {
                 showPurchaseHistory: false,
                 allowsMissingPurchaseAction: true,
                 virtualCurrencies: nil,
-                purchaseInformation: .yearlyExpiring(store: $0)
+                purchaseInformation: .mock(store: $0, isExpired: false)
             )
 
             expect(viewModelOther.shouldShowContactSupport).to(beTrue())

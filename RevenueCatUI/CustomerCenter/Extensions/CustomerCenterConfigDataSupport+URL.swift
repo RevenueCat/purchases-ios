@@ -12,7 +12,7 @@
 //  Created by Facundo Menzella on 2/4/25.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 #if os(iOS)
 

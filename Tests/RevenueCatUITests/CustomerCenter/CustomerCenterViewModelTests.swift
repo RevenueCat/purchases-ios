@@ -16,8 +16,8 @@
 // swiftlint:disable type_body_length function_body_length
 
 import Nimble
-import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) import RevenueCat
+@_spi(Internal) @testable import RevenueCatUI
 import XCTest
 
 #if os(iOS)
@@ -1043,7 +1043,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         // one active subscription
         viewModel = CustomerCenterViewModel(
-            activeSubscriptionPurchases: [.yearlyExpiring()],
+            activeSubscriptionPurchases: [.monthlyRenewing],
             activeNonSubscriptionPurchases: [],
             configuration: CustomerCenterConfigData.default
         )
@@ -1053,8 +1053,8 @@ final class CustomerCenterViewModelTests: TestCase {
         // two active subscription
         viewModel = CustomerCenterViewModel(
             activeSubscriptionPurchases: [
-                .yearlyExpiring(productIdentifier: "1"),
-                    .yearlyExpiring(productIdentifier: "2")
+                .mock(productIdentifier: "1"),
+                    .mock(productIdentifier: "2")
             ],
             activeNonSubscriptionPurchases: [],
             configuration: CustomerCenterConfigData.default
@@ -1065,7 +1065,7 @@ final class CustomerCenterViewModelTests: TestCase {
         // one active subscription and one purchase
         viewModel = CustomerCenterViewModel(
             activeSubscriptionPurchases: [
-                .yearlyExpiring(productIdentifier: "1")
+                .mock(productIdentifier: "1")
             ],
             activeNonSubscriptionPurchases: [
                 .consumable

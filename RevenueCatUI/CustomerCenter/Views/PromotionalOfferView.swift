@@ -13,7 +13,7 @@
 //  Created by Cesar de la Vega on 17/6/24.
 //
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import StoreKit
 import SwiftUI
 

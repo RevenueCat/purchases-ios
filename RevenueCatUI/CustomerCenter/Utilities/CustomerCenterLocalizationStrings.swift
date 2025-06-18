@@ -11,7 +11,7 @@
 //
 //  Created by Facundo Menzella on 21/1/25.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 /// **typealias** for **CustomerCenterConfigData.Localization.CommonLocalizedString**
 typealias CCLocalizedString = CustomerCenterConfigData.Localization.CommonLocalizedString

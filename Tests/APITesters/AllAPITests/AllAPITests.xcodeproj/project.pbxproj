@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1E37C7842C65187B0009D546 /* CustomerCenterConfigDataAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E37C7812C6518410009D546 /* CustomerCenterConfigDataAPI.swift */; };
 		1E8A60812CDCF29D0034ACF3 /* RedeemWebPurchasesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E8A60802CDCF29D0034ACF3 /* RedeemWebPurchasesAPI.swift */; };
 		1EB697C22CD26218003000FC /* WebPurchaseRedemptionResultAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EB697C12CD26218003000FC /* WebPurchaseRedemptionResultAPI.swift */; };
 		2D4C60E12C5AD1BC00A29FD2 /* AllAPITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C60D82C5AD1BC00A29FD2 /* AllAPITests.framework */; };
@@ -221,7 +220,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		1E37C7812C6518410009D546 /* CustomerCenterConfigDataAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomerCenterConfigDataAPI.swift; sourceTree = "<group>"; };
 		1E8A60802CDCF29D0034ACF3 /* RedeemWebPurchasesAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RedeemWebPurchasesAPI.swift; sourceTree = "<group>"; };
 		1EB697C12CD26218003000FC /* WebPurchaseRedemptionResultAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebPurchaseRedemptionResultAPI.swift; sourceTree = "<group>"; };
 		2D4C60D82C5AD1BC00A29FD2 /* AllAPITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AllAPITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -569,7 +567,6 @@
 				2D4C61D32C5AD62900A29FD2 /* AttributionNetworkAPI.swift */,
 				2D4C61CC2C5AD62900A29FD2 /* AttributionAPI.swift */,
 				2D4C61D42C5AD62900A29FD2 /* ConfigurationAPI.swift */,
-				1E37C7812C6518410009D546 /* CustomerCenterConfigDataAPI.swift */,
 				2D4C61C92C5AD62800A29FD2 /* CustomerInfoAPI.swift */,
 				75C1B6AC2D48D4550011512D /* DangerousSettingsAPI.swift */,
 				2D4C61CA2C5AD62900A29FD2 /* EntitlementInfoAPI.swift */,
@@ -1045,7 +1042,6 @@
 				2D4C61E42C5AD62A00A29FD2 /* main.swift in Sources */,
 				2D4C61E62C5AD62A00A29FD2 /* StoreProductDiscountAPI.swift in Sources */,
 				2D4C61EE2C5AD62A00A29FD2 /* ConfigurationAPI.swift in Sources */,
-				1E37C7842C65187B0009D546 /* CustomerCenterConfigDataAPI.swift in Sources */,
 				2D4C61E32C5AD62A00A29FD2 /* PurchasesDiagnosticsAPI.swift in Sources */,
 				2D4C61E22C5AD62A00A29FD2 /* CustomerInfoAPI.swift in Sources */,
 				2D4C61DC2C5AD62A00A29FD2 /* StoreTransactionAPI.swift in Sources */,

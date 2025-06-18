@@ -13,7 +13,7 @@
 //
 
 #if os(iOS)
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 @available(iOS 15.0, *)
@@ -53,9 +53,7 @@ struct PurchaseDetailView: View {
         .listStyle(.insetGrouped)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
-            Task {
-                await viewModel.didAppear()
-            }
+            viewModel.didAppear(localization: localization)
         }
     }
 
@@ -72,7 +70,8 @@ struct PurchaseDetailView: View {
                 .store(let value):
             return localization[value]
 
-        case .purchaseDate(let value),
+        case .latestPurchaseDate(let value),
+                .originalPurchaseDate(let value),
                 .expiresDate(let value),
                 .nextRenewalDate(let value),
                 .unsubscribeDetectedAt(let value),
