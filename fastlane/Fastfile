@@ -370,7 +370,7 @@ platform :ios do
     )
 
     send_to_emerge(
-        app_id_suffix: "mac_catalyst"
+        app_id_suffix: "mac-catalyst"
     )
   end
   
@@ -383,7 +383,7 @@ platform :ios do
     )
 
     send_to_emerge(
-        app_id_suffix: "mac_designed_for_ipad"
+        app_id_suffix: "mac-designed-for-ipad"
     )
   end
   
