@@ -346,6 +346,7 @@ platform :ios do
   lane :build_paywalls_tester_for_emerge do |options|
     build_paywalls_tester_for_emerge_ios(options)
     build_paywalls_tester_for_emerge_mac_catalyst(options)
+    build_paywalls_tester_for_emerge_mac_designed_for_ipad(options)
   end
   
   private_lane :build_paywalls_tester_for_emerge_ios do |options|
@@ -355,7 +356,7 @@ platform :ios do
       build_for_testing: true,
     )
 
-    send_to_emerge(options)
+    send_to_emerge()
   end
   
   private_lane :build_paywalls_tester_for_emerge_mac_catalyst do |options|
@@ -366,7 +367,22 @@ platform :ios do
       destination: "platform=macOS,arch=arm64,variant=Mac Catalyst"
     )
 
-    send_to_emerge(options)
+    send_to_emerge(
+        app_id_suffix: "mac_catalyst"
+    )
+  end
+  
+  private_lane :build_paywalls_tester_for_emerge_mac_designed_for_ipad do |options|
+    build_mac_app(
+      workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
+      scheme: "PaywallsTester - Live Config",
+      configuration: "Debug",
+      destination: "platform=macOS,arch=arm64,variant=Designed for iPad"
+    )
+
+    send_to_emerge(
+        app_id_suffix: "mac_designed_for_ipad"
+    )
   end
   
   private_lane :send_to_emerge do |options|
@@ -384,6 +400,7 @@ platform :ios do
 
     emerge_args = {repo_name: "RevenueCat/purchases-ios"}
     emerge_args[:pr_number] = pr_number if pr_number
+    emerge_args[:app_id_suffix] = options[:app_id_suffix] if options[:app_id_suffix]
     emerge(emerge_args)
 end
   
