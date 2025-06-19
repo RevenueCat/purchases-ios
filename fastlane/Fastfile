@@ -359,7 +359,6 @@ platform :ios do
     send_to_emerge(
         app_id_suffix: "ios"
     )
-)
   end
   
   private_lane :build_paywalls_tester_for_emerge_mac_catalyst do |options|
