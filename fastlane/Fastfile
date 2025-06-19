@@ -344,7 +344,7 @@ platform :ios do
 
   desc "Build the Paywalls Test app for Emerge Snapshots"
   lane :build_paywalls_tester_for_emerge do |options|
-    build_paywalls_tester_for_emerge_ios(options)
+    # build_paywalls_tester_for_emerge_ios(options)
     build_paywalls_tester_for_emerge_mac_catalyst(options)
     build_paywalls_tester_for_emerge_mac_designed_for_ipad(options)
   end
