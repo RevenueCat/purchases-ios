@@ -178,6 +178,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .health,
                 .getOfferings,
                 .getProductEntitlementMapping,
+                .getVirtualCurrencies,
                 .appHealthReport:
             return true
         case .getIntroEligibility,
@@ -186,7 +187,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postAdServicesToken,
                 .postOfferForSigning,
                 .postRedeemWebPurchase,
-                .getVirtualCurrencies,
                 .getCustomerCenterConfig:
             return false
         }
@@ -197,6 +197,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .getCustomerInfo,
                 .logIn,
                 .postReceiptData,
+                .getVirtualCurrencies,
                 .health:
             return true
         case .getOfferings,
@@ -208,7 +209,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postRedeemWebPurchase,
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
-                .getVirtualCurrencies,
                 .appHealthReport:
             return false
         }
