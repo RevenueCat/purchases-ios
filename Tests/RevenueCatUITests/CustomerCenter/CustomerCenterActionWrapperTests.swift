@@ -7,10 +7,11 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  CustomerCenterActionWrapperTests.swift
+//  CustomerCenter.swift
 //
-//  Created by Facundo Menzella on 24/3/25.
+//  Created by Facundo Menzella on 16/6/25.
 
+import RevenueCat
 @testable import RevenueCatUI
 import SwiftUI
 import XCTest
@@ -18,279 +19,133 @@ import XCTest
 #if !os(watchOS) && !os(macOS)
 
 @MainActor
-private final class WindowHolder {
-    var window: UIWindow?
-}
-
 @available(iOS 15.0, *)
 final class CustomerCenterActionWrapperTests: TestCase {
 
     func testRestoreStarted() async throws {
-        let actionWrapper = await CustomerCenterActionWrapper()
-        let expectation = XCTestExpectation(description: "restoreStarted")
+        let wrapper = CustomerCenterActionWrapper()
+        let expectation = XCTestExpectation(description: "onCustomerCenterRestoreStarted called")
 
-        let windowHolder = await WindowHolder()
-
-        await MainActor.run {
-            let testView = Text("test")
-                .modifier(CustomerCenterActionViewModifier(actionWrapper: actionWrapper))
-                .onCustomerCenterRestoreStarted {
-                    expectation.fulfill()
-                }
-
-            let viewController = UIHostingController(rootView: testView)
-            let window = UIWindow(frame: UIScreen.main.bounds)
-            window.rootViewController = viewController
-            window.makeKeyAndVisible()
-            viewController.view.layoutIfNeeded()
-
-            windowHolder.window = window
+        wrapper.onCustomerCenterRestoreStarted {
+            expectation.fulfill()
         }
 
-        await MainActor.run {
-            actionWrapper.handleAction(.restoreStarted)
-        }
-
+        wrapper.handleAction(.restoreStarted)
         await fulfillment(of: [expectation], timeout: 1.0)
     }
 
     func testRestoreFailed() async throws {
-        let actionWrapper = await CustomerCenterActionWrapper()
-        let expectation = XCTestExpectation(description: "restoreFailed")
+        let wrapper = CustomerCenterActionWrapper()
+        let expectation = XCTestExpectation(description: "onCustomerCenterRestoreFailed called")
 
-        let windowHolder = await WindowHolder()
-
-        await MainActor.run {
-            let testView = Text("test")
-                .modifier(CustomerCenterActionViewModifier(actionWrapper: actionWrapper))
-                .onCustomerCenterRestoreFailed { _ in
-                    expectation.fulfill()
-                }
-
-            let viewController = UIHostingController(rootView: testView)
-            let window = UIWindow(frame: UIScreen.main.bounds)
-            window.rootViewController = viewController
-            window.makeKeyAndVisible()
-            viewController.view.layoutIfNeeded()
-
-            windowHolder.window = window
+        wrapper.onCustomerCenterRestoreFailed { error in
+            // swiftlint:disable:next force_cast
+            XCTAssertEqual((error as! TestError), TestError.error)
+            expectation.fulfill()
         }
 
-        await MainActor.run {
-            actionWrapper.handleAction(.restoreFailed(TestError.error))
-        }
-
-        await fulfillment(of: [expectation], timeout: 1.0)
-    }
-
-    func testShowingManageSubscriptions() async throws {
-        let actionWrapper = await CustomerCenterActionWrapper()
-        let expectation = XCTestExpectation(description: "showingManageSubscriptions")
-
-        let windowHolder = await WindowHolder()
-
-        await MainActor.run {
-            let testView = Text("test")
-                .modifier(CustomerCenterActionViewModifier(actionWrapper: actionWrapper))
-                .onCustomerCenterShowingManageSubscriptions {
-                    expectation.fulfill()
-                }
-
-            let viewController = UIHostingController(rootView: testView)
-            let window = UIWindow(frame: UIScreen.main.bounds)
-            window.rootViewController = viewController
-            window.makeKeyAndVisible()
-            viewController.view.layoutIfNeeded()
-
-            windowHolder.window = window
-        }
-
-        await MainActor.run {
-            actionWrapper.handleAction(.showingManageSubscriptions)
-        }
-
+        wrapper.handleAction(.restoreFailed(TestError.error))
         await fulfillment(of: [expectation], timeout: 1.0)
     }
 
     func testRestoreCompleted() async throws {
-        let actionWrapper = await CustomerCenterActionWrapper()
-        let expectation = XCTestExpectation(description: "restoreCompleted")
+        let wrapper = CustomerCenterActionWrapper()
+        let expectation = XCTestExpectation(description: "onCustomerCenterRestoreCompleted called")
 
-        let windowHolder = await WindowHolder()
+        let expectedInfo = CustomerInfoFixtures.customerInfoWithGoogleSubscriptions
 
-        await MainActor.run {
-            let testView = Text("test")
-                .modifier(CustomerCenterActionViewModifier(actionWrapper: actionWrapper))
-                .onCustomerCenterRestoreCompleted { _ in
-                    expectation.fulfill()
-                }
-
-            let viewController = UIHostingController(rootView: testView)
-            let window = UIWindow(frame: UIScreen.main.bounds)
-            window.rootViewController = viewController
-            window.makeKeyAndVisible()
-            viewController.view.layoutIfNeeded()
-
-            windowHolder.window = window
+        wrapper.onCustomerCenterRestoreCompleted { info in
+            XCTAssertEqual(info, expectedInfo)
+            expectation.fulfill()
         }
 
-        await MainActor.run {
-            actionWrapper.handleAction(.restoreCompleted(CustomerInfoFixtures.customerInfoWithGoogleSubscriptions))
-        }
-
+        wrapper.handleAction(.restoreCompleted(expectedInfo))
         await fulfillment(of: [expectation], timeout: 1.0)
     }
 
-    func testFeedbackSurveyCompleted() async throws {
-        let actionWrapper = await CustomerCenterActionWrapper()
-        let expectation = XCTestExpectation(description: "feedbackSurveyCompleted")
+    func testShowingManageSubscriptions() async throws {
+        let wrapper = CustomerCenterActionWrapper()
+        let expectation = XCTestExpectation(description: "onCustomerCenterShowingManageSubscriptions called")
 
-        let windowHolder = await WindowHolder()
-
-        await MainActor.run {
-            let testView = Text("test")
-                .modifier(CustomerCenterActionViewModifier(actionWrapper: actionWrapper))
-                .onCustomerCenterFeedbackSurveyCompleted { _ in
-                    expectation.fulfill()
-                }
-
-            let viewController = UIHostingController(rootView: testView)
-            let window = UIWindow(frame: UIScreen.main.bounds)
-            window.rootViewController = viewController
-            window.makeKeyAndVisible()
-            viewController.view.layoutIfNeeded()
-
-            windowHolder.window = window
+        wrapper.onCustomerCenterShowingManageSubscriptions {
+            expectation.fulfill()
         }
 
-        await MainActor.run {
-            actionWrapper.handleAction(.feedbackSurveyCompleted(""))
-        }
-
+        wrapper.handleAction(.showingManageSubscriptions)
         await fulfillment(of: [expectation], timeout: 1.0)
     }
 
     func testRefundRequestStarted() async throws {
-        let actionWrapper = await CustomerCenterActionWrapper()
-        let expectation = XCTestExpectation(description: "refundRequestStarted")
+        let wrapper = CustomerCenterActionWrapper()
+        let expectation = XCTestExpectation(description: "onCustomerCenterRefundRequestStarted called")
 
-        let windowHolder = await WindowHolder()
+        let productId = "test_product"
 
-        await MainActor.run {
-            let testView = Text("test")
-                .modifier(CustomerCenterActionViewModifier(actionWrapper: actionWrapper))
-                .onCustomerCenterRefundRequestStarted { _ in
-                    expectation.fulfill()
-                }
-
-            let viewController = UIHostingController(rootView: testView)
-            let window = UIWindow(frame: UIScreen.main.bounds)
-            window.rootViewController = viewController
-            window.makeKeyAndVisible()
-            viewController.view.layoutIfNeeded()
-
-            windowHolder.window = window
+        wrapper.onCustomerCenterRefundRequestStarted { id in
+            XCTAssertEqual(id, productId)
+            expectation.fulfill()
         }
 
-        await MainActor.run {
-            actionWrapper.handleAction(.refundRequestStarted(""))
-        }
-
+        wrapper.handleAction(.refundRequestStarted(productId))
         await fulfillment(of: [expectation], timeout: 1.0)
     }
 
     func testRefundRequestCompleted() async throws {
-        let actionWrapper = await CustomerCenterActionWrapper()
-        let expectation = XCTestExpectation(description: "refundRequestCompleted")
+        let wrapper = CustomerCenterActionWrapper()
+        let expectation = XCTestExpectation(description: "onCustomerCenterRefundRequestCompleted called")
 
-        let windowHolder = await WindowHolder()
+        let productId = "completed_product"
+        let status: RefundRequestStatus = .success
 
-        await MainActor.run {
-            let testView = Text("test")
-                .modifier(CustomerCenterActionViewModifier(actionWrapper: actionWrapper))
-                .onCustomerCenterRefundRequestCompleted { _, _ in
-                    expectation.fulfill()
-                }
-
-            let viewController = UIHostingController(rootView: testView)
-            let window = UIWindow(frame: UIScreen.main.bounds)
-            window.rootViewController = viewController
-            window.makeKeyAndVisible()
-            viewController.view.layoutIfNeeded()
-
-            windowHolder.window = window
+        wrapper.onCustomerCenterRefundRequestCompleted { id, result in
+            XCTAssertEqual(id, productId)
+            XCTAssertEqual(result, status)
+            expectation.fulfill()
         }
 
-        await MainActor.run {
-            actionWrapper.handleAction(.refundRequestCompleted("", .error))
+        wrapper.handleAction(.refundRequestCompleted(productId, status))
+        await fulfillment(of: [expectation], timeout: 1.0)
+    }
+
+    func testFeedbackSurveyCompleted() async throws {
+        let wrapper = CustomerCenterActionWrapper()
+        let expectation = XCTestExpectation(description: "onCustomerCenterFeedbackSurveyCompleted called")
+
+        let option = "option-id"
+
+        wrapper.onCustomerCenterFeedbackSurveyCompleted { value in
+            XCTAssertEqual(value, option)
+            expectation.fulfill()
         }
 
+        wrapper.handleAction(.feedbackSurveyCompleted(option))
+        await fulfillment(of: [expectation], timeout: 1.0)
+    }
+
+    func testManagementOptionSelected() async throws {
+        let wrapper = CustomerCenterActionWrapper()
+        let expectation = XCTestExpectation(description: "onCustomerCenterManagementOptionSelected called")
+
+        wrapper.onCustomerCenterManagementOptionSelected { _ in
+            expectation.fulfill()
+        }
+
+        wrapper.handleAction(.buttonTapped(action: CustomerCenterManagementOption.MissingPurchase()))
         await fulfillment(of: [expectation], timeout: 1.0)
     }
 
     func testPromotionalOfferSuccess() async throws {
-        let actionWrapper = await CustomerCenterActionWrapper()
-        let expectation = XCTestExpectation(description: "promotionalOfferSuccess")
+        let wrapper = CustomerCenterActionWrapper()
+        let expectation = XCTestExpectation(description: "onCustomerCenterPromotionalOfferSuccess called")
 
-        let windowHolder = await WindowHolder()
-
-        await MainActor.run {
-            let testView = Text("test")
-                .modifier(CustomerCenterActionViewModifier(actionWrapper: actionWrapper))
-                .onCustomerCenterPromotionalOfferSuccess {
-                    expectation.fulfill()
-                }
-
-            let viewController = UIHostingController(rootView: testView)
-            let window = UIWindow(frame: UIScreen.main.bounds)
-            window.rootViewController = viewController
-            window.makeKeyAndVisible()
-            viewController.view.layoutIfNeeded()
-
-            windowHolder.window = window
+        wrapper.onCustomerCenterPromotionalOfferSuccess {
+            expectation.fulfill()
         }
 
-        await MainActor.run {
-            actionWrapper.handleAction(.promotionalOfferSuccess)
-        }
-
+        wrapper.handleAction(.promotionalOfferSuccess)
         await fulfillment(of: [expectation], timeout: 1.0)
     }
 
-    func testNestedActionWrappers() async throws {
-        let actionWrapper = await CustomerCenterActionWrapper()
-        let expectation1 = XCTestExpectation(description: "promotionalOfferSuccess")
-        let expectation2 = XCTestExpectation(description: "promotionalOfferSuccess")
-
-        let windowHolder = await WindowHolder()
-
-        await MainActor.run {
-            let testView = VStack {
-                Text("test")
-                    .modifier(CustomerCenterActionViewModifier(actionWrapper: actionWrapper))
-                    .onCustomerCenterPromotionalOfferSuccess {
-                        expectation1.fulfill()
-                    }
-            }
-                .onCustomerCenterPromotionalOfferSuccess {
-                    expectation2.fulfill()
-                }
-
-            let viewController = UIHostingController(rootView: testView)
-            let window = UIWindow(frame: UIScreen.main.bounds)
-            window.rootViewController = viewController
-            window.makeKeyAndVisible()
-            viewController.view.layoutIfNeeded()
-
-            windowHolder.window = window
-        }
-
-        await MainActor.run {
-            actionWrapper.handleAction(.promotionalOfferSuccess)
-        }
-
-        await fulfillment(of: [expectation1, expectation2], timeout: 1.0)
-    }
 }
 
 #endif
