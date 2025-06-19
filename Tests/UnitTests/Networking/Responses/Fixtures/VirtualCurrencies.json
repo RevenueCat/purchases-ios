@@ -1,0 +1,15 @@
+{
+  "virtual_currencies": {
+    "COIN": {
+      "balance": 1,
+      "code": "COIN",
+      "description": "It's a coin",
+      "name": "Coin"
+    },
+    "RC_COIN": {
+      "balance": 0,
+      "code": "RC_COIN",
+      "name": "RC Coin"
+    }
+  }
+}

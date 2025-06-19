@@ -12,6 +12,8 @@
 //  Created by Joshua Liebowitz on 6/29/21.
 //
 
+// swiftlint:disable file_length
+
 import Foundation
 
 #if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)
@@ -205,6 +207,15 @@ class SystemInfo {
             isApplicationBackgrounded = self.isApplicationBackgroundedWatchOS
             #endif
             completion(isApplicationBackgrounded)
+        }
+    }
+
+    /// Async/await API to check if an app is backgrounded at a specific moment.
+    func isApplicationBackgrounded() async -> Bool {
+        return await Async.call { completion in
+            self.isApplicationBackgrounded { isAppBackgrounded in
+                completion(isAppBackgrounded)
+            }
         }
     }
 

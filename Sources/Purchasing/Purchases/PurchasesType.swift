@@ -978,6 +978,33 @@ public protocol PurchasesType: AnyObject {
         completion: @escaping (CustomerInfo?, PublicError?) -> Void
     )
 
+    /**
+     * Fetches the virtual currencies for the current subscriber.
+     *
+     * - Parameter completion: The callback that is called when the request is complete with a ``VirtualCurrencies``
+     * object containing the subscriber's virtual currencies.
+     *
+     * #### Related Articles
+     * -  [Virtual Currencies](https://www.revenuecat.com/docs/offerings/virtual-currency)
+     */
+    @objc
+    func virtualCurrencies(
+        completion: @escaping @Sendable (VirtualCurrencies?, PublicError?) -> Void
+    )
+
+    /**
+     * Invalidates the cache for virtual currencies.
+     *
+     * This is useful for cases where a virtual currency's balance might have been updated
+     * outside of the app, like if you decreased a user's balance from the user spending a virtual currency,
+     * or if you increased the balance from your backend using the server APIs.
+     *
+     * #### Related Articles
+     * -  [Virtual Currencies](https://www.revenuecat.com/docs/offerings/virtual-currency)
+     */
+    @objc
+    func invalidateVirtualCurrenciesCache()
+
     // MARK: - Deprecated
 
     // swiftlint:disable missing_docs
@@ -1233,8 +1260,17 @@ public protocol PurchasesSwiftType: AnyObject {
     func eligibleWinBackOffers(
         forPackage package: Package
     ) async throws -> [WinBackOffer]
-    #endif
 
+    /**
+     * Fetches the virtual currencies for the current subscriber.
+     *
+     * - Returns: The ``VirtualCurrencies`` object containing the virtual currencies for the subscriber.
+     *
+     * #### Related Articles
+     * -  [Virtual Currencies](https://www.revenuecat.com/docs/offerings/virtual-currency)
+     */
+    func virtualCurrencies() async throws -> VirtualCurrencies
+    #endif
 }
 
 // MARK: -

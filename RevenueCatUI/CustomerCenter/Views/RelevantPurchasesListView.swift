@@ -35,7 +35,7 @@ struct RelevantPurchasesListView: View {
     @Environment(\.navigationOptions)
     var navigationOptions
 
-    @StateObject
+    @ObservedObject
     private var viewModel: RelevantPurchasesListViewModel
 
     @ObservedObject
@@ -47,7 +47,7 @@ struct RelevantPurchasesListView: View {
         originalAppUserId: String,
         originalPurchaseDate: Date?,
         shouldShowSeeAllPurchases: Bool,
-        virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]?,
+        virtualCurrencies: RevenueCat.VirtualCurrencies?,
         purchasesProvider: CustomerCenterPurchasesType,
         actionWrapper: CustomerCenterActionWrapper
     ) {
@@ -166,7 +166,7 @@ struct RelevantPurchasesListView: View {
                     .tint(colorScheme == .dark ? .white : .black)
                 }
 
-                if let virtualCurrencies = viewModel.virtualCurrencies, !virtualCurrencies.isEmpty {
+                if let virtualCurrencies = viewModel.virtualCurrencies, !virtualCurrencies.all.isEmpty {
                     VirtualCurrenciesScrollViewWithOSBackgroundSection(
                         virtualCurrencies: virtualCurrencies,
                         onSeeAllInAppCurrenciesButtonTapped: self.viewModel.displayAllInAppCurrenciesScreen
@@ -409,7 +409,7 @@ struct RelevantPurchasesListView_Previews: PreviewProvider {
                         screen: warningOffMock.screens[.management]!,
                         originalAppUserId: "originalAppUserId",
                         activePurchases: purchases,
-                        virtualCurrencies: CustomerCenterConfigData.fourVirtualCurrencies,
+                        virtualCurrencies: VirtualCurrenciesFixtures.fourVirtualCurrencies,
                         shouldShowSeeAllPurchases: false
                     )
                 )
@@ -429,7 +429,7 @@ struct RelevantPurchasesListView_Previews: PreviewProvider {
                         screen: warningOffMock.screens[.management]!,
                         originalAppUserId: "originalAppUserId",
                         activePurchases: purchases,
-                        virtualCurrencies: CustomerCenterConfigData.fiveVirtualCurrencies,
+                        virtualCurrencies: VirtualCurrenciesFixtures.fiveVirtualCurrencies,
                         shouldShowSeeAllPurchases: false
                     )
                 )

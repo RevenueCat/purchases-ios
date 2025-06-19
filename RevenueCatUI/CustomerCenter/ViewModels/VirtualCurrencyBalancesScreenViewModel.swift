@@ -74,8 +74,9 @@ final class VirtualCurrencyBalancesScreenViewModel: ObservableObject {
         self.viewState = .loading
 
         do {
-            let customerInfo = try await self.purchasesProvider.customerInfo(fetchPolicy: .fetchCurrent)
-            let virtualCurrencyBalanceData = self.extractVirtualCurrencyBalanceData(from: customerInfo)
+            self.purchasesProvider.invalidateVirtualCurrenciesCache()
+            let virtualCurrencies = try await self.purchasesProvider.virtualCurrencies()
+            let virtualCurrencyBalanceData = self.extractVirtualCurrencyBalanceData(from: virtualCurrencies.all)
 
             self.viewState = .loaded(virtualCurrencyBalanceData)
         } catch {
@@ -88,9 +89,9 @@ final class VirtualCurrencyBalancesScreenViewModel: ObservableObject {
     /// - Parameter customerInfo: The customer information containing virtual currency data.
     /// - Returns: An array of row data objects sorted by balance in descending order.
     private func extractVirtualCurrencyBalanceData(
-        from customerInfo: RevenueCat.CustomerInfo
+        from virtualCurrencies: [String: RevenueCat.VirtualCurrency]
     ) -> [VirtualCurrencyBalanceListRow.RowData] {
-        return customerInfo.virtualCurrencies
+        return virtualCurrencies
             .map {
                 VirtualCurrencyBalanceListRow.RowData(
                     virtualCurrencyCode: $0.key,

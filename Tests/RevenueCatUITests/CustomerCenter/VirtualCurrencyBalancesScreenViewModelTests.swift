@@ -55,13 +55,17 @@ final class VirtualCurrencyBalancesScreenViewModelTests: TestCase {
     }
 
     func testLoadDataSuccess() async {
-        let customerInfo = CustomerInfoFixtures.customerInfoWithVirtualCurrencies
-        let mockPurchases = MockCustomerCenterPurchases(customerInfo: customerInfo)
+        let mockPurchases = MockCustomerCenterPurchases(
+            customerInfo: CustomerInfoFixtures.customerInfoWithAppleSubscriptions
+        )
+        mockPurchases.virtualCurrenciesResult = .success(VirtualCurrenciesFixtures.fourVirtualCurrencies)
+
         let viewModel = VirtualCurrencyBalancesScreenViewModel(
             purchasesProvider: mockPurchases
         )
 
         await viewModel.onViewAppeared()
+        expect(mockPurchases.virtualCurrenciesCallCount).to(equal(1))
 
         switch viewModel.viewState {
         case .loaded(let virtualCurrencyRowData):
@@ -71,18 +75,33 @@ final class VirtualCurrencyBalancesScreenViewModelTests: TestCase {
         }
     }
 
-    func testLoadDataEmptyVirtualCurrencies() async {
-        let customerInfo = CustomerInfoFixtures.customerInfo(
-            subscriptions: [],
-            entitlements: [],
-            virtualCurrencies: [:]
+    func testLoadDataInvalidatesVirtualCurrencyCache() async {
+        let mockPurchases = MockCustomerCenterPurchases(
+            customerInfo: CustomerInfoFixtures.customerInfoWithAppleSubscriptions
         )
-        let mockPurchases = MockCustomerCenterPurchases(customerInfo: customerInfo)
+        mockPurchases.virtualCurrenciesResult = .success(VirtualCurrenciesFixtures.fourVirtualCurrencies)
+
         let viewModel = VirtualCurrencyBalancesScreenViewModel(
             purchasesProvider: mockPurchases
         )
 
         await viewModel.onViewAppeared()
+
+        expect(mockPurchases.invalidateVirtualCurrenciesCacheCallCount).to(equal(1))
+        expect(mockPurchases.virtualCurrenciesCallCount).to(equal(1))
+    }
+
+    func testLoadDataEmptyVirtualCurrencies() async {
+        let mockPurchases = MockCustomerCenterPurchases(
+            customerInfo: CustomerInfoFixtures.customerInfoWithAppleSubscriptions
+        )
+        mockPurchases.virtualCurrenciesResult = .success(VirtualCurrenciesFixtures.noVirtualCurrencies)
+        let viewModel = VirtualCurrencyBalancesScreenViewModel(
+            purchasesProvider: mockPurchases
+        )
+
+        await viewModel.onViewAppeared()
+        expect(mockPurchases.virtualCurrenciesCallCount).to(equal(1))
 
         switch viewModel.viewState {
         case .loaded(let data):
@@ -93,19 +112,25 @@ final class VirtualCurrencyBalancesScreenViewModelTests: TestCase {
     }
 
     func testLoadDataFailure() async {
-        let mockPurchases = MockCustomerCenterPurchases(customerInfoError: error)
+        let mockPurchases = MockCustomerCenterPurchases(
+            customerInfo: CustomerInfoFixtures.customerInfoWithAppleSubscriptions
+        )
+        mockPurchases.virtualCurrenciesResult = .failure(NSError(domain: "error", code: -1))
         let viewModel = VirtualCurrencyBalancesScreenViewModel(
             purchasesProvider: mockPurchases
         )
 
         await viewModel.onViewAppeared()
 
+        expect(mockPurchases.virtualCurrenciesCallCount).to(equal(1))
         expect(viewModel.viewState).to(equal(.error))
     }
 
     func testVirtualCurrenciesSortedByBalance() async {
-        let customerInfo = CustomerInfoFixtures.customerInfoWithVirtualCurrencies
-        let mockPurchases = MockCustomerCenterPurchases(customerInfo: customerInfo)
+        let mockPurchases = MockCustomerCenterPurchases(
+            customerInfo: CustomerInfoFixtures.customerInfoWithAppleSubscriptions
+        )
+        mockPurchases.virtualCurrenciesResult = .success(VirtualCurrenciesFixtures.fourVirtualCurrencies)
         let viewModel = VirtualCurrencyBalancesScreenViewModel(
             purchasesProvider: mockPurchases
         )

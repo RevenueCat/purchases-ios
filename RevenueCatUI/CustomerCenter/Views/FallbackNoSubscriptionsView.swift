@@ -48,12 +48,12 @@ struct FallbackNoSubscriptionsView: View {
     @State
     private var showAllInAppCurrenciesScreen: Bool = false
 
-    private let virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]?
+    private let virtualCurrencies: RevenueCat.VirtualCurrencies?
 
     init(
         customerCenterViewModel: CustomerCenterViewModel,
         actionWrapper: CustomerCenterActionWrapper,
-        virtualCurrencies: [String: RevenueCat.VirtualCurrencyInfo]?
+        virtualCurrencies: RevenueCat.VirtualCurrencies?
     ) {
         self.customerCenterViewModel = customerCenterViewModel
         self.actionWrapper = actionWrapper
@@ -68,7 +68,7 @@ struct FallbackNoSubscriptionsView: View {
                     .padding(.horizontal)
                     .padding(.bottom, 32)
 
-                if let virtualCurrencies, !virtualCurrencies.isEmpty {
+                if let virtualCurrencies, !virtualCurrencies.all.isEmpty {
                     VirtualCurrenciesScrollViewWithOSBackgroundSection(
                         virtualCurrencies: virtualCurrencies,
                         onSeeAllInAppCurrenciesButtonTapped: { self.showAllInAppCurrenciesScreen = true }
@@ -82,18 +82,18 @@ struct FallbackNoSubscriptionsView: View {
         }
         .dismissCircleButtonToolbarIfNeeded()
         .compatibleNavigation(
-                        isPresented: $showAllInAppCurrenciesScreen,
-                        usesNavigationStack: navigationOptions.usesNavigationStack
-                    ) {
-                        VirtualCurrencyBalancesScreen(
-                            viewModel: VirtualCurrencyBalancesScreenViewModel(
-                                purchasesProvider: customerCenterViewModel.purchasesProvider
-                            )
-                        )
-                        .environment(\.appearance, appearance)
-                        .environment(\.localization, localization)
-                        .environment(\.navigationOptions, navigationOptions)
-                    }
+            isPresented: $showAllInAppCurrenciesScreen,
+            usesNavigationStack: navigationOptions.usesNavigationStack
+        ) {
+            VirtualCurrencyBalancesScreen(
+                viewModel: VirtualCurrencyBalancesScreenViewModel(
+                    purchasesProvider: customerCenterViewModel.purchasesProvider
+                )
+            )
+            .environment(\.appearance, appearance)
+            .environment(\.localization, localization)
+            .environment(\.navigationOptions, navigationOptions)
+        }
         .overlay {
             RestorePurchasesAlert(
                 isPresented: $showRestoreAlert,
@@ -140,7 +140,7 @@ struct NoSubscriptionsView_Previews: PreviewProvider {
         FallbackNoSubscriptionsView(
             customerCenterViewModel: CustomerCenterViewModel(uiPreviewPurchaseProvider: MockCustomerCenterPurchases()),
             actionWrapper: CustomerCenterActionWrapper(),
-            virtualCurrencies: CustomerCenterConfigData.fourVirtualCurrencies
+            virtualCurrencies: VirtualCurrenciesFixtures.fourVirtualCurrencies
         )
         .environment(\.supportInformation, CustomerCenterConfigData.mock(displayVirtualCurrencies: true).support)
         .previewDisplayName("4 Virtual Currencies")
@@ -148,7 +148,7 @@ struct NoSubscriptionsView_Previews: PreviewProvider {
         FallbackNoSubscriptionsView(
             customerCenterViewModel: CustomerCenterViewModel(uiPreviewPurchaseProvider: MockCustomerCenterPurchases()),
             actionWrapper: CustomerCenterActionWrapper(),
-            virtualCurrencies: CustomerCenterConfigData.fiveVirtualCurrencies
+            virtualCurrencies: VirtualCurrenciesFixtures.fiveVirtualCurrencies
         )
         .environment(\.supportInformation, CustomerCenterConfigData.mock(displayVirtualCurrencies: true).support)
         .previewDisplayName("5 Virtual Currencies")

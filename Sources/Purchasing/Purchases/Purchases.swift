@@ -277,6 +277,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
     private let syncAttributesAndOfferingsIfNeededRateLimiter = RateLimiter(maxCalls: 5, period: 60)
     private let diagnosticsTracker: DiagnosticsTrackerType?
+    private let virtualCurrencyManager: VirtualCurrencyManagerType
 
     // swiftlint:disable:next function_body_length cyclomatic_complexity
     convenience init(apiKey: String,
@@ -592,6 +593,13 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             paywallCache = nil
         }
 
+        let virtualCurrencyManager = VirtualCurrencyManager(
+            identityManager: identityManager,
+            deviceCache: deviceCache,
+            backend: backend,
+            systemInfo: systemInfo
+        )
+
         self.init(appUserID: appUserID,
                   requestFetcher: fetcher,
                   receiptFetcher: receiptFetcher,
@@ -617,7 +625,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   purchasedProductsFetcher: purchasedProductsFetcher,
                   trialOrIntroPriceEligibilityChecker: trialOrIntroPriceChecker,
                   storeMessagesHelper: storeMessagesHelper,
-                  diagnosticsTracker: diagnosticsTracker
+                  diagnosticsTracker: diagnosticsTracker,
+                  virtualCurrencyManager: virtualCurrencyManager
         )
     }
 
@@ -647,7 +656,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          purchasedProductsFetcher: PurchasedProductsFetcherType?,
          trialOrIntroPriceEligibilityChecker: CachingTrialOrIntroPriceEligibilityChecker,
          storeMessagesHelper: StoreMessagesHelperType?,
-         diagnosticsTracker: DiagnosticsTrackerType?
+         diagnosticsTracker: DiagnosticsTrackerType?,
+         virtualCurrencyManager: VirtualCurrencyManagerType
     ) {
 
         if systemInfo.dangerousSettings.customEntitlementComputation {
@@ -696,6 +706,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.trialOrIntroPriceEligibilityChecker = trialOrIntroPriceEligibilityChecker
         self.storeMessagesHelper = storeMessagesHelper
         self.diagnosticsTracker = diagnosticsTracker
+        self.virtualCurrencyManager = virtualCurrencyManager
 
         super.init()
 
@@ -1296,6 +1307,43 @@ public extension Purchases {
         return await self.purchasesOrchestrator.redeemWebPurchase(webPurchaseRedemption)
     }
 }
+
+// MARK: - Virtual Currencies
+#if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+public extension Purchases {
+
+    @objc func virtualCurrencies(
+        completion: @escaping @Sendable (VirtualCurrencies?, PublicError?) -> Void
+    ) {
+        Task {
+            do {
+                let virtualCurrencies = try await self.virtualCurrencies()
+                OperationDispatcher.dispatchOnMainActor {
+                    completion(virtualCurrencies, nil)
+                }
+            } catch {
+                let publicError = NewErrorUtils.purchasesError(withUntypedError: error).asPublicError
+                OperationDispatcher.dispatchOnMainActor {
+                    completion(nil, publicError)
+                }
+            }
+        }
+    }
+
+    func virtualCurrencies() async throws -> VirtualCurrencies {
+        do {
+            return try await self.virtualCurrencyManager.virtualCurrencies()
+        } catch {
+            let publicError = NewErrorUtils.purchasesError(withUntypedError: error).asPublicError
+            throw publicError
+        }
+    }
+
+    @objc func invalidateVirtualCurrenciesCache() {
+        self.virtualCurrencyManager.invalidateVirtualCurrenciesCache()
+    }
+}
+#endif
 
 // swiftlint:enable missing_docs
 
