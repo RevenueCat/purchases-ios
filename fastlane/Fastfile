@@ -366,7 +366,8 @@ platform :ios do
       workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
       scheme: "PaywallsTester - Live Config",
       configuration: "Debug",
-      destination: "platform=macOS,arch=arm64,variant=Mac Catalyst"
+      destination: "platform=macOS,arch=arm64,variant=Mac Catalyst",
+      xcargs: "-allowProvisioningUpdates"
     )
 
     send_to_emerge(
@@ -379,7 +380,8 @@ platform :ios do
       workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
       scheme: "PaywallsTester - Live Config",
       configuration: "Debug",
-      destination: "platform=macOS,arch=arm64,variant=Designed for iPad"
+      destination: "platform=macOS,arch=arm64,variant=Designed for iPad",
+      xcargs: "-allowProvisioningUpdates"
     )
 
     send_to_emerge(
