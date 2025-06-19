@@ -440,8 +440,7 @@ private func checkVirtualCurrenciesAPI(_ purchases: Purchases) async throws {
     let _: VirtualCurrencies = try await purchases.virtualCurrencies()
 
     // Invalidating Virtual Currencies Cache
-    purchases.invalidateVirtualCurrenciesCache {}
-    await purchases.invalidateVirtualCurrenciesCache()
+    purchases.invalidateVirtualCurrenciesCache()
 }
 
 @available(*, deprecated) // Ignore deprecation warnings

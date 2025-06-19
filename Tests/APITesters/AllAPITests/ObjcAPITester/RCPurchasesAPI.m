@@ -207,7 +207,7 @@ NSURL *url;
 
     }];
 
-    [p invalidateVirtualCurrenciesCacheWithCompletion:^{ }];
+    [p invalidateVirtualCurrenciesCache];
 
 #if (TARGET_OS_IPHONE || TARGET_OS_MACCATALYST) && !TARGET_OS_TV && !TARGET_OS_WATCH
     if (@available(iOS 15.0, *)) {
