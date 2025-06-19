@@ -400,6 +400,7 @@ platform :ios do
 
     emerge_args = {repo_name: "RevenueCat/purchases-ios"}
     emerge_args[:pr_number] = pr_number if pr_number
+    emerge_args[:tag] = options[:app_id_suffix] if options[:app_id_suffix]
     emerge_args[:app_id_suffix] = options[:app_id_suffix] if options[:app_id_suffix]
     emerge(emerge_args)
 end
