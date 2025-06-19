@@ -1,14 +1,22 @@
 ## RevenueCat SDK
-### 🐞 Bugfixes
-* Enable markdown in paywalls in iOS 15 and watchOS 8 (#5267) via Antonio Pallares (@ajpallares)
 ### Customer Center
+#### ✨ New Features
+* Use `card_store_promotional` for RC Promos in card & history (#5275) via Facundo Menzella (@facumenzella)
+* Refactor PurchaseHistory to use PurchaseInformation (#5260) via Facundo Menzella (@facumenzella)
 #### 🐞 Bugfixes
-* Trigger promotional offer callback from `PromotionalOfferViewModel` (#5263) via Facundo Menzella (@facumenzella)
+* Add tests for PurchaseInformationView.Badge + rc promo (#5273) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* FIx image load in paywall rendering validation (#5264) via Antonio Pallares (@ajpallares)
-* Include commit hash in commit message for paywall-rendering-validation (#5265) via Antonio Pallares (@ajpallares)
-* Bring back paywall rendering validation (no submodules) (#5252) via Antonio Pallares (@ajpallares)
-* Rename duplicate CachingProductsManagerTests to CachingProductsManagerIntegrationTests (#5244) via Facundo Menzella (@facumenzella)
-* Update CustomerInfo sample with is_sandbox to make sure it works (#5203) via Facundo Menzella (@facumenzella)
-* Add originalPurchaseDate & isSandbox to PurchaseInformation (#5259) via Facundo Menzella (@facumenzella)
+* [Paywalls] Update ImageComponent max width after initial layout if it changes. (#5291) via Mark Villacampa (@MarkVillacampa)
+* Fix index and mgiration guides docs not being updated (#5298) via Mark Villacampa (@MarkVillacampa)
+* Add .yield to `PaywallViewEventsFullscreenLightModeTests` (#5294) via Facundo Menzella (@facumenzella)
+* Add missing `@_spi` to import in backend tests (#5297) via Antonio Pallares (@ajpallares)
+* Use minimal permissions for installation tests (#5274) via JayShortway (@JayShortway)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5295) via RevenueCat Git Bot (@RCGitBot)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5289) via RevenueCat Git Bot (@RCGitBot)
+* Delete Examples folder from carthage checkout (#5287) via Facundo Menzella (@facumenzella)
+* Remove CustomerCenterConfigDataAPI from API Tests (#5286) via Facundo Menzella (@facumenzella)
+* Delete duplicate OfferingsList.swift from PaywallTester (#5249) via Facundo Menzella (@facumenzella)
+* Add abbrev to Gemfile (#5207) via Facundo Menzella (@facumenzella)
+* Test removing example apps before Carthage installation test (#5268) via Facundo Menzella (@facumenzella)
+* Add _spi(Internal) to Customer Center (#5270) via Facundo Menzella (@facumenzella)
