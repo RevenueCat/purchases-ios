@@ -144,6 +144,7 @@ struct PackageComponentView_Previews: PreviewProvider {
                 component: .init(
                     packageID: "weekly",
                     isSelectedByDefault: false,
+                    applePromoOfferProductCode: nil,
                     stack: stack
                 ),
                 localizationProvider: .init(
@@ -172,6 +173,7 @@ struct PackageComponentView_Previews: PreviewProvider {
                 component: .init(
                     packageID: "weekly",
                     isSelectedByDefault: false,
+                    applePromoOfferProductCode: nil,
                     stack: stack
                 ),
                 localizationProvider: .init(

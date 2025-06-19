@@ -24,6 +24,9 @@ struct IconComponentView: View {
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
     @EnvironmentObject
+    private var promotionalOfferEligibilityContext: PromotionalOfferEligibilityContext
+
+    @EnvironmentObject
     private var packageContext: PackageContext
 
     @Environment(\.componentViewState)
@@ -43,6 +46,9 @@ struct IconComponentView: View {
             condition: self.screenCondition,
             isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                 package: self.packageContext.package
+            ),
+            isEligibleForPromoOffer: self.promotionalOfferEligibilityContext.isMostLikelyEligible(
+                for: self.packageContext.package
             )
         ) { style in
             if style.visible {
