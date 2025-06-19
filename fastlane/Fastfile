@@ -348,31 +348,17 @@ platform :ios do
     build_paywalls_tester_for_emerge_mac_catalyst(options)
   end
   
-  private lane :build_paywalls_tester_for_emerge_ios do |options|
-      scan(
+  private_lane :build_paywalls_tester_for_emerge_ios do |options|
+    scan(
       workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
       scheme: "PaywallsTester - Live Config",
       build_for_testing: true,
     )
 
-    pr_url = ENV["CIRCLE_PULL_REQUEST"]
-    branch_name = sh("git rev-parse --abbrev-ref HEAD").strip
-    pr_number = nil
-    # Try to parse the PR number from the pr_url variable first
-    if pr_url && pr_url.include?("/")
-      pr_number = pr_url.split("/").last
-    # Try to parse the PR number from the merge queue branch name. In this case,
-    # there's no CIRCLE_PULL_REQUEST environment variable.
-    elsif branch_name =~ /^gh-readonly-queue\/[^\/]+\/pr-([0-9]+)-[0-9a-f]+$/
-      pr_number = $1
-    end
-
-    emerge_args = {repo_name: "RevenueCat/purchases-ios"}
-    emerge_args[:pr_number] = pr_number if pr_number
-    emerge(emerge_args)
+    send_to_emerge(options)
   end
   
-  private lane :build_paywalls_tester_for_emerge_mac_catalyst do |options|
+  private_lane :build_paywalls_tester_for_emerge_mac_catalyst do |options|
     build_mac_app(
       workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
       scheme: "PaywallsTester - Live Config",
@@ -380,6 +366,10 @@ platform :ios do
       destination: "platform=macOS,arch=arm64,variant=Mac Catalyst"
     )
 
+    send_to_emerge(options)
+  end
+  
+  private_lane :send_to_emerge do |options|
     pr_url = ENV["CIRCLE_PULL_REQUEST"]
     branch_name = sh("git rev-parse --abbrev-ref HEAD").strip
     pr_number = nil
@@ -395,7 +385,7 @@ platform :ios do
     emerge_args = {repo_name: "RevenueCat/purchases-ios"}
     emerge_args[:pr_number] = pr_number if pr_number
     emerge(emerge_args)
-  end
+end
   
   
 
