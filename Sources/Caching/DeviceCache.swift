@@ -162,7 +162,7 @@ class DeviceCache {
             $0.data(forKey: CacheKey.offerings(appUserID))
         }
     }
-    
+
     func cache(offerings: Offerings, preferredLocales: [String], appUserID: String) {
         // We can't get the preferred locales from the `systemInfo` object because they may change
         // during the get offerings request, before this cache method gets called.
