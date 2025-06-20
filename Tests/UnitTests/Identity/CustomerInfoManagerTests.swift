@@ -55,7 +55,7 @@ class BaseCustomerInfoManagerTests: TestCase {
         ])
 
         self.mockOfflineEntitlementsManager = MockOfflineEntitlementsManager()
-        self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.mockSystemInfo)
+        self.mockDeviceCache = MockDeviceCache(systemInfo: self.mockSystemInfo)
         self.mockTransationFetcher = MockStoreKit2TransactionFetcher()
         self.mockTransactionPoster = MockTransactionPoster()
 

@@ -34,7 +34,7 @@ class BaseOfflineEntitlementsManagerTests: TestCase {
         self.mockOfflineEntitlements = try XCTUnwrap(
             self.mockBackend.offlineEntitlements as? MockOfflineEntitlementsAPI
         )
-        self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.mockSystemInfo)
+        self.mockDeviceCache = MockDeviceCache(systemInfo: self.mockSystemInfo)
         self.manager = self.createManager()
     }
 

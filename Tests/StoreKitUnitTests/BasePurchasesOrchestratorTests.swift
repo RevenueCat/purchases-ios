@@ -79,7 +79,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher(), systemInfo: self.systemInfo)
         self.mockTransactionFetcher = MockStoreKit2TransactionFetcher()
         self.receiptParser = MockReceiptParser()
-        self.deviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo)
+        self.deviceCache = MockDeviceCache(systemInfo: self.systemInfo)
         self.backend = MockBackend()
         self.offerings = try XCTUnwrap(self.backend.offerings as? MockOfferingsAPI)
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
