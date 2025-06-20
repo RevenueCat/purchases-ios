@@ -116,12 +116,15 @@ class OfferingsManager {
         fetchPolicy: FetchPolicy = .default,
         completion: (@MainActor @Sendable (Result<OfferingsResultData, Error>) -> Void)?
     ) {
+        // We keep track of preferred locales at the time of launching the request
+        let preferredLocales = systemInfo.preferredLocales
         self.backend.offerings.getOfferings(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded) { result in
             switch result {
             case let .success(response):
                 self.handleOfferingsBackendResult(with: response,
                                                   appUserID: appUserID,
                                                   fetchPolicy: fetchPolicy,
+                                                  preferredLocales: preferredLocales,
                                                   completion: completion)
 
             case let .failure(.networkError(networkError)) where networkError.isServerDown:
@@ -208,7 +211,7 @@ private extension OfferingsManager {
 
                     // Cache in memory but as stale, so it can be re-updated when possible
                     cache.cacheInMemory(offerings: offeringsResultData.offerings)
-                    cache.clearOfferingsCacheTimestamp()
+                    cache.forceOfferingsCacheStale()
 
                     completion(offeringsResultData)
 
@@ -275,6 +278,7 @@ private extension OfferingsManager {
         with response: OfferingsResponse,
         appUserID: String,
         fetchPolicy: FetchPolicy,
+        preferredLocales: [String],
         completion: (@MainActor @Sendable (Result<OfferingsResultData, Error>) -> Void)?
     ) {
         self.createOfferings(from: response, fetchPolicy: fetchPolicy) { result in
@@ -282,7 +286,9 @@ private extension OfferingsManager {
             case let .success(offeringsResultData):
                 Logger.rcSuccess(Strings.offering.offerings_stale_updated_from_network)
 
-                self.deviceCache.cache(offerings: offeringsResultData.offerings, appUserID: appUserID)
+                self.deviceCache.cache(offerings: offeringsResultData.offerings,
+                                       preferredLocales: preferredLocales,
+                                       appUserID: appUserID)
                 self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(offeringsResultData))
 
             case let .failure(error):
