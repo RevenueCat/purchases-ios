@@ -70,7 +70,8 @@ public extension PaywallData {
     /// Includes `Locale.preferredLanguages`.
     internal static var localesOrderedByPriority: [Locale] {
         // Removing the use of Locale.current as it should really only be used for dates, currency formatting, etc
-        return Locale.preferredLocales
+        let locales = Purchases.isConfigured ? Purchases.shared.preferredLocales : Locale.preferredLanguages
+        return locales.map(Locale.init(identifier:))
     }
 
     private func defaultLocalizedConfiguration(locale: Locale?) -> (String, LocalizedConfiguration)? {
@@ -136,16 +137,6 @@ private extension PaywallData {
 
             return (Locale(identifier: fallbackLocale), fallbackLocalization)
         }
-    }
-
-}
-
-// MARK: -
-
-extension Locale {
-
-    fileprivate static var preferredLocales: [Self] {
-        return Self.preferredLanguages.map(Locale.init(identifier:))
     }
 
 }

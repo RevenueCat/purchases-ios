@@ -21,13 +21,14 @@ extension RevenueCat.Purchases {
     /// Use `nil` to remove the override and use the default user locale determined by the system.
     ///
     /// Setting this will affect the display of RevenueCat UI components, such as the Paywalls.
-    public static func overridePreferredUILocale()(_ locale: String?) {
+    /// - Important: This method only takes effect after `Purchases` has been configured.
+    public static func overridePreferredUILocale(_ locale: String?) {
         guard self.isConfigured else {
             Logger.error(Strings.failed_to_set_preferred_locale_purchases_not_configured)
             return
         }
 
-        self.shared.preferredLocale = locale
+        self.shared.overridePreferredLocale(locale)
     }
 }
 

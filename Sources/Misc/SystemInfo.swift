@@ -251,6 +251,14 @@ class SystemInfo {
         return self.preferredLocalesProvider.preferredLocales
     }
 
+    /// Developer-set preferred locale.
+    ///
+    /// `preferredLocales` will always include the preferred locale override if set, so this
+    /// property is only useful for reading the override value.
+    var preferredLocaleOverride: String? {
+        return self.preferredLocalesProvider.preferredLocaleOverride
+    }
+
     func overridePreferredLocale(_ locale: String?) {
         self.preferredLocalesProvider.overridePreferredLocale(locale)
     }

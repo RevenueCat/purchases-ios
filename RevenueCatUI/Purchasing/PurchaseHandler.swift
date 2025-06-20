@@ -37,8 +37,12 @@ final class PurchaseHandler: ObservableObject {
     /// `false` if this `PurchaseHandler` is not backend by a configured `Purchases`instance.
     let isConfigured: Bool
 
-    var preferredLocale: Locale? {
-        return purchases.preferredLocale.map(Locale.init)
+    var preferredLocales: [Locale] {
+        return purchases.preferredLocales.map(Locale.init)
+    }
+
+    var preferredLocaleOverride: Locale? {
+        return purchases.preferredLocaleOverride.map(Locale.init)
     }
 
     /// Whether a purchase is currently in progress
@@ -405,7 +409,9 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
 
     let customerInfo: CustomerInfo?
 
-    var preferredLocale: String? { nil }
+    var preferredLocales: [String] { Locale.preferredLanguages }
+
+    var preferredLocaleOverride: String? { nil }
 
     init(customerInfo: CustomerInfo? = nil, purchasesAreCompletedBy: PurchasesAreCompletedBy) {
         self.customerInfo = customerInfo
