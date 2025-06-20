@@ -19,6 +19,13 @@ protocol PaywallPurchasesType: Sendable {
 
     var purchasesAreCompletedBy: PurchasesAreCompletedBy { get }
 
+    /// Returns the preferred locales, including the locale override if set.
+    var preferredLocales: [String] { get }
+
+    /// `preferredLocales` will always include the preferred locale override if set, so this
+    /// property is only useful for reading the override value.
+    var preferredLocaleOverride: String? { get }
+
     @Sendable
     func purchase(package: Package) async throws -> PurchaseResultData
 

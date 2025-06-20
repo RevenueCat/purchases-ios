@@ -29,6 +29,8 @@ final class MockPurchases: PaywallPurchasesType {
     private let restoreBlock: RestoreBlock
     private let trackEventBlock: TrackEventBlock
     private let _purchasesAreCompletedBy: PurchasesAreCompletedBy
+    let preferredLocales: [String]
+    let preferredLocaleOverride: String?
 
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
         get { return _purchasesAreCompletedBy }
@@ -37,6 +39,8 @@ final class MockPurchases: PaywallPurchasesType {
 
     init(
         purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat,
+        preferredLocales: [String] = ["en_US"],
+        preferredLocaleOverride: String? = nil,
         purchase: @escaping PurchaseBlock,
         restorePurchases: @escaping RestoreBlock,
         trackEvent: @escaping TrackEventBlock,
@@ -47,6 +51,8 @@ final class MockPurchases: PaywallPurchasesType {
         self.trackEventBlock = trackEvent
         self.customerInfoBlock = customerInfo
         self._purchasesAreCompletedBy = purchasesAreCompletedBy
+        self.preferredLocales = preferredLocales
+        self.preferredLocaleOverride = preferredLocaleOverride
     }
 
     func customerInfo() async throws -> RevenueCat.CustomerInfo {
