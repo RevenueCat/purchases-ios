@@ -21,6 +21,7 @@ class DeviceCacheTests: TestCase {
         self.preferredLocalesProvider = .mock(locales: ["en-US"])
         self.systemInfo = MockSystemInfo(finishTransactions: false,
                                          preferredLocalesProvider: self.preferredLocalesProvider)
+        self.systemInfo.stubbedIsSandbox = false
         self.mockUserDefaults = MockUserDefaults()
         self.deviceCache = self.create()
     }
@@ -335,6 +336,9 @@ class DeviceCacheTests: TestCase {
         self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
                                        userDefaults: self.mockUserDefaults,
                                        offeringsCachedObject: mockCachedObject)
+        self.deviceCache.cache(offerings: .empty,
+                               preferredLocales: self.preferredLocalesProvider.preferredLocales,
+                               appUserID: "user")
 
         let outdatedCacheDate = Calendar.current.date(byAdding: .hour, value: -25, to: Date())!
         mockCachedObject.updateCacheTimestamp(date: outdatedCacheDate)
