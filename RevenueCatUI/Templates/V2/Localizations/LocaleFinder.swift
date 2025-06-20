@@ -31,23 +31,21 @@ extension Dictionary where Key == String {
         }
 
         // For matching language and script without region
-        if let onlyLanguageAndScriptIdentifier = locale.rc_languageAndScript,
-           let exactMatch = self.valueForLocaleString(onlyLanguageAndScriptIdentifier) {
-            return exactMatch
+        if let onlyLanguageAndScriptIdentifier = locale.rc_languageAndScript {
+            if let exactMatch = self.valueForLocaleString(onlyLanguageAndScriptIdentifier) {
+                return exactMatch
+            } else if let match = self.valueForLanguageAndScript(onlyLanguageAndScriptIdentifier) {
+                // Matching language and script converting dictionary keys to language and script as well
+                // This covers cases where dictionary keys contain the UN M.49 standard. For example:
+                // If locale = "es_MX" and dictionary key = "es_419" (both have rc_languageAndScript = "es-Latn")
+                return match
+            }
         }
 
         // For matching language without script or region
         if let onlyLanguageIdentifier = locale.rc_languageCode,
            let exactMatch = self.valueForLocaleString(onlyLanguageIdentifier) {
             return exactMatch
-        }
-
-        // Last resort: matching language and script converting dictionary keys to language and script as well
-        // This covers cases where dictionary keys contain the UN M.49 standard. For example:
-        // If locale = "es_MX" and dictionary key = "es_419" (both have rc_languageAndScript = "es-Latn")
-        if let onlyLanguageAndScriptIdentifier = locale.rc_languageAndScript,
-           let match = self.valueForLanguageAndScript(onlyLanguageAndScriptIdentifier) {
-            return match
         }
 
         return nil
