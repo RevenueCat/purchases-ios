@@ -253,8 +253,7 @@ class SystemInfo {
 
     /// Developer-set preferred locale.
     ///
-    /// `preferredLocales` will always include the preferred locale override if set, so this
-    /// property is only useful for reading the override value.
+    /// `preferredLocales` already includes it if set, so this property is only useful for reading the override value.
     var preferredLocaleOverride: String? {
         return self.preferredLocalesProvider.preferredLocaleOverride
     }
@@ -262,7 +261,6 @@ class SystemInfo {
     func overridePreferredLocale(_ locale: String?) {
         self.preferredLocalesProvider.overridePreferredLocale(locale)
     }
-
 }
 
 #if os(iOS) || VISION_OS
@@ -281,7 +279,6 @@ extension SystemInfo {
             return try scene.orThrow(ErrorUtils.storeProblemError(withMessage: "Failed to get UIWindowScene"))
         }
     }
-
 }
 #endif
 
@@ -306,7 +303,6 @@ extension SystemInfo {
     #elseif VISION_OS
     static let platformHeaderConstant = "visionOS"
     #endif
-
 }
 
 extension SystemInfo {
@@ -355,7 +351,6 @@ extension SystemInfo {
     var isAppExtension: Bool {
         return self.bundle.bundlePath.hasSuffix(".appex")
     }
-
 }
 
 private extension SystemInfo {
