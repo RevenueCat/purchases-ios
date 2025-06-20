@@ -1023,6 +1023,13 @@ platform :ios do
            "-Xswiftc", ".build")
       end
 
+      puts ""
+      puts "🚀 Starting DocC preview server..."
+      puts "📚 Combined documentation for RevenueCat SDK and RevenueCatUI SDK"
+      puts "🌐 Server will start at http://localhost:8000/documentation/revenuecat"
+      puts "⏹️  Press Ctrl+C to stop the server"
+      puts ""
+
       # Use preview-documentation for local development server
       sh("swift",
          "package",
