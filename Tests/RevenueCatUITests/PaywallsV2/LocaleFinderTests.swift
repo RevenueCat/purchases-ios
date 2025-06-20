@@ -132,4 +132,16 @@ class LocaleFinderTest: TestCase {
         expect(foundLocalizations).to(equal(Self.expectedTranslations))
     }
 
+    func test_es_MX_Matches_es_419_ByLanguageAndScript() {
+        let localizations = [
+            "es_419": Self.expectedTranslations,
+            "es": ["wrong": "this is es"]
+        ]
+
+        let locale = Locale(identifier: "es_MX")
+
+        // This tests that "es_MX" matches "es_419" due to both sharing the same language and script ("es-Latn")
+        let foundLocalizations = localizations.findLocale(locale)
+        expect(foundLocalizations).to(equal(Self.expectedTranslations))
+    }
 }
