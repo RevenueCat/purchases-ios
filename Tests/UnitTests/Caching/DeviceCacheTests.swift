@@ -352,6 +352,31 @@ class DeviceCacheTests: TestCase {
         expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: true)) == false
     }
 
+    func testIsOfferingsCacheStaleIfPreferredLocalesChange() throws {
+        let sampleOfferings = try Self.createSampleOfferings()
+        self.deviceCache.cache(offerings: sampleOfferings, preferredLocales: ["en-US"], appUserID: "user")
+
+        expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: false)) == false
+        expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: true)) == false
+
+        self.preferredLocalesProvider.overridePreferredLocale("es-ES")
+        // preferred locales changed to ["es-ES", "en-US"]
+
+        expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: false)) == true
+        expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: true)) == true
+
+        self.deviceCache.cache(offerings: .empty, preferredLocales: ["es-ES", "en-US"], appUserID: "user")
+
+        expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: false)) == false
+        expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: true)) == false
+
+        self.preferredLocalesProvider.overridePreferredLocale(nil)
+        // preferred locales changed back to ["en-US"]
+
+        expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: false)) == true
+        expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: true)) == true
+    }
+
     func testClearCachedOfferings() {
         let mockCachedObject = MockInMemoryCachedOfferings<Offerings>()
         self.deviceCache = DeviceCache(systemInfo: self.systemInfo,

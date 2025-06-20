@@ -106,6 +106,7 @@ class MockDeviceCache: DeviceCache {
     // MARK: offerings
 
     var cacheOfferingsCount = 0
+    var latestCachePreferredLocales: [String]? = nil
     var cacheOfferingsInMemoryCount = 0
     var clearCachedOfferingsCount = 0
     var clearOfferingsCacheTimestampCount = 0
@@ -121,6 +122,7 @@ class MockDeviceCache: DeviceCache {
 
     override func cache(offerings: Offerings, preferredLocales: [String], appUserID: String) {
         self.cacheOfferingsCount += 1
+        self.latestCachePreferredLocales = preferredLocales
     }
     override func cacheInMemory(offerings: Offerings) {
         self.cacheOfferingsInMemoryCount += 1
