@@ -1,15 +1,6 @@
 {
   "pins" : [
     {
-      "identity" : "accessibilitysnapshot",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/EmergeTools/AccessibilitySnapshot.git",
-      "state" : {
-        "revision" : "54046d8fa44b9fa9f0e2229526f6ed89cb5e0ec2",
-        "version" : "1.0.2"
-      }
-    },
-    {
       "identity" : "cwlcatchexception",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/mattgallagher/CwlCatchException.git",
@@ -28,15 +19,6 @@
       }
     },
     {
-      "identity" : "flyingfox",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/swhitty/FlyingFox.git",
-      "state" : {
-        "revision" : "f7829d4aca8cbfecb410a1cce872b1b045224aa1",
-        "version" : "0.16.0"
-      }
-    },
-    {
       "identity" : "nimble",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/quick/nimble",
@@ -46,21 +28,21 @@
       }
     },
     {
-      "identity" : "ohhttpstubs",
+      "identity" : "swift-docc-plugin",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/AliSoftware/OHHTTPStubs.git",
+      "location" : "https://github.com/apple/swift-docc-plugin",
       "state" : {
-        "revision" : "12f19662426d0434d6c330c6974d53e2eb10ecd9",
-        "version" : "9.1.0"
+        "revision" : "d1691545d53581400b1de9b0472d45eb25c19fed",
+        "version" : "1.4.4"
       }
     },
     {
-      "identity" : "snapshotpreviews",
+      "identity" : "swift-docc-symbolkit",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/EmergeTools/SnapshotPreviews.git",
+      "location" : "https://github.com/swiftlang/swift-docc-symbolkit",
       "state" : {
-        "revision" : "e29969072e600518867af25d4d2acd0d1d2ffd5f",
-        "version" : "0.10.20"
+        "revision" : "b45d1f2ed151d057b54504d653e0da5552844e34",
+        "version" : "1.0.0"
       }
     },
     {

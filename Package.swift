@@ -45,11 +45,10 @@ var dependencies: [Package.Dependency] = [
     )
 ]
 if shouldIncludeDocCPlugin {
-    // Versions 1.4.0 and 1.4.1 are failing to compile, so we are pinning it to 1.3.0 for now
-    // https://github.com/RevenueCat/purchases-ios/pull/4216
+    // Updated to 1.4.4 to resolve DocC version compatibility issues
     dependencies.append(.package(
         url: "https://github.com/apple/swift-docc-plugin",
-        revision: "26ac5758409154cc448d7ab82389c520fa8a8247"
+        from: "1.4.4"
     ))
 }
 

@@ -945,6 +945,23 @@ platform :ios do
        "-Xswiftc", ".build")
   end
 
+  private_lane :build_symbols_for_combined_docs do
+    ios_version = ENV['DOCS_IOS_VERSION'] || "16.1"
+
+    # Build symbols for both RevenueCat and RevenueCatUI targets
+    ["RevenueCat", "RevenueCatUI"].each do |target|
+      sh("swift",
+         "build",
+         "--target", target,
+         # Build for iOS instead of the default macOS. This ensures that iOS-only symbols are included in the docs.
+         "-Xswiftc", "-sdk", "-Xswiftc", sh("xcrun", "--sdk", "iphonesimulator", "--show-sdk-path").strip!,
+         "-Xswiftc", "-target", "-Xswiftc", "arm64-apple-ios#{ios_version}-simulator",
+         "-Xswiftc", "-emit-symbol-graph",
+         "-Xswiftc", "-emit-symbol-graph-dir",
+         "-Xswiftc", ".build")
+    end
+  end
+
   desc "Preview docs"
   lane :preview_docs do
     ios_version = ENV['DOCS_IOS_VERSION'] || "16.1"
@@ -967,9 +984,69 @@ platform :ios do
     end
   end
 
+  desc "Preview combined docs for RevenueCat SDK and RevenueCatUI SDK"
+  lane :preview_combined_docs do
+    ios_version = ENV['DOCS_IOS_VERSION'] || "16.1"
+
+    ENV["INCLUDE_DOCC_PLUGIN"] = "true"
+    Dir.chdir("..") do
+      build_symbols_for_combined_docs
+
+      sh("swift",
+         "package",
+         "--disable-sandbox",
+         "preview-documentation",
+         "--target",
+         "RevenueCat",
+         "--include-extended-types",
+         "--platform",
+         "name=iOS,version=#{ios_version}",
+         "--transform-for-static-hosting",
+         "--enable-inherited-docs",
+         "--additional-symbol-graph-dir", ".build")
+    end
+  end
+
+  desc "Preview DocC documentation for both RevenueCat SDK and RevenueCatUI SDK locally"
+  lane :preview_docc_docs do
+    ios_version = ENV['DOCS_IOS_VERSION'] || "16.1"
+
+    ENV["INCLUDE_DOCC_PLUGIN"] = "true"
+    Dir.chdir("..") do
+      # Build symbols for both RevenueCat and RevenueCatUI targets for macOS to avoid cross-compilation issues
+      ["RevenueCat", "RevenueCatUI"].each do |target|
+        sh("swift",
+           "build",
+           "--target", target,
+           "-Xswiftc", "-emit-symbol-graph",
+           "-Xswiftc", "-emit-symbol-graph-dir",
+           "-Xswiftc", ".build")
+      end
+
+      # Use preview-documentation for local development server
+      sh("swift",
+         "package",
+         "--disable-sandbox",
+         "preview-documentation",
+         "--target",
+         "RevenueCat",
+         "--include-extended-types",
+         "--platform",
+         "name=iOS,version=#{ios_version}",
+         "--transform-for-static-hosting",
+         "--enable-inherited-docs",
+         "--additional-symbol-graph-dir", ".build")
+    end
+  end
+
   desc "Generate docs without publishing"
   lane :build_docs do
     build_docs_shared
+  end
+
+  desc "Generate combined docs for RevenueCat SDK and RevenueCatUI SDK without publishing"
+  lane :build_combined_docs do
+    build_combined_docs_shared
   end
 
   desc "Generate & publish docs"
@@ -1037,6 +1114,47 @@ platform :ios do
           "generate-documentation",
           "--target",
           "RevenueCat",
+          "--disable-indexing", # Produces a DocC archive that is best-suited for hosting online but incompatible with Xcode.
+          "--platform",
+          "name=iOS,version=#{ios_version}",
+          "--output-path",
+          docs_generation_folder,
+          "--hosting-base-path",
+          hosting_base_path,
+          "--transform-for-static-hosting",
+          "--enable-inherited-docs",
+          "--additional-symbol-graph-dir", ".build")
+    end
+
+    docs_generation_folder # returning path from lane
+  end
+
+  desc "Builds the combined docs for RevenueCat SDK and RevenueCatUI SDK"
+  private_lane :build_combined_docs_shared do
+    ENV["INCLUDE_DOCC_PLUGIN"] = "true"
+
+    version_number = current_version_number
+    docs_repo_name = ENV["DOCS_REPO_NAME"] || "purchases-ios-docs"
+    ios_version = ENV['DOCS_IOS_VERSION'] || "16.1"
+
+    hosting_base_path = File.join(docs_repo_name, version_number)
+
+    docs_generation_folder = Dir.mktmpdir
+
+    # swift package must be run from the dir that contains the Package.swift
+    # output is generated in docs_generation_folder
+    Dir.chdir("..") do
+      build_symbols_for_combined_docs
+
+      sh("swift",
+          "package",
+          "--disable-sandbox",
+          "--allow-writing-to-directory",
+          docs_generation_folder,
+          "generate-documentation",
+          "--target",
+          "RevenueCat",
+          "--include-extended-types",
           "--disable-indexing", # Produces a DocC archive that is best-suited for hosting online but incompatible with Xcode.
           "--platform",
           "name=iOS,version=#{ios_version}",
