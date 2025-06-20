@@ -41,7 +41,7 @@ final class BackendGetCustomerCenterConfigTests: BaseBackendTests {
     }
 
     func testGetCustomerCenterConfigPassesLocales() {
-        self.createDependencies(localesProvider: MockPreferredLocalesProvider(stubbedLocales: ["en_EN", "es_ES"]))
+        self.createDependencies(localesProvider: .mock(locales: ["en_EN", "es_ES"]))
 
         self.httpClient.mock(
             requestPath: .getCustomerCenterConfig(appUserID: Self.userID),
@@ -57,6 +57,27 @@ final class BackendGetCustomerCenterConfigTests: BaseBackendTests {
         expect(result).to(beSuccess())
         expect(self.httpClient.calls).to(haveCount(1))
         expect(self.httpClient.calls[0].headers["X-Preferred-Locales"]) == "en_EN,es_ES"
+    }
+
+    func testGetCustomerCenterConfigPassesLocalesWithOverride() {
+        let localesProvider: PreferredLocalesProvider = .mock(preferredLocaleOverride: "fr_FR",
+                                                              locales: ["en_EN", "es_ES"])
+        self.createDependencies(localesProvider: localesProvider)
+
+        self.httpClient.mock(
+            requestPath: .getCustomerCenterConfig(appUserID: Self.userID),
+            response: .init(statusCode: .success, response: Self.customerCenterResponse as [String: Any])
+        )
+
+        let result = waitUntilValue { completed in
+            self.customerCenterConfig.getCustomerCenterConfig(appUserID: Self.userID,
+                                                              isAppBackgrounded: false,
+                                                              completion: completed)
+        }
+
+        expect(result).to(beSuccess())
+        expect(self.httpClient.calls).to(haveCount(1))
+        expect(self.httpClient.calls[0].headers["X-Preferred-Locales"]) == "fr_FR,en_EN,es_ES"
     }
 
     func testGetCustomerCenterConfigCallsHTTPMethodWithRandomDelay() {

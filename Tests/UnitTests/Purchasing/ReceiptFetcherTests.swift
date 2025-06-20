@@ -37,7 +37,8 @@ class BaseReceiptFetcherTests: TestCase {
         self.mockSystemInfo = MockSystemInfo(platformInfo: nil,
                                              finishTransactions: false,
                                              bundle: self.mockBundle,
-                                             clock: self.clock)
+                                             clock: self.clock,
+                                             preferredLocalesProvider: .mock())
 
         self.receiptFetcher = ReceiptFetcher(requestFetcher: self.mockRequestFetcher,
                                              systemInfo: self.mockSystemInfo,
