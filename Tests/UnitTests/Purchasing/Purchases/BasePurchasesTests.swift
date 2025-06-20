@@ -40,7 +40,7 @@ class BasePurchasesTests: TestCase {
                                          storeKitVersion: self.storeKitVersion,
                                          clock: self.clock)
         self.storeKit1Wrapper = MockStoreKit1Wrapper(observerMode: self.systemInfo.observerMode)
-        self.deviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo,
+        self.deviceCache = MockDeviceCache(systemInfo: self.systemInfo,
                                            userDefaults: self.userDefaults)
         self.paywallCache = .init()
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {

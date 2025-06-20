@@ -76,7 +76,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
         self.clock = TestClock()
         self.systemInfo = MockSystemInfo(finishTransactions: true, clock: self.clock)
 
-        self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo,
+        self.mockDeviceCache = MockDeviceCache(systemInfo: self.systemInfo,
                                                userDefaults: self.userDefaults)
 
         self.subscriberAttributeHeight = SubscriberAttribute(withKey: "height",

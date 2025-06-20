@@ -32,7 +32,7 @@ class OfferingsManagerTests: TestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
         self.mockOfferings = try XCTUnwrap(self.mockBackend.offerings as? MockOfferingsAPI)
-        self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.mockSystemInfo)
+        self.mockDeviceCache = MockDeviceCache(systemInfo: self.mockSystemInfo)
         self.mockProductsManager = MockProductsManager(diagnosticsTracker: nil,
                                                        systemInfo: self.mockSystemInfo,
                                                        requestTimeout: Configuration.storeKitRequestTimeoutDefault)

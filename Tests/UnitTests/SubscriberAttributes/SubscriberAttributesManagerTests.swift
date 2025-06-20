@@ -32,7 +32,7 @@ class SubscriberAttributesManagerTests: TestCase {
         let platformInfo = Purchases.PlatformInfo(flavor: "iOS", version: "3.2.1")
         let systemInfo = MockSystemInfo(platformInfo: platformInfo, finishTransactions: true)
 
-        self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: systemInfo)
+        self.mockDeviceCache = MockDeviceCache(systemInfo: systemInfo)
         self.mockBackend = MockBackend()
         self.mockAttributionFetcher = MockAttributionFetcher(attributionFactory: AttributionTypeFactory(),
                                                              systemInfo: systemInfo)

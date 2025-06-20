@@ -8,8 +8,8 @@ import Foundation
 
 class MockDeviceCache: DeviceCache {
 
-    convenience init(sandboxEnvironmentDetector: SandboxEnvironmentDetector = MockSandboxEnvironmentDetector()) {
-        self.init(sandboxEnvironmentDetector: sandboxEnvironmentDetector,
+    convenience init(systemInfo: SystemInfo = MockSystemInfo(finishTransactions: false)) {
+        self.init(systemInfo: systemInfo,
                   userDefaults: MockUserDefaults())
     }
 
@@ -119,7 +119,7 @@ class MockDeviceCache: DeviceCache {
         return stubbedOfferings
     }
 
-    override func cache(offerings: Offerings, appUserID: String) {
+    override func cache(offerings: Offerings, preferredLocales: [String], appUserID: String) {
         self.cacheOfferingsCount += 1
     }
     override func cacheInMemory(offerings: Offerings) {
@@ -130,7 +130,7 @@ class MockDeviceCache: DeviceCache {
         return self.stubbedIsOfferingsCacheStale
     }
 
-    override func clearOfferingsCacheTimestamp() {
+    override func forceOfferingsCacheStale() {
         self.clearOfferingsCacheTimestampCount += 1
     }
 

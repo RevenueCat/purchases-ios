@@ -18,7 +18,9 @@ class DeviceCacheSubscriberAttributesTests: TestCase {
 
         UserDefaults.resetStandardUserDefaults()
         self.mockUserDefaults = MockUserDefaults()
-        self.deviceCache = DeviceCache(sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(),
+        let systemInfo = MockSystemInfo(finishTransactions: false)
+        systemInfo.stubbedIsSandbox = true
+        self.deviceCache = DeviceCache(systemInfo: systemInfo,
                                        userDefaults: self.mockUserDefaults)
 
         self.mockDateProvider = MockDateProvider(stubbedNow: self.now)

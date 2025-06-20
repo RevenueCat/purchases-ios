@@ -21,10 +21,9 @@ class DeviceCache {
     var cachedLegacyAppUserID: String? { return self._cachedLegacyAppUserID.value }
     var cachedOfferings: Offerings? { self.offeringsCachedObject.cachedInstance }
 
-    private let sandboxEnvironmentDetector: SandboxEnvironmentDetector
+    private let systemInfo: SystemInfo
     private let userDefaults: SynchronizedUserDefaults
     private let offeringsCachedObject: InMemoryCachedObject<Offerings>
-    private let systemInfo: SystemInfo
 
     private let _cachedAppUserID: Atomic<String?>
     private let _cachedLegacyAppUserID: Atomic<String?>
@@ -33,11 +32,9 @@ class DeviceCache {
 
     private var offeringsCachePreferredLocales: [String] = []
 
-    init(sandboxEnvironmentDetector: SandboxEnvironmentDetector,
+    init(systemInfo: SystemInfo,
          userDefaults: UserDefaults,
-         offeringsCachedObject: InMemoryCachedObject<Offerings> = .init(),
-         systemInfo: SystemInfo) {
-        self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
+         offeringsCachedObject: InMemoryCachedObject<Offerings> = .init()) {
         self.offeringsCachedObject = offeringsCachedObject
         self.systemInfo = systemInfo
         self.userDefaults = .init(userDefaults: userDefaults)
@@ -132,7 +129,7 @@ class DeviceCache {
             let timeSinceLastCheck = cachesLastUpdated.timeIntervalSinceNow * -1
             let cacheDurationInSeconds = self.cacheDurationInSeconds(
                 isAppBackgrounded: isAppBackgrounded,
-                isSandbox: self.sandboxEnvironmentDetector.isSandbox
+                isSandbox: self.systemInfo.isSandbox
             )
 
             return timeSinceLastCheck >= cacheDurationInSeconds
@@ -193,7 +190,7 @@ class DeviceCache {
         // Time-based staleness, or
         return self.offeringsCachedObject.isCacheStale(
             durationInSeconds: self.cacheDurationInSeconds(isAppBackgrounded: isAppBackgrounded,
-                                                           isSandbox: self.sandboxEnvironmentDetector.isSandbox)
+                                                           isSandbox: self.systemInfo.isSandbox)
         ) ||
         // Locale-based staleness
         self.offeringsCachePreferredLocales != self.systemInfo.preferredLocales

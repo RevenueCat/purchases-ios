@@ -24,7 +24,8 @@ class MockSystemInfo: SystemInfo {
                      storeKitVersion: StoreKitVersion = .default,
                      responseVerificationMode: Signing.ResponseVerificationMode = .disabled,
                      dangerousSettings: DangerousSettings,
-                     clock: ClockType = TestClock()) {
+                     clock: ClockType = TestClock(),
+                     preferredLocalesProvider: PreferredLocalesProvider = .mock()) {
         self.init(platformInfo: platformInfo,
                   finishTransactions: finishTransactions,
                   storeKitVersion: storeKitVersion,
@@ -32,7 +33,7 @@ class MockSystemInfo: SystemInfo {
                   dangerousSettings: dangerousSettings,
                   isAppBackgrounded: false,
                   clock: clock,
-                  preferredLocalesProvider: .mock())
+                  preferredLocalesProvider: preferredLocalesProvider)
     }
 
     convenience init(platformInfo: Purchases.PlatformInfo? = nil,
@@ -41,7 +42,8 @@ class MockSystemInfo: SystemInfo {
                      uiPreviewMode: Bool = false,
                      storeKitVersion: StoreKitVersion = .default,
                      responseVerificationMode: Signing.ResponseVerificationMode = .disabled,
-                     clock: ClockType = TestClock()) {
+                     clock: ClockType = TestClock(),
+                     preferredLocalesProvider: PreferredLocalesProvider = .mock()) {
         let dangerousSettings = DangerousSettings(
             autoSyncPurchases: true,
             customEntitlementComputation: customEntitlementsComputation,
@@ -55,7 +57,8 @@ class MockSystemInfo: SystemInfo {
                   storeKitVersion: storeKitVersion,
                   responseVerificationMode: responseVerificationMode,
                   dangerousSettings: dangerousSettings,
-                  clock: clock)
+                  clock: clock,
+                  preferredLocalesProvider: preferredLocalesProvider)
     }
 
     override var isAppBackgroundedState: Bool {
