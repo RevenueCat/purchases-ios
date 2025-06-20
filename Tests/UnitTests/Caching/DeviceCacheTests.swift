@@ -158,7 +158,6 @@ class DeviceCacheTests: TestCase {
                                        userDefaults: self.mockUserDefaults,
                                        offeringsCachedObject: mockCachedObject)
         self.deviceCache.cache(offerings: .empty, preferredLocales: ["en-US"], appUserID: "user")
-        let isAppBackgrounded = false
 
         mockCachedObject.stubbedCachedInstanceResult = .empty
 
