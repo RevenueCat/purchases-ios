@@ -39,12 +39,12 @@ final class MockPurchases: PaywallPurchasesType {
 
     init(
         purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat,
+        preferredLocales: [String] = ["en_US"],
+        preferredLocaleOverride: String? = nil,
         purchase: @escaping PurchaseBlock,
         restorePurchases: @escaping RestoreBlock,
         trackEvent: @escaping TrackEventBlock,
-        customerInfo: @escaping CustomerInfoBlock,
-        preferredLocales: [String] = ["en_US"],
-        preferredLocaleOverride: String? = nil
+        customerInfo: @escaping CustomerInfoBlock
     ) {
         self.purchaseBlock = purchase
         self.restoreBlock = restorePurchases
