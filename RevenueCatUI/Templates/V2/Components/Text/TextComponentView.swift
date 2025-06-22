@@ -23,12 +23,6 @@ import SwiftUI
 struct TextComponentView: View {
 
     @EnvironmentObject
-    private var introOfferEligibilityContext: IntroOfferEligibilityContext
-
-    @EnvironmentObject
-    private var promotionalOfferEligibilityContext: PromotionalOfferEligibilityContext
-
-    @EnvironmentObject
     private var packageContext: PackageContext
 
     @Environment(\.componentViewState)
@@ -48,12 +42,8 @@ struct TextComponentView: View {
             state: self.componentViewState,
             condition: self.screenCondition,
             packageContext: self.packageContext,
-            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
-                package: self.packageContext.package
-            ),
-            isEligibleForPromoOffer: self.promotionalOfferEligibilityContext.isMostLikelyEligible(
-                for: self.packageContext.package
-            )
+            isEligibleForIntroOffer: self.packageContext.isEligibleForIntroOffer,
+            isEligibleForPromoOffer: self.packageContext.isEligibleForPromoOffer
         ) { style in
             if style.visible {
                 NonLocalizedMarkdownText(text: style.text, font: style.font, fontWeight: style.fontWeight)
@@ -676,6 +666,8 @@ struct TextComponentView_Previews: PreviewProvider {
         }
         .previewRequiredEnvironmentProperties(
             packageContext: .init(
+                introOfferEligibilityContext: IntroOfferEligibilityContext(introEligibilityChecker: .default()),
+                paywallPromoOfferCache: PaywallPromoOfferCache(),
                 package: PreviewMock.annualStandardPackage,
                 variableContext: .init(packages: [
                     PreviewMock.monthlyStandardPackage,
