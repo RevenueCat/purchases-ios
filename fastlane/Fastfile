@@ -367,7 +367,6 @@ platform :ios do
       scheme: "PaywallsTester - Live Config",
       configuration: "Debug",
       destination: "platform=macOS,arch=arm64,variant=Mac Catalyst",
-      xcargs: "-allowProvisioningUpdates"
     )
 
     send_to_emerge(
@@ -381,8 +380,14 @@ platform :ios do
       scheme: "PaywallsTester - Live Config",
       configuration: "Debug",
       destination: "platform=macOS,arch=arm64,variant=Designed for iPad",
-      xcargs: "-allowProvisioningUpdates"
+      export_options: {
+        provisioningProfiles: {
+          "com.revenuecat.PaywallsTester" => "match AppStore com.revenuecat.PaywallsTester macos",
+        }
+      }
     )
+    
+    
 
     send_to_emerge(
         app_id_suffix: "mac-designed-for-ipad"
