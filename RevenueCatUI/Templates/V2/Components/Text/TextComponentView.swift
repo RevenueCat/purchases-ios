@@ -139,7 +139,15 @@ struct TextComponentView_Previews: PreviewProvider {
             return "Native Mac"
         }
         else if isMacCatalyst {
-            return "Mac Catalyst"
+            switch UIDevice.current.userInterfaceIdiom {
+            case .mac:
+                return "Mac Catalyst Optimized for Mac"
+            case .pad:
+                return "Mac Catalyst Scaled to iPad"
+            default:
+                return "Unexpected Platform on Mac Catalyst"
+            }
+
         }
         else {
             switch UIDevice.current.userInterfaceIdiom {
@@ -148,7 +156,7 @@ struct TextComponentView_Previews: PreviewProvider {
             case .pad:
                 return "iPad App on Mac"
             default:
-                return "Unexpected Platform on Mac"
+                return "Unexpected iOS App on Mac"
             }
         }
     }
