@@ -6,7 +6,7 @@
 //
 // swiftlint:disable missing_docs file_length
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
@@ -95,9 +95,6 @@ struct PaywallsV2View: View {
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
     @StateObject
-    private var promotionalOfferEligibilityContext: PromotionalOfferEligibilityContext
-
-    @StateObject
     private var paywallStateManager: PaywallStateManager
 
     private let paywallComponentsData: PaywallComponentsData
@@ -107,11 +104,15 @@ struct PaywallsV2View: View {
     private let onDismiss: () -> Void
     private let fallbackContent: FallbackContent
 
-    init(
+    @ObservedObject
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
+
+    public init(
         paywallComponents: Offering.PaywallComponents,
         offering: Offering,
         purchaseHandler: PurchaseHandler,
         introEligibilityChecker: TrialOrIntroEligibilityChecker,
+        paywallPromoOfferCache: PaywallPromoOfferCache,
         showZeroDecimalPlacePrices: Bool,
         onDismiss: @escaping () -> Void,
         fallbackContent: FallbackContent,
@@ -131,10 +132,7 @@ struct PaywallsV2View: View {
         self._introOfferEligibilityContext = .init(
             wrappedValue: .init(introEligibilityChecker: introEligibilityChecker)
         )
-
-        self._promotionalOfferEligibilityContext = .init(
-            wrappedValue: PromotionalOfferEligibilityContext()
-        )
+        self._paywallPromoOfferCache = .init(wrappedValue: paywallPromoOfferCache)
 
         // Step 0: Decide which ComponentsConfig to use (base is default)
         let componentsConfig = paywallComponentsData.componentsConfig.base
@@ -167,6 +165,8 @@ struct PaywallsV2View: View {
             switch self.paywallStateManager.state {
             case .success(let paywallState):
                 LoadedPaywallsV2View(
+                    introOfferEligibilityContext: introOfferEligibilityContext,
+                    paywallPromoOfferCache: paywallPromoOfferCache,
                     paywallState: paywallState,
                     uiConfigProvider: self.uiConfigProvider,
                     onDismiss: self.onDismiss
@@ -174,7 +174,7 @@ struct PaywallsV2View: View {
                 .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
                 .environmentObject(self.purchaseHandler)
                 .environmentObject(self.introOfferEligibilityContext)
-                .environmentObject(self.promotionalOfferEligibilityContext)
+                .environmentObject(self.paywallPromoOfferCache)
                 .disabled(self.purchaseHandler.actionInProgress)
                 .onAppear {
                     self.purchaseHandler.trackPaywallImpression(
@@ -191,7 +191,9 @@ struct PaywallsV2View: View {
                     await self.introOfferEligibilityContext.computeEligibility(for: paywallState.packages)
                 }
                 .task {
-                    await self.promotionalOfferEligibilityContext.computeEligibility(for: paywallState.packageInfos)
+                    await self.paywallPromoOfferCache.computeEligibility(
+                        for: paywallState.packageInfos.map { ($0.package, $0.promotionalOfferProductCode) }
+                    )
                 }
                 // Note: preferences need to be applied after `.toolbar` call
                 .preference(key: PurchaseInProgressPreferenceKey.self,
@@ -249,6 +251,9 @@ struct PaywallsV2View: View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct LoadedPaywallsV2View: View {
 
+    private let introOfferEligibilityContext: IntroOfferEligibilityContext
+    private let paywallPromoOfferCache: PaywallPromoOfferCache
+
     private let paywallState: PaywallState
     private let uiConfigProvider: UIConfigProvider
     private let onDismiss: () -> Void
@@ -256,13 +261,23 @@ private struct LoadedPaywallsV2View: View {
     @StateObject
     private var selectedPackageContext: PackageContext
 
-    init(paywallState: PaywallState, uiConfigProvider: UIConfigProvider, onDismiss: @escaping () -> Void) {
+    init(
+        introOfferEligibilityContext: IntroOfferEligibilityContext,
+        paywallPromoOfferCache: PaywallPromoOfferCache,
+        paywallState: PaywallState,
+        uiConfigProvider: UIConfigProvider,
+        onDismiss: @escaping () -> Void
+    ) {
+        self.introOfferEligibilityContext = introOfferEligibilityContext
+        self.paywallPromoOfferCache = paywallPromoOfferCache
         self.paywallState = paywallState
         self.uiConfigProvider = uiConfigProvider
         self.onDismiss = onDismiss
 
         self._selectedPackageContext = .init(
             wrappedValue: .init(
+                introOfferEligibilityContext: introOfferEligibilityContext,
+                paywallPromoOfferCache: paywallPromoOfferCache,
                 package: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
                 variableContext: .init(
                     packages: paywallState.packages,

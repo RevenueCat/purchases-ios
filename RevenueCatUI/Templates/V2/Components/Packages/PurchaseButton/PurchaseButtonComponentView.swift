@@ -27,7 +27,7 @@ struct PurchaseButtonComponentView: View {
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
     @EnvironmentObject
-    private var promotionalOfferEligibilityContext: PromotionalOfferEligibilityContext
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
 
     @EnvironmentObject
     private var packageContext: PackageContext
@@ -110,7 +110,7 @@ struct PurchaseButtonComponentView: View {
             return
         }
 
-        let promoOffer = promotionalOfferEligibilityContext.get(for: selectedPackage)
+        let promoOffer = await paywallPromoOfferCache.get(for: selectedPackage)
 
         _ = try await self.purchaseHandler.purchase(package: selectedPackage, promotionalOffer: promoOffer)
     }

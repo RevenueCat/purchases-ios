@@ -12,19 +12,13 @@
 //  Created by Josh Holtz on 6/11/24.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ImageComponentView: View {
-
-    @EnvironmentObject
-    private var introOfferEligibilityContext: IntroOfferEligibilityContext
-
-    @EnvironmentObject
-    private var promotionalOfferEligibilityContext: PromotionalOfferEligibilityContext
 
     @EnvironmentObject
     private var packageContext: PackageContext
@@ -46,12 +40,8 @@ struct ImageComponentView: View {
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
-            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
-                package: self.packageContext.package
-            ),
-            isEligibleForPromoOffer: self.promotionalOfferEligibilityContext.isMostLikelyEligible(
-                for: self.packageContext.package
-            )
+            isEligibleForIntroOffer: self.packageContext.isEligibleForIntroOffer,
+            isEligibleForPromoOffer: self.packageContext.isEligibleForPromoOffer
         ) { style in
             if style.visible {
                 if let maxWidth = self.maxWidth {

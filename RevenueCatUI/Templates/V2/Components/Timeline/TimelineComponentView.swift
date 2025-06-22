@@ -12,7 +12,7 @@
 //  Created by Mark Villacampa on 15/1/25.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
@@ -21,12 +21,6 @@ import SwiftUI
 struct TimelineComponentView: View {
 
     private let viewModel: TimelineComponentViewModel
-
-    @EnvironmentObject
-    private var introOfferEligibilityContext: IntroOfferEligibilityContext
-
-    @EnvironmentObject
-    private var promotionalOfferEligibilityContext: PromotionalOfferEligibilityContext
 
     @EnvironmentObject
     private var packageContext: PackageContext
@@ -50,12 +44,8 @@ struct TimelineComponentView: View {
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
-            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
-                package: self.packageContext.package
-            ),
-            isEligibleForPromoOffer: self.promotionalOfferEligibilityContext.isMostLikelyEligible(
-                for: self.packageContext.package
-            )
+            isEligibleForIntroOffer: self.packageContext.isEligibleForIntroOffer,
+            isEligibleForPromoOffer: self.packageContext.isEligibleForPromoOffer
         ) { style in
             if style.visible {
                 timeline(style: style)
@@ -72,12 +62,8 @@ struct TimelineComponentView: View {
                 item.styles(
                     state: self.componentViewState,
                     condition: self.screenCondition,
-                    isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
-                        package: self.packageContext.package
-                    ),
-                    isEligibleForPromoOffer: self.promotionalOfferEligibilityContext.isMostLikelyEligible(
-                        for: self.packageContext.package
-                    )
+                    isEligibleForIntroOffer: self.packageContext.isEligibleForIntroOffer,
+                    isEligibleForPromoOffer: self.packageContext.isEligibleForPromoOffer
                 ) { itemStyle in
                     if itemStyle.visible {
                         timelineRow(itemStyle: itemStyle, style: style)
@@ -97,12 +83,8 @@ struct TimelineComponentView: View {
                     item.styles(
                         state: self.componentViewState,
                         condition: self.screenCondition,
-                        isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
-                            package: self.packageContext.package
-                        ),
-                        isEligibleForPromoOffer: self.promotionalOfferEligibilityContext.isMostLikelyEligible(
-                            for: self.packageContext.package
-                        )
+                        isEligibleForIntroOffer: self.packageContext.isEligibleForIntroOffer,
+                        isEligibleForPromoOffer: self.packageContext.isEligibleForPromoOffer
                     ) { itemStyle in
                         if itemStyle.visible {
                             let next = viewModel.items.indices.contains(index + 1) ? viewModel.items[index + 1] : nil
