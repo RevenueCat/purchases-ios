@@ -134,6 +134,25 @@ struct TextComponentView_Previews: PreviewProvider {
         return ProcessInfo.processInfo.isiOSAppOnMac
     }
     
+    private static var platformString: String {
+        if isNativeMac {
+            return "Native Mac"
+        }
+        else if isMacCatalyst {
+            return "Mac Catalyst"
+        }
+        else {
+            switch UIDevice.current.userInterfaceIdiom {
+            case .phone:
+                return "iPhone App on Mac"
+            case .pad:
+                return "iPad App on Mac"
+            default:
+                return "Unexpected Platform on Mac"
+            }
+        }
+    }
+    
     private static var defaultPreview: some View {
         // Default
         TextComponentView(
@@ -142,7 +161,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 localizationProvider: .init(
                     locale: Locale.current,
                     localizedStrings: [
-                        "id_1": .string(isNativeMac ? "Native Mac" : (isMacCatalyst ? "Mac Catalyst" : (isiOSAppOnMac ? "iOS App on Mac" : "iOS")))
+                        "id_1": .string(platformString)
                     ]
                 ),
                 uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
