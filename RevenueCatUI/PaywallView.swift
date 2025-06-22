@@ -56,6 +56,9 @@ public struct PaywallView: View {
     @State
     private var error: NSError?
 
+    @StateObject
+    private var defaultPaywallPromoOfferCache = PaywallPromoOfferCache()
+
     private var initializationError: NSError?
 
     @Environment(\.onRequestedDismissal)
@@ -264,6 +267,14 @@ public struct PaywallView: View {
         }
     }
 
+    var paywallPromoOfferCache: PaywallPromoOfferCache {
+        if Purchases.isConfigured, let cache = Purchases.shared.paywallPromoOfferCache as? PaywallPromoOfferCache {
+            return cache
+        } else {
+            return self.defaultPaywallPromoOfferCache
+        }
+    }
+
     @ViewBuilder
     // swiftlint:disable:next function_body_length function_parameter_count
     private func paywallView(
@@ -322,6 +333,7 @@ public struct PaywallView: View {
                     offering: offering,
                     purchaseHandler: purchaseHandler,
                     introEligibilityChecker: checker,
+                    paywallPromoOfferCache: paywallPromoOfferCache,
                     showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
                     onDismiss: {
                         guard let onRequestedDismissal = self.onRequestedDismissal else {

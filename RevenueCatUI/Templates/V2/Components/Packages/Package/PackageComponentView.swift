@@ -12,7 +12,7 @@
 //  Created by Josh Holtz on 9/27/24.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
@@ -38,11 +38,11 @@ struct PackageComponentView: View {
 
     var body: some View {
         if let package = self.viewModel.package {
-            Button {
+            AsyncButton {
                 // Updating package with same variable context
                 // This will be needed when different sets of packages
                 // in different tiers
-                self.packageContext.update(
+                await self.packageContext.update(
                     package: package,
                     variableContext: self.packageContext.variableContext
                 )
@@ -54,6 +54,8 @@ struct PackageComponentView: View {
                 .environment(\.componentViewState, componentViewState)
                 // Overrides the existing PackageContext
                 .environmentObject(PackageContext(
+                    introOfferEligibilityContext: packageContext.introOfferEligibilityContext,
+                    paywallPromoOfferCache: packageContext.paywallPromoOfferCache,
                     // This is needed so text component children use this
                     // package and not selected package for processing variables
                     package: package,
@@ -81,12 +83,18 @@ struct PackageComponentView_Previews: PreviewProvider {
                      webCheckoutUrl: nil)
     }
 
+    @MainActor
     static let packageContext = PackageContext(
+        introOfferEligibilityContext: IntroOfferEligibilityContext(introEligibilityChecker: .default()),
+        paywallPromoOfferCache: PaywallPromoOfferCache(),
         package: nil,
         variableContext: .init()
     )
+    @MainActor
     static let packageContextSelected = PackageContext(
-        package: Self.package,
+        introOfferEligibilityContext: IntroOfferEligibilityContext(introEligibilityChecker: .default()),
+        paywallPromoOfferCache: PaywallPromoOfferCache(),
+        package: nil,
         variableContext: .init()
     )
 

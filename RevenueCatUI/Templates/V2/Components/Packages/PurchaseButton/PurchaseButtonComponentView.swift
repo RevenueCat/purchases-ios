@@ -12,7 +12,7 @@
 //  Created by Josh Holtz on 9/27/24.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
@@ -27,7 +27,7 @@ struct PurchaseButtonComponentView: View {
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
     @EnvironmentObject
-    private var promotionalOfferEligibilityContext: PromotionalOfferEligibilityContext
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
 
     @EnvironmentObject
     private var packageContext: PackageContext
@@ -110,7 +110,7 @@ struct PurchaseButtonComponentView: View {
             return
         }
 
-        let promoOffer = promotionalOfferEligibilityContext.get(for: selectedPackage)
+        let promoOffer = await paywallPromoOfferCache.get(for: selectedPackage)
 
         _ = try await self.purchaseHandler.purchase(package: selectedPackage, promotionalOffer: promoOffer)
     }

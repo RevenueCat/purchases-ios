@@ -11,7 +11,7 @@
 //
 //  Created by Josh Holtz on 11/14/24.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
@@ -57,17 +57,49 @@ class PackageContext: ObservableObject {
 
     }
 
+    let introOfferEligibilityContext: IntroOfferEligibilityContext
+    let paywallPromoOfferCache: PaywallPromoOfferCache
+
     @Published var package: Package?
     @Published var variableContext: VariableContext
+    @Published var isEligibleForIntroOffer: Bool = false
+    @Published var isEligibleForPromoOffer: Bool = false
 
-    init(package: Package?, variableContext: VariableContext) {
+
+    init(
+        introOfferEligibilityContext: IntroOfferEligibilityContext,
+        paywallPromoOfferCache: PaywallPromoOfferCache,
+        package: Package?,
+        variableContext: VariableContext
+    ) {
+        self.introOfferEligibilityContext = introOfferEligibilityContext
+        self.paywallPromoOfferCache = paywallPromoOfferCache
+
         self.package = package
         self.variableContext = variableContext
+
+        Task { @MainActor in
+            await self.update(package: package, variableContext: variableContext)
+        }
     }
 
-    func update(package: Package?, variableContext: VariableContext) {
+    @MainActor
+    func update(package: Package?, variableContext: VariableContext) async {
         self.package = package
         self.variableContext = variableContext
+
+        let thing1 = self.introOfferEligibilityContext.isEligible(
+            package: package
+        )
+        if thing1 != self.isEligibleForIntroOffer {
+            self.isEligibleForIntroOffer = thing1
+        }
+        let thing2 = await self.paywallPromoOfferCache.isMostLikelyEligible(
+            for: package
+        )
+        if thing2 != self.isEligibleForPromoOffer {
+            self.isEligibleForPromoOffer = thing2
+        }
     }
 
 }
