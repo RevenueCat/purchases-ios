@@ -143,6 +143,14 @@ class Backend {
         self.customer.post(subscriberAttributes: subscriberAttributes, appUserID: appUserID, completion: completion)
     }
 
+    /// Call the `/health_report` endpoint and perform a full validation of the SDK's configuration
+    /// - Parameter appUserID: An `appUserID` that allows the Backend to fetch offerings
+    /// - Returns: A report with all validation checks along with their status
+    func healthReportRequest(appUserID: String) async throws -> HealthReport {
+        try await Async.call { (completion: @escaping (Result<HealthReport, BackendError>) -> Void) in
+            self.internalAPI.healthReportRequest(appUserID: appUserID, completion: completion)
+        }
+    }
 }
 
 extension Backend {
@@ -153,19 +161,6 @@ extension Backend {
             self.internalAPI.healthRequest(signatureVerification: signatureVerification) { error in
                 completion(.init(error))
             }
-        }
-    }
-
-}
-
-extension Backend {
-
-    /// Call the `/health_report` endpoint and perform a full validation of the SDK's configuration
-    /// - Parameter appUserID: An `appUserID` that allows the Backend to fetch offerings
-    /// - Returns: A report with all validation checks along with their status
-    func healthReportRequest(appUserID: String) async throws -> HealthReport {
-        try await Async.call { (completion: @escaping (Result<HealthReport, BackendError>) -> Void) in
-            self.internalAPI.healthReportRequest(appUserID: appUserID, completion: completion)
         }
     }
 

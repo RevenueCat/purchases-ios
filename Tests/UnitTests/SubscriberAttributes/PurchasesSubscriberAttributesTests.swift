@@ -236,7 +236,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
                                 with: trialOrIntroductoryPriceEligibilityChecker
                               ),
                               storeMessagesHelper: self.mockStoreMessagesHelper,
-                              diagnosticsTracker: nil)
+                              diagnosticsTracker: nil,
+                              validateConfigurationOnLaunch: false)
         purchasesOrchestrator.delegate = purchases
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)

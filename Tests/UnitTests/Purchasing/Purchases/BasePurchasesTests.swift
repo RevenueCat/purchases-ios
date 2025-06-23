@@ -234,12 +234,17 @@ class BasePurchasesTests: TestCase {
         }
     }
 
-    func setupPurchases(automaticCollection: Bool = false, withDelegate: Bool = true) {
+    func setupPurchases(
+        automaticCollection: Bool = false,
+        withDelegate: Bool = true,
+        validateConfigurationOnLaunch: Bool = true
+    ) {
         self.identityManager.mockIsAnonymous = false
 
         self.initializePurchasesInstance(
             appUserId: self.identityManager.currentAppUserID,
-            withDelegate: withDelegate
+            withDelegate: withDelegate,
+            validateConfigurationOnLaunch: validateConfigurationOnLaunch
         )
     }
 
@@ -257,7 +262,11 @@ class BasePurchasesTests: TestCase {
         self.initializePurchasesInstance(appUserId: nil)
     }
 
-    func initializePurchasesInstance(appUserId: String?, withDelegate: Bool = true) {
+    func initializePurchasesInstance(
+        appUserId: String?,
+        withDelegate: Bool = true,
+        validateConfigurationOnLaunch: Bool = true
+    ) {
         self.purchasesOrchestrator = PurchasesOrchestrator(
             productsManager: self.mockProductsManager,
             paymentQueueWrapper: self.paymentQueueWrapper,
@@ -319,7 +328,8 @@ class BasePurchasesTests: TestCase {
                                    purchasedProductsFetcher: self.mockPurchasedProductsFetcher,
                                    trialOrIntroPriceEligibilityChecker: self.cachingTrialOrIntroPriceEligibilityChecker,
                                    storeMessagesHelper: self.mockStoreMessagesHelper,
-                                   diagnosticsTracker: self.diagnosticsTracker)
+                                   diagnosticsTracker: self.diagnosticsTracker,
+                                   validateConfigurationOnLaunch: validateConfigurationOnLaunch)
 
         self.purchasesOrchestrator.delegate = self.purchases
 
@@ -455,6 +465,18 @@ extension BasePurchasesTests {
             DispatchQueue.main.async {
                 completion(result)
             }
+        }
+
+        var healthReportRequests = [String]()
+        override func healthReportRequest(appUserID: String) async throws -> HealthReport {
+            healthReportRequests += [appUserID]
+
+            return .init(
+                status: .passed,
+                projectId: nil,
+                appId: nil,
+                checks: []
+            )
         }
 
         var postReceiptDataCalled = false
