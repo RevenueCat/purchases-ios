@@ -76,7 +76,7 @@ extension PurchasesDiagnostics {
     }
 
     /// Additional information behind a configuration issue for the app's Bundle Id
-    public struct InvalidBundleIdErrorPayload {
+    public struct InvalidBundleIdErrorPayload: Equatable {
         /// Bundle ID for the RevenueCat app
         public let appBundleId: String
         /// Bundle ID detected from the app at runtime by the RevenueCat SDK
