@@ -277,7 +277,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
     private let syncAttributesAndOfferingsIfNeededRateLimiter = RateLimiter(maxCalls: 5, period: 60)
     private let diagnosticsTracker: DiagnosticsTrackerType?
-    private let validateConfigurationOnLaunch: Bool
 
     // swiftlint:disable:next function_body_length cyclomatic_complexity
     convenience init(apiKey: String,
@@ -619,8 +618,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   purchasedProductsFetcher: purchasedProductsFetcher,
                   trialOrIntroPriceEligibilityChecker: trialOrIntroPriceChecker,
                   storeMessagesHelper: storeMessagesHelper,
-                  diagnosticsTracker: diagnosticsTracker,
-                  validateConfigurationOnLaunch: validateConfigurationOnLaunch
+                  diagnosticsTracker: diagnosticsTracker
         )
     }
 
@@ -651,7 +649,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          trialOrIntroPriceEligibilityChecker: CachingTrialOrIntroPriceEligibilityChecker,
          storeMessagesHelper: StoreMessagesHelperType?,
          diagnosticsTracker: DiagnosticsTrackerType?,
-         validateConfigurationOnLaunch: Bool
+         validateConfigurationOnLaunch: Bool = true
     ) {
 
         if systemInfo.dangerousSettings.customEntitlementComputation {
@@ -700,7 +698,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.trialOrIntroPriceEligibilityChecker = trialOrIntroPriceEligibilityChecker
         self.storeMessagesHelper = storeMessagesHelper
         self.diagnosticsTracker = diagnosticsTracker
-        self.validateConfigurationOnLaunch = validateConfigurationOnLaunch
 
         super.init()
 
@@ -719,7 +716,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.updateCachesIfInForeground()
 
         #if DEBUG
-        if self.validateConfigurationOnLaunch {
+        if validateConfigurationOnLaunch {
             self.runHealthCheckIfInForeground()
         }
         #endif
