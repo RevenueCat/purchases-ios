@@ -40,7 +40,7 @@ class VirtualCurrencyManager: VirtualCurrencyManagerType {
 
     func virtualCurrencies() async throws -> VirtualCurrencies {
         let appUserID = identityManager.currentAppUserID
-        let isAppBackgrounded = await systemInfo.isApplicationBackgrounded()
+        let isAppBackgrounded = systemInfo.isAppBackgroundedState
 
         if let cachedVirtualCurrencies = await fetchCachedVirtualCurrencies(
             appUserID: appUserID,

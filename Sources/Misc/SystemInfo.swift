@@ -210,15 +210,6 @@ class SystemInfo {
         }
     }
 
-    /// Async/await API to check if an app is backgrounded at a specific moment.
-    func isApplicationBackgrounded() async -> Bool {
-        return await Async.call { completion in
-            self.isApplicationBackgrounded { isAppBackgrounded in
-                completion(isAppBackgrounded)
-            }
-        }
-    }
-
     #if targetEnvironment(simulator)
     static let isRunningInSimulator = true
     #else
