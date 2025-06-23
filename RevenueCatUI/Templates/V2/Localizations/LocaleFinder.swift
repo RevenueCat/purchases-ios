@@ -31,9 +31,15 @@ extension Dictionary where Key == String {
         }
 
         // For matching language and script without region
-        if let onlyLanguageAndScriptIdentifier = locale.rc_languageAndScript,
-           let exactMatch = self.valueForLocaleString(onlyLanguageAndScriptIdentifier) {
-            return exactMatch
+        if let onlyLanguageAndScriptIdentifier = locale.rc_languageAndScript {
+            if let exactMatch = self.valueForLocaleString(onlyLanguageAndScriptIdentifier) {
+                return exactMatch
+            } else if let match = self.valueForLanguageAndScript(onlyLanguageAndScriptIdentifier) {
+                // Matching language and script converting dictionary keys to language and script as well
+                // This covers cases where dictionary keys contain the UN M.49 standard. For example:
+                // If locale = "es_MX" and dictionary key = "es_419" (both have rc_languageAndScript = "es-Latn")
+                return match
+            }
         }
 
         // For matching language without script or region
@@ -53,6 +59,16 @@ extension Dictionary where Key == String {
         // For cases like zh-Hans and zh-Hant
         let underscoreLocaleIdentifier = localeIdentifier.replacingOccurrences(of: "-", with: "_")
         return self[underscoreLocaleIdentifier]
+    }
+
+    private func valueForLanguageAndScript(_ languageAndScript: String) -> Value? {
+        guard let matchKey = self.keys.lazy.first(where: {
+            let keyLocale = Locale(identifier: $0)
+            return keyLocale.rc_languageAndScript == languageAndScript
+        }) else {
+            return nil
+        }
+        return self[matchKey]
     }
 
 }
