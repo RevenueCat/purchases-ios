@@ -24,6 +24,12 @@ struct CarouselComponentView: View {
     @EnvironmentObject
     private var packageContext: PackageContext
 
+    @EnvironmentObject
+    private var introOfferEligibilityContext: IntroOfferEligibilityContext
+
+    @EnvironmentObject
+    private var paywallPromoOfferCache: PaywallPromoOfferCacheV2
+
     @Environment(\.componentViewState)
     private var componentViewState
 
@@ -39,8 +45,12 @@ struct CarouselComponentView: View {
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
-            isEligibleForIntroOffer: self.packageContext.isEligibleForIntroOffer,
-            isEligibleForPromoOffer: self.packageContext.isEligibleForPromoOffer
+            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
+                package: self.packageContext.package
+            ),
+            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                for: self.packageContext.package
+            )
         ) { style in
             if style.visible {
                 GeometryReader { reader in

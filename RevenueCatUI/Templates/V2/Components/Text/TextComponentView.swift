@@ -25,6 +25,12 @@ struct TextComponentView: View {
     @EnvironmentObject
     private var packageContext: PackageContext
 
+    @EnvironmentObject
+    private var introOfferEligibilityContext: IntroOfferEligibilityContext
+
+    @EnvironmentObject
+    private var paywallPromoOfferCache: PaywallPromoOfferCacheV2
+
     @Environment(\.componentViewState)
     private var componentViewState
 
@@ -42,8 +48,12 @@ struct TextComponentView: View {
             state: self.componentViewState,
             condition: self.screenCondition,
             packageContext: self.packageContext,
-            isEligibleForIntroOffer: self.packageContext.isEligibleForIntroOffer,
-            isEligibleForPromoOffer: self.packageContext.isEligibleForPromoOffer
+            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
+                package: self.packageContext.package
+            ),
+            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                for: self.packageContext.package
+            )
         ) { style in
             if style.visible {
                 NonLocalizedMarkdownText(text: style.text, font: style.font, fontWeight: style.fontWeight)
@@ -666,8 +676,6 @@ struct TextComponentView_Previews: PreviewProvider {
         }
         .previewRequiredEnvironmentProperties(
             packageContext: .init(
-                introOfferEligibilityContext: IntroOfferEligibilityContext(introEligibilityChecker: .default()),
-                paywallPromoOfferCache: PaywallPromoOfferCache(),
                 package: PreviewMock.annualStandardPackage,
                 variableContext: .init(packages: [
                     PreviewMock.monthlyStandardPackage,

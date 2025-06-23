@@ -24,13 +24,10 @@ struct PurchaseButtonComponentView: View {
     private var openURL
 
     @EnvironmentObject
-    private var introOfferEligibilityContext: IntroOfferEligibilityContext
-
-    @EnvironmentObject
-    private var paywallPromoOfferCache: PaywallPromoOfferCache
-
-    @EnvironmentObject
     private var packageContext: PackageContext
+
+    @EnvironmentObject
+    private var paywallPromoOfferCache: PaywallPromoOfferCacheV2
 
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
@@ -110,7 +107,7 @@ struct PurchaseButtonComponentView: View {
             return
         }
 
-        let promoOffer = await paywallPromoOfferCache.get(for: selectedPackage)
+        let promoOffer = self.paywallPromoOfferCache.get(for: selectedPackage)
 
         _ = try await self.purchaseHandler.purchase(package: selectedPackage, promotionalOffer: promoOffer)
     }
