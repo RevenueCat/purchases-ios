@@ -53,6 +53,7 @@ import Foundation
     let platformInfo: Purchases.PlatformInfo?
     let responseVerificationMode: Signing.ResponseVerificationMode
     let showStoreMessagesAutomatically: Bool
+    let validateConfigurationOnLaunch: Bool
     internal let diagnosticsEnabled: Bool
 
     private init(with builder: Builder) {
@@ -69,6 +70,7 @@ import Foundation
         self.platformInfo = builder.platformInfo
         self.responseVerificationMode = builder.responseVerificationMode
         self.showStoreMessagesAutomatically = builder.showStoreMessagesAutomatically
+        self.validateConfigurationOnLaunch = builder.validateConfigurationOnLaunch
         self.diagnosticsEnabled = builder.diagnosticsEnabled
     }
 
@@ -111,6 +113,7 @@ import Foundation
         private(set) var platformInfo: Purchases.PlatformInfo?
         private(set) var responseVerificationMode: Signing.ResponseVerificationMode = .default
         private(set) var showStoreMessagesAutomatically: Bool = true
+        private(set) var validateConfigurationOnLaunch: Bool = true
         private(set) var diagnosticsEnabled: Bool = false
         private(set) var storeKitVersion: StoreKitVersion = .default
 
@@ -240,6 +243,30 @@ import Foundation
         /// the related methods
         @objc public func with(showStoreMessagesAutomatically: Bool) -> Builder {
             self.showStoreMessagesAutomatically = showStoreMessagesAutomatically
+            return self
+        }
+
+        /// Set `validateConfigurationOnLaunch`. Enabled by default.
+        /// If enabled, the SDK will automatically validate its configuration on every launch 
+        /// by running a health check and logging the results to the console. This helps identify
+        /// configuration issues early in the development process.
+        /// 
+        /// The health check validates:
+        /// - API key validity
+        /// - Bundle ID configuration
+        /// - Product configuration in App Store Connect
+        /// - Offering configuration
+        /// - Payment authorization status
+        /// 
+        /// Health check results are logged with appropriate log levels:
+        /// - `.error` for unhealthy configurations that need immediate attention
+        /// - `.warn` for healthy configurations with warnings
+        /// - `.info` for healthy configurations without issues
+        /// 
+        /// - Note: This feature is only available in DEBUG builds
+        /// - Note: Health checks are performed asynchronously and don't block app startup
+        @objc public func with(validateConfigurationOnLaunch: Bool) -> Builder {
+            self.validateConfigurationOnLaunch = validateConfigurationOnLaunch
             return self
         }
 

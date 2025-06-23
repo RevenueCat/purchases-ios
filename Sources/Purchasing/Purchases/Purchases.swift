@@ -277,6 +277,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
     private let syncAttributesAndOfferingsIfNeededRateLimiter = RateLimiter(maxCalls: 5, period: 60)
     private let diagnosticsTracker: DiagnosticsTrackerType?
+    private let validateConfigurationOnLaunch: Bool
 
     // swiftlint:disable:next function_body_length cyclomatic_complexity
     convenience init(apiKey: String,
@@ -291,6 +292,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      networkTimeout: TimeInterval = Configuration.networkTimeoutDefault,
                      dangerousSettings: DangerousSettings? = nil,
                      showStoreMessagesAutomatically: Bool,
+                     validateConfigurationOnLaunch: Bool = true,
                      diagnosticsEnabled: Bool = false
     ) {
         if userDefaults != nil {
@@ -617,7 +619,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   purchasedProductsFetcher: purchasedProductsFetcher,
                   trialOrIntroPriceEligibilityChecker: trialOrIntroPriceChecker,
                   storeMessagesHelper: storeMessagesHelper,
-                  diagnosticsTracker: diagnosticsTracker
+                  diagnosticsTracker: diagnosticsTracker,
+                  validateConfigurationOnLaunch: validateConfigurationOnLaunch
         )
     }
 
@@ -647,7 +650,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          purchasedProductsFetcher: PurchasedProductsFetcherType?,
          trialOrIntroPriceEligibilityChecker: CachingTrialOrIntroPriceEligibilityChecker,
          storeMessagesHelper: StoreMessagesHelperType?,
-         diagnosticsTracker: DiagnosticsTrackerType?
+         diagnosticsTracker: DiagnosticsTrackerType?,
+         validateConfigurationOnLaunch: Bool
     ) {
 
         if systemInfo.dangerousSettings.customEntitlementComputation {
@@ -696,6 +700,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.trialOrIntroPriceEligibilityChecker = trialOrIntroPriceEligibilityChecker
         self.storeMessagesHelper = storeMessagesHelper
         self.diagnosticsTracker = diagnosticsTracker
+        self.validateConfigurationOnLaunch = validateConfigurationOnLaunch
 
         super.init()
 
@@ -714,7 +719,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.updateCachesIfInForeground()
 
         #if DEBUG
-        self.runHealthCheckIfInForeground()
+        if self.validateConfigurationOnLaunch {
+            self.runHealthCheckIfInForeground()
+        }
         #endif
 
         if self.systemInfo.dangerousSettings.autoSyncPurchases {
@@ -1393,6 +1400,7 @@ public extension Purchases {
                   networkTimeout: configuration.networkTimeout,
                   dangerousSettings: configuration.dangerousSettings,
                   showStoreMessagesAutomatically: configuration.showStoreMessagesAutomatically,
+                  validateConfigurationOnLaunch: configuration.validateConfigurationOnLaunch,
                   diagnosticsEnabled: configuration.diagnosticsEnabled
         )
     }
@@ -1659,6 +1667,7 @@ public extension Purchases {
         networkTimeout: TimeInterval,
         dangerousSettings: DangerousSettings?,
         showStoreMessagesAutomatically: Bool,
+        validateConfigurationOnLaunch: Bool,
         diagnosticsEnabled: Bool
     ) -> Purchases {
         return self.setDefaultInstance(
@@ -1674,6 +1683,7 @@ public extension Purchases {
                   networkTimeout: networkTimeout,
                   dangerousSettings: dangerousSettings,
                   showStoreMessagesAutomatically: showStoreMessagesAutomatically,
+                  validateConfigurationOnLaunch: validateConfigurationOnLaunch,
                   diagnosticsEnabled: diagnosticsEnabled)
         )
     }
