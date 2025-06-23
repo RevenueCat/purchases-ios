@@ -344,12 +344,12 @@ platform :ios do
 
   desc "Build the Paywalls Test app for Emerge Snapshots"
   lane :build_paywalls_tester_for_emerge do |options|
-    # build_paywalls_tester_for_emerge_ios(options)
-    # build_paywalls_tester_for_emerge_mac_catalyst(options)
+    build_paywalls_tester_for_emerge_ios(options)
+    build_paywalls_tester_for_emerge_mac_catalyst(options)
     build_paywalls_tester_for_emerge_mac_designed_for_ipad(options)
   end
   
-  private_lane :build_paywalls_tester_for_emerge_ios do |options|
+  lane :build_paywalls_tester_for_emerge_ios do |options|
     scan(
       workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
       scheme: "PaywallsTester - Live Config",
@@ -361,36 +361,49 @@ platform :ios do
     )
   end
   
-  private_lane :build_paywalls_tester_for_emerge_mac_catalyst do |options|
-    build_mac_app(
+  lane :build_paywalls_tester_for_emerge_mac_catalyst do |options|
+    archive_path = File.absolute_path("build/PaywallsTester-mac-catalyst.xcarchive")
+
+    gym(
       workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
       scheme: "PaywallsTester - Live Config",
       configuration: "Debug",
       destination: "platform=macOS,arch=arm64,variant=Mac Catalyst",
+      xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO",
+      skip_codesigning: true,
+      skip_package_pkg: true,
+      archive_path: archive_path,
     )
 
     send_to_emerge(
-        app_id_suffix: "mac-catalyst"
+        app_id_suffix: "mac-catalyst",
+        archive_path: archive_path
     )
   end
   
-  private_lane :build_paywalls_tester_for_emerge_mac_designed_for_ipad do |options|
-    build_mac_app(
+  lane :build_paywalls_tester_for_emerge_mac_designed_for_ipad do |options|
+    archive_path = File.absolute_path("build/PaywallsTester-mac-designed-for-ipad.xcarchive")
+
+    gym(
       workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
       scheme: "PaywallsTester - Live Config",
       configuration: "Debug",
       destination: "platform=macOS,arch=arm64,variant=Designed for iPad",
+      xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO",
+      skip_codesigning: true,
+      archive_path: archive_path,
+      export_method: "development",
       export_options: {
-        provisioningProfiles: {
-          "com.revenuecat.PaywallsTester" => "match AppStore com.revenuecat.PaywallsTester macos",
-        }
+        method: "development",
+        compileBitcode: false,
+        uploadBitcode: false,
+        uploadSymbols: false
       }
     )
-    
-    
 
     send_to_emerge(
-        app_id_suffix: "mac-designed-for-ipad"
+        app_id_suffix: "mac-designed-for-ipad",
+        archive_path: archive_path
     )
   end
   
@@ -410,8 +423,15 @@ platform :ios do
     emerge_args = {repo_name: "RevenueCat/purchases-ios"}
     emerge_args[:pr_number] = pr_number if pr_number
     emerge_args[:app_id_suffix] = options[:app_id_suffix]
+
+    # Use the archive_path if provided
+    if options[:archive_path]
+      emerge_args[:file_path] = options[:archive_path]
+      UI.message("Using archive path: #{options[:archive_path]}")
+    end
+    
     emerge(emerge_args)
-end
+  end
   
   
 
