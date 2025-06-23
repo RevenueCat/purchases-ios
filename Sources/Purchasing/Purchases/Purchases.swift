@@ -2051,8 +2051,8 @@ private extension Purchases {
             if !isBackgrounded {
                 self.operationDispatcher.dispatchOnWorkerThread {
                     Task {
-                        await SDKHealthManager(healthReportRequest: self.healthReportRequest)
-                            .logSDKHealthReportOutcome()
+                        let manager = SDKHealthManager { try await self.healthReportRequest() }
+                        await manager.logSDKHealthReportOutcome()
                     }
                 }
             }
