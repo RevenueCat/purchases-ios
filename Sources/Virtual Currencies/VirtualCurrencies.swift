@@ -17,7 +17,7 @@ import Foundation
 @objc(RCVirtualCurrencies) public final class VirtualCurrencies: NSObject {
 
     /// Dictionary of all ``VirtualCurrency`` objects keyed by virtual currency code.
-    /// This dictionary can also be access through an index subscript on ``VirtualCurrencies``, e.g.
+    /// This dictionary can also be accessed through an index subscript on ``VirtualCurrencies``, e.g.
     /// `virtualCurrencies["VC_CODE"]`.
     @objc public let all: [String: VirtualCurrency]
 
@@ -36,7 +36,7 @@ extension VirtualCurrencies: Sendable {}
 extension VirtualCurrencies: Codable {}
 
 extension VirtualCurrencies {
-    /// Compares two VirtualCurrencies objects for equality by comparing their underlying dictionaries.
+    /// Compares two ``VirtualCurrencies`` objects for equality by comparing their underlying dictionaries.
     /// - Parameter object: The object to compare against
     /// - Returns: `true` if the objects are equal, `false` otherwise
     public override func isEqual(_ object: Any?) -> Bool {
