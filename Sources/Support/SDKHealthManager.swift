@@ -4,14 +4,19 @@ import StoreKit
 
 final class SDKHealthManager: Sendable {
     private let healthReportRequest: @Sendable () async throws -> HealthReport
+    private let paymentAuthorizationProvider: PaymentAuthorizationProvider
 
-    init(healthReportRequest: @Sendable @escaping () async throws -> HealthReport) {
+    init(
+        healthReportRequest: @Sendable @escaping () async throws -> HealthReport,
+        paymentAuthorizationProvider: PaymentAuthorizationProvider = .storeKit
+    ) {
         self.healthReportRequest = healthReportRequest
+        self.paymentAuthorizationProvider = paymentAuthorizationProvider
     }
 
     func healthReport() async -> PurchasesDiagnostics.SDKHealthReport {
         do {
-            if !canMakePayments {
+            if !paymentAuthorizationProvider.isAuthorized() {
                 return .init(status: .unhealthy(.notAuthorizedToMakePayments))
             }
             return try await self.healthReportRequest().validate()
@@ -37,14 +42,6 @@ final class SDKHealthManager: Sendable {
             } else {
                 Logger.warn(HealthReportLogMessage.healthyWithWarnings(warnings: warnings, report: report))
             }
-        }
-    }
-
-    private var canMakePayments: Bool {
-        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
-            return AppStore.canMakePayments
-        } else {
-            return SKPaymentQueue.canMakePayments()
         }
     }
 }
