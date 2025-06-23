@@ -13,6 +13,7 @@
 + (void)checkAPI {
     RCVirtualCurrencies *virtualCurrencies = nil;
     NSDictionary<NSString *, RCVirtualCurrency *> *all = virtualCurrencies.all;
+    RCVirtualCurrency *subscriptTest = virtualCurrencies[@"test"];
 }
 
 @end
