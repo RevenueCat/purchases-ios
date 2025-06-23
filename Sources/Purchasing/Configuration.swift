@@ -113,7 +113,7 @@ import Foundation
         private(set) var platformInfo: Purchases.PlatformInfo?
         private(set) var responseVerificationMode: Signing.ResponseVerificationMode = .default
         private(set) var showStoreMessagesAutomatically: Bool = true
-        private(set) var validateConfigurationOnLaunch: Bool = true
+        private(set) var validateConfigurationOnLaunch: Bool = false
         private(set) var diagnosticsEnabled: Bool = false
         private(set) var storeKitVersion: StoreKitVersion = .default
 

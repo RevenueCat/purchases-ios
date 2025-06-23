@@ -291,7 +291,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      networkTimeout: TimeInterval = Configuration.networkTimeoutDefault,
                      dangerousSettings: DangerousSettings? = nil,
                      showStoreMessagesAutomatically: Bool,
-                     validateConfigurationOnLaunch: Bool = true,
+                     validateConfigurationOnLaunch: Bool,
                      diagnosticsEnabled: Bool = false
     ) {
         if userDefaults != nil {
@@ -618,7 +618,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   purchasedProductsFetcher: purchasedProductsFetcher,
                   trialOrIntroPriceEligibilityChecker: trialOrIntroPriceChecker,
                   storeMessagesHelper: storeMessagesHelper,
-                  diagnosticsTracker: diagnosticsTracker
+                  diagnosticsTracker: diagnosticsTracker,
+                  validateConfigurationOnLaunch: validateConfigurationOnLaunch
         )
     }
 
@@ -649,7 +650,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          trialOrIntroPriceEligibilityChecker: CachingTrialOrIntroPriceEligibilityChecker,
          storeMessagesHelper: StoreMessagesHelperType?,
          diagnosticsTracker: DiagnosticsTrackerType?,
-         validateConfigurationOnLaunch: Bool = true
+         validateConfigurationOnLaunch: Bool
     ) {
 
         if systemInfo.dangerousSettings.customEntitlementComputation {
