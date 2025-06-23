@@ -17,59 +17,36 @@ import XCTest
 @testable import RevenueCat
 
 class SDKHealthManagerTests: TestCase {
-
-    private var healthReportRequest: (@Sendable () async throws -> HealthReport)!
-    private var manager: SDKHealthManager!
-
-    override func setUp() async throws {
-        try await super.setUp()
-
-        self.healthReportRequest = {
-            throw BackendError.networkError(.errorResponse(.defaultResponse, .internalServerError))
-        }
-        self.manager = SDKHealthManager(healthReportRequest: self.healthReportRequest)
-    }
-
-    // MARK: - Health Report Tests
-
     func testHealthReportReturnsUnhealthyWhenCannotMakePayments() async {
-        // Mock SKPaymentQueue to return false for canMakePayments
-        // This would require mocking StoreKit, but for now we'll test the happy path
-        // where canMakePayments returns true
-
-        self.healthReportRequest = {
-            HealthReport(
+        let manager = makeSUT(request: {
+            return HealthReport(
                 status: .passed,
                 projectId: "test_project",
                 appId: "test_app",
                 checks: []
             )
-        }
-        self.manager = SDKHealthManager(healthReportRequest: self.healthReportRequest)
+        }, canMakePayments: false)
 
-        let report = await self.manager.healthReport()
+        let report = await manager.healthReport()
 
-        expect(report.status).to(beHealthy())
-        expect(report.projectId) == "test_project"
-        expect(report.appId) == "test_app"
+        expect(report.status).to(beUnhealthy(.notAuthorizedToMakePayments))
     }
 
     func testHealthReportReturnsUnhealthyForInvalidAPIKey() async {
-        self.healthReportRequest = {
+        let manager = makeSUT {
             throw BackendError.networkError(.errorResponse(
                 .init(code: .invalidAPIKey, originalCode: 0),
                 .forbidden
             ))
         }
-        self.manager = SDKHealthManager(healthReportRequest: self.healthReportRequest)
 
-        let report = await self.manager.healthReport()
+        let report = await manager.healthReport()
 
         expect(report.status).to(beUnhealthy(.invalidAPIKey))
     }
 
     func testHealthReportReturnsUnhealthyForUnknownBackendError() async {
-        self.healthReportRequest = {
+        let manager = makeSUT {
             throw BackendError.networkError(
                 .errorResponse(
                     .init(code: .unknownError, originalCode: 0),
@@ -77,21 +54,19 @@ class SDKHealthManagerTests: TestCase {
                 )
             )
         }
-        self.manager = SDKHealthManager(healthReportRequest: self.healthReportRequest)
 
-        let report = await self.manager.healthReport()
+        let report = await manager.healthReport()
 
         expect(report.status).to(beUnhealthyWithUnknownError())
     }
 
     func testHealthReportReturnsUnhealthyForNonBackendError() async {
         let testError = NSError(domain: "test", code: 1, userInfo: nil)
-        self.healthReportRequest = {
+        let manager = makeSUT {
             throw testError
         }
-        self.manager = SDKHealthManager(healthReportRequest: self.healthReportRequest)
 
-        let report = await self.manager.healthReport()
+        let report = await manager.healthReport()
 
         expect(report.status).to(beUnhealthyWithUnknownError())
     }
@@ -113,10 +88,9 @@ class SDKHealthManagerTests: TestCase {
             ]
         )
 
-        self.healthReportRequest = { healthReport }
-        self.manager = SDKHealthManager(healthReportRequest: self.healthReportRequest)
+        let manager = makeSUT { healthReport }
 
-        let report = await self.manager.healthReport()
+        let report = await manager.healthReport()
 
         expect(report.status).to(beHealthy())
         expect(report.projectId) == "test_project"
@@ -136,10 +110,9 @@ class SDKHealthManagerTests: TestCase {
             ]
         )
 
-        self.healthReportRequest = { healthReport }
-        self.manager = SDKHealthManager(healthReportRequest: self.healthReportRequest)
+        let manager = makeSUT { healthReport }
 
-        let report = await self.manager.healthReport()
+        let report = await manager.healthReport()
 
         expect(report.status).to(beUnhealthy(.invalidAPIKey))
         expect(report.projectId) == "test_project"
@@ -163,10 +136,9 @@ class SDKHealthManagerTests: TestCase {
             ]
         )
 
-        self.healthReportRequest = { healthReport }
-        self.manager = SDKHealthManager(healthReportRequest: self.healthReportRequest)
+        let manager = makeSUT { healthReport }
 
-        let report = await self.manager.healthReport()
+        let report = await manager.healthReport()
 
         expect(report.status).to(beHealthyWithWarnings())
         if case let .healthy(warnings) = report.status {
@@ -175,15 +147,12 @@ class SDKHealthManagerTests: TestCase {
         }
     }
 
-    // MARK: - Logging Tests
-
     func testLogSDKHealthReportOutcomeLogsErrorForUnhealthyStatus() async {
-        self.healthReportRequest = {
+        let manager = makeSUT {
             throw BackendError.networkError(.errorResponse(.init(code: .invalidAPIKey, originalCode: 0), .forbidden))
         }
-        self.manager = SDKHealthManager(healthReportRequest: self.healthReportRequest)
 
-        await self.manager.logSDKHealthReportOutcome()
+        await manager.logSDKHealthReportOutcome()
 
         self.logger.verifyMessageWasLogged("SDK Configuration is not valid", level: .error)
         self.logger.verifyMessageWasLogged("API key is not valid", level: .error)
@@ -196,11 +165,9 @@ class SDKHealthManagerTests: TestCase {
             appId: "test_app",
             checks: []
         )
+        let manager = makeSUT { healthReport }
 
-        self.healthReportRequest = { healthReport }
-        self.manager = SDKHealthManager(healthReportRequest: self.healthReportRequest)
-
-        await self.manager.logSDKHealthReportOutcome()
+        await manager.logSDKHealthReportOutcome()
 
         self.logger.verifyMessageWasLogged("SDK Configuration is Valid", level: .info)
     }
@@ -222,10 +189,9 @@ class SDKHealthManagerTests: TestCase {
             ]
         )
 
-        self.healthReportRequest = { healthReport }
-        self.manager = SDKHealthManager(healthReportRequest: self.healthReportRequest)
+        let manager = makeSUT { healthReport }
 
-        await self.manager.logSDKHealthReportOutcome()
+        await manager.logSDKHealthReportOutcome()
 
         self.logger.verifyMessageWasLogged(
             "SDK is configured correctly, but contains some issues you might want to address",
@@ -247,10 +213,9 @@ class SDKHealthManagerTests: TestCase {
             ]
         )
 
-        self.healthReportRequest = { healthReport }
-        self.manager = SDKHealthManager(healthReportRequest: self.healthReportRequest)
+        let manager = makeSUT { healthReport }
 
-        await self.manager.logSDKHealthReportOutcome()
+        await manager.logSDKHealthReportOutcome()
 
         self.logger.verifyMessageWasLogged(
             "https://app.revenuecat.com/projects/test_project/apps/test_app",
@@ -279,10 +244,9 @@ class SDKHealthManagerTests: TestCase {
             ]
         )
 
-        self.healthReportRequest = { healthReport }
-        self.manager = SDKHealthManager(healthReportRequest: self.healthReportRequest)
+        let manager = makeSUT { healthReport }
 
-        await self.manager.logSDKHealthReportOutcome()
+        await manager.logSDKHealthReportOutcome()
 
         self.logger.verifyMessageWasLogged(
             "https://app.revenuecat.com/projects/test_project/product-catalog/products",
@@ -300,10 +264,9 @@ class SDKHealthManagerTests: TestCase {
             ]
         )
 
-        self.healthReportRequest = { healthReport }
-        self.manager = SDKHealthManager(healthReportRequest: self.healthReportRequest)
+        let manager = makeSUT { healthReport }
 
-        await self.manager.logSDKHealthReportOutcome()
+        await manager.logSDKHealthReportOutcome()
 
         self.logger.verifyMessageWasLogged(
             "https://app.revenuecat.com/projects/test_project/product-catalog/offerings",
@@ -334,10 +297,9 @@ class SDKHealthManagerTests: TestCase {
             ]
         )
 
-        self.healthReportRequest = { healthReport }
-        self.manager = SDKHealthManager(healthReportRequest: self.healthReportRequest)
+        let manager = makeSUT { healthReport }
 
-        await self.manager.logSDKHealthReportOutcome()
+        await manager.logSDKHealthReportOutcome()
 
         self.logger.verifyMessageWasLogged("Products Status:", level: .info)
         self.logger.verifyMessageWasLogged(
@@ -379,10 +341,9 @@ class SDKHealthManagerTests: TestCase {
             ]
         )
 
-        self.healthReportRequest = { healthReport }
-        self.manager = SDKHealthManager(healthReportRequest: self.healthReportRequest)
+        let manager = makeSUT { healthReport }
 
-        await self.manager.logSDKHealthReportOutcome()
+        await manager.logSDKHealthReportOutcome()
 
         self.logger.verifyMessageWasLogged("Offerings Status:", level: .info)
         self.logger.verifyMessageWasLogged("✅ test_offering", level: .info)
@@ -400,17 +361,44 @@ class SDKHealthManagerTests: TestCase {
             checks: []
         )
 
-        self.healthReportRequest = { healthReport }
-        self.manager = SDKHealthManager(healthReportRequest: self.healthReportRequest)
+        let manager = makeSUT { healthReport }
 
-        await self.manager.logSDKHealthReportOutcome()
+        await manager.logSDKHealthReportOutcome()
 
         self.logger.verifyMessageWasNotLogged("Products Status:", level: .info)
         self.logger.verifyMessageWasNotLogged("Offerings Status:", level: .info)
     }
+}
 
-    // MARK: - Custom Matchers
+// MARK: - Builder Methods
 
+fileprivate extension SDKHealthManagerTests {
+    private func makeSUT(
+        request: @escaping @Sendable () async throws -> HealthReport,
+        canMakePayments: Bool = true,
+        file: StaticString = #file,
+        line: UInt = #line
+    ) -> SDKHealthManager {
+        let manager = SDKHealthManager(
+            healthReportRequest: request,
+            paymentAuthorizationProvider: .mock(canMakePayments: canMakePayments)
+        )
+
+        addTeardownBlock { [weak manager] in
+            XCTAssertNil(
+                manager,
+                file: file,
+                line: line
+            )
+        }
+
+        return manager
+    }
+}
+
+// MARK: - Custom Matchers
+
+fileprivate extension SDKHealthManagerTests {
     private func beHealthy() -> Matcher<PurchasesDiagnostics.SDKHealthStatus> {
         return Matcher { actualExpression in
             let message = ExpectationMessage.expectedActualValueTo("be healthy")
@@ -555,5 +543,14 @@ class SDKHealthManagerTests: TestCase {
             }
         }
     }
+}
 
+// MARK: - Mocks
+
+fileprivate extension PaymentAuthorizationProvider {
+    static func mock(canMakePayments: Bool = true) -> PaymentAuthorizationProvider {
+        return PaymentAuthorizationProvider(
+            isAuthorized: { canMakePayments }
+        )
+    }
 }
