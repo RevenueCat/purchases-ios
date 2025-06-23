@@ -32,11 +32,15 @@ public final class PurchasesDiagnostics: NSObject, Sendable {
     typealias SDK = PurchasesType & InternalPurchasesType & Sendable
 
     private let purchases: SDK
+    #if DEBUG
     private let sdkHealthManager: SDKHealthManager
+    #endif
 
     init(purchases: SDK) {
         self.purchases = purchases
+        #if DEBUG
         self.sdkHealthManager = SDKHealthManager { try await purchases.healthReportRequest() }
+        #endif
     }
 
     /// Default instance of `PurchasesDiagnostics`.
