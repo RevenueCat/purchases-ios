@@ -32,9 +32,11 @@ public final class PurchasesDiagnostics: NSObject, Sendable {
     typealias SDK = PurchasesType & InternalPurchasesType & Sendable
 
     private let purchases: SDK
+    private let sdkHealthManager: SDKHealthManager
 
     init(purchases: SDK) {
         self.purchases = purchases
+        self.sdkHealthManager = SDKHealthManager(healthReportRequest: purchases.healthReportRequest)
     }
 
     /// Default instance of `PurchasesDiagnostics`.
@@ -241,33 +243,12 @@ extension PurchasesDiagnostics {
         }
     }
 
-    private var canMakePayments: Bool {
-        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
-            return AppStore.canMakePayments
-        } else {
-            return SKPaymentQueue.canMakePayments()
-        }
-    }
-
     /// Performs a full SDK configuration health check and returns its status.
     /// - Important: This method is intended solely for debugging configuration issues with the SDK implementation.
     /// It should not be invoked in production builds.
     /// - Returns: The result of the SDK configuration health check.
     public func healthReport() async -> SDKHealthReport {
-        do {
-            if !canMakePayments {
-                return .init(status: .unhealthy(.notAuthorizedToMakePayments))
-            }
-            return try await self.purchases.healthReportRequest().validate()
-        } catch let error as BackendError {
-            if case .networkError(let networkError) = error,
-               case .errorResponse(let response, _, _) = networkError, response.code == .invalidAPIKey {
-                return .init(status: .unhealthy(.invalidAPIKey))
-            }
-            return .init(status: .unhealthy(.unknown(error)))
-        } catch {
-            return .init(status: .unhealthy(.unknown(error)))
-        }
+        await sdkHealthManager.healthReport()
     }
     #endif
 }
