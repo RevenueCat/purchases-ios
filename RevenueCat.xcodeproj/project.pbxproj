@@ -480,6 +480,8 @@
 		75D9DE072D79FC0E0068554F /* testEncoding.1.json in Resources */ = {isa = PBXBuildFile; fileRef = 75D9DE022D79FC0E0068554F /* testEncoding.1.json */; };
 		75D9DE082D79FC0E0068554F /* DiagnosticsEventEncodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D9DE052D79FC0E0068554F /* DiagnosticsEventEncodingTests.swift */; };
 		777FB4882C661C0600CD4749 /* SemanticVersionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 777FB4872C661C0600CD4749 /* SemanticVersionTests.swift */; };
+		839D184D2E0A198F009B6C86 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 839D184C2E0A198F009B6C86 /* RevenueCat */; };
+		839D184F2E0A1998009B6C86 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 839D184E2E0A1998009B6C86 /* RevenueCat */; };
 		8834AFA52C2B9375005A72FE /* PresentIfNeededTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A62222C1D168B00E1A461 /* PresentIfNeededTests.swift */; };
 		887A632B2C1D177800E1A461 /* LocalizedAlertErrorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A61282C1D168B00E1A461 /* LocalizedAlertErrorTests.swift */; };
 		887A632C2C1D177800E1A461 /* PackageVariablesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A61292C1D168B00E1A461 /* PackageVariablesTests.swift */; };
@@ -1911,6 +1913,7 @@
 			files = (
 				576C8ABE27D299860058FA6E /* SnapshotTesting in Frameworks */,
 				2D9C5ED726F281750057FC45 /* OHHTTPStubsSwift in Frameworks */,
+				839D184D2E0A198F009B6C86 /* RevenueCat in Frameworks */,
 				2D9C5ED526F281750057FC45 /* OHHTTPStubs in Frameworks */,
 				2D803F6826F144C40069D717 /* Nimble in Frameworks */,
 			);
@@ -1922,6 +1925,7 @@
 			files = (
 				57E0473B277260DE0082FE91 /* SnapshotTesting in Frameworks */,
 				B36824BE268FBC5B00957E4C /* XCTest.framework in Frameworks */,
+				839D184F2E0A1998009B6C86 /* RevenueCat in Frameworks */,
 				2D9C5ED326F2816F0057FC45 /* OHHTTPStubsSwift in Frameworks */,
 				2D9C5ED126F2816F0057FC45 /* OHHTTPStubs in Frameworks */,
 				2D803F6326F144830069D717 /* Nimble in Frameworks */,
@@ -4840,6 +4844,7 @@
 				2D9C5ED426F281750057FC45 /* OHHTTPStubs */,
 				2D9C5ED626F281750057FC45 /* OHHTTPStubsSwift */,
 				576C8ABD27D299860058FA6E /* SnapshotTesting */,
+				839D184C2E0A198F009B6C86 /* RevenueCat */,
 			);
 			productName = StoreKitUnitTests;
 			productReference = 2DAC5F7226F13C9800C5258F /* StoreKitUnitTests.xctest */;
@@ -4864,6 +4869,7 @@
 				2D9C5ED026F2816F0057FC45 /* OHHTTPStubs */,
 				2D9C5ED226F2816F0057FC45 /* OHHTTPStubsSwift */,
 				57E0473A277260DE0082FE91 /* SnapshotTesting */,
+				839D184E2E0A1998009B6C86 /* RevenueCat */,
 			);
 			productName = PurchasesTests;
 			productReference = 2DC5621E24EC63430031F69B /* UnitTests.xctest */;
@@ -7240,6 +7246,14 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 57E04739277260DE0082FE91 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
 			productName = SnapshotTesting;
+		};
+		839D184C2E0A198F009B6C86 /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = RevenueCat;
+		};
+		839D184E2E0A1998009B6C86 /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = RevenueCat;
 		};
 		887A63492C1D17EF00E1A461 /* Nimble */ = {
 			isa = XCSwiftPackageProductDependency;

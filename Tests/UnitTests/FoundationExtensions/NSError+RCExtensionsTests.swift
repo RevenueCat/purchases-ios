@@ -13,7 +13,7 @@ class NSErrorRCExtensionsTests: TestCase {
     func testSubscriberAttributesErrorsNilIfNoAttributesErrors() {
         let errorCode = ErrorCode.purchaseNotAllowedError.rawValue
         let error = NSError(
-            domain: RCPurchasesErrorCodeDomain,
+            domain: ErrorCode.errorDomain,
             code: errorCode,
             userInfo: [:]
         )
@@ -25,7 +25,7 @@ class NSErrorRCExtensionsTests: TestCase {
         let attributeErrors = ["$phoneNumber": "phone number is in invalid format",
                                "$email": "email is too long"]
         let error = NSError(
-            domain: RCPurchasesErrorCodeDomain,
+            domain: ErrorCode.errorDomain,
             code: errorCode,
             userInfo: [ErrorDetails.attributeErrorsKey: attributeErrors]
         )

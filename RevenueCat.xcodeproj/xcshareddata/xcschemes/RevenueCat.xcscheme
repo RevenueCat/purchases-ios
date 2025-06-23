@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "2DC5621524EC63420031F69B"
-               BuildableName = "RevenueCat.framework"
-               BlueprintName = "RevenueCat"
+               BlueprintIdentifier = "2DEAC2D926EFE46E006914ED"
+               BuildableName = "UnitTestsHostApp.app"
+               BlueprintName = "UnitTestsHostApp"
                ReferencedContainer = "container:RevenueCat.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -158,15 +158,6 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "2DC5621524EC63420031F69B"
-            BuildableName = "RevenueCat.framework"
-            BlueprintName = "RevenueCat"
-            ReferencedContainer = "container:RevenueCat.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">
