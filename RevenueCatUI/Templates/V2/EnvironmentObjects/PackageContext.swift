@@ -57,49 +57,21 @@ class PackageContext: ObservableObject {
 
     }
 
-    let introOfferEligibilityContext: IntroOfferEligibilityContext
-    let paywallPromoOfferCache: PaywallPromoOfferCache
-
     @Published var package: Package?
     @Published var variableContext: VariableContext
-    @Published var isEligibleForIntroOffer: Bool = false
-    @Published var isEligibleForPromoOffer: Bool = false
-
 
     init(
-        introOfferEligibilityContext: IntroOfferEligibilityContext,
-        paywallPromoOfferCache: PaywallPromoOfferCache,
         package: Package?,
         variableContext: VariableContext
     ) {
-        self.introOfferEligibilityContext = introOfferEligibilityContext
-        self.paywallPromoOfferCache = paywallPromoOfferCache
-
         self.package = package
         self.variableContext = variableContext
-
-        Task { @MainActor in
-            await self.update(package: package, variableContext: variableContext)
-        }
     }
 
     @MainActor
-    func update(package: Package?, variableContext: VariableContext) async {
+    func update(package: Package?, variableContext: VariableContext) {
         self.package = package
         self.variableContext = variableContext
-
-        let thing1 = self.introOfferEligibilityContext.isEligible(
-            package: package
-        )
-        if thing1 != self.isEligibleForIntroOffer {
-            self.isEligibleForIntroOffer = thing1
-        }
-        let thing2 = await self.paywallPromoOfferCache.isMostLikelyEligible(
-            for: package
-        )
-        if thing2 != self.isEligibleForPromoOffer {
-            self.isEligibleForPromoOffer = thing2
-        }
     }
 
 }

@@ -9,12 +9,10 @@
 import Combine
 import StoreKit
 
-import StoreKit
-
 @available(iOS 15.0, *)
 public actor SubscriptionHistoryTracker {
 
-    public struct Update: Equatable {
+    public struct Update: Equatable, Sendable {
         public let hasAnySubscriptionHistory: Bool
     }
 
@@ -71,7 +69,6 @@ public actor SubscriptionHistoryTracker {
     }
 }
 
-
 @_spi(Internal) public protocol PaywallPromoOfferCacheType: Sendable {
 
 }
@@ -79,17 +76,7 @@ public actor SubscriptionHistoryTracker {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @_spi(Internal) public actor PaywallPromoOfferCache: ObservableObject, PaywallPromoOfferCacheType {
 
-    typealias ProductID = String
-    @_spi(Internal) public typealias PackageInfo = (package: Package, promotionalOfferProductCode: String?)
-
-    public enum Status: Equatable {
-        case unknown
-        case ineligible
-        case signedEligible(PromotionalOffer)
-    }
-
-    private var cache: [ProductID: Status] = [:]
-    private var hasAnySubscriptionHistory: Bool = false
+    @_spi(Internal) public var hasAnySubscriptionHistory: Bool = false
 
     private let subscriptionTracker: SubscriptionHistoryTracker
     private var listenTask: Task<Void, Never>?
@@ -117,6 +104,29 @@ public actor SubscriptionHistoryTracker {
         for await update in await subscriptionTracker.updates {
             self.hasAnySubscriptionHistory = update.hasAnySubscriptionHistory
         }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@_spi(Internal) public final class PaywallPromoOfferCacheV2: ObservableObject {
+
+    typealias ProductID = String
+    @_spi(Internal) public typealias PackageInfo = (package: Package, promotionalOfferProductCode: String?)
+
+    public enum Status: Equatable {
+        case unknown
+        case ineligible
+        case signedEligible(PromotionalOffer)
+    }
+
+    private var cache: [ProductID: Status] = [:]
+    private var hasAnySubscriptionHistory: Bool = false
+
+    // MARK: - Init
+
+    @_spi(Internal) public init(hasAnySubscriptionHistory: Bool = false) {
+        self.hasAnySubscriptionHistory = hasAnySubscriptionHistory
     }
 
     // MARK: - Public API
@@ -168,4 +178,3 @@ public actor SubscriptionHistoryTracker {
         }
     }
 }
-

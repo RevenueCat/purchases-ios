@@ -38,11 +38,11 @@ struct PackageComponentView: View {
 
     var body: some View {
         if let package = self.viewModel.package {
-            AsyncButton {
+            Button {
                 // Updating package with same variable context
                 // This will be needed when different sets of packages
                 // in different tiers
-                await self.packageContext.update(
+                self.packageContext.update(
                     package: package,
                     variableContext: self.packageContext.variableContext
                 )
@@ -54,8 +54,6 @@ struct PackageComponentView: View {
                 .environment(\.componentViewState, componentViewState)
                 // Overrides the existing PackageContext
                 .environmentObject(PackageContext(
-                    introOfferEligibilityContext: packageContext.introOfferEligibilityContext,
-                    paywallPromoOfferCache: packageContext.paywallPromoOfferCache,
                     // This is needed so text component children use this
                     // package and not selected package for processing variables
                     package: package,
@@ -85,15 +83,11 @@ struct PackageComponentView_Previews: PreviewProvider {
 
     @MainActor
     static let packageContext = PackageContext(
-        introOfferEligibilityContext: IntroOfferEligibilityContext(introEligibilityChecker: .default()),
-        paywallPromoOfferCache: PaywallPromoOfferCache(),
         package: nil,
         variableContext: .init()
     )
     @MainActor
     static let packageContextSelected = PackageContext(
-        introOfferEligibilityContext: IntroOfferEligibilityContext(introEligibilityChecker: .default()),
-        paywallPromoOfferCache: PaywallPromoOfferCache(),
         package: nil,
         variableContext: .init()
     )
