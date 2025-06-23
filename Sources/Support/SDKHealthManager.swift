@@ -52,7 +52,10 @@ final class SDKHealthManager: Sendable {
 private enum HealthReportLogMessage: LogMessage {
     case unhealthy(error: PurchasesDiagnostics.SDKHealthError, report: PurchasesDiagnostics.SDKHealthReport)
     case healthy(report: PurchasesDiagnostics.SDKHealthReport)
-    case healthyWithWarnings(warnings: [PurchasesDiagnostics.SDKHealthError], report: PurchasesDiagnostics.SDKHealthReport)
+    case healthyWithWarnings(
+        warnings: [PurchasesDiagnostics.SDKHealthError],
+        report: PurchasesDiagnostics.SDKHealthReport
+    )
 
     var description: String {
         switch self {
@@ -67,7 +70,10 @@ private enum HealthReportLogMessage: LogMessage {
 
     var category: String { "health_report" }
 
-    private func buildUnhealthyMessage(error: PurchasesDiagnostics.SDKHealthError, report: PurchasesDiagnostics.SDKHealthReport) -> String {
+    private func buildUnhealthyMessage(
+        error: PurchasesDiagnostics.SDKHealthError,
+        report: PurchasesDiagnostics.SDKHealthReport
+    ) -> String {
         var message = "SDK Configuration is not valid\n"
         message += "\n\(error.localizedDescription)\n"
 
@@ -75,7 +81,7 @@ private enum HealthReportLogMessage: LogMessage {
             guard let projectId = report.projectId, let appId = report.appId else { return nil }
 
             switch error {
-            case .invalidBundleId(let invalidBundleIdErrorPayload):
+            case .invalidBundleId:
                 return "https://app.revenuecat.com/projects/\(projectId)/apps/\(appId)"
             case .offeringConfiguration, .noOfferings:
                 return "https://app.revenuecat.com/projects/\(projectId)/product-catalog/offerings"
@@ -91,36 +97,39 @@ private enum HealthReportLogMessage: LogMessage {
 
         message += buildProductsSection(report: report)
         message += buildOfferingsSection(report: report)
-        
+
         return message
     }
 
     private func buildHealthyMessage(report: PurchasesDiagnostics.SDKHealthReport) -> String {
         var message = "SDK Configuration is Valid\n"
-        
+
         message += buildProductsSection(report: report)
         message += buildOfferingsSection(report: report)
-        
+
         return message
     }
 
-    private func buildHealthyWithWarningsMessage(warnings: [PurchasesDiagnostics.SDKHealthError], report: PurchasesDiagnostics.SDKHealthReport) -> String {
+    private func buildHealthyWithWarningsMessage(
+        warnings: [PurchasesDiagnostics.SDKHealthError],
+        report: PurchasesDiagnostics.SDKHealthReport
+    ) -> String {
         var message = "SDK is configured correctly, but contains some issues you might want to address\n"
-        
+
         message += "\nWarnings:\n"
         for warning in warnings {
             message += "  • \(warning.localizedDescription)\n"
         }
-        
+
         message += buildProductsSection(report: report)
         message += buildOfferingsSection(report: report)
-        
+
         return message
     }
 
     private func buildProductsSection(report: PurchasesDiagnostics.SDKHealthReport) -> String {
         guard !report.products.isEmpty else { return "" }
-        
+
         var section = "\nProducts Status:\n"
         for product in report.products {
             let statusIcon = productStatusIcon(product.status)
@@ -130,23 +139,24 @@ private enum HealthReportLogMessage: LogMessage {
             }
             section += ": \(product.description)\n"
         }
-        
+
         return section
     }
 
     private func buildOfferingsSection(report: PurchasesDiagnostics.SDKHealthReport) -> String {
         guard !report.offerings.isEmpty else { return "" }
-        
+
         var section = "\nOfferings Status:\n"
         for offering in report.offerings {
             let statusIcon = offeringStatusIcon(offering.status)
             section += "  \(statusIcon) \(offering.identifier)\n"
             for package in offering.packages {
                 let packageStatusIcon = productStatusIcon(package.status)
-                section += "    \(packageStatusIcon) \(package.identifier) (\(package.productIdentifier)): \(package.description)\n"
+                let packageInfo = "\(packageStatusIcon) \(package.identifier) (\(package.productIdentifier))"
+                section += "    \(packageInfo): \(package.description)\n"
             }
         }
-        
+
         return section
     }
 
