@@ -25,6 +25,12 @@ struct TimelineComponentView: View {
     @EnvironmentObject
     private var packageContext: PackageContext
 
+    @EnvironmentObject
+    private var introOfferEligibilityContext: IntroOfferEligibilityContext
+
+    @EnvironmentObject
+    private var paywallPromoOfferCache: PaywallPromoOfferCacheV2
+
     @Environment(\.componentViewState)
     private var componentViewState
 
@@ -44,8 +50,12 @@ struct TimelineComponentView: View {
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
-            isEligibleForIntroOffer: self.packageContext.isEligibleForIntroOffer,
-            isEligibleForPromoOffer: self.packageContext.isEligibleForPromoOffer
+            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
+                package: self.packageContext.package
+            ),
+            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                for: self.packageContext.package
+            )
         ) { style in
             if style.visible {
                 timeline(style: style)
@@ -62,8 +72,12 @@ struct TimelineComponentView: View {
                 item.styles(
                     state: self.componentViewState,
                     condition: self.screenCondition,
-                    isEligibleForIntroOffer: self.packageContext.isEligibleForIntroOffer,
-                    isEligibleForPromoOffer: self.packageContext.isEligibleForPromoOffer
+                    isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
+                        package: self.packageContext.package
+                    ),
+                    isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                        for: self.packageContext.package
+                    )
                 ) { itemStyle in
                     if itemStyle.visible {
                         timelineRow(itemStyle: itemStyle, style: style)
@@ -83,8 +97,12 @@ struct TimelineComponentView: View {
                     item.styles(
                         state: self.componentViewState,
                         condition: self.screenCondition,
-                        isEligibleForIntroOffer: self.packageContext.isEligibleForIntroOffer,
-                        isEligibleForPromoOffer: self.packageContext.isEligibleForPromoOffer
+                        isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
+                            package: self.packageContext.package
+                        ),
+                        isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                            for: self.packageContext.package
+                        )
                     ) { itemStyle in
                         if itemStyle.visible {
                             let next = viewModel.items.indices.contains(index + 1) ? viewModel.items[index + 1] : nil

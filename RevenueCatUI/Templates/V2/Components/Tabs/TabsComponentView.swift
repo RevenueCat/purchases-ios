@@ -102,8 +102,6 @@ struct LoadedTabsComponentView: View {
         self._tierPackageContexts = .init(initialValue: Dictionary(
             uniqueKeysWithValues: viewModel.tabViewModels.map { key, tabViewModel in
                 let packageContext = PackageContext(
-                    introOfferEligibilityContext: parentPackageContext.introOfferEligibilityContext,
-                    paywallPromoOfferCache: parentPackageContext.paywallPromoOfferCache,
                     package: tabViewModel.defaultSelectedPackage,
                     variableContext: .init(
                         packages: tabViewModel.packages,
@@ -121,12 +119,10 @@ struct LoadedTabsComponentView: View {
             LoadedTabComponentView(
                 stackViewModel: activeTabViewModel.stackViewModel,
                 onChange: { context in
-                    Task {
-                        await self.packageContext.update(
-                            package: context.package,
-                            variableContext: context.variableContext
-                        )
-                    }
+                    self.packageContext.update(
+                        package: context.package,
+                        variableContext: context.variableContext
+                    )
                 },
                 onDismiss: self.onDismiss
             )

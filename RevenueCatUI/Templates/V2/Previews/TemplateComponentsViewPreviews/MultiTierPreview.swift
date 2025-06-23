@@ -26,8 +26,6 @@ private enum MultiTierPreview {
 
     @MainActor
     static let paywallState = PackageContext(
-        introOfferEligibilityContext: IntroOfferEligibilityContext(introEligibilityChecker: .default()),
-        paywallPromoOfferCache: PaywallPromoOfferCache(),
         package: nil,
         variableContext: .init()
     )
