@@ -36,7 +36,7 @@ public final class PurchasesDiagnostics: NSObject, Sendable {
 
     init(purchases: SDK) {
         self.purchases = purchases
-        self.sdkHealthManager = SDKHealthManager(healthReportRequest: purchases.healthReportRequest)
+        self.sdkHealthManager = SDKHealthManager { try await purchases.healthReportRequest() }
     }
 
     /// Default instance of `PurchasesDiagnostics`.
