@@ -520,6 +520,7 @@
 		537B4B392DA9744B00CEFF4C /* SDKHealthCheckStatus+Icon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 537B4B352DA9744B00CEFF4C /* SDKHealthCheckStatus+Icon.swift */; };
 		537B4B3A2DA9744B00CEFF4C /* ProductStatus+Icon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 537B4B342DA9744B00CEFF4C /* ProductStatus+Icon.swift */; };
 		537BA85B2DBBFAF200C93327 /* SDKHealthError+CustomNSError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 537BA85A2DBBFAE700C93327 /* SDKHealthError+CustomNSError.swift */; };
+		53AAD34F2E09857300605F51 /* PaymentAuthorizationProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53AAD34E2E09856400605F51 /* PaymentAuthorizationProvider.swift */; };
 		53E33BBB2E095B8900287158 /* SDKHealthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53E33BBA2E095B8900287158 /* SDKHealthManager.swift */; };
 		57045B3829C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57045B3729C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift */; };
 		57045B3A29C51751001A5417 /* GetProductEntitlementMappingOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57045B3929C51751001A5417 /* GetProductEntitlementMappingOperation.swift */; };
@@ -1960,6 +1961,7 @@
 		537B4B352DA9744B00CEFF4C /* SDKHealthCheckStatus+Icon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SDKHealthCheckStatus+Icon.swift"; sourceTree = "<group>"; };
 		537B4B362DA9744B00CEFF4C /* SDKHealthStatus+Icon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SDKHealthStatus+Icon.swift"; sourceTree = "<group>"; };
 		537BA85A2DBBFAE700C93327 /* SDKHealthError+CustomNSError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SDKHealthError+CustomNSError.swift"; sourceTree = "<group>"; };
+		53AAD34E2E09856400605F51 /* PaymentAuthorizationProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentAuthorizationProvider.swift; sourceTree = "<group>"; };
 		53E33BBA2E095B8900287158 /* SDKHealthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDKHealthManager.swift; sourceTree = "<group>"; };
 		57045B3729C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductEntitlementMappingDecodingTests.swift; sourceTree = "<group>"; };
 		57045B3929C51751001A5417 /* GetProductEntitlementMappingOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetProductEntitlementMappingOperation.swift; sourceTree = "<group>"; };
@@ -4129,6 +4131,7 @@
 		35E840C1270FB45600899AE2 /* Support */ = {
 			isa = PBXGroup;
 			children = (
+				53AAD34E2E09856400605F51 /* PaymentAuthorizationProvider.swift */,
 				4F6BED572A26A13800CD9322 /* DebugUI */,
 				A5F0104D2717B3150090732D /* BeginRefundRequestHelper.swift */,
 				35E840C5270FB47C00899AE2 /* ManageSubscriptionsHelper.swift */,
@@ -6635,6 +6638,7 @@
 				4F6BEDE02A26B65900CD9322 /* DebugViewSheetPresentation.swift in Sources */,
 				4F6BEDD92A26B55C00CD9322 /* DebugViewModel.swift in Sources */,
 				FDAC7B552CD3D7A500DFC0D9 /* WinBackOfferEligibilityCalculator.swift in Sources */,
+				53AAD34F2E09857300605F51 /* PaymentAuthorizationProvider.swift in Sources */,
 				1EDB6AA82DC9519D00C771A4 /* WebProductsResponse.swift in Sources */,
 				5766C622282DAA700067D886 /* GetIntroEligibilityResponse.swift in Sources */,
 				35E840CC270FB70D00899AE2 /* ManageSubscriptionsHelper.swift in Sources */,
