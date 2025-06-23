@@ -713,6 +713,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         // all at the same time by too many users concurrently.
         self.updateCachesIfInForeground()
 
+        #if DEBUG
+        self.runHealthCheckIfInForeground()
+        #endif
+
         if self.systemInfo.dangerousSettings.autoSyncPurchases {
             self.paymentQueueWrapper.sk1Wrapper?.delegate = purchasesOrchestrator
         } else {
@@ -2040,6 +2044,21 @@ private extension Purchases {
             }
         }
     }
+
+    #if DEBUG
+    func runHealthCheckIfInForeground() {
+        self.systemInfo.isApplicationBackgrounded { isBackgrounded in
+            if !isBackgrounded {
+                self.operationDispatcher.dispatchOnWorkerThread {
+                    Task {
+                        await SDKHealthManager(healthReportRequest: self.healthReportRequest)
+                            .logSDKHealthReportOutcome()
+                    }
+                }
+            }
+        }
+    }
+    #endif
 
     func updateAllCachesIfNeeded(isAppBackgrounded: Bool) {
         guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
