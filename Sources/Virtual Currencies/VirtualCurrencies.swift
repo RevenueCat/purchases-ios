@@ -17,7 +17,7 @@ import Foundation
 @objc(RCVirtualCurrencies) public final class VirtualCurrencies: NSObject {
 
     /// Dictionary of all ``VirtualCurrency`` objects keyed by virtual currency code.
-    /// This dictionary can also be access through an index subscript on ``VirtualCurrencies``, e.g.
+    /// This dictionary can also be accessed through an index subscript on ``VirtualCurrencies``, e.g.
     /// `virtualCurrencies["VC_CODE"]`.
     @objc public let all: [String: VirtualCurrency]
 
