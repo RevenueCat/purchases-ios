@@ -391,14 +391,8 @@ platform :ios do
       destination: "platform=macOS,arch=arm64,variant=Designed for iPad",
       xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO",
       skip_codesigning: true,
+      skip_package_pkg: true,
       archive_path: archive_path,
-      export_method: "development",
-      export_options: {
-        method: "development",
-        compileBitcode: false,
-        uploadBitcode: false,
-        uploadSymbols: false
-      }
     )
 
     send_to_emerge(
