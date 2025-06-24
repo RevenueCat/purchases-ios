@@ -26,12 +26,7 @@ class MockVirtualCurrencyManager: VirtualCurrencyManagerType {
         self.virtualCurrenciesCallCount += 1
         self.virtualCurrenciesCalled = true
 
-        switch stubbedVirtualCurrenciesResult {
-        case .success(let virtualCurrencies):
-            return virtualCurrencies
-        case .failure(let error):
-            throw error
-        }
+        return try stubbedVirtualCurrenciesResult.get()
     }
 
     var invalidateVirtualCurrenciesCacheCallCount = 0
