@@ -480,6 +480,7 @@
 		75D9DE072D79FC0E0068554F /* testEncoding.1.json in Resources */ = {isa = PBXBuildFile; fileRef = 75D9DE022D79FC0E0068554F /* testEncoding.1.json */; };
 		75D9DE082D79FC0E0068554F /* DiagnosticsEventEncodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D9DE052D79FC0E0068554F /* DiagnosticsEventEncodingTests.swift */; };
 		777FB4882C661C0600CD4749 /* SemanticVersionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 777FB4872C661C0600CD4749 /* SemanticVersionTests.swift */; };
+		837EA6132E0A5151006D25F9 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 837EA6122E0A5151006D25F9 /* RevenueCat */; };
 		839D184D2E0A198F009B6C86 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 839D184C2E0A198F009B6C86 /* RevenueCat */; };
 		839D184F2E0A1998009B6C86 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 839D184E2E0A1998009B6C86 /* RevenueCat */; };
 		8834AFA52C2B9375005A72FE /* PresentIfNeededTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A62222C1D168B00E1A461 /* PresentIfNeededTests.swift */; };
@@ -1938,6 +1939,7 @@
 			files = (
 				FD2E6C9F2C480FF000CB4BD7 /* OHHTTPStubs in Frameworks */,
 				FD2E6CA12C48100900CB4BD7 /* OHHTTPStubsSwift in Frameworks */,
+				837EA6132E0A5151006D25F9 /* RevenueCat in Frameworks */,
 				2D803F6626F144BF0069D717 /* Nimble in Frameworks */,
 				4FCBA8512A153940004134BD /* SnapshotTesting in Frameworks */,
 				2DE20B7626408807004C597D /* StoreKitTest.framework in Frameworks */,
@@ -4894,6 +4896,7 @@
 				4FCBA8502A153940004134BD /* SnapshotTesting */,
 				FD2E6C9E2C480FF000CB4BD7 /* OHHTTPStubs */,
 				FD2E6CA02C48100900CB4BD7 /* OHHTTPStubsSwift */,
+				837EA6122E0A5151006D25F9 /* RevenueCat */,
 			);
 			productName = BackendIntegrationTests;
 			productReference = 2DE20B6C264087FB004C597D /* BackendIntegrationTests.xctest */;
@@ -7246,6 +7249,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 57E04739277260DE0082FE91 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
 			productName = SnapshotTesting;
+		};
+		837EA6122E0A5151006D25F9 /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = RevenueCat;
 		};
 		839D184C2E0A198F009B6C86 /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;
