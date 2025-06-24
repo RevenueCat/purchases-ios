@@ -131,16 +131,17 @@ final class BackendGetVirtualCurrenciesTests: BaseBackendTests {
                             response: Self.twoVirtualCurrenciesResponse,
                             delay: .milliseconds(10))
         )
-        let result: Atomic<Result<VirtualCurrenciesResponse, BackendError>?> = nil
 
-        self.virtualCurrenciesAPI.getVirtualCurrencies(
-            appUserID: Self.userID,
-            isAppBackgrounded: false
-        ) { result.value = $0 }
+        let result: Result<VirtualCurrenciesResponse, BackendError>? = waitUntilValue { completed in
+            self.virtualCurrenciesAPI.getVirtualCurrencies(
+                appUserID: Self.userID,
+                isAppBackgrounded: false
+            ) {
+                completed($0)
+            }
+        }
 
-        expect(result.value).toEventuallyNot(beNil())
-
-        let response = try XCTUnwrap(result.value?.value)
+        let response = try XCTUnwrap(result?.value)
         let virtualCurrencies = try XCTUnwrap(response.virtualCurrencies)
         expect(virtualCurrencies.count).to(equal(2))
 
@@ -164,16 +165,17 @@ final class BackendGetVirtualCurrenciesTests: BaseBackendTests {
                             response: Self.noVirtualCurrenciesResponse,
                             delay: .milliseconds(10))
         )
-        let result: Atomic<Result<VirtualCurrenciesResponse, BackendError>?> = nil
 
-        self.virtualCurrenciesAPI.getVirtualCurrencies(
-            appUserID: Self.userID,
-            isAppBackgrounded: false
-        ) { result.value = $0 }
+        let result: Result<VirtualCurrenciesResponse, BackendError>? = waitUntilValue { completed in
+            self.virtualCurrenciesAPI.getVirtualCurrencies(
+                appUserID: Self.userID,
+                isAppBackgrounded: false
+            ) {
+                completed($0)
+            }
+        }
 
-        expect(result.value).toEventuallyNot(beNil())
-
-        let response = try XCTUnwrap(result.value?.value)
+        let response = try XCTUnwrap(result?.value)
         let virtualCurrencies = try XCTUnwrap(response.virtualCurrencies)
         expect(virtualCurrencies.count).to(equal(0))
     }
