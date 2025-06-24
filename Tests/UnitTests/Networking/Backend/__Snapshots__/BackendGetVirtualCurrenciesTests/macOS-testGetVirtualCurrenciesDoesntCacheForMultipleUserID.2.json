@@ -18,7 +18,7 @@
     "X-Storefront" : "USA",
     "X-StoreKit-Version" : "2",
     "X-StoreKit2-Enabled" : "true",
-    "X-Version" : "4.0.0",
+    "X-Version" : "4.0.0"
   },
   "request" : {
     "body" : null,
