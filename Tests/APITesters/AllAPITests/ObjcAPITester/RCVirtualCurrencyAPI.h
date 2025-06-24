@@ -9,7 +9,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface RCVirtualCurrencyInfoAPI : NSObject
+@interface RCVirtualCurrencyAPI : NSObject
 
 + (void)checkAPI;
 

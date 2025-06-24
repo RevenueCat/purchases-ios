@@ -41,7 +41,7 @@ struct SubscriptionDetailView: View {
     @Environment(\.supportInformation)
     private var support
 
-    @StateObject
+    @ObservedObject
     private var viewModel: SubscriptionDetailViewModel
 
     @ObservedObject
@@ -54,7 +54,7 @@ struct SubscriptionDetailView: View {
         customerInfoViewModel: CustomerCenterViewModel,
         screen: CustomerCenterConfigData.Screen,
         purchaseInformation: PurchaseInformation?,
-        virtualCurrencies: [String: VirtualCurrencyInfo]?,
+        virtualCurrencies: RevenueCat.VirtualCurrencies?,
         showPurchaseHistory: Bool,
         allowsMissingPurchaseAction: Bool,
         purchasesProvider: CustomerCenterPurchasesType,
@@ -186,7 +186,7 @@ struct SubscriptionDetailView: View {
                         .padding(.vertical, 32)
                 }
 
-                 if let virtualCurrencies = viewModel.virtualCurrencies, !virtualCurrencies.isEmpty {
+                if let virtualCurrencies = viewModel.virtualCurrencies, !virtualCurrencies.all.isEmpty {
                     VirtualCurrenciesScrollViewWithOSBackgroundSection(
                         virtualCurrencies: virtualCurrencies,
                         onSeeAllInAppCurrenciesButtonTapped: self.viewModel.displayAllInAppCurrenciesScreen
@@ -390,7 +390,7 @@ struct SubscriptionDetailView: View {
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
                         allowsMissingPurchaseAction: false,
-                        virtualCurrencies: CustomerCenterConfigData.fourVirtualCurrencies,
+                        virtualCurrencies: VirtualCurrenciesFixtures.fourVirtualCurrencies,
                         purchaseInformation: .mock(store: .playStore, isExpired: false)
                     )
                 )
@@ -412,7 +412,7 @@ struct SubscriptionDetailView: View {
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
                         allowsMissingPurchaseAction: false,
-                        virtualCurrencies: CustomerCenterConfigData.fiveVirtualCurrencies,
+                        virtualCurrencies: VirtualCurrenciesFixtures.fiveVirtualCurrencies,
                         purchaseInformation: .mock(store: .playStore, isExpired: false)
                     )
                 )

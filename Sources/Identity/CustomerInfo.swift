@@ -99,9 +99,6 @@ public typealias ProductIdentifier = String
     /// Dictionary of all subscription product identifiers and their subscription info
     @objc public let subscriptionsByProductIdentifier: [ProductIdentifier: SubscriptionInfo]
 
-    /// Dictionary of all virtual currency codes to their info
-    @objc public let virtualCurrencies: [String: VirtualCurrencyInfo]
-
     /// Get the expiration date for a given product identifier. You should use Entitlements though!
     /// - Parameter productIdentifier: Product identifier for product
     /// - Returns:  The expiration date for `productIdentifier`, `nil` if product never purchased
@@ -225,8 +222,6 @@ public typealias ProductIdentifier = String
         self.purchaseDatesByProductId = Self.extractPurchaseDates(subscriber)
         self.allPurchasedProductIdentifiers = Set(self.expirationDatesByProductId.keys)
             .union(self.nonSubscriptions.map { $0.productIdentifier })
-
-        self.virtualCurrencies = Self.convertVirtualCurrenciesResponse(subscriber.virtualCurrencies)
 
         self.subscriptionsByProductIdentifier =
         Dictionary(uniqueKeysWithValues: subscriber.subscriptions.map { (key, subscriptionData) in
@@ -373,16 +368,6 @@ private extension CustomerInfo {
 
     }
 
-}
-
-internal extension CustomerInfo {
-    static func convertVirtualCurrenciesResponse(
-        _ values: [String: CustomerInfoResponse.VirtualCurrencyInfo]
-    ) -> [String: VirtualCurrencyInfo] {
-        return values.mapValues { responseInfo in
-            VirtualCurrencyInfo(with: responseInfo)
-        }
-    }
 }
 
 /// `Codable` implementation that puts the content of`response` and `schemaVersion`

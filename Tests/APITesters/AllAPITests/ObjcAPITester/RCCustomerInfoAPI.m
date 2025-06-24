@@ -38,8 +38,6 @@
 
     NSDictionary<NSString *, id> *rawData = [ci rawData];
 
-    NSDictionary<NSString *, RCVirtualCurrencyInfo *> *vci = ci.virtualCurrencies;
-
     NSLog(ci, ei, as, appis, led, ncp, ns, nst, oav, opd, rd, fs, oaud, murl, edfpi, pdfpi, exdf, pdfe, d, rawData);
 }
 

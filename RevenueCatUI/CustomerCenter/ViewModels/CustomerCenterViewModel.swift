@@ -35,7 +35,7 @@ import Foundation
     private(set) var appIsLatestVersion: Bool = defaultAppIsLatestVersion
 
     @Published
-    private(set) var virtualCurrencies: [String: VirtualCurrencyInfo]?
+    private(set) var virtualCurrencies: VirtualCurrencies?
 
     @Published
     private(set) var onUpdateAppClick: (() -> Void)?
@@ -192,7 +192,8 @@ import Foundation
             try await self.loadCustomerCenterConfig()
 
             if self.configuration?.support.displayVirtualCurrencies == true {
-                self.virtualCurrencies = customerInfo.virtualCurrencies
+                purchasesProvider.invalidateVirtualCurrenciesCache()
+                self.virtualCurrencies = try? await purchasesProvider.virtualCurrencies()
             } else {
                 self.virtualCurrencies = nil
             }
