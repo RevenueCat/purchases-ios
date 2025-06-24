@@ -99,9 +99,10 @@ final class BackendGetVirtualCurrenciesTests: BaseBackendTests {
         ) { _ in }
 
         expect(self.httpClient.calls).toEventually(haveCount(1))
+        expect(self.httpClient.calls).toNever(haveCount(2))
     }
 
-    func testGetVirtualCurrenciesDoesntCacheForMultipleUserID() {
+    func testGetVirtualCurrenciesDoesntCacheForMultipleUserIDs() {
         let response = MockHTTPClient.Response(
             statusCode: .success,
             response: Self.twoVirtualCurrenciesResponse
@@ -121,6 +122,7 @@ final class BackendGetVirtualCurrenciesTests: BaseBackendTests {
         ) { _ in }
 
         expect(self.httpClient.calls).toEventually(haveCount(2))
+        expect(self.httpClient.calls).toNever(haveCount(3))
     }
 
     // MARK: - Response Tests
@@ -236,6 +238,7 @@ final class BackendGetVirtualCurrenciesTests: BaseBackendTests {
         ) { _ in }
 
         expect(self.httpClient.calls).toEventually(haveCount(1))
+        expect(self.httpClient.calls).toNever(haveCount(2))
 
         self.logger.verifyMessageWasLogged(
             "Network operation '\(GetVirtualCurrenciesOperation.self)' found with the same cache key",
