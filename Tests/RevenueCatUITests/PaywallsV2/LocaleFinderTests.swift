@@ -158,6 +158,19 @@ class LocaleFinderTest: TestCase {
         expect(foundLocalizations).to(equal(Self.expectedTranslations))
     }
 
+    func test_es_MX_Matches_es_ES_if_that_is_the_only_es_language() {
+        let localizations = [
+            "en": ["wrong": "this is en"],
+            "es_ES": Self.expectedTranslations,
+            "fr_FR": ["wrong": "this is fr_FR"]
+        ]
+
+        let locale = Locale(identifier: "es_MX")
+
+        let foundLocalizations = localizations.findLocale(locale)
+        expect(foundLocalizations).to(equal(Self.expectedTranslations))
+    }
+
     func test_es_ES_matches_none_when_no_es_locale_present() {
         let localizations = [
             "en": Self.expectedTranslations
