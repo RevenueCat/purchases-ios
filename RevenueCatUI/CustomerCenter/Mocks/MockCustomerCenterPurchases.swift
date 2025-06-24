@@ -127,16 +127,7 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
     var virtualCurrenciesResult: Result<VirtualCurrencies, Error>?
     func virtualCurrencies() async throws -> VirtualCurrencies {
         virtualCurrenciesCallCount += 1
-        guard let virtualCurrenciesResult = virtualCurrenciesResult else {
-            return VirtualCurrenciesFixtures.noVirtualCurrencies
-        }
-
-        switch virtualCurrenciesResult {
-        case .success(let virtualCurrencies):
-            return virtualCurrencies
-        case .failure(let error):
-            throw error
-        }
+        return try virtualCurrenciesResult?.get() ?? VirtualCurrenciesFixtures.noVirtualCurrencies
     }
 
     func showManageSubscriptions() async throws {
