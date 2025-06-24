@@ -130,7 +130,7 @@ class SDKHealthManagerTests: TestCase {
                         identifier: "test_product",
                         title: "Test Product",
                         status: .needsAction,
-                        description: "Product needs action in App Store Connect."
+                        description: "Product needs action in App Store Connect"
                     )
                 ])))
             ]
@@ -169,7 +169,7 @@ class SDKHealthManagerTests: TestCase {
 
         await manager.logSDKHealthReportOutcome()
 
-        self.logger.verifyMessageWasLogged("SDK Configuration is Valid", level: .info)
+        self.logger.verifyMessageWasLogged("SDK is configured correctly", level: .info)
     }
 
     func testLogSDKHealthReportOutcomeLogsWarningForHealthyWithWarningsStatus() async {
