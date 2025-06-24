@@ -99,7 +99,7 @@ private enum HealthReportLogMessage: LogMessage {
     }
 
     private func buildHealthyMessage(report: PurchasesDiagnostics.SDKHealthReport) -> String {
-        var message = "SDK Configuration is Valid\n"
+        var message = "✅ SDK is configured correctly\n"
 
         message += buildProductsSection(report: report)
         message += buildOfferingsSection(report: report)
