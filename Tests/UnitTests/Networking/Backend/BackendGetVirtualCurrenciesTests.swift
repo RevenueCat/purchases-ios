@@ -102,7 +102,7 @@ final class BackendGetVirtualCurrenciesTests: BaseBackendTests {
         expect(self.httpClient.calls).toNever(haveCount(2))
     }
 
-    func testGetVirtualCurrenciesDoesntCacheForMultipleUserIDs() {
+    func testGetVirtualCurrenciesDoesntCacheForMultipleUserID() {
         let response = MockHTTPClient.Response(
             statusCode: .success,
             response: Self.twoVirtualCurrenciesResponse
