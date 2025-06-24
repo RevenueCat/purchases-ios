@@ -71,7 +71,7 @@ private enum HealthReportLogMessage: LogMessage {
         error: PurchasesDiagnostics.SDKHealthError,
         report: PurchasesDiagnostics.SDKHealthReport
     ) -> String {
-        var message = "SDK Configuration is not valid\n"
+        var message = "RevenueCat SDK Configuration is not valid\n"
         message += "\n\(error.localizedDescription)\n"
 
         let actionURL: String? = {
@@ -99,7 +99,7 @@ private enum HealthReportLogMessage: LogMessage {
     }
 
     private func buildHealthyMessage(report: PurchasesDiagnostics.SDKHealthReport) -> String {
-        var message = "✅ SDK is configured correctly\n"
+        var message = "✅ RevenueCat SDK is configured correctly\n"
 
         message += buildProductsSection(report: report)
         message += buildOfferingsSection(report: report)
@@ -111,7 +111,7 @@ private enum HealthReportLogMessage: LogMessage {
         warnings: [PurchasesDiagnostics.SDKHealthError],
         report: PurchasesDiagnostics.SDKHealthReport
     ) -> String {
-        var message = "SDK is configured correctly, but contains some issues you might want to address\n"
+        var message = "RevenueCat SDK is configured correctly, but contains some issues you might want to address\n"
 
         message += "\nWarnings:\n"
         for warning in warnings {
