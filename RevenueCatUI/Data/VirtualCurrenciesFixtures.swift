@@ -53,15 +53,7 @@ internal enum VirtualCurrenciesFixtures {
                 }
                 """.data(using: .utf8)
 
-        guard let data = jsonData else {
-            return Self.noVirtualCurrencies
-        }
-
-        guard let virtualCurrencies = try? JSONDecoder().decode(RevenueCat.VirtualCurrencies.self, from: data) else {
-            return Self.noVirtualCurrencies
-        }
-
-        return virtualCurrencies
+        return try! JSONDecoder().decode(RevenueCat.VirtualCurrencies.self, from: jsonData!)
     }
 
     static var fiveVirtualCurrencies: RevenueCat.VirtualCurrencies {
