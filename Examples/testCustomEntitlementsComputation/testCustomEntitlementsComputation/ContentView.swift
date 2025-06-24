@@ -89,6 +89,19 @@ struct ContentView: View {
             .cornerRadius(20)
             .padding()
 
+            Button("Fetch product's intro/trial eligibility") {
+                Task<Void, Never> {
+                    await checkProductTrialIntroEligibility()
+                }
+            }
+            .font(.system(size: 20))
+            .foregroundColor(.white)
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(Color.blue)
+            .cornerRadius(20)
+            .padding()
+
             .task {
                 Purchases.configureInCustomEntitlementsComputationMode(apiKey: Constants.apiKey,
                                                                        appUserID: appUserID)
@@ -229,6 +242,29 @@ struct ContentView: View {
             print("FAILED TO PURCHASE: \(error.localizedDescription)")
         }
 
+    }
+
+    func checkProductTrialIntroEligibility() async {
+        guard let offerings = self.offerings,
+              let offering = offerings.current,
+              let package = offering.availablePackages.first else {
+            print("no offerings, can't check product's eligibility")
+            return
+        }
+
+        print("Checking product trial intro eligibility with checkTrialOrIntroDiscountEligibility(product:)...")
+        let introStatus = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: package.storeProduct)
+        print("Intro status: \(introStatus)")
+
+        print("Checking product trial intro eligibility with checkTrialOrIntroDiscountEligibility(packages:)...")
+        let introStatusDict = await Purchases.shared.checkTrialOrIntroDiscountEligibility(packages: [package])
+        print("Intro status dictionary: \(introStatusDict)")
+
+        print("Checking product trial intro eligibility with checkTrialOrIntroDiscountEligibility(productIdentifiers:)...")
+        let introStatusDict2 = await Purchases.shared.checkTrialOrIntroDiscountEligibility(
+            productIdentifiers: [package.storeProduct.productIdentifier]
+        )
+        print("Intro status dictionary: \(introStatusDict2)")
     }
 
 
