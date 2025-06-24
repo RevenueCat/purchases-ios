@@ -328,7 +328,7 @@ platform :ios do
     # This is due to RevenueCatUI scheme belonging to purchases-ios and not an actual project
     xcodebuild(
       workspace: '.',
-      scheme: 'RevenueCatUI',
+      scheme: 'RevenueCatUITestsDev',
       destination: "platform=iOS Simulator,name=#{device}",
       sdk: 'iphonesimulator',
       test: true,
