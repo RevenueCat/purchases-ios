@@ -53,6 +53,7 @@ internal enum VirtualCurrenciesFixtures {
                 }
                 """.data(using: .utf8)
 
+        // swiftlint:disable:next force_try
         return try! JSONDecoder().decode(RevenueCat.VirtualCurrencies.self, from: jsonData!)
     }
 
@@ -94,6 +95,7 @@ internal enum VirtualCurrenciesFixtures {
                 }
                 """.data(using: .utf8)
 
+        // swiftlint:disable:next force_try
         return try! JSONDecoder().decode(RevenueCat.VirtualCurrencies.self, from: jsonData!)
     }
 }
