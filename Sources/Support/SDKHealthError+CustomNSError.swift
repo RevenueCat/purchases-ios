@@ -58,9 +58,12 @@ extension PurchasesDiagnostics.SDKHealthError: CustomNSError {
         case let .offeringConfiguration(payload):
             guard let offendingOffering = payload.first(where: { $0.status == .failed }) else {
                 let offeringsWithWarnings = payload.filter { $0.status == .warning }
+                let offeringDescription = offeringsWithWarnings.isEmpty ?
+                    "Some offerings" :
+                    "The offerings \(offeringsWithWarnings.map { "'\($0.identifier)'" }.joined(separator: ", "))"
                 return """
-                The offerings \(offeringsWithWarnings.map { "'\($0.identifier)'" }.joined(separator: ", ")) have \
-                configuration issues that may prevent users from seeing product options or making purchases.
+                \(offeringDescription) have configuration issues that may prevent users from seeing product \
+                options or making purchases.
                 """
             }
 
