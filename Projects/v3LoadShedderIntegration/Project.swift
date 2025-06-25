@@ -14,8 +14,6 @@ let allDeploymentTargets: DeploymentTargets = .multiplatform(
     iOS: "14.0",
 )
 
-let storeKitFile = "../../Tests/v3LoadShedderIntegration/v3LoadShedderIntegrationTests/V3LoadShedderIntegrationTestsConfiguration.storekit"
-
 // MARK: - Project Definition
 
 let project = Project(
@@ -39,13 +37,13 @@ let project = Project(
                 "../../Tests/v3LoadShedderIntegration/v3LoadShedderIntegration/Assets.xcassets",
                 "../../Tests/v3LoadShedderIntegration/v3LoadShedderIntegration/Base.lproj/LaunchScreen.storyboard",
                 "../../Tests/v3LoadShedderIntegration/v3LoadShedderIntegration/Base.lproj/Main.storyboard",
-                storeKitFile
+                 "../../Tests/v3LoadShedderIntegration/v3LoadShedderIntegrationTests/V3LoadShedderIntegrationTestsConfiguration.storekit"
             ],
             headers: .headers(
                 project: ["../../Tests/v3LoadShedderIntegration/v3LoadShedderIntegration/v3LoadShedderIntegrationTests-Info.h"]
             ),
             additionalFiles: [
-                storeKitFile,
+                 "../../Tests/v3LoadShedderIntegration/v3LoadShedderIntegrationTests/V3LoadShedderIntegrationTestsConfiguration.storekit",
                 "../../Tests/v3LoadShedderIntegration/v3LoadShedderIntegration/Info.plist"
             ]
         ),
@@ -65,7 +63,7 @@ let project = Project(
                 .external(name: "Purchases")
             ],
             additionalFiles: [
-                storeKitFile
+                 "../../Tests/v3LoadShedderIntegration/v3LoadShedderIntegrationTests/V3LoadShedderIntegrationTestsConfiguration.storekit"
             ]
         )
     ],
@@ -78,7 +76,7 @@ let project = Project(
             runAction: .runAction(
                 executable: "v3LoadShedderIntegration",
                 options: .options(
-                    storeKitConfigurationPath: storeKitFile
+                    storeKitConfigurationPath: "../../Tests/v3LoadShedderIntegration/v3LoadShedderIntegrationTests/V3LoadShedderIntegrationTestsConfiguration.storekit"
                 )
             ),
             archiveAction: .archiveAction(configuration: "Release"),
