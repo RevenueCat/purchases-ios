@@ -87,11 +87,12 @@ struct AccountDetailsSection: View {
     let localization: CustomerCenterConfigData.Localization
 
     init(
-        customerInfoViewModel: CustomerCenterViewModel,
+        originalPurchaseDate: Date?,
+        originalAppUserId: String,
         localization: CustomerCenterConfigData.Localization
     ) {
-        self.originalPurchaseDate = customerInfoViewModel.originalPurchaseDate
-        self.originalAppUserId = customerInfoViewModel.originalAppUserId
+        self.originalPurchaseDate = originalPurchaseDate
+        self.originalAppUserId = originalAppUserId
         self.localization = localization
     }
 

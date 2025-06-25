@@ -159,7 +159,8 @@ struct RelevantPurchasesListView: View {
                 }
 
                 AccountDetailsSection(
-                    customerInfoViewModel: customerInfoViewModel,
+                    originalPurchaseDate: customerInfoViewModel.originalPurchaseDate,
+                    originalAppUserId: customerInfoViewModel.originalAppUserId,
                     localization: localization
                 )
             }

@@ -210,7 +210,8 @@ struct SubscriptionDetailView: View {
         Spacer().frame(height: 16)
 
         AccountDetailsSection(
-            customerInfoViewModel: customerInfoViewModel,
+            originalPurchaseDate: customerInfoViewModel.originalPurchaseDate,
+            originalAppUserId: customerInfoViewModel.originalAppUserId,
             localization: localization
         )
     }
