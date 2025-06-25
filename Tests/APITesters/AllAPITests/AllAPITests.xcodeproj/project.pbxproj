@@ -114,18 +114,15 @@
 		2D4C62742C5ADC4800A29FD2 /* StoreProductDiscountAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4C62492C5ADC4600A29FD2 /* StoreProductDiscountAPI.swift */; };
 		2D4C62752C5ADC4800A29FD2 /* EntitlementInfoAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4C62522C5ADC4700A29FD2 /* EntitlementInfoAPI.swift */; };
 		2D4C62772C5ADC8F00A29FD2 /* RevenueCat_CustomEntitlementComputation in Frameworks */ = {isa = PBXBuildFile; productRef = 2D4C62762C5ADC8F00A29FD2 /* RevenueCat_CustomEntitlementComputation */; };
-		2D4C62CD2C5D41BE00A29FD2 /* RevenueCatUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C62CC2C5D41BE00A29FD2 /* RevenueCatUI.framework */; };
-		2D4C62CE2C5D41BE00A29FD2 /* RevenueCatUI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C62CC2C5D41BE00A29FD2 /* RevenueCatUI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2D4C62D12C5D41D400A29FD2 /* ReceiptParser.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C62D02C5D41D400A29FD2 /* ReceiptParser.framework */; };
 		2D4C62D22C5D41D400A29FD2 /* ReceiptParser.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C62D02C5D41D400A29FD2 /* ReceiptParser.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		2D4C62D52C5D41E200A29FD2 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C62D42C5D41E200A29FD2 /* RevenueCat.framework */; };
-		2D4C62D62C5D41E200A29FD2 /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C62D42C5D41E200A29FD2 /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		2D4C62D92C5D41EC00A29FD2 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C62D82C5D41EC00A29FD2 /* RevenueCat.framework */; };
-		2D4C62DA2C5D41EC00A29FD2 /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C62D82C5D41EC00A29FD2 /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		3502630E2CF61E9F00894270 /* SubscriptionInfoAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3502630D2CF61E9A00894270 /* SubscriptionInfoAPI.swift */; };
 		35370AC52CFF8304004F0A64 /* RCSubscriptionInfoAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = 35370AC42CFF82F8004F0A64 /* RCSubscriptionInfoAPI.h */; };
 		35370AC82CFF8317004F0A64 /* RCSubscriptionInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 35370AC72CFF8312004F0A64 /* RCSubscriptionInfoAPI.m */; };
 		75C1B6AD2D48D4550011512D /* DangerousSettingsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C1B6AC2D48D4550011512D /* DangerousSettingsAPI.swift */; };
+		83C0A6412E0A597B00124A02 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 83C0A6402E0A597B00124A02 /* RevenueCat */; };
+		83C0A6432E0A598D00124A02 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 83C0A6422E0A598D00124A02 /* RevenueCat */; };
+		83C0A6452E0A599400124A02 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 83C0A6442E0A599400124A02 /* RevenueCatUI */; };
 		FD33CD732D03587E000D13A4 /* CustomerCenterViewControllerAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD33CD722D035876000D13A4 /* CustomerCenterViewControllerAPI.swift */; };
 		FDCC983A2D0A0FD500F5854B /* CustomerCenterViewAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDCC98392D0A0FD500F5854B /* CustomerCenterViewAPI.swift */; };
 /* End PBXBuildFile section */
@@ -167,17 +164,6 @@
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		2D4C62CF2C5D41BE00A29FD2 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				2D4C62CE2C5D41BE00A29FD2 /* RevenueCatUI.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		2D4C62D32C5D41D400A29FD2 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -185,28 +171,6 @@
 			dstSubfolderSpec = 10;
 			files = (
 				2D4C62D22C5D41D400A29FD2 /* ReceiptParser.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		2D4C62D72C5D41E200A29FD2 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				2D4C62D62C5D41E200A29FD2 /* RevenueCat.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		2D4C62DB2C5D41EC00A29FD2 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				2D4C62DA2C5D41EC00A29FD2 /* RevenueCat.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -384,7 +348,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2D4C62D92C5D41EC00A29FD2 /* RevenueCat.framework in Frameworks */,
+				83C0A6412E0A597B00124A02 /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -392,7 +356,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2D4C62D52C5D41E200A29FD2 /* RevenueCat.framework in Frameworks */,
+				83C0A6432E0A598D00124A02 /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -408,7 +372,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2D4C62CD2C5D41BE00A29FD2 /* RevenueCatUI.framework in Frameworks */,
+				83C0A6452E0A599400124A02 /* RevenueCatUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -746,7 +710,6 @@
 				2D4C61392C5AD30400A29FD2 /* Sources */,
 				2D4C613A2C5AD30400A29FD2 /* Frameworks */,
 				2D4C613B2C5AD30400A29FD2 /* Resources */,
-				2D4C62DB2C5D41EC00A29FD2 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -754,6 +717,7 @@
 			);
 			name = ObjcAPITester;
 			packageProductDependencies = (
+				83C0A6402E0A597B00124A02 /* RevenueCat */,
 			);
 			productName = ObjcAPITester;
 			productReference = 2D4C613D2C5AD30400A29FD2 /* ObjcAPITester.framework */;
@@ -767,7 +731,6 @@
 				2D4C61AF2C5AD61800A29FD2 /* Sources */,
 				2D4C61B02C5AD61800A29FD2 /* Frameworks */,
 				2D4C61B12C5AD61800A29FD2 /* Resources */,
-				2D4C62D72C5D41E200A29FD2 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -775,6 +738,7 @@
 			);
 			name = SwiftAPITester;
 			packageProductDependencies = (
+				83C0A6422E0A598D00124A02 /* RevenueCat */,
 			);
 			productName = SwiftAPITester;
 			productReference = 2D4C61B32C5AD61800A29FD2 /* SwiftAPITester.framework */;
@@ -809,7 +773,6 @@
 				2D4C621D2C5ADA2400A29FD2 /* Sources */,
 				2D4C621E2C5ADA2400A29FD2 /* Frameworks */,
 				2D4C621F2C5ADA2400A29FD2 /* Resources */,
-				2D4C62CF2C5D41BE00A29FD2 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -817,6 +780,7 @@
 			);
 			name = RevenueCatUISwiftAPITester;
 			packageProductDependencies = (
+				83C0A6442E0A599400124A02 /* RevenueCatUI */,
 			);
 			productName = RevenueCatUISwiftAPITester;
 			productReference = 2D4C62212C5ADA2400A29FD2 /* RevenueCatUISwiftAPITester.framework */;
@@ -1891,6 +1855,18 @@
 		2D4C62762C5ADC8F00A29FD2 /* RevenueCat_CustomEntitlementComputation */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = RevenueCat_CustomEntitlementComputation;
+		};
+		83C0A6402E0A597B00124A02 /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = RevenueCat;
+		};
+		83C0A6422E0A598D00124A02 /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = RevenueCat;
+		};
+		83C0A6442E0A599400124A02 /* RevenueCatUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = RevenueCatUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
