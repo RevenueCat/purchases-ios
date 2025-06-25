@@ -83,7 +83,8 @@ class BaseBackendIntegrationTests: TestCase {
                             networkTimeout: Configuration.networkTimeoutDefault,
                             dangerousSettings: self.dangerousSettings,
                             showStoreMessagesAutomatically: true,
-                            diagnosticsEnabled: false)
+                            diagnosticsEnabled: false,
+                            preferredLocale: nil)
     }
 
     // MARK: -
