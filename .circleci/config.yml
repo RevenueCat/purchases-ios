@@ -17,6 +17,7 @@ parameters:
         run-manual-tests,
         run-manual-docs-deploy,
         update_paywall_templates,
+        record_paywall_screenshots,
       ]
     default: default
   generate_snapshots:
@@ -1598,6 +1599,14 @@ workflows:
         - equal: ["default", << pipeline.parameters.action >>]
     jobs:
       - record-and-push-paywall-template-screenshots:
+          context:
+            - paywall-rendering-validation-pr-rw
+
+  record-paywall-screenshots:
+    when:
+      equal: ["record_paywall_screenshots", << pipeline.parameters.action >>]
+    jobs:
+      - record-paywall-screenshots:
           context:
             - paywall-rendering-validation-pr-rw
 
