@@ -18,8 +18,7 @@ import RevenueCat
 
 /// A view model that manages the state and data for the virtual currencies screen.
 ///
-/// This view model is responsible for loading and managing virtual currency balance data
-/// from RevenueCat's CustomerInfo.
+/// This view model is responsible for loading and managing virtual currency balance data.
 @available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
