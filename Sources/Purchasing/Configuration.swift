@@ -53,7 +53,7 @@ import Foundation
     let platformInfo: Purchases.PlatformInfo?
     let responseVerificationMode: Signing.ResponseVerificationMode
     let showStoreMessagesAutomatically: Bool
-    let validateConfigurationOnLaunch: Bool
+    let validateConfigurationOnDebugAppLaunch: Bool
     internal let diagnosticsEnabled: Bool
 
     private init(with builder: Builder) {
@@ -70,7 +70,7 @@ import Foundation
         self.platformInfo = builder.platformInfo
         self.responseVerificationMode = builder.responseVerificationMode
         self.showStoreMessagesAutomatically = builder.showStoreMessagesAutomatically
-        self.validateConfigurationOnLaunch = builder.validateConfigurationOnLaunch
+        self.validateConfigurationOnDebugAppLaunch = builder.validateConfigurationOnDebugAppLaunch
         self.diagnosticsEnabled = builder.diagnosticsEnabled
     }
 
@@ -113,7 +113,7 @@ import Foundation
         private(set) var platformInfo: Purchases.PlatformInfo?
         private(set) var responseVerificationMode: Signing.ResponseVerificationMode = .default
         private(set) var showStoreMessagesAutomatically: Bool = true
-        private(set) var validateConfigurationOnLaunch: Bool = false
+        private(set) var validateConfigurationOnDebugAppLaunch: Bool = false
         private(set) var diagnosticsEnabled: Bool = false
         private(set) var storeKitVersion: StoreKitVersion = .default
 
@@ -247,7 +247,7 @@ import Foundation
         }
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-        /// Set `validateConfigurationOnLaunch`. Enabled by default.
+        /// Set `validateConfigurationOnDebugAppLaunch`. Enabled by default.
         /// If enabled, the SDK will automatically validate its configuration on every launch 
         /// by running a health check and logging the results to the console. This helps identify
         /// configuration issues early in the development process.
@@ -261,8 +261,8 @@ import Foundation
         ///
         /// - Note: This feature is only available in DEBUG builds
         /// - Note: Health checks are performed asynchronously and don't block app startup
-        @objc public func with(validateConfigurationOnLaunch: Bool) -> Builder {
-            self.validateConfigurationOnLaunch = validateConfigurationOnLaunch
+        @objc public func with(validateConfigurationOnDebugAppLaunch: Bool) -> Builder {
+            self.validateConfigurationOnDebugAppLaunch = validateConfigurationOnDebugAppLaunch
             return self
         }
         #endif
