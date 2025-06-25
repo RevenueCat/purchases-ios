@@ -2058,10 +2058,8 @@ private extension Purchases {
         self.systemInfo.isApplicationBackgrounded { isBackgrounded in
             if !isBackgrounded {
                 self.operationDispatcher.dispatchOnWorkerThread {
-                    Task {
-                        let manager = SDKHealthManager { try await self.healthReportRequest() }
-                        await manager.logSDKHealthReportOutcome()
-                    }
+                    let manager = SDKHealthManager { try await self.healthReportRequest() }
+                    await manager.logSDKHealthReportOutcome()
                 }
             }
         }
