@@ -112,6 +112,7 @@ extension CustomerInfoResponse {
 extension CustomerInfoResponse.Subscriber: Codable, Hashable {}
 extension CustomerInfoResponse.Subscription: Codable, Hashable {}
 extension CustomerInfoResponse.PurchasePaidPrice: Codable, Hashable {}
+
 extension CustomerInfoResponse.Entitlement: Hashable {}
 extension CustomerInfoResponse.Entitlement: Encodable {}
 extension CustomerInfoResponse.Entitlement: Decodable {
