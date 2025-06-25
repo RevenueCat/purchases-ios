@@ -1,0 +1,175 @@
+name: 🐛 Bug report
+description: File a bug report for the RevenueCat iOS SDK
+title: "🐛 "
+labels: ["bug"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! Please provide as much detail as possible to help us resolve the issue quickly.
+
+        **Before submitting, please ensure:**
+        - [ ] I have updated Purchases SDK to the latest version
+        - [ ] I have read the [Contribution Guidelines](https://github.com/RevenueCat/purchases-ios/blob/main/Contributing/CONTRIBUTING.md)
+        - [ ] I have searched the [Community](https://community.revenuecat.com)
+        - [ ] I have read [docs.revenuecat.com](https://docs.revenuecat.com/)
+        - [ ] I have searched for [existing Github issues](https://github.com/RevenueCat/purchases-ios/issues)
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is. The more detail you can provide the faster our team will be able to triage and resolve the issue.
+      placeholder: Describe the bug here...
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ## Environment Information
+        Please provide the following details about your environment:
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      description: Which platform are you experiencing the issue on?
+      options:
+        - iOS
+        - macOS
+        - tvOS
+        - watchOS
+        - visionOS
+    validations:
+      required: true
+
+  - type: input
+    id: sdk-version
+    attributes:
+      label: SDK version
+      description: What version of the RevenueCat SDK are you using?
+      placeholder: e.g., 5.0.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: storekit-version
+    attributes:
+      label: StoreKit version
+      description: Which StoreKit version are you using?
+      options:
+        - StoreKit 1 (default on versions <5.0.0. Can be enabled in versions >=5.0.0 with `.with(storeKitVersion: .storeKit1)`)
+        - StoreKit 2 (default on versions >=5.0.0)
+    validations:
+      required: true
+
+  - type: input
+    id: os-version
+    attributes:
+      label: OS version
+      description: What version of the operating system are you testing on?
+      placeholder: e.g., iOS 16.0, macOS 13.0
+    validations:
+      required: true
+
+  - type: input
+    id: xcode-version
+    attributes:
+      label: Xcode version
+      description: What version of Xcode are you using?
+      placeholder: e.g., 14.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: device-type
+    attributes:
+      label: Device and/or simulator
+      description: Are you testing on a device or simulator?
+      options:
+        - Device
+        - Simulator
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      description: Which environment are you testing in?
+      options:
+        - Sandbox
+        - TestFlight
+        - Production
+    validations:
+      required: true
+
+  - type: input
+    id: issue-spread
+    attributes:
+      label: How widespread is the issue
+      description: What percentage of devices are affected by this issue?
+      placeholder: e.g., 100%, 50%, Only specific devices
+    validations:
+      required: true
+
+  - type: textarea
+    id: debug-logs
+    attributes:
+      label: Debug logs
+      description: |
+        Please provide [debug logs](https://docs.revenuecat.com/docs/debugging) that reproduce the issue. 
+        If this is a crash, make sure to include the full stack trace.
+        **Complete logs with `Purchases.logLevel = .verbose` will help us debug this issue.**
+      placeholder: |
+        ```
+        [Paste your debug logs here]
+        ```
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to reproduce
+      description: |
+        Please provide detailed steps to reproduce the issue, including:
+        - What you were trying to do
+        - What you expected to happen
+        - What actually happened
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. Scroll down to '...'
+        4. See error
+
+        **Expected behavior:** [Describe what you expected to happen]
+        **Actual behavior:** [Describe what actually happened]
+    validations:
+      required: true
+
+  - type: textarea
+    id: other-information
+    attributes:
+      label: Other information
+      description: |
+        Please provide any other relevant information such as:
+        - Stack traces
+        - Related issues
+        - Suggestions for fixes
+        - Links to relevant discussions (Stack Overflow, etc.)
+      placeholder: |
+        [Paste any additional information here]
+      render: markdown
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add any other context about the problem here.
+      placeholder: |
+        [Any additional context that might be helpful]
+      render: markdown
