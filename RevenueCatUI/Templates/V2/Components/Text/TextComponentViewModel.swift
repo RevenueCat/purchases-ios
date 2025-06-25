@@ -131,7 +131,8 @@ class TextComponentViewModel {
             in: text,
             with: package,
             locale: locale,
-            localizations: localizations
+            localizations: localizations,
+            virtualCurrencies: packageContext.variableContext.virtualCurrencies
         )
     }
 

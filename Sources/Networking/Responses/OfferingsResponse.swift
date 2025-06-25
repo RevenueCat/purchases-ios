@@ -15,14 +15,27 @@ import Foundation
 
 struct OfferingsResponse {
 
+    struct VirtualCurrency {
+        let description: String
+        let iconUrl: URL?
+        let name: String
+    }
+
     struct Offering {
 
         // swiftlint:disable:next nesting
         struct Package {
 
+            // swiftlint:disable:next nesting
+            struct VirtualCurrencyGrant {
+                let amount: Int
+            }
+
             let identifier: String
             let platformProductIdentifier: String
             let webCheckoutUrl: URL?
+            @DefaultDecodable.EmptyDictionary
+            var virtualCurrencies: [String: VirtualCurrencyGrant]
 
         }
 
@@ -54,6 +67,8 @@ struct OfferingsResponse {
     let placements: Placements?
     let targeting: Targeting?
     let uiConfig: UIConfig?
+    @DefaultDecodable.EmptyDictionary
+    var virtualCurrencies: [String: VirtualCurrency]
 
 }
 
@@ -79,10 +94,12 @@ extension OfferingsResponse {
     }
 }
 
+extension OfferingsResponse.Offering.Package.VirtualCurrencyGrant: Codable, Equatable {}
 extension OfferingsResponse.Offering.Package: Codable, Equatable {}
 extension OfferingsResponse.Offering: Codable, Equatable {}
 extension OfferingsResponse.Placements: Codable, Equatable {}
 extension OfferingsResponse.Targeting: Codable, Equatable {}
+extension OfferingsResponse.VirtualCurrency: Codable, Equatable {}
 extension OfferingsResponse: Codable, Equatable {}
 
 extension OfferingsResponse: HTTPResponseBody {}

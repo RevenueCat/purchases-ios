@@ -137,6 +137,11 @@ import Foundation
      */
     @objc public let webCheckoutUrl: URL?
 
+    /**
+     Virtual currencies associated with this offering
+     */
+    @objc public let virtualCurrencies: [String: VirtualCurrencyMetadata]
+
     public override var description: String {
         return """
         <Offering {
@@ -185,7 +190,8 @@ import Foundation
         serverDescription: String,
         metadata: [String: Any] = [:],
         availablePackages: [Package],
-        webCheckoutUrl: URL?
+        webCheckoutUrl: URL?,
+        virtualCurrencies: [String: VirtualCurrencyMetadata] = [:]
     ) {
         self.init(
             identifier: identifier,
@@ -194,7 +200,8 @@ import Foundation
             paywall: nil,
             paywallComponents: nil,
             availablePackages: availablePackages,
-            webCheckoutUrl: webCheckoutUrl
+            webCheckoutUrl: webCheckoutUrl,
+            virtualCurrencies: virtualCurrencies
         )
     }
 
@@ -206,7 +213,8 @@ import Foundation
         paywall: PaywallData? = nil,
         paywallComponents: PaywallComponents? = nil,
         availablePackages: [Package],
-        webCheckoutUrl: URL?
+        webCheckoutUrl: URL?,
+        virtualCurrencies: [String: VirtualCurrencyMetadata] = [:]
     ) {
         self.init(
             identifier: identifier,
@@ -216,7 +224,8 @@ import Foundation
             paywallComponents: paywallComponents,
             draftPaywallComponents: nil,
             availablePackages: availablePackages,
-            webCheckoutUrl: webCheckoutUrl
+            webCheckoutUrl: webCheckoutUrl,
+            virtualCurrencies: virtualCurrencies
         )
     }
 
@@ -228,7 +237,8 @@ import Foundation
         paywallComponents: PaywallComponents? = nil,
         draftPaywallComponents: PaywallComponents?,
         availablePackages: [Package],
-        webCheckoutUrl: URL?
+        webCheckoutUrl: URL?,
+        virtualCurrencies: [String: VirtualCurrencyMetadata] = [:]
     ) {
         self.identifier = identifier
         self.serverDescription = serverDescription
@@ -238,6 +248,7 @@ import Foundation
         self.paywallComponents = paywallComponents
         self.draftPaywallComponents = draftPaywallComponents
         self.webCheckoutUrl = webCheckoutUrl
+        self.virtualCurrencies = virtualCurrencies
 
         var foundPackages: [PackageType: Package] = [:]
 

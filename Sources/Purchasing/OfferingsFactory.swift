@@ -23,7 +23,8 @@ class OfferingsFactory {
             .compactMap { offeringData in
                 createOffering(from: storeProductsByID,
                                offering: offeringData,
-                               uiConfig: data.uiConfig)
+                               uiConfig: data.uiConfig,
+                               virtualCurrencies: data.virtualCurrencies)
             }
             .dictionaryAllowingDuplicateKeys { $0.identifier }
 
@@ -41,7 +42,8 @@ class OfferingsFactory {
     func createOffering(
         from storeProductsByID: [String: StoreProduct],
         offering: OfferingsResponse.Offering,
-        uiConfig: UIConfig?
+        uiConfig: UIConfig?,
+        virtualCurrencies: [String: OfferingsResponse.VirtualCurrency]
     ) -> Offering? {
         let availablePackages: [Package] = offering.packages.compactMap { package in
             createPackage(with: package, productsByID: storeProductsByID, offeringIdentifier: offering.identifier)
@@ -72,6 +74,13 @@ class OfferingsFactory {
             return nil
         }()
 
+        let virtualCurrencyMetadata = virtualCurrencies.mapValues { currency in
+            VirtualCurrencyMetadata(
+                name: currency.name,
+                description: currency.description,
+            )
+        }
+
         return Offering(identifier: offering.identifier,
                         serverDescription: offering.description,
                         metadata: offering.metadata.mapValues(\.asAny),
@@ -79,7 +88,8 @@ class OfferingsFactory {
                         paywallComponents: paywallComponents,
                         draftPaywallComponents: paywallDraftComponents,
                         availablePackages: availablePackages,
-                        webCheckoutUrl: offering.webCheckoutUrl)
+                        webCheckoutUrl: offering.webCheckoutUrl,
+                        virtualCurrencies: virtualCurrencyMetadata)
     }
 
     func createPackage(
@@ -91,10 +101,15 @@ class OfferingsFactory {
             return nil
         }
 
+        let virtualCurrencyGrants = data.virtualCurrencies.mapValues { value in
+            return VirtualCurrencyProductGrant(amount: value.amount)
+        }
+
         return .init(package: data,
                      product: product,
                      offeringIdentifier: offeringIdentifier,
-                     webCheckoutUrl: data.webCheckoutUrl)
+                     webCheckoutUrl: data.webCheckoutUrl,
+                     virtualCurrencyGrants: virtualCurrencyGrants)
     }
 
     func createPlacement(
@@ -121,13 +136,15 @@ private extension Package {
         package: OfferingsResponse.Offering.Package,
         product: StoreProduct,
         offeringIdentifier: String,
-        webCheckoutUrl: URL?
+        webCheckoutUrl: URL?,
+        virtualCurrencyGrants: [String: VirtualCurrencyProductGrant]
     ) {
         self.init(identifier: package.identifier,
                   packageType: Package.packageType(from: package.identifier),
                   storeProduct: product,
                   offeringIdentifier: offeringIdentifier,
-                  webCheckoutUrl: webCheckoutUrl)
+                  webCheckoutUrl: webCheckoutUrl,
+                  virtualCurrencyGrants: virtualCurrencyGrants)
     }
 
 }
