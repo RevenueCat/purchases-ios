@@ -14,7 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Issue Notification Action
-        uses: joshdholtz/github-action-issue-ack@v10
+        uses: joshdholtz/github-action-issue-ack@v11
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         with:
           slack_webhook_url: ${{ secrets.ACK_SLACK_WEBHOOK_URL }}
 
@@ -35,7 +37,7 @@ jobs:
 
           # Custom message for testing
           message_template: |
-            **{title}**
+            *{title}*
             Reactions: {reactions} | Comments: {comments}
             {url}
 
