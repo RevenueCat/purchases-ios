@@ -68,7 +68,7 @@ final class VirtualCurrencyBalancesScreenViewModel: ObservableObject {
     ///
     /// This method updates the view state to reflect the loading process and handles
     /// any errors that occur during data fetching. On success, it transforms the
-    /// customer information into a format suitable for display in the UI.
+    /// virtual currency data into a format suitable for displaying in the UI.
     private func loadData() async {
         self.viewState = .loading
 
@@ -83,10 +83,6 @@ final class VirtualCurrencyBalancesScreenViewModel: ObservableObject {
         }
     }
 
-    /// Extracts and formats virtual currency balance data from customer information.
-    ///
-    /// - Parameter customerInfo: The customer information containing virtual currency data.
-    /// - Returns: An array of row data objects sorted by balance in descending order.
     private func extractVirtualCurrencyBalanceData(
         from virtualCurrencies: [String: RevenueCat.VirtualCurrency]
     ) -> [VirtualCurrencyBalanceListRow.RowData] {
