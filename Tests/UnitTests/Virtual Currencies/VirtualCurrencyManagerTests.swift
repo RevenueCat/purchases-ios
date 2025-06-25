@@ -109,6 +109,15 @@ class VirtualCurrencyManagerTests: TestCase {
             self.mockVirtualCurrencies,
             "Returned virtual currencies should equal the cached virtual currencies"
         )
+
+        self.logger.verifyMessageWasLogged(
+            Strings.virtualCurrencies.vending_from_cache,
+            level: .debug
+        )
+        self.logger.verifyMessageWasNotLogged(
+            Strings.virtualCurrencies.virtual_currencies_updated_from_network,
+            level: .debug
+        )
     }
 
     func testVirtualCurrenciesReturnsNetworkVirtualCurrenciesWhenCacheIsStale() async throws {
@@ -172,6 +181,20 @@ class VirtualCurrencyManagerTests: TestCase {
             virtualCurrencies,
             expectVirtualCurrencies,
             "Returned virtual currencies should equal the virtual currencies from the network"
+        )
+
+        self.logger.verifyMessageWasLogged(
+            Strings.virtualCurrencies.virtual_currencies_stale_updating_from_network,
+            level: .debug
+        )
+
+        self.logger.verifyMessageWasLogged(
+            Strings.virtualCurrencies.virtual_currencies_updated_from_network,
+            level: .debug
+        )
+        self.logger.verifyMessageWasNotLogged(
+            Strings.virtualCurrencies.vending_from_cache,
+            level: .debug
         )
     }
 
@@ -237,6 +260,19 @@ class VirtualCurrencyManagerTests: TestCase {
             expectVirtualCurrencies,
             "Returned virtual currencies should equal the virtual currencies from the network"
         )
+
+        self.logger.verifyMessageWasLogged(
+            Strings.virtualCurrencies.no_cached_virtual_currencies,
+            level: .debug
+        )
+        self.logger.verifyMessageWasLogged(
+            Strings.virtualCurrencies.virtual_currencies_updated_from_network,
+            level: .debug
+        )
+        self.logger.verifyMessageWasNotLogged(
+            Strings.virtualCurrencies.vending_from_cache,
+            level: .debug
+        )
     }
 
     func testCachesVirtualCurrenciesFetchedFromNetwork() async throws {
@@ -270,12 +306,34 @@ class VirtualCurrencyManagerTests: TestCase {
         )
     }
 
+    func testParsingCorruptedCachedVirtualCurrenciesDataFetchesFromNetwork() async throws {
+        let corruptedData = "{};thisIsCorruptedData%^&*#@(".data(using: .utf8)!
+
+        self.mockDeviceCache.stubbedIsVirtualCurrenciesCacheStale = false
+        self.mockDeviceCache.stubbedCachedVirtualCurrenciesDataForAppUserID = corruptedData
+        self.mockVirtualCurrenciesAPI.stubbedGetVirtualCurrenciesResult = .success(self.mockVirtualCurrenciesResponse)
+
+        let virtualCurrencies = try await self.virtualCurrencyManager.virtualCurrencies()
+        let expectedVirtualCurrencies = VirtualCurrencies(from: self.mockVirtualCurrenciesResponse)
+        XCTAssertEqual(virtualCurrencies, expectedVirtualCurrencies)
+
+        self.logger.verifyMessageWasLogged(
+            Strings.virtualCurrencies.virtual_currencies_updated_from_network,
+            level: .debug
+        )
+    }
+
     // MARK: - invalidateVirtualCurrenciesCache() Tests
     func testInvalidateVirtualCurrenciesCacheCallsClearVirtualCurrenciesCache() async {
         virtualCurrencyManager.invalidateVirtualCurrenciesCache()
 
         XCTAssertTrue(self.mockDeviceCache.invokedClearVirtualCurrenciesCache)
         XCTAssertEqual(self.mockDeviceCache.invokedClearVirtualCurrenciesCacheCount, 1)
+
+        self.logger.verifyMessageWasLogged(
+            Strings.virtualCurrencies.invalidating_virtual_currencies_cache,
+            level: .debug
+        )
     }
 
     // MARK: - Network Error Handling Tests
@@ -293,6 +351,14 @@ class VirtualCurrencyManagerTests: TestCase {
         } catch {
             let purchasesError = try XCTUnwrap(error as? PurchasesError)
             XCTAssertEqual(purchasesError.error, ErrorCode.unknownBackendError)
+            self.logger.verifyMessageWasLogged(
+                Strings.virtualCurrencies.no_cached_virtual_currencies,
+                level: .debug
+            )
+            self.logger.verifyMessageWasLogged(
+                Strings.virtualCurrencies.virtual_currencies_updated_from_network_error(error),
+                level: .error
+            )
         }
     }
 }
