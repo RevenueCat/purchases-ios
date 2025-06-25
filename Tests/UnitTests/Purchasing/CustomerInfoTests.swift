@@ -950,20 +950,6 @@ extension CustomerInfo {
         }
     }
 
-    convenience init?(fromJSON jsonString: String) {
-        do {
-            guard let jsonData = jsonString.data(using: String.Encoding.utf8) else { return nil }
-            let jsonObject = try JSONSerialization.jsonObject(with: jsonData, options: [])
-            guard let jsonDict = jsonObject as? [String: Any] else { return nil }
-            try self.init(data: jsonDict)
-        } catch {
-            let errorDescription = (error as? DescribableError)?.description ?? error.localizedDescription
-            Logger.error("Caught error creating testData, this is probably expected, right? \(errorDescription).")
-
-            return nil
-        }
-    }
-
 }
 
 private extension BasicCustomerInfoTests {
