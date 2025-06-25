@@ -121,6 +121,7 @@ body:
       label: Debug logs
       description: |
         Please provide [debug logs](https://docs.revenuecat.com/docs/debugging) that reproduce the issue. 
+        If this is a crash, make sure to include the full stack trace.
         **Complete logs with `Purchases.logLevel = .verbose` will help us debug this issue.**
       placeholder: |
         ```
