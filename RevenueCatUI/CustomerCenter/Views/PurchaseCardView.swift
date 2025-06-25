@@ -36,13 +36,11 @@ struct PurchaseInformationCardView: View {
     private let additionalIcon: Image?
     private let additionalInfo: String?
 
-    private let paidPrice: String
     private let showChevron: Bool
 
     init(
         title: String,
         storeTitle: String,
-        paidPrice: String,
         accessibilityIdentifier: String,
         badge: PurchaseInformationCardView.Badge? = nil,
         additionalIcon: Image? = nil,
@@ -51,7 +49,6 @@ struct PurchaseInformationCardView: View {
         showChevron: Bool = true
     ) {
         self.title = title
-        self.paidPrice = paidPrice
         self.subtitle = subtitle
         self.badge = badge
         self.additionalIcon = additionalIcon
@@ -87,14 +84,6 @@ struct PurchaseInformationCardView: View {
         self.additionalIcon = refundStatus?.icon
         self.additionalInfo = refundStatus?.subtitle(localization: localization)
 
-        switch purchaseInformation.pricePaid {
-        case .free, .unknown:
-            self.paidPrice = ""
-        case .nonFree(let pricePaid) where purchaseInformation.shoulShowPricePaid:
-            self.paidPrice = pricePaid
-        case .nonFree:
-            self.paidPrice = ""
-        }
         self.storeTitle = localization[purchaseInformation.storeLocalizationKey]
         self.showChevron = showChevron
 
@@ -141,16 +130,13 @@ struct PurchaseInformationCardView: View {
                         .multilineTextAlignment(.leading)
                 }
             } content: {
-                HStack {
-                    Text(paidPrice)
-                    if showChevron {
-                        Image(systemName: "chevron.forward")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 12, height: 12)
-                            .foregroundStyle(.secondary)
-                            .font(Font.system(size: 12, weight: .bold))
-                    }
+                if showChevron {
+                    Image(systemName: "chevron.forward")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 12, height: 12)
+                        .foregroundStyle(.secondary)
+                        .font(Font.system(size: 12, weight: .bold))
                 }
             }
             .padding()
@@ -307,7 +293,6 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                 PurchaseInformationCardView(
                     title: "Product name",
                     storeTitle: "App Store",
-                    paidPrice: "$19.99",
                     accessibilityIdentifier: "accessibilityIdentifier",
                     badge: .cancelled(CustomerCenterConfigData.default.localization),
                     subtitle: "Renews 24 May for $19.99"
@@ -318,7 +303,6 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                 PurchaseInformationCardView(
                     title: "Product name",
                     storeTitle: "App Store",
-                    paidPrice: "$19.99",
                     accessibilityIdentifier: "accessibilityIdentifier",
                     badge: .cancelledTrial(CustomerCenterConfigData.default.localization),
                     subtitle: "Renews 24 May for $19.99"
@@ -329,7 +313,6 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                 PurchaseInformationCardView(
                     title: "Product name",
                     storeTitle: "App Store",
-                    paidPrice: "$19.99",
                     accessibilityIdentifier: "accessibilityIdentifier",
                     badge: .freeTrial(CustomerCenterConfigData.default.localization),
                     subtitle: "Renews 24 May for $19.99"
@@ -340,7 +323,6 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                 PurchaseInformationCardView(
                     title: "Product name",
                     storeTitle: "App Store",
-                    paidPrice: "$19.99",
                     accessibilityIdentifier: "accessibilityIdentifier",
                     badge: .active(CustomerCenterConfigData.default.localization),
                     additionalIcon: Image(systemName: "exclamationmark.triangle.fill"),
@@ -353,7 +335,6 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                 PurchaseInformationCardView(
                     title: "Product name",
                     storeTitle: "App Store",
-                    paidPrice: "$19.99",
                     accessibilityIdentifier: "accessibilityIdentifier",
                     badge: .active(CustomerCenterConfigData.default.localization),
                     additionalIcon: Image(systemName: "info.circle.fill"),
