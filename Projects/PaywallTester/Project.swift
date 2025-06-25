@@ -1,3 +1,4 @@
+import Foundation
 import ProjectDescription
 import ProjectDescriptionHelpers
 
@@ -19,6 +20,13 @@ let allDeploymentTargets: DeploymentTargets = .multiplatform(
     watchOS: "7.0",
     tvOS: "14.0"
 )
+
+var additionalFiles: [FileElement] = [
+    .glob(pattern: "../../Global.xcconfig")
+]
+if FileManager.default.fileExists(atPath: "../../Local.xcconfig") {
+    additionalFiles.append(.glob(pattern: "../../Local.xcconfig"))
+}
 
 let project = Project(
     name: "PaywallTester",
@@ -71,8 +79,5 @@ let project = Project(
             )
         )
     ],
-    additionalFiles: [
-        "../../Local.xcconfig",
-        "../../Global.xcconfig"
-    ]
+    additionalFiles: additionalFiles
 )

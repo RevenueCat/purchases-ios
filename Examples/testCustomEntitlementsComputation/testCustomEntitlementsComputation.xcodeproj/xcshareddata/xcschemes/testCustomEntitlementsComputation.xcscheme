@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1430"
-   version = "1.7">
+   LastUpgradeVersion = "1010"
+   version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
       buildImplicitDependencies = "YES">
       <BuildActionEntries>
          <BuildActionEntry
-            buildForTesting = "NO"
+            buildForTesting = "YES"
             buildForRunning = "YES"
             buildForProfiling = "YES"
             buildForArchiving = "YES"
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "2D276F5129F1C85700F51382"
+               BlueprintIdentifier = "A87D977F7D7103389A52F6AC"
                BuildableName = "testCustomEntitlementsComputation.app"
                BlueprintName = "testCustomEntitlementsComputation"
                ReferencedContainer = "container:testCustomEntitlementsComputation.xcodeproj">
@@ -27,7 +27,9 @@
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
-      shouldAutocreateTestPlan = "YES">
+      disableMainThreadChecker = "YES">
+      <Testables>
+      </Testables>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
@@ -43,7 +45,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "2D276F5129F1C85700F51382"
+            BlueprintIdentifier = "A87D977F7D7103389A52F6AC"
             BuildableName = "testCustomEntitlementsComputation.app"
             BlueprintName = "testCustomEntitlementsComputation"
             ReferencedContainer = "container:testCustomEntitlementsComputation.xcodeproj">
@@ -60,7 +62,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "2D276F5129F1C85700F51382"
+            BlueprintIdentifier = "A87D977F7D7103389A52F6AC"
             BuildableName = "testCustomEntitlementsComputation.app"
             BlueprintName = "testCustomEntitlementsComputation"
             ReferencedContainer = "container:testCustomEntitlementsComputation.xcodeproj">

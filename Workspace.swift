@@ -1,3 +1,4 @@
+import Foundation
 import ProjectDescription
 import ProjectDescriptionHelpers
 
@@ -22,11 +23,15 @@ if Environment.local {
     projects.append("./Projects/v3LoadShedderIntegration")
 }
 
+var additionalFiles: [FileElement] = [
+    .glob(pattern: "Global.xcconfig")
+]
+if FileManager.default.fileExists(atPath: "Local.xcconfig") {
+    additionalFiles.append(.glob(pattern: "Local.xcconfig"))
+}
+
 let workspace = Workspace(
     name: "RevenueCat-Workspace",
     projects: projects,
-    additionalFiles: [
-        "Local.xcconfig",
-        "Global.xcconfig"
-    ]
+    additionalFiles: additionalFiles
 )
