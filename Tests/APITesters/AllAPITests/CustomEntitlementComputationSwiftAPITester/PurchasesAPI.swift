@@ -209,16 +209,32 @@ private func checkAsyncMethods(purchases: Purchases) async {
             let _: RefundRequestStatus = try await purchases.beginRefundRequestForActiveEntitlement()
 #endif
         }
+
+        let _: [String: IntroEligibility] = await purchases.checkTrialOrIntroDiscountEligibility(productIdentifiers: [""])
+        let _: [Package: IntroEligibility] = await purchases.checkTrialOrIntroDiscountEligibility(packages: [pack])
+        let _: IntroEligibilityStatus = await purchases.checkTrialOrIntroDiscountEligibility(product: stp)
     } catch {}
 }
 
 func checkNonAsyncMethods(_ purchases: Purchases) {
+    let storeProduct: StoreProduct! = nil
+
     if #available(iOS 15.0, *) {
 #if os(iOS)
         purchases.beginRefundRequest(forProduct: "") { (_: Result<RefundRequestStatus, PublicError>) in }
         purchases.beginRefundRequest(forEntitlement: "") { (_: Result<RefundRequestStatus, PublicError>) in }
         purchases.beginRefundRequestForActiveEntitlement { (_: Result<RefundRequestStatus, PublicError>) in }
 #endif
+    }
+
+    purchases.checkTrialOrIntroDiscountEligibility(
+        productIdentifiers: [""],
+        completion: { eligibilityDictionary in
+            let _: [String: IntroEligibility] = eligibilityDictionary
+        }
+    )
+    purchases.checkTrialOrIntroDiscountEligibility(product: storeProduct) { introEligibilityStatus in
+        let _: IntroEligibilityStatus = introEligibilityStatus
     }
 }
 
