@@ -73,4 +73,68 @@ struct PurchasesInformationSection: View {
     }
 }
 
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+struct AccountDetailsSection: View {
+
+    @Environment(\.colorScheme)
+    private var colorScheme
+
+    let originalPurchaseDate: Date?
+    let originalAppUserId: String
+    let localization: CustomerCenterConfigData.Localization
+
+    init(
+        customerInfoViewModel: CustomerCenterViewModel,
+        localization: CustomerCenterConfigData.Localization
+    ) {
+        self.originalPurchaseDate = customerInfoViewModel.originalPurchaseDate
+        self.originalAppUserId = customerInfoViewModel.originalAppUserId
+        self.localization = localization
+    }
+
+    var body: some View {
+        ScrollViewSection(title: localization[.accountDetails]) {
+            VStack {
+                if let originalPurchaseDate {
+                    CompatibilityLabeledContent(
+                        localization[.dateWhenAppWasPurchased],
+                        content: Self.dateFormatter.string(from: originalPurchaseDate)
+                    )
+
+                    Divider()
+                }
+
+                CompatibilityLabeledContent(
+                    localization[.userId],
+                    content: originalAppUserId
+                )
+                .contextMenu {
+                    Button {
+                        UIPasteboard.general.string = originalAppUserId
+                    } label: {
+                        Text(localization[.copy])
+                        Image(systemName: "doc.on.clipboard")
+                    }
+                }
+            }
+            .padding()
+            .background(Color(colorScheme == .light
+                              ? UIColor.systemBackground
+                              : UIColor.secondarySystemBackground))
+            .cornerRadius(10)
+            .padding(.horizontal)
+        }
+    }
+
+    private static var dateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return formatter
+    }
+}
+
 #endif
