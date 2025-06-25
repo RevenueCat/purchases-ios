@@ -142,10 +142,10 @@ import Foundation
             case storePromotional = "store_promotional"
             case storeAmazon = "store_amazon_store"
             case cardStorePromotional = "card_store_promotional"
-            case storeRCBilling = "store_web"
             case storeExternal = "store_external"
             case storeUnknownStore = "store_unknown"
             case storePaddle = "store_paddle"
+            case storeWeb = "store_web"
             case debugHeaderTitle = "Debug"
             case seeAllVirtualCurrencies = "see_all_virtual_currencies"
             case virtualCurrencyBalancesScreenHeader = "virtual_currency_balances_screen_header"
@@ -347,14 +347,14 @@ import Foundation
                     return "Amazon Store"
                 case .cardStorePromotional:
                     return "Via Support"
-                case .storeRCBilling:
-                    return "Web"
                 case .storeExternal:
                     return "External Purchases"
                 case .storeUnknownStore:
                     return "Unknown Store"
                 case .storePaddle:
                     return "Paddle"
+                case .storeWeb:
+                    return "Web"
                 case .debugHeaderTitle:
                     return "Debug"
                 case .virtualCurrencyBalancesScreenHeader:

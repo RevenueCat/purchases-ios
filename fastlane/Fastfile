@@ -321,18 +321,15 @@ platform :ios do
     FileUtils.rm_rf(output_dir)
     FileUtils.mkdir_p(output_dir)
 
-    device = ENV['SCAN_DEVICE'] || "iPhone 12 (15.2)"
     result_bundle_path = "#{output_dir}/RevenueCatUITests.xcresult"
 
-    # Using xcodebuild because scan couldn't find RevenueCatUI scheme locally (even though shared)
-    # This is due to RevenueCatUI scheme belonging to purchases-ios and not an actual project
-    xcodebuild(
-      workspace: '.',
-      scheme: 'RevenueCatUI',
-      destination: "platform=iOS Simulator,name=#{device}",
+    scan(
+      workspace: 'RevenueCat.xcworkspace',
+      scheme: 'RevenueCatUITestsDev',
+      testplan: 'Paywall-Screenshots',
       sdk: 'iphonesimulator',
-      test: true,
-      xcargs: "-testPlan Paywall-Screenshots -resultBundlePath #{result_bundle_path}"
+      result_bundle: true,
+      result_bundle_path: result_bundle_path,
     )
 
     image_output_dir = "#{output_dir}/images"
