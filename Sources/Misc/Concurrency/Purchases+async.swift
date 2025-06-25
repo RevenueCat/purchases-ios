@@ -172,6 +172,8 @@ extension Purchases {
         }
     }
 
+    #endif
+
     func checkTrialOrIntroductoryDiscountEligibilityAsync(_ product: StoreProduct) async
     -> IntroEligibilityStatus {
         return await withCheckedContinuation { continuation in
@@ -189,8 +191,6 @@ extension Purchases {
             }
         }
     }
-
-    #endif
 
 #if os(iOS) || os(macOS) || VISION_OS
 
