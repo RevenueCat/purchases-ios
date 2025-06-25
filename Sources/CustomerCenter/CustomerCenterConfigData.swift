@@ -142,7 +142,6 @@ import Foundation
             case storePromotional = "store_promotional"
             case storeAmazon = "store_amazon_store"
             case cardStorePromotional = "card_store_promotional"
-            case storeRCBilling = "store_web"
             case storeExternal = "store_external"
             case storeUnknownStore = "store_unknown"
             case storePaddle = "store_paddle"
@@ -345,8 +344,6 @@ import Foundation
                     return "Amazon Store"
                 case .cardStorePromotional:
                     return "Via Support"
-                case .storeRCBilling:
-                    return "Web"
                 case .storeExternal:
                     return "External Purchases"
                 case .storeUnknownStore:
