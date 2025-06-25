@@ -246,6 +246,7 @@ import Foundation
             return self
         }
 
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         /// Set `validateConfigurationOnLaunch`. Enabled by default.
         /// If enabled, the SDK will automatically validate its configuration on every launch 
         /// by running a health check and logging the results to the console. This helps identify
@@ -257,18 +258,14 @@ import Foundation
         /// - Product configuration in App Store Connect
         /// - Offering configuration
         /// - Payment authorization status
-        /// 
-        /// Health check results are logged with appropriate log levels:
-        /// - `.error` for unhealthy configurations that need immediate attention
-        /// - `.warn` for healthy configurations with warnings
-        /// - `.info` for healthy configurations without issues
-        /// 
+        ///
         /// - Note: This feature is only available in DEBUG builds
         /// - Note: Health checks are performed asynchronously and don't block app startup
         @objc public func with(validateConfigurationOnLaunch: Bool) -> Builder {
             self.validateConfigurationOnLaunch = validateConfigurationOnLaunch
             return self
         }
+        #endif
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
