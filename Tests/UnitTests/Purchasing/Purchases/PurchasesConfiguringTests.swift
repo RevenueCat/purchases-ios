@@ -328,7 +328,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
     func testFirstInitializationFromForegroundAndHealthValidationNotEnabledDoesNotLogHealth() {
         self.systemInfo.stubbedIsApplicationBackgrounded = false
 
-        self.setupPurchases(validateConfigurationOnLaunch: false)
+        self.setupPurchases(validateConfigurationOnDebugAppLaunch: false)
 
         expect(self.backend.healthReportRequests).toEventually(equal([]))
     }
@@ -437,7 +437,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
                           responseVerificationMode: .default,
                           dangerousSettings: .init(customEntitlementComputation: true),
                           showStoreMessagesAutomatically: true,
-                          validateConfigurationOnLaunch: false)
+                          validateConfigurationOnDebugAppLaunch: false)
         }.to(throwAssertion())
     }
 
