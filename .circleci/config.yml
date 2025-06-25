@@ -1606,7 +1606,7 @@ workflows:
     when:
       equal: ["record_paywall_screenshots", << pipeline.parameters.action >>]
     jobs:
-      - record-paywall-screenshots:
+      - record-and-push-paywall-template-screenshots:
           context:
             - paywall-rendering-validation-pr-rw
 
