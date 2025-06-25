@@ -37,7 +37,7 @@ jobs:
 
           # Custom message for testing
           message_template: |
-            **{title}**
+            🚨 *{title}*
             Reactions: {reactions} | Comments: {comments}
             {url}
 
