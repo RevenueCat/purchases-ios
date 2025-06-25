@@ -757,7 +757,8 @@ jobs:
       - checkout
       - install-dependencies:
           install_xcbeautify: false
-          install_mint: true
+          # Mint 0.17.5 is required here as newer versions of Mint don't support macOS 12.
+          install_mint_0_17_5: true
           install_swiftlint: << parameters.install_swiftlint >>
       - macos/install-rosetta
       - install-xcbeautify-for-xcode14
@@ -789,7 +790,8 @@ jobs:
       - checkout
       - install-dependencies:
           install_xcbeautify: false
-          install_mint: true
+          # Mint 0.17.5 is required here as newer versions of Mint don't support macOS 12.
+          install_mint_0_17_5: true
           install_swiftlint: << parameters.install_swiftlint >>
       - macos/install-rosetta
       - install-xcbeautify-for-xcode14
