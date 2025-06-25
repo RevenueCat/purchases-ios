@@ -1590,19 +1590,13 @@ workflows:
 
   record-and-push-paywall-template-screenshots:
     when:
-      and:
-        - not:
-            equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-        - equal: ["main", << pipeline.git.branch >>]
-        - equal: ["default", << pipeline.parameters.action >>]
-    jobs:
-      - record-and-push-paywall-template-screenshots:
-          context:
-            - paywall-rendering-validation-pr-rw
-
-  record-paywall-screenshots:
-    when:
-      equal: ["record_paywall_screenshots", << pipeline.parameters.action >>]
+      or:
+        - equal: ["record_paywall_screenshots", << pipeline.parameters.action >>]
+        - and:
+            - not:
+                equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+            - equal: ["main", << pipeline.git.branch >>]
+            - equal: ["default", << pipeline.parameters.action >>]
     jobs:
       - record-and-push-paywall-template-screenshots:
           context:
