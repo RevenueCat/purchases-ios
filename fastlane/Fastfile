@@ -985,7 +985,7 @@ platform :ios do
 
     docs_repo_url = File.join(docs_repo_base_url, docs_repo_name)
 
-    docs_files = Dir.glob("scripts/docs/*.html").map { |file| File.realpath(file) }
+    docs_files = Dir.glob("../scripts/docs/*.html").map { |file| File.realpath(file) }
     # clone docs repo
     Dir.mktmpdir do |docs_repo_clone_dir|
       Dir.chdir(docs_repo_clone_dir) do
