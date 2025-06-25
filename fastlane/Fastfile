@@ -179,7 +179,7 @@ platform :ios do
     UI.user_error!("Failed to determine target repository name") if target_repository_name.nil? || target_repository_name.empty?
 
     # Loop over all platforms and generate screenshots for each
-    platforms = ["ios", "iphone-app-on-mac", "ipad-app-on-mac"]
+    platforms = ["ios", "iphone-app-on-mac", "ipad-app-on-mac", "mac-catalyst-optimized-for-mac", "mac-catalyst-scaled-to-match-ipad"]
     
     platforms.each do |platform|
       UI.message("Generating screenshots for platform: #{platform}")
@@ -202,7 +202,7 @@ platform :ios do
         branch_name: target_repository_branch,
         commit_message: "[Automated] Updates template screenshots for all platforms (commit: #{this_commit_hash})",
         title: "[AUTOMATIC] Updates template screenshots for all platforms",
-        body: "This is an automatic update of the template screenshots for iOS, iPhone app on Mac, and iPad app on Mac platforms.",
+        body: "This is an automatic update of the template screenshots for iOS, iPhone app on Mac, iPad app on Mac, Mac Catalyst optimized for Mac, and Mac Catalyst scaled to match iPad platforms.",
         team_reviewers: ["coresdk", "monetization", "bab-s"]
       )
     end
@@ -335,13 +335,21 @@ platform :ios do
 
   desc "Records screenshots for paywalls"
   lane :record_paywall_screenshots do |options|
-    platform = options[:platform] || UI.user_error!("No platform provided. Use one of: ios, iphone-app-on-mac, ipad-app-on-mac")
+    platform = options[:platform] || UI.user_error!("No platform provided. Use one of: ios, iphone-app-on-mac, ipad-app-on-mac, mac-catalyst-optimized-for-mac, mac-catalyst-scaled-to-match-ipad")
     
     # Map platform to destination
     destinations = {
       "ios" => "platform=iOS Simulator,name=iPhone 16",
       "iphone-app-on-mac" => "platform=macOS,arch=arm64,variant=Designed for iPhone",
-      "ipad-app-on-mac" => "platform=macOS,arch=arm64,variant=Designed for iPad"
+      "ipad-app-on-mac" => "platform=macOS,arch=arm64,variant=Designed for iPad",
+      "mac-catalyst-optimized-for-mac" => "platform=macOS,arch=arm64,variant=Mac Catalyst",
+      "mac-catalyst-scaled-to-match-ipad" => "platform=macOS,arch=arm64,variant=Mac Catalyst"
+    }
+    
+    # Map platform to TARGETED_DEVICE_FAMILY build setting
+    targeted_device_families = {
+      "mac-catalyst-optimized-for-mac" => "1,2,3,4,6",
+      "mac-catalyst-scaled-to-match-ipad" => "1,2,3,4"
     }
     
     destination = destinations[platform]
@@ -353,14 +361,25 @@ platform :ios do
 
     result_bundle_path = "#{output_dir}/RevenueCatUITests.xcresult"
 
-    scan(
+    # Build xcargs with TARGETED_DEVICE_FAMILY if needed for Mac Catalyst platforms
+    xcargs = []
+    if targeted_device_families[platform]
+      xcargs << "TARGETED_DEVICE_FAMILY='#{targeted_device_families[platform]}'"
+    end
+
+    scan_options = {
       workspace: 'RevenueCat.xcworkspace',
       scheme: 'RevenueCatUITestsDev',
       testplan: 'Paywall-Screenshots',
       destination: destination,
       result_bundle: true,
       result_bundle_path: result_bundle_path,
-    )
+    }
+    
+    # Add xcargs only if we have build settings to apply
+    scan_options[:xcargs] = xcargs.join(' ') unless xcargs.empty?
+    
+    scan(scan_options)
 
     image_output_dir = "#{output_dir}/images"
     FileUtils.mkdir_p(image_output_dir)
