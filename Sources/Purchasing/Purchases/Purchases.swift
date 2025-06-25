@@ -716,7 +716,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         // all at the same time by too many users concurrently.
         self.updateCachesIfInForeground()
 
-        #if DEBUG
+        #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         if validateConfigurationOnLaunch {
             self.runHealthCheckIfInForeground()
         }
@@ -2053,7 +2053,7 @@ private extension Purchases {
         }
     }
 
-    #if DEBUG
+    #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func runHealthCheckIfInForeground() {
         self.systemInfo.isApplicationBackgrounded { isBackgrounded in
             if !isBackgrounded {
