@@ -1,22 +1,55 @@
 ## RevenueCat SDK
-### Customer Center
-#### ✨ New Features
-* Use `card_store_promotional` for RC Promos in card & history (#5275) via Facundo Menzella (@facumenzella)
-* Refactor PurchaseHistory to use PurchaseInformation (#5260) via Facundo Menzella (@facumenzella)
-#### 🐞 Bugfixes
-* Add tests for PurchaseInformationView.Badge + rc promo (#5273) via Facundo Menzella (@facumenzella)
 
-### 🔄 Other Changes
-* [Paywalls] Update ImageComponent max width after initial layout if it changes. (#5291) via Mark Villacampa (@MarkVillacampa)
-* Fix index and mgiration guides docs not being updated (#5298) via Mark Villacampa (@MarkVillacampa)
-* Add .yield to `PaywallViewEventsFullscreenLightModeTests` (#5294) via Facundo Menzella (@facumenzella)
-* Add missing `@_spi` to import in backend tests (#5297) via Antonio Pallares (@ajpallares)
-* Use minimal permissions for installation tests (#5274) via JayShortway (@JayShortway)
-* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5295) via RevenueCat Git Bot (@RCGitBot)
-* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5289) via RevenueCat Git Bot (@RCGitBot)
-* Delete Examples folder from carthage checkout (#5287) via Facundo Menzella (@facumenzella)
-* Remove CustomerCenterConfigDataAPI from API Tests (#5286) via Facundo Menzella (@facumenzella)
-* Delete duplicate OfferingsList.swift from PaywallTester (#5249) via Facundo Menzella (@facumenzella)
-* Add abbrev to Gemfile (#5207) via Facundo Menzella (@facumenzella)
-* Test removing example apps before Carthage installation test (#5268) via Facundo Menzella (@facumenzella)
-* Add _spi(Internal) to Customer Center (#5270) via Facundo Menzella (@facumenzella)
+### Virtual Currencies
+
+Warning: the virtual currency features are currently in beta and may change without notice.
+
+#### Dedicated Function for Fetching Virtual Currencies
+
+Virtual Currencies have been moved out of `CustomerInfo` and can now be fetched using the new `Purchases.shared.virtualCurrencies()` function, like so:
+
+```swift
+// With Async/Await
+let virtualCurrencies = try? await Purchases.shared.virtualCurrencies()
+
+// With Completion Handlers
+Purchases.shared.virtualCurrencies { virtualCurrencies, error in
+
+}
+```
+
+#### Refreshing the Virtual Currencies Cache
+
+The `virtualCurrencies()` functions use caching behind the scenes. If you know a virtual currency's balance has changed (e.g., due to a backend update) you can refresh the cache like so:
+
+```swift
+Purchases.shared.invalidateVirtualCurrenciesCache()
+```
+
+This ensures that the next `virtualCurrencies()` call will update the latest virtual currency values from the RevenueCat backend.
+
+#### Working with Virtual Currencies
+
+After fetching the `VirtualCurrencies` object from the above functions, you can work with individual `VirtualCurrency` objects like so:
+
+```swift
+// Iterate through all virtual currencies
+for (virtualCurrencyCode, virtualCurrency) in virtualCurrencies.all {
+    print("\(virtualCurrencyCode): \(virtualCurrency.balance)")
+}
+
+// Access a specific virtual currency
+let virtualCurrency = virtualCurrencies["{YOUR_VIRTUAL_CURRENCY_CODE_HERE}"]
+```
+
+#### Renaming & New Fields
+
+The `VirtualCurrencyInfo` type has been renamed to `VirtualCurrency`, with the following new fields added:
+
+- `name`: The name of the virtual currency as defined in the RevenueCat dashboard
+- `code`: The virtual currency's code as defined in the RevenueCat dashboard
+- `serverDescription`: The virtual currency's description as defined in the RevenueCat dashboard
+
+### Commits
+
+- [Virtual Currencies] Break VC Balances out of CustomerInfo (#5151) via Will Taylor (@fire-at-will)
