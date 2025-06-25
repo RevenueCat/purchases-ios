@@ -31,15 +31,14 @@ class TakeScreenshotTests: BaseSnapshotTest {
     func testPaywallValidationScreenshots() {
         let bundle = Bundle(for: Self.self)
 
-        guard let resourceBundleURL = bundle.url(
-            forResource: "RevenueCat_RevenueCatUITests", withExtension: "bundle"
+        guard let resourcesFolderURL = bundle.url(
+            forResource: "paywall-preview-resources", withExtension: nil
         ) else {
-            XCTFail("Could not locate RevenueCat_RevenueCatUITests.bundle")
+            XCTFail("Could not locate paywall-preview-resources")
             return
         }
 
-        let baseResourcesURL = resourceBundleURL
-            .appendingPathComponent("__PreviewResources__")
+        let baseResourcesURL = resourcesFolderURL
             .appendingPathComponent("resources")
 
         let resourceDirectories = (try? FileManager.default.contentsOfDirectory(
@@ -59,29 +58,21 @@ class TakeScreenshotTests: BaseSnapshotTest {
             let resource = resourceURL.lastPathComponent
             let offeringsFileName = "offerings.json"
 
-            let packagesPath = resourceBundleURL
-                .appendingPathComponent("__PreviewResources__")
-                .appendingPathComponent("resources")
+            let packagesPath = baseResourcesURL
                 .appendingPathComponent("packages.json")
 
-            let offeringsPath = resourceBundleURL
-                .appendingPathComponent("__PreviewResources__")
-                .appendingPathComponent("resources")
+            let offeringsPath = baseResourcesURL
                 .appendingPathComponent(resource)
                 .appendingPathComponent(offeringsFileName)
 
             let originalImagesURL = "https://assets.pawwalls.com"
-            let replacementImagesURL = resourceBundleURL
-                .appendingPathComponent("__PreviewResources__")
-                .appendingPathComponent("resources")
+            let replacementImagesURL = baseResourcesURL
                 .appendingPathComponent(resource)
                 .appendingPathComponent("pawwalls")
                 .appendingPathComponent("assets")
                 .absoluteString
             let originalIconsURL = "https://icons.pawwalls.com"
-            let replacementIconsURL = resourceBundleURL
-                .appendingPathComponent("__PreviewResources__")
-                .appendingPathComponent("resources")
+            let replacementIconsURL = baseResourcesURL
                 .appendingPathComponent(resource)
                 .appendingPathComponent("pawwalls")
                 .appendingPathComponent("icons")
