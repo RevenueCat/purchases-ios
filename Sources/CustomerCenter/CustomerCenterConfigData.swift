@@ -146,6 +146,7 @@ import Foundation
             case storeExternal = "store_external"
             case storeUnknownStore = "store_unknown"
             case storePaddle = "store_paddle"
+            case storeWeb = "store_web"
             case debugHeaderTitle = "Debug"
             case youMayHaveDuplicatedSubscriptionsTitle = "you_may_have_duplicated_subscriptions_title"
             case youMayHaveDuplicatedSubscriptionsSubtitle = "you_may_have_duplicated_subscriptions_subtitle"
@@ -352,6 +353,8 @@ import Foundation
                     return "Unknown Store"
                 case .storePaddle:
                     return "Paddle"
+                case .storeWeb:
+                    return "Web"
                 case .debugHeaderTitle:
                     return "Debug"
                 case .youMayHaveDuplicatedSubscriptionsTitle:
