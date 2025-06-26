@@ -43,8 +43,8 @@ jobs:
             {url}
 
           # Custom prefixes for testing
-          new_issue_prefix: "🚨 New issue created on {repo_link}!"
-          threshold_prefix: "📈 High-engagement issue on {repo_link}!"
+          new_issue_prefix: "🚨 New issue created on *{repo_name}*!"
+          threshold_prefix: "📈 High-engagement issue on *{repo_name}*!"
 
           # Enable both notification types
           notify_on_create: "true"
