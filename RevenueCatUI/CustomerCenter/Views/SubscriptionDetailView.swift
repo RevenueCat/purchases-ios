@@ -151,7 +151,10 @@ struct SubscriptionDetailView: View {
                 if viewModel.isRefreshing {
                     ProgressView()
                         .padding(.vertical)
+                        .transition(.opacity.combined(with: .scale))
+                        .animation(.easeInOut(duration: 0.3), value: viewModel.isRefreshing)
                 }
+
                 if let purchaseInformation = self.viewModel.purchaseInformation {
                     PurchaseInformationCardView(
                         purchaseInformation: purchaseInformation,
@@ -191,6 +194,8 @@ struct SubscriptionDetailView: View {
 
                 accountDetailsView
             }
+            .opacity(viewModel.isRefreshing ? 0.5 : 1)
+            .animation(.easeInOut(duration: 0.3), value: viewModel.isRefreshing)
         }
         .overlay {
             RestorePurchasesAlert(
