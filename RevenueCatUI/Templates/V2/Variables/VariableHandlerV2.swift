@@ -43,10 +43,26 @@ struct VariableHandlerV2 {
         in text: String,
         with package: Package,
         locale: Locale,
-        localizations: [String: String]
+        localizations: [String: String],
+        virtualCurrencies: [String: VirtualCurrencyMetadata] = [:]
     ) -> String {
         let whisker = Whisker(template: text) { variableRaw, functionRaw in
-            let variable = self.findVariable(variableRaw)
+
+            // TODO: Brackets are currently returned escaled from the backend with \\.
+            let components = variableRaw.replacingOccurrences(of: "\\", with: "").components(separatedBy: "[")
+            // Extract bracketed content from variable name
+            let variableSubscript: String? = {
+
+                guard components.count == 2,
+                      let content = components[1].split(separator: "]").first else {
+                    return nil
+                }
+                return String(content)
+            }()
+
+            let variableComponent = components[0]
+
+            let variable = self.findVariable(variableComponent)
             let function = functionRaw.flatMap { self.findFunction($0) }
 
             let processedVariable = variable?.process(
@@ -54,7 +70,9 @@ struct VariableHandlerV2 {
                 locale: locale,
                 localizations: localizations,
                 discountRelativeToMostExpensivePerMonth: self.discountRelativeToMostExpensivePerMonth,
-                date: self.dateProvider()
+                date: self.dateProvider(),
+                variableSubscript: variableSubscript,
+                virtualCurrencies: virtualCurrencies
             ) ?? ""
 
             return function?.process(processedVariable) ?? processedVariable
@@ -211,6 +229,12 @@ enum VariablesV2: String {
     case productSecondaryOfferPeriodAbbreviated = "product.secondary_offer_period_abbreviated"
     case productRelativeDiscount = "product.relative_discount"
     case productStoreProductName = "product.store_product_name"
+    case productGrantsAllAmountCodePerPeriod = "product.grants.all_amount_code_per_period"
+    case productGrantsAllAmountNamePerPeriod = "product.grants.all_amount_name_per_period"
+    case productGrantsAllAmountCodePerPeriodAbbreviated = "product.grants.all_amount_code_per_period_abbreviated"
+    case productGrantsAllAmountNamePerPeriodAbbreviated = "product.grants.all_amount_name_per_period_abbreviated"
+    case productGrantsAmount = "product.grants.amount"
+    case productGrantsName = "product.grants.name"
 
 }
 
@@ -226,12 +250,14 @@ enum FunctionsV2: String {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension VariablesV2 {
 
-    // swiftlint:disable:next cyclomatic_complexity function_body_length
+    // swiftlint:disable:next cyclomatic_complexity function_body_length function_parameter_count
     func process(package: Package,
                  locale: Locale,
                  localizations: [String: String],
                  discountRelativeToMostExpensivePerMonth: Double?,
-                 date: Date) -> String {
+                 date: Date,
+                 variableSubscript: String?,
+                 virtualCurrencies: [String: VirtualCurrencyMetadata]) -> String {
         switch self {
         case .productCurrencyCode:
             return self.productCurrencyCode(package: package)
@@ -306,6 +332,24 @@ extension VariablesV2 {
             )
         case .productStoreProductName:
             return self.productStoreProductName(package: package)
+        case .productGrantsAllAmountCodePerPeriod:
+            return self.productGrantAllAmountCodePerPeriod(package: package, localizations: localizations)
+        case .productGrantsAllAmountNamePerPeriod:
+            return self.productGrantAllAmountNamePerPeriod(package: package,
+                                                           localizations: localizations,
+                                                           virtualCurrencies: virtualCurrencies)
+        case .productGrantsAllAmountCodePerPeriodAbbreviated:
+            return self.productGrantAllAmountCodePerPeriodAbbreviated(package: package, localizations: localizations)
+        case .productGrantsAllAmountNamePerPeriodAbbreviated:
+            return self.productGrantAllAmountNamePerPeriodAbbreviated(package: package,
+                                                                      localizations: localizations,
+                                                                      virtualCurrencies: virtualCurrencies)
+        case .productGrantsAmount:
+            return self.productGrantAmount(package: package, virtualCurrencyCode: variableSubscript ?? "")
+        case .productGrantsName:
+            return self.productGrantName(package: package,
+                                         virtualCurrencyCode: variableSubscript ?? "",
+                                         virtualCurrencies: virtualCurrencies)
         }
     }
 
@@ -700,6 +744,70 @@ private extension VariablesV2 {
         case .payAsYouGo, .payUpFront:
             return false
         }
+    }
+
+    func productGrantAmount(package: Package, virtualCurrencyCode: String) -> String {
+        guard let grant = package.virtualCurrencyGrants[virtualCurrencyCode] else {
+            return ""
+        }
+
+        return "\(grant.amount)"
+    }
+
+    func productGrantName(package: Package,
+                          virtualCurrencyCode: String,
+                          virtualCurrencies: [String: VirtualCurrencyMetadata]) -> String {
+        guard let name = virtualCurrencies[virtualCurrencyCode]?.name else {
+            return ""
+        }
+
+        return name
+    }
+
+    func productGrantAllAmountCodePerPeriod(package: Package, localizations: [String: String]) -> String {
+        let periodAbbreviated = self.productPeriod(package: package, localizations: localizations)
+
+        var currencies: [String] = []
+        package.virtualCurrencyGrants.forEach { key, value in
+            currencies.append("\(value.amount) \(key)/\(periodAbbreviated)")
+        }
+        return currencies.joined(separator: " ")
+    }
+
+    func productGrantAllAmountCodePerPeriodAbbreviated(package: Package, localizations: [String: String]) -> String {
+        let periodAbbreviated = self.productPeriodAbbreviated(package: package, localizations: localizations)
+
+        var currencies: [String] = []
+        package.virtualCurrencyGrants.forEach { key, value in
+            currencies.append("\(value.amount) \(key)/\(periodAbbreviated)")
+        }
+        return currencies.joined(separator: " ")
+    }
+
+    func productGrantAllAmountNamePerPeriod(package: Package,
+                                            localizations: [String: String],
+                                            virtualCurrencies: [String: VirtualCurrencyMetadata]) -> String {
+        let periodAbbreviated = self.productPeriod(package: package, localizations: localizations)
+
+        var currencies: [String] = []
+        package.virtualCurrencyGrants.forEach { key, value in
+            let virtualCurrencyName = virtualCurrencies[key]?.name ?? key
+            currencies.append("\(value.amount) \(virtualCurrencyName)/\(periodAbbreviated)")
+        }
+        return currencies.joined(separator: " ")
+    }
+
+    func productGrantAllAmountNamePerPeriodAbbreviated(package: Package,
+                                                       localizations: [String: String],
+                                                       virtualCurrencies: [String: VirtualCurrencyMetadata]) -> String {
+        let periodAbbreviated = self.productPeriodAbbreviated(package: package, localizations: localizations)
+
+        var currencies: [String] = []
+        package.virtualCurrencyGrants.forEach { key, value in
+            let virtualCurrencyName = virtualCurrencies[key]?.name ?? key
+            currencies.append("\(value.amount) \(virtualCurrencyName)/\(periodAbbreviated)")
+        }
+        return currencies.joined(separator: " ")
     }
 
 }

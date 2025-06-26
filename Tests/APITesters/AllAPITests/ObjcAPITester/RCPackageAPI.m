@@ -27,6 +27,7 @@
     RCPresentedOfferingContext *poc = p.presentedOfferingContext;
     NSString *lps = p.localizedPriceString;
     NSString *lips = p.localizedIntroductoryPriceString;
+    NSDictionary<NSString*, RCVirtualCurrencyProductGrant*> *virtualCurrencyGrants;
 
     NSLog(p, storeProduct, i, t, oid, poc, lps, lips);
 
@@ -34,7 +35,8 @@
                                                             packageType:RCPackageTypeAnnual
                                                            storeProduct:storeProduct
                                                      offeringIdentifier:oid
-                                                         webCheckoutUrl:[NSURL URLWithString:@"https://revenuecat.com"]];
+                                                         webCheckoutUrl:[NSURL URLWithString:@"https://revenuecat.com"]
+                                                  virtualCurrencyGrants:virtualCurrencyGrants];
 }
 
 + (void)checkEnums {

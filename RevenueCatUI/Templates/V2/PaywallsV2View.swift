@@ -28,6 +28,7 @@ private struct PaywallState {
     let packages: [Package]
     let rootViewModel: RootViewModel
     let showZeroDecimalPlacePrices: Bool
+    let virtualCurrencies: [String: VirtualCurrencyMetadata]
 
 }
 
@@ -248,7 +249,8 @@ private struct LoadedPaywallsV2View: View {
                 package: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
                 variableContext: .init(
                     packages: paywallState.packages,
-                    showZeroDecimalPlacePrices: paywallState.showZeroDecimalPlacePrices
+                    showZeroDecimalPlacePrices: paywallState.showZeroDecimalPlacePrices,
+                    virtualCurrencies: paywallState.virtualCurrencies
                 )
             )
         )
@@ -339,7 +341,8 @@ fileprivate extension PaywallsV2View {
                     viewModelFactory: factory,
                     packages: packages,
                     rootViewModel: root,
-                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+                    virtualCurrencies: offering.virtualCurrencies
                 )
             )
         } catch {

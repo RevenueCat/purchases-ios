@@ -23,15 +23,17 @@ func checkPackageAPI(pack: Package! = nil) {
     let _: PresentedOfferingContext = pack.presentedOfferingContext
     let _: String = pack.localizedPriceString
     let _: String? = pack.localizedIntroductoryPriceString
+    let _: [String:VirtualCurrencyProductGrant] = pack.virtualCurrencyGrants
 }
 
-private func checkCreatePackageAPI(product: StoreProduct) {
+private func checkCreatePackageAPI(product: StoreProduct, grant: VirtualCurrencyProductGrant) {
     _ = Package(
         identifier: "",
         packageType: PackageType.annual,
         storeProduct: product,
         offeringIdentifier: "",
-        webCheckoutUrl: URL(string: "https://revenuecat.com")!
+        webCheckoutUrl: URL(string: "https://revenuecat.com")!,
+        virtualCurrencyGrants: ["test": grant]
     )
 }
 

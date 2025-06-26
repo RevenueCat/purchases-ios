@@ -10,7 +10,7 @@
 //  VariableHandlerV2Tests.swift
 //
 //  Created by Josh Holtz on 1/5/25.
-// swiftlint:disable file_length type_body_length 
+// swiftlint:disable file_length type_body_length
 
 import Nimble
 import RevenueCat
@@ -647,6 +647,153 @@ class VariableHandlerV2Test: TestCase {
             localizations: localizations["en_US"]!
         )
         expect(result).to(equal("Monthly"))
+    }
+
+    // MARK: - Virtual Currency Tests
+
+    private var testVirtualCurrencies: [String: VirtualCurrencyMetadata] {
+        return [
+            "gems": VirtualCurrencyMetadata(name: "Gems", description: "Premium gems"),
+            "coins": VirtualCurrencyMetadata(name: "Coins", description: "Gold coins")
+        ]
+    }
+
+    private var testPackageWithVirtualCurrencies: Package {
+        return Package(
+            identifier: "test_package",
+            packageType: .monthly,
+            storeProduct: TestData.monthlyProduct.toStoreProduct(),
+            offeringIdentifier: "test_offering",
+            webCheckoutUrl: nil,
+            virtualCurrencyGrants: ["gems": .init(amount: 100), "coins": .init(amount: 50)]
+        )
+    }
+
+    func testVirtualCurrencyAmount() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.grants.amount[gems] }}",
+            with: testPackageWithVirtualCurrencies,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            virtualCurrencies: testVirtualCurrencies
+        )
+        expect(result).to(equal("100"))
+    }
+
+    func testVirtualCurrencyAmountNonExistent() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.grants.amount[nonexistent] }}",
+            with: testPackageWithVirtualCurrencies,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            virtualCurrencies: testVirtualCurrencies
+        )
+        expect(result).to(equal(""))
+    }
+
+    func testVirtualCurrencyName() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.grants.name[gems] }}",
+            with: testPackageWithVirtualCurrencies,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            virtualCurrencies: testVirtualCurrencies
+        )
+        expect(result).to(equal("Gems"))
+    }
+
+    func testVirtualCurrencyNameNonExistent() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.grants.name[nonexistent] }}",
+            with: testPackageWithVirtualCurrencies,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            virtualCurrencies: testVirtualCurrencies
+        )
+        expect(result).to(equal(""))
+    }
+
+    func testVirtualCurrencyGrantPerPeriod() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.grants.all_amount_name_per_period }}",
+            with: testPackageWithVirtualCurrencies,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            virtualCurrencies: testVirtualCurrencies
+        )
+        // Should contain both currencies with period
+        expect(result).to(contain("100 Gems/month"))
+        expect(result).to(contain("50 Coins/month"))
+    }
+
+    func testVirtualCurrencyGrantPerPeriodAbbreviated() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.grants.all_amount_name_per_period_abbreviated }}",
+            with: testPackageWithVirtualCurrencies,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            virtualCurrencies: testVirtualCurrencies
+        )
+        // Should contain both currencies with abbreviated period
+        expect(result).to(contain("100 Gems/mo"))
+        expect(result).to(contain("50 Coins/mo"))
+    }
+
+    func testVirtualCurrencyGrantPerPeriodCode() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.grants.all_amount_code_per_period }}",
+            with: testPackageWithVirtualCurrencies,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            virtualCurrencies: testVirtualCurrencies
+        )
+        // Should contain both currencies with period using codes
+        expect(result).to(contain("100 gems/month"))
+        expect(result).to(contain("50 coins/month"))
+    }
+
+    func testVirtualCurrencyGrantPerPeriodCodeAbbreviated() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.grants.all_amount_code_per_period_abbreviated }}",
+            with: testPackageWithVirtualCurrencies,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            virtualCurrencies: testVirtualCurrencies
+        )
+        // Should contain both currencies with abbreviated period using codes
+        expect(result).to(contain("100 gems/mo"))
+        expect(result).to(contain("50 coins/mo"))
+    }
+
+    func testVirtualCurrencyWithFunction() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.grants.name[gems] | uppercase }}",
+            with: testPackageWithVirtualCurrencies,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            virtualCurrencies: testVirtualCurrencies
+        )
+        expect(result).to(equal("GEMS"))
+    }
+
+    func testVirtualCurrenciesWithEmptyPackage() {
+        let emptyPackage = Package(
+            identifier: "empty_package",
+            packageType: .monthly,
+            storeProduct: TestData.monthlyProduct.toStoreProduct(),
+            offeringIdentifier: "test_offering",
+            webCheckoutUrl: nil,
+            virtualCurrencyGrants: [:]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.grants.all_amount_name_per_period }}",
+            with: emptyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            virtualCurrencies: testVirtualCurrencies
+        )
+        expect(result).to(equal(""))
     }
 
 }

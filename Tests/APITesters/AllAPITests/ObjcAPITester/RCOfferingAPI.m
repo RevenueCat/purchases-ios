@@ -33,12 +33,14 @@
     p = [o packageWithIdentifier:@""];
     RCPackage *ok = [o objectForKeyedSubscript:@""];
     NSDictionary<NSString *, id> *md = o.metadata;
+    NSDictionary<NSString *,RCVirtualCurrencyMetadata *> *virtualCurrencies;
 
     o = [[RCOffering alloc] initWithIdentifier:@""
                              serverDescription:@""
                                       metadata:@{}
                              availablePackages:a
-                                webCheckoutUrl:[NSURL URLWithString:@"https://revenuecat.com"]];
+                                webCheckoutUrl:[NSURL URLWithString:@"https://revenuecat.com"]
+                             virtualCurrencies:virtualCurrencies];
 
     NSLog(o, i, sd, a, l, an, s, t, tm, m, w, p, ok, md);
 }
