@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Issue Notification Action
-        uses: joshdholtz/github-action-issue-ack@v11
+        uses: joshdholtz/github-action-issue-ack@v15
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -38,8 +38,13 @@ jobs:
           # Custom message for testing
           message_template: |
             *{title}*
+            Created: {created_ago}
             Reactions: {reactions} | Comments: {comments}
             {url}
+
+          # Custom prefixes for testing
+          new_issue_prefix: "🚨 New issue created on *RevenueCat/purchases-ios*!"
+          threshold_prefix: "📈 High-engagement issue on *RevenueCat/purchases-ios*!"
 
           # Enable both notification types
           notify_on_create: "true"
