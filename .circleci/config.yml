@@ -47,6 +47,7 @@ executors:
         type: string
         default: "16.0"
     macos:
+      # circleci-lint: disable=unknown-xcode-version
       xcode: << parameters.xcode_version >>
     resource_class: m4pro.medium
     environment:
@@ -54,12 +55,27 @@ executors:
       CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
+  macos-executor-for-macos-12_6:
+    parameters:
+      xcode_version:
+        type: string
+        default: "16.0"
+    macos:
+      # circleci-lint: disable=unknown-xcode-version
+      xcode: << parameters.xcode_version >>
+    resource_class: m4pro.medium
+    environment:
+      CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.generate_snapshots >>
+      CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail  
   macos-executor-large:
     parameters:
       xcode_version:
         type: string
         default: "16.0"
     macos:
+      # circleci-lint: disable=unknown-xcode-version
       xcode: << parameters.xcode_version >>
     resource_class: m4pro.medium
     environment:
@@ -458,8 +474,10 @@ jobs:
     parameters:
       xcode_version:
         type: string
+      mac_os_executor_name:
+        type: string
     executor:
-      name: macos-executor
+      name: << parameters.mac_os_executor_name >>
       xcode_version: << parameters.xcode_version >>
     steps:
       - checkout
@@ -470,7 +488,7 @@ jobs:
   spm-release-build-xcode-14:
     executor:
       name: macos-executor
-      xcode_version: "14.3.0"
+      xcode_version: "14.3.1"
 
     steps:
       - checkout
@@ -508,7 +526,7 @@ jobs:
 
   spm-xcode-14-1:
     executor:
-      name: macos-executor
+      name: macos-executor-for-macos-12_6
       xcode_version: "14.1.0"
 
     steps:
@@ -573,7 +591,7 @@ jobs:
   spm-revenuecat-ui-ios-15:
     executor:
       name: macos-executor
-      xcode_version: "14.3.0"
+      xcode_version: "14.3.1"
 
     steps:
       - checkout
@@ -921,7 +939,7 @@ jobs:
 
   run-test-ios-14:
     executor:
-      name: macos-executor
+      name: macos-executor-for-macos-12_6
       # Pre-iOS 15 requires macOS 12 which requires Xcode 14.2
       # See https://circleci.com/docs/using-macos/#supported-xcode-versions
       xcode_version: "14.2.0"
@@ -959,7 +977,7 @@ jobs:
 
   run-test-ios-13:
     executor:
-      name: macos-executor
+      name: macos-executor-for-macos-12_6
       xcode_version: "14.2.0"
 
     steps:
@@ -1098,7 +1116,7 @@ jobs:
       name: macos-executor
       # needs to be xcode 14 since we couldn't get xcode 15 to get along with --additional-symbol-graph-dir
       # https://github.com/RevenueCat/purchases-ios/pull/1997
-      xcode_version: "14.3.0"
+      xcode_version: "14.3.1"
     steps:
       - setup-git-credentials
       - checkout
@@ -1115,7 +1133,7 @@ jobs:
       name: macos-executor
       # needs to be xcode 14 since we couldn't get xcode 15 to get along with --additional-symbol-graph-dir
       # https://github.com/RevenueCat/purchases-ios/pull/1997
-      xcode_version: "14.3.0"
+      xcode_version: "14.3.1"
     steps:
       - setup-git-credentials
       - checkout
@@ -1494,9 +1512,11 @@ workflows:
       - validate-package-swift:
           name: validate-package-swift-5.7
           xcode_version: "14.0.1"
+          mac_os_executor_name: macos-executor-for-macos-12_6
       - validate-package-swift:
           name: validate-package-swift-5.8
           xcode_version: "14.3.1"
+          mac_os_executor_name: macos-executor
       - run-test-ios-17
       - run-test-ios-18
       - pod-lib-lint
