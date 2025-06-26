@@ -64,7 +64,7 @@ executors:
     macos:
       # circleci-lint: disable=unknown-xcode-version
       xcode: << parameters.xcode_version >>
-    resource_class: m4pro.medium
+    resource_class: m2pro.medium
     environment:
       CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.generate_snapshots >>
       CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
