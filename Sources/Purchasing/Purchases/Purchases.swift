@@ -1122,6 +1122,8 @@ public extension Purchases {
         return try await syncPurchasesAsync()
     }
 
+    #endif
+
     @objc(checkTrialOrIntroDiscountEligibility:completion:)
     func checkTrialOrIntroDiscountEligibility(productIdentifiers: [String],
                                               completion: @escaping ([String: IntroEligibility]) -> Void) {
@@ -1153,8 +1155,6 @@ public extension Purchases {
     func checkTrialOrIntroDiscountEligibility(product: StoreProduct) async -> IntroEligibilityStatus {
         return await checkTrialOrIntroductoryDiscountEligibilityAsync(product)
     }
-
-    #endif
 
 #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
     @available(iOS 13.4, macCatalyst 13.4, *)
@@ -2184,7 +2184,7 @@ extension Purchases {
                     completion(eligibleWinBackOffers, nil)
                 }
             } catch {
-                let publicError = RevenueCat.ErrorUtils.purchasesError(withUntypedError: error).asPublicError
+                let publicError = NewErrorUtils.purchasesError(withUntypedError: error).asPublicError
                 OperationDispatcher.dispatchOnMainActor {
                     completion(nil, publicError)
                 }
