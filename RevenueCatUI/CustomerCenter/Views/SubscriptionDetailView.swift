@@ -176,6 +176,7 @@ struct SubscriptionDetailView: View {
                 if viewModel.showPurchaseHistory {
                     seeAllSubscriptionsButton
                         .padding(.top, 16)
+                        .padding(.bottom, 16)
                 }
 
                 if let url = support?.supportURL(
@@ -185,8 +186,10 @@ struct SubscriptionDetailView: View {
                    viewModel.shouldShowContactSupport,
                    URLUtilities.canOpenURL(url) || RuntimeUtils.isSimulator {
                     contactSupportView(url)
-                        .padding(.top)
+                        .padding(.bottom, 16)
                 }
+
+                accountDetailsView
             }
         }
         .overlay {
@@ -200,6 +203,17 @@ struct SubscriptionDetailView: View {
             $0.navigationTitle(self.viewModel.screen.title)
                 .navigationBarTitleDisplayMode(.inline)
         })
+    }
+
+    @ViewBuilder
+    private var accountDetailsView: some View {
+        Spacer().frame(height: 16)
+
+        AccountDetailsSection(
+            originalPurchaseDate: customerInfoViewModel.originalPurchaseDate,
+            originalAppUserId: customerInfoViewModel.originalAppUserId,
+            localization: localization
+        )
     }
 
     @ViewBuilder
