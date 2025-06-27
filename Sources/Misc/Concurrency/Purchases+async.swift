@@ -193,6 +193,8 @@ extension Purchases {
         }
     }
 
+    #endif
+
     func checkTrialOrIntroductoryDiscountEligibilityAsync(_ product: StoreProduct) async
     -> IntroEligibilityStatus {
         return await withUnsafeContinuation { continuation in
@@ -210,8 +212,6 @@ extension Purchases {
             }
         }
     }
-
-    #endif
 
 #if os(iOS) || os(macOS) || VISION_OS
 

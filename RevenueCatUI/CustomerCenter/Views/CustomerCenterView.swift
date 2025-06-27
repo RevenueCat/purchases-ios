@@ -225,8 +225,6 @@ private extension CustomerCenterView {
         RelevantPurchasesListView(
             customerInfoViewModel: viewModel,
             screen: screen,
-            originalAppUserId: viewModel.originalAppUserId,
-            originalPurchaseDate: viewModel.originalPurchaseDate,
             shouldShowSeeAllPurchases: viewModel.shouldShowSeeAllPurchases,
             purchasesProvider: self.viewModel.purchasesProvider,
             actionWrapper: self.viewModel.actionWrapper
