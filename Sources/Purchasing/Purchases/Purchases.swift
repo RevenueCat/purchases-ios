@@ -2060,7 +2060,7 @@ private extension Purchases {
                 self.operationDispatcher.dispatchOnWorkerThread {
                     guard let availability = try? await self.backend.healthReportAvailabilityRequest(
                         appUserID: self.appUserID
-                    ), availability.isAvailable else {
+                    ), availability.reportLogs else {
                         return
                     }
                     let manager = SDKHealthManager { try await self.healthReportRequest() }
