@@ -142,19 +142,11 @@ import Foundation
             case storePromotional = "promotional"
             case storeAmazon = "amazon_store"
             case cardStorePromotional = "card_store_promotional"
-<<<<<<< fix-strings
-            case storeRCBilling = "web_store"
+            case storeWeb = "web_store"
             case storeExternal = "external_store"
             case storeUnknownStore = "unknown_store"
             case storePaddle = "store_paddle"
             case debugHeaderTitle = "debug"
-=======
-            case storeExternal = "store_external"
-            case storeUnknownStore = "store_unknown"
-            case storePaddle = "store_paddle"
-            case storeWeb = "store_web"
-            case debugHeaderTitle = "Debug"
->>>>>>> main
             case youMayHaveDuplicatedSubscriptionsTitle = "you_may_have_duplicated_subscriptions_title"
             case youMayHaveDuplicatedSubscriptionsSubtitle = "you_may_have_duplicated_subscriptions_subtitle"
             case pricePaid = "price_paid"
