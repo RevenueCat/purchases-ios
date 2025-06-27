@@ -368,6 +368,99 @@ class SDKHealthManagerTests: TestCase {
         self.logger.verifyMessageWasNotLogged("Products Status:", level: .info)
         self.logger.verifyMessageWasNotLogged("Offerings Status:", level: .info)
     }
+
+    func testLogSDKHealthReportOutcomeLogsSpecialMessageWhenNoAppStoreConnectCredentials() async {
+        let healthReport = HealthReport(
+            status: .passed,
+            projectId: "test_project",
+            appId: "test_app",
+            checks: [
+                HealthCheck(name: .products, status: .warning, details: .products(ProductsCheckDetails(products: [
+                    ProductHealthReport(
+                        identifier: "test_product_1",
+                        title: "Test Product 1",
+                        status: .couldNotCheck,
+                        description: "Could not validate product status due to App Store Connect API issues"
+                    ),
+                    ProductHealthReport(
+                        identifier: "test_product_2",
+                        title: "Test Product 2",
+                        status: .couldNotCheck,
+                        description: "Could not validate product status due to App Store Connect API issues"
+                    )
+                ])))
+            ]
+        )
+
+        let manager = makeSUT { healthReport }
+
+        await manager.logSDKHealthReportOutcome()
+
+        self.logger.verifyMessageWasLogged(
+            "We could not validate your SDK's configuration and check your product statuses in App Store Connect.",
+            level: .warn
+        )
+        self.logger.verifyMessageWasLogged(
+            "Error: Could not validate product status due to App Store Connect API issues",
+            level: .warn
+        )
+        self.logger.verifyMessageWasLogged(
+            """
+            If you want to check if your SDK is configured correctly, please check your App Store Connect \
+            credentials in RevenueCat, make sure your App Store Connect App exists and try again:
+            """,
+            level: .warn
+        )
+        self.logger.verifyMessageWasLogged(
+            "https://app.revenuecat.com/projects/test_project/apps/test_app#scroll=app-store-connect-api",
+            level: .warn
+        )
+    }
+
+    func testLogSDKHealthReportOutcomeLogsNoAppStoreCredentialsWarningWithNoProjectAndAppId() async {
+        let healthReport = HealthReport(
+            status: .passed,
+            projectId: nil,
+            appId: nil,
+            checks: [
+                HealthCheck(name: .products, status: .warning, details: .products(ProductsCheckDetails(products: [
+                    ProductHealthReport(
+                        identifier: "test_product_1",
+                        title: "Test Product 1",
+                        status: .couldNotCheck,
+                        description: "Could not validate product status due to App Store Connect API issues"
+                    ),
+                    ProductHealthReport(
+                        identifier: "test_product_2",
+                        title: "Test Product 2",
+                        status: .couldNotCheck,
+                        description: "Could not validate product status due to App Store Connect API issues"
+                    )
+                ])))
+            ]
+        )
+
+        let manager = makeSUT { healthReport }
+
+        await manager.logSDKHealthReportOutcome()
+
+        self.logger.verifyMessageWasLogged(
+            "We could not validate your SDK's configuration and check your product statuses in App Store Connect.",
+            level: .warn
+        )
+        self.logger.verifyMessageWasLogged(
+            "Error: Could not validate product status due to App Store Connect API issues",
+            level: .warn
+        )
+        self.logger.verifyMessageWasLogged(
+            """
+            If you want to check if your SDK is configured correctly, please check your App Store Connect \
+            credentials in RevenueCat, make sure your App Store Connect App exists and try again:
+            """,
+            level: .warn
+        )
+        self.logger.verifyMessageWasNotLogged("https://app.revenuecat.com/projects/", level: .warn)
+    }
 }
 
 // MARK: - Builder Methods
