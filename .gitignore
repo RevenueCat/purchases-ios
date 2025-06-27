@@ -77,7 +77,7 @@ Local.xcconfig
 # tuist
 **/Derived/
 
-# temporary workspace to test tuist
+# Tuist workspaces
 RevenueCat-Workspace.xcworkspace/
 Projects/**/*.xcodeproj
 Examples/**/*.xcodeproj
