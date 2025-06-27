@@ -325,6 +325,14 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(self.backend.healthReportRequests).toEventually(equal([self.identityManager.currentAppUserID]))
     }
 
+    func testFirstInitializationFromForegroundAndDefaultConfigurationWithNoAvailabilityDoesNotLogHealth() {
+        self.systemInfo.stubbedIsApplicationBackgrounded = false
+        self.backend.overrideHealthReportAvailabilityResponse = false
+        self.setupPurchases()
+        expect(self.backend.healthReportAvailabilityRequests).toEventually(equal([identityManager.currentAppUserID]))
+        expect(self.backend.healthReportRequests).toEventually(equal([]))
+    }
+
     func testFirstInitializationFromForegroundAndHealthValidationNotEnabledDoesNotLogHealth() {
         self.systemInfo.stubbedIsApplicationBackgrounded = false
 
