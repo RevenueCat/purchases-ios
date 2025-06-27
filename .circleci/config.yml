@@ -143,6 +143,8 @@ commands:
       runtime-name:
         type: string
     steps:
+      - restore_cache:
+          key: simulator-runtime-cache-<< parameters.runtime-name >>
       - install-brew-dependency:
           dependency_name: "xcodes"
       - run:
@@ -150,6 +152,10 @@ commands:
           command: | # Print all available simulators and install required one
             xcodes runtimes
             sudo xcodes runtimes install "<< parameters.runtime-name >>"
+      - save_cache:
+          key: simulator-runtime-cache-<< parameters.runtime-name >>
+          paths:
+            - /Library/Developer/CoreSimulator/Volumes/<< parameters.runtime-name >> Simulator
 
   install-bundle-dependencies:
     parameters:
