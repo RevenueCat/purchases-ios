@@ -27,7 +27,7 @@ final class V3LoadShedderIntegrationTests: XCTestCase {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
-//        Purchases.logLevel = .debug
+        Purchases.logLevel = .debug
         let userDefaultsSuite = "v3LoadShedderIntegrationTests"
         let userDefaults = UserDefaults(suiteName: userDefaultsSuite)!
         userDefaults.removePersistentDomain(forName: userDefaultsSuite)

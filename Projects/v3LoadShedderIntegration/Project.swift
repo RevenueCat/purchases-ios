@@ -11,7 +11,7 @@ let allDestinations: Destinations = [
 ]
 
 let allDeploymentTargets: DeploymentTargets = .multiplatform(
-    iOS: "14.0",
+    iOS: "16.2",
 )
 
 // MARK: - Project Definition
@@ -68,20 +68,23 @@ let project = Project(
         )
     ],
     schemes: [
-        .scheme(
-            name: "v3LoadShedderIntegrationTests",
-            shared: true,
-            buildAction: .buildAction(targets: ["v3LoadShedderIntegrationTests"]),
-            testAction: .targets(["v3LoadShedderIntegrationTests"]),
-            runAction: .runAction(
-                executable: "v3LoadShedderIntegration",
-                options: .options(
-                    storeKitConfigurationPath: "../../Tests/v3LoadShedderIntegration/v3LoadShedderIntegrationTests/V3LoadShedderIntegrationTestsConfiguration.storekit"
-                )
-            ),
-            archiveAction: .archiveAction(configuration: "Release"),
-            profileAction: .profileAction(configuration: "Release"),
-            analyzeAction: .analyzeAction(configuration: "Debug")
+.scheme(
+    name: "v3LoadShedderIntegration",
+    shared: true,
+    buildAction: .buildAction(targets: [
+        "v3LoadShedderIntegration",
+        "v3LoadShedderIntegrationTests"
+    ]),
+    testAction: .targets(["v3LoadShedderIntegrationTests"]),
+    runAction: .runAction(
+        executable: "v3LoadShedderIntegration",
+        options: .options(
+            storeKitConfigurationPath: "../../Tests/v3LoadShedderIntegration/v3LoadShedderIntegrationTests/V3LoadShedderIntegrationTestsConfiguration.storekit"
         )
+    ),
+    archiveAction: .archiveAction(configuration: "Release"),
+    profileAction: .profileAction(configuration: "Release"),
+    analyzeAction: .analyzeAction(configuration: "Debug")
+)
     ]
 )

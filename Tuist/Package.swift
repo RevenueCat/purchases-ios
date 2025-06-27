@@ -35,7 +35,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/RevenueCat/purchases-ios-spm",
-            revision: "3.0.0"
+            revision: "3.14.4"
         ),
         .package(
             url: "https://github.com/AliSoftware/OHHTTPStubs",
