@@ -139,11 +139,11 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postRedeemWebPurchase,
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
-                .appHealthReport,
-                .appHealthReportAvailability:
+                .appHealthReport:
             return true
 
-        case .health:
+        case .health,
+             .appHealthReportAvailability:
             return false
         }
     }
@@ -162,10 +162,10 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postRedeemWebPurchase,
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
-                .appHealthReport,
-                .appHealthReportAvailability:
+                .appHealthReport:
             return true
-        case .health:
+        case .health,
+             .appHealthReportAvailability:
             return false
         }
     }
@@ -197,7 +197,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .getCustomerInfo,
                 .logIn,
                 .postReceiptData,
-                .health:
+                .health,
+                .appHealthReportAvailability:
             return true
         case .getOfferings,
                 .getIntroEligibility,
@@ -208,8 +209,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postRedeemWebPurchase,
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
-                .appHealthReport,
-                .appHealthReportAvailability:
+                .appHealthReport:
             return false
         }
     }
