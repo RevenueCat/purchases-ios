@@ -2058,6 +2058,11 @@ private extension Purchases {
         self.systemInfo.isApplicationBackgrounded { isBackgrounded in
             if !isBackgrounded {
                 self.operationDispatcher.dispatchOnWorkerThread {
+                    guard let availability = try? await self.backend.healthReportAvailabilityRequest(
+                        appUserID: self.appUserID
+                    ), availability.isAvailable else {
+                        return
+                    }
                     let manager = SDKHealthManager { try await self.healthReportRequest() }
                     await manager.logSDKHealthReportOutcome()
                 }
