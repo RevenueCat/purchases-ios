@@ -111,6 +111,28 @@ private enum HealthReportLogMessage: LogMessage {
         warnings: [PurchasesDiagnostics.SDKHealthError],
         report: PurchasesDiagnostics.SDKHealthReport
     ) -> String {
+        if report.products.allSatisfy({ $0.status == .couldNotCheck }) {
+            var message = """
+            We could not validate your SDK's configuration and check your product statuses in App Store Connect.\n
+            """
+
+            if let description = report.products.first?.description {
+                message += "\nError: \(description)\n"
+            }
+
+            message += """
+            \nIf you want to check if your SDK is configured correctly, please check your App Store Connect \
+            credentials in RevenueCat, make sure your App Store Connect App exists and try again:
+            """
+
+            if let projectId = report.projectId, let appId = report.appId {
+                let url = "https://app.revenuecat.com/projects/\(projectId)/apps/\(appId)#scroll=app-store-connect-api"
+                message += "\n\n\(url)"
+            }
+
+            return message
+        }
+
         var message = "RevenueCat SDK is configured correctly, but contains some issues you might want to address\n"
 
         message += "\nWarnings:\n"
