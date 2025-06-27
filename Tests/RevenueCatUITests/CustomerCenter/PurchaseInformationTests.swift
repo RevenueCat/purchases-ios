@@ -89,7 +89,8 @@ final class PurchaseInformationTests: TestCase {
             displayName: "A product",
             periodType: .normal,
             purchaseDate: Date(),
-            isSandbox: false
+            isSandbox: false,
+            isSubscrition: false
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -106,7 +107,7 @@ final class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.title) == "Monthly Product"
         expect(subscriptionInfo.pricePaid) == .nonFree("$6.99")
         expect(subscriptionInfo.renewalPrice).to(beNil())
-        expect(subscriptionInfo.isLifetime).to(beFalse())
+        expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
         expect(subscriptionInfo.store) == .appStore
@@ -145,7 +146,8 @@ final class PurchaseInformationTests: TestCase {
             displayName: "A product",
             periodType: .normal,
             purchaseDate: Date(),
-            isSandbox: false
+            isSandbox: false,
+            isSubscrition: true
         )
 
         let subscriptionInfoNullable = await PurchaseInformation.purchaseInformationUsingRenewalInfo(
@@ -163,7 +165,7 @@ final class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.title) == "Monthly Product"
         expect(subscriptionInfo.pricePaid) == .nonFree("$6.99")
         expect(subscriptionInfo.renewalPrice) == .nonFree("$7.99")
-        expect(subscriptionInfo.isLifetime).to(beFalse())
+        expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
         expect(subscriptionInfo.store) == .appStore
@@ -202,7 +204,8 @@ final class PurchaseInformationTests: TestCase {
             displayName: "A product",
             periodType: .normal,
             purchaseDate: Date(),
-            isSandbox: false
+            isSandbox: false,
+            isSubscrition: true
         )
 
         let subscriptionInfoNullable = await PurchaseInformation.purchaseInformationUsingRenewalInfo(
@@ -221,7 +224,7 @@ final class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.title) == "Monthly Product"
         expect(subscriptionInfo.pricePaid) == .nonFree("$6.99")
         expect(subscriptionInfo.renewalPrice).to(beNil())
-        expect(subscriptionInfo.isLifetime).to(beTrue())
+        expect(subscriptionInfo.isLifetimeSubscription).to(beTrue())
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
         expect(subscriptionInfo.store) == .appStore
@@ -260,7 +263,8 @@ final class PurchaseInformationTests: TestCase {
             displayName: "A product",
             periodType: .normal,
             purchaseDate: Date(),
-            isSandbox: false
+            isSandbox: false,
+            isSubscrition: true
         )
 
         let subscriptionInfoNullable = await PurchaseInformation.purchaseInformationUsingRenewalInfo(
@@ -277,7 +281,7 @@ final class PurchaseInformationTests: TestCase {
         let subscriptionInfo = try XCTUnwrap(subscriptionInfoNullable)
         expect(subscriptionInfo.title) == "Monthly Product"
         expect(subscriptionInfo.pricePaid) == .nonFree("$6.99")
-        expect(subscriptionInfo.isLifetime).to(beFalse())
+        expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
         expect(subscriptionInfo.store) == .appStore
@@ -316,7 +320,8 @@ final class PurchaseInformationTests: TestCase {
             displayName: "A product",
             periodType: .normal,
             purchaseDate: Date(),
-            isSandbox: false
+            isSandbox: false,
+            isSubscrition: true
         )
 
         let subscriptionInfoNullable = await PurchaseInformation.purchaseInformationUsingRenewalInfo(
@@ -334,7 +339,7 @@ final class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.title) == "Monthly Product"
         expect(subscriptionInfo.pricePaid) == .nonFree("$6.99")
         expect(subscriptionInfo.renewalPrice).to(beNil())
-        expect(subscriptionInfo.isLifetime).to(beFalse())
+        expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
         expect(subscriptionInfo.store) == .appStore
@@ -360,7 +365,8 @@ final class PurchaseInformationTests: TestCase {
             displayName: "A product",
             periodType: .normal,
             purchaseDate: Date(),
-            isSandbox: false
+            isSandbox: false,
+            isSubscrition: true
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -377,7 +383,7 @@ final class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.title) == "com.revenuecat.product"
         expect(subscriptionInfo.pricePaid) == .nonFree("$6.99")
         expect(subscriptionInfo.renewalPrice).to(beNil())
-        expect(subscriptionInfo.isLifetime).to(beFalse())
+        expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
         expect(subscriptionInfo.store) == .playStore
@@ -403,7 +409,8 @@ final class PurchaseInformationTests: TestCase {
             displayName: "A product",
             periodType: .normal,
             purchaseDate: Date(),
-            isSandbox: false
+            isSandbox: false,
+            isSubscrition: true
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -420,7 +427,7 @@ final class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.title) == "com.revenuecat.product"
         expect(subscriptionInfo.pricePaid) == .nonFree("$6.99")
         expect(subscriptionInfo.renewalPrice).to(beNil())
-        expect(subscriptionInfo.isLifetime).to(beFalse())
+        expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
         expect(subscriptionInfo.store) == .playStore
@@ -446,7 +453,8 @@ final class PurchaseInformationTests: TestCase {
             displayName: "A product",
             periodType: .normal,
             purchaseDate: Date(),
-            isSandbox: false
+            isSandbox: false,
+            isSubscrition: true
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -463,7 +471,7 @@ final class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.title) == "com.revenuecat.product"
         expect(subscriptionInfo.pricePaid) == .nonFree("$6.99")
         expect(subscriptionInfo.renewalPrice).to(beNil())
-        expect(subscriptionInfo.isLifetime).to(beFalse())
+        expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
         expect(subscriptionInfo.store) == .playStore
@@ -489,7 +497,8 @@ final class PurchaseInformationTests: TestCase {
             displayName: "A product",
             periodType: .normal,
             purchaseDate: Date(),
-            isSandbox: false
+            isSandbox: false,
+            isSubscrition: true
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -507,7 +516,7 @@ final class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.title) == "premium"
         expect(subscriptionInfo.pricePaid) == .free
         expect(subscriptionInfo.renewalPrice).to(beNil())
-        expect(subscriptionInfo.isLifetime).to(beFalse())
+        expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
         expect(subscriptionInfo.store) == .promotional
@@ -533,7 +542,8 @@ final class PurchaseInformationTests: TestCase {
             displayName: "A product",
             periodType: .normal,
             purchaseDate: Date(),
-            isSandbox: false
+            isSandbox: false,
+            isSubscrition: true
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -551,7 +561,7 @@ final class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.pricePaid) == .free
         expect(subscriptionInfo.renewalPrice).to(beNil())
         // false - no way to know if its lifetime
-        expect(subscriptionInfo.isLifetime).to(beFalse())
+        expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
         expect(subscriptionInfo.store) == .promotional
@@ -577,7 +587,8 @@ final class PurchaseInformationTests: TestCase {
             displayName: "A product",
             periodType: .normal,
             purchaseDate: Date(),
-            isSandbox: false
+            isSandbox: false,
+            isSubscrition: true
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -594,7 +605,7 @@ final class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.title) == "com.revenuecat.product"
         expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
         expect(subscriptionInfo.renewalPrice).to(beNil())
-        expect(subscriptionInfo.isLifetime).to(beFalse())
+        expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
         expect(subscriptionInfo.store) == .stripe
@@ -620,7 +631,8 @@ final class PurchaseInformationTests: TestCase {
             displayName: "A product",
             periodType: .normal,
             purchaseDate: Date(),
-            isSandbox: false
+            isSandbox: false,
+            isSubscrition: true
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -637,7 +649,7 @@ final class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.title) == "com.revenuecat.product"
         expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
         expect(subscriptionInfo.renewalPrice).to(beNil())
-        expect(subscriptionInfo.isLifetime).to(beFalse())
+        expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
         expect(subscriptionInfo.store) == .stripe
@@ -663,7 +675,8 @@ final class PurchaseInformationTests: TestCase {
             displayName: "A product",
             periodType: .normal,
             purchaseDate: Date(),
-            isSandbox: false
+            isSandbox: false,
+            isSubscrition: true
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -680,7 +693,7 @@ final class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.title) == "com.revenuecat.product"
         expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
         expect(subscriptionInfo.renewalPrice).to(beNil())
-        expect(subscriptionInfo.isLifetime).to(beFalse())
+        expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
         expect(subscriptionInfo.store) == .stripe
@@ -706,7 +719,8 @@ final class PurchaseInformationTests: TestCase {
             displayName: "A product",
             periodType: .normal,
             purchaseDate: Date(),
-            isSandbox: false
+            isSandbox: false,
+            isSubscrition: true
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -723,7 +737,7 @@ final class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.title) == "com.revenuecat.product"
         expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
         expect(subscriptionInfo.renewalPrice) == .nonFree("$1.99")
-        expect(subscriptionInfo.isLifetime).to(beFalse())
+        expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
         expect(subscriptionInfo.store) == .rcBilling
@@ -749,7 +763,8 @@ final class PurchaseInformationTests: TestCase {
             displayName: "A product",
             periodType: .normal,
             purchaseDate: Date(),
-            isSandbox: false
+            isSandbox: false,
+            isSubscrition: true
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -766,7 +781,7 @@ final class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.title) == "com.revenuecat.product"
         expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
         expect(subscriptionInfo.renewalPrice).to(beNil())
-        expect(subscriptionInfo.isLifetime).to(beFalse())
+        expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
         expect(subscriptionInfo.store) == .rcBilling
@@ -792,7 +807,8 @@ final class PurchaseInformationTests: TestCase {
             displayName: "A product",
             periodType: .normal,
             purchaseDate: Date(),
-            isSandbox: false
+            isSandbox: false,
+            isSubscrition: true
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -809,7 +825,7 @@ final class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.title) == "com.revenuecat.product"
         expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
         expect(subscriptionInfo.renewalPrice).to(beNil())
-        expect(subscriptionInfo.isLifetime).to(beFalse())
+        expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
         expect(subscriptionInfo.store) == .rcBilling
@@ -835,7 +851,8 @@ final class PurchaseInformationTests: TestCase {
             displayName: "A product",
             periodType: .normal,
             purchaseDate: Date(),
-            isSandbox: false
+            isSandbox: false,
+            isSubscrition: true
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -852,7 +869,7 @@ final class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.title) == "com.revenuecat.product"
         expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
         expect(subscriptionInfo.renewalPrice).to(beNil())
-        expect(subscriptionInfo.isLifetime).to(beFalse())
+        expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
         expect(subscriptionInfo.store) == .paddle
@@ -878,7 +895,8 @@ final class PurchaseInformationTests: TestCase {
             displayName: "A product",
             periodType: .normal,
             purchaseDate: Date(),
-            isSandbox: false
+            isSandbox: false,
+            isSubscrition: true
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -895,7 +913,7 @@ final class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.title) == "com.revenuecat.product"
         expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
         expect(subscriptionInfo.renewalPrice).to(beNil())
-        expect(subscriptionInfo.isLifetime).to(beFalse())
+        expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
         expect(subscriptionInfo.store) == .paddle
@@ -921,7 +939,8 @@ final class PurchaseInformationTests: TestCase {
             displayName: "A product",
             periodType: .normal,
             purchaseDate: Date(),
-            isSandbox: false
+            isSandbox: false,
+            isSubscrition: true
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -938,7 +957,7 @@ final class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.title) == "com.revenuecat.product"
         expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
         expect(subscriptionInfo.renewalPrice).to(beNil())
-        expect(subscriptionInfo.isLifetime).to(beFalse())
+        expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
         expect(subscriptionInfo.store) == .paddle
@@ -961,7 +980,8 @@ final class PurchaseInformationTests: TestCase {
             displayName: "A product",
             periodType: .normal,
             purchaseDate: Date(),
-            isSandbox: false
+            isSandbox: false,
+            isSubscrition: true
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -977,7 +997,7 @@ final class PurchaseInformationTests: TestCase {
         )
         expect(subscriptionInfo.title) == "product_id"
         expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
-        expect(subscriptionInfo.isLifetime).to(beFalse())
+        expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
 
         expect(subscriptionInfo.productIdentifier) == "product_id"
         expect(subscriptionInfo.store) == .stripe

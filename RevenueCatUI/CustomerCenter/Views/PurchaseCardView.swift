@@ -308,7 +308,7 @@ extension PurchaseInformationCardView {
             purchaseInformation: PurchaseInformation,
             localization: CustomerCenterConfigData.Localization
         ) {
-            if purchaseInformation.isLifetime {
+            if purchaseInformation.isLifetimeSubscription {
                 self = .lifetime(localization)
             } else if purchaseInformation.isExpired {
                 self = .expired(localization)
