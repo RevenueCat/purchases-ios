@@ -29,7 +29,7 @@ let project = Project(
             destinations: allDestinations,
             product: .framework,
             bundleId: "com.revenuecat.RevenueCatUI",
-            deploymentTargets: .iOS("15.0"),
+            deploymentTargets: allDeploymentTargets,
             infoPlist: .default,
             sources: [
                 "../../RevenueCatUI/**/*.swift"

@@ -1,13 +1,20 @@
 import ProjectDescription
 import ProjectDescriptionHelpers
 
+let allDestinations: Destinations = [
+    .iPhone,
+    .iPad,
+    .macWithiPadDesign,
+    .appleVisionWithiPadDesign
+]
+
 let project = Project(
     name: "testCustomEntitlementsComputation",
     organizationName: "RevenueCat, Inc.",
     targets: [
         .target(
             name: "testCustomEntitlementsComputation",
-            destinations: .iOS,
+            destinations: allDestinations,
             product: .app,
             bundleId: "com.revenuecat.sampleapp",
             deploymentTargets: .iOS("15.0"),

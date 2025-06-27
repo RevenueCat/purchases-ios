@@ -2,8 +2,6 @@ import Foundation
 import ProjectDescription
 import ProjectDescriptionHelpers
 
-// projects that are commented will be enabled one by one
-
 var projects: [Path] = [
     "./Examples/rc-maestro/",
     "./Examples/MagicWeather/",
@@ -11,7 +9,6 @@ var projects: [Path] = [
     "./Examples/testCustomEntitlementsComputation/",
     "./Projects/PaywallTester",
     "./Projects/APITesters"
-    //	  "./Examples/SampleCat/"
 ]
 
 if Environment.local {

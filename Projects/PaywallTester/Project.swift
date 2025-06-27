@@ -16,9 +16,8 @@ let allDestinations: Destinations = [
 
 let allDeploymentTargets: DeploymentTargets = .multiplatform(
     iOS: "15.0",
-    macOS: "11.0",
-    watchOS: "7.0",
-    tvOS: "14.0"
+    watchOS: "10.0",
+    visionOS: "1.3"
 )
 
 var additionalFiles: [FileElement] = [
@@ -44,7 +43,7 @@ let project = Project(
             destinations: allDestinations,
             product: .app,
             bundleId: "com.revenuecat.PaywallTester",
-            deploymentTargets: .iOS("15.0"),
+            deploymentTargets: allDeploymentTargets,
             infoPlist: "../../Tests/TestingApps/PaywallsTester/PaywallsTester/Info.plist",
             sources: [
                 "../../Tests/TestingApps/PaywallsTester/PaywallsTester/**/*.swift"
