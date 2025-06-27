@@ -14,7 +14,7 @@
 import Foundation
 
 struct HealthReportAvailability {
-    let isAvailable: Bool
+    let reportLogs: Bool
 }
 
 extension HealthReportAvailability: HTTPResponseBody {}
