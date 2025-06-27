@@ -259,7 +259,7 @@ let project = Project(
                 )
             ],
             resources: [
-                "../../Tests/StoreKitUnitTests/UnitTestsConfiguration.storekit"
+                "../../Tests/BackendIntegrationTests/RevenueCat_IntegrationPurchaseTesterConfiguration.storekit"
             ],
             dependencies: [
                 .target(name: "RevenueCat"),
@@ -270,7 +270,7 @@ let project = Project(
                 .storeKitTests
             ],
             additionalFiles: [
-                "../../Tests/StoreKitUnitTests/UnitTestsConfiguration.storekit",
+                "../../Tests/BackendIntegrationTests/RevenueCat_IntegrationPurchaseTesterConfiguration.storekit",
                 "../../BackendIntegrationTests/**.xctestplan"
             ]
         )
