@@ -291,6 +291,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      networkTimeout: TimeInterval = Configuration.networkTimeoutDefault,
                      dangerousSettings: DangerousSettings? = nil,
                      showStoreMessagesAutomatically: Bool,
+                     validateConfigurationOnDebugAppLaunch: Bool,
                      diagnosticsEnabled: Bool = false
     ) {
         if userDefaults != nil {
@@ -617,7 +618,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   purchasedProductsFetcher: purchasedProductsFetcher,
                   trialOrIntroPriceEligibilityChecker: trialOrIntroPriceChecker,
                   storeMessagesHelper: storeMessagesHelper,
-                  diagnosticsTracker: diagnosticsTracker
+                  diagnosticsTracker: diagnosticsTracker,
+                  validateConfigurationOnDebugAppLaunch: validateConfigurationOnDebugAppLaunch
         )
     }
 
@@ -647,7 +649,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          purchasedProductsFetcher: PurchasedProductsFetcherType?,
          trialOrIntroPriceEligibilityChecker: CachingTrialOrIntroPriceEligibilityChecker,
          storeMessagesHelper: StoreMessagesHelperType?,
-         diagnosticsTracker: DiagnosticsTrackerType?
+         diagnosticsTracker: DiagnosticsTrackerType?,
+         validateConfigurationOnDebugAppLaunch: Bool
     ) {
 
         if systemInfo.dangerousSettings.customEntitlementComputation {
@@ -712,6 +715,12 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         // Don't update caches in the background to potentially avoid apps being launched through a notification
         // all at the same time by too many users concurrently.
         self.updateCachesIfInForeground()
+
+        #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        if validateConfigurationOnDebugAppLaunch {
+            self.runHealthCheckIfInForeground()
+        }
+        #endif
 
         if self.systemInfo.dangerousSettings.autoSyncPurchases {
             self.paymentQueueWrapper.sk1Wrapper?.delegate = purchasesOrchestrator
@@ -1389,6 +1398,7 @@ public extension Purchases {
                   networkTimeout: configuration.networkTimeout,
                   dangerousSettings: configuration.dangerousSettings,
                   showStoreMessagesAutomatically: configuration.showStoreMessagesAutomatically,
+                  validateConfigurationOnDebugAppLaunch: configuration.validateConfigurationOnDebugAppLaunch,
                   diagnosticsEnabled: configuration.diagnosticsEnabled
         )
     }
@@ -1655,6 +1665,7 @@ public extension Purchases {
         networkTimeout: TimeInterval,
         dangerousSettings: DangerousSettings?,
         showStoreMessagesAutomatically: Bool,
+        validateConfigurationOnDebugAppLaunch: Bool,
         diagnosticsEnabled: Bool
     ) -> Purchases {
         return self.setDefaultInstance(
@@ -1670,6 +1681,7 @@ public extension Purchases {
                   networkTimeout: networkTimeout,
                   dangerousSettings: dangerousSettings,
                   showStoreMessagesAutomatically: showStoreMessagesAutomatically,
+                  validateConfigurationOnDebugAppLaunch: validateConfigurationOnDebugAppLaunch,
                   diagnosticsEnabled: diagnosticsEnabled)
         )
     }
@@ -2040,6 +2052,24 @@ private extension Purchases {
             }
         }
     }
+
+    #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    func runHealthCheckIfInForeground() {
+        self.systemInfo.isApplicationBackgrounded { isBackgrounded in
+            if !isBackgrounded {
+                self.operationDispatcher.dispatchOnWorkerThread {
+                    guard let availability = try? await self.backend.healthReportAvailabilityRequest(
+                        appUserID: self.appUserID
+                    ), availability.reportLogs else {
+                        return
+                    }
+                    let manager = SDKHealthManager { try await self.healthReportRequest() }
+                    await manager.logSDKHealthReportOutcome()
+                }
+            }
+        }
+    }
+    #endif
 
     func updateAllCachesIfNeeded(isAppBackgrounded: Bool) {
         guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
