@@ -479,12 +479,12 @@ extension BasePurchasesTests {
             )
         }
 
-        var overrideHealthReportAvailabilityResponse = true
+        var overrideHealthReportAvailabilityResponse = HealthReportAvailability(reportLogs: true)
         var healthReportAvailabilityRequests = [String]()
         override func healthReportAvailabilityRequest(appUserID: String) async throws -> HealthReportAvailability {
             healthReportAvailabilityRequests.append(appUserID)
 
-            return .init(isAvailable: overrideHealthReportAvailabilityResponse)
+            return overrideHealthReportAvailabilityResponse
         }
 
         var postReceiptDataCalled = false

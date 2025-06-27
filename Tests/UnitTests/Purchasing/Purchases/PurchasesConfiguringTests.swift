@@ -327,7 +327,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
     func testFirstInitializationFromForegroundAndDefaultConfigurationWithNoAvailabilityDoesNotLogHealth() {
         self.systemInfo.stubbedIsApplicationBackgrounded = false
-        self.backend.overrideHealthReportAvailabilityResponse = false
+        self.backend.overrideHealthReportAvailabilityResponse = HealthReportAvailability(reportLogs: false)
         self.setupPurchases()
         expect(self.backend.healthReportAvailabilityRequests).toEventually(equal([identityManager.currentAppUserID]))
         expect(self.backend.healthReportRequests).toEventually(equal([]))
