@@ -17,15 +17,18 @@ class InternalAPI {
 
     typealias ResponseHandler = (BackendError?) -> Void
     typealias HealthReportResponseHandler = (Result<HealthReport, BackendError>) -> Void
+    typealias HealthReportAvailabilityResponseHandler = (Result<HealthReportAvailability, BackendError>) -> Void
 
     private let backendConfig: BackendConfiguration
     private let healthCallbackCache: CallbackCache<HealthOperation.Callback>
     private let healthReportCallbackCache: CallbackCache<HealthReportOperation.Callback>
+    private let healthReportAvailabilityCallbackCache: CallbackCache<HealthReportAvailabilityOperation.Callback>
 
     init(backendConfig: BackendConfiguration) {
         self.backendConfig = backendConfig
         self.healthCallbackCache = .init()
         self.healthReportCallbackCache = .init()
+        self.healthReportAvailabilityCallbackCache = .init()
     }
 
     func healthRequest(signatureVerification: Bool, completion: @escaping ResponseHandler) {
@@ -48,6 +51,26 @@ class InternalAPI {
                                                           callbackCache: self.healthReportCallbackCache)
         let callback = HealthReportOperation.Callback(cacheKey: factory.cacheKey, completion: completion)
         let cacheStatus = self.healthReportCallbackCache.add(callback)
+
+        self.backendConfig.addCacheableOperation(with: factory,
+                                                 delay: .none,
+                                                 cacheStatus: cacheStatus)
+    }
+
+    func healthReportAvailabilityRequest(
+        appUserID: String,
+        completion: @escaping HealthReportAvailabilityResponseHandler
+    ) {
+        let config = NetworkOperation.UserSpecificConfiguration(
+            httpClient: self.backendConfig.httpClient,
+            appUserID: appUserID
+        )
+        let factory = HealthReportAvailabilityOperation.createFactory(
+            configuration: config,
+            callbackCache: self.healthReportAvailabilityCallbackCache
+        )
+        let callback = HealthReportAvailabilityOperation.Callback(cacheKey: factory.cacheKey, completion: completion)
+        let cacheStatus = self.healthReportAvailabilityCallbackCache.add(callback)
 
         self.backendConfig.addCacheableOperation(with: factory,
                                                  delay: .none,
