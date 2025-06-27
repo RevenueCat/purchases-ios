@@ -143,6 +143,15 @@ class Backend {
         self.customer.post(subscriberAttributes: subscriberAttributes, appUserID: appUserID, completion: completion)
     }
 
+    func healthReportAvailabilityRequest(appUserID: String) async throws -> HealthReportAvailability {
+        try await Async.call { (completion: @escaping (Result<HealthReportAvailability, BackendError>) -> Void) in
+            self.internalAPI.healthReportAvailabilityRequest(
+                appUserID: appUserID,
+                completion: completion
+            )
+        }
+    }
+
     /// Call the `/health_report` endpoint and perform a full validation of the SDK's configuration
     /// - Parameter appUserID: An `appUserID` that allows the Backend to fetch offerings
     /// - Returns: A report with all validation checks along with their status
