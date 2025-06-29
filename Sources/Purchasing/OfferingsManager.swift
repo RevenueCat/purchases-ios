@@ -237,7 +237,7 @@ private extension OfferingsManager {
 
             guard products.isEmpty == false else {
                 // Check if empty products is likely caused by https://github.com/RevenueCat/purchases-ios/issues/4954
-                // There is a widely reported bug in the iOS 18.4 Simulator affecting some HTTP requests
+                // There is a widely reported bug in the iOS 18.4 and 18.5 Simulators which affects some HTTP requests
                 let showSimulatorWarning = self.systemInfo.isSubjectToKnownIssue_18_4_sim()
                 completion(.failure(Self.createErrorForEmptyResult(result.error,
                                                                    showSimulatorWarning: showSimulatorWarning)))
