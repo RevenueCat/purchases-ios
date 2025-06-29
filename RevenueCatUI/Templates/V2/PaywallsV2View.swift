@@ -13,9 +13,15 @@ import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private class PaywallStateManager: ObservableObject {
-    @Published var state: Result<PaywallState, Error>
 
-    init(state: Result<PaywallState, Error>) {
+    struct StateError: Error {
+        let error: Error
+        let fallbackReasonType: PaywallEvent.Data.FallbackReasonType
+    }
+
+    @Published var state: Result<PaywallState, StateError>
+
+    init(state: Result<PaywallState, StateError>) {
         self.state = state
     }
 }
@@ -50,11 +56,15 @@ struct DataForV1DefaultPaywall {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum FallbackContent {
+
+    //
     case paywallV1View(DataForV1DefaultPaywall)
+
+    /// Used for SwiftUI previews
     case customView(AnyView)
 
     @ViewBuilder
-    func view() -> some View {
+    func view(fallbackReason: PaywallEvent.Data.FallbackReason?) -> some View {
         switch self {
         case .paywallV1View(let data):
             LoadedOfferingPaywallView(
@@ -68,12 +78,14 @@ enum FallbackContent {
                 introEligibility: data.introEligibility,
                 purchaseHandler: data.purchaseHandler,
                 locale: data.locale,
-                showZeroDecimalPlacePrices: data.showZeroDecimalPlacePrices
+                showZeroDecimalPlacePrices: data.showZeroDecimalPlacePrices,
+                fallbackReason: fallbackReason
             )
         case .customView(let view):
             view
         }
     }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -97,6 +109,11 @@ struct PaywallsV2View: View {
     private let purchaseHandler: PurchaseHandler
     private let onDismiss: () -> Void
     private let fallbackContent: FallbackContent
+
+    @State
+    private var hasTrackedImpression = false
+    @State
+    private var hasTrackedClose = false
 
     public init(
         paywallComponents: Offering.PaywallComponents,
@@ -147,7 +164,11 @@ struct PaywallsV2View: View {
             // Show fallback paywall and debug error message that
             // occurred while decoding the paywall
             self.fallbackViewWithErrorMessage(
-                "Error decoding paywall response on: \(errorInfo.keys.joined(separator: ", "))"
+                "Error decoding paywall response on: \(errorInfo.keys.joined(separator: ", "))",
+                fallbackReason: .init(
+                    type: .schema,
+                    message: errorInfo.debugDescription
+                )
             )
         } else {
             switch self.paywallStateManager.state {
@@ -162,11 +183,24 @@ struct PaywallsV2View: View {
                 .environmentObject(self.introOfferEligibilityContext)
                 .disabled(self.purchaseHandler.actionInProgress)
                 .onAppear {
-                    self.purchaseHandler.trackPaywallImpression(
-                        self.createEventData()
-                    )
+                    // Ensure impression is only tracked once
+                    // onAppear can be called more than once
+                    if !self.hasTrackedImpression {
+                        self.hasTrackedImpression = true
+                        self.purchaseHandler.trackPaywallImpression(
+                            self.createEventData(),
+                            fallbackReason: nil
+                        )
+                    }
                 }
-                .onDisappear { self.purchaseHandler.trackPaywallClose() }
+                .onDisappear {
+                    // Ensure close is only tracked once
+                    // onAppear can be called more than once
+                    if !self.hasTrackedClose {
+                        self.hasTrackedClose = true
+                        self.purchaseHandler.trackPaywallClose()
+                    }
+                }
                 .onChangeOf(self.purchaseHandler.purchased) { purchased in
                     if purchased {
                         self.onDismiss()
@@ -192,14 +226,21 @@ struct PaywallsV2View: View {
                 // Show fallback paywall and debug error message that
                 // occurred while validating data and view models
                 self.fallbackViewWithErrorMessage(
-                    "Error validating paywall: \(error.localizedDescription)"
+                    "Error validating paywall: \(error.localizedDescription)",
+                    fallbackReason: .init(
+                        type: error.fallbackReasonType,
+                        message: error.localizedDescription
+                    )
                 )
             }
         }
     }
 
     @ViewBuilder
-    func fallbackViewWithErrorMessage(_ errorMessage: String) -> some View {
+    func fallbackViewWithErrorMessage(
+        _ errorMessage: String,
+        fallbackReason: PaywallEvent.Data.FallbackReason?
+    ) -> some View {
         let fullMessage = """
         \(errorMessage)
         Validate your paywall is correct in the RevenueCat dashboard,
@@ -211,7 +252,7 @@ struct PaywallsV2View: View {
 
         DebugErrorView(
             fullMessage,
-            replacement: self.fallbackContent.view()
+            replacement: self.fallbackContent.view(fallbackReason: fallbackReason)
         )
     }
 
@@ -222,7 +263,9 @@ struct PaywallsV2View: View {
             sessionID: .init(),
             displayMode: .fullScreen,
             locale: .current,
-            darkMode: self.colorScheme == .dark
+            darkMode: self.colorScheme == .dark,
+            storeTransactionID: nil,
+            fallbackReason: nil
         )
     }
 
@@ -309,7 +352,7 @@ fileprivate extension PaywallsV2View {
         offering: Offering,
         introEligibilityChecker: TrialOrIntroEligibilityChecker,
         showZeroDecimalPlacePrices: Bool
-    ) -> Result<PaywallState, Error> {
+    ) -> Result<PaywallState, PaywallStateManager.StateError> {
         // Step 1: Get localization
         let localizationProvider = Self.chooseLocalization(
             componentsLocalizations: componentsLocalizations,
@@ -347,7 +390,7 @@ fileprivate extension PaywallsV2View {
             Logger.error(Strings.paywall_view_model_construction_failed(error))
 
             // WIP: Need to select default package in fallback view model
-            return .failure(error)
+            return .failure(.init(error: error, fallbackReasonType: .localization))
         }
     }
 

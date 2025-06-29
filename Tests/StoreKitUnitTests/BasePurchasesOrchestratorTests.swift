@@ -298,7 +298,9 @@ extension BasePurchasesOrchestratorTests {
         sessionID: .init(),
         displayMode: .fullScreen,
         localeIdentifier: "en_US",
-        darkMode: true
+        darkMode: true,
+        storeTransactionID: nil,
+        fallbackReason: nil
     )
 
 }

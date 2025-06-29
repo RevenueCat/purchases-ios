@@ -65,7 +65,9 @@ actor PaywallEventsManager: PaywallEventsManagerType {
             return 0
         }
         self.flushInProgress = true
-        defer { self.flushInProgress = false }
+        defer {
+            self.flushInProgress = false
+        }
 
         let events = await self.store.fetch(count)
 
@@ -80,7 +82,9 @@ actor PaywallEventsManager: PaywallEventsManagerType {
             try await self.internalAPI.postPaywallEvents(events: events)
             Logger.debug(Strings.analytics.flush_events_success)
 
-            await self.store.clear(count)
+            print("JOSH: was trying to clear \(count)")
+            print("JOSH: now trying to clearn \(events.count)")
+            await self.store.clear(events.count)
 
             return events.count
         } catch {

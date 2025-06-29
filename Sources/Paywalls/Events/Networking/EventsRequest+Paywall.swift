@@ -21,6 +21,7 @@ extension EventsRequest {
         let version: Int
         var type: EventType
         var appUserID: String
+        var appSessionID: UUID?
         var sessionID: String
         var offeringID: String
         var paywallRevision: Int
@@ -28,6 +29,25 @@ extension EventsRequest {
         var displayMode: PaywallViewMode
         var darkMode: Bool
         var localeIdentifier: String
+
+        // For purchase
+        var storeTransactionID: String?
+
+        // For impression
+        var fallbackReasonType: FallbackReasonType?
+        var fallbackReasonMessage: String?
+    }
+
+}
+
+extension EventsRequest.PaywallEvent {
+
+    enum FallbackReasonType: String {
+
+        case offering
+        case localization
+        case schema
+        case unknown
 
     }
 
@@ -40,6 +60,8 @@ extension EventsRequest.PaywallEvent {
         case impression = "paywall_impression"
         case cancel = "paywall_cancel"
         case close = "paywall_close"
+        case purchase = "paywall_purchase_from_sdk"
+        case restore = "paywall_restore"
 
     }
 
@@ -60,13 +82,17 @@ extension EventsRequest.PaywallEvent {
                 version: Self.version,
                 type: paywallEvent.eventType,
                 appUserID: storedEvent.userID,
+                appSessionID: storedEvent.appSessionID,
                 sessionID: data.sessionIdentifier.uuidString,
                 offeringID: data.offeringIdentifier,
                 paywallRevision: data.paywallRevision,
                 timestamp: creationData.date.millisecondsSince1970,
                 displayMode: data.displayMode,
                 darkMode: data.darkMode,
-                localeIdentifier: data.localeIdentifier
+                localeIdentifier: data.localeIdentifier,
+                storeTransactionID: data.storeTransactionIdentifier,
+                fallbackReasonType: data.fallbackReason?.type?.toRequestFallbackReasonType,
+                fallbackReasonMessage: data.fallbackReason?.message
             )
         } catch {
             Logger.error(Strings.paywalls.event_cannot_deserialize(error))
@@ -78,6 +104,19 @@ extension EventsRequest.PaywallEvent {
 
 }
 
+private extension PaywallEvent.Data.FallbackReasonType {
+
+    var toRequestFallbackReasonType: EventsRequest.PaywallEvent.FallbackReasonType {
+        switch self {
+        case .localization: return .localization
+        case .offering: return .offering
+        case .schema: return .schema
+        case .unknown: return .unknown
+        }
+    }
+
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PaywallEvent {
 
@@ -86,6 +125,8 @@ private extension PaywallEvent {
         case .impression: return .impression
         case .cancel: return .cancel
         case .close: return .close
+        case .purchase: return .purchase
+        case .restore: return .restore
         }
 
     }
@@ -94,6 +135,7 @@ private extension PaywallEvent {
 
 // MARK: - Codable
 
+extension EventsRequest.PaywallEvent.FallbackReasonType: Encodable {}
 extension EventsRequest.PaywallEvent.EventType: Encodable {}
 extension EventsRequest.PaywallEvent: Encodable {
 
@@ -104,6 +146,7 @@ extension EventsRequest.PaywallEvent: Encodable {
         case version
         case type
         case appUserID = "appUserId"
+        case appSessionID = "appSessionId"
         case sessionID = "sessionId"
         case offeringID = "offeringId"
         case paywallRevision
@@ -111,6 +154,11 @@ extension EventsRequest.PaywallEvent: Encodable {
         case displayMode
         case darkMode
         case localeIdentifier = "locale"
+
+        case storeTransactionID = "storeTransactionId"
+
+        case fallbackReasonType = "fallbackReason"
+        case fallbackReasonMessage = "fallbackReasonMessage"
 
     }
 

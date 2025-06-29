@@ -25,6 +25,7 @@
     "body" : {
       "events" : [
         {
+          "app_session_id" : "EE6E1304-0D77-4CA4-835B-2C0FF5FE3A1D",
           "app_user_id" : "user",
           "dark_mode" : true,
           "display_mode" : "full_screen",

@@ -202,13 +202,15 @@ class PurchaseHandlerTests: TestCase {
             sessionID: .init(),
             displayMode: .fullScreen,
             locale: .init(identifier: "en_US"),
-            darkMode: false
+            darkMode: false,
+            storeTransactionID: nil,
+            fallbackReason: nil
         )
 
         let result1 = handler.trackPaywallClose()
         expect(result1) == false
 
-        handler.trackPaywallImpression(eventData)
+        handler.trackPaywallImpression(eventData, fallbackReason: nil)
 
         let result2 = handler.trackPaywallClose()
         expect(result2) == true

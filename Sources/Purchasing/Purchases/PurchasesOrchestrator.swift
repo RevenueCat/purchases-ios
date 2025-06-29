@@ -780,6 +780,12 @@ final class PurchasesOrchestrator {
 
         case .cancel:
             break
+
+        case .purchase:
+            break
+
+        case .restore:
+            break
         }
     }
 

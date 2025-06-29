@@ -176,6 +176,8 @@ private extension BasePaywallViewEventsTests {
         switch event {
         case .impression: self.impressionEventExpectation.fulfill()
         case .cancel: break
+        case .purchase: break
+        case .restore: break
         case .close: self.closeEventExpectation.fulfill()
         }
     }
@@ -220,6 +222,8 @@ private extension PaywallEvent {
     enum EventType {
 
         case impression
+        case purchase
+        case restore
         case cancel
         case close
 
@@ -228,6 +232,8 @@ private extension PaywallEvent {
     var eventType: EventType {
         switch self {
         case .impression: return .impression
+        case .purchase: return .purchase
+        case .restore: return .restore
         case .cancel: return .cancel
         case .close: return .close
         }
