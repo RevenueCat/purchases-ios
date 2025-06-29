@@ -48,14 +48,12 @@ struct CustomerCenterActionViewModifier: ViewModifier {
     @State private var managementOptionSelected: UniqueWrapper<CustomerCenterActionable>?
     @State private var promotionalOfferSuccess: UniqueWrapper<Void>?
 
-    @State private var cancellables = Set<AnyCancellable>()
-
     func body(content: Content) -> some View {
         content
             .onAppear {
                 subscribeToActionWrapper()
             }
-            // Apply preferences based on state
+        // Apply preferences based on state
             .preference(key: CustomerCenterView.RestoreStartedPreferenceKey.self,
                         value: restoreStarted)
             .preference(key: CustomerCenterView.RestoreFailedPreferenceKey.self,
@@ -78,59 +76,41 @@ struct CustomerCenterActionViewModifier: ViewModifier {
 
     @MainActor
     private func subscribeToActionWrapper() {
-        actionWrapper.restoreStarted
-            .sink { _ in
-                restoreStarted = UniqueWrapper(value: ())
-            }
-            .store(in: &cancellables)
+        actionWrapper.onCustomerCenterRestoreStarted {
+            restoreStarted = UniqueWrapper(value: ())
+        }
 
-        actionWrapper.restoreFailed
-            .sink { error in
-                restoreFailed = UniqueWrapper(value: error)
-            }
-            .store(in: &cancellables)
+        actionWrapper.onCustomerCenterRestoreFailed { error in
+            restoreFailed = UniqueWrapper(value: error as NSError)
+        }
 
-        actionWrapper.restoreCompleted
-            .sink { info in
-                restoreCompleted = UniqueWrapper(value: info)
-            }
-            .store(in: &cancellables)
+        actionWrapper.onCustomerCenterRestoreCompleted { info in
+            restoreCompleted = UniqueWrapper(value: info)
+        }
 
-        actionWrapper.showingManageSubscriptions
-            .sink { _ in
-                showingManageSubscriptions = UniqueWrapper(value: ())
-            }
-            .store(in: &cancellables)
+        actionWrapper.onCustomerCenterShowingManageSubscriptions {
+            showingManageSubscriptions = UniqueWrapper(value: ())
+        }
 
-        actionWrapper.refundRequestStarted
-            .sink { productId in
-                refundRequestStarted = UniqueWrapper(value: productId)
-            }
-            .store(in: &cancellables)
+        actionWrapper.onCustomerCenterRefundRequestStarted { productId in
+            refundRequestStarted = UniqueWrapper(value: productId)
+        }
 
-        actionWrapper.refundRequestCompleted
-            .sink { productId, status in
-                refundRequestCompleted = UniqueWrapper(value: (productId, status))
-            }
-            .store(in: &cancellables)
+        actionWrapper.onCustomerCenterRefundRequestCompleted { productId, status in
+            refundRequestCompleted = UniqueWrapper(value: (productId, status))
+        }
 
-        actionWrapper.feedbackSurveyCompleted
-            .sink { reason in
-                feedbackSurveyCompleted = UniqueWrapper(value: reason)
-            }
-            .store(in: &cancellables)
+        actionWrapper.onCustomerCenterFeedbackSurveyCompleted { reason in
+            feedbackSurveyCompleted = UniqueWrapper(value: reason)
+        }
 
-        actionWrapper.managementOptionSelected
-            .sink { action in
-                managementOptionSelected = UniqueWrapper(value: action)
-            }
-            .store(in: &cancellables)
+        actionWrapper.onCustomerCenterManagementOptionSelected { action in
+            managementOptionSelected = UniqueWrapper(value: action)
+        }
 
-        actionWrapper.promotionalOfferSuccess
-            .sink { _ in
-                promotionalOfferSuccess = UniqueWrapper(value: ())
-            }
-            .store(in: &cancellables)
+        actionWrapper.onCustomerCenterPromotionalOfferSuccess {
+            promotionalOfferSuccess = UniqueWrapper(value: ())
+        }
     }
 }
 
