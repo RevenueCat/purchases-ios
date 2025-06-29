@@ -45,7 +45,7 @@ class BaseBackendTests: TestCase {
     }
 
     final func createDependencies(dangerousSettings: DangerousSettings? = nil,
-                                  localesProvider: PreferredLocalesProviderType = MockPreferredLocalesProvider()) {
+                                  localesProvider: PreferredLocalesProvider = .mock()) {
         // Need to force StoreKit 1 because we use iOS 13 snapshots
         // for watchOS tests which contain StoreKit 1 headers
         #if os(watchOS)
@@ -170,20 +170,6 @@ final class MockStorefrontProvider: StorefrontProviderType {
         } else {
             return nil
         }
-    }
-
-}
-
-final class MockPreferredLocalesProvider: PreferredLocalesProviderType {
-
-    var preferredLanguages: [String] {
-        stubbedLocales
-    }
-
-    private let stubbedLocales: [String]
-
-    init(stubbedLocales: [String] = ["en_EN"]) {
-        self.stubbedLocales = stubbedLocales
     }
 
 }

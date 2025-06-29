@@ -49,7 +49,9 @@ class StorefrontTests: StoreKitConfigTestCase {
         let expected = "ESP"
         try await self.changeStorefront(expected)
 
-        let systemInfo = SystemInfo(platformInfo: nil, finishTransactions: false)
+        let systemInfo = SystemInfo(platformInfo: nil,
+                                    finishTransactions: false,
+                                    preferredLocalesProvider: .mock())
         let storefront = try XCTUnwrap(systemInfo.storefront)
 
         expect(storefront.countryCode) == expected

@@ -142,7 +142,8 @@ class PurchasesSyncPurchasesTests: BasePurchasesTests {
         self.systemInfo = MockSystemInfo(platformInfo: nil,
                                          finishTransactions: false,
                                          storeKitVersion: self.storeKitVersion,
-                                         dangerousSettings: DangerousSettings(autoSyncPurchases: false))
+                                         dangerousSettings: DangerousSettings(autoSyncPurchases: false),
+                                         preferredLocalesProvider: .mock())
         Purchases.clearSingleton()
         self.initializePurchasesInstance(appUserId: nil)
 

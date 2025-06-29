@@ -21,6 +21,23 @@ class MockSystemInfo: SystemInfo {
     convenience init(platformInfo: Purchases.PlatformInfo? = nil,
                      finishTransactions: Bool,
                      customEntitlementsComputation: Bool = false,
+                     storeKitVersion: StoreKitVersion = .default,
+                     responseVerificationMode: Signing.ResponseVerificationMode = .disabled,
+                     dangerousSettings: DangerousSettings,
+                     clock: ClockType = TestClock()) {
+        self.init(platformInfo: platformInfo,
+                  finishTransactions: finishTransactions,
+                  storeKitVersion: storeKitVersion,
+                  responseVerificationMode: responseVerificationMode,
+                  dangerousSettings: dangerousSettings,
+                  isAppBackgrounded: false,
+                  clock: clock,
+                  preferredLocalesProvider: .mock())
+    }
+
+    convenience init(platformInfo: Purchases.PlatformInfo? = nil,
+                     finishTransactions: Bool,
+                     customEntitlementsComputation: Bool = false,
                      uiPreviewMode: Bool = false,
                      storeKitVersion: StoreKitVersion = .default,
                      responseVerificationMode: Signing.ResponseVerificationMode = .disabled,
@@ -31,12 +48,13 @@ class MockSystemInfo: SystemInfo {
             internalSettings: DangerousSettings.Internal.default,
             uiPreviewMode: uiPreviewMode
         )
+
         self.init(platformInfo: platformInfo,
                   finishTransactions: finishTransactions,
+                  customEntitlementsComputation: customEntitlementsComputation,
                   storeKitVersion: storeKitVersion,
                   responseVerificationMode: responseVerificationMode,
                   dangerousSettings: dangerousSettings,
-                  isAppBackgrounded: false,
                   clock: clock)
     }
 

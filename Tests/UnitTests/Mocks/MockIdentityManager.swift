@@ -18,7 +18,8 @@ class MockIdentityManager: IdentityManager {
     init(mockAppUserID: String, mockDeviceCache: MockDeviceCache) {
         let mockSystemInfo = MockSystemInfo(platformInfo: nil,
                                             finishTransactions: false,
-                                            dangerousSettings: nil)
+                                            dangerousSettings: nil,
+                                            preferredLocalesProvider: .mock())
         let mockBackend = MockBackend()
 
         self.mockAppUserID = mockAppUserID

@@ -988,7 +988,8 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
         self.systemInfo = MockSystemInfo(platformInfo: nil,
                                          finishTransactions: false,
                                          storeKitVersion: .storeKit1,
-                                         dangerousSettings: DangerousSettings(autoSyncPurchases: false))
+                                         dangerousSettings: DangerousSettings(autoSyncPurchases: false),
+                                         preferredLocalesProvider: .mock())
         self.initializePurchasesInstance(appUserId: nil)
 
         self.purchases.purchase(product: Self.mockProduct) { (_, _, _, _) in }
@@ -1013,7 +1014,8 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
         self.systemInfo = MockSystemInfo(platformInfo: nil,
                                          finishTransactions: true,
                                          storeKitVersion: .storeKit1,
-                                         dangerousSettings: DangerousSettings(autoSyncPurchases: false))
+                                         dangerousSettings: DangerousSettings(autoSyncPurchases: false),
+                                         preferredLocalesProvider: .mock())
         self.initializePurchasesInstance(appUserId: nil)
 
         self.purchases.purchase(product: Self.mockProduct) { (_, _, _, _) in }
