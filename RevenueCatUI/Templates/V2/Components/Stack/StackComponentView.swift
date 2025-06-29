@@ -11,7 +11,7 @@
 //
 //  Created by James Borthwick on 2024-08-20.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 // swiftlint:disable file_length
@@ -22,10 +22,13 @@ import SwiftUI
 struct StackComponentView: View {
 
     @EnvironmentObject
+    private var packageContext: PackageContext
+
+    @EnvironmentObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
     @EnvironmentObject
-    private var packageContext: PackageContext
+    private var paywallPromoOfferCache: PaywallPromoOfferCacheV2
 
     @Environment(\.componentViewState)
     private var componentViewState
@@ -64,6 +67,9 @@ struct StackComponentView: View {
             condition: self.screenCondition,
             isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                 package: self.packageContext.package
+            ),
+            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                for: self.packageContext.package
             )
         ) { style in
             if style.visible {

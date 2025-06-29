@@ -152,14 +152,24 @@ extension PurchaseHandler {
     func purchase(package: Package) async throws {
         switch self.purchases.purchasesAreCompletedBy {
         case .revenueCat:
-            try await performPurchase(package: package)
+            try await performPurchase(package: package, promotionalOffer: nil)
         case .myApp:
-            try await performExternalPurchaseLogic(package: package)
+            try await performExternalPurchaseLogic(package: package, promotionalOffer: nil)
         }
     }
 
     @MainActor
-    func performPurchase(package: Package) async throws {
+    func purchase(package: Package, promotionalOffer: PromotionalOffer?) async throws {
+        switch self.purchases.purchasesAreCompletedBy {
+        case .revenueCat:
+            try await performPurchase(package: package, promotionalOffer: promotionalOffer)
+        case .myApp:
+            try await performExternalPurchaseLogic(package: package, promotionalOffer: promotionalOffer)
+        }
+    }
+
+    @MainActor
+    func performPurchase(package: Package, promotionalOffer: PromotionalOffer?) async throws {
         Logger.debug(Strings.executing_purchase_logic)
         self.packageBeingPurchased = package
         self.purchaseResult = nil
@@ -173,7 +183,14 @@ extension PurchaseHandler {
         self.startAction(.purchase)
 
         do {
-            let result = try await self.purchases.purchase(package: package)
+            let result: PurchaseResultData
+
+            if let promotionalOffer {
+                result = try await self.purchases.purchase(package: package, promotionalOffer: promotionalOffer)
+            } else {
+                result = try await self.purchases.purchase(package: package)
+            }
+
             self.purchaseResult = result
 
             if result.userCancelled {
@@ -191,9 +208,10 @@ extension PurchaseHandler {
     }
 
     @MainActor
-    func performExternalPurchaseLogic(package: Package) async throws {
+    func performExternalPurchaseLogic(package: Package, promotionalOffer: PromotionalOffer?) async throws {
         Logger.debug(Strings.executing_external_purchase_logic)
 
+        // WIP: Handle promotionalOffer in performPurchase
         guard let externalPurchaseMethod = self.performPurchase else {
             throw PaywallError.performPurchaseAndRestoreHandlersNotDefined(missingBlocks: "performPurchase is")
         }
@@ -412,6 +430,10 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
     }
 
     func purchase(package: Package) async throws -> PurchaseResultData {
+        throw ErrorCode.configurationError
+    }
+
+    func purchase(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
         throw ErrorCode.configurationError
     }
 
