@@ -512,6 +512,11 @@ extension PurchaseInformation {
             return nil
         }
 
+        if isExpired {
+            return localizations[.purchaseInfoExpiredOnDate]
+                .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: expirationDate))
+        }
+
         return localizations[.expiresOnDateWithoutChanges]
             .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: expirationDate))
     }
