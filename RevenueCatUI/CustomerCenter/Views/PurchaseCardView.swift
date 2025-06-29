@@ -22,6 +22,8 @@ import SwiftUI
 @available(watchOS, unavailable)
 struct PurchaseInformationCardView: View {
 
+    // swiftlint:disable file_length
+
     @Environment(\.colorScheme)
     private var colorScheme
 
@@ -36,13 +38,11 @@ struct PurchaseInformationCardView: View {
     private let additionalIcon: Image?
     private let additionalInfo: String?
 
-    private let paidPrice: String
     private let showChevron: Bool
 
     init(
         title: String,
         storeTitle: String,
-        paidPrice: String,
         accessibilityIdentifier: String,
         badge: PurchaseInformationCardView.Badge? = nil,
         additionalIcon: Image? = nil,
@@ -51,7 +51,6 @@ struct PurchaseInformationCardView: View {
         showChevron: Bool = true
     ) {
         self.title = title
-        self.paidPrice = paidPrice
         self.subtitle = subtitle
         self.badge = badge
         self.additionalIcon = additionalIcon
@@ -71,9 +70,8 @@ struct PurchaseInformationCardView: View {
         self.title = purchaseInformation.title
         self.accessibilityIdentifier = accessibilityIdentifier
 
-        if let renewalDate = purchaseInformation.renewalDate {
+        if purchaseInformation.renewalDate != nil {
             self.subtitle = purchaseInformation.priceRenewalString(
-                date: renewalDate,
                 localizations: localization
             )
         } else if purchaseInformation.expirationDate != nil {
@@ -87,18 +85,13 @@ struct PurchaseInformationCardView: View {
         self.additionalIcon = refundStatus?.icon
         self.additionalInfo = refundStatus?.subtitle(localization: localization)
 
-        switch purchaseInformation.pricePaid {
-        case .free, .unknown:
-            self.paidPrice = ""
-        case .nonFree(let pricePaid) where purchaseInformation.shoulShowPricePaid:
-            self.paidPrice = pricePaid
-        case .nonFree:
-            self.paidPrice = ""
-        }
         self.storeTitle = localization[purchaseInformation.storeLocalizationKey]
         self.showChevron = showChevron
 
-        self.badge = Badge(purchaseInformation: purchaseInformation, localization: localization)
+        self.badge = Badge(
+            purchaseInformation: purchaseInformation,
+            localization: localization
+        )
     }
 
     var body: some View {
@@ -113,14 +106,7 @@ struct PurchaseInformationCardView: View {
                             .multilineTextAlignment(.leading)
 
                         if let badge {
-                            Text(badge.title)
-                                .font(.caption2)
-                                .bold()
-                                .padding(.vertical, 2)
-                                .padding(.horizontal, 4)
-                                .background(badge.backgroundColor)
-                                .clipShape(RoundedRectangle(cornerRadius: 4))
-                                .accessibilityIdentifier([accessibilityIdentifier, badge.id].joined(separator: "_"))
+                            badge
                         }
                     }
                     .padding(.bottom, 8)
@@ -142,7 +128,6 @@ struct PurchaseInformationCardView: View {
                 }
             } content: {
                 HStack {
-                    Text(paidPrice)
                     if showChevron {
                         Image(systemName: "chevron.forward")
                             .resizable()
@@ -225,16 +210,54 @@ private extension RefundRequestStatus {
 @available(watchOS, unavailable)
 extension PurchaseInformationCardView {
 
-    struct Badge {
+    struct Badge: View {
+        @Environment(\.colorScheme)
+        private var colorScheme
+
         let title: String
         let id: String
-        let backgroundColor: Color
+        let backgroundColor: Color?
+        let borderColor: Color
+        var accessibilityIdentifier: String = "PurchaseInformationCardView.Badge"
+
+        var body: some View {
+            Text(title)
+                .font(.caption2)
+                .bold()
+                .padding(.vertical, 2)
+                .padding(.horizontal, 4)
+                .background(
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(backgroundColor ?? Color(
+                            colorScheme == .light
+                            ? UIColor.systemBackground
+                            : UIColor.secondarySystemBackground
+                        ))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 4)
+                        .stroke(borderColor, lineWidth: 1)
+                )
+                .accessibilityIdentifier([accessibilityIdentifier, id].joined(separator: "_"))
+        }
 
         static func cancelled(_ localizations: CustomerCenterConfigData.Localization) -> Badge {
             Badge(
                 title: localizations[.badgeCancelled],
                 id: CCLocalizedString.badgeCancelled.rawValue,
-                backgroundColor: Color(red: 242 / 256, green: 84 / 256, blue: 91 / 256, opacity: 0.15)
+                backgroundColor: Color(red: 242 / 256, green: 84 / 256, blue: 91 / 256, opacity: 0.15),
+                borderColor: .clear
+            )
+        }
+
+        static func lifetime(
+            _ localizations: CustomerCenterConfigData.Localization
+        ) -> Badge {
+            Badge(
+                title: localizations[.badgeLifetime],
+                id: CCLocalizedString.badgeLifetime.rawValue,
+                backgroundColor: nil,
+                borderColor: Color(red: 60 / 256, green: 60 / 256, blue: 67 / 256, opacity: 0.29)
             )
         }
 
@@ -242,7 +265,8 @@ extension PurchaseInformationCardView {
             Badge(
                 title: localizations[.badgeTrialCancelled],
                 id: CCLocalizedString.badgeTrialCancelled.rawValue,
-                backgroundColor: Color(red: 242 / 256, green: 84 / 256, blue: 91 / 256, opacity: 0.15)
+                backgroundColor: Color(red: 242 / 256, green: 84 / 256, blue: 91 / 256, opacity: 0.15),
+                borderColor: .clear
             )
         }
 
@@ -250,7 +274,8 @@ extension PurchaseInformationCardView {
             Badge(
                 title: localizations[.badgeFreeTrial],
                 id: CCLocalizedString.badgeFreeTrial.rawValue,
-                backgroundColor: Color(red: 245 / 256, green: 202 / 256, blue: 92 / 256, opacity: 0.2)
+                backgroundColor: Color(red: 245 / 256, green: 202 / 256, blue: 92 / 256, opacity: 0.2),
+                borderColor: .clear
             )
         }
 
@@ -258,7 +283,8 @@ extension PurchaseInformationCardView {
             Badge(
                 title: localizations[.active],
                 id: CCLocalizedString.active.rawValue,
-                backgroundColor: Color(red: 52 / 256, green: 199 / 256, blue: 89 / 256, opacity: 0.2)
+                backgroundColor: Color(red: 52 / 256, green: 199 / 256, blue: 89 / 256, opacity: 0.2),
+                borderColor: .clear
             )
         }
 
@@ -266,18 +292,25 @@ extension PurchaseInformationCardView {
             Badge(
                 title: localizations[.expired],
                 id: CCLocalizedString.expired.rawValue,
-                backgroundColor: Color(red: 242 / 256, green: 242 / 256, blue: 247 / 256, opacity: 0.2)
+                backgroundColor: Color(red: 242 / 256, green: 242 / 256, blue: 247 / 256, opacity: 0.2),
+                borderColor: .clear
             )
         }
 
-        init (title: String, id: String, backgroundColor: Color) {
+        init(title: String, id: String, backgroundColor: Color?, borderColor: Color) {
             self.title = title
             self.id = id
             self.backgroundColor = backgroundColor
+            self.borderColor = borderColor
         }
 
-        init?(purchaseInformation: PurchaseInformation, localization: CustomerCenterConfigData.Localization) {
-            if purchaseInformation.isExpired {
+        init?(
+            purchaseInformation: PurchaseInformation,
+            localization: CustomerCenterConfigData.Localization
+        ) {
+            if purchaseInformation.isLifetimeSubscription {
+                self = .lifetime(localization)
+            } else if purchaseInformation.isExpired {
                 self = .expired(localization)
             } else if purchaseInformation.isCancelled, purchaseInformation.isTrial {
                 self = .cancelledTrial(localization)
@@ -305,12 +338,60 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
         ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
             ScrollViewWithOSBackground {
                 PurchaseInformationCardView(
-                    title: "Product name",
-                    storeTitle: "App Store",
-                    paidPrice: "$19.99",
-                    accessibilityIdentifier: "accessibilityIdentifier",
-                    badge: .cancelled(CustomerCenterConfigData.default.localization),
-                    subtitle: "Renews 24 May for $19.99"
+                    purchaseInformation: .lifetime,
+                    localization: CustomerCenterConfigData.default.localization,
+                    accessibilityIdentifier: "accessibilityIdentifier"
+                )
+                .cornerRadius(10)
+                .padding([.leading, .trailing])
+
+                PurchaseInformationCardView(
+                    purchaseInformation: .mock(
+                        isCancelled: true,
+                        renewalDate: nil
+                    ),
+                    localization: CustomerCenterConfigData.default.localization,
+                    accessibilityIdentifier: "accessibilityIdentifier"
+                )
+                .cornerRadius(10)
+                .padding([.leading, .trailing])
+
+                PurchaseInformationCardView(
+                    purchaseInformation: .mock(
+                        isTrial: true,
+                        isCancelled: true,
+                        renewalDate: nil
+                    ),
+                    localization: CustomerCenterConfigData.default.localization,
+                    accessibilityIdentifier: "accessibilityIdentifier"
+                )
+                .cornerRadius(10)
+                .padding([.leading, .trailing])
+
+                PurchaseInformationCardView(
+                    purchaseInformation: .mock(pricePaid: .free, isTrial: true, isCancelled: false),
+                    localization: CustomerCenterConfigData.default.localization,
+                    accessibilityIdentifier: "accessibilityIdentifier"
+                )
+                .cornerRadius(10)
+                .padding([.leading, .trailing])
+
+                PurchaseInformationCardView(
+                    purchaseInformation: .mock(isTrial: true, isCancelled: false),
+                    localization: CustomerCenterConfigData.default.localization,
+                    accessibilityIdentifier: "accessibilityIdentifier"
+                )
+                .cornerRadius(10)
+                .padding([.leading, .trailing])
+
+                PurchaseInformationCardView(
+                    purchaseInformation: .mock(
+                        isExpired: true,
+                        expirationDate: PurchaseInformation.defaultExpirationDate,
+                        renewalDate: nil
+                    ),
+                    localization: CustomerCenterConfigData.default.localization,
+                    accessibilityIdentifier: "accessibilityIdentifier"
                 )
                 .cornerRadius(10)
                 .padding([.leading, .trailing])
@@ -318,63 +399,11 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                 PurchaseInformationCardView(
                     title: "Product name",
                     storeTitle: "App Store",
-                    paidPrice: "$19.99",
-                    accessibilityIdentifier: "accessibilityIdentifier",
-                    badge: .cancelledTrial(CustomerCenterConfigData.default.localization),
-                    subtitle: "Renews 24 May for $19.99"
-                )
-                .cornerRadius(10)
-                .padding([.leading, .trailing])
-
-                PurchaseInformationCardView(
-                    title: "Product name",
-                    storeTitle: "App Store",
-                    paidPrice: "$19.99",
-                    accessibilityIdentifier: "accessibilityIdentifier",
-                    badge: .freeTrial(CustomerCenterConfigData.default.localization),
-                    subtitle: "Renews 24 May for $19.99"
-                )
-                .cornerRadius(10)
-                .padding([.leading, .trailing])
-
-                PurchaseInformationCardView(
-                    title: "Product name",
-                    storeTitle: "App Store",
-                    paidPrice: "$19.99",
-                    accessibilityIdentifier: "accessibilityIdentifier",
-                    badge: .active(CustomerCenterConfigData.default.localization),
-                    additionalIcon: Image(systemName: "exclamationmark.triangle.fill"),
-                    additionalInfo: "Apple has received the refund request Apple has received the refund request",
-                    subtitle: "Renews 24 May for $19.99"
-                )
-                .cornerRadius(10)
-                .padding([.leading, .trailing])
-
-                PurchaseInformationCardView(
-                    title: "Product name",
-                    storeTitle: "App Store",
-                    paidPrice: "$19.99",
                     accessibilityIdentifier: "accessibilityIdentifier",
                     badge: .active(CustomerCenterConfigData.default.localization),
                     additionalIcon: Image(systemName: "info.circle.fill"),
                     additionalInfo: "An error occurred while processing the refund request. Please try again.",
                     subtitle: "Renews 24 May for $19.99"
-                )
-                .cornerRadius(10)
-                .padding([.leading, .trailing])
-
-                PurchaseInformationCardView(
-                    purchaseInformation: .consumable,
-                    localization: CustomerCenterConfigData.default.localization,
-                    accessibilityIdentifier: "accessibilityIdentifier"
-                )
-                .cornerRadius(10)
-                .padding([.leading, .trailing])
-
-                PurchaseInformationCardView(
-                    purchaseInformation: .expired,
-                    localization: CustomerCenterConfigData.default.localization,
-                    accessibilityIdentifier: "accessibilityIdentifier"
                 )
                 .cornerRadius(10)
                 .padding([.leading, .trailing])

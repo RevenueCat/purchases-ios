@@ -108,7 +108,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
     }
 
     func testLifetimeSubscriptionDoesNotShowCancel() {
-        let purchase = PurchaseInformation.mock(isLifetime: true)
+        let purchase = PurchaseInformation.mock(isSubscription: true, expirationDate: nil)
 
         let viewModel = BaseManageSubscriptionViewModel(
             screen: BaseManageSubscriptionViewModelTests.default,

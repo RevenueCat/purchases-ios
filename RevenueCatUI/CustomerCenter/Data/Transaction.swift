@@ -32,6 +32,7 @@ protocol Transaction {
     var identifier: String? { get }
     var isSandbox: Bool { get }
     var originalPurchaseDate: Date? { get }
+    var isSubscrition: Bool { get }
 }
 
 enum TransactionType {
@@ -72,6 +73,10 @@ enum TransactionType {
 
     var identifier: String? {
         nil
+    }
+
+    var isSubscrition: Bool {
+        true
     }
 }
 
@@ -119,5 +124,9 @@ extension NonSubscriptionTransaction: Transaction {
 
     var originalPurchaseDate: Date? {
         nil
+    }
+
+    var isSubscrition: Bool {
+        false
     }
 }

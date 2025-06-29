@@ -33,4 +33,5 @@ struct MockTransaction: Transaction {
     var identifier: String?
     var originalPurchaseDate: Date?
     var isSandbox: Bool
+    var isSubscrition: Bool
 }
