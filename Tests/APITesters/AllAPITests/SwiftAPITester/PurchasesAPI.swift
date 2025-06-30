@@ -433,6 +433,16 @@ private func checkPaywallsAPI(_ purchases: Purchases, _ event: PaywallEvent) asy
     }
 }
 
+private func checkVirtualCurrenciesAPI(_ purchases: Purchases) async throws {
+
+    // Fetching Virtual Currencies
+    purchases.virtualCurrencies() { (virtualCurrencies: VirtualCurrencies?, error: PublicError?) in }
+    let _: VirtualCurrencies = try await purchases.virtualCurrencies()
+
+    // Invalidating Virtual Currencies Cache
+    purchases.invalidateVirtualCurrenciesCache()
+}
+
 @available(*, deprecated) // Ignore deprecation warnings
 private func checkAsyncDeprecatedMethods(_ purchases: Purchases, _ stp: StoreProduct) async throws {
     let _: [PromotionalOffer] = await purchases.getEligiblePromotionalOffers(forProduct: stp)

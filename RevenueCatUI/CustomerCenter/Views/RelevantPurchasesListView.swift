@@ -20,6 +20,7 @@ import SwiftUI
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
+// swiftlint:disable file_length
 struct RelevantPurchasesListView: View {
 
     @Environment(\.appearance)
@@ -34,7 +35,7 @@ struct RelevantPurchasesListView: View {
     @Environment(\.navigationOptions)
     var navigationOptions
 
-    @StateObject
+    @ObservedObject
     private var viewModel: RelevantPurchasesListViewModel
 
     @ObservedObject
@@ -44,12 +45,14 @@ struct RelevantPurchasesListView: View {
         customerInfoViewModel: CustomerCenterViewModel,
         screen: CustomerCenterConfigData.Screen,
         shouldShowSeeAllPurchases: Bool,
+        virtualCurrencies: RevenueCat.VirtualCurrencies?,
         purchasesProvider: CustomerCenterPurchasesType,
         actionWrapper: CustomerCenterActionWrapper
     ) {
         let viewModel = RelevantPurchasesListViewModel(
             screen: screen,
             actionWrapper: actionWrapper,
+            virtualCurrencies: virtualCurrencies,
             shouldShowSeeAllPurchases: shouldShowSeeAllPurchases,
             purchasesProvider: purchasesProvider
         )
@@ -83,6 +86,7 @@ struct RelevantPurchasesListView: View {
                     customerInfoViewModel: customerInfoViewModel,
                     screen: viewModel.screen,
                     purchaseInformation: viewModel.purchaseInformation,
+                    virtualCurrencies: nil, // Don't show virtual currencies when navigated to from here
                     showPurchaseHistory: false,
                     allowsMissingPurchaseAction: false,
                     purchasesProvider: self.viewModel.purchasesProvider,
@@ -98,6 +102,19 @@ struct RelevantPurchasesListView: View {
             ) {
                 PurchaseHistoryView(
                     viewModel: PurchaseHistoryViewModel(purchasesProvider: self.viewModel.purchasesProvider)
+                )
+                .environment(\.appearance, appearance)
+                .environment(\.localization, localization)
+                .environment(\.navigationOptions, navigationOptions)
+            }
+            .compatibleNavigation(
+                isPresented: $viewModel.showAllInAppCurrenciesScreen,
+                usesNavigationStack: navigationOptions.usesNavigationStack
+            ) {
+                VirtualCurrencyBalancesScreen(
+                    viewModel: VirtualCurrencyBalancesScreenViewModel(
+                        purchasesProvider: self.viewModel.purchasesProvider
+                    )
                 )
                 .environment(\.appearance, appearance)
                 .environment(\.localization, localization)
@@ -143,6 +160,15 @@ struct RelevantPurchasesListView: View {
                         viewModel.purchaseInformation = $0
                     }
                     .tint(colorScheme == .dark ? .white : .black)
+                }
+
+                if let virtualCurrencies = viewModel.virtualCurrencies, !virtualCurrencies.all.isEmpty {
+                    VirtualCurrenciesScrollViewWithOSBackgroundSection(
+                        virtualCurrencies: virtualCurrencies,
+                        onSeeAllInAppCurrenciesButtonTapped: self.viewModel.displayAllInAppCurrenciesScreen
+                    )
+
+                    Spacer().frame(height: 16)
                 }
 
                 ScrollViewSection(title: localization[.actionsSectionTitle]) {
@@ -312,6 +338,62 @@ struct RelevantPurchasesListView_Previews: PreviewProvider {
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Active subs & other - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                RelevantPurchasesListView(
+                    customerInfoViewModel: CustomerCenterViewModel(
+                        activeSubscriptionPurchases: [],
+                        activeNonSubscriptionPurchases: [],
+                        configuration: .default
+                    ),
+                    viewModel: RelevantPurchasesListViewModel(
+                        screen: warningOffMock.screens[.management]!,
+                        activePurchases: [],
+                        shouldShowSeeAllPurchases: false
+                    )
+                )
+                .environment(\.supportInformation, warningOffMock.support)
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Empty - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                RelevantPurchasesListView(
+                    customerInfoViewModel: CustomerCenterViewModel(
+                        activeSubscriptionPurchases: purchases,
+                        activeNonSubscriptionPurchases: [],
+                        configuration: .default
+                    ),
+                    viewModel: RelevantPurchasesListViewModel(
+                        screen: warningOffMock.screens[.management]!,
+                        activePurchases: purchases,
+                        virtualCurrencies: VirtualCurrenciesFixtures.fourVirtualCurrencies,
+                        shouldShowSeeAllPurchases: false
+                    )
+                )
+                .environment(\.supportInformation, warningOffMock.support)
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("4 VCs - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                RelevantPurchasesListView(
+                    customerInfoViewModel: CustomerCenterViewModel(
+                        activeSubscriptionPurchases: purchases,
+                        activeNonSubscriptionPurchases: [],
+                        configuration: .default
+                    ),
+                    viewModel: RelevantPurchasesListViewModel(
+                        screen: warningOffMock.screens[.management]!,
+                        activePurchases: purchases,
+                        virtualCurrencies: VirtualCurrenciesFixtures.fiveVirtualCurrencies,
+                        shouldShowSeeAllPurchases: false
+                    )
+                )
+                .environment(\.supportInformation, warningOffMock.support)
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("5 VCs - \(colorScheme)")
         }
         .environment(\.localization, CustomerCenterConfigData.default.localization)
         .environment(\.appearance, CustomerCenterConfigData.default.appearance)

@@ -50,6 +50,7 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
         screen: CustomerCenterConfigData.Screen,
         showPurchaseHistory: Bool,
         allowsMissingPurchaseAction: Bool,
+        virtualCurrencies: RevenueCat.VirtualCurrencies?,
         actionWrapper: CustomerCenterActionWrapper,
         purchaseInformation: PurchaseInformation? = nil,
         refundRequestStatus: RefundRequestStatus? = nil,
@@ -59,15 +60,16 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
             self.allowsMissingPurchaseAction = allowsMissingPurchaseAction
             self.customerInfoViewModel = customerInfoViewModel
 
-            super.init(
-                screen: screen,
-                actionWrapper: actionWrapper,
-                purchaseInformation: purchaseInformation,
-                refundRequestStatus: refundRequestStatus,
-                purchasesProvider: purchasesProvider,
-                loadPromotionalOfferUseCase: loadPromotionalOfferUseCase
-            )
-        }
+        super.init(
+            screen: screen,
+            actionWrapper: actionWrapper,
+            purchaseInformation: purchaseInformation,
+            virtualCurrencies: virtualCurrencies,
+            refundRequestStatus: refundRequestStatus,
+            purchasesProvider: purchasesProvider,
+            loadPromotionalOfferUseCase: loadPromotionalOfferUseCase
+        )
+    }
 
     func refreshPurchase() {
         cancellable = customerInfoViewModel.publisher(for: purchaseInformation)?
@@ -93,6 +95,7 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
         screen: CustomerCenterConfigData.Screen,
         showPurchaseHistory: Bool,
         allowsMissingPurchaseAction: Bool,
+        virtualCurrencies: RevenueCat.VirtualCurrencies?,
         purchaseInformation: PurchaseInformation? = nil,
         refundRequestStatus: RefundRequestStatus? = nil
     ) {
@@ -101,6 +104,7 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
             screen: screen,
             showPurchaseHistory: showPurchaseHistory,
             allowsMissingPurchaseAction: allowsMissingPurchaseAction,
+            virtualCurrencies: virtualCurrencies,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchaseInformation,
             refundRequestStatus: refundRequestStatus,

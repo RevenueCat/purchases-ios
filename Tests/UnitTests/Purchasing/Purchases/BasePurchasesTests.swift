@@ -127,6 +127,7 @@ class BasePurchasesTests: TestCase {
         self.mockTransactionsManager = MockTransactionsManager(receiptParser: self.mockReceiptParser)
         self.mockStoreMessagesHelper = .init()
         self.mockWinBackOfferEligibilityCalculator = MockWinBackOfferEligibilityCalculator()
+        self.mockVirtualCurrencyManager = MockVirtualCurrencyManager()
         self.webPurchaseRedemptionHelper = .init(backend: self.backend,
                                                  identityManager: self.identityManager,
                                                  customerInfoManager: self.customerInfoManager)
@@ -195,6 +196,7 @@ class BasePurchasesTests: TestCase {
     var mockWinBackOfferEligibilityCalculator: MockWinBackOfferEligibilityCalculator!
     var webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper!
     var diagnosticsTracker: DiagnosticsTrackerType?
+    var mockVirtualCurrencyManager: MockVirtualCurrencyManager!
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     var mockDiagnosticsTracker: MockDiagnosticsTracker {
@@ -319,7 +321,8 @@ class BasePurchasesTests: TestCase {
                                    purchasedProductsFetcher: self.mockPurchasedProductsFetcher,
                                    trialOrIntroPriceEligibilityChecker: self.cachingTrialOrIntroPriceEligibilityChecker,
                                    storeMessagesHelper: self.mockStoreMessagesHelper,
-                                   diagnosticsTracker: self.diagnosticsTracker)
+                                   diagnosticsTracker: self.diagnosticsTracker,
+                                   virtualCurrencyManager: self.mockVirtualCurrencyManager)
 
         self.purchasesOrchestrator.delegate = self.purchases
 
