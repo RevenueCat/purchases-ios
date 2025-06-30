@@ -104,7 +104,7 @@ let project = Project(
             name: "ReceiptParser",
             destinations: allDestinations,
             product: .framework,
-            bundleId: "com.revenuecat.receiptparser",
+            bundleId: "com.revenuecat.ReceiptParser",
             deploymentTargets: allDeploymentTargets,
             infoPlist: .default,
             sources: [
