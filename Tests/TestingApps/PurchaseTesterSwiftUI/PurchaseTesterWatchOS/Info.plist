@@ -4,5 +4,13 @@
 <dict>
 	<key>REVENUECAT_API_KEY</key>
 	<string>$(REVENUECAT_API_KEY)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>WKWatchKitApp</key>
+	<true/>
 </dict>
 </plist>
