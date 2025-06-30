@@ -380,8 +380,8 @@ platform :ios do
     end
 
     targeted_device_families = {
-      "mac-catalyst-optimized-for-mac" => "1,2,3,4,6",
-      "mac-catalyst-scaled-to-match-ipad" => "1,2,3,4"
+      "mac-catalyst-optimized-for-mac" => "1,2,3,4,5,6,7",
+      "mac-catalyst-scaled-to-match-ipad" => "1,2,3,4,5,7"
     }
 
     xcargs = "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
