@@ -13,7 +13,7 @@
 
 import Foundation
 
-class GetVirtualCurrenciesOperation: CacheableNetworkOperation {
+final class GetVirtualCurrenciesOperation: CacheableNetworkOperation {
 
     private let virtualCurrenciesCallbackCache: CallbackCache<VirtualCurrenciesCallback>
     private let configuration: AppUserConfiguration
