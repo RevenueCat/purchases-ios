@@ -414,7 +414,7 @@ class DeviceCache {
             return timeSinceLastCheck >= cacheDurationInSeconds
         }
     }
-    
+
     func clearVirtualCurrenciesCache(appUserID: String) {
         self.userDefaults.write {
             Self.clearVirtualCurrenciesCacheLastUpdatedTimestamp($0, appUserID: appUserID)
