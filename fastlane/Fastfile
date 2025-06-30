@@ -345,10 +345,10 @@ platform :ios do
   desc "Build the Paywalls Test app for Emerge Snapshots"
   lane :build_paywalls_tester_for_emerge do |options|
     build_paywalls_tester_for_emerge_ios(options)
-    build_paywalls_tester_for_emerge_mac(platform: "mac-catalyst-scaled-to-match-ipad")
+    # build_paywalls_tester_for_emerge_mac(platform: "mac-catalyst-scaled-to-match-ipad")
     build_paywalls_tester_for_emerge_mac(platform: "mac-catalyst-optimized-for-mac")
-    build_paywalls_tester_for_emerge_mac(platform: "ipad-app-on-mac")
-    build_paywalls_tester_for_emerge_mac(platform: "iphone-app-on-mac")
+    # build_paywalls_tester_for_emerge_mac(platform: "ipad-app-on-mac")
+    # build_paywalls_tester_for_emerge_mac(platform: "iphone-app-on-mac")
   end
   
   lane :build_paywalls_tester_for_emerge_ios do |options|
