@@ -1,18 +1,6 @@
 import ProjectDescription
 import ProjectDescriptionHelpers
 
-let allDestinations: Destinations = [
-    .iPhone,
-    .iPad,
-    .mac,
-    .macWithiPadDesign,
-    .macCatalyst,
-    .appleWatch,
-    .appleTv,
-    .appleVision,
-    .appleVisionWithiPadDesign
-]
-
 let allDeploymentTargets: DeploymentTargets = .multiplatform(
     iOS: "13.0",
     macOS: "10.15",
@@ -27,10 +15,10 @@ let project = Project(
     targets: [
         .target(
             name: "RevenueCatUI",
-            destinations: allDestinations,
+            destinations: .allRevenueCat,
             product: .framework,
             bundleId: "com.revenuecat.RevenueCatUI",
-            deploymentTargets: allDeploymentTargets,
+            deploymentTargets: .allRevenueCat,
             infoPlist: .default,
             sources: [
                 "../../RevenueCatUI/**/*.swift"
@@ -43,10 +31,10 @@ let project = Project(
                 // MARK: – RevenueCat Tests
         .target(
             name: "RevenueCatUITests",
-            destinations: allDestinations,
+            destinations: .allRevenueCat,
             product: .unitTests,
             bundleId: "com.revenuecat.sampleapp.tests",
-            deploymentTargets: allDeploymentTargets,
+            deploymentTargets: .allRevenueCat,
             infoPlist: .default,
             sources: [
                 "../../Tests/RevenueCatUITests/**/*.swift"

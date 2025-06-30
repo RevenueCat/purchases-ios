@@ -32,10 +32,10 @@ let project = Project(
         // MARK: – Main Library
         .target(
             name: "RevenueCat",
-            destinations: allDestinations,
+            destinations: .allRevenueCat,
             product: .framework,
             bundleId: "com.revenuecat.Purchases",
-            deploymentTargets: allDeploymentTargets,
+            deploymentTargets: .allRevenueCat,
             infoPlist: "../../Sources/Info.plist",
             sources: [
                 .glob(
@@ -57,10 +57,10 @@ let project = Project(
 
         .target(
             name: "UnitTests",
-            destinations: allDestinations,
+            destinations: .allRevenueCat,
             product: .unitTests,
             bundleId: "com.revenuecat.PurchasesTests",
-            deploymentTargets: allDeploymentTargets,
+            deploymentTargets: .allRevenueCat,
             infoPlist: .default,
             sources: [
                 "../../Tests/UnitTests/**/*.swift"
@@ -145,7 +145,7 @@ let project = Project(
             sources: [
                 "../../Tests/UnitTestsHostApp/**/*.swift"
             ],
-            dependencies: []
+            dependencies: [],
         ),
 
         // MARK: – StoreKit Unit Tests
@@ -197,7 +197,12 @@ let project = Project(
             ],
             dependencies: [
              .storeKit
-            ]
+            ],
+            settings: .settings(
+                base: [
+                    "APPLICATION_EXTENSION_API_ONLY": "YES"
+                ]
+            )
         ),
 
         .target(
@@ -216,7 +221,9 @@ let project = Project(
                 "../../Tests/BackendIntegrationTests/CustomEntitlementsComputationIntegrationTests.swift",
                 "../../Tests/UnitTests/Misc/**/TestCase.swift",
                 "../../Tests/BackendIntegrationTests/BaseBackendIntegrationTests.swift",
-                "../../Tests/BackendIntegrationTests/BaseStoreKitIntegrationTests.swift"
+                "../../Tests/BackendIntegrationTests/BaseStoreKitIntegrationTests.swift",
+                "../../Tests/UnitTests/Mocks/MockSandboxEnvironmentDetector.swift",
+                "../../Tests/UnitTests/TestHelpers/**/TestLogHandler.swift"
             ],
             dependencies: [
                 .target(name: "RevenueCat"),
@@ -263,7 +270,6 @@ let project = Project(
             ],
             dependencies: [
                 .target(name: "RevenueCat"),
-                .target(name: "BackendIntegrationTestsHostApp"),
                 .nimble,
                 .ohHTTPStubsSwift,
                 .snapshotTesting,
