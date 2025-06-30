@@ -390,7 +390,7 @@ platform :ios do
       xcargs << "TARGETED_DEVICE_FAMILY='#{targeted_device_families[platform]}'"
     end
     
-    archive_path = File.absolute_path("build/PaywallsTester-#{app_id_suffix}.xcarchive")
+    archive_path = File.absolute_path("build/PaywallsTester-#{platform}.xcarchive")
 
     gym(
       workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
