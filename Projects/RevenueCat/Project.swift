@@ -192,10 +192,9 @@ let project = Project(
             product: .app,
             bundleId: "com.revenuecat.StoreKitTestApp",
             deploymentTargets: .multiplatform(
-                iOS: "16.0",
-                macOS: "11.0",
-                watchOS: "7.0",
-                tvOS: "14.0"
+                iOS: "14.1",
+                macOS: "10.15",
+                tvOS: "14.1"
             ),
             infoPlist: .file(path: "../../Tests/UnitTestsHostApp/Info.plist"),
             sources: [
