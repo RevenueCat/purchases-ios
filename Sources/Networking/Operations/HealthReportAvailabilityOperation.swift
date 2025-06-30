@@ -11,6 +11,7 @@
 //
 //  Created by Pol Piella Abadia on 27/06/2025.
 
+#if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 import Foundation
 
 final class HealthReportAvailabilityOperation: CacheableNetworkOperation {
@@ -71,3 +72,4 @@ final class HealthReportAvailabilityOperation: CacheableNetworkOperation {
 
 // Restating inherited @unchecked Sendable from Foundation's Operation
 extension HealthReportAvailabilityOperation: @unchecked Sendable {}
+#endif

@@ -44,6 +44,7 @@ class InternalAPI {
                                                  cacheStatus: cacheStatus)
     }
 
+    #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func healthReportRequest(appUserID: String, completion: @escaping HealthReportResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)
@@ -76,6 +77,7 @@ class InternalAPI {
                                                  delay: .none,
                                                  cacheStatus: cacheStatus)
     }
+    #endif
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func postPaywallEvents(events: [StoredEvent], completion: @escaping ResponseHandler) {
