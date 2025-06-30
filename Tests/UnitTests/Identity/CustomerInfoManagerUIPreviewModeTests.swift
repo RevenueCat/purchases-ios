@@ -26,7 +26,8 @@ class CustomerInfoManagerUIPreviewModeTests: BaseCustomerInfoManagerTests {
         self.mockSystemInfo = MockSystemInfo(
             platformInfo: nil,
             finishTransactions: true,
-            dangerousSettings: DangerousSettings(uiPreviewMode: true)
+            dangerousSettings: DangerousSettings(uiPreviewMode: true),
+            preferredLocalesProvider: .mock()
         )
 
         try super.setUpWithError()
