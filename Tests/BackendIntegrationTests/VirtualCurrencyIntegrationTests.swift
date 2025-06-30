@@ -35,6 +35,7 @@ class VirtualCurrencyStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         try self.purchases.invalidateVirtualCurrenciesCache()
         let virtualCurrenciesBeforePurchase = try await self.purchases.virtualCurrencies()
 
+        // swiftlint:disable:next todo
         // TODO: We might need to check for this to be 0 depending on the outcome from a discussion with the team
         expect(virtualCurrenciesBeforePurchase["TEST"]?.balance).to(beNil())
         expect(virtualCurrenciesBeforePurchase["TEST2"]?.balance).to(beNil())
@@ -51,6 +52,7 @@ class VirtualCurrencyStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         expect(virtualCurrenciesAfterPurchase["TEST"]?.name).to(equal("Test Currency"))
         expect(virtualCurrenciesAfterPurchase["TEST"]?.serverDescription).to(equal("This is a test currency"))
 
+        // swiftlint:disable:next todo
         // TODO: We might need to check for this to be 0 depending on the outcome from a discussion with the team
 //        expect(virtualCurrenciesAfterPurchase["TEST2"]?.balance).to(beNil())
 
@@ -58,6 +60,7 @@ class VirtualCurrencyStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         _ = try await self.purchases.logIn(userID2)
         let virtualCurrenciesForOtherUser = try await self.purchases.virtualCurrencies()
 
+        // swiftlint:disable:next todo
         // TODO: We might need to check for this to be 0 depending on the outcome from a discussion with the team
 //        expect(virtualCurrenciesForOtherUser["TEST"]?.balance).to(beNil())
 //        expect(virtualCurrenciesForOtherUser["TEST2"]?.balance).to(beNil())
@@ -81,6 +84,7 @@ class VirtualCurrencyStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         let virtualCurrenciesAfterPurchase = try await self.purchases.virtualCurrencies()
 
+        // swiftlint:disable:next todo
         // TODO: We might need to check for this to be 0 depending on the outcome from a discussion with the team
 //        expect(virtualCurrenciesAfterPurchase["TEST"]?.balance).to(beNil())
 //        expect(virtualCurrenciesAfterPurchase["TEST2"]?.balance).to(beNil())

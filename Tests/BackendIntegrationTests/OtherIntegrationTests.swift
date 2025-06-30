@@ -271,6 +271,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         expect(testCurrency2.code).to(equal("TEST2"))
         expect(testCurrency2.name).to(equal("Test Currency 2"))
 
+        // swiftlint:disable:next todo
         // TODO: We probably want to check that this is nil instead, depending on
         // the results of a discussion with the backend team
 //        expect(testCurrency2.serverDescription).to(beEmpty())
@@ -298,6 +299,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         expect(testCurrency2.code).to(equal("TEST2"))
         expect(testCurrency2.name).to(equal("Test Currency 2"))
 
+        // swiftlint:disable:next todo
         // TODO: We probably want to check that this is nil instead, depending on
         // the results of a discussion with the backend team
 //        expect(testCurrency2.serverDescription).to(beEmpty())
