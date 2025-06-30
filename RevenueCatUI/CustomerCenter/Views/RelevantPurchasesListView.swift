@@ -348,7 +348,6 @@ struct RelevantPurchasesListView_Previews: PreviewProvider {
                     ),
                     viewModel: RelevantPurchasesListViewModel(
                         screen: warningOffMock.screens[.management]!,
-                        originalAppUserId: "originalAppUserId",
                         activePurchases: [],
                         shouldShowSeeAllPurchases: false
                     )
@@ -367,7 +366,6 @@ struct RelevantPurchasesListView_Previews: PreviewProvider {
                     ),
                     viewModel: RelevantPurchasesListViewModel(
                         screen: warningOffMock.screens[.management]!,
-                        originalAppUserId: "originalAppUserId",
                         activePurchases: purchases,
                         virtualCurrencies: VirtualCurrenciesFixtures.fourVirtualCurrencies,
                         shouldShowSeeAllPurchases: false
@@ -387,7 +385,6 @@ struct RelevantPurchasesListView_Previews: PreviewProvider {
                     ),
                     viewModel: RelevantPurchasesListViewModel(
                         screen: warningOffMock.screens[.management]!,
-                        originalAppUserId: "originalAppUserId",
                         activePurchases: purchases,
                         virtualCurrencies: VirtualCurrenciesFixtures.fiveVirtualCurrencies,
                         shouldShowSeeAllPurchases: false
