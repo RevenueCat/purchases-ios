@@ -524,13 +524,11 @@ extension PurchaseInformation {
         case .appStore: return .storeAppStore
         case .macAppStore: return .storeMacAppStore
         case .playStore: return .storePlayStore
-        case .stripe: return .storeStripe
         case .promotional: return .cardStorePromotional
         case .amazon: return .storeAmazon
-        case .rcBilling: return .storeRCBilling
-        case .external: return .storeExternal
-        case .paddle: return .storePaddle
         case .unknownStore: return .storeUnknownStore
+        case .paddle, .stripe, .rcBilling, .external:
+            return .storeWeb
         }
     }
 }
