@@ -397,12 +397,77 @@ platform :ios do
 
   desc "Build the Paywalls Test app for Emerge Snapshots"
   lane :build_paywalls_tester_for_emerge do |options|
+    build_paywalls_tester_for_emerge_ios(options)
+    build_paywalls_tester_for_emerge_mac(platform: "mac-catalyst-scaled-to-match-ipad")
+    build_paywalls_tester_for_emerge_mac(platform: "mac-catalyst-optimized-for-mac")
+    build_paywalls_tester_for_emerge_mac(platform: "ipad-app-on-mac")
+    build_paywalls_tester_for_emerge_mac(platform: "iphone-app-on-mac")
+  end
+  
+  lane :build_paywalls_tester_for_emerge_ios do |options|
     scan(
       workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
       scheme: "PaywallsTester - Live Config",
       build_for_testing: true,
     )
 
+    send_to_emerge(
+        app_id_suffix: ""
+    )
+  end
+
+  private_lane :build_paywalls_tester_for_emerge_mac do |options|
+    platform = options[:platform]
+    
+    case platform
+    when "mac-catalyst-scaled-to-match-ipad"
+      variant = "Mac Catalyst"
+      skip_package_ipa = false
+    when "mac-catalyst-optimized-for-mac"
+      variant = "Mac Catalyst"
+      skip_package_ipa = false
+    when "ipad-app-on-mac"
+      variant = "Designed for iPad"
+      skip_package_ipa = true
+    when "iphone-app-on-mac"
+      variant = "Designed for iPhone"
+      skip_package_ipa = true
+    else
+      UI.user_error!("Invalid platform: #{platform}. Must be one of: mac-catalyst-scaled-to-match-ipad, mac-catalyst-optimized-for-mac, ipad-app-on-mac, iphone-app-on-mac")
+    end
+
+    targeted_device_families = {
+      "mac-catalyst-optimized-for-mac" => "1,2,3,4,5,6,7",
+      "mac-catalyst-scaled-to-match-ipad" => "1,2,3,4,5,7"
+    }
+
+    xcargs = "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
+
+    # if targeted_device_families[platform]
+    #   xcargs << " TARGETED_DEVICE_FAMILY='#{targeted_device_families[platform]}'"
+    # end
+    
+    archive_path = File.absolute_path("build/PaywallsTester-#{platform}.xcarchive")
+
+    gym(
+      workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
+      scheme: "PaywallsTester - Live Config",
+      configuration: "Debug",
+      destination: "platform=macOS,arch=arm64,variant=#{variant}",
+      xcargs: xcargs,
+      skip_codesigning: true,
+      archive_path: archive_path,
+      skip_package_pkg: true,
+      skip_package_ipa: skip_package_ipa
+    )
+
+    send_to_emerge(
+        app_id_suffix: platform,
+        archive_path: archive_path
+    )
+  end
+  
+  private_lane :send_to_emerge do |options|
     pr_url = ENV["CIRCLE_PULL_REQUEST"]
     branch_name = sh("git rev-parse --abbrev-ref HEAD").strip
     pr_number = nil
@@ -417,8 +482,18 @@ platform :ios do
 
     emerge_args = {repo_name: "RevenueCat/purchases-ios"}
     emerge_args[:pr_number] = pr_number if pr_number
+    emerge_args[:app_id_suffix] = options[:app_id_suffix]
+
+    # Use the archive_path if provided
+    if options[:archive_path]
+      emerge_args[:file_path] = options[:archive_path]
+      UI.message("Using archive path: #{options[:archive_path]}")
+    end
+    
     emerge(emerge_args)
   end
+  
+  
 
   desc "Runs all the iOS tests"
   lane :test_ios do |options|
@@ -1370,6 +1445,7 @@ platform :mac do
       raise e if !generate_snapshots
     end
   end
+
 end
 
 def check_no_git_tag_exists(version_number)
