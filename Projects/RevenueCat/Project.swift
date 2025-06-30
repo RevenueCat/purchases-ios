@@ -116,7 +116,7 @@ let project = Project(
             name: "ReceiptParserTests",
             destinations: allDestinations,
             product: .unitTests,
-            bundleId: "com.revenuecat.StoreKitUnitTests",
+            bundleId: "com.revenuecat.ReceiptParserTests",
             deploymentTargets: allDeploymentTargets,
             infoPlist: .default,
             sources: [
