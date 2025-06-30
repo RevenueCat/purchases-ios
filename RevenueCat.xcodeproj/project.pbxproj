@@ -883,6 +883,13 @@
 		77BA1AB32CCBB6EE009BF0EA /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BA1AB22CCBB6EE009BF0EA /* RootView.swift */; };
 		805B60C97993B311CEC93EAF /* ProductsFetcherSK2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3628C1F100BB3C1782860D24 /* ProductsFetcherSK2.swift */; };
 		80E80EF226970E04008F245A /* ReceiptFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E80EF026970DC3008F245A /* ReceiptFetcher.swift */; };
+		8337D6B62E0A7890000798BF /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DC5621624EC63420031F69B /* RevenueCat.framework */; };
+		8337D6B72E0A7890000798BF /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2DC5621624EC63420031F69B /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		8337D6BA2E0A7890000798BF /* RevenueCatUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 887A5FBA2C1D036200E1A461 /* RevenueCatUI.framework */; };
+		8337D6BB2E0A7890000798BF /* RevenueCatUI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 887A5FBA2C1D036200E1A461 /* RevenueCatUI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		8337DD6E2E0A7D69000798BF /* header.heic in Resources */ = {isa = PBXBuildFile; fileRef = 2C5F71F52C3D6C2600B0FE4B /* header.heic */; };
+		8337DD6F2E0A7D79000798BF /* background.heic in Resources */ = {isa = PBXBuildFile; fileRef = 2C5F71F62C3D6C2600B0FE4B /* background.heic */; };
+		8337DD702E0A7E42000798BF /* paywall-preview-resources in Resources */ = {isa = PBXBuildFile; fileRef = 8337DD6D2E0A7CFE000798BF /* paywall-preview-resources */; };
 		8834AFA52C2B9375005A72FE /* PresentIfNeededTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A62222C1D168B00E1A461 /* PresentIfNeededTests.swift */; };
 		887A5FBD2C1D036200E1A461 /* RevenueCatUIDev.h in Headers */ = {isa = PBXBuildFile; fileRef = 887A5FBC2C1D036200E1A461 /* RevenueCatUIDev.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		887A60672C1D037000E1A461 /* PaywallError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FC72C1D037000E1A461 /* PaywallError.swift */; };
@@ -1327,6 +1334,27 @@
 			remoteGlobalIDString = 57D92C32293E4D0C00D1912A;
 			remoteInfo = ReceiptParser;
 		};
+		8337D6B82E0A7890000798BF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2DC5621524EC63420031F69B;
+			remoteInfo = RevenueCat;
+		};
+		8337D6BC2E0A7890000798BF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 887A5FB92C1D036200E1A461;
+			remoteInfo = RevenueCatUI;
+		};
+		8337D6BF2E0A79A0000798BF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2DEAC2D926EFE46E006914ED;
+			remoteInfo = UnitTestsHostApp;
+		};
 		88DE93E32C211CBC0086B6D8 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
@@ -1348,6 +1376,18 @@
 				57E6C2CB2975C777001AFE98 /* base64encoded_sandboxReceipt.txt in CopyFiles */,
 				57E6C2CC2975C777001AFE98 /* base64EncodedReceiptSampleForDataExtension.txt in CopyFiles */,
 			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8337D6BE2E0A7890000798BF /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				8337D6BB2E0A7890000798BF /* RevenueCatUI.framework in Embed Frameworks */,
+				8337D6B72E0A7890000798BF /* RevenueCat.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -2244,6 +2284,7 @@
 		77BA1AB02CCBAB80009BF0EA /* RootViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewModel.swift; sourceTree = "<group>"; };
 		77BA1AB22CCBB6EE009BF0EA /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		80E80EF026970DC3008F245A /* ReceiptFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptFetcher.swift; sourceTree = "<group>"; };
+		8337DD6D2E0A7CFE000798BF /* paywall-preview-resources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "paywall-preview-resources"; sourceTree = "<group>"; };
 		84C3F1AC1D7E1E64341D3936 /* Pods_RevenueCat_PurchasesTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RevenueCat_PurchasesTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		887A5FB42C1D024300E1A461 /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 		887A5FBA2C1D036200E1A461 /* RevenueCatUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RevenueCatUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -2643,6 +2684,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8337D6BA2E0A7890000798BF /* RevenueCatUI.framework in Frameworks */,
+				8337D6B62E0A7890000798BF /* RevenueCat.framework in Frameworks */,
 				887A63502C1D17EF00E1A461 /* SnapshotTesting in Frameworks */,
 				887A634E2C1D17EF00E1A461 /* OHHTTPStubsSwift in Frameworks */,
 				887A634C2C1D17EF00E1A461 /* OHHTTPStubs in Frameworks */,
@@ -3584,6 +3627,7 @@
 		2DDE870027E5238500D8B390 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				8337DD6D2E0A7CFE000798BF /* paywall-preview-resources */,
 				2DD500EF2C519EB4009C19B7 /* TestingApps */,
 				570896B627596E6E00296F1C /* APITesters */,
 				2DE20B8026409EB7004C597D /* BackendIntegrationTestApp */,
@@ -5722,10 +5766,14 @@
 				887A631D2C1D174200E1A461 /* Sources */,
 				887A631E2C1D174200E1A461 /* Frameworks */,
 				887A631F2C1D174200E1A461 /* Resources */,
+				8337D6BE2E0A7890000798BF /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				8337D6B92E0A7890000798BF /* PBXTargetDependency */,
+				8337D6BD2E0A7890000798BF /* PBXTargetDependency */,
+				8337D6C02E0A79A0000798BF /* PBXTargetDependency */,
 			);
 			name = RevenueCatUITestsDev;
 			packageProductDependencies = (
@@ -5785,6 +5833,7 @@
 					};
 					887A63202C1D174200E1A461 = {
 						CreatedOnToolsVersion = 15.4;
+						TestTargetID = 2DEAC2D926EFE46E006914ED;
 					};
 				};
 			};
@@ -6094,6 +6143,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8337DD702E0A7E42000798BF /* paywall-preview-resources in Resources */,
+				8337DD6F2E0A7D79000798BF /* background.heic in Resources */,
+				8337DD6E2E0A7D69000798BF /* header.heic in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -7324,6 +7376,21 @@
 			isa = PBXTargetDependency;
 			target = 57D92C32293E4D0C00D1912A /* ReceiptParser */;
 			targetProxy = 5759B420296DFEE2002472D5 /* PBXContainerItemProxy */;
+		};
+		8337D6B92E0A7890000798BF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2DC5621524EC63420031F69B /* RevenueCat */;
+			targetProxy = 8337D6B82E0A7890000798BF /* PBXContainerItemProxy */;
+		};
+		8337D6BD2E0A7890000798BF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 887A5FB92C1D036200E1A461 /* RevenueCatUI */;
+			targetProxy = 8337D6BC2E0A7890000798BF /* PBXContainerItemProxy */;
+		};
+		8337D6C02E0A79A0000798BF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2DEAC2D926EFE46E006914ED /* UnitTestsHostApp */;
+			targetProxy = 8337D6BF2E0A79A0000798BF /* PBXContainerItemProxy */;
 		};
 		88DE93E42C211CBC0086B6D8 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -8581,6 +8648,7 @@
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/UnitTestsHostApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/UnitTestsHostApp";
 			};
 			name = Debug;
 		};
@@ -8608,6 +8676,7 @@
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/UnitTestsHostApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/UnitTestsHostApp";
 			};
 			name = Release;
 		};
