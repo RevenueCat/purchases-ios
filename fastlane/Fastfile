@@ -362,13 +362,9 @@ platform :ios do
 
     result_bundle_path = "#{output_dir}/RevenueCatUITests.xcresult"
 
-    # Build xcargs with code signing disabled for non-iOS platforms and TARGETED_DEVICE_FAMILY if needed
     xcargs = []
-    if platform != "ios"
-      xcargs += ["CODE_SIGN_IDENTITY=''", "CODE_SIGNING_REQUIRED=NO"]
-    end
     if targeted_device_families[platform]
-      xcargs << "TARGETED_DEVICE_FAMILY='#{targeted_device_families[platform]}'"
+      xcargs += ["TARGETED_DEVICE_FAMILY='#{targeted_device_families[platform]}'"]
     end
 
     scan_options = {
