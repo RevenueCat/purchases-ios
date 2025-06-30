@@ -18,7 +18,7 @@ let allDeploymentTargets: DeploymentTargets = .multiplatform(
 
 let project = Project(
     name: "v3LoadShedderIntegration",
-    organizationName: "RevenueCat, Inc.",
+    organizationName: .revenueCatOrgName,
     targets: [
         // MARK: – Main Library
         .target(
@@ -68,23 +68,24 @@ let project = Project(
         )
     ],
     schemes: [
-.scheme(
-    name: "v3LoadShedderIntegration",
-    shared: true,
-    buildAction: .buildAction(targets: [
-        "v3LoadShedderIntegration",
-        "v3LoadShedderIntegrationTests"
-    ]),
-    testAction: .targets(["v3LoadShedderIntegrationTests"]),
-    runAction: .runAction(
-        executable: "v3LoadShedderIntegration",
-        options: .options(
-            storeKitConfigurationPath: "../../Tests/v3LoadShedderIntegration/v3LoadShedderIntegrationTests/V3LoadShedderIntegrationTestsConfiguration.storekit"
+        .scheme(
+            name: "v3LoadShedderIntegration",
+            shared: true,
+            buildAction: .buildAction(targets: [
+                "v3LoadShedderIntegration",
+                "v3LoadShedderIntegrationTests"
+            ]),
+            testAction: .targets(["v3LoadShedderIntegrationTests"]),
+            runAction: .runAction(
+                executable: "v3LoadShedderIntegration",
+                options: .options(
+                    storeKitConfigurationPath: "../../Tests/v3LoadShedderIntegration/v3LoadShedderIntegrationTests/V3LoadShedderIntegrationTestsConfiguration.storekit"
+                )
+            ),
+            archiveAction: .archiveAction(configuration: "Release"),
+            profileAction: .profileAction(configuration: "Release"),
+            analyzeAction: .analyzeAction(configuration: "Debug")
         )
-    ),
-    archiveAction: .archiveAction(configuration: "Release"),
-    profileAction: .profileAction(configuration: "Release"),
-    analyzeAction: .analyzeAction(configuration: "Debug")
-)
-    ]
+    ],
+    settings: .settings(base: [:].automaticCodeSigning(devTeam: .revenueCatTeamID))
 )

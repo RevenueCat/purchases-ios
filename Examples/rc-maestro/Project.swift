@@ -13,8 +13,9 @@ if FileManager.default.fileExists(atPath: "rc-maestro/Resources/**/Local.xcconfi
 
 let project = Project(
     name: "Maestro",
-    organizationName: "RevenueCat, Inc",
+    organizationName: .revenueCatOrgName,
     settings: .settings(
+        base: [:].automaticCodeSigning(devTeam: .revenueCatTeamID),
         defaultSettings: .essential
     ),
     targets: [

@@ -11,7 +11,8 @@ let allDeploymentTargets: DeploymentTargets = .multiplatform(
 
 let project = Project(
     name: "RevenueCatUI",
-    organizationName: "RevenueCat, Inc.",
+    organizationName: .revenueCatOrgName,
+    settings: .settings(base: [:].automaticCodeSigning(devTeam: .revenueCatTeamID)),
     targets: [
         .target(
             name: "RevenueCatUI",

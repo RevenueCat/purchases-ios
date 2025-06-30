@@ -29,8 +29,9 @@ if FileManager.default.fileExists(atPath: "../../Local.xcconfig") {
 
 let project = Project(
     name: "PaywallTester",
-    organizationName: "RevenueCat, Inc.",
+    organizationName: .revenueCatOrgName,
     settings: .settings(
+        base: [:].automaticCodeSigning(devTeam: .revenueCatTeamID),
         configurations: [
             .debug(name: "Debug-SK", xcconfig: .relativeToRoot("Global.xcconfig")),
             .debug(name: "Debug")

@@ -3,7 +3,8 @@ import ProjectDescriptionHelpers
 
 let project = Project(
     name: "MagicWeatherSwiftUI",
-    organizationName: "RevenueCat, Inc.",
+    organizationName: .revenueCatOrgName,
+    settings: .settings(base: [:].automaticCodeSigning(devTeam: .revenueCatTeamID)),
     targets: [
         .target(
             name: "MagicWeatherSwiftUI",
@@ -31,5 +32,5 @@ let project = Project(
                 .revenueCatUI,
             ]
         )
-    ]
+    ],
 )

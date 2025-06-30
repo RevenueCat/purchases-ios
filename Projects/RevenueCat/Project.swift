@@ -29,9 +29,9 @@ let allDeploymentTargets: DeploymentTargets = .multiplatform(
 
 let project = Project(
     name: "RevenueCat",
-    organizationName: "RevenueCat, Inc.",
+    organizationName: .revenueCatOrgName,
+    settings: .settings(base: [:].automaticCodeSigning(devTeam: .revenueCatTeamID)),
     targets: [
-
         // MARK: – Main Library
         .target(
             name: "RevenueCat",
@@ -96,9 +96,9 @@ let project = Project(
             ),
             settings: .settings(
                 base: [
-                    "APPLICATION_EXTENSION_API_ONLY": "YES",
-                    "ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION": "YES"
+                    "APPLICATION_EXTENSION_API_ONLY": "YES"
                 ]
+                .swiftActiveCompilationConditions([.enableCustomEntitlementComputation])
             )
         ),
 
@@ -207,6 +207,7 @@ let project = Project(
                 base: [
                     "APPLICATION_EXTENSION_API_ONLY": "YES"
                 ]
+                .swiftActiveCompilationConditions([.enableCustomEntitlementComputation])
             )
         ),
 
@@ -219,11 +220,20 @@ let project = Project(
             infoPlist: .default,
             sources: [
                 "../../Tests/BackendIntegrationTests/CustomEntitlementsComputationIntegrationTests.swift",
-                "../../Tests/UnitTests/Misc/**/TestCase.swift",
                 "../../Tests/BackendIntegrationTests/BaseBackendIntegrationTests.swift",
                 "../../Tests/BackendIntegrationTests/BaseStoreKitIntegrationTests.swift",
+                "../../Tests/BackendIntegrationTests/MainThreadMonitor.swift",
+                "../../Tests/BackendIntegrationTests/Constants.swift",
+                "../../Tests/BackendIntegrationTests/Helpers/**/*.swift",
+                "../../Tests/UnitTests/Misc/**/TestCase.swift",
                 "../../Tests/UnitTests/Mocks/MockSandboxEnvironmentDetector.swift",
-                "../../Tests/UnitTests/TestHelpers/**/TestLogHandler.swift"
+                "../../Tests/UnitTests/TestHelpers/**/TestLogHandler.swift",
+                "../../Tests/UnitTests/TestHelpers/**/CurrentTestCaseTracker.swift",
+                "../../Tests/UnitTests/TestHelpers/**/AsyncTestHelpers.swift",
+                "../../Tests/UnitTests/TestHelpers/**/OSVersionEquivalent.swift",
+                "../../Tests/UnitTests/Misc/XCTestCase+Extensions.swift",
+                "../../Tests/StoreKitUnitTests/TestHelpers/StoreKitTestHelpers.swift",
+                "../../Tests/StoreKitUnitTests/TestHelpers/AvailabilityChecks.swift"
             ],
             dependencies: [
                 .target(name: "RevenueCat_CustomEntitlementComputation"),
@@ -232,6 +242,9 @@ let project = Project(
                 .snapshotTesting,
                 .storeKitTests
             ],
+            settings: .settings(
+                base: [:].swiftActiveCompilationConditions([.enableCustomEntitlementComputation])
+            )
         ),
 
         .target(
@@ -328,5 +341,5 @@ let project = Project(
             ]),
             runAction: .runAction(configuration: "Debug")
         )
-    ]
+    ],
 )
