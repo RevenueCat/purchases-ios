@@ -26,8 +26,6 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
 
     static let maxNonSubscriptionsToShow = 2
 
-    let originalAppUserId: String
-    let originalPurchaseDate: Date?
     let shouldShowSeeAllPurchases: Bool
 
     override var relevantPathsForPurchase: [CustomerCenterConfigData.HelpPath] {
@@ -38,14 +36,10 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
         screen: CustomerCenterConfigData.Screen,
         actionWrapper: CustomerCenterActionWrapper,
         virtualCurrencies: RevenueCat.VirtualCurrencies?,
-        originalAppUserId: String,
-        originalPurchaseDate: Date?,
         shouldShowSeeAllPurchases: Bool,
         refundRequestStatus: RefundRequestStatus? = nil,
         purchasesProvider: CustomerCenterPurchasesType,
         loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
-            self.originalAppUserId = originalAppUserId
-            self.originalPurchaseDate = originalPurchaseDate
             self.shouldShowSeeAllPurchases = shouldShowSeeAllPurchases
 
             super.init(
@@ -62,7 +56,6 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
     // Used for Previews
     convenience init(
         screen: CustomerCenterConfigData.Screen,
-        originalAppUserId: String,
         activePurchases: [PurchaseInformation] = [],
         nonSubscriptionPurchases: [PurchaseInformation] = [],
         virtualCurrencies: RevenueCat.VirtualCurrencies? = nil,
@@ -73,8 +66,6 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
             screen: screen,
             actionWrapper: CustomerCenterActionWrapper(),
             virtualCurrencies: virtualCurrencies,
-            originalAppUserId: originalAppUserId,
-            originalPurchaseDate: originalPurchaseDate,
             shouldShowSeeAllPurchases: shouldShowSeeAllPurchases,
             purchasesProvider: MockCustomerCenterPurchases()
         )

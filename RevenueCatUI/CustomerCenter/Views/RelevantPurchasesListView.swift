@@ -44,8 +44,6 @@ struct RelevantPurchasesListView: View {
     init(
         customerInfoViewModel: CustomerCenterViewModel,
         screen: CustomerCenterConfigData.Screen,
-        originalAppUserId: String,
-        originalPurchaseDate: Date?,
         shouldShowSeeAllPurchases: Bool,
         virtualCurrencies: RevenueCat.VirtualCurrencies?,
         purchasesProvider: CustomerCenterPurchasesType,
@@ -55,8 +53,6 @@ struct RelevantPurchasesListView: View {
             screen: screen,
             actionWrapper: actionWrapper,
             virtualCurrencies: virtualCurrencies,
-            originalAppUserId: originalAppUserId,
-            originalPurchaseDate: originalPurchaseDate,
             shouldShowSeeAllPurchases: shouldShowSeeAllPurchases,
             purchasesProvider: purchasesProvider
         )
@@ -188,7 +184,11 @@ struct RelevantPurchasesListView: View {
                     Spacer().frame(height: 16)
                 }
 
-                accountDetailsView
+                AccountDetailsSection(
+                    originalPurchaseDate: customerInfoViewModel.originalPurchaseDate,
+                    originalAppUserId: customerInfoViewModel.originalAppUserId,
+                    localization: localization
+                )
             }
             .padding(.top, 16)
         }
@@ -215,41 +215,6 @@ struct RelevantPurchasesListView: View {
             .padding(.horizontal)
         }
         .tint(colorScheme == .dark ? .white : .black)
-    }
-
-    @ViewBuilder
-    private var accountDetailsView: some View {
-        ScrollViewSection(title: localization[.accountDetails]) {
-            VStack {
-                if let originalPurchaseDate = viewModel.originalPurchaseDate {
-                    CompatibilityLabeledContent(
-                        localization[.dateWhenAppWasPurchased],
-                        content: dateFormatter.string(from: originalPurchaseDate)
-                    )
-
-                    Divider()
-                }
-
-                CompatibilityLabeledContent(
-                    localization[.userId],
-                    content: viewModel.originalAppUserId
-                )
-                .contextMenu {
-                    Button {
-                        UIPasteboard.general.string = viewModel.originalAppUserId
-                    } label: {
-                        Text(localization[.copy])
-                        Image(systemName: "doc.on.clipboard")
-                    }
-                }
-            }
-            .padding()
-            .background(Color(colorScheme == .light
-                              ? UIColor.systemBackground
-                              : UIColor.secondarySystemBackground))
-            .cornerRadius(10)
-            .padding(.horizontal)
-        }
     }
 
     private var dateFormatter: DateFormatter {
@@ -296,7 +261,6 @@ struct RelevantPurchasesListView_Previews: PreviewProvider {
                     ),
                     viewModel: RelevantPurchasesListViewModel(
                         screen: warningOffMock.screens[.management]!,
-                        originalAppUserId: "originalAppUserId",
                         shouldShowSeeAllPurchases: true
                     )
                 )
@@ -314,7 +278,6 @@ struct RelevantPurchasesListView_Previews: PreviewProvider {
                     ),
                     viewModel: RelevantPurchasesListViewModel(
                         screen: warningOffMock.screens[.management]!,
-                        originalAppUserId: "originalAppUserId",
                         shouldShowSeeAllPurchases: true
                     )
                 )
@@ -332,7 +295,6 @@ struct RelevantPurchasesListView_Previews: PreviewProvider {
                     ),
                     viewModel: RelevantPurchasesListViewModel(
                         screen: warningOffMock.screens[.management]!,
-                        originalAppUserId: "originalAppUserId",
                         shouldShowSeeAllPurchases: true
                     )
                 )
@@ -350,7 +312,6 @@ struct RelevantPurchasesListView_Previews: PreviewProvider {
                     ),
                     viewModel: RelevantPurchasesListViewModel(
                         screen: warningOffMock.screens[.management]!,
-                        originalAppUserId: "originalAppUserId",
                         shouldShowSeeAllPurchases: true
                     )
                 )
@@ -368,7 +329,6 @@ struct RelevantPurchasesListView_Previews: PreviewProvider {
                     ),
                     viewModel: RelevantPurchasesListViewModel(
                         screen: warningOffMock.screens[.management]!,
-                        originalAppUserId: "originalAppUserId",
                         activePurchases: purchases,
                         nonSubscriptionPurchases: [.consumable, .lifetime],
                         shouldShowSeeAllPurchases: false
