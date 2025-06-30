@@ -375,7 +375,7 @@ platform :ios do
       xcargs += ["TARGETED_DEVICE_FAMILY='#{targeted_device_families[platform]}'"]
     end
 
-    Dir.chdir("Tests/UnitTestsHostApp/fastlane") do
+    Dir.chdir("../Tests/UnitTestsHostApp/fastlane") do
       match(type: "appstore", readonly: true)
     end
 
