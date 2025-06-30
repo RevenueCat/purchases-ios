@@ -400,8 +400,7 @@ platform :ios do
       xcargs: xcargs,
       skip_codesigning: true,
       archive_path: archive_path,
-      skip_package_pkg: true,
-      **skip_package_option
+      skip_package_pkg: true
     )
 
     send_to_emerge(
