@@ -1,51 +1,19 @@
 name: Issue Notifications
 
 on:
-  workflow_dispatch: # Manual trigger for testing
+  workflow_dispatch:
   issues:
     types: [opened, edited]
   issue_comment:
     types: [created]
   schedule:
-    - cron: "0 * * * *" # Every hour
+    - cron: "0 * * * *"
 
 jobs:
   notify:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Issue Notification Action
-        uses: joshdholtz/github-action-issue-ack@v15
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          slack_webhook_url: ${{ secrets.ACK_SLACK_WEBHOOK_URL }}
-
-          # Keywords to raise alert
-          title_keywords: ${{ secrets.ACK_ALERT_KEYWORDS }}
-
-          # Excluded labels to silence notifications
-          excluded_labels: "acknowledged"
-
-          # Reaction and comment thresholds to raise alert
-          reaction_threshold: ${{ secrets.ACK_REACTION_THRESHOLD }}
-          comment_threshold: ${{ secrets.ACK_COMMENT_THRESHOLD }}
-
-          # Batch checking configuration
-          check_all_open_issues: "true"
-          max_issues_to_check: "100"
-          issue_state: "open"
-
-          # Custom message for testing
-          message_template: |
-            *{title}*
-            Created: {created_ago}
-            Reactions: {reactions} | Comments: {comments}
-            {url}
-
-          # Custom prefixes for testing
-          new_issue_prefix: "🚨 New issue created on *RevenueCat/purchases-ios*!"
-          threshold_prefix: "📈 High-engagement issue on *RevenueCat/purchases-ios*!"
-
-          # Enable both notification types
-          notify_on_create: "true"
-          notify_on_threshold: "true"
+    uses: revenuecat/sdk-github-workflows/.github/workflows/issue-notifications.yml@v1
+    secrets:
+      ACK_SLACK_WEBHOOK_URL: ${{ secrets.ACK_SLACK_WEBHOOK_URL }}
+      ACK_ALERT_KEYWORDS: ${{ secrets.ACK_ALERT_KEYWORDS }}
+      ACK_REACTION_THRESHOLD: ${{ secrets.ACK_REACTION_THRESHOLD }}
+      ACK_COMMENT_THRESHOLD: ${{ secrets.ACK_COMMENT_THRESHOLD }}
