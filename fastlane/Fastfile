@@ -381,11 +381,6 @@ platform :ios do
     
     scan(scan_options)
 
-    send_to_emerge(
-        app_id_suffix: platform,
-        file_path: result_bundle_path
-    )
-
     image_output_dir = "#{output_dir}/images"
     FileUtils.mkdir_p(image_output_dir)
     extract_xcresult_images(
@@ -464,7 +459,7 @@ platform :ios do
 
     send_to_emerge(
         app_id_suffix: platform,
-        file_path: archive_path
+        archive_path: archive_path
     )
   end
   
@@ -485,10 +480,10 @@ platform :ios do
     emerge_args[:pr_number] = pr_number if pr_number
     emerge_args[:app_id_suffix] = options[:app_id_suffix]
 
-    # Use the file_path if provided
-    if options[:file_path]
-      emerge_args[:file_path] = options[:file_path]
-      UI.message("Using file path: #{options[:file_path]}")
+    # Use the archive_path if provided
+    if options[:archive_path]
+      emerge_args[:file_path] = options[:archive_path]
+      UI.message("Using archive path: #{options[:archive_path]}")
     end
     
     emerge(emerge_args)
