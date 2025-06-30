@@ -3,17 +3,20 @@ import ProjectDescriptionHelpers
 
 // MARK: - Shared Constants
 
-let allDestinations: Destinations = [
-    .iPhone,
-    .iPad,
-    .mac,
-    .macWithiPadDesign,
-    .macCatalyst,
-    .appleWatch,
-    .appleTv,
-    .appleVision,
-    .appleVisionWithiPadDesign
-]
+func allDestinations(macWithiPadDesign: Bool) -> Destinations {
+    let destinations: [Destination?] = [
+        .iPhone,
+        .iPad,
+        .mac,
+        macWithiPadDesign ? .macWithiPadDesign : nil,
+        .macCatalyst,
+        .appleWatch,
+        .appleTv,
+        .appleVision,
+        .appleVisionWithiPadDesign
+    ]
+    return Set(destinations.compactMap { $0 })
+}
 
 let allDeploymentTargets: DeploymentTargets = .multiplatform(
     iOS: "13.0",
@@ -75,7 +78,7 @@ let project = Project(
 
         .target(
             name: "RevenueCat_CustomEntitlementComputation",
-            destinations: allDestinations,
+            destinations: allDestinations(macWithiPadDesign: true),
             product: .framework,
             bundleId: "com.revenuecat.RevenueCatCustomEntitlementComputation",
             deploymentTargets: allDeploymentTargets,
@@ -102,7 +105,7 @@ let project = Project(
         // MARK: – Receipt Parser
         .target(
             name: "ReceiptParser",
-            destinations: allDestinations,
+            destinations: allDestinations(macWithiPadDesign: false),
             product: .framework,
             bundleId: "com.revenuecat.ReceiptParser",
             deploymentTargets: allDeploymentTargets,
@@ -114,7 +117,7 @@ let project = Project(
 
         .target(
             name: "ReceiptParserTests",
-            destinations: allDestinations,
+            destinations: allDestinations(macWithiPadDesign: false),
             product: .unitTests,
             bundleId: "com.revenuecat.ReceiptParserTests",
             deploymentTargets: allDeploymentTargets,
@@ -134,7 +137,7 @@ let project = Project(
         // MARK: – Unit Tests Host App
         .target(
             name: "UnitTestsHostApp",
-            destinations: allDestinations,
+            destinations: allDestinations(macWithiPadDesign: true),
             product: .app,
             bundleId: "com.revenuecat.StoreKitUnitTestsHostApp",
             deploymentTargets: .multiplatform(
@@ -154,7 +157,7 @@ let project = Project(
         // MARK: – StoreKit Unit Tests
         .target(
             name: "StoreKitUnitTests",
-            destinations: allDestinations,
+            destinations: allDestinations(macWithiPadDesign: true),
             product: .unitTests,
             bundleId: "com.revenuecat.StoreKitUnitTests",
             deploymentTargets: allDeploymentTargets,
@@ -185,7 +188,7 @@ let project = Project(
         // MARK: – BackendIntegrationTests Host App
         .target(
             name: "BackendIntegrationTestsHostApp",
-            destinations: allDestinations,
+            destinations: allDestinations(macWithiPadDesign: true),
             product: .app,
             bundleId: "com.revenuecat.StoreKitTestApp",
             deploymentTargets: .multiplatform(
@@ -210,7 +213,7 @@ let project = Project(
 
         .target(
             name: "BackendCustomEntitlementsIntegrationTests",
-            destinations: allDestinations,
+            destinations: allDestinations(macWithiPadDesign: true),
             product: .unitTests,
             bundleId: "com.revenuecat.BackendIntBackendCustomEntitlementsIntegrationTestsegrationTests",
             deploymentTargets: .multiplatform(
@@ -240,7 +243,7 @@ let project = Project(
 
         .target(
             name: "BackendIntegrationTests",
-            destinations: allDestinations,
+            destinations: allDestinations(macWithiPadDesign: true),
             product: .unitTests,
             bundleId: "com.revenuecat.BackendIntegrationTests",
             deploymentTargets: .multiplatform(
