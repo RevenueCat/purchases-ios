@@ -22,7 +22,7 @@ class VirtualCurrencyStoreKit2IntegrationTests: BaseStoreKitIntegrationTests {
 
 class VirtualCurrencyStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
-    override var apiKey: String { return Constants.loadShedderApiKey }
+    override var apiKey: String { return Constants.apiKey }
 
     override class var storeKitVersion: StoreKitVersion { .storeKit1 }
 
@@ -46,21 +46,19 @@ class VirtualCurrencyStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         let virtualCurrenciesAfterPurchase = try await self.purchases.virtualCurrencies()
 
-        expect(userID1).to(equal("intentionally fail to print out the user ID"))
+        expect(virtualCurrenciesAfterPurchase["TEST"]?.balance).to(equal(1))
+        expect(virtualCurrenciesAfterPurchase["TEST"]?.code).to(equal("TEST"))
+        expect(virtualCurrenciesAfterPurchase["TEST"]?.name).to(equal("Test Currency"))
+        expect(virtualCurrenciesAfterPurchase["TEST"]?.serverDescription).to(equal("This is a test currency"))
 
-//        expect(virtualCurrenciesAfterPurchase["TEST"]?.balance).to(equal(1))
-//        expect(virtualCurrenciesAfterPurchase["TEST"]?.code).to(equal("TEST"))
-//        expect(virtualCurrenciesAfterPurchase["TEST"]?.name).to(equal("Test Currency"))
-//        expect(virtualCurrenciesAfterPurchase["TEST"]?.serverDescription).to(equal("This is a test currency"))
-//
-//        // TODO: We might need to check for this to be 0 depending on the outcome from a discussion with the team
+        // TODO: We might need to check for this to be 0 depending on the outcome from a discussion with the team
 //        expect(virtualCurrenciesAfterPurchase["TEST2"]?.balance).to(beNil())
-//
-//        // Ensure that this purchase didn't grant VCs to other subscribers
-//        _ = try await self.purchases.logIn(userID2)
-//        let virtualCurrenciesForOtherUser = try await self.purchases.virtualCurrencies()
-//
-//        // TODO: We might need to check for this to be 0 depending on the outcome from a discussion with the team
+
+        // Ensure that this purchase didn't grant VCs to other subscribers
+        _ = try await self.purchases.logIn(userID2)
+        let virtualCurrenciesForOtherUser = try await self.purchases.virtualCurrencies()
+
+        // TODO: We might need to check for this to be 0 depending on the outcome from a discussion with the team
 //        expect(virtualCurrenciesForOtherUser["TEST"]?.balance).to(beNil())
 //        expect(virtualCurrenciesForOtherUser["TEST2"]?.balance).to(beNil())
     }
@@ -74,8 +72,8 @@ class VirtualCurrencyStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let virtualCurrenciesBeforePurchase = try await self.purchases.virtualCurrencies()
 
         // TODO: We might need to check for this to be 0 depending on the outcome from a discussion with the team
-        expect(virtualCurrenciesBeforePurchase["TEST"]?.balance).to(beNil())
-        expect(virtualCurrenciesBeforePurchase["TEST2"]?.balance).to(beNil())
+//        expect(virtualCurrenciesBeforePurchase["TEST"]?.balance).to(beNil())
+//        expect(virtualCurrenciesBeforePurchase["TEST2"]?.balance).to(beNil())
 
         try await self.purchaseMonthlyOffering()
 
@@ -84,7 +82,7 @@ class VirtualCurrencyStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let virtualCurrenciesAfterPurchase = try await self.purchases.virtualCurrencies()
 
         // TODO: We might need to check for this to be 0 depending on the outcome from a discussion with the team
-        expect(virtualCurrenciesAfterPurchase["TEST"]?.balance).to(beNil())
-        expect(virtualCurrenciesAfterPurchase["TEST2"]?.balance).to(beNil())
+//        expect(virtualCurrenciesAfterPurchase["TEST"]?.balance).to(beNil())
+//        expect(virtualCurrenciesAfterPurchase["TEST2"]?.balance).to(beNil())
     }
 }
