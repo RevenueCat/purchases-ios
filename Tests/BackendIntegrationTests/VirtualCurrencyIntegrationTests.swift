@@ -45,6 +45,8 @@ class VirtualCurrencyStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         let virtualCurrenciesAfterPurchase = try await self.purchases.virtualCurrencies()
 
+        expect(userID1).to(equal("fail to print out the user ID"))
+
         expect(virtualCurrenciesAfterPurchase["TEST"]?.balance).to(equal(1))
         expect(virtualCurrenciesAfterPurchase["TEST"]?.code).to(equal("TEST"))
         expect(virtualCurrenciesAfterPurchase["TEST"]?.name).to(equal("Test Currency"))
