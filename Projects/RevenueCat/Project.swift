@@ -226,10 +226,9 @@ let project = Project(
                 "../../Tests/UnitTests/TestHelpers/**/TestLogHandler.swift"
             ],
             dependencies: [
-                .target(name: "RevenueCat"),
+                .target(name: "RevenueCat_CustomEntitlementComputation"),
                 .target(name: "BackendIntegrationTestsHostApp"),
                 .nimble,
-                .ohHTTPStubsSwift,
                 .snapshotTesting,
                 .storeKitTests
             ],
