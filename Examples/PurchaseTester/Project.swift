@@ -57,7 +57,7 @@ let project = Project(
         .target(
             name: "PurchaseTesterWatchOS",
             destinations: [.appleWatch],
-            product: .watch2Extension,
+            product: .app,
             bundleId: "com.revenuecat.sampleapp.watchkitapp",
             deploymentTargets: .watchOS("8.0"),
             infoPlist: "../../Tests/TestingApps/PurchaseTesterSwiftUI/PurchaseTesterWatchOS/Info.plist",
