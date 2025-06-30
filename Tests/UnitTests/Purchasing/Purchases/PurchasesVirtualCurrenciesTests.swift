@@ -118,4 +118,25 @@ class PurchasesVirtualCurrenciesTests: BasePurchasesTests {
         expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount).to(equal(1))
         expect(Thread.isMainThread).to(beTrue())
     }
+
+    // MARK: - cachedVirtualCurrencies Tests
+    func testCachedVirtualCurrenciesReturnsCachedVirtualCurrencies() {
+        self.mockVirtualCurrencyManager.stubbedCachedVirtualCurrencies = Self.mockVirtualCurrencies
+
+        let cachedVirtualCurrencies = self.purchases.cachedVirtualCurrencies
+        expect(cachedVirtualCurrencies).to(equal(Self.mockVirtualCurrencies))
+        expect(self.mockVirtualCurrencyManager.cachedVirtualCurrenciesCalled).to(beTrue())
+        expect(self.mockVirtualCurrencyManager.cachedVirtualCurrenciesCallCount).to(equal(1))
+        expect(Thread.isMainThread).to(beTrue())
+    }
+
+    func testCachedVirtualCurrenciesReturnsNilWhenThereAreNoCachedVirtualCurrencies() {
+        self.mockVirtualCurrencyManager.stubbedCachedVirtualCurrencies = nil
+
+        let cachedVirtualCurrencies = self.purchases.cachedVirtualCurrencies
+        expect(cachedVirtualCurrencies).to(beNil())
+        expect(self.mockVirtualCurrencyManager.cachedVirtualCurrenciesCalled).to(beTrue())
+        expect(self.mockVirtualCurrencyManager.cachedVirtualCurrenciesCallCount).to(equal(1))
+        expect(Thread.isMainThread).to(beTrue())
+    }
 }

@@ -564,4 +564,8 @@ extension MockPurchases: PurchasesSwiftType {
     func virtualCurrencies() async throws -> RevenueCat.VirtualCurrencies {
         self.unimplemented()
     }
+
+    var cachedVirtualCurrencies: VirtualCurrencies? {
+        self.unimplemented()
+    }
 }
