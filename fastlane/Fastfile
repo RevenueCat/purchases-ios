@@ -362,7 +362,7 @@ platform :ios do
   end
   
   lane :build_paywalls_tester_for_emerge_mac_catalyst do |options|
-    archive_path = File.absolute_path("build/PaywallsTester-mac-catalyst.xcarchive")
+    archive_path = File.absolute_path("build/PaywallsTester-mac-catalyst-optimized-for-mac.xcarchive")
 
     gym(
       workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
@@ -382,7 +382,7 @@ platform :ios do
   end
   
   lane :build_paywalls_tester_for_emerge_mac_designed_for_ipad do |options|
-    archive_path = File.absolute_path("build/PaywallsTester-mac-catalyst-optimized-for-mac.xcarchive")
+    archive_path = File.absolute_path("build/PaywallsTester-mac-designed-for-ipad.xcarchive")
 
     gym(
       workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
