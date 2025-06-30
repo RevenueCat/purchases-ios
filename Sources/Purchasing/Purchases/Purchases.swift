@@ -2184,7 +2184,7 @@ extension Purchases {
                     completion(eligibleWinBackOffers, nil)
                 }
             } catch {
-                let publicError = RevenueCat.ErrorUtils.purchasesError(withUntypedError: error).asPublicError
+                let publicError = NewErrorUtils.purchasesError(withUntypedError: error).asPublicError
                 OperationDispatcher.dispatchOnMainActor {
                     completion(nil, publicError)
                 }
