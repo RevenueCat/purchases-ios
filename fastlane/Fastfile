@@ -345,8 +345,10 @@ platform :ios do
   desc "Build the Paywalls Test app for Emerge Snapshots"
   lane :build_paywalls_tester_for_emerge do |options|
     build_paywalls_tester_for_emerge_ios(options)
-    build_paywalls_tester_for_emerge_mac_catalyst(options)
-    build_paywalls_tester_for_emerge_mac_designed_for_ipad(options)
+    build_paywalls_tester_for_emerge_mac(platform: "mac-catalyst-scaled-to-match-ipad")
+    build_paywalls_tester_for_emerge_mac(platform: "mac-catalyst-optimized-for-mac")
+    build_paywalls_tester_for_emerge_mac(platform: "ipad-app-on-mac")
+    build_paywalls_tester_for_emerge_mac(platform: "iphone-app-on-mac")
   end
   
   lane :build_paywalls_tester_for_emerge_ios do |options|
@@ -360,43 +362,50 @@ platform :ios do
         app_id_suffix: ""
     )
   end
-  
-  lane :build_paywalls_tester_for_emerge_mac_catalyst do |options|
-    archive_path = File.absolute_path("build/PaywallsTester-mac-catalyst.xcarchive")
+
+  private_lane :build_paywalls_tester_for_emerge_mac do |options|
+    platform = options[:platform]
+    
+    case platform
+    when "mac-catalyst-scaled-to-match-ipad"
+      variant = "Mac Catalyst"
+    when "mac-catalyst-optimized-for-mac"
+      variant = "Mac Catalyst"
+    when "ipad-app-on-mac"
+      variant = "Designed for iPad"
+    when "iphone-app-on-mac"
+      variant = "Designed for iPhone"
+    else
+      UI.user_error!("Invalid platform: #{platform}. Must be one of: mac-catalyst-scaled-to-match-ipad, mac-catalyst-optimized-for-mac, ipad-app-on-mac, iphone-app-on-mac")
+    end
+
+    targeted_device_families = {
+      "mac-catalyst-optimized-for-mac" => "1,2,3,4,6",
+      "mac-catalyst-scaled-to-match-ipad" => "1,2,3,4"
+    }
+
+    xcargs = "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
+
+    if targeted_device_families[platform]
+      xcargs << "TARGETED_DEVICE_FAMILY='#{targeted_device_families[platform]}'"
+    end
+    
+    archive_path = File.absolute_path("build/PaywallsTester-#{app_id_suffix}.xcarchive")
 
     gym(
       workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
       scheme: "PaywallsTester - Live Config",
       configuration: "Debug",
-      destination: "platform=macOS,arch=arm64,variant=Mac Catalyst",
-      xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO",
+      destination: "platform=macOS,arch=arm64,variant=#{variant}",
+      xcargs: xcargs,
       skip_codesigning: true,
+      archive_path: archive_path,
       skip_package_pkg: true,
-      archive_path: archive_path,
+      **skip_package_option
     )
 
     send_to_emerge(
-        app_id_suffix: "mac-catalyst",
-        archive_path: archive_path
-    )
-  end
-  
-  lane :build_paywalls_tester_for_emerge_mac_designed_for_ipad do |options|
-    archive_path = File.absolute_path("build/PaywallsTester-mac-designed-for-ipad.xcarchive")
-
-    gym(
-      workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
-      scheme: "PaywallsTester - Live Config",
-      configuration: "Debug",
-      destination: "platform=macOS,arch=arm64,variant=Designed for iPad",
-      xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO",
-      skip_codesigning: true,
-      skip_package_ipa: true,
-      archive_path: archive_path,
-    )
-
-    send_to_emerge(
-        app_id_suffix: "mac-designed-for-ipad",
+        app_id_suffix: platform,
         archive_path: archive_path
     )
   end
