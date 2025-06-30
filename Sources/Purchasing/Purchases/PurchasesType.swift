@@ -991,7 +991,7 @@ public protocol PurchasesType: AnyObject {
     func virtualCurrencies(
         completion: @escaping @Sendable (VirtualCurrencies?, PublicError?) -> Void
     )
-    
+
     /**
      * The currently cached ``VirtualCurrencies`` if one is available.
      * This is synchronous, and therefore useful for contexts where an app needs a `VirtualCurrencies`
