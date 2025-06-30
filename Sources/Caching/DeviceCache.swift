@@ -382,52 +382,43 @@ class DeviceCache {
     }
 
     // MARK: - Virtual Currencies
-    private let virtualCurrenciesLock = Lock(.nonRecursive)
 
     func cache(
         virtualCurrencies: Data,
         appUserID: String
     ) {
-        virtualCurrenciesLock.perform {
-            self.userDefaults.write {
-                $0.set(virtualCurrencies, forKey: CacheKey.virtualCurrencies(appUserID))
-                Self.setVirtualCurrenciesCacheLastUpdatedTimestampToNow($0, appUserID: appUserID)
-            }
+        self.userDefaults.write {
+            $0.set(virtualCurrencies, forKey: CacheKey.virtualCurrencies(appUserID))
+            Self.setVirtualCurrenciesCacheLastUpdatedTimestampToNow($0, appUserID: appUserID)
         }
     }
 
     func cachedVirtualCurrenciesData(forAppUserID appUserID: String) -> Data? {
-        virtualCurrenciesLock.perform {
-            return self.userDefaults.read {
-                $0.data(forKey: CacheKey.virtualCurrencies(appUserID))
-            }
+        return self.userDefaults.read {
+            $0.data(forKey: CacheKey.virtualCurrencies(appUserID))
         }
     }
 
     func isVirtualCurrenciesCacheStale(appUserID: String, isAppBackgrounded: Bool) -> Bool {
-        virtualCurrenciesLock.perform {
-            return self.userDefaults.read {
-                guard let cachesLastUpdated = Self.virtualCurrenciesLastUpdated($0, appUserID: appUserID) else {
-                    return true
-                }
-
-                let timeSinceLastCheck = cachesLastUpdated.timeIntervalSinceNow * -1
-                let cacheDurationInSeconds = self.cacheDurationInSeconds(
-                    isAppBackgrounded: isAppBackgrounded,
-                    isSandbox: self.sandboxEnvironmentDetector.isSandbox
-                )
-
-                return timeSinceLastCheck >= cacheDurationInSeconds
+        return self.userDefaults.read {
+            guard let cachesLastUpdated = Self.virtualCurrenciesLastUpdated($0, appUserID: appUserID) else {
+                return true
             }
+
+            let timeSinceLastCheck = cachesLastUpdated.timeIntervalSinceNow * -1
+            let cacheDurationInSeconds = self.cacheDurationInSeconds(
+                isAppBackgrounded: isAppBackgrounded,
+                isSandbox: self.sandboxEnvironmentDetector.isSandbox
+            )
+
+            return timeSinceLastCheck >= cacheDurationInSeconds
         }
     }
-
+    
     func clearVirtualCurrenciesCache(appUserID: String) {
-        virtualCurrenciesLock.perform {
-            self.userDefaults.write {
-                Self.clearVirtualCurrenciesCacheLastUpdatedTimestamp($0, appUserID: appUserID)
-                $0.removeObject(forKey: CacheKey.virtualCurrencies(appUserID))
-            }
+        self.userDefaults.write {
+            Self.clearVirtualCurrenciesCacheLastUpdatedTimestamp($0, appUserID: appUserID)
+            $0.removeObject(forKey: CacheKey.virtualCurrencies(appUserID))
         }
     }
 
