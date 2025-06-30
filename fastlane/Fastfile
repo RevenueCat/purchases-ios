@@ -346,7 +346,8 @@ platform :ios do
       "mac-catalyst-scaled-to-match-ipad" => "platform=macOS,arch=arm64,variant=Mac Catalyst"
     }
     
-    # Map platform to TARGETED_DEVICE_FAMILY build setting
+    # Map platform to TARGETED_DEVICE_FAMILY build setting. This overrides the setting in the Xcode Project,
+    # if we ever change the list of supported platforms we'll need to make sure to update this as well.
     targeted_device_families = {
       "mac-catalyst-optimized-for-mac" => "1,2,3,4,6",
       "mac-catalyst-scaled-to-match-ipad" => "1,2,3,4"
