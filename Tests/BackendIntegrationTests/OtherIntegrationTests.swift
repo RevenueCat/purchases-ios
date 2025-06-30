@@ -274,7 +274,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         // swiftlint:disable:next todo
         // TODO: We probably want to check that this is nil instead, depending on
         // the results of a discussion with the backend team
-//        expect(testCurrency2.serverDescription).to(beEmpty())
+        expect(testCurrency2.serverDescription).to(beEmpty())
     }
 
     func testGetVirtualCurrenciesWithBalancesWithNonZeroValues() async throws {
@@ -302,7 +302,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         // swiftlint:disable:next todo
         // TODO: We probably want to check that this is nil instead, depending on
         // the results of a discussion with the backend team
-//        expect(testCurrency2.serverDescription).to(beEmpty())
+        expect(testCurrency2.serverDescription).to(beEmpty())
     }
 
     func testGetVirtualCurrenciesMultipleTimesInParallel() async throws {

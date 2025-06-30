@@ -14,6 +14,7 @@
 import Foundation
 import Nimble
 @testable import RevenueCat
+import StoreKit
 import XCTest
 
 class VirtualCurrencyStoreKit2IntegrationTests: BaseStoreKitIntegrationTests {
@@ -34,11 +35,7 @@ class VirtualCurrencyStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         try self.purchases.invalidateVirtualCurrenciesCache()
         let virtualCurrenciesBeforePurchase = try await self.purchases.virtualCurrencies()
-
-        // swiftlint:disable:next todo
-        // TODO: We might need to check for this to be 0 depending on the outcome from a discussion with the team
-        expect(virtualCurrenciesBeforePurchase["TEST"]?.balance).to(beNil())
-        expect(virtualCurrenciesBeforePurchase["TEST2"]?.balance).to(beNil())
+        assertAllVirtualCurrenciesHaveZeroBalances(virtualCurrenciesBeforePurchase)
 
         try await self.purchaseConsumablePackage()
         self.verifyTransactionWasFinished()
@@ -51,42 +48,132 @@ class VirtualCurrencyStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         expect(virtualCurrenciesAfterPurchase["TEST"]?.code).to(equal("TEST"))
         expect(virtualCurrenciesAfterPurchase["TEST"]?.name).to(equal("Test Currency"))
         expect(virtualCurrenciesAfterPurchase["TEST"]?.serverDescription).to(equal("This is a test currency"))
-
-        // swiftlint:disable:next todo
-        // TODO: We might need to check for this to be 0 depending on the outcome from a discussion with the team
-//        expect(virtualCurrenciesAfterPurchase["TEST2"]?.balance).to(beNil())
+        assertVCCodeHasNoBalance(virtualCurrenciesAfterPurchase, vcCode: "TEST2")
 
         // Ensure that this purchase didn't grant VCs to other subscribers
         _ = try await self.purchases.logIn(userID2)
         let virtualCurrenciesForOtherUser = try await self.purchases.virtualCurrencies()
 
-        // swiftlint:disable:next todo
-        // TODO: We might need to check for this to be 0 depending on the outcome from a discussion with the team
-//        expect(virtualCurrenciesForOtherUser["TEST"]?.balance).to(beNil())
-//        expect(virtualCurrenciesForOtherUser["TEST2"]?.balance).to(beNil())
+        assertAllVirtualCurrenciesHaveZeroBalances(virtualCurrenciesForOtherUser)
     }
 
-    func testDoesntGrantVCForProductWithoutVCGrant() async throws {
+    func testGrantsVCForNonConsumableWithVCGrant() async throws {
         let userID1 = "vc_user_\(UUID().uuidString)"
+        let userID2 = "vc_user_\(UUID().uuidString)"
 
         _ = try await self.purchases.logIn(userID1)
 
         try self.purchases.invalidateVirtualCurrenciesCache()
         let virtualCurrenciesBeforePurchase = try await self.purchases.virtualCurrencies()
+        assertAllVirtualCurrenciesHaveZeroBalances(virtualCurrenciesBeforePurchase)
 
-        // TODO: We might need to check for this to be 0 depending on the outcome from a discussion with the team
-//        expect(virtualCurrenciesBeforePurchase["TEST"]?.balance).to(beNil())
-//        expect(virtualCurrenciesBeforePurchase["TEST2"]?.balance).to(beNil())
-
-        try await self.purchaseMonthlyOffering()
+        try await self.purchaseNonConsumablePackage()
+        self.verifyTransactionWasFinished()
 
         try self.purchases.invalidateVirtualCurrenciesCache()
 
         let virtualCurrenciesAfterPurchase = try await self.purchases.virtualCurrencies()
 
+        expect(virtualCurrenciesAfterPurchase["TEST"]?.balance).to(equal(2))
+        expect(virtualCurrenciesAfterPurchase["TEST"]?.code).to(equal("TEST"))
+        expect(virtualCurrenciesAfterPurchase["TEST"]?.name).to(equal("Test Currency"))
+        expect(virtualCurrenciesAfterPurchase["TEST"]?.serverDescription).to(equal("This is a test currency"))
+        assertVCCodeHasNoBalance(virtualCurrenciesAfterPurchase, vcCode: "TEST2")
+
+        // Ensure that this purchase didn't grant VCs to other subscribers
+        _ = try await self.purchases.logIn(userID2)
+        let virtualCurrenciesForOtherUser = try await self.purchases.virtualCurrencies()
+        assertAllVirtualCurrenciesHaveZeroBalances(virtualCurrenciesForOtherUser)
+    }
+
+    func testGrantsVCForAutoRenewingSubscriptionWithVCGrant() async throws {
+        let userID1 = "vc_user_\(UUID().uuidString)"
+        let userID2 = "vc_user_\(UUID().uuidString)"
+
+        _ = try await self.purchases.logIn(userID1)
+
+        try self.purchases.invalidateVirtualCurrenciesCache()
+        let virtualCurrenciesBeforePurchase = try await self.purchases.virtualCurrencies()
+        assertAllVirtualCurrenciesHaveZeroBalances(virtualCurrenciesBeforePurchase)
+
+        try await self.purchaseMonthlyOffering()
+        self.verifyTransactionWasFinished()
+
+        try self.purchases.invalidateVirtualCurrenciesCache()
+
+        let virtualCurrenciesAfterPurchase = try await self.purchases.virtualCurrencies()
+
+        expect(virtualCurrenciesAfterPurchase["TEST"]?.balance).to(equal(3))
+        expect(virtualCurrenciesAfterPurchase["TEST"]?.code).to(equal("TEST"))
+        expect(virtualCurrenciesAfterPurchase["TEST"]?.name).to(equal("Test Currency"))
+        expect(virtualCurrenciesAfterPurchase["TEST"]?.serverDescription).to(equal("This is a test currency"))
+        assertVCCodeHasNoBalance(virtualCurrenciesAfterPurchase, vcCode: "TEST2")
+
+        // Ensure that this purchase didn't grant VCs to other subscribers
+        _ = try await self.purchases.logIn(userID2)
+        let virtualCurrenciesForOtherUser = try await self.purchases.virtualCurrencies()
+        assertAllVirtualCurrenciesHaveZeroBalances(virtualCurrenciesForOtherUser)
+    }
+
+    func testGrantsVCForNonRenewingSubscriptionWithVCGrant() async throws {
+        let userID1 = "vc_user_\(UUID().uuidString)"
+        let userID2 = "vc_user_\(UUID().uuidString)"
+
+        _ = try await self.purchases.logIn(userID1)
+
+        try self.purchases.invalidateVirtualCurrenciesCache()
+        let virtualCurrenciesBeforePurchase = try await self.purchases.virtualCurrencies()
+        assertAllVirtualCurrenciesHaveZeroBalances(virtualCurrenciesBeforePurchase)
+
+        try await self.purchaseNonRenewingSubscriptionPackage()
+        self.verifyTransactionWasFinished()
+
+        try self.purchases.invalidateVirtualCurrenciesCache()
+
+        let virtualCurrenciesAfterPurchase = try await self.purchases.virtualCurrencies()
+
+        expect(virtualCurrenciesAfterPurchase["TEST"]?.balance).to(equal(4))
+        expect(virtualCurrenciesAfterPurchase["TEST"]?.code).to(equal("TEST"))
+        expect(virtualCurrenciesAfterPurchase["TEST"]?.name).to(equal("Test Currency"))
+        expect(virtualCurrenciesAfterPurchase["TEST"]?.serverDescription).to(equal("This is a test currency"))
+        assertVCCodeHasNoBalance(virtualCurrenciesAfterPurchase, vcCode: "TEST2")
+
+        // Ensure that this purchase didn't grant VCs to other subscribers
+        _ = try await self.purchases.logIn(userID2)
+        let virtualCurrenciesForOtherUser = try await self.purchases.virtualCurrencies()
+
+        assertAllVirtualCurrenciesHaveZeroBalances(virtualCurrenciesForOtherUser)
+    }
+
+    func testDoesntGrantVCForProductWithoutVCGrant() async throws {
+        let userID1 = "vc_user_\(UUID().uuidString)"
+        _ = try await self.purchases.logIn(userID1)
+
+        try self.purchases.invalidateVirtualCurrenciesCache()
+        let virtualCurrenciesBeforePurchase = try await self.purchases.virtualCurrencies()
+        assertAllVirtualCurrenciesHaveZeroBalances(virtualCurrenciesBeforePurchase)
+
+        let product = try await StoreKit.Product.products(for: [Self.weeklyWith3DayTrial]).first!
+        _ = try await self.purchases.purchase(product: StoreProduct(sk2Product: product))
+
+        try self.purchases.invalidateVirtualCurrenciesCache()
+
+        let virtualCurrenciesAfterPurchase = try await self.purchases.virtualCurrencies()
+        assertAllVirtualCurrenciesHaveZeroBalances(virtualCurrenciesAfterPurchase)
+    }
+
+    // MARK: - Assertion Helpers
+    private func assertAllVirtualCurrenciesHaveZeroBalances(_ virtualCurrencies: VirtualCurrencies) {
+        assertVCCodeHasNoBalance(virtualCurrencies, vcCode: "TEST")
+        assertVCCodeHasNoBalance(virtualCurrencies, vcCode: "TEST2")
+    }
+
+    private func assertVCCodeHasNoBalance(
+        _ virtualCurrencies: VirtualCurrencies,
+        vcCode: String
+    ) {
         // swiftlint:disable:next todo
         // TODO: We might need to check for this to be 0 depending on the outcome from a discussion with the team
-//        expect(virtualCurrenciesAfterPurchase["TEST"]?.balance).to(beNil())
-//        expect(virtualCurrenciesAfterPurchase["TEST2"]?.balance).to(beNil())
+        expect(virtualCurrencies[vcCode]?.balance).to(beNil())
     }
 }
