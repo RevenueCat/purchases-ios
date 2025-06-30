@@ -375,7 +375,9 @@ platform :ios do
       xcargs += ["TARGETED_DEVICE_FAMILY='#{targeted_device_families[platform]}'"]
     end
 
-    match(type: "appstore", readonly: true, app_identifier: "com.revenuecat.StoreKitUnitTestsHostApp")
+    Dir.chdir("Tests/UnitTestsHostApp/fastlane") do
+      match(type: "appstore", readonly: true)
+    end
 
     scan_options = {
       workspace: 'RevenueCat.xcworkspace',
