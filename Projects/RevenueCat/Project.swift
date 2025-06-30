@@ -137,7 +137,13 @@ let project = Project(
             destinations: allDestinations,
             product: .app,
             bundleId: "com.revenuecat.StoreKitUnitTestsHostApp",
-            deploymentTargets: allDeploymentTargets,
+            deploymentTargets: .multiplatform(
+                iOS: "13.0",
+                macOS: "10.15",
+                watchOS: "6.2",
+                tvOS: "13.0",
+                visionOS: "1.0"
+            ),
             infoPlist: .file(path: "../../Tests/UnitTestsHostApp/Info.plist"),
             sources: [
                 "../../Tests/UnitTestsHostApp/**/*.swift"
