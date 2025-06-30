@@ -16,19 +16,24 @@ import Foundation
 class InternalAPI {
 
     typealias ResponseHandler = (BackendError?) -> Void
+    #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     typealias HealthReportResponseHandler = (Result<HealthReport, BackendError>) -> Void
     typealias HealthReportAvailabilityResponseHandler = (Result<HealthReportAvailability, BackendError>) -> Void
 
-    private let backendConfig: BackendConfiguration
-    private let healthCallbackCache: CallbackCache<HealthOperation.Callback>
     private let healthReportCallbackCache: CallbackCache<HealthReportOperation.Callback>
     private let healthReportAvailabilityCallbackCache: CallbackCache<HealthReportAvailabilityOperation.Callback>
+    #endif
+
+    private let backendConfig: BackendConfiguration
+    private let healthCallbackCache: CallbackCache<HealthOperation.Callback>
 
     init(backendConfig: BackendConfiguration) {
         self.backendConfig = backendConfig
         self.healthCallbackCache = .init()
+        #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         self.healthReportCallbackCache = .init()
         self.healthReportAvailabilityCallbackCache = .init()
+        #endif
     }
 
     func healthRequest(signatureVerification: Bool, completion: @escaping ResponseHandler) {
