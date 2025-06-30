@@ -414,13 +414,21 @@ private extension PaywallViewConfiguration.Content {
         switch self {
         case let .offering(offering): return offering
         case .defaultOffering: return Self.loadCachedCurrentOfferingIfPossible()
-        case .offeringIdentifier: return nil
+        case let .offeringIdentifier(identifier): return Self.loadCachedOfferingIfPossible(identifier: identifier)
         }
     }
 
     private static func loadCachedCurrentOfferingIfPossible() -> Offering? {
         if Purchases.isConfigured {
             return Purchases.shared.cachedOfferings?.current
+        } else {
+            return nil
+        }
+    }
+
+    private static func loadCachedOfferingIfPossible(identifier: String) -> Offering? {
+        if Purchases.isConfigured {
+            return Purchases.shared.cachedOfferings?.offering(identifier: identifier)
         } else {
             return nil
         }

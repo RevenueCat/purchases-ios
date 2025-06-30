@@ -151,7 +151,10 @@ struct SubscriptionDetailView: View {
                 if viewModel.isRefreshing {
                     ProgressView()
                         .padding(.vertical)
+                        .transition(.opacity.combined(with: .scale))
+                        .animation(.easeInOut(duration: 0.3), value: viewModel.isRefreshing)
                 }
+
                 if let purchaseInformation = self.viewModel.purchaseInformation {
                     PurchaseInformationCardView(
                         purchaseInformation: purchaseInformation,
@@ -176,6 +179,7 @@ struct SubscriptionDetailView: View {
                 if viewModel.showPurchaseHistory {
                     seeAllSubscriptionsButton
                         .padding(.top, 16)
+                        .padding(.bottom, 16)
                 }
 
                 if let url = support?.supportURL(
@@ -185,9 +189,13 @@ struct SubscriptionDetailView: View {
                    viewModel.shouldShowContactSupport,
                    URLUtilities.canOpenURL(url) || RuntimeUtils.isSimulator {
                     contactSupportView(url)
-                        .padding(.top)
+                        .padding(.bottom, 16)
                 }
+
+                accountDetailsView
             }
+            .opacity(viewModel.isRefreshing ? 0.5 : 1)
+            .animation(.easeInOut(duration: 0.3), value: viewModel.isRefreshing)
         }
         .overlay {
             RestorePurchasesAlert(
@@ -200,6 +208,17 @@ struct SubscriptionDetailView: View {
             $0.navigationTitle(self.viewModel.screen.title)
                 .navigationBarTitleDisplayMode(.inline)
         })
+    }
+
+    @ViewBuilder
+    private var accountDetailsView: some View {
+        Spacer().frame(height: 16)
+
+        AccountDetailsSection(
+            originalPurchaseDate: customerInfoViewModel.originalPurchaseDate,
+            originalAppUserId: customerInfoViewModel.originalAppUserId,
+            localization: localization
+        )
     }
 
     @ViewBuilder
