@@ -248,6 +248,95 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         expect(stubbedRequestCount).to(equal(1)) // Just the original request
     }
 
+    // MARK: - Virtual Currencies
+    func testGetVirtualCurrenciesWithBalancesOfZero() async throws {
+        let appUserIDWith0BalanceCurrencies = "integrationTestUserWithAllBalancesEqualTo0"
+        let purchases = try self.purchases
+
+        _ = try await purchases.logIn(appUserIDWith0BalanceCurrencies)
+
+        purchases.invalidateVirtualCurrenciesCache()
+        let virtualCurrencies = try await purchases.virtualCurrencies()
+
+        expect(virtualCurrencies.all.count).to(equal(2))
+
+        let testCurrency = try XCTUnwrap(virtualCurrencies["TEST"])
+        expect(testCurrency.balance).to(equal(0))
+        expect(testCurrency.code).to(equal("TEST"))
+        expect(testCurrency.name).to(equal("Test Currency"))
+        expect(testCurrency.serverDescription).to(equal("This is a test currency"))
+
+        let testCurrency2 = try XCTUnwrap(virtualCurrencies["TEST2"])
+        expect(testCurrency2.balance).to(equal(0))
+        expect(testCurrency2.code).to(equal("TEST2"))
+        expect(testCurrency2.name).to(equal("Test Currency 2"))
+
+        // TODO: We probably want to check that this is nil instead, depending on
+        // the results of a discussion with the backend team
+        expect(testCurrency2.serverDescription).to(beEmpty())
+    }
+
+    func testGetVirtualCurrenciesWithBalancesWithNonZeroValues() async throws {
+        let appUserIDWith0BalanceCurrencies = "integrationTestUserWithAllBalancesNonZero"
+        let purchases = try self.purchases
+
+        _ = try await purchases.logIn(appUserIDWith0BalanceCurrencies)
+
+        purchases.invalidateVirtualCurrenciesCache()
+        let virtualCurrencies = try await purchases.virtualCurrencies()
+
+        expect(virtualCurrencies.all.count).to(equal(2))
+
+        let testCurrency = try XCTUnwrap(virtualCurrencies["TEST"])
+        expect(testCurrency.balance).to(equal(100))
+        expect(testCurrency.code).to(equal("TEST"))
+        expect(testCurrency.name).to(equal("Test Currency"))
+        expect(testCurrency.serverDescription).to(equal("This is a test currency"))
+
+        let testCurrency2 = try XCTUnwrap(virtualCurrencies["TEST2"])
+        expect(testCurrency2.balance).to(equal(777))
+        expect(testCurrency2.code).to(equal("TEST2"))
+        expect(testCurrency2.name).to(equal("Test Currency 2"))
+
+        // TODO: We probably want to check that this is nil instead, depending on
+        // the results of a discussion with the backend team
+        expect(testCurrency2.serverDescription).to(beEmpty())
+    }
+
+    func testGetVirtualCurrenciesMultipleTimesInParallel() async throws {
+        let requestCount = 3
+
+        let purchases = try self.purchases
+
+        // 1. Invalidate cache
+        purchases.invalidateVirtualCurrenciesCache()
+        self.logger.clearMessages()
+
+        // 2. Request offerings multiple times in parallel
+        await withThrowingTaskGroup(of: Void.self) {
+            for _ in 0..<requestCount {
+                $0.addTask { _ = try await purchases.virtualCurrencies() }
+            }
+        }
+
+        // 3. Verify N-1 requests were de-duped
+        self.logger.verifyMessageWasLogged(
+            "Network operation 'GetVirtualCurrenciesOperation' found with the same cache key",
+            level: .debug,
+            expectedCount: requestCount - 1
+        )
+
+        self.logger.verifyMessageWasLogged(
+            Strings.network.api_request_completed(
+                .init(method: .get,
+                      path: .getVirtualCurrencies(appUserID: try self.purchases.appUserID)),
+                httpCode: .success,
+                metadata: nil
+            ),
+            level: .debug,
+            expectedCount: 1
+        )
+    }
 }
 
 private extension OtherIntegrationTests {
