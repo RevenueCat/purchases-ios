@@ -239,12 +239,7 @@ let project = Project(
             destinations: allDestinations(macWithiPadDesign: true),
             product: .unitTests,
             bundleId: "com.revenuecat.BackendIntegrationTests",
-            deploymentTargets: .multiplatform(
-                iOS: "16.0",
-                macOS: "11.0",
-                watchOS: "7.0",
-                tvOS: "14.0"
-            ),
+            deploymentTargets: .iOS("16.0"),
             infoPlist: .default,
             sources: [
                 .glob(
