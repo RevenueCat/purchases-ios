@@ -74,7 +74,7 @@ class VirtualCurrencyStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         expect(virtualCurrenciesBeforePurchase["TEST"]?.balance).to(beNil())
         expect(virtualCurrenciesBeforePurchase["TEST2"]?.balance).to(beNil())
 
-        try await self.purchaseNonRenewingSubscriptionPackage()
+        try await self.purchaseMonthlyOffering()
 
         try self.purchases.invalidateVirtualCurrenciesCache()
 
