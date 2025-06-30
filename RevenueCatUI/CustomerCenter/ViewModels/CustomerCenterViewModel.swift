@@ -88,7 +88,7 @@ import Foundation
         subscriptionsSection.count + nonSubscriptionsSection.count > 1
     }
 
-    var  originalAppUserId: String {
+    var originalAppUserId: String {
         customerInfo?.originalAppUserId ?? ""
     }
 
