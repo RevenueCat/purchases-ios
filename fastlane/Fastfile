@@ -225,6 +225,14 @@ platform :ios do
       FileUtils.mkdir_p(target_dir)
       FileUtils.cp(file_path, target_path)
     end
+
+    # Upload snapshots to Emerge
+    UI.message("Uploading snapshots to Emerge for platform: #{platform}")
+    sh("bundle", "exec", "emerge", "upload", "snapshots", 
+       "--name", "RevenueCat", 
+       "--id", "com.revenuecat.paywall-rendering-validation.#{platform}", 
+       "--repo-name", "RevenueCat/purchases-ios", 
+       "#{output_dir}/images")
   end
 
   private_lane :create_or_checkout_branch do |options|
