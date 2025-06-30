@@ -128,9 +128,6 @@ let project = Project(
             dependencies: [
                 .target(name: "ReceiptParser"),
                 .nimble
-            ],
-            additionalFiles: [
-                "../../Tests/StoreKitUnitTests/UnitTestsConfiguration.storekit"
             ]
         ),
 
