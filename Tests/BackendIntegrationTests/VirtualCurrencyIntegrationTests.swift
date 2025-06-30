@@ -11,8 +11,8 @@
 //
 //  Created by Will Taylor on 6/29/25.
 
-import Nimble
 import Foundation
+import Nimble
 @testable import RevenueCat
 import XCTest
 
