@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  HealthReportOperation 2.swift
+//  HealthReportAvailabilityOperation.swift
 //
 //  Created by Pol Piella Abadia on 27/06/2025.
 
