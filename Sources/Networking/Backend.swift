@@ -143,6 +143,10 @@ class Backend {
         self.customer.post(subscriberAttributes: subscriberAttributes, appUserID: appUserID, completion: completion)
     }
 
+    #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    /// Checks if the SDK should log the status of the health report to the console.
+    /// - Parameter appUserID: An `appUserID` that allows the Backend to check for health report availability
+    /// - Returns: Whether the health report should be reported to the console for the given `appUserID`.
     func healthReportAvailabilityRequest(appUserID: String) async throws -> HealthReportAvailability {
         try await Async.call { (completion: @escaping (Result<HealthReportAvailability, BackendError>) -> Void) in
             self.internalAPI.healthReportAvailabilityRequest(
@@ -160,6 +164,7 @@ class Backend {
             self.internalAPI.healthReportRequest(appUserID: appUserID, completion: completion)
         }
     }
+    #endif
 }
 
 extension Backend {
