@@ -369,12 +369,16 @@ platform :ios do
     case platform
     when "mac-catalyst-scaled-to-match-ipad"
       variant = "Mac Catalyst"
+      skip_package_ipa = false
     when "mac-catalyst-optimized-for-mac"
       variant = "Mac Catalyst"
+      skip_package_ipa = false
     when "ipad-app-on-mac"
       variant = "Designed for iPad"
+      skip_package_ipa = true
     when "iphone-app-on-mac"
       variant = "Designed for iPhone"
+      skip_package_ipa = true
     else
       UI.user_error!("Invalid platform: #{platform}. Must be one of: mac-catalyst-scaled-to-match-ipad, mac-catalyst-optimized-for-mac, ipad-app-on-mac, iphone-app-on-mac")
     end
@@ -401,7 +405,7 @@ platform :ios do
       skip_codesigning: true,
       archive_path: archive_path,
       skip_package_pkg: true,
-      skip_package_ipa: true
+      skip_package_ipa: skip_package_ipa
     )
 
     send_to_emerge(
