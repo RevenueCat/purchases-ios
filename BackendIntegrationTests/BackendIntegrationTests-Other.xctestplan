@@ -57,7 +57,11 @@
         "StoreKit2NotEnabledObserverModeIntegrationTests",
         "StoreKit2ObserverModeIntegrationTests",
         "StoreKit2ObserverModeWithExistingPurchasesTests",
-        "TestCase"
+        "TestCase",
+        "VirtualCurrencyStoreKit1IntegrationTests",
+        "VirtualCurrencyStoreKit1IntegrationTests\/testDoesntGrantVCForProductWithoutVCGrant()",
+        "VirtualCurrencyStoreKit1IntegrationTests\/testGrantsVCForProductWithVCGrant()",
+        "VirtualCurrencyStoreKit2IntegrationTests"
       ],
       "target" : {
         "containerPath" : "container:RevenueCat.xcodeproj",
