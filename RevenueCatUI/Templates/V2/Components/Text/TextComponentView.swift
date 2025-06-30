@@ -149,7 +149,7 @@ struct TextComponentView_Previews: PreviewProvider {
             }
 
         }
-        else {
+        else if isiOSAppOnMac {
             switch UIDevice.current.userInterfaceIdiom {
             case .phone:
                 return "iPhone App on Mac"
@@ -159,10 +159,12 @@ struct TextComponentView_Previews: PreviewProvider {
                 return "Unexpected iOS App on Mac"
             }
         }
+        else {
+            return "iOS"
+        }
     }
     
-    private static var defaultPreview: some View {
-        // Default
+    private static var platformPreview: some View {
         TextComponentView(
             // swiftlint:disable:next force_try
             viewModel: try! .init(
@@ -183,18 +185,36 @@ struct TextComponentView_Previews: PreviewProvider {
         .previewLayout(.sizeThatFits)
 
     }
+    
+    private static var defaultPreview: some View {
+        // Default
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_1": .string("Hello, world")
+                    ]
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(
+                    text: "id_1",
+                    color: .init(light: .hex("#000000"))
+                )
+            )
+        )
+        .previewRequiredEnvironmentProperties()
+        .previewLayout(.sizeThatFits)
+
+    }
 
     static var previews: some View {
         defaultPreview
         .previewDisplayName("Default")
         
-        defaultPreview
-        .previewDisplayName("Default - Mac")
-        .previewDevice("Mac")
-        
-        defaultPreview
-        .previewDisplayName("Default - Mac Catalyst")
-        .previewDevice("Mac Catalyst")
+        platformPreview
+        .previewDisplayName("Detected Platform")
 
         // Markdown
         TextComponentView(
