@@ -14,10 +14,11 @@ let allDestinations: Destinations = [
 ]
 
 let allDeploymentTargets: DeploymentTargets = .multiplatform(
-    iOS: "15.0",
-    macOS: "11.0",
-    watchOS: "7.0",
-    tvOS: "14.0"
+    iOS: "13.0",
+    macOS: "10.15",
+    watchOS: "6.2",
+    tvOS: "13.0",
+    visionOS: "1.0"
 )
 
 let project = Project(
