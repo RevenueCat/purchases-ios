@@ -103,7 +103,7 @@ extension PurchaseInformation {
         productIdentifier: "product_id_lifetime",
         isSubscription: true,
         expirationDate: nil,
-        renewalDate: nil
+        renewalDate: nil,
     )
 
     static let free = PurchaseInformation.mock(
