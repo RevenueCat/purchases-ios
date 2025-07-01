@@ -67,7 +67,7 @@ class VirtualCurrencyManager: VirtualCurrencyManagerType {
         if let cachedVirtualCurrencies = fetchCachedVirtualCurrencies(
             appUserID: appUserID,
             isAppBackgrounded: systemInfo.isAppBackgroundedState,
-            fetchEvenIfCacheIsStale: true
+            allowStaleCache: true
         ) {
             Logger.debug(Strings.virtualCurrencies.vending_from_cache)
             return cachedVirtualCurrencies
@@ -96,9 +96,9 @@ class VirtualCurrencyManager: VirtualCurrencyManagerType {
     private func fetchCachedVirtualCurrencies(
         appUserID: String,
         isAppBackgrounded: Bool,
-        fetchEvenIfCacheIsStale: Bool = false
+        allowStaleCache: Bool = false
     ) -> VirtualCurrencies? {
-        if !fetchEvenIfCacheIsStale && self.deviceCache.isVirtualCurrenciesCacheStale(
+        if !allowStaleCache && self.deviceCache.isVirtualCurrenciesCacheStale(
             appUserID: appUserID,
             isAppBackgrounded: isAppBackgrounded
         ) {
