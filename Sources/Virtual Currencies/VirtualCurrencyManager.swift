@@ -16,6 +16,8 @@ import Foundation
 protocol VirtualCurrencyManagerType {
     func virtualCurrencies() async throws -> VirtualCurrencies
 
+    func cachedVirtualCurrencies() -> VirtualCurrencies?
+
     func invalidateVirtualCurrenciesCache()
 }
 
@@ -42,7 +44,7 @@ class VirtualCurrencyManager: VirtualCurrencyManagerType {
         let appUserID = identityManager.currentAppUserID
         let isAppBackgrounded = systemInfo.isAppBackgroundedState
 
-        if let cachedVirtualCurrencies = await fetchCachedVirtualCurrencies(
+        if let cachedVirtualCurrencies = fetchCachedVirtualCurrencies(
             appUserID: appUserID,
             isAppBackgrounded: isAppBackgrounded
         ) {
@@ -58,6 +60,20 @@ class VirtualCurrencyManager: VirtualCurrencyManagerType {
         cacheVirtualCurrencies(virtualCurrencies, appUserID: appUserID)
 
         return virtualCurrencies
+    }
+
+    func cachedVirtualCurrencies() -> VirtualCurrencies? {
+        let appUserID = identityManager.currentAppUserID
+        if let cachedVirtualCurrencies = fetchCachedVirtualCurrencies(
+            appUserID: appUserID,
+            isAppBackgrounded: systemInfo.isAppBackgroundedState,
+            allowStaleCache: true
+        ) {
+            Logger.debug(Strings.virtualCurrencies.vending_from_cache)
+            return cachedVirtualCurrencies
+        } else {
+            return nil
+        }
     }
 
     func invalidateVirtualCurrenciesCache() {
@@ -79,14 +95,15 @@ class VirtualCurrencyManager: VirtualCurrencyManagerType {
 
     private func fetchCachedVirtualCurrencies(
         appUserID: String,
-        isAppBackgrounded: Bool
-    ) async -> VirtualCurrencies? {
-        if self.deviceCache.isVirtualCurrenciesCacheStale(
+        isAppBackgrounded: Bool,
+        allowStaleCache: Bool = false
+    ) -> VirtualCurrencies? {
+        if !allowStaleCache && self.deviceCache.isVirtualCurrenciesCacheStale(
             appUserID: appUserID,
             isAppBackgrounded: isAppBackgrounded
         ) {
-            // The virtual currencies cache is stale, so
-            // return no cached virtual currencies.
+            // The virtual currencies cache is stale and we don't want to fetch stale data,
+            // so return no cached virtual currencies.
             Logger.debug(Strings.virtualCurrencies.virtual_currencies_stale_updating_from_network)
             return nil
         }

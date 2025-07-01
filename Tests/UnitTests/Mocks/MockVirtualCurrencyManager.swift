@@ -35,4 +35,13 @@ class MockVirtualCurrencyManager: VirtualCurrencyManagerType {
         self.invalidateVirtualCurrenciesCacheCallCount += 1
         self.invalidateVirtualCurrenciesCacheCalled = true
     }
+
+    var stubbedCachedVirtualCurrencies: VirtualCurrencies?
+    var cachedVirtualCurrenciesCallCount = 0
+    var cachedVirtualCurrenciesCalled = false
+    func cachedVirtualCurrencies() -> VirtualCurrencies? {
+        cachedVirtualCurrenciesCallCount += 1
+        cachedVirtualCurrenciesCalled = true
+        return stubbedCachedVirtualCurrencies
+    }
 }

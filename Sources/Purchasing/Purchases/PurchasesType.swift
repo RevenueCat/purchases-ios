@@ -993,6 +993,15 @@ public protocol PurchasesType: AnyObject {
     )
 
     /**
+     * The currently cached ``VirtualCurrencies`` if one is available.
+     * This is synchronous, and therefore useful for contexts where an app needs a `VirtualCurrencies`
+     * right away without waiting for a callback, like a SwiftUI view.
+     *
+     * This allows initializing state to ensure that UI can be loaded from the very first frame.
+     */
+    var cachedVirtualCurrencies: VirtualCurrencies? { get }
+
+    /**
      * Invalidates the cache for virtual currencies.
      *
      * This is useful for cases where a virtual currency's balance might have been updated
