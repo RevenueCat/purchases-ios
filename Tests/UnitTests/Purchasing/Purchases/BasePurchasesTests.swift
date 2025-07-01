@@ -302,6 +302,10 @@ class BasePurchasesTests: TestCase {
             diagnosticsTracker: self.diagnosticsTracker
         )
         self.cachingTrialOrIntroPriceEligibilityChecker = .init(checker: self.trialOrIntroPriceEligibilityChecker)
+        let healthManager = SDKHealthManager(
+            backend: self.backend,
+            identityManager: self.identityManager
+        )
 
         self.purchases = Purchases(appUserID: appUserId,
                                    requestFetcher: self.requestFetcher,
@@ -329,7 +333,8 @@ class BasePurchasesTests: TestCase {
                                    trialOrIntroPriceEligibilityChecker: self.cachingTrialOrIntroPriceEligibilityChecker,
                                    storeMessagesHelper: self.mockStoreMessagesHelper,
                                    diagnosticsTracker: self.diagnosticsTracker,
-                                   validateConfigurationOnDebugAppLaunch: validateConfigurationOnDebugAppLaunch)
+                                   validateConfigurationOnDebugAppLaunch: validateConfigurationOnDebugAppLaunch,
+                                   healthManager: healthManager)
 
         self.purchasesOrchestrator.delegate = self.purchases
 

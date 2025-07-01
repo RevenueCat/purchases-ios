@@ -18,14 +18,14 @@ import XCTest
 
 class SDKHealthManagerTests: TestCase {
     func testHealthReportReturnsUnhealthyWhenCannotMakePayments() async {
-        let manager = makeSUT(request: {
-            return HealthReport(
+        let manager = makeSUT(backendResponse: .success(
+            HealthReport(
                 status: .passed,
                 projectId: "test_project",
                 appId: "test_app",
                 checks: []
             )
-        }, canMakePayments: false)
+        ), canMakePayments: false)
 
         let report = await manager.healthReport()
 
@@ -33,12 +33,10 @@ class SDKHealthManagerTests: TestCase {
     }
 
     func testHealthReportReturnsUnhealthyForInvalidAPIKey() async {
-        let manager = makeSUT {
-            throw BackendError.networkError(.errorResponse(
-                .init(code: .invalidAPIKey, originalCode: 0),
-                .forbidden
-            ))
-        }
+        let manager = makeSUT(backendResponse: .failure(BackendError.networkError(.errorResponse(
+            .init(code: .invalidAPIKey, originalCode: 0),
+            .forbidden
+        ))))
 
         let report = await manager.healthReport()
 
@@ -46,14 +44,12 @@ class SDKHealthManagerTests: TestCase {
     }
 
     func testHealthReportReturnsUnhealthyForUnknownBackendError() async {
-        let manager = makeSUT {
-            throw BackendError.networkError(
-                .errorResponse(
-                    .init(code: .unknownError, originalCode: 0),
-                    .internalServerError
-                )
+        let manager = makeSUT(backendResponse: .failure(BackendError.networkError(
+            .errorResponse(
+                .init(code: .unknownError, originalCode: 0),
+                .internalServerError
             )
-        }
+        )))
 
         let report = await manager.healthReport()
 
@@ -61,10 +57,10 @@ class SDKHealthManagerTests: TestCase {
     }
 
     func testHealthReportReturnsUnhealthyForNonBackendError() async {
-        let testError = NSError(domain: "test", code: 1, userInfo: nil)
-        let manager = makeSUT {
-            throw testError
-        }
+        let manager = makeSUT(backendResponse: .failure(BackendError.networkError(.errorResponse(
+            .init(code: .unknownError, originalCode: 0),
+            .internalServerError
+        ))))
 
         let report = await manager.healthReport()
 
@@ -88,7 +84,7 @@ class SDKHealthManagerTests: TestCase {
             ]
         )
 
-        let manager = makeSUT { healthReport }
+        let manager = makeSUT(backendResponse: .success(healthReport))
 
         let report = await manager.healthReport()
 
@@ -110,7 +106,7 @@ class SDKHealthManagerTests: TestCase {
             ]
         )
 
-        let manager = makeSUT { healthReport }
+        let manager = makeSUT(backendResponse: .success(healthReport))
 
         let report = await manager.healthReport()
 
@@ -136,7 +132,7 @@ class SDKHealthManagerTests: TestCase {
             ]
         )
 
-        let manager = makeSUT { healthReport }
+        let manager = makeSUT(backendResponse: .success(healthReport))
 
         let report = await manager.healthReport()
 
@@ -148,9 +144,13 @@ class SDKHealthManagerTests: TestCase {
     }
 
     func testLogSDKHealthReportOutcomeLogsErrorForUnhealthyStatus() async {
-        let manager = makeSUT {
-            throw BackendError.networkError(.errorResponse(.init(code: .invalidAPIKey, originalCode: 0), .forbidden))
-        }
+        let manager = makeSUT(
+            backendResponse: .failure(
+                BackendError.networkError(
+                    .errorResponse(.init(code: .invalidAPIKey, originalCode: 0), .forbidden)
+                )
+            )
+        )
 
         await manager.logSDKHealthReportOutcome()
 
@@ -165,7 +165,7 @@ class SDKHealthManagerTests: TestCase {
             appId: "test_app",
             checks: []
         )
-        let manager = makeSUT { healthReport }
+        let manager = makeSUT(backendResponse: .success(healthReport))
 
         await manager.logSDKHealthReportOutcome()
 
@@ -189,7 +189,7 @@ class SDKHealthManagerTests: TestCase {
             ]
         )
 
-        let manager = makeSUT { healthReport }
+        let manager = makeSUT(backendResponse: .success(healthReport))
 
         await manager.logSDKHealthReportOutcome()
 
@@ -213,7 +213,7 @@ class SDKHealthManagerTests: TestCase {
             ]
         )
 
-        let manager = makeSUT { healthReport }
+        let manager = makeSUT(backendResponse: .success(healthReport))
 
         await manager.logSDKHealthReportOutcome()
 
@@ -244,7 +244,7 @@ class SDKHealthManagerTests: TestCase {
             ]
         )
 
-        let manager = makeSUT { healthReport }
+        let manager = makeSUT(backendResponse: .success(healthReport))
 
         await manager.logSDKHealthReportOutcome()
 
@@ -264,7 +264,7 @@ class SDKHealthManagerTests: TestCase {
             ]
         )
 
-        let manager = makeSUT { healthReport }
+        let manager = makeSUT(backendResponse: .success(healthReport))
 
         await manager.logSDKHealthReportOutcome()
 
@@ -297,7 +297,7 @@ class SDKHealthManagerTests: TestCase {
             ]
         )
 
-        let manager = makeSUT { healthReport }
+        let manager = makeSUT(backendResponse: .success(healthReport))
 
         await manager.logSDKHealthReportOutcome()
 
@@ -341,7 +341,7 @@ class SDKHealthManagerTests: TestCase {
             ]
         )
 
-        let manager = makeSUT { healthReport }
+        let manager = makeSUT(backendResponse: .success(healthReport))
 
         await manager.logSDKHealthReportOutcome()
 
@@ -361,7 +361,7 @@ class SDKHealthManagerTests: TestCase {
             checks: []
         )
 
-        let manager = makeSUT { healthReport }
+        let manager = makeSUT(backendResponse: .success(healthReport))
 
         await manager.logSDKHealthReportOutcome()
 
@@ -392,7 +392,7 @@ class SDKHealthManagerTests: TestCase {
             ]
         )
 
-        let manager = makeSUT { healthReport }
+        let manager = makeSUT(backendResponse: .success(healthReport))
 
         await manager.logSDKHealthReportOutcome()
 
@@ -440,7 +440,7 @@ class SDKHealthManagerTests: TestCase {
             ]
         )
 
-        let manager = makeSUT { healthReport }
+        let manager = makeSUT(backendResponse: .success(healthReport))
 
         await manager.logSDKHealthReportOutcome()
 
@@ -467,13 +467,16 @@ class SDKHealthManagerTests: TestCase {
 
 fileprivate extension SDKHealthManagerTests {
     private func makeSUT(
-        request: @escaping @Sendable () async throws -> HealthReport,
+        backendResponse: Result<HealthReport, BackendError>,
         canMakePayments: Bool = true,
         file: StaticString = #file,
         line: UInt = #line
     ) -> SDKHealthManager {
+        let backend = MockBackend()
+        backend.healthReportRequestResponse = backendResponse
         let manager = SDKHealthManager(
-            healthReportRequest: request,
+            backend: backend,
+            identityManager: MockIdentityManager(mockAppUserID: "app_user_id", mockDeviceCache: .init()),
             paymentAuthorizationProvider: .mock(canMakePayments: canMakePayments)
         )
 
