@@ -54,6 +54,7 @@ import Foundation
     let responseVerificationMode: Signing.ResponseVerificationMode
     let showStoreMessagesAutomatically: Bool
     let validateConfigurationOnDebugAppLaunch: Bool
+    let preferredLocale: String?
     internal let diagnosticsEnabled: Bool
 
     private init(with builder: Builder) {
@@ -72,6 +73,7 @@ import Foundation
         self.showStoreMessagesAutomatically = builder.showStoreMessagesAutomatically
         self.validateConfigurationOnDebugAppLaunch = builder.validateConfigurationOnDebugAppLaunch
         self.diagnosticsEnabled = builder.diagnosticsEnabled
+        self.preferredLocale = builder.preferredLocale
     }
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
@@ -116,6 +118,7 @@ import Foundation
         private(set) var validateConfigurationOnDebugAppLaunch: Bool = true
         private(set) var diagnosticsEnabled: Bool = false
         private(set) var storeKitVersion: StoreKitVersion = .default
+        private(set) var preferredLocale: String?
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
@@ -341,6 +344,13 @@ import Foundation
             return timeout
         }
 
+        /// Sets the preferred locale for the requests.
+        ///
+        /// This locale is included in all requests made by `HTTPClient`.
+        @_spi(Internal) public func with(preferredLocale: String?) -> Builder {
+            self.preferredLocale = preferredLocale
+            return self
+        }
     }
 
 }

@@ -293,7 +293,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      dangerousSettings: DangerousSettings? = nil,
                      showStoreMessagesAutomatically: Bool,
                      validateConfigurationOnDebugAppLaunch: Bool,
-                     diagnosticsEnabled: Bool = false
+                     diagnosticsEnabled: Bool = false,
+                     preferredLocale: String?
     ) {
         if userDefaults != nil {
             Logger.debug(Strings.configure.using_custom_user_defaults)
@@ -303,12 +304,15 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let receiptRefreshRequestFactory = ReceiptRefreshRequestFactory()
         let fetcher = StoreKitRequestFetcher(requestFactory: receiptRefreshRequestFactory,
                                              operationDispatcher: operationDispatcher)
-        let systemInfo = SystemInfo(platformInfo: platformInfo,
-                                    finishTransactions: !observerMode,
-                                    operationDispatcher: operationDispatcher,
-                                    storeKitVersion: storeKitVersion,
-                                    responseVerificationMode: responseVerificationMode,
-                                    dangerousSettings: dangerousSettings)
+        let systemInfo = SystemInfo(
+            platformInfo: platformInfo,
+            finishTransactions: !observerMode,
+            operationDispatcher: operationDispatcher,
+            storeKitVersion: storeKitVersion,
+            responseVerificationMode: responseVerificationMode,
+            dangerousSettings: dangerousSettings,
+            preferredLocalesProvider: PreferredLocalesProvider(preferredLocaleOverride: preferredLocale)
+        )
 
         let receiptFetcher = ReceiptFetcher(requestFetcher: fetcher, systemInfo: systemInfo)
         let eTagManager = ETagManager()
@@ -1405,7 +1409,8 @@ public extension Purchases {
                   dangerousSettings: configuration.dangerousSettings,
                   showStoreMessagesAutomatically: configuration.showStoreMessagesAutomatically,
                   validateConfigurationOnDebugAppLaunch: configuration.validateConfigurationOnDebugAppLaunch,
-                  diagnosticsEnabled: configuration.diagnosticsEnabled
+                  diagnosticsEnabled: configuration.diagnosticsEnabled,
+                  preferredLocale: configuration.preferredLocale
         )
     }
 
@@ -1672,7 +1677,8 @@ public extension Purchases {
         dangerousSettings: DangerousSettings?,
         showStoreMessagesAutomatically: Bool,
         validateConfigurationOnDebugAppLaunch: Bool,
-        diagnosticsEnabled: Bool
+        diagnosticsEnabled: Bool,
+        preferredLocale: String?
     ) -> Purchases {
         return self.setDefaultInstance(
             .init(apiKey: apiKey,
@@ -1688,7 +1694,8 @@ public extension Purchases {
                   dangerousSettings: dangerousSettings,
                   showStoreMessagesAutomatically: showStoreMessagesAutomatically,
                   validateConfigurationOnDebugAppLaunch: validateConfigurationOnDebugAppLaunch,
-                  diagnosticsEnabled: diagnosticsEnabled)
+                  diagnosticsEnabled: diagnosticsEnabled,
+                  preferredLocale: preferredLocale)
         )
     }
 
@@ -1844,6 +1851,16 @@ extension Purchases {
             context,
             productIdentifier: productIdentifier
         )
+    }
+
+    // swiftlint:disable missing_docs
+    @_spi(Internal) public var preferredLocales: [String] {
+        return self.systemInfo.preferredLocales
+    }
+
+    // swiftlint:disable missing_docs
+    @_spi(Internal) public func overridePreferredLocale(_ locale: String?) {
+        self.systemInfo.overridePreferredLocale(locale)
     }
 
 }
