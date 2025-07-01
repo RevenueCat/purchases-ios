@@ -263,8 +263,8 @@ extension Strings: CustomStringConvertible {
             return "No web checkout url found."
 
         case .failed_to_set_preferred_locale_purchases_not_configured:
-            return "Failed to set preferred locale because Purchases is not configured. " +
-            "Make sure to call `Purchases.configure` before setting the preferred locale."
+            return "Failed to override preferred UI locale because Purchases is not configured. " +
+            "Make sure to call `Purchases.configure` before calling `overridePreferredUILocale`."
         }
     }
 
