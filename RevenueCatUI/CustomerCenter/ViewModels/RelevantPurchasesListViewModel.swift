@@ -46,7 +46,6 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
                 screen: screen,
                 actionWrapper: actionWrapper,
                 purchaseInformation: nil,
-                virtualCurrencies: virtualCurrencies,
                 refundRequestStatus: refundRequestStatus,
                 purchasesProvider: purchasesProvider,
                 loadPromotionalOfferUseCase: loadPromotionalOfferUseCase
