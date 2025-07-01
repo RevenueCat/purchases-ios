@@ -429,31 +429,23 @@ platform :ios do
     
     case platform
     when "mac-catalyst-scaled-to-match-ipad"
-      variant = "Mac Catalyst"
-      skip_package_ipa = false
+      build_mac_catalyst_version(platform: platform, device_families: "1,2,3,4,5,7")
     when "mac-catalyst-optimized-for-mac"
-      variant = "Mac Catalyst"
-      skip_package_ipa = false
+      build_mac_catalyst_version(platform: platform, device_families: "1,2,3,4,5,6,7")
     when "ipad-app-on-mac"
-      variant = "Designed for iPad"
-      skip_package_ipa = true
+      build_ios_app_on_mac_version(platform: platform, include_ipad: true)
     when "iphone-app-on-mac"
-      variant = "Designed for iPhone"
-      skip_package_ipa = true
+      build_ios_app_on_mac_version(platform: platform, include_ipad: false)
     else
       UI.user_error!("Invalid platform: #{platform}. Must be one of: mac-catalyst-scaled-to-match-ipad, mac-catalyst-optimized-for-mac, ipad-app-on-mac, iphone-app-on-mac")
     end
+  end
 
-    targeted_device_families = {
-      "mac-catalyst-optimized-for-mac" => "1,2,3,4,5,6,7",
-      "mac-catalyst-scaled-to-match-ipad" => "1,2,3,4,5,7"
-    }
-
+  private_lane :build_mac_catalyst_version do |options|
+    platform = options[:platform]
+    device_families = options[:device_families]
     xcargs = "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
-
-    if targeted_device_families[platform]
-      xcargs << " TARGETED_DEVICE_FAMILY='#{targeted_device_families[platform]}'"
-    end
+    xcargs << " TARGETED_DEVICE_FAMILY='#{device_families}'"
     
     archive_path = File.absolute_path("build/PaywallsTester-#{platform}.xcarchive")
 
@@ -461,12 +453,12 @@ platform :ios do
       workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
       scheme: "PaywallsTester - Live Config",
       configuration: "Debug",
-      destination: "platform=macOS,arch=arm64,variant=#{variant}",
+      destination: "platform=macOS,arch=arm64,variant=Mac Catalyst",
       xcargs: xcargs,
       skip_codesigning: true,
       archive_path: archive_path,
       skip_package_pkg: true,
-      skip_package_ipa: skip_package_ipa
+      skip_package_ipa: false
     )
 
     send_to_emerge(
@@ -474,29 +466,69 @@ platform :ios do
         archive_path: archive_path
     )
   end
+
+  private_lane :build_ios_app_on_mac_version do |options|
+    platform = options[:platform]
+    include_ipad = options[:include_ipad]
+    
+    # Build iOS version first with appropriate device family targeting
+    device_families = include_ipad ? "1,2" : "1"
+    xcargs = "TARGETED_DEVICE_FAMILY='#{device_families}'"
+    
+    ios_archive_path = File.absolute_path("build/PaywallsTester-#{platform}-ios.xcarchive")
+
+    # Build the iOS version
+    gym(
+      workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
+      scheme: "PaywallsTester - Live Config",
+      configuration: "Debug",
+      destination: "generic/platform=iOS",
+      xcargs: xcargs,
+      archive_path: ios_archive_path,
+      skip_package_pkg: true,
+      skip_package_ipa: true
+    )
+
+    # Extract the .app file from the archive
+    ios_app_path = "#{ios_archive_path}/Products/Applications/PaywallsTester.app"
+    
+    unless File.exist?(ios_app_path)
+      UI.user_error!("Could not find iOS .app at expected path: #{ios_app_path}")
+    end
+
+    # Create the Mac app wrapper structure
+    mac_app_path = File.absolute_path("build/PaywallsTester-#{platform}.app")
+    wrapper_dir = "#{mac_app_path}/Wrapper"
+    wrapped_app_path = "#{wrapper_dir}/PaywallsTester.app"
+    symlink_path = "#{mac_app_path}/WrappedBundle"
+
+    # Clean up any existing structure
+    FileUtils.rm_rf(mac_app_path) if File.exist?(mac_app_path)
+
+    # Create the directory structure
+    FileUtils.mkdir_p(wrapper_dir)
+
+    # Copy the iOS .app to the Wrapper directory
+    UI.message("Copying iOS .app from #{ios_app_path} to #{wrapped_app_path}")
+    FileUtils.cp_r(ios_app_path, wrapped_app_path)
+
+    # Create the symlink
+    UI.message("Creating symlink from #{symlink_path} to Wrapper/PaywallsTester.app")
+    File.symlink("Wrapper/PaywallsTester.app", symlink_path)
+
+    # Verify the structure was created correctly
+    unless File.exist?(wrapped_app_path) && File.symlink?(symlink_path)
+      UI.user_error!("Failed to create proper Mac app structure")
+    end
+
+    UI.success("Successfully created Mac app structure at #{mac_app_path}")
+
+    send_to_emerge(
+        app_id_suffix: platform,
+        file_path: mac_app_path
+    )
+  end
   
-  private_lane :send_to_emerge do |options|
-    pr_url = ENV["CIRCLE_PULL_REQUEST"]
-    branch_name = sh("git rev-parse --abbrev-ref HEAD").strip
-    pr_number = nil
-    # Try to parse the PR number from the pr_url variable first
-    if pr_url && pr_url.include?("/")
-      pr_number = pr_url.split("/").last
-    # Try to parse the PR number from the merge queue branch name. In this case,
-    # there's no CIRCLE_PULL_REQUEST environment variable.
-    elsif branch_name =~ /^gh-readonly-queue\/[^\/]+\/pr-([0-9]+)-[0-9a-f]+$/
-      pr_number = $1
-    end
-
-    emerge_args = {repo_name: "RevenueCat/purchases-ios"}
-    emerge_args[:pr_number] = pr_number if pr_number
-    emerge_args[:app_id_suffix] = options[:app_id_suffix]
-
-    # Use the archive_path if provided
-    if options[:archive_path]
-      emerge_args[:file_path] = options[:archive_path]
-      UI.message("Using archive path: #{options[:archive_path]}")
-    end
     
     emerge(emerge_args)
   end
