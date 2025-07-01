@@ -258,7 +258,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         purchases.invalidateVirtualCurrenciesCache()
         let virtualCurrencies = try await purchases.virtualCurrencies()
 
-        expect(virtualCurrencies.all.count).to(equal(2))
+        expect(virtualCurrencies.all.count).to(equal(3))
 
         let testCurrency = try XCTUnwrap(virtualCurrencies["TEST"])
         expect(testCurrency.balance).to(equal(0))
@@ -270,14 +270,16 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         expect(testCurrency2.balance).to(equal(0))
         expect(testCurrency2.code).to(equal("TEST2"))
         expect(testCurrency2.name).to(equal("Test Currency 2"))
-
-        // swiftlint:disable:next todo
-        // TODO: We probably want to check that this is nil instead, depending on
-        // the results of a discussion with the backend team
         expect(testCurrency2.serverDescription).to(beEmpty())
+
+        let testCurrency3 = try XCTUnwrap(virtualCurrencies["TEST3"])
+        expect(testCurrency3.balance).to(equal(0))
+        expect(testCurrency3.code).to(equal("TEST3"))
+        expect(testCurrency3.name).to(equal("Test Currency 3"))
+        expect(testCurrency3.serverDescription).to(beNil())
     }
 
-    func testGetVirtualCurrenciesWithBalancesWithNonZeroValues() async throws {
+    func testGetVirtualCurrenciesWithBalancesWithSomeNonZeroValues() async throws {
         let appUserIDWith0BalanceCurrencies = "integrationTestUserWithAllBalancesNonZero"
         let purchases = try self.purchases
 
@@ -286,7 +288,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         purchases.invalidateVirtualCurrenciesCache()
         let virtualCurrencies = try await purchases.virtualCurrencies()
 
-        expect(virtualCurrencies.all.count).to(equal(2))
+        expect(virtualCurrencies.all.count).to(equal(3))
 
         let testCurrency = try XCTUnwrap(virtualCurrencies["TEST"])
         expect(testCurrency.balance).to(equal(100))
@@ -299,10 +301,11 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         expect(testCurrency2.code).to(equal("TEST2"))
         expect(testCurrency2.name).to(equal("Test Currency 2"))
 
-        // swiftlint:disable:next todo
-        // TODO: We probably want to check that this is nil instead, depending on
-        // the results of a discussion with the backend team
-        expect(testCurrency2.serverDescription).to(beEmpty())
+        let testCurrency3 = try XCTUnwrap(virtualCurrencies["TEST3"])
+        expect(testCurrency3.balance).to(equal(0))
+        expect(testCurrency3.code).to(equal("TEST3"))
+        expect(testCurrency3.name).to(equal("Test Currency 3"))
+        expect(testCurrency3.serverDescription).to(beNil())
     }
 
     func testGetVirtualCurrenciesMultipleTimesInParallel() async throws {
