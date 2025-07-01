@@ -359,10 +359,12 @@
 		4D322E382B7E7B170004AF53 /* PurchasesOrchestratorSK2Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D322E372B7E7B170004AF53 /* PurchasesOrchestratorSK2Tests.swift */; };
 		4D322E3A2B7E7B570004AF53 /* PurchasesOrchestratorSK1Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D322E392B7E7B570004AF53 /* PurchasesOrchestratorSK1Tests.swift */; };
 		4D322E3C2B7E7E250004AF53 /* PurchasesOrchestratorCommonTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D322E3B2B7E7E250004AF53 /* PurchasesOrchestratorCommonTests.swift */; };
+		4D371D082E0428F10000F5F4 /* VirtualCurrencyMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D371D072E0428F10000F5F4 /* VirtualCurrencyMetadata.swift */; };
 		4D3BA4CC2D37D15E00668AFC /* PaywallTimelineComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D3BA4CB2D37D15E00668AFC /* PaywallTimelineComponent.swift */; };
 		4D3BA5882D432E5900668AFC /* Fill.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D3BA5872D432E5700668AFC /* Fill.swift */; };
 		4D3BA5B22D47AB4400668AFC /* TimelineComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D3BA5AF2D47AB4400668AFC /* TimelineComponentView.swift */; };
 		4D3BA5B32D47AB4400668AFC /* TimelineComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D3BA5B02D47AB4400668AFC /* TimelineComponentViewModel.swift */; };
+		4D4D06C42E0C467100B5D574 /* VirtualCurrencyProductGrant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D4D06C32E0C466900B5D574 /* VirtualCurrencyProductGrant.swift */; };
 		4D6ABB0C2AF13F9400BB2A08 /* StoreKit2Receipt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D6ABB0B2AF13F9400BB2A08 /* StoreKit2Receipt.swift */; };
 		4D6ABB0E2AF13FB100BB2A08 /* StoreEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D6ABB0D2AF13FB100BB2A08 /* StoreEnvironment.swift */; };
 		4D6ABB102AF13FBD00BB2A08 /* SK2AppTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D6ABB0F2AF13FBD00BB2A08 /* SK2AppTransaction.swift */; };
@@ -1852,11 +1854,13 @@
 		4D322E372B7E7B170004AF53 /* PurchasesOrchestratorSK2Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesOrchestratorSK2Tests.swift; sourceTree = "<group>"; };
 		4D322E392B7E7B570004AF53 /* PurchasesOrchestratorSK1Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesOrchestratorSK1Tests.swift; sourceTree = "<group>"; };
 		4D322E3B2B7E7E250004AF53 /* PurchasesOrchestratorCommonTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesOrchestratorCommonTests.swift; sourceTree = "<group>"; };
+		4D371D072E0428F10000F5F4 /* VirtualCurrencyMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyMetadata.swift; sourceTree = "<group>"; };
 		4D3BA4CB2D37D15E00668AFC /* PaywallTimelineComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallTimelineComponent.swift; sourceTree = "<group>"; };
 		4D3BA5872D432E5700668AFC /* Fill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Fill.swift; sourceTree = "<group>"; };
 		4D3BA5AF2D47AB4400668AFC /* TimelineComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineComponentView.swift; sourceTree = "<group>"; };
 		4D3BA5B02D47AB4400668AFC /* TimelineComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineComponentViewModel.swift; sourceTree = "<group>"; };
 		4D4CADED2D09B06C004E85B7 /* SnapshotTestingStub */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = SnapshotTestingStub; sourceTree = "<group>"; };
+		4D4D06C32E0C466900B5D574 /* VirtualCurrencyProductGrant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyProductGrant.swift; sourceTree = "<group>"; };
 		4D6ABB0B2AF13F9400BB2A08 /* StoreKit2Receipt.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StoreKit2Receipt.swift; sourceTree = "<group>"; };
 		4D6ABB0D2AF13FB100BB2A08 /* StoreEnvironment.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StoreEnvironment.swift; sourceTree = "<group>"; };
 		4D6ABB0F2AF13FBD00BB2A08 /* SK2AppTransaction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SK2AppTransaction.swift; sourceTree = "<group>"; };
@@ -4003,6 +4007,7 @@
 				F575858C26C088FE00C12B97 /* OfferingsManager.swift */,
 				B3D3C4712685784800CB3C21 /* Package.swift */,
 				5766AB4628401B8400FA6091 /* PackageType.swift */,
+				4D4D06C32E0C466900B5D574 /* VirtualCurrencyProductGrant.swift */,
 				B372EC55268FEF020099171E /* ProductRequestData.swift */,
 				F5BE424126965F9F00254A30 /* ProductRequestData+Initialization.swift */,
 				37E35C7060D7E486F5958BED /* ProductsManager.swift */,
@@ -4013,6 +4018,7 @@
 				3597020F24BF6A710010506E /* TransactionsFactory.swift */,
 				F56E2E7627622B5E009FED5B /* TransactionsManager.swift */,
 				359E8E3E26DEBEEB00B869F9 /* TrialOrIntroPriceEligibilityChecker.swift */,
+				4D371D072E0428F10000F5F4 /* VirtualCurrencyMetadata.swift */,
 				57BB070D28D27A2B007F5DF0 /* CachingProductsManager.swift */,
 				57E9CF0E290B2A4B00EE12D1 /* CachingTrialOrIntroPriceEligibilityChecker.swift */,
 			);
@@ -6420,6 +6426,7 @@
 				1E42CC6C2D7F1A0500E0EE8D /* CacheStatus.swift in Sources */,
 				B3B5FBB4269CED4B00104A0C /* BackendErrorCode.swift in Sources */,
 				FDC892FE2CD157F1000AEB9F /* WinBackOffer.swift in Sources */,
+				4D371D082E0428F10000F5F4 /* VirtualCurrencyMetadata.swift in Sources */,
 				2DDF41B624F6F387005BC22D /* ASN1ObjectIdentifierBuilder.swift in Sources */,
 				35D832D2262E56DB00E60AC5 /* HTTPStatusCode.swift in Sources */,
 				5740FCD32996CE5E00E049F9 /* VerificationResult.swift in Sources */,
@@ -6434,6 +6441,7 @@
 				4FE6669F2A2F95A1004EEAFC /* PaywallExtensions.swift in Sources */,
 				F5C0196926E880800005D61E /* StoreKitStrings.swift in Sources */,
 				2D4E926526990AB1000E10B0 /* StoreKit1Wrapper.swift in Sources */,
+				4D4D06C42E0C467100B5D574 /* VirtualCurrencyProductGrant.swift in Sources */,
 				2DDF419624F6F331005BC22D /* ProductsRequestFactory.swift in Sources */,
 				1E8A60422CDBD75A0034ACF3 /* WebPurchaseRedemption.swift in Sources */,
 				2DDF419724F6F331005BC22D /* DateExtensions.swift in Sources */,

@@ -118,6 +118,9 @@ import Foundation
     /// The url to purchase this package on the web
     @objc public let webCheckoutUrl: URL?
 
+    /// Virtual currencies granted by this package
+    @objc public let virtualCurrencyGrants: [String: VirtualCurrencyProductGrant]
+
     /// Initialize a ``Package``.
     @objc
     public convenience init(
@@ -125,14 +128,16 @@ import Foundation
         packageType: PackageType,
         storeProduct: StoreProduct,
         offeringIdentifier: String,
-        webCheckoutUrl: URL?
+        webCheckoutUrl: URL?,
+        virtualCurrencyGrants: [String: VirtualCurrencyProductGrant] = [:]
     ) {
         self.init(
             identifier: identifier,
             packageType: packageType,
             storeProduct: storeProduct,
             presentedOfferingContext: .init(offeringIdentifier: offeringIdentifier),
-            webCheckoutUrl: webCheckoutUrl
+            webCheckoutUrl: webCheckoutUrl,
+            virtualCurrencyGrants: virtualCurrencyGrants
         )
     }
 
@@ -143,13 +148,15 @@ import Foundation
         packageType: PackageType,
         storeProduct: StoreProduct,
         presentedOfferingContext: PresentedOfferingContext,
-        webCheckoutUrl: URL?
+        webCheckoutUrl: URL?,
+        virtualCurrencyGrants: [String: VirtualCurrencyProductGrant] = [:]
     ) {
         self.identifier = identifier
         self.packageType = packageType
         self.storeProduct = storeProduct
         self.presentedOfferingContext = presentedOfferingContext
         self.webCheckoutUrl = webCheckoutUrl
+        self.virtualCurrencyGrants = virtualCurrencyGrants
 
         super.init()
     }
@@ -161,7 +168,8 @@ import Foundation
             self.identifier == other.identifier &&
             self.packageType == other.packageType &&
             self.storeProduct == other.storeProduct &&
-            self.presentedOfferingContext == other.presentedOfferingContext
+            self.presentedOfferingContext == other.presentedOfferingContext &&
+            self.virtualCurrencyGrants == other.virtualCurrencyGrants
         )
     }
 
@@ -171,6 +179,7 @@ import Foundation
         hasher.combine(self.packageType)
         hasher.combine(self.storeProduct)
         hasher.combine(self.presentedOfferingContext)
+        hasher.combine(self.virtualCurrencyGrants)
 
         return hasher.finalize()
     }

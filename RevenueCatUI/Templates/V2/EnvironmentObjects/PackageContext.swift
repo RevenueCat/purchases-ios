@@ -23,18 +23,29 @@ class PackageContext: ObservableObject {
 
         let mostExpensivePricePerMonth: Double?
         let showZeroDecimalPlacePrices: Bool
+        let virtualCurrencies: [String: VirtualCurrencyMetadata]
 
-        init(packages: [Package], showZeroDecimalPlacePrices: Bool = true) {
+        init(
+            packages: [Package],
+            showZeroDecimalPlacePrices: Bool = true,
+            virtualCurrencies: [String: VirtualCurrencyMetadata] = [:]
+        ) {
             let mostExpensivePricePerMonth = Self.mostExpensivePricePerMonth(in: packages)
             self.init(
                 mostExpensivePricePerMonth: mostExpensivePricePerMonth,
-                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+                virtualCurrencies: virtualCurrencies
             )
         }
 
-        init(mostExpensivePricePerMonth: Double? = nil, showZeroDecimalPlacePrices: Bool = true) {
+        init(
+            mostExpensivePricePerMonth: Double? = nil,
+            showZeroDecimalPlacePrices: Bool = true,
+            virtualCurrencies: [String: VirtualCurrencyMetadata] = [:]
+        ) {
             self.mostExpensivePricePerMonth = mostExpensivePricePerMonth
             self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
+            self.virtualCurrencies = virtualCurrencies
         }
 
         private static func mostExpensivePricePerMonth(in packages: [Package]) -> Double? {
