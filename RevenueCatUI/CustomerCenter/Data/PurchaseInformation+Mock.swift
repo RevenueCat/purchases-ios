@@ -93,7 +93,7 @@ extension PurchaseInformation {
         store: .appStore,
         isSubscription: true,
         isExpired: true,
-        expirationDate: nil,
+        expirationDate: Self.defaultExpirationDate,
         renewalDate: nil
     )
 
