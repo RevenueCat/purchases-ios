@@ -106,6 +106,10 @@ import Foundation
         ) ?? false
     }
 
+    var shouldShowVirtualCurrencies: Bool {
+        configuration?.support.displayVirtualCurrencies == true
+    }
+
     private let currentVersionFetcher: CurrentVersionFetcher
 
     internal var customerInfo: CustomerInfo?
@@ -157,11 +161,13 @@ import Foundation
     convenience init(
         activeSubscriptionPurchases: [PurchaseInformation],
         activeNonSubscriptionPurchases: [PurchaseInformation],
+        virtualCurrencies: VirtualCurrencies? = nil,
         configuration: CustomerCenterConfigData
     ) {
         self.init(actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil))
         self.subscriptionsSection = activeSubscriptionPurchases
         self.nonSubscriptionsSection = activeNonSubscriptionPurchases
+        self.virtualCurrencies = virtualCurrencies
         self.configuration = configuration
         self.state = .success
     }
@@ -191,7 +197,7 @@ import Foundation
             try await self.loadPurchases(customerInfo: customerInfo)
             try await self.loadCustomerCenterConfig()
 
-            if self.configuration?.support.displayVirtualCurrencies == true {
+            if shouldShowVirtualCurrencies {
                 purchasesProvider.invalidateVirtualCurrenciesCache()
                 self.virtualCurrencies = try? await purchasesProvider.virtualCurrencies()
             } else {

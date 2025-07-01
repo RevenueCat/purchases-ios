@@ -33,8 +33,8 @@ final class SubscriptionDetailViewModelTests: TestCase {
             ),
             screen: CustomerCenterConfigData.default.screens[.management]!,
             showPurchaseHistory: false,
+            showVirtualCurrencies: false,
             allowsMissingPurchaseAction: false,
-            virtualCurrencies: nil,
             purchaseInformation: .mock(store: .appStore, isExpired: false)
         )
 
@@ -59,8 +59,8 @@ final class SubscriptionDetailViewModelTests: TestCase {
                 ),
                 screen: CustomerCenterConfigData.default.screens[.management]!,
                 showPurchaseHistory: false,
+                showVirtualCurrencies: false,
                 allowsMissingPurchaseAction: true,
-                virtualCurrencies: nil,
                 purchaseInformation: .mock(store: $0, isExpired: false)
             )
 

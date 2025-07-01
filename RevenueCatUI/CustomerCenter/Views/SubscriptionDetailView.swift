@@ -41,7 +41,7 @@ struct SubscriptionDetailView: View {
     @Environment(\.supportInformation)
     private var support
 
-    @ObservedObject
+    @StateObject
     private var viewModel: SubscriptionDetailViewModel
 
     @ObservedObject
@@ -54,8 +54,8 @@ struct SubscriptionDetailView: View {
         customerInfoViewModel: CustomerCenterViewModel,
         screen: CustomerCenterConfigData.Screen,
         purchaseInformation: PurchaseInformation?,
-        virtualCurrencies: RevenueCat.VirtualCurrencies?,
         showPurchaseHistory: Bool,
+        showVirtualCurrencies: Bool,
         allowsMissingPurchaseAction: Bool,
         purchasesProvider: CustomerCenterPurchasesType,
         actionWrapper: CustomerCenterActionWrapper) {
@@ -63,8 +63,8 @@ struct SubscriptionDetailView: View {
                 customerInfoViewModel: customerInfoViewModel,
                 screen: screen,
                 showPurchaseHistory: showPurchaseHistory,
+                showVirtualCurrencies: showVirtualCurrencies,
                 allowsMissingPurchaseAction: allowsMissingPurchaseAction,
-                virtualCurrencies: virtualCurrencies,
                 actionWrapper: actionWrapper,
                 purchaseInformation: purchaseInformation,
                 purchasesProvider: purchasesProvider)
@@ -189,12 +189,15 @@ struct SubscriptionDetailView: View {
                         .padding(.vertical, 32)
                 }
 
-                if let virtualCurrencies = viewModel.virtualCurrencies, !virtualCurrencies.all.isEmpty {
+
+                if let virtualCurrencies = customerInfoViewModel.virtualCurrencies,
+                   !virtualCurrencies.all.isEmpty,
+                   viewModel.showVirtualCurrencies {
                     VirtualCurrenciesScrollViewWithOSBackgroundSection(
                         virtualCurrencies: virtualCurrencies,
                         onSeeAllInAppCurrenciesButtonTapped: self.viewModel.displayAllInAppCurrenciesScreen
                     )
-                     Spacer().frame(height: 32)
+                    Spacer().frame(height: 32)
                 }
 
                 ActiveSubscriptionButtonsView(viewModel: viewModel)
@@ -297,8 +300,8 @@ struct SubscriptionDetailView: View {
                         ),
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
+                        showVirtualCurrencies: false,
                         allowsMissingPurchaseAction: false,
-                        virtualCurrencies: nil,
                         purchaseInformation: .monthlyRenewing,
                         refundRequestStatus: .success
                     )
@@ -320,8 +323,8 @@ struct SubscriptionDetailView: View {
                         ),
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
+                        showVirtualCurrencies: false,
                         allowsMissingPurchaseAction: false,
-                        virtualCurrencies: nil,
                         purchaseInformation: .free
                     )
                 )
@@ -342,8 +345,8 @@ struct SubscriptionDetailView: View {
                         ),
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: false,
+                        showVirtualCurrencies: false,
                         allowsMissingPurchaseAction: false,
-                        virtualCurrencies: nil,
                         purchaseInformation: .consumable
                     )
                 )
@@ -364,8 +367,8 @@ struct SubscriptionDetailView: View {
                         ),
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
+                        showVirtualCurrencies: false,
                         allowsMissingPurchaseAction: false,
-                        virtualCurrencies: nil,
                         purchaseInformation: nil
                     )
                 )
@@ -386,8 +389,8 @@ struct SubscriptionDetailView: View {
                         ),
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
+                        showVirtualCurrencies: false,
                         allowsMissingPurchaseAction: false,
-                        virtualCurrencies: nil,
                         purchaseInformation: .mock(store: .playStore, isExpired: false)
                     )
                 )
@@ -400,6 +403,7 @@ struct SubscriptionDetailView: View {
                     customerInfoViewModel: CustomerCenterViewModel(
                         activeSubscriptionPurchases: [.mock(store: .playStore, isExpired: false)],
                         activeNonSubscriptionPurchases: [],
+                        virtualCurrencies: VirtualCurrenciesFixtures.fourVirtualCurrencies,
                         configuration: .default
                     ),
                     viewModel: SubscriptionDetailViewModel(
@@ -408,8 +412,8 @@ struct SubscriptionDetailView: View {
                         ),
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
+                        showVirtualCurrencies: true,
                         allowsMissingPurchaseAction: false,
-                        virtualCurrencies: VirtualCurrenciesFixtures.fourVirtualCurrencies,
                         purchaseInformation: .mock(store: .playStore, isExpired: false)
                     )
                 )
@@ -422,6 +426,7 @@ struct SubscriptionDetailView: View {
                     customerInfoViewModel: CustomerCenterViewModel(
                         activeSubscriptionPurchases: [.mock(store: .playStore, isExpired: false)],
                         activeNonSubscriptionPurchases: [],
+                        virtualCurrencies: VirtualCurrenciesFixtures.fiveVirtualCurrencies,
                         configuration: .default
                     ),
                     viewModel: SubscriptionDetailViewModel(
@@ -430,8 +435,8 @@ struct SubscriptionDetailView: View {
                         ),
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
+                        showVirtualCurrencies: true,
                         allowsMissingPurchaseAction: false,
-                        virtualCurrencies: VirtualCurrenciesFixtures.fiveVirtualCurrencies,
                         purchaseInformation: .mock(store: .playStore, isExpired: false)
                     )
                 )

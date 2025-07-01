@@ -31,6 +31,7 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
     var isRefreshing: Bool = false
 
     let showPurchaseHistory: Bool
+    let showVirtualCurrencies: Bool
 
     var shouldShowContactSupport: Bool {
         purchaseInformation?.store != .appStore
@@ -49,13 +50,14 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
         customerInfoViewModel: CustomerCenterViewModel,
         screen: CustomerCenterConfigData.Screen,
         showPurchaseHistory: Bool,
+        showVirtualCurrencies: Bool,
         allowsMissingPurchaseAction: Bool,
-        virtualCurrencies: RevenueCat.VirtualCurrencies?,
         actionWrapper: CustomerCenterActionWrapper,
         purchaseInformation: PurchaseInformation? = nil,
         refundRequestStatus: RefundRequestStatus? = nil,
         purchasesProvider: CustomerCenterPurchasesType,
         loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
+            self.showVirtualCurrencies = showVirtualCurrencies
             self.showPurchaseHistory = showPurchaseHistory
             self.allowsMissingPurchaseAction = allowsMissingPurchaseAction
             self.customerInfoViewModel = customerInfoViewModel
@@ -64,7 +66,6 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
             screen: screen,
             actionWrapper: actionWrapper,
             purchaseInformation: purchaseInformation,
-            virtualCurrencies: virtualCurrencies,
             refundRequestStatus: refundRequestStatus,
             purchasesProvider: purchasesProvider,
             loadPromotionalOfferUseCase: loadPromotionalOfferUseCase
@@ -94,8 +95,8 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
         customerInfoViewModel: CustomerCenterViewModel,
         screen: CustomerCenterConfigData.Screen,
         showPurchaseHistory: Bool,
+        showVirtualCurrencies: Bool,
         allowsMissingPurchaseAction: Bool,
-        virtualCurrencies: RevenueCat.VirtualCurrencies?,
         purchaseInformation: PurchaseInformation? = nil,
         refundRequestStatus: RefundRequestStatus? = nil
     ) {
@@ -103,8 +104,8 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
             customerInfoViewModel: customerInfoViewModel,
             screen: screen,
             showPurchaseHistory: showPurchaseHistory,
+            showVirtualCurrencies: showVirtualCurrencies,
             allowsMissingPurchaseAction: allowsMissingPurchaseAction,
-            virtualCurrencies: virtualCurrencies,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchaseInformation,
             refundRequestStatus: refundRequestStatus,
