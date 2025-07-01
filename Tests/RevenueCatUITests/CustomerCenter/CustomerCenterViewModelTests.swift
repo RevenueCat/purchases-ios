@@ -1121,8 +1121,6 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(viewModel.shouldShowList).to(beTrue())
     }
 
-
-
     private func formatted(price: Decimal, currencyCode: String = "USD") -> String {
         PurchaseInformation.defaultNumberFormatter.currencyCode = currencyCode
         return PurchaseInformation.defaultNumberFormatter.string(from: price as NSNumber)!
