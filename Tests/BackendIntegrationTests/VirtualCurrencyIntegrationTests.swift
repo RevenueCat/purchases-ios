@@ -181,8 +181,6 @@ class VirtualCurrencyStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         _ virtualCurrencies: VirtualCurrencies,
         vcCode: String
     ) {
-        // swiftlint:disable:next todo
-        // TODO: We might need to check for this to be 0 depending on the outcome from a discussion with the team
         expect(virtualCurrencies[vcCode]?.balance).to(equal(0))
     }
 }

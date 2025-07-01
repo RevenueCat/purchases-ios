@@ -270,7 +270,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         expect(testCurrency2.balance).to(equal(0))
         expect(testCurrency2.code).to(equal("TEST2"))
         expect(testCurrency2.name).to(equal("Test Currency 2"))
-        expect(testCurrency2.serverDescription).to(beEmpty())
+        expect(testCurrency2.serverDescription).to(equal("This is test currency 2"))
 
         let testCurrency3 = try XCTUnwrap(virtualCurrencies["TEST3"])
         expect(testCurrency3.balance).to(equal(0))
@@ -300,6 +300,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         expect(testCurrency2.balance).to(equal(777))
         expect(testCurrency2.code).to(equal("TEST2"))
         expect(testCurrency2.name).to(equal("Test Currency 2"))
+        expect(testCurrency2.serverDescription).to(equal("This is test currency 2"))
 
         let testCurrency3 = try XCTUnwrap(virtualCurrencies["TEST3"])
         expect(testCurrency3.balance).to(equal(0))
