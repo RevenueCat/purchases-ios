@@ -11,7 +11,7 @@ on:
 
 jobs:
   notify:
-    uses: revenuecat/sdk-github-workflows/.github/workflows/issue-notifications.yml@v1
+    uses: revenuecat/sdk-github-workflows/.github/workflows/issue-notifications.yml@v2
     secrets:
       ACK_SLACK_WEBHOOK_URL: ${{ secrets.ACK_SLACK_WEBHOOK_URL }}
       ACK_ALERT_KEYWORDS: ${{ secrets.ACK_ALERT_KEYWORDS }}
