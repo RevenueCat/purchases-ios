@@ -45,14 +45,12 @@ struct RelevantPurchasesListView: View {
         customerInfoViewModel: CustomerCenterViewModel,
         screen: CustomerCenterConfigData.Screen,
         shouldShowSeeAllPurchases: Bool,
-        virtualCurrencies: RevenueCat.VirtualCurrencies?,
         purchasesProvider: CustomerCenterPurchasesType,
         actionWrapper: CustomerCenterActionWrapper
     ) {
         let viewModel = RelevantPurchasesListViewModel(
             screen: screen,
             actionWrapper: actionWrapper,
-            virtualCurrencies: virtualCurrencies,
             shouldShowSeeAllPurchases: shouldShowSeeAllPurchases,
             purchasesProvider: purchasesProvider
         )
@@ -364,12 +362,12 @@ struct RelevantPurchasesListView_Previews: PreviewProvider {
                     customerInfoViewModel: CustomerCenterViewModel(
                         activeSubscriptionPurchases: purchases,
                         activeNonSubscriptionPurchases: [],
-                        configuration: .default
+                        virtualCurrencies: VirtualCurrenciesFixtures.fourVirtualCurrencies,
+                        configuration: CustomerCenterConfigData.mock(displayVirtualCurrencies: true)
                     ),
                     viewModel: RelevantPurchasesListViewModel(
                         screen: warningOffMock.screens[.management]!,
                         activePurchases: purchases,
-                        virtualCurrencies: VirtualCurrenciesFixtures.fourVirtualCurrencies,
                         shouldShowSeeAllPurchases: false
                     )
                 )
@@ -383,12 +381,12 @@ struct RelevantPurchasesListView_Previews: PreviewProvider {
                     customerInfoViewModel: CustomerCenterViewModel(
                         activeSubscriptionPurchases: purchases,
                         activeNonSubscriptionPurchases: [],
-                        configuration: .default
+                        virtualCurrencies: VirtualCurrenciesFixtures.fiveVirtualCurrencies,
+                        configuration: CustomerCenterConfigData.mock(displayVirtualCurrencies: true)
                     ),
                     viewModel: RelevantPurchasesListViewModel(
                         screen: warningOffMock.screens[.management]!,
                         activePurchases: purchases,
-                        virtualCurrencies: VirtualCurrenciesFixtures.fiveVirtualCurrencies,
                         shouldShowSeeAllPurchases: false
                     )
                 )

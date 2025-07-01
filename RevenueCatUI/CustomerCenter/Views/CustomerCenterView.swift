@@ -227,7 +227,6 @@ private extension CustomerCenterView {
             customerInfoViewModel: viewModel,
             screen: screen,
             shouldShowSeeAllPurchases: viewModel.shouldShowSeeAllPurchases,
-            virtualCurrencies: self.viewModel.virtualCurrencies,
             purchasesProvider: self.viewModel.purchasesProvider,
             actionWrapper: self.viewModel.actionWrapper
         )
