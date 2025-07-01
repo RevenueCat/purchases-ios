@@ -226,7 +226,7 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(mockPurchases.virtualCurrenciesCallCount).to(equal(0))
     }
 
-    func testShouldShowVirtualCurrenciesTrue() {
+    func testShouldShowVirtualCurrenciesIsFalseBeforeConfigIsLoaded() async throws {
         let mockPurchases = MockCustomerCenterPurchases(
             customerInfo: CustomerInfoFixtures.customerInfoWithAppleSubscriptions,
             customerCenterConfigData: CustomerCenterConfigData.mock(displayVirtualCurrencies: true)
@@ -236,6 +236,22 @@ final class CustomerCenterViewModelTests: TestCase {
             actionWrapper: CustomerCenterActionWrapper(),
             purchasesProvider: mockPurchases
         )
+
+        expect(viewModel.shouldShowVirtualCurrencies).to(beFalse())
+    }
+
+    func testShouldShowVirtualCurrenciesTrue() async throws {
+        let mockPurchases = MockCustomerCenterPurchases(
+            customerInfo: CustomerInfoFixtures.customerInfoWithAppleSubscriptions,
+            customerCenterConfigData: CustomerCenterConfigData.mock(displayVirtualCurrencies: true)
+        )
+
+        let viewModel = CustomerCenterViewModel(
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchasesProvider: mockPurchases
+        )
+
+        await viewModel.loadScreen()
 
         expect(viewModel.shouldShowVirtualCurrencies).to(beTrue())
     }
