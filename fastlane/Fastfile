@@ -473,7 +473,8 @@ platform :ios do
     
     # Build iOS version first with appropriate device family targeting
     device_families = include_ipad ? "1,2" : "1"
-    xcargs = "TARGETED_DEVICE_FAMILY='#{device_families}'"
+    xcargs = "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
+    xcargs << " TARGETED_DEVICE_FAMILY='#{device_families}'"
     
     ios_archive_path = File.absolute_path("build/PaywallsTester-#{platform}-ios.xcarchive")
 
@@ -485,6 +486,7 @@ platform :ios do
       destination: "generic/platform=iOS",
       xcargs: xcargs,
       archive_path: ios_archive_path,
+      skip_codesigning: true,
       skip_package_pkg: true,
       skip_package_ipa: true
     )
