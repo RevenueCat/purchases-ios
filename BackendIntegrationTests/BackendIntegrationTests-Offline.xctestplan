@@ -67,8 +67,6 @@
         "SubscriberAttributesManagerIntegrationTests",
         "TestCase",
         "VirtualCurrencyStoreKit1IntegrationTests",
-        "VirtualCurrencyStoreKit1IntegrationTests\/testDoesntGrantVCForProductWithoutVCGrant()",
-        "VirtualCurrencyStoreKit1IntegrationTests\/testGrantsVCForProductWithVCGrant()",
         "VirtualCurrencyStoreKit2IntegrationTests"
       ],
       "target" : {
