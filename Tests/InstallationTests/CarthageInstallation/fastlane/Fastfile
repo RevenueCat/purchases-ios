@@ -31,6 +31,6 @@ lane :installation_tests do
       sh "rm", "-f", file_path
     end
 
-    sh "carthage", "build", "--use-xcframeworks", "--verbose"
+    sh "carthage", "build", "--use-xcframeworks", "--cache-builds", "--verbose"
   end
 end
