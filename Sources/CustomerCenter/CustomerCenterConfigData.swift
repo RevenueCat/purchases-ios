@@ -156,6 +156,7 @@ import Foundation
             case priceAfterwards = "price_afterwards"
             case freeTrialUntilDate = "free_trial_until_date"
             case priceExpiresOnDateWithoutChanges = "price_expires_on_date_without_changes"
+            case badgeLifetime = "badge_lifetime"
             case badgeCancelled = "badge_cancelled"
             case badgeTrialCancelled = "badge_free_trial_cancelled"
             case badgeFreeTrial = "badge_free_trial"
@@ -373,6 +374,8 @@ import Foundation
                     return "Free trial until {{ date }}."
                 case .priceExpiresOnDateWithoutChanges:
                      return "{{ price }}. Expires on {{ date }} without changes."
+                case .badgeLifetime:
+                    return "Lifetime"
                 case .badgeCancelled:
                     return "Cancelled"
                 case .badgeFreeTrial:
