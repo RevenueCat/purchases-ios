@@ -45,12 +45,10 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             screen: BaseManageSubscriptionViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: nil,
-            virtualCurrencies: nil,
             purchasesProvider: MockCustomerCenterPurchases()
         )
 
         expect(viewModel.purchaseInformation).to(beNil())
-        expect(viewModel.virtualCurrencies).to(beNil())
         expect(viewModel.refundRequestStatus).to(beNil())
         expect(viewModel.screen).toNot(beNil())
         expect(viewModel.showRestoreAlert) == false
@@ -62,7 +60,6 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             screen: BaseManageSubscriptionViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: nil,
-            virtualCurrencies: nil,
             purchasesProvider: MockCustomerCenterPurchases()
         )
 
@@ -77,7 +74,6 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             screen: BaseManageSubscriptionViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
-            virtualCurrencies: nil,
             purchasesProvider: MockCustomerCenterPurchases()
         )
 
@@ -92,21 +88,19 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             screen: BaseManageSubscriptionViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
-            virtualCurrencies: nil,
             purchasesProvider: MockCustomerCenterPurchases()
         )
 
         expect(viewModel.relevantPathsForPurchase.count) == 0
     }
 
-    func testLifetimeCantBeRefunded() {
+    func testLifetimeSubscriptionPaths() {
         let purchase = PurchaseInformation.lifetime
 
         let viewModel = BaseManageSubscriptionViewModel(
             screen: BaseManageSubscriptionViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
-            virtualCurrencies: nil,
             purchasesProvider: MockCustomerCenterPurchases()
         )
 
@@ -115,13 +109,12 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
     }
 
     func testLifetimeSubscriptionDoesNotShowCancel() {
-        let purchase = PurchaseInformation.mock(isLifetime: true)
+        let purchase = PurchaseInformation.mock(isSubscription: true, expirationDate: nil)
 
         let viewModel = BaseManageSubscriptionViewModel(
             screen: BaseManageSubscriptionViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
-            virtualCurrencies: nil,
             purchasesProvider: MockCustomerCenterPurchases())
 
         expect(viewModel.relevantPathsForPurchase.count) == 1
@@ -137,7 +130,6 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             screen: BaseManageSubscriptionViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
-            virtualCurrencies: nil,
             purchasesProvider: MockCustomerCenterPurchases())
 
         expect(viewModel.relevantPathsForPurchase.count) == 1
@@ -145,13 +137,14 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
     }
 
     func testShowsRefundIfRefundWindowIsForever() {
-        let purchase = PurchaseInformation.mock()
+        let purchase = PurchaseInformation.mock(
+            isSubscription: true
+        )
 
         let viewModel = BaseManageSubscriptionViewModel(
             screen: BaseManageSubscriptionViewModelTests.managementScreen(refundWindowDuration: .forever),
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
-            virtualCurrencies: nil,
             purchasesProvider: MockCustomerCenterPurchases())
 
         expect(viewModel.relevantPathsForPurchase.count) == 3
@@ -174,14 +167,15 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
 
         let twoDays: TimeInterval = 2 * 24 * 60 * 60
         let purchase = PurchaseInformation.mock(
+            isSubscription: true,
             latestPurchaseDate: latestPurchaseDate,
-            customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
+            customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays)
+        )
 
         let viewModel = BaseManageSubscriptionViewModel(
             screen: BaseManageSubscriptionViewModelTests.managementScreen(refundWindowDuration: .duration(oneDay)),
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
-            virtualCurrencies: nil,
             purchasesProvider: MockCustomerCenterPurchases()
         )
 
@@ -190,11 +184,12 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).toNot(beNil())
     }
 
-    func testDoesNotShowRefundIfPurchaseIsFree() {
+    func testDoesNotShowRefundIfPricePaidIsFree() {
         let latestPurchaseDate = Date()
         let twoDays: TimeInterval = 2 * 24 * 60 * 60
         let purchase = PurchaseInformation.mock(
             pricePaid: .free,
+            isSubscription: true,
             latestPurchaseDate: latestPurchaseDate,
             customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
 
@@ -202,7 +197,6 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             screen: BaseManageSubscriptionViewModelTests.managementScreen(refundWindowDuration: .forever),
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
-            virtualCurrencies: nil,
             purchasesProvider: MockCustomerCenterPurchases())
 
         expect(viewModel.relevantPathsForPurchase.count) == 2
@@ -215,6 +209,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         let twoDays: TimeInterval = 2 * 24 * 60 * 60
         let purchase = PurchaseInformation.mock(
             pricePaid: .nonFree(""), // just to prove price is ignored if is in trial
+            isSubscription: true,
             isTrial: true,
             latestPurchaseDate: latestPurchaseDate,
             customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
@@ -223,7 +218,6 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             screen: BaseManageSubscriptionViewModelTests.managementScreen(refundWindowDuration: .forever),
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
-            virtualCurrencies: nil,
             purchasesProvider: MockCustomerCenterPurchases())
 
         expect(viewModel.relevantPathsForPurchase.count) == 2
@@ -245,14 +239,15 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
 
         let twoDays: TimeInterval = 2 * 24 * 60 * 60
         let purchase = PurchaseInformation.mock(
+            isSubscription: true,
             latestPurchaseDate: latestPurchaseDate,
-            customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
+            customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays)
+        )
 
         let viewModel = BaseManageSubscriptionViewModel(
             screen: BaseManageSubscriptionViewModelTests.managementScreen(refundWindowDuration: .duration(oneDay)),
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchase,
-            virtualCurrencies: nil,
             purchasesProvider: MockCustomerCenterPurchases())
 
         expect(viewModel.relevantPathsForPurchase.count) == 3
@@ -381,7 +376,6 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
                 screen: PurchaseInformationFixtures.screenWithIneligiblePromo,
                 actionWrapper: CustomerCenterActionWrapper(),
                 purchaseInformation: nil,
-                virtualCurrencies: nil,
                 purchasesProvider: MockCustomerCenterPurchases(
                     customerInfo: customerInfo,
                     products: products
@@ -410,7 +404,6 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             screen: BaseManageSubscriptionViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: nil,
-            virtualCurrencies: nil,
             purchasesProvider: MockCustomerCenterPurchases()
         )
 
@@ -500,7 +493,6 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         let viewModel = BaseManageSubscriptionViewModel(screen: screen,
                                                         actionWrapper: CustomerCenterActionWrapper(),
                                                         purchaseInformation: .mock(store: .appStore, isExpired: false),
-                                                        virtualCurrencies: nil,
                                                         purchasesProvider: MockCustomerCenterPurchases(
                                                             customerInfo: customerInfo,
                                                             products: products

@@ -441,6 +441,9 @@ private func checkVirtualCurrenciesAPI(_ purchases: Purchases) async throws {
 
     // Invalidating Virtual Currencies Cache
     purchases.invalidateVirtualCurrenciesCache()
+
+    // Cached virtual currencies
+    let _: VirtualCurrencies? = purchases.cachedVirtualCurrencies
 }
 
 @available(*, deprecated) // Ignore deprecation warnings

@@ -323,6 +323,147 @@ class VirtualCurrencyManagerTests: TestCase {
         )
     }
 
+    // MARK: - cachedVirtualCurrencies Tests
+    func testCachedVirtualCurrenciesReturnsNilVirtualCurrenciesWhenCacheIsEmpty() async throws {
+        self.mockDeviceCache.stubbedCachedVirtualCurrenciesDataForAppUserID = nil
+        self.mockDeviceCache.stubbedIsVirtualCurrenciesCacheStale = true
+
+        let virtualCurrencies: VirtualCurrencies? = virtualCurrencyManager.cachedVirtualCurrencies()
+
+        // Ensure that we did not check to see if the cache was stale
+        XCTAssertFalse(
+            self.mockDeviceCache.invokedIsVirtualCurrenciesCacheStale,
+            "isVirtualCurrenciesCacheStale should be called when the cache is empty"
+        )
+        XCTAssertEqual(
+            self.mockDeviceCache.invokedIsVirtualCurrenciesCacheStaleCount,
+            0,
+            "cachedVirtualCurrenciesData should not be called when the cache is empty"
+        )
+        XCTAssertEqual(self.mockDeviceCache.invokedIsVirtualCurrenciesCacheStaleParametersList.count, 0)
+
+        // Ensure that we tried to load VCs from the cache (it's empty though)
+        XCTAssertTrue(
+            self.mockDeviceCache.invokedCachedVirtualCurrenciesDataForAppUserID,
+            "cachedVirtualCurrenciesData should be called when the cache is empty"
+        )
+        XCTAssertEqual(
+            self.mockDeviceCache.invokedCachedVirtualCurrenciesDataForAppUserIDCount,
+            1,
+            "cachedVirtualCurrenciesData should be called once when the cache is empty"
+        )
+
+        // Check that the virtual currencies API was not called
+        XCTAssertFalse(
+            self.mockVirtualCurrenciesAPI.invokedGetVirtualCurrencies,
+            "getVirtualCurrencies should not be called when the cache is empty"
+        )
+        XCTAssertEqual(
+            self.mockVirtualCurrenciesAPI.invokedGetVirtualCurrenciesCount,
+            0,
+            "getVirtualCurrencies should not be called when the cache is empty"
+        )
+
+        // Check that the virtual currencies returned are the ones from the network
+        XCTAssertNil(
+            virtualCurrencies,
+            "Returned virtual currencies should be nil"
+        )
+
+        self.logger.verifyMessageWasLogged(
+            Strings.virtualCurrencies.no_cached_virtual_currencies,
+            level: .debug
+        )
+        self.logger.verifyMessageWasNotLogged(
+            Strings.virtualCurrencies.virtual_currencies_updated_from_network,
+            level: .debug
+        )
+        self.logger.verifyMessageWasNotLogged(
+            Strings.virtualCurrencies.vending_from_cache,
+            level: .debug
+        )
+    }
+
+    func testCachedVirtualCurrenciesReturnsCachedVirtualCurrenciesWhenCacheIsNotStale() async throws {
+        self.mockDeviceCache.stubbedCachedVirtualCurrenciesDataForAppUserID = self.mockVirtualCurrenciesData
+        self.mockDeviceCache.stubbedIsVirtualCurrenciesCacheStale = false
+
+        let virtualCurrencies: VirtualCurrencies? = virtualCurrencyManager.cachedVirtualCurrencies()
+        XCTAssertFalse(
+            self.mockDeviceCache.invokedIsVirtualCurrenciesCacheStale,
+            "isVirtualCurrenciesCacheStale should not be called"
+        )
+        XCTAssertEqual(
+            self.mockDeviceCache.invokedIsVirtualCurrenciesCacheStaleCount,
+            0,
+            "cachedVirtualCurrenciesData should not be called"
+        )
+        XCTAssertEqual(self.mockDeviceCache.invokedIsVirtualCurrenciesCacheStaleParametersList.count, 0)
+        XCTAssertTrue(
+            self.mockDeviceCache.invokedCachedVirtualCurrenciesDataForAppUserID,
+            "cachedVirtualCurrenciesData should be called"
+        )
+        XCTAssertEqual(
+            self.mockDeviceCache.invokedCachedVirtualCurrenciesDataForAppUserIDCount,
+            1,
+            "cachedVirtualCurrenciesData should be called"
+        )
+        XCTAssertEqual(
+            virtualCurrencies,
+            self.mockVirtualCurrencies,
+            "Returned virtual currencies should equal the cached virtual currencies"
+        )
+
+        self.logger.verifyMessageWasLogged(
+            Strings.virtualCurrencies.vending_from_cache,
+            level: .debug
+        )
+        self.logger.verifyMessageWasNotLogged(
+            Strings.virtualCurrencies.virtual_currencies_updated_from_network,
+            level: .debug
+        )
+    }
+
+    func testCachedVirtualCurrenciesReturnsCachedVirtualCurrenciesWhenCacheIsStale() async throws {
+        self.mockDeviceCache.stubbedCachedVirtualCurrenciesDataForAppUserID = self.mockVirtualCurrenciesData
+        self.mockDeviceCache.stubbedIsVirtualCurrenciesCacheStale = true
+
+        let virtualCurrencies: VirtualCurrencies? = virtualCurrencyManager.cachedVirtualCurrencies()
+        XCTAssertFalse(
+            self.mockDeviceCache.invokedIsVirtualCurrenciesCacheStale,
+            "isVirtualCurrenciesCacheStale should not be called"
+        )
+        XCTAssertEqual(
+            self.mockDeviceCache.invokedIsVirtualCurrenciesCacheStaleCount,
+            0,
+            "cachedVirtualCurrenciesData should not be called"
+        )
+        XCTAssertEqual(self.mockDeviceCache.invokedIsVirtualCurrenciesCacheStaleParametersList.count, 0)
+        XCTAssertTrue(
+            self.mockDeviceCache.invokedCachedVirtualCurrenciesDataForAppUserID,
+            "cachedVirtualCurrenciesData should be called"
+        )
+        XCTAssertEqual(
+            self.mockDeviceCache.invokedCachedVirtualCurrenciesDataForAppUserIDCount,
+            1,
+            "cachedVirtualCurrenciesData should be called"
+        )
+        XCTAssertEqual(
+            virtualCurrencies,
+            self.mockVirtualCurrencies,
+            "Returned virtual currencies should equal the cached virtual currencies"
+        )
+
+        self.logger.verifyMessageWasLogged(
+            Strings.virtualCurrencies.vending_from_cache,
+            level: .debug
+        )
+        self.logger.verifyMessageWasNotLogged(
+            Strings.virtualCurrencies.virtual_currencies_updated_from_network,
+            level: .debug
+        )
+    }
+
     // MARK: - invalidateVirtualCurrenciesCache() Tests
     func testInvalidateVirtualCurrenciesCacheCallsClearVirtualCurrenciesCache() async {
         virtualCurrencyManager.invalidateVirtualCurrenciesCache()

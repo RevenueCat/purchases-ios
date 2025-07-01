@@ -35,7 +35,7 @@ struct RelevantPurchasesListView: View {
     @Environment(\.navigationOptions)
     var navigationOptions
 
-    @ObservedObject
+    @StateObject
     private var viewModel: RelevantPurchasesListViewModel
 
     @ObservedObject
@@ -86,8 +86,8 @@ struct RelevantPurchasesListView: View {
                     customerInfoViewModel: customerInfoViewModel,
                     screen: viewModel.screen,
                     purchaseInformation: viewModel.purchaseInformation,
-                    virtualCurrencies: nil, // Don't show virtual currencies when navigated to from here
                     showPurchaseHistory: false,
+                    showVirtualCurrencies: false,
                     allowsMissingPurchaseAction: false,
                     purchasesProvider: self.viewModel.purchasesProvider,
                     actionWrapper: self.viewModel.actionWrapper
@@ -162,7 +162,9 @@ struct RelevantPurchasesListView: View {
                     .tint(colorScheme == .dark ? .white : .black)
                 }
 
-                if let virtualCurrencies = viewModel.virtualCurrencies, !virtualCurrencies.all.isEmpty {
+                if let virtualCurrencies = customerInfoViewModel.virtualCurrencies,
+                   !virtualCurrencies.all.isEmpty,
+                    customerInfoViewModel.shouldShowVirtualCurrencies {
                     VirtualCurrenciesScrollViewWithOSBackgroundSection(
                         virtualCurrencies: virtualCurrencies,
                         onSeeAllInAppCurrenciesButtonTapped: self.viewModel.displayAllInAppCurrenciesScreen

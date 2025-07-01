@@ -240,8 +240,8 @@ private extension CustomerCenterView {
             screen: screen,
             purchaseInformation: viewModel.subscriptionsSection.first
                 ?? viewModel.nonSubscriptionsSection.first,
-            virtualCurrencies: self.viewModel.virtualCurrencies,
             showPurchaseHistory: viewModel.shouldShowSeeAllPurchases,
+            showVirtualCurrencies: viewModel.shouldShowVirtualCurrencies,
             allowsMissingPurchaseAction: true,
             purchasesProvider: self.viewModel.purchasesProvider,
             actionWrapper: self.viewModel.actionWrapper
