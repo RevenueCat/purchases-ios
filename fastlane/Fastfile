@@ -451,9 +451,9 @@ platform :ios do
 
     xcargs = "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
 
-    # if targeted_device_families[platform]
-    #   xcargs << " TARGETED_DEVICE_FAMILY='#{targeted_device_families[platform]}'"
-    # end
+    if targeted_device_families[platform]
+      xcargs << " TARGETED_DEVICE_FAMILY='#{targeted_device_families[platform]}'"
+    end
     
     archive_path = File.absolute_path("build/PaywallsTester-#{platform}.xcarchive")
 
