@@ -26,13 +26,6 @@ import XCTest
 @available(watchOS, unavailable)
 final class PromotionalOfferViewModelTests: TestCase {
 
-    var cancellables = Set<AnyCancellable>()
-
-    override func setUp() {
-        super.setUp()
-        cancellables = Set<AnyCancellable>()
-    }
-
     @MainActor
     func testActionWrapperTriggersActionOnPurchaseSuccess() async {
         let mockPurchases = MockCustomerCenterPurchases()
@@ -94,11 +87,9 @@ final class PromotionalOfferViewModelTests: TestCase {
         )
 
         var didReceivePromotionalOfferSuccess = false
-        actionWrapper.promotionalOfferSuccess
-            .sink { _ in
-                didReceivePromotionalOfferSuccess = true
-            }
-            .store(in: &cancellables)
+        actionWrapper.onCustomerCenterPromotionalOfferSuccess {
+            didReceivePromotionalOfferSuccess = true
+        }
 
         await viewModel.purchasePromo()
 
