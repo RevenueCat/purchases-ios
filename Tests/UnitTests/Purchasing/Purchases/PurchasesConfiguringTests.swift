@@ -333,14 +333,6 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(self.backend.healthReportRequests).toEventually(equal([]))
     }
 
-    func testFirstInitializationFromForegroundAndHealthValidationNotEnabledDoesNotLogHealth() {
-        self.systemInfo.stubbedIsApplicationBackgrounded = false
-
-        self.setupPurchases(validateConfigurationOnDebugAppLaunch: false)
-
-        expect(self.backend.healthReportRequests).toEventually(equal([]))
-    }
-
     func testFirstInitializationFromForegroundUpdatesCustomerInfoCacheIfUserDefaultsCacheStale() {
         let staleCacheDateForForeground = Calendar.current.date(byAdding: .minute, value: -20, to: Date())!
         self.deviceCache.setCustomerInfoCache(timestamp: staleCacheDateForForeground,
@@ -445,7 +437,6 @@ class PurchasesConfiguringTests: BasePurchasesTests {
                           responseVerificationMode: .default,
                           dangerousSettings: .init(customEntitlementComputation: true),
                           showStoreMessagesAutomatically: true,
-                          validateConfigurationOnDebugAppLaunch: false,
                           preferredLocale: nil)
         }.to(throwAssertion())
     }

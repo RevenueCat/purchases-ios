@@ -53,7 +53,6 @@ import Foundation
     let platformInfo: Purchases.PlatformInfo?
     let responseVerificationMode: Signing.ResponseVerificationMode
     let showStoreMessagesAutomatically: Bool
-    let validateConfigurationOnDebugAppLaunch: Bool
     let preferredLocale: String?
     internal let diagnosticsEnabled: Bool
 
@@ -71,7 +70,6 @@ import Foundation
         self.platformInfo = builder.platformInfo
         self.responseVerificationMode = builder.responseVerificationMode
         self.showStoreMessagesAutomatically = builder.showStoreMessagesAutomatically
-        self.validateConfigurationOnDebugAppLaunch = builder.validateConfigurationOnDebugAppLaunch
         self.diagnosticsEnabled = builder.diagnosticsEnabled
         self.preferredLocale = builder.preferredLocale
     }
@@ -115,7 +113,6 @@ import Foundation
         private(set) var platformInfo: Purchases.PlatformInfo?
         private(set) var responseVerificationMode: Signing.ResponseVerificationMode = .default
         private(set) var showStoreMessagesAutomatically: Bool = true
-        private(set) var validateConfigurationOnDebugAppLaunch: Bool = true
         private(set) var diagnosticsEnabled: Bool = false
         private(set) var storeKitVersion: StoreKitVersion = .default
         private(set) var preferredLocale: String?
@@ -248,27 +245,6 @@ import Foundation
             self.showStoreMessagesAutomatically = showStoreMessagesAutomatically
             return self
         }
-
-        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-        /// Set `validateConfigurationOnDebugAppLaunch`. Enabled by default.
-        /// If enabled, the SDK will automatically validate its configuration on every launch 
-        /// by running a health check and logging the results to the console. This helps identify
-        /// configuration issues early in the development process.
-        /// 
-        /// The health check validates:
-        /// - API key validity
-        /// - Bundle ID configuration
-        /// - Product configuration in App Store Connect
-        /// - Offering configuration
-        /// - Payment authorization status
-        ///
-        /// - Note: This feature is only available in DEBUG builds
-        /// - Note: Health checks are performed asynchronously and don't block app startup
-        @objc public func with(validateConfigurationOnDebugAppLaunch: Bool) -> Builder {
-            self.validateConfigurationOnDebugAppLaunch = validateConfigurationOnDebugAppLaunch
-            return self
-        }
-        #endif
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 

@@ -241,7 +241,6 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               ),
                               storeMessagesHelper: self.mockStoreMessagesHelper,
                               diagnosticsTracker: nil,
-                              validateConfigurationOnDebugAppLaunch: false,
                               healthManager: healthManager)
         purchasesOrchestrator.delegate = purchases
         purchases!.delegate = purchasesDelegate

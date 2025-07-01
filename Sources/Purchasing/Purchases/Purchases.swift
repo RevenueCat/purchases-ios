@@ -292,7 +292,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      networkTimeout: TimeInterval = Configuration.networkTimeoutDefault,
                      dangerousSettings: DangerousSettings? = nil,
                      showStoreMessagesAutomatically: Bool,
-                     validateConfigurationOnDebugAppLaunch: Bool,
                      diagnosticsEnabled: Bool = false,
                      preferredLocale: String?
     ) {
@@ -626,7 +625,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   trialOrIntroPriceEligibilityChecker: trialOrIntroPriceChecker,
                   storeMessagesHelper: storeMessagesHelper,
                   diagnosticsTracker: diagnosticsTracker,
-                  validateConfigurationOnDebugAppLaunch: validateConfigurationOnDebugAppLaunch,
                   healthManager: healthManager
         )
     }
@@ -658,7 +656,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          trialOrIntroPriceEligibilityChecker: CachingTrialOrIntroPriceEligibilityChecker,
          storeMessagesHelper: StoreMessagesHelperType?,
          diagnosticsTracker: DiagnosticsTrackerType?,
-         validateConfigurationOnDebugAppLaunch: Bool,
          healthManager: SDKHealthManager
     ) {
 
@@ -727,9 +724,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.updateCachesIfInForeground()
 
         #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-        if validateConfigurationOnDebugAppLaunch {
-            self.runHealthCheckIfInForeground()
-        }
+        self.runHealthCheckIfInForeground()
         #endif
 
         if self.systemInfo.dangerousSettings.autoSyncPurchases {
@@ -1408,7 +1403,6 @@ public extension Purchases {
                   networkTimeout: configuration.networkTimeout,
                   dangerousSettings: configuration.dangerousSettings,
                   showStoreMessagesAutomatically: configuration.showStoreMessagesAutomatically,
-                  validateConfigurationOnDebugAppLaunch: configuration.validateConfigurationOnDebugAppLaunch,
                   diagnosticsEnabled: configuration.diagnosticsEnabled,
                   preferredLocale: configuration.preferredLocale
         )
@@ -1676,7 +1670,6 @@ public extension Purchases {
         networkTimeout: TimeInterval,
         dangerousSettings: DangerousSettings?,
         showStoreMessagesAutomatically: Bool,
-        validateConfigurationOnDebugAppLaunch: Bool,
         diagnosticsEnabled: Bool,
         preferredLocale: String?
     ) -> Purchases {
@@ -1693,7 +1686,6 @@ public extension Purchases {
                   networkTimeout: networkTimeout,
                   dangerousSettings: dangerousSettings,
                   showStoreMessagesAutomatically: showStoreMessagesAutomatically,
-                  validateConfigurationOnDebugAppLaunch: validateConfigurationOnDebugAppLaunch,
                   diagnosticsEnabled: diagnosticsEnabled,
                   preferredLocale: preferredLocale)
         )

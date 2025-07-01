@@ -236,15 +236,13 @@ class BasePurchasesTests: TestCase {
 
     func setupPurchases(
         automaticCollection: Bool = false,
-        withDelegate: Bool = true,
-        validateConfigurationOnDebugAppLaunch: Bool = true
+        withDelegate: Bool = true
     ) {
         self.identityManager.mockIsAnonymous = false
 
         self.initializePurchasesInstance(
             appUserId: self.identityManager.currentAppUserID,
-            withDelegate: withDelegate,
-            validateConfigurationOnDebugAppLaunch: validateConfigurationOnDebugAppLaunch
+            withDelegate: withDelegate
         )
     }
 
@@ -264,8 +262,7 @@ class BasePurchasesTests: TestCase {
 
     func initializePurchasesInstance(
         appUserId: String?,
-        withDelegate: Bool = true,
-        validateConfigurationOnDebugAppLaunch: Bool = true
+        withDelegate: Bool = true
     ) {
         self.purchasesOrchestrator = PurchasesOrchestrator(
             productsManager: self.mockProductsManager,
@@ -333,7 +330,6 @@ class BasePurchasesTests: TestCase {
                                    trialOrIntroPriceEligibilityChecker: self.cachingTrialOrIntroPriceEligibilityChecker,
                                    storeMessagesHelper: self.mockStoreMessagesHelper,
                                    diagnosticsTracker: self.diagnosticsTracker,
-                                   validateConfigurationOnDebugAppLaunch: validateConfigurationOnDebugAppLaunch,
                                    healthManager: healthManager)
 
         self.purchasesOrchestrator.delegate = self.purchases
