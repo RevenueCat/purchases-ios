@@ -274,6 +274,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     fileprivate let systemInfo: SystemInfo
     private let storeMessagesHelper: StoreMessagesHelperType?
     private var customerInfoObservationDisposable: (() -> Void)?
+    private let healthManager: SDKHealthManager
 
     private let syncAttributesAndOfferingsIfNeededRateLimiter = RateLimiter(maxCalls: 5, period: 60)
     private let diagnosticsTracker: DiagnosticsTrackerType?
@@ -593,6 +594,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             paywallCache = nil
         }
 
+        let healthManager = SDKHealthManager(backend: backend, identityManager: identityManager)
+
         self.init(appUserID: appUserID,
                   requestFetcher: fetcher,
                   receiptFetcher: receiptFetcher,
@@ -619,7 +622,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   trialOrIntroPriceEligibilityChecker: trialOrIntroPriceChecker,
                   storeMessagesHelper: storeMessagesHelper,
                   diagnosticsTracker: diagnosticsTracker,
-                  validateConfigurationOnDebugAppLaunch: validateConfigurationOnDebugAppLaunch
+                  validateConfigurationOnDebugAppLaunch: validateConfigurationOnDebugAppLaunch,
+                  healthManager: healthManager
         )
     }
 
@@ -650,7 +654,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          trialOrIntroPriceEligibilityChecker: CachingTrialOrIntroPriceEligibilityChecker,
          storeMessagesHelper: StoreMessagesHelperType?,
          diagnosticsTracker: DiagnosticsTrackerType?,
-         validateConfigurationOnDebugAppLaunch: Bool
+         validateConfigurationOnDebugAppLaunch: Bool,
+         healthManager: SDKHealthManager
     ) {
 
         if systemInfo.dangerousSettings.customEntitlementComputation {
@@ -699,6 +704,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.trialOrIntroPriceEligibilityChecker = trialOrIntroPriceEligibilityChecker
         self.storeMessagesHelper = storeMessagesHelper
         self.diagnosticsTracker = diagnosticsTracker
+        self.healthManager = healthManager
 
         super.init()
 
@@ -1853,8 +1859,8 @@ extension Purchases: InternalPurchasesType {
     }
 
     #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-    internal func healthReportRequest() async throws -> HealthReport {
-        try await self.backend.healthReportRequest(appUserID: self.appUserID)
+    internal func healthReport() async -> PurchasesDiagnostics.SDKHealthReport {
+        await self.healthManager.healthReport()
     }
     #endif
 
@@ -2065,8 +2071,7 @@ private extension Purchases {
                     ), availability.reportLogs else {
                         return
                     }
-                    let manager = SDKHealthManager { try await self.healthReportRequest() }
-                    await manager.logSDKHealthReportOutcome()
+                    await self.healthManager.logSDKHealthReportOutcome()
                 }
             }
         }

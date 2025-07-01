@@ -1,25 +1,28 @@
-#if DEBUG
 import Foundation
-import StoreKit
 
 final class SDKHealthManager: Sendable {
-    private let healthReportRequest: @Sendable () async throws -> HealthReport
+    private let backend: Backend
+    private let identityManager: IdentityManager
     private let paymentAuthorizationProvider: PaymentAuthorizationProvider
 
     init(
-        healthReportRequest: @Sendable @escaping () async throws -> HealthReport,
+        backend: Backend,
+        identityManager: IdentityManager,
         paymentAuthorizationProvider: PaymentAuthorizationProvider = .storeKit
     ) {
-        self.healthReportRequest = healthReportRequest
+        self.backend = backend
+        self.identityManager = identityManager
         self.paymentAuthorizationProvider = paymentAuthorizationProvider
     }
 
+    #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func healthReport() async -> PurchasesDiagnostics.SDKHealthReport {
         do {
             if !paymentAuthorizationProvider.isAuthorized() {
                 return .init(status: .unhealthy(.notAuthorizedToMakePayments))
             }
-            return try await self.healthReportRequest().validate()
+            let appUserID = self.identityManager.currentAppUserID
+            return try await self.backend.healthReportRequest(appUserID: appUserID).validate()
         } catch let error as BackendError {
             if case .networkError(let networkError) = error,
                case .errorResponse(let response, _, _) = networkError, response.code == .invalidAPIKey {
@@ -44,8 +47,10 @@ final class SDKHealthManager: Sendable {
             }
         }
     }
+    #endif
 }
 
+#if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 private enum HealthReportLogMessage: LogMessage {
     case unhealthy(error: PurchasesDiagnostics.SDKHealthError, report: PurchasesDiagnostics.SDKHealthReport)
     case healthy(report: PurchasesDiagnostics.SDKHealthReport)

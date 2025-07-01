@@ -32,15 +32,9 @@ public final class PurchasesDiagnostics: NSObject, Sendable {
     typealias SDK = PurchasesType & InternalPurchasesType & Sendable
 
     private let purchases: SDK
-    #if DEBUG
-    private let sdkHealthManager: SDKHealthManager
-    #endif
 
     init(purchases: SDK) {
         self.purchases = purchases
-        #if DEBUG
-        self.sdkHealthManager = SDKHealthManager { try await purchases.healthReportRequest() }
-        #endif
     }
 
     /// Default instance of `PurchasesDiagnostics`.
@@ -252,7 +246,7 @@ extension PurchasesDiagnostics {
     /// It should not be invoked in production builds.
     /// - Returns: The result of the SDK configuration health check.
     public func healthReport() async -> SDKHealthReport {
-        await sdkHealthManager.healthReport()
+        await purchases.healthReport()
     }
     #endif
 }
