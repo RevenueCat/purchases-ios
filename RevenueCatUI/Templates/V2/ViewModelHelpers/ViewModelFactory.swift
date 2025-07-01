@@ -157,7 +157,12 @@ struct ViewModelFactory {
             )
 
             if let package = viewModel.package {
-                packageValidator.add(package, isSelectedByDefault: viewModel.isSelectedByDefault)
+                let packageInfo = PackageValidator.PackageInfo(
+                    package: package,
+                    isSelectedByDefault: viewModel.isSelectedByDefault,
+                    promotionalOfferProductCode: viewModel.promotionalOfferProductCode
+                )
+                packageValidator.add(packageInfo)
             }
 
             return .package(viewModel)
@@ -297,8 +302,8 @@ struct ViewModelFactory {
                 )
 
                 // Merging into entire paywall package validator
-                for (pkg, isSelectedByDefault) in tabPackageValidator.packageInfos {
-                    packageValidator.add(pkg, isSelectedByDefault: isSelectedByDefault)
+                for packageInfo in tabPackageValidator.packageInfos {
+                    packageValidator.add(packageInfo)
                 }
 
                 return try .init(
