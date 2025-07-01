@@ -5,11 +5,9 @@ let destinations: Destinations = [
     .iPhone,
     .iPad,
     .mac,
-    .macWithiPadDesign,
     .macCatalyst,
     .appleTv,
-    .appleVision,
-    .appleVisionWithiPadDesign
+    .appleVision
 ]
 
 var allDestinations = destinations 
@@ -52,6 +50,10 @@ let project = Project(
             dependencies: [
                 .target(name: "Core"),
                 .target(name: "PurchaseTesterWatchOS"),
+            ],
+            additionalFiles: [
+                "../../Tests/TestingApps/PurchaseTesterSwiftUI/PurchaseTester.entitlements",
+                "../../Tests/TestingApps/PurchaseTesterSwiftUI/PurchaseTesterStoreKitConfiguration.storekit"
             ]
         ),
 
@@ -77,7 +79,7 @@ let project = Project(
         .target(
             name: "Core",
             destinations: allDestinations,
-            product: .framework,
+            product: .staticFramework,
             bundleId: "com.revenuecat.Core",
             deploymentTargets: allDeploymentTargets,
             sources: [
@@ -90,4 +92,27 @@ let project = Project(
             ]
         )
     ],
+    schemes: [
+        .scheme(
+            name: "PurchaseTester",
+            shared: true,
+            buildAction: .buildAction(targets: ["PurchaseTester"], findImplicitDependencies: true),
+                        runAction: .runAction(
+                configuration: "Debug",
+                executable: "PurchaseTester",
+                options: .options(
+                    storeKitConfigurationPath: "../../Tests/TestingApps/PurchaseTesterSwiftUI/PurchaseTesterStoreKitConfiguration.storekit"
+                )
+            )
+        ),
+        .scheme(
+            name: "PurchaseTesterWatchOS",
+            shared: true,
+            buildAction: .buildAction(targets: ["PurchaseTesterWatchOS"], findImplicitDependencies: true),
+            runAction: .runAction(
+                configuration: "Debug",
+                executable: "PurchaseTesterWatchOS"
+            )
+        )
+    ]
 )
