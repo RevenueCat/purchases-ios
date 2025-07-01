@@ -135,18 +135,18 @@ import Foundation
             case transactionID = "transaction_id"
             case answerYes = "yes"
             case answerNo = "no"
-            case storeAppStore = "store_app_store"
-            case storeMacAppStore = "store_mac_app_store"
-            case storePlayStore = "store_google_play_store"
-            case storeStripe = "store_stripe"
-            case storePromotional = "store_promotional"
-            case storeAmazon = "store_amazon_store"
+            case storeAppStore = "app_store"
+            case storeMacAppStore = "mac_app_store"
+            case storePlayStore = "google_play_store"
+            case storeStripe = "stripe"
+            case storePromotional = "promotional"
+            case storeAmazon = "amazon_store"
             case cardStorePromotional = "card_store_promotional"
-            case storeRCBilling = "store_web"
-            case storeExternal = "store_external"
-            case storeUnknownStore = "store_unknown"
+            case storeExternal = "external_store"
+            case storeUnknownStore = "unknown_store"
             case storePaddle = "store_paddle"
-            case debugHeaderTitle = "Debug"
+            case storeWeb = "web_store"
+            case debugHeaderTitle = "debug"
             case youMayHaveDuplicatedSubscriptionsTitle = "you_may_have_duplicated_subscriptions_title"
             case youMayHaveDuplicatedSubscriptionsSubtitle = "you_may_have_duplicated_subscriptions_subtitle"
             case pricePaid = "price_paid"
@@ -159,7 +159,7 @@ import Foundation
             case badgeLifetime = "badge_lifetime"
             case badgeCancelled = "badge_cancelled"
             case badgeTrialCancelled = "badge_free_trial_cancelled"
-            case badgeFreeTrial = "free_trial"
+            case badgeFreeTrial = "badge_free_trial"
             case refundSuccess = "refund_success"
             case actionsSectionTitle = "actions_section_title"
             case subscriptionsSectionTitle = "subscriptions_section_title"
@@ -345,14 +345,14 @@ import Foundation
                     return "Amazon Store"
                 case .cardStorePromotional:
                     return "Via Support"
-                case .storeRCBilling:
-                    return "Web"
                 case .storeExternal:
                     return "External Purchases"
                 case .storeUnknownStore:
                     return "Unknown Store"
                 case .storePaddle:
                     return "Paddle"
+                case .storeWeb:
+                    return "Web"
                 case .debugHeaderTitle:
                     return "Debug"
                 case .youMayHaveDuplicatedSubscriptionsTitle:

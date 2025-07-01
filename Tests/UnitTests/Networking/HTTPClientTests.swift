@@ -968,7 +968,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         }
         let platformInfo = Purchases.PlatformInfo(flavor: "react-native", version: "3.2.1")
         let systemInfo = SystemInfo(platformInfo: platformInfo,
-                                    finishTransactions: true)
+                                    finishTransactions: true,
+                                    preferredLocalesProvider: .mock())
 
         self.client = self.createClient(systemInfo)
 
@@ -1006,7 +1007,9 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             return .emptySuccessResponse()
         }
         let platformInfo = Purchases.PlatformInfo(flavor: "react-native", version: "1.2.3")
-        let systemInfo = SystemInfo(platformInfo: platformInfo, finishTransactions: true)
+        let systemInfo = SystemInfo(platformInfo: platformInfo,
+                                    finishTransactions: true,
+                                    preferredLocalesProvider: .mock())
         self.client = self.createClient(systemInfo)
 
         waitUntil { completion in
@@ -1025,7 +1028,9 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             headerPresent.value = true
             return .emptySuccessResponse()
         }
-        self.client = self.createClient(SystemInfo(platformInfo: nil, finishTransactions: true))
+        self.client = self.createClient(SystemInfo(platformInfo: nil,
+                                                   finishTransactions: true,
+                                                   preferredLocalesProvider: .mock()))
 
         waitUntil { completion in
             self.client.perform(request) { (_: DataResponse) in completion() }
@@ -1038,7 +1043,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         let headerName = "X-UI-Preview-Mode"
         let systemInfo = SystemInfo(platformInfo: nil,
                                     finishTransactions: true,
-                                    dangerousSettings: .init(uiPreviewMode: true))
+                                    dangerousSettings: .init(uiPreviewMode: true),
+                                    preferredLocalesProvider: .mock())
         self.client = self.createClient(systemInfo)
 
         let header: Atomic<String?> = nil
@@ -1061,7 +1067,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         let headerName = "X-UI-Preview-Mode"
         let systemInfo = SystemInfo(platformInfo: nil,
                                     finishTransactions: true,
-                                    dangerousSettings: .init(uiPreviewMode: false))
+                                    dangerousSettings: .init(uiPreviewMode: false),
+                                    preferredLocalesProvider: .mock())
         self.client = self.createClient(systemInfo)
 
         let header: Atomic<String?> = nil
@@ -1130,7 +1137,9 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             headerPresent.value = true
             return .emptySuccessResponse()
         }
-        self.client = self.createClient(SystemInfo(platformInfo: nil, finishTransactions: false))
+        self.client = self.createClient(SystemInfo(platformInfo: nil,
+                                                   finishTransactions: false,
+                                                   preferredLocalesProvider: .mock()))
 
         waitUntil { completion in
             self.client.perform(request) { (_: DataResponse) in completion() }
@@ -1628,7 +1637,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
                 dangerousSettings: .init(
                     autoSyncPurchases: true,
                     internalSettings: DangerousSettings.Internal(forceServerErrors: true)
-                )
+                ),
+                preferredLocalesProvider: .mock()
             )
         )
 
