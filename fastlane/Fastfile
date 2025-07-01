@@ -468,11 +468,21 @@ platform :ios do
     )
   end
   
+  private_lane :send_to_emerge do |options|
+    pr_url = ENV["CIRCLE_PULL_REQUEST"]
+    branch_name = sh("git rev-parse --abbrev-ref HEAD").strip
+    pr_number = nil
+    # Try to parse the PR number from the pr_url variable first
+    if pr_url && pr_url.include?("/")
+      pr_number = pr_url.split("/").last
+    # Try to parse the PR number from the merge queue branch name. In this case,
+    # there's no CIRCLE_PULL_REQUEST environment variable.
+    elsif branch_name =~ /^gh-readonly-queue\/[^\/]+\/pr-([0-9]+)-[0-9a-f]+$/
+      pr_number = $1
+    end
     
     emerge(emerge_args)
   end
-  
-  
 
   desc "Runs all the iOS tests"
   lane :test_ios do |options|
