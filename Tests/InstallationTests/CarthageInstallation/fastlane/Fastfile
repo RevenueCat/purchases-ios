@@ -23,6 +23,9 @@ lane :installation_tests do
 
     # Carthage builds all schemes including ones we don't need, so let's nuke them before proceeding
     schemes_directory = "Carthage/Checkouts/purchases-root/RevenueCat.xcodeproj/xcshareddata/xcschemes"
+
+    sh "ls", "-l", schemes_directory
+
     Dir.glob("#{schemes_directory}/*.xcscheme").each do |file_path|
       next if File.basename(file_path) == "RevenueCat.xcscheme"
       sh "rm", "-f", file_path
