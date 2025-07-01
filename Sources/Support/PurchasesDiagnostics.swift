@@ -230,7 +230,7 @@ extension PurchasesDiagnostics {
         }
     }
 
-    #if DEBUG
+    #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     /// Performs a full SDK configuration health check and throws an error if the configuration is not valid.
     /// - Important: This method can not be invoked in production builds.
     /// - Throws: ``SDKHealthError`` indicating the specific configuration issue that needs to be solved.
