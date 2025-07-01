@@ -541,6 +541,16 @@ platform :ios do
     elsif branch_name =~ /^gh-readonly-queue\/[^\/]+\/pr-([0-9]+)-[0-9a-f]+$/
       pr_number = $1
     end
+
+    emerge_args = {repo_name: "RevenueCat/purchases-ios"}
+    emerge_args[:pr_number] = pr_number if pr_number
+    emerge_args[:app_id_suffix] = options[:app_id_suffix]
+
+    # Use the archive_path if provided
+    if options[:archive_path]
+      emerge_args[:file_path] = options[:archive_path]
+      UI.message("Using archive path: #{options[:archive_path]}")
+    end
     
     emerge(emerge_args)
   end
