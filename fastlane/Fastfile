@@ -390,6 +390,7 @@ platform :ios do
     scan_with_flaky_test_retries(
       step_name: "scan - iPhone",
       device: ENV['SCAN_DEVICE'] || "iPhone 12 (15.2)",
+      max_concurrent_simulators: 3,
       ensure_devices_found: true,
       scheme: "RevenueCat",
       prelaunch_simulator: true,
