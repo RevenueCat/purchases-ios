@@ -239,6 +239,15 @@ commands:
             - /usr/local/Cellar/xcbeautify/
             - /Users/$USER/Library/Caches/Homebrew/
 
+  install-concurrent-carthage-dependency:
+    steps:
+      - run:
+          name: Install concurrent-carthage
+          command: |
+            git clone https://github.com/webcpu/ConcurrentCarthage
+            cd ConcurrentCarthage
+            ruby main.rb
+
   install-brew-dependency:
     parameters:
       dependency_name:
@@ -1263,11 +1272,12 @@ jobs:
       name: macos-executor-large
     steps:
       - checkout-with-minimal-permissions
-      - run:
-          name: Upgrade Carthage
-          command: |
-            brew update
-            brew upgrade carthage
+      - install-concurrent-carthage-dependency
+      # - run:
+      #     name: Upgrade Carthage
+      #     command: |
+      #       brew update
+      #       brew upgrade carthage
       - update-carthage-installation-commit
       # Carthage
       - run:
