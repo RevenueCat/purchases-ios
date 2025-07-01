@@ -189,7 +189,6 @@ struct SubscriptionDetailView: View {
                         .padding(.vertical, 32)
                 }
 
-
                 if let virtualCurrencies = customerInfoViewModel.virtualCurrencies,
                    !virtualCurrencies.all.isEmpty,
                    viewModel.showVirtualCurrencies {
