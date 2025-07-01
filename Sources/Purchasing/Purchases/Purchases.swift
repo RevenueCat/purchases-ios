@@ -1334,6 +1334,10 @@ public extension Purchases {
         }
     }
 
+    var cachedVirtualCurrencies: VirtualCurrencies? {
+        return self.virtualCurrencyManager.cachedVirtualCurrencies()
+    }
+
     func virtualCurrencies() async throws -> VirtualCurrencies {
         do {
             return try await self.virtualCurrencyManager.virtualCurrencies()
