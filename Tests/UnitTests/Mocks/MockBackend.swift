@@ -188,6 +188,10 @@ class MockBackend: Backend {
     override func healthReportRequest(appUserID: String) async throws -> HealthReport {
         return try healthReportRequestResponse.get()
     }
+
+    override func healthReportAvailabilityRequest(appUserID: String) async throws -> HealthReportAvailability {
+        return .init(reportLogs: true)
+    }
 }
 
 extension MockBackend: @unchecked Sendable {}
