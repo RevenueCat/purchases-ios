@@ -209,6 +209,10 @@ class PurchasesSubscriberAttributesTests: TestCase {
             productsManager: mockProductsManager,
             diagnosticsTracker: nil
         )
+        let healthManager = SDKHealthManager(
+            backend: self.mockBackend,
+            identityManager: self.mockIdentityManager
+        )
         purchases = Purchases(appUserID: mockIdentityManager.currentAppUserID,
                               requestFetcher: mockRequestFetcher,
                               receiptFetcher: mockReceiptFetcher,
@@ -236,7 +240,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
                                 with: trialOrIntroductoryPriceEligibilityChecker
                               ),
                               storeMessagesHelper: self.mockStoreMessagesHelper,
-                              diagnosticsTracker: nil)
+                              diagnosticsTracker: nil,
+                              healthManager: healthManager)
         purchasesOrchestrator.delegate = purchases
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
