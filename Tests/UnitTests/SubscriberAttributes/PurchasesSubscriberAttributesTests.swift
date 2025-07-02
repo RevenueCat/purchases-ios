@@ -41,6 +41,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
     var mockTransactionsManager: MockTransactionsManager!
     var mockOperationDispatcher: MockOperationDispatcher!
     var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
+    var mockVirtualCurrencyManager: MockVirtualCurrencyManager!
     var transactionPoster: TransactionPoster!
 
     // swiftlint:disable:next weak_delegate
@@ -94,6 +95,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
                                                        requestTimeout: Configuration.storeKitRequestTimeoutDefault)
         self.mockIntroEligibilityCalculator = MockIntroEligibilityCalculator(productsManager: mockProductsManager,
                                                                              receiptParser: mockReceiptParser)
+
+        self.mockVirtualCurrencyManager = MockVirtualCurrencyManager()
         let platformInfo = Purchases.PlatformInfo(flavor: "iOS", version: "3.2.1")
         let systemInfoAttribution = MockSystemInfo(platformInfo: platformInfo,
                                                    finishTransactions: true)
@@ -241,6 +244,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               ),
                               storeMessagesHelper: self.mockStoreMessagesHelper,
                               diagnosticsTracker: nil,
+                              virtualCurrencyManager: self.mockVirtualCurrencyManager,
                               healthManager: healthManager)
         purchasesOrchestrator.delegate = purchases
         purchases!.delegate = purchasesDelegate

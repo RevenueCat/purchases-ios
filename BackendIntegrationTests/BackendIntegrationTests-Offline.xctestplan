@@ -65,7 +65,9 @@
         "StoreKit2ObserverModeIntegrationTests",
         "StoreKit2ObserverModeWithExistingPurchasesTests",
         "SubscriberAttributesManagerIntegrationTests",
-        "TestCase"
+        "TestCase",
+        "VirtualCurrencyStoreKit1IntegrationTests",
+        "VirtualCurrencyStoreKit2IntegrationTests"
       ],
       "target" : {
         "containerPath" : "container:RevenueCat.xcodeproj",

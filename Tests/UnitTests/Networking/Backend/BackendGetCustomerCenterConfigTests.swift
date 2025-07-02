@@ -240,6 +240,7 @@ final class BackendGetCustomerCenterConfigTests: BaseBackendTests {
         expect(support.email) == "support@revenuecat.com"
         expect(support.displayPurchaseHistoryLink) == true
         expect(support.shouldWarnCustomerToUpdate) == false
+        expect(support.displayVirtualCurrencies) == true
     }
 
     func testGetCustomerCenterConfigFailSendsNil() {
@@ -411,7 +412,8 @@ private extension BackendGetCustomerCenterConfigTests {
             "support": [
                 "email": "support@revenuecat.com",
                 "should_warn_customer_to_update": false,
-                "display_purchase_history_link": true
+                "display_purchase_history_link": true,
+                "display_virtual_currencies": true
             ] as [String: Any]
         ] as [String: Any]
     ]
