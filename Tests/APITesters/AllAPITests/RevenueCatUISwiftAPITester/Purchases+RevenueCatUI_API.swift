@@ -8,9 +8,10 @@
 import RevenueCat
 import RevenueCatUI
 
-func checkPreferredUILocaleAPIs() {
-    Purchases.overridePreferredUILocale("de_DE")
-    Purchases.overridePreferredUILocale(nil)
+func checkPreferredUILocaleAPIs(purchases: Purchases) {
+    purchases.overridePreferredUILocale("de_DE")
+    purchases.overridePreferredUILocale(nil)
+
     let _: RevenueCat.Configuration.Builder = Configuration
         .builder(withAPIKey: "")
         .with(preferredUILocaleOverride: "de_DE")

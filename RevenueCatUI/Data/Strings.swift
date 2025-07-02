@@ -79,9 +79,6 @@ enum Strings {
     case promo_offer_not_eligible_for_product(String, String)
     case could_not_find_target_product(String, String)
     case could_not_find_discount_for_target_product(String, String)
-
-    // Preferred locale
-    case failed_to_set_preferred_locale_purchases_not_configured
 }
 
 extension Strings: CustomStringConvertible {
@@ -261,10 +258,6 @@ extension Strings: CustomStringConvertible {
 
         case .no_web_checkout_url_found:
             return "No web checkout url found."
-
-        case .failed_to_set_preferred_locale_purchases_not_configured:
-            return "Failed to override preferred UI locale because Purchases is not configured. " +
-            "Make sure to call `Purchases.configure` before calling `overridePreferredUILocale`."
         }
     }
 
