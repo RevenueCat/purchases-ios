@@ -47,8 +47,7 @@ let project = Project(
                 "../../Tests/TestingApps/PurchaseTesterSwiftUI/Shared/Assets.xcassets",
             ],
             dependencies: [
-                .target(name: "Core"),
-                .target(name: "PurchaseTesterWatchOS")
+                .target(name: "Core")
             ],
             additionalFiles: [
                 "../../Tests/TestingApps/PurchaseTesterSwiftUI/PurchaseTester.entitlements",
