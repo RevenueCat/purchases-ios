@@ -79,7 +79,6 @@ enum Strings {
     case promo_offer_not_eligible_for_product(String, String)
     case could_not_find_target_product(String, String)
     case could_not_find_discount_for_target_product(String, String)
-
 }
 
 extension Strings: CustomStringConvertible {

@@ -1850,6 +1850,13 @@ extension Purchases {
         return self.systemInfo.preferredLocales
     }
 
+    // `preferredLocales` will always include the preferred locale override if set, so this
+    // property is only useful for reading the override value
+    // swiftlint:disable missing_docs
+    @_spi(Internal) public var preferredLocaleOverride: String? {
+        return self.systemInfo.preferredLocaleOverride
+    }
+
     // swiftlint:disable missing_docs
     @_spi(Internal) public func overridePreferredLocale(_ locale: String?) {
         self.systemInfo.overridePreferredLocale(locale)

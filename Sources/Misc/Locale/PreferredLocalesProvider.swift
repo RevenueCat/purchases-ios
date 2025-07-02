@@ -20,7 +20,7 @@ final class PreferredLocalesProvider {
     }
 
     /// Developer-set preferred locale that takes precedence over the system preferred locales.
-    private var preferredLocaleOverride: String?
+    private(set) var preferredLocaleOverride: String?
 
     /// Closure to get the user's preferred locales, allowing for dependency injection in tests.
     private var systemPreferredLocalesGetter: () -> [String]
@@ -38,7 +38,8 @@ final class PreferredLocalesProvider {
         self.systemPreferredLocalesGetter = systemPreferredLocalesGetter
     }
 
-    /// Returns the list of the user's preferred languages, with the preferred locale override at the top.
+    /// Returns the list of the user's preferred languages, including the preferred locale override as the first
+    /// locale of the array.
     var preferredLocales: [String] {
         if let preferredLocaleOverride = self.preferredLocaleOverride {
             return [preferredLocaleOverride] + systemPreferredLocalesGetter()

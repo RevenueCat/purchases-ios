@@ -15,10 +15,6 @@ import Foundation
 
 extension Locale {
 
-    static var preferredLocales: [Self] {
-        return Self.preferredLanguages.map(Locale.init(identifier:))
-    }
-
     func matchesLanguage(_ rhs: Locale) -> Bool {
         self.removingRegion == rhs.removingRegion
     }
