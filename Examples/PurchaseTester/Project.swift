@@ -17,6 +17,16 @@ let deploymentTargets: DeploymentTargets = .multiplatform(
     visionOS: "1.3"
 )
 
+let allDeploymentTargets: DeploymentTargets = .multiplatform(
+    iOS: "15.2",
+    macOS: "13.0",
+    watchOS: "8.0",
+    tvOS: "15.2",
+    visionOS: "1.3"
+)
+
+let allDestinations = destinations + [.appleWatch]
+
 let project = Project(
     name: "PurchaseTester",
     organizationName: .revenueCatOrgName,
@@ -37,7 +47,8 @@ let project = Project(
                 "../../Tests/TestingApps/PurchaseTesterSwiftUI/Shared/Assets.xcassets",
             ],
             dependencies: [
-                .target(name: "Core_App"),
+                .target(name: "Core"),
+                .target(name: "PurchaseTesterWatchOS")
             ],
             additionalFiles: [
                 "../../Tests/TestingApps/PurchaseTesterSwiftUI/PurchaseTester.entitlements",
@@ -60,7 +71,7 @@ let project = Project(
                 "../../Tests/TestingApps/PurchaseTesterSwiftUI/Shared/Assets.xcassets",
             ],
             dependencies: [
-                .target(name: "Core_WatchOS")
+                .target(name: "Core")
             ],
             settings: .settings(
                 base: [
@@ -77,12 +88,11 @@ let project = Project(
         ),
 
         .target(
-            name: "Core_App",
-            destinations: destinations,
+            name: "Core",
+            destinations: Set(allDestinations),
             product: .framework,
-            productName: "Core",
             bundleId: "com.revenuecat.Core",
-            deploymentTargets: deploymentTargets,
+            deploymentTargets: allDeploymentTargets,
             sources: [
                 "../../Tests/TestingApps/PurchaseTesterSwiftUI/Core/**/*.swift",
             ],
@@ -92,23 +102,6 @@ let project = Project(
                 .receiptparser,
             ]
         ),
-
-        .target(
-            name: "Core_WatchOS",
-            destinations: [.appleWatch],
-            product: .framework,
-            productName: "Core",
-            bundleId: "com.revenuecat.Core",
-            deploymentTargets: .watchOS("8.0"),
-            sources: [
-                "../../Tests/TestingApps/PurchaseTesterSwiftUI/Core/**/*.swift",
-            ],
-            dependencies: [
-                .revenueCat,
-                .revenueCatUI,
-                .receiptparser,
-            ]
-        )
     ],
     schemes: [
         .scheme(
