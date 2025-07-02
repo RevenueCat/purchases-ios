@@ -388,17 +388,16 @@ fileprivate extension PaywallsV2View {
         // STEP 3: Get localization for one of preferred locales in order
         if let localizedStrings = componentsLocalizations.findLocale(chosenLocale) {
             return .init(locale: chosenLocale, localizedStrings: localizedStrings)
-        } else if let localizedStrings = componentsLocalizations.findLocale(defaultLocale) {
-            if !notFoundLocales.contains(chosenLocale) {
-                notFoundLocales.append(chosenLocale)
-            }
-            return .init(locale: defaultLocale, localizedStrings: localizedStrings)
         } else {
-            if !notFoundLocales.contains(defaultLocale) {
-                notFoundLocales.append(defaultLocale)
-            }
-            return .init(locale: defaultLocale, localizedStrings: PaywallComponent.LocalizationDictionary())
+            notFoundLocales.append(chosenLocale)
         }
+
+        if let localizedStrings = componentsLocalizations.findLocale(defaultLocale) {            return .init(locale: defaultLocale, localizedStrings: localizedStrings)
+        } else if !notFoundLocales.contains(defaultLocale) {
+            notFoundLocales.append(defaultLocale)
+        }
+
+        return .init(locale: defaultLocale, localizedStrings: PaywallComponent.LocalizationDictionary())
     }
 
     /// Returns the preferred paywall locale from the device's preferred locales.

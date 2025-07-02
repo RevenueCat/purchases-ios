@@ -38,7 +38,7 @@ final class PreferredLocalesProvider {
         self.systemPreferredLocalesGetter = systemPreferredLocalesGetter
     }
 
-    /// Returns the list of the user's preferred languages, including the preferred locale override at the top.
+    /// Returns the list of the user's preferred languages, including the preferred locale override as the first locale of the array.
     var preferredLocales: [String] {
         if let preferredLocaleOverride = self.preferredLocaleOverride {
             return [preferredLocaleOverride] + systemPreferredLocalesGetter()
