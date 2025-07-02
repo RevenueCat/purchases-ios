@@ -1,22 +1,25 @@
 ## RevenueCat SDK
 ### Customer Center
 #### ✨ New Features
-* Use `card_store_promotional` for RC Promos in card & history (#5275) via Facundo Menzella (@facumenzella)
-* Refactor PurchaseHistory to use PurchaseInformation (#5260) via Facundo Menzella (@facumenzella)
+* Add smoother loading animation to SubscriptionDetailView (#5329) via Facundo Menzella (@facumenzella)
+
+## RevenueCatUI SDK
+### Customer Center
+#### ✨ New Features
+* Remove trailing text for PurchaseCardView, and simplify billing information.  (#5300) via Facundo Menzella (@facumenzella)
+* Add account details to single purchase view (#5327) via Facundo Menzella (@facumenzella)
 #### 🐞 Bugfixes
-* Add tests for PurchaseInformationView.Badge + rc promo (#5273) via Facundo Menzella (@facumenzella)
+* Fix broken Customer Center strings (#5311) via Cesar de la Vega (@vegaro)
 
 ### 🔄 Other Changes
-* [Paywalls] Update ImageComponent max width after initial layout if it changes. (#5291) via Mark Villacampa (@MarkVillacampa)
-* Fix index and mgiration guides docs not being updated (#5298) via Mark Villacampa (@MarkVillacampa)
-* Add .yield to `PaywallViewEventsFullscreenLightModeTests` (#5294) via Facundo Menzella (@facumenzella)
-* Add missing `@_spi` to import in backend tests (#5297) via Antonio Pallares (@ajpallares)
-* Use minimal permissions for installation tests (#5274) via JayShortway (@JayShortway)
-* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5295) via RevenueCat Git Bot (@RCGitBot)
-* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5289) via RevenueCat Git Bot (@RCGitBot)
-* Delete Examples folder from carthage checkout (#5287) via Facundo Menzella (@facumenzella)
-* Remove CustomerCenterConfigDataAPI from API Tests (#5286) via Facundo Menzella (@facumenzella)
-* Delete duplicate OfferingsList.swift from PaywallTester (#5249) via Facundo Menzella (@facumenzella)
-* Add abbrev to Gemfile (#5207) via Facundo Menzella (@facumenzella)
-* Test removing example apps before Carthage installation test (#5268) via Facundo Menzella (@facumenzella)
-* Add _spi(Internal) to Customer Center (#5270) via Facundo Menzella (@facumenzella)
+* [DX-457] Log the SDK configuration report on every `#DEBUG` run (#5317) via Pol Piella Abadia (@polpielladev)
+* Update workflows/issue-notifications.yml@v2 (#5346) via Josh Holtz (@joshdholtz)
+* Fix some failing tests (#5344) via Antonio Pallares (@ajpallares)
+* Preferred locale override (#5288) via Antonio Pallares (@ajpallares)
+* [CI] use M4 Pro Medium (#5321) via Mark Villacampa (@MarkVillacampa)
+* Add shared ack workflow (#5340) via Josh Holtz (@joshdholtz)
+* Use NewErrorUtils instead of RevenueCat.ErrorUtils (#5293) via Facundo Menzella (@facumenzella)
+* Bump ack action to v15 (#5339) via Josh Holtz (@joshdholtz)
+* Bump ack action to v11 (#5336) via Josh Holtz (@joshdholtz)
+* New issue template form and issue monitoring job (#5333) via Josh Holtz (@joshdholtz)
+* Add Intro Eligibility Functions to CEC Mode (#5322) via Will Taylor (@fire-at-will)
