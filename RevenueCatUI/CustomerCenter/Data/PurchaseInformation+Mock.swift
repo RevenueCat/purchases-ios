@@ -28,7 +28,7 @@ extension PurchaseInformation {
         renewalPrice: RenewalPrice? = .nonFree("$9.99"),
         productIdentifier: String = "com.revenuecat.pro",
         store: Store = .appStore,
-        isLifetime: Bool = false,
+        isSubscription: Bool = false,
         isTrial: Bool = false,
         isCancelled: Bool = false,
         isExpired: Bool = false,
@@ -55,7 +55,7 @@ extension PurchaseInformation {
             renewalPrice: renewalPrice,
             productIdentifier: productIdentifier,
             store: store,
-            isLifetime: isLifetime,
+            isSubscription: isSubscription,
             isTrial: isTrial,
             isCancelled: isCancelled,
             isExpired: isExpired,
@@ -91,9 +91,9 @@ extension PurchaseInformation {
         renewalPrice: .nonFree("$4.99"),
         productIdentifier: "product_id_expired",
         store: .appStore,
-        isLifetime: false,
+        isSubscription: true,
         isExpired: true,
-        expirationDate: nil,
+        expirationDate: Self.defaultExpirationDate,
         renewalDate: nil
     )
 
@@ -101,7 +101,7 @@ extension PurchaseInformation {
         title: "Lifetime",
         pricePaid: .nonFree("$4.99"),
         productIdentifier: "product_id_lifetime",
-        isLifetime: true,
+        isSubscription: true,
         expirationDate: nil,
         renewalDate: nil
     )
@@ -123,7 +123,7 @@ extension PurchaseInformation {
         renewalPrice: nil,
         productIdentifier: "product_id",
         store: .appStore,
-        isLifetime: true,
+        isSubscription: false,
         isExpired: false,
         isSandbox: false,
         managementURL: URL(string: "https://www.revenuecat.com"),
