@@ -20,6 +20,8 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>LSApplicationCategoryType</key>
+	<string>WKWatchKitApp</string>
 	<key>REVENUECAT_API_KEY</key>
 	<string>$(REVENUECAT_API_KEY)</string>
 	<key>UISupportedInterfaceOrientations</key>
@@ -29,5 +31,7 @@
 	</array>
 	<key>WKCompanionAppBundleIdentifier</key>
 	<string>com.revenuecat.sampleapp</string>
+	<key>WKWatchKitApp</key>
+	<true/>
 </dict>
 </plist>
