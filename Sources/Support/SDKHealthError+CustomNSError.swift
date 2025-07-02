@@ -57,9 +57,13 @@ extension PurchasesDiagnostics.SDKHealthError: CustomNSError {
 
         case let .offeringConfiguration(payload):
             guard let offendingOffering = payload.first(where: { $0.status == .failed }) else {
+                let offeringsWithWarnings = payload.filter { $0.status == .warning }
+                let offeringDescription = offeringsWithWarnings.isEmpty ?
+                    "Some offerings" :
+                    "The offerings \(offeringsWithWarnings.map { "'\($0.identifier)'" }.joined(separator: ", "))"
                 return """
-                Your default offering is not configured correctly in RevenueCat. This prevents users from \
-                seeing product options. Please check your offering configuration in the RevenueCat website.
+                \(offeringDescription) have configuration issues that may prevent users from seeing product \
+                options or making purchases.
                 """
             }
 
