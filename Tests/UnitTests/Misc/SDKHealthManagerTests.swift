@@ -274,7 +274,7 @@ class SDKHealthManagerTests: TestCase {
         )
     }
 
-    func testLogSDKHealthReportOutcomeIncludesProductsSection() async {
+    func testLogSDKHealthReportOutcomeIncludesProductIssuesSection() async {
         let healthReport = HealthReport(
             status: .passed,
             projectId: "test_project",
@@ -292,6 +292,12 @@ class SDKHealthManagerTests: TestCase {
                         title: nil,
                         status: .notFound,
                         description: "Product not found in App Store Connect."
+                    ),
+                    ProductHealthReport(
+                        identifier: "test_product_3",
+                        title: "Test Product 3",
+                        status: .needsAction,
+                        description: "Product needs action in App Store Connect."
                     )
                 ])))
             ]
@@ -301,8 +307,8 @@ class SDKHealthManagerTests: TestCase {
 
         await manager.logSDKHealthReportOutcome()
 
-        self.logger.verifyMessageWasLogged("Products Status:", level: .info)
-        self.logger.verifyMessageWasLogged(
+        self.logger.verifyMessageWasLogged("Product Issues:", level: .info)
+        self.logger.verifyMessageWasNotLogged(
             "✅ test_product (Test Product): Available for production purchases.",
             level: .info
         )
@@ -310,9 +316,16 @@ class SDKHealthManagerTests: TestCase {
             "❌ test_product_2: Product not found in App Store Connect.",
             level: .info
         )
+        self.logger.verifyMessageWasLogged(
+            """
+            ⚠️ test_product_3 (Test Product 3): This product's status (Product needs action in App Store Connect.) \
+            requires you to take action in App Store Connect before using it in production purchases.
+            """,
+            level: .info
+        )
     }
 
-    func testLogSDKHealthReportOutcomeIncludesOfferingsSection() async {
+    func testLogSDKHealthReportOutcomeIncludesOfferingIssuesSection() async {
         let healthReport = HealthReport(
             status: .passed,
             projectId: "test_project",
@@ -332,9 +345,31 @@ class SDKHealthManagerTests: TestCase {
                                     description: "Available for production purchases.",
                                     productIdentifier: "test_product",
                                     productTitle: "Test Product"
+                                ),
+                                PackageHealthReport(
+                                    identifier: "test_package_2",
+                                    title: "Test Package 2",
+                                    status: .notFound,
+                                    description: "Package not found in App Store Connect.",
+                                    productIdentifier: "test_product_2",
+                                    productTitle: "Test Product 2"
                                 )
                             ],
-                            status: .passed
+                            status: .warning
+                        ),
+                        OfferingHealthReport(
+                            identifier: "test_offering_2",
+                            packages: [
+                                PackageHealthReport(
+                                    identifier: "test_package_3",
+                                    title: "Test Package 3",
+                                    status: .needsAction,
+                                    description: "Package needs action in App Store Connect.",
+                                    productIdentifier: "test_product_3",
+                                    productTitle: "Test Product 3"
+                                )
+                            ],
+                            status: .warning
                         )
                     ]))
                 )
@@ -345,10 +380,25 @@ class SDKHealthManagerTests: TestCase {
 
         await manager.logSDKHealthReportOutcome()
 
-        self.logger.verifyMessageWasLogged("Offerings Status:", level: .info)
-        self.logger.verifyMessageWasLogged("✅ test_offering", level: .info)
-        self.logger.verifyMessageWasLogged(
+        self.logger.verifyMessageWasLogged("Offering Issues:", level: .info)
+        self.logger.verifyMessageWasNotLogged("✅ test_offering", level: .info)
+        self.logger.verifyMessageWasNotLogged(
             "✅ test_package (test_product): Available for production purchases.",
+            level: .info
+        )
+        self.logger.verifyMessageWasLogged("⚠️ test_offering_2", level: .info)
+        self.logger.verifyMessageWasLogged(
+            """
+            ❌ test_package_2 (test_product_2): Product not found in App Store Connect. You need to create a product \
+            with identifier: 'test_product_2' in App Store Connect to use it for production purchases.
+            """,
+            level: .info
+        )
+        self.logger.verifyMessageWasLogged(
+            """
+            ⚠️ test_package_3 (test_product_3): This product's status (Package needs action in App Store Connect.) \
+            requires you to take action in App Store Connect before using it in production purchases.
+            """,
             level: .info
         )
     }
@@ -365,8 +415,8 @@ class SDKHealthManagerTests: TestCase {
 
         await manager.logSDKHealthReportOutcome()
 
-        self.logger.verifyMessageWasNotLogged("Products Status:", level: .info)
-        self.logger.verifyMessageWasNotLogged("Offerings Status:", level: .info)
+        self.logger.verifyMessageWasNotLogged("Product Issues:", level: .info)
+        self.logger.verifyMessageWasNotLogged("Offering Issues:", level: .info)
     }
 
     func testLogSDKHealthReportOutcomeLogsSpecialMessageWhenNoAppStoreConnectCredentials() async {
@@ -460,6 +510,266 @@ class SDKHealthManagerTests: TestCase {
             level: .warn
         )
         self.logger.verifyMessageWasNotLogged("https://app.revenuecat.com/projects/", level: .warn)
+    }
+
+    func testLogSDKHealthReportOutcomeDoesNotIncludeValidProducts() async {
+        let healthReport = HealthReport(
+            status: .passed,
+            projectId: "test_project",
+            appId: "test_app",
+            checks: [
+                HealthCheck(name: .products, status: .passed, details: .products(ProductsCheckDetails(products: [
+                    ProductHealthReport(
+                        identifier: "valid_product_1",
+                        title: "Valid Product 1",
+                        status: .valid,
+                        description: "Available for production purchases."
+                    ),
+                    ProductHealthReport(
+                        identifier: "valid_product_2",
+                        title: "Valid Product 2",
+                        status: .valid,
+                        description: "Available for production purchases."
+                    )
+                ])))
+            ]
+        )
+
+        let manager = makeSUT(backendResponse: .success(healthReport))
+
+        await manager.logSDKHealthReportOutcome()
+
+        self.logger.verifyMessageWasNotLogged("Product Issues:", level: .info)
+        self.logger.verifyMessageWasNotLogged("valid_product_1", level: .info)
+        self.logger.verifyMessageWasNotLogged("valid_product_2", level: .info)
+    }
+
+    func testLogSDKHealthReportOutcomeDoesNotIncludeValidOfferings() async {
+        let healthReport = HealthReport(
+            status: .passed,
+            projectId: "test_project",
+            appId: "test_app",
+            checks: [
+                HealthCheck(
+                    name: .offeringsProducts,
+                    status: .passed,
+                    details: .offeringsProducts(OfferingsCheckDetails(offerings: [
+                        OfferingHealthReport(
+                            identifier: "valid_offering",
+                            packages: [
+                                PackageHealthReport(
+                                    identifier: "valid_package",
+                                    title: "Valid Package",
+                                    status: .valid,
+                                    description: "Available for production purchases.",
+                                    productIdentifier: "valid_product",
+                                    productTitle: "Valid Product"
+                                )
+                            ],
+                            status: .passed
+                        )
+                    ]))
+                )
+            ]
+        )
+
+        let manager = makeSUT(backendResponse: .success(healthReport))
+
+        await manager.logSDKHealthReportOutcome()
+
+        self.logger.verifyMessageWasNotLogged("Offering Issues:", level: .info)
+        self.logger.verifyMessageWasNotLogged("valid_offering", level: .info)
+        self.logger.verifyMessageWasNotLogged("valid_package", level: .info)
+    }
+
+    func testLogSDKHealthReportOutcomeDoesNotIncludeValidOfferingMessages() async {
+        let healthReport = HealthReport(
+            status: .passed,
+            projectId: "test_project",
+            appId: "test_app",
+            checks: [
+                HealthCheck(
+                    name: .offeringsProducts,
+                    status: .passed,
+                    details: .offeringsProducts(OfferingsCheckDetails(offerings: [
+                        OfferingHealthReport(
+                            identifier: "test_offering",
+                            packages: [
+                                PackageHealthReport(
+                                    identifier: "valid_package",
+                                    title: "Valid Package",
+                                    status: .valid,
+                                    description: "Available for production purchases.",
+                                    productIdentifier: "valid_product",
+                                    productTitle: "Valid Product"
+                                ),
+                                PackageHealthReport(
+                                    identifier: "invalid_package",
+                                    title: "Invalid Package",
+                                    status: .notFound,
+                                    description: "Package not found in App Store Connect.",
+                                    productIdentifier: "invalid_product",
+                                    productTitle: "Invalid Product"
+                                )
+                            ],
+                            status: .passed
+                        )
+                    ]))
+                )
+            ]
+        )
+
+        let manager = makeSUT(backendResponse: .success(healthReport))
+
+        await manager.logSDKHealthReportOutcome()
+
+        self.logger.verifyMessageWasNotLogged("valid_package", level: .info)
+    }
+
+    func testLogSDKHealthReportOutcomeIncludesAllProductStatusesExceptValid() async {
+        let healthReport = HealthReport(
+            status: .passed,
+            projectId: "test_project",
+            appId: "test_app",
+            checks: [
+                HealthCheck(name: .products, status: .passed, details: .products(ProductsCheckDetails(products: [
+                    ProductHealthReport(
+                        identifier: "valid_product",
+                        title: "Valid Product",
+                        status: .valid,
+                        description: "Available for production purchases."
+                    ),
+                    ProductHealthReport(
+                        identifier: "not_found_product",
+                        title: "Not Found Product",
+                        status: .notFound,
+                        description: "Product not found in App Store Connect."
+                    ),
+                    ProductHealthReport(
+                        identifier: "needs_action_product",
+                        title: "Needs Action Product",
+                        status: .needsAction,
+                        description: "Product needs action in App Store Connect."
+                    ),
+                    ProductHealthReport(
+                        identifier: "action_in_progress_product",
+                        title: "Action In Progress Product",
+                        status: .actionInProgress,
+                        description: "Action in progress for this product."
+                    ),
+                    ProductHealthReport(
+                        identifier: "could_not_check_product",
+                        title: "Could Not Check Product",
+                        status: .couldNotCheck,
+                        description: "Could not validate product status."
+                    ),
+                    ProductHealthReport(
+                        identifier: "unknown_product",
+                        title: "Unknown Product",
+                        status: .unknown,
+                        description: "Unknown product status."
+                    )
+                ])))
+            ]
+        )
+
+        let manager = makeSUT(backendResponse: .success(healthReport))
+
+        await manager.logSDKHealthReportOutcome()
+
+        self.logger.verifyMessageWasLogged("Product Issues:", level: .info)
+        self.logger.verifyMessageWasNotLogged("valid_product", level: .info)
+        self.logger.verifyMessageWasLogged("❌ not_found_product", level: .info)
+        self.logger.verifyMessageWasLogged("⚠️ needs_action_product", level: .info)
+        self.logger.verifyMessageWasLogged("⏳ action_in_progress_product", level: .info)
+        self.logger.verifyMessageWasLogged("❓ could_not_check_product", level: .info)
+        self.logger.verifyMessageWasLogged("❓ unknown_product", level: .info)
+    }
+
+    func testLogSDKHealthReportOutcomeIncludesAllOfferingStatusesExceptPassed() async {
+        let healthReport = HealthReport(
+            status: .passed,
+            projectId: "test_project",
+            appId: "test_app",
+            checks: [
+                HealthCheck(
+                    name: .offeringsProducts,
+                    status: .passed,
+                    details: .offeringsProducts(OfferingsCheckDetails(offerings: [
+                        OfferingHealthReport(
+                            identifier: "passed_offering",
+                            packages: [],
+                            status: .passed
+                        ),
+                        OfferingHealthReport(
+                            identifier: "failed_offering",
+                            packages: [],
+                            status: .failed
+                        ),
+                        OfferingHealthReport(
+                            identifier: "warning_offering",
+                            packages: [],
+                            status: .warning
+                        )
+                    ]))
+                )
+            ]
+        )
+
+        let manager = makeSUT(backendResponse: .success(healthReport))
+
+        await manager.logSDKHealthReportOutcome()
+
+        self.logger.verifyMessageWasLogged("Offering Issues:", level: .info)
+        self.logger.verifyMessageWasNotLogged("passed_offering", level: .info)
+        self.logger.verifyMessageWasLogged("❌ failed_offering", level: .info)
+        self.logger.verifyMessageWasLogged("⚠️ warning_offering", level: .info)
+    }
+
+    func testLogSDKHealthReportOutcomeShowsCleanMessageWhenAllProductsAndOfferingsAreValid() async {
+        let healthReport = HealthReport(
+            status: .passed,
+            projectId: "test_project",
+            appId: "test_app",
+            checks: [
+                HealthCheck(name: .products, status: .passed, details: .products(ProductsCheckDetails(products: [
+                    ProductHealthReport(
+                        identifier: "valid_product",
+                        title: "Valid Product",
+                        status: .valid,
+                        description: "Available for production purchases."
+                    )
+                ]))),
+                HealthCheck(
+                    name: .offeringsProducts,
+                    status: .passed,
+                    details: .offeringsProducts(OfferingsCheckDetails(offerings: [
+                        OfferingHealthReport(
+                            identifier: "valid_offering",
+                            packages: [
+                                PackageHealthReport(
+                                    identifier: "valid_package",
+                                    title: "Valid Package",
+                                    status: .valid,
+                                    description: "Available for production purchases.",
+                                    productIdentifier: "valid_product",
+                                    productTitle: "Valid Product"
+                                )
+                            ],
+                            status: .passed
+                        )
+                    ]))
+                )
+            ]
+        )
+
+        let manager = makeSUT(backendResponse: .success(healthReport))
+
+        await manager.logSDKHealthReportOutcome()
+
+        self.logger.verifyMessageWasLogged("✅ RevenueCat SDK is configured correctly", level: .info)
+        self.logger.verifyMessageWasNotLogged("Product Issues:", level: .info)
+        self.logger.verifyMessageWasNotLogged("Offering Issues:", level: .info)
     }
 }
 

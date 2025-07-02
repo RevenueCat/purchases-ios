@@ -152,10 +152,11 @@ private enum HealthReportLogMessage: LogMessage {
     }
 
     private func buildProductsSection(report: PurchasesDiagnostics.SDKHealthReport) -> String {
-        guard !report.products.isEmpty else { return "" }
+        let productsWithIssues = report.products.filter { $0.status != .valid }
+        guard !productsWithIssues.isEmpty else { return "" }
 
-        var section = "\nProducts Status:\n"
-        for product in report.products {
+        var section = "\nProduct Issues:\n"
+        for product in productsWithIssues {
             let statusIcon = productStatusIcon(product.status)
             section += "  \(statusIcon) \(product.identifier)"
             if let title = product.title {
@@ -168,13 +169,15 @@ private enum HealthReportLogMessage: LogMessage {
     }
 
     private func buildOfferingsSection(report: PurchasesDiagnostics.SDKHealthReport) -> String {
-        guard !report.offerings.isEmpty else { return "" }
+        let offeringsWithIssues = report.offerings.filter { $0.status != .passed }
+        guard !offeringsWithIssues.isEmpty else { return "" }
 
-        var section = "\nOfferings Status:\n"
-        for offering in report.offerings {
+        var section = "\nOffering Issues:\n"
+        for offering in offeringsWithIssues {
             let statusIcon = offeringStatusIcon(offering.status)
             section += "  \(statusIcon) \(offering.identifier)\n"
-            for package in offering.packages {
+            let packagesWithIssues = offering.packages.filter { $0.status != .valid }
+            for package in packagesWithIssues {
                 let packageStatusIcon = productStatusIcon(package.status)
                 let packageInfo = "\(packageStatusIcon) \(package.identifier) (\(package.productIdentifier))"
                 section += "    \(packageInfo): \(package.description)\n"
