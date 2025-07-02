@@ -1329,12 +1329,6 @@ SWIFT_CLASS("_TtC10RevenueCat15HealthOperation")
 
 
 
-SWIFT_CLASS("_TtC10RevenueCat21HealthReportOperation")
-@interface HealthReportOperation : CacheableNetworkOperation
-@end
-
-
-
 
 
 enum RCIntroEligibilityStatus : NSInteger;
@@ -2903,7 +2897,6 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, copy) NSString * _No
 
 
 
-
 SWIFT_PROTOCOL("_TtP10RevenueCat29PurchasesOrchestratorDelegate_")
 @protocol PurchasesOrchestratorDelegate
 - (void)readyForPromotedProduct:(RCStoreProduct * _Nonnull)product purchase:(void (^ _Nonnull)(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL)))startPurchase;
@@ -2966,6 +2959,7 @@ SWIFT_AVAILABILITY(visionos,introduced=2.0) SWIFT_AVAILABILITY(watchos,introduce
 ///
 - (void)eligibleWinBackOffersForPackage:(RCPackage * _Nonnull)package completion:(void (^ _Nonnull)(NSArray<RCWinBackOffer *> * _Nullable, NSError * _Nullable))completion SWIFT_AVAILABILITY(visionos,introduced=2.0) SWIFT_AVAILABILITY(watchos,introduced=11.0) SWIFT_AVAILABILITY(tvos,introduced=18.0) SWIFT_AVAILABILITY(macos,introduced=15.0) SWIFT_AVAILABILITY(ios,introduced=18.0);
 @end
+
 
 
 
@@ -3110,7 +3104,6 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 @end
 
 
-
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
 /// Parses a deep link URL to verify it’s a RevenueCat web purchase redemption link
 /// seealso:
@@ -3123,6 +3116,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 - (void)offeringsWithCompletionHandler:(void (^ _Nonnull)(RCOfferings * _Nullable, NSError * _Nullable))completionHandler;
 @property (nonatomic, readonly, strong) RCOfferings * _Nullable cachedOfferings;
 @end
+
 
 
 
@@ -3502,10 +3496,11 @@ SWIFT_CLASS("_TtC10RevenueCat22PurchasesReceiptParser")
 
 
 
-
 @interface PurchasesReceiptParser (SWIFT_EXTENSION(RevenueCat))
 - (BOOL)receiptHasTransactionsWithReceiptData:(NSData * _Nonnull)receiptData SWIFT_WARN_UNUSED_RESULT;
 @end
+
+
 
 
 @interface PurchasesReceiptParser (SWIFT_EXTENSION(RevenueCat))
@@ -3513,7 +3508,6 @@ SWIFT_CLASS("_TtC10RevenueCat22PurchasesReceiptParser")
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong, getter=default) PurchasesReceiptParser * _Nonnull default_;)
 + (PurchasesReceiptParser * _Nonnull)default SWIFT_WARN_UNUSED_RESULT;
 @end
-
 
 
 
@@ -4092,14 +4086,14 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCSubscriptionPeriodUnit, "Unit", open) {
 
 
 @interface RCSubscriptionPeriod (SWIFT_EXTENSION(RevenueCat))
-@property (nonatomic, readonly, copy) NSString * _Nonnull debugDescription;
+/// The number of units per subscription period
+@property (nonatomic, readonly) NSInteger numberOfUnits SWIFT_AVAILABILITY(macos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(watchos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(tvos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(ios,unavailable,message="'numberOfUnits' has been renamed to 'value'");
 @end
 
 
 
 @interface RCSubscriptionPeriod (SWIFT_EXTENSION(RevenueCat))
-/// The number of units per subscription period
-@property (nonatomic, readonly) NSInteger numberOfUnits SWIFT_AVAILABILITY(macos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(watchos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(tvos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(ios,unavailable,message="'numberOfUnits' has been renamed to 'value'");
+@property (nonatomic, readonly, copy) NSString * _Nonnull debugDescription;
 @end
 
 
