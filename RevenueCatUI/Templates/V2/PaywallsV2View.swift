@@ -392,7 +392,8 @@ fileprivate extension PaywallsV2View {
             notFoundLocales.append(chosenLocale)
         }
 
-        if let localizedStrings = componentsLocalizations.findLocale(defaultLocale) {            return .init(locale: defaultLocale, localizedStrings: localizedStrings)
+        if let localizedStrings = componentsLocalizations.findLocale(defaultLocale) {
+            return .init(locale: defaultLocale, localizedStrings: localizedStrings)
         } else if !notFoundLocales.contains(defaultLocale) {
             notFoundLocales.append(defaultLocale)
         }
