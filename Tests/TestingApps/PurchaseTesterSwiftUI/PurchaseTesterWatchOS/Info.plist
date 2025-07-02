@@ -31,7 +31,5 @@
 	</array>
 	<key>WKCompanionAppBundleIdentifier</key>
 	<string>com.revenuecat.sampleapp</string>
-	<key>WKWatchKitApp</key>
-	<true/>
 </dict>
 </plist>

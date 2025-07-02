@@ -62,7 +62,7 @@ let project = Project(
             product: .app,
             bundleId: "com.revenuecat.sampleapp.watchkitapp",
             deploymentTargets: .watchOS("8.0"),
-            infoPlist: nil,
+            infoPlist: "../../Tests/TestingApps/PurchaseTesterSwiftUI/PurchaseTesterWatchOS/Info.plist",
             sources: [
                 "../../Tests/TestingApps/PurchaseTesterSwiftUI/PurchaseTesterWatchOS/**/*.swift"
             ],
@@ -72,19 +72,7 @@ let project = Project(
             ],
             dependencies: [
                 .target(name: "Core")
-            ],
-            settings: .settings(
-                base: [
-                    "GENERATE_INFOPLIST_FILE": true,
-                    "CURRENT_PROJECT_VERSION": "1.0",
-                    "MARKETING_VERSION": "1.0",
-                    "INFOPLIST_KEY_UISupportedInterfaceOrientations": [
-                        "UIInterfaceOrientationPortrait",
-                        "UIInterfaceOrientationPortraitUpsideDown",
-                    ],
-                    "INFOPLIST_KEY_WKCompanionAppBundleIdentifier": "com.revenuecat.sampleapp"
-                ]
-            )
+            ]
         ),
 
         .target(
