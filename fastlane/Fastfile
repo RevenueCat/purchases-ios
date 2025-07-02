@@ -400,7 +400,8 @@ platform :ios do
       output_directory: "fastlane/test_output/xctest/ios",
       number_of_retries: generate_snapshots ? 0 : 5, # Number of retries in an xcodebuild run
       fail_build: !generate_snapshots,
-      number_of_flaky_retries: generate_snapshots ? 0 : 5 # Number of retries in an xcodebuild run
+      number_of_flaky_retries: generate_snapshots ? 0 : 5, # Number of retries in an xcodebuild run
+      xcargs: "-jobs 3"
     )
   end
 
@@ -1310,7 +1311,7 @@ platform :mac do
         report_formats: [:junit],
         report_path: 'fastlane/test_output/xctest/macos/revenuecat/tests.xml',
         test: true,
-        xcargs: "-testPlan #{test_plan} CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
+        xcargs: "-testPlan #{test_plan} CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO -jobs 3"
       )
     rescue => e
       # Equivalent to `fail_build: !generate_snapshots`
