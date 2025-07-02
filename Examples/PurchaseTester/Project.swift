@@ -72,6 +72,7 @@ let project = Project(
                         "UIInterfaceOrientationPortraitUpsideDown",
                     ],
                     "INFOPLIST_KEY_WKCompanionAppBundleIdentifier": "com.revenuecat.sampleapp",
+                    "WKWatchKitApp": true,
                     "INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp": false,
                 ]
             )
