@@ -106,7 +106,7 @@ class MockDeviceCache: DeviceCache {
     // MARK: offerings
 
     var cacheOfferingsCount = 0
-    var latestCachePreferredLocales: [String]? = nil
+    var latestCachePreferredLocales: [String]?
     var cacheOfferingsInMemoryCount = 0
     var clearCachedOfferingsCount = 0
     var clearOfferingsCacheTimestampCount = 0
