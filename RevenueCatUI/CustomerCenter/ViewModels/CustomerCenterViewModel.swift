@@ -294,6 +294,7 @@ private extension CustomerCenterViewModel {
                 // Do the opposite as CustomerInfo.extractProductIDAndBasePlan for non-apple products
                 let idWithoutBasePlan = id.split(separator: ":").first.map { id in String(id) } ?? id
                 return customerInfo.subscriptionsByProductIdentifier[idWithoutBasePlan]
+                    ?? customerInfo.subscriptionsByProductIdentifier[id] // fallback in case it fails
             })
             .sorted(by: {
                 guard let date1 = $0.expiresDate, let date2 = $1.expiresDate else {
@@ -330,6 +331,10 @@ private extension CustomerCenterViewModel {
                 URLUtilities.openURLIfNotAppExtension(url)
             }
         }
+    }
+
+    static func mapProductID(_ productID: String) -> String {
+
     }
 }
 
