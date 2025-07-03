@@ -11,6 +11,7 @@
 //
 //  Created by Pol Piella on 4/8/25.
 
+#if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 import Foundation
 
 enum HealthCheckStatus: String {
@@ -138,3 +139,4 @@ extension ProductStatus: Codable, Equatable {}
 extension ProductHealthReport: Codable, Equatable {}
 extension OfferingHealthReport: Codable, Equatable {}
 extension PackageHealthReport: Codable, Equatable {}
+#endif
