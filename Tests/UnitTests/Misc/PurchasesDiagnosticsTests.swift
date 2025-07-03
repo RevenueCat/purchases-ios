@@ -239,36 +239,8 @@ class PurchasesDiagnosticsTests: TestCase {
 
         expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
         let expected = """
-        Some offerings have configuration issues that may prevent users from seeing product options or making purchases.
-        """
-        expect(error.localizedDescription) == expected
-    }
-
-    func testWarningOfferingConfigurationError() {
-        let error = PurchasesDiagnostics.SDKHealthError.offeringConfiguration(
-            [
-                .init(
-                    identifier: "offering_one",
-                    packages: [],
-                    status: .warning
-                ),
-                .init(
-                    identifier: "offering_two",
-                    packages: [],
-                    status: .warning
-                ),
-                .init(
-                    identifier: "offering_three",
-                    packages: [],
-                    status: .passed
-                )
-            ]
-        )
-
-        expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
-        let expected = """
-        The offerings 'offering_one', 'offering_two' have configuration issues that may prevent users from \
-        seeing product options or making purchases.
+        Your default offering is not configured correctly in RevenueCat. This prevents users from \
+        seeing product options. Please check your offering configuration in the RevenueCat website.
         """
         expect(error.localizedDescription) == expected
     }

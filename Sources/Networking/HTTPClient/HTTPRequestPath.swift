@@ -83,7 +83,6 @@ extension HTTPRequest {
         case postAdServicesToken(appUserID: String)
         case health
         case appHealthReport(appUserID: String)
-        case appHealthReportAvailability(appUserID: String)
         case getProductEntitlementMapping
         case getCustomerCenterConfig(appUserID: String)
         case postRedeemWebPurchase
@@ -142,8 +141,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .appHealthReport:
             return true
 
-        case .health,
-             .appHealthReportAvailability:
+        case .health:
             return false
         }
     }
@@ -164,8 +162,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getCustomerCenterConfig,
                 .appHealthReport:
             return true
-        case .health,
-             .appHealthReportAvailability:
+        case .health:
             return false
         }
     }
@@ -178,8 +175,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .health,
                 .getOfferings,
                 .getProductEntitlementMapping,
-                .appHealthReport,
-                .appHealthReportAvailability:
+                .appHealthReport:
             return true
         case .getIntroEligibility,
                 .postSubscriberAttributes,
@@ -197,8 +193,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .getCustomerInfo,
                 .logIn,
                 .postReceiptData,
-                .health,
-                .appHealthReportAvailability:
+                .health:
             return true
         case .getOfferings,
                 .getIntroEligibility,
@@ -231,9 +226,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case let .appHealthReport(appUserID):
             return "subscribers/\(Self.escape(appUserID))/health_report"
-
-        case let .appHealthReportAvailability(appUserID):
-            return "subscribers/\(Self.escape(appUserID))/health_report_availability"
 
         case .logIn:
             return "subscribers/identify"
@@ -311,9 +303,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .appHealthReport:
             return "get_app_health_report"
-
-        case .appHealthReportAvailability:
-            return "get_app_health_report_availability"
 
         }
     }

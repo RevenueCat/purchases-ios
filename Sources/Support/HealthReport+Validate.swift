@@ -11,7 +11,7 @@
 //
 //  Created by Pol Piella on 4/10/25.
 
-#if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+#if DEBUG
 extension HealthReport {
     func validate() -> PurchasesDiagnostics.SDKHealthReport {
         guard let firstFailedCheck = self.checks.first(where: { $0.status == .failed }) else {
