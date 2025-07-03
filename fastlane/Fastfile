@@ -368,6 +368,8 @@ platform :ios do
   private_lane :build_paywalls_tester_for_emerge_mac do |options|
     platform = options[:platform]
     
+    # As of July 2025, Emerge Tools has explicitly enabled Catalyst support for apps with the bundle identifiers com.revenuecat.PaywallsTester-<platform> for these 4 platform values.
+    # If you change one of these values, you will need to verify that Catalyst support has been enabled for all bundle identifiers, or tell them the new bundle identiifer.
     case platform
     when "mac-catalyst-scaled-to-match-ipad"
       build_mac_catalyst_version(platform: platform, device_families: "1,2,3,4,5,7")
