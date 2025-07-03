@@ -376,7 +376,7 @@ platform :ios do
     end
 
     Dir.chdir("../Tests/UnitTestsHostApp/fastlane") do
-      match(type: "development")
+      match(type: "appstore", readonly: true)
     end
 
     scan_options = {
