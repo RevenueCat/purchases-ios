@@ -332,10 +332,6 @@ private extension CustomerCenterViewModel {
             }
         }
     }
-
-    static func mapProductID(_ productID: String) -> String {
-
-    }
 }
 
 fileprivate extension String {
