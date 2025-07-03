@@ -179,7 +179,7 @@ platform :ios do
     UI.user_error!("Failed to determine target repository name") if target_repository_name.nil? || target_repository_name.empty?
 
     # Loop over all platforms and generate screenshots for each
-    platforms = ["ios", "iphone-app-on-mac", "ipad-app-on-mac", "mac-catalyst-optimized-for-mac", "mac-catalyst-scaled-to-match-ipad"]
+    platforms = ["ios", "mac-catalyst-optimized-for-mac", "mac-catalyst-scaled-to-match-ipad"]
     
     platforms.each do |platform|
       UI.message("Generating screenshots for platform: #{platform}")
