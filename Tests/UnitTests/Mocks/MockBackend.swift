@@ -24,7 +24,10 @@ class MockBackend: Backend {
     var onPostReceipt: (() -> Void)?
 
     public convenience init() {
-        let systemInfo = MockSystemInfo(platformInfo: nil, finishTransactions: false, dangerousSettings: nil)
+        let systemInfo = MockSystemInfo(platformInfo: nil,
+                                        finishTransactions: false,
+                                        dangerousSettings: nil,
+                                        preferredLocalesProvider: .mock())
         let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                     systemInfo: systemInfo)
 
@@ -179,6 +182,16 @@ class MockBackend: Backend {
 
     static let referenceDate = Date(timeIntervalSinceReferenceDate: 700000000) // 2023-03-08 20:26:40
 
+    var healthReportRequestResponse: Result<HealthReport, BackendError> = .success(
+        HealthReport(status: .passed, projectId: nil, appId: nil, checks: [])
+    )
+    override func healthReportRequest(appUserID: String) async throws -> HealthReport {
+        return try healthReportRequestResponse.get()
+    }
+
+    override func healthReportAvailabilityRequest(appUserID: String) async throws -> HealthReportAvailability {
+        return .init(reportLogs: true)
+    }
 }
 
 extension MockBackend: @unchecked Sendable {}

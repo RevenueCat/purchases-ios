@@ -98,7 +98,7 @@ struct PaywallsV2View: View {
     private let onDismiss: () -> Void
     private let fallbackContent: FallbackContent
 
-    public init(
+    init(
         paywallComponents: Offering.PaywallComponents,
         offering: Offering,
         purchaseHandler: PurchaseHandler,
@@ -133,6 +133,7 @@ struct PaywallsV2View: View {
             wrappedValue: .init(state: Self.createPaywallState(
                 componentsConfig: componentsConfig,
                 componentsLocalizations: paywallComponents.data.componentsLocalizations,
+                preferredLocales: purchaseHandler.preferredLocales,
                 defaultLocale: paywallComponents.data.defaultLocale,
                 uiConfigProvider: uiConfigProvider,
                 offering: offering,
@@ -304,6 +305,7 @@ fileprivate extension PaywallsV2View {
     static func createPaywallState(
         componentsConfig: PaywallComponentsData.PaywallComponentsConfig,
         componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary],
+        preferredLocales: [Locale],
         defaultLocale: String,
         uiConfigProvider: UIConfigProvider,
         offering: Offering,
@@ -313,6 +315,7 @@ fileprivate extension PaywallsV2View {
         // Step 1: Get localization
         let localizationProvider = Self.chooseLocalization(
             componentsLocalizations: componentsLocalizations,
+            preferredLocales: preferredLocales,
             defaultLocale: defaultLocale
         )
 
@@ -353,6 +356,7 @@ fileprivate extension PaywallsV2View {
 
     static func chooseLocalization(
         componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary],
+        preferredLocales: [Locale],
         defaultLocale: String
     ) -> LocalizationProvider {
 
@@ -361,25 +365,40 @@ fileprivate extension PaywallsV2View {
             return .init(locale: Locale.current, localizedStrings: PaywallComponent.LocalizationDictionary())
         }
 
+        var notFoundLocales = [Locale]()
+
+        defer {
+            if !notFoundLocales.isEmpty {
+                let localeStrings = notFoundLocales.map { "\($0)" }
+                let msgFormatted = localeStrings.formatted(.list(type: .or))
+                Logger.error(Strings.paywall_could_not_find_localization(msgFormatted))
+            }
+        }
+
         // STEP 1: Get available paywall locales
         let paywallLocales = componentsLocalizations.keys.map { Locale(identifier: $0) }
 
-        // use default locale as a fallback if none of the user's preferred locales are not available in the paywall
+        // use default locale as a fallback if none of the user's preferred locales are available in the paywall
         let defaultLocale = Locale(identifier: defaultLocale)
 
         // STEP 2: choose best locale based on device's list of preferred locales.
-        let chosenLocale = Self.preferredLocale(from: paywallLocales) ?? defaultLocale
+        let chosenLocale = Self.preferredLocale(from: paywallLocales, preferredLocales: preferredLocales)
+        ?? defaultLocale
 
         // STEP 3: Get localization for one of preferred locales in order
         if let localizedStrings = componentsLocalizations.findLocale(chosenLocale) {
             return .init(locale: chosenLocale, localizedStrings: localizedStrings)
-        } else if let localizedStrings = componentsLocalizations.findLocale(defaultLocale) {
-            Logger.error(Strings.paywall_could_not_find_localization("\(chosenLocale)"))
-            return .init(locale: defaultLocale, localizedStrings: localizedStrings)
         } else {
-            Logger.error(Strings.paywall_could_not_find_localization("\(chosenLocale) or \(defaultLocale)"))
-            return .init(locale: defaultLocale, localizedStrings: PaywallComponent.LocalizationDictionary())
+            notFoundLocales.append(chosenLocale)
         }
+
+        if let localizedStrings = componentsLocalizations.findLocale(defaultLocale) {
+            return .init(locale: defaultLocale, localizedStrings: localizedStrings)
+        } else if !notFoundLocales.contains(defaultLocale) {
+            notFoundLocales.append(defaultLocale)
+        }
+
+        return .init(locale: defaultLocale, localizedStrings: PaywallComponent.LocalizationDictionary())
     }
 
     /// Returns the preferred paywall locale from the device's preferred locales.
@@ -388,32 +407,33 @@ fileprivate extension PaywallsV2View {
     /// the function returns `nil`.
     ///
     /// - Parameter paywallLocales: An array of `Locale` objects representing the paywall's available locales.
+    /// - Parameter preferredLocales: An array of `Locale` objects representing the device's preferred locales.
     /// - Returns: A `Locale` available on the paywall chosen based on the device's preferredlocales,
     /// or `nil` if no match is found.
     ///
     /// # Example 1
-    ///   device locales: `en_CA, en_US, fr_CA`
     ///   paywall locales: `en_US, fr_FR, en_CA, de_DE`
+    ///   preferred locales: `en_CA, en_US, fr_CA`
     ///   returns `en_CA`
     ///
     ///
     /// # Example 2
-    ///   device locales: `en_CA, en_US, fr_CA`
     ///   paywall locales: `en_US, fr_FR, de_DE`
+    ///   preferred locales: `en_CA, en_US, fr_CA`
     ///   returns `en_US`
     ///
     /// # Example 3
-    ///   device locales: `fr_CA, en_CA, en_US`
     ///   paywall locales: `en_US, fr_FR, de_DE, en_CA`
+    ///   preferred locales: `fr_CA, en_CA, en_US`
     ///   returns `fr_FR`
     ///
     /// # Example 4
-    ///   device locales: `es_ES`
     ///   paywall locales: `en_US, de_DE`
+    ///   preferred locales: `es_ES`
     ///   returns `nil`
     ///
-    static func preferredLocale(from paywallLocales: [Locale]) -> Locale? {
-        for preferredLocale in Locale.preferredLocales {
+    static func preferredLocale(from paywallLocales: [Locale], preferredLocales: [Locale]) -> Locale? {
+        for preferredLocale in preferredLocales {
             // match language
             if let languageMatch = paywallLocales.first(where: { $0.matchesLanguage(preferredLocale) }) {
                 // Look for a match that includes region
