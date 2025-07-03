@@ -16,24 +16,16 @@ import Foundation
 class InternalAPI {
 
     typealias ResponseHandler = (BackendError?) -> Void
-    #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     typealias HealthReportResponseHandler = (Result<HealthReport, BackendError>) -> Void
-    typealias HealthReportAvailabilityResponseHandler = (Result<HealthReportAvailability, BackendError>) -> Void
-
-    private let healthReportCallbackCache: CallbackCache<HealthReportOperation.Callback>
-    private let healthReportAvailabilityCallbackCache: CallbackCache<HealthReportAvailabilityOperation.Callback>
-    #endif
 
     private let backendConfig: BackendConfiguration
     private let healthCallbackCache: CallbackCache<HealthOperation.Callback>
+    private let healthReportCallbackCache: CallbackCache<HealthReportOperation.Callback>
 
     init(backendConfig: BackendConfiguration) {
         self.backendConfig = backendConfig
         self.healthCallbackCache = .init()
-        #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         self.healthReportCallbackCache = .init()
-        self.healthReportAvailabilityCallbackCache = .init()
-        #endif
     }
 
     func healthRequest(signatureVerification: Bool, completion: @escaping ResponseHandler) {
@@ -49,7 +41,6 @@ class InternalAPI {
                                                  cacheStatus: cacheStatus)
     }
 
-    #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func healthReportRequest(appUserID: String, completion: @escaping HealthReportResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)
@@ -62,27 +53,6 @@ class InternalAPI {
                                                  delay: .none,
                                                  cacheStatus: cacheStatus)
     }
-
-    func healthReportAvailabilityRequest(
-        appUserID: String,
-        completion: @escaping HealthReportAvailabilityResponseHandler
-    ) {
-        let config = NetworkOperation.UserSpecificConfiguration(
-            httpClient: self.backendConfig.httpClient,
-            appUserID: appUserID
-        )
-        let factory = HealthReportAvailabilityOperation.createFactory(
-            configuration: config,
-            callbackCache: self.healthReportAvailabilityCallbackCache
-        )
-        let callback = HealthReportAvailabilityOperation.Callback(cacheKey: factory.cacheKey, completion: completion)
-        let cacheStatus = self.healthReportAvailabilityCallbackCache.add(callback)
-
-        self.backendConfig.addCacheableOperation(with: factory,
-                                                 delay: .none,
-                                                 cacheStatus: cacheStatus)
-    }
-    #endif
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func postPaywallEvents(events: [StoredEvent], completion: @escaping ResponseHandler) {
