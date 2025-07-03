@@ -13,6 +13,10 @@
 
 import Foundation
 
+#if canImport(UIKit)
+import UIKit
+#endif
+
 #if DEBUG
 
 enum EnvironmentKey: String {
@@ -58,7 +62,45 @@ extension ProcessInfo {
     static var isXcodeCloud: Bool {
         return self[.XCCloud] == "1"
     }
-
+    
+    @_spi(Internal) public var platformString: String {
+        #if os(macOS)
+        return "Native Mac"
+        #elseif os(tvOS)
+        return "tvOS"
+        #elseif os(watchOS)
+        return "watchOS"
+        #elseif os(visionOS)
+        // May want to distinguish between iPad apps running on visionOS and native visionOS apps in the future
+        return "visionOS"
+        #elseif os(iOS)
+        if isMacCatalystApp {
+            if #available(iOS 14.0, *), isiOSAppOnMac {
+                switch UIDevice.current.userInterfaceIdiom {
+                case .phone:
+                    return "iPhone App on Mac"
+                case .pad:
+                    return "iPad App on Mac"
+                default:
+                    return "Unexpected iOS App on Mac"
+                }
+            }
+            else {
+                switch UIDevice.current.userInterfaceIdiom {
+                case .mac:
+                    return "Mac Catalyst Optimized for Mac"
+                case .pad:
+                    return "Mac Catalyst Scaled to iPad"
+                default:
+                    return "Unexpected Platform on Mac Catalyst"
+                }
+            }
+        }
+        else {
+            return "iOS"
+        }
+        #endif
+    }
 }
 
 #endif
