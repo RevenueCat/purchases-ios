@@ -138,7 +138,7 @@ struct TextComponentView_Previews: PreviewProvider {
         .previewLayout(.sizeThatFits)
 
     }
-    
+
     private static var defaultPreview: some View {
         // Default
         TextComponentView(
@@ -165,7 +165,7 @@ struct TextComponentView_Previews: PreviewProvider {
     static var previews: some View {
         defaultPreview
         .previewDisplayName("Default")
-        
+
         platformPreview
         .previewDisplayName("Detected Platform")
 
