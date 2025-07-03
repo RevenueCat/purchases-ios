@@ -408,8 +408,10 @@ platform :ios do
     build_paywalls_tester_for_emerge_ios(options)
     build_paywalls_tester_for_emerge_mac(platform: "mac-catalyst-scaled-to-match-ipad")
     build_paywalls_tester_for_emerge_mac(platform: "mac-catalyst-optimized-for-mac")
-    build_paywalls_tester_for_emerge_mac(platform: "ipad-app-on-mac")
-    build_paywalls_tester_for_emerge_mac(platform: "iphone-app-on-mac")
+
+    # Emerge Tools does not yet support iOS Apps on Mac as of July 2025
+    # build_paywalls_tester_for_emerge_mac(platform: "ipad-app-on-mac")
+    # build_paywalls_tester_for_emerge_mac(platform: "iphone-app-on-mac")
   end
   
   lane :build_paywalls_tester_for_emerge_ios do |options|
