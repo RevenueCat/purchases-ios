@@ -289,16 +289,21 @@ private extension CustomerCenterViewModel {
 
     func loadSubscriptionsSection(customerInfo: CustomerInfo) async {
         var activeSubscriptionPurchases: [PurchaseInformation] = []
-        for subscription in customerInfo.activeSubscriptions
-            .compactMap({ id in customerInfo.subscriptionsByProductIdentifier[id] })
+        let subscriptions = customerInfo.activeSubscriptions
+            .compactMap({ id in
+                // Do the opposite as CustomerInfo.extractProductIDAndBasePlan for non-apple products
+                let idWithoutBasePlan = id.split(separator: ":").first.map { id in String(id) } ?? id
+                return customerInfo.subscriptionsByProductIdentifier[idWithoutBasePlan]
+            })
             .sorted(by: {
                 guard let date1 = $0.expiresDate, let date2 = $1.expiresDate else {
                     return $0.expiresDate != nil
                 }
 
                 return date1 < date2
-            }) {
+            })
 
+        for subscription in subscriptions {
             let purchaseInfo: PurchaseInformation = await .from(
                 transaction: subscription,
                 customerInfo: customerInfo,
