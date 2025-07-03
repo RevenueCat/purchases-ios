@@ -62,7 +62,9 @@ extension ProcessInfo {
     static var isXcodeCloud: Bool {
         return self[.XCCloud] == "1"
     }
-    
+
+    /// Returns a string identifying the platform and environment
+    /// the app is running on (iOS, Mac Catalyst, visionOS, etc.).
     @_spi(Internal) public var platformString: String {
         #if os(macOS)
         return "Native Mac"
@@ -84,8 +86,7 @@ extension ProcessInfo {
                 default:
                     return "Unexpected iOS App on Mac"
                 }
-            }
-            else {
+            } else {
                 switch UIDevice.current.userInterfaceIdiom {
                 case .mac:
                     return "Mac Catalyst Optimized for Mac"
@@ -95,8 +96,7 @@ extension ProcessInfo {
                     return "Unexpected Platform on Mac Catalyst"
                 }
             }
-        }
-        else {
+        } else {
             return "iOS"
         }
         #endif
