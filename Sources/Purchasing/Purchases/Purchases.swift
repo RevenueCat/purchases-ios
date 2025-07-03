@@ -2079,15 +2079,16 @@ private extension Purchases {
 
     #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func runHealthCheckIfInForeground() {
-        self.systemInfo.isApplicationBackgrounded { isBackgrounded in
+        self.systemInfo.isApplicationBackgrounded { [weak operationDispatcher] isBackgrounded in
             if !isBackgrounded {
-                self.operationDispatcher.dispatchOnWorkerThread {
-                    guard let availability = try? await self.backend.healthReportAvailabilityRequest(
-                        appUserID: self.appUserID
+                operationDispatcher?.dispatchOnWorkerThread { [weak self] in
+                    guard let appUserID = self?.appUserID,
+                          let availability = try? await self?.backend.healthReportAvailabilityRequest(
+                        appUserID: appUserID
                     ), availability.reportLogs else {
                         return
                     }
-                    await self.healthManager.logSDKHealthReportOutcome()
+                    await self?.healthManager.logSDKHealthReportOutcome()
                 }
             }
         }
