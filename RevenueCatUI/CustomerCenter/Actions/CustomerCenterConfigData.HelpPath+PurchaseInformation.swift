@@ -35,8 +35,10 @@ extension Array<CustomerCenterConfigData.HelpPath> {
             let isAppStoreOnlyPath = $0.type.isAppStoreOnly
 
             let isCancel = $0.type == .cancel
+
             // if it's cancel, it cannot be a lifetime subscription
-            let isEligibleCancel = !purchaseInformation.isLifetime && !purchaseInformation.isCancelled
+            let isEligibleCancel = !purchaseInformation.isSubscription
+                || (!purchaseInformation.isCancelled &&  !purchaseInformation.isLifetimeSubscription)
 
             // if it's refundRequest, it cannot be free nor within trial period
             let isRefund = $0.type == .refundRequest
@@ -57,8 +59,9 @@ extension Array<CustomerCenterConfigData.HelpPath> {
                  return false
             }
 
-            // can't change plans if it's not a subscription
-            if $0.type == .changePlans && purchaseInformation.isLifetime {
+            // can't change plans if it's not a subscription or lifetime subscription
+            if $0.type == .changePlans
+                && (!purchaseInformation.isSubscription || purchaseInformation.isLifetimeSubscription) {
                 return false
             }
 

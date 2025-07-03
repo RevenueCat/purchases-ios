@@ -21,7 +21,7 @@ class DeviceCache {
     var cachedLegacyAppUserID: String? { return self._cachedLegacyAppUserID.value }
     var cachedOfferings: Offerings? { self.offeringsCachedObject.cachedInstance }
 
-    private let sandboxEnvironmentDetector: SandboxEnvironmentDetector
+    private let systemInfo: SystemInfo
     private let userDefaults: SynchronizedUserDefaults
     private let offeringsCachedObject: InMemoryCachedObject<Offerings>
 
@@ -30,11 +30,13 @@ class DeviceCache {
 
     private var userDefaultsObserver: NSObjectProtocol?
 
-    init(sandboxEnvironmentDetector: SandboxEnvironmentDetector,
+    private var offeringsCachePreferredLocales: [String] = []
+
+    init(systemInfo: SystemInfo,
          userDefaults: UserDefaults,
          offeringsCachedObject: InMemoryCachedObject<Offerings> = .init()) {
-        self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
         self.offeringsCachedObject = offeringsCachedObject
+        self.systemInfo = systemInfo
         self.userDefaults = .init(userDefaults: userDefaults)
         self._cachedAppUserID = .init(userDefaults.string(forKey: CacheKeys.appUserDefaults))
         self._cachedLegacyAppUserID = .init(userDefaults.string(forKey: CacheKeys.legacyGeneratedAppUserDefaults))
@@ -127,7 +129,7 @@ class DeviceCache {
             let timeSinceLastCheck = cachesLastUpdated.timeIntervalSinceNow * -1
             let cacheDurationInSeconds = self.cacheDurationInSeconds(
                 isAppBackgrounded: isAppBackgrounded,
-                isSandbox: self.sandboxEnvironmentDetector.isSandbox
+                isSandbox: self.systemInfo.isSandbox
             )
 
             return timeSinceLastCheck >= cacheDurationInSeconds
@@ -161,8 +163,12 @@ class DeviceCache {
         }
     }
 
-    func cache(offerings: Offerings, appUserID: String) {
+    func cache(offerings: Offerings, preferredLocales: [String], appUserID: String) {
+        // We can't get the preferred locales from the `systemInfo` object because they may change
+        // during the get offerings request, before this cache method gets called.
+        // For the cache we need the preferred locales that were used in the request.
         self.cacheInMemory(offerings: offerings)
+        self.offeringsCachePreferredLocales = preferredLocales
         self.userDefaults.write {
             $0.set(codable: offerings.response, forKey: CacheKey.offerings(appUserID))
         }
@@ -174,20 +180,25 @@ class DeviceCache {
 
     func clearOfferingsCache(appUserID: String) {
         self.offeringsCachedObject.clearCache()
+        self.offeringsCachePreferredLocales = []
         self.userDefaults.write {
             $0.removeObject(forKey: CacheKey.offerings(appUserID))
         }
     }
 
     func isOfferingsCacheStale(isAppBackgrounded: Bool) -> Bool {
+        // Time-based staleness, or
         return self.offeringsCachedObject.isCacheStale(
             durationInSeconds: self.cacheDurationInSeconds(isAppBackgrounded: isAppBackgrounded,
-                                                           isSandbox: self.sandboxEnvironmentDetector.isSandbox)
-        )
+                                                           isSandbox: self.systemInfo.isSandbox)
+        ) ||
+        // Locale-based staleness
+        self.offeringsCachePreferredLocales != self.systemInfo.preferredLocales
     }
 
-    func clearOfferingsCacheTimestamp() {
+    func forceOfferingsCacheStale() {
         self.offeringsCachedObject.clearCacheTimestamp()
+        self.offeringsCachePreferredLocales = []
     }
 
     func offeringsCacheStatus(isAppBackgrounded: Bool) -> CacheStatus {

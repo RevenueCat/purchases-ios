@@ -44,7 +44,7 @@ class ManageSubscriptionsHelperTests: TestCase {
         self.customerInfoManager = MockCustomerInfoManager(
             offlineEntitlementsManager: MockOfflineEntitlementsManager(),
             operationDispatcher: MockOperationDispatcher(),
-            deviceCache: MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo),
+            deviceCache: MockDeviceCache(systemInfo: self.systemInfo),
             backend: MockBackend(),
             transactionFetcher: MockStoreKit2TransactionFetcher(),
             transactionPoster: MockTransactionPoster(),

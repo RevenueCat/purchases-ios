@@ -274,6 +274,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     fileprivate let systemInfo: SystemInfo
     private let storeMessagesHelper: StoreMessagesHelperType?
     private var customerInfoObservationDisposable: (() -> Void)?
+    private let healthManager: SDKHealthManager
 
     private let syncAttributesAndOfferingsIfNeededRateLimiter = RateLimiter(maxCalls: 5, period: 60)
     private let diagnosticsTracker: DiagnosticsTrackerType?
@@ -291,7 +292,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      networkTimeout: TimeInterval = Configuration.networkTimeoutDefault,
                      dangerousSettings: DangerousSettings? = nil,
                      showStoreMessagesAutomatically: Bool,
-                     diagnosticsEnabled: Bool = false
+                     diagnosticsEnabled: Bool = false,
+                     preferredLocale: String?
     ) {
         if userDefaults != nil {
             Logger.debug(Strings.configure.using_custom_user_defaults)
@@ -301,19 +303,22 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let receiptRefreshRequestFactory = ReceiptRefreshRequestFactory()
         let fetcher = StoreKitRequestFetcher(requestFactory: receiptRefreshRequestFactory,
                                              operationDispatcher: operationDispatcher)
-        let systemInfo = SystemInfo(platformInfo: platformInfo,
-                                    finishTransactions: !observerMode,
-                                    operationDispatcher: operationDispatcher,
-                                    storeKitVersion: storeKitVersion,
-                                    responseVerificationMode: responseVerificationMode,
-                                    dangerousSettings: dangerousSettings)
+        let systemInfo = SystemInfo(
+            platformInfo: platformInfo,
+            finishTransactions: !observerMode,
+            operationDispatcher: operationDispatcher,
+            storeKitVersion: storeKitVersion,
+            responseVerificationMode: responseVerificationMode,
+            dangerousSettings: dangerousSettings,
+            preferredLocalesProvider: PreferredLocalesProvider(preferredLocaleOverride: preferredLocale)
+        )
 
         let receiptFetcher = ReceiptFetcher(requestFetcher: fetcher, systemInfo: systemInfo)
         let eTagManager = ETagManager()
         let attributionTypeFactory = AttributionTypeFactory()
         let attributionFetcher = AttributionFetcher(attributionFactory: attributionTypeFactory, systemInfo: systemInfo)
         let userDefaults = userDefaults ?? UserDefaults.computeDefault()
-        let deviceCache = DeviceCache(sandboxEnvironmentDetector: systemInfo, userDefaults: userDefaults)
+        let deviceCache = DeviceCache(systemInfo: systemInfo, userDefaults: userDefaults)
 
         let diagnosticsFileHandler: DiagnosticsFileHandlerType? = {
             guard diagnosticsEnabled,
@@ -592,6 +597,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             paywallCache = nil
         }
 
+        let healthManager = SDKHealthManager(backend: backend, identityManager: identityManager)
+
         self.init(appUserID: appUserID,
                   requestFetcher: fetcher,
                   receiptFetcher: receiptFetcher,
@@ -617,7 +624,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   purchasedProductsFetcher: purchasedProductsFetcher,
                   trialOrIntroPriceEligibilityChecker: trialOrIntroPriceChecker,
                   storeMessagesHelper: storeMessagesHelper,
-                  diagnosticsTracker: diagnosticsTracker
+                  diagnosticsTracker: diagnosticsTracker,
+                  healthManager: healthManager
         )
     }
 
@@ -647,7 +655,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          purchasedProductsFetcher: PurchasedProductsFetcherType?,
          trialOrIntroPriceEligibilityChecker: CachingTrialOrIntroPriceEligibilityChecker,
          storeMessagesHelper: StoreMessagesHelperType?,
-         diagnosticsTracker: DiagnosticsTrackerType?
+         diagnosticsTracker: DiagnosticsTrackerType?,
+         healthManager: SDKHealthManager
     ) {
 
         if systemInfo.dangerousSettings.customEntitlementComputation {
@@ -696,6 +705,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.trialOrIntroPriceEligibilityChecker = trialOrIntroPriceEligibilityChecker
         self.storeMessagesHelper = storeMessagesHelper
         self.diagnosticsTracker = diagnosticsTracker
+        self.healthManager = healthManager
 
         super.init()
 
@@ -712,6 +722,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         // Don't update caches in the background to potentially avoid apps being launched through a notification
         // all at the same time by too many users concurrently.
         self.updateCachesIfInForeground()
+
+        #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        self.runHealthCheckIfInForeground()
+        #endif
 
         if self.systemInfo.dangerousSettings.autoSyncPurchases {
             self.paymentQueueWrapper.sk1Wrapper?.delegate = purchasesOrchestrator
@@ -1389,7 +1403,8 @@ public extension Purchases {
                   networkTimeout: configuration.networkTimeout,
                   dangerousSettings: configuration.dangerousSettings,
                   showStoreMessagesAutomatically: configuration.showStoreMessagesAutomatically,
-                  diagnosticsEnabled: configuration.diagnosticsEnabled
+                  diagnosticsEnabled: configuration.diagnosticsEnabled,
+                  preferredLocale: configuration.preferredLocale
         )
     }
 
@@ -1655,7 +1670,8 @@ public extension Purchases {
         networkTimeout: TimeInterval,
         dangerousSettings: DangerousSettings?,
         showStoreMessagesAutomatically: Bool,
-        diagnosticsEnabled: Bool
+        diagnosticsEnabled: Bool,
+        preferredLocale: String?
     ) -> Purchases {
         return self.setDefaultInstance(
             .init(apiKey: apiKey,
@@ -1670,7 +1686,8 @@ public extension Purchases {
                   networkTimeout: networkTimeout,
                   dangerousSettings: dangerousSettings,
                   showStoreMessagesAutomatically: showStoreMessagesAutomatically,
-                  diagnosticsEnabled: diagnosticsEnabled)
+                  diagnosticsEnabled: diagnosticsEnabled,
+                  preferredLocale: preferredLocale)
         )
     }
 
@@ -1828,6 +1845,23 @@ extension Purchases {
         )
     }
 
+    // swiftlint:disable missing_docs
+    @_spi(Internal) public var preferredLocales: [String] {
+        return self.systemInfo.preferredLocales
+    }
+
+    // `preferredLocales` will always include the preferred locale override if set, so this
+    // property is only useful for reading the override value
+    // swiftlint:disable missing_docs
+    @_spi(Internal) public var preferredLocaleOverride: String? {
+        return self.systemInfo.preferredLocaleOverride
+    }
+
+    // swiftlint:disable missing_docs
+    @_spi(Internal) public func overridePreferredLocale(_ locale: String?) {
+        self.systemInfo.overridePreferredLocale(locale)
+    }
+
 }
 
 extension Purchases: InternalPurchasesType {
@@ -1840,9 +1874,11 @@ extension Purchases: InternalPurchasesType {
         }
     }
 
-    internal func healthReportRequest() async throws -> HealthReport {
-        try await self.backend.healthReportRequest(appUserID: self.appUserID)
+    #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    internal func healthReport() async -> PurchasesDiagnostics.SDKHealthReport {
+        await self.healthManager.healthReport()
     }
+    #endif
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func productEntitlementMapping() async throws -> ProductEntitlementMapping {
@@ -2040,6 +2076,23 @@ private extension Purchases {
             }
         }
     }
+
+    #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    func runHealthCheckIfInForeground() {
+        self.systemInfo.isApplicationBackgrounded { isBackgrounded in
+            if !isBackgrounded {
+                self.operationDispatcher.dispatchOnWorkerThread {
+                    guard let availability = try? await self.backend.healthReportAvailabilityRequest(
+                        appUserID: self.appUserID
+                    ), availability.reportLogs else {
+                        return
+                    }
+                    await self.healthManager.logSDKHealthReportOutcome()
+                }
+            }
+        }
+    }
+    #endif
 
     func updateAllCachesIfNeeded(isAppBackgrounded: Bool) {
         guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
