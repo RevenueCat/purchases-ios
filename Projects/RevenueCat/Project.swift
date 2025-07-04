@@ -302,14 +302,6 @@ let project = Project(
                     .relativeToRoot("Tests/TestPlans/AllTests.xctestplan")
                 ]
             ),
-            runAction: .runAction(
-                executable: "RevenueCat",
-                options: .options(
-                    storeKitConfigurationPath: .relativeToRoot(
-                        "Tests/StoreKitUnitTests/UnitTestsConfiguration.storekit"
-                    )
-                )
-            ),
             archiveAction: .archiveAction(configuration: "Release"),
             profileAction: .profileAction(configuration: "Release"),
             analyzeAction: .analyzeAction(configuration: "Debug")
@@ -345,5 +337,5 @@ let project = Project(
             ]),
             runAction: .runAction(configuration: "Debug")
         )
-    ],
+    ]
 )
