@@ -4,6 +4,7 @@ excluded:
   - Tests/InstallationTests
   - Tests/TestingApps
   - Tests/APITesters
+  - Tuist
   - vendor
   - scan_derived_data
   - .git
