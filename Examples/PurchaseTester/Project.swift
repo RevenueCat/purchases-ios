@@ -45,6 +45,7 @@ let project = Project(
             resources: [
                 "../../Tests/TestingApps/PurchaseTesterSwiftUI/AppIcon.xcassets",
                 "../../Tests/TestingApps/PurchaseTesterSwiftUI/Shared/Assets.xcassets",
+                "../../Tests/TestingApps/PurchaseTesterSwiftUI/Resources/**/LaunchScreen.storyboard",
             ],
             dependencies: [
                 .target(name: "Core")
