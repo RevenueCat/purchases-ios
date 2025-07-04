@@ -49,7 +49,7 @@ let project = Project(
                 )
             ],
             headers: .headers(
-                project: ["../../Sources/RevenueCat.h"]
+                public: ["../../Sources/RevenueCat.h"]
             ),
             settings: .settings(
                 base: [
@@ -66,14 +66,18 @@ let project = Project(
             deploymentTargets: .allRevenueCat,
             infoPlist: .default,
             sources: [
-                "../../Tests/UnitTests/**/*.swift"
+                "../../Tests/UnitTests/**/*.swift",
+                "../../Tests/ReceiptParserTests/Helpers/MockBundle.swift",
+                "../../Tests/StoreKitUnitTests/TestHelpers/AvailabilityChecks.swift",
+                "../../Tests/StoreKitUnitTests/TestHelpers/StoreKitTestHelpers.swift",
+                "../../Tests/StoreKitUnitTests/TestHelpers/ImageSnapshot.swift"
             ],
             dependencies: [
                 .target(name: "RevenueCat"),
                 .nimble,
                 .snapshotTesting,
                 .ohHTTPStubsSwift
-            ]
+            ],
         ),
 
         .target(
