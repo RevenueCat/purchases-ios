@@ -7,19 +7,19 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  HealthReportOperation.swift
+//  HealthReportAvailabilityOperation.swift
 //
-//  Created by Pol Piella on 4/8/25.
+//  Created by Pol Piella Abadia on 27/06/2025.
 
 #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 import Foundation
 
-final class HealthReportOperation: CacheableNetworkOperation {
+final class HealthReportAvailabilityOperation: CacheableNetworkOperation {
 
     struct Callback: CacheKeyProviding {
 
         let cacheKey: String
-        let completion: InternalAPI.HealthReportResponseHandler
+        let completion: InternalAPI.HealthReportAvailabilityResponseHandler
 
     }
 
@@ -29,7 +29,7 @@ final class HealthReportOperation: CacheableNetworkOperation {
     static func createFactory(
         configuration: UserSpecificConfiguration,
         callbackCache: CallbackCache<Callback>
-    ) -> CacheableNetworkOperationFactory<HealthReportOperation> {
+    ) -> CacheableNetworkOperationFactory<HealthReportAvailabilityOperation> {
         return .init({ .init(configuration: configuration,
                              callbackCache: callbackCache,
                              cacheKey: $0) },
@@ -47,16 +47,16 @@ final class HealthReportOperation: CacheableNetworkOperation {
 
     override func begin(completion: @escaping () -> Void) {
         let request: HTTPRequest = .init(method: .get,
-                                         path: .appHealthReport(appUserID: configuration.appUserID))
+                                         path: .appHealthReportAvailability(appUserID: configuration.appUserID))
 
         self.httpClient.perform(
             request
-        ) { (response: VerifiedHTTPResponse<HealthReport>.Result) in
+        ) { (response: VerifiedHTTPResponse<HealthReportAvailability>.Result) in
             self.finish(with: response, completion: completion)
         }
     }
 
-    private func finish(with response: VerifiedHTTPResponse<HealthReport>.Result,
+    private func finish(with response: VerifiedHTTPResponse<HealthReportAvailability>.Result,
                         completion: () -> Void) {
         self.callbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
             callback.completion(
@@ -71,5 +71,5 @@ final class HealthReportOperation: CacheableNetworkOperation {
 }
 
 // Restating inherited @unchecked Sendable from Foundation's Operation
-extension HealthReportOperation: @unchecked Sendable {}
+extension HealthReportAvailabilityOperation: @unchecked Sendable {}
 #endif

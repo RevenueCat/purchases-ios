@@ -62,8 +62,9 @@ final class DebugViewModel: ObservableObject {
     @MainActor
     func load() async {
         self.configuration = .loaded(.create())
-
+        #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         self.diagnosticsResult = .loaded(await PurchasesDiagnostics.default.healthReport())
+        #endif
         self.offerings = await .create { try await Purchases.shared.offerings() }
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         self.customerInfo = await .create { try await Purchases.shared.customerInfo() }

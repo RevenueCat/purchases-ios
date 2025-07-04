@@ -64,8 +64,12 @@ extension MockPurchases: InternalPurchasesType {
         }
     }
 
-    func healthReportRequest() async throws -> HealthReport {
-        return try self.mockedHealthReportRequestResponse.get()
+    func healthReport() async -> PurchasesDiagnostics.SDKHealthReport {
+        do {
+            return try self.mockedHealthReportRequestResponse.get().validate()
+        } catch {
+            return .init(status: .unhealthy(.unknown(error)))
+        }
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
