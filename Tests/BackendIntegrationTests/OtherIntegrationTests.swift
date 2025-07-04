@@ -86,7 +86,8 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
 
     func testCustomerInfoIsOnlyFetchedOnceOnAppLaunch() async throws {
         // 1. Make sure any existing customer info requests finish
-        _ = try? await purchases.customerInfo(fetchPolicy: .fromCacheOnly)
+        var customerInfoIterator = try? purchases.customerInfoStream.makeAsyncIterator()
+        _ = await customerInfoIterator?.next()
 
         // 2. Verify only one CustomerInfo request was done
         try self.logger.verifyMessageWasLogged(

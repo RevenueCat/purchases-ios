@@ -810,7 +810,6 @@
 				INFOPLIST_FILE = PurchaseTesterWatchOS/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = PurchaseTesterWatchOS;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.revenuecat.sampleapp;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -839,7 +838,6 @@
 				INFOPLIST_FILE = PurchaseTesterWatchOS/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = PurchaseTesterWatchOS;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.revenuecat.sampleapp;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
