@@ -255,7 +255,7 @@ extension View {
 extension UIView {
   func asImage() -> UIImage {
     let renderer = UIGraphicsImageRenderer(bounds: bounds)
-    return renderer.image { rendererContext in
+    return renderer.image { _ in
         drawHierarchy(in: bounds, afterScreenUpdates: true)
     }
   }
