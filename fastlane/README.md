@@ -122,6 +122,14 @@ Records screenshots for paywalls
 
 Build the Paywalls Test app for Emerge Snapshots
 
+### ios build_paywalls_tester_for_emerge_ios
+
+```sh
+[bundle exec] fastlane ios build_paywalls_tester_for_emerge_ios
+```
+
+
+
 ### ios test_ios
 
 ```sh
