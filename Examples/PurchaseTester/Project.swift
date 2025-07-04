@@ -30,7 +30,7 @@ let allDestinations = destinations + [.appleWatch]
 let project = Project(
     name: "PurchaseTester",
     organizationName: .revenueCatOrgName,
-    settings: .settings(base: [:].automaticCodeSigning(devTeam: .revenueCatTeamID)),
+    settings: .project,
     targets: [
         .target(
             name: "PurchaseTester",
@@ -50,10 +50,11 @@ let project = Project(
             dependencies: [
                 .target(name: "Core")
             ],
+            settings: .target,
             additionalFiles: [
                 "../../Tests/TestingApps/PurchaseTesterSwiftUI/PurchaseTester.entitlements",
                 "../../Tests/TestingApps/PurchaseTesterSwiftUI/PurchaseTesterStoreKitConfiguration.storekit"
-            ]
+            ],
         ),
 
         .target(
@@ -88,7 +89,8 @@ let project = Project(
                 .revenueCat,
                 .revenueCatUI,
                 .receiptparser,
-            ]
+            ],
+            settings: .framework
         ),
     ],
     schemes: [
