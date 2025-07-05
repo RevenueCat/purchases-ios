@@ -29,14 +29,14 @@
       "parallelizable" : true,
       "target" : {
         "containerPath" : "container:RevenueCat.xcodeproj",
-        "identifier" : "2DC5621D24EC63430031F69B",
+        "identifier" : "04F4DECB1716482D40FDC0BC",
         "name" : "UnitTests"
       }
     },
     {
       "target" : {
         "containerPath" : "container:RevenueCat.xcodeproj",
-        "identifier" : "2DAC5F7126F13C9800C5258F",
+        "identifier" : "16A87FA96D64BBE719F0D5B9",
         "name" : "StoreKitUnitTests"
       }
     },
@@ -44,7 +44,7 @@
       "parallelizable" : true,
       "target" : {
         "containerPath" : "container:RevenueCat.xcodeproj",
-        "identifier" : "5759B330296DF65D002472D5",
+        "identifier" : "92CC67900507E0699340949E",
         "name" : "ReceiptParserTests"
       }
     }
