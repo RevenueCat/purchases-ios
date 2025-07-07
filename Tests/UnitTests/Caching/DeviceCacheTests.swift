@@ -533,7 +533,7 @@ class DeviceCacheTests: TestCase {
         let sixMinutesAgo = Calendar.current.date(byAdding: .minute, value: -6, to: Date())!
 
         self.deviceCache = DeviceCache(
-            sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
+            systemInfo: self.systemInfo,
             userDefaults: self.mockUserDefaults
         )
         let appUserID = "userID"
@@ -582,7 +582,7 @@ class DeviceCacheTests: TestCase {
         let fourMinutesAgo = Calendar.current.date(byAdding: .minute, value: -4, to: Date())
         let cackeKey = "com.revenuecat.userdefaults.virtualCurrenciesLastUpdated.\(appUserID)"
         mockUserDefaults.mockValues[cackeKey] = fourMinutesAgo
-        self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
+        self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
                                        userDefaults: self.mockUserDefaults)
 
         expect(self.deviceCache.isVirtualCurrenciesCacheStale(
@@ -598,7 +598,7 @@ class DeviceCacheTests: TestCase {
             "com.revenuecat.userdefaults.virtualCurrenciesLastUpdated.\(appUserID)"
         ] = fourDaysAgo
         self.deviceCache = DeviceCache(
-            sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
+            systemInfo: self.systemInfo,
             userDefaults: self.mockUserDefaults
         )
 
@@ -611,7 +611,7 @@ class DeviceCacheTests: TestCase {
     func testNewDeviceCacheInstanceWithNoCachedVirtualCurrenciesCacheIsStale() {
         let appUserID = "appUserID"
         self.deviceCache = DeviceCache(
-            sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
+            systemInfo: self.systemInfo,
             userDefaults: self.mockUserDefaults
         )
 
@@ -624,7 +624,7 @@ class DeviceCacheTests: TestCase {
     func testIsVirtualCurrenciesCacheStaleForBackground() {
         let appUserID = "appUserID"
         self.deviceCache = DeviceCache(
-            sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
+            systemInfo: self.systemInfo,
             userDefaults: self.mockUserDefaults
         )
         let outdatedCacheDateForBackground = Calendar.current.date(byAdding: .hour, value: -25, to: Date())!
@@ -653,7 +653,7 @@ class DeviceCacheTests: TestCase {
     func testIsVirtualCurrenciesCacheStaleForForeground() {
         let appUserID = "appUserID"
         self.deviceCache = DeviceCache(
-            sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
+            systemInfo: self.systemInfo,
             userDefaults: self.mockUserDefaults
         )
         let outdatedCacheDateForForeground = Calendar.current.date(byAdding: .minute, value: -25, to: Date())!
@@ -682,7 +682,7 @@ class DeviceCacheTests: TestCase {
     func testIsVirtualCurrenciesCacheWithCachedVCsButNoTimestamp() {
         let appUserID = "appUserID"
         self.deviceCache = DeviceCache(
-            sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
+            systemInfo: self.systemInfo,
             userDefaults: self.mockUserDefaults
         )
 
@@ -704,7 +704,7 @@ class DeviceCacheTests: TestCase {
         let otherAppUserID = "some other user"
         let currentAppUserID = "appUserID"
         self.deviceCache = DeviceCache(
-            sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
+            systemInfo: self.systemInfo,
             userDefaults: self.mockUserDefaults
         )
         let validCacheDate = Calendar.current.date(byAdding: .minute, value: -3, to: Date())!
@@ -722,7 +722,7 @@ class DeviceCacheTests: TestCase {
     func testClearVirtualCurrenciesCacheWorks() {
         let appUserID = "appUserID"
         self.deviceCache = DeviceCache(
-            sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
+            systemInfo: self.systemInfo,
             userDefaults: self.mockUserDefaults
         )
 
@@ -757,7 +757,7 @@ class DeviceCacheTests: TestCase {
         let appUserID = "appUserID"
         let appUserID2 = "appUserID2"
         self.deviceCache = DeviceCache(
-            sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
+            systemInfo: self.systemInfo,
             userDefaults: self.mockUserDefaults
         )
 
