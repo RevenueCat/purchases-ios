@@ -988,7 +988,7 @@ public protocol PurchasesType: AnyObject {
      * -  [Virtual Currencies](https://www.revenuecat.com/docs/offerings/virtual-currency)
      */
     @objc
-    func virtualCurrencies(
+    func getVirtualCurrencies(
         completion: @escaping @Sendable (VirtualCurrencies?, PublicError?) -> Void
     )
 

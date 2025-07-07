@@ -203,7 +203,7 @@ NSURL *url;
 
     }];
 
-    [p virtualCurrenciesWithCompletion: ^(RCVirtualCurrencies * _Nullable virtualCurrencies, NSError * _Nullable error) {
+    [p getVirtualCurrenciesWithCompletion: ^(RCVirtualCurrencies * _Nullable virtualCurrencies, NSError * _Nullable error) {
 
     }];
 

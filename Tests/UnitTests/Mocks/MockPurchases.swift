@@ -474,7 +474,7 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
-    func virtualCurrencies(completion: @escaping (RevenueCat.VirtualCurrencies?, RevenueCat.PublicError?) -> Void) {
+    func getVirtualCurrencies(completion: @escaping (RevenueCat.VirtualCurrencies?, RevenueCat.PublicError?) -> Void) {
         self.unimplemented()
     }
 

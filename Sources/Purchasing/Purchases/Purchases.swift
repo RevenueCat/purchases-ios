@@ -1316,7 +1316,7 @@ public extension Purchases {
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 public extension Purchases {
 
-    @objc func virtualCurrencies(
+    @objc func getVirtualCurrencies(
         completion: @escaping @Sendable (VirtualCurrencies?, PublicError?) -> Void
     ) {
         Task {

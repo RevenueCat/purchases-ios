@@ -436,7 +436,8 @@ private func checkPaywallsAPI(_ purchases: Purchases, _ event: PaywallEvent) asy
 private func checkVirtualCurrenciesAPI(_ purchases: Purchases) async throws {
 
     // Fetching Virtual Currencies
-    purchases.virtualCurrencies() { (virtualCurrencies: VirtualCurrencies?, error: PublicError?) in }
+    purchases.getVirtualCurrencies(completion: { (virtualCurrencies: VirtualCurrencies?, error: PublicError?) in })
+    purchases.getVirtualCurrencies() { (virtualCurrencies: VirtualCurrencies?, error: PublicError?) in }
     let _: VirtualCurrencies = try await purchases.virtualCurrencies()
 
     // Invalidating Virtual Currencies Cache

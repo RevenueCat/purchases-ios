@@ -47,7 +47,7 @@ class PurchasesVirtualCurrenciesTests: BasePurchasesTests {
         self.mockVirtualCurrencyManager.stubbedVirtualCurrenciesResult = .success(Self.mockVirtualCurrencies)
 
         await waitUntil { completed in
-            self.purchases.virtualCurrencies { vcs, error in
+            self.purchases.getVirtualCurrencies { vcs, error in
                 expect(vcs).to(equal(Self.mockVirtualCurrencies))
                 expect(error).to(beNil())
                 completed()
@@ -77,7 +77,7 @@ class PurchasesVirtualCurrenciesTests: BasePurchasesTests {
         self.mockVirtualCurrencyManager.stubbedVirtualCurrenciesResult = .failure(backendError)
 
         await waitUntil { completed in
-            self.purchases.virtualCurrencies { vcs, error in
+            self.purchases.getVirtualCurrencies { vcs, error in
                 expect(vcs).to(beNil())
                 expect(error).to(matchError(backendError.asPurchasesError))
                 completed()
@@ -92,7 +92,7 @@ class PurchasesVirtualCurrenciesTests: BasePurchasesTests {
         self.mockVirtualCurrencyManager.stubbedVirtualCurrenciesResult = .success(Self.mockVirtualCurrencies)
 
         await waitUntil { completed in
-            self.purchases.virtualCurrencies { _, _ in
+            self.purchases.getVirtualCurrencies { _, _ in
                 expect(Thread.isMainThread).to(beTrue())
                 completed()
             }
@@ -104,7 +104,7 @@ class PurchasesVirtualCurrenciesTests: BasePurchasesTests {
         self.mockVirtualCurrencyManager.stubbedVirtualCurrenciesResult = .failure(backendError)
 
         await waitUntil { completed in
-            self.purchases.virtualCurrencies { _, _ in
+            self.purchases.getVirtualCurrencies { _, _ in
                 expect(Thread.isMainThread).to(beTrue())
                 completed()
             }
