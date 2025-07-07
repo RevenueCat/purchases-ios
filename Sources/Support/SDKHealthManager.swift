@@ -15,7 +15,7 @@ final class SDKHealthManager: Sendable {
         self.paymentAuthorizationProvider = paymentAuthorizationProvider
     }
 
-    #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    #if DEBUG
     func healthReport() async -> PurchasesDiagnostics.SDKHealthReport {
         do {
             if !paymentAuthorizationProvider.isAuthorized() {
@@ -50,7 +50,7 @@ final class SDKHealthManager: Sendable {
     #endif
 }
 
-#if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+#if DEBUG
 private enum HealthReportLogMessage: LogMessage {
     case unhealthy(error: PurchasesDiagnostics.SDKHealthError, report: PurchasesDiagnostics.SDKHealthReport)
     case healthy(report: PurchasesDiagnostics.SDKHealthReport)

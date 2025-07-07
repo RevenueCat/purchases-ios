@@ -11,7 +11,7 @@
 //
 //  Created by Pol Piella on 4/8/25.
 
-#if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+#if DEBUG
 import Foundation
 
 final class HealthReportOperation: CacheableNetworkOperation {
