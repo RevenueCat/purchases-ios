@@ -185,8 +185,8 @@ import Foundation
             try await self.purchasesProvider.syncPurchases() :
             try await purchasesProvider.customerInfo(fetchPolicy: .fetchCurrent)
 
-            try await self.loadPurchases(customerInfo: customerInfo)
             try await self.loadCustomerCenterConfig()
+            try await self.loadPurchases(customerInfo: customerInfo, changePlans: configuration?.changePlan ?? [])
             self.state = .success
         } catch {
             self.state = .error(error)
@@ -221,7 +221,7 @@ import Foundation
 @available(watchOS, unavailable)
 private extension CustomerCenterViewModel {
 
-    func loadPurchases(customerInfo: CustomerInfo) async throws {
+    func loadPurchases(customerInfo: CustomerInfo, changePlans: [CustomerCenterConfigData.ChangePlan]) async throws {
         self.customerInfo = customerInfo
 
         let hasActiveProducts =  !customerInfo.activeSubscriptions.isEmpty || !customerInfo.nonSubscriptions.isEmpty
@@ -233,7 +233,7 @@ private extension CustomerCenterViewModel {
             return
         }
 
-        await loadSubscriptionsSection(customerInfo: customerInfo)
+        await loadSubscriptionsSection(customerInfo: customerInfo, changePlans: changePlans)
         await loadNonSubscriptionsSection(customerInfo: customerInfo)
     }
 
@@ -245,6 +245,7 @@ private extension CustomerCenterViewModel {
                 transaction: subscription,
                 customerInfo: customerInfo,
                 purchasesProvider: purchasesProvider,
+                changePlans: [],
                 customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
             )
             activeNonSubscriptionPurchases.append(purchaseInfo)
@@ -281,13 +282,17 @@ private extension CustomerCenterViewModel {
             transaction: inactiveSub,
             customerInfo: customerInfo,
             purchasesProvider: purchasesProvider,
+            changePlans: [],
             customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
         )
 
         self.subscriptionsSection = [purchaseInfo]
     }
 
-    func loadSubscriptionsSection(customerInfo: CustomerInfo) async {
+    func loadSubscriptionsSection(
+        customerInfo: CustomerInfo,
+        changePlans: [CustomerCenterConfigData.ChangePlan]
+    ) async {
         var activeSubscriptionPurchases: [PurchaseInformation] = []
         let subscriptions = customerInfo.activeSubscriptions
             .compactMap({ id in
@@ -309,6 +314,7 @@ private extension CustomerCenterViewModel {
                 transaction: subscription,
                 customerInfo: customerInfo,
                 purchasesProvider: purchasesProvider,
+                changePlans: changePlans,
                 customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
             )
 

@@ -129,6 +129,7 @@ extension CustomerCenterConfigData {
                 displayPurchaseHistoryLink: displayPurchaseHistoryLink,
                 shouldWarnCustomersAboutMultipleSubscriptions: shouldWarnCustomersAboutMultipleSubscriptions
             ),
+            changePlan: [],
             lastPublishedAppVersion: lastPublishedAppVersion,
             productId: 1
         )

@@ -11,7 +11,7 @@
 //
 //  Created by Facundo Menzella on 21/5/25.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 extension PurchaseInformation {
 
@@ -23,6 +23,7 @@ extension PurchaseInformation {
         transaction: RevenueCatUI.Transaction,
         customerInfo: CustomerInfo,
         purchasesProvider: CustomerCenterPurchasesType,
+        changePlans: [CustomerCenterConfigData.ChangePlan],
         customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
     ) async -> PurchaseInformation {
         let entitlement = customerInfo.entitlements.all.values
@@ -30,6 +31,7 @@ extension PurchaseInformation {
 
         if transaction.store == .appStore {
             if let product = await purchasesProvider.products([transaction.productIdentifier]).first {
+                let changePlan = changePlans.first(where: { product.subscriptionGroupIdentifier == $0.groupId })
                 return await PurchaseInformation.purchaseInformationUsingRenewalInfo(
                     entitlement: entitlement,
                     subscribedProduct: product,
