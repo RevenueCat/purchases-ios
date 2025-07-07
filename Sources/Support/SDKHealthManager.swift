@@ -33,7 +33,9 @@ final class SDKHealthManager: Sendable {
             return .init(status: .unhealthy(.unknown(error)))
         }
     }
+    #endif
 
+    #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func logSDKHealthReportOutcome() async {
         let report = await healthReport()
         switch report.status {
@@ -50,7 +52,7 @@ final class SDKHealthManager: Sendable {
     #endif
 }
 
-#if DEBUG
+#if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 private enum HealthReportLogMessage: LogMessage {
     case unhealthy(error: PurchasesDiagnostics.SDKHealthError, report: PurchasesDiagnostics.SDKHealthReport)
     case healthy(report: PurchasesDiagnostics.SDKHealthReport)
