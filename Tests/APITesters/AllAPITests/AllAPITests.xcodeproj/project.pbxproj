@@ -129,6 +129,7 @@
 		FD181EF12D72451000A8EBE2 /* VirtualCurrencyAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD181EF02D72451000A8EBE2 /* VirtualCurrencyAPI.swift */; };
 		FD2A4F982D721D2100ED3367 /* RCVirtualCurrencyAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = FD2A4F972D721D2100ED3367 /* RCVirtualCurrencyAPI.m */; };
 		FD2A4F9A2D721D3D00ED3367 /* RCVirtualCurrencyAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = FD2A4F992D721D3D00ED3367 /* RCVirtualCurrencyAPI.h */; };
+		75D7048D2DFC3F9400F02803 /* Purchases+RevenueCatUI_API.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D7048C2DFC3F9400F02803 /* Purchases+RevenueCatUI_API.swift */; };
 		FD33CD732D03587E000D13A4 /* CustomerCenterViewControllerAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD33CD722D035876000D13A4 /* CustomerCenterViewControllerAPI.swift */; };
 		FDCC983A2D0A0FD500F5854B /* CustomerCenterViewAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDCC98392D0A0FD500F5854B /* CustomerCenterViewAPI.swift */; };
 		FDE57B082DF8B9C900101CE2 /* VirtualCurrenciesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDE57B072DF8B9C900101CE2 /* VirtualCurrenciesAPI.swift */; };
@@ -364,6 +365,7 @@
 		FD181EF02D72451000A8EBE2 /* VirtualCurrencyAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyAPI.swift; sourceTree = "<group>"; };
 		FD2A4F972D721D2100ED3367 /* RCVirtualCurrencyAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCVirtualCurrencyAPI.m; sourceTree = "<group>"; };
 		FD2A4F992D721D3D00ED3367 /* RCVirtualCurrencyAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCVirtualCurrencyAPI.h; sourceTree = "<group>"; };
+		75D7048C2DFC3F9400F02803 /* Purchases+RevenueCatUI_API.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Purchases+RevenueCatUI_API.swift"; sourceTree = "<group>"; };
 		FD33CD722D035876000D13A4 /* CustomerCenterViewControllerAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterViewControllerAPI.swift; sourceTree = "<group>"; };
 		FDCC98392D0A0FD500F5854B /* CustomerCenterViewAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterViewAPI.swift; sourceTree = "<group>"; };
 		FDE57B072DF8B9C900101CE2 /* VirtualCurrenciesAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrenciesAPI.swift; sourceTree = "<group>"; };
@@ -625,6 +627,7 @@
 				2D4C622C2C5ADA6700A29FD2 /* main.swift */,
 				2D4C62232C5ADA2400A29FD2 /* RevenueCatUISwiftAPITester.h */,
 				FDCC98392D0A0FD500F5854B /* CustomerCenterViewAPI.swift */,
+				75D7048C2DFC3F9400F02803 /* Purchases+RevenueCatUI_API.swift */,
 			);
 			path = RevenueCatUISwiftAPITester;
 			sourceTree = "<group>";
@@ -1086,6 +1089,7 @@
 				2D4C622F2C5ADA6700A29FD2 /* main.swift in Sources */,
 				FDCC983A2D0A0FD500F5854B /* CustomerCenterViewAPI.swift in Sources */,
 				2D4C62302C5ADA6700A29FD2 /* PaywallViewControllerAPI.swift in Sources */,
+				75D7048D2DFC3F9400F02803 /* Purchases+RevenueCatUI_API.swift in Sources */,
 				1E8A60812CDCF29D0034ACF3 /* RedeemWebPurchasesAPI.swift in Sources */,
 				2D4C622E2C5ADA6700A29FD2 /* PaywallViewAPI.swift in Sources */,
 			);

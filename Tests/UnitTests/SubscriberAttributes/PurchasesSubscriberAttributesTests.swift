@@ -77,7 +77,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
         self.clock = TestClock()
         self.systemInfo = MockSystemInfo(finishTransactions: true, clock: self.clock)
 
-        self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo,
+        self.mockDeviceCache = MockDeviceCache(systemInfo: self.systemInfo,
                                                userDefaults: self.userDefaults)
 
         self.subscriberAttributeHeight = SubscriberAttribute(withKey: "height",
@@ -212,10 +212,6 @@ class PurchasesSubscriberAttributesTests: TestCase {
             productsManager: mockProductsManager,
             diagnosticsTracker: nil
         )
-        let healthManager = SDKHealthManager(
-            backend: self.mockBackend,
-            identityManager: self.mockIdentityManager
-        )
         purchases = Purchases(appUserID: mockIdentityManager.currentAppUserID,
                               requestFetcher: mockRequestFetcher,
                               receiptFetcher: mockReceiptFetcher,
@@ -244,8 +240,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               ),
                               storeMessagesHelper: self.mockStoreMessagesHelper,
                               diagnosticsTracker: nil,
-                              virtualCurrencyManager: self.mockVirtualCurrencyManager,
-                              healthManager: healthManager)
+                              virtualCurrencyManager: self.mockVirtualCurrencyManager)
         purchasesOrchestrator.delegate = purchases
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)

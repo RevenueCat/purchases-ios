@@ -40,7 +40,7 @@ class BasePurchasesTests: TestCase {
                                          storeKitVersion: self.storeKitVersion,
                                          clock: self.clock)
         self.storeKit1Wrapper = MockStoreKit1Wrapper(observerMode: self.systemInfo.observerMode)
-        self.deviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo,
+        self.deviceCache = MockDeviceCache(systemInfo: self.systemInfo,
                                            userDefaults: self.userDefaults)
         self.paywallCache = .init()
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
@@ -236,10 +236,7 @@ class BasePurchasesTests: TestCase {
         }
     }
 
-    func setupPurchases(
-        automaticCollection: Bool = false,
-        withDelegate: Bool = true
-    ) {
+    func setupPurchases(automaticCollection: Bool = false, withDelegate: Bool = true) {
         self.identityManager.mockIsAnonymous = false
 
         self.initializePurchasesInstance(
@@ -262,10 +259,7 @@ class BasePurchasesTests: TestCase {
         self.initializePurchasesInstance(appUserId: nil)
     }
 
-    func initializePurchasesInstance(
-        appUserId: String?,
-        withDelegate: Bool = true
-    ) {
+    func initializePurchasesInstance(appUserId: String?, withDelegate: Bool = true) {
         self.purchasesOrchestrator = PurchasesOrchestrator(
             productsManager: self.mockProductsManager,
             paymentQueueWrapper: self.paymentQueueWrapper,
@@ -301,10 +295,6 @@ class BasePurchasesTests: TestCase {
             diagnosticsTracker: self.diagnosticsTracker
         )
         self.cachingTrialOrIntroPriceEligibilityChecker = .init(checker: self.trialOrIntroPriceEligibilityChecker)
-        let healthManager = SDKHealthManager(
-            backend: self.backend,
-            identityManager: self.identityManager
-        )
 
         self.purchases = Purchases(appUserID: appUserId,
                                    requestFetcher: self.requestFetcher,
@@ -332,8 +322,7 @@ class BasePurchasesTests: TestCase {
                                    trialOrIntroPriceEligibilityChecker: self.cachingTrialOrIntroPriceEligibilityChecker,
                                    storeMessagesHelper: self.mockStoreMessagesHelper,
                                    diagnosticsTracker: self.diagnosticsTracker,
-                                   virtualCurrencyManager: self.mockVirtualCurrencyManager,
-                                   healthManager: healthManager)
+                                   virtualCurrencyManager: self.mockVirtualCurrencyManager)
 
         self.purchasesOrchestrator.delegate = self.purchases
 
@@ -469,26 +458,6 @@ extension BasePurchasesTests {
             DispatchQueue.main.async {
                 completion(result)
             }
-        }
-
-        var healthReportRequests = [String]()
-        override func healthReportRequest(appUserID: String) async throws -> HealthReport {
-            healthReportRequests += [appUserID]
-
-            return .init(
-                status: .passed,
-                projectId: nil,
-                appId: nil,
-                checks: []
-            )
-        }
-
-        var overrideHealthReportAvailabilityResponse = HealthReportAvailability(reportLogs: true)
-        var healthReportAvailabilityRequests = [String]()
-        override func healthReportAvailabilityRequest(appUserID: String) async throws -> HealthReportAvailability {
-            healthReportAvailabilityRequests.append(appUserID)
-
-            return overrideHealthReportAvailabilityResponse
         }
 
         var postReceiptDataCalled = false

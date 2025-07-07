@@ -12,13 +12,17 @@ class DeviceCacheTests: TestCase {
 
     private let subscriberAttributesKey = "com.revenuecat.userdefaults.subscriberAttributes"
 
-    private var sandboxEnvironmentDetector: MockSandboxEnvironmentDetector! = nil
+    private var systemInfo: MockSystemInfo! = nil
+    private var preferredLocalesProvider: PreferredLocalesProvider! = nil
     private var mockUserDefaults: MockUserDefaults! = nil
     private var deviceCache: DeviceCache! = nil
     private var mockVirtualCurrenciesData: Data!
 
     override func setUp() {
-        self.sandboxEnvironmentDetector = MockSandboxEnvironmentDetector(isSandbox: false)
+        self.preferredLocalesProvider = .mock(locales: ["en-US"])
+        self.systemInfo = MockSystemInfo(finishTransactions: false,
+                                         preferredLocalesProvider: self.preferredLocalesProvider)
+        self.systemInfo.stubbedIsSandbox = false
         self.mockUserDefaults = MockUserDefaults()
 
         let mockVirtualCurrencies = VirtualCurrencies(virtualCurrencies: [
@@ -74,7 +78,7 @@ class DeviceCacheTests: TestCase {
 
     func testClearCachesForAppUserIDAndSaveNewUserIDRemovesCachedOfferings() {
         let offerings: Offerings = .empty
-        self.deviceCache.cache(offerings: offerings, appUserID: "cesar")
+        self.deviceCache.cache(offerings: offerings, preferredLocales: ["en-US"], appUserID: "cesar")
         expect(self.deviceCache.cachedOfferings) == offerings
 
         self.deviceCache.clearCaches(oldAppUserID: "cesar", andSaveWithNewUserID: "newUser")
@@ -160,11 +164,10 @@ class DeviceCacheTests: TestCase {
 
     func testOfferingsCacheStatusReturnsStaleOrValidDependingOnCacheStaleness() {
         let mockCachedObject = MockInMemoryCachedOfferings<Offerings>()
-        self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
+        self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
                                        userDefaults: self.mockUserDefaults,
                                        offeringsCachedObject: mockCachedObject)
-        self.deviceCache.cache(offerings: .empty, appUserID: "user")
-        let isAppBackgrounded = false
+        self.deviceCache.cache(offerings: .empty, preferredLocales: ["en-US"], appUserID: "user")
 
         mockCachedObject.stubbedCachedInstanceResult = .empty
 
@@ -177,7 +180,7 @@ class DeviceCacheTests: TestCase {
 
     func testCustomerInfoCacheIsStaleIfLongerThanFiveMinutes() {
         let oldDate: Date! = Calendar.current.date(byAdding: .minute, value: -(6), to: Date())
-        self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
+        self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
                                        userDefaults: self.mockUserDefaults)
         let appUserID = "waldo"
         deviceCache.cache(customerInfo: Data(), appUserID: appUserID)
@@ -194,10 +197,10 @@ class DeviceCacheTests: TestCase {
 
     func testOfferingsCacheIsStaleIfCachedObjectIsStale() {
         let mockCachedObject = MockInMemoryCachedOfferings<Offerings>()
-        self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
+        self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
                                        userDefaults: self.mockUserDefaults,
                                        offeringsCachedObject: mockCachedObject)
-        self.deviceCache.cache(offerings: .empty, appUserID: "user")
+        self.deviceCache.cache(offerings: .empty, preferredLocales: ["en-US"], appUserID: "user")
         let isAppBackgrounded = false
 
         mockCachedObject.stubbedIsCacheStaleResult = false
@@ -222,7 +225,7 @@ class DeviceCacheTests: TestCase {
     func testOfferingsAreProperlyCached() throws {
         let expectedOfferings = try Self.createSampleOfferings()
 
-        self.deviceCache.cache(offerings: expectedOfferings, appUserID: "user")
+        self.deviceCache.cache(offerings: expectedOfferings, preferredLocales: ["en-US"], appUserID: "user")
 
         expect(self.deviceCache.cachedOfferings) === expectedOfferings
 
@@ -247,7 +250,7 @@ class DeviceCacheTests: TestCase {
         let fourMinutesAgo = Calendar.current.date(byAdding: .minute, value: -4, to: Date())
         let cackeKey = "com.revenuecat.userdefaults.purchaserInfoLastUpdated.\(appUserID)"
         mockUserDefaults.mockValues[cackeKey] = fourMinutesAgo
-        self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
+        self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
                                        userDefaults: self.mockUserDefaults)
 
         expect(self.deviceCache.isCustomerInfoCacheStale(appUserID: appUserID,
@@ -258,7 +261,7 @@ class DeviceCacheTests: TestCase {
         let appUserID = "myUser"
         let fourDaysAgo = Calendar.current.date(byAdding: .day, value: -4, to: Date())
         mockUserDefaults.mockValues["com.revenuecat.userdefaults.purchaserInfoLastUpdated.\(appUserID)"] = fourDaysAgo
-        self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
+        self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
                                        userDefaults: self.mockUserDefaults)
 
         expect(self.deviceCache.isCustomerInfoCacheStale(appUserID: appUserID,
@@ -267,7 +270,7 @@ class DeviceCacheTests: TestCase {
 
     func testNewDeviceCacheInstanceWithNoCachedCustomerInfoCacheIsStale() {
         let appUserID = "myUser"
-        self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
+        self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
                                        userDefaults: self.mockUserDefaults)
 
         expect(self.deviceCache.isCustomerInfoCacheStale(appUserID: appUserID,
@@ -276,7 +279,7 @@ class DeviceCacheTests: TestCase {
 
     func testIsCustomerInfoCacheStaleForBackground() {
         let appUserID = "myUser"
-        self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
+        self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
                                        userDefaults: self.mockUserDefaults)
         let outdatedCacheDateForBackground = Calendar.current.date(byAdding: .hour, value: -25, to: Date())!
         self.deviceCache.setCustomerInfoCache(timestamp: outdatedCacheDateForBackground, appUserID: appUserID)
@@ -293,7 +296,7 @@ class DeviceCacheTests: TestCase {
 
     func testIsCustomerInfoCacheStaleForForeground() {
         let appUserID = "myUser"
-        self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
+        self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
                                        userDefaults: self.mockUserDefaults)
         let outdatedCacheDateForForeground = Calendar.current.date(byAdding: .minute, value: -25, to: Date())!
         self.deviceCache.setCustomerInfoCache(timestamp: outdatedCacheDateForForeground, appUserID: appUserID)
@@ -310,7 +313,7 @@ class DeviceCacheTests: TestCase {
 
     func testIsCustomerInfoCacheWithCachedInfoButNoTimestamp() {
         let appUserID = "myUser"
-        self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
+        self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
                                        userDefaults: self.mockUserDefaults)
 
         let data = Data()
@@ -327,7 +330,7 @@ class DeviceCacheTests: TestCase {
     func testIsCustomerInfoCacheStaleForDifferentAppUserID() {
         let otherAppUserID = "some other user"
         let currentAppUserID = "myUser"
-        self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
+        self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
                                        userDefaults: self.mockUserDefaults)
         let validCacheDate = Calendar.current.date(byAdding: .minute, value: -3, to: Date())!
         self.deviceCache.setCustomerInfoCache(timestamp: validCacheDate, appUserID: otherAppUserID)
@@ -339,9 +342,12 @@ class DeviceCacheTests: TestCase {
     func testIsOfferingsCacheStaleDifferentCacheLengthsForBackgroundAndForeground() {
         let mockCachedObject = InMemoryCachedObject<Offerings>()
 
-        self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
+        self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
                                        userDefaults: self.mockUserDefaults,
                                        offeringsCachedObject: mockCachedObject)
+        self.deviceCache.cache(offerings: .empty,
+                               preferredLocales: self.preferredLocalesProvider.preferredLocales,
+                               appUserID: "user")
 
         let outdatedCacheDate = Calendar.current.date(byAdding: .hour, value: -25, to: Date())!
         mockCachedObject.updateCacheTimestamp(date: outdatedCacheDate)
@@ -359,9 +365,34 @@ class DeviceCacheTests: TestCase {
         expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: true)) == false
     }
 
+    func testIsOfferingsCacheStaleIfPreferredLocalesChange() throws {
+        let sampleOfferings = try Self.createSampleOfferings()
+        self.deviceCache.cache(offerings: sampleOfferings, preferredLocales: ["en-US"], appUserID: "user")
+
+        expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: false)) == false
+        expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: true)) == false
+
+        self.preferredLocalesProvider.overridePreferredLocale("es-ES")
+        // preferred locales changed to ["es-ES", "en-US"]
+
+        expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: false)) == true
+        expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: true)) == true
+
+        self.deviceCache.cache(offerings: .empty, preferredLocales: ["es-ES", "en-US"], appUserID: "user")
+
+        expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: false)) == false
+        expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: true)) == false
+
+        self.preferredLocalesProvider.overridePreferredLocale(nil)
+        // preferred locales changed back to ["en-US"]
+
+        expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: false)) == true
+        expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: true)) == true
+    }
+
     func testClearCachedOfferings() {
         let mockCachedObject = MockInMemoryCachedOfferings<Offerings>()
-        self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
+        self.deviceCache = DeviceCache(systemInfo: self.systemInfo,
                                        userDefaults: self.mockUserDefaults,
                                        offeringsCachedObject: mockCachedObject)
 
@@ -774,7 +805,7 @@ class DeviceCacheTests: TestCase {
 private extension DeviceCacheTests {
 
     func create() -> DeviceCache {
-        return DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
+        return DeviceCache(systemInfo: self.systemInfo,
                            userDefaults: self.mockUserDefaults)
     }
 

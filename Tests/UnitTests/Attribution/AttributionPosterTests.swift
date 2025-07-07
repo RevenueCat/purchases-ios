@@ -37,7 +37,9 @@ class BaseAttributionPosterTests: TestCase {
         super.setUp()
 
         let userID = "userID"
-        self.deviceCache = MockDeviceCache(sandboxEnvironmentDetector: BundleSandboxEnvironmentDetector.default,
+        let systemInfo = MockSystemInfo(finishTransactions: false)
+        systemInfo.stubbedIsSandbox = BundleSandboxEnvironmentDetector.default.isSandbox
+        self.deviceCache = MockDeviceCache(systemInfo: systemInfo,
                                            userDefaults: UserDefaults(suiteName: userDefaultsSuiteName)!)
         self.deviceCache.cache(appUserID: userID)
         self.backend = MockBackend()

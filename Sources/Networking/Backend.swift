@@ -148,28 +148,6 @@ class Backend {
         self.customer.post(subscriberAttributes: subscriberAttributes, appUserID: appUserID, completion: completion)
     }
 
-    #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-    /// Checks if the SDK should log the status of the health report to the console.
-    /// - Parameter appUserID: An `appUserID` that allows the Backend to check for health report availability
-    /// - Returns: Whether the health report should be reported to the console for the given `appUserID`.
-    func healthReportAvailabilityRequest(appUserID: String) async throws -> HealthReportAvailability {
-        try await Async.call { (completion: @escaping (Result<HealthReportAvailability, BackendError>) -> Void) in
-            self.internalAPI.healthReportAvailabilityRequest(
-                appUserID: appUserID,
-                completion: completion
-            )
-        }
-    }
-
-    /// Call the `/health_report` endpoint and perform a full validation of the SDK's configuration
-    /// - Parameter appUserID: An `appUserID` that allows the Backend to fetch offerings
-    /// - Returns: A report with all validation checks along with their status
-    func healthReportRequest(appUserID: String) async throws -> HealthReport {
-        try await Async.call { (completion: @escaping (Result<HealthReport, BackendError>) -> Void) in
-            self.internalAPI.healthReportRequest(appUserID: appUserID, completion: completion)
-        }
-    }
-    #endif
 }
 
 extension Backend {
@@ -180,6 +158,19 @@ extension Backend {
             self.internalAPI.healthRequest(signatureVerification: signatureVerification) { error in
                 completion(.init(error))
             }
+        }
+    }
+
+}
+
+extension Backend {
+
+    /// Call the `/health_report` endpoint and perform a full validation of the SDK's configuration
+    /// - Parameter appUserID: An `appUserID` that allows the Backend to fetch offerings
+    /// - Returns: A report with all validation checks along with their status
+    func healthReportRequest(appUserID: String) async throws -> HealthReport {
+        try await Async.call { (completion: @escaping (Result<HealthReport, BackendError>) -> Void) in
+            self.internalAPI.healthReportRequest(appUserID: appUserID, completion: completion)
         }
     }
 
