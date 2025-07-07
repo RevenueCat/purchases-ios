@@ -179,7 +179,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getOfferings,
                 .getProductEntitlementMapping,
                 .getVirtualCurrencies,
-                .appHealthReport,
+                .appHealthReport:
             return true
         case .getIntroEligibility,
                 .postSubscriberAttributes,
@@ -198,7 +198,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .logIn,
                 .postReceiptData,
                 .getVirtualCurrencies,
-                .health,
+                .health:
             return true
         case .getOfferings,
                 .getIntroEligibility,

@@ -419,7 +419,7 @@ class DeviceCache {
             let timeSinceLastCheck = cachesLastUpdated.timeIntervalSinceNow * -1
             let cacheDurationInSeconds = self.cacheDurationInSeconds(
                 isAppBackgrounded: isAppBackgrounded,
-                isSandbox: self.sandboxEnvironmentDetector.isSandbox
+                isSandbox: self.systemInfo.isSandbox
             )
 
             return timeSinceLastCheck >= cacheDurationInSeconds
