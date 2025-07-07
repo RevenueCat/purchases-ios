@@ -258,26 +258,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
 
         purchases.invalidateVirtualCurrenciesCache()
         let virtualCurrencies = try await purchases.virtualCurrencies()
-
-        expect(virtualCurrencies.all.count).to(equal(3))
-
-        let testCurrency = try XCTUnwrap(virtualCurrencies["TEST"])
-        expect(testCurrency.balance).to(equal(0))
-        expect(testCurrency.code).to(equal("TEST"))
-        expect(testCurrency.name).to(equal("Test Currency"))
-        expect(testCurrency.serverDescription).to(equal("This is a test currency"))
-
-        let testCurrency2 = try XCTUnwrap(virtualCurrencies["TEST2"])
-        expect(testCurrency2.balance).to(equal(0))
-        expect(testCurrency2.code).to(equal("TEST2"))
-        expect(testCurrency2.name).to(equal("Test Currency 2"))
-        expect(testCurrency2.serverDescription).to(equal("This is test currency 2"))
-
-        let testCurrency3 = try XCTUnwrap(virtualCurrencies["TEST3"])
-        expect(testCurrency3.balance).to(equal(0))
-        expect(testCurrency3.code).to(equal("TEST3"))
-        expect(testCurrency3.name).to(equal("Test Currency 3"))
-        expect(testCurrency3.serverDescription).to(beNil())
+        try validateAllZeroBalanceVirtualCurrenciesObject(virtualCurrencies)
     }
 
     func testGetVirtualCurrenciesWithBalancesWithSomeNonZeroValues() async throws {
@@ -289,25 +270,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         purchases.invalidateVirtualCurrenciesCache()
         let virtualCurrencies = try await purchases.virtualCurrencies()
 
-        expect(virtualCurrencies.all.count).to(equal(3))
-
-        let testCurrency = try XCTUnwrap(virtualCurrencies["TEST"])
-        expect(testCurrency.balance).to(equal(100))
-        expect(testCurrency.code).to(equal("TEST"))
-        expect(testCurrency.name).to(equal("Test Currency"))
-        expect(testCurrency.serverDescription).to(equal("This is a test currency"))
-
-        let testCurrency2 = try XCTUnwrap(virtualCurrencies["TEST2"])
-        expect(testCurrency2.balance).to(equal(777))
-        expect(testCurrency2.code).to(equal("TEST2"))
-        expect(testCurrency2.name).to(equal("Test Currency 2"))
-        expect(testCurrency2.serverDescription).to(equal("This is test currency 2"))
-
-        let testCurrency3 = try XCTUnwrap(virtualCurrencies["TEST3"])
-        expect(testCurrency3.balance).to(equal(0))
-        expect(testCurrency3.code).to(equal("TEST3"))
-        expect(testCurrency3.name).to(equal("Test Currency 3"))
-        expect(testCurrency3.serverDescription).to(beNil())
+        try validateAllNonZeroBalanceVirtualCurrenciesObject(virtualCurrencies)
     }
 
     func testGetVirtualCurrenciesMultipleTimesInParallel() async throws {
@@ -343,6 +306,81 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
             level: .debug,
             expectedCount: 1
         )
+    }
+
+    func testGettingVirtualCurrenciesForNewUserReturnsVCsWith0Balance() async throws {
+        let newAppUserID = "integrationTestUser_\(UUID().uuidString)"
+        let purchases = try self.purchases
+
+        _ = try await purchases.logIn(newAppUserID)
+
+        purchases.invalidateVirtualCurrenciesCache()
+        let virtualCurrencies = try await purchases.virtualCurrencies()
+        try validateAllZeroBalanceVirtualCurrenciesObject(virtualCurrencies)
+    }
+
+    func testCachedVirtualCurrencies() async throws {
+        let appUserID = "integrationTestUserWithAllBalancesNonZero"
+        let purchases = try self.purchases
+
+        _ = try await purchases.logIn(appUserID)
+
+        purchases.invalidateVirtualCurrenciesCache()
+        let virtualCurrencies = try await purchases.virtualCurrencies()
+        try validateAllNonZeroBalanceVirtualCurrenciesObject(virtualCurrencies)
+
+        var cachedVirtualCurrencies = purchases.cachedVirtualCurrencies
+        try validateAllNonZeroBalanceVirtualCurrenciesObject(cachedVirtualCurrencies)
+
+        purchases.invalidateVirtualCurrenciesCache()
+        cachedVirtualCurrencies = purchases.cachedVirtualCurrencies
+        expect(cachedVirtualCurrencies).to(beNil())
+    }
+
+    private func validateAllZeroBalanceVirtualCurrenciesObject(_ virtualCurrencies: VirtualCurrencies?) throws {
+        let virtualCurrencies = try XCTUnwrap(virtualCurrencies)
+        expect(virtualCurrencies.all.count).to(equal(3))
+
+        let testCurrency = try XCTUnwrap(virtualCurrencies["TEST"])
+        expect(testCurrency.balance).to(equal(0))
+        expect(testCurrency.code).to(equal("TEST"))
+        expect(testCurrency.name).to(equal("Test Currency"))
+        expect(testCurrency.serverDescription).to(equal("This is a test currency"))
+
+        let testCurrency2 = try XCTUnwrap(virtualCurrencies["TEST2"])
+        expect(testCurrency2.balance).to(equal(0))
+        expect(testCurrency2.code).to(equal("TEST2"))
+        expect(testCurrency2.name).to(equal("Test Currency 2"))
+        expect(testCurrency2.serverDescription).to(equal("This is test currency 2"))
+
+        let testCurrency3 = try XCTUnwrap(virtualCurrencies["TEST3"])
+        expect(testCurrency3.balance).to(equal(0))
+        expect(testCurrency3.code).to(equal("TEST3"))
+        expect(testCurrency3.name).to(equal("Test Currency 3"))
+        expect(testCurrency3.serverDescription).to(beNil())
+    }
+
+    private func validateAllNonZeroBalanceVirtualCurrenciesObject(_ virtualCurrencies: VirtualCurrencies?) throws {
+        let virtualCurrencies = try XCTUnwrap(virtualCurrencies)
+        expect(virtualCurrencies.all.count).to(equal(3))
+
+        let testCurrency = try XCTUnwrap(virtualCurrencies["TEST"])
+        expect(testCurrency.balance).to(equal(100))
+        expect(testCurrency.code).to(equal("TEST"))
+        expect(testCurrency.name).to(equal("Test Currency"))
+        expect(testCurrency.serverDescription).to(equal("This is a test currency"))
+
+        let testCurrency2 = try XCTUnwrap(virtualCurrencies["TEST2"])
+        expect(testCurrency2.balance).to(equal(777))
+        expect(testCurrency2.code).to(equal("TEST2"))
+        expect(testCurrency2.name).to(equal("Test Currency 2"))
+        expect(testCurrency2.serverDescription).to(equal("This is test currency 2"))
+
+        let testCurrency3 = try XCTUnwrap(virtualCurrencies["TEST3"])
+        expect(testCurrency3.balance).to(equal(0))
+        expect(testCurrency3.code).to(equal("TEST3"))
+        expect(testCurrency3.name).to(equal("Test Currency 3"))
+        expect(testCurrency3.serverDescription).to(beNil())
     }
 }
 
