@@ -11,7 +11,7 @@
 //
 //  Created by Pol Piella Abadia on 27/06/2025.
 
-#if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+#if DEBUG
 import Foundation
 
 final class HealthReportAvailabilityOperation: CacheableNetworkOperation {

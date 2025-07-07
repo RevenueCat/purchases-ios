@@ -1925,7 +1925,7 @@ extension Purchases: InternalPurchasesType {
         }
     }
 
-    #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    #if DEBUG
     internal func healthReport() async -> PurchasesDiagnostics.SDKHealthReport {
         await self.healthManager.healthReport()
     }
