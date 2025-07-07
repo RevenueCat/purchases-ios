@@ -184,6 +184,16 @@ class MockBackend: Backend {
 
     static let referenceDate = Date(timeIntervalSinceReferenceDate: 700000000) // 2023-03-08 20:26:40
 
+    var healthReportRequestResponse: Result<HealthReport, BackendError> = .success(
+        HealthReport(status: .passed, projectId: nil, appId: nil, checks: [])
+    )
+    override func healthReportRequest(appUserID: String) async throws -> HealthReport {
+        return try healthReportRequestResponse.get()
+    }
+
+    override func healthReportAvailabilityRequest(appUserID: String) async throws -> HealthReportAvailability {
+        return .init(reportLogs: true)
+    }
 }
 
 extension MockBackend: @unchecked Sendable {}

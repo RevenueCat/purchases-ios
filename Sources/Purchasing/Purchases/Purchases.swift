@@ -274,6 +274,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     fileprivate let systemInfo: SystemInfo
     private let storeMessagesHelper: StoreMessagesHelperType?
     private var customerInfoObservationDisposable: (() -> Void)?
+    private let healthManager: SDKHealthManager
 
     private let syncAttributesAndOfferingsIfNeededRateLimiter = RateLimiter(maxCalls: 5, period: 60)
     private let diagnosticsTracker: DiagnosticsTrackerType?
@@ -603,6 +604,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             backend: backend,
             systemInfo: systemInfo
         )
+        let healthManager = SDKHealthManager(backend: backend, identityManager: identityManager)
 
         self.init(appUserID: appUserID,
                   requestFetcher: fetcher,
@@ -630,7 +632,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   trialOrIntroPriceEligibilityChecker: trialOrIntroPriceChecker,
                   storeMessagesHelper: storeMessagesHelper,
                   diagnosticsTracker: diagnosticsTracker,
-                  virtualCurrencyManager: virtualCurrencyManager
+                  virtualCurrencyManager: virtualCurrencyManager,
+                  healthManager: healthManager
         )
     }
 
@@ -661,7 +664,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          trialOrIntroPriceEligibilityChecker: CachingTrialOrIntroPriceEligibilityChecker,
          storeMessagesHelper: StoreMessagesHelperType?,
          diagnosticsTracker: DiagnosticsTrackerType?,
-         virtualCurrencyManager: VirtualCurrencyManagerType
+         virtualCurrencyManager: VirtualCurrencyManagerType,
+         healthManager: SDKHealthManager
     ) {
 
         if systemInfo.dangerousSettings.customEntitlementComputation {
@@ -711,6 +715,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.storeMessagesHelper = storeMessagesHelper
         self.diagnosticsTracker = diagnosticsTracker
         self.virtualCurrencyManager = virtualCurrencyManager
+        self.healthManager = healthManager
 
         super.init()
 
@@ -727,6 +732,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         // Don't update caches in the background to potentially avoid apps being launched through a notification
         // all at the same time by too many users concurrently.
         self.updateCachesIfInForeground()
+
+        #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        self.runHealthCheckIfInForeground()
+        #endif
 
         if self.systemInfo.dangerousSettings.autoSyncPurchases {
             self.paymentQueueWrapper.sk1Wrapper?.delegate = purchasesOrchestrator
@@ -1916,9 +1925,11 @@ extension Purchases: InternalPurchasesType {
         }
     }
 
-    internal func healthReportRequest() async throws -> HealthReport {
-        try await self.backend.healthReportRequest(appUserID: self.appUserID)
+    #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    internal func healthReport() async -> PurchasesDiagnostics.SDKHealthReport {
+        await self.healthManager.healthReport()
     }
+    #endif
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func productEntitlementMapping() async throws -> ProductEntitlementMapping {
@@ -2116,6 +2127,31 @@ private extension Purchases {
             }
         }
     }
+
+    #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    func runHealthCheckIfInForeground() {
+        // This is a workaround and needs to be fixed at some point. Explanation:
+        // The StoreKit integration tests are very time sensitive and set very
+        // short expiry times for most products. This results in flakiness, which
+        // is further aggravated by the fact that the health check adds an extra async
+        // method and thus an extra delay.
+        // To avoid this, we skip the health check when running integration tests.
+        // This is not ideal, and we should consider making the tests more resilient
+        // in the future.
+        guard !ProcessInfo.isRunningIntegrationTests else { return }
+
+        self.operationDispatcher.dispatchOnWorkerThread { [weak self] in
+            guard self?.systemInfo.isAppBackgroundedState == false,
+            let appUserID = self?.appUserID,
+                let availability = try? await self?.backend.healthReportAvailabilityRequest(
+                    appUserID: appUserID
+                ), availability.reportLogs else {
+                    return
+                }
+            await self?.healthManager.logSDKHealthReportOutcome()
+        }
+    }
+    #endif
 
     func updateAllCachesIfNeeded(isAppBackgrounded: Bool) {
         guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
