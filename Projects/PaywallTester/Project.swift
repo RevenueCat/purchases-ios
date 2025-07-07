@@ -23,6 +23,7 @@ let allDeploymentTargets: DeploymentTargets = .multiplatform(
 var additionalFiles: [FileElement] = [
     .glob(pattern: "../../Global.xcconfig")
 ]
+
 if FileManager.default.fileExists(atPath: "Local.xcconfig") {
     additionalFiles.append(.glob(pattern: "../../Local.xcconfig"))
 }
@@ -47,7 +48,7 @@ let project = Project(
                 "../../Tests/TestingApps/PaywallsTester/PaywallsTester/**/*.swift"
             ],
             resources: [
-                "../../Local.xcconfig"
+               additionalFiles.count == 2 ? "../../Local.xcconfig" : ""
             ],
             dependencies: [
                 .revenueCat,
