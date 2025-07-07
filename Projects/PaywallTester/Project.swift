@@ -23,7 +23,7 @@ let allDeploymentTargets: DeploymentTargets = .multiplatform(
 var additionalFiles: [FileElement] = [
     .glob(pattern: "../../Global.xcconfig")
 ]
-if FileManager.default.fileExists(atPath: "../../Local.xcconfig") {
+if FileManager.default.fileExists(atPath: "Local.xcconfig") {
     additionalFiles.append(.glob(pattern: "../../Local.xcconfig"))
 }
 
@@ -32,10 +32,7 @@ let project = Project(
     organizationName: .revenueCatOrgName,
     settings: .settings(
         base: [:].automaticCodeSigning(devTeam: .revenueCatTeamID),
-        configurations: [
-            .debug(name: "Debug-SK", xcconfig: .relativeToRoot("Global.xcconfig")),
-            .debug(name: "Debug")
-        ],
+        configurations: .xcconfigFileConfigurations,
         defaultSettings: .essential
     ),
     targets: [
@@ -48,6 +45,9 @@ let project = Project(
             infoPlist: "../../Tests/TestingApps/PaywallsTester/PaywallsTester/Info.plist",
             sources: [
                 "../../Tests/TestingApps/PaywallsTester/PaywallsTester/**/*.swift"
+            ],
+            resources: [
+                "../../Local.xcconfig"
             ],
             dependencies: [
                 .revenueCat,
@@ -62,7 +62,7 @@ let project = Project(
             shared: true,
             buildAction: .buildAction(targets: ["PaywallTester"]),
             runAction: .runAction(
-                configuration: "Debug-SK",
+                configuration: "Debug",
                 executable: "PaywallTester",
                 options: .options(
                     storeKitConfigurationPath: "../../Tests/TestingApps/PaywallsTester/PaywallsTester/Products.storekit"

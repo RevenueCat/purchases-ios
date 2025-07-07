@@ -3,12 +3,10 @@ import ProjectDescriptionHelpers
 import Foundation
 
 var additionalFiles: [FileElement] = [
-    .glob(pattern: "rc-maestro/Resources/**/Local.xcconfig.sample")
+    .glob(pattern: "../../Global.xcconfig")
 ]
-var shouldAddLocalConfig: Bool = false
-if FileManager.default.fileExists(atPath: "rc-maestro/Resources/**/Local.xcconfig") {
-    shouldAddLocalConfig = true
-     additionalFiles.append(.glob(pattern: "rc-maestro/Resources/**/Local.xcconfig"))
+if FileManager.default.fileExists(atPath: "Local.xcconfig") {
+    additionalFiles.append(.glob(pattern: "../../Local.xcconfig"))
 }
 
 let project = Project(
@@ -16,6 +14,7 @@ let project = Project(
     organizationName: .revenueCatOrgName,
     settings: .settings(
         base: [:].automaticCodeSigning(devTeam: .revenueCatTeamID),
+        configurations: .xcconfigFileConfigurations,
         defaultSettings: .essential
     ),
     targets: [
@@ -31,7 +30,9 @@ let project = Project(
                         "UIColorName": "",
                         "UIImageName": "",
                     ],
-                    "REVENUECAT_API_KEY": "$(REVENUECAT_API_KEY)"
+                    "REVENUECAT_API_KEY": "$(REVENUECAT_API_KEY)",
+                    "REVENUECAT_PROXY_URL_SCHEME": "$(REVENUECAT_PROXY_URL_SCHEME)",
+                    "REVENUECAT_PROXY_URL_HOST": "$(REVENUECAT_PROXY_URL_HOST)"
                 ]
             ),
             sources: ["rc-maestro/Sources/**/*.swift"],
