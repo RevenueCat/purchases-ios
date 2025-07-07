@@ -1334,7 +1334,7 @@ public extension Purchases {
         }
     }
 
-    var cachedVirtualCurrencies: VirtualCurrencies? {
+    @objc var cachedVirtualCurrencies: VirtualCurrencies? {
         return self.virtualCurrencyManager.cachedVirtualCurrencies()
     }
 
