@@ -3,7 +3,7 @@ username(ENV["FASTLANE_USER"])
 
 storage_mode("git")
 
-type("development")
+type("appstore")
 platform("macos")
 
 app_identifier(["com.revenuecat.StoreKitUnitTestsHostApp"])
