@@ -58,7 +58,7 @@ platform :ios do
       wwdr_certs.each do |cert|
         begin
           UI.message("Downloading #{cert}")
-          sh("curl -O https://developer.apple.com/certificationauthority/#{cert}")
+          sh("curl -O https://www.apple.com/certificateauthority/#{cert}")
           
           cert_path = File.absolute_path(cert)
           if File.exist?(cert_path)
