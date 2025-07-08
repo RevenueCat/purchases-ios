@@ -47,24 +47,42 @@ platform :ios do
     setup_circle_ci
 
     if is_ci
-      UI.message("Downloading WWDR certificate")
-      wwdr_cert = "AppleWWDRCAG4.cer"
-      sh("curl -O https://developer.apple.com/certificationauthority/#{wwdr_cert}")
+      UI.message("Downloading WWDR certificates")
+      
+      # Download the latest WWDR certificates
+      wwdr_certs = [
+        "AppleWWDRCAG6.cer",
+        "AppleWWDRCAG5.cer"
+      ]
+      
+      wwdr_certs.each do |cert|
+        begin
+          UI.message("Downloading #{cert}")
+          sh("curl -O https://developer.apple.com/certificationauthority/#{cert}")
+          
+          cert_path = File.absolute_path(cert)
+          if File.exist?(cert_path)
+            UI.message("Importing #{cert} from #{cert_path}")
+            import_certificate(
+              keychain_name: ENV["MATCH_KEYCHAIN_NAME"] || "login.keychain",
+              certificate_path: cert_path,
+              certificate_password: nil,
+              keychain_password: ENV["MATCH_KEYCHAIN_PASSWORD"] || ""
+            )
+            UI.message("Successfully imported #{cert}")
+          else
+            UI.message("Warning: Failed to download #{cert}")
+          end
+        rescue => e
+          UI.message("Warning: Failed to process #{cert}: #{e.message}")
+        end
+      end
 
-      UI.message("Importing WWDR certificate")
-
-      import_certificate(
-        keychain_name: ENV["MATCH_KEYCHAIN_NAME"] || "login.keychain",
-        certificate_path: wwdr_cert,
-        certificate_password: nil,
-        keychain_password: ENV["MATCH_KEYCHAIN_PASSWORD"] || ""
-      )
-
-      UI.message("Verifying WWDR certificate")
+      UI.message("Verifying WWDR certificates")
       sh("security find-certificate -c 'Apple Worldwide Developer Relations'")
-      UI.message("WWDR certificate verified")
+      UI.message("WWDR certificates verified")
 
-      UI.message("WWDR certificate installed")
+      UI.message("WWDR certificates installed")
     end
 
     if ENV['APP_STORE_CONNECT_API_KEY_ISSUER_ID']
