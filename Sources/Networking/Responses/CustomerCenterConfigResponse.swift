@@ -141,6 +141,7 @@ struct CustomerCenterConfigResponse {
         let email: String
         let shouldWarnCustomerToUpdate: Bool?
         let displayPurchaseHistoryLink: Bool?
+        let displayVirtualCurrencies: Bool?
         let shouldWarnCustomersAboutMultipleSubscriptions: Bool?
     }
 

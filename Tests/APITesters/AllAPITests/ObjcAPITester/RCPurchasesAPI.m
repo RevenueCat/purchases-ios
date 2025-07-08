@@ -203,6 +203,14 @@ NSURL *url;
 
     }];
 
+    [p getVirtualCurrenciesWithCompletion: ^(RCVirtualCurrencies * _Nullable virtualCurrencies, NSError * _Nullable error) {
+
+    }];
+
+    [p invalidateVirtualCurrenciesCache];
+
+    RCVirtualCurrencies * _Nullable __unused virtualCurrencies = p.cachedVirtualCurrencies;
+
 #if (TARGET_OS_IPHONE || TARGET_OS_MACCATALYST) && !TARGET_OS_TV && !TARGET_OS_WATCH
     if (@available(iOS 15.0, *)) {
         [p beginRefundRequestForProduct:@"1234" completion:^(RCRefundRequestStatus s, NSError * _Nullable e) { }];
