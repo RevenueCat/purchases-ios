@@ -46,6 +46,27 @@ platform :ios do
   before_all do
     setup_circle_ci
 
+    if is_ci
+      UI.message("Downloading WWDR certificate")
+      wwdr_cert = "AppleWWDRCAG4.cer"
+      sh("curl -O https://developer.apple.com/certificationauthority/#{wwdr_cert}")
+
+      UI.message("Importing WWDR certificate")
+
+      import_certificate(
+        keychain_name: ENV["MATCH_KEYCHAIN_NAME"] || "login.keychain",
+        certificate_path: wwdr_cert,
+        certificate_password: nil,
+        keychain_password: ENV["MATCH_KEYCHAIN_PASSWORD"] || ""
+      )
+
+      UI.message("Verifying WWDR certificate")
+      sh("security find-certificate -c 'Apple Worldwide Developer Relations'")
+      UI.message("WWDR certificate verified")
+
+      UI.message("WWDR certificate installed")
+    end
+
     if ENV['APP_STORE_CONNECT_API_KEY_ISSUER_ID']
       app_store_connect_api_key # This will create a shared client that all the tools know how to use and will look for
     end
