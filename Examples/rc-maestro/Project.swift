@@ -2,13 +2,6 @@ import ProjectDescription
 import ProjectDescriptionHelpers
 import Foundation
 
-var additionalFiles: [FileElement] = [
-    .glob(pattern: "../../Global.xcconfig")
-]
-if FileManager.default.fileExists(atPath: "Local.xcconfig") {
-    additionalFiles.append(.glob(pattern: "../../Local.xcconfig"))
-}
-
 let project = Project(
     name: "Maestro",
     organizationName: .revenueCatOrgName,
@@ -60,6 +53,5 @@ let project = Project(
                 )
             )
         )
-    ],
-    additionalFiles: additionalFiles
+    ]
 )

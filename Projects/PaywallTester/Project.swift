@@ -20,14 +20,6 @@ let allDeploymentTargets: DeploymentTargets = .multiplatform(
     visionOS: "1.3"
 )
 
-var additionalFiles: [FileElement] = [
-    .glob(pattern: "../../Global.xcconfig")
-]
-
-if FileManager.default.fileExists(atPath: "Local.xcconfig") {
-    additionalFiles.append(.glob(pattern: "../../Local.xcconfig"))
-}
-
 let project = Project(
     name: "PaywallTester",
     organizationName: .revenueCatOrgName,
@@ -46,9 +38,6 @@ let project = Project(
             infoPlist: "../../Tests/TestingApps/PaywallsTester/PaywallsTester/Info.plist",
             sources: [
                 "../../Tests/TestingApps/PaywallsTester/PaywallsTester/**/*.swift"
-            ],
-            resources: [
-               additionalFiles.count == 2 ? "../../Local.xcconfig" : ""
             ],
             dependencies: [
                 .revenueCat,
@@ -79,6 +68,5 @@ let project = Project(
                 executable: "PaywallTester"
             )
         )
-    ],
-    additionalFiles: additionalFiles
+    ]
 )

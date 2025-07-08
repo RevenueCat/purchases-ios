@@ -30,7 +30,11 @@ let allDestinations = destinations + [.appleWatch]
 let project = Project(
     name: "PurchaseTester",
     organizationName: .revenueCatOrgName,
-    settings: .settings(base: [:].automaticCodeSigning(devTeam: .revenueCatTeamID)),
+    settings: .settings(
+        base: [:].automaticCodeSigning(devTeam: .revenueCatTeamID),
+        configurations: .xcconfigFileConfigurations,
+        defaultSettings: .essential
+    ),
     targets: [
         .target(
             name: "PurchaseTester",
