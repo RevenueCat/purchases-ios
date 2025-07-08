@@ -489,10 +489,21 @@ platform :ios do
     emerge_args[:pr_number] = pr_number if pr_number
     emerge_args[:app_id_suffix] = options[:app_id_suffix]
 
-    # Use the archive_path if provided
-    if options[:archive_path]
+    # Add emerge_config.yaml to .xcarchive files
+    if options[:archive_path] && options[:archive_path].end_with?('.xcarchive')
+      emerge_config_source = File.absolute_path("../emerge/emerge_config.yaml")
+      emerge_config_dest = "#{options[:archive_path]}/emerge_config.yaml"
+      
+      if File.exist?(emerge_config_source)
+        FileUtils.cp(emerge_config_source, emerge_config_dest)
+        UI.message("Added emerge_config.yaml to #{File.basename(options[:archive_path])}")
+      else
+        UI.important("emerge_config.yaml not found at #{emerge_config_source}")
+      end
+      
       emerge_args[:file_path] = options[:archive_path]
-      UI.message("Using archive path: #{options[:archive_path]}")
+    elsif options[:archive_path] || options[:file_path]
+      emerge_args[:file_path] = options[:archive_path] || options[:file_path]
     end
     
     emerge(emerge_args)

@@ -1,0 +1,7 @@
+version: 2.0
+snapshots:
+  ios:
+    runSettings:
+      - excludedPreviews:
+          - type: regex
+            value: ^(?!(PaywallsTester|RevenueCatUI)).*
