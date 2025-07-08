@@ -1444,10 +1444,9 @@ jobs:
             echo "export GITHUB_TOKEN=$GH_TOKEN_PAYWALL_RENDERING_VALIDATION_PR_RW" >> $BASH_ENV
             source $BASH_ENV
       - run:
-          name: Install WWDR Certificate
+          name: Check WWDR Certificate Installation
           command: |
-            curl -o /tmp/WWDRCert.cer https://www.apple.com/certificateauthority/AppleWWDRCAG3.cer
-            security import /tmp/WWDRCert.cer -k /Users/circleci/Library/Keychains/login.keychain-db
+            security find-certificate -a -p /Users/circleci/Library/Keychains/login.keychain-db | grep "AppleWWDR"
       - run:
           name: Run tests
           command: bundle exec fastlane record_and_push_paywall_template_screenshots target_repository_path:../Tests/paywall-rendering-validation
