@@ -63,12 +63,12 @@ platform :ios do
           cert_path = File.absolute_path(cert)
           if File.exist?(cert_path)
             UI.message("Importing #{cert} from #{cert_path}")
-            import_certificate(
-              keychain_name: ENV["MATCH_KEYCHAIN_NAME"] || "login.keychain",
-              certificate_path: cert_path,
-              certificate_password: nil,
-              keychain_password: ENV["MATCH_KEYCHAIN_PASSWORD"] || ""
-            )
+            # Use security command directly to import the certificate
+            sh("security", "import", cert_path, 
+               "-k", ENV["MATCH_KEYCHAIN_NAME"] || "login.keychain",
+               "-T", "/usr/bin/codesign",
+               "-T", "/usr/bin/productbuild",
+               "-T", "/usr/bin/productsign")
             UI.message("Successfully imported #{cert}")
           else
             UI.message("Warning: Failed to download #{cert}")
