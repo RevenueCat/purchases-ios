@@ -376,8 +376,8 @@ platform :ios do
     end
 
     Dir.chdir("../Tests/UnitTestsHostApp/fastlane") do
-      match(type: "development", platform: "ios", readonly: true)
-      match(type: "development", platform: "macos", readonly: true)
+      match_platform = platform == "iphone-app-on-mac" ? "macos" : platform
+      match(type: "development", platform: match_platform, readonly: true)
     end
 
     scan_options = {
