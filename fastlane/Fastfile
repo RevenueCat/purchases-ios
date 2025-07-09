@@ -375,11 +375,12 @@ platform :ios do
       xcargs += ["TARGETED_DEVICE_FAMILY='#{targeted_device_families[platform]}'"]
     end
 
-    fastlane_platform = platform == "iphone-app-on-mac" ? "macos" : platform
-    UI.message("Fastlane platform: #{fastlane_platform}")
+    catalyst_platform = platform.start_with?("mac-catalyst") ? "macos" : platform
+    UI.message("Platform: #{platform}")
+    UI.message("Catalyst platform: #{catalyst_platform}")
 
     Dir.chdir("../Tests/UnitTestsHostApp/fastlane") do
-      match(type: "development", platform: fastlane_platform, readonly: true)
+      match(type: "development", platform: catalyst_platform, readonly: true)
     end
 
     scan_options = {
@@ -387,7 +388,7 @@ platform :ios do
       scheme: 'RevenueCatUITestsDev',
       testplan: 'Paywall-Screenshots',
       destination: destination,
-      platform: fastlane_platform,
+      catalyst_platform: catalyst_platform,
       result_bundle: true,
       result_bundle_path: result_bundle_path,
     }
