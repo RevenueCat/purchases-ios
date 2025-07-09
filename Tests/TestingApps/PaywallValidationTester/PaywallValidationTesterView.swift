@@ -33,6 +33,7 @@ struct PaywallValidationTesterView: View {
                             purchaseHandler: .mock(preferredLocaleOverride: nil)
                         )
                     )
+                    .navigationTitle(offering.id)
                 }
             }
         }
