@@ -60,7 +60,7 @@ extension XCTestCase {
 
     func waitUntilUnfinishedTransactions(
         condition: @Sendable @escaping (Int) -> Bool,
-        file: FileString = #fileID,
+        file: FileString = #filePath,
         line: UInt = #line
     ) async throws {
         try await asyncWait(
