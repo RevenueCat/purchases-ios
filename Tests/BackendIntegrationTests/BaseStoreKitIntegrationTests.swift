@@ -200,7 +200,12 @@ extension BaseStoreKitIntegrationTests {
 
         let data = try await self.purchases.purchase(product: StoreProduct(sk2Product: product))
 
-        try await self.verifyEntitlementWentThrough(data.customerInfo,
+        try await self.waitUntilNoUnfinishedTransactions()
+
+        var stream = try self.purchases.customerInfoStream.makeAsyncIterator()
+        let customerInfo = try await XCTAsyncUnwrap(await stream.next())
+
+        try await self.verifyEntitlementWentThrough(customerInfo,
                                                     file: file,
                                                     line: line)
 

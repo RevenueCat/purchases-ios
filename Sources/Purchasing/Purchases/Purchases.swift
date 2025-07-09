@@ -2130,16 +2130,6 @@ private extension Purchases {
 
     #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func runHealthCheckIfInForeground() {
-        // This is a workaround and needs to be fixed at some point. Explanation:
-        // The StoreKit integration tests are very time sensitive and set very
-        // short expiry times for most products. This results in flakiness, which
-        // is further aggravated by the fact that the health check adds an extra async
-        // method and thus an extra delay.
-        // To avoid this, we skip the health check when running integration tests.
-        // This is not ideal, and we should consider making the tests more resilient
-        // in the future.
-        guard !ProcessInfo.isRunningIntegrationTests else { return }
-
         self.operationDispatcher.dispatchOnWorkerThread { [weak self] in
             guard self?.systemInfo.isAppBackgroundedState == false,
             let appUserID = self?.appUserID,
