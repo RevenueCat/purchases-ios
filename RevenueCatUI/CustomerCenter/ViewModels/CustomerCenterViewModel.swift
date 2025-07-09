@@ -41,6 +41,9 @@ import Foundation
     var manageSubscriptionsSheet = false
 
     @Published
+    var changePlansSheet = false
+
+    @Published
     var state: CustomerCenterViewState {
         didSet {
             if case let .error(stateError) = state {

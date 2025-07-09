@@ -89,11 +89,21 @@ struct SubscriptionDetailView: View {
                 .manageSubscriptionsSheetViewModifier(isPresented: .init(
                     get: { customerInfoViewModel.manageSubscriptionsSheet },
                     set: { manage in DispatchQueue.main.async {
-                        customerInfoViewModel.manageSubscriptionsSheet = manage }
-                    }
+                        customerInfoViewModel.manageSubscriptionsSheet = manage
+                    }}
                 ), subscriptionGroupID: viewModel.purchaseInformation?.subscriptionGroupID
                 )
             )
+            .modifier(self.customerInfoViewModel.purchasesProvider
+                .changePlansSheetViewModifier(isPresented: .init(
+                    get: { customerInfoViewModel.changePlansSheet },
+                    set: { manage in DispatchQueue.main.async {
+                        customerInfoViewModel.changePlansSheet = manage
+                    }}
+                ),
+                subscriptionGroupID: viewModel.purchaseInformation?.subscriptionGroupID ?? "",
+                productIDs: customerInfoViewModel.configuration?.changePlan.first(where: { $0.groupId == viewModel.purchaseInformation?.subscriptionGroupID })
+                    .map { $0.products.map(\.productId) } ?? []))
             .onCustomerCenterPromotionalOfferSuccess {
                 viewModel.refreshPurchase()
             }
@@ -102,6 +112,9 @@ struct SubscriptionDetailView: View {
                     customerInfoViewModel.manageSubscriptionsSheet = true
                 }
             }
+            .onCustomerCenterChangePlansSelected({ _ in
+                customerInfoViewModel.changePlansSheet = true
+            })
             .onChangeOf(customerInfoViewModel.manageSubscriptionsSheet) { manageSubscriptionsSheet in
                 if !manageSubscriptionsSheet {
                     viewModel.refreshPurchase()

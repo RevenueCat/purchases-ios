@@ -68,6 +68,13 @@ import SwiftUI
         isPresented: Binding<Bool>,
         subscriptionGroupID: String?
     ) -> ManageSubscriptionSheetModifier
+
+    @MainActor
+    func changePlansSheetViewModifier(
+        isPresented: Binding<Bool>,
+        subscriptionGroupID: String,
+        productIDs: [String]
+    ) -> ChangePlansSheetViewModifier
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -83,6 +90,57 @@ extension CustomerCenterPurchasesType {
         ManageSubscriptionSheetModifier(isPresented: isPresented, subscriptionGroupID: subscriptionGroupID)
     }
 
+    func changePlansSheetViewModifier(
+        isPresented: Binding<Bool>,
+        subscriptionGroupID: String,
+        productIDs: [String]
+    ) -> ChangePlansSheetViewModifier {
+        ChangePlansSheetViewModifier(
+            isPresented: isPresented,
+            subscriptionGroupID: subscriptionGroupID,
+            productIDs: productIDs
+        )
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@_spi(Internal) public struct ChangePlansSheetViewModifier: ViewModifier {
+
+    let isPresented: Binding<Bool>
+    let subscriptionGroupID: String
+    let productIDs: [String]
+
+    @_spi(Internal) public init(isPresented: Binding<Bool>, subscriptionGroupID: String, productIDs: [String]) {
+        self.isPresented = isPresented
+        self.subscriptionGroupID = subscriptionGroupID
+        self.productIDs = productIDs
+    }
+
+    @_spi(Internal) public func body(content: Content) -> some View {
+        #if swift(>=5.9)
+        if #available(iOS 17.0, *) {
+            content
+                .sheet(isPresented: isPresented) {
+                    if productIDs.count > 1 {
+                        SubscriptionStoreView(
+                            productIDs: productIDs
+                        )
+                    } else {
+                        SubscriptionStoreView(
+                            groupID: subscriptionGroupID
+                        )
+                    }
+                }
+        } else {
+            content.manageSubscriptionsSheet(isPresented: isPresented)
+        }
+        #else
+        content.manageSubscriptionsSheet(isPresented: isPresented)
+        #endif
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

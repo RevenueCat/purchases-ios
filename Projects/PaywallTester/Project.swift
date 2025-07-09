@@ -33,8 +33,8 @@ let project = Project(
     settings: .settings(
         base: [:].automaticCodeSigning(devTeam: .revenueCatTeamID),
         configurations: [
-            .debug(name: "Debug-SK", xcconfig: .relativeToRoot("Global.xcconfig")),
-            .debug(name: "Debug")
+            .debug(name: "Debug", xcconfig: .relativeToRoot("Global.xcconfig")),
+            .release(name: "Release")
         ],
         defaultSettings: .essential
     ),
@@ -62,7 +62,7 @@ let project = Project(
             shared: true,
             buildAction: .buildAction(targets: ["PaywallTester"]),
             runAction: .runAction(
-                configuration: "Debug-SK",
+                configuration: "Debug",
                 executable: "PaywallTester",
                 options: .options(
                     storeKitConfigurationPath: "../../Tests/TestingApps/PaywallsTester/PaywallsTester/Products.storekit"

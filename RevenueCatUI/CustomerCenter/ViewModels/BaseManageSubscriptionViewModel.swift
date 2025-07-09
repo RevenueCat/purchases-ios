@@ -174,7 +174,10 @@ private extension BaseManageSubscriptionViewModel {
                 self.inAppBrowserURL = IdentifiableURL(url: url)
             }
 
-        case .changePlans, .cancel:
+        case .changePlans:
+            self.actionWrapper.handleAction(.showingChangePlans(purchaseInformation?.subscriptionGroupID ?? ""))
+
+        case .cancel:
             self.actionWrapper.handleAction(.showingManageSubscriptions)
 
         case .customUrl:

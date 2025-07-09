@@ -191,7 +191,11 @@ struct SamplePaywallsList: View {
                 }
 
                 Button {
-                    self.display = .uiKitCustomerCenter
+//                    self.display = .uiKitCustomerCenter
+                    Task {
+                        let product = await Purchases.shared.products(["com.revenuecat.simpleapp.monthly"]).first!
+                        try await Purchases.shared.purchase(product: product)
+                    }
                 } label: {
                     TemplateLabel(name: "UIKit Customer Center", icon: "person.fill.questionmark")
                 }
