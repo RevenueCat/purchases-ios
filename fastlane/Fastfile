@@ -181,10 +181,10 @@ platform :ios do
     # Loop over all platforms and generate screenshots for each
     platforms = [
       # "ios", # ✅
-      # "iphone-app-on-mac", # ❓
-      # "ipad-app-on-mac", # ❓
-      "mac-catalyst-optimized-for-mac", # ❓
-      "mac-catalyst-scaled-to-match-ipad"# ❓
+      "iphone-app-on-mac", # ❓
+      "ipad-app-on-mac" # ❓
+      # "mac-catalyst-optimized-for-mac", # ✅
+      # "mac-catalyst-scaled-to-match-ipad"# ✅
     ]
     
     platforms.each do |platform|
@@ -380,7 +380,13 @@ platform :ios do
     if targeted_device_families[platform]
       xcargs += ["TARGETED_DEVICE_FAMILY='#{targeted_device_families[platform]}'"]
     end
+    
+    # For iOS apps on Mac, disable code signing since we're using iOS provisioning profiles on macOS
+    if platform.include?("-app-on-mac")
+      xcargs += ["CODE_SIGN_IDENTITY=''", "CODE_SIGNING_REQUIRED=NO"]
+    end
 
+    # iOS apps on Mac still need iOS provisioning profiles, but they run on macOS
     catalyst_platform = platform.start_with?("mac-catalyst") ? "macos" : "ios"
     UI.message("Platform: #{platform}")
     UI.message("Catalyst platform: #{catalyst_platform}")
