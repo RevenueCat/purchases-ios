@@ -67,6 +67,20 @@ let project = Project(
                 configuration: "Debug",
                 executable: "PaywallTester"
             )
+        ),
+        // hack to avoid having `PaywallTester` visible in the scheme list (hidden: true)
+        .scheme(
+            name: "PaywallTester",
+            shared: false,
+            hidden: true,
+            buildAction: .buildAction(targets: ["PaywallTester"]),
+            runAction: .runAction(
+                configuration: "Debug",
+                executable: "PaywallTester",
+                options: .options(
+                    storeKitConfigurationPath: "../../Tests/TestingApps/PaywallsTester/PaywallsTester/Products.storekit"
+                )
+            )
         )
     ]
 )
