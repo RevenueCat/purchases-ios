@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 55;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -898,6 +898,9 @@
 		8337DD6E2E0A7D69000798BF /* header.heic in Resources */ = {isa = PBXBuildFile; fileRef = 2C5F71F52C3D6C2600B0FE4B /* header.heic */; };
 		8337DD6F2E0A7D79000798BF /* background.heic in Resources */ = {isa = PBXBuildFile; fileRef = 2C5F71F62C3D6C2600B0FE4B /* background.heic */; };
 		8337DD702E0A7E42000798BF /* paywall-preview-resources in Resources */ = {isa = PBXBuildFile; fileRef = 8337DD6D2E0A7CFE000798BF /* paywall-preview-resources */; };
+		83675A712E1E73C40012B894 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 83675A6C2E1E73C40012B894 /* Assets.xcassets */; };
+		83675A722E1E73C40012B894 /* PaywallValidationTesterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83675A6E2E1E73C40012B894 /* PaywallValidationTesterApp.swift */; };
+		83675A732E1E73C40012B894 /* PaywallValidationTesterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83675A6F2E1E73C40012B894 /* PaywallValidationTesterView.swift */; };
 		83B2775D2E1E3CC800E1E821 /* paywall-preview-resources in Resources */ = {isa = PBXBuildFile; fileRef = 8337DD6D2E0A7CFE000798BF /* paywall-preview-resources */; };
 		83B2775E2E1E3CCD00E1E821 /* background.heic in Resources */ = {isa = PBXBuildFile; fileRef = 2C5F71F62C3D6C2600B0FE4B /* background.heic */; };
 		83B2775F2E1E3CD300E1E821 /* header.heic in Resources */ = {isa = PBXBuildFile; fileRef = 2C5F71F52C3D6C2600B0FE4B /* header.heic */; };
@@ -2332,6 +2335,10 @@
 		77BA1AB22CCBB6EE009BF0EA /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		80E80EF026970DC3008F245A /* ReceiptFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptFetcher.swift; sourceTree = "<group>"; };
 		8337DD6D2E0A7CFE000798BF /* paywall-preview-resources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "paywall-preview-resources"; sourceTree = "<group>"; };
+		83675A6C2E1E73C40012B894 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		83675A6D2E1E73C40012B894 /* PaywallValidationTester.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PaywallValidationTester.entitlements; sourceTree = "<group>"; };
+		83675A6E2E1E73C40012B894 /* PaywallValidationTesterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallValidationTesterApp.swift; sourceTree = "<group>"; };
+		83675A6F2E1E73C40012B894 /* PaywallValidationTesterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallValidationTesterView.swift; sourceTree = "<group>"; };
 		83B277512E1E3C8700E1E821 /* PaywallValidationTester.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PaywallValidationTester.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		83EE33252E1E20360011CF1C /* PaywallPreviewResourcesLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallPreviewResourcesLoader.swift; sourceTree = "<group>"; };
 		84C3F1AC1D7E1E64341D3936 /* Pods_RevenueCat_PurchasesTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RevenueCat_PurchasesTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -2661,10 +2668,6 @@
 		FDE57B0D2DF8BC1100101CE2 /* VirtualCurrenciesDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrenciesDecodingTests.swift; sourceTree = "<group>"; };
 		FECF627761D375C8431EB866 /* StoreProduct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreProduct.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		83B277522E1E3C8700E1E821 /* PaywallValidationTester */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = PaywallValidationTester; sourceTree = "<group>"; };
-/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		2DAC5F6F26F13C9800C5258F /* Frameworks */ = {
@@ -3636,7 +3639,7 @@
 		2DD500EF2C519EB4009C19B7 /* TestingApps */ = {
 			isa = PBXGroup;
 			children = (
-				83B277522E1E3C8700E1E821 /* PaywallValidationTester */,
+				83675A702E1E73C40012B894 /* PaywallValidationTester */,
 				2DD500932C519EB4009C19B7 /* PaywallsTester */,
 				2DD500EE2C519EB4009C19B7 /* PurchaseTesterSwiftUI */,
 			);
@@ -4998,6 +5001,17 @@
 			path = StickyFooter;
 			sourceTree = "<group>";
 		};
+		83675A702E1E73C40012B894 /* PaywallValidationTester */ = {
+			isa = PBXGroup;
+			children = (
+				83675A6C2E1E73C40012B894 /* Assets.xcassets */,
+				83675A6D2E1E73C40012B894 /* PaywallValidationTester.entitlements */,
+				83675A6E2E1E73C40012B894 /* PaywallValidationTesterApp.swift */,
+				83675A6F2E1E73C40012B894 /* PaywallValidationTesterView.swift */,
+			);
+			path = PaywallValidationTester;
+			sourceTree = "<group>";
+		};
 		887A5FBB2C1D036200E1A461 /* RevenueCatUIDev */ = {
 			isa = PBXGroup;
 			children = (
@@ -5892,9 +5906,6 @@
 			);
 			dependencies = (
 			);
-			fileSystemSynchronizedGroups = (
-				83B277522E1E3C8700E1E821 /* PaywallValidationTester */,
-			);
 			name = PaywallValidationTester;
 			packageProductDependencies = (
 				83B277642E1E429A00E1E821 /* RevenueCat */,
@@ -6264,6 +6275,7 @@
 			files = (
 				83B2775F2E1E3CD300E1E821 /* header.heic in Resources */,
 				83B2775E2E1E3CCD00E1E821 /* background.heic in Resources */,
+				83675A712E1E73C40012B894 /* Assets.xcassets in Resources */,
 				83B2775D2E1E3CC800E1E821 /* paywall-preview-resources in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -7262,6 +7274,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				83B277602E1E3CE800E1E821 /* PaywallPreviewResourcesLoader.swift in Sources */,
+				83675A722E1E73C40012B894 /* PaywallValidationTesterApp.swift in Sources */,
+				83675A732E1E73C40012B894 /* PaywallValidationTesterView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
