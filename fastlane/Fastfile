@@ -381,9 +381,9 @@ platform :ios do
       xcargs += ["TARGETED_DEVICE_FAMILY='#{targeted_device_families[platform]}'"]
     end
     
-    # For iOS apps on Mac, use ad-hoc code signing since iOS provisioning profiles don't work on macOS
+    # For iOS apps on Mac, use development team code signing since ad-hoc is not allowed with iOS 18.0
     if platform.include?("-app-on-mac")
-      xcargs += ["CODE_SIGN_IDENTITY='-'", "CODE_SIGNING_REQUIRED=YES"]
+      xcargs += ["CODE_SIGN_IDENTITY='Apple Development'", "CODE_SIGNING_REQUIRED=YES"]
     end
 
     # iOS apps on Mac still need iOS provisioning profiles, but they run on macOS
