@@ -748,7 +748,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         // 6. Purchase again
         self.logger.clearMessages()
-        try await self.purchaseShortestDuration()
+        let newCustomerInfo = try await self.purchaseMonthlyOffering().customerInfo
+        try await self.verifyEntitlementWentThrough(newCustomerInfo)
 
         // 7. Verify transaction is posted as a purchase.
         try await self.verifyReceiptIsEventuallyPosted()
