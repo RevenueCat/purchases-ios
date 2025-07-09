@@ -50,7 +50,9 @@ struct PaywallValidationTesterView: View {
 
             do {
                 let loader = try PaywallPreviewResourcesLoader(baseResourcesURL: baseResourcesURL)
-                offerings = loader.allOfferings
+                offerings = loader.allOfferings.sorted(by: { a, b in
+                    a.identifier < b.identifier
+                })
             }
             catch {
                 print(error)
