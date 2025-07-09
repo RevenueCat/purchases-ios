@@ -902,6 +902,8 @@
 		83B2775E2E1E3CCD00E1E821 /* background.heic in Resources */ = {isa = PBXBuildFile; fileRef = 2C5F71F62C3D6C2600B0FE4B /* background.heic */; };
 		83B2775F2E1E3CD300E1E821 /* header.heic in Resources */ = {isa = PBXBuildFile; fileRef = 2C5F71F52C3D6C2600B0FE4B /* header.heic */; };
 		83B277602E1E3CE800E1E821 /* PaywallPreviewResourcesLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EE33252E1E20360011CF1C /* PaywallPreviewResourcesLoader.swift */; };
+		83B277652E1E429A00E1E821 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 83B277642E1E429A00E1E821 /* RevenueCat */; };
+		83B277672E1E429A00E1E821 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 83B277662E1E429A00E1E821 /* RevenueCatUI */; };
 		83EE33262E1E20430011CF1C /* PaywallPreviewResourcesLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EE33252E1E20360011CF1C /* PaywallPreviewResourcesLoader.swift */; };
 		8834AFA52C2B9375005A72FE /* PresentIfNeededTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A62222C1D168B00E1A461 /* PresentIfNeededTests.swift */; };
 		887A5FBD2C1D036200E1A461 /* RevenueCatUIDev.h in Headers */ = {isa = PBXBuildFile; fileRef = 887A5FBC2C1D036200E1A461 /* RevenueCatUIDev.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -2750,6 +2752,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				83B277672E1E429A00E1E821 /* RevenueCatUI in Frameworks */,
+				83B277652E1E429A00E1E821 /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5893,6 +5897,8 @@
 			);
 			name = PaywallValidationTester;
 			packageProductDependencies = (
+				83B277642E1E429A00E1E821 /* RevenueCat */,
+				83B277662E1E429A00E1E821 /* RevenueCatUI */,
 			);
 			productName = PaywallValidationTester;
 			productReference = 83B277512E1E3C8700E1E821 /* PaywallValidationTester.app */;
@@ -9240,6 +9246,14 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 57E04739277260DE0082FE91 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
 			productName = SnapshotTesting;
+		};
+		83B277642E1E429A00E1E821 /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = RevenueCat;
+		};
+		83B277662E1E429A00E1E821 /* RevenueCatUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = RevenueCatUI;
 		};
 		887A63492C1D17EF00E1A461 /* Nimble */ = {
 			isa = XCSwiftPackageProductDependency;
