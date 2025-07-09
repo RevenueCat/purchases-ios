@@ -382,17 +382,19 @@ platform :ios do
     end
     
     # For iOS apps on Mac, explicitly specity "Apple Development" since "iOS Development" was being used by default for unknown reason
+    match_type = platform.include?("-app-on-mac") ? "appstore" : "development"
     if platform.include?("-app-on-mac")
-      xcargs += ["CODE_SIGN_IDENTITY='Apple Development'", "CODE_SIGNING_REQUIRED=YES"]
+      xcargs += ["CODE_SIGN_IDENTITY='Apple Distribution'", "CODE_SIGNING_REQUIRED=YES"]
     end
 
     # iOS apps on Mac still need iOS provisioning profiles, but they run on macOS
     catalyst_platform = platform.start_with?("mac-catalyst") ? "macos" : "ios"
     UI.message("Platform: #{platform}")
+    UI.message("Match type: #{match_type}")
     UI.message("Catalyst platform: #{catalyst_platform}")
 
     Dir.chdir("../Tests/UnitTestsHostApp/fastlane") do
-      match(type: "development", platform: catalyst_platform, readonly: true)
+      match(type: match_type, platform: catalyst_platform, readonly: true)
     end
 
     scan_options = {
@@ -402,7 +404,7 @@ platform :ios do
       destination: destination,
       catalyst_platform: catalyst_platform,
       result_bundle: true,
-      result_bundle_path: result_bundle_path,
+      result_bundle_path: result_bundle_path
     }
     
     # Add xcargs only if we have build settings to apply
