@@ -22,6 +22,7 @@ class Backend {
     let internalAPI: InternalAPI
     let customerCenterConfig: CustomerCenterConfigAPI
     let redeemWebPurchaseAPI: RedeemWebPurchaseAPI
+    let virtualCurrenciesAPI: VirtualCurrenciesAPI
 
     private let config: BackendConfiguration
 
@@ -61,6 +62,7 @@ class Backend {
         let internalAPI = InternalAPI(backendConfig: backendConfig)
         let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
         let redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
+        let virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
 
         self.init(backendConfig: backendConfig,
                   customerAPI: customer,
@@ -69,7 +71,8 @@ class Backend {
                   offlineEntitlements: offlineEntitlements,
                   internalAPI: internalAPI,
                   customerCenterConfig: customerCenterConfig,
-                  redeemWebPurchaseAPI: redeemWebPurchaseAPI)
+                  redeemWebPurchaseAPI: redeemWebPurchaseAPI,
+                  virtualCurrenciesAPI: virtualCurrenciesAPI)
     }
 
     required init(backendConfig: BackendConfiguration,
@@ -79,7 +82,8 @@ class Backend {
                   offlineEntitlements: OfflineEntitlementsAPI,
                   internalAPI: InternalAPI,
                   customerCenterConfig: CustomerCenterConfigAPI,
-                  redeemWebPurchaseAPI: RedeemWebPurchaseAPI) {
+                  redeemWebPurchaseAPI: RedeemWebPurchaseAPI,
+                  virtualCurrenciesAPI: VirtualCurrenciesAPI) {
         self.config = backendConfig
 
         self.customer = customerAPI
@@ -89,6 +93,7 @@ class Backend {
         self.internalAPI = internalAPI
         self.customerCenterConfig = customerCenterConfig
         self.redeemWebPurchaseAPI = redeemWebPurchaseAPI
+        self.virtualCurrenciesAPI = virtualCurrenciesAPI
     }
 
     func clearHTTPClientCaches() {
@@ -143,7 +148,7 @@ class Backend {
         self.customer.post(subscriberAttributes: subscriberAttributes, appUserID: appUserID, completion: completion)
     }
 
-    #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    #if DEBUG
     /// Checks if the SDK should log the status of the health report to the console.
     /// - Parameter appUserID: An `appUserID` that allows the Backend to check for health report availability
     /// - Returns: Whether the health report should be reported to the console for the given `appUserID`.

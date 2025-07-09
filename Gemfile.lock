@@ -304,8 +304,8 @@ GEM
     i18n (1.14.7)
       concurrent-ruby (~> 1.0)
     io-endpoint (0.15.2)
-    io-event (1.11.0)
-    io-stream (0.8.0)
+    io-event (1.11.2)
+    io-stream (0.10.0)
     jmespath (1.6.2)
     json (2.11.3)
     jwt (2.10.1)
@@ -352,7 +352,7 @@ GEM
       tty-color (~> 0.5)
     plist (3.7.2)
     protocol-hpack (1.5.1)
-    protocol-http (0.50.1)
+    protocol-http (0.51.0)
     protocol-http1 (0.34.0)
       protocol-http (~> 0.22)
     protocol-http2 (0.22.1)
@@ -395,7 +395,7 @@ GEM
     simctl (1.6.10)
       CFPropertyList
       naturally
-    sorbet-runtime (0.5.12210)
+    sorbet-runtime (0.5.12219)
     strings (0.2.1)
       strings-ansi (~> 0.2)
       unicode-display_width (>= 1.5, < 3.0)

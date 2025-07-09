@@ -1,12 +1,21 @@
 import ProjectDescription
+import ProjectDescriptionHelpers
+import Foundation
+
+var additionalFiles: [FileElement] = [
+    .glob(pattern: "rc-maestro/Resources/**/Local.xcconfig.sample")
+]
+var shouldAddLocalConfig: Bool = false
+if FileManager.default.fileExists(atPath: "rc-maestro/Resources/**/Local.xcconfig") {
+    shouldAddLocalConfig = true
+     additionalFiles.append(.glob(pattern: "rc-maestro/Resources/**/Local.xcconfig"))
+}
 
 let project = Project(
     name: "Maestro",
-    organizationName: "RevenueCat",
+    organizationName: .revenueCatOrgName,
     settings: .settings(
-        configurations: [
-            .debug(name: "Debug", xcconfig: .relativeToManifest("rc-maestro/Resources/Local.xcconfig"))
-        ],
+        base: [:].automaticCodeSigning(devTeam: .revenueCatTeamID),
         defaultSettings: .essential
     ),
     targets: [
@@ -30,9 +39,9 @@ let project = Project(
                 "rc-maestro/Resources/**/*.xcassets",
             ],
             dependencies: [
-                .external(name: "RevenueCat"),
-                .external(name: "RevenueCatUI"),
-                .sdk(name: "StoreKit", type: .framework, status: .required)
+                .revenueCat,
+                .revenueCatUI,
+                .storeKit
             ]
         )
     ],
@@ -51,8 +60,5 @@ let project = Project(
             )
         )
     ],
-    additionalFiles: [
-        "rc-maestro/Resources/**/Local.xcconfig.sample",
-        "rc-maestro/Resources/**/Local.xcconfig"
-    ]
+    additionalFiles: additionalFiles
 )

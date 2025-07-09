@@ -73,3 +73,18 @@ Local.xcconfig
 /buildServer.json
 
 *.orig
+
+# tuist
+**/Derived/
+
+# Tuist workspaces
+RevenueCat-Workspace.xcworkspace/
+Projects/**/*.xcodeproj
+Examples/**/*.xcodeproj
+
+Projects/**/xcshareddata/
+Projects/**/*.xcworkspacedata
+
+Examples/**/.xcworkspacedata
+Examples/**/*.xcscheme
+Examples/**/xcshareddata/**

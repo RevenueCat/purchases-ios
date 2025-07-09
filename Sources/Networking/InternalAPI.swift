@@ -16,7 +16,7 @@ import Foundation
 class InternalAPI {
 
     typealias ResponseHandler = (BackendError?) -> Void
-    #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    #if DEBUG
     typealias HealthReportResponseHandler = (Result<HealthReport, BackendError>) -> Void
     typealias HealthReportAvailabilityResponseHandler = (Result<HealthReportAvailability, BackendError>) -> Void
 
@@ -30,7 +30,7 @@ class InternalAPI {
     init(backendConfig: BackendConfiguration) {
         self.backendConfig = backendConfig
         self.healthCallbackCache = .init()
-        #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        #if DEBUG
         self.healthReportCallbackCache = .init()
         self.healthReportAvailabilityCallbackCache = .init()
         #endif
@@ -49,7 +49,7 @@ class InternalAPI {
                                                  cacheStatus: cacheStatus)
     }
 
-    #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    #if DEBUG
     func healthReportRequest(appUserID: String, completion: @escaping HealthReportResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)

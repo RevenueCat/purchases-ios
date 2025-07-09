@@ -15,7 +15,7 @@ final class SDKHealthManager: Sendable {
         self.paymentAuthorizationProvider = paymentAuthorizationProvider
     }
 
-    #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    #if DEBUG
     func healthReport() async -> PurchasesDiagnostics.SDKHealthReport {
         do {
             if !paymentAuthorizationProvider.isAuthorized() {
@@ -33,7 +33,9 @@ final class SDKHealthManager: Sendable {
             return .init(status: .unhealthy(.unknown(error)))
         }
     }
+    #endif
 
+    #if DEBUG && !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func logSDKHealthReportOutcome() async {
         let report = await healthReport()
         switch report.status {

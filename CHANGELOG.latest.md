@@ -1,22 +1,13 @@
 ## RevenueCat SDK
-### Customer Center
+### 🐞 Bugfixes
+* Fixes API tests after changes to public API (#5365) via Pol Piella Abadia (@polpielladev)
+### Virtual Currencies
 #### ✨ New Features
-* Use `card_store_promotional` for RC Promos in card & history (#5275) via Facundo Menzella (@facumenzella)
-* Refactor PurchaseHistory to use PurchaseInformation (#5260) via Facundo Menzella (@facumenzella)
-#### 🐞 Bugfixes
-* Add tests for PurchaseInformationView.Badge + rc promo (#5273) via Facundo Menzella (@facumenzella)
+* Virtual Currency Support (#5108) via Will Taylor (@fire-at-will)
 
 ### 🔄 Other Changes
-* [Paywalls] Update ImageComponent max width after initial layout if it changes. (#5291) via Mark Villacampa (@MarkVillacampa)
-* Fix index and mgiration guides docs not being updated (#5298) via Mark Villacampa (@MarkVillacampa)
-* Add .yield to `PaywallViewEventsFullscreenLightModeTests` (#5294) via Facundo Menzella (@facumenzella)
-* Add missing `@_spi` to import in backend tests (#5297) via Antonio Pallares (@ajpallares)
-* Use minimal permissions for installation tests (#5274) via JayShortway (@JayShortway)
-* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5295) via RevenueCat Git Bot (@RCGitBot)
-* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5289) via RevenueCat Git Bot (@RCGitBot)
-* Delete Examples folder from carthage checkout (#5287) via Facundo Menzella (@facumenzella)
-* Remove CustomerCenterConfigDataAPI from API Tests (#5286) via Facundo Menzella (@facumenzella)
-* Delete duplicate OfferingsList.swift from PaywallTester (#5249) via Facundo Menzella (@facumenzella)
-* Add abbrev to Gemfile (#5207) via Facundo Menzella (@facumenzella)
-* Test removing example apps before Carthage installation test (#5268) via Facundo Menzella (@facumenzella)
-* Add _spi(Internal) to Customer Center (#5270) via Facundo Menzella (@facumenzella)
+* [DX-457] Re-apply Health SDK logging on app launch (#5360) via Pol Piella Abadia (@polpielladev)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5361) via RevenueCat Git Bot (@RCGitBot)
+* Add basics for a working tuist workspace (#5248) via Facundo Menzella (@facumenzella)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5357) via RevenueCat Git Bot (@RCGitBot)
+* Fix one flaky unit test (#5356) via Antonio Pallares (@ajpallares)

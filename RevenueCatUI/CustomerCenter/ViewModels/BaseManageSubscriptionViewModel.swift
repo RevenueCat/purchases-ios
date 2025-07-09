@@ -64,6 +64,9 @@ class BaseManageSubscriptionViewModel: ObservableObject {
     var purchaseInformation: PurchaseInformation?
 
     @Published
+    var showAllInAppCurrenciesScreen: Bool = false
+
+    @Published
     private(set) var refundRequestStatus: RefundRequestStatus?
 
     private var error: Error?
@@ -136,6 +139,10 @@ class BaseManageSubscriptionViewModel: ObservableObject {
 
     func onDismissInAppBrowser() {
         self.inAppBrowserURL = nil
+    }
+
+    func displayAllInAppCurrenciesScreen() {
+        self.showAllInAppCurrenciesScreen = true
     }
 
 #endif
