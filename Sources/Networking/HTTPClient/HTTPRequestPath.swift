@@ -86,6 +86,7 @@ extension HTTPRequest {
         case appHealthReportAvailability(appUserID: String)
         case getProductEntitlementMapping
         case getCustomerCenterConfig(appUserID: String)
+        case getVirtualCurrencies(appUserID: String)
         case postRedeemWebPurchase
 
     }
@@ -139,6 +140,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postRedeemWebPurchase,
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
+                .getVirtualCurrencies,
                 .appHealthReport:
             return true
 
@@ -162,6 +164,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postRedeemWebPurchase,
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
+                .getVirtualCurrencies,
                 .appHealthReport:
             return true
         case .health,
@@ -178,6 +181,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .health,
                 .getOfferings,
                 .getProductEntitlementMapping,
+                .getVirtualCurrencies,
                 .appHealthReport,
                 .appHealthReportAvailability:
             return true
@@ -197,6 +201,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .getCustomerInfo,
                 .logIn,
                 .postReceiptData,
+                .getVirtualCurrencies,
                 .health,
                 .appHealthReportAvailability:
             return true
@@ -265,6 +270,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .postRedeemWebPurchase:
             return "subscribers/redeem_purchase"
 
+        case let .getVirtualCurrencies(appUserID):
+            return "subscribers/\(Self.escape(appUserID))/virtual_currencies"
         }
     }
 
@@ -311,6 +318,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .appHealthReport:
             return "get_app_health_report"
+
+        case .getVirtualCurrencies:
+            return "get_virtual_currencies"
 
         case .appHealthReportAvailability:
             return "get_app_health_report_availability"

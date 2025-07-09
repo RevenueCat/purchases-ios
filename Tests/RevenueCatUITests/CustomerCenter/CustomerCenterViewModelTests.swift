@@ -47,6 +47,7 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(viewModel.subscriptionsSection).to(beEmpty())
         expect(viewModel.nonSubscriptionsSection).to(beEmpty())
         expect(viewModel.state) == .notLoaded
+        expect(viewModel.virtualCurrencies).to(beNil())
     }
 
     func testStateChangeToError() {
@@ -122,7 +123,11 @@ final class CustomerCenterViewModelTests: TestCase {
 
     func testLoadHasSubscriptionsGoogle() async throws {
         let mockPurchases = MockCustomerCenterPurchases(
-            customerInfo: CustomerCenterViewModelTests.customerInfoWithGoogleSubscriptions
+            customerInfo: CustomerCenterViewModelTests.customerInfoWithGoogleSubscription(
+                requestDate: Date().addingTimeInterval(-60*60),
+                entitlementExpiryDate: Date(),
+                subscriptionExpiryDate: Date()
+            )
         )
 
         let viewModel = CustomerCenterViewModel(
@@ -134,7 +139,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         expect(viewModel.hasPurchases).to(beTrue())
         let purchaseInformation = try XCTUnwrap(viewModel.subscriptionsSection.first)
-        expect(purchaseInformation.productIdentifier) == "com.revenuecat.product"
+        expect(purchaseInformation.productIdentifier) == "test_msmath_premium_v1"
 
         expect(viewModel.nonSubscriptionsSection).to(beEmpty())
         expect(purchaseInformation.store) == .playStore
@@ -179,6 +184,94 @@ final class CustomerCenterViewModelTests: TestCase {
         default:
             fail("Expected state to be .error")
         }
+    }
+
+    func testLoadLoadsVirtualCurrenciesWhenDisplayVirtualCurrenciesIsTrue() async throws {
+        let mockPurchases = MockCustomerCenterPurchases(
+            customerInfo: CustomerInfoFixtures.customerInfoWithAppleSubscriptions,
+            customerCenterConfigData: CustomerCenterConfigData.mock(displayVirtualCurrencies: true)
+        )
+        mockPurchases.virtualCurrenciesResult = .success(VirtualCurrenciesFixtures.fourVirtualCurrencies)
+
+        let viewModel = CustomerCenterViewModel(
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchasesProvider: mockPurchases
+        )
+
+        await viewModel.loadScreen()
+        expect(viewModel.virtualCurrencies).toNot(beNil())
+        guard let virtualCurrencies = viewModel.virtualCurrencies else {
+            fail("Virtual currencies should not be nil")
+            return
+        }
+
+        expect(virtualCurrencies.all.count).to(equal(4))
+        expect(virtualCurrencies["GLD"]).toNot(beNil())
+        expect(virtualCurrencies["SLV"]).toNot(beNil())
+        expect(virtualCurrencies["BRNZ"]).toNot(beNil())
+        expect(virtualCurrencies["PLTNM"]).toNot(beNil())
+        expect(mockPurchases.virtualCurrenciesCallCount).to(equal(1))
+        expect(mockPurchases.invalidateVirtualCurrenciesCacheCallCount).to(equal(1))
+    }
+
+    func testLoadDoesNotLoadVirtualCurrenciesWhenDisplayVirtualCurrenciesIsFalse() async throws {
+        let mockPurchases = MockCustomerCenterPurchases(
+            customerInfo: CustomerInfoFixtures.customerInfoWithAppleSubscriptions,
+            customerCenterConfigData: CustomerCenterConfigData.mock(displayVirtualCurrencies: false)
+        )
+
+        let viewModel = CustomerCenterViewModel(
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchasesProvider: mockPurchases
+        )
+
+        await viewModel.loadScreen()
+        expect(viewModel.virtualCurrencies).to(beNil())
+        expect(mockPurchases.virtualCurrenciesCallCount).to(equal(0))
+    }
+
+    func testShouldShowVirtualCurrenciesIsFalseBeforeConfigIsLoaded() async throws {
+        let mockPurchases = MockCustomerCenterPurchases(
+            customerInfo: CustomerInfoFixtures.customerInfoWithAppleSubscriptions,
+            customerCenterConfigData: CustomerCenterConfigData.mock(displayVirtualCurrencies: true)
+        )
+
+        let viewModel = CustomerCenterViewModel(
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchasesProvider: mockPurchases
+        )
+
+        expect(viewModel.shouldShowVirtualCurrencies).to(beFalse())
+    }
+
+    func testShouldShowVirtualCurrenciesTrue() async throws {
+        let mockPurchases = MockCustomerCenterPurchases(
+            customerInfo: CustomerInfoFixtures.customerInfoWithAppleSubscriptions,
+            customerCenterConfigData: CustomerCenterConfigData.mock(displayVirtualCurrencies: true)
+        )
+
+        let viewModel = CustomerCenterViewModel(
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchasesProvider: mockPurchases
+        )
+
+        await viewModel.loadScreen()
+
+        expect(viewModel.shouldShowVirtualCurrencies).to(beTrue())
+    }
+
+    func testShouldShowVirtualCurrenciesFalse() {
+        let mockPurchases = MockCustomerCenterPurchases(
+            customerInfo: CustomerInfoFixtures.customerInfoWithAppleSubscriptions,
+            customerCenterConfigData: CustomerCenterConfigData.mock(displayVirtualCurrencies: false)
+        )
+
+        let viewModel = CustomerCenterViewModel(
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchasesProvider: mockPurchases
+        )
+
+        expect(viewModel.shouldShowVirtualCurrencies).to(beFalse())
     }
 
     func testShouldShowActiveSubscription_whenUserHasOneActiveSubscriptionOneEntitlement() async throws {
@@ -1101,49 +1194,60 @@ private extension CustomerCenterViewModelTests {
         )
     }()
 
-    static let customerInfoWithGoogleSubscriptions: CustomerInfo = {
+    static func customerInfoWithGoogleSubscription(
+        requestDate: Date,
+        entitlementExpiryDate: Date,
+        subscriptionExpiryDate: Date
+    ) -> CustomerInfo {
+        let formatter = ISO8601DateFormatter()
+
         return .decode(
         """
         {
-            "schema_version": "4",
-            "request_date": "2022-03-08T17:42:58Z",
-            "request_date_ms": 1646761378845,
-            "subscriber": {
-                "first_seen": "2022-03-08T17:42:58Z",
-                "last_seen": "2022-03-08T17:42:58Z",
-                "management_url": "https://apps.apple.com/account/subscriptions",
-                "non_subscriptions": {
-                },
-                "original_app_user_id": "$RCAnonymousID:5b6fdbac3a0c4f879e43d269ecdf9ba1",
-                "original_application_version": "1.0",
-                "original_purchase_date": "2022-04-12T00:03:24Z",
-                "other_purchases": {
-                },
-                "subscriptions": {
-                    "com.revenuecat.product": {
-                        "billing_issues_detected_at": null,
-                        "expires_date": "2062-04-12T00:03:35Z",
-                        "grace_period_expires_date": null,
-                        "is_sandbox": true,
-                        "original_purchase_date": "2022-04-12T00:03:28Z",
-                        "period_type": "intro",
-                        "purchase_date": "2022-04-12T00:03:28Z",
-                        "store": "play_store",
-                        "unsubscribe_detected_at": null
-                    },
-                },
-                "entitlements": {
-                    "premium": {
-                        "expires_date": "2062-04-12T00:03:35Z",
-                        "product_identifier": "com.revenuecat.product",
-                        "purchase_date": "2022-04-12T00:03:28Z"
-                    }
-                }
+          "request_date": "\(formatter.string(from: requestDate))",
+          "request_date_ms": 1751269357064,
+          "subscriber": {
+            "entitlements": {
+              "MS Math Premium": {
+                "expires_date": "\(formatter.string(from: entitlementExpiryDate))",
+                "grace_period_expires_date": null,
+                "product_identifier": "test_msmath_premium_v1",
+                "product_plan_identifier": "msmath-1m-autorenew",
+                "purchase_date": "2025-06-30T07:39:30Z"
+              }
+            },
+            "first_seen": "2025-06-26T13:51:09Z",
+            "last_seen": "2025-06-30T07:30:49Z",
+            "management_url": "https://play.google.com/store/account/subscriptions",
+            "non_subscriptions": {},
+            "original_app_user_id": "9004c18e-75ff-42f8-9574-961ca0397fbd",
+            "original_application_version": null,
+            "original_purchase_date": null,
+            "other_purchases": {},
+            "subscriptions": {
+              "test_msmath_premium_v1": {
+                "auto_resume_date": null,
+                "billing_issues_detected_at": null,
+                "display_name": null,
+                "expires_date": "\(formatter.string(from: subscriptionExpiryDate))",
+                "grace_period_expires_date": null,
+                "is_sandbox": true,
+                "management_url": "https://play.google.com/store/account/subscriptions",
+                "original_purchase_date": "2025-06-30T07:29:31Z",
+                "period_type": "normal",
+                "price": { "amount": 3.59, "currency": "EUR" },
+                "product_plan_identifier": "msmath-1m-autorenew",
+                "purchase_date": "2025-06-30T07:39:30Z",
+                "refunded_at": null,
+                "store": "play_store",
+                "store_transaction_id": "GPA.3302-7309-1582-35065..1",
+                "unsubscribe_detected_at": null
+              }
             }
+          }
         }
-        """
-        )
-    }()
+        """)
+    }
 
     static let customerInfoWithoutSubscriptions: CustomerInfo = {
         return .decode(

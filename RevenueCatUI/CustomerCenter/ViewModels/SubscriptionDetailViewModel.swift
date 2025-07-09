@@ -31,6 +31,7 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
     var isRefreshing: Bool = false
 
     let showPurchaseHistory: Bool
+    let showVirtualCurrencies: Bool
 
     var shouldShowContactSupport: Bool {
         purchaseInformation?.store != .appStore
@@ -49,25 +50,27 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
         customerInfoViewModel: CustomerCenterViewModel,
         screen: CustomerCenterConfigData.Screen,
         showPurchaseHistory: Bool,
+        showVirtualCurrencies: Bool,
         allowsMissingPurchaseAction: Bool,
         actionWrapper: CustomerCenterActionWrapper,
         purchaseInformation: PurchaseInformation? = nil,
         refundRequestStatus: RefundRequestStatus? = nil,
         purchasesProvider: CustomerCenterPurchasesType,
         loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
+            self.showVirtualCurrencies = showVirtualCurrencies
             self.showPurchaseHistory = showPurchaseHistory
             self.allowsMissingPurchaseAction = allowsMissingPurchaseAction
             self.customerInfoViewModel = customerInfoViewModel
 
-            super.init(
-                screen: screen,
-                actionWrapper: actionWrapper,
-                purchaseInformation: purchaseInformation,
-                refundRequestStatus: refundRequestStatus,
-                purchasesProvider: purchasesProvider,
-                loadPromotionalOfferUseCase: loadPromotionalOfferUseCase
-            )
-        }
+        super.init(
+            screen: screen,
+            actionWrapper: actionWrapper,
+            purchaseInformation: purchaseInformation,
+            refundRequestStatus: refundRequestStatus,
+            purchasesProvider: purchasesProvider,
+            loadPromotionalOfferUseCase: loadPromotionalOfferUseCase
+        )
+    }
 
     func refreshPurchase() {
         cancellable = customerInfoViewModel.publisher(for: purchaseInformation)?
@@ -92,6 +95,7 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
         customerInfoViewModel: CustomerCenterViewModel,
         screen: CustomerCenterConfigData.Screen,
         showPurchaseHistory: Bool,
+        showVirtualCurrencies: Bool,
         allowsMissingPurchaseAction: Bool,
         purchaseInformation: PurchaseInformation? = nil,
         refundRequestStatus: RefundRequestStatus? = nil
@@ -100,6 +104,7 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
             customerInfoViewModel: customerInfoViewModel,
             screen: screen,
             showPurchaseHistory: showPurchaseHistory,
+            showVirtualCurrencies: showVirtualCurrencies,
             allowsMissingPurchaseAction: allowsMissingPurchaseAction,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchaseInformation,

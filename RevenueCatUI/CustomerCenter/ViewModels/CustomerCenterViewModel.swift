@@ -35,6 +35,9 @@ import Foundation
     private(set) var appIsLatestVersion: Bool = defaultAppIsLatestVersion
 
     @Published
+    private(set) var virtualCurrencies: VirtualCurrencies?
+
+    @Published
     private(set) var onUpdateAppClick: (() -> Void)?
 
     @Published
@@ -103,6 +106,10 @@ import Foundation
         ) ?? false
     }
 
+    var shouldShowVirtualCurrencies: Bool {
+        configuration?.support.displayVirtualCurrencies == true
+    }
+
     private let currentVersionFetcher: CurrentVersionFetcher
 
     internal var customerInfo: CustomerInfo?
@@ -154,11 +161,13 @@ import Foundation
     convenience init(
         activeSubscriptionPurchases: [PurchaseInformation],
         activeNonSubscriptionPurchases: [PurchaseInformation],
+        virtualCurrencies: VirtualCurrencies? = nil,
         configuration: CustomerCenterConfigData
     ) {
         self.init(actionWrapper: CustomerCenterActionWrapper(legacyActionHandler: nil))
         self.subscriptionsSection = activeSubscriptionPurchases
         self.nonSubscriptionsSection = activeNonSubscriptionPurchases
+        self.virtualCurrencies = virtualCurrencies
         self.configuration = configuration
         self.state = .success
     }
@@ -187,6 +196,14 @@ import Foundation
 
             try await self.loadPurchases(customerInfo: customerInfo)
             try await self.loadCustomerCenterConfig()
+
+            if shouldShowVirtualCurrencies {
+                purchasesProvider.invalidateVirtualCurrenciesCache()
+                self.virtualCurrencies = try? await purchasesProvider.virtualCurrencies()
+            } else {
+                self.virtualCurrencies = nil
+            }
+
             self.state = .success
         } catch {
             self.state = .error(error)
@@ -289,16 +306,22 @@ private extension CustomerCenterViewModel {
 
     func loadSubscriptionsSection(customerInfo: CustomerInfo) async {
         var activeSubscriptionPurchases: [PurchaseInformation] = []
-        for subscription in customerInfo.activeSubscriptions
-            .compactMap({ id in customerInfo.subscriptionsByProductIdentifier[id] })
+        let subscriptions = customerInfo.activeSubscriptions
+            .compactMap({ id in
+                // Do the opposite as CustomerInfo.extractProductIDAndBasePlan for non-apple products
+                let idWithoutBasePlan = id.split(separator: ":").first.map { id in String(id) } ?? id
+                return customerInfo.subscriptionsByProductIdentifier[idWithoutBasePlan]
+                    ?? customerInfo.subscriptionsByProductIdentifier[id] // fallback in case it fails
+            })
             .sorted(by: {
                 guard let date1 = $0.expiresDate, let date2 = $1.expiresDate else {
                     return $0.expiresDate != nil
                 }
 
                 return date1 < date2
-            }) {
+            })
 
+        for subscription in subscriptions {
             let purchaseInfo: PurchaseInformation = await .from(
                 transaction: subscription,
                 customerInfo: customerInfo,
