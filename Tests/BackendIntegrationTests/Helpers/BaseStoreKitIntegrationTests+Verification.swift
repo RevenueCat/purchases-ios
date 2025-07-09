@@ -177,12 +177,18 @@ extension BaseStoreKitIntegrationTests {
     }
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-    @discardableResult
-    func verifySubscriptionExpired() async throws -> CustomerInfo {
+    func verifySubscriptionExpired() async throws {
+        try await asyncWait(
+            description: "Subscription should be expired",
+            timeout: .seconds(5),
+            pollInterval: .milliseconds(100)
+        ) {
+            let info = try? await self.purchases.syncPurchases()
+            return info?.entitlements.active.isEmpty == true
+        }
+
         let info = try await self.purchases.syncPurchases()
         self.assertNoActiveSubscription(info)
-
-        return info
     }
     #endif
 
