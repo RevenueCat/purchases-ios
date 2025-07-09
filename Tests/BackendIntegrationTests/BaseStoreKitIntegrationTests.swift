@@ -62,11 +62,6 @@ class BaseStoreKitIntegrationTests: BaseBackendIntegrationTests {
         self.testSession.resetToDefaultState()
         self.testSession.disableDialogs = true
         self.testSession.clearTransactions()
-        if #available(iOS 15.2, *) {
-            self.testSession.timeRate = .monthlyRenewalEveryThirtySeconds
-        } else {
-            self.testSession.timeRate = .oneSecondIsOneDay
-        }
 
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
             // Despite calling `SKTestSession.clearTransactions` tests sometimes
@@ -253,28 +248,9 @@ extension BaseStoreKitIntegrationTests {
     }
 
     func expireSubscription(_ entitlement: EntitlementInfo) async throws {
-        guard let expirationDate = entitlement.expirationDate else { return }
-
         Logger.info(TestMessage.expiring_subscription(productID: entitlement.productIdentifier))
 
-        // Try expiring using `SKTestSession`
-        do {
-            try self.testSession.expireSubscription(productIdentifier: entitlement.productIdentifier)
-        } catch {
-            Logger.warn(TestMessage.expire_subscription_failed(error))
-        }
-
-        let secondsUntilExpiration = expirationDate.timeIntervalSince(Date())
-        guard secondsUntilExpiration > 0 else {
-            Logger.info(TestMessage.finished_waiting_for_expiration)
-            return
-        }
-
-        let timeToSleep = Int(secondsUntilExpiration.rounded(.up) + 1)
-
-        // `SKTestSession.expireSubscription` doesn't seem to work, so force expiration by waiting
-        Logger.warn(TestMessage.sleeping_to_force_expiration(seconds: timeToSleep))
-        try await Task.sleep(nanoseconds: UInt64(timeToSleep * 1_000_000_000))
+        try self.testSession.expireSubscription(productIdentifier: entitlement.productIdentifier)
     }
 
     @available(iOS 15.2, tvOS 15.2, macOS 12.1, watchOS 8.3, *)
