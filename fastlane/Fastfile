@@ -180,11 +180,11 @@ platform :ios do
 
     # Loop over all platforms and generate screenshots for each
     platforms = [
-      "ios",
+      # "ios",
       "iphone-app-on-mac",
-      "ipad-app-on-mac",
-      "mac-catalyst-optimized-for-mac",
-      "mac-catalyst-scaled-to-match-ipad"
+      "ipad-app-on-mac"
+      # "mac-catalyst-optimized-for-mac",
+      # "mac-catalyst-scaled-to-match-ipad"
     ]
     
     platforms.each do |platform|
