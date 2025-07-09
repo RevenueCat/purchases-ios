@@ -400,6 +400,7 @@ platform :ios do
     scan_options = {
       workspace: 'RevenueCat.xcworkspace',
       scheme: 'RevenueCatUITestsDev',
+      configuration: 'Debug',
       testplan: 'Paywall-Screenshots',
       destination: destination,
       catalyst_platform: catalyst_platform,
