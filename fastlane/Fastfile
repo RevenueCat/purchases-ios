@@ -203,7 +203,7 @@ platform :ios do
         commit_message: "[Automated] Updates template screenshots for all platforms (commit: #{this_commit_hash})",
         title: "[AUTOMATIC] Updates template screenshots for all platforms",
         body: "This is an automatic update of the template screenshots for iOS, iPhone app on Mac, iPad app on Mac, Mac Catalyst optimized for Mac, and Mac Catalyst scaled to match iPad platforms.",
-        team_reviewers: ["coresdk", "monetization", "bab-s"]
+        team_reviewers: ["coresdk", "monetization"]
       )
     end
   end
@@ -376,7 +376,7 @@ platform :ios do
     end
 
     Dir.chdir("../Tests/UnitTestsHostApp/fastlane") do
-      match(type: "appstore", readonly: true)
+      match(type: "development", readonly: true)
     end
 
     scan_options = {
