@@ -386,6 +386,7 @@ platform :ios do
     UI.message("Platform: #{platform}")
     UI.message("Catalyst platform: #{catalyst_platform}")
 
+    UI.message("Match type: development")
     Dir.chdir("../Tests/UnitTestsHostApp/fastlane") do
       match(type: "development", platform: catalyst_platform, readonly: true)
     end
