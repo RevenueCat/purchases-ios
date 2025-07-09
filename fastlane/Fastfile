@@ -381,6 +381,8 @@ platform :ios do
       xcargs += ["TARGETED_DEVICE_FAMILY='#{targeted_device_families[platform]}'"]
     end
 
+    xcargs << "-allowProvisioningUpdates"
+
     # iOS apps on Mac still need iOS provisioning profiles, but they run on macOS
     catalyst_platform = platform.start_with?("mac-catalyst") ? "macos" : "ios"
     UI.message("Platform: #{platform}")
