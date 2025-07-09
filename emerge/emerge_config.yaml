@@ -1,3 +1,9 @@
+# Gets around an issue that was causing StoreKit previews to be included when running in Catalyst mode.
+# Should be fixed in EmergeTools v0.10.23+, and this won't be necessary anymore.
+# This exclusion only runs on EmergeTool's server. When running locally, the same exclusion is applied,
+# via the snapshotPreviews() method in PaywallsTesterTests.swift
+# PR: https://github.com/EmergeTools/SnapshotPreviews/pull/239
+
 version: 2.0
 snapshots:
   ios:
