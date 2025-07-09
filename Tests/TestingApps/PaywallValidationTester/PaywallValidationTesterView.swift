@@ -16,7 +16,7 @@ import RevenueCat
 @testable import RevenueCatUI
 
 struct PaywallValidationTesterView: View {
-    var offeringId: String? = nil
+    var offeringId: String? = ProcessInfo.processInfo.environment["OFFERING_ID"]
     @State var offerings:[Offering] = []
 
     var body: some View {
@@ -64,5 +64,5 @@ struct PaywallValidationTesterView: View {
 }
 
 #Preview {
-    PaywallValidationTesterView(offeringId: "app_51612306-paywall_pwbcb8845a57024e7d")
+    PaywallValidationTesterView(offeringId: "Multi-tier 1")
 }
