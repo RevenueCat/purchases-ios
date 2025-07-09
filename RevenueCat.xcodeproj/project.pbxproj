@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 55;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -898,6 +898,10 @@
 		8337DD6E2E0A7D69000798BF /* header.heic in Resources */ = {isa = PBXBuildFile; fileRef = 2C5F71F52C3D6C2600B0FE4B /* header.heic */; };
 		8337DD6F2E0A7D79000798BF /* background.heic in Resources */ = {isa = PBXBuildFile; fileRef = 2C5F71F62C3D6C2600B0FE4B /* background.heic */; };
 		8337DD702E0A7E42000798BF /* paywall-preview-resources in Resources */ = {isa = PBXBuildFile; fileRef = 8337DD6D2E0A7CFE000798BF /* paywall-preview-resources */; };
+		83B2775D2E1E3CC800E1E821 /* paywall-preview-resources in Resources */ = {isa = PBXBuildFile; fileRef = 8337DD6D2E0A7CFE000798BF /* paywall-preview-resources */; };
+		83B2775E2E1E3CCD00E1E821 /* background.heic in Resources */ = {isa = PBXBuildFile; fileRef = 2C5F71F62C3D6C2600B0FE4B /* background.heic */; };
+		83B2775F2E1E3CD300E1E821 /* header.heic in Resources */ = {isa = PBXBuildFile; fileRef = 2C5F71F52C3D6C2600B0FE4B /* header.heic */; };
+		83B277602E1E3CE800E1E821 /* PaywallPreviewResourcesLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EE33252E1E20360011CF1C /* PaywallPreviewResourcesLoader.swift */; };
 		83EE33262E1E20430011CF1C /* PaywallPreviewResourcesLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EE33252E1E20360011CF1C /* PaywallPreviewResourcesLoader.swift */; };
 		8834AFA52C2B9375005A72FE /* PresentIfNeededTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A62222C1D168B00E1A461 /* PresentIfNeededTests.swift */; };
 		887A5FBD2C1D036200E1A461 /* RevenueCatUIDev.h in Headers */ = {isa = PBXBuildFile; fileRef = 887A5FBC2C1D036200E1A461 /* RevenueCatUIDev.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -2326,6 +2330,7 @@
 		77BA1AB22CCBB6EE009BF0EA /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		80E80EF026970DC3008F245A /* ReceiptFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptFetcher.swift; sourceTree = "<group>"; };
 		8337DD6D2E0A7CFE000798BF /* paywall-preview-resources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "paywall-preview-resources"; sourceTree = "<group>"; };
+		83B277512E1E3C8700E1E821 /* PaywallValidationTester.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PaywallValidationTester.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		83EE33252E1E20360011CF1C /* PaywallPreviewResourcesLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallPreviewResourcesLoader.swift; sourceTree = "<group>"; };
 		84C3F1AC1D7E1E64341D3936 /* Pods_RevenueCat_PurchasesTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RevenueCat_PurchasesTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		887A5FB42C1D024300E1A461 /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
@@ -2655,6 +2660,10 @@
 		FECF627761D375C8431EB866 /* StoreProduct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreProduct.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		83B277522E1E3C8700E1E821 /* PaywallValidationTester */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = PaywallValidationTester; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXFrameworksBuildPhase section */
 		2DAC5F6F26F13C9800C5258F /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
@@ -2731,6 +2740,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		57D92C30293E4D0C00D1912A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		83B2774E2E1E3C8700E1E821 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -3616,6 +3632,7 @@
 		2DD500EF2C519EB4009C19B7 /* TestingApps */ = {
 			isa = PBXGroup;
 			children = (
+				83B277522E1E3C8700E1E821 /* PaywallValidationTester */,
 				2DD500932C519EB4009C19B7 /* PaywallsTester */,
 				2DD500EE2C519EB4009C19B7 /* PurchaseTesterSwiftUI */,
 			);
@@ -3916,6 +3933,7 @@
 				4F6BEE312A27B02400CD9322 /* BackendCustomEntitlementsIntegrationTests.xctest */,
 				887A5FBA2C1D036200E1A461 /* RevenueCatUI.framework */,
 				887A63212C1D174200E1A461 /* RevenueCatUITestsDev.xctest */,
+				83B277512E1E3C8700E1E821 /* PaywallValidationTester.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -5858,6 +5876,28 @@
 			productReference = 57D92C33293E4D0C00D1912A /* ReceiptParser.framework */;
 			productType = "com.apple.product-type.framework";
 		};
+		83B277502E1E3C8700E1E821 /* PaywallValidationTester */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 83B2775A2E1E3C8800E1E821 /* Build configuration list for PBXNativeTarget "PaywallValidationTester" */;
+			buildPhases = (
+				83B2774D2E1E3C8700E1E821 /* Sources */,
+				83B2774E2E1E3C8700E1E821 /* Frameworks */,
+				83B2774F2E1E3C8700E1E821 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				83B277522E1E3C8700E1E821 /* PaywallValidationTester */,
+			);
+			name = PaywallValidationTester;
+			packageProductDependencies = (
+			);
+			productName = PaywallValidationTester;
+			productReference = 83B277512E1E3C8700E1E821 /* PaywallValidationTester.app */;
+			productType = "com.apple.product-type.application";
+		};
 		887A5FB92C1D036200E1A461 /* RevenueCatUI */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 887A5FBE2C1D036200E1A461 /* Build configuration list for PBXNativeTarget "RevenueCatUI" */;
@@ -5912,7 +5952,7 @@
 		352629F51F7C4B9100C04F2C /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1540;
+				LastSwiftUpdateCheck = 1640;
 				LastUpgradeCheck = 1430;
 				ORGANIZATIONNAME = RevenueCat;
 				TargetAttributes = {
@@ -5947,6 +5987,9 @@
 					};
 					57D92C32293E4D0C00D1912A = {
 						CreatedOnToolsVersion = 14.1;
+					};
+					83B277502E1E3C8700E1E821 = {
+						CreatedOnToolsVersion = 16.4;
 					};
 					887A5FB92C1D036200E1A461 = {
 						CreatedOnToolsVersion = 15.4;
@@ -6046,6 +6089,7 @@
 				2DAC5F7126F13C9800C5258F /* StoreKitUnitTests */,
 				887A5FB92C1D036200E1A461 /* RevenueCatUI */,
 				887A63202C1D174200E1A461 /* RevenueCatUITestsDev */,
+				83B277502E1E3C8700E1E821 /* PaywallValidationTester */,
 			);
 		};
 /* End PBXProject section */
@@ -6205,6 +6249,16 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		83B2774F2E1E3C8700E1E821 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				83B2775F2E1E3CD300E1E821 /* header.heic in Resources */,
+				83B2775E2E1E3CCD00E1E821 /* background.heic in Resources */,
+				83B2775D2E1E3CC800E1E821 /* paywall-preview-resources in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -7194,6 +7248,14 @@
 				57D92C50293E506100D1912A /* ReceiptParserLogger.swift in Sources */,
 				57D92C4C293E4DE500D1912A /* AppleReceipt.swift in Sources */,
 				57D92C44293E4DE500D1912A /* ASN1ContainerBuilder.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		83B2774D2E1E3C8700E1E821 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				83B277602E1E3CE800E1E821 /* PaywallPreviewResourcesLoader.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -8674,6 +8736,100 @@
 			};
 			name = Release;
 		};
+		83B2775B2E1E3C8800E1E821 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_ENTITLEMENTS = Tests/TestingApps/PaywallValidationTester/PaywallValidationTester.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8SXR2327BM;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.5;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.PaywallValidationTester;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				XROS_DEPLOYMENT_TARGET = 2.5;
+			};
+			name = Debug;
+		};
+		83B2775C2E1E3C8800E1E821 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_ENTITLEMENTS = Tests/TestingApps/PaywallValidationTester/PaywallValidationTester.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8SXR2327BM;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.5;
+				MARKETING_VERSION = 1.0;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.PaywallValidationTester;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				XROS_DEPLOYMENT_TARGET = 2.5;
+			};
+			name = Release;
+		};
 		887A5FBF2C1D036200E1A461 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -8922,6 +9078,15 @@
 			buildConfigurations = (
 				57D92C38293E4D0C00D1912A /* Debug */,
 				57D92C39293E4D0C00D1912A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		83B2775A2E1E3C8800E1E821 /* Build configuration list for PBXNativeTarget "PaywallValidationTester" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				83B2775B2E1E3C8800E1E821 /* Debug */,
+				83B2775C2E1E3C8800E1E821 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
