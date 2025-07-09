@@ -28,22 +28,22 @@ class PaywallPreviewResourcesLoader {
     struct PackageData: Decodable {
         let packages: [OfferingsResponse.Offering.Package]
     }
-    
+
     private var baseResourcesURL: URL
-    private var offerings: [String:Offering] = [:]
-    
+    private var offerings: [String: Offering] = [:]
+
     init(baseResourcesURL: URL) throws {
         self.baseResourcesURL = baseResourcesURL
-        
+
         self.offerings = try loadOfferings()
     }
-    
+
     var allOfferings: [Offering] {
         return Array(offerings.values)
     }
-    
-    private func loadOfferings() throws -> [String:Offering] {
-        var result: [String:Offering] = [:]
+
+    private func loadOfferings() throws -> [String: Offering] {
+        var result: [String: Offering] = [:]
         let resourceDirectories = (try? FileManager.default.contentsOfDirectory(
             at: baseResourcesURL,
             includingPropertiesForKeys: [.isDirectoryKey],
@@ -167,9 +167,8 @@ class PaywallPreviewResourcesLoader {
 
             result.merge(offerings!.all)
         }
-        
+
         return result
     }
-    
-    
+
 }
