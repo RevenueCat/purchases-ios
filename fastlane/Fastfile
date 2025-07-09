@@ -186,32 +186,34 @@ platform :ios do
       # "mac-catalyst-optimized-for-mac",
       # "mac-catalyst-scaled-to-match-ipad"
     ]
+
+    sh("xcodebuild -workspace RevenueCat.xcworkspace -scheme RevenueCatUITestsDev -configuration Debug  -destination 'platform=macOS,arch=arm64,variant=Designed for iPhone' -testPlan 'Paywall-Screenshots' build test")
     
-    platforms.each do |platform|
-      UI.message("Generating screenshots for platform: #{platform}")
+    # platforms.each do |platform|
+    #   UI.message("Generating screenshots for platform: #{platform}")
       
-      output_dir = record_paywall_screenshots(platform: platform)
-      UI.message("Output directory for #{platform}: #{output_dir}")
+    #   output_dir = record_paywall_screenshots(platform: platform)
+    #   UI.message("Output directory for #{platform}: #{output_dir}")
       
-      # Process the screenshots from the output directory
-      process_paywall_screenshots(
-        output_dir: output_dir,
-        target_repository_path: target_repository_path,
-        platform: platform
-      )
-    end
+    #   # Process the screenshots from the output directory
+    #   process_paywall_screenshots(
+    #     output_dir: output_dir,
+    #     target_repository_path: target_repository_path,
+    #     platform: platform
+    #   )
+    # end
 
     # Commit, push, and create a PR in the target repository
-    Dir.chdir(target_repository_path) do
-      commit_push_and_create_pr_if_necessary(
-        repo: target_repository_name,
-        branch_name: target_repository_branch,
-        commit_message: "[Automated] Updates template screenshots for all platforms (commit: #{this_commit_hash})",
-        title: "[AUTOMATIC] Updates template screenshots for all platforms",
-        body: "This is an automatic update of the template screenshots for iOS, iPhone app on Mac, iPad app on Mac, Mac Catalyst optimized for Mac, and Mac Catalyst scaled to match iPad platforms.",
-        team_reviewers: ["coresdk", "monetization"]
-      )
-    end
+    # Dir.chdir(target_repository_path) do
+    #   commit_push_and_create_pr_if_necessary(
+    #     repo: target_repository_name,
+    #     branch_name: target_repository_branch,
+    #     commit_message: "[Automated] Updates template screenshots for all platforms (commit: #{this_commit_hash})",
+    #     title: "[AUTOMATIC] Updates template screenshots for all platforms",
+    #     body: "This is an automatic update of the template screenshots for iOS, iPhone app on Mac, iPad app on Mac, Mac Catalyst optimized for Mac, and Mac Catalyst scaled to match iPad platforms.",
+    #     team_reviewers: ["coresdk", "monetization"]
+    #   )
+    # end
   end
 
   
@@ -381,8 +383,6 @@ platform :ios do
       xcargs += ["TARGETED_DEVICE_FAMILY='#{targeted_device_families[platform]}'"]
     end
 
-    xcargs << "-allowProvisioningUpdates"
-
     # iOS apps on Mac still need iOS provisioning profiles, but they run on macOS
     catalyst_platform = platform.start_with?("mac-catalyst") ? "macos" : "ios"
     UI.message("Platform: #{platform}")
@@ -399,7 +399,6 @@ platform :ios do
       configuration: 'Debug',
       testplan: 'Paywall-Screenshots',
       destination: destination,
-      catalyst_platform: catalyst_platform,
       result_bundle: true,
       result_bundle_path: result_bundle_path
     }
