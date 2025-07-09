@@ -97,7 +97,14 @@ extension ProcessInfo {
                 }
             }
         } else {
-            return "iOS"
+            switch UIDevice.current.userInterfaceIdiom {
+            case .phone:
+                return "iOS"
+            case .pad:
+                return "iPad OS"
+            default:
+                return "Unexpected iOS Platform"
+            }
         }
         #endif
     }
