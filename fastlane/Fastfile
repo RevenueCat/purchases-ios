@@ -348,7 +348,7 @@ platform :ios do
     build_paywalls_tester_for_emerge_mac(platform: "mac-catalyst-scaled-to-match-ipad")
     build_paywalls_tester_for_emerge_mac(platform: "mac-catalyst-optimized-for-mac")
 
-    # As of July 2025, Emerge Tools does not support iOS apps on Mac.
+    # As of July 2025, Emerge Tools does not support iOS apps on Mac yet.
     # build_paywalls_tester_for_emerge_mac(platform: "ipad-app-on-mac")
     # build_paywalls_tester_for_emerge_mac(platform: "iphone-app-on-mac")
   end
