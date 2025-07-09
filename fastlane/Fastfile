@@ -187,7 +187,7 @@ platform :ios do
       # "mac-catalyst-scaled-to-match-ipad"
     ]
 
-    sh("xcodebuild -workspace RevenueCat.xcworkspace -scheme RevenueCatUITestsDev -configuration Debug  -destination 'platform=macOS,arch=arm64,variant=Designed for iPhone' -testPlan 'Paywall-Screenshots' build test")
+    sh("cd .. && xcodebuild -workspace RevenueCat.xcworkspace -scheme RevenueCatUITestsDev -configuration Debug  -destination 'platform=macOS,arch=arm64,variant=Designed for iPhone' -testPlan 'Paywall-Screenshots' build test")
     
     # platforms.each do |platform|
     #   UI.message("Generating screenshots for platform: #{platform}")
