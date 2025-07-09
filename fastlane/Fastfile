@@ -46,45 +46,6 @@ platform :ios do
   before_all do
     setup_circle_ci
 
-    if is_ci
-    #   UI.message("Downloading WWDR certificates")
-      
-    #   # Download the latest WWDR certificates
-    #   wwdr_certs = [
-    #     "AppleWWDRCAG6.cer",
-    #     "AppleWWDRCAG5.cer"
-    #   ]
-      
-    #   wwdr_certs.each do |cert|
-    #     begin
-    #       UI.message("Downloading #{cert}")
-    #       sh("curl -O https://www.apple.com/certificateauthority/#{cert}")
-          
-    #       cert_path = File.absolute_path(cert)
-    #       if File.exist?(cert_path)
-    #         UI.message("Importing #{cert} from #{cert_path}")
-    #         # Use security command directly to import the certificate
-    #         sh("security", "import", cert_path, 
-    #            "-k", ENV["MATCH_KEYCHAIN_NAME"] || "login.keychain",
-    #            "-T", "/usr/bin/codesign",
-    #            "-T", "/usr/bin/productbuild",
-    #            "-T", "/usr/bin/productsign")
-    #         UI.message("Successfully imported #{cert}")
-    #       else
-    #         UI.message("Warning: Failed to download #{cert}")
-    #       end
-    #     rescue => e
-    #       UI.message("Warning: Failed to process #{cert}: #{e.message}")
-    #     end
-    #   end
-
-      UI.message("Verifying WWDR certificates")
-      sh("security find-certificate -c 'Apple Worldwide Developer Relations'")
-      UI.message("WWDR certificates verified")
-
-    #   UI.message("WWDR certificates installed")
-    end
-
     if ENV['APP_STORE_CONNECT_API_KEY_ISSUER_ID']
       app_store_connect_api_key # This will create a shared client that all the tools know how to use and will look for
     end
@@ -242,7 +203,7 @@ platform :ios do
         commit_message: "[Automated] Updates template screenshots for all platforms (commit: #{this_commit_hash})",
         title: "[AUTOMATIC] Updates template screenshots for all platforms",
         body: "This is an automatic update of the template screenshots for iOS, iPhone app on Mac, iPad app on Mac, Mac Catalyst optimized for Mac, and Mac Catalyst scaled to match iPad platforms.",
-        team_reviewers: ["coresdk", "monetization", "bab-s"]
+        team_reviewers: ["coresdk", "monetization"]
       )
     end
   end
