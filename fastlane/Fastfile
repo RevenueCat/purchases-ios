@@ -182,6 +182,14 @@ platform :ios do
     output_dir = record_paywall_screenshots
 
     UI.message("Output directory: #{output_dir}")
+
+    # Upload snapshots to Emerge
+    UI.message("Uploading snapshots to Emerge for platform: iOS")
+    sh("bundle", "exec", "emerge", "upload", "snapshots", 
+       "--name", "RevenueCat", 
+       "--id", "com.revenuecat.paywall-rendering-validation.ios", 
+       "--repo-name", "RevenueCat/purchases-ios", 
+       "#{output_dir}/images")
     
     # Process the screenshots from the output directory
     Dir.glob("#{output_dir}/images/*.png").each do |file_path|

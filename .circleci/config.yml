@@ -1314,7 +1314,7 @@ jobs:
 
   danger:
     docker:
-      - image: cimg/ruby:3.1.2
+      - image: cimg/ruby:3.2.0
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -1326,7 +1326,7 @@ jobs:
 
   tag-release-branch:
     docker:
-      - image: cimg/ruby:3.1.2
+      - image: cimg/ruby:3.2.0
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
