@@ -180,11 +180,11 @@ platform :ios do
 
     # Loop over all platforms and generate screenshots for each
     platforms = [
-      # "ios", # ✅
-      "iphone-app-on-mac", # ❓
-      "ipad-app-on-mac" # ❓
-      # "mac-catalyst-optimized-for-mac", # ✅
-      # "mac-catalyst-scaled-to-match-ipad"# ✅
+      "ios",
+      "iphone-app-on-mac",
+      "ipad-app-on-mac",
+      "mac-catalyst-optimized-for-mac",
+      "mac-catalyst-scaled-to-match-ipad"
     ]
     
     platforms.each do |platform|
@@ -381,7 +381,7 @@ platform :ios do
       xcargs += ["TARGETED_DEVICE_FAMILY='#{targeted_device_families[platform]}'"]
     end
     
-    # For iOS apps on Mac, use development team code signing since ad-hoc is not allowed with iOS 18.0
+    # For iOS apps on Mac, explicitly specity "Apple Development" since "iOS Development" was being used by default for unknown reason
     if platform.include?("-app-on-mac")
       xcargs += ["CODE_SIGN_IDENTITY='Apple Development'", "CODE_SIGNING_REQUIRED=YES"]
     end
