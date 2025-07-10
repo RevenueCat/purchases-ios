@@ -23,6 +23,9 @@ let allDeploymentTargets: DeploymentTargets = .multiplatform(
 let project = Project(
     name: "PaywallTester",
     organizationName: .revenueCatOrgName,
+    options: .options(
+        automaticSchemesOptions: .disabled,
+    ),
     settings: .settings(
         base: [:].automaticCodeSigning(devTeam: .revenueCatTeamID),
         configurations: .xcconfigFileConfigurations,
