@@ -230,7 +230,7 @@ extension View {
 
   func asImage(wait duration: TimeInterval = 0.1) -> UIImage {
 
-    let controller = UIHostingController(rootView: self)
+    let controller = UIHostingController(rootView: self.ignoresSafeArea())
     let view = controller.view
     let targetSize = controller.view.intrinsicContentSize
     let bounds = CGRect(origin: .zero, size: targetSize)
