@@ -127,10 +127,9 @@ commands:
   set-swiftpm-skip-package-collection-validation:
     steps:
       - run:
-          name: Set SWIFTPM_SKIP_PACKAGE_COLLECTION_VALIDATION for Xcode < 16
+          name: Enable IDEPackageCollectionSkipSignatureVerification
           command: |
-            export SWIFTPM_SKIP_PACKAGE_COLLECTION_VALIDATION=1
-            echo "export SWIFTPM_SKIP_PACKAGE_COLLECTION_VALIDATION=1" >> $BASH_ENV
+            defaults write com.apple.dt.Xcode IDEPackageCollectionSkipSignatureVerification -bool YES
   set-maximum-duration:
     parameters:
       seconds:
