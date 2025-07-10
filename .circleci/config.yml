@@ -124,12 +124,35 @@ commands:
           channel: "feed-circleci-ios-failures"
           event: fail
           template: basic_fail_1
-  set-swiftpm-skip-package-collection-validation:
+    set-swiftpm-skip-package-collection-validation:
     steps:
       - run:
           name: Enable IDEPackageCollectionSkipSignatureVerification
           command: |
+            echo "Current Xcode version: $(xcodebuild -version)"
+            echo "Available Xcode installations:"
+            ls -la /Applications/Xcode*.app 2>/dev/null || echo "No Xcode apps found in /Applications"
+            
+            # Set the preference for the current Xcode version
             defaults write com.apple.dt.Xcode IDEPackageCollectionSkipSignatureVerification -bool YES
+            
+            # Also set it for all Xcode versions to be safe
+            for xcode_path in /Applications/Xcode*.app; do
+              if [ -d "$xcode_path" ]; then
+                echo "Setting preference for $xcode_path"
+                defaults write "$xcode_path/Contents/Info.plist" IDEPackageCollectionSkipSignatureVerification -bool YES 2>/dev/null || true
+              fi
+            done
+            
+            # Verify the setting was applied
+            echo "Checking if preference was set:"
+            defaults read com.apple.dt.Xcode IDEPackageCollectionSkipSignatureVerification || echo "Setting not found, will be created"
+            
+            # Also set environment variable as backup
+            export SWIFTPM_SKIP_PACKAGE_COLLECTION_VALIDATION=1
+            echo "export SWIFTPM_SKIP_PACKAGE_COLLECTION_VALIDATION=1" >> $BASH_ENV
+            
+            echo "Environment variable set: $SWIFTPM_SKIP_PACKAGE_COLLECTION_VALIDATION"
   set-maximum-duration:
     parameters:
       seconds:
