@@ -8078,7 +8078,6 @@
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx watchos watchsimulator xros xrsimulator";
 				SUPPORTS_MACCATALYST = YES;
-				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = YES;
 				"SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=xros*]" = "$(inherited) VISION_OS";
 				"SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=xrsimulator*]" = "$(inherited) VISION_OS";
