@@ -69,7 +69,7 @@ executors:
       CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.generate_snapshots >>
       CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
     working_directory: ~/purchases-ios
-    shell: /bin/bash --login -o pipefail  
+    shell: /bin/bash --login -o pipefail
   macos-executor-large:
     parameters:
       xcode_version:
@@ -124,6 +124,13 @@ commands:
           channel: "feed-circleci-ios-failures"
           event: fail
           template: basic_fail_1
+  set-swiftpm-skip-package-collection-validation:
+    steps:
+      - run:
+          name: Set SWIFTPM_SKIP_PACKAGE_COLLECTION_VALIDATION for Xcode < 16
+          command: |
+            export SWIFTPM_SKIP_PACKAGE_COLLECTION_VALIDATION=1
+            echo "export SWIFTPM_SKIP_PACKAGE_COLLECTION_VALIDATION=1" >> $BASH_ENV
   set-maximum-duration:
     parameters:
       seconds:
@@ -482,6 +489,7 @@ jobs:
       xcode_version: << parameters.xcode_version >>
     steps:
       - checkout
+      - set-swiftpm-skip-package-collection-validation
       - run:
           name: Validate Package.swift
           command: swift package describe
@@ -493,6 +501,7 @@ jobs:
 
     steps:
       - checkout
+      - set-swiftpm-skip-package-collection-validation
       - run:
           name: SPM Release Build
           command: swift build -c release --target RevenueCat
@@ -519,6 +528,7 @@ jobs:
 
     steps:
       - checkout
+      - set-swiftpm-skip-package-collection-validation
       - run:
           name: SPM Release Build
           command: swift build -c release --target RevenueCat
@@ -532,6 +542,7 @@ jobs:
 
     steps:
       - checkout
+      - set-swiftpm-skip-package-collection-validation
       - run:
           name: SPM RevenueCat Release Build
           command: swift build -c release --target RevenueCat
@@ -596,6 +607,7 @@ jobs:
 
     steps:
       - checkout
+      - set-swiftpm-skip-package-collection-validation
       - install-dependencies:
           install_swiftlint: false
       - update-spm-installation-commit
@@ -626,6 +638,7 @@ jobs:
 
     steps:
       - checkout
+      - set-swiftpm-skip-package-collection-validation
       - install-dependencies:
           install_swiftlint: false
       - update-spm-installation-commit
@@ -660,6 +673,7 @@ jobs:
 
     steps:
       - checkout
+      - set-swiftpm-skip-package-collection-validation
       - install-dependencies:
           install_swiftlint: false
       - update-spm-installation-commit
@@ -803,6 +817,7 @@ jobs:
 
     steps:
       - checkout
+      - set-swiftpm-skip-package-collection-validation
       - install-dependencies:
           install_swiftlint: false
       - run:
@@ -831,6 +846,7 @@ jobs:
 
     steps:
       - checkout
+      - set-swiftpm-skip-package-collection-validation
       - install-dependencies:
           install_swiftlint: false
       - update-spm-installation-commit
@@ -865,6 +881,7 @@ jobs:
 
     steps:
       - checkout
+      - set-swiftpm-skip-package-collection-validation
       - install-dependencies:
           install_swiftlint: false
       - update-spm-installation-commit
@@ -947,6 +964,7 @@ jobs:
 
     steps:
       - checkout
+      - set-swiftpm-skip-package-collection-validation
       - install-dependencies:
           install_xcbeautify: false
           # Mint 0.17.5 is required here as newer versions of Mint don't support macOS 12.
@@ -983,6 +1001,7 @@ jobs:
 
     steps:
       - checkout
+      - set-swiftpm-skip-package-collection-validation
       - install-dependencies:
           install_xcbeautify: false
           install_mint: true
@@ -1121,6 +1140,7 @@ jobs:
     steps:
       - setup-git-credentials
       - checkout
+      - set-swiftpm-skip-package-collection-validation
       - install-bundle-dependencies
       - run:
           name: Build docs
@@ -1138,6 +1158,7 @@ jobs:
     steps:
       - setup-git-credentials
       - checkout
+      - set-swiftpm-skip-package-collection-validation
       - install-bundle-dependencies
       - run:
           name: Build docs
@@ -1613,7 +1634,8 @@ workflows:
   record-and-push-paywall-template-screenshots:
     when:
       or:
-        - equal: ["record_paywall_screenshots", << pipeline.parameters.action >>]
+        - equal:
+            ["record_paywall_screenshots", << pipeline.parameters.action >>]
         - and:
             - not:
                 equal: [scheduled_pipeline, << pipeline.trigger_source >>]
