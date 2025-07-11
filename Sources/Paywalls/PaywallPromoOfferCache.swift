@@ -9,7 +9,7 @@
 import Combine
 import StoreKit
 
-@available(iOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public actor SubscriptionHistoryTracker {
 
     public struct Update: Equatable, Sendable {
