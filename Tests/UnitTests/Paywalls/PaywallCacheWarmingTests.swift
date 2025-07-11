@@ -21,6 +21,7 @@ final class PaywallCacheWarmingTests: TestCase {
     private var eligibilityChecker: MockTrialOrIntroPriceEligibilityChecker!
     private var imageFetcher: MockPaywallImageFetcher!
     private var cache: PaywallCacheWarmingType!
+    private var promoOfferCache: MockPaywallPromoOfferCacheType!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -29,8 +30,10 @@ final class PaywallCacheWarmingTests: TestCase {
 
         self.eligibilityChecker = .init()
         self.imageFetcher = .init()
+        self.promoOfferCache = .init()
         self.cache = PaywallCacheWarming(introEligibiltyChecker: self.eligibilityChecker,
-                                         imageFetcher: self.imageFetcher)
+                                         imageFetcher: self.imageFetcher,
+                                         promoOfferCache: self.promoOfferCache)
     }
 
     func testOfferingsWithNoPaywallsDoesNotCheckEligibility() async throws {
@@ -190,7 +193,8 @@ final class PaywallCacheWarmingTests: TestCase {
         let cache = PaywallCacheWarming(
             introEligibiltyChecker: self.eligibilityChecker,
             imageFetcher: self.imageFetcher,
-            fontsManager: fontsManager
+            fontsManager: fontsManager,
+            promoOfferCache: self.promoOfferCache
         )
 
         // Launch two tasks installing the same font concurrently
