@@ -212,6 +212,23 @@ private extension BaseManageSubscriptionViewModel {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension BaseManageSubscriptionViewModel {
+
+    var purchaseSubscriptionGroupID: String? {
+        purchaseInformation?.subscriptionGroupID
+    }
+
+    var changePlanProductIDs: [String] {
+        purchaseInformation?
+            .changePlan
+            .map { $0.products.map(\.productId) } ?? []
+    }
+}
+
 private extension CustomerCenterConfigData.Screen {
 
     var supportedPaths: [CustomerCenterConfigData.HelpPath] {

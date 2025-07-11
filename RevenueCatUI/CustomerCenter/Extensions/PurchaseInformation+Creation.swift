@@ -39,7 +39,8 @@ extension PurchaseInformation {
                     transaction: transaction,
                     customerCenterStoreKitUtilities: customerCenterStoreKitUtilities,
                     customerInfoRequestedDate: customerInfo.requestDate,
-                    managementURL: transaction.managementURL
+                    managementURL: transaction.managementURL,
+                    changePlan: changePlan
                 )
             } else {
                 Logger.warning(
@@ -50,7 +51,8 @@ extension PurchaseInformation {
                     entitlement: entitlement,
                     transaction: transaction,
                     customerInfoRequestedDate: customerInfo.requestDate,
-                    managementURL: transaction.managementURL
+                    managementURL: transaction.managementURL,
+                    changePlan: nil
                 )
             }
         }

@@ -24,7 +24,8 @@ import Foundation
     @_spi(Internal) public let appearance: Appearance
     @_spi(Internal) public let localization: Localization
     @_spi(Internal) public let support: Support
-    @_spi(Internal) public let changePlan: [ChangePlan]
+    @_spi(Internal) public let changePlan
+    : [ChangePlan]
     @_spi(Internal) public let lastPublishedAppVersion: String?
     @_spi(Internal) public let productId: UInt?
 
