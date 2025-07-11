@@ -14,7 +14,7 @@
 import Foundation
 @_spi(Internal) @testable import RevenueCat
 
-private final class MockPaywallPromoOfferCacheType: RevenueCat.PaywallPromoOfferCacheType {
+final class MockPaywallPromoOfferCacheType: RevenueCat.PaywallPromoOfferCacheType {
 
 }
 
