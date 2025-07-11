@@ -12,12 +12,18 @@
 //  Created by Nacho Soto on 8/7/23.
 
 import Foundation
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
+
+private final class MockPaywallPromoOfferCacheType: RevenueCat.PaywallPromoOfferCacheType {
+
+}
 
 final class MockPaywallCacheWarming: PaywallCacheWarmingType {
 
     private let _invokedWarmUpEligibilityCache: Atomic<Bool> = false
     private let _invokedWarmUpEligibilityCacheOfferings: Atomic<Offerings?> = nil
+
+    let promoOfferCache: PaywallPromoOfferCacheType = MockPaywallPromoOfferCacheType()
 
     var invokedWarmUpEligibilityCache: Bool {
         get { return self._invokedWarmUpEligibilityCache.value }
