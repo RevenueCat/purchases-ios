@@ -68,7 +68,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType,
         imageFetcher: PaywallImageFetcherType = DefaultPaywallImageFetcher(),
         fontsManager: PaywallFontManagerType = DefaultPaywallFontsManager(session: PaywallCacheWarming.downloadSession),
-        promoOfferCache: PaywallPromoOfferCacheType,
+        promoOfferCache: PaywallPromoOfferCacheType
     ) {
         self.introEligibiltyChecker = introEligibiltyChecker
         self.imageFetcher = imageFetcher
