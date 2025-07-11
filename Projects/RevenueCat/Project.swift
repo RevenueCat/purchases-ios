@@ -281,6 +281,7 @@ let project = Project(
             ],
             dependencies: [
                 .target(name: "RevenueCat"),
+                .target(name: "BackendIntegrationTestsHostApp"),
                 .nimble,
                 .ohHTTPStubsSwift,
                 .snapshotTesting,
