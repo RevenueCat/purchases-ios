@@ -63,6 +63,10 @@ final class MockPurchases: PaywallPurchasesType {
         return try await self.purchaseBlock(package)
     }
 
+    func purchase(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
+        return try await self.purchaseBlock(package)
+    }
+
     func restorePurchases() async throws -> CustomerInfo {
         return try await self.restoreBlock()
     }
