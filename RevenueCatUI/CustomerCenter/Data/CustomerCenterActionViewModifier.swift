@@ -45,6 +45,7 @@ struct CustomerCenterActionViewModifier: ViewModifier {
     @State private var refundRequestStarted: UniqueWrapper<String>?
     @State private var refundRequestCompleted: UniqueWrapper<(String, RefundRequestStatus)>?
     @State private var feedbackSurveyCompleted: UniqueWrapper<String>?
+    @State private var showingChangePlans: UniqueWrapper<String>?
     @State private var managementOptionSelected: UniqueWrapper<CustomerCenterActionable>?
     @State private var promotionalOfferSuccess: UniqueWrapper<Void>?
 
@@ -74,6 +75,8 @@ struct CustomerCenterActionViewModifier: ViewModifier {
                         value: managementOptionSelected)
             .preference(key: CustomerCenterView.PromotionalOfferSuccessPreferenceKey.self,
                         value: promotionalOfferSuccess)
+            .preference(key: CustomerCenterView.ChangePlansSelectedPreferenceKey.self,
+                        value: showingChangePlans)
     }
 
     @MainActor
@@ -129,6 +132,12 @@ struct CustomerCenterActionViewModifier: ViewModifier {
         actionWrapper.promotionalOfferSuccess
             .sink { _ in
                 promotionalOfferSuccess = UniqueWrapper(value: ())
+            }
+            .store(in: &cancellables)
+
+        actionWrapper.showingChangePlans
+            .sink { subscriptionGroupID in
+                showingChangePlans = UniqueWrapper(value: subscriptionGroupID)
             }
             .store(in: &cancellables)
     }

@@ -43,6 +43,7 @@
 		4299FA8156FAC6F41B1D3E2E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		57BE31076EE78CAC5D802898 /* testCustomEntitlementsComputation-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "testCustomEntitlementsComputation-Info.plist"; sourceTree = "<group>"; };
 		5D3D43B0F1902135F3556572 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		7235BD93D9CAB6C8C681B9DA /* Global.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Global.xcconfig; path = ../../Global.xcconfig; sourceTree = "<group>"; };
 		7B56A335C3599AE98135A29B /* RevenueCatUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RevenueCatUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		ABECB7BAA86F9315475B0DC4 /* testCustomEntitlementsComputation.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testCustomEntitlementsComputation.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B279D5A7966CB41CCBF05D66 /* TuistBundle+TestCustomEntitlementsComputation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TuistBundle+TestCustomEntitlementsComputation.swift"; sourceTree = "<group>"; };
@@ -111,6 +112,7 @@
 			children = (
 				A40080F28EB3880802B7FB10 /* Derived */,
 				E7D1F5B3665A2D7448CCB79D /* testCustomEntitlementsComputation */,
+				7235BD93D9CAB6C8C681B9DA /* Global.xcconfig */,
 			);
 			name = Project;
 			sourceTree = "<group>";
@@ -281,6 +283,7 @@
 		};
 		7156FB3704DF8A365714742C /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7235BD93D9CAB6C8C681B9DA /* Global.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -338,6 +341,7 @@
 		};
 		741F762893818BD5864928D4 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7235BD93D9CAB6C8C681B9DA /* Global.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;

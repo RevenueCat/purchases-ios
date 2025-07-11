@@ -131,6 +131,7 @@ extension CustomerCenterConfigData {
                 displayVirtualCurrencies: displayVirtualCurrencies,
                 shouldWarnCustomersAboutMultipleSubscriptions: shouldWarnCustomersAboutMultipleSubscriptions
             ),
+            changePlan: [],
             lastPublishedAppVersion: lastPublishedAppVersion,
             productId: 1
         )

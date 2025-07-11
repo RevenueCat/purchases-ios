@@ -54,6 +54,8 @@ extension CustomerCenterView {
 
     typealias PromotionalOfferSuccessHandler = @MainActor @Sendable () -> Void
 
+    typealias ChangePlansHandler = @MainActor @Sendable (_ optionId: String) -> Void
+
     // MARK: - View Modifiers
 
     fileprivate struct OnRestoreStartedModifier: ViewModifier {
@@ -168,6 +170,19 @@ extension CustomerCenterView {
                 .onPreferenceChange(PromotionalOfferSuccessPreferenceKey.self) { wrappedStarted in
                     if wrappedStarted != nil {
                         self.handler()
+                    }
+                }
+        }
+    }
+
+    struct OnChangePlansSelected: ViewModifier {
+        let handler: ChangePlansHandler
+
+        func body(content: Content) -> some View {
+            content
+                .onPreferenceChange(ChangePlansSelectedPreferenceKey.self) { wrapperSubscriptionGroupID in
+                    if let subscriptionGroupID = wrapperSubscriptionGroupID?.value {
+                        self.handler(subscriptionGroupID)
                     }
                 }
         }
@@ -345,6 +360,12 @@ extension View {
         _ handler: @escaping CustomerCenterView.PromotionalOfferSuccessHandler
     ) -> some View {
         return self.modifier(CustomerCenterView.OnPromotionalOfferSuccess(handler: handler))
+    }
+
+    func onCustomerCenterChangePlansSelected(
+        _ handler: @escaping CustomerCenterView.ChangePlansHandler
+    ) -> some View {
+        return self.modifier(CustomerCenterView.OnChangePlansSelected(handler: handler))
     }
 }
 

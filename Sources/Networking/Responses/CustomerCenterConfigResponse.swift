@@ -29,6 +29,7 @@ struct CustomerCenterConfigResponse {
         let screens: [String: Screen]
         let localization: Localization
         let support: Support
+        let changePlans: [ChangePlan]
 
     }
 
@@ -145,6 +146,17 @@ struct CustomerCenterConfigResponse {
         let shouldWarnCustomersAboutMultipleSubscriptions: Bool?
     }
 
+    struct ChangePlan {
+        let groupId: String
+        let groupName: String
+        let products: [ChangePlanProduct]
+    }
+
+    struct ChangePlanProduct {
+        let productId: String
+        let selected: Bool
+    }
+
 }
 
 extension CustomerCenterConfigResponse: Codable, Equatable {}
@@ -162,6 +174,8 @@ extension CustomerCenterConfigResponse.Appearance.AppearanceCustomColors: Codabl
 extension CustomerCenterConfigResponse.Screen: Codable, Equatable {}
 extension CustomerCenterConfigResponse.Screen.ScreenType: Equatable {}
 extension CustomerCenterConfigResponse.Support: Codable, Equatable {}
+extension CustomerCenterConfigResponse.ChangePlan: Codable, Equatable {}
+extension CustomerCenterConfigResponse.ChangePlanProduct: Codable, Equatable {}
 
 protocol CodableEnumWithUnknownCase: Codable {
 
