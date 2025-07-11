@@ -81,8 +81,10 @@ struct PaywallPresenter: View {
             CustomPaywallContent()
                 .originalTemplatePaywallFooter(offering: self.offering,
                                                condensed: true)
-
 #endif
+        case .presentIfNeeded:
+            fatalError()
+
 #endif
         }
     }

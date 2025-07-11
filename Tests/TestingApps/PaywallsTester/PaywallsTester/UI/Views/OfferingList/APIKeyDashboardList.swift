@@ -37,6 +37,9 @@ struct APIKeyDashboardList: View {
 
     @State
     private var presentedPaywallCover: PresentedPaywall?
+    
+    @State
+    private var offeringToPresent: Offering?
 
     var body: some View {
         NavigationView {
@@ -200,6 +203,15 @@ struct APIKeyDashboardList: View {
                     }
                 }
         }
+        .overlay {
+            if offeringToPresent != nil {
+                VStack {}.presentPaywallIfNeeded(offering: offeringToPresent,
+                                        shouldDisplay: { _ in true },
+                                        onDismiss: { offeringToPresent = nil }
+                                        )
+            }
+        }
+       
     }
 
     #if !os(watchOS)
@@ -219,6 +231,8 @@ struct APIKeyDashboardList: View {
                 self.presentedPaywallCover = .init(offering: offering, mode: selectedMode)
             case .sheet, .footer, .condensedFooter:
                 self.presentedPaywall = .init(offering: offering, mode: selectedMode)
+            case .presentIfNeeded:
+                self.offeringToPresent = offering
             }
         } label: {
             Text(selectedMode.name)
