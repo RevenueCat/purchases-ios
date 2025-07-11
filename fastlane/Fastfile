@@ -1296,10 +1296,14 @@ platform :ios do
       }
     )
 
+    # Wait 20 minutes for the build to be processed by Apple otherwise fail
+    wait_processing_timeout_duration_in_seconds = 60 * 20
+
     if not dry_run
       upload_to_testflight(
       changelog: changelog,
       app_identifier: "com.revenuecat.sampleapp",
+      wait_processing_timeout_duration: wait_processing_timeout_duration_in_seconds
     )
     else
       UI.message("Dry run mode enabled. Skipping upload to TestFlight")
@@ -1334,6 +1338,7 @@ platform :ios do
         changelog: changelog,
         app_platform: 'osx',
         app_identifier: "com.revenuecat.sampleapp",
+        wait_processing_timeout_duration: wait_processing_timeout_duration_in_seconds
       )
     else
         UI.message("Dry run mode enabled. Skipping upload to TestFlight")
