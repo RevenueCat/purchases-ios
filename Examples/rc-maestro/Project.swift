@@ -5,14 +5,10 @@ import Foundation
 let project = Project(
     name: "Maestro",
     organizationName: .revenueCatOrgName,
-    settings: .settings(
-        base: [:].automaticCodeSigning(devTeam: .revenueCatTeamID),
-        configurations: .xcconfigFileConfigurations,
-        defaultSettings: .recommended
-    ),
+    settings: .project,
     targets: [
         .target(
-            name: "Maestro-Debug",
+            name: "Maestro",
             destinations: .iOS,
             product: .app,
             bundleId: "com.revenuecat.maestro.ios",
@@ -36,18 +32,19 @@ let project = Project(
                 .revenueCat,
                 .revenueCatUI,
                 .storeKit
-            ]
+            ],
+            settings: .target
         )
     ],
     schemes: [
         .scheme(
-            name: "Maestro-Debug",
+            name: "Maestro",
             shared: true,
             hidden: false,
-            buildAction: .buildAction(targets: ["Maestro-Debug"], findImplicitDependencies: true),
+            buildAction: .buildAction(targets: ["Maestro"], findImplicitDependencies: true),
             runAction: .runAction(
                 configuration: "Debug",
-                executable: "Maestro-Debug",
+                executable: "Maestro",
                 options: .options(
                     storeKitConfigurationPath: "rc-maestro/Resources/StoreKit/StoreKitConfiguration.storekit"
                 )
