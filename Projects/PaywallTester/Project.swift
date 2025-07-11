@@ -26,7 +26,7 @@ let project = Project(
     settings: .settings(
         base: [:].automaticCodeSigning(devTeam: .revenueCatTeamID),
         configurations: .xcconfigFileConfigurations,
-        defaultSettings: .essential
+        defaultSettings: .recommended
     ),
     targets: [
         .target(
