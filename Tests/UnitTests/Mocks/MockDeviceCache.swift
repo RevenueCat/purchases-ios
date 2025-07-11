@@ -325,6 +325,60 @@ class MockDeviceCache: DeviceCache {
         cachedSyncedSK2TransactionIDs.append(contentsOf: ids)
     }
 
+    // MARK: - Virtual Currencies
+    var invokedIsVirtualCurrenciesCacheStale = false
+    var invokedIsVirtualCurrenciesCacheStaleCount = 0
+    var invokedIsVirtualCurrenciesCacheStaleParametersList: [(String, Bool)] = []
+    var stubbedIsVirtualCurrenciesCacheStale: Bool?
+    override func isVirtualCurrenciesCacheStale(
+        appUserID: String,
+        isAppBackgrounded: Bool
+    ) -> Bool {
+        invokedIsVirtualCurrenciesCacheStale = true
+        invokedIsVirtualCurrenciesCacheStaleCount += 1
+        invokedIsVirtualCurrenciesCacheStaleParametersList.append((appUserID, isAppBackgrounded))
+
+        if let stubbedIsVirtualCurrenciesCacheStale {
+            return stubbedIsVirtualCurrenciesCacheStale
+        } else {
+            return super.isVirtualCurrenciesCacheStale(
+                appUserID: appUserID,
+                isAppBackgrounded: isAppBackgrounded
+            )
+        }
+    }
+
+    var invokedCachedVirtualCurrenciesDataForAppUserID: Bool = false
+    var invokedCachedVirtualCurrenciesDataForAppUserIDCount: Int = 0
+    var invokedCachedVirtualCurrenciesDataForAppUserIDParametersList: [String] = []
+    var stubbedCachedVirtualCurrenciesDataForAppUserID: Data?
+    override func cachedVirtualCurrenciesData(forAppUserID appUserID: String) -> Data? {
+        invokedCachedVirtualCurrenciesDataForAppUserID = true
+        invokedCachedVirtualCurrenciesDataForAppUserIDCount += 1
+        invokedCachedVirtualCurrenciesDataForAppUserIDParametersList.append(appUserID)
+
+        if let stubbedCachedVirtualCurrenciesDataForAppUserID {
+            return stubbedCachedVirtualCurrenciesDataForAppUserID
+        } else {
+            return super.cachedVirtualCurrenciesData(forAppUserID: appUserID)
+        }
+    }
+
+    var invokedCacheVirtualCurrencies = false
+    var invokedCacheVirtualCurrenciesCount = 0
+    var invokedCacheVirtualCurrenciesParametersList: [(Data, String)] = []
+    override func cache(virtualCurrencies: Data, appUserID: String) {
+        invokedCacheVirtualCurrencies = true
+        invokedCacheVirtualCurrenciesCount += 1
+        invokedCacheVirtualCurrenciesParametersList.append((virtualCurrencies, appUserID))
+    }
+
+    var invokedClearVirtualCurrenciesCache = false
+    var invokedClearVirtualCurrenciesCacheCount = 0
+    override func clearVirtualCurrenciesCache(appUserID: String) {
+        invokedClearVirtualCurrenciesCache = true
+        invokedClearVirtualCurrenciesCacheCount += 1
+    }
 }
 
 extension MockDeviceCache: @unchecked Sendable {}

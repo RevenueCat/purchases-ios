@@ -2,25 +2,13 @@ import ProjectDescription
 import ProjectDescriptionHelpers
 import Foundation
 
-var additionalFiles: [FileElement] = [
-    .glob(pattern: "rc-maestro/Resources/**/Local.xcconfig.sample")
-]
-var shouldAddLocalConfig: Bool = false
-if FileManager.default.fileExists(atPath: "rc-maestro/Resources/**/Local.xcconfig") {
-    shouldAddLocalConfig = true
-     additionalFiles.append(.glob(pattern: "rc-maestro/Resources/**/Local.xcconfig"))
-}
-
 let project = Project(
     name: "Maestro",
     organizationName: .revenueCatOrgName,
-    settings: .settings(
-        base: [:].automaticCodeSigning(devTeam: .revenueCatTeamID),
-        defaultSettings: .essential
-    ),
+    settings: .project,
     targets: [
         .target(
-            name: "Maestro-Debug",
+            name: "Maestro",
             destinations: .iOS,
             product: .app,
             bundleId: "com.revenuecat.maestro.ios",
@@ -31,7 +19,9 @@ let project = Project(
                         "UIColorName": "",
                         "UIImageName": "",
                     ],
-                    "REVENUECAT_API_KEY": "$(REVENUECAT_API_KEY)"
+                    "REVENUECAT_API_KEY": "$(REVENUECAT_API_KEY)",
+                    "REVENUECAT_PROXY_URL_SCHEME": "$(REVENUECAT_PROXY_URL_SCHEME)",
+                    "REVENUECAT_PROXY_URL_HOST": "$(REVENUECAT_PROXY_URL_HOST)"
                 ]
             ),
             sources: ["rc-maestro/Sources/**/*.swift"],
@@ -42,23 +32,23 @@ let project = Project(
                 .revenueCat,
                 .revenueCatUI,
                 .storeKit
-            ]
+            ],
+            settings: .target
         )
     ],
     schemes: [
         .scheme(
-            name: "Maestro-Debug",
+            name: "Maestro",
             shared: true,
             hidden: false,
-            buildAction: .buildAction(targets: ["Maestro-Debug"], findImplicitDependencies: true),
+            buildAction: .buildAction(targets: ["Maestro"], findImplicitDependencies: true),
             runAction: .runAction(
                 configuration: "Debug",
-                executable: "Maestro-Debug",
+                executable: "Maestro",
                 options: .options(
                     storeKitConfigurationPath: "rc-maestro/Resources/StoreKit/StoreKitConfiguration.storekit"
                 )
             )
         )
-    ],
-    additionalFiles: additionalFiles
+    ]
 )

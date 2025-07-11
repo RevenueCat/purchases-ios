@@ -20,23 +20,13 @@ let allDeploymentTargets: DeploymentTargets = .multiplatform(
     visionOS: "1.3"
 )
 
-var additionalFiles: [FileElement] = [
-    .glob(pattern: "../../Global.xcconfig")
-]
-if FileManager.default.fileExists(atPath: "../../Local.xcconfig") {
-    additionalFiles.append(.glob(pattern: "../../Local.xcconfig"))
-}
-
 let project = Project(
     name: "PaywallTester",
     organizationName: .revenueCatOrgName,
     settings: .settings(
         base: [:].automaticCodeSigning(devTeam: .revenueCatTeamID),
-        configurations: [
-            .debug(name: "Debug", xcconfig: .relativeToRoot("Global.xcconfig")),
-            .release(name: "Release")
-        ],
-        defaultSettings: .essential
+        configurations: .xcconfigFileConfigurations,
+        defaultSettings: .recommended
     ),
     targets: [
         .target(
@@ -77,7 +67,20 @@ let project = Project(
                 configuration: "Debug",
                 executable: "PaywallTester"
             )
+        ),
+        // hack to avoid having `PaywallTester` visible in the scheme list (hidden: true)
+        .scheme(
+            name: "PaywallTester",
+            shared: false,
+            hidden: true,
+            buildAction: .buildAction(targets: ["PaywallTester"]),
+            runAction: .runAction(
+                configuration: "Debug",
+                executable: "PaywallTester",
+                options: .options(
+                    storeKitConfigurationPath: "../../Tests/TestingApps/PaywallsTester/PaywallsTester/Products.storekit"
+                )
+            )
         )
-    ],
-    additionalFiles: additionalFiles
+    ]
 )

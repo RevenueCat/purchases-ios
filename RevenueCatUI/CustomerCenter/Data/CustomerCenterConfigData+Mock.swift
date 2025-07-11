@@ -24,6 +24,7 @@ extension CustomerCenterConfigData {
         lastPublishedAppVersion: String? = "1.0.0",
         shouldWarnCustomerToUpdate: Bool = false,
         displayPurchaseHistoryLink: Bool = false,
+        displayVirtualCurrencies: Bool = false,
         refundWindowDuration: CustomerCenterConfigData.HelpPath.RefundWindowDuration = .forever,
         shouldWarnCustomersAboutMultipleSubscriptions: Bool = false
     ) -> CustomerCenterConfigData {
@@ -127,6 +128,7 @@ extension CustomerCenterConfigData {
                 email: "test-support@revenuecat.com",
                 shouldWarnCustomerToUpdate: shouldWarnCustomerToUpdate,
                 displayPurchaseHistoryLink: displayPurchaseHistoryLink,
+                displayVirtualCurrencies: displayVirtualCurrencies,
                 shouldWarnCustomersAboutMultipleSubscriptions: shouldWarnCustomersAboutMultipleSubscriptions
             ),
             changePlan: [],
@@ -145,5 +147,4 @@ extension CustomerCenterConfigData {
         buttonTextColor: .init(light: "#ffffff", dark: "#000000"),
         buttonBackgroundColor: .init(light: "#287aff", dark: "#287aff")
     )
-
 }
