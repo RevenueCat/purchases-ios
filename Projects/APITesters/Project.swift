@@ -25,7 +25,11 @@ let allDeploymentTargets: DeploymentTargets = .multiplatform(
 let project = Project(
     name: "APITesters",
     organizationName: .revenueCatOrgName,
-    settings: .settings(base: [:].automaticCodeSigning(devTeam: .revenueCatTeamID)),
+    settings: .settings(
+        base: [:].automaticCodeSigning(devTeam: .revenueCatTeamID),
+        configurations: .xcconfigFileConfigurations,
+        defaultSettings: .recommended
+    ),
     targets: [
         .target(
             name: "ObjcAPITester",
@@ -46,7 +50,8 @@ let project = Project(
             ),
             dependencies: [
                 .revenueCat
-            ]
+            ],
+            metadata: .metadata(tags: ["APITester"])
         ),
 
         .target(
@@ -65,7 +70,8 @@ let project = Project(
             ),
             dependencies: [
                 .revenueCat
-            ]
+            ],
+            metadata: .metadata(tags: ["APITester"])
         ),
 
         .target(
@@ -84,7 +90,8 @@ let project = Project(
             ),
             dependencies: [
                 .receiptparser
-            ]
+            ],
+            metadata: .metadata(tags: ["APITester"])
         ),
 
         .target(
@@ -108,7 +115,8 @@ let project = Project(
             ),
             dependencies: [
                 .revenueCatUI
-            ]
+            ],
+            metadata: .metadata(tags: ["APITester"])
         ),
 
         .target(
@@ -127,7 +135,8 @@ let project = Project(
             ),
             dependencies: [
                 .revenueCatCustomEntitlementComputation
-            ]
+            ],
+            metadata: .metadata(tags: ["APITester"])
         )
     ],
     schemes: [],
