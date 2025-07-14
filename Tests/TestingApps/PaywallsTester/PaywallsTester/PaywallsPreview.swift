@@ -88,9 +88,17 @@ struct PaywallsPreview: App {
 extension PaywallsPreview {
 
     func processURL(_ url: URL) {
-        // set to nil to trigger re-render if presenting same paywall with new data
-        paywallPreviewData = nil
-        paywallPreviewData = getPaywallDataFrom(incomingURL: url)
+        if isDeepLinkTest(url) {
+            showAlert(title: "Deep Link", message: url.absoluteString)
+        } else {
+            // set to nil to trigger re-render if presenting same paywall with new data
+            paywallPreviewData = nil
+            paywallPreviewData = getPaywallDataFrom(incomingURL: url)
+        }
+    }
+
+    func isDeepLinkTest(_ url: URL) -> Bool {
+        return url.host == "deeplinktest"
     }
 
     func getPaywallDataFrom(incomingURL: URL) -> PaywallPreviewData? {
@@ -115,5 +123,35 @@ extension PaywallsPreview {
 
         return PaywallPreviewData(paywallIDToShow: paywallID, introOfferEligible: introElgibility)
     }
-    
+
+    func showAlert(title: String, message: String) {
+        DispatchQueue.main.async {
+            guard let topVC = topMostViewController() else { return }
+
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+
+            topVC.present(alert, animated: true, completion: nil)
+        }
+    }
+
+    private func topMostViewController(controller: UIViewController? = UIApplication.shared.connectedScenes
+        .compactMap { ($0 as? UIWindowScene)?.keyWindow }
+        .first?.rootViewController) -> UIViewController? {
+
+        if let nav = controller as? UINavigationController {
+            return topMostViewController(controller: nav.visibleViewController)
+        }
+
+        if let tab = controller as? UITabBarController {
+            return topMostViewController(controller: tab.selectedViewController)
+        }
+
+        if let presented = controller?.presentedViewController {
+            return topMostViewController(controller: presented)
+        }
+
+        return controller
+    }
+
 }

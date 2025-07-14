@@ -11,7 +11,7 @@ let allDestinations: Destinations = [
 let project = Project(
     name: "testCustomEntitlementsComputation",
     organizationName: .revenueCatOrgName,
-    settings: .settings(base: [:].automaticCodeSigning(devTeam: .revenueCatTeamID)),
+    settings: .project,
     targets: [
         .target(
             name: "testCustomEntitlementsComputation",
@@ -37,7 +37,8 @@ let project = Project(
             dependencies: [
                 .revenueCat,
                 .revenueCatUI,
-            ]
+            ],
+            settings: .target
         )
     ],
 )

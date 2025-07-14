@@ -30,7 +30,11 @@ let allDeploymentTargets: DeploymentTargets = .multiplatform(
 let project = Project(
     name: "RevenueCat",
     organizationName: .revenueCatOrgName,
-    settings: .settings(base: [:].automaticCodeSigning(devTeam: .revenueCatTeamID)),
+    settings: .settings(
+        base: [:].automaticCodeSigning(devTeam: .revenueCatTeamID),
+        configurations: .xcconfigFileConfigurations,
+        defaultSettings: .recommended
+    ),
     targets: [
         // MARK: – Main Library
         .target(
@@ -100,9 +104,9 @@ let project = Project(
             ),
             settings: .settings(
                 base: [
-                    "APPLICATION_EXTENSION_API_ONLY": "YES"
+                    "APPLICATION_EXTENSION_API_ONLY": "YES",
+                    "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "$(inherited) ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION"
                 ]
-                .swiftActiveCompilationConditions([.enableCustomEntitlementComputation])
             )
         ),
 
@@ -209,9 +213,9 @@ let project = Project(
             ],
             settings: .settings(
                 base: [
-                    "APPLICATION_EXTENSION_API_ONLY": "YES"
+                    "APPLICATION_EXTENSION_API_ONLY": "YES",
+                    "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "$(inherited) ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION"
                 ]
-                .swiftActiveCompilationConditions([.enableCustomEntitlementComputation])
             )
         ),
 
@@ -247,7 +251,9 @@ let project = Project(
                 .storeKitTests
             ],
             settings: .settings(
-                base: [:].swiftActiveCompilationConditions([.enableCustomEntitlementComputation])
+                base: [
+                    "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "$(inherited) ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION"
+                ]
             )
         ),
 
@@ -281,6 +287,7 @@ let project = Project(
             ],
             dependencies: [
                 .target(name: "RevenueCat"),
+                .target(name: "BackendIntegrationTestsHostApp"),
                 .nimble,
                 .ohHTTPStubsSwift,
                 .snapshotTesting,
@@ -301,14 +308,6 @@ let project = Project(
             testAction: .testPlans([
                     .relativeToRoot("Tests/TestPlans/AllTests.xctestplan")
                 ]
-            ),
-            runAction: .runAction(
-                executable: "RevenueCat",
-                options: .options(
-                    storeKitConfigurationPath: .relativeToRoot(
-                        "Tests/StoreKitUnitTests/UnitTestsConfiguration.storekit"
-                    )
-                )
             ),
             archiveAction: .archiveAction(configuration: "Release"),
             profileAction: .profileAction(configuration: "Release"),
@@ -345,5 +344,5 @@ let project = Project(
             ]),
             runAction: .runAction(configuration: "Debug")
         )
-    ],
+    ]
 )
