@@ -4,6 +4,7 @@ import ProjectDescriptionHelpers
 let project = Project(
     name: "MagicWeather",
     organizationName: .revenueCatOrgName,
+    settings: .project,
     targets: [
         .target(
             name: "MagicWeather",
@@ -22,7 +23,7 @@ let project = Project(
             sources: [
                 "MagicWeather/Sources/**/*.swift",
                 "MagicWeather/Constants.swift"
-                ],
+            ],
             resources: [
                 "MagicWeather/Resources/**/*.xcassets",
             ],
@@ -30,7 +31,7 @@ let project = Project(
                 .revenueCat,
                 .revenueCatUI,
             ],
-            settings: .settings(base: [:].automaticCodeSigning(devTeam: .revenueCatTeamID))
+            settings: .target
         )
     ]
 )
