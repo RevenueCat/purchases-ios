@@ -39,7 +39,7 @@ extension XCTestCase {
     // Some tests were randomly failing on CI when using `.oneRenewalEveryTwoSeconds` due to a race condition where the
     // purchase would expire before the receipt was posted.
     // This time rate is used to work around that issue by having a longer time rate.
-    func setOnSecondIsOneDayTimeRate(_ testSession: SKTestSession) {
+    func setOneSecondIsOneDayTimeRate(_ testSession: SKTestSession) {
         // Using rawValue: 6 because the compiler shows this warning for `.oneSecondIsOneDay`:
         // 'oneSecondIsOneDay' was deprecated in iOS 15.2: renamed to
         // 'SKTestSession.TimeRate.monthlyRenewalEveryThirtySeconds'
