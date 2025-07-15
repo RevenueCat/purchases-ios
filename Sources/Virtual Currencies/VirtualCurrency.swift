@@ -34,7 +34,7 @@ public final class VirtualCurrency: NSObject {
     /// Virtual currency description defined in the RevenueCat dashboard.
     @objc public let serverDescription: String?
 
-    internal init(
+    @_spi(Internal) public init(
         balance: Int,
         name: String,
         code: String,
