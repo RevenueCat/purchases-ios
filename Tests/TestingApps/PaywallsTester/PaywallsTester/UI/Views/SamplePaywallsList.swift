@@ -36,7 +36,7 @@ struct SamplePaywallsList: View {
             self.view(for: display)
         }
         .navigationTitle("Paywalls")
-//        .navigationViewStyle(StackNavigationViewStyle())
+        .navigationViewStyle(.automatic)
     }
 
     @ViewBuilder
