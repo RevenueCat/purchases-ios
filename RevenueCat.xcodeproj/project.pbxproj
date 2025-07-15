@@ -891,10 +891,10 @@
 		77BA1AB32CCBB6EE009BF0EA /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BA1AB22CCBB6EE009BF0EA /* RootView.swift */; };
 		805B60C97993B311CEC93EAF /* ProductsFetcherSK2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3628C1F100BB3C1782860D24 /* ProductsFetcherSK2.swift */; };
 		80E80EF226970E04008F245A /* ReceiptFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E80EF026970DC3008F245A /* ReceiptFetcher.swift */; };
-		8337D6B62E0A7890000798BF /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DC5621624EC63420031F69B /* RevenueCat.framework */; };
-		8337D6B72E0A7890000798BF /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2DC5621624EC63420031F69B /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		8337D6BA2E0A7890000798BF /* RevenueCatUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 887A5FBA2C1D036200E1A461 /* RevenueCatUI.framework */; };
-		8337D6BB2E0A7890000798BF /* RevenueCatUI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 887A5FBA2C1D036200E1A461 /* RevenueCatUI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		8337D6B62E0A7890000798BF /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DC5621624EC63420031F69B /* RevenueCat.framework */; platformFilters = (ios, maccatalyst, macos, ); };
+		8337D6B72E0A7890000798BF /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2DC5621624EC63420031F69B /* RevenueCat.framework */; platformFilters = (ios, maccatalyst, macos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		8337D6BA2E0A7890000798BF /* RevenueCatUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 887A5FBA2C1D036200E1A461 /* RevenueCatUI.framework */; platformFilters = (ios, maccatalyst, macos, ); };
+		8337D6BB2E0A7890000798BF /* RevenueCatUI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 887A5FBA2C1D036200E1A461 /* RevenueCatUI.framework */; platformFilters = (ios, maccatalyst, macos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		8337DD6E2E0A7D69000798BF /* header.heic in Resources */ = {isa = PBXBuildFile; fileRef = 2C5F71F52C3D6C2600B0FE4B /* header.heic */; };
 		8337DD6F2E0A7D79000798BF /* background.heic in Resources */ = {isa = PBXBuildFile; fileRef = 2C5F71F62C3D6C2600B0FE4B /* background.heic */; };
 		8337DD702E0A7E42000798BF /* paywall-preview-resources in Resources */ = {isa = PBXBuildFile; fileRef = 8337DD6D2E0A7CFE000798BF /* paywall-preview-resources */; };
@@ -7529,16 +7529,31 @@
 		};
 		8337D6B92E0A7890000798BF /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
+			platformFilters = (
+				ios,
+				maccatalyst,
+				macos,
+			);
 			target = 2DC5621524EC63420031F69B /* RevenueCat */;
 			targetProxy = 8337D6B82E0A7890000798BF /* PBXContainerItemProxy */;
 		};
 		8337D6BD2E0A7890000798BF /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
+			platformFilters = (
+				ios,
+				maccatalyst,
+				macos,
+			);
 			target = 887A5FB92C1D036200E1A461 /* RevenueCatUI */;
 			targetProxy = 8337D6BC2E0A7890000798BF /* PBXContainerItemProxy */;
 		};
 		8337D6C02E0A79A0000798BF /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
+			platformFilters = (
+				ios,
+				maccatalyst,
+				macos,
+			);
 			target = 2DEAC2D926EFE46E006914ED /* UnitTestsHostApp */;
 			targetProxy = 8337D6BF2E0A79A0000798BF /* PBXContainerItemProxy */;
 		};
@@ -8791,12 +8806,16 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.RevenueCatUITestsDev;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
 				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = NO;
@@ -8821,11 +8840,15 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MARKETING_VERSION = 1.0;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.RevenueCatUITestsDev;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
 				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = NO;
 				SWIFT_VERSION = 5.0;
