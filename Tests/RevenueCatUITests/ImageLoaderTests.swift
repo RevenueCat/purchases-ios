@@ -17,7 +17,6 @@ import Nimble
 import SwiftUI
 import XCTest
 
-#if os(iOS)
 
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 @MainActor
@@ -239,9 +238,9 @@ class ImageLoaderTests: TestCase {
             throw XCTSkip("API only available on iOS 16")
         }
 
-        let renderedImage = try XCTUnwrap(self.loader.result?.value?.image.getUIImage())
-        let expectedImage = try XCTUnwrap(Image(uiImage: try XCTUnwrap(UIImage(data: data)))
-            .getUIImage())
+        let renderedImage = try XCTUnwrap(self.loader.result?.value?.image.getPlatformImage())
+        let expectedImage = try XCTUnwrap(Image(platformImage: try XCTUnwrap(PlatformImage(data: data)))
+            .getPlatformImage())
 
         expect(self.loader.result).to(beSuccess())
         expect(renderedImage.pngData()) == expectedImage.pngData()
@@ -306,10 +305,9 @@ private extension Image {
 
     @MainActor
     @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
-    func getUIImage() -> UIImage? {
-        return ImageRenderer(content: self).uiImage
+    func getPlatformImage() -> PlatformImage? {
+        return ImageRenderer(content: self).platformImage
     }
 
 }
 
-#endif
