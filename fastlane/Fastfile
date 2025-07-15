@@ -184,7 +184,8 @@ platform :ios do
                 #  "iphone-app-on-mac",
                 #  "ipad-app-on-mac", 
                  "mac-catalyst-optimized-for-mac", 
-                 "mac-catalyst-scaled-to-match-ipad"]
+                 "mac-catalyst-scaled-to-match-ipad",
+                 "mac-native"]
     
     platforms.each do |platform|
       UI.message("Generating screenshots for platform: #{platform}")
@@ -356,7 +357,8 @@ platform :ios do
       "iphone-app-on-mac" => "platform=macOS,arch=arm64,variant=Designed for iPhone",
       "ipad-app-on-mac" => "platform=macOS,arch=arm64,variant=Designed for iPad",
       "mac-catalyst-optimized-for-mac" => "platform=macOS,arch=arm64,variant=Mac Catalyst",
-      "mac-catalyst-scaled-to-match-ipad" => "platform=macOS,arch=arm64,variant=Mac Catalyst"
+      "mac-catalyst-scaled-to-match-ipad" => "platform=macOS,arch=arm64,variant=Mac Catalyst",
+      "mac-native" => "platform=macOS,arch=arm64"
     }
     
     # Map platform to TARGETED_DEVICE_FAMILY build setting. This overrides the setting in the Xcode Project,
