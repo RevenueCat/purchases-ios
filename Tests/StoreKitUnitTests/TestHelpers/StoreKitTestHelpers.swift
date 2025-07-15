@@ -48,7 +48,6 @@ extension XCTestCase {
         }
     }
 
-
     // Some tests were randomly failing on CI when using `.oneRenewalEveryTwoSeconds` due to a race condition where the
     // purchase would expire before the receipt was posted.
     // This time rate is used to work around that issue by having a longer time rate.
