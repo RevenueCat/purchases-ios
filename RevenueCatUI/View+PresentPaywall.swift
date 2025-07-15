@@ -468,7 +468,7 @@ private struct PresentingPaywallModifier: ViewModifier {
                         // in a modal that is "roughly iPhone sized", and if you want to customize further you
                         // can use PaywallView.
                         // https://www.revenuecat.com/docs/tools/paywalls/displaying-paywalls
-                        #if targetEnvironment(macCatalyst)
+                        #if targetEnvironment(macCatalyst) || os(macOS)
                             .frame(height: 667)
                         #endif
                     }
