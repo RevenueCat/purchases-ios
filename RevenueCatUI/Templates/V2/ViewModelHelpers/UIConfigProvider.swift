@@ -70,18 +70,21 @@ struct UIConfigProvider {
         if let genericFont = GenericFont(rawValue: fontName) {
             return genericFont.makeFont(fontSize: fontSize)
         }
-//
-//        guard let customFont = UIFont(name: fontName, size: fontSize) else {
-//            Logger.warning("Custom font '\(fontName)' could not be loaded. Falling back to system font.")
-//            self.failedToLoadFont?(fontsConfig)
-//            return nil
-//        }
-//
-//        // Apply dynamic type scaling
-//        let uiFont = UIFontMetrics.default.scaledFont(for: customFont)
-//        return Font(uiFont)
-        
-        return nil
+
+        guard let customFont = PlatformFont(name: fontName, size: fontSize) else {
+            Logger.warning("Custom font '\(fontName)' could not be loaded. Falling back to system font.")
+            self.failedToLoadFont?(fontsConfig)
+            return nil
+        }
+
+        // Apply dynamic type scaling
+        #if canImport(UIKit)
+        let uiFont = UIFontMetrics.default.scaledFont(for: customFont)
+        return Font(uiFont)
+        #else
+        //TODO: Figure out how to apply dynamic type scaling on Mac
+        return Font(customFont)
+        #endif
     }
 }
 
