@@ -891,6 +891,7 @@
 		77BA1AB32CCBB6EE009BF0EA /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BA1AB22CCBB6EE009BF0EA /* RootView.swift */; };
 		805B60C97993B311CEC93EAF /* ProductsFetcherSK2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3628C1F100BB3C1782860D24 /* ProductsFetcherSK2.swift */; };
 		80E80EF226970E04008F245A /* ReceiptFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E80EF026970DC3008F245A /* ReceiptFetcher.swift */; };
+		830003FF2E26162000143F9F /* PlatformFont.swift in Sources */ = {isa = PBXBuildFile; fileRef = 830003FE2E26161D00143F9F /* PlatformFont.swift */; };
 		8337D6B62E0A7890000798BF /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DC5621624EC63420031F69B /* RevenueCat.framework */; platformFilters = (ios, maccatalyst, macos, ); };
 		8337D6B72E0A7890000798BF /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2DC5621624EC63420031F69B /* RevenueCat.framework */; platformFilters = (ios, maccatalyst, macos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		8337D6BA2E0A7890000798BF /* RevenueCatUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 887A5FBA2C1D036200E1A461 /* RevenueCatUI.framework */; platformFilters = (ios, maccatalyst, macos, ); };
@@ -2324,6 +2325,7 @@
 		77BA1AB02CCBAB80009BF0EA /* RootViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewModel.swift; sourceTree = "<group>"; };
 		77BA1AB22CCBB6EE009BF0EA /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		80E80EF026970DC3008F245A /* ReceiptFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptFetcher.swift; sourceTree = "<group>"; };
+		830003FE2E26161D00143F9F /* PlatformFont.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformFont.swift; sourceTree = "<group>"; };
 		8337DD6D2E0A7CFE000798BF /* paywall-preview-resources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "paywall-preview-resources"; sourceTree = "<group>"; };
 		84C3F1AC1D7E1E64341D3936 /* Pods_RevenueCat_PurchasesTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RevenueCat_PurchasesTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		887A5FB42C1D024300E1A461 /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
@@ -4973,6 +4975,14 @@
 			path = StickyFooter;
 			sourceTree = "<group>";
 		};
+		830003FD2E26160D00143F9F /* CrossPlatform */ = {
+			isa = PBXGroup;
+			children = (
+				830003FE2E26161D00143F9F /* PlatformFont.swift */,
+			);
+			path = CrossPlatform;
+			sourceTree = "<group>";
+		};
 		887A5FBB2C1D036200E1A461 /* RevenueCatUIDev */ = {
 			isa = PBXGroup;
 			children = (
@@ -5182,6 +5192,7 @@
 		887A60652C1D037000E1A461 /* RevenueCatUI */ = {
 			isa = PBXGroup;
 			children = (
+				830003FD2E26160D00143F9F /* CrossPlatform */,
 				353756642C382C2800A1B8D6 /* CustomerCenter */,
 				887A62242C1D168B00E1A461 /* RevenueCatUITests */,
 				887A5FDD2C1D037000E1A461 /* Data */,
@@ -7346,6 +7357,7 @@
 				5798C93E2DF1985700F44400 /* ScrollViewWithOSBackground.swift in Sources */,
 				5798C93F2DF1985700F44400 /* RestorePurchasesAlert.swift in Sources */,
 				5798C9402DF1985700F44400 /* CustomerCenterNavigationLink.swift in Sources */,
+				830003FF2E26162000143F9F /* PlatformFont.swift in Sources */,
 				5798C9412DF1985700F44400 /* SemanticVersion.swift in Sources */,
 				5798C9422DF1985700F44400 /* ButtonStyles.swift in Sources */,
 				5798C9432DF1985700F44400 /* CustomerCenterView+Actions.swift in Sources */,

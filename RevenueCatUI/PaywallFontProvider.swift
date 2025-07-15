@@ -90,7 +90,7 @@ open class CustomPaywallFontProvider: PaywallFontProvider {
     // swiftlint:disable:next missing_docs
     open func font(for textStyle: Font.TextStyle) -> Font {
         return Font.custom(self.fontName,
-                           size: 18,
+                           size: PlatformFont.preferredFont(forTextStyle: textStyle.style).pointSize,
                            relativeTo: textStyle)
     }
 
@@ -98,12 +98,10 @@ open class CustomPaywallFontProvider: PaywallFontProvider {
 
 // MARK: - Private
 
-#if canImport(UIKit)
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private extension Font.TextStyle {
 
-    var style: UIFont.TextStyle {
+    var style: PlatformFont.TextStyle {
         switch self {
         #if os(tvOS)
         case .largeTitle: return .title1
@@ -142,5 +140,3 @@ private extension Font.TextStyle {
     }
 
 }
-
-#endif
