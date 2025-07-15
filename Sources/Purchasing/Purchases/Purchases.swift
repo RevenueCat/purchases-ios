@@ -1396,7 +1396,7 @@ public extension Purchases {
         return CustomerCenterConfigData(from: response)
     }
 
-#if !os(macOS) && !os(tvOS)
+#if !os(tvOS)
 
     /// Used by `RevenueCatUI` to notify `RevenueCat` when a font in a paywall fails to load.
     @_spi(Internal) func failedToLoadFontWithConfig(_ fontConfig: UIConfig.FontsConfig) {

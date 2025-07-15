@@ -42,7 +42,7 @@ struct ShadowModifier: ViewModifier {
     let shape: (any Shape)?
 
     func body(content: Content) -> some View {
-        #if !os(watchOS)
+        #if !os(watchOS) && !os(macOS)
         if let shadow {
             content
                 .background {
@@ -80,7 +80,7 @@ extension View {
     }
 }
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 
 // Using the .shadow() modifier to add a drop shadow in SwiftUI has multiple downsides:
 // - The shadow is applied to all children views (can be worked around with .compositingGroup())

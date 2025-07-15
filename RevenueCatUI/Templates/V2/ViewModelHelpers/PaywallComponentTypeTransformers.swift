@@ -20,10 +20,10 @@ import SwiftUI
 extension PaywallComponent.FontSize {
 
     func makeFont(familyName: String?) -> Font {
-        return Font(self.makeUIFont(familyName: familyName))
+        return Font(self.makeNSFont(familyName: familyName))
     }
 
-    private var textStyle: UIFont.TextStyle {
+    private var textStyle: NSFont.TextStyle {
         switch self {
         case .headingXXL: return .largeTitle
         case .headingXL: return .title1
@@ -38,7 +38,7 @@ extension PaywallComponent.FontSize {
     }
 
     // swiftlint:disable cyclomatic_complexity
-    private func makeUIFont(familyName: String?) -> UIFont {
+    private func makeNSFont(familyName: String?) -> NSFont {
         let fontSize: CGFloat
         switch self {
         case .headingXXL: fontSize = 40
@@ -54,20 +54,21 @@ extension PaywallComponent.FontSize {
         }
 
         // Create the base font, with fallback to the system font
-        let baseFont: UIFont
+        let baseFont: NSFont
         if let familyName = familyName {
-            if let customFont = UIFont(name: familyName, size: fontSize) {
+            if let customFont = NSFont(name: familyName, size: fontSize) {
                 baseFont = customFont
             } else {
                 Logger.warning("Custom font '\(familyName)' could not be loaded. Falling back to system font.")
-                baseFont = UIFont.systemFont(ofSize: fontSize, weight: .regular)
+                baseFont = NSFont.systemFont(ofSize: fontSize, weight: .regular)
             }
         } else {
-            baseFont = UIFont.systemFont(ofSize: fontSize, weight: .regular)
+            baseFont = NSFont.systemFont(ofSize: fontSize, weight: .regular)
         }
 
         // Apply dynamic type scaling
-        return UIFontMetrics(forTextStyle: self.textStyle).scaledFont(for: baseFont)
+//        return NSFontMetrics(forTextStyle: self.textStyle).scaledFont(for: baseFont)
+        return baseFont
     }
 
 }

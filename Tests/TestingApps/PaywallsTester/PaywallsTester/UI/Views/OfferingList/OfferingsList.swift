@@ -18,7 +18,7 @@ struct OfferingsList: View {
         self.content
             .toolbar {
                 #if !os(watchOS)
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .automatic) {
                     Menu {
                         Picker("Options", selection: $introEligility) {
                             Text("Show Intro Offer").tag(IntroEligibilityStatus.eligible)
@@ -68,7 +68,7 @@ struct OfferingsList: View {
                 Text("No data available.")
             }
         case .error(let error):
-            #if os(iOS)
+            #if os(iOS) || os(macOS)
             CompatibilityContentUnavailableView("Error loading paywalls", systemImage: "exclamationmark.triangle.fill", description: Text(error.localizedDescription))
             #else
             ContentUnavailableView("Error loading paywalls", systemImage: "exclamationmark.triangle.fill", description: Text(error.localizedDescription))
@@ -104,13 +104,13 @@ struct OfferingsList: View {
                 }
                 .id(viewModel.presentedPaywall?.hashValue) //FIXME: This should not be required, issue is in Paywallview
         }
-        .fullScreenCover(item: $viewModel.presentedPaywall) { paywall in
-            PaywallPresenter(offering: paywall.offering, mode: paywall.mode, introEligility: introEligility)
-                .onRestoreCompleted { _ in
-                    viewModel.dismissPaywall()
-                }
-                .id(viewModel.presentedPaywall?.hashValue) //FIXME: This should not be required, issue is in Paywallview
-        }
+//        .fullScreenCover(item: $viewModel.presentedPaywall) { paywall in
+//            PaywallPresenter(offering: paywall.offering, mode: paywall.mode, introEligility: introEligility)
+//                .onRestoreCompleted { _ in
+//                    viewModel.dismissPaywall()
+//                }
+//                .id(viewModel.presentedPaywall?.hashValue) //FIXME: This should not be required, issue is in Paywallview
+//        }
     }
 
     @ViewBuilder
@@ -138,7 +138,7 @@ struct OfferingsList: View {
 
     private func noPaywallsListItem() -> some View {
         VStack {
-            #if canImport(UIKit) && os(iOS)
+            #if os(iOS) || os(macOS)
             CompatibilityContentUnavailableView("No configured paywalls",
                                                          systemImage: "exclamationmark.triangle.fill")
             #else

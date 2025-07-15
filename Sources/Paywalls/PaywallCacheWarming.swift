@@ -25,7 +25,7 @@ protocol PaywallCacheWarmingType: Sendable {
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func warmUpPaywallFontsCache(offerings: Offerings) async
 
-#if !os(macOS) && !os(tvOS) // For Paywalls
+#if !os(tvOS) // For Paywalls
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func triggerFontDownloadIfNeeded(fontsConfig: UIConfig.FontsConfig) async
@@ -113,7 +113,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         }
     }
 
-#if !os(macOS) && !os(tvOS)
+#if !os(tvOS)
 
     /// Downloads and installs the font if it is not already installed.
     func triggerFontDownloadIfNeeded(fontsConfig: UIConfig.FontsConfig) async {

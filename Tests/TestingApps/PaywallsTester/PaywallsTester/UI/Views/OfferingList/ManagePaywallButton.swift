@@ -82,17 +82,17 @@ struct ManagePaywallButton: View {
     }
 
     private func openURL(_ url: URL) {
-        #if !os(watchOS)
-        guard UIApplication.shared.canOpenURL(url) else {
-            Self.logger.log(level: .error, "Could not open URL for \(url)")
-            self.error = URLError(.badURL, userInfo: [NSLocalizedDescriptionKey: "Could not open URL",
-                                               NSLocalizedFailureReasonErrorKey: "Could not open \(url)"])
-            return
-        }
-        UIApplication.shared.open(url)
-        #else
-        WKExtension.shared().openSystemURL(url)
-        #endif
+//        #if !os(watchOS)
+//        guard UIApplication.shared.canOpenURL(url) else {
+//            Self.logger.log(level: .error, "Could not open URL for \(url)")
+//            self.error = URLError(.badURL, userInfo: [NSLocalizedDescriptionKey: "Could not open URL",
+//                                               NSLocalizedFailureReasonErrorKey: "Could not open \(url)"])
+//            return
+//        }
+//        UIApplication.shared.open(url)
+//        #else
+//        WKExtension.shared().openSystemURL(url)
+//        #endif
     }
 
     private static var logger = Logging.shared.logger(category: "Paywalls Tester")

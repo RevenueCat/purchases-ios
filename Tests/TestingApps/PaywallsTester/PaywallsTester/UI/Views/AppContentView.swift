@@ -59,7 +59,7 @@ struct AppContentView: View {
 }
 
 
-#if !os(watchOS)
+#if !os(macOS) && !os(watchOS)
 
 private extension UIApplication {
 

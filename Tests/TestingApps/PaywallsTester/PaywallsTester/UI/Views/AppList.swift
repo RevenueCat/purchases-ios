@@ -32,7 +32,7 @@ struct AppList: View {
             }
             .navigationTitle("My Apps")
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .automatic) {
                     Button {
                         application.signOut()
                     } label: {
@@ -42,7 +42,7 @@ struct AppList: View {
                 }
             }
         }
-        .navigationViewStyle(.stack)
+//        .navigationViewStyle(.stack)
     }
 }
 

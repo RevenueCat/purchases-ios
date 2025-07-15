@@ -11,7 +11,11 @@ import RevenueCat
 #if DEBUG
 @testable import RevenueCatUI
 
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 
 final class SamplePaywallLoader {
 

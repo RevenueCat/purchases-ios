@@ -16,7 +16,7 @@
 import RevenueCat
 import SwiftUI
 
-#if !os(watchOS) && !os(tvOS) && !os(macOS)
+#if !os(watchOS) && !os(tvOS)
 
 /// A closure used for notifying of changes to the current tier.
 /// Useful when creating custom paywalls using `.paywallFooter`.

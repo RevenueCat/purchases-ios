@@ -14,14 +14,13 @@
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS)
+#if !os(tvOS)
 
 /// A SwiftUI view for displaying the paywall for an `Offering`.
 ///
 /// ### Related Articles
 /// [Documentation](https://rev.cat/paywalls)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
 @available(tvOS, unavailable, message: "RevenueCatUI does not support tvOS yet")
 // swiftlint:disable:next type_body_length
 public struct PaywallView: View {
@@ -376,7 +375,6 @@ public struct PaywallView: View {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
 @available(tvOS, unavailable)
 private extension PaywallView {
 
@@ -439,7 +437,6 @@ private extension PaywallViewConfiguration.Content {
 // MARK: -
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
 @available(tvOS, unavailable)
 struct LoadedOfferingPaywallView: View {
 
@@ -558,7 +555,9 @@ struct LoadedOfferingPaywallView: View {
                                 color: self.getCloseButtonColor(configuration: configuration)
                             )
                         }
+                        #if !os(macOS)
                         .toolbarBackground(.hidden, for: .navigationBar)
+                        #endif
                 } else {
                     view
                         .toolbar {
@@ -568,7 +567,9 @@ struct LoadedOfferingPaywallView: View {
                         }
                 }
             }
+            #if !os(macOS)
             .navigationViewStyle(.stack)
+            #endif
         } else {
             view
         }

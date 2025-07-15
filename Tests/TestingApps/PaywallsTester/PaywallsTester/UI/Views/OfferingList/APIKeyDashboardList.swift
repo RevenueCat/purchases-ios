@@ -42,7 +42,7 @@ struct APIKeyDashboardList: View {
         NavigationView {
             self.content
                 .navigationTitle("Live Paywalls")
-                .navigationBarTitleDisplayMode(.inline)
+//                .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .automatic) {
                         Button {
@@ -189,17 +189,17 @@ struct APIKeyDashboardList: View {
                     }
                 }
         }
-        .fullScreenCover(item: self.$presentedPaywallCover) { paywall in
-            PaywallPresenter(offering: paywall.offering, mode: paywall.mode, introEligility: .eligible)
-                .onRestoreCompleted { _ in
-                    self.presentedPaywall = nil
-                }
-                .onAppear {
-                    if let errorInfo = paywall.offering.paywallComponents?.data.errorInfo {
-                        print("Paywall V2 Error:", errorInfo.debugDescription)
-                    }
-                }
-        }
+//        .fullScreenCover(item: self.$presentedPaywallCover) { paywall in
+//            PaywallPresenter(offering: paywall.offering, mode: paywall.mode, introEligility: .eligible)
+//                .onRestoreCompleted { _ in
+//                    self.presentedPaywall = nil
+//                }
+//                .onAppear {
+//                    if let errorInfo = paywall.offering.paywallComponents?.data.errorInfo {
+//                        print("Paywall V2 Error:", errorInfo.debugDescription)
+//                    }
+//                }
+//        }
     }
 
     #if !os(watchOS)
