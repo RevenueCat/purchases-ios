@@ -21,6 +21,7 @@ import Foundation
     /// `virtualCurrencies["VC_CODE"]`.
     @objc public let all: [String: VirtualCurrency]
 
+    // swiftlint:disable:next missing_docs
     @_spi(Internal) public init(virtualCurrencies: [String: VirtualCurrency]) {
         self.all = virtualCurrencies
     }
