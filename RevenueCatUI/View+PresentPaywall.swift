@@ -60,7 +60,6 @@ public struct MyAppPurchaseLogic {
 
 // swiftlint:disable file_length
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
 @available(tvOS, unavailable, message: "RevenueCatUI does not support tvOS yet")
 extension View {
 
@@ -386,7 +385,6 @@ extension View {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
 @available(tvOS, unavailable)
 private struct PresentingPaywallModifier: ViewModifier {
 
@@ -474,9 +472,9 @@ private struct PresentingPaywallModifier: ViewModifier {
                     }
             case .fullScreen:
                 content
-                    .fullScreenCover(item: self.$data, onDismiss: self.onDismiss) { data in
-                        self.paywallView(data)
-                    }
+//                    .fullScreenCover(item: self.$data, onDismiss: self.onDismiss) { data in
+//                        self.paywallView(data)
+//                    }
             }
         }
         .task {
