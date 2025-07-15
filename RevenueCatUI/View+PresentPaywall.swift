@@ -26,6 +26,7 @@ public enum PaywallPresentationMode {
     case sheet
 
     /// Paywall presented using SwiftUI's `.fullScreenCover`.
+    @available(macOS, unavailable)
     case fullScreen
 
 }
@@ -470,11 +471,13 @@ private struct PresentingPaywallModifier: ViewModifier {
                             .frame(height: 667)
                         #endif
                     }
+            #if !os(macOS)
             case .fullScreen:
                 content
-//                    .fullScreenCover(item: self.$data, onDismiss: self.onDismiss) { data in
-//                        self.paywallView(data)
-//                    }
+                    .fullScreenCover(item: self.$data, onDismiss: self.onDismiss) { data in
+                        self.paywallView(data)
+                    }
+            #endif
             }
         }
         .task {
