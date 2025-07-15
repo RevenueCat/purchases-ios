@@ -46,7 +46,12 @@ extension ImageRenderer {
 #if canImport(AppKit)
 extension NSImage {
     func pngData() -> Data? {
-        tiffRepresentation?.bitmap?.png
+        if let tiffRepresentation,
+           let bitmap = NSBitmapImageRep(data: tiffRepresentation) {
+            return bitmap.representation(using: .png, properties: [:])
+        }
+        
+        return nil
     }
 }
 #endif
