@@ -226,7 +226,7 @@ private extension Offerings {
         )
     }
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
     var allFontsInPaywallsNamed: [DownloadableFont] {
         response.uiConfig?
@@ -242,7 +242,7 @@ private extension Offerings {
 
 #endif
 
-    #if !os(macOS) && !os(tvOS) // For Paywalls V2
+    #if !os(tvOS) // For Paywalls V2
 
     var allImagesInPaywalls: Set<URL> {
         return self.allImagesInPaywallsV1 + self.allImagesInPaywallsV2
@@ -266,7 +266,7 @@ private extension Offerings {
         )
     }
 
-    #if !os(macOS) && !os(tvOS) // For Paywalls V2
+    #if !os(tvOS) // For Paywalls V2
 
     private var allImagesInPaywallsV2: Set<URL> {
         // Attempting to warm up all low res images for all offerings for Paywalls V2.
@@ -326,7 +326,7 @@ struct DownloadableFont: Sendable {
     let hash: String
 }
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 private extension UIConfig.AppConfig {
     var allDownloadableFonts: [DownloadableFont] {

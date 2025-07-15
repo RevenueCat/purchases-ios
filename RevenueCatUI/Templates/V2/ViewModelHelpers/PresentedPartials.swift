@@ -15,7 +15,7 @@
 import Foundation
 import RevenueCat
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 /// Protocol defining how partial components can be combined
 protocol PresentedPartial {
