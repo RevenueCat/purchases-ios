@@ -43,7 +43,7 @@ extension ImageRenderer {
     }
 }
 
-#if canImport(AppKit)
+#if canImport(AppKit) && !canImport(UIKit)
 extension NSImage {
     func pngData() -> Data? {
         if let tiffRepresentation,
