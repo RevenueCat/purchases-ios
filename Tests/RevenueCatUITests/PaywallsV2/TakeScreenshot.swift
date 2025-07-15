@@ -19,7 +19,7 @@ import SnapshotTesting
 import SwiftUI
 import XCTest
 
-#if !os(watchOS) && !os(macOS)
+#if !os(watchOS)
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class TakeScreenshotTests: BaseSnapshotTest {
@@ -81,8 +81,9 @@ class TakeScreenshotTests: BaseSnapshotTest {
 
 }
 
-extension UIImage {
-    func resized(toWidth width: CGFloat) -> UIImage {
+extension PlatformImage {
+    func resized(toWidth width: CGFloat) -> PlatformImage {
+        #if canImport(UIKit)
         let scale = width / self.size.width
         let height = self.size.height * scale
         let newSize = CGSize(width: width, height: height)
@@ -94,13 +95,34 @@ extension UIImage {
         return renderer.image { _ in
             self.draw(in: CGRect(origin: .zero, size: newSize))
         }
+        
+        #elseif canImport(AppKit)
+        
+        let scale = width / self.size.width
+        let height = self.size.height * scale
+        let newSize = NSSize(width: width, height: height)
+        
+        let newImage = NSImage(size: newSize)
+        newImage.lockFocus()
+        defer { newImage.unlockFocus() }
+
+        // Draw the image into the new size
+        self.draw(in: NSRect(origin: .zero, size: newSize),
+                  from: NSRect(origin: .zero, size: self.size),
+                  operation: .copy,
+                  fraction: 1.0)
+        
+        return newImage
+        #endif
     }
 }
 
 extension View {
 
-  func asImage(wait duration: TimeInterval = 0.1) -> UIImage {
+  func asImage(wait duration: TimeInterval = 0.1) -> PlatformImage {
 
+    #if canImport(UIKit)
+      
     let controller = UIHostingController(rootView: self)
     let view = controller.view
     let targetSize = controller.view.intrinsicContentSize
@@ -120,8 +142,35 @@ extension View {
     let image = controller.view.asImage()
 
     return image
+      
+    #elseif canImport(AppKit)
+      
+    let controller = NSHostingController(rootView: self)
+    let view = controller.view
+    let targetSize = controller.view.intrinsicContentSize
+    let bounds = CGRect(origin: .zero, size: targetSize)
+
+    view.frame.size = view.fittingSize
+      
+    let window = NSWindow(contentViewController: controller)
+    window.setContentSize(view.fittingSize)
+    window.makeKeyAndOrderFront(nil)
+    view.bounds = bounds
+
+    // 💡 Wait for SwiftUI rendering to complete
+    RunLoop.main.run(until: Date().addingTimeInterval(duration))
+
+    let image = controller.view.asImage()
+      
+    window.close()
+      
+    return image
+      
+    #endif
   }
 }
+
+#if canImport(UIKit)
 
 extension UIView {
   func asImage() -> UIImage {
@@ -131,5 +180,20 @@ extension UIView {
     }
   }
 }
+
+#elseif canImport(AppKit)
+
+extension NSView {
+    func asImage() -> NSImage {
+        let rep = bitmapImageRepForCachingDisplay(in: bounds)!
+        cacheDisplay(in: bounds, to: rep)
+        
+        let image = NSImage(size: bounds.size)
+        image.addRepresentation(rep)
+        return image
+    }
+}
+
+#endif
 
 #endif
