@@ -24,11 +24,7 @@ import XCTest
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class TakeScreenshotTests: BaseSnapshotTest {
 
-    struct PackageData: Decodable {
-        let packages: [OfferingsResponse.Offering.Package]
-    }
-
-    func testPaywallValidationScreenshots() {
+    func testPaywallValidationScreenshots() throws {
         let bundle = Bundle(for: Self.self)
 
         guard let resourcesFolderURL = bundle.url(
@@ -41,146 +37,21 @@ class TakeScreenshotTests: BaseSnapshotTest {
         let baseResourcesURL = resourcesFolderURL
             .appendingPathComponent("resources")
 
-        let resourceDirectories = (try? FileManager.default.contentsOfDirectory(
-            at: baseResourcesURL,
-            includingPropertiesForKeys: [.isDirectoryKey],
-            options: .skipsHiddenFiles
-        ))?.filter { url in
-            (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
-        } ?? []
+        let paywallPreviewsResourceLoader = try PaywallPreviewResourcesLoader(baseResourcesURL: baseResourcesURL)
 
-        if resourceDirectories.isEmpty {
-            XCTFail("No valid resource directories found")
-            return
-        }
+        for offering in paywallPreviewsResourceLoader.allOfferings {
+            let offeringId = offering.id
 
-        for resourceURL in resourceDirectories {
-            let resource = resourceURL.lastPathComponent
-            let offeringsFileName = "offerings.json"
-
-            let packagesPath = baseResourcesURL
-                .appendingPathComponent("packages.json")
-
-            let offeringsPath = baseResourcesURL
-                .appendingPathComponent(resource)
-                .appendingPathComponent(offeringsFileName)
-
-            let originalImagesURL = "https://assets.pawwalls.com"
-            let replacementImagesURL = baseResourcesURL
-                .appendingPathComponent(resource)
-                .appendingPathComponent("pawwalls")
-                .appendingPathComponent("assets")
-                .absoluteString
-            let originalIconsURL = "https://icons.pawwalls.com"
-            let replacementIconsURL = baseResourcesURL
-                .appendingPathComponent(resource)
-                .appendingPathComponent("pawwalls")
-                .appendingPathComponent("icons")
-                .absoluteString
-
-            // Read original file as String
-            guard let offeringsRawString = try? String(contentsOf: offeringsPath) else {
-                XCTFail("Couldn't read offerings file as String")
-                return
-            }
-
-            // Replace URLs
-            let modifiedJSON = offeringsRawString
-                .replacingOccurrences(of: originalImagesURL, with: replacementImagesURL)
-                .replacingOccurrences(of: originalIconsURL, with: replacementIconsURL)
-
-            // Decode updated JSON
-            guard let modifiedData = modifiedJSON.data(using: .utf8) else {
-                XCTFail("Failed to convert modified JSON to Data")
-                return
-            }
-            guard let offeringsResponse = try? JSONDecoder.default.decode(
-                OfferingsResponse.self, from: modifiedData
-            ) else {
-                XCTFail("Failed to decode modified offerings data")
-                return
-            }
-
-            // Read and decode or print contents
-            guard let packagesData = try? Data(contentsOf: packagesPath) else {
-                XCTFail("Couldn't parse packages data")
-                return
-            }
-            guard let packages = try? JSONDecoder.default.decode(PackageData.self, from: packagesData) else {
-                XCTFail("Failed to decode packages data")
-                return
-            }
-
-            let offeringsWithPackages = offeringsResponse.offerings.map { offering in
-                return OfferingsResponse.Offering(
-                    identifier: offering.identifier,
-                    description: offering.description,
-                    packages: packages.packages,
-                    paywallComponents: offering.paywallComponents,
-                    draftPaywallComponents: offering.draftPaywallComponents,
-                    webCheckoutUrl: offering.webCheckoutUrl
-                )
-            }
-
-            let offeringsResponseWithPackages = OfferingsResponse(
-                currentOfferingId: offeringsResponse.currentOfferingId,
-                offerings: offeringsWithPackages,
-                placements: offeringsResponse.placements,
-                targeting: offeringsResponse.targeting,
-                uiConfig: offeringsResponse.uiConfig
-            )
-
-            let offerings = OfferingsFactory().createOfferings(from: [
-                "com.revenuecat.lifetime_product": .init(sk1Product: PreviewMock.Product(
-                    price: 1.99,
-                    unit: .week,
-                    localizedTitle: "Lifeime"
-                )),
-                "com.revenuecat.annual_product": .init(sk1Product: PreviewMock.Product(
-                    price: 1.99,
-                    unit: .year,
-                    localizedTitle: "Annual"
-                )),
-                "com.revenuecat.semester_product": .init(sk1Product: PreviewMock.Product(
-                    price: 1.99,
-                    unit: .month,
-                    localizedTitle: "6 Month"
-                )),
-                "com.revenuecat.quarterly_product": .init(sk1Product: PreviewMock.Product(
-                    price: 1.99,
-                    unit: .week,
-                    localizedTitle: "3 Month"
-                )),
-                "com.revenuecat.bimonthly_product": .init(sk1Product: PreviewMock.Product(
-                    price: 1.99,
-                    unit: .week,
-                    localizedTitle: "2 Month"
-                )),
-                "com.revenuecat.monthly_product": .init(sk1Product: PreviewMock.Product(
-                    price: 1.99,
-                    unit: .month,
-                    localizedTitle: "Monthly"
-                )),
-                "com.revenuecat.weekly_product": .init(sk1Product: PreviewMock.Product(
-                    price: 1.99,
-                    unit: .week,
-                    localizedTitle: "Weekly"
-                ))
-            ], data: offeringsResponseWithPackages)
-
-            for offeringId in offerings!.all.keys {
-                let offering = offerings!.all[offeringId]!
-
-                if offering.paywallComponents != nil {
-                    let view = Self.createPaywall(offering: offering)
-                        .frame(width: 450, height: 1000)
-                    self.snapshotAndSave(view: view,
-                                         size: CGSize(width: 450, height: 1000),
-                                         filename: "\(offeringId)__END.png",
-                                         template: offeringId)
-                }
+            if offering.paywallComponents != nil {
+                let view = Self.createPaywall(offering: offering)
+                    .frame(width: 450, height: 1000)
+                self.snapshotAndSave(view: view,
+                                     size: CGSize(width: 450, height: 1000),
+                                     filename: "\(offeringId)__END.png",
+                                     template: offeringId)
             }
         }
+
     }
 
     func clearContentsOfDirectory(at url: URL) throws {
