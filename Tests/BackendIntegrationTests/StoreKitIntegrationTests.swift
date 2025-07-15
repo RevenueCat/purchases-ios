@@ -609,7 +609,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testIneligibleForIntroAfterPurchase() async throws {
-        setOneSecondIsOneDayTimeRate(self.testSession)
+        setLongestTestSessionTimeRate(self.testSession)
 
         let product = try await self.shortestDurationProduct
 
