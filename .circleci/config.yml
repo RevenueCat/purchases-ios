@@ -69,7 +69,7 @@ executors:
       CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.generate_snapshots >>
       CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
     working_directory: ~/purchases-ios
-    shell: /bin/bash --login -o pipefail  
+    shell: /bin/bash --login -o pipefail
   macos-executor-large:
     parameters:
       xcode_version:
@@ -1447,8 +1447,6 @@ jobs:
           name: Run tests
           command: bundle exec fastlane record_and_push_paywall_template_screenshots target_repository_path:../Tests/paywall-rendering-validation
           no_output_timeout: 15m
-          environment:
-            SCAN_DEVICE: iPhone 16
 
   update-paywall-preview-resources-commit:
     docker:
@@ -1613,7 +1611,8 @@ workflows:
   record-and-push-paywall-template-screenshots:
     when:
       or:
-        - equal: ["record_paywall_screenshots", << pipeline.parameters.action >>]
+        - equal:
+            ["record_paywall_screenshots", << pipeline.parameters.action >>]
         - and:
             - not:
                 equal: [scheduled_pipeline, << pipeline.trigger_source >>]
