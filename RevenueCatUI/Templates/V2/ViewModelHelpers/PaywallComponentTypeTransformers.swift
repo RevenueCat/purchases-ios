@@ -20,10 +20,10 @@ import SwiftUI
 extension PaywallComponent.FontSize {
 
     func makeFont(familyName: String?) -> Font {
-        return Font(self.makeNSFont(familyName: familyName))
+        return Font(self.makePlatformFont(familyName: familyName))
     }
 
-    private var textStyle: NSFont.TextStyle {
+    private var textStyle: PlatformFont.TextStyle {
         switch self {
         case .headingXXL: return .largeTitle
         case .headingXL: return .title1
@@ -38,7 +38,7 @@ extension PaywallComponent.FontSize {
     }
 
     // swiftlint:disable cyclomatic_complexity
-    private func makeNSFont(familyName: String?) -> NSFont {
+    private func makePlatformFont(familyName: String?) -> PlatformFont {
         let fontSize: CGFloat
         switch self {
         case .headingXXL: fontSize = 40
@@ -54,21 +54,25 @@ extension PaywallComponent.FontSize {
         }
 
         // Create the base font, with fallback to the system font
-        let baseFont: NSFont
+        let baseFont: PlatformFont
         if let familyName = familyName {
-            if let customFont = NSFont(name: familyName, size: fontSize) {
+            if let customFont = PlatformFont(name: familyName, size: fontSize) {
                 baseFont = customFont
             } else {
                 Logger.warning("Custom font '\(familyName)' could not be loaded. Falling back to system font.")
-                baseFont = NSFont.systemFont(ofSize: fontSize, weight: .regular)
+                baseFont = PlatformFont.systemFont(ofSize: fontSize, weight: .regular)
             }
         } else {
-            baseFont = NSFont.systemFont(ofSize: fontSize, weight: .regular)
+            baseFont = PlatformFont.systemFont(ofSize: fontSize, weight: .regular)
         }
 
         // Apply dynamic type scaling
-//        return NSFontMetrics(forTextStyle: self.textStyle).scaledFont(for: baseFont)
+        #if canImport(UIKit)
+        return UIFontMetrics(forTextStyle: self.textStyle).scaledFont(for: baseFont)
+        #else
+        //TODO: Figure out how to apply dynamic type scaling on macOS
         return baseFont
+        #endif
     }
 
 }
