@@ -45,7 +45,9 @@ struct APIKeyDashboardList: View {
         NavigationView {
             self.content
                 .navigationTitle("Live Paywalls")
-//                .navigationBarTitleDisplayMode(.inline)
+                #if !os(macOS)
+                .navigationBarTitleDisplayMode(.inline)
+                #endif
                 .toolbar {
                     ToolbarItem(placement: .automatic) {
                         Button {
@@ -192,17 +194,19 @@ struct APIKeyDashboardList: View {
                     }
                 }
         }
-//        .fullScreenCover(item: self.$presentedPaywallCover) { paywall in
-//            PaywallPresenter(offering: paywall.offering, mode: paywall.mode, introEligility: .eligible)
-//                .onRestoreCompleted { _ in
-//                    self.presentedPaywall = nil
-//                }
-//                .onAppear {
-//                    if let errorInfo = paywall.offering.paywallComponents?.data.errorInfo {
-//                        print("Paywall V2 Error:", errorInfo.debugDescription)
-//                    }
-//                }
-//        }
+        #if !os(macOS)
+        .fullScreenCover(item: self.$presentedPaywallCover) { paywall in
+            PaywallPresenter(offering: paywall.offering, mode: paywall.mode, introEligility: .eligible)
+                .onRestoreCompleted { _ in
+                    self.presentedPaywall = nil
+                }
+                .onAppear {
+                    if let errorInfo = paywall.offering.paywallComponents?.data.errorInfo {
+                        print("Paywall V2 Error:", errorInfo.debugDescription)
+                    }
+                }
+        }
+        #endif
         .overlay {
             if offeringToPresent != nil {
                 VStack {}.presentPaywallIfNeeded(offering: offeringToPresent,
