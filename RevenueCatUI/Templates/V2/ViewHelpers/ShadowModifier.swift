@@ -62,6 +62,7 @@ struct ShadowModifier: ViewModifier {
             content
         }
         #else
+        //TODO: See how we can handle shadows on macOS
         content
         #endif
     }
