@@ -463,8 +463,8 @@ final class PurchasesOrchestrator {
                           winBackOffer: winBackOffer,
                           metadata: metadata,
                           completion: completionWithTracking)
-        } else if product.isTestProduct {
-            self.handleTestProduct(completionWithTracking)
+        } else if let testStoreProduct = product.testStoreProduct {
+            self.purchase(testStoreProduct: testStoreProduct, completion: completionWithTracking)
         } else {
             fatalError("Unrecognized product: \(product)")
         }
@@ -1840,7 +1840,19 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    func handleTestProduct(_ completion: @escaping PurchaseCompletedBlock) {
+    func purchase(testStoreProduct: TestStoreProduct, completion: @escaping PurchaseCompletedBlock) {
+        #if TEST_STORE
+        if self.systemInfo.isTestStoreAPIKey {
+            // TODO: implement
+        } else {
+            self.handleTestProductNotAvailableForPurchase(completion)
+        }
+        #else
+        self.handleTestProductNotAvailableForPurchase(completion)
+        #endif // TEST_STORE
+    }
+
+    func handleTestProductNotAvailableForPurchase(_ completion: @escaping PurchaseCompletedBlock) {
         self.operationDispatcher.dispatchOnMainActor {
             completion(
                 nil,

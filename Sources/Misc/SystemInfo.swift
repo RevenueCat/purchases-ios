@@ -34,7 +34,13 @@ class SystemInfo {
     }
 
     let storeKitVersion: StoreKitVersion
-    let apiKeyValidationResult: Configuration.APIKeyValidationResult
+    private let apiKeyValidationResult: Configuration.APIKeyValidationResult
+
+    /// Whether the API key used to configure the SDK is a Test Store API key.
+    var isTestStoreAPIKey: Bool {
+        return self.apiKeyValidationResult == .testStore
+    }
+
     let operationDispatcher: OperationDispatcher
     let platformFlavor: String
     let platformFlavorVersion: String?
