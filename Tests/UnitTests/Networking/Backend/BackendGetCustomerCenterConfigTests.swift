@@ -420,19 +420,23 @@ private extension BackendGetCustomerCenterConfigTests {
                     "group_id": "group_id",
                     "group_name": "group_name",
                     "products": [
+                        [
                         "product_id": "product_id",
-                        "selected": true
+                        "selected": false
+                        ]
                     ]
                 ],
                 [
                     "group_id": "group_id2",
                     "group_name": "group_name2",
                     "products": [
-                        "product_id": "product_id2",
-                        "selected": true
+                        [
+                        "product_id": "product_id",
+                        "selected": false
+                        ]
                     ]
                 ]
-            ]
+            ] as [Any]
         ] as [String: Any]
     ]
 

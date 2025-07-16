@@ -254,7 +254,7 @@ class CustomerCenterConfigDataTests: TestCase {
                 "support": {
                     "email": "support@example.com"
                 },
-                "change_plans": []
+                "changePlans": []
             },
             "lastPublishedAppVersion": "1.0.0",
             "itunesTrackId": 123
