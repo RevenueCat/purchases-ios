@@ -198,7 +198,7 @@ import Foundation
             try await purchasesProvider.customerInfo(fetchPolicy: .fetchCurrent)
 
             let configuration = try await self.loadCustomerCenterConfig()
-            try await self.loadPurchases(customerInfo: customerInfo, changePlans: configuration.changePlan)
+            try await self.loadPurchases(customerInfo: customerInfo, changePlans: configuration.changePlans)
 
             if shouldShowVirtualCurrencies {
                 purchasesProvider.invalidateVirtualCurrenciesCache()

@@ -24,7 +24,7 @@ import Foundation
     @_spi(Internal) public let appearance: Appearance
     @_spi(Internal) public let localization: Localization
     @_spi(Internal) public let support: Support
-    @_spi(Internal) public let changePlan: [ChangePlan]
+    @_spi(Internal) public let changePlans: [ChangePlan]
     @_spi(Internal) public let lastPublishedAppVersion: String?
     @_spi(Internal) public let productId: UInt?
 
@@ -33,7 +33,7 @@ import Foundation
         appearance: Appearance,
         localization: Localization,
         support: Support,
-        changePlan: [ChangePlan],
+        changePlans: [ChangePlan],
         lastPublishedAppVersion: String?,
         productId: UInt?
     ) {
@@ -41,7 +41,7 @@ import Foundation
         self.appearance = appearance
         self.localization = localization
         self.support = support
-        self.changePlan = changePlan
+        self.changePlans = changePlans
         self.lastPublishedAppVersion = lastPublishedAppVersion
         self.productId = productId
     }
@@ -720,7 +720,7 @@ extension CustomerCenterConfigData {
         self.support = Support(from: response.customerCenter.support)
         self.lastPublishedAppVersion = response.lastPublishedAppVersion
         self.productId = response.itunesTrackId
-        self.changePlan = response.customerCenter.changePlans.map {
+        self.changePlans = response.customerCenter.changePlans.map {
             .init(groupId: $0.groupId, groupName: $0.groupName, products: $0.products.map {
                 .init(productId: $0.productId, selected: $0.selected)
             })
