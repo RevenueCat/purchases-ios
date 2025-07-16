@@ -97,19 +97,6 @@ struct SubscriptionDetailView: View {
                 ), subscriptionGroupID: viewModel.purchaseInformation?.subscriptionGroupID
                 )
             )
-            .onCustomerCenterPromotionalOfferSuccess {
-                viewModel.refreshPurchase()
-            }
-            .onCustomerCenterShowingManageSubscriptions {
-                Task { @MainActor in
-                    customerInfoViewModel.manageSubscriptionsSheet = true
-                }
-            }
-            .onChangeOf(customerInfoViewModel.manageSubscriptionsSheet) { manageSubscriptionsSheet in
-                if !manageSubscriptionsSheet {
-                    viewModel.refreshPurchase()
-                }
-            }
             .compatibleNavigation(
                 isPresented: $viewModel.showAllPurchases,
                 usesNavigationStack: navigationOptions.usesNavigationStack
@@ -234,6 +221,9 @@ struct SubscriptionDetailView: View {
             $0.navigationTitle(self.viewModel.screen.title)
                 .navigationBarTitleDisplayMode(.inline)
         })
+        .onAppear {
+            viewModel.didAppear()
+        }
     }
 
     @ViewBuilder
