@@ -13,7 +13,6 @@
 //
 
 import Foundation
-import StoreKit
 
 /// Protocol for a type that can fetch and cache ``StoreProduct``s.
 /// The basic interface only has a completion-blocked based API, but default `async` overloads are provided.
