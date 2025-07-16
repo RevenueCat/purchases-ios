@@ -150,7 +150,7 @@ private extension PurchaseHistoryViewModel {
                 transaction: purchase,
                 customerInfo: customerInfo,
                 purchasesProvider: purchasesProvider,
-                changePlans: [], // ignored on purpose because there's no change plan flow from history
+                changePlans: [], // ignored on purpose because there's no change plan flow from purchase history
                 customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
             ))
         }
