@@ -72,13 +72,6 @@ import SwiftUI
         isPresented: Binding<Bool>,
         subscriptionGroupID: String?
     ) -> ManageSubscriptionSheetModifier
-
-    @MainActor
-    func changePlansSheetViewModifier(
-        isPresented: Binding<Bool>,
-        subscriptionGroupID: String,
-        productIDs: [String]
-    ) -> ChangePlansSheetViewModifier
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -93,6 +86,13 @@ extension CustomerCenterPurchasesType {
     ) -> ManageSubscriptionSheetModifier {
         ManageSubscriptionSheetModifier(isPresented: isPresented, subscriptionGroupID: subscriptionGroupID)
     }
+}
+
+@available(iOS 15.0, macOS 14.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension CustomerCenterPurchasesType {
 
     func changePlansSheetViewModifier(
         isPresented: Binding<Bool>,
@@ -107,7 +107,7 @@ extension CustomerCenterPurchasesType {
     }
 }
 
-@available(iOS 15.0, *)
+@available(iOS 15.0, macOS 14.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
