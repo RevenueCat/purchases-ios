@@ -96,7 +96,7 @@ extension CustomerCenterPurchasesType {
 
     func changePlansSheetViewModifier(
         isPresented: Binding<Bool>,
-        subscriptionGroupID: String,
+        subscriptionGroupID: String?,
         productIDs: [String]
     ) -> ChangePlansSheetViewModifier {
         ChangePlansSheetViewModifier(
@@ -114,10 +114,14 @@ extension CustomerCenterPurchasesType {
 @_spi(Internal) public struct ChangePlansSheetViewModifier: ViewModifier {
 
     let isPresented: Binding<Bool>
-    let subscriptionGroupID: String
+    let subscriptionGroupID: String?
     let productIDs: [String]
 
-    @_spi(Internal) public init(isPresented: Binding<Bool>, subscriptionGroupID: String, productIDs: [String]) {
+    @_spi(Internal) public init(
+        isPresented: Binding<Bool>,
+        subscriptionGroupID: String?,
+        productIDs: [String]
+    ) {
         self.isPresented = isPresented
         self.subscriptionGroupID = subscriptionGroupID
         self.productIDs = productIDs
@@ -125,14 +129,14 @@ extension CustomerCenterPurchasesType {
 
     @_spi(Internal) public func body(content: Content) -> some View {
         #if swift(>=5.9)
-        if #available(iOS 17.0, *) {
+        if #available(iOS 17.0, *), productIDs.count > 2 || subscriptionGroupID != nil {
             content
                 .sheet(isPresented: isPresented) {
-                    if productIDs.count > 1 {
+                    if productIDs.count > 2 {
                         SubscriptionStoreView(
                             productIDs: productIDs
                         )
-                    } else {
+                    } else if let subscriptionGroupID {
                         SubscriptionStoreView(
                             groupID: subscriptionGroupID
                         )

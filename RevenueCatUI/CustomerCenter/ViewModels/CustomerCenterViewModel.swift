@@ -197,8 +197,8 @@ import Foundation
             try await self.purchasesProvider.syncPurchases() :
             try await purchasesProvider.customerInfo(fetchPolicy: .fetchCurrent)
 
-            try await self.loadCustomerCenterConfig()
-            try await self.loadPurchases(customerInfo: customerInfo, changePlans: configuration?.changePlan ?? [])
+            let configuration = try await self.loadCustomerCenterConfig()
+            try await self.loadPurchases(customerInfo: customerInfo, changePlans: configuration.changePlan)
 
             if shouldShowVirtualCurrencies {
                 purchasesProvider.invalidateVirtualCurrenciesCache()
@@ -347,15 +347,22 @@ private extension CustomerCenterViewModel {
         }
     }
 
-    func loadCustomerCenterConfig() async throws {
-        self.configuration = try await purchasesProvider.loadCustomerCenter()
-        if let productId = configuration?.productId,
+    func loadCustomerCenterConfig() async throws -> CustomerCenterConfigData {
+        let configuration = try await purchasesProvider.loadCustomerCenter()
+
+        defer {
+            self.configuration = configuration
+        }
+
+        if let productId = configuration.productId,
             let url = URL(string: "https://itunes.apple.com/app/id\(productId)") {
             self.onUpdateAppClick = {
                 // productId is a positive integer, so it should be safe to construct a URL from it.
                 URLUtilities.openURLIfNotAppExtension(url)
             }
         }
+
+        return configuration
     }
 }
 

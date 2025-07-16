@@ -105,7 +105,7 @@ struct SubscriptionDetailView: View {
                             customerInfoViewModel.changePlansSheet = manage
                         }}
                     ),
-                    subscriptionGroupID: viewModel.purchaseSubscriptionGroupID ?? "",
+                    subscriptionGroupID: viewModel.purchaseSubscriptionGroupID,
                     productIDs: viewModel.changePlanProductIDs
                 )
             )

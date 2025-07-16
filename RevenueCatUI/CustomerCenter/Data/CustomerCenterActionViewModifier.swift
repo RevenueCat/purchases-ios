@@ -45,7 +45,7 @@ struct CustomerCenterActionViewModifier: ViewModifier {
     @State private var refundRequestStarted: UniqueWrapper<String>?
     @State private var refundRequestCompleted: UniqueWrapper<(String, RefundRequestStatus)>?
     @State private var feedbackSurveyCompleted: UniqueWrapper<String>?
-    @State private var showingChangePlans: UniqueWrapper<String>?
+    @State private var showingChangePlans: UniqueWrapper<String?>?
     @State private var managementOptionSelected: UniqueWrapper<CustomerCenterActionable>?
     @State private var promotionalOfferSuccess: UniqueWrapper<Void>?
 

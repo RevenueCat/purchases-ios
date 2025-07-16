@@ -133,7 +133,8 @@ class CustomerCenterConfigDataTests: TestCase {
                     displayPurchaseHistoryLink: true,
                     displayVirtualCurrencies: true,
                     shouldWarnCustomersAboutMultipleSubscriptions: false
-                )
+                ),
+                changePlans: []
             ),
             lastPublishedAppVersion: "1.2.3",
             itunesTrackId: 123
@@ -252,7 +253,8 @@ class CustomerCenterConfigDataTests: TestCase {
                 },
                 "support": {
                     "email": "support@example.com"
-                }
+                },
+                "change_plans": []
             },
             "lastPublishedAppVersion": "1.0.0",
             "itunesTrackId": 123

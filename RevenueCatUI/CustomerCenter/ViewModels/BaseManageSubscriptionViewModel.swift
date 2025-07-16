@@ -182,7 +182,7 @@ private extension BaseManageSubscriptionViewModel {
             }
 
         case .changePlans:
-            self.actionWrapper.handleAction(.showingChangePlans(purchaseInformation?.subscriptionGroupID ?? ""))
+            self.actionWrapper.handleAction(.showingChangePlans(purchaseInformation?.subscriptionGroupID))
 
         case .cancel:
             self.actionWrapper.handleAction(.showingManageSubscriptions)
