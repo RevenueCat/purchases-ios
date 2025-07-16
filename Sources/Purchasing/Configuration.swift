@@ -57,8 +57,6 @@ import Foundation
     internal let diagnosticsEnabled: Bool
 
     private init(with builder: Builder) {
-        Self.verify(apiKey: builder.apiKey)
-
         self.apiKey = builder.apiKey
         self.appUserID = builder.appUserID
         self.observerMode = builder.observerMode
@@ -401,17 +399,20 @@ extension Configuration {
         }
     }
 
-    fileprivate static func verify(apiKey: String) {
-        switch self.validate(apiKey: apiKey) {
+    private static let applePlatformKeyPrefixes: Set<String> = ["appl_", "mac_"]
+    private static let testStoreKeyPrefix = "test_"
+}
+
+extension Configuration.APIKeyValidationResult {
+
+    func logIfNeeded() {
+        switch self {
         case .validApplePlatform: break
         case .testStore: Logger.warn(Strings.configure.testStoreAPIKey)
         case .legacy: Logger.debug(Strings.configure.legacyAPIKey)
         case .otherPlatforms: Logger.error(Strings.configure.invalidAPIKey)
         }
     }
-
-    private static let applePlatformKeyPrefixes: Set<String> = ["appl_", "mac_"]
-    private static let testStoreKeyPrefix = "test_"
 
 }
 
