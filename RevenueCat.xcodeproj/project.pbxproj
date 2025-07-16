@@ -1311,27 +1311,6 @@
 			remoteGlobalIDString = 4F6BED9A2A26A64200CD9322;
 			remoteInfo = PaywallsTester;
 		};
-		2DD501052C519EB4009C19B7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 2DD500EC2C519EB4009C19B7 /* PurchaseTester.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 2CD2C4F5278C9B02005D1CC2;
-			remoteInfo = PurchaseTester;
-		};
-		2DD501072C519EB4009C19B7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 2DD500EC2C519EB4009C19B7 /* PurchaseTester.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 578DAA092947DD21001700FD;
-			remoteInfo = PurchaseTesterWatchOS;
-		};
-		2DD501092C519EB4009C19B7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 2DD500EC2C519EB4009C19B7 /* PurchaseTester.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 578DAA202947DD8C001700FD;
-			remoteInfo = Core;
-		};
 		2DE20B8E26409EC0004C597D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
@@ -1639,55 +1618,8 @@
 		2DD5008D2C519EB4009C19B7 /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
 		2DD5008F2C519EB4009C19B7 /* PaywallsTester.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = PaywallsTester.xcodeproj; sourceTree = "<group>"; };
 		2DD500902C519EB4009C19B7 /* PaywallsTester.xcworkspace */ = {isa = PBXFileReference; lastKnownFileType = wrapper.workspace; path = PaywallsTester.xcworkspace; sourceTree = "<group>"; };
-		2DD500B42C519EB4009C19B7 /* ConfiguredPurchases.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfiguredPurchases.swift; sourceTree = "<group>"; };
-		2DD500B52C519EB4009C19B7 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
-		2DD500B62C519EB4009C19B7 /* Core.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Core.h; sourceTree = "<group>"; };
-		2DD500B72C519EB4009C19B7 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
-		2DD500B92C519EB4009C19B7 /* Appfile */ = {isa = PBXFileReference; lastKnownFileType = text; path = Appfile; sourceTree = "<group>"; };
-		2DD500BA2C519EB4009C19B7 /* Fastfile */ = {isa = PBXFileReference; lastKnownFileType = text; path = Fastfile; sourceTree = "<group>"; };
-		2DD500BB2C519EB4009C19B7 /* Matchfile */ = {isa = PBXFileReference; lastKnownFileType = text; path = Matchfile; sourceTree = "<group>"; };
-		2DD500BC2C519EB4009C19B7 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		2DD500BE2C519EB4009C19B7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		2DD500BF2C519EB4009C19B7 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		2DD500C02C519EB4009C19B7 /* PurchaseTesterWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseTesterWatchApp.swift; sourceTree = "<group>"; };
-		2DD500C22C519EB4009C19B7 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
-		2DD500C32C519EB4009C19B7 /* Identifiable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Identifiable.swift; sourceTree = "<group>"; };
-		2DD500C42C519EB4009C19B7 /* Package+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Package+Extensions.swift"; sourceTree = "<group>"; };
-		2DD500C62C519EB4009C19B7 /* AdaptiveStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdaptiveStack.swift; sourceTree = "<group>"; };
-		2DD500C72C519EB4009C19B7 /* LocalizedAlertError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedAlertError.swift; sourceTree = "<group>"; };
-		2DD500C82C519EB4009C19B7 /* ObserverModeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObserverModeManager.swift; sourceTree = "<group>"; };
-		2DD500C92C519EB4009C19B7 /* ProductFetcherSK1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductFetcherSK1.swift; sourceTree = "<group>"; };
-		2DD500CA2C519EB4009C19B7 /* ProductFetcherSK2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductFetcherSK2.swift; sourceTree = "<group>"; };
-		2DD500CB2C519EB4009C19B7 /* PurchasesOrchestrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesOrchestrator.swift; sourceTree = "<group>"; };
-		2DD500CD2C519EB4009C19B7 /* ProxyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyManager.swift; sourceTree = "<group>"; };
-		2DD500CE2C519EB4009C19B7 /* ProxyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyView.swift; sourceTree = "<group>"; };
-		2DD500CF2C519EB4009C19B7 /* ProxyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyViewModel.swift; sourceTree = "<group>"; };
-		2DD500D12C519EB4009C19B7 /* CustomerInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfoView.swift; sourceTree = "<group>"; };
-		2DD500D22C519EB4009C19B7 /* CustomerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerView.swift; sourceTree = "<group>"; };
-		2DD500D32C519EB4009C19B7 /* EntitlementsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementsView.swift; sourceTree = "<group>"; };
-		2DD500D42C519EB4009C19B7 /* SubscriberAttributesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberAttributesView.swift; sourceTree = "<group>"; };
-		2DD500D52C519EB4009C19B7 /* TransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsView.swift; sourceTree = "<group>"; };
-		2DD500D72C519EB4009C19B7 /* OfferingDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferingDetailView.swift; sourceTree = "<group>"; };
-		2DD500D82C519EB4009C19B7 /* PromoOfferDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromoOfferDetailsView.swift; sourceTree = "<group>"; };
-		2DD500DA2C519EB4009C19B7 /* ConfigurationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationView.swift; sourceTree = "<group>"; };
-		2DD500DB2C519EB4009C19B7 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		2DD500DC2C519EB4009C19B7 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
-		2DD500DD2C519EB4009C19B7 /* LocalReceiptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalReceiptView.swift; sourceTree = "<group>"; };
-		2DD500DE2C519EB4009C19B7 /* LoggerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerView.swift; sourceTree = "<group>"; };
-		2DD500DF2C519EB4009C19B7 /* TextFieldAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFieldAlert.swift; sourceTree = "<group>"; };
-		2DD500E12C519EB4009C19B7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		2DD500E22C519EB4009C19B7 /* PurchaseTesterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseTesterApp.swift; sourceTree = "<group>"; };
-		2DD500E32C519EB4009C19B7 /* ReceiptInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptInspector.swift; sourceTree = "<group>"; };
-		2DD500E42C519EB4009C19B7 /* ReceiptVerifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptVerifier.swift; sourceTree = "<group>"; };
-		2DD500E62C519EB4009C19B7 /* Windows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Windows.swift; sourceTree = "<group>"; };
-		2DD500E82C519EB4009C19B7 /* AppIcon.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = AppIcon.xcassets; sourceTree = "<group>"; };
-		2DD500E92C519EB4009C19B7 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		2DD500EA2C519EB4009C19B7 /* PurchaseTester-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "PurchaseTester-Info.plist"; sourceTree = "<group>"; };
-		2DD500EB2C519EB4009C19B7 /* PurchaseTester.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PurchaseTester.entitlements; sourceTree = "<group>"; };
-		2DD500EC2C519EB4009C19B7 /* PurchaseTester.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = PurchaseTester.xcodeproj; sourceTree = "<group>"; };
 		2DD58DD727F240EB000FDFE3 /* EmptyFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyFile.swift; sourceTree = "<group>"; };
 		2DD6E5882C544C420068E695 /* RevenueCat_IntegrationPurchaseTesterConfiguration.storekit */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = RevenueCat_IntegrationPurchaseTesterConfiguration.storekit; sourceTree = "<group>"; };
-		2DD6E58B2C544D2D0068E695 /* PurchaseTesterStoreKitConfiguration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = PurchaseTesterStoreKitConfiguration.storekit; sourceTree = "<group>"; };
 		2DD9F4BD274EADC20031AE2C /* Purchases+async.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Purchases+async.swift"; sourceTree = "<group>"; };
 		2DDA3E4624DB0B5400EDFE5B /* OperationDispatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationDispatcher.swift; sourceTree = "<group>"; };
 		2DDE559A24C8B5E300DCB087 /* verifyReceiptSample1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = verifyReceiptSample1.txt; sourceTree = "<group>"; };
@@ -3476,145 +3408,10 @@
 			path = PaywallsTester;
 			sourceTree = "<group>";
 		};
-		2DD500B82C519EB4009C19B7 /* Core */ = {
-			isa = PBXGroup;
-			children = (
-				2DD500B42C519EB4009C19B7 /* ConfiguredPurchases.swift */,
-				2DD500B52C519EB4009C19B7 /* Constants.swift */,
-				2DD500B62C519EB4009C19B7 /* Core.h */,
-				2DD500B72C519EB4009C19B7 /* Logger.swift */,
-			);
-			path = Core;
-			sourceTree = "<group>";
-		};
-		2DD500BD2C519EB4009C19B7 /* fastlane */ = {
-			isa = PBXGroup;
-			children = (
-				2DD500B92C519EB4009C19B7 /* Appfile */,
-				2DD500BA2C519EB4009C19B7 /* Fastfile */,
-				2DD500BB2C519EB4009C19B7 /* Matchfile */,
-				2DD500BC2C519EB4009C19B7 /* README.md */,
-			);
-			path = fastlane;
-			sourceTree = "<group>";
-		};
-		2DD500C12C519EB4009C19B7 /* PurchaseTesterWatchOS */ = {
-			isa = PBXGroup;
-			children = (
-				2DD500BE2C519EB4009C19B7 /* Assets.xcassets */,
-				2DD500BF2C519EB4009C19B7 /* ContentView.swift */,
-				2DD500C02C519EB4009C19B7 /* PurchaseTesterWatchApp.swift */,
-			);
-			path = PurchaseTesterWatchOS;
-			sourceTree = "<group>";
-		};
-		2DD500C52C519EB4009C19B7 /* Extensions */ = {
-			isa = PBXGroup;
-			children = (
-				2DD500C22C519EB4009C19B7 /* Extensions.swift */,
-				2DD500C32C519EB4009C19B7 /* Identifiable.swift */,
-				2DD500C42C519EB4009C19B7 /* Package+Extensions.swift */,
-			);
-			path = Extensions;
-			sourceTree = "<group>";
-		};
-		2DD500CC2C519EB4009C19B7 /* Helpers */ = {
-			isa = PBXGroup;
-			children = (
-				2DD500C62C519EB4009C19B7 /* AdaptiveStack.swift */,
-				2DD500C72C519EB4009C19B7 /* LocalizedAlertError.swift */,
-				2DD500C82C519EB4009C19B7 /* ObserverModeManager.swift */,
-				2DD500C92C519EB4009C19B7 /* ProductFetcherSK1.swift */,
-				2DD500CA2C519EB4009C19B7 /* ProductFetcherSK2.swift */,
-				2DD500CB2C519EB4009C19B7 /* PurchasesOrchestrator.swift */,
-			);
-			path = Helpers;
-			sourceTree = "<group>";
-		};
-		2DD500D02C519EB4009C19B7 /* Proxy */ = {
-			isa = PBXGroup;
-			children = (
-				2DD500CD2C519EB4009C19B7 /* ProxyManager.swift */,
-				2DD500CE2C519EB4009C19B7 /* ProxyView.swift */,
-				2DD500CF2C519EB4009C19B7 /* ProxyViewModel.swift */,
-			);
-			path = Proxy;
-			sourceTree = "<group>";
-		};
-		2DD500D62C519EB4009C19B7 /* Customer */ = {
-			isa = PBXGroup;
-			children = (
-				2DD500D12C519EB4009C19B7 /* CustomerInfoView.swift */,
-				2DD500D22C519EB4009C19B7 /* CustomerView.swift */,
-				2DD500D32C519EB4009C19B7 /* EntitlementsView.swift */,
-				2DD500D42C519EB4009C19B7 /* SubscriberAttributesView.swift */,
-				2DD500D52C519EB4009C19B7 /* TransactionsView.swift */,
-			);
-			path = Customer;
-			sourceTree = "<group>";
-		};
-		2DD500D92C519EB4009C19B7 /* Offerings */ = {
-			isa = PBXGroup;
-			children = (
-				2DD500D72C519EB4009C19B7 /* OfferingDetailView.swift */,
-				2DD500D82C519EB4009C19B7 /* PromoOfferDetailsView.swift */,
-			);
-			path = Offerings;
-			sourceTree = "<group>";
-		};
-		2DD500E02C519EB4009C19B7 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				2DD500D62C519EB4009C19B7 /* Customer */,
-				2DD500D92C519EB4009C19B7 /* Offerings */,
-				2DD500DA2C519EB4009C19B7 /* ConfigurationView.swift */,
-				2DD500DB2C519EB4009C19B7 /* ContentView.swift */,
-				2DD500DC2C519EB4009C19B7 /* HomeView.swift */,
-				2DD500DD2C519EB4009C19B7 /* LocalReceiptView.swift */,
-				2DD500DE2C519EB4009C19B7 /* LoggerView.swift */,
-				2DD500DF2C519EB4009C19B7 /* TextFieldAlert.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		2DD500E72C519EB4009C19B7 /* Shared */ = {
-			isa = PBXGroup;
-			children = (
-				2DD500C52C519EB4009C19B7 /* Extensions */,
-				2DD500CC2C519EB4009C19B7 /* Helpers */,
-				2DD500D02C519EB4009C19B7 /* Proxy */,
-				2DD500E02C519EB4009C19B7 /* Views */,
-				2DD500E12C519EB4009C19B7 /* Assets.xcassets */,
-				2DD500E22C519EB4009C19B7 /* PurchaseTesterApp.swift */,
-				2DD500E32C519EB4009C19B7 /* ReceiptInspector.swift */,
-				2DD500E42C519EB4009C19B7 /* ReceiptVerifier.swift */,
-				2DD500E62C519EB4009C19B7 /* Windows.swift */,
-			);
-			path = Shared;
-			sourceTree = "<group>";
-		};
-		2DD500EE2C519EB4009C19B7 /* PurchaseTesterSwiftUI */ = {
-			isa = PBXGroup;
-			children = (
-				2DD500B82C519EB4009C19B7 /* Core */,
-				2DD500BD2C519EB4009C19B7 /* fastlane */,
-				2DD500C12C519EB4009C19B7 /* PurchaseTesterWatchOS */,
-				2DD500E72C519EB4009C19B7 /* Shared */,
-				2DD500E82C519EB4009C19B7 /* AppIcon.xcassets */,
-				2DD500E92C519EB4009C19B7 /* PrivacyInfo.xcprivacy */,
-				2DD500EA2C519EB4009C19B7 /* PurchaseTester-Info.plist */,
-				2DD500EB2C519EB4009C19B7 /* PurchaseTester.entitlements */,
-				2DD500EC2C519EB4009C19B7 /* PurchaseTester.xcodeproj */,
-				2DD6E58B2C544D2D0068E695 /* PurchaseTesterStoreKitConfiguration.storekit */,
-			);
-			path = PurchaseTesterSwiftUI;
-			sourceTree = "<group>";
-		};
 		2DD500EF2C519EB4009C19B7 /* TestingApps */ = {
 			isa = PBXGroup;
 			children = (
 				2DD500932C519EB4009C19B7 /* PaywallsTester */,
-				2DD500EE2C519EB4009C19B7 /* PurchaseTesterSwiftUI */,
 			);
 			path = TestingApps;
 			sourceTree = "<group>";
@@ -3624,16 +3421,6 @@
 			children = (
 				2DD500F82C519EB4009C19B7 /* PaywallsTester.app */,
 				4D6F4BE92CFE2FAB00353AF6 /* PaywallsTesterTests.xctest */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		2DD500F42C519EB4009C19B7 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				2DD501062C519EB4009C19B7 /* PurchaseTester.app */,
-				2DD501082C519EB4009C19B7 /* PurchaseTesterWatchOS.app */,
-				2DD5010A2C519EB4009C19B7 /* Core.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -6025,10 +5812,6 @@
 					ProductGroup = 2DD500F22C519EB4009C19B7 /* Products */;
 					ProjectRef = 2DD5008F2C519EB4009C19B7 /* PaywallsTester.xcodeproj */;
 				},
-				{
-					ProductGroup = 2DD500F42C519EB4009C19B7 /* Products */;
-					ProjectRef = 2DD500EC2C519EB4009C19B7 /* PurchaseTester.xcodeproj */;
-				},
 			);
 			projectRoot = "";
 			targets = (
@@ -6102,27 +5885,6 @@
 			fileType = wrapper.application;
 			path = PaywallsTester.app;
 			remoteRef = 2DD500F72C519EB4009C19B7 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		2DD501062C519EB4009C19B7 /* PurchaseTester.app */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.application;
-			path = PurchaseTester.app;
-			remoteRef = 2DD501052C519EB4009C19B7 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		2DD501082C519EB4009C19B7 /* PurchaseTesterWatchOS.app */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.application;
-			path = PurchaseTesterWatchOS.app;
-			remoteRef = 2DD501072C519EB4009C19B7 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		2DD5010A2C519EB4009C19B7 /* Core.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = Core.framework;
-			remoteRef = 2DD501092C519EB4009C19B7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		4D6F4BE92CFE2FAB00353AF6 /* PaywallsTesterTests.xctest */ = {
