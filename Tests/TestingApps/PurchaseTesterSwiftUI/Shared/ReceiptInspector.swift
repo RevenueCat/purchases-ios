@@ -30,7 +30,9 @@ struct ReceiptInspectorView: View {
                         }
                     }
                 })
+                    #if !os(tvOS)
                     .textFieldStyle(.roundedBorder)
+                    #endif
                     .padding()
 
             TextField("Enter shared secret here", text: $sharedSecret, onEditingChanged: { isEditing in
@@ -40,7 +42,9 @@ struct ReceiptInspectorView: View {
                         }
                     }
                 })
+                    #if !os(tvOS)
                     .textFieldStyle(.roundedBorder)
+                    #endif
                     .padding()
 
             Divider()
@@ -52,7 +56,9 @@ struct ReceiptInspectorView: View {
                 Text(parsedReceipt)
                     .padding()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    #if !os(tvOS)
                     .textSelection(.enabled)
+                    #endif
             }.frame(maxWidth: .infinity, maxHeight: .infinity)
 
             Divider()
@@ -65,7 +71,9 @@ struct ReceiptInspectorView: View {
                 Text(verifyReceiptResult)
                     .padding()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    #if !os(tvOS)
                     .textSelection(.enabled)
+                    #endif
             }.frame(maxWidth: .infinity, maxHeight: .infinity)
         }.frame(minWidth: 800, maxWidth: .infinity, minHeight: 1000, maxHeight: .infinity, alignment: .center)
     }
