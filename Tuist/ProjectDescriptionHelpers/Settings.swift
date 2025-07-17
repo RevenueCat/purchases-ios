@@ -15,10 +15,10 @@ extension Settings {
             configurations: [
                 .debug(name: "Debug", settings: [
                     "SWIFT_COMPILATION_MODE": "incremental"
-                ]),
+                ], xcconfig: .relativeToRoot("Global.xcconfig")),
                 .release(name: "Release", settings: [
                     "SWIFT_COMPILATION_MODE": "wholemodule"
-                ])
+                ], xcconfig: .relativeToRoot("Global.xcconfig")),
             ],
             defaultSettings: .recommended
         )
