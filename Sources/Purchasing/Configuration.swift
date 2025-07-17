@@ -388,7 +388,7 @@ extension Configuration {
     private static let applePlatformKeyPrefixes: Set<String> = ["appl_", "mac_"]
     private static let testStoreKeyPrefix = "test_"
 
-    static func validate(apiKey: String) -> APIKeyValidationResult {
+    private static func validate(apiKey: String) -> APIKeyValidationResult {
         #if TEST_STORE
         if apiKey.hasPrefix(testStoreKeyPrefix) {
             // Test Store key format: "test_CtDdmbdWBySmqJeeQUTyrNxETUVkajsJ"
