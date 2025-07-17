@@ -119,10 +119,10 @@ struct VirtualCurrencyBalancesScreen_Previews: PreviewProvider {
                 VirtualCurrencyBalancesScreen(
                     viewModel: VirtualCurrencyBalancesScreenViewModel(
                         viewState: .loaded([
-                            .init(virtualCurrencyCode: "PLTNM", balance: 2000),
-                            .init(virtualCurrencyCode: "BRNZ", balance: 1000),
-                            .init(virtualCurrencyCode: "SLVR", balance: 500),
-                            .init(virtualCurrencyCode: "GLD", balance: 100)
+                            .init(virtualCurrencyName: "Platinum", virtualCurrencyCode: "PLTNM", balance: 2000),
+                            .init(virtualCurrencyName: "Bronze", virtualCurrencyCode: "BRNZ", balance: 1000),
+                            .init(virtualCurrencyName: "Silver", virtualCurrencyCode: "SLVR", balance: 500),
+                            .init(virtualCurrencyName: "Gold", virtualCurrencyCode: "GLD", balance: 100)
 
                         ]),
                         purchasesProvider: CustomerCenterPurchases()
