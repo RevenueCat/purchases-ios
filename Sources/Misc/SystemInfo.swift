@@ -93,7 +93,7 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "5.33.0-SNAPSHOT"
+        return "5.34.0-SNAPSHOT"
     }
 
     static var systemVersion: String {
@@ -311,9 +311,6 @@ extension SystemInfo {
     #elseif VISION_OS
     static let platformHeaderConstant = "visionOS"
     #endif
-}
-
-extension SystemInfo {
 
     static var applicationWillEnterForegroundNotification: Notification.Name {
         #if os(iOS) || os(tvOS) || VISION_OS
