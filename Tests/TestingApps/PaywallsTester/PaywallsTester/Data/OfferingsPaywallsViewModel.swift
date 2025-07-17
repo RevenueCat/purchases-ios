@@ -167,7 +167,7 @@ private extension OfferingsPaywallsViewModel {
                     switch mode {
                     case .fullScreen:
                         self.presentedPaywallCover = .init(offering: newRCOffering, mode: mode, responseOfferingID: id)
-                    case .sheet, .footer, .condensedFooter:
+                    case .sheet, .footer, .condensedFooter, .presentIfNeeded:
                         self.presentedPaywall = .init(offering: newRCOffering, mode: mode, responseOfferingID: id)
                     }
 

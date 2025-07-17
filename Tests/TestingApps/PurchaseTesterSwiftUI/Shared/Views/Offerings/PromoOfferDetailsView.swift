@@ -92,8 +92,9 @@ struct PromoOfferDetailsView: View {
                 }
                 
                 Divider()
-                
-                if let promotionalOffer = self.eligibility?[discount] as? PromotionalOffer {
+
+                if #available(iOS 13.0, macOS 10.15, tvOS 16.0, watchOS 6.0, *),
+                   let promotionalOffer = self.eligibility?[discount] as? PromotionalOffer {
                     Text("Accept promo offer")
                         .foregroundColor(.blue)
                         .padding(.vertical, 10)
