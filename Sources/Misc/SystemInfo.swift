@@ -272,14 +272,13 @@ class SystemInfo {
     }
 }
 
-#if os(iOS) || VISION_OS
+#if os(iOS) || os(tvOS) || VISION_OS
 extension SystemInfo {
 
-    @available(iOS 13.0, macCatalystApplicationExtension 13.1, *)
+    @available(iOS 13.0, macCatalyst 13.1, tvOS 13.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(watchOSApplicationExtension, unavailable)
-    @available(tvOS, unavailable)
     @MainActor
     var currentWindowScene: UIWindowScene {
         get throws {
