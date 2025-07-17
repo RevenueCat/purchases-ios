@@ -5,7 +5,7 @@ import Foundation
 let project = Project(
     name: "Maestro",
     organizationName: .revenueCatOrgName,
-    settings: .project,
+    settings: .appProject,
     targets: [
         .target(
             name: "Maestro",
@@ -33,7 +33,7 @@ let project = Project(
                 .revenueCatUI,
                 .storeKit
             ],
-            settings: .target
+            settings: .appTarget
         )
     ],
     schemes: [

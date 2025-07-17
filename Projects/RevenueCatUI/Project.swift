@@ -12,11 +12,7 @@ let allDeploymentTargets: DeploymentTargets = .multiplatform(
 let project = Project(
     name: "RevenueCatUI",
     organizationName: .revenueCatOrgName,
-    settings: .settings(
-        base: [:].automaticCodeSigning(devTeam: .revenueCatTeamID),
-        configurations: .xcconfigFileConfigurations,
-        defaultSettings: .recommended
-    ),
+    settings: .framework,
     targets: [
         .target(
             name: "RevenueCatUI",
