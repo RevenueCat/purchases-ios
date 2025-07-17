@@ -15,6 +15,7 @@ enum PaywallTesterViewMode {
     case footer
     @available(watchOS, unavailable)
     case condensedFooter
+    case presentIfNeeded
 }
 
 internal extension PaywallTesterViewMode {
@@ -29,9 +30,14 @@ internal extension PaywallTesterViewMode {
             .fullScreen,
             .sheet,
             .footer,
-            .condensedFooter
+            .condensedFooter,
+            .presentIfNeeded
         ]
         #endif
+    }
+    
+    var isAvailableOnExamples: Bool {
+        return self != .presentIfNeeded
     }
 
     var mode: PaywallViewMode {
@@ -41,6 +47,7 @@ internal extension PaywallTesterViewMode {
         #if !os(watchOS)
         case .footer: return .footer
         case .condensedFooter: return .condensedFooter
+        case .presentIfNeeded: return .fullScreen
         #endif
         }
     }
@@ -52,6 +59,7 @@ internal extension PaywallTesterViewMode {
         #if !os(watchOS)
         case .footer: return "lanyardcard"
         case .condensedFooter: return "ruler"
+        case .presentIfNeeded: return "signpost.right.and.left"
         #endif
         }
     }
@@ -67,6 +75,8 @@ internal extension PaywallTesterViewMode {
             return "Footer"
         case .condensedFooter:
             return "Condensed Footer"
+        case .presentIfNeeded:
+            return "Present If Needed"
         #endif
         }
     }
