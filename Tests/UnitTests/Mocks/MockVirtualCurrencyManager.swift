@@ -12,7 +12,7 @@
 //  Created by Will Taylor on 6/4/25.
 
 import Foundation
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 class MockVirtualCurrencyManager: VirtualCurrencyManagerType {
 

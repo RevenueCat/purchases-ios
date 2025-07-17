@@ -24,6 +24,7 @@ import Foundation
     @_spi(Internal) public let appearance: Appearance
     @_spi(Internal) public let localization: Localization
     @_spi(Internal) public let support: Support
+    @_spi(Internal) public let changePlans: [ChangePlan]
     @_spi(Internal) public let lastPublishedAppVersion: String?
     @_spi(Internal) public let productId: UInt?
 
@@ -32,6 +33,7 @@ import Foundation
         appearance: Appearance,
         localization: Localization,
         support: Support,
+        changePlans: [ChangePlan],
         lastPublishedAppVersion: String?,
         productId: UInt?
     ) {
@@ -39,6 +41,7 @@ import Foundation
         self.appearance = appearance
         self.localization = localization
         self.support = support
+        self.changePlans = changePlans
         self.lastPublishedAppVersion = lastPublishedAppVersion
         self.productId = productId
     }
@@ -673,6 +676,34 @@ import Foundation
 
     }
 
+    @_spi(Internal) public struct ChangePlan: Equatable {
+        @_spi(Internal) public let groupId: String
+        @_spi(Internal) public let groupName: String
+        @_spi(Internal) public let products: [ChangePlanProduct]
+
+        @_spi(Internal) public init(
+            groupId: String,
+            groupName: String,
+            products: [ChangePlanProduct]
+        ) {
+            self.groupId = groupId
+            self.groupName = groupName
+            self.products = products
+        }
+    }
+
+    @_spi(Internal) public struct ChangePlanProduct: Equatable {
+        @_spi(Internal) public let productId: String
+        @_spi(Internal) public let selected: Bool
+
+        @_spi(Internal) public init(
+            productId: String,
+            selected: Bool
+        ) {
+            self.productId = productId
+            self.selected = selected
+        }
+    }
 }
 
 @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
@@ -689,6 +720,11 @@ extension CustomerCenterConfigData {
         self.support = Support(from: response.customerCenter.support)
         self.lastPublishedAppVersion = response.lastPublishedAppVersion
         self.productId = response.itunesTrackId
+        self.changePlans = response.customerCenter.changePlans.map {
+            .init(groupId: $0.groupId, groupName: $0.groupName, products: $0.products.map {
+                .init(productId: $0.productId, selected: $0.selected)
+            })
+        }
     }
 
 }

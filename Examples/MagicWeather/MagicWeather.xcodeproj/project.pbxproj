@@ -44,6 +44,7 @@
 		00B11FF935E6C87A5BE6E8A8 /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		0967EDE23CD011015F4D0613 /* UserViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserViewController.swift; sourceTree = "<group>"; };
 		0E83BD63E6C2A1D892E52B04 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		1B33C3ABEDCE08667D5622B3 /* Global.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Global.xcconfig; path = ../../Global.xcconfig; sourceTree = "<group>"; };
 		33C3B1CAFF9927CE41F9CD70 /* TuistAssets+MagicWeather.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TuistAssets+MagicWeather.swift"; sourceTree = "<group>"; };
 		36B758C57A6EE6FE6212141C /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		67FC64E0DA7B5D33517AF018 /* RevenueCatUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RevenueCatUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -186,6 +187,7 @@
 			children = (
 				927575168FFC0306B47AEE2F /* Derived */,
 				1ADC5528742C8FC02CE97362 /* MagicWeather */,
+				1B33C3ABEDCE08667D5622B3 /* Global.xcconfig */,
 			);
 			name = Project;
 			sourceTree = "<group>";
@@ -275,6 +277,7 @@
 /* Begin XCBuildConfiguration section */
 		657983500F013B37ABFD9576 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1B33C3ABEDCE08667D5622B3 /* Global.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -361,6 +364,7 @@
 		};
 		96E0A57DF5232981213D6340 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1B33C3ABEDCE08667D5622B3 /* Global.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;

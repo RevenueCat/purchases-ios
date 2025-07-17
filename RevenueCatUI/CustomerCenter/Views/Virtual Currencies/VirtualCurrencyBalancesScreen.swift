@@ -102,7 +102,7 @@ struct VirtualCurrencyBalancesScreen_Previews: PreviewProvider {
 
     static var previews: some View {
         if #available(iOS 15.0, *) {
-            NavigationView {
+            CompatibilityNavigationStack {
                 VirtualCurrencyBalancesScreen(
                     viewModel: VirtualCurrencyBalancesScreenViewModel(
                         viewState: .loaded([]),
@@ -115,7 +115,7 @@ struct VirtualCurrencyBalancesScreen_Previews: PreviewProvider {
             }
             .previewDisplayName("Loaded With 0 VC Balances")
 
-            NavigationView {
+            CompatibilityNavigationStack {
                 VirtualCurrencyBalancesScreen(
                     viewModel: VirtualCurrencyBalancesScreenViewModel(
                         viewState: .loaded([
@@ -133,7 +133,7 @@ struct VirtualCurrencyBalancesScreen_Previews: PreviewProvider {
             }
             .previewDisplayName("Loaded with 4 VC Balances")
 
-            NavigationView {
+            CompatibilityNavigationStack {
                 VirtualCurrencyBalancesScreen(
                     viewModel: VirtualCurrencyBalancesScreenViewModel(
                         viewState: .error,

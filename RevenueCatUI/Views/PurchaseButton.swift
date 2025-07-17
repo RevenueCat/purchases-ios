@@ -121,7 +121,7 @@ struct PurchaseButton: View {
             }
         }
         #if targetEnvironment(macCatalyst)
-        .buttonStyle(.plain)
+        .buttonStyle(.borderless)
         #endif
     }
 
