@@ -9,7 +9,7 @@ extension Settings {
     /// - Debug configuration with incremental compilation
     /// - Release configuration with whole module optimization
     /// - Recommended default settings
-    public static var app: Settings {
+    public static var appProject: Settings {
         return .settings(
             base: .projectBase,
             configurations: .xcconfigFileConfigurations,
@@ -22,7 +22,7 @@ extension Settings {
     /// This provides a standardized target settings configuration that includes:
     /// - User script sandboxing enabled for security
     /// - Essential default settings for optimal build performance
-    public static var target: Settings {
+    public static var appTarget: Settings {
         return .settings(
             base: [
                 "ENABLE_USER_SCRIPT_SANDBOXING": "YES"

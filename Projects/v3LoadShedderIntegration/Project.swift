@@ -19,7 +19,7 @@ let allDeploymentTargets: DeploymentTargets = .multiplatform(
 let project = Project(
     name: "v3LoadShedderIntegration",
     organizationName: .revenueCatOrgName,
-    settings: .app,
+    settings: .appProject,
     targets: [
         // MARK: – Main Library
         .target(

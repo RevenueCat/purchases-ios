@@ -11,7 +11,7 @@ let allDestinations: Destinations = [
 let project = Project(
     name: "testCustomEntitlementsComputation",
     organizationName: .revenueCatOrgName,
-    settings: .app,
+    settings: .appProject,
     targets: [
         .target(
             name: "testCustomEntitlementsComputation",
@@ -38,7 +38,7 @@ let project = Project(
                 .revenueCat,
                 .revenueCatUI,
             ],
-            settings: .target
+            settings: .appTarget
         )
     ],
 )
