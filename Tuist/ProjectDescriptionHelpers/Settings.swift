@@ -2,14 +2,14 @@ import ProjectDescription
 
 extension Settings {
 
-    /// Default project settings configuration for RevenueCat projects.
-    /// 
+    /// Default settings configuration for app projects in the RevenueCat SDK repo.
+    ///
     /// This provides a standardized settings configuration that includes:
     /// - Base settings from `.projectBase`
     /// - Debug configuration with incremental compilation
     /// - Release configuration with whole module optimization
     /// - Recommended default settings
-    public static var project: Settings {
+    public static var app: Settings {
         return .settings(
             base: .projectBase,
             configurations: .xcconfigFileConfigurations,

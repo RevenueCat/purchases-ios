@@ -5,7 +5,7 @@ import Foundation
 let project = Project(
     name: "Maestro",
     organizationName: .revenueCatOrgName,
-    settings: .project,
+    settings: .app,
     targets: [
         .target(
             name: "Maestro",

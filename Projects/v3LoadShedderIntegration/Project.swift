@@ -19,11 +19,7 @@ let allDeploymentTargets: DeploymentTargets = .multiplatform(
 let project = Project(
     name: "v3LoadShedderIntegration",
     organizationName: .revenueCatOrgName,
-    settings: .settings(
-        base: [:].automaticCodeSigning(devTeam: .revenueCatTeamID),
-        configurations: .xcconfigFileConfigurations,
-        defaultSettings: .recommended
-    ),
+    settings: .app,
     targets: [
         // MARK: – Main Library
         .target(
