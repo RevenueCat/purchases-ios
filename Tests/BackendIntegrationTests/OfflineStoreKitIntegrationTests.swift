@@ -250,6 +250,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         self.serverDown()
 
         try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
+        try await Task.sleep(for: .seconds(1))
         try self.testSession.forceRenewalOfSubscription(
             productIdentifier: await self.monthlyPackage.storeProduct.productIdentifier
         )
