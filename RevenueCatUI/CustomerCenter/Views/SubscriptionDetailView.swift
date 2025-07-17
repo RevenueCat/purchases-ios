@@ -92,9 +92,21 @@ struct SubscriptionDetailView: View {
                 .manageSubscriptionsSheetViewModifier(isPresented: .init(
                     get: { customerInfoViewModel.manageSubscriptionsSheet },
                     set: { manage in DispatchQueue.main.async {
-                        customerInfoViewModel.manageSubscriptionsSheet = manage }
-                    }
+                        customerInfoViewModel.manageSubscriptionsSheet = manage
+                    }}
                 ), subscriptionGroupID: viewModel.purchaseInformation?.subscriptionGroupID
+                )
+            )
+            .modifier(self.customerInfoViewModel.purchasesProvider
+                .changePlansSheetViewModifier(
+                    isPresented: .init(
+                        get: { customerInfoViewModel.changePlansSheet },
+                        set: { manage in DispatchQueue.main.async {
+                            customerInfoViewModel.changePlansSheet = manage
+                        }}
+                    ),
+                    subscriptionGroupID: viewModel.purchaseSubscriptionGroupID,
+                    productIDs: viewModel.changePlanProductIDs
                 )
             )
             .onCustomerCenterPromotionalOfferSuccess {
@@ -105,8 +117,16 @@ struct SubscriptionDetailView: View {
                     customerInfoViewModel.manageSubscriptionsSheet = true
                 }
             }
+            .onCustomerCenterChangePlansSelected({ _ in
+                customerInfoViewModel.changePlansSheet = true
+            })
             .onChangeOf(customerInfoViewModel.manageSubscriptionsSheet) { manageSubscriptionsSheet in
                 if !manageSubscriptionsSheet {
+                    viewModel.refreshPurchase()
+                }
+            }
+            .onChangeOf(customerInfoViewModel.changePlansSheet) { changePlansSheet in
+                if !changePlansSheet {
                     viewModel.refreshPurchase()
                 }
             }
@@ -204,8 +224,7 @@ struct SubscriptionDetailView: View {
 
                 if viewModel.showPurchaseHistory {
                     seeAllSubscriptionsButton
-                        .padding(.top, 16)
-                        .padding(.bottom, 16)
+                        .padding(.vertical, 16)
                 }
 
                 if let url = support?.supportURL(
@@ -215,7 +234,7 @@ struct SubscriptionDetailView: View {
                    viewModel.shouldShowContactSupport,
                    URLUtilities.canOpenURL(url) || RuntimeUtils.isSimulator {
                     contactSupportView(url)
-                        .padding(.bottom, 16)
+                        .padding(.vertical, 16)
                 }
 
                 accountDetailsView
