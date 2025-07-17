@@ -376,11 +376,19 @@ extension Configuration {
 
     enum APIKeyValidationResult {
         case validApplePlatform
+        case testStore
         case otherPlatforms
         case legacy
     }
 
     static func validate(apiKey: String) -> APIKeyValidationResult {
+        #if TEST_STORE
+        if apiKey.hasPrefix(testStoreKeyPrefix) {
+            // Test Store key format: "test_CtDdmbdWBySmqJeeQUTyrNxETUVkajsJ"
+            return .testStore
+        }
+        #endif // TEST_STORE
+
         if applePlatformKeyPrefixes.contains(where: { prefix in apiKey.hasPrefix(prefix) }) {
             // Apple key format: "apple_CtDdmbdWBySmqJeeQUTyrNxETUVkajsJ"
             return .validApplePlatform
@@ -396,12 +404,14 @@ extension Configuration {
     fileprivate static func verify(apiKey: String) {
         switch self.validate(apiKey: apiKey) {
         case .validApplePlatform: break
+        case .testStore: Logger.warn(Strings.configure.testStoreAPIKey)
         case .legacy: Logger.debug(Strings.configure.legacyAPIKey)
         case .otherPlatforms: Logger.error(Strings.configure.invalidAPIKey)
         }
     }
 
     private static let applePlatformKeyPrefixes: Set<String> = ["appl_", "mac_"]
+    private static let testStoreKeyPrefix = "test_"
 
 }
 
