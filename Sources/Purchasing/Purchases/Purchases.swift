@@ -305,8 +305,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let fetcher = StoreKitRequestFetcher(requestFactory: receiptRefreshRequestFactory,
                                              operationDispatcher: operationDispatcher)
 
-        let apiKeyValidationResult = Configuration.validate(apiKey: apiKey)
-        apiKeyValidationResult.logIfNeeded()
+        let apiKeyValidationResult = Configuration.validateAndLog(apiKey: apiKey)
 
         let systemInfo = SystemInfo(
             platformInfo: platformInfo,

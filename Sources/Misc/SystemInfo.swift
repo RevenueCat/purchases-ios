@@ -306,9 +306,6 @@ extension SystemInfo {
     #elseif VISION_OS
     static let platformHeaderConstant = "visionOS"
     #endif
-}
-
-extension SystemInfo {
 
     static var applicationWillEnterForegroundNotification: Notification.Name {
         #if os(iOS) || os(tvOS) || VISION_OS

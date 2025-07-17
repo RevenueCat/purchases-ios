@@ -379,6 +379,15 @@ extension Configuration {
         case legacy
     }
 
+    static func validateAndLog(apiKey: String) -> APIKeyValidationResult {
+        let validationResult = self.validate(apiKey: apiKey)
+        validationResult.logIfNeeded()
+        return validationResult
+    }
+
+    private static let applePlatformKeyPrefixes: Set<String> = ["appl_", "mac_"]
+    private static let testStoreKeyPrefix = "test_"
+
     static func validate(apiKey: String) -> APIKeyValidationResult {
         #if TEST_STORE
         if apiKey.hasPrefix(testStoreKeyPrefix) {
@@ -398,14 +407,11 @@ extension Configuration {
             return .legacy
         }
     }
-
-    private static let applePlatformKeyPrefixes: Set<String> = ["appl_", "mac_"]
-    private static let testStoreKeyPrefix = "test_"
 }
 
 extension Configuration.APIKeyValidationResult {
 
-    func logIfNeeded() {
+    fileprivate func logIfNeeded() {
         switch self {
         case .validApplePlatform: break
         case .testStore: Logger.warn(Strings.configure.testStoreAPIKey)
