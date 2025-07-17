@@ -11,7 +11,7 @@
 //
 //  Created by Will Taylor on 6/4/25.
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import XCTest
 
 class VirtualCurrencyManagerTests: TestCase {
