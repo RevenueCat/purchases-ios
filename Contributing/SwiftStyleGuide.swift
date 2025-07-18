@@ -51,7 +51,7 @@ struct MyStruct {
     /// saturn is used for ...
     public var saturn: String?
 
-    /// eath is used for ...
+    /// earth is used for ...
     public static var Earth = "earth"
 
     // use public private(set) when a public var is only written to within the class scope
@@ -119,7 +119,7 @@ enum MyCustomError: Error {
 private extension MyStruct {
 
     func somethingPrivate() -> String {
-        return Bool.random() ? .saturn : .nepturn
+        return Bool.random() ? .saturn : .neptune
     }
 
     func someMethodThatThrows() throws {
