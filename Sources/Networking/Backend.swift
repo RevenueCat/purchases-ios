@@ -21,6 +21,7 @@ class Backend {
     let customer: CustomerAPI
     let internalAPI: InternalAPI
     let customerCenterConfig: CustomerCenterConfigAPI
+    let ratingsAPI: RatingsAPI
     let redeemWebPurchaseAPI: RedeemWebPurchaseAPI
     let virtualCurrenciesAPI: VirtualCurrenciesAPI
 
@@ -61,6 +62,7 @@ class Backend {
         let offlineEntitlements = OfflineEntitlementsAPI(backendConfig: backendConfig)
         let internalAPI = InternalAPI(backendConfig: backendConfig)
         let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
+        let ratingsAPI = RatingsAPI(backendConfig: backendConfig)
         let redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
         let virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
 
@@ -71,6 +73,7 @@ class Backend {
                   offlineEntitlements: offlineEntitlements,
                   internalAPI: internalAPI,
                   customerCenterConfig: customerCenterConfig,
+                  ratingsAPI: ratingsAPI,
                   redeemWebPurchaseAPI: redeemWebPurchaseAPI,
                   virtualCurrenciesAPI: virtualCurrenciesAPI)
     }
@@ -82,6 +85,7 @@ class Backend {
                   offlineEntitlements: OfflineEntitlementsAPI,
                   internalAPI: InternalAPI,
                   customerCenterConfig: CustomerCenterConfigAPI,
+                  ratingsAPI: RatingsAPI,
                   redeemWebPurchaseAPI: RedeemWebPurchaseAPI,
                   virtualCurrenciesAPI: VirtualCurrenciesAPI) {
         self.config = backendConfig
@@ -92,6 +96,7 @@ class Backend {
         self.offlineEntitlements = offlineEntitlements
         self.internalAPI = internalAPI
         self.customerCenterConfig = customerCenterConfig
+        self.ratingsAPI = ratingsAPI
         self.redeemWebPurchaseAPI = redeemWebPurchaseAPI
         self.virtualCurrenciesAPI = virtualCurrenciesAPI
     }

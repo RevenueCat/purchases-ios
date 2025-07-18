@@ -1400,6 +1400,35 @@ public extension Purchases {
         return CustomerCenterConfigData(from: response)
     }
 
+    /// Used to download Ratings data
+    @_spi(Internal) func loadRatings() async throws -> RatingsResponse {
+        let response = try await Async.call { completion in
+            self.backend.ratingsAPI.getRatings(appUserID: self.appUserID,
+                                              isAppBackgrounded: false) { result in
+                completion(result.mapError(\.asPublicError))
+            }
+        }
+
+        return response
+    }
+
+    /// Used to download Ratings data
+    @_spi(Internal) func getRatings(completion: @escaping (RatingsResponse?, PublicError?) -> Void) {
+        Task {
+            do {
+                let ratings = try await self.loadRatings()
+                completion(ratings, nil)
+            } catch {
+                completion(nil, NewErrorUtils.purchasesError(withUntypedError: error).asPublicError)
+            }
+        }
+    }
+
+    /// Used to download Ratings data
+    @_spi(Internal) func ratings() async throws -> RatingsResponse {
+        return try await self.loadRatings()
+    }
+
 #if !os(macOS) && !os(tvOS)
 
     /// Used by `RevenueCatUI` to notify `RevenueCat` when a font in a paywall fails to load.

@@ -21,7 +21,7 @@ extension Array<CustomerCenterConfigData.HelpPath> {
     ) -> [CustomerCenterConfigData.HelpPath] {
         guard let purchaseInformation else {
             return filter {
-                $0.type == .missingPurchase
+                $0.type == .missingPurchase || $0.type == .rateApp
             }
         }
 
@@ -76,7 +76,7 @@ private extension CustomerCenterConfigData.HelpPath.PathType {
 
     var isAppStoreOnly: Bool {
         switch self {
-        case .cancel, .customUrl:
+        case .cancel, .customUrl, .rateApp:
             return false
 
         case .changePlans, .refundRequest, .missingPurchase, .unknown:

@@ -58,6 +58,7 @@ struct CustomerCenterConfigResponse {
             case changePlans = "CHANGE_PLANS"
             case cancel = "CANCEL"
             case customUrl = "CUSTOM_URL"
+            case rateApp = "RATE_APP"
             case unknown
 
         }

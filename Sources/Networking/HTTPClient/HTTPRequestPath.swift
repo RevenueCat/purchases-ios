@@ -86,6 +86,7 @@ extension HTTPRequest {
         case appHealthReportAvailability(appUserID: String)
         case getProductEntitlementMapping
         case getCustomerCenterConfig(appUserID: String)
+        case getRatings(appUserID: String)
         case getVirtualCurrencies(appUserID: String)
         case postRedeemWebPurchase
 
@@ -140,6 +141,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postRedeemWebPurchase,
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
+                .getRatings,
                 .getVirtualCurrencies,
                 .appHealthReport:
             return true
@@ -164,6 +166,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postRedeemWebPurchase,
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
+                .getRatings,
                 .getVirtualCurrencies,
                 .appHealthReport:
             return true
@@ -191,7 +194,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postAdServicesToken,
                 .postOfferForSigning,
                 .postRedeemWebPurchase,
-                .getCustomerCenterConfig:
+                .getCustomerCenterConfig,
+                .getRatings:
             return false
         }
     }
@@ -214,6 +218,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postRedeemWebPurchase,
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
+                .getRatings,
                 .appHealthReport:
             return false
         }
@@ -267,6 +272,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case let .getCustomerCenterConfig(appUserID):
             return "customercenter/\(Self.escape(appUserID))"
 
+        case let .getRatings(appUserID):
+            return "customercenter/\(Self.escape(appUserID))/ratings"
+
         case .postRedeemWebPurchase:
             return "subscribers/redeem_purchase"
 
@@ -312,6 +320,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .getCustomerCenterConfig:
             return "customer_center"
+
+        case .getRatings:
+            return "get_ratings"
 
         case .postRedeemWebPurchase:
             return "post_redeem_web_purchase"

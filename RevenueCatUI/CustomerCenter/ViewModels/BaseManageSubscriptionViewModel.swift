@@ -44,6 +44,9 @@ class BaseManageSubscriptionViewModel: ObservableObject {
     var showRestoreAlert: Bool = false
 
     @Published
+    var showRateApp: Bool = false
+
+    @Published
     var restoreAlertType: RestorePurchasesAlertViewModel.AlertType
 
     @Published
@@ -159,6 +162,9 @@ private extension BaseManageSubscriptionViewModel {
     // swiftlint:disable:next cyclomatic_complexity
     private func onPathSelected(path: CustomerCenterConfigData.HelpPath) async {
         switch path.type {
+        case .rateApp:
+            self.showRateApp = true
+
         case .missingPurchase:
             self.showRestoreAlert = true
 

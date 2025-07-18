@@ -458,6 +458,7 @@ import Foundation
             case changePlans = "CHANGE_PLANS"
             case cancel = "CANCEL"
             case customUrl = "CUSTOM_URL"
+            case rateApp = "RATE APP"
             case unknown
 
             init(from rawValue: String) {
@@ -472,6 +473,8 @@ import Foundation
                     self = .cancel
                 case "CUSTOM_URL":
                     self = .customUrl
+                case "RATE_APP":
+                    self = .rateApp
                 default:
                     self = .unknown
                 }

@@ -166,6 +166,26 @@ struct SubscriptionDetailView: View {
                     .environment(\.navigationOptions, navigationOptions)
                 }
             }
+            .sheet(isPresented: self.$viewModel.showRateApp, content: {
+                RatingRequestScreen(
+                        configuration: RatingRequestConfiguration(
+                            screenTitle: "Rate Our App",
+                            primaryButtonTitle: "Rate on App Store",
+                            secondaryButtonTitle: "Maybe Later",
+                            primaryButtonAction: {
+                                // Handle App Store rating request
+                                if let appStoreURL = URL(string: "itms-apps://itunes.apple.com/app/viewContentsUserReviews/id{YOUR_APP_ID}?action=write-review") {
+                                    UIApplication.shared.open(appStoreURL)
+                                }
+                                viewModel.showRateApp = false
+                            },
+                            secondaryButtonAction: {
+                                // Handle dismiss/maybe later
+                                viewModel.showRateApp = false
+                            }
+                        )
+                    )
+            })
             .sheet(item: self.$viewModel.inAppBrowserURL,
                    onDismiss: {
                 self.viewModel.onDismissInAppBrowser()
