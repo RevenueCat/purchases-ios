@@ -873,6 +873,7 @@
 		7542E4E92DEDCC2A002CE340 /* PaywallFontManagerType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7542E4E82DEDCC2A002CE340 /* PaywallFontManagerType.swift */; };
 		756AE8352D8816CD00BA2E39 /* PurchasesDiagnosticsTrackingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756AE8342D8816CD00BA2E39 /* PurchasesDiagnosticsTrackingTests.swift */; };
 		7571BE9F2D672B2C00A2C8B6 /* TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7571BE9E2D672B2C00A2C8B6 /* TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift */; };
+		757758612E2A7131008E5432 /* TestStorePurchaseHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7577585F2E2A7131008E5432 /* TestStorePurchaseHandler.swift */; };
 		75ABFDB52D5F579E00D69DF1 /* CustomerInfoManagerUIPreviewModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75ABFDB42D5F579E00D69DF1 /* CustomerInfoManagerUIPreviewModeTests.swift */; };
 		75BE27EA2DFC8C6A00C9440E /* PreferredLocalesProvider+Mock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75BE27E92DFC8C6A00C9440E /* PreferredLocalesProvider+Mock.swift */; };
 		75BE27EB2DFC8C6A00C9440E /* PreferredLocalesProvider+Mock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75BE27E92DFC8C6A00C9440E /* PreferredLocalesProvider+Mock.swift */; };
@@ -2306,6 +2307,7 @@
 		7542E4E82DEDCC2A002CE340 /* PaywallFontManagerType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallFontManagerType.swift; sourceTree = "<group>"; };
 		756AE8342D8816CD00BA2E39 /* PurchasesDiagnosticsTrackingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesDiagnosticsTrackingTests.swift; sourceTree = "<group>"; };
 		7571BE9E2D672B2C00A2C8B6 /* TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift; sourceTree = "<group>"; };
+		7577585F2E2A7131008E5432 /* TestStorePurchaseHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestStorePurchaseHandler.swift; sourceTree = "<group>"; };
 		75ABFDB42D5F579E00D69DF1 /* CustomerInfoManagerUIPreviewModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfoManagerUIPreviewModeTests.swift; sourceTree = "<group>"; };
 		75BE27E92DFC8C6A00C9440E /* PreferredLocalesProvider+Mock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PreferredLocalesProvider+Mock.swift"; sourceTree = "<group>"; };
 		75D7048A2DFC33A900F02803 /* Purchases+RevenueCatUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Purchases+RevenueCatUI.swift"; sourceTree = "<group>"; };
@@ -4011,6 +4013,7 @@
 				2D1DB44A26EA61AB00DDE736 /* StoreKit1 */,
 				006E105DDA8D0D0FA32D690C /* StoreKit2 */,
 				2D1015DC275A57DB0086173F /* StoreKitAbstractions */,
+				757758602E2A7131008E5432 /* TestStore */,
 				B325543B2825C81800DA62EA /* Configuration.swift */,
 				B32B750026868C1D005647BF /* EntitlementInfo.swift */,
 				B3AA6235268A81C700894871 /* EntitlementInfos.swift */,
@@ -4918,6 +4921,14 @@
 				4F34AEEB2A5DCCBA00F4BCB0 /* VerificationResultTests.swift */,
 			);
 			path = Security;
+			sourceTree = "<group>";
+		};
+		757758602E2A7131008E5432 /* TestStore */ = {
+			isa = PBXGroup;
+			children = (
+				7577585F2E2A7131008E5432 /* TestStorePurchaseHandler.swift */,
+			);
+			path = TestStore;
 			sourceTree = "<group>";
 		};
 		75D9DE032D79FC0E0068554F /* DiagnosticsEventEncodingTests */ = {
@@ -6421,6 +6432,7 @@
 				2C9107E02CE2E33400189565 /* StoredEvent.swift in Sources */,
 				B3A36AAE26BC76340059EDEA /* CustomerInfoManager.swift in Sources */,
 				F5FCD3EA27DA0D0B003BDC04 /* PriceFormatterProvider.swift in Sources */,
+				757758612E2A7131008E5432 /* TestStorePurchaseHandler.swift in Sources */,
 				B3083A132699334C007B5503 /* Offering.swift in Sources */,
 				4D6ABB0E2AF13FB100BB2A08 /* StoreEnvironment.swift in Sources */,
 				1ED4CA4D2CC1515F0021AB8F /* DeepLinkParser.swift in Sources */,
