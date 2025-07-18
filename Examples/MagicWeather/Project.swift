@@ -2,7 +2,7 @@ import ProjectDescription
 import ProjectDescriptionHelpers
 
 let project = Project(
-    name: "MagicWeather",
+    name: "MagicWeatherApp",
     organizationName: .revenueCatOrgName,
     settings: .appProject,
     targets: [
