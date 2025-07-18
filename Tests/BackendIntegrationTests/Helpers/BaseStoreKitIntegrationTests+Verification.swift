@@ -49,7 +49,7 @@ extension BaseStoreKitIntegrationTests {
 
         let entitlements = customerInfo.entitlements.all
         if entitlements.count != 1 {
-            try await failTest("Expected 1 Entitlement. Got: \(entitlements)")
+            try await failTest("\(Date()): Expected 1 Entitlement. Got: \(entitlements)")
         }
 
         let entitlement: EntitlementInfo
@@ -65,7 +65,7 @@ extension BaseStoreKitIntegrationTests {
         }
 
         if !entitlement.isActive {
-            try await failTest("Entitlement is not active: \(entitlement)")
+            try await failTest("\(Date()): Entitlement is not active: \(entitlement)")
         }
 
         return entitlement
@@ -81,7 +81,7 @@ extension BaseStoreKitIntegrationTests {
             customerInfo.entitlements.active
         ).to(
             beEmpty(),
-            description: "Expected no active entitlements"
+            description: "\(Date()): Expected no active entitlements"
         )
     }
 
@@ -96,7 +96,7 @@ extension BaseStoreKitIntegrationTests {
         )
         .to(
             beEmpty(),
-            description: "Expected no entitlements. Got: \(customerInfo.entitlements.all)"
+            description: "\(Date()): Expected no entitlements. Got: \(customerInfo.entitlements.all)"
         )
     }
 
