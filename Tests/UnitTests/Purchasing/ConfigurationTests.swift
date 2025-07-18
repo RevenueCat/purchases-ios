@@ -20,20 +20,26 @@ import XCTest
 class ConfigurationTests: TestCase {
 
     func testValidateAPIKeyWithApplPlatformSpecificKey() {
-        expect(Configuration.validate(apiKey: "appl_1a2b3c4d5e6f7h")) == .validApplePlatform
+        expect(Configuration.validateAndLog(apiKey: "appl_1a2b3c4d5e6f7h")) == .validApplePlatform
     }
 
     func testValidateAPIKeyWithMacPlatformSpecificKey() {
-        expect(Configuration.validate(apiKey: "mac_1a2b3c4d5e6f7h")) == .validApplePlatform
+        expect(Configuration.validateAndLog(apiKey: "mac_1a2b3c4d5e6f7h")) == .validApplePlatform
     }
 
     func testValidateAPIKeyWithInvalidPlatformKey() {
-        expect(Configuration.validate(apiKey: "goog_1a2b3c4d5e6f7h")) == .otherPlatforms
+        expect(Configuration.validateAndLog(apiKey: "goog_1a2b3c4d5e6f7h")) == .otherPlatforms
     }
 
     func testValidateAPIKeyWithLegacyKey() {
-        expect(Configuration.validate(apiKey: "swRTCezdEzjnJSxdexDNJfcfiFrMXwqZ")) == .legacy
+        expect(Configuration.validateAndLog(apiKey: "swRTCezdEzjnJSxdexDNJfcfiFrMXwqZ")) == .legacy
     }
+
+    #if TEST_STORE
+    func testValidateAPIKeyWithTestStoreKey() {
+        expect(Configuration.validateAndLog(apiKey: "test_eg2t9g3098bgqqn")) == .testStore
+    }
+    #endif
 
     func testNoObserverModeWithStoreKit1() {
         let configuration = Configuration.Builder(withAPIKey: "test")
