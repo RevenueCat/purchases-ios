@@ -22,7 +22,8 @@ let allDeploymentTargets: DeploymentTargets = .multiplatform(
     iOS: "13.0",
     macOS: "11.0",
     watchOS: "7.0",
-    tvOS: "14.0"
+    tvOS: "14.0",
+    visionOS: "1.3"
 )
 
 // MARK: - Project Definition
