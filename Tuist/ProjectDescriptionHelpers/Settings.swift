@@ -45,6 +45,7 @@ extension Settings {
                 "SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=xros*]": "$(inherited) VISION_OS",
                 "SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=xrsimulator*]": "$(inherited) VISION_OS"
             ],
+            configurations: .xcconfigFileConfigurations
         )
     }
 }
