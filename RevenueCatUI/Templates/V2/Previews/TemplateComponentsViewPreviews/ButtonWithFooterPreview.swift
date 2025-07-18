@@ -12,7 +12,7 @@
 //  Created by Josh Holtz on 9/26/24.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
@@ -92,6 +92,7 @@ private enum ButtonWithSheetPreview {
     static let package = PaywallComponent.PackageComponent(
         packageID: "weekly",
         isSelectedByDefault: false,
+        applePromoOfferProductCode: nil,
         stack: packageStack
     )
 
@@ -367,6 +368,7 @@ private enum ButtonWithSheetPreview {
         return PaywallComponent.PackageComponent(
             packageID: packageID,
             isSelectedByDefault: isSelectedByDefault,
+            applePromoOfferProductCode: nil,
             stack: stack
         )
     }
@@ -505,6 +507,7 @@ struct ButtonWithSheetPreview_Previews: PreviewProvider {
                             webCheckoutUrl: URL(string: "https://pay.revenuecat.com/abcd1234/the-app-user-id")!),
             purchaseHandler: PurchaseHandler.default(),
             introEligibilityChecker: .default(),
+            paywallPromoOfferCache: PaywallPromoOfferCache(),
             showZeroDecimalPlacePrices: true,
             onDismiss: { },
             fallbackContent: .customView(AnyView(Text("Fallback paywall"))),

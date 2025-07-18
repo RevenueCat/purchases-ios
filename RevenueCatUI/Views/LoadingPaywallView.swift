@@ -167,6 +167,10 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
         fatalError("Should not be able to purchase")
     }
 
+    func purchase(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
+        fatalError("Should not be able to purchase")
+    }
+
     func restorePurchases() async throws -> CustomerInfo {
         fatalError("Should not be able to purchase")
     }
