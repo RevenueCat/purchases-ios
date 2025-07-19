@@ -117,6 +117,29 @@ private struct NonLocalizedMarkdownText: View {
 // swiftlint:disable type_body_length
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TextComponentView_Previews: PreviewProvider {
+    private static var environmentVariablePreview: some View {
+        
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_1": .string(ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] ?? "not-set")
+                    ]
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(
+                    text: "id_1",
+                    color: .init(light: .hex("#000000"))
+                )
+            )
+        )
+        .previewRequiredEnvironmentProperties()
+        .previewLayout(.sizeThatFits)
+
+    }
+    
     private static var platformPreview: some View {
         TextComponentView(
             // swiftlint:disable:next force_try
@@ -165,6 +188,9 @@ struct TextComponentView_Previews: PreviewProvider {
     static var previews: some View {
         defaultPreview
         .previewDisplayName("Default")
+        
+        environmentVariablePreview
+            .previewDisplayName("Value of XCODE_RUNNING_FOR_PREVIEWS")
 
         platformPreview
         .previewDisplayName("Detected Platform")
