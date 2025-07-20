@@ -30,7 +30,7 @@ let allDestinations = destinations + [.appleWatch]
 let project = Project(
     name: "PurchaseTester",
     organizationName: .revenueCatOrgName,
-    settings: .project,
+    settings: .appProject,
     targets: [
         .target(
             name: "PurchaseTester",
@@ -49,7 +49,7 @@ let project = Project(
             dependencies: [
                 .target(name: "Core")
             ],
-            settings: .target,
+            settings: .appTarget,
             additionalFiles: [
                 "../../Tests/TestingApps/PurchaseTesterSwiftUI/PurchaseTester.entitlements",
                 "../../Tests/TestingApps/PurchaseTesterSwiftUI/PurchaseTesterStoreKitConfiguration.storekit"
