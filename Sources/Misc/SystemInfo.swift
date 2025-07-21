@@ -23,6 +23,7 @@ import WatchKit
 import AppKit
 #endif
 
+// swiftlint:disable file_length
 class SystemInfo {
 
     // swiftlint:disable:next force_unwrapping

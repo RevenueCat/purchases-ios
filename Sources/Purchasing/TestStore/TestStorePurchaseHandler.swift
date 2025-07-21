@@ -31,7 +31,8 @@ class TestStorePurchaseHandler {
     }
 
     #if TEST_STORE
-    /// - Throws: an `PurchasesError` if there's an error when trying to make the test purchase (e.g. there's already a purchase in progress).
+    /// - Throws: an `PurchasesError` if there's an error when trying to make the test purchase
+    /// (e.g. there's already a purchase in progress).
     @MainActor
     func purchase(product: TestStoreProduct, completion: @escaping (Bool) -> Void) throws {
         guard !self.purchaseInProgress else {
@@ -65,15 +66,15 @@ class TestStorePurchaseHandler {
         let alertController = UIAlertController(title: Self.purchaseAlertTitle,
                                                 message: product.purchaseAlertMessage,
                                                 preferredStyle: .alert)
-        
+
         alertController.addAction(UIAlertAction(title: Self.cancelActionTitle, style: .cancel) { _ in
             completion(false)
         })
-        
+
         alertController.addAction(UIAlertAction(title: Self.purchaseActionTitle, style: .default) { _ in
             completion(true)
         })
-        
+
         viewController.present(alertController, animated: true)
     }
 
@@ -83,12 +84,12 @@ class TestStorePurchaseHandler {
         if let windowScene = self.systemInfo.sharedUIApplication?.currentWindowScene {
             return self.findTopViewController(in: windowScene)
         }
-        
+
         // Fallback to legacy approach
         guard let application = self.systemInfo.sharedUIApplication else {
             return nil
         }
-        
+
         // Use the first key window
         let window = application.windows.first(where: { $0.isKeyWindow })
         return window?.rootViewController?.topMostViewController()
@@ -103,7 +104,7 @@ class TestStorePurchaseHandler {
         } else {
             window = windowScene.windows.first(where: { $0.isKeyWindow })
         }
-        
+
         return window?.rootViewController?.topMostViewController()
     }
     #endif
@@ -114,18 +115,18 @@ class TestStorePurchaseHandler {
         let alertAction = WKAlertAction(title: Self.purchaseActionTitle, style: .default) {
             completion(true)
         }
-        
+
         let cancelAction = WKAlertAction(title: Self.cancelActionTitle, style: .cancel) {
             completion(false)
         }
-        
+
         WKInterfaceDevice.current().play(.click)
-        
+
         let controller = WKExtension.shared().rootInterfaceController
         controller?.presentAlert(withTitle: Self.purchaseAlertTitle,
-                                message: product.purchaseAlertMessage,
-                                preferredStyle: .alert, 
-                                actions: [cancelAction, alertAction])
+                                 message: product.purchaseAlertMessage,
+                                 preferredStyle: .alert,
+                                 actions: [cancelAction, alertAction])
     }
     #endif
 
@@ -136,7 +137,7 @@ class TestStorePurchaseHandler {
         alert.messageText = Self.purchaseAlertTitle
         alert.informativeText = product.purchaseAlertMessage
         alert.alertStyle = .informational
-        
+
         alert.addButton(withTitle: Self.purchaseActionTitle)
         alert.addButton(withTitle: Self.cancelActionTitle)
 
@@ -150,20 +151,20 @@ class TestStorePurchaseHandler {
 #if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)
 // MARK: - UIViewController Extensions
 private extension UIViewController {
-    
+
     func topMostViewController() -> UIViewController {
         if let presentedViewController = self.presentedViewController {
             return presentedViewController.topMostViewController()
         }
-        
+
         if let navigationController = self as? UINavigationController {
             return navigationController.visibleViewController?.topMostViewController() ?? navigationController
         }
-        
+
         if let tabBarController = self as? UITabBarController {
             return tabBarController.selectedViewController?.topMostViewController() ?? tabBarController
         }
-        
+
         return self
     }
 }
@@ -204,7 +205,8 @@ fileprivate extension TestStoreProduct {
 fileprivate extension StoreProductDiscount {
 
     var testPurchaseDescription: String {
-        return "\(self.type.testPurchaseTitle): \(self.localizedPriceString) for \(self.numberOfPeriods * self.subscriptionPeriod.value) \(self.subscriptionPeriod.unit.debugDescription)(s)"
+        return "\(self.type.testPurchaseTitle): \(self.localizedPriceString) for " +
+        "\(self.numberOfPeriods * self.subscriptionPeriod.value) \(self.subscriptionPeriod.unit.debugDescription)(s)"
     }
 }
 

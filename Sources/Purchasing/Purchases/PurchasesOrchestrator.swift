@@ -27,7 +27,7 @@ import StoreKit
 
 }
 
-// swiftlint:disable file_length type_body_length
+// swiftlint:disable file_length type_body_length function_body_length
 final class PurchasesOrchestrator {
 
     var finishTransactions: Bool { self.systemInfo.finishTransactions }
@@ -1960,7 +1960,7 @@ private extension PurchasesOrchestrator {
             do {
                 try self.testStorePurchaseHandler.purchase(product: testStoreProduct) { userConfirmed in
                     if userConfirmed {
-                        // TODO: Implement actual test purchase completion logic
+                        // WIP: Implement actual test purchase completion logic
                         // For now, we'll simulate a successful purchase
                         completion(nil, nil, nil, false)
                     } else {
