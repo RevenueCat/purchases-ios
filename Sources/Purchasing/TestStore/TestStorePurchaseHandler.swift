@@ -23,39 +23,52 @@ class TestStorePurchaseHandler {
 
     private let systemInfo: SystemInfo
 
+    @MainActor
+    private var purchaseInProgress: Bool = false
+
     init(systemInfo: SystemInfo) {
         self.systemInfo = systemInfo
     }
 
+    /// - Throws: an `PurchasesError` if there's an error when trying to make the test purchase (e.g. there's already a purchase in progress).
     @MainActor
-    func purchase(product: TestStoreProduct, completion: @escaping (Bool) -> Void) {
+    func purchase(product: TestStoreProduct, completion: @escaping (Bool) -> Void) throws {
+        guard !self.purchaseInProgress else {
+            throw ErrorUtils.operationAlreadyInProgressError()
+        }
+        self.purchaseInProgress = true
+        let completionWrapper: (Bool) -> Void = { @MainActor [weak self] success in
+            self?.purchaseInProgress = false
+            completion(success)
+        }
+
         #if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)
-        self.purchaseWithUIKit(product: product, completion: completion)
+        self.purchaseWithUIKit(product: product, completion: completionWrapper)
         #elseif os(watchOS)
-        self.purchaseWithWatchKit(product: product, completion: completion)
+        self.purchaseWithWatchKit(product: product, completion: completionWrapper)
         #elseif os(macOS)
-        self.purchaseWithAppKit(product: product, completion: completion)
+        self.purchaseWithAppKit(product: product, completion: completionWrapper)
         #endif
     }
 
     #if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)
     @MainActor
-    private func purchaseWithUIKit(product: TestStoreProduct, completion: @escaping (Bool) -> Void) {
+    private func purchaseWithUIKit(product: TestStoreProduct, completion: @escaping @MainActor (Bool) -> Void) {
         guard let viewController = self.findTopViewController() else {
             Logger.warn(Strings.purchase.unable_to_find_root_view_controller_for_test_purchase)
             completion(false)
             return
         }
 
-        let alertController = UIAlertController(title: "Test Purchase",
+        let alertController = UIAlertController(title: Self.purchaseAlertTitle,
                                                 message: product.purchaseAlertMessage,
                                                 preferredStyle: .alert)
         
-        alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in
+        alertController.addAction(UIAlertAction(title: Self.cancelActionTitle, style: .cancel) { _ in
             completion(false)
         })
         
-        alertController.addAction(UIAlertAction(title: "Test Purchase", style: .default) { _ in
+        alertController.addAction(UIAlertAction(title: Self.purchaseActionTitle, style: .default) { _ in
             completion(true)
         })
         
@@ -95,20 +108,20 @@ class TestStorePurchaseHandler {
 
     #if os(watchOS)
     @MainActor
-    private func purchaseWithWatchKit(product: TestStoreProduct, completion: @escaping (Bool) -> Void) {
-        let alertAction = WKAlertAction(title: "Test Purchase", style: .default) {
+    private func purchaseWithWatchKit(product: TestStoreProduct, completion: @escaping @MainActor (Bool) -> Void) {
+        let alertAction = WKAlertAction(title: Self.purchaseActionTitle, style: .default) {
             completion(true)
         }
         
-        let cancelAction = WKAlertAction(title: "Cancel", style: .cancel) {
+        let cancelAction = WKAlertAction(title: Self.cancelActionTitle, style: .cancel) {
             completion(false)
         }
         
         WKInterfaceDevice.current().play(.click)
         
         let controller = WKExtension.shared().rootInterfaceController
-        controller?.presentAlert(withTitle: "Test Purchase", 
-                                message: product.purchaseAlertMessage, 
+        controller?.presentAlert(withTitle: Self.purchaseAlertTitle,
+                                message: product.purchaseAlertMessage,
                                 preferredStyle: .alert, 
                                 actions: [cancelAction, alertAction])
     }
@@ -116,15 +129,15 @@ class TestStorePurchaseHandler {
 
     #if os(macOS)
     @MainActor
-    private func purchaseWithAppKit(product: TestStoreProduct, completion: @escaping (Bool) -> Void) {
+    private func purchaseWithAppKit(product: TestStoreProduct, completion: @escaping @MainActor (Bool) -> Void) {
         let alert = NSAlert()
-        alert.messageText = "Test Purchase"
+        alert.messageText = Self.purchaseAlertTitle
         alert.informativeText = product.purchaseAlertMessage
         alert.alertStyle = .informational
         
-        alert.addButton(withTitle: "Test Purchase")
-        alert.addButton(withTitle: "Cancel")
-        
+        alert.addButton(withTitle: Self.purchaseActionTitle)
+        alert.addButton(withTitle: Self.cancelActionTitle)
+
         let response = alert.runModal()
         let userConfirmed = response == .alertFirstButtonReturn
         completion(userConfirmed)
@@ -155,6 +168,14 @@ private extension UIViewController {
 #endif
 
 // MARK: - Building the Purchase alert
+
+fileprivate extension TestStorePurchaseHandler {
+
+    static let purchaseAlertTitle = "Test Purchase"
+    static let purchaseActionTitle = "Test Purchase"
+    static let cancelActionTitle = "Cancel"
+
+}
 
 fileprivate extension TestStoreProduct {
 

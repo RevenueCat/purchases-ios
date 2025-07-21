@@ -1956,15 +1956,19 @@ private extension PurchasesOrchestrator {
 
     private func purchase(testStoreProduct: TestStoreProduct, completion: @escaping PurchaseCompletedBlock) {
         self.operationDispatcher.dispatchOnMainActor {
-            self.testStorePurchaseHandler.purchase(product: testStoreProduct) { userConfirmed in
-                if userConfirmed {
-                    // TODO: Implement actual test purchase completion logic
-                    // For now, we'll simulate a successful purchase
-                    completion(nil, nil, nil, false)
-                } else {
-                    // User cancelled the purchase
-                    completion(nil, nil, ErrorUtils.purchaseCancelledError().asPublicError, true)
+            do {
+                try self.testStorePurchaseHandler.purchase(product: testStoreProduct) { userConfirmed in
+                    if userConfirmed {
+                        // TODO: Implement actual test purchase completion logic
+                        // For now, we'll simulate a successful purchase
+                        completion(nil, nil, nil, false)
+                    } else {
+                        // User cancelled the purchase
+                        completion(nil, nil, ErrorUtils.purchaseCancelledError().asPublicError, true)
+                    }
                 }
+            } catch {
+                completion(nil, nil, ErrorUtils.purchasesError(withUntypedError: error).asPublicError, false)
             }
         }
     }
