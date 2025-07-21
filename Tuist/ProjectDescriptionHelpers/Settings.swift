@@ -42,9 +42,10 @@ extension Settings {
                 "CODE_SIGNING_ALLOWED": "NO",
                 "CODE_SIGNING_REQUIRED": "NO",
                 "CODE_SIGN_IDENTITY": "",
-                "SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=xros*]": "VISION_OS",
-                "SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=xrsimulator*]": "VISION_OS"
-            ]
+                "SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=xros*]": "$(inherited) VISION_OS",
+                "SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=xrsimulator*]": "$(inherited) VISION_OS"
+            ],
+            configurations: .xcconfigFileConfigurations
         )
     }
 }
