@@ -462,6 +462,15 @@ private struct PresentingPaywallModifier: ViewModifier {
                 content
                     .sheet(item: self.$data, onDismiss: self.onDismiss) { data in
                         self.paywallView(data)
+                        // The default height given to sheets on Mac Catalyst is too small, and looks terrible.
+                        // So we need to give it a more reasonable default size. This is the height of an
+                        // iPhone 6/7/8 screen. This aligns with our documentation that we will show a paywall
+                        // in a modal that is "roughly iPhone sized", and if you want to customize further you
+                        // can use PaywallView.
+                        // https://www.revenuecat.com/docs/tools/paywalls/displaying-paywalls
+                        #if targetEnvironment(macCatalyst)
+                            .frame(height: 667)
+                        #endif
                     }
             case .fullScreen:
                 content

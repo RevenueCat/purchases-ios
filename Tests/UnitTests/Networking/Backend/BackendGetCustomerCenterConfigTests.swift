@@ -414,7 +414,29 @@ private extension BackendGetCustomerCenterConfigTests {
                 "should_warn_customer_to_update": false,
                 "display_purchase_history_link": true,
                 "display_virtual_currencies": true
-            ] as [String: Any]
+            ] as [String: Any],
+            "change_plans": [
+                [
+                    "group_id": "group_id",
+                    "group_name": "group_name",
+                    "products": [
+                        [
+                        "product_id": "product_id",
+                        "selected": false
+                        ]
+                    ]
+                ],
+                [
+                    "group_id": "group_id2",
+                    "group_name": "group_name2",
+                    "products": [
+                        [
+                        "product_id": "product_id",
+                        "selected": false
+                        ]
+                    ]
+                ]
+            ] as [Any]
         ] as [String: Any]
     ]
 
