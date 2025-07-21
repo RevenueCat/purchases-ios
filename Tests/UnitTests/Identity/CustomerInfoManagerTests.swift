@@ -701,7 +701,7 @@ class CustomerInfoManagerGetCustomerInfoTests: BaseCustomerInfoManagerTests {
                                                                      fetchPolicy: .cachedOrFetched)
 
         expect(result) == self.mockCustomerInfo
-        expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
+        await expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(1))
     }
 
     func testCustomerInfoCachedOrFetchedFetchesIfNoCache() async throws {
