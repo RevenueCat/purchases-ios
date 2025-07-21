@@ -30,6 +30,7 @@ class TestStorePurchaseHandler {
         self.systemInfo = systemInfo
     }
 
+    #if TEST_STORE
     /// - Throws: an `PurchasesError` if there's an error when trying to make the test purchase (e.g. there's already a purchase in progress).
     @MainActor
     func purchase(product: TestStoreProduct, completion: @escaping (Bool) -> Void) throws {
@@ -50,6 +51,7 @@ class TestStorePurchaseHandler {
         self.purchaseWithAppKit(product: product, completion: completionWrapper)
         #endif
     }
+    #endif // TEST_STORE
 
     #if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)
     @MainActor

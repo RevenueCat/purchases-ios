@@ -1954,6 +1954,7 @@ private extension PurchasesOrchestrator {
         #endif // TEST_STORE
     }
 
+    #if TEST_STORE
     private func purchase(testStoreProduct: TestStoreProduct, completion: @escaping PurchaseCompletedBlock) {
         self.operationDispatcher.dispatchOnMainActor {
             do {
@@ -1972,6 +1973,7 @@ private extension PurchasesOrchestrator {
             }
         }
     }
+    #endif // TEST_STORE
 
     private func handleTestProductNotAvailableForPurchase(_ completion: @escaping PurchaseCompletedBlock) {
         self.operationDispatcher.dispatchOnMainActor {
