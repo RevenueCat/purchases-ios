@@ -35,7 +35,7 @@ let project = Project(
                 "../../Tests/RevenueCatUITests/PaywallsV2/PaywallPreviewResourcesLoader.swift"
             ],
             resources: [
-                .folderReference(path:"../../Tests/paywall-preview-resources"),
+                .folderReference(path: "../../Tests/paywall-preview-resources"),
                 "../../Tests/RevenueCatUITests/Resources/header.heic",
                 "../../Tests/RevenueCatUITests/Resources/background.heic"
             ],
@@ -54,6 +54,6 @@ let project = Project(
                 configuration: "Debug",
                 executable: "PaywallValidationTester"
             )
-        ),
+        )
     ]
 )
