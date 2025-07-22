@@ -4,7 +4,7 @@ import ProjectDescriptionHelpers
 let project = Project(
     name: "MagicWeatherSwiftUI",
     organizationName: .revenueCatOrgName,
-    settings: .project,
+    settings: .appProject,
     targets: [
         .target(
             name: "MagicWeatherSwiftUI",
@@ -31,7 +31,7 @@ let project = Project(
                 .revenueCat,
                 .revenueCatUI,
             ],
-            settings: .target
+            settings: .appTarget
         )
     ],
 )

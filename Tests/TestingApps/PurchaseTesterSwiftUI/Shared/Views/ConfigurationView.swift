@@ -32,7 +32,7 @@ struct ConfigurationView: View {
     }
 
     var body: some View {
-        if #available(iOS 16.0, macOS 13.0, watchOS 9.0, *) {
+        if #available(iOS 16.0, macOS 13.0, watchOS 9.0, tvOS 16.0, *) {
             self.form.formStyle(.grouped)
         } else {
             self.form
@@ -84,7 +84,7 @@ struct ConfigurationView: View {
                 } label: {
                     Text("Continue")
                 }
-                #if !os(watchOS)
+                #if !os(watchOS) && !os(tvOS)
                 .keyboardShortcut(.return)
                 #endif
                 .disabled(!self.contentIsValid)
