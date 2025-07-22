@@ -420,7 +420,7 @@ commands:
           name: Generate Tuist workspace
           command: |
             export PATH="$HOME/.local/share/mise/shims:$PATH"
-            tuist generate --no-open
+            tuist install && tuist generate --no-open
 
   create-snapshot-pr-if-needed:
     parameters:
