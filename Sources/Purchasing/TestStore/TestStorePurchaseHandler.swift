@@ -88,33 +88,32 @@ class TestStorePurchaseHandler: TestStorePurchaseHandlerType {
 
     @MainActor
     private func findTopViewController() -> UIViewController? {
-        // Try to get the window scene first (iOS 13+)
-        if let windowScene = self.systemInfo.sharedUIApplication?.currentWindowScene {
-            return self.findTopViewController(in: windowScene)
-        }
-
-        // Fallback to legacy approach
         guard let application = self.systemInfo.sharedUIApplication else {
             return nil
         }
 
-        // Use the first key window
-        let window = application.windows.first(where: { $0.isKeyWindow })
-        return window?.rootViewController?.topMostViewController()
-    }
-
-    @available(iOS 13.0, macCatalyst 13.1, tvOS 13.0, *)
-    @MainActor
-    private func findTopViewController(in windowScene: UIWindowScene) -> UIViewController? {
         let window: UIWindow?
-        if #available(iOS 15.0, macCatalyst 15.0, tvOS 15.0, *) {
-            window = windowScene.keyWindow
+
+        // Try to get the window from the scene first
+        if #available(macCatalyst 13.1, *),
+           let windowScene = application.currentWindowScene {
+            if #available(iOS 15.0, macCatalyst 15.0, tvOS 15.0, *) {
+                window = windowScene.keyWindow
+            } else {
+                window = windowScene.windows.first(where: { $0.isKeyWindow })
+            }
         } else {
-            window = windowScene.windows.first(where: { $0.isKeyWindow })
+            if #available(iOS 15.0, macCatalyst 15.0, *) {
+                window = nil
+            } else {
+                // Fallback to legacy approach on OSs where UIApplication's `windows` property is not deprecated
+                window = application.windows.first(where: { $0.isKeyWindow })
+            }
         }
 
         return window?.rootViewController?.topMostViewController()
     }
+
     #endif
 
     #if os(watchOS)
