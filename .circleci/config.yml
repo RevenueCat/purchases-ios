@@ -18,6 +18,7 @@ parameters:
         run-manual-docs-deploy,
         update_paywall_templates,
         record_paywall_screenshots,
+        tuist
       ]
     default: default
   generate_snapshots:
@@ -410,6 +411,14 @@ commands:
           working_directory: Tests/InstallationTests/CarthageInstallation/
           command: |
             bundle exec fastlane update_carthage_commit
+
+  tuist-generate-workspace:
+    description: "Install Tuist and generate workspace"
+    steps:
+      - revenuecat/install-tuist
+      - run:
+          name: Generate Tuist workspace
+          command: tuist generate
 
   create-snapshot-pr-if-needed:
     parameters:
@@ -1421,6 +1430,13 @@ jobs:
           name: Build Paywalls Tester
           command: bundle exec fastlane build_paywalls_tester_for_emerge
 
+  test-tuist-generate-workspace:
+    executor:
+      name: macos-executor
+    steps:
+      - checkout
+      - tuist-generate-workspace
+
   record-and-push-paywall-template-screenshots:
     description: "Record new paywall template screenshots with Paparazzi and push them to the paywall-rendering-validation repository"
     executor:
@@ -1740,3 +1756,9 @@ workflows:
           dry_run: true
           context:
             - slack-secrets-ios
+
+  test-tuist-workflow:
+    when:
+      equal: [tuist, << pipeline.parameters.action >>]
+    jobs:
+      - test-tuist-generate-workspace
