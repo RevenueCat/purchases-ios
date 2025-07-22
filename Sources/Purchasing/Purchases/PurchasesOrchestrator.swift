@@ -1961,8 +1961,8 @@ private extension PurchasesOrchestrator {
                 try self.testStorePurchaseHandler.purchase(product: testStoreProduct) { userConfirmed in
                     if userConfirmed {
                         // WIP: Implement actual test purchase completion logic
-                        // For now, we'll simulate a successful purchase
-                        completion(nil, nil, nil, false)
+                        // For now, we'll simulate a successful purchase with a hardcoded response
+                        completion(nil, CustomerInfoManager.createPreviewCustomerInfo(), nil, false)
                     } else {
                         // User cancelled the purchase
                         completion(nil, nil, ErrorUtils.purchaseCancelledError().asPublicError, true)
