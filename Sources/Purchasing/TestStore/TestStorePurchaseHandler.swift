@@ -31,7 +31,7 @@ class TestStorePurchaseHandler {
     }
 
     #if TEST_STORE
-    /// - Throws: an `PurchasesError` if there's an error when trying to make the test purchase
+    /// - Throws: a `PurchasesError` if there's an error when trying to make the test purchase
     /// (e.g. there's already a purchase in progress).
     @MainActor
     func purchase(product: TestStoreProduct, completion: @escaping (Bool) -> Void) throws {
@@ -183,8 +183,8 @@ fileprivate extension TestStorePurchaseHandler {
 fileprivate extension TestStoreProduct {
 
     var purchaseAlertMessage: String {
-        var message = "⚠️ This is a test purchase and should be tested with real products using " +
-        "an Apple API key from RevenueCat.\n\n"
+        var message = "This is a test purchase and should only be used during development. In production, " +
+        "use an Apple API key from RevenueCat.\n\n"
         message += "Product ID: \(self.productIdentifier)\n"
         message += "Title: \(self.localizedTitle)\n"
         message += "Price: \(self.localizedPriceString)\n"
