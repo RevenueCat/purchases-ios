@@ -118,7 +118,7 @@ private struct NonLocalizedMarkdownText: View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TextComponentView_Previews: PreviewProvider {
     private static var environmentVariablePreview: some View {
-        
+
         TextComponentView(
             // swiftlint:disable:next force_try
             viewModel: try! .init(
@@ -139,7 +139,7 @@ struct TextComponentView_Previews: PreviewProvider {
         .previewLayout(.sizeThatFits)
 
     }
-    
+
     private static var platformPreview: some View {
         TextComponentView(
             // swiftlint:disable:next force_try
@@ -188,7 +188,7 @@ struct TextComponentView_Previews: PreviewProvider {
     static var previews: some View {
         defaultPreview
         .previewDisplayName("Default")
-        
+
         environmentVariablePreview
             .previewDisplayName("Is running in previews")
 
