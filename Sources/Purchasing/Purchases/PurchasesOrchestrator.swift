@@ -53,7 +53,7 @@ final class PurchasesOrchestrator {
 
     private let productsManager: ProductsManagerType
     private let paymentQueueWrapper: EitherPaymentQueueWrapper
-    private let testStorePurchaseHandler: TestStorePurchaseHandler
+    private let testStorePurchaseHandler: TestStorePurchaseHandlerType
     private let systemInfo: SystemInfo
     private let attribution: Attribution
     private let operationDispatcher: OperationDispatcher
@@ -124,7 +124,7 @@ final class PurchasesOrchestrator {
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     convenience init(productsManager: ProductsManagerType,
                      paymentQueueWrapper: EitherPaymentQueueWrapper,
-                     testStorePurchaseHandler: TestStorePurchaseHandler,
+                     testStorePurchaseHandler: TestStorePurchaseHandlerType,
                      systemInfo: SystemInfo,
                      subscriberAttributes: Attribution,
                      operationDispatcher: OperationDispatcher,
@@ -212,7 +212,7 @@ final class PurchasesOrchestrator {
 
     init(productsManager: ProductsManagerType,
          paymentQueueWrapper: EitherPaymentQueueWrapper,
-         testStorePurchaseHandler: TestStorePurchaseHandler,
+         testStorePurchaseHandler: TestStorePurchaseHandlerType,
          systemInfo: SystemInfo,
          subscriberAttributes: Attribution,
          operationDispatcher: OperationDispatcher,

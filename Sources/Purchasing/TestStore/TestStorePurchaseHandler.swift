@@ -16,10 +16,20 @@ import WatchKit
 import AppKit
 #endif
 
+protocol TestStorePurchaseHandlerType: AnyObject {
+
+    #if TEST_STORE
+    /// - Throws: a `PurchasesError` if there's an error when trying to make the test purchase
+    /// (e.g. there's already a purchase in progress).
+    @MainActor
+    func purchase(product: TestStoreProduct, completion: @escaping (Bool) -> Void) throws
+    #endif // TEST_STORE
+}
+
 /// The object that handles purchases in the Test Store.
 ///
 /// This class is used to handle purchases when using a Test Store API key.
-class TestStorePurchaseHandler {
+class TestStorePurchaseHandler: TestStorePurchaseHandlerType {
 
     private let systemInfo: SystemInfo
 
@@ -31,8 +41,6 @@ class TestStorePurchaseHandler {
     }
 
     #if TEST_STORE
-    /// - Throws: a `PurchasesError` if there's an error when trying to make the test purchase
-    /// (e.g. there's already a purchase in progress).
     @MainActor
     func purchase(product: TestStoreProduct, completion: @escaping (Bool) -> Void) throws {
         guard !self.purchaseInProgress else {
