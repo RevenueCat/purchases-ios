@@ -47,79 +47,81 @@ class CustomerCenterConfigDataTests: TestCase {
                             .init(
                                 id: "path1",
                                 title: "Path 1",
-                                type: .missingPurchase,
                                 url: nil,
                                 openMethod: nil,
-                                promotionalOffer: nil,
-                                feedbackSurvey: nil,
-                                refundWindow: nil
+                                type: .missingPurchase,
+                                detail: nil,
+                                refundWindowDuration: nil
                             ),
                             .init(
                                 id: "path2",
                                 title: "Path 2",
-                                type: .cancel,
                                 url: nil,
                                 openMethod: nil,
-                                promotionalOffer: .init(iosOfferId: "offer_id",
-                                                        eligible: true,
-                                                        title: "Wait!",
-                                                        subtitle: "Before you go",
-                                                        productMapping: [
-                                                            "product_id": "offer_id"
-                                                        ],
-                                                        crossProductPromotions: [
-                                                            "monthly": .init(storeOfferIdentifier: "offer_id",
-                                                                             targetProductId: "annual")
-                                                        ]),
-                                feedbackSurvey: nil,
-                                refundWindow: nil
+                                type: .cancel,
+                                detail: .promotionalOffer(.init(iosOfferId: "offer_id",
+                                                                eligible: true,
+                                                                title: "Wait!",
+                                                                subtitle: "Before you go",
+                                                                productMapping: [
+                                                                    "product_id": "offer_id"
+                                                                ],
+                                                                crossProductPromotions: [
+                                                                    "monthly": .init(storeOfferIdentifier: "offer_id",
+                                                                                     targetProductId: "annual")
+                                                                ])),
+                                refundWindowDuration: nil
                             ),
                             .init(
                                 id: "path3",
                                 title: "Path 3",
-                                type: .changePlans,
                                 url: nil,
                                 openMethod: nil,
-                                promotionalOffer: nil,
-                                feedbackSurvey: .init(title: "survey title",
-                                                      options: [
-                                                        .init(id: "id_1",
-                                                              title: "option 1",
-                                                              promotionalOffer: .init(iosOfferId: "offer_id_1",
-                                                                                      eligible: true,
-                                                                                      title: "Wait!",
-                                                                                      subtitle: "Before you go",
-                                                                                      productMapping: [
-                                                                                        "product_id": "offer_id"
-                                                                                      ],
-                                                                                      crossProductPromotions: [
-                                                                                        "monthly": .init(
-                                                                                            storeOfferIdentifier:
-                                                                                                "offer_id",
-                                                                                            targetProductId: "annual"
-                                                                                        )
-                                                                                      ])
-                                                             )]),
-                                refundWindow: nil
+                                type: .changePlans,
+                                detail: .feedbackSurvey(
+                                    .init(
+                                        title: "survey title",
+                                        options: [
+                                            .init(id: "id_1",
+                                                  title: "option 1",
+                                                  promotionalOffer: .init(iosOfferId: "offer_id_1",
+                                                                          eligible: true,
+                                                                          title: "Wait!",
+                                                                          subtitle: "Before you go",
+                                                                          productMapping: [
+                                                                            "product_id": "offer_id"
+                                                                          ],
+                                                                          crossProductPromotions: [
+                                                                            "monthly": .init(
+                                                                                storeOfferIdentifier:
+                                                                                    "offer_id",
+                                                                                targetProductId: "annual"
+                                                                            )
+                                                                          ])
+                                                 )
+                                        ])
+                                ),
+                                refundWindowDuration: nil
                             ),
                             .init(
                                 id: "path4",
                                 title: "Path 4",
-                                type: .customUrl,
                                 url: "https://revenuecat.com",
                                 openMethod: .external,
-                                promotionalOffer: .init(iosOfferId: "offer_id",
-                                                        eligible: true,
-                                                        title: "Wait!",
-                                                        subtitle: "Before you go",
-                                                        productMapping: [
-                                                            "product_id": "offer_id"
-                                                        ],
-                                                        crossProductPromotions: [
-                                                            "monthly": .init(storeOfferIdentifier: "offer_id",
-                                                                             targetProductId: "annual")]),
-                                feedbackSurvey: nil,
-                                refundWindow: nil
+                                type: .customUrl,
+                                detail: .promotionalOffer(
+                                    .init(
+                                        iosOfferId: "offer_id",
+                                        eligible: true,
+                                        title: "Wait!",
+                                        subtitle: "Before you go",
+                                        productMapping: [
+                                            "product_id": "offer_id"
+                                        ],
+                                        crossProductPromotions: [
+                                            "monthly": .init(storeOfferIdentifier: "offer_id",
+                                                             targetProductId: "annual")])),
+                                refundWindowDuration: nil
                             )
                         ]
                     )
