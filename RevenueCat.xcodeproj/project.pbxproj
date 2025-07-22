@@ -881,6 +881,7 @@
 		75D7048B2DFC33A900F02803 /* Purchases+RevenueCatUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D7048A2DFC33A900F02803 /* Purchases+RevenueCatUI.swift */; };
 		75D9DE072D79FC0E0068554F /* testEncoding.1.json in Resources */ = {isa = PBXBuildFile; fileRef = 75D9DE022D79FC0E0068554F /* testEncoding.1.json */; };
 		75D9DE082D79FC0E0068554F /* DiagnosticsEventEncodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D9DE052D79FC0E0068554F /* DiagnosticsEventEncodingTests.swift */; };
+		75E61CB62E2F9EF30034B41C /* MockTestStorePurchaseHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7581A92C2E2EB27100D0C3DE /* MockTestStorePurchaseHandler.swift */; };
 		7707A94C2CAD93AC006E0313 /* PaywallButtonComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94B2CAD93AC006E0313 /* PaywallButtonComponent.swift */; };
 		7707A94E2CAD94D2006E0313 /* ButtonComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94D2CAD94D2006E0313 /* ButtonComponentViewModel.swift */; };
 		7707A9502CAD9775006E0313 /* ButtonComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94F2CAD9775006E0313 /* ButtonComponentView.swift */; };
@@ -6383,6 +6384,7 @@
 				2D222BAB27FB7008003D5F37 /* LocalReceiptParserStoreKitTests.swift in Sources */,
 				B31C8BEF285BDD76001017B7 /* MockIdentityAPI.swift in Sources */,
 				571E7AD4279F2D0C003B3606 /* StoreKitTestHelpers.swift in Sources */,
+				75E61CB62E2F9EF30034B41C /* MockTestStorePurchaseHandler.swift in Sources */,
 				2DFF6C56270CA28800ECAFAB /* MockRequestFetcher.swift in Sources */,
 				5738F489278CC2500096D623 /* MockTransaction.swift in Sources */,
 				576C8ABC27D2997C0058FA6E /* SnapshotTesting+Extensions.swift in Sources */,
