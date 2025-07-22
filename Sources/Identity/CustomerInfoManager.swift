@@ -565,7 +565,7 @@ private extension CustomerInfoManager {
 // MARK: - For UI Preview mode
 
 extension CustomerInfoManager {
-    
+
     /// Generates a dummy `CustomerInfo` with hardcoded information exclusively for UI Preview mode.
     static func createPreviewCustomerInfo() -> CustomerInfo {
         let previewSubscriber = CustomerInfoResponse.Subscriber(
@@ -583,7 +583,7 @@ extension CustomerInfoManager {
                                                sandboxEnvironmentDetector: BundleSandboxEnvironmentDetector.default)
         return previewCustomerInfo
     }
-    
+
 }
 
 // MARK: - Diagnostics

@@ -20,7 +20,7 @@ class MockTestStorePurchaseHandler: TestStorePurchaseHandlerType {
 
     var stubbedPurchaseResult: Bool = true
     private var invokedPurchase: Bool = false
-    private var invokedPurchaseProduct: TestStoreProduct? = nil
+    private var invokedPurchaseProduct: TestStoreProduct?
 
     @MainActor
     func purchase(product: TestStoreProduct, completion: @escaping (Bool) -> Void) throws {
@@ -28,7 +28,6 @@ class MockTestStorePurchaseHandler: TestStorePurchaseHandlerType {
         invokedPurchaseProduct = product
         completion(self.stubbedPurchaseResult)
     }
-
 
     #endif // TEST_STORE
 }
