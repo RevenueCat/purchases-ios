@@ -52,6 +52,10 @@ extension CustomerCenterView {
     public typealias ManagementOptionSelectedHandler =
     @MainActor @Sendable (_ managementOption: CustomerCenterActionable) -> Void
 
+    /// A closure used for notifying when a custom action is selected in the Customer Center.
+    public typealias CustomActionHandler =
+    @MainActor @Sendable (_ actionIdentifier: String, _ activePurchaseId: String?) -> Void
+
     typealias PromotionalOfferSuccessHandler = @MainActor @Sendable () -> Void
 
     typealias ChangePlansHandler = @MainActor @Sendable (_ optionId: String) -> Void
@@ -183,6 +187,19 @@ extension CustomerCenterView {
                 .onPreferenceChange(ChangePlansSelectedPreferenceKey.self) { wrapperSubscriptionGroupID in
                     if let subscriptionGroupID = wrapperSubscriptionGroupID?.value {
                         self.handler(subscriptionGroupID)
+                    }
+                }
+        }
+    }
+
+    fileprivate struct OnCustomActionModifier: ViewModifier {
+        let handler: CustomActionHandler
+
+        func body(content: Content) -> some View {
+            content
+                .onPreferenceChange(CustomActionPreferenceKey.self) { wrapper in
+                    if let (actionIdentifier, activePurchaseId) = wrapper?.value {
+                        handler(actionIdentifier, activePurchaseId)
                     }
                 }
         }
@@ -331,24 +348,11 @@ extension View {
     }
 
     /// Invokes the given closure when a management option is selected in the Customer Center.
-    /// Example:
     /// ```swift
-    ///  var body: some View {
-    ///     ContentView()
-    ///         .sheet(isPresented: self.$displayCustomerCenter) {
-    ///             CustomerCenterView()
-    ///                 .onCustomerCenterManagementOptionSelected { action in
-    ///                     switch action {
-    ///                     case is CustomerCenterManagementOption.Cancel:
-    ///                         print("Cancel action triggered")
-    ///                     case let customUrl as CustomerCenterManagementOption.CustomUrl:
-    ///                         print("Opening URL: \(customUrl.url)")
-    ///                     default:
-    ///                         print("Unknown action")
-    ///                     }
-    ///                 }
-    ///         }
-    ///  }
+    /// CustomerCenterView()
+    ///     .onCustomerCenterManagementOptionSelected { action in
+    ///         handleManagementAction(action)
+    ///     }
     /// ```
     public func onCustomerCenterManagementOptionSelected(
         _ handler: @escaping CustomerCenterView.ManagementOptionSelectedHandler
@@ -366,6 +370,19 @@ extension View {
         _ handler: @escaping CustomerCenterView.ChangePlansHandler
     ) -> some View {
         return self.modifier(CustomerCenterView.OnChangePlansSelected(handler: handler))
+    }
+
+    /// Invokes the given closure when a custom action is selected in the Customer Center.
+    /// ```swift
+    /// CustomerCenterView()
+    ///     .onCustomerCenterCustomActionSelected { actionIdentifier, activePurchaseId in
+    ///         handleCustomAction(actionIdentifier, activePurchaseId)
+    ///     }
+    /// ```
+    public func onCustomerCenterCustomActionSelected(
+        _ handler: @escaping CustomerCenterView.CustomActionHandler
+    ) -> some View {
+        return self.modifier(CustomerCenterView.OnCustomActionModifier(handler: handler))
     }
 }
 

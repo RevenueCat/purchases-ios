@@ -93,6 +93,14 @@ extension CustomerCenterView {
             value = nextValue() ?? value
         }
     }
+
+    struct CustomActionPreferenceKey: PreferenceKey {
+        static var defaultValue: UniqueWrapper<(String, String?)>?
+        static func reduce(value: inout UniqueWrapper<(String, String?)>?,
+                           nextValue: () -> UniqueWrapper<(String, String?)>?) {
+            value = nextValue() ?? value
+        }
+    }
 }
 
 #endif

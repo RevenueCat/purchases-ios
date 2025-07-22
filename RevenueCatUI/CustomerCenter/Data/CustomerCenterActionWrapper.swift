@@ -29,6 +29,7 @@ internal enum CustomerCenterInternalAction {
     case refundRequestStarted(String)
     case refundRequestCompleted(String, RefundRequestStatus)
     case feedbackSurveyCompleted(String)
+    case customActionSelected(CustomActionData)
 
     // New internal-only actions that don't exist in the public legacy CustomerCenterAction
     case buttonTapped(action: CustomerCenterActionable)
@@ -53,7 +54,11 @@ internal enum CustomerCenterInternalAction {
             return .refundRequestCompleted(status)
         case .feedbackSurveyCompleted(let optionId):
             return .feedbackSurveyCompleted(optionId)
-        case .buttonTapped, .promotionalOfferSuccess, .showingChangePlans:
+        case .customActionSelected(let customActionData):
+            return .customActionSelected(customActionData)
+        case .buttonTapped,
+                .promotionalOfferSuccess,
+                .showingChangePlans:
             return nil // No public equivalent
         }
     }
@@ -76,6 +81,7 @@ final class CustomerCenterActionWrapper {
     let refundRequestCompleted = PassthroughSubject<(String, RefundRequestStatus), Never>()
     let feedbackSurveyCompleted = PassthroughSubject<String, Never>()
     let managementOptionSelected = PassthroughSubject<CustomerCenterActionable, Never>()
+    let customActionSelected = PassthroughSubject<(String, String?), Never>()
     let promotionalOfferSuccess = PassthroughSubject<Void, Never>()
 
     init(legacyActionHandler: DeprecatedCustomerCenterActionHandler? = nil) {
@@ -113,6 +119,9 @@ final class CustomerCenterActionWrapper {
         case .buttonTapped(let action):
             managementOptionSelected.send(action)
 
+        case .customActionSelected(let customActionData):
+            customActionSelected.send((customActionData.actionIdentifier, customActionData.activePurchaseId))
+
         case .promotionalOfferSuccess:
             promotionalOfferSuccess.send(())
 
@@ -130,8 +139,9 @@ final class CustomerCenterActionWrapper {
 extension CustomerCenterConfigData.HelpPath {
 
     /// Converts this HelpPath to an appropriate CustomerCenterActionable
+    /// - Parameter activePurchaseId: The optional active purchase ID for the context
     /// - Returns: A CustomerCenterActionable representing this path
-    func asAction() -> CustomerCenterActionable? {
+    func asAction(activePurchaseId: String? = nil) -> CustomerCenterActionable? {
         switch self.type {
         case .missingPurchase:
             return CustomerCenterManagementOption.MissingPurchase()
@@ -149,6 +159,12 @@ extension CustomerCenterConfigData.HelpPath {
             if let url = self.url {
                 return CustomerCenterManagementOption.CustomUrl(url: url)
             }
+
+        case .customAction:
+            return CustomerCenterManagementOption.CustomAction(
+                actionIdentifier: self.customActionIdentifier ?? "",
+                activePurchaseId: activePurchaseId
+            )
 
         default:
             break

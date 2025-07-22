@@ -36,4 +36,22 @@ public enum CustomerCenterManagementOption {
     /// Represents a change plans action
     public struct ChangePlans: CustomerCenterActionable {}
 
+    /// Represents a custom action
+    public struct CustomAction: CustomerCenterActionable {
+        /// The custom action identifier
+        public let actionIdentifier: String
+        /// The optional active purchase ID
+        public let activePurchaseId: String?
+
+        /// Creates a new `CustomAction` instance.
+        /// 
+        /// - Parameters:
+        ///   - actionIdentifier: The unique identifier for the custom action
+        ///   - activePurchaseId: The optional product identifier of the active purchase
+        public init(actionIdentifier: String, activePurchaseId: String?) {
+            self.actionIdentifier = actionIdentifier
+            self.activePurchaseId = activePurchaseId
+        }
+    }
+
 }

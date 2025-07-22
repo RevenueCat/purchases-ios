@@ -420,6 +420,7 @@ import Foundation
         @_spi(Internal) public let type: PathType
         @_spi(Internal) public let detail: PathDetail?
         @_spi(Internal) public let refundWindowDuration: RefundWindowDuration?
+        @_spi(Internal) public let customActionIdentifier: String?
 
         @_spi(Internal) public init(
             id: String,
@@ -428,7 +429,8 @@ import Foundation
             openMethod: OpenMethod? = nil,
             type: PathType,
             detail: PathDetail?,
-            refundWindowDuration: RefundWindowDuration? = nil
+            refundWindowDuration: RefundWindowDuration? = nil,
+            customActionIdentifier: String? = nil
         ) {
             self.id = id
             self.title = title
@@ -437,6 +439,7 @@ import Foundation
             self.type = type
             self.detail = detail
             self.refundWindowDuration = refundWindowDuration
+            self.customActionIdentifier = customActionIdentifier
         }
 
         @_spi(Internal) public enum PathDetail: Equatable {
@@ -458,6 +461,7 @@ import Foundation
             case changePlans = "CHANGE_PLANS"
             case cancel = "CANCEL"
             case customUrl = "CUSTOM_URL"
+            case customAction = "CUSTOM_ACTION"
             case unknown
 
             init(from rawValue: String) {
@@ -472,6 +476,8 @@ import Foundation
                     self = .cancel
                 case "CUSTOM_URL":
                     self = .customUrl
+                case "CUSTOM_ACTION":
+                    self = .customAction
                 default:
                     self = .unknown
                 }
@@ -804,6 +810,8 @@ extension CustomerCenterConfigData.HelpPath {
         } else {
             self.refundWindowDuration = nil
         }
+
+        self.customActionIdentifier = response.actionIdentifier
     }
 }
 

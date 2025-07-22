@@ -50,6 +50,7 @@ struct CustomerCenterConfigResponse {
         let promotionalOffer: PromotionalOffer?
         let feedbackSurvey: FeedbackSurvey?
         let refundWindow: String?
+        let actionIdentifier: String?
 
         enum PathType: String {
 
@@ -58,6 +59,7 @@ struct CustomerCenterConfigResponse {
             case changePlans = "CHANGE_PLANS"
             case cancel = "CANCEL"
             case customUrl = "CUSTOM_URL"
+            case customAction = "CUSTOM_ACTION"
             case unknown
 
         }

@@ -11,6 +11,7 @@
 //
 //  Created by Facundo Menzella on 24/3/25.
 
+import Nimble
 @testable import RevenueCatUI
 import SwiftUI
 import XCTest
@@ -290,6 +291,132 @@ final class CustomerCenterActionWrapperTests: TestCase {
         }
 
         await fulfillment(of: [expectation1, expectation2], timeout: 1.0)
+    }
+
+    func testCustomActionSelected() async throws {
+        let actionWrapper = await CustomerCenterActionWrapper()
+        let expectation = XCTestExpectation(description: "customActionSelected")
+        var receivedActionData: (String, String?)?
+
+        let windowHolder = await WindowHolder()
+
+        await MainActor.run {
+            let testView = Text("test")
+                .modifier(CustomerCenterActionViewModifier(actionWrapper: actionWrapper))
+                .onCustomerCenterCustomActionSelected { actionIdentifier, activePurchaseId in
+                    receivedActionData = (actionIdentifier, activePurchaseId)
+                    expectation.fulfill()
+                }
+
+            let viewController = UIHostingController(rootView: testView)
+            let window = UIWindow(frame: UIScreen.main.bounds)
+            window.rootViewController = viewController
+            window.makeKeyAndVisible()
+            viewController.view.layoutIfNeeded()
+
+            windowHolder.window = window
+        }
+
+        await MainActor.run {
+            let customActionData = CustomActionData(
+                actionIdentifier: "delete_user",
+                activePurchaseId: "monthly_subscription"
+            )
+            actionWrapper.handleAction(.customActionSelected(customActionData))
+        }
+
+        await fulfillment(of: [expectation], timeout: 1.0)
+
+        expect(receivedActionData?.0) == "delete_user"
+        expect(receivedActionData?.1) == "monthly_subscription"
+    }
+
+    func testCustomActionSelectedWithNilPurchase() async throws {
+        let actionWrapper = await CustomerCenterActionWrapper()
+        let expectation = XCTestExpectation(description: "customActionSelected with nil purchase")
+        var receivedActionData: (String, String?)?
+
+        let windowHolder = await WindowHolder()
+
+        await MainActor.run {
+            let testView = Text("test")
+                .modifier(CustomerCenterActionViewModifier(actionWrapper: actionWrapper))
+                .onCustomerCenterCustomActionSelected { actionIdentifier, activePurchaseId in
+                    receivedActionData = (actionIdentifier, activePurchaseId)
+                    expectation.fulfill()
+                }
+
+            let viewController = UIHostingController(rootView: testView)
+            let window = UIWindow(frame: UIScreen.main.bounds)
+            window.rootViewController = viewController
+            window.makeKeyAndVisible()
+            viewController.view.layoutIfNeeded()
+
+            windowHolder.window = window
+        }
+
+        await MainActor.run {
+            let customActionData = CustomActionData(
+                actionIdentifier: "rate_app",
+                activePurchaseId: nil
+            )
+            actionWrapper.handleAction(.customActionSelected(customActionData))
+        }
+
+        await fulfillment(of: [expectation], timeout: 1.0)
+
+        expect(receivedActionData?.0) == "rate_app"
+        expect(receivedActionData?.1).to(beNil())
+    }
+
+    func testManagementOptionSelectedWithCustomAction() async throws {
+        let actionWrapper = await CustomerCenterActionWrapper()
+        let customActionExpectation = XCTestExpectation(description: "customActionSelected")
+        let managementOptionExpectation = XCTestExpectation(description: "managementOptionSelected")
+
+        var receivedCustomActionData: (String, String?)?
+        var receivedManagementAction: CustomerCenterActionable?
+
+        let windowHolder = await WindowHolder()
+
+        await MainActor.run {
+            let testView = Text("test")
+                .modifier(CustomerCenterActionViewModifier(actionWrapper: actionWrapper))
+                .onCustomerCenterCustomActionSelected { actionIdentifier, activePurchaseId in
+                    receivedCustomActionData = (actionIdentifier, activePurchaseId)
+                    customActionExpectation.fulfill()
+                }
+                .onCustomerCenterManagementOptionSelected { action in
+                    receivedManagementAction = action
+                    managementOptionExpectation.fulfill()
+                }
+
+            let viewController = UIHostingController(rootView: testView)
+            let window = UIWindow(frame: UIScreen.main.bounds)
+            window.rootViewController = viewController
+            window.makeKeyAndVisible()
+            viewController.view.layoutIfNeeded()
+
+            windowHolder.window = window
+        }
+
+        await MainActor.run {
+            let customAction = CustomerCenterManagementOption.CustomAction(
+                actionIdentifier: "delete_user",
+                activePurchaseId: "product_123"
+            )
+            actionWrapper.handleAction(.buttonTapped(action: customAction))
+        }
+
+        await fulfillment(of: [customActionExpectation, managementOptionExpectation], timeout: 1.0)
+
+        // Verify both handlers received the action
+        expect(receivedCustomActionData?.0) == "delete_user"
+        expect(receivedCustomActionData?.1) == "product_123"
+
+        let receivedCustomAction = receivedManagementAction as? CustomerCenterManagementOption.CustomAction
+        expect(receivedCustomAction?.actionIdentifier) == "delete_user"
+        expect(receivedCustomAction?.activePurchaseId) == "product_123"
     }
 }
 
