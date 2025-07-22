@@ -25,6 +25,7 @@ internal enum CustomerCenterInternalAction {
     case restoreFailed(Error)
     case restoreCompleted(CustomerInfo)
     case showingManageSubscriptions
+    case showingChangePlans(String?)
     case refundRequestStarted(String)
     case refundRequestCompleted(String, RefundRequestStatus)
     case feedbackSurveyCompleted(String)
@@ -52,7 +53,7 @@ internal enum CustomerCenterInternalAction {
             return .refundRequestCompleted(status)
         case .feedbackSurveyCompleted(let optionId):
             return .feedbackSurveyCompleted(optionId)
-        case .buttonTapped, .promotionalOfferSuccess:
+        case .buttonTapped, .promotionalOfferSuccess, .showingChangePlans:
             return nil // No public equivalent
         }
     }
@@ -70,6 +71,7 @@ final class CustomerCenterActionWrapper {
     let restoreFailed = PassthroughSubject<NSError, Never>()
     let restoreCompleted = PassthroughSubject<CustomerInfo, Never>()
     let showingManageSubscriptions = PassthroughSubject<Void, Never>()
+    let showingChangePlans = PassthroughSubject<String?, Never>()
     let refundRequestStarted = PassthroughSubject<String, Never>()
     let refundRequestCompleted = PassthroughSubject<(String, RefundRequestStatus), Never>()
     let feedbackSurveyCompleted = PassthroughSubject<String, Never>()
@@ -80,6 +82,7 @@ final class CustomerCenterActionWrapper {
         self.legacyActionHandler = legacyActionHandler
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     func handleAction(_ action: CustomerCenterInternalAction) {
         if let legacyAction = action.asLegacyAction {
             legacyActionHandler?(legacyAction)
@@ -112,6 +115,9 @@ final class CustomerCenterActionWrapper {
 
         case .promotionalOfferSuccess:
             promotionalOfferSuccess.send(())
+
+        case .showingChangePlans(let subscriptionGroupID):
+            showingChangePlans.send(subscriptionGroupID)
         }
     }
 }

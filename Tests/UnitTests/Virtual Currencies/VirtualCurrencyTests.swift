@@ -12,7 +12,7 @@
 //  Created by Will Taylor on 6/10/25.
 
 import Foundation
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import XCTest
 
 final class VirtualCurrencyTests: TestCase {

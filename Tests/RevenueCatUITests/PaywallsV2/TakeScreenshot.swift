@@ -97,11 +97,12 @@ extension UIImage {
     }
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
 
   func asImage(wait duration: TimeInterval = 0.1) -> UIImage {
 
-    let controller = UIHostingController(rootView: self)
+    let controller = UIHostingController(rootView: self.ignoresSafeArea())
     let view = controller.view
     let targetSize = controller.view.intrinsicContentSize
     let bounds = CGRect(origin: .zero, size: targetSize)

@@ -14,7 +14,7 @@
 import Nimble
 import XCTest
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 @testable import RevenueCatUI
 
 // swiftlint:disable file_length type_body_length
@@ -101,14 +101,19 @@ final class PurchaseInformationTests: TestCase {
                 customerInfoRequestedDate: Date(),
                 dateFormatter: Self.mockDateFormatter,
                 numberFormatter: Self.mockNumberFormatter,
-                managementURL: URL(string: "https://www.revenuecat.com")!
+                managementURL: URL(string: "https://www.revenuecat.com")!,
+                changePlan: CustomerCenterConfigData.ChangePlan(
+                    groupId: "groupId",
+                    groupName: "groupName",
+                    products: []
+                )
             )
         )
         expect(subscriptionInfo.title) == "Monthly Product"
         expect(subscriptionInfo.pricePaid) == .nonFree("$6.99")
         expect(subscriptionInfo.renewalPrice).to(beNil())
         expect(subscriptionInfo.isLifetimeSubscription).to(beFalse())
-
+        expect(subscriptionInfo.changePlan).toNot(beNil())
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
         expect(subscriptionInfo.store) == .appStore
     }
@@ -158,7 +163,8 @@ final class PurchaseInformationTests: TestCase {
             customerInfoRequestedDate: Date(),
             dateFormatter: Self.mockDateFormatter,
             numberFormatter: Self.mockNumberFormatter,
-            managementURL: URL(string: "https://www.revenuecat.com")!
+            managementURL: URL(string: "https://www.revenuecat.com")!,
+            changePlan: nil
         )
 
         let subscriptionInfo = try XCTUnwrap(subscriptionInfoNullable)
@@ -216,7 +222,8 @@ final class PurchaseInformationTests: TestCase {
             customerInfoRequestedDate: Date(),
             dateFormatter: Self.mockDateFormatter,
             numberFormatter: Self.mockNumberFormatter,
-            managementURL: URL(string: "https://www.revenuecat.com")!
+            managementURL: URL(string: "https://www.revenuecat.com")!,
+            changePlan: nil
         )
 
         let subscriptionInfo = try XCTUnwrap(subscriptionInfoNullable)
@@ -275,7 +282,8 @@ final class PurchaseInformationTests: TestCase {
             customerInfoRequestedDate: Date(),
             dateFormatter: Self.mockDateFormatter,
             numberFormatter: Self.mockNumberFormatter,
-            managementURL: URL(string: "https://www.revenuecat.com")!
+            managementURL: URL(string: "https://www.revenuecat.com")!,
+            changePlan: nil
         )
 
         let subscriptionInfo = try XCTUnwrap(subscriptionInfoNullable)
@@ -332,7 +340,8 @@ final class PurchaseInformationTests: TestCase {
             customerInfoRequestedDate: Date(),
             dateFormatter: Self.mockDateFormatter,
             numberFormatter: Self.mockNumberFormatter,
-            managementURL: URL(string: "https://www.revenuecat.com")!
+            managementURL: URL(string: "https://www.revenuecat.com")!,
+            changePlan: nil
         )
 
         let subscriptionInfo = try XCTUnwrap(subscriptionInfoNullable)
@@ -376,7 +385,8 @@ final class PurchaseInformationTests: TestCase {
                 customerInfoRequestedDate: Date(),
                 dateFormatter: Self.mockDateFormatter,
                 numberFormatter: Self.mockNumberFormatter,
-                managementURL: URL(string: "https://www.revenuecat.com")!
+                managementURL: URL(string: "https://www.revenuecat.com")!,
+                changePlan: nil
             )
         )
 
@@ -420,7 +430,8 @@ final class PurchaseInformationTests: TestCase {
                 customerInfoRequestedDate: Date(),
                 dateFormatter: Self.mockDateFormatter,
                 numberFormatter: Self.mockNumberFormatter,
-                managementURL: URL(string: "https://www.revenuecat.com")!
+                managementURL: URL(string: "https://www.revenuecat.com")!,
+                changePlan: nil
             )
         )
 
@@ -464,7 +475,8 @@ final class PurchaseInformationTests: TestCase {
                 customerInfoRequestedDate: Date(),
                 dateFormatter: Self.mockDateFormatter,
                 numberFormatter: Self.mockNumberFormatter,
-                managementURL: URL(string: "https://www.revenuecat.com")!
+                managementURL: URL(string: "https://www.revenuecat.com")!,
+                changePlan: nil
             )
         )
 
@@ -508,7 +520,8 @@ final class PurchaseInformationTests: TestCase {
                 customerInfoRequestedDate: Date(),
                 dateFormatter: Self.mockDateFormatter,
                 numberFormatter: Self.mockNumberFormatter,
-                managementURL: URL(string: "https://www.revenuecat.com")!
+                managementURL: URL(string: "https://www.revenuecat.com")!,
+                changePlan: nil
             )
         )
 
@@ -553,7 +566,8 @@ final class PurchaseInformationTests: TestCase {
                 customerInfoRequestedDate: Date(),
                 dateFormatter: Self.mockDateFormatter,
                 numberFormatter: Self.mockNumberFormatter,
-                managementURL: URL(string: "https://www.revenuecat.com")!
+                managementURL: URL(string: "https://www.revenuecat.com")!,
+                changePlan: nil
             )
         )
 
@@ -598,7 +612,8 @@ final class PurchaseInformationTests: TestCase {
                 customerInfoRequestedDate: Date(),
                 dateFormatter: Self.mockDateFormatter,
                 numberFormatter: Self.mockNumberFormatter,
-                managementURL: URL(string: "https://www.revenuecat.com")!
+                managementURL: URL(string: "https://www.revenuecat.com")!,
+                changePlan: nil
             )
         )
 
@@ -642,7 +657,8 @@ final class PurchaseInformationTests: TestCase {
                 customerInfoRequestedDate: Date(),
                 dateFormatter: Self.mockDateFormatter,
                 numberFormatter: Self.mockNumberFormatter,
-                managementURL: URL(string: "https://www.revenuecat.com")!
+                managementURL: URL(string: "https://www.revenuecat.com")!,
+                changePlan: nil
             )
         )
 
@@ -686,7 +702,8 @@ final class PurchaseInformationTests: TestCase {
                 customerInfoRequestedDate: Date(),
                 dateFormatter: Self.mockDateFormatter,
                 numberFormatter: Self.mockNumberFormatter,
-                managementURL: URL(string: "https://www.revenuecat.com")!
+                managementURL: URL(string: "https://www.revenuecat.com")!,
+                changePlan: nil
             )
         )
 
@@ -730,7 +747,8 @@ final class PurchaseInformationTests: TestCase {
                 customerInfoRequestedDate: Date(),
                 dateFormatter: Self.mockDateFormatter,
                 numberFormatter: Self.mockNumberFormatter,
-                managementURL: URL(string: "https://www.revenuecat.com")!
+                managementURL: URL(string: "https://www.revenuecat.com")!,
+                changePlan: nil
             )
         )
 
@@ -774,7 +792,8 @@ final class PurchaseInformationTests: TestCase {
                 customerInfoRequestedDate: Date(),
                 dateFormatter: Self.mockDateFormatter,
                 numberFormatter: Self.mockNumberFormatter,
-                managementURL: URL(string: "https://www.revenuecat.com")!
+                managementURL: URL(string: "https://www.revenuecat.com")!,
+                changePlan: nil
             )
         )
 
@@ -818,7 +837,8 @@ final class PurchaseInformationTests: TestCase {
                 customerInfoRequestedDate: Date(),
                 dateFormatter: Self.mockDateFormatter,
                 numberFormatter: Self.mockNumberFormatter,
-                managementURL: URL(string: "https://www.revenuecat.com")!
+                managementURL: URL(string: "https://www.revenuecat.com")!,
+                changePlan: nil
             )
         )
 
@@ -862,7 +882,8 @@ final class PurchaseInformationTests: TestCase {
                 customerInfoRequestedDate: Date(),
                 dateFormatter: Self.mockDateFormatter,
                 numberFormatter: Self.mockNumberFormatter,
-                managementURL: URL(string: "https://www.revenuecat.com")!
+                managementURL: URL(string: "https://www.revenuecat.com")!,
+                changePlan: nil
             )
         )
 
@@ -906,7 +927,8 @@ final class PurchaseInformationTests: TestCase {
                 customerInfoRequestedDate: Date(),
                 dateFormatter: Self.mockDateFormatter,
                 numberFormatter: Self.mockNumberFormatter,
-                managementURL: URL(string: "https://www.revenuecat.com")!
+                managementURL: URL(string: "https://www.revenuecat.com")!,
+                changePlan: nil
             )
         )
 
@@ -950,7 +972,8 @@ final class PurchaseInformationTests: TestCase {
                 customerInfoRequestedDate: Date(),
                 dateFormatter: Self.mockDateFormatter,
                 numberFormatter: Self.mockNumberFormatter,
-                managementURL: URL(string: "https://www.revenuecat.com")!
+                managementURL: URL(string: "https://www.revenuecat.com")!,
+                changePlan: nil
             )
         )
 
