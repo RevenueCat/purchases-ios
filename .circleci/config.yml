@@ -1435,6 +1435,7 @@ jobs:
   test-tuist-generate-workspace:
     executor:
       name: macos-executor
+      xcode_version: "16.4"
     steps:
       - checkout
       - tuist-generate-workspace
