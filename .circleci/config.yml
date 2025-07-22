@@ -418,7 +418,9 @@ commands:
       - revenuecat/install-tuist
       - run:
           name: Generate Tuist workspace
-          command: tuist generate
+          command: |
+            export PATH="$HOME/.local/share/mise/shims:$PATH"
+            tuist generate --no-open
 
   create-snapshot-pr-if-needed:
     parameters:
