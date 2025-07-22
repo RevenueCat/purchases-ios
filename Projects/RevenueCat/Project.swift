@@ -22,7 +22,8 @@ let allDeploymentTargets: DeploymentTargets = .multiplatform(
     iOS: "13.0",
     macOS: "11.0",
     watchOS: "7.0",
-    tvOS: "14.0"
+    tvOS: "14.0",
+    visionOS: "1.3"
 )
 
 // MARK: - Project Definition
@@ -30,11 +31,7 @@ let allDeploymentTargets: DeploymentTargets = .multiplatform(
 let project = Project(
     name: "RevenueCat",
     organizationName: .revenueCatOrgName,
-    settings: .settings(
-        base: [:].automaticCodeSigning(devTeam: .revenueCatTeamID),
-        configurations: .xcconfigFileConfigurations,
-        defaultSettings: .recommended
-    ),
+    settings: .framework,
     targets: [
         // MARK: – Main Library
         .target(

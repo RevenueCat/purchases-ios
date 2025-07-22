@@ -57,8 +57,6 @@ import Foundation
     internal let diagnosticsEnabled: Bool
 
     private init(with builder: Builder) {
-        Self.verify(apiKey: builder.apiKey)
-
         self.apiKey = builder.apiKey
         self.appUserID = builder.appUserID
         self.observerMode = builder.observerMode
@@ -376,11 +374,28 @@ extension Configuration {
 
     enum APIKeyValidationResult {
         case validApplePlatform
+        case testStore
         case otherPlatforms
         case legacy
     }
 
-    static func validate(apiKey: String) -> APIKeyValidationResult {
+    static func validateAndLog(apiKey: String) -> APIKeyValidationResult {
+        let validationResult = self.validate(apiKey: apiKey)
+        validationResult.logIfNeeded()
+        return validationResult
+    }
+
+    private static let applePlatformKeyPrefixes: Set<String> = ["appl_", "mac_"]
+    private static let testStoreKeyPrefix = "test_"
+
+    private static func validate(apiKey: String) -> APIKeyValidationResult {
+        #if TEST_STORE
+        if apiKey.hasPrefix(testStoreKeyPrefix) {
+            // Test Store key format: "test_CtDdmbdWBySmqJeeQUTyrNxETUVkajsJ"
+            return .testStore
+        }
+        #endif // TEST_STORE
+
         if applePlatformKeyPrefixes.contains(where: { prefix in apiKey.hasPrefix(prefix) }) {
             // Apple key format: "apple_CtDdmbdWBySmqJeeQUTyrNxETUVkajsJ"
             return .validApplePlatform
@@ -392,16 +407,18 @@ extension Configuration {
             return .legacy
         }
     }
+}
 
-    fileprivate static func verify(apiKey: String) {
-        switch self.validate(apiKey: apiKey) {
+extension Configuration.APIKeyValidationResult {
+
+    fileprivate func logIfNeeded() {
+        switch self {
         case .validApplePlatform: break
+        case .testStore: Logger.warn(Strings.configure.testStoreAPIKey)
         case .legacy: Logger.debug(Strings.configure.legacyAPIKey)
         case .otherPlatforms: Logger.error(Strings.configure.invalidAPIKey)
         }
     }
-
-    private static let applePlatformKeyPrefixes: Set<String> = ["appl_", "mac_"]
 
 }
 

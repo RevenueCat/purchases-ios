@@ -464,7 +464,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
     func testRenewalsOnASeparateUserDontTransferPurchases() async throws {
         // forceRenewalOfSubscription doesn't work well, so we use this instead
-        setShortestTestSessionTimeRate(self.testSession)
+        setOneSecondIsOneDayTimeRate(self.testSession)
 
         let prefix = UUID().uuidString
         let userID1 = "\(prefix)-user-1"
@@ -498,7 +498,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
     func testUserCanMakePurchaseAfterTransferBlocked() async throws {
         // forceRenewalOfSubscription doesn't work well, so we use this instead
-        setShortestTestSessionTimeRate(self.testSession)
+        setOneSecondIsOneDayTimeRate(self.testSession)
 
         let prefix = UUID().uuidString
         let userID1 = "\(prefix)-user-1"
@@ -609,7 +609,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testIneligibleForIntroAfterPurchase() async throws {
-        setShortestTestSessionTimeRate(self.testSession)
+        setLongestTestSessionTimeRate(self.testSession)
 
         let product = try await self.shortestDurationProduct
 
@@ -669,7 +669,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testIneligibleForIntroAfterPurchaseExpires() async throws {
-        setShortestTestSessionTimeRate(self.testSession)
+        setOneSecondIsOneDayTimeRate(self.testSession)
 
         let product = try await self.shortestDurationProduct
 
@@ -702,7 +702,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     // MARK: -
 
     func testExpireSubscription() async throws {
-        setShortestTestSessionTimeRate(self.testSession)
+        setOneSecondIsOneDayTimeRate(self.testSession)
 
         let (_, created) = try await self.purchases.logIn(UUID().uuidString)
         expect(created) == true
@@ -736,7 +736,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
     func testSubscribeAfterExpirationWhileAppIsClosed() async throws {
         // forceRenewalOfSubscription doesn't work well, so we use this instead
-        setShortestTestSessionTimeRate(self.testSession)
+        setOneSecondIsOneDayTimeRate(self.testSession)
 
         func waitForNewPurchaseDate() async {
             // The backend uses the transaction purchase date as a way to disambiguate transactions.
