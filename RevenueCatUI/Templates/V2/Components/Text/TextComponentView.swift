@@ -125,7 +125,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 localizationProvider: .init(
                     locale: Locale.current,
                     localizedStrings: [
-                        "id_1": .string(ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] ?? "not-set")
+                        "id_1": .string(ProcessInfo.isRunningForPreviews ? "true" : "false")
                     ]
                 ),
                 uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
@@ -190,7 +190,7 @@ struct TextComponentView_Previews: PreviewProvider {
         .previewDisplayName("Default")
         
         environmentVariablePreview
-            .previewDisplayName("Value of XCODE_RUNNING_FOR_PREVIEWS")
+            .previewDisplayName("Is running in previews")
 
         platformPreview
         .previewDisplayName("Detected Platform")
