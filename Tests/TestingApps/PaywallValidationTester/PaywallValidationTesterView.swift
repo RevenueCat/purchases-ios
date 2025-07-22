@@ -20,43 +20,49 @@ struct PaywallValidationTesterView: View {
     @State var offerings:[Offering] = []
 
     var body: some View {
-        TabView {
-            ForEach(offerings, id: \.self) { offering in
-                if offering.id == offeringId || offeringId == nil {
-                    PaywallView(
-                        configuration: .init(
-                            offering: offering,
-                            customerInfo: TestData.customerInfo,
-                            mode: .default,
-                            fonts: DefaultPaywallFontProvider(),
-                            introEligibility: .producing(eligibility: .eligible),
-                            purchaseHandler: .mock(preferredLocaleOverride: nil)
-                        )
-                    )
-                    .navigationTitle(offering.id)
+        GeometryReader { proxy in
+            ScrollView(.horizontal) {
+                LazyHStack {
+                    ForEach(offerings, id: \.self) { offering in
+                        if offering.id == offeringId || offeringId == nil {
+                            PaywallView(
+                                configuration: .init(
+                                    offering: offering,
+                                    customerInfo: TestData.customerInfo,
+                                    mode: .default,
+                                    fonts: DefaultPaywallFontProvider(),
+                                    introEligibility: .producing(eligibility: .eligible),
+                                    purchaseHandler: .mock(preferredLocaleOverride: nil)
+                                )
+                            )
+                            .frame(width: proxy.size.width, height: proxy.size.height)
+                            .navigationTitle(offering.id)
+                        }
+                    }
                 }
+                .scrollTargetLayout()
             }
-        }
-        .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-        .ignoresSafeArea()
-        .onAppear {
-            guard let resourcesFolderURL = Bundle.main.url(
-                forResource: "paywall-preview-resources", withExtension: nil
-            ) else {
-                return
-            }
-
-            let baseResourcesURL = resourcesFolderURL
-                .appendingPathComponent("resources")
-
-            do {
-                let loader = try PaywallPreviewResourcesLoader(baseResourcesURL: baseResourcesURL)
-                offerings = loader.allOfferings.sorted(by: { a, b in
-                    a.identifier < b.identifier
-                })
-            }
-            catch {
-                print(error)
+            .scrollTargetBehavior(.viewAligned)
+            .ignoresSafeArea()
+            .onAppear {
+                guard let resourcesFolderURL = Bundle.main.url(
+                    forResource: "paywall-preview-resources", withExtension: nil
+                ) else {
+                    return
+                }
+                
+                let baseResourcesURL = resourcesFolderURL
+                    .appendingPathComponent("resources")
+                
+                do {
+                    let loader = try PaywallPreviewResourcesLoader(baseResourcesURL: baseResourcesURL)
+                    offerings = loader.allOfferings.sorted(by: { a, b in
+                        a.identifier < b.identifier
+                    })
+                }
+                catch {
+                    print(error)
+                }
             }
         }
     }
