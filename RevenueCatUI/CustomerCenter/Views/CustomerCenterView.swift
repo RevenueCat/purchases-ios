@@ -120,7 +120,7 @@ public struct CustomerCenterView: View {
             }
             .onAppear {
 #if DEBUG
-                guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else { return }
+                guard !ProcessInfo.isRunningForPreviews else { return }
 #endif
                 self.trackImpression()
             }
