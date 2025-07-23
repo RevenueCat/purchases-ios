@@ -20,42 +20,42 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
 
     var authenticated: Bool {
         switch self {
-        case .getWebProducts:
+        case .getWebOfferingProducts:
             return true
         }
     }
 
     var shouldSendEtag: Bool {
         switch self {
-        case .getWebProducts:
+        case .getWebOfferingProducts:
             return true
         }
     }
 
     var supportsSignatureVerification: Bool {
         switch self {
-        case .getWebProducts:
+        case .getWebOfferingProducts:
             return false
         }
     }
 
     var needsNonceForSigning: Bool {
         switch self {
-        case .getWebProducts:
+        case .getWebOfferingProducts:
             return false
         }
     }
 
     var relativePath: String {
         switch self {
-        case let .getWebProducts(appUserID):
+        case let .getWebOfferingProducts(appUserID):
             return "/rcbilling/v1/subscribers/\(appUserID.trimmedAndEscaped)/offering_products"
         }
     }
 
     var name: String {
         switch self {
-        case .getWebProducts:
+        case .getWebOfferingProducts:
             return "get_web_products"
         }
     }
