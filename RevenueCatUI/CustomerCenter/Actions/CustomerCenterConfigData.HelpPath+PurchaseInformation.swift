@@ -34,11 +34,21 @@ extension Array<CustomerCenterConfigData.HelpPath> {
             let isNonAppStorePurchase = purchaseInformation.store != .appStore
             let isAppStoreOnlyPath = $0.type.isAppStoreOnly
 
-            let isCancel = $0.type == .cancel
+            // skip AppStore only paths if the purchase is not from App Store
+            if isNonAppStorePurchase && isAppStoreOnlyPath {
+                return false
+            }
 
-            // if it's cancel, it cannot be a lifetime subscription
-            let isEligibleCancel = !purchaseInformation.isSubscription
-                || (!purchaseInformation.isCancelled &&  !purchaseInformation.isLifetimeSubscription)
+            if $0.type == .cancel {
+                // don't show cancel if there's no URL
+                if isNonAppStorePurchase && purchaseInformation.managementURL == nil {
+                     return false
+                }
+
+                return purchaseInformation.isSubscription
+                    && !purchaseInformation.isLifetimeSubscription
+                    && !purchaseInformation.isCancelled
+            }
 
             // if it's refundRequest, it cannot be free nor within trial period
             let isRefund = $0.type == .refundRequest
@@ -49,25 +59,13 @@ extension Array<CustomerCenterConfigData.HelpPath> {
             // if it has a refundDuration, check it's still valid
             let refundWindowIsValid = $0.refundWindowDuration?.isWithin(purchaseInformation) ?? true
 
-            // skip AppStore only paths if the purchase is not from App Store
-            if isNonAppStorePurchase && isAppStoreOnlyPath {
-                return false
-            }
-
-            // don't show cancel if there's no URL
-            if isCancel && isNonAppStorePurchase && purchaseInformation.managementURL == nil {
-                 return false
-            }
-
             // can't change plans if it's not a subscription or lifetime subscription
             if $0.type == .changePlans
                 && (!purchaseInformation.isSubscription || purchaseInformation.isLifetimeSubscription) {
                 return false
             }
 
-            return (!isCancel || isEligibleCancel) &&
-                    (!isRefund || isRefundEligible) &&
-                    refundWindowIsValid
+            return (!isRefund || isRefundEligible) && refundWindowIsValid
         }
     }
 }

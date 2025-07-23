@@ -68,7 +68,10 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
     }
 
     func testNonAppStoreFiltersAppStoreOnlyPaths() {
-        let purchase = PurchaseInformation.mock(store: .playStore)
+        let purchase = PurchaseInformation.mock(
+            store: .playStore,
+            isSubscription: true
+        )
 
         let viewModel = BaseManageSubscriptionViewModel(
             screen: BaseManageSubscriptionViewModelTests.default,
@@ -123,6 +126,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
 
     func testCancelledDoesNotShowCancelAndRefund() {
         let purchase = PurchaseInformation.mock(
+            isSubscription: true,
             isCancelled: true
         )
 
