@@ -48,6 +48,7 @@ extension Array<CustomerCenterConfigData.HelpPath> {
                 return purchaseInformation.isSubscription
                     && !purchaseInformation.isLifetimeSubscription
                     && !purchaseInformation.isCancelled
+                    && purchaseInformation.renewalDate != nil
             }
 
             // if it's refundRequest, it cannot be free nor within trial period
