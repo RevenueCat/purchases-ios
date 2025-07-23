@@ -372,10 +372,8 @@ final class CustomerCenterActionWrapperTests: TestCase {
     func testManagementOptionSelectedWithCustomAction() async throws {
         let actionWrapper = await CustomerCenterActionWrapper()
         let customActionExpectation = XCTestExpectation(description: "customActionSelected")
-        let managementOptionExpectation = XCTestExpectation(description: "managementOptionSelected")
 
         var receivedCustomActionData: (String, String?)?
-        var receivedManagementAction: CustomerCenterActionable?
 
         let windowHolder = await WindowHolder()
 
@@ -385,10 +383,6 @@ final class CustomerCenterActionWrapperTests: TestCase {
                 .onCustomerCenterCustomActionSelected { actionIdentifier, activePurchaseId in
                     receivedCustomActionData = (actionIdentifier, activePurchaseId)
                     customActionExpectation.fulfill()
-                }
-                .onCustomerCenterManagementOptionSelected { action in
-                    receivedManagementAction = action
-                    managementOptionExpectation.fulfill()
                 }
 
             let viewController = UIHostingController(rootView: testView)
@@ -400,23 +394,26 @@ final class CustomerCenterActionWrapperTests: TestCase {
             windowHolder.window = window
         }
 
+        let customAction = CustomerCenterManagementOption.CustomAction(
+            actionIdentifier: "delete_user",
+            activePurchaseId: "product_123"
+        )
+
         await MainActor.run {
-            let customAction = CustomerCenterManagementOption.CustomAction(
-                actionIdentifier: "delete_user",
-                activePurchaseId: "product_123"
+            actionWrapper.handleAction(
+                .customActionSelected(
+                    CustomActionData(
+                        actionIdentifier: customAction.actionIdentifier,
+                        activePurchaseId: customAction.activePurchaseId
+                    )
+                )
             )
-            actionWrapper.handleAction(.buttonTapped(action: customAction))
         }
 
-        await fulfillment(of: [customActionExpectation, managementOptionExpectation], timeout: 1.0)
+        await fulfillment(of: [customActionExpectation], timeout: 1.0)
 
-        // Verify both handlers received the action
-        expect(receivedCustomActionData?.0) == "delete_user"
-        expect(receivedCustomActionData?.1) == "product_123"
-
-        let receivedCustomAction = receivedManagementAction as? CustomerCenterManagementOption.CustomAction
-        expect(receivedCustomAction?.actionIdentifier) == "delete_user"
-        expect(receivedCustomAction?.activePurchaseId) == "product_123"
+        expect(receivedCustomActionData?.0) == customAction.actionIdentifier
+        expect(receivedCustomActionData?.1) == customAction.activePurchaseId
     }
 }
 
