@@ -123,7 +123,7 @@ struct PurchaseInformation {
     /// Remote configured set of product ids to handle change plans flow.
     let changePlan: CustomerCenterConfigData.ChangePlan?
 
-    /// Indicates the product is lasts forever
+    /// Indicates the product lasts forever
     let isLifetime: Bool
 
     private let dateFormatter: DateFormatter
