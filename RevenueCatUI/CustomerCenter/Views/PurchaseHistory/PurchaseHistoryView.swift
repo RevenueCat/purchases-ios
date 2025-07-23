@@ -130,7 +130,7 @@ struct PurchaseHistoryView_Previews: PreviewProvider {
                 viewModel: PurchaseHistoryViewModel(
                     isLoading: false,
                     activeSubscriptions: [
-                        .monthlyRenewing,
+                        .subscription,
                         .free
                     ],
                     inactiveSubscriptions: [

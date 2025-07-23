@@ -7,15 +7,18 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  WebProductsCallback.swift
+//  PaywallValidationTesterApp.swift
 //
-//  Created by Toni Rico on 5/6/25.
+//  Created by Chris Vasselli on 2025/07/09.
 
-import Foundation
+import SwiftUI
 
-struct WebProductsCallback: CacheKeyProviding {
+@main
+struct PaywallValidationTesterApp: App {
 
-    let cacheKey: String
-    let completion: (Result<WebProductsResponse, BackendError>) -> Void
-
+    var body: some Scene {
+        WindowGroup {
+            PaywallValidationTesterView()
+        }
+    }
 }

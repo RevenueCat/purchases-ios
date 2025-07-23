@@ -307,7 +307,7 @@ private struct PreviewContainer: View {
 
     var body: some View {
         let viewModelApple = CustomerCenterViewModel(
-            activeSubscriptionPurchases: [.monthlyRenewing],
+            activeSubscriptionPurchases: [.subscription],
             activeNonSubscriptionPurchases: [],
             configuration: CustomerCenterConfigData.default
         )

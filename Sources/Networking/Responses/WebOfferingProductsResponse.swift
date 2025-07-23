@@ -7,13 +7,13 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  WebProductsResponse.swift
+//  WebOfferingProductsResponse.swift
 //
 //  Created by Toni Rico on 5/6/25.
 
 import Foundation
 
-struct WebProductsResponse {
+struct WebOfferingProductsResponse {
 
     struct Price {
         let amountMicros: Int64
@@ -64,13 +64,13 @@ struct WebProductsResponse {
 
 }
 
-extension WebProductsResponse.Offering: Codable, Equatable {}
-extension WebProductsResponse.Package: Codable, Equatable {}
-extension WebProductsResponse.Product: Codable, Equatable {}
-extension WebProductsResponse.PurchaseOption: Codable, Equatable {}
-extension WebProductsResponse.PricingPhase: Codable, Equatable {}
-extension WebProductsResponse.Price: Codable, Equatable {}
+extension WebOfferingProductsResponse.Offering: Codable, Equatable {}
+extension WebOfferingProductsResponse.Package: Codable, Equatable {}
+extension WebOfferingProductsResponse.Product: Codable, Equatable {}
+extension WebOfferingProductsResponse.PurchaseOption: Codable, Equatable {}
+extension WebOfferingProductsResponse.PricingPhase: Codable, Equatable {}
+extension WebOfferingProductsResponse.Price: Codable, Equatable {}
 
-extension WebProductsResponse: Codable, Equatable {}
+extension WebOfferingProductsResponse: Codable, Equatable {}
 
-extension WebProductsResponse: HTTPResponseBody {}
+extension WebOfferingProductsResponse: HTTPResponseBody {}
