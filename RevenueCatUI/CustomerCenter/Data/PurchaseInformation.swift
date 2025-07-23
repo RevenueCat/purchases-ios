@@ -123,6 +123,9 @@ struct PurchaseInformation {
     /// Remote configured set of product ids to handle change plans flow.
     let changePlan: CustomerCenterConfigData.ChangePlan?
 
+    /// Indicates the product is lasts forever
+    let isLifetime: Bool
+
     private let dateFormatter: DateFormatter
     private let numberFormatter: NumberFormatter
 
@@ -153,7 +156,8 @@ struct PurchaseInformation {
          refundedAtDate: Date? = nil,
          transactionIdentifier: String? = nil,
          storeTransactionIdentifier: String? = nil,
-         changePlan: CustomerCenterConfigData.ChangePlan? = nil
+         changePlan: CustomerCenterConfigData.ChangePlan? = nil,
+         isLifetime: Bool = false
     ) {
         self.title = title
         self.pricePaid = pricePaid
@@ -183,6 +187,7 @@ struct PurchaseInformation {
         self.transactionIdentifier = transactionIdentifier
         self.storeTransactionIdentifier = storeTransactionIdentifier
         self.changePlan = changePlan
+        self.isLifetime = isLifetime
     }
 
     // swiftlint:disable:next function_body_length
@@ -211,6 +216,7 @@ struct PurchaseInformation {
         self.customerInfoRequestedDate = customerInfoRequestedDate
         self.managementURL = managementURL
         self.isSubscription = transaction.isSubscrition && transaction.store != .promotional
+        self.isLifetime = subscribedProduct?.productType == .nonConsumable
 
         // Use entitlement data if available, otherwise derive from transaction
         if let entitlement = entitlement {
@@ -533,10 +539,6 @@ extension PurchaseInformation {
 }
 
 extension PurchaseInformation {
-
-    var isLifetimeSubscription: Bool {
-        expirationDate == nil && isSubscription
-    }
 
     var storeLocalizationKey: CCLocalizedString {
         switch store {
