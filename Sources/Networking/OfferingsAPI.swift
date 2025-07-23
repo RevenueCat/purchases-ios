@@ -19,15 +19,18 @@ class OfferingsAPI {
     typealias OfferSigningResponseHandler = Backend.ResponseHandler<PostOfferForSigningOperation.SigningData>
     typealias OfferingsResponseHandler = Backend.ResponseHandler<OfferingsResponse>
     typealias WebOfferingProductsResponseHandler = Backend.ResponseHandler<WebOfferingProductsResponse>
+    typealias WebProductsResponseHandler = Backend.ResponseHandler<WebProductsResponse>
 
     private let offeringsCallbacksCache: CallbackCache<OfferingsCallback>
     private let webOfferingProductsCallbacksCache: CallbackCache<WebOfferingProductsCallback>
+    private let webProductsCallbacksCache: CallbackCache<WebProductsCallback>
     private let backendConfig: BackendConfiguration
 
     init(backendConfig: BackendConfiguration) {
         self.backendConfig = backendConfig
         self.offeringsCallbacksCache = .init()
         self.webOfferingProductsCallbacksCache = .init()
+        self.webProductsCallbacksCache = .init()
     }
 
     func getOfferings(appUserID: String,
@@ -66,6 +69,25 @@ class OfferingsAPI {
 
         let webProductsCallback = WebOfferingProductsCallback(cacheKey: factory.cacheKey, completion: completion)
         let cacheStatus = self.webOfferingProductsCallbacksCache.add(webProductsCallback)
+
+        self.backendConfig.addCacheableOperation(
+            with: factory,
+            delay: .none,
+            cacheStatus: cacheStatus
+        )
+    }
+
+    func getWebProducts(appUserID: String, productIds: Set<String>, completion: @escaping WebProductsResponseHandler) {
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+                                                                appUserID: appUserID)
+        let factory = GetWebProductsOperation.createFactory(
+            configuration: config,
+            webProductsCallbackCache: self.webProductsCallbacksCache,
+            productIds: productIds
+        )
+
+        let webProductsCallback = WebProductsCallback(cacheKey: factory.cacheKey, completion: completion)
+        let cacheStatus = self.webProductsCallbacksCache.add(webProductsCallback)
 
         self.backendConfig.addCacheableOperation(
             with: factory,
