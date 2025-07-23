@@ -46,7 +46,6 @@ extension Array<CustomerCenterConfigData.HelpPath> {
                 }
 
                 return purchaseInformation.isSubscription
-                    && !purchaseInformation.isLifetimeSubscription
                     && !purchaseInformation.isCancelled
                     && purchaseInformation.renewalDate != nil
             }

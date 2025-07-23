@@ -84,8 +84,8 @@ extension PurchaseInformation {
         store: .appStore,
         isSubscription: true,
         isCancelled: false,
-        expirationDate: Self.defaultExpirationDate,
-        renewalDate: nil
+        expirationDate: nil,
+        renewalDate: Self.defaulRenewalDate
     )
 
     static let expired = PurchaseInformation.mock(
