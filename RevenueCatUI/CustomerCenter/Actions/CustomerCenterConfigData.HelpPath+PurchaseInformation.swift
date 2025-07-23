@@ -61,7 +61,7 @@ extension Array<CustomerCenterConfigData.HelpPath> {
 
             // can't change plans if it's not a subscription
             if $0.type == .changePlans &&
-                (!purchaseInformation.isSubscription || purchaseInformation.isLifetimeSubscription) {
+                (!purchaseInformation.isSubscription || purchaseInformation.isLifetime) {
                 return false
             }
 
