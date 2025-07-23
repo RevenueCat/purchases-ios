@@ -78,15 +78,18 @@ extension PurchaseInformation {
         )
     }
 
-    static let monthlyRenewing = PurchaseInformation.mock(
+    static let subscription = PurchaseInformation.mock(
         pricePaid: .nonFree("$4.99"),
         renewalPrice: .nonFree("$4.99"),
         store: .appStore,
+        isSubscription: true,
+        isCancelled: false,
         expirationDate: nil,
         renewalDate: Self.defaulRenewalDate
     )
 
     static let expired = PurchaseInformation.mock(
+
         pricePaid: .nonFree("$4.99"),
         renewalPrice: .nonFree("$4.99"),
         productIdentifier: "product_id_expired",
