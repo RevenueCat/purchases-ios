@@ -47,7 +47,8 @@ extension PurchaseInformation {
         gracePeriodExpiresDate: Date? = nil,
         refundedAtDate: Date? = nil,
         transactionIdentifier: String? = "rc_tx_123",
-        storeTransactionIdentifier: String? = "store_tx_abc"
+        storeTransactionIdentifier: String? = "store_tx_abc",
+        isLifetime: Bool = false
     ) -> PurchaseInformation {
         return PurchaseInformation(
             title: title,
@@ -74,7 +75,8 @@ extension PurchaseInformation {
             gracePeriodExpiresDate: gracePeriodExpiresDate,
             refundedAtDate: refundedAtDate,
             transactionIdentifier: transactionIdentifier,
-            storeTransactionIdentifier: storeTransactionIdentifier
+            storeTransactionIdentifier: storeTransactionIdentifier,
+            isLifetime: isLifetime
         )
     }
 
@@ -106,7 +108,8 @@ extension PurchaseInformation {
         productIdentifier: "product_id_lifetime",
         isSubscription: true,
         expirationDate: nil,
-        renewalDate: nil
+        renewalDate: nil,
+        isLifetime: true
     )
 
     static let free = PurchaseInformation.mock(
