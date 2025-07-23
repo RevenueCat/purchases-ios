@@ -60,7 +60,8 @@ extension Array<CustomerCenterConfigData.HelpPath> {
             let refundWindowIsValid = $0.refundWindowDuration?.isWithin(purchaseInformation) ?? true
 
             // can't change plans if it's not a subscription
-            if $0.type == .changePlans && !purchaseInformation.isSubscription {
+            if $0.type == .changePlans &&
+                (!purchaseInformation.isSubscription || purchaseInformation.isLifetimeSubscription) {
                 return false
             }
 
