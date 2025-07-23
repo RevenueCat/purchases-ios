@@ -47,7 +47,7 @@ struct PurchaseHistoryView: View {
         .listStyle(.insetGrouped)
         .onAppear {
 #if DEBUG
-                guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else { return }
+            guard !ProcessInfo.isRunningForPreviews else { return }
 #endif
             Task {
                 await viewModel.didAppear()
@@ -130,7 +130,7 @@ struct PurchaseHistoryView_Previews: PreviewProvider {
                 viewModel: PurchaseHistoryViewModel(
                     isLoading: false,
                     activeSubscriptions: [
-                        .monthlyRenewing,
+                        .subscription,
                         .free
                     ],
                     inactiveSubscriptions: [

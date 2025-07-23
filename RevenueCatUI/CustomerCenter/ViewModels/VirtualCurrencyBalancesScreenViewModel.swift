@@ -14,7 +14,7 @@
 #if os(iOS)
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 /// A view model that manages the state and data for the virtual currencies screen.
 ///
@@ -43,7 +43,7 @@ final class VirtualCurrencyBalancesScreenViewModel: ObservableObject {
         self.purchasesProvider = purchasesProvider
 
         #if DEBUG
-        self.isRunningInSwiftUIPreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+        self.isRunningInSwiftUIPreview = ProcessInfo.isRunningForPreviews
         #else
         self.isRunningInSwiftUIPreview = false
         #endif
