@@ -19,4 +19,3 @@ struct WebOfferingProductsCallback: CacheKeyProviding {
     let completion: (Result<WebOfferingProductsResponse, BackendError>) -> Void
 
 }
-
