@@ -7,15 +7,15 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  WebProductsCallback.swift
+//  WebOfferingProductsCallback.swift
 //
 //  Created by Toni Rico on 5/6/25.
 
 import Foundation
 
-struct WebProductsCallback: CacheKeyProviding {
+struct WebOfferingProductsCallback: CacheKeyProviding {
 
     let cacheKey: String
-    let completion: (Result<WebProductsResponse, BackendError>) -> Void
+    let completion: (Result<WebOfferingProductsResponse, BackendError>) -> Void
 
 }

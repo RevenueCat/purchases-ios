@@ -7,25 +7,25 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  GetWebProductsOperation.swift
+//  GetWebOfferingProductsOperation.swift
 //
 //  Created by Toni Rico on 5/6/25.
 
 import Foundation
 
-final class GetWebProductsOperation: CacheableNetworkOperation {
+final class GetWebOfferingProductsOperation: CacheableNetworkOperation {
 
-    private let webProductsCallbackCache: CallbackCache<WebProductsCallback>
+    private let webOfferingProductsCallbackCache: CallbackCache<WebOfferingProductsCallback>
     private let configuration: AppUserConfiguration
 
     static func createFactory(
         configuration: UserSpecificConfiguration,
-        webProductsCallbackCache: CallbackCache<WebProductsCallback>
-    ) -> CacheableNetworkOperationFactory<GetWebProductsOperation> {
+        webOfferingProductsCallbackCache: CallbackCache<WebOfferingProductsCallback>
+    ) -> CacheableNetworkOperationFactory<GetWebOfferingProductsOperation> {
         return .init({ cacheKey in
                     .init(
                         configuration: configuration,
-                        webProductsCallbackCache: webProductsCallbackCache,
+                        webOfferingProductsCallbackCache: webOfferingProductsCallbackCache,
                         cacheKey: cacheKey
                     )
             },
@@ -33,30 +33,30 @@ final class GetWebProductsOperation: CacheableNetworkOperation {
     }
 
     private init(configuration: UserSpecificConfiguration,
-                 webProductsCallbackCache: CallbackCache<WebProductsCallback>,
+                 webOfferingProductsCallbackCache: CallbackCache<WebOfferingProductsCallback>,
                  cacheKey: String) {
         self.configuration = configuration
-        self.webProductsCallbackCache = webProductsCallbackCache
+        self.webOfferingProductsCallbackCache = webOfferingProductsCallbackCache
 
         super.init(configuration: configuration, cacheKey: cacheKey)
     }
 
     override func begin(completion: @escaping () -> Void) {
-        self.getWebProducts(completion: completion)
+        self.getWebOfferingProducts(completion: completion)
     }
 
 }
 
 // Restating inherited @unchecked Sendable from Foundation's Operation
-extension GetWebProductsOperation: @unchecked Sendable {}
+extension GetWebOfferingProductsOperation: @unchecked Sendable {}
 
-private extension GetWebProductsOperation {
+private extension GetWebOfferingProductsOperation {
 
-    func getWebProducts(completion: @escaping () -> Void) {
+    func getWebOfferingProducts(completion: @escaping () -> Void) {
         let appUserID = self.configuration.appUserID
 
         guard appUserID.isNotEmpty else {
-            self.webProductsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
+            self.webOfferingProductsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 callback.completion(.failure(.missingAppUserID()))
             }
             completion()
@@ -64,14 +64,16 @@ private extension GetWebProductsOperation {
             return
         }
 
-        let request = HTTPRequest(method: .get, path: .getWebProducts(appUserID: appUserID))
+        let request = HTTPRequest(method: .get, path: .getWebOfferingProducts(appUserID: appUserID))
 
-        httpClient.perform(request) { (response: VerifiedHTTPResponse<WebProductsResponse>.Result) in
+        httpClient.perform(request) { (response: VerifiedHTTPResponse<WebOfferingProductsResponse>.Result) in
             defer {
                 completion()
             }
 
-            self.webProductsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
+            self.webOfferingProductsCallbackCache.performOnAllItemsAndRemoveFromCache(
+                withCacheable: self
+            ) { callbackObject in
                 callbackObject.completion(response
                     .map { $0.body }
                     .mapError(BackendError.networkError)
