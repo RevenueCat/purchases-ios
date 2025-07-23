@@ -74,7 +74,7 @@ private extension CustomerCenterConfigData.HelpPath.PathType {
 
     var isAppStoreOnly: Bool {
         switch self {
-        case .cancel, .customUrl:
+        case .cancel, .customUrl, .customAction:
             return false
 
         case .changePlans, .refundRequest, .missingPurchase, .unknown:
