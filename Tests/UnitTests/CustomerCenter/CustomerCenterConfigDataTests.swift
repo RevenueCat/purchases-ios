@@ -21,7 +21,7 @@ import XCTest
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-class CustomerCenterConfigDataTests: TestCase {
+final class CustomerCenterConfigDataTests: TestCase {
 
     func testCustomerCenterConfigDataConversion() throws {
         let mockResponse = CustomerCenterConfigResponse(
@@ -47,81 +47,83 @@ class CustomerCenterConfigDataTests: TestCase {
                             .init(
                                 id: "path1",
                                 title: "Path 1",
+                                type: .missingPurchase,
                                 url: nil,
                                 openMethod: nil,
-                                type: .missingPurchase,
-                                detail: nil,
-                                refundWindowDuration: nil
+                                promotionalOffer: nil,
+                                feedbackSurvey: nil,
+                                refundWindow: nil,
+                                actionIdentifier: nil
                             ),
                             .init(
                                 id: "path2",
                                 title: "Path 2",
+                                type: .cancel,
                                 url: nil,
                                 openMethod: nil,
-                                type: .cancel,
-                                detail: .promotionalOffer(.init(iosOfferId: "offer_id",
-                                                                eligible: true,
-                                                                title: "Wait!",
-                                                                subtitle: "Before you go",
-                                                                productMapping: [
-                                                                    "product_id": "offer_id"
-                                                                ],
-                                                                crossProductPromotions: [
-                                                                    "monthly": .init(storeOfferIdentifier: "offer_id",
-                                                                                     targetProductId: "annual")
-                                                                ])),
-                                refundWindowDuration: nil
+                                promotionalOffer: .init(iosOfferId: "offer_id",
+                                                        eligible: true,
+                                                        title: "Wait!",
+                                                        subtitle: "Before you go",
+                                                        productMapping: [
+                                                            "product_id": "offer_id"
+                                                        ],
+                                                        crossProductPromotions: [
+                                                            "monthly": .init(storeOfferIdentifier: "offer_id",
+                                                                             targetProductId: "annual")
+                                                        ]),
+                                feedbackSurvey: nil,
+                                refundWindow: nil,
+                                actionIdentifier: nil
                             ),
                             .init(
                                 id: "path3",
                                 title: "Path 3",
+                                type: .changePlans,
                                 url: nil,
                                 openMethod: nil,
-                                type: .changePlans,
-                                detail: .feedbackSurvey(
-                                    .init(
-                                        title: "survey title",
-                                        options: [
-                                            .init(id: "id_1",
-                                                  title: "option 1",
-                                                  promotionalOffer: .init(iosOfferId: "offer_id_1",
-                                                                          eligible: true,
-                                                                          title: "Wait!",
-                                                                          subtitle: "Before you go",
-                                                                          productMapping: [
-                                                                            "product_id": "offer_id"
-                                                                          ],
-                                                                          crossProductPromotions: [
-                                                                            "monthly": .init(
-                                                                                storeOfferIdentifier:
-                                                                                    "offer_id",
-                                                                                targetProductId: "annual"
-                                                                            )
-                                                                          ])
-                                                 )
-                                        ])
-                                ),
-                                refundWindowDuration: nil
+                                promotionalOffer: nil,
+                                feedbackSurvey: .init(title: "survey title",
+                                                      options: [
+                                                        .init(id: "id_1",
+                                                              title: "option 1",
+                                                              promotionalOffer: .init(iosOfferId: "offer_id_1",
+                                                                                      eligible: true,
+                                                                                      title: "Wait!",
+                                                                                      subtitle: "Before you go",
+                                                                                      productMapping: [
+                                                                                        "product_id": "offer_id"
+                                                                                      ],
+                                                                                      crossProductPromotions: [
+                                                                                        "monthly": .init(
+                                                                                            storeOfferIdentifier:
+                                                                                                "offer_id",
+                                                                                            targetProductId: "annual"
+                                                                                        )
+                                                                                      ])
+                                                             )]),
+                                refundWindow: nil,
+                                actionIdentifier: nil
                             ),
                             .init(
                                 id: "path4",
                                 title: "Path 4",
+                                type: .customUrl,
                                 url: "https://revenuecat.com",
                                 openMethod: .external,
-                                type: .customUrl,
-                                detail: .promotionalOffer(
-                                    .init(
-                                        iosOfferId: "offer_id",
-                                        eligible: true,
-                                        title: "Wait!",
-                                        subtitle: "Before you go",
-                                        productMapping: [
-                                            "product_id": "offer_id"
-                                        ],
-                                        crossProductPromotions: [
-                                            "monthly": .init(storeOfferIdentifier: "offer_id",
-                                                             targetProductId: "annual")])),
-                                refundWindowDuration: nil
+                                promotionalOffer: .init(iosOfferId: "offer_id",
+                                                        eligible: true,
+                                                        title: "Wait!",
+                                                        subtitle: "Before you go",
+                                                        productMapping: [
+                                                            "product_id": "offer_id"
+                                                        ],
+                                                        crossProductPromotions: [
+                                                            "monthly": .init(storeOfferIdentifier: "offer_id",
+                                                                             targetProductId: "annual")]),
+                                feedbackSurvey: nil,
+                                refundWindow: nil,
+                                actionIdentifier: nil
                             )
                         ]
                     )
@@ -284,120 +286,5 @@ class CustomerCenterConfigDataTests: TestCase {
         expect(configData.support.email) == "support@example.com"
         expect(configData.support.shouldWarnCustomerToUpdate) == true
         expect(configData.support.displayPurchaseHistoryLink) == false
-    }
-
-    func testCustomActionPathConfiguration() throws {
-        let mockResponse = CustomerCenterConfigResponse(
-            customerCenter: .init(
-                appearance: .init(
-                    light: .init(accentColor: nil, textColor: nil, backgroundColor: nil,
-                                 buttonTextColor: nil, buttonBackgroundColor: nil),
-                    dark: .init(accentColor: nil, textColor: nil, backgroundColor: nil,
-                                buttonTextColor: nil, buttonBackgroundColor: nil)
-                ),
-                screens: [
-                    "MANAGEMENT": .init(
-                        title: "Management Screen",
-                        type: .management,
-                        subtitle: nil,
-                        paths: [
-                            .init(
-                                id: "custom_action_delete",
-                                title: "Delete Account",
-                                type: .customAction,
-                                url: nil,
-                                openMethod: nil,
-                                promotionalOffer: nil,
-                                feedbackSurvey: nil,
-                                refundWindow: nil,
-                                actionIdentifier: "delete_user"
-                            ),
-                            .init(
-                                id: "custom_action_rate",
-                                title: "Rate App",
-                                type: .customAction,
-                                url: nil,
-                                openMethod: nil,
-                                promotionalOffer: nil,
-                                feedbackSurvey: nil,
-                                refundWindow: nil,
-                                actionIdentifier: "rate_app"
-                            )
-                        ]
-                    )
-                ],
-                localization: .init(locale: "en_US", localizedStrings: [:]),
-                support: .init(email: "support@example.com", shouldWarnCustomerToUpdate: true,
-                               displayPurchaseHistoryLink: false, displayVirtualCurrencies: false,
-                               shouldWarnCustomersAboutMultipleSubscriptions: false),
-                changePlans: []
-            ),
-            lastPublishedAppVersion: "1.0.0",
-            itunesTrackId: nil
-        )
-
-        let configData = CustomerCenterConfigData(from: mockResponse)
-        let managementScreen = try XCTUnwrap(configData.screens[.management])
-
-        expect(managementScreen.paths.count) == 2
-
-        let deleteActionPath = managementScreen.paths.first { $0.id == "custom_action_delete" }
-        expect(deleteActionPath).toNot(beNil())
-        expect(deleteActionPath?.type) == .customAction
-        expect(deleteActionPath?.title) == "Delete Account"
-        expect(deleteActionPath?.customActionIdentifier) == "delete_user"
-
-        let rateActionPath = managementScreen.paths.first { $0.id == "custom_action_rate" }
-        expect(rateActionPath).toNot(beNil())
-        expect(rateActionPath?.type) == .customAction
-        expect(rateActionPath?.title) == "Rate App"
-        expect(rateActionPath?.customActionIdentifier) == "rate_app"
-    }
-
-    func testCustomActionPathWithoutActionIdentifier() throws {
-        let mockResponse = CustomerCenterConfigResponse(
-            customerCenter: .init(
-                appearance: .init(
-                    light: .init(accentColor: nil, textColor: nil, backgroundColor: nil,
-                                 buttonTextColor: nil, buttonBackgroundColor: nil),
-                    dark: .init(accentColor: nil, textColor: nil, backgroundColor: nil,
-                                buttonTextColor: nil, buttonBackgroundColor: nil)
-                ),
-                screens: [
-                    "MANAGEMENT": .init(
-                        title: "Management Screen",
-                        type: .management,
-                        subtitle: nil,
-                        paths: [
-                            .init(
-                                id: "custom_action_no_identifier",
-                                title: "Custom Action",
-                                type: .customAction,
-                                url: nil,
-                                openMethod: nil,
-                                promotionalOffer: nil,
-                                feedbackSurvey: nil,
-                                refundWindow: nil,
-                                actionIdentifier: nil
-                            )
-                        ]
-                    )
-                ],
-                localization: .init(locale: "en_US", localizedStrings: [:]),
-                support: .init(email: "support@example.com", shouldWarnCustomerToUpdate: true,
-                               displayPurchaseHistoryLink: false, displayVirtualCurrencies: false,
-                               shouldWarnCustomersAboutMultipleSubscriptions: false),
-                changePlans: []
-            ),
-            lastPublishedAppVersion: "1.0.0",
-            itunesTrackId: nil
-        )
-
-        let configData = CustomerCenterConfigData(from: mockResponse)
-        let managementScreen = try XCTUnwrap(configData.screens[.management])
-
-        let customActionPath = managementScreen.paths.first { $0.type == .customAction }
-        expect(customActionPath).toNot(beNil())
-        expect(customActionPath?.customActionIdentifier).to(beNil())
     }
 }

@@ -537,7 +537,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
     }
 
     func testCustomActionPathHandling() async throws {
-        let purchaseInformation = PurchaseInformation.monthlyRenewing
+        let purchaseInformation = PurchaseInformation.subscription
         let actionWrapper = CustomerCenterActionWrapper()
         var capturedCustomActionData: CustomActionData?
 
@@ -585,7 +585,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
     }
 
     func testCustomActionPathWithoutActionIdentifier() async throws {
-        let purchaseInformation = PurchaseInformation.monthlyRenewing
+        let purchaseInformation = PurchaseInformation.subscription
         let actionWrapper = CustomerCenterActionWrapper()
         var wasActionTriggered = false
 
