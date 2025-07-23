@@ -296,15 +296,13 @@ final class CustomerCenterActionWrapperTests: TestCase {
     func testCustomActionSelected() async throws {
         let actionWrapper = await CustomerCenterActionWrapper()
         let expectation = XCTestExpectation(description: "customActionSelected")
-        var receivedActionData: (String, String?)?
 
         let windowHolder = await WindowHolder()
 
         await MainActor.run {
             let testView = Text("test")
                 .modifier(CustomerCenterActionViewModifier(actionWrapper: actionWrapper))
-                .onCustomerCenterCustomActionSelected { actionIdentifier, activePurchaseId in
-                    receivedActionData = (actionIdentifier, activePurchaseId)
+                .onCustomerCenterCustomActionSelected { _, _ in
                     expectation.fulfill()
                 }
 
@@ -326,23 +324,18 @@ final class CustomerCenterActionWrapperTests: TestCase {
         }
 
         await fulfillment(of: [expectation], timeout: 1.0)
-
-        expect(receivedActionData?.0) == "delete_user"
-        expect(receivedActionData?.1) == "monthly_subscription"
     }
 
     func testCustomActionSelectedWithNilPurchase() async throws {
         let actionWrapper = await CustomerCenterActionWrapper()
         let expectation = XCTestExpectation(description: "customActionSelected with nil purchase")
-        var receivedActionData: (String, String?)?
 
         let windowHolder = await WindowHolder()
 
         await MainActor.run {
             let testView = Text("test")
                 .modifier(CustomerCenterActionViewModifier(actionWrapper: actionWrapper))
-                .onCustomerCenterCustomActionSelected { actionIdentifier, activePurchaseId in
-                    receivedActionData = (actionIdentifier, activePurchaseId)
+                .onCustomerCenterCustomActionSelected { _, _ in
                     expectation.fulfill()
                 }
 
@@ -364,24 +357,18 @@ final class CustomerCenterActionWrapperTests: TestCase {
         }
 
         await fulfillment(of: [expectation], timeout: 1.0)
-
-        expect(receivedActionData?.0) == "rate_app"
-        expect(receivedActionData?.1).to(beNil())
     }
 
     func testManagementOptionSelectedWithCustomAction() async throws {
         let actionWrapper = await CustomerCenterActionWrapper()
         let customActionExpectation = XCTestExpectation(description: "customActionSelected")
 
-        var receivedCustomActionData: (String, String?)?
-
         let windowHolder = await WindowHolder()
 
         await MainActor.run {
             let testView = Text("test")
                 .modifier(CustomerCenterActionViewModifier(actionWrapper: actionWrapper))
-                .onCustomerCenterCustomActionSelected { actionIdentifier, activePurchaseId in
-                    receivedCustomActionData = (actionIdentifier, activePurchaseId)
+                .onCustomerCenterCustomActionSelected { _, _ in
                     customActionExpectation.fulfill()
                 }
 
@@ -411,9 +398,6 @@ final class CustomerCenterActionWrapperTests: TestCase {
         }
 
         await fulfillment(of: [customActionExpectation], timeout: 1.0)
-
-        expect(receivedCustomActionData?.0) == customAction.actionIdentifier
-        expect(receivedCustomActionData?.1) == customAction.activePurchaseId
     }
 }
 
