@@ -23,7 +23,7 @@ class BackendGetWebOfferingProductsTests: BaseBackendTests {
         super.createClient(#file)
     }
 
-    func testGetWebOfferingProductsCallsHTTPMethod() {
+    func testGetWebProductsCallsHTTPMethod() {
         self.httpClient.mock(
             requestPath: .getWebOfferingProducts(appUserID: Self.userID),
             response: .init(statusCode: .success, response: Self.noOfferingsResponse as [String: Any])
@@ -38,7 +38,7 @@ class BackendGetWebOfferingProductsTests: BaseBackendTests {
         expect(self.operationDispatcher.invokedDispatchOnWorkerThreadDelayParam) == JitterableDelay.none
     }
 
-    func testGetWebOfferingProductsCallsHTTPMethodWithNoDelay() {
+    func testGetWebProductsCallsHTTPMethodWithNoDelay() {
         self.httpClient.mock(
             requestPath: .getWebOfferingProducts(appUserID: Self.userID),
             response: .init(statusCode: .success, response: Self.noOfferingsResponse as [String: Any])
@@ -53,7 +53,7 @@ class BackendGetWebOfferingProductsTests: BaseBackendTests {
         expect(self.operationDispatcher.invokedDispatchOnWorkerThreadDelayParam) == JitterableDelay.none
     }
 
-    func testGetWebOfferingProductsCachesForSameUserID() {
+    func testGetWebProductsCachesForSameUserID() {
         self.httpClient.mock(
             requestPath: .getWebOfferingProducts(appUserID: Self.userID),
             response: .init(statusCode: .success,
@@ -84,7 +84,7 @@ class BackendGetWebOfferingProductsTests: BaseBackendTests {
         )
     }
 
-    func testGetWebOfferingProductsDoesntCacheForMultipleUserID() {
+    func testGetWebProductsDoesntCacheForMultipleUserID() {
         let response = MockHTTPClient.Response(statusCode: .success,
                                                response: Self.noOfferingsResponse as [String: Any])
         let userID2 = "user_id_2"
@@ -98,7 +98,7 @@ class BackendGetWebOfferingProductsTests: BaseBackendTests {
         expect(self.httpClient.calls).toEventually(haveCount(2))
     }
 
-    func testGetWebOfferingProductsOneOffering() throws {
+    func testGetWebProductsOneOffering() throws {
         self.httpClient.mock(
             requestPath: .getWebOfferingProducts(appUserID: Self.userID),
             response: .init(statusCode: .success, response: Self.oneOfferingResponse)
@@ -168,7 +168,7 @@ class BackendGetWebOfferingProductsTests: BaseBackendTests {
         expect(lifetimePurchaseOption.basePrice?.currency) == "EUR"
     }
 
-    func testGetWebOfferingProductsFailSendsError() {
+    func testGetWebProductsFailSendsError() {
         self.httpClient.mock(
             requestPath: .getWebOfferingProducts(appUserID: Self.userID),
             response: .init(error: .unexpectedResponse(nil))
@@ -181,7 +181,7 @@ class BackendGetWebOfferingProductsTests: BaseBackendTests {
         expect(result).to(beFailure())
     }
 
-    func testGetWebOfferingProductsNetworkErrorSendsError() {
+    func testGetWebProductsNetworkErrorSendsError() {
         let mockedError: NetworkError = .unexpectedResponse(nil)
 
         self.httpClient.mock(
@@ -197,7 +197,7 @@ class BackendGetWebOfferingProductsTests: BaseBackendTests {
         expect(result?.error) == .networkError(mockedError)
     }
 
-    func testGetWebOfferingProductsSkipsBackendCallIfAppUserIDIsEmpty() {
+    func testGetWebProductsSkipsBackendCallIfAppUserIDIsEmpty() {
         waitUntil { completed in
             self.offerings.getWebOfferingProducts(appUserID: "") { _ in
                 completed()
@@ -207,7 +207,7 @@ class BackendGetWebOfferingProductsTests: BaseBackendTests {
         expect(self.httpClient.calls).to(beEmpty())
     }
 
-    func testGetWebOfferingProductsCallsCompletionWithErrorIfAppUserIDIsEmpty() {
+    func testGetWebProductsCallsCompletionWithErrorIfAppUserIDIsEmpty() {
         let receivedError = waitUntilValue { completed in
             self.offerings.getWebOfferingProducts(appUserID: "") { result in
                 completed(result.error)
