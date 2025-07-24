@@ -48,8 +48,13 @@ struct VirtualCurrencyBalanceListRow: View {
     struct RowData: Identifiable, Hashable {
         /// A unique identifier for the row.
         let id = UUID()
+
+        /// The virtual currency's name
+        let virtualCurrencyName: String
+
         /// The code representing the virtual currency (e.g., "GLD" for gold).
         let virtualCurrencyCode: String
+
         /// The current balance of the virtual currency.
         let balance: Int
     }
@@ -59,7 +64,9 @@ struct VirtualCurrencyBalanceListRow: View {
 
     var body: some View {
         CompatibilityLabeledContent {
-            Text(rowData.virtualCurrencyCode)
+            Text("\(rowData.virtualCurrencyName) (\(rowData.virtualCurrencyCode))")
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
         } content: {
             Text(rowData.balance.formatted())
         }
@@ -74,6 +81,7 @@ struct VirtualCurrencyBalanceListRow_Previews: PreviewProvider {
             List {
                 VirtualCurrencyBalanceListRow(
                     rowData: .init(
+                        virtualCurrencyName: "Gold",
                         virtualCurrencyCode: "GLD",
                         balance: 100
                     )
