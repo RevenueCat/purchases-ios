@@ -65,6 +65,8 @@ struct VirtualCurrencyBalanceListRow: View {
     var body: some View {
         CompatibilityLabeledContent {
             Text("\(rowData.virtualCurrencyName) (\(rowData.virtualCurrencyCode))")
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
         } content: {
             Text(rowData.balance.formatted())
         }
