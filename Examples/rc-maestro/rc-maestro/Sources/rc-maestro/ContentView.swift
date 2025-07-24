@@ -100,6 +100,7 @@ public struct ContentView: View {
          [
              "maestro.weekly.tests.01",
              "maestro.monthly.tests.02",
+             "maestro.yearly.tests.01",
              "maestro.weekly2.tests.01",
              "maestro.nonconsumable.tests.01",
              "maestro.consumable.tests.01"

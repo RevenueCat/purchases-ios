@@ -129,11 +129,12 @@ extension CustomerCenterPurchasesType {
 
     @_spi(Internal) public func body(content: Content) -> some View {
         #if swift(>=5.9)
+        let validAmountOfProducts = productIDs.count >= 2
         if #available(iOS 17.0, macOS 14.0, tvOS 17, watchOS 10.0, *),
-            productIDs.count > 2 || subscriptionGroupID != nil {
+           validAmountOfProducts || subscriptionGroupID != nil {
             content
                 .sheet(isPresented: isPresented) {
-                    if productIDs.count > 2 {
+                    if validAmountOfProducts {
                         SubscriptionStoreView(
                             productIDs: productIDs
                         )
