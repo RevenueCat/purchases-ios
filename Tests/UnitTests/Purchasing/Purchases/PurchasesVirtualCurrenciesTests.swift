@@ -15,7 +15,7 @@ import Nimble
 import StoreKit
 import XCTest
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 @MainActor
 class PurchasesVirtualCurrenciesTests: BasePurchasesTests {

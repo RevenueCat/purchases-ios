@@ -52,6 +52,8 @@ struct SamplePaywallsList: View {
                     displayCloseButton: Self.displayCloseButton,
                     introEligibility: Self.introEligibility
                 ))
+            case .presentIfNeeded:
+                fatalError()
 
             #if !os(watchOS)
             case .footer, .condensedFooter:
@@ -128,7 +130,7 @@ struct SamplePaywallsList: View {
             #if DEBUG
             ForEach(PaywallTemplate.allCases, id: \.rawValue) { template in
                 Section(template.name) {
-                    ForEach(PaywallTesterViewMode.allCases, id: \.self) { mode in
+                    ForEach(PaywallTesterViewMode.allCases.filter(\.isAvailableOnExamples), id: \.self) { mode in
                         Button {
                             self.display = .template(template, mode)
                         } label: {
