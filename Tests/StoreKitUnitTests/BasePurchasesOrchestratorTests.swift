@@ -32,6 +32,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
     var receiptParser: MockReceiptParser!
     var customerInfoManager: MockCustomerInfoManager!
     var paymentQueueWrapper: EitherPaymentQueueWrapper!
+    var mockTestStorePurchaseHandler: MockTestStorePurchaseHandler!
     var backend: MockBackend!
     var offerings: MockOfferingsAPI!
     var currentUserProvider: MockCurrentUserProvider!
@@ -98,6 +99,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                          productsManager: self.productsManager,
                                                          diagnosticsTracker: self.mockDiagnosticsTracker)
         self.setUpStoreKit1Wrapper()
+        self.mockTestStorePurchaseHandler = MockTestStorePurchaseHandler()
 
         self.customerInfoManager = MockCustomerInfoManager(
             offlineEntitlementsManager: MockOfflineEntitlementsManager(),
@@ -186,6 +188,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.orchestrator = PurchasesOrchestrator(
             productsManager: self.productsManager,
             paymentQueueWrapper: self.paymentQueueWrapper,
+            testStorePurchaseHandler: self.mockTestStorePurchaseHandler,
             systemInfo: self.systemInfo,
             subscriberAttributes: self.attribution,
             operationDispatcher: self.operationDispatcher,
@@ -220,6 +223,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.orchestrator = PurchasesOrchestrator(
             productsManager: self.productsManager,
             paymentQueueWrapper: self.paymentQueueWrapper,
+            testStorePurchaseHandler: self.mockTestStorePurchaseHandler,
             systemInfo: self.systemInfo,
             subscriberAttributes: self.attribution,
             operationDispatcher: self.operationDispatcher,

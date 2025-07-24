@@ -11,16 +11,15 @@
 //
 //  Created by Andrés Boedo on 8/20/21.
 
-#if os(iOS) || VISION_OS
+#if os(iOS) || os(tvOS) || VISION_OS
 import UIKit
 
 extension UIApplication {
 
-    @available(iOS 13.0, macCatalyst 13.1, *)
+    @available(macCatalyst 13.1, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(watchOSApplicationExtension, unavailable)
-    @available(tvOS, unavailable)
     @MainActor
     var currentWindowScene: UIWindowScene? {
         var scenes = self

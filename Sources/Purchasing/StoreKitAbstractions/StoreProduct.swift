@@ -323,8 +323,9 @@ extension StoreProduct {
         return (self.product as? SK2StoreProduct)?.underlyingSK2Product
     }
 
-    var isTestProduct: Bool {
-        return self.product is TestStoreProduct
+    /// Returns the `TestStoreProduct` if this `StoreProduct` represents a `TestStoreProduct`.
+    internal var testStoreProduct: TestStoreProduct? {
+        return self.product as? TestStoreProduct
     }
 
 }

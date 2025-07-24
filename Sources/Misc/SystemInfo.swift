@@ -23,6 +23,7 @@ import WatchKit
 import AppKit
 #endif
 
+// swiftlint:disable file_length
 class SystemInfo {
 
     // swiftlint:disable:next force_unwrapping
@@ -34,7 +35,13 @@ class SystemInfo {
     }
 
     let storeKitVersion: StoreKitVersion
-    let apiKeyValidationResult: Configuration.APIKeyValidationResult
+    private let apiKeyValidationResult: Configuration.APIKeyValidationResult
+
+    /// Whether the API key used to configure the SDK is a Test Store API key.
+    var isTestStoreAPIKey: Bool {
+        return self.apiKeyValidationResult == .testStore
+    }
+
     let operationDispatcher: OperationDispatcher
     let platformFlavor: String
     let platformFlavorVersion: String?
@@ -266,14 +273,13 @@ class SystemInfo {
     }
 }
 
-#if os(iOS) || VISION_OS
+#if os(iOS) || os(tvOS) || VISION_OS
 extension SystemInfo {
 
-    @available(iOS 13.0, macCatalystApplicationExtension 13.1, *)
+    @available(iOS 13.0, macCatalyst 13.1, tvOS 13.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(watchOSApplicationExtension, unavailable)
-    @available(tvOS, unavailable)
     @MainActor
     var currentWindowScene: UIWindowScene {
         get throws {
