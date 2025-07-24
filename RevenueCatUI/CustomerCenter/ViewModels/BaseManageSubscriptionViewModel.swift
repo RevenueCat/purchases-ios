@@ -225,7 +225,7 @@ extension BaseManageSubscriptionViewModel {
     var changePlanProductIDs: [String] {
         purchaseInformation?
             .changePlan
-            .map { $0.products.filter { $0.selected }.map(\.productId) }
+            .map { $0.products.filter { $0.selected }.map(\.productId) } ?? []
     }
 }
 
