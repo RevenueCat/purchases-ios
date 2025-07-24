@@ -12,7 +12,7 @@
 //  Created by Josh Holtz on 9/26/24.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
@@ -186,6 +186,7 @@ private enum PurchaseButtonInPackagePreview {
         return PaywallComponent.PackageComponent(
             packageID: packageID,
             isSelectedByDefault: isSelectedByDefault,
+            applePromoOfferProductCode: nil,
             stack: stack
         )
     }
@@ -231,6 +232,7 @@ private enum PurchaseButtonInPackagePreview {
             .package(.init(
                 packageID: "lifetime",
                 isSelectedByDefault: false,
+                applePromoOfferProductCode: nil,
                 stack: packageLifetimeStack
             ))
         ],
@@ -342,6 +344,7 @@ struct PurchaseButtonInPackagePreview_Previews: PreviewProvider {
                             webCheckoutUrl: nil),
             purchaseHandler: PurchaseHandler.default(),
             introEligibilityChecker: .default(),
+            paywallPromoOfferCache: PaywallPromoOfferCache(),
             showZeroDecimalPlacePrices: true,
             onDismiss: { },
             fallbackContent: .customView(AnyView(Text("Fallback paywall"))),

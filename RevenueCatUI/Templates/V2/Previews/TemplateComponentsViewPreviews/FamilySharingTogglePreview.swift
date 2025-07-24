@@ -13,7 +13,7 @@
 // swiftlint:disable file_length
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
@@ -26,6 +26,7 @@ import SwiftUI
 // swiftlint:disable:next type_body_length
 private enum FamilySharingTogglePreview {
 
+    @MainActor
     static let paywallState = PackageContext(
         package: nil,
         variableContext: .init()
@@ -156,6 +157,7 @@ private enum FamilySharingTogglePreview {
         return PaywallComponent.PackageComponent(
             packageID: packageID,
             isSelectedByDefault: isSelectedByDefault,
+            applePromoOfferProductCode: nil,
             stack: stack
         )
     }
@@ -393,6 +395,7 @@ struct FamilySharingTogglePreview_Previews: PreviewProvider {
                                webCheckoutUrl: nil),
             purchaseHandler: PurchaseHandler.default(),
             introEligibilityChecker: .default(),
+            paywallPromoOfferCache: PaywallPromoOfferCache(),
             showZeroDecimalPlacePrices: true,
             onDismiss: { },
             fallbackContent: .customView(AnyView(Text("Fallback paywall"))),

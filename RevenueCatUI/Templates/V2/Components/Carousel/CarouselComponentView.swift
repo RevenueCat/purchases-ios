@@ -13,7 +13,7 @@
 // swiftlint:disable file_length
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
@@ -22,10 +22,13 @@ import SwiftUI
 struct CarouselComponentView: View {
 
     @EnvironmentObject
+    private var packageContext: PackageContext
+
+    @EnvironmentObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
     @EnvironmentObject
-    private var packageContext: PackageContext
+    private var paywallPromoOfferCache: PaywallPromoOfferCacheV2
 
     @Environment(\.componentViewState)
     private var componentViewState
@@ -44,6 +47,9 @@ struct CarouselComponentView: View {
             condition: self.screenCondition,
             isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                 package: self.packageContext.package
+            ),
+            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                for: self.packageContext.package
             )
         ) { style in
             if style.visible {
