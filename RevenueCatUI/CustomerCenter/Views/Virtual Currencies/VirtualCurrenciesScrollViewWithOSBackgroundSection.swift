@@ -86,6 +86,7 @@ struct VirtualCurrenciesScrollViewWithOSBackgroundSection: View {
     ) {
         let sortedCurrencies = virtualCurrencies.all.map {
             VirtualCurrencyBalanceListRow.RowData(
+                virtualCurrencyName: $0.value.name,
                 virtualCurrencyCode: $0.key,
                 balance: $0.value.balance
             )

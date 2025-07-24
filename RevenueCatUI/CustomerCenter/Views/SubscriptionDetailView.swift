@@ -308,7 +308,7 @@ struct SubscriptionDetailView: View {
             CompatibilityNavigationStack {
                 SubscriptionDetailView(
                     customerInfoViewModel: CustomerCenterViewModel(
-                        activeSubscriptionPurchases: [.monthlyRenewing],
+                        activeSubscriptionPurchases: [.subscription],
                         activeNonSubscriptionPurchases: [],
                         configuration: .default
                     ),
@@ -320,7 +320,7 @@ struct SubscriptionDetailView: View {
                         showPurchaseHistory: true,
                         showVirtualCurrencies: false,
                         allowsMissingPurchaseAction: false,
-                        purchaseInformation: .monthlyRenewing,
+                        purchaseInformation: .subscription,
                         refundRequestStatus: .success
                     )
                 )
