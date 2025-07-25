@@ -178,30 +178,26 @@ platform :ios do
     end
     UI.user_error!("Failed to determine target repository name") if target_repository_name.nil? || target_repository_name.empty?
 
-    # Loop over all PNG files in the tmp_dir, parse the offering ID from the file names, and move them into the target repository
-    output_dir = record_paywall_screenshots
-
-    UI.message("Output directory: #{output_dir}")
-
-    # Upload snapshots to Emerge
-    UI.message("Uploading snapshots to Emerge for platform: iOS")
-    sh("bundle", "exec", "emerge", "upload", "snapshots", 
-       "--name", "RevenueCat", 
-       "--id", "com.revenuecat.paywall-rendering-validation.ios", 
-       "--repo-name", "RevenueCat/purchases-ios", 
-       "#{output_dir}/images")
+    # Loop over all platforms and generate screenshots for each
+    platforms = ["ios", 
+                # These platforms work locally but we have been unable to figure out how to get them to work on CI due to codesigning issues.
+                #  "iphone-app-on-mac",
+                #  "ipad-app-on-mac", 
+                 "mac-catalyst-optimized-for-mac", 
+                 "mac-catalyst-scaled-to-match-ipad"]
     
-    # Process the screenshots from the output directory
-    Dir.glob("#{output_dir}/images/*.png").each do |file_path|
-      offering_id = File.basename(file_path, File.extname(file_path))
-      target_dir = "#{target_repository_path}/screenshots/templates/#{offering_id}"
-
-      target_path = "#{target_dir}/ios.png"
-
-      UI.message("Moving #{file_path} to #{target_path}")
-
-      FileUtils.mkdir_p(target_dir)
-      FileUtils.cp(file_path, target_path)
+    platforms.each do |platform|
+      UI.message("Generating screenshots for platform: #{platform}")
+      
+      output_dir = record_paywall_screenshots(platform: platform)
+      UI.message("Output directory for #{platform}: #{output_dir}")
+      
+      # Process the screenshots from the output directory
+      process_paywall_screenshots(
+        output_dir: output_dir,
+        target_repository_path: target_repository_path,
+        platform: platform
+      )
     end
 
     # Commit, push, and create a PR in the target repository
@@ -209,12 +205,39 @@ platform :ios do
       commit_push_and_create_pr_if_necessary(
         repo: target_repository_name,
         branch_name: target_repository_branch,
-        commit_message: "[Automated] Updates iOS template screenshots (commit: #{this_commit_hash})",
-        title: "[AUTOMATIC] Updates iOS template screenshots",
-        body: "This is an automatic update of the iOS template screenshots.",
-        team_reviewers: ["coresdk", "monetization", "bab-s"]
+        commit_message: "[Automated] Updates template screenshots for all Apple platforms (commit: #{this_commit_hash})",
+        title: "[AUTOMATIC] Updates template screenshots for all Apple platforms",
+        body: "This is an automatic update of the template screenshots for iOS, iPhone app on Mac, iPad app on Mac, Mac Catalyst optimized for Mac, and Mac Catalyst scaled to match iPad platforms.",
+        team_reviewers: ["coresdk", "monetization"]
       )
     end
+  end
+
+  
+  private_lane :process_paywall_screenshots do |options|
+    output_dir = options[:output_dir] || UI.user_error!("No output_dir provided")
+    target_repository_path = options[:target_repository_path] || UI.user_error!("No target_repository_path provided")
+    platform = options[:platform] || UI.user_error!("No platform provided")
+
+    Dir.glob("#{output_dir}/images/*.png").each do |file_path|
+      offering_id = File.basename(file_path, File.extname(file_path))
+      target_dir = "#{target_repository_path}/screenshots/templates/#{offering_id}"
+
+      target_path = "#{target_dir}/#{platform}.png"
+
+      UI.message("Moving #{file_path} to #{target_path}")
+
+      FileUtils.mkdir_p(target_dir)
+      FileUtils.cp(file_path, target_path)
+    end
+
+    # Upload snapshots to Emerge
+    UI.message("Uploading snapshots to Emerge for platform: #{platform}")
+    sh("bundle", "exec", "emerge", "upload", "snapshots", 
+       "--name", "RevenueCat", 
+       "--id", "com.revenuecat.paywall-rendering-validation.#{platform}", 
+       "--repo-name", "RevenueCat/purchases-ios", 
+       "#{output_dir}/images")
   end
 
   private_lane :create_or_checkout_branch do |options|
@@ -325,20 +348,55 @@ platform :ios do
 
   desc "Records screenshots for paywalls"
   lane :record_paywall_screenshots do |options|
+    platform = options[:platform] || UI.user_error!("No platform provided. Use one of: ios, iphone-app-on-mac, ipad-app-on-mac, mac-catalyst-optimized-for-mac, mac-catalyst-scaled-to-match-ipad")
+    
+    # Map platform to destination
+    destinations = {
+      "ios" => "platform=iOS Simulator,name=iPhone 16",
+      "iphone-app-on-mac" => "platform=macOS,arch=arm64,variant=Designed for iPhone",
+      "ipad-app-on-mac" => "platform=macOS,arch=arm64,variant=Designed for iPad",
+      "mac-catalyst-optimized-for-mac" => "platform=macOS,arch=arm64,variant=Mac Catalyst",
+      "mac-catalyst-scaled-to-match-ipad" => "platform=macOS,arch=arm64,variant=Mac Catalyst"
+    }
+    
+    # Map platform to TARGETED_DEVICE_FAMILY build setting. This overrides the setting in the Xcode Project,
+    # if we ever change the list of supported platforms we'll need to make sure to update this as well.
+    targeted_device_families = {
+      "mac-catalyst-optimized-for-mac" => "1,2,3,4,6",
+      "mac-catalyst-scaled-to-match-ipad" => "1,2,3,4"
+    }
+    
+    destination = destinations[platform]
+    UI.user_error!("Invalid platform '#{platform}'. Use one of: #{destinations.keys.join(', ')}") unless destination
+    
     output_dir = File.absolute_path("../fastlane/test_output/xctest/paywall-screenshots")
     FileUtils.rm_rf(output_dir)
     FileUtils.mkdir_p(output_dir)
 
     result_bundle_path = "#{output_dir}/RevenueCatUITests.xcresult"
 
-    scan(
+    xcargs = []
+    if targeted_device_families[platform]
+      xcargs += ["TARGETED_DEVICE_FAMILY='#{targeted_device_families[platform]}'"]
+    end
+
+    Dir.chdir("../Tests/UnitTestsHostApp/fastlane") do
+      match(type: "development", readonly: true)
+    end
+
+    scan_options = {
       workspace: 'RevenueCat.xcworkspace',
       scheme: 'RevenueCatUITestsDev',
       testplan: 'Paywall-Screenshots',
-      sdk: 'iphonesimulator',
+      destination: destination,
       result_bundle: true,
       result_bundle_path: result_bundle_path,
-    )
+    }
+    
+    # Add xcargs only if we have build settings to apply
+    scan_options[:xcargs] = xcargs.join(' ') unless xcargs.empty?
+    
+    scan(scan_options)
 
     image_output_dir = "#{output_dir}/images"
     FileUtils.mkdir_p(image_output_dir)
@@ -424,7 +482,8 @@ platform :ios do
     
     # Build iOS version first with appropriate device family targeting
     device_families = include_ipad ? "1,2" : "1"
-    xcargs = "TARGETED_DEVICE_FAMILY='#{device_families}'"
+    xcargs = "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
+    xcargs << " TARGETED_DEVICE_FAMILY='#{device_families}'"
     
     ios_archive_path = File.absolute_path("build/PaywallsTester-#{platform}-ios.xcarchive")
 
@@ -436,6 +495,7 @@ platform :ios do
       destination: "generic/platform=iOS",
       xcargs: xcargs,
       archive_path: ios_archive_path,
+      skip_codesigning: true,
       skip_package_pkg: true,
       skip_package_ipa: true
     )
