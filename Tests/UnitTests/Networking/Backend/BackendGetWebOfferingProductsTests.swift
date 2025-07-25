@@ -129,7 +129,7 @@ class BackendGetWebOfferingProductsTests: BaseBackendTests {
         expect(monthlyPackage.identifier) == "$rc_monthly"
         expect(monthlyPackage.webCheckoutUrl) == "https://test.rev.cat/web-billing-monthly"
         expect(monthlyPackage.productDetails.identifier) == "test_monthly"
-        expect(monthlyPackage.productDetails.productType) == "subscription"
+        expect(monthlyPackage.productDetails.productType) == .subscription
         expect(monthlyPackage.productDetails.title) == "Test Monthly"
         expect(monthlyPackage.productDetails.description) == "Test Monthly description"
         expect(monthlyPackage.productDetails.defaultPurchaseOptionId) == "base_option"
@@ -143,7 +143,7 @@ class BackendGetWebOfferingProductsTests: BaseBackendTests {
         expect(annualPackage.identifier) == "$rc_annual"
         expect(annualPackage.webCheckoutUrl) == "https://test.rev.cat/web-billing-annual"
         expect(annualPackage.productDetails.identifier) == "test_annual"
-        expect(annualPackage.productDetails.productType) == "subscription"
+        expect(annualPackage.productDetails.productType) == .subscription
         expect(annualPackage.productDetails.title) == "Test Annual"
         expect(annualPackage.productDetails.description) == "Test Annual description"
         expect(annualPackage.productDetails.defaultPurchaseOptionId) == "base_option"
@@ -158,7 +158,7 @@ class BackendGetWebOfferingProductsTests: BaseBackendTests {
         expect(lifetimePackage.identifier) == "$rc_lifetime"
         expect(lifetimePackage.webCheckoutUrl) == "https://test.rev.cat/web-billing-lifetime"
         expect(lifetimePackage.productDetails.identifier) == "test_lifetime"
-        expect(lifetimePackage.productDetails.productType) == "non_consumable"
+        expect(lifetimePackage.productDetails.productType) == .nonConsumable
         expect(lifetimePackage.productDetails.title) == "Test Lifetime"
         expect(lifetimePackage.productDetails.description) == "Test Lifetime description"
         expect(lifetimePackage.productDetails.defaultPurchaseOptionId) == "base_option"
