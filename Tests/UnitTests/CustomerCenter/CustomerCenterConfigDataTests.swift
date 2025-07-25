@@ -21,7 +21,7 @@ import XCTest
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-class CustomerCenterConfigDataTests: TestCase {
+final class CustomerCenterConfigDataTests: TestCase {
 
     func testCustomerCenterConfigDataConversion() throws {
         let mockResponse = CustomerCenterConfigResponse(
@@ -52,7 +52,8 @@ class CustomerCenterConfigDataTests: TestCase {
                                 openMethod: nil,
                                 promotionalOffer: nil,
                                 feedbackSurvey: nil,
-                                refundWindow: nil
+                                refundWindow: nil,
+                                actionIdentifier: nil
                             ),
                             .init(
                                 id: "path2",
@@ -72,7 +73,8 @@ class CustomerCenterConfigDataTests: TestCase {
                                                                              targetProductId: "annual")
                                                         ]),
                                 feedbackSurvey: nil,
-                                refundWindow: nil
+                                refundWindow: nil,
+                                actionIdentifier: nil
                             ),
                             .init(
                                 id: "path3",
@@ -100,7 +102,8 @@ class CustomerCenterConfigDataTests: TestCase {
                                                                                         )
                                                                                       ])
                                                              )]),
-                                refundWindow: nil
+                                refundWindow: nil,
+                                actionIdentifier: nil
                             ),
                             .init(
                                 id: "path4",
@@ -119,7 +122,8 @@ class CustomerCenterConfigDataTests: TestCase {
                                                             "monthly": .init(storeOfferIdentifier: "offer_id",
                                                                              targetProductId: "annual")]),
                                 feedbackSurvey: nil,
-                                refundWindow: nil
+                                refundWindow: nil,
+                                actionIdentifier: nil
                             )
                         ]
                     )
