@@ -379,12 +379,26 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let receiptParser = PurchasesReceiptParser.default
         let transactionsManager = TransactionsManager(receiptParser: receiptParser)
 
-        let productsRequestFactory = ProductsRequestFactory()
+        let attributionDataMigrator = AttributionDataMigrator()
+        let subscriberAttributesManager = SubscriberAttributesManager(backend: backend,
+                                                                      deviceCache: deviceCache,
+                                                                      operationDispatcher: operationDispatcher,
+                                                                      attributionFetcher: attributionFetcher,
+                                                                      attributionDataMigrator: attributionDataMigrator)
+        let identityManager = IdentityManager(deviceCache: deviceCache,
+                                              systemInfo: systemInfo,
+                                              backend: backend,
+                                              customerInfoManager: customerInfoManager,
+                                              attributeSyncing: subscriberAttributesManager,
+                                              appUserID: appUserID)
+
         let productsManager = CachingProductsManager(
-            manager: ProductsManager(productsRequestFactory: productsRequestFactory,
-                                     diagnosticsTracker: diagnosticsTracker,
-                                     systemInfo: systemInfo,
-                                     requestTimeout: storeKitTimeout)
+            manager: ProductsManagerFactory.createManager(apiKeyValidationResult: apiKeyValidationResult,
+                                                          diagnosticsTracker: diagnosticsTracker,
+                                                          systemInfo: systemInfo,
+                                                          backend: backend,
+                                                          currentUserProvider: identityManager,
+                                                          requestTimeout: storeKitTimeout)
         )
 
         let transactionPoster = TransactionPoster(
@@ -421,19 +435,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                       transactionPoster: transactionPoster,
                                                       systemInfo: systemInfo)
         }
-
-        let attributionDataMigrator = AttributionDataMigrator()
-        let subscriberAttributesManager = SubscriberAttributesManager(backend: backend,
-                                                                      deviceCache: deviceCache,
-                                                                      operationDispatcher: operationDispatcher,
-                                                                      attributionFetcher: attributionFetcher,
-                                                                      attributionDataMigrator: attributionDataMigrator)
-        let identityManager = IdentityManager(deviceCache: deviceCache,
-                                              systemInfo: systemInfo,
-                                              backend: backend,
-                                              customerInfoManager: customerInfoManager,
-                                              attributeSyncing: subscriberAttributesManager,
-                                              appUserID: appUserID)
 
         let paywallEventsManager: PaywallEventsManagerType?
         do {

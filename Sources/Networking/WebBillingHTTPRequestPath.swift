@@ -20,28 +20,32 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
 
     var authenticated: Bool {
         switch self {
-        case .getWebOfferingProducts:
+        case .getWebOfferingProducts,
+             .getWebProducts:
             return true
         }
     }
 
     var shouldSendEtag: Bool {
         switch self {
-        case .getWebOfferingProducts:
+        case .getWebOfferingProducts,
+             .getWebProducts:
             return true
         }
     }
 
     var supportsSignatureVerification: Bool {
         switch self {
-        case .getWebOfferingProducts:
+        case .getWebOfferingProducts,
+             .getWebProducts:
             return false
         }
     }
 
     var needsNonceForSigning: Bool {
         switch self {
-        case .getWebOfferingProducts:
+        case .getWebOfferingProducts,
+             .getWebProducts:
             return false
         }
     }
@@ -50,12 +54,20 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
         switch self {
         case let .getWebOfferingProducts(appUserID):
             return "/rcbilling/v1/subscribers/\(appUserID.trimmedAndEscaped)/offering_products"
+        case let .getWebProducts(userId, productIds):
+            let encodedUserId = userId.trimmedAndEscaped
+            let encodedProductIds = productIds.sorted().map { productId in
+                "id=\(productId.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? productId)"
+            }.joined(separator: "&")
+            return "/rcbilling/v1/subscribers/\(encodedUserId)/products?\(encodedProductIds)"
         }
     }
 
     var name: String {
         switch self {
         case .getWebOfferingProducts:
+            return "get_web_offering_products"
+        case .getWebProducts:
             return "get_web_products"
         }
     }
