@@ -161,6 +161,10 @@ struct SubscriberAttributesView: View {
                     Purchases.shared.attribution.setTenjinAnalyticsInstallationID(self.otherValue)
                 case .setPostHogUserID:
                     Purchases.shared.attribution.setPostHogUserID(self.otherValue)
+                case .setAmplitudeUserID:
+                    Purchases.shared.attribution.setAmplitudeUserID(self.otherValue)
+                case .setAmplitudeDeviceID:
+                    Purchases.shared.attribution.setAmplitudeDeviceID(self.otherValue)
                 }
             }
         }

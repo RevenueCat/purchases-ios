@@ -341,6 +341,32 @@ public extension Attribution {
     }
 
     /**
+     * Subscriber attribute associated with the Amplitude User ID for the user.
+     * Optional for the RevenueCat Amplitude integration.
+     *
+     * #### Related Articles
+     * - [Amplitude RevenueCat Integration](https://www.revenuecat.com/docs/integrations/third-party-integrations/amplitude)
+     *
+     *- Parameter amplitudeUserID: Empty String or `nil` will delete the subscriber attribute.
+     */
+    @objc func setAmplitudeUserID(_ amplitudeUserID: String?) {
+        self.subscriberAttributesManager.setAmplitudeUserID(amplitudeUserID, appUserID: appUserID)
+    }
+
+    /**
+     * Subscriber attribute associated with the Amplitude Device ID for the user.
+     * Optional for the RevenueCat Amplitude integration.
+     *
+     * #### Related Articles
+     * - [Amplitude RevenueCat Integration](https://www.revenuecat.com/docs/integrations/third-party-integrations/amplitude)
+     *
+     *- Parameter amplitudeDeviceID: Empty String or `nil` will delete the subscriber attribute.
+     */
+    @objc func setAmplitudeDeviceID(_ amplitudeDeviceID: String?) {
+        self.subscriberAttributesManager.setAmplitudeDeviceID(amplitudeDeviceID, appUserID: appUserID)
+    }
+
+    /**
      * Subscriber attribute associated with the install media source for the user.
      *
      * #### Related Articles

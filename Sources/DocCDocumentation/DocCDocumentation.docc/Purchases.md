@@ -113,6 +113,9 @@ Most features require configuring the SDK before using it.
 - ``Purchases/setMixpanelDistinctID(_:)``
 - ``Purchases/setMparticleID(_:)``
 - ``Purchases/setOnesignalID(_:)``
+- ``Purchases/setPostHogUserID(_:)``
+- ``Purchases/setAmplitudeUserID(_:)``
+- ``Purchases/setAmplitudeDeviceID(_:)``
 
 ### Advanced Configuration
 - ``Purchases/finishTransactions``

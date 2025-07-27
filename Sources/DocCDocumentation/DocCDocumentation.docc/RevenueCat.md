@@ -157,6 +157,9 @@ Or browse our iOS sample apps:
 - ``Purchases/setMixpanelDistinctID(_:)``
 - ``Purchases/setMparticleID(_:)``
 - ``Purchases/setOnesignalID(_:)``
+- ``Purchases/setPostHogUserID(_:)``
+- ``Purchases/setAmplitudeUserID(_:)``
+- ``Purchases/setAmplitudeDeviceID(_:)``
 
 ### Configuring the SDK with parameters (deprecated)
 - ``Purchases/configure(withAPIKey:appUserID:)-57pv0``
