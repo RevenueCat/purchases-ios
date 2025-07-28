@@ -546,10 +546,10 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
 
         // Monitor the customActionSelected publisher
         let cancellable = actionWrapper.customActionSelected
-            .sink { actionIdentifier, activePurchaseId in
+            .sink { actionIdentifier, purchaseIdentifier in
                 capturedCustomActionData = CustomActionData(
                     actionIdentifier: actionIdentifier,
-                    activePurchaseId: activePurchaseId
+                    purchaseIdentifier: purchaseIdentifier
                 )
                 expectation.fulfill()
             }
@@ -637,10 +637,10 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
 
         // Monitor the customActionSelected publisher
         let cancellable = actionWrapper.customActionSelected
-            .sink { actionIdentifier, activePurchaseId in
+            .sink { actionIdentifier, purchaseIdentifier in
                 capturedCustomActionData = CustomActionData(
                     actionIdentifier: actionIdentifier,
-                    activePurchaseId: activePurchaseId
+                    purchaseIdentifier: purchaseIdentifier
                 )
                 expectation.fulfill()
             }

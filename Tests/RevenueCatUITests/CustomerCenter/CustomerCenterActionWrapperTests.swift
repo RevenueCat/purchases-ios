@@ -318,7 +318,7 @@ final class CustomerCenterActionWrapperTests: TestCase {
         await MainActor.run {
             let customActionData = CustomActionData(
                 actionIdentifier: "delete_user",
-                activePurchaseId: "monthly_subscription"
+                purchaseIdentifier: "monthly_subscription"
             )
             actionWrapper.handleAction(.customActionSelected(customActionData))
         }
@@ -351,7 +351,7 @@ final class CustomerCenterActionWrapperTests: TestCase {
         await MainActor.run {
             let customActionData = CustomActionData(
                 actionIdentifier: "rate_app",
-                activePurchaseId: nil
+                purchaseIdentifier: nil
             )
             actionWrapper.handleAction(.customActionSelected(customActionData))
         }
@@ -383,7 +383,7 @@ final class CustomerCenterActionWrapperTests: TestCase {
 
         let customAction = CustomerCenterManagementOption.CustomAction(
             actionIdentifier: "delete_user",
-            activePurchaseId: "product_123"
+            purchaseIdentifier: "product_123"
         )
 
         await MainActor.run {
@@ -391,7 +391,7 @@ final class CustomerCenterActionWrapperTests: TestCase {
                 .customActionSelected(
                     CustomActionData(
                         actionIdentifier: customAction.actionIdentifier,
-                        activePurchaseId: customAction.activePurchaseId
+                        purchaseIdentifier: customAction.purchaseIdentifier
                     )
                 )
             )

@@ -22,7 +22,7 @@ final class CustomActionDataTests: TestCase {
     func testCustomActionDataInitialization() {
         let data = CustomActionData(
             actionIdentifier: "delete_user",
-            activePurchaseId: "monthly_subscription"
+            purchaseIdentifier: "monthly_subscription"
         )
 
         expect(data.actionIdentifier) == "delete_user"
@@ -32,7 +32,7 @@ final class CustomActionDataTests: TestCase {
     func testCustomActionDataInitializationWithNilPurchase() {
         let data = CustomActionData(
             actionIdentifier: "rate_app",
-            activePurchaseId: nil
+            purchaseIdentifier: nil
         )
 
         expect(data.actionIdentifier) == "rate_app"
@@ -40,11 +40,11 @@ final class CustomActionDataTests: TestCase {
     }
 
     func testCustomActionDataEquality() {
-        let data1 = CustomActionData(actionIdentifier: "delete_user", activePurchaseId: "product1")
-        let data2 = CustomActionData(actionIdentifier: "delete_user", activePurchaseId: "product1")
-        let data3 = CustomActionData(actionIdentifier: "rate_app", activePurchaseId: "product1")
-        let data4 = CustomActionData(actionIdentifier: "delete_user", activePurchaseId: "product2")
-        let data5 = CustomActionData(actionIdentifier: "delete_user", activePurchaseId: nil)
+        let data1 = CustomActionData(actionIdentifier: "delete_user", purchaseIdentifier: "product1")
+        let data2 = CustomActionData(actionIdentifier: "delete_user", purchaseIdentifier: "product1")
+        let data3 = CustomActionData(actionIdentifier: "rate_app", purchaseIdentifier: "product1")
+        let data4 = CustomActionData(actionIdentifier: "delete_user", purchaseIdentifier: "product2")
+        let data5 = CustomActionData(actionIdentifier: "delete_user", purchaseIdentifier: nil)
 
         // Test equality
         expect(data1) == data2
@@ -60,9 +60,9 @@ final class CustomActionDataTests: TestCase {
     }
 
     func testCustomActionDataHashable() {
-        let data1 = CustomActionData(actionIdentifier: "delete_user", activePurchaseId: "product1")
-        let data2 = CustomActionData(actionIdentifier: "delete_user", activePurchaseId: "product1")
-        let data3 = CustomActionData(actionIdentifier: "rate_app", activePurchaseId: "product1")
+        let data1 = CustomActionData(actionIdentifier: "delete_user", purchaseIdentifier: "product1")
+        let data2 = CustomActionData(actionIdentifier: "delete_user", purchaseIdentifier: "product1")
+        let data3 = CustomActionData(actionIdentifier: "rate_app", purchaseIdentifier: "product1")
 
         // Equal objects should have equal hash values
         expect(data1.hashValue) == data2.hashValue
@@ -78,11 +78,11 @@ final class CustomActionDataTests: TestCase {
     func testCustomActionDataDescription() {
         let dataWithPurchase = CustomActionData(
             actionIdentifier: "delete_user",
-            activePurchaseId: "monthly_sub"
+            purchaseIdentifier: "monthly_sub"
         )
         let dataWithoutPurchase = CustomActionData(
             actionIdentifier: "rate_app",
-            activePurchaseId: nil
+            purchaseIdentifier: nil
         )
 
         expect(dataWithPurchase.description).to(contain("delete_user"))
@@ -95,8 +95,8 @@ final class CustomActionDataTests: TestCase {
     }
 
     func testCustomActionDataCanBeUsedInDictionaries() {
-        let data1 = CustomActionData(actionIdentifier: "delete_user", activePurchaseId: "product1")
-        let data2 = CustomActionData(actionIdentifier: "rate_app", activePurchaseId: nil)
+        let data1 = CustomActionData(actionIdentifier: "delete_user", purchaseIdentifier: "product1")
+        let data2 = CustomActionData(actionIdentifier: "rate_app", purchaseIdentifier: nil)
 
         var actionMap: [CustomActionData: String] = [:]
         actionMap[data1] = "Delete Account"
@@ -110,7 +110,7 @@ final class CustomActionDataTests: TestCase {
     func testCustomActionDataWithEmptyStrings() {
         let data = CustomActionData(
             actionIdentifier: "",
-            activePurchaseId: ""
+            purchaseIdentifier: ""
         )
 
         expect(data.actionIdentifier) == ""
@@ -127,7 +127,7 @@ final class CustomActionDataTests: TestCase {
 
         let data = CustomActionData(
             actionIdentifier: longActionId,
-            activePurchaseId: longPurchaseId
+            purchaseIdentifier: longPurchaseId
         )
 
         expect(data.actionIdentifier) == longActionId
