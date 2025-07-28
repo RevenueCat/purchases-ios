@@ -34,8 +34,5 @@ public enum CustomerCenterAction {
     /// An option of the feedback survey has been selected
     /// - Parameter feedbackSurveyOptionId: The id of the feedback survey option selected
     case feedbackSurveyCompleted(_ feedbackSurveyOptionId: String)
-    /// A custom action has been selected
-    /// - Parameter customActionData: The data associated with the custom action
-    case customActionSelected(_ customActionData: CustomActionData)
 
 }

@@ -60,7 +60,7 @@ public struct CustomActionData {
     /// 
     /// - When triggered from a purchase detail screen: Contains the product identifier of that purchase
     /// - When triggered from the management screen: Will be `nil`
-    public let activePurchaseId: String?
+    public let purchaseIdentifier: String?
 
     /// Creates a new `CustomActionData` instance.
     /// 
@@ -69,7 +69,7 @@ public struct CustomActionData {
     ///   - activePurchaseId: The optional product identifier of the active purchase
     public init(actionIdentifier: String, activePurchaseId: String?) {
         self.actionIdentifier = actionIdentifier
-        self.activePurchaseId = activePurchaseId
+        self.purchaseIdentifier = activePurchaseId
     }
 }
 
@@ -88,7 +88,7 @@ extension CustomActionData: Equatable {
     /// - Returns: `true` if the instances are equal; otherwise, `false`.
     public static func == (lhs: CustomActionData, rhs: CustomActionData) -> Bool {
         return lhs.actionIdentifier == rhs.actionIdentifier &&
-               lhs.activePurchaseId == rhs.activePurchaseId
+               lhs.purchaseIdentifier == rhs.purchaseIdentifier
     }
 }
 
@@ -104,7 +104,7 @@ extension CustomActionData: Hashable {
     /// - Parameter hasher: The hasher to use when combining the components of this instance.
     public func hash(into hasher: inout Hasher) {
         hasher.combine(actionIdentifier)
-        hasher.combine(activePurchaseId)
+        hasher.combine(purchaseIdentifier)
     }
 }
 
@@ -119,7 +119,7 @@ extension CustomActionData: CustomStringConvertible {
     /// 
     /// - Returns: A string describing the custom action data.
     public var description: String {
-        let purchaseInfo = activePurchaseId.map { "purchase: \($0)" } ?? "no active purchase"
+        let purchaseInfo = purchaseIdentifier.map { "purchase: \($0)" } ?? "no active purchase"
         return "CustomActionData(actionIdentifier: \"\(actionIdentifier)\", \(purchaseInfo))"
     }
 }

@@ -579,7 +579,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         // Verify that the correct custom action was triggered
         let customActionData = try XCTUnwrap(capturedCustomActionData)
         expect(customActionData.actionIdentifier) == "delete_user"
-        expect(customActionData.activePurchaseId) == purchaseInformation.productIdentifier
+        expect(customActionData.purchaseIdentifier) == purchaseInformation.productIdentifier
 
         cancellable.cancel()
     }
@@ -670,7 +670,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         // Verify that the custom action was triggered with nil purchase ID
         let customActionData = try XCTUnwrap(capturedCustomActionData)
         expect(customActionData.actionIdentifier) == "rate_app"
-        expect(customActionData.activePurchaseId).to(beNil())
+        expect(customActionData.purchaseIdentifier).to(beNil())
 
         cancellable.cancel()
     }

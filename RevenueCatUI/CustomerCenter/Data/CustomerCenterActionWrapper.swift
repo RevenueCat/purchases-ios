@@ -29,12 +29,12 @@ internal enum CustomerCenterInternalAction {
     case refundRequestStarted(String)
     case refundRequestCompleted(String, RefundRequestStatus)
     case feedbackSurveyCompleted(String)
-    case customActionSelected(CustomActionData)
 
     // New internal-only actions that don't exist in the public legacy CustomerCenterAction
     case buttonTapped(action: CustomerCenterActionable)
     // Internal action for when a promotional offer succeeds
     case promotionalOfferSuccess
+    case customActionSelected(CustomActionData)
 
     /// Converts this internal action to the corresponding legacy action if one exists
     /// Returns nil for actions that don't have a legacy CustomerCenterAction equivalent
@@ -54,11 +54,10 @@ internal enum CustomerCenterInternalAction {
             return .refundRequestCompleted(status)
         case .feedbackSurveyCompleted(let optionId):
             return .feedbackSurveyCompleted(optionId)
-        case .customActionSelected(let customActionData):
-            return .customActionSelected(customActionData)
         case .buttonTapped,
                 .promotionalOfferSuccess,
-                .showingChangePlans:
+                .showingChangePlans,
+                .customActionSelected:
             return nil // No public equivalent
         }
     }
@@ -120,7 +119,7 @@ final class CustomerCenterActionWrapper {
             managementOptionSelected.send(action)
 
         case .customActionSelected(let customActionData):
-            customActionSelected.send((customActionData.actionIdentifier, customActionData.activePurchaseId))
+            customActionSelected.send((customActionData.actionIdentifier, customActionData.purchaseIdentifier))
 
         case .promotionalOfferSuccess:
             promotionalOfferSuccess.send(())

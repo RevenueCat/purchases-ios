@@ -26,7 +26,7 @@ final class CustomActionDataTests: TestCase {
         )
 
         expect(data.actionIdentifier) == "delete_user"
-        expect(data.activePurchaseId) == "monthly_subscription"
+        expect(data.purchaseIdentifier) == "monthly_subscription"
     }
 
     func testCustomActionDataInitializationWithNilPurchase() {
@@ -36,7 +36,7 @@ final class CustomActionDataTests: TestCase {
         )
 
         expect(data.actionIdentifier) == "rate_app"
-        expect(data.activePurchaseId).to(beNil())
+        expect(data.purchaseIdentifier).to(beNil())
     }
 
     func testCustomActionDataEquality() {
@@ -114,7 +114,7 @@ final class CustomActionDataTests: TestCase {
         )
 
         expect(data.actionIdentifier) == ""
-        expect(data.activePurchaseId) == ""
+        expect(data.purchaseIdentifier) == ""
 
         // Empty strings should still work correctly
         expect(data.description).to(contain("CustomActionData"))
@@ -131,8 +131,8 @@ final class CustomActionDataTests: TestCase {
         )
 
         expect(data.actionIdentifier) == longActionId
-        expect(data.activePurchaseId) == longPurchaseId
+        expect(data.purchaseIdentifier) == longPurchaseId
         expect(data.actionIdentifier.count) == 1000
-        expect(data.activePurchaseId?.count) == 1000
+        expect(data.purchaseIdentifier?.count) == 1000
     }
 }

@@ -54,7 +54,7 @@ extension CustomerCenterView {
 
     /// A closure used for notifying when a custom action is selected in the Customer Center.
     public typealias CustomActionHandler =
-    @MainActor @Sendable (_ actionIdentifier: String, _ activePurchaseId: String?) -> Void
+    @MainActor @Sendable (_ actionIdentifier: String, _ purchaseIdentifier: String?) -> Void
 
     typealias PromotionalOfferSuccessHandler = @MainActor @Sendable () -> Void
 
@@ -376,7 +376,7 @@ extension View {
     /// ```swift
     /// CustomerCenterView()
     ///     .onCustomerCenterCustomActionSelected { actionIdentifier, activePurchaseId in
-    ///         handleCustomAction(actionIdentifier, activePurchaseId)
+    ///         handleCustomAction(actionIdentifier, purchaseIdentifier)
     ///     }
     /// ```
     public func onCustomerCenterCustomActionSelected(
