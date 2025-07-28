@@ -13,6 +13,8 @@
 
 import Foundation
 
+#if TEST_STORE
+
 /// Implementation of `ProductsManagerType` for the Test Store.
 final class TestStoreProductsManager: ProductsManagerType {
 
@@ -61,3 +63,5 @@ final class TestStoreProductsManager: ProductsManagerType {
     // See `CachingProductsManager`.
     func clearCache() { }
 }
+
+#endif // TEST_STORE
