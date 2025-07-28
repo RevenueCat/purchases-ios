@@ -200,9 +200,11 @@ struct PaywallsV2View: View {
                             await self.introOfferEligibilityContext.computeEligibility(for: paywallState.packages)
                         }
                         .task {
-                            await paywallPromoOfferCache.computeEligibility(
-                                for: paywallState.packageInfos.map { ($0.package, $0.promotionalOfferProductCode) }
-                            )
+                            if let paywallPromoOfferCache = self.myViewModel.data {
+                                await paywallPromoOfferCache.computeEligibility(
+                                    for: paywallState.packageInfos.map { ($0.package, $0.promotionalOfferProductCode) }
+                                )
+                            }
                         }
                         // Note: preferences need to be applied after `.toolbar` call
                         .preference(key: PurchaseInProgressPreferenceKey.self,
@@ -227,8 +229,10 @@ struct PaywallsV2View: View {
                 }
             }
         }
-        .task {
-            self.myViewModel.data = .init(purchases: self.purchaseHandler.purchases)
+        .onAppear {
+            if self.myViewModel.data == nil {
+                self.myViewModel.data = .init(purchases: self.purchaseHandler.purchases)
+            }
         }
     }
 

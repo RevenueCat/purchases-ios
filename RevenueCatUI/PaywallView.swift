@@ -55,7 +55,7 @@ public struct PaywallView: View {
     private var error: NSError?
 
     @StateObject
-    private var defaultPaywallPromoOfferCache = PaywallPromoOfferCache()
+    private var defaultPaywallPromoOfferCache: PaywallPromoOfferCache
 
     private var initializationError: NSError?
 
@@ -159,6 +159,8 @@ public struct PaywallView: View {
         self._customerInfo = .init(
             initialValue: configuration.customerInfo ?? Self.loadCachedCustomerInfoIfPossible()
         )
+
+        self._defaultPaywallPromoOfferCache = .init(wrappedValue: .init(purchases: configuration.purchaseHandler.purchases))
 
         self.contentToDisplay = configuration.content
         self.mode = configuration.mode

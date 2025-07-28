@@ -27,22 +27,27 @@ final class PurchaseHandler: ObservableObject {
 
     }
 
-    private let purchases: PaywallPurchasesType
+    private let _purchases: PaywallPurchasesType
 
     /// Where responsibiliy for completing purchases lies
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
-        purchases.purchasesAreCompletedBy
+        _purchases.purchasesAreCompletedBy
     }
 
     /// `false` if this `PurchaseHandler` is not backend by a configured `Purchases`instance.
     let isConfigured: Bool
+    
+    /// Access to the underlying purchases instance for promotional offer operations
+    var purchases: PaywallPurchasesType {
+        return self._purchases
+    }
 
     var preferredLocales: [Locale] {
-        return purchases.preferredLocales.map(Locale.init)
+        return _purchases.preferredLocales.map(Locale.init)
     }
 
     var preferredLocaleOverride: Locale? {
-        return purchases.preferredLocaleOverride.map(Locale.init)
+        return _purchases.preferredLocaleOverride.map(Locale.init)
     }
 
     /// Whether a purchase is currently in progress
@@ -111,7 +116,7 @@ final class PurchaseHandler: ObservableObject {
         performRestore: PerformRestore? = nil
     ) {
         self.isConfigured = isConfigured
-        self.purchases = purchases
+        self._purchases = purchases
         self.performPurchase = performPurchase
         self.performRestore = performRestore
     }
@@ -158,7 +163,7 @@ extension PurchaseHandler {
 
     @MainActor
     func purchase(package: Package) async throws {
-        switch self.purchases.purchasesAreCompletedBy {
+        switch self._purchases.purchasesAreCompletedBy {
         case .revenueCat:
             try await performPurchase(package: package, promotionalOffer: nil)
         case .myApp:
@@ -168,7 +173,7 @@ extension PurchaseHandler {
 
     @MainActor
     func purchase(package: Package, promotionalOffer: PromotionalOffer?) async throws {
-        switch self.purchases.purchasesAreCompletedBy {
+        switch self._purchases.purchasesAreCompletedBy {
         case .revenueCat:
             try await performPurchase(package: package, promotionalOffer: promotionalOffer)
         case .myApp:
@@ -194,9 +199,9 @@ extension PurchaseHandler {
             let result: PurchaseResultData
 
             if let promotionalOffer {
-                result = try await self.purchases.purchase(package: package, promotionalOffer: promotionalOffer)
+                result = try await self._purchases.purchase(package: package, promotionalOffer: promotionalOffer)
             } else {
-                result = try await self.purchases.purchase(package: package)
+                result = try await self._purchases.purchase(package: package)
             }
 
             self.purchaseResult = result
@@ -247,7 +252,7 @@ extension PurchaseHandler {
         }
 
         let resultInfo: PurchaseResultData = (transaction: nil,
-                                             customerInfo: try await self.purchases.customerInfo(),
+                                             customerInfo: try await self._purchases.customerInfo(),
                                             userCancelled: result.userCancelled)
 
         self.purchaseResult = resultInfo
@@ -264,7 +269,7 @@ extension PurchaseHandler {
     // MARK: - Restore
 
     func restorePurchases() async throws -> (info: CustomerInfo, success: Bool) {
-        switch self.purchases.purchasesAreCompletedBy {
+        switch self._purchases.purchasesAreCompletedBy {
         case .revenueCat:
             return try await performRestorePurchases()
         case .myApp:
@@ -291,7 +296,7 @@ extension PurchaseHandler {
         }
 
         do {
-            let customerInfo = try await self.purchases.restorePurchases()
+            let customerInfo = try await self._purchases.restorePurchases()
 
             return (info: customerInfo,
                     success: customerInfo.hasActiveSubscriptionsOrNonSubscriptions)
@@ -327,7 +332,7 @@ extension PurchaseHandler {
             throw error
         }
 
-        let customerInfo = try await self.purchases.customerInfo()
+        let customerInfo = try await self._purchases.customerInfo()
 
         // This is done by `RestorePurchasesButton` when using RevenueCat logic.
         self.setRestored(customerInfo)
@@ -390,7 +395,7 @@ extension PurchaseHandler {
     ) -> Self {
         return .init(
             isConfigured: self.isConfigured,
-            purchases: self.purchases.map(purchase: purchase, restore: restore)
+            purchases: self._purchases.map(purchase: purchase, restore: restore)
         )
     }
 
@@ -399,7 +404,7 @@ extension PurchaseHandler {
     ) -> Self {
         return .init(
             isConfigured: self.isConfigured,
-            purchases: self.purchases.map(trackEvent: trackEvent)
+            purchases: self._purchases.map(trackEvent: trackEvent)
         )
     }
 
@@ -413,7 +418,7 @@ extension PurchaseHandler {
 private extension PurchaseHandler {
 
     func track(_ event: PaywallEvent) {
-        Task.detached(priority: .background) { [purchases = self.purchases] in
+        Task.detached(priority: .background) { [purchases = self._purchases] in
             await purchases.track(paywallEvent: event)
         }
     }

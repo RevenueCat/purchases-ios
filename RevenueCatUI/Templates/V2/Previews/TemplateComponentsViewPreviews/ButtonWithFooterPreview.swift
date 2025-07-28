@@ -507,7 +507,6 @@ struct ButtonWithSheetPreview_Previews: PreviewProvider {
                             webCheckoutUrl: URL(string: "https://pay.revenuecat.com/abcd1234/the-app-user-id")!),
             purchaseHandler: PurchaseHandler.default(),
             introEligibilityChecker: .default(),
-            paywallPromoOfferCache: PaywallPromoOfferCache(),
             showZeroDecimalPlacePrices: true,
             onDismiss: { },
             fallbackContent: .customView(AnyView(Text("Fallback paywall"))),

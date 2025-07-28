@@ -85,16 +85,16 @@ public final class PaywallPromoOfferCache: ObservableObject {
 
     private var cache: [ProductID: Status] = [:]
     @Published public private(set) var hasAnySubscriptionHistory: Bool = false
-    private let purchases: Purchases
+    internal let purchases: PaywallPurchasesType
     private let subscriptionTracker: SubscriptionHistoryTracker
     private var listenTask: Task<Void, Never>?
 
     // MARK: - Init
 
-    public init(purchases: Purchases = Purchases.shared) {
+    init(purchases: PaywallPurchasesType) {
         self.purchases = purchases
         self.subscriptionTracker = SubscriptionHistoryTracker()
-        Task { await self.configure() }
+        self.configure()
     }
     
     deinit {
@@ -152,11 +152,11 @@ public final class PaywallPromoOfferCache: ObservableObject {
                let discount = storeProduct.discounts.first(where: { $0.offerIdentifier == productCode }) {
 
                 do {
-                    let promoOffer = try await purchases.promotionalOffer(
-                        forProductDiscount: discount,
-                        product: storeProduct
-                    )
-                    cache[storeProduct.productIdentifier] = .signedEligible(promoOffer)
+//                    let promoOffer = try await purchases.promotionalOffer(
+//                        forProductDiscount: discount,
+//                        product: storeProduct
+//                    )
+//                    cache[storeProduct.productIdentifier] = .signedEligible(promoOffer)
                 } catch {
                     cache[storeProduct.productIdentifier] = .ineligible
                 }
