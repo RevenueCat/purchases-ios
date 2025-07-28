@@ -344,7 +344,6 @@ struct PurchaseButtonInPackagePreview_Previews: PreviewProvider {
                             webCheckoutUrl: nil),
             purchaseHandler: PurchaseHandler.default(),
             introEligibilityChecker: .default(),
-            paywallPromoOfferCache: PaywallPromoOfferCache(),
             showZeroDecimalPlacePrices: true,
             onDismiss: { },
             fallbackContent: .customView(AnyView(Text("Fallback paywall"))),
