@@ -41,8 +41,10 @@ class TestStoreProductsManagerTests: TestCase {
         self.offerings.stubbedGetWebProductsCompletionResult = .failure(BackendError.networkError(.offlineConnection()))
 
         let manager = self.createManager()
-        let _ = waitUntilValue { completed in
-            manager.products(withIdentifiers: ["product1", "product2"], completion: completed)
+        waitUntil { completed in
+            manager.products(withIdentifiers: ["product1", "product2"]) { _ in
+                completed()
+            }
         }
 
         expect(self.offerings.invokedGetWebProducts).to(beTrue())
@@ -50,6 +52,18 @@ class TestStoreProductsManagerTests: TestCase {
         let params = try XCTUnwrap(self.offerings.invokedGetWebProductsParameters)
         expect(params.appUserID).to(equal("appUserID"))
         expect(params.productIds).to(equal(Set(["product1", "product2"])))
+    }
+
+    func testFetchTestStoreProductsDoesNothingIfEmptyIdentifiers() throws {
+
+        let manager = self.createManager()
+        waitUntil { completed in
+            manager.products(withIdentifiers: []) { _ in
+                completed()
+            }
+        }
+
+        expect(self.offerings.invokedGetWebProducts).to(beFalse())
     }
 
     fileprivate func createManager() -> TestStoreProductsManager {

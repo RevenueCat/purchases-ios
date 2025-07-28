@@ -29,6 +29,11 @@ final class TestStoreProductsManager: ProductsManagerType {
     }
 
     func products(withIdentifiers identifiers: Set<String>, completion: @escaping Completion) {
+        guard !identifiers.isEmpty else {
+            completion(.success(Set()))
+            return
+        }
+
         let appUserID = self.deviceCache.cachedAppUserID ?? ""
         backend.offerings.getWebProducts(appUserID: appUserID, productIds: identifiers) { result in
             switch result {
