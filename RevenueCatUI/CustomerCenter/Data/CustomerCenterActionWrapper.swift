@@ -138,9 +138,9 @@ final class CustomerCenterActionWrapper {
 extension CustomerCenterConfigData.HelpPath {
 
     /// Converts this HelpPath to an appropriate CustomerCenterActionable
-    /// - Parameter activePurchaseId: The optional active purchase ID for the context
+    /// - Parameter purchaseIdentifier: The optional active purchase ID for the context
     /// - Returns: A CustomerCenterActionable representing this path
-    func asAction(activePurchaseId: String? = nil) -> CustomerCenterActionable? {
+    func asAction() -> CustomerCenterActionable? {
         switch self.type {
         case .missingPurchase:
             return CustomerCenterManagementOption.MissingPurchase()
@@ -158,12 +158,6 @@ extension CustomerCenterConfigData.HelpPath {
             if let url = self.url {
                 return CustomerCenterManagementOption.CustomUrl(url: url)
             }
-
-        case .customAction:
-            return CustomerCenterManagementOption.CustomAction(
-                actionIdentifier: self.customActionIdentifier ?? "",
-                activePurchaseId: activePurchaseId
-            )
 
         default:
             break

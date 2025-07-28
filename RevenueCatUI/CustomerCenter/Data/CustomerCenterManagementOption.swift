@@ -41,16 +41,16 @@ public enum CustomerCenterManagementOption {
         /// The custom action identifier
         public let actionIdentifier: String
         /// The optional active purchase ID
-        public let activePurchaseId: String?
+        public let purchaseIdentifier: String?
 
         /// Creates a new `CustomAction` instance.
         /// 
         /// - Parameters:
         ///   - actionIdentifier: The unique identifier for the custom action
-        ///   - activePurchaseId: The optional product identifier of the active purchase
-        public init(actionIdentifier: String, activePurchaseId: String?) {
+        ///   - purchaseIdentifier: The optional product identifier of the active purchase
+        public init(actionIdentifier: String, purchaseIdentifier: String?) {
             self.actionIdentifier = actionIdentifier
-            self.activePurchaseId = activePurchaseId
+            self.purchaseIdentifier = purchaseIdentifier
         }
     }
 

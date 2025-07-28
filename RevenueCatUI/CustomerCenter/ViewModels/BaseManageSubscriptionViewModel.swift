@@ -94,9 +94,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
 
 #if os(iOS) || targetEnvironment(macCatalyst)
     func handleHelpPath(_ path: CustomerCenterConfigData.HelpPath, withActiveProductId: String? = nil) async {
-        // Convert the path to an appropriate action using the extension
-        if let action = path.asAction(activePurchaseId: withActiveProductId) {
-            // Send the action through the action wrapper
+        if let action = path.asAction() {
             self.actionWrapper.handleAction(.buttonTapped(action: action))
         }
 
@@ -184,7 +182,7 @@ private extension BaseManageSubscriptionViewModel {
                 .customActionSelected(
                     CustomActionData(
                         actionIdentifier: actionIdentifier,
-                        activePurchaseId: purchaseInformation?.productIdentifier
+                        purchaseIdentifier: purchaseInformation?.productIdentifier
                     )
                 )
             )

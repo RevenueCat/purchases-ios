@@ -27,7 +27,7 @@ import Foundation
 /// 
 /// ```swift
 /// CustomerCenterView()
-///     .onCustomerCenterCustomActionSelected { actionIdentifier, activePurchaseId in
+///     .onCustomerCenterCustomActionSelected { actionIdentifier, purchaseIdentifier in
 ///         // Handle the custom action
 ///         switch actionIdentifier {
 ///         case "delete_user":
@@ -66,10 +66,10 @@ public struct CustomActionData {
     /// 
     /// - Parameters:
     ///   - actionIdentifier: The unique identifier for the custom action
-    ///   - activePurchaseId: The optional product identifier of the active purchase
-    public init(actionIdentifier: String, activePurchaseId: String?) {
+    ///   - purchaseIdentifier: The unique identifier of a purchase
+    public init(actionIdentifier: String, purchaseIdentifier: String?) {
         self.actionIdentifier = actionIdentifier
-        self.purchaseIdentifier = activePurchaseId
+        self.purchaseIdentifier = purchaseIdentifier
     }
 }
 
@@ -80,8 +80,8 @@ extension CustomActionData: Equatable {
     /// Returns a Boolean value indicating whether two `CustomActionData` instances are equal.
     /// 
     /// Two `CustomActionData` instances are considered equal if both their `actionIdentifier` 
-    /// and `activePurchaseId` properties are equal.
-    /// 
+    /// and `purchaseIdentifier` properties are equal.
+    ///
     /// - Parameters:
     ///   - lhs: A `CustomActionData` instance to compare.
     ///   - rhs: Another `CustomActionData` instance to compare.
@@ -98,7 +98,7 @@ extension CustomActionData: Hashable {
 
     /// Hashes the essential components of this `CustomActionData` by feeding them into the given hasher.
     /// 
-    /// This method combines the `actionIdentifier` and `activePurchaseId` properties 
+    /// This method combines the `actionIdentifier` and `purchaseIdentifier` properties 
     /// to generate a hash value for the instance.
     /// 
     /// - Parameter hasher: The hasher to use when combining the components of this instance.
