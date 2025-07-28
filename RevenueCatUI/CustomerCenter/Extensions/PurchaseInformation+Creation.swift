@@ -31,7 +31,11 @@ extension PurchaseInformation {
 
         if transaction.store == .appStore {
             if let product = await purchasesProvider.products([transaction.productIdentifier]).first {
-                let changePlan = changePlans.first(where: { product.subscriptionGroupIdentifier == $0.groupId })
+                let changePlan = changePlans
+                    .first(where: { product.subscriptionGroupIdentifier == $0.groupId })
+                ?? changePlans.first(
+                    where: { $0.products.contains(where: { $0.productId == product.productIdentifier }) }
+                )
 
                 return await PurchaseInformation.purchaseInformationUsingRenewalInfo(
                     entitlement: entitlement,
