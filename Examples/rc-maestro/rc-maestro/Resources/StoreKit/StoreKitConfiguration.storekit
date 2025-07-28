@@ -101,7 +101,11 @@
     {
       "id" : "F7DE1690",
       "localizations" : [
-
+        {
+          "description" : "Group 1",
+          "displayName" : "Editable Group",
+          "locale" : "en_US"
+        }
       ],
       "name" : "subscription.group.1",
       "subscriptions" : [
@@ -148,7 +152,7 @@
           ],
           "displayPrice" : "1.99",
           "familyShareable" : false,
-          "groupNumber" : 1,
+          "groupNumber" : 2,
           "internalID" : "AB1B73AE",
           "introductoryOffer" : null,
           "localizations" : [
@@ -161,6 +165,34 @@
           "productID" : "maestro.monthly.tests.02",
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "Product 1 [Monthly]",
+          "subscriptionGroupID" : "F7DE1690",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "2.99",
+          "familyShareable" : false,
+          "groupNumber" : 3,
+          "internalID" : "C3CC4618",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Product 1 on yearly basis",
+              "displayName" : "Product 1 [Yearly]",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "maestro.yearly.tests.01",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Product 1 [Yearly]",
           "subscriptionGroupID" : "F7DE1690",
           "type" : "RecurringSubscription",
           "winbackOffers" : [
