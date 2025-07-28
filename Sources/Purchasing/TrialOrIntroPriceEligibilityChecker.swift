@@ -76,6 +76,15 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
             return
         }
 
+        guard !self.systemInfo.isTestStoreAPIKey else {
+            // For now, all products in the Test Store are ineligible for trial or intro discount
+            let result = productIdentifiers.reduce(into: [:]) { resultDict, productId in
+                resultDict[productId] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.ineligible)
+            }
+            completion(result)
+            return
+        }
+
         let startTime = self.dateProvider.now()
 
         // Extracting and wrapping the completion block from the async call
