@@ -891,6 +891,8 @@
 		75D9DE082D79FC0E0068554F /* DiagnosticsEventEncodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D9DE052D79FC0E0068554F /* DiagnosticsEventEncodingTests.swift */; };
 		75DD49E32E2FAEB400694402 /* TestStoreProductsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DD49E22E2FAEB400694402 /* TestStoreProductsManager.swift */; };
 		75E61CB62E2F9EF30034B41C /* MockTestStorePurchaseHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7581A92C2E2EB27100D0C3DE /* MockTestStorePurchaseHandler.swift */; };
+		75FCD4CE2E37FBE100036C02 /* TestStoreMockData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FCD4CC2E37FBE100036C02 /* TestStoreMockData.swift */; };
+		75FCD4CF2E37FBE100036C02 /* TestStoreProductsManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FCD4CD2E37FBE100036C02 /* TestStoreProductsManagerTests.swift */; };
 		7707A94C2CAD93AC006E0313 /* PaywallButtonComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94B2CAD93AC006E0313 /* PaywallButtonComponent.swift */; };
 		7707A94E2CAD94D2006E0313 /* ButtonComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94D2CAD94D2006E0313 /* ButtonComponentViewModel.swift */; };
 		7707A9502CAD9775006E0313 /* ButtonComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94F2CAD9775006E0313 /* ButtonComponentView.swift */; };
@@ -2335,6 +2337,8 @@
 		75D9DE022D79FC0E0068554F /* testEncoding.1.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = testEncoding.1.json; sourceTree = "<group>"; };
 		75D9DE052D79FC0E0068554F /* DiagnosticsEventEncodingTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiagnosticsEventEncodingTests.swift; sourceTree = "<group>"; };
 		75DD49E22E2FAEB400694402 /* TestStoreProductsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestStoreProductsManager.swift; sourceTree = "<group>"; };
+		75FCD4CC2E37FBE100036C02 /* TestStoreMockData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestStoreMockData.swift; sourceTree = "<group>"; };
+		75FCD4CD2E37FBE100036C02 /* TestStoreProductsManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestStoreProductsManagerTests.swift; sourceTree = "<group>"; };
 		7707A93B2CAD8AA2006E0313 /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
 		7707A94B2CAD93AC006E0313 /* PaywallButtonComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallButtonComponent.swift; sourceTree = "<group>"; };
 		7707A94D2CAD94D2006E0313 /* ButtonComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonComponentViewModel.swift; sourceTree = "<group>"; };
@@ -3923,6 +3927,7 @@
 				3530C18722653E8F00D6DF52 /* Frameworks */,
 				57B530E52858F3FD00FA4E37 /* SwiftStyleGuide.swift */,
 				887A5FB42C1D024300E1A461 /* Package.swift */,
+				75FCD4BF2E37FB5400036C02 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -4076,7 +4081,7 @@
 				57E0474B27729A1E0082FE91 /* __Snapshots__ */,
 				2D1015DF275A67560086173F /* StoreKitAbstractions */,
 				5766AABB283E809D00FA6091 /* Purchases */,
-				7581A92B2E2EB25400D0C3DE /* TestStore */,
+				7581A92B2E2EB25400D0C3DE /* TestStoreUnitTests */,
 				37E3582920E16E065502E5FC /* EntitlementInfosTests.swift */,
 				B3F8418E26F3A93400E560FB /* ErrorCodeTests.swift */,
 				5752E8472892DC500069281E /* ErrorUtilsTests.swift */,
@@ -4954,11 +4959,13 @@
 			path = Security;
 			sourceTree = "<group>";
 		};
-		7581A92B2E2EB25400D0C3DE /* TestStore */ = {
+		7581A92B2E2EB25400D0C3DE /* TestStoreUnitTests */ = {
 			isa = PBXGroup;
 			children = (
+				75FCD4CC2E37FBE100036C02 /* TestStoreMockData.swift */,
+				75FCD4CD2E37FBE100036C02 /* TestStoreProductsManagerTests.swift */,
 			);
-			path = TestStore;
+			path = TestStoreUnitTests;
 			sourceTree = "<group>";
 		};
 		75BB99002E3381BF0001DD1A /* TestStore */ = {
@@ -4994,6 +5001,13 @@
 				75D9DE052D79FC0E0068554F /* DiagnosticsEventEncodingTests.swift */,
 			);
 			path = Requests;
+			sourceTree = "<group>";
+		};
+		75FCD4BF2E37FB5400036C02 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 		7707A94A2CAD936A006E0313 /* Button */ = {
@@ -6859,6 +6873,8 @@
 				0368727A2D9DCF7100506BBB /* DefaultEnumTests.swift in Sources */,
 				03C7305B2D35985900297FEC /* TextComponentTests.swift in Sources */,
 				FDE57B0E2DF8BC1100101CE2 /* VirtualCurrenciesDecodingTests.swift in Sources */,
+				75FCD4CE2E37FBE100036C02 /* TestStoreMockData.swift in Sources */,
+				75FCD4CF2E37FBE100036C02 /* TestStoreProductsManagerTests.swift in Sources */,
 				B36824BF268FBC8700957E4C /* SubscriberAttributeTests.swift in Sources */,
 				351B51BC26D450E800BD2BD7 /* OfferingsTests.swift in Sources */,
 				5796A38827D6B85900653165 /* BackendPostReceiptDataTests.swift in Sources */,

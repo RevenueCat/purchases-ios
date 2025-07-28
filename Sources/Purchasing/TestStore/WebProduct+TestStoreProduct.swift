@@ -18,8 +18,8 @@ extension WebProductsResponse.Product {
     // Lazily instantiated
     private static var _priceFormatterProvider: PriceFormatterProvider?
     private static var priceFormatterProvider: PriceFormatterProvider {
-        if let _priceFormatterProvider = self._priceFormatterProvider {
-            return _priceFormatterProvider
+        if let priceFormatterProvider = self._priceFormatterProvider {
+            return priceFormatterProvider
         } else {
             let provider = PriceFormatterProvider()
             self._priceFormatterProvider = provider
