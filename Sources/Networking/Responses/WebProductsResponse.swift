@@ -27,6 +27,13 @@ struct WebProductsResponse {
         let cycleCount: Int
     }
 
+    enum ProductType: String {
+        case subscription
+        case consumable
+        case nonConsumable = "non_consumable"
+        case unknown
+    }
+
     struct PurchaseOption {
         // Only for non-subscriptions
         @IgnoreDecodeErrors<Price?>
@@ -37,11 +44,13 @@ struct WebProductsResponse {
         var base: PricingPhase?
         @IgnoreDecodeErrors<PricingPhase?>
         var trial: PricingPhase?
+        @IgnoreDecodeErrors<PricingPhase?>
+        var introPrice: PricingPhase?
     }
 
     struct Product {
         let identifier: String
-        let productType: String
+        let productType: ProductType
         let title: String
         let description: String?
         let defaultPurchaseOptionId: String?
@@ -60,3 +69,12 @@ extension WebProductsResponse.Price: Codable, Equatable {}
 extension WebProductsResponse: Codable, Equatable {}
 
 extension WebProductsResponse: HTTPResponseBody {}
+
+extension WebProductsResponse.ProductType: Codable, Equatable {
+
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let rawValue = try container.decode(String.self)
+        self = WebProductsResponse.ProductType(rawValue: rawValue) ?? .unknown
+    }
+}
