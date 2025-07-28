@@ -764,7 +764,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
 
         Purchases.shared.attribution.setAmplitudeDeviceID("123abc")
         expect(self.mockSubscriberAttributesManager.invokedSetAmplitudeDeviceIDCount) == 1
-        expect(self.mockSubscriberAttributesManager.invokedSetAmplitudeDeviceIDParameters?.amplitudeUserID) ==
+        expect(self.mockSubscriberAttributesManager.invokedSetAmplitudeDeviceIDParameters?.amplitudeDeviceID) ==
         "123abc"
         expect(self.mockSubscriberAttributesManager.invokedSetAmplitudeDeviceIDParameters?.appUserID) ==
         mockIdentityManager.currentAppUserID

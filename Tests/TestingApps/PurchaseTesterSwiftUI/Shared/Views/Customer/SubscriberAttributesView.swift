@@ -46,6 +46,8 @@ struct SubscriberAttributesView: View {
         case setFirebaseAppInstanceID
         case setTenjinAnalyticsInstallationID
         case setPostHogUserID
+        case setAmplitudeUserID
+        case setAmplitudeDeviceID
     }
     
     let customerInfo: RevenueCat.CustomerInfo
