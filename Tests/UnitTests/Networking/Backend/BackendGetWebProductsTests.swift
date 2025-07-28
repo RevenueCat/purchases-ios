@@ -141,7 +141,7 @@ class BackendGetWebProductsTests: BaseBackendTests {
         expect(productDetails).to(haveCount(2))
 
         expect(monthlyProduct.identifier) == "test_monthly"
-        expect(monthlyProduct.productType) == "subscription"
+        expect(monthlyProduct.productType) == .subscription
         expect(monthlyProduct.title) == "Test Monthly"
         expect(monthlyProduct.description) == "Test Monthly description"
         expect(monthlyProduct.defaultPurchaseOptionId) == "base_option"
@@ -153,7 +153,7 @@ class BackendGetWebProductsTests: BaseBackendTests {
         expect(monthlyPurchaseOption.base?.price?.currency) == "EUR"
 
         expect(annualProduct.identifier) == "test_annual"
-        expect(annualProduct.productType) == "subscription"
+        expect(annualProduct.productType) == .subscription
         expect(annualProduct.title) == "Test Annual"
         expect(annualProduct.description) == "Test Annual description"
         expect(annualProduct.defaultPurchaseOptionId) == "base_option"
