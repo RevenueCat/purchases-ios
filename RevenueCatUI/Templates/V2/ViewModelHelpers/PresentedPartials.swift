@@ -59,10 +59,6 @@ extension PresentedPartial {
             return nil
         }
 
-        if isEligibleForPromoOffer {
-            print("isEligibleForPromoOffer: \(isEligibleForPromoOffer)")
-        }
-
         var presentedPartial: Self?
 
         for presentedOverride in presentedOverrides where self.shouldApply(
