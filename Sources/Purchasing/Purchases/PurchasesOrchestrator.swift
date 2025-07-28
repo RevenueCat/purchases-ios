@@ -27,7 +27,7 @@ import StoreKit
 
 }
 
-// swiftlint:disable file_length type_body_length
+// swiftlint:disable file_length type_body_length function_body_length
 final class PurchasesOrchestrator {
 
     var finishTransactions: Bool { self.systemInfo.finishTransactions }
@@ -53,6 +53,7 @@ final class PurchasesOrchestrator {
 
     private let productsManager: ProductsManagerType
     private let paymentQueueWrapper: EitherPaymentQueueWrapper
+    private let testStorePurchaseHandler: TestStorePurchaseHandlerType
     private let systemInfo: SystemInfo
     private let attribution: Attribution
     private let operationDispatcher: OperationDispatcher
@@ -123,6 +124,7 @@ final class PurchasesOrchestrator {
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     convenience init(productsManager: ProductsManagerType,
                      paymentQueueWrapper: EitherPaymentQueueWrapper,
+                     testStorePurchaseHandler: TestStorePurchaseHandlerType,
                      systemInfo: SystemInfo,
                      subscriberAttributes: Attribution,
                      operationDispatcher: OperationDispatcher,
@@ -152,6 +154,7 @@ final class PurchasesOrchestrator {
         self.init(
             productsManager: productsManager,
             paymentQueueWrapper: paymentQueueWrapper,
+            testStorePurchaseHandler: testStorePurchaseHandler,
             systemInfo: systemInfo,
             subscriberAttributes: subscriberAttributes,
             operationDispatcher: operationDispatcher,
@@ -209,6 +212,7 @@ final class PurchasesOrchestrator {
 
     init(productsManager: ProductsManagerType,
          paymentQueueWrapper: EitherPaymentQueueWrapper,
+         testStorePurchaseHandler: TestStorePurchaseHandlerType,
          systemInfo: SystemInfo,
          subscriberAttributes: Attribution,
          operationDispatcher: OperationDispatcher,
@@ -233,6 +237,7 @@ final class PurchasesOrchestrator {
     ) {
         self.productsManager = productsManager
         self.paymentQueueWrapper = paymentQueueWrapper
+        self.testStorePurchaseHandler = testStorePurchaseHandler
         self.systemInfo = systemInfo
         self.attribution = subscriberAttributes
         self.operationDispatcher = operationDispatcher
@@ -463,8 +468,8 @@ final class PurchasesOrchestrator {
                           winBackOffer: winBackOffer,
                           metadata: metadata,
                           completion: completionWithTracking)
-        } else if product.isTestProduct {
-            self.handleTestProduct(completionWithTracking)
+        } else if let testStoreProduct = product.testStoreProduct {
+            self.handlePurchase(testStoreProduct: testStoreProduct, completion: completionWithTracking)
         } else {
             fatalError("Unrecognized product: \(product)")
         }
@@ -1840,17 +1845,6 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    func handleTestProduct(_ completion: @escaping PurchaseCompletedBlock) {
-        self.operationDispatcher.dispatchOnMainActor {
-            completion(
-                nil,
-                nil,
-                ErrorUtils.productNotAvailableForPurchaseError().asPublicError,
-                false
-            )
-        }
-    }
-
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func sk2PromotionalOffer(forProductDiscount productDiscount: StoreProductDiscountType,
                              discountIdentifier: String,
@@ -1939,6 +1933,56 @@ private extension PurchasesOrchestrator {
                 .mapError { $0.asPurchasesError }
 
             completion(result)
+        }
+    }
+
+}
+
+// MARK: - Test Store Purchases
+
+private extension PurchasesOrchestrator {
+
+    func handlePurchase(testStoreProduct: TestStoreProduct, completion: @escaping PurchaseCompletedBlock) {
+        #if TEST_STORE
+        if self.systemInfo.isTestStoreAPIKey {
+            self.purchase(testStoreProduct: testStoreProduct, completion: completion)
+        } else {
+            self.handleTestProductNotAvailableForPurchase(completion)
+        }
+        #else
+        self.handleTestProductNotAvailableForPurchase(completion)
+        #endif // TEST_STORE
+    }
+
+    #if TEST_STORE
+    private func purchase(testStoreProduct: TestStoreProduct, completion: @escaping PurchaseCompletedBlock) {
+        self.operationDispatcher.dispatchOnMainActor {
+            do {
+                try self.testStorePurchaseHandler.purchase(product: testStoreProduct) { userConfirmed in
+                    if userConfirmed {
+                        // WIP: Implement actual test purchase completion logic
+                        // For now, we'll simulate a successful purchase with a hardcoded response
+                        completion(nil, CustomerInfoManager.createPreviewCustomerInfo(), nil, false)
+                    } else {
+                        // User cancelled the purchase
+                        completion(nil, nil, ErrorUtils.purchaseCancelledError().asPublicError, true)
+                    }
+                }
+            } catch {
+                completion(nil, nil, ErrorUtils.purchasesError(withUntypedError: error).asPublicError, false)
+            }
+        }
+    }
+    #endif // TEST_STORE
+
+    private func handleTestProductNotAvailableForPurchase(_ completion: @escaping PurchaseCompletedBlock) {
+        self.operationDispatcher.dispatchOnMainActor {
+            completion(
+                nil,
+                nil,
+                ErrorUtils.productNotAvailableForPurchaseError().asPublicError,
+                false
+            )
         }
     }
 

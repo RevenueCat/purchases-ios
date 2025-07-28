@@ -87,6 +87,7 @@ enum PurchaseStrings {
     case restorepurchases_called_with_allow_sharing_appstore_account_false
     case sk2_observer_mode_error_processing_transaction(Error)
 
+    case unable_to_find_root_view_controller_for_test_purchase
 }
 
 extension PurchaseStrings: LogMessage {
@@ -340,6 +341,9 @@ extension PurchaseStrings: LogMessage {
             "Are you sure you want to do this?"
         case let .sk2_observer_mode_error_processing_transaction(error):
             return "RevenueCat could not process transaction completed by your app: \(error)"
+
+        case .unable_to_find_root_view_controller_for_test_purchase:
+            return "Unable to find root view controller to present test purchase alert."
         }
     }
 
