@@ -251,14 +251,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         systemInfo.storefront?.countryCode
     }
 
-    @_spi(Internal) public var paywallPromoOfferCache: PaywallPromoOfferCacheType? {
-        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-            return self.paywallCache?.promoOfferCache
-        } else {
-            return nil
-        }
-    }
-
     private let attributionFetcher: AttributionFetcher
     private let attributionPoster: AttributionPoster
     private let backend: Backend
@@ -287,6 +279,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let syncAttributesAndOfferingsIfNeededRateLimiter = RateLimiter(maxCalls: 5, period: 60)
     private let diagnosticsTracker: DiagnosticsTrackerType?
     private let virtualCurrencyManager: VirtualCurrencyManagerType
+
+    @_spi(Internal) public let subscriptionHistoryObserver = SubscriptionHistoryObserver()
 
     // swiftlint:disable:next function_body_length cyclomatic_complexity
     convenience init(apiKey: String,
@@ -611,8 +605,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) {
             paywallCache = PaywallCacheWarming(
-                introEligibiltyChecker: trialOrIntroPriceChecker,
-                promoOfferCache: PaywallPromoOfferCache()
+                introEligibiltyChecker: trialOrIntroPriceChecker
             )
         } else {
             paywallCache = nil

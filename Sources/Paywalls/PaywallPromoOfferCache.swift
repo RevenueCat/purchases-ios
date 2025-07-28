@@ -10,171 +10,90 @@ import Combine
 import StoreKit
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public actor SubscriptionHistoryTracker {
+private class SubscriptionHistoryTracker {
 
-    public struct Update: Equatable, Sendable {
+    public struct Update: Equatable {
         public let hasAnySubscriptionHistory: Bool
     }
 
-    private var continuation: AsyncStream<Update>.Continuation?
-    private(set) var updates: AsyncStream<Update>!
+    public let updateSubject = CurrentValueSubject<Update, Never>(.init(hasAnySubscriptionHistory: false))
+
+    private var cancellables = Set<AnyCancellable>()
 
     public init() {
-        Task { await self.configureStream() }
-        Task { await self.evaluateSubscriptionHistory() }
+        evaluateSubscriptionHistory()
 
+        // Subscribe to real-time SK2 transaction updates
         Task.detached {
             for await _ in StoreKit.Transaction.updates {
-                await self.evaluateSubscriptionHistory()
+                self.evaluateSubscriptionHistory()
             }
         }
     }
 
-    private func configureStream() {
-        let (stream, continuation) = Self.makeStream()
-        self.updates = stream
-        self.continuation = continuation
-    }
+    private func evaluateSubscriptionHistory() {
+        Task {
+            var found = false
 
-    private static func makeStream() -> (AsyncStream<Update>, AsyncStream<Update>.Continuation) {
-        var continuation: AsyncStream<Update>.Continuation!
-        let stream = AsyncStream<Update> { cont in
-            continuation = cont
-        }
-        return (stream, continuation)
-    }
-
-    private func evaluateSubscriptionHistory() async {
-        var found = false
-
-        for await result in StoreKit.Transaction.currentEntitlements {
-            if case .verified(let transaction) = result,
-               transaction.productType == .autoRenewable {
-                found = true
-                break
-            }
-        }
-
-        if !found {
-            for await result in StoreKit.Transaction.all {
+            for await result in StoreKit.Transaction.currentEntitlements {
                 if case .verified(let transaction) = result,
                    transaction.productType == .autoRenewable {
                     found = true
                     break
                 }
             }
-        }
 
-        continuation?.yield(Update(hasAnySubscriptionHistory: found))
+            if !found {
+                for await result in StoreKit.Transaction.all {
+                    if case .verified(let transaction) = result,
+                       transaction.productType == .autoRenewable {
+                        found = true
+                        break
+                    }
+                }
+            }
+
+            print("JOSH update subject \(found)")
+
+            updateSubject.send(.init(hasAnySubscriptionHistory: found))
+        }
     }
 }
 
-@_spi(Internal) public protocol PaywallPromoOfferCacheType: Sendable {
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@_spi(Internal) public actor PaywallPromoOfferCache: ObservableObject, PaywallPromoOfferCacheType {
-
-    @_spi(Internal) public var hasAnySubscriptionHistory: Bool = false
-
-    private let subscriptionTracker: SubscriptionHistoryTracker
-    private var listenTask: Task<Void, Never>?
-
-    // MARK: - Init
-
-    @_spi(Internal) public init() {
-        self.subscriptionTracker = SubscriptionHistoryTracker()
-        Task { await self.configure() }
-    }
-
-    deinit {
-        listenTask?.cancel()
-    }
-
-    private func configure() {
-        self.listenTask = Task {
-            await self.listenToSubscriptionUpdates()
-        }
-    }
-
-    // MARK: - Subscription updates
-
-    private func listenToSubscriptionUpdates() async {
-        for await update in await subscriptionTracker.updates {
-            self.hasAnySubscriptionHistory = update.hasAnySubscriptionHistory
-        }
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@_spi(Internal) public final class PaywallPromoOfferCacheV2: ObservableObject {
-
-    typealias ProductID = String
-    @_spi(Internal) public typealias PackageInfo = (package: Package, promotionalOfferProductCode: String?)
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
+@_spi(Internal)
+public final class SubscriptionHistoryObserver: ObservableObject {
 
     public enum Status: Equatable {
         case unknown
-        case ineligible
-        case signedEligible(PromotionalOffer)
+        case hasHistory
+        case noHistory
     }
 
-    private var cache: [ProductID: Status] = [:]
-    private var hasAnySubscriptionHistory: Bool = false
+    @Published public var status: Status = .unknown
 
-    // MARK: - Init
+    private var subscriptionTracker: Any?
+    private var cancellables = Set<AnyCancellable>()
 
-    @_spi(Internal) public init(hasAnySubscriptionHistory: Bool = false) {
-        self.hasAnySubscriptionHistory = hasAnySubscriptionHistory
-    }
-
-    // MARK: - Public API
-
-    @_spi(Internal) public func computeEligibility(for packageInfos: [PackageInfo]) async {
-        await self.checkSignedEligibility(packageInfos: packageInfos)
-    }
-
-    @_spi(Internal) public func isMostLikelyEligible(for package: Package?) -> Bool {
-        guard let package else { return false }
-
-        let status = cache[package.storeProduct.productIdentifier] ?? .ineligible
-        switch status {
-        case .unknown, .signedEligible:
-            return true
-        case .ineligible:
-            return hasAnySubscriptionHistory
+    public init() {
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+            let tracker = SubscriptionHistoryTracker()
+            self.subscriptionTracker = tracker
+            bind(tracker)
+        } else {
+            // On older versions, we don't have access to SK2
+            self.status = .unknown
         }
     }
 
-    @_spi(Internal) public func get(for package: Package?) -> PromotionalOffer? {
-        guard let package else { return nil }
-
-        if case .signedEligible(let promoOffer) = cache[package.storeProduct.productIdentifier] {
-            return promoOffer
-        }
-
-        return nil
-    }
-
-    // MARK: - Internal Logic
-
-    private func checkSignedEligibility(packageInfos: [PackageInfo]) async {
-        for packageInfo in packageInfos {
-            let storeProduct = packageInfo.package.storeProduct
-            if let productCode = packageInfo.promotionalOfferProductCode,
-               let discount = storeProduct.discounts.first(where: { $0.offerIdentifier == productCode }) {
-
-                do {
-                    let promoOffer = try await Purchases.shared.promotionalOffer(
-                        forProductDiscount: discount,
-                        product: storeProduct
-                    )
-                    cache[storeProduct.productIdentifier] = .signedEligible(promoOffer)
-                } catch {
-                    cache[storeProduct.productIdentifier] = .ineligible
-                }
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    private func bind(_ tracker: SubscriptionHistoryTracker) {
+        tracker.updateSubject
+            .map { $0.hasAnySubscriptionHistory ? Status.hasHistory : Status.noHistory }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] status in
+                self?.status = status
             }
-        }
+            .store(in: &cancellables)
     }
 }

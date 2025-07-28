@@ -83,6 +83,81 @@ enum FallbackContent {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+internal final class PaywallPromoOfferCacheV2: ObservableObject {
+
+    typealias ProductID = String
+    @_spi(Internal) public typealias PackageInfo = (package: Package, promotionalOfferProductCode: String?)
+
+    public enum Status: Equatable {
+        case unknown
+        case ineligible
+        case signedEligible(PromotionalOffer)
+    }
+
+    private var cache: [ProductID: Status] = [:]
+    private var hasAnySubscriptionHistory: Bool = false
+
+    // MARK: - Init
+
+    @_spi(Internal) public init(hasAnySubscriptionHistory: Bool = false) {
+        self.hasAnySubscriptionHistory = hasAnySubscriptionHistory
+    }
+
+    public func update(_ hasAnySubscriptionHistory: Bool) {
+        self.hasAnySubscriptionHistory = hasAnySubscriptionHistory
+    }
+
+    // MARK: - Public API
+
+    @_spi(Internal) public func computeEligibility(for packageInfos: [PackageInfo]) async {
+        await self.checkSignedEligibility(packageInfos: packageInfos)
+    }
+
+    @_spi(Internal) public func isMostLikelyEligible(for package: Package?) -> Bool {
+        guard let package else { return false }
+
+        let status = cache[package.storeProduct.productIdentifier] ?? .ineligible
+        switch status {
+        case .unknown, .signedEligible:
+            return true
+        case .ineligible:
+            return hasAnySubscriptionHistory
+        }
+    }
+
+    @_spi(Internal) public func get(for package: Package?) -> PromotionalOffer? {
+        guard let package else { return nil }
+
+        if case .signedEligible(let promoOffer) = cache[package.storeProduct.productIdentifier] {
+            return promoOffer
+        }
+
+        return nil
+    }
+
+    // MARK: - Internal Logic
+
+    private func checkSignedEligibility(packageInfos: [PackageInfo]) async {
+        for packageInfo in packageInfos {
+            let storeProduct = packageInfo.package.storeProduct
+            if let productCode = packageInfo.promotionalOfferProductCode,
+               let discount = storeProduct.discounts.first(where: { $0.offerIdentifier == productCode }) {
+
+                do {
+                    let promoOffer = try await Purchases.shared.promotionalOffer(
+                        forProductDiscount: discount,
+                        product: storeProduct
+                    )
+                    cache[storeProduct.productIdentifier] = .signedEligible(promoOffer)
+                } catch {
+                    cache[storeProduct.productIdentifier] = .ineligible
+                }
+            }
+        }
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 class MyViewModel: ObservableObject {
 
@@ -112,18 +187,14 @@ struct PaywallsV2View: View {
     private let onDismiss: () -> Void
     private let fallbackContent: FallbackContent
 
-    @ObservedObject
-    private var paywallPromoOfferCache: PaywallPromoOfferCache
-
     @StateObject
-    private var myViewModel = MyViewModel()
+    private var paywallPromoOfferCache = PaywallPromoOfferCacheV2()
 
     public init(
         paywallComponents: Offering.PaywallComponents,
         offering: Offering,
         purchaseHandler: PurchaseHandler,
         introEligibilityChecker: TrialOrIntroEligibilityChecker,
-        paywallPromoOfferCache: PaywallPromoOfferCache,
         showZeroDecimalPlacePrices: Bool,
         onDismiss: @escaping () -> Void,
         fallbackContent: FallbackContent,
@@ -143,7 +214,6 @@ struct PaywallsV2View: View {
         self._introOfferEligibilityContext = .init(
             wrappedValue: .init(introEligibilityChecker: introEligibilityChecker)
         )
-        self._paywallPromoOfferCache = .init(wrappedValue: paywallPromoOfferCache)
 
         // Step 0: Decide which ComponentsConfig to use (base is default)
         let componentsConfig = paywallComponentsData.componentsConfig.base
@@ -176,10 +246,9 @@ struct PaywallsV2View: View {
             } else {
                 switch self.paywallStateManager.state {
                 case .success(let paywallState):
-                    if let paywallPromoOfferCache = myViewModel.data {
+//                    if let paywallPromoOfferCache = myViewModel.data {
                         LoadedPaywallsV2View(
                             introOfferEligibilityContext: introOfferEligibilityContext,
-                            paywallPromoOfferCache: paywallPromoOfferCache,
                             paywallState: paywallState,
                             uiConfigProvider: self.uiConfigProvider,
                             onDismiss: self.onDismiss
@@ -187,7 +256,7 @@ struct PaywallsV2View: View {
                         .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
                         .environmentObject(self.purchaseHandler)
                         .environmentObject(self.introOfferEligibilityContext)
-                        .environmentObject(paywallPromoOfferCache)
+                        .environmentObject(self.paywallPromoOfferCache)
                         .disabled(self.purchaseHandler.actionInProgress)
                         .onAppear {
                             self.purchaseHandler.trackPaywallImpression(
@@ -204,7 +273,7 @@ struct PaywallsV2View: View {
                             await self.introOfferEligibilityContext.computeEligibility(for: paywallState.packages)
                         }
                         .task {
-                            await paywallPromoOfferCache.computeEligibility(
+                            await self.paywallPromoOfferCache.computeEligibility(
                                 for: paywallState.packageInfos.map { ($0.package, $0.promotionalOfferProductCode) }
                             )
                         }
@@ -221,7 +290,7 @@ struct PaywallsV2View: View {
                                     value: self.purchaseHandler.purchaseError as NSError?)
                         .preference(key: RestoreErrorPreferenceKey.self,
                                     value: self.purchaseHandler.restoreError as NSError?)
-                    }
+//                    }
                 case .failure(let error):
                     // Show fallback paywall and debug error message that
                     // occurred while validating data and view models
@@ -231,9 +300,23 @@ struct PaywallsV2View: View {
                 }
             }
         }
-        .task {
-            let value = await self.paywallPromoOfferCache.hasAnySubscriptionHistory
-            self.myViewModel.data = .init(hasAnySubscriptionHistory: value)
+        .onAppear {
+            let historyObserver = Purchases.shared.subscriptionHistoryObserver
+
+            print("JOSH thing \(historyObserver.status)")
+            let valueEnum = historyObserver.status
+
+            let value: Bool
+            switch valueEnum {
+            case .unknown:
+                value = false
+            case .hasHistory:
+                value = true
+            case .noHistory:
+                value = false
+            }
+
+            self.paywallPromoOfferCache.update(value)
         }
     }
 
@@ -271,7 +354,6 @@ struct PaywallsV2View: View {
 private struct LoadedPaywallsV2View: View {
 
     private let introOfferEligibilityContext: IntroOfferEligibilityContext
-    private let paywallPromoOfferCache: PaywallPromoOfferCacheV2
 
     private let paywallState: PaywallState
     private let uiConfigProvider: UIConfigProvider
@@ -282,13 +364,11 @@ private struct LoadedPaywallsV2View: View {
 
     init(
         introOfferEligibilityContext: IntroOfferEligibilityContext,
-        paywallPromoOfferCache: PaywallPromoOfferCacheV2,
         paywallState: PaywallState,
         uiConfigProvider: UIConfigProvider,
         onDismiss: @escaping () -> Void
     ) {
         self.introOfferEligibilityContext = introOfferEligibilityContext
-        self.paywallPromoOfferCache = paywallPromoOfferCache
         self.paywallState = paywallState
         self.uiConfigProvider = uiConfigProvider
         self.onDismiss = onDismiss
