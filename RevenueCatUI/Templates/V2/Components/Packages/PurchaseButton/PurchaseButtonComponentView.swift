@@ -27,7 +27,7 @@ struct PurchaseButtonComponentView: View {
     private var packageContext: PackageContext
 
     @EnvironmentObject
-    private var paywallPromoOfferCache: PaywallPromoOfferCacheV2
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
 
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler

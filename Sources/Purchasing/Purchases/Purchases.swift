@@ -251,13 +251,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         systemInfo.storefront?.countryCode
     }
 
-    @_spi(Internal) public var paywallPromoOfferCache: PaywallPromoOfferCacheType? {
-        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-            return self.paywallCache?.promoOfferCache
-        } else {
-            return nil
-        }
-    }
 
     private let attributionFetcher: AttributionFetcher
     private let attributionPoster: AttributionPoster
@@ -606,8 +599,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) {
             paywallCache = PaywallCacheWarming(
-                introEligibiltyChecker: trialOrIntroPriceChecker,
-                promoOfferCache: PaywallPromoOfferCache()
+                introEligibiltyChecker: trialOrIntroPriceChecker
             )
         } else {
             paywallCache = nil

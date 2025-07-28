@@ -27,7 +27,7 @@ struct ImageComponentView: View {
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
     @EnvironmentObject
-    private var paywallPromoOfferCache: PaywallPromoOfferCacheV2
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
 
     @Environment(\.componentViewState)
     private var componentViewState

@@ -86,7 +86,7 @@ enum FallbackContent {
 @MainActor
 class MyViewModel: ObservableObject {
 
-    @Published var data: PaywallPromoOfferCacheV2?
+    @Published var data: PaywallPromoOfferCache?
 
 }
 
@@ -112,8 +112,6 @@ struct PaywallsV2View: View {
     private let onDismiss: () -> Void
     private let fallbackContent: FallbackContent
 
-    @ObservedObject
-    private var paywallPromoOfferCache: PaywallPromoOfferCache
 
     @StateObject
     private var myViewModel = MyViewModel()
@@ -123,7 +121,6 @@ struct PaywallsV2View: View {
         offering: Offering,
         purchaseHandler: PurchaseHandler,
         introEligibilityChecker: TrialOrIntroEligibilityChecker,
-        paywallPromoOfferCache: PaywallPromoOfferCache,
         showZeroDecimalPlacePrices: Bool,
         onDismiss: @escaping () -> Void,
         fallbackContent: FallbackContent,
@@ -143,7 +140,6 @@ struct PaywallsV2View: View {
         self._introOfferEligibilityContext = .init(
             wrappedValue: .init(introEligibilityChecker: introEligibilityChecker)
         )
-        self._paywallPromoOfferCache = .init(wrappedValue: paywallPromoOfferCache)
 
         // Step 0: Decide which ComponentsConfig to use (base is default)
         let componentsConfig = paywallComponentsData.componentsConfig.base
@@ -232,8 +228,7 @@ struct PaywallsV2View: View {
             }
         }
         .task {
-            let value = await self.paywallPromoOfferCache.hasAnySubscriptionHistory
-            self.myViewModel.data = .init(hasAnySubscriptionHistory: value)
+            self.myViewModel.data = .init(purchases: self.purchaseHandler.purchases)
         }
     }
 
@@ -271,7 +266,7 @@ struct PaywallsV2View: View {
 private struct LoadedPaywallsV2View: View {
 
     private let introOfferEligibilityContext: IntroOfferEligibilityContext
-    private let paywallPromoOfferCache: PaywallPromoOfferCacheV2
+    private let paywallPromoOfferCache: PaywallPromoOfferCache
 
     private let paywallState: PaywallState
     private let uiConfigProvider: UIConfigProvider
@@ -282,7 +277,7 @@ private struct LoadedPaywallsV2View: View {
 
     init(
         introOfferEligibilityContext: IntroOfferEligibilityContext,
-        paywallPromoOfferCache: PaywallPromoOfferCacheV2,
+        paywallPromoOfferCache: PaywallPromoOfferCache,
         paywallState: PaywallState,
         uiConfigProvider: UIConfigProvider,
         onDismiss: @escaping () -> Void

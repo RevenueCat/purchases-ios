@@ -7,10 +7,12 @@
 // swiftlint:disable missing_docs
 
 import Combine
+import Foundation
+import RevenueCat
 import StoreKit
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public actor SubscriptionHistoryTracker {
+fileprivate actor SubscriptionHistoryTracker {
 
     public struct Update: Equatable, Sendable {
         public let hasAnySubscriptionHistory: Bool
@@ -69,25 +71,32 @@ public actor SubscriptionHistoryTracker {
     }
 }
 
-@_spi(Internal) public protocol PaywallPromoOfferCacheType: Sendable {
-
-}
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@_spi(Internal) public actor PaywallPromoOfferCache: ObservableObject, PaywallPromoOfferCacheType {
+public final class PaywallPromoOfferCache: ObservableObject {
 
-    @_spi(Internal) public var hasAnySubscriptionHistory: Bool = false
+    typealias ProductID = String
+    public typealias PackageInfo = (package: Package, promotionalOfferProductCode: String?)
 
+    public enum Status: Equatable {
+        case unknown
+        case ineligible
+        case signedEligible(PromotionalOffer)
+    }
+
+    private var cache: [ProductID: Status] = [:]
+    @Published public private(set) var hasAnySubscriptionHistory: Bool = false
+    private let purchases: Purchases
     private let subscriptionTracker: SubscriptionHistoryTracker
     private var listenTask: Task<Void, Never>?
 
     // MARK: - Init
 
-    @_spi(Internal) public init() {
+    public init(purchases: Purchases = Purchases.shared) {
+        self.purchases = purchases
         self.subscriptionTracker = SubscriptionHistoryTracker()
         Task { await self.configure() }
     }
-
+    
     deinit {
         listenTask?.cancel()
     }
@@ -98,44 +107,21 @@ public actor SubscriptionHistoryTracker {
         }
     }
 
-    // MARK: - Subscription updates
-
     private func listenToSubscriptionUpdates() async {
         for await update in await subscriptionTracker.updates {
-            self.hasAnySubscriptionHistory = update.hasAnySubscriptionHistory
+            await MainActor.run {
+                self.hasAnySubscriptionHistory = update.hasAnySubscriptionHistory
+            }
         }
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@_spi(Internal) public final class PaywallPromoOfferCacheV2: ObservableObject {
-
-    typealias ProductID = String
-    @_spi(Internal) public typealias PackageInfo = (package: Package, promotionalOfferProductCode: String?)
-
-    public enum Status: Equatable {
-        case unknown
-        case ineligible
-        case signedEligible(PromotionalOffer)
-    }
-
-    private var cache: [ProductID: Status] = [:]
-    private var hasAnySubscriptionHistory: Bool = false
-
-    // MARK: - Init
-
-    @_spi(Internal) public init(hasAnySubscriptionHistory: Bool = false) {
-        self.hasAnySubscriptionHistory = hasAnySubscriptionHistory
     }
 
     // MARK: - Public API
 
-    @_spi(Internal) public func computeEligibility(for packageInfos: [PackageInfo]) async {
+    public func computeEligibility(for packageInfos: [PackageInfo]) async {
         await self.checkSignedEligibility(packageInfos: packageInfos)
     }
 
-    @_spi(Internal) public func isMostLikelyEligible(for package: Package?) -> Bool {
+    public func isMostLikelyEligible(for package: Package?) -> Bool {
         guard let package else { return false }
 
         let status = cache[package.storeProduct.productIdentifier] ?? .ineligible
@@ -147,7 +133,7 @@ public actor SubscriptionHistoryTracker {
         }
     }
 
-    @_spi(Internal) public func get(for package: Package?) -> PromotionalOffer? {
+    public func get(for package: Package?) -> PromotionalOffer? {
         guard let package else { return nil }
 
         if case .signedEligible(let promoOffer) = cache[package.storeProduct.productIdentifier] {
@@ -166,7 +152,7 @@ public actor SubscriptionHistoryTracker {
                let discount = storeProduct.discounts.first(where: { $0.offerIdentifier == productCode }) {
 
                 do {
-                    let promoOffer = try await Purchases.shared.promotionalOffer(
+                    let promoOffer = try await purchases.promotionalOffer(
                         forProductDiscount: discount,
                         product: storeProduct
                     )

@@ -25,8 +25,6 @@ protocol PaywallCacheWarmingType: Sendable {
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func warmUpPaywallFontsCache(offerings: Offerings) async
 
-    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    var promoOfferCache: PaywallPromoOfferCacheType { get }
 
 #if !os(macOS) && !os(tvOS) // For Paywalls
 
@@ -58,7 +56,6 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     private let introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType
     private let imageFetcher: PaywallImageFetcherType
     private let fontsManager: PaywallFontManagerType
-    internal let promoOfferCache: PaywallPromoOfferCacheType
 
     private var hasLoadedEligibility = false
     private var hasLoadedImages = false
@@ -67,13 +64,11 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     init(
         introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType,
         imageFetcher: PaywallImageFetcherType = DefaultPaywallImageFetcher(),
-        fontsManager: PaywallFontManagerType = DefaultPaywallFontsManager(session: PaywallCacheWarming.downloadSession),
-        promoOfferCache: PaywallPromoOfferCacheType
+        fontsManager: PaywallFontManagerType = DefaultPaywallFontsManager(session: PaywallCacheWarming.downloadSession)
     ) {
         self.introEligibiltyChecker = introEligibiltyChecker
         self.imageFetcher = imageFetcher
         self.fontsManager = fontsManager
-        self.promoOfferCache = promoOfferCache
     }
 
     func warmUpEligibilityCache(offerings: Offerings) {
