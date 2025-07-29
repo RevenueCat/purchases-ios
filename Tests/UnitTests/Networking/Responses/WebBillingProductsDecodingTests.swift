@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  WebProductsDecodingTests.swift
+//  WebBillingProductsDecodingTests.swift
 //
 //  Created by Antonio Pallares on 28/7/25.
 
@@ -15,7 +15,7 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-class WebProductsDecodingTests: BaseHTTPResponseTest {
+class WebBillingProductsDecodingTests: BaseHTTPResponseTest {
 
     func testResponseDataIsCorrect() throws {
         let response: WebBillingProductsResponse = try Self.decodeFixture("WebProducts")

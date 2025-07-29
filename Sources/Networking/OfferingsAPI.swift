@@ -77,7 +77,7 @@ class OfferingsAPI {
         )
     }
 
-    func getWebProducts(
+    func getWebBillingProducts(
         appUserID: String, productIds: Set<String>, completion: @escaping WebBillingProductsResponseHandler
     ) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
