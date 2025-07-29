@@ -18,7 +18,7 @@ import XCTest
 class WebBillingProductsDecodingTests: BaseHTTPResponseTest {
 
     func testResponseDataIsCorrect() throws {
-        let response: WebBillingProductsResponse = try Self.decodeFixture("WebProducts")
+        let response: WebBillingProductsResponse = try Self.decodeFixture("WebBillingProducts")
 
         let products = response.productDetails
         expect(products.count).to(equal(2))
@@ -55,7 +55,7 @@ class WebBillingProductsDecodingTests: BaseHTTPResponseTest {
     }
 
     func testResponseDataIsCorrectWith0WebProducts() throws {
-        let response: WebBillingProductsResponse = try Self.decodeFixture("WebProductsEmpty")
+        let response: WebBillingProductsResponse = try Self.decodeFixture("WebBillingProductsEmpty")
         expect(response.productDetails).to(beEmpty())
     }
 }
