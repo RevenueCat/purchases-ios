@@ -217,9 +217,9 @@ private extension UIViewController {
 fileprivate extension TestStorePurchaseHandler {
 
     static let purchaseAlertTitle = "Test Purchase"
-    static let purchaseActionTitle = "Test Purchase"
+    static let purchaseActionTitle = "Test valid purchase"
     static let cancelActionTitle = "Cancel"
-    static let failureActionTitle = "Test Failure"
+    static let failureActionTitle = "Test failed purchase"
 
 }
 
