@@ -18,7 +18,7 @@ struct WebOfferingProductsResponse {
     struct Package {
         let identifier: String
         let webCheckoutUrl: String
-        let productDetails: WebProductsResponse.Product
+        let productDetails: WebBillingProductsResponse.Product
     }
 
     struct Offering {

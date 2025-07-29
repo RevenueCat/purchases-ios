@@ -27,7 +27,7 @@ class BackendGetWebProductsTests: BaseBackendTests {
 
     func testGetWebProductsCallsHTTPMethod() {
         self.httpClient.mock(
-            requestPath: .getWebProducts(userId: Self.userID, productIds: self.productIds),
+            requestPath: .getWebBillingProducts(userId: Self.userID, productIds: self.productIds),
             response: .init(statusCode: .success, response: Self.noProductsResponse as [String: Any])
         )
 
@@ -42,7 +42,7 @@ class BackendGetWebProductsTests: BaseBackendTests {
 
     func testGetWebProductsCallsHTTPMethodWithNoDelay() {
         self.httpClient.mock(
-            requestPath: .getWebProducts(userId: Self.userID, productIds: self.productIds),
+            requestPath: .getWebBillingProducts(userId: Self.userID, productIds: self.productIds),
             response: .init(statusCode: .success, response: Self.noProductsResponse as [String: Any])
         )
 
@@ -57,7 +57,7 @@ class BackendGetWebProductsTests: BaseBackendTests {
 
     func testGetWebProductsCachesForSameUserIDAndProductIds() {
         self.httpClient.mock(
-            requestPath: .getWebProducts(userId: Self.userID, productIds: self.productIds),
+            requestPath: .getWebBillingProducts(userId: Self.userID, productIds: self.productIds),
             response: .init(statusCode: .success,
                             response: Self.noProductsResponse as [String: Any],
                             delay: .milliseconds(10))
@@ -70,7 +70,7 @@ class BackendGetWebProductsTests: BaseBackendTests {
 
     func testRepeatedRequestsLogDebugMessage() {
         self.httpClient.mock(
-            requestPath: .getWebProducts(userId: Self.userID, productIds: self.productIds),
+            requestPath: .getWebBillingProducts(userId: Self.userID, productIds: self.productIds),
             response: .init(statusCode: .success,
                             response: Self.noProductsResponse as [String: Any],
                             delay: .milliseconds(10))
@@ -81,7 +81,7 @@ class BackendGetWebProductsTests: BaseBackendTests {
         expect(self.httpClient.calls).toEventually(haveCount(1))
 
         self.logger.verifyMessageWasLogged(
-            "Network operation '\(GetWebProductsOperation.self)' found with the same cache key",
+            "Network operation '\(GetWebBillingProductsOperation.self)' found with the same cache key",
             level: .debug
         )
     }
@@ -91,9 +91,9 @@ class BackendGetWebProductsTests: BaseBackendTests {
                                                response: Self.noProductsResponse as [String: Any])
         let userID2 = "user_id_2"
 
-        self.httpClient.mock(requestPath: .getWebProducts(userId: Self.userID, productIds: self.productIds),
+        self.httpClient.mock(requestPath: .getWebBillingProducts(userId: Self.userID, productIds: self.productIds),
                              response: response)
-        self.httpClient.mock(requestPath: .getWebProducts(userId: userID2, productIds: self.productIds),
+        self.httpClient.mock(requestPath: .getWebBillingProducts(userId: userID2, productIds: self.productIds),
                              response: response)
 
         self.offerings.getWebProducts(appUserID: Self.userID, productIds: self.productIds, completion: { _ in })
@@ -107,9 +107,9 @@ class BackendGetWebProductsTests: BaseBackendTests {
                                                response: Self.noProductsResponse as [String: Any])
         let differentProductIds: Set<String> = ["test_lifetime"]
 
-        self.httpClient.mock(requestPath: .getWebProducts(userId: Self.userID, productIds: self.productIds),
+        self.httpClient.mock(requestPath: .getWebBillingProducts(userId: Self.userID, productIds: self.productIds),
                              response: response)
-        self.httpClient.mock(requestPath: .getWebProducts(userId: Self.userID, productIds: differentProductIds),
+        self.httpClient.mock(requestPath: .getWebBillingProducts(userId: Self.userID, productIds: differentProductIds),
                              response: response)
 
         self.offerings.getWebProducts(appUserID: Self.userID, productIds: self.productIds, completion: { _ in })
@@ -120,11 +120,11 @@ class BackendGetWebProductsTests: BaseBackendTests {
 
     func testGetWebProductsTwoProducts() throws {
         self.httpClient.mock(
-            requestPath: .getWebProducts(userId: Self.userID, productIds: self.productIds),
+            requestPath: .getWebBillingProducts(userId: Self.userID, productIds: self.productIds),
             response: .init(statusCode: .success, response: Self.twoProductsResponse)
         )
 
-        let result: Atomic<Result<WebProductsResponse, BackendError>?> = nil
+        let result: Atomic<Result<WebBillingProductsResponse, BackendError>?> = nil
         self.offerings.getWebProducts(appUserID: Self.userID, productIds: self.productIds) {
             result.value = $0
         }
@@ -168,7 +168,7 @@ class BackendGetWebProductsTests: BaseBackendTests {
 
     func testGetWebProductsFailSendsError() {
         self.httpClient.mock(
-            requestPath: .getWebProducts(userId: Self.userID, productIds: self.productIds),
+            requestPath: .getWebBillingProducts(userId: Self.userID, productIds: self.productIds),
             response: .init(error: .unexpectedResponse(nil))
         )
 
@@ -183,7 +183,7 @@ class BackendGetWebProductsTests: BaseBackendTests {
         let mockedError: NetworkError = .unexpectedResponse(nil)
 
         self.httpClient.mock(
-            requestPath: .getWebProducts(userId: Self.userID, productIds: self.productIds),
+            requestPath: .getWebBillingProducts(userId: Self.userID, productIds: self.productIds),
             response: .init(error: mockedError)
         )
 
