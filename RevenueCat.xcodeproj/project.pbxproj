@@ -35,6 +35,7 @@
 		03A98D322D2441B8009BCA61 /* PaywallDataDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98D312D2441B2009BCA61 /* PaywallDataDecodingTests.swift */; };
 		03A98D362D244329009BCA61 /* UIConfigDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98D352D244321009BCA61 /* UIConfigDecodingTests.swift */; };
 		03A98D382D2AC63B009BCA61 /* UIConfigProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98D372D2AC637009BCA61 /* UIConfigProvider.swift */; };
+		03AB07812E385AEF00BC5275 /* PaywallPromoOfferCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03AB07802E385AEF00BC5275 /* PaywallPromoOfferCache.swift */; };
 		03C06FC52D4553C000600693 /* PresentedPartialsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C06FC42D4553BB00600693 /* PresentedPartialsTests.swift */; };
 		03C06FC72D46742D00600693 /* PaywallCarouselComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C06FC62D46742600600693 /* PaywallCarouselComponent.swift */; };
 		03C06FCA2D479C7400600693 /* CarouselComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C06FC92D479C6D00600693 /* CarouselComponentView.swift */; };
@@ -1459,6 +1460,7 @@
 		03A98D312D2441B2009BCA61 /* PaywallDataDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallDataDecodingTests.swift; sourceTree = "<group>"; };
 		03A98D352D244321009BCA61 /* UIConfigDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIConfigDecodingTests.swift; sourceTree = "<group>"; };
 		03A98D372D2AC637009BCA61 /* UIConfigProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIConfigProvider.swift; sourceTree = "<group>"; };
+		03AB07802E385AEF00BC5275 /* PaywallPromoOfferCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallPromoOfferCache.swift; sourceTree = "<group>"; };
 		03C06FC42D4553BB00600693 /* PresentedPartialsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentedPartialsTests.swift; sourceTree = "<group>"; };
 		03C06FC62D46742600600693 /* PaywallCarouselComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallCarouselComponent.swift; sourceTree = "<group>"; };
 		03C06FC92D479C6D00600693 /* CarouselComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarouselComponentView.swift; sourceTree = "<group>"; };
@@ -2979,6 +2981,7 @@
 		2C7457492CEA6B06004ACE52 /* EnvironmentObjects */ = {
 			isa = PBXGroup;
 			children = (
+				03AB07802E385AEF00BC5275 /* PaywallPromoOfferCache.swift */,
 				2C7457412CE810FD004ACE52 /* IntroOfferEligibilityContext.swift */,
 				2C7457202CE702BB004ACE52 /* PackageContext.swift */,
 				0382135F2DCAF6BE003C02C3 /* OpenSheet.swift */,
@@ -7392,6 +7395,7 @@
 				5798C94B2DF1985700F44400 /* CustomerCenter+PreferenceKeys.swift in Sources */,
 				5798C94C2DF1985700F44400 /* URLUtilities.swift in Sources */,
 				5798C94D2DF1985700F44400 /* PurchaseHistoryView.swift in Sources */,
+				03AB07812E385AEF00BC5275 /* PaywallPromoOfferCache.swift in Sources */,
 				5798C94E2DF1985700F44400 /* CustomerCenterPurchasesType.swift in Sources */,
 				5798C94F2DF1985700F44400 /* CustomerCenterConfigData+Mock.swift in Sources */,
 				5798C9502DF1985700F44400 /* MockCustomerCenterStoreKitUtilities.swift in Sources */,

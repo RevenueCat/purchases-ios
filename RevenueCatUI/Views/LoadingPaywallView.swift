@@ -11,7 +11,7 @@
 //
 //  Created by Nacho Soto on 7/21/23.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(macOS) && !os(tvOS)
@@ -157,6 +157,10 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
         get { return .myApp }
         set { _ = newValue }
+    }
+
+    var subscriptionHistoryObserver: RevenueCat.SubscriptionHistoryObserver {
+        SubscriptionHistoryObserver()
     }
 
     func customerInfo() async throws -> RevenueCat.CustomerInfo {

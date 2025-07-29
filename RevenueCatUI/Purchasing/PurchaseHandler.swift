@@ -11,7 +11,7 @@
 //  
 //  Created by Nacho Soto on 7/13/23.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import StoreKit
 import SwiftUI
 
@@ -32,6 +32,10 @@ final class PurchaseHandler: ObservableObject {
     /// Where responsibiliy for completing purchases lies
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
         purchases.purchasesAreCompletedBy
+    }
+
+    var subscriptionHistoryObserver: RevenueCat.SubscriptionHistoryObserver {
+        purchases.subscriptionHistoryObserver
     }
 
     /// `false` if this `PurchaseHandler` is not backend by a configured `Purchases`instance.
@@ -430,6 +434,10 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
     var preferredLocales: [String] { Locale.preferredLanguages }
 
     var preferredLocaleOverride: String? { nil }
+
+    var subscriptionHistoryObserver: RevenueCat.SubscriptionHistoryObserver {
+        SubscriptionHistoryObserver()
+    }
 
     init(customerInfo: CustomerInfo? = nil, purchasesAreCompletedBy: PurchasesAreCompletedBy) {
         self.customerInfo = customerInfo

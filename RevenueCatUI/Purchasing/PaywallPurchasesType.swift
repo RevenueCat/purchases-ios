@@ -26,6 +26,9 @@ protocol PaywallPurchasesType: Sendable {
     /// property is only useful for reading the override value.
     var preferredLocaleOverride: String? { get }
 
+    /// Returns an observer of user's subscription history
+    var subscriptionHistoryObserver: SubscriptionHistoryObserver { get }
+
     @Sendable
     func purchase(package: Package) async throws -> PurchaseResultData
 
