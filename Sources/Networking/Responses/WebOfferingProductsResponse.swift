@@ -15,43 +15,10 @@ import Foundation
 
 struct WebOfferingProductsResponse {
 
-    struct Price {
-        let amountMicros: Int64
-        // This will be a 3-letter currency code
-        let currency: String
-    }
-
-    struct PricingPhase {
-        let periodDuration: String?
-        let price: Price?
-        let cycleCount: Int
-    }
-
-    struct PurchaseOption {
-        // Only for non-subscriptions
-        @IgnoreDecodeErrors<Price?>
-        var basePrice: Price?
-
-        // Only for subscriptions
-        @IgnoreDecodeErrors<PricingPhase?>
-        var base: PricingPhase?
-        @IgnoreDecodeErrors<PricingPhase?>
-        var trial: PricingPhase?
-    }
-
-    struct Product {
-        let identifier: String
-        let productType: String
-        let title: String
-        let description: String?
-        let defaultPurchaseOptionId: String?
-        let purchaseOptions: [String: PurchaseOption]
-    }
-
     struct Package {
         let identifier: String
         let webCheckoutUrl: String
-        let productDetails: Product
+        let productDetails: WebBillingProductsResponse.Product
     }
 
     struct Offering {
@@ -66,10 +33,6 @@ struct WebOfferingProductsResponse {
 
 extension WebOfferingProductsResponse.Offering: Codable, Equatable {}
 extension WebOfferingProductsResponse.Package: Codable, Equatable {}
-extension WebOfferingProductsResponse.Product: Codable, Equatable {}
-extension WebOfferingProductsResponse.PurchaseOption: Codable, Equatable {}
-extension WebOfferingProductsResponse.PricingPhase: Codable, Equatable {}
-extension WebOfferingProductsResponse.Price: Codable, Equatable {}
 
 extension WebOfferingProductsResponse: Codable, Equatable {}
 

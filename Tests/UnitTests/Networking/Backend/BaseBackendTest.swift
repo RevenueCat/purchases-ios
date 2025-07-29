@@ -29,6 +29,7 @@ class BaseBackendTests: TestCase {
     private(set) var mockPurchasedProductsFetcher: MockPurchasedProductsFetcher!
     private(set) var backend: Backend!
     private(set) var offerings: OfferingsAPI!
+    private(set) var webBilling: WebBillingAPI!
     private(set) var offlineEntitlements: OfflineEntitlementsAPI!
     private(set) var identity: IdentityAPI!
     private(set) var internalAPI: InternalAPI!
@@ -85,6 +86,7 @@ class BaseBackendTests: TestCase {
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
         self.identity = IdentityAPI(backendConfig: backendConfig)
         self.offerings = OfferingsAPI(backendConfig: backendConfig)
+        self.webBilling = WebBillingAPI(backendConfig: backendConfig)
         self.offlineEntitlements = OfflineEntitlementsAPI(backendConfig: backendConfig)
         self.internalAPI = InternalAPI(backendConfig: backendConfig)
         self.customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
@@ -95,6 +97,7 @@ class BaseBackendTests: TestCase {
                                customerAPI: customer,
                                identityAPI: self.identity,
                                offeringsAPI: self.offerings,
+                               webBillingAPI: self.webBilling,
                                offlineEntitlements: self.offlineEntitlements,
                                internalAPI: self.internalAPI,
                                customerCenterConfig: self.customerCenterConfig,
