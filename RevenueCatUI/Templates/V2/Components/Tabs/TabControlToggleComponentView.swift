@@ -39,12 +39,11 @@ struct TabControlToggleComponentView: View {
     private let onDismiss: () -> Void
 
     @State
-    private var isOn: Bool
+    private var isOn: Bool = false
 
     init(viewModel: TabControlToggleComponentViewModel, onDismiss: @escaping () -> Void) {
         self.viewModel = viewModel
         self.onDismiss = onDismiss
-        self._isOn = .init(wrappedValue: viewModel.defaultValue)
     }
 
     var body: some View {
@@ -58,10 +57,15 @@ struct TabControlToggleComponentView: View {
                 )
             )
             .labelsHidden()
-        .onChangeOf(self.isOn) { newValue in
-            self.tabControlContext.selectedTabId =
-                newValue ? self.tabControlContext.tabIds[1] : self.tabControlContext.tabIds[0]
-        }
+            .onAppear {
+                let tabIds = tabControlContext.tabIds
+                let selectedId = tabControlContext.selectedTabId
+                self.isOn = tabIds.indices.contains(1) && selectedId == tabIds[1]
+            }
+            .onChangeOf(self.isOn) { newValue in
+                self.tabControlContext.selectedTabId =
+                    newValue ? self.tabControlContext.tabIds[1] : self.tabControlContext.tabIds[0]
+            }
     }
 
 }
