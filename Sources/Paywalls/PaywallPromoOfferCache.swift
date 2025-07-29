@@ -98,7 +98,6 @@ public actor SubscriptionHistoryObserver {
         self.status = newStatus
     }
 
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     private func bind(_ tracker: SubscriptionHistoryTracker) {
         tracker.updateSubject
             .map { $0.hasAnySubscriptionHistory ? Status.hasHistory : Status.noHistory }
