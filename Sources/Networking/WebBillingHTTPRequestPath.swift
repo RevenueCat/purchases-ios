@@ -56,7 +56,7 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
             return "/rcbilling/v1/subscribers/\(appUserID.trimmedAndEscaped)/offering_products"
         case let .getWebBillingProducts(userId, productIds):
             let encodedUserId = userId.trimmedAndEscaped
-            let encodedProductIds = productIds.sorted().map { productId in
+            let encodedProductIds = productIds.map { productId in
                 "id=\(productId.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? productId)"
             }.joined(separator: "&")
             return "/rcbilling/v1/subscribers/\(encodedUserId)/products?\(encodedProductIds)"
