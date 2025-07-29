@@ -227,7 +227,7 @@ fileprivate extension TestStoreProduct {
         message += "Price: \(self.localizedPriceString)\n"
 
         if let subscriptionPeriod = self.subscriptionPeriod {
-            message += "Period: \(subscriptionPeriod)\n"
+            message += subscriptionPeriod.debugDescription + "\n"
         }
 
         if !self.discounts.isEmpty {
