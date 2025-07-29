@@ -60,8 +60,7 @@ final class SubscriptionHistoryTracker {
                     }
                 }
 
-                print("JOSH update subject \(found)")
-                updateSubject.send(.init(hasAnySubscriptionHistory: found))
+                self.updateSubject.send(.init(hasAnySubscriptionHistory: found))
             }
         }
     }
@@ -69,7 +68,7 @@ final class SubscriptionHistoryTracker {
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
 @_spi(Internal)
-public actor SubscriptionHistoryObserver: ObservableObject, Sendable {
+public actor SubscriptionHistoryObserver {
 
     public enum Status: Equatable {
         case unknown
