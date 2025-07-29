@@ -21,7 +21,7 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
     var authenticated: Bool {
         switch self {
         case .getWebOfferingProducts,
-             .getWebProducts:
+             .getWebBillingProducts:
             return true
         }
     }
@@ -29,7 +29,7 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
     var shouldSendEtag: Bool {
         switch self {
         case .getWebOfferingProducts,
-             .getWebProducts:
+             .getWebBillingProducts:
             return true
         }
     }
@@ -37,7 +37,7 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
     var supportsSignatureVerification: Bool {
         switch self {
         case .getWebOfferingProducts,
-             .getWebProducts:
+             .getWebBillingProducts:
             return false
         }
     }
@@ -45,7 +45,7 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
     var needsNonceForSigning: Bool {
         switch self {
         case .getWebOfferingProducts,
-             .getWebProducts:
+             .getWebBillingProducts:
             return false
         }
     }
@@ -54,7 +54,7 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
         switch self {
         case let .getWebOfferingProducts(appUserID):
             return "/rcbilling/v1/subscribers/\(appUserID.trimmedAndEscaped)/offering_products"
-        case let .getWebProducts(userId, productIds):
+        case let .getWebBillingProducts(userId, productIds):
             let encodedUserId = userId.trimmedAndEscaped
             let encodedProductIds = productIds.sorted().map { productId in
                 "id=\(productId.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? productId)"
@@ -67,7 +67,7 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
         switch self {
         case .getWebOfferingProducts:
             return "get_web_offering_products"
-        case .getWebProducts:
+        case .getWebBillingProducts:
             return "get_web_products"
         }
     }

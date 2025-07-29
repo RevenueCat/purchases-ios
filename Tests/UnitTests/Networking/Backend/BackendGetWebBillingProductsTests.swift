@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  BackendGetWebProductsTests.swift
+//  BackendGetWebBillingProductsTests.swift
 //
 //  Created by Antonio Pallares on 23/7/25.
 
@@ -17,7 +17,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class BackendGetWebProductsTests: BaseBackendTests {
+class BackendGetWebBillingProductsTests: BaseBackendTests {
 
     private let productIds: Set<String> = ["test_monthly", "test_annual"]
 
@@ -25,14 +25,16 @@ class BackendGetWebProductsTests: BaseBackendTests {
         super.createClient(#file)
     }
 
-    func testGetWebProductsCallsHTTPMethod() {
+    func testGetWebBillingProductsCallsHTTPMethod() {
         self.httpClient.mock(
-            requestPath: .getWebProducts(userId: Self.userID, productIds: self.productIds),
+            requestPath: .getWebBillingProducts(userId: Self.userID, productIds: self.productIds),
             response: .init(statusCode: .success, response: Self.noProductsResponse as [String: Any])
         )
 
         let result = waitUntilValue { completed in
-            self.offerings.getWebProducts(appUserID: Self.userID, productIds: self.productIds, completion: completed)
+            self.offerings.getWebBillingProducts(
+                appUserID: Self.userID, productIds: self.productIds, completion: completed
+            )
         }
 
         expect(result).to(beSuccess())
@@ -40,14 +42,16 @@ class BackendGetWebProductsTests: BaseBackendTests {
         expect(self.operationDispatcher.invokedDispatchOnWorkerThreadDelayParam) == JitterableDelay.none
     }
 
-    func testGetWebProductsCallsHTTPMethodWithNoDelay() {
+    func testGetWebBillingProductsCallsHTTPMethodWithNoDelay() {
         self.httpClient.mock(
-            requestPath: .getWebProducts(userId: Self.userID, productIds: self.productIds),
+            requestPath: .getWebBillingProducts(userId: Self.userID, productIds: self.productIds),
             response: .init(statusCode: .success, response: Self.noProductsResponse as [String: Any])
         )
 
         let result = waitUntilValue { completed in
-            self.offerings.getWebProducts(appUserID: Self.userID, productIds: self.productIds, completion: completed)
+            self.offerings.getWebBillingProducts(
+                appUserID: Self.userID, productIds: self.productIds, completion: completed
+            )
         }
 
         expect(result).to(beSuccess())
@@ -55,77 +59,81 @@ class BackendGetWebProductsTests: BaseBackendTests {
         expect(self.operationDispatcher.invokedDispatchOnWorkerThreadDelayParam) == JitterableDelay.none
     }
 
-    func testGetWebProductsCachesForSameUserIDAndProductIds() {
+    func testGetWebBillingProductsCachesForSameUserIDAndProductIds() {
         self.httpClient.mock(
-            requestPath: .getWebProducts(userId: Self.userID, productIds: self.productIds),
+            requestPath: .getWebBillingProducts(userId: Self.userID, productIds: self.productIds),
             response: .init(statusCode: .success,
                             response: Self.noProductsResponse as [String: Any],
                             delay: .milliseconds(10))
         )
-        self.offerings.getWebProducts(appUserID: Self.userID, productIds: self.productIds) { _ in }
-        self.offerings.getWebProducts(appUserID: Self.userID, productIds: self.productIds) { _ in }
+        self.offerings.getWebBillingProducts(appUserID: Self.userID, productIds: self.productIds) { _ in }
+        self.offerings.getWebBillingProducts(appUserID: Self.userID, productIds: self.productIds) { _ in }
 
         expect(self.httpClient.calls).toEventually(haveCount(1))
     }
 
     func testRepeatedRequestsLogDebugMessage() {
         self.httpClient.mock(
-            requestPath: .getWebProducts(userId: Self.userID, productIds: self.productIds),
+            requestPath: .getWebBillingProducts(userId: Self.userID, productIds: self.productIds),
             response: .init(statusCode: .success,
                             response: Self.noProductsResponse as [String: Any],
                             delay: .milliseconds(10))
         )
-        self.offerings.getWebProducts(appUserID: Self.userID, productIds: self.productIds) { _ in }
-        self.offerings.getWebProducts(appUserID: Self.userID, productIds: self.productIds) { _ in }
+        self.offerings.getWebBillingProducts(appUserID: Self.userID, productIds: self.productIds) { _ in }
+        self.offerings.getWebBillingProducts(appUserID: Self.userID, productIds: self.productIds) { _ in }
 
         expect(self.httpClient.calls).toEventually(haveCount(1))
 
         self.logger.verifyMessageWasLogged(
-            "Network operation '\(GetWebProductsOperation.self)' found with the same cache key",
+            "Network operation '\(GetWebBillingProductsOperation.self)' found with the same cache key",
             level: .debug
         )
     }
 
-    func testGetWebProductsDoesntCacheForMultipleUserID() {
+    func testGetWebBillingProductsDoesntCacheForMultipleUserID() {
         let response = MockHTTPClient.Response(statusCode: .success,
                                                response: Self.noProductsResponse as [String: Any])
         let userID2 = "user_id_2"
 
-        self.httpClient.mock(requestPath: .getWebProducts(userId: Self.userID, productIds: self.productIds),
+        self.httpClient.mock(requestPath: .getWebBillingProducts(userId: Self.userID, productIds: self.productIds),
                              response: response)
-        self.httpClient.mock(requestPath: .getWebProducts(userId: userID2, productIds: self.productIds),
+        self.httpClient.mock(requestPath: .getWebBillingProducts(userId: userID2, productIds: self.productIds),
                              response: response)
 
-        self.offerings.getWebProducts(appUserID: Self.userID, productIds: self.productIds, completion: { _ in })
-        self.offerings.getWebProducts(appUserID: userID2, productIds: self.productIds, completion: { _ in })
+        self.offerings.getWebBillingProducts(appUserID: Self.userID, productIds: self.productIds, completion: { _ in })
+        self.offerings.getWebBillingProducts(appUserID: userID2, productIds: self.productIds, completion: { _ in })
 
         expect(self.httpClient.calls).toEventually(haveCount(2))
     }
 
-    func testGetWebProductsDoesntCacheForDifferentProductIds() {
+    func testGetWebBillingProductsDoesntCacheForDifferentProductIds() {
         let response = MockHTTPClient.Response(statusCode: .success,
                                                response: Self.noProductsResponse as [String: Any])
         let differentProductIds: Set<String> = ["test_lifetime"]
 
-        self.httpClient.mock(requestPath: .getWebProducts(userId: Self.userID, productIds: self.productIds),
+        self.httpClient.mock(requestPath: .getWebBillingProducts(userId: Self.userID, productIds: self.productIds),
                              response: response)
-        self.httpClient.mock(requestPath: .getWebProducts(userId: Self.userID, productIds: differentProductIds),
+        self.httpClient.mock(requestPath: .getWebBillingProducts(userId: Self.userID, productIds: differentProductIds),
                              response: response)
 
-        self.offerings.getWebProducts(appUserID: Self.userID, productIds: self.productIds, completion: { _ in })
-        self.offerings.getWebProducts(appUserID: Self.userID, productIds: differentProductIds, completion: { _ in })
+        self.offerings.getWebBillingProducts(
+            appUserID: Self.userID, productIds: self.productIds, completion: { _ in }
+        )
+        self.offerings.getWebBillingProducts(
+            appUserID: Self.userID, productIds: differentProductIds, completion: { _ in }
+        )
 
         expect(self.httpClient.calls).toEventually(haveCount(2))
     }
 
-    func testGetWebProductsTwoProducts() throws {
+    func testGetWebBillingProductsTwoProducts() throws {
         self.httpClient.mock(
-            requestPath: .getWebProducts(userId: Self.userID, productIds: self.productIds),
+            requestPath: .getWebBillingProducts(userId: Self.userID, productIds: self.productIds),
             response: .init(statusCode: .success, response: Self.twoProductsResponse)
         )
 
-        let result: Atomic<Result<WebProductsResponse, BackendError>?> = nil
-        self.offerings.getWebProducts(appUserID: Self.userID, productIds: self.productIds) {
+        let result: Atomic<Result<WebBillingProductsResponse, BackendError>?> = nil
+        self.offerings.getWebBillingProducts(appUserID: Self.userID, productIds: self.productIds) {
             result.value = $0
         }
 
@@ -166,38 +174,42 @@ class BackendGetWebProductsTests: BaseBackendTests {
         expect(annualPurchaseOption.base?.price?.currency) == "EUR"
     }
 
-    func testGetWebProductsFailSendsError() {
+    func testGetWebBillingProductsFailSendsError() {
         self.httpClient.mock(
-            requestPath: .getWebProducts(userId: Self.userID, productIds: self.productIds),
+            requestPath: .getWebBillingProducts(userId: Self.userID, productIds: self.productIds),
             response: .init(error: .unexpectedResponse(nil))
         )
 
         let result = waitUntilValue { completed in
-            self.offerings.getWebProducts(appUserID: Self.userID, productIds: self.productIds, completion: completed)
+            self.offerings.getWebBillingProducts(
+                appUserID: Self.userID, productIds: self.productIds, completion: completed
+            )
         }
 
         expect(result).to(beFailure())
     }
 
-    func testGetWebProductsNetworkErrorSendsError() {
+    func testGetWebBillingProductsNetworkErrorSendsError() {
         let mockedError: NetworkError = .unexpectedResponse(nil)
 
         self.httpClient.mock(
-            requestPath: .getWebProducts(userId: Self.userID, productIds: self.productIds),
+            requestPath: .getWebBillingProducts(userId: Self.userID, productIds: self.productIds),
             response: .init(error: mockedError)
         )
 
         let result = waitUntilValue { completed in
-            self.offerings.getWebProducts(appUserID: Self.userID, productIds: self.productIds, completion: completed)
+            self.offerings.getWebBillingProducts(
+                appUserID: Self.userID, productIds: self.productIds, completion: completed
+            )
         }
 
         expect(result).to(beFailure())
         expect(result?.error) == .networkError(mockedError)
     }
 
-    func testGetWebProductsSkipsBackendCallIfAppUserIDIsEmpty() {
+    func testGetWebBillingProductsSkipsBackendCallIfAppUserIDIsEmpty() {
         waitUntil { completed in
-            self.offerings.getWebProducts(appUserID: "", productIds: self.productIds) { _ in
+            self.offerings.getWebBillingProducts(appUserID: "", productIds: self.productIds) { _ in
                 completed()
             }
         }
@@ -205,9 +217,9 @@ class BackendGetWebProductsTests: BaseBackendTests {
         expect(self.httpClient.calls).to(beEmpty())
     }
 
-    func testGetWebProductsCallsCompletionWithErrorIfAppUserIDIsEmpty() {
+    func testGetWebBillingProductsCallsCompletionWithErrorIfAppUserIDIsEmpty() {
         let receivedError = waitUntilValue { completed in
-            self.offerings.getWebProducts(appUserID: "", productIds: self.productIds) { result in
+            self.offerings.getWebBillingProducts(appUserID: "", productIds: self.productIds) { result in
                 completed(result.error)
             }
         }
@@ -217,7 +229,7 @@ class BackendGetWebProductsTests: BaseBackendTests {
 
 }
 
-private extension BackendGetWebProductsTests {
+private extension BackendGetWebBillingProductsTests {
 
     static let noProductsResponse: [String: Any?] = [
         "product_details": [] as [[String: Any]]

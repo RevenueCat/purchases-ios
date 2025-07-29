@@ -15,53 +15,53 @@
 
 enum TestStoreMockData {
 
-    private static let yearlyPricingPhase = WebProductsResponse.PricingPhase(
+    private static let yearlyPricingPhase = WebBillingProductsResponse.PricingPhase(
         periodDuration: "P1Y",
-        price: WebProductsResponse.Price(amountMicros: 99_990_000,
-                                         currency: "EUR"),
+        price: WebBillingProductsResponse.Price(amountMicros: 99_990_000,
+                                                currency: "EUR"),
         cycleCount: 1
     )
 
-    private static let monthlyPricingPhase = WebProductsResponse.PricingPhase(
+    private static let monthlyPricingPhase = WebBillingProductsResponse.PricingPhase(
         periodDuration: "P1M",
-        price: WebProductsResponse.Price(amountMicros: 9_990_000,
-                                         currency: "EUR"),
+        price: WebBillingProductsResponse.Price(amountMicros: 9_990_000,
+                                                currency: "EUR"),
         cycleCount: 1
     )
 
-    private static let oneTimePurchasePrice = WebProductsResponse.Price(
+    private static let oneTimePurchasePrice = WebBillingProductsResponse.Price(
         amountMicros: 199_900_000, currency: "GBP")
 
-    private static let yearlyPurchaseOption = WebProductsResponse.PurchaseOption(
+    private static let yearlyPurchaseOption = WebBillingProductsResponse.PurchaseOption(
         basePrice: .init(wrappedValue: nil),
         base: .init(wrappedValue: yearlyPricingPhase),
         trial: .init(wrappedValue: nil),
         introPrice: .init(wrappedValue: nil)
     )
 
-    private static let monthlyPurchaseOption = WebProductsResponse.PurchaseOption(
+    private static let monthlyPurchaseOption = WebBillingProductsResponse.PurchaseOption(
         basePrice: .init(wrappedValue: nil),
         base: .init(wrappedValue: monthlyPricingPhase),
         trial: .init(wrappedValue: nil),
         introPrice: .init(wrappedValue: nil)
     )
 
-    private static let oneTimePurchaseOption = WebProductsResponse.PurchaseOption(
+    private static let oneTimePurchaseOption = WebBillingProductsResponse.PurchaseOption(
         basePrice: .init(wrappedValue: oneTimePurchasePrice),
         base: .init(wrappedValue: nil),
         trial: .init(wrappedValue: nil),
         introPrice: .init(wrappedValue: nil)
     )
 
-    /// Can be used to test errors when converting `WebProductsResponse.Product` to `StoreProduct`.
-    private static let noBasePricePurchaseOption = WebProductsResponse.PurchaseOption(
+    /// Can be used to test errors when converting `WebBillingProductsResponse.Product` to `StoreProduct`.
+    private static let noBasePricePurchaseOption = WebBillingProductsResponse.PurchaseOption(
         basePrice: .init(wrappedValue: nil),
         base: .init(wrappedValue: nil),
         trial: .init(wrappedValue: nil),
         introPrice: .init(wrappedValue: nil)
     )
 
-    static let yearlyProduct = WebProductsResponse.Product(
+    static let yearlyProduct = WebBillingProductsResponse.Product(
         identifier: "product_annual",
         productType: .subscription,
         title: "Test Yearly Subscription",
@@ -72,7 +72,7 @@ enum TestStoreMockData {
         ]
     )
 
-    static let monthlyProduct = WebProductsResponse.Product(
+    static let monthlyProduct = WebBillingProductsResponse.Product(
         identifier: "product_monthly",
         productType: .subscription,
         title: "Test Monthly Subscription",
@@ -83,7 +83,7 @@ enum TestStoreMockData {
         ]
     )
 
-    static let lifetimeProduct = WebProductsResponse.Product(
+    static let lifetimeProduct = WebBillingProductsResponse.Product(
         identifier: "lifetime",
         productType: .nonConsumable,
         title: "Test Lifetime Product",
@@ -94,8 +94,8 @@ enum TestStoreMockData {
         ]
     )
 
-    /// Can be used to test errors when converting `WebProductsResponse.Product` to `StoreProduct`.
-    static let productWithoutPurchaseOptions = WebProductsResponse.Product(
+    /// Can be used to test errors when converting `WebBillingProductsResponse.Product` to `StoreProduct`.
+    static let productWithoutPurchaseOptions = WebBillingProductsResponse.Product(
         identifier: "product_no_purchase_options",
         productType: .subscription,
         title: "Test No Purchase Options",
@@ -104,8 +104,8 @@ enum TestStoreMockData {
         purchaseOptions: [:]
     )
 
-    /// Can be used to test errors when converting `WebProductsResponse.Product` to `StoreProduct`.
-    static let productWithoutBasePrices = WebProductsResponse.Product(
+    /// Can be used to test errors when converting `WebBillingProductsResponse.Product` to `StoreProduct`.
+    static let productWithoutBasePrices = WebBillingProductsResponse.Product(
         identifier: "product_no_base_prices",
         productType: .subscription,
         title: "Test No Base Prices",
@@ -114,17 +114,17 @@ enum TestStoreMockData {
         purchaseOptions: ["no_base_prices_option": noBasePricePurchaseOption]
     )
 
-    static let yearlyAndMonthlyWebProductsResponse = WebProductsResponse(
+    static let yearlyAndMonthlyWebBillingProductsResponse = WebBillingProductsResponse(
         productDetails: [yearlyProduct, monthlyProduct]
     )
 
-    /// Can be used to test errors when converting `WebProductsResponse.Product` to `StoreProduct`.
-    static let noPurchaseOptionsWebProductsResponse = WebProductsResponse(
+    /// Can be used to test errors when converting `WebBillingProductsResponse.Product` to `StoreProduct`.
+    static let noPurchaseOptionsWebBillingProductsResponse = WebBillingProductsResponse(
         productDetails: [productWithoutPurchaseOptions]
     )
 
-    /// Can be used to test errors when converting `WebProductsResponse.Product` to `StoreProduct`.
-    static let noBasePricesWebProductsResponse = WebProductsResponse(
+    /// Can be used to test errors when converting `WebBillingProductsResponse.Product` to `StoreProduct`.
+    static let noBasePricesWebBillingProductsResponse = WebBillingProductsResponse(
         productDetails: [productWithoutBasePrices]
     )
 

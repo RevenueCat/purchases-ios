@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  WebProductsDecodingTests.swift
+//  WebBillingProductsDecodingTests.swift
 //
 //  Created by Antonio Pallares on 28/7/25.
 
@@ -15,10 +15,10 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-class WebProductsDecodingTests: BaseHTTPResponseTest {
+class WebBillingProductsDecodingTests: BaseHTTPResponseTest {
 
     func testResponseDataIsCorrect() throws {
-        let response: WebProductsResponse = try Self.decodeFixture("WebProducts")
+        let response: WebBillingProductsResponse = try Self.decodeFixture("WebProducts")
 
         let products = response.productDetails
         expect(products.count).to(equal(2))
@@ -55,7 +55,7 @@ class WebProductsDecodingTests: BaseHTTPResponseTest {
     }
 
     func testResponseDataIsCorrectWith0WebProducts() throws {
-        let response: WebProductsResponse = try Self.decodeFixture("WebProductsEmpty")
+        let response: WebBillingProductsResponse = try Self.decodeFixture("WebProductsEmpty")
         expect(response.productDetails).to(beEmpty())
     }
 }

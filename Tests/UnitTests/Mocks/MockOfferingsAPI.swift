@@ -69,19 +69,19 @@ class MockOfferingsAPI: OfferingsAPI {
         completion(self.stubbedGetWebOfferingProductsCompletionResult!)
     }
 
-    var invokedGetWebProducts = false
-    var invokedGetWebProductsCount = 0
-    var invokedGetWebProductsParameters: (appUserID: String,
+    var invokedGetWebBillingProducts = false
+    var invokedGetWebBillingProductsCount = 0
+    var invokedGetWebBillingProductsParameters: (appUserID: String,
                                           productIds: Set<String>,
-                                          completion: WebProductsResponseHandler)?
-    var stubbedGetWebProductsCompletionResult: Result<WebProductsResponse, BackendError>?
+                                          completion: WebBillingProductsResponseHandler)?
+    var stubbedGetWebBillingProductsCompletionResult: Result<WebBillingProductsResponse, BackendError>?
 
-    override func getWebProducts(appUserID: String, productIds: Set<String>, completion: @escaping WebProductsResponseHandler) {
-        self.invokedGetWebProducts = true
-        self.invokedGetWebProductsCount += 1
-        self.invokedGetWebProductsParameters = (appUserID, productIds, completion)
+    override func getWebBillingProducts(appUserID: String, productIds: Set<String>, completion: @escaping WebBillingProductsResponseHandler) {
+        self.invokedGetWebBillingProducts = true
+        self.invokedGetWebBillingProductsCount += 1
+        self.invokedGetWebBillingProductsParameters = (appUserID, productIds, completion)
 
-        completion(self.stubbedGetWebProductsCompletionResult!)
+        completion(self.stubbedGetWebBillingProductsCompletionResult!)
     }
 
     var invokedPostOffer = false

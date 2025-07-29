@@ -40,7 +40,11 @@ public struct ContentView: View {
                 )
             })
             .ignoresSafeArea(.all)
-            .presentCustomerCenter(isPresented: $presentCustomerCenter)
+            .presentCustomerCenter(isPresented: $presentCustomerCenter, onCustomAction: { actionIdentifier, purchase in
+                print("""
+                    Action \(actionIdentifier) triggered for \(purchase)
+                    """)
+            })
             .manageSubscriptionsSheet(isPresented: $manageSubscriptions)
             .confirmationDialog(
                 "Buy something",
