@@ -17,6 +17,7 @@ class Backend {
 
     let identity: IdentityAPI
     let offerings: OfferingsAPI
+    let webBilling: WebBillingAPI
     let offlineEntitlements: OfflineEntitlementsAPI
     let customer: CustomerAPI
     let internalAPI: InternalAPI
@@ -58,6 +59,7 @@ class Backend {
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
         let identity = IdentityAPI(backendConfig: backendConfig)
         let offerings = OfferingsAPI(backendConfig: backendConfig)
+        let webBilling = WebBillingAPI(backendConfig: backendConfig)
         let offlineEntitlements = OfflineEntitlementsAPI(backendConfig: backendConfig)
         let internalAPI = InternalAPI(backendConfig: backendConfig)
         let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
@@ -68,6 +70,7 @@ class Backend {
                   customerAPI: customer,
                   identityAPI: identity,
                   offeringsAPI: offerings,
+                  webBillingAPI: webBilling,
                   offlineEntitlements: offlineEntitlements,
                   internalAPI: internalAPI,
                   customerCenterConfig: customerCenterConfig,
@@ -79,6 +82,7 @@ class Backend {
                   customerAPI: CustomerAPI,
                   identityAPI: IdentityAPI,
                   offeringsAPI: OfferingsAPI,
+                  webBillingAPI: WebBillingAPI,
                   offlineEntitlements: OfflineEntitlementsAPI,
                   internalAPI: InternalAPI,
                   customerCenterConfig: CustomerCenterConfigAPI,
@@ -89,6 +93,7 @@ class Backend {
         self.customer = customerAPI
         self.identity = identityAPI
         self.offerings = offeringsAPI
+        self.webBilling = webBillingAPI
         self.offlineEntitlements = offlineEntitlements
         self.internalAPI = internalAPI
         self.customerCenterConfig = customerCenterConfig

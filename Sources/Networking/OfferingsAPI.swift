@@ -19,18 +19,15 @@ class OfferingsAPI {
     typealias OfferSigningResponseHandler = Backend.ResponseHandler<PostOfferForSigningOperation.SigningData>
     typealias OfferingsResponseHandler = Backend.ResponseHandler<OfferingsResponse>
     typealias WebOfferingProductsResponseHandler = Backend.ResponseHandler<WebOfferingProductsResponse>
-    typealias WebBillingProductsResponseHandler = Backend.ResponseHandler<WebBillingProductsResponse>
 
     private let offeringsCallbacksCache: CallbackCache<OfferingsCallback>
     private let webOfferingProductsCallbacksCache: CallbackCache<WebOfferingProductsCallback>
-    private let webBillingProductsCallbackCache: CallbackCache<WebBillingProductsCallback>
     private let backendConfig: BackendConfiguration
 
     init(backendConfig: BackendConfiguration) {
         self.backendConfig = backendConfig
         self.offeringsCallbacksCache = .init()
         self.webOfferingProductsCallbacksCache = .init()
-        self.webBillingProductsCallbackCache = .init()
     }
 
     func getOfferings(appUserID: String,
@@ -69,27 +66,6 @@ class OfferingsAPI {
 
         let webProductsCallback = WebOfferingProductsCallback(cacheKey: factory.cacheKey, completion: completion)
         let cacheStatus = self.webOfferingProductsCallbacksCache.add(webProductsCallback)
-
-        self.backendConfig.addCacheableOperation(
-            with: factory,
-            delay: .none,
-            cacheStatus: cacheStatus
-        )
-    }
-
-    func getWebBillingProducts(
-        appUserID: String, productIds: Set<String>, completion: @escaping WebBillingProductsResponseHandler
-    ) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
-                                                                appUserID: appUserID)
-        let factory = GetWebBillingProductsOperation.createFactory(
-            configuration: config,
-            webBillingProductsCallbackCache: self.webBillingProductsCallbackCache,
-            productIds: productIds
-        )
-
-        let webProductsCallback = WebBillingProductsCallback(cacheKey: factory.cacheKey, completion: completion)
-        let cacheStatus = self.webBillingProductsCallbackCache.add(webProductsCallback)
 
         self.backendConfig.addCacheableOperation(
             with: factory,

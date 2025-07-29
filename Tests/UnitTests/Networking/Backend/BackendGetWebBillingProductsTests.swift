@@ -19,7 +19,7 @@ import XCTest
 
 class BackendGetWebBillingProductsTests: BaseBackendTests {
 
-    private let productIds: Set<String> = ["test_monthly", "test_annual"]
+    private let productIds: Set<String> = ["test_monthly"]
 
     override func createClient() -> MockHTTPClient {
         super.createClient(#file)
@@ -32,7 +32,7 @@ class BackendGetWebBillingProductsTests: BaseBackendTests {
         )
 
         let result = waitUntilValue { completed in
-            self.offerings.getWebBillingProducts(
+            self.webBilling.getWebBillingProducts(
                 appUserID: Self.userID, productIds: self.productIds, completion: completed
             )
         }
@@ -49,7 +49,7 @@ class BackendGetWebBillingProductsTests: BaseBackendTests {
         )
 
         let result = waitUntilValue { completed in
-            self.offerings.getWebBillingProducts(
+            self.webBilling.getWebBillingProducts(
                 appUserID: Self.userID, productIds: self.productIds, completion: completed
             )
         }
@@ -66,10 +66,11 @@ class BackendGetWebBillingProductsTests: BaseBackendTests {
                             response: Self.noProductsResponse as [String: Any],
                             delay: .milliseconds(10))
         )
-        self.offerings.getWebBillingProducts(appUserID: Self.userID, productIds: self.productIds) { _ in }
-        self.offerings.getWebBillingProducts(appUserID: Self.userID, productIds: self.productIds) { _ in }
+        self.webBilling.getWebBillingProducts(appUserID: Self.userID, productIds: self.productIds) { _ in }
+        self.webBilling.getWebBillingProducts(appUserID: Self.userID, productIds: self.productIds) { _ in }
 
         expect(self.httpClient.calls).toEventually(haveCount(1))
+        expect(self.httpClient.calls).toNever(haveCount(2))
     }
 
     func testRepeatedRequestsLogDebugMessage() {
@@ -79,8 +80,8 @@ class BackendGetWebBillingProductsTests: BaseBackendTests {
                             response: Self.noProductsResponse as [String: Any],
                             delay: .milliseconds(10))
         )
-        self.offerings.getWebBillingProducts(appUserID: Self.userID, productIds: self.productIds) { _ in }
-        self.offerings.getWebBillingProducts(appUserID: Self.userID, productIds: self.productIds) { _ in }
+        self.webBilling.getWebBillingProducts(appUserID: Self.userID, productIds: self.productIds) { _ in }
+        self.webBilling.getWebBillingProducts(appUserID: Self.userID, productIds: self.productIds) { _ in }
 
         expect(self.httpClient.calls).toEventually(haveCount(1))
 
@@ -100,8 +101,8 @@ class BackendGetWebBillingProductsTests: BaseBackendTests {
         self.httpClient.mock(requestPath: .getWebBillingProducts(userId: userID2, productIds: self.productIds),
                              response: response)
 
-        self.offerings.getWebBillingProducts(appUserID: Self.userID, productIds: self.productIds, completion: { _ in })
-        self.offerings.getWebBillingProducts(appUserID: userID2, productIds: self.productIds, completion: { _ in })
+        self.webBilling.getWebBillingProducts(appUserID: Self.userID, productIds: self.productIds, completion: { _ in })
+        self.webBilling.getWebBillingProducts(appUserID: userID2, productIds: self.productIds, completion: { _ in })
 
         expect(self.httpClient.calls).toEventually(haveCount(2))
     }
@@ -116,10 +117,10 @@ class BackendGetWebBillingProductsTests: BaseBackendTests {
         self.httpClient.mock(requestPath: .getWebBillingProducts(userId: Self.userID, productIds: differentProductIds),
                              response: response)
 
-        self.offerings.getWebBillingProducts(
+        self.webBilling.getWebBillingProducts(
             appUserID: Self.userID, productIds: self.productIds, completion: { _ in }
         )
-        self.offerings.getWebBillingProducts(
+        self.webBilling.getWebBillingProducts(
             appUserID: Self.userID, productIds: differentProductIds, completion: { _ in }
         )
 
@@ -133,7 +134,7 @@ class BackendGetWebBillingProductsTests: BaseBackendTests {
         )
 
         let result: Atomic<Result<WebBillingProductsResponse, BackendError>?> = nil
-        self.offerings.getWebBillingProducts(appUserID: Self.userID, productIds: self.productIds) {
+        self.webBilling.getWebBillingProducts(appUserID: Self.userID, productIds: self.productIds) {
             result.value = $0
         }
 
@@ -181,7 +182,7 @@ class BackendGetWebBillingProductsTests: BaseBackendTests {
         )
 
         let result = waitUntilValue { completed in
-            self.offerings.getWebBillingProducts(
+            self.webBilling.getWebBillingProducts(
                 appUserID: Self.userID, productIds: self.productIds, completion: completed
             )
         }
@@ -198,7 +199,7 @@ class BackendGetWebBillingProductsTests: BaseBackendTests {
         )
 
         let result = waitUntilValue { completed in
-            self.offerings.getWebBillingProducts(
+            self.webBilling.getWebBillingProducts(
                 appUserID: Self.userID, productIds: self.productIds, completion: completed
             )
         }
@@ -209,7 +210,7 @@ class BackendGetWebBillingProductsTests: BaseBackendTests {
 
     func testGetWebBillingProductsSkipsBackendCallIfAppUserIDIsEmpty() {
         waitUntil { completed in
-            self.offerings.getWebBillingProducts(appUserID: "", productIds: self.productIds) { _ in
+            self.webBilling.getWebBillingProducts(appUserID: "", productIds: self.productIds) { _ in
                 completed()
             }
         }
@@ -219,7 +220,7 @@ class BackendGetWebBillingProductsTests: BaseBackendTests {
 
     func testGetWebBillingProductsCallsCompletionWithErrorIfAppUserIDIsEmpty() {
         let receivedError = waitUntilValue { completed in
-            self.offerings.getWebBillingProducts(appUserID: "", productIds: self.productIds) { result in
+            self.webBilling.getWebBillingProducts(appUserID: "", productIds: self.productIds) { result in
                 completed(result.error)
             }
         }

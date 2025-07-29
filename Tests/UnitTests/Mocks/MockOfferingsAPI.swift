@@ -69,21 +69,6 @@ class MockOfferingsAPI: OfferingsAPI {
         completion(self.stubbedGetWebOfferingProductsCompletionResult!)
     }
 
-    var invokedGetWebBillingProducts = false
-    var invokedGetWebBillingProductsCount = 0
-    var invokedGetWebBillingProductsParameters: (appUserID: String,
-                                          productIds: Set<String>,
-                                          completion: WebBillingProductsResponseHandler)?
-    var stubbedGetWebBillingProductsCompletionResult: Result<WebBillingProductsResponse, BackendError>?
-
-    override func getWebBillingProducts(appUserID: String, productIds: Set<String>, completion: @escaping WebBillingProductsResponseHandler) {
-        self.invokedGetWebBillingProducts = true
-        self.invokedGetWebBillingProductsCount += 1
-        self.invokedGetWebBillingProductsParameters = (appUserID, productIds, completion)
-
-        completion(self.stubbedGetWebBillingProductsCompletionResult!)
-    }
-
     var invokedPostOffer = false
     var invokedPostOfferCount = 0
     var invokedPostOfferParameters: (offerIdentifier: String?, productIdentifier: String?, subscriptionGroup: String?, data: EncodedAppleReceipt?, applicationUsername: String?, completion: OfferingsAPI.OfferSigningResponseHandler?)?
