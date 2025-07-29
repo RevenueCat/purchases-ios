@@ -7,13 +7,13 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  WebProduct+TestStoreProduct.swift
+//  WebBillingProduct+TestStoreProduct.swift
 //
 //  Created by Antonio Pallares on 25/7/25.
 
 import Foundation
 
-extension WebProductsResponse.Product {
+extension WebBillingProductsResponse.Product {
 
     // Lazily instantiated
     private static var _priceFormatterProvider: PriceFormatterProvider?
@@ -34,7 +34,7 @@ extension WebProductsResponse.Product {
             )
         }
 
-        let price: WebProductsResponse.Price
+        let price: WebBillingProductsResponse.Price
         var period: SubscriptionPeriod?
         let introDiscount: TestStoreProductDiscount? = nil // Not supported in Test Store products for now
 
@@ -69,7 +69,7 @@ extension WebProductsResponse.Product {
         return testStoreProduct.toStoreProduct()
     }
 
-    private var purchaseOption: WebProductsResponse.PurchaseOption? {
+    private var purchaseOption: WebBillingProductsResponse.PurchaseOption? {
         if let defaultPurchaseOptionId = self.defaultPurchaseOptionId,
         let defaultPurchaseOption = self.purchaseOptions[defaultPurchaseOptionId] {
             return defaultPurchaseOption
@@ -86,7 +86,7 @@ extension WebProductsResponse.Product {
 
 }
 
-private extension WebProductsResponse.ProductType {
+private extension WebBillingProductsResponse.ProductType {
 
     var storeProductType: StoreProduct.ProductType {
         switch self {

@@ -38,7 +38,8 @@ class TestStoreProductsManagerTests: TestCase {
     }
 
     func testFetchTestStoreProductsWithIdentifiersTriggersTheCorrectRequest() async throws {
-        self.offerings.stubbedGetWebProductsCompletionResult = .failure(BackendError.networkError(.offlineConnection()))
+        self.offerings.stubbedGetWebBillingProductsCompletionResult =
+            .failure(BackendError.networkError(.offlineConnection()))
 
         let manager = self.createManager()
         await waitUntil { completed in
@@ -47,9 +48,9 @@ class TestStoreProductsManagerTests: TestCase {
             }
         }
 
-        expect(self.offerings.invokedGetWebProducts).to(beTrue())
-        expect(self.offerings.invokedGetWebProductsCount).to(equal(1))
-        let params = try XCTUnwrap(self.offerings.invokedGetWebProductsParameters)
+        expect(self.offerings.invokedGetWebBillingProducts).to(beTrue())
+        expect(self.offerings.invokedGetWebBillingProductsCount).to(equal(1))
+        let params = try XCTUnwrap(self.offerings.invokedGetWebBillingProductsParameters)
         expect(params.appUserID).to(equal("appUserID"))
         expect(params.productIds).to(equal(Set(["product1", "product2"])))
     }
@@ -62,12 +63,12 @@ class TestStoreProductsManagerTests: TestCase {
             }
         }
 
-        expect(self.offerings.invokedGetWebProducts).to(beFalse())
+        expect(self.offerings.invokedGetWebBillingProducts).to(beFalse())
     }
 
     func testFetchTestStoreProductsWithSuccessfulResponseReturnsProducts() throws {
-        self.offerings.stubbedGetWebProductsCompletionResult = .success(
-            TestStoreMockData.yearlyAndMonthlyWebProductsResponse
+        self.offerings.stubbedGetWebBillingProductsCompletionResult = .success(
+            TestStoreMockData.yearlyAndMonthlyWebBillingProductsResponse
         )
         let productIds: Set = [TestStoreMockData.yearlyProduct.identifier,
                                TestStoreMockData.monthlyProduct.identifier]
@@ -88,7 +89,7 @@ class TestStoreProductsManagerTests: TestCase {
 
     func testFetchTestStoreProductsWithBackendErrorPropagatesError() throws {
         let expectedError = BackendError.networkError(.serverDown())
-        self.offerings.stubbedGetWebProductsCompletionResult = .failure(expectedError)
+        self.offerings.stubbedGetWebBillingProductsCompletionResult = .failure(expectedError)
 
         let manager = self.createManager()
         let result = waitUntilValue { completed in
@@ -103,8 +104,8 @@ class TestStoreProductsManagerTests: TestCase {
 
     func testFetchTestStoreProductsWithToStoreProductConversionErrorPropagatesError() throws {
         // This represents a scenario where the backend returns a response that cannot be converted to StoreProduct
-        self.offerings.stubbedGetWebProductsCompletionResult = .success(
-            TestStoreMockData.noBasePricesWebProductsResponse
+        self.offerings.stubbedGetWebBillingProductsCompletionResult = .success(
+            TestStoreMockData.noBasePricesWebBillingProductsResponse
         )
         let productId = TestStoreMockData.productWithoutBasePrices.identifier
 

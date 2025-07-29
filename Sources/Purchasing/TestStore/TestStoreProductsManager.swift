@@ -35,7 +35,7 @@ final class TestStoreProductsManager: ProductsManagerType {
         }
 
         let appUserID = self.deviceCache.cachedAppUserID ?? ""
-        backend.offerings.getWebProducts(appUserID: appUserID, productIds: identifiers) { result in
+        backend.offerings.getWebBillingProducts(appUserID: appUserID, productIds: identifiers) { result in
             switch result {
             case let .success(response):
                 do {
