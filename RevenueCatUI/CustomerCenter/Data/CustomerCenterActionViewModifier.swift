@@ -47,6 +47,7 @@ struct CustomerCenterActionViewModifier: ViewModifier {
     @State private var feedbackSurveyCompleted: UniqueWrapper<String>?
     @State private var showingChangePlans: UniqueWrapper<String?>?
     @State private var managementOptionSelected: UniqueWrapper<CustomerCenterActionable>?
+    @State private var customActionSelected: UniqueWrapper<(String, String?)>?
     @State private var promotionalOfferSuccess: UniqueWrapper<Void>?
 
     @State private var cancellables = Set<AnyCancellable>()
@@ -73,6 +74,8 @@ struct CustomerCenterActionViewModifier: ViewModifier {
                         value: feedbackSurveyCompleted)
             .preference(key: CustomerCenterView.ManagementOptionSelectedPreferenceKey.self,
                         value: managementOptionSelected)
+            .preference(key: CustomerCenterView.CustomActionPreferenceKey.self,
+                        value: customActionSelected)
             .preference(key: CustomerCenterView.PromotionalOfferSuccessPreferenceKey.self,
                         value: promotionalOfferSuccess)
             .preference(key: CustomerCenterView.ChangePlansSelectedPreferenceKey.self,
@@ -81,6 +84,13 @@ struct CustomerCenterActionViewModifier: ViewModifier {
 
     @MainActor
     private func subscribeToActionWrapper() {
+        subscribeToRestoreActions()
+        subscribeToRefundActions()
+        subscribeToOtherActions()
+    }
+
+    @MainActor
+    private func subscribeToRestoreActions() {
         actionWrapper.restoreStarted
             .sink { _ in
                 restoreStarted = UniqueWrapper(value: ())
@@ -98,7 +108,10 @@ struct CustomerCenterActionViewModifier: ViewModifier {
                 restoreCompleted = UniqueWrapper(value: info)
             }
             .store(in: &cancellables)
+    }
 
+    @MainActor
+    private func subscribeToRefundActions() {
         actionWrapper.showingManageSubscriptions
             .sink { _ in
                 showingManageSubscriptions = UniqueWrapper(value: ())
@@ -116,7 +129,10 @@ struct CustomerCenterActionViewModifier: ViewModifier {
                 refundRequestCompleted = UniqueWrapper(value: (productId, status))
             }
             .store(in: &cancellables)
+    }
 
+    @MainActor
+    private func subscribeToOtherActions() {
         actionWrapper.feedbackSurveyCompleted
             .sink { reason in
                 feedbackSurveyCompleted = UniqueWrapper(value: reason)
@@ -138,6 +154,12 @@ struct CustomerCenterActionViewModifier: ViewModifier {
         actionWrapper.showingChangePlans
             .sink { subscriptionGroupID in
                 showingChangePlans = UniqueWrapper(value: subscriptionGroupID)
+            }
+            .store(in: &cancellables)
+
+        actionWrapper.customActionSelected
+            .sink { actionIdentifier, activePurchaseId in
+                customActionSelected = UniqueWrapper(value: (actionIdentifier, activePurchaseId))
             }
             .store(in: &cancellables)
     }
