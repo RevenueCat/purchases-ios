@@ -70,7 +70,9 @@ class TestStorePurchaseHandler: TestStorePurchaseHandlerType {
 
     #if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)
     @MainActor
-    private func purchaseWithUIKit(product: TestStoreProduct, completion: @escaping @MainActor (TestPurchaseResult) -> Void) {
+    private func purchaseWithUIKit(
+        product: TestStoreProduct, completion: @escaping @MainActor (TestPurchaseResult) -> Void
+    ) {
         guard let viewController = self.findTopViewController() else {
             Logger.warn(Strings.purchase.unable_to_find_root_view_controller_for_test_purchase)
             completion(.failure)
@@ -128,7 +130,9 @@ class TestStorePurchaseHandler: TestStorePurchaseHandlerType {
 
     #if os(watchOS)
     @MainActor
-    private func purchaseWithWatchKit(product: TestStoreProduct, completion: @escaping @MainActor (TestPurchaseResult) -> Void) {
+    private func purchaseWithWatchKit(
+        product: TestStoreProduct, completion: @escaping @MainActor (TestPurchaseResult) -> Void
+    ) {
 
         let failureAction = WKAlertAction(title: Self.failureActionTitle, style: .destructive) {
             completion(.failure)
@@ -154,7 +158,9 @@ class TestStorePurchaseHandler: TestStorePurchaseHandlerType {
 
     #if os(macOS)
     @MainActor
-    private func purchaseWithAppKit(product: TestStoreProduct, completion: @escaping @MainActor (TestPurchaseResult) -> Void) {
+    private func purchaseWithAppKit(
+        product: TestStoreProduct, completion: @escaping @MainActor (TestPurchaseResult) -> Void
+    ) {
         let alert = NSAlert()
         alert.messageText = Self.purchaseAlertTitle
         alert.informativeText = product.purchaseAlertMessage
