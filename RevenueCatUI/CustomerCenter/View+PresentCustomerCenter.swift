@@ -148,6 +148,7 @@ extension View {
         refundRequestCompleted: CustomerCenterView.RefundRequestCompletedHandler? = nil,
         feedbackSurveyCompleted: CustomerCenterView.FeedbackSurveyCompletedHandler? = nil,
         managementOptionSelected: CustomerCenterView.ManagementOptionSelectedHandler? = nil,
+        onCustomAction: CustomerCenterView.CustomActionHandler? = nil,
         onDismiss: (() -> Void)? = nil
     ) -> some View {
         self.modifier(
@@ -163,7 +164,8 @@ extension View {
                 refundRequestStarted: refundRequestStarted,
                 refundRequestCompleted: refundRequestCompleted,
                 feedbackSurveyCompleted: feedbackSurveyCompleted,
-                managementOptionSelected: managementOptionSelected
+                managementOptionSelected: managementOptionSelected,
+                onCustomAction: onCustomAction
             )
         )
     }
@@ -184,6 +186,7 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
     let refundRequestCompleted: CustomerCenterView.RefundRequestCompletedHandler?
     let feedbackSurveyCompleted: CustomerCenterView.FeedbackSurveyCompletedHandler?
     let managementOptionSelected: CustomerCenterView.ManagementOptionSelectedHandler?
+    let onCustomAction: CustomerCenterView.CustomActionHandler?
 
     /// The closure to execute when dismissing the sheet / fullScreen present
     let onDismiss: (() -> Void)?
@@ -201,6 +204,7 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
         refundRequestCompleted: CustomerCenterView.RefundRequestCompletedHandler? = nil,
         feedbackSurveyCompleted: CustomerCenterView.FeedbackSurveyCompletedHandler? = nil,
         managementOptionSelected: CustomerCenterView.ManagementOptionSelectedHandler? = nil,
+        onCustomAction: CustomerCenterView.CustomActionHandler? = nil,
         purchaseHandler: PurchaseHandler? = nil
     ) {
         self._isPresented = isPresented
@@ -214,6 +218,7 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
         self.refundRequestCompleted = refundRequestCompleted
         self.feedbackSurveyCompleted = feedbackSurveyCompleted
         self.managementOptionSelected = managementOptionSelected
+        self.onCustomAction = onCustomAction
         self._purchaseHandler = .init(wrappedValue: purchaseHandler ??
                                       PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
                                                               performRestore: myAppPurchaseLogic?.performRestore))
@@ -272,6 +277,9 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
             }
             .onCustomerCenterManagementOptionSelected { action in
                 managementOptionSelected?(action)
+            }
+            .onCustomerCenterCustomActionSelected { actionIdentifier, purchaseIdentifier in
+                onCustomAction?(actionIdentifier, purchaseIdentifier)
             }
             .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
     }
