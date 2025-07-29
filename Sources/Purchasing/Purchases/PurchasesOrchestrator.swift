@@ -1958,14 +1958,16 @@ private extension PurchasesOrchestrator {
     private func purchase(testStoreProduct: TestStoreProduct, completion: @escaping PurchaseCompletedBlock) {
         self.operationDispatcher.dispatchOnMainActor {
             do {
-                try self.testStorePurchaseHandler.purchase(product: testStoreProduct) { userConfirmed in
-                    if userConfirmed {
+                try self.testStorePurchaseHandler.purchase(product: testStoreProduct) { result in
+                    switch result {
+                    case .cancel:
+                        completion(nil, nil, ErrorUtils.purchaseCancelledError().asPublicError, true)
+                    case .failure:
+                        completion(nil, nil, ErrorUtils.productNotAvailableForPurchaseError().asPublicError, false)
+                    case .success:
                         // WIP: Implement actual test purchase completion logic
                         // For now, we'll simulate a successful purchase with a hardcoded response
                         completion(nil, CustomerInfoManager.createPreviewCustomerInfo(), nil, false)
-                    } else {
-                        // User cancelled the purchase
-                        completion(nil, nil, ErrorUtils.purchaseCancelledError().asPublicError, true)
                     }
                 }
             } catch {
