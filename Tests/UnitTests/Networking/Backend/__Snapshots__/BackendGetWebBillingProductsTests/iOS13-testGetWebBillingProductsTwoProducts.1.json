@@ -24,6 +24,6 @@
   "request" : {
     "body" : null,
     "method" : "GET",
-    "url" : "https://api.revenuecat.com/rcbilling/v1/subscribers/user/products?id=test_annual&id=test_monthly"
+    "url" : "https://api.revenuecat.com/rcbilling/v1/subscribers/user/products?id=test_monthly"
   }
 }

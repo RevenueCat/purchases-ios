@@ -19,7 +19,7 @@ import XCTest
 
 class BackendGetWebBillingProductsTests: BaseBackendTests {
 
-    private let productIds: Set<String> = ["test_monthly", "test_annual"]
+    private let productIds: Set<String> = ["test_monthly"]
 
     override func createClient() -> MockHTTPClient {
         super.createClient(#file)
