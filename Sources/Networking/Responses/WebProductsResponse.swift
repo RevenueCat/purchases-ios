@@ -7,13 +7,13 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  WebProductsResponse.swift
+//  WebBillingProductsResponse.swift
 //
 //  Created by Antonio Pallares on 23/7/25.
 
 import Foundation
 
-struct WebProductsResponse {
+struct WebBillingProductsResponse {
 
     struct Price {
         let amountMicros: Int64
@@ -61,20 +61,20 @@ struct WebProductsResponse {
 
 }
 
-extension WebProductsResponse.Product: Codable, Equatable {}
-extension WebProductsResponse.PurchaseOption: Codable, Equatable {}
-extension WebProductsResponse.PricingPhase: Codable, Equatable {}
-extension WebProductsResponse.Price: Codable, Equatable {}
+extension WebBillingProductsResponse.Product: Codable, Equatable {}
+extension WebBillingProductsResponse.PurchaseOption: Codable, Equatable {}
+extension WebBillingProductsResponse.PricingPhase: Codable, Equatable {}
+extension WebBillingProductsResponse.Price: Codable, Equatable {}
 
-extension WebProductsResponse: Codable, Equatable {}
+extension WebBillingProductsResponse: Codable, Equatable {}
 
-extension WebProductsResponse: HTTPResponseBody {}
+extension WebBillingProductsResponse: HTTPResponseBody {}
 
-extension WebProductsResponse.ProductType: Codable, Equatable {
+extension WebBillingProductsResponse.ProductType: Codable, Equatable {
 
     init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
         let rawValue = try container.decode(String.self)
-        self = WebProductsResponse.ProductType(rawValue: rawValue) ?? .unknown
+        self = WebBillingProductsResponse.ProductType(rawValue: rawValue) ?? .unknown
     }
 }

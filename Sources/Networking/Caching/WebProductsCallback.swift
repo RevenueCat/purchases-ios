@@ -16,6 +16,6 @@ import Foundation
 struct WebProductsCallback: CacheKeyProviding {
 
     let cacheKey: String
-    let completion: (Result<WebProductsResponse, BackendError>) -> Void
+    let completion: (Result<WebBillingProductsResponse, BackendError>) -> Void
 
 }

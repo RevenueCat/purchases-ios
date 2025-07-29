@@ -7,13 +7,13 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  GetWebProductsOperation.swift
+//  GetWebBillingProductsOperation.swift
 //
 //  Created by Antonio Pallares on 23/7/25.
 
 import Foundation
 
-final class GetWebProductsOperation: CacheableNetworkOperation {
+final class GetWebBillingProductsOperation: CacheableNetworkOperation {
 
     private let webProductsCallbackCache: CallbackCache<WebProductsCallback>
     private let configuration: AppUserConfiguration
@@ -23,7 +23,7 @@ final class GetWebProductsOperation: CacheableNetworkOperation {
         configuration: UserSpecificConfiguration,
         webProductsCallbackCache: CallbackCache<WebProductsCallback>,
         productIds: Set<String>
-    ) -> CacheableNetworkOperationFactory<GetWebProductsOperation> {
+    ) -> CacheableNetworkOperationFactory<GetWebBillingProductsOperation> {
         return .init({ cacheKey in
                     .init(
                         configuration: configuration,
@@ -53,9 +53,9 @@ final class GetWebProductsOperation: CacheableNetworkOperation {
 }
 
 // Restating inherited @unchecked Sendable from Foundation's Operation
-extension GetWebProductsOperation: @unchecked Sendable {}
+extension GetWebBillingProductsOperation: @unchecked Sendable {}
 
-private extension GetWebProductsOperation {
+private extension GetWebBillingProductsOperation {
 
     func getWebProducts(completion: @escaping () -> Void) {
         let appUserID = self.configuration.appUserID
@@ -69,9 +69,10 @@ private extension GetWebProductsOperation {
             return
         }
 
-        let request = HTTPRequest(method: .get, path: .getWebProducts(userId: appUserID, productIds: self.productIds))
+        let request = HTTPRequest(method: .get,
+                                  path: .getWebBillingProducts(userId: appUserID, productIds: self.productIds))
 
-        httpClient.perform(request) { (response: VerifiedHTTPResponse<WebProductsResponse>.Result) in
+        httpClient.perform(request) { (response: VerifiedHTTPResponse<WebBillingProductsResponse>.Result) in
             defer {
                 completion()
             }

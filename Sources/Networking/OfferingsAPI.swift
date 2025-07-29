@@ -19,7 +19,7 @@ class OfferingsAPI {
     typealias OfferSigningResponseHandler = Backend.ResponseHandler<PostOfferForSigningOperation.SigningData>
     typealias OfferingsResponseHandler = Backend.ResponseHandler<OfferingsResponse>
     typealias WebOfferingProductsResponseHandler = Backend.ResponseHandler<WebOfferingProductsResponse>
-    typealias WebProductsResponseHandler = Backend.ResponseHandler<WebProductsResponse>
+    typealias WebBillingProductsResponseHandler = Backend.ResponseHandler<WebBillingProductsResponse>
 
     private let offeringsCallbacksCache: CallbackCache<OfferingsCallback>
     private let webOfferingProductsCallbacksCache: CallbackCache<WebOfferingProductsCallback>
@@ -77,10 +77,12 @@ class OfferingsAPI {
         )
     }
 
-    func getWebProducts(appUserID: String, productIds: Set<String>, completion: @escaping WebProductsResponseHandler) {
+    func getWebProducts(
+        appUserID: String, productIds: Set<String>, completion: @escaping WebBillingProductsResponseHandler
+    ) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)
-        let factory = GetWebProductsOperation.createFactory(
+        let factory = GetWebBillingProductsOperation.createFactory(
             configuration: config,
             webProductsCallbackCache: self.webProductsCallbacksCache,
             productIds: productIds
