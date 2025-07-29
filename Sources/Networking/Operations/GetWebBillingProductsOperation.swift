@@ -15,19 +15,19 @@ import Foundation
 
 final class GetWebBillingProductsOperation: CacheableNetworkOperation {
 
-    private let webProductsCallbackCache: CallbackCache<WebProductsCallback>
+    private let webBillingProductsCallbackCache: CallbackCache<WebBillingProductsCallback>
     private let configuration: AppUserConfiguration
     private let productIds: Set<String>
 
     static func createFactory(
         configuration: UserSpecificConfiguration,
-        webProductsCallbackCache: CallbackCache<WebProductsCallback>,
+        webBillingProductsCallbackCache: CallbackCache<WebBillingProductsCallback>,
         productIds: Set<String>
     ) -> CacheableNetworkOperationFactory<GetWebBillingProductsOperation> {
         return .init({ cacheKey in
                     .init(
                         configuration: configuration,
-                        webProductsCallbackCache: webProductsCallbackCache,
+                        webBillingProductsCallbackCache: webBillingProductsCallbackCache,
                         productIds: productIds,
                         cacheKey: cacheKey
                     )
@@ -36,11 +36,11 @@ final class GetWebBillingProductsOperation: CacheableNetworkOperation {
     }
 
     private init(configuration: UserSpecificConfiguration,
-                 webProductsCallbackCache: CallbackCache<WebProductsCallback>,
+                 webBillingProductsCallbackCache: CallbackCache<WebBillingProductsCallback>,
                  productIds: Set<String>,
                  cacheKey: String) {
         self.configuration = configuration
-        self.webProductsCallbackCache = webProductsCallbackCache
+        self.webBillingProductsCallbackCache = webBillingProductsCallbackCache
         self.productIds = productIds
 
         super.init(configuration: configuration, cacheKey: cacheKey)
@@ -61,7 +61,7 @@ private extension GetWebBillingProductsOperation {
         let appUserID = self.configuration.appUserID
 
         guard appUserID.isNotEmpty else {
-            self.webProductsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
+            self.webBillingProductsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 callback.completion(.failure(.missingAppUserID()))
             }
             completion()
@@ -77,7 +77,7 @@ private extension GetWebBillingProductsOperation {
                 completion()
             }
 
-            self.webProductsCallbackCache.performOnAllItemsAndRemoveFromCache(
+            self.webBillingProductsCallbackCache.performOnAllItemsAndRemoveFromCache(
                 withCacheable: self
             ) { callbackObject in
                 callbackObject.completion(response

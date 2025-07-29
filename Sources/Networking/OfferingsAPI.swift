@@ -23,14 +23,14 @@ class OfferingsAPI {
 
     private let offeringsCallbacksCache: CallbackCache<OfferingsCallback>
     private let webOfferingProductsCallbacksCache: CallbackCache<WebOfferingProductsCallback>
-    private let webProductsCallbacksCache: CallbackCache<WebProductsCallback>
+    private let webBillingProductsCallbackCache: CallbackCache<WebBillingProductsCallback>
     private let backendConfig: BackendConfiguration
 
     init(backendConfig: BackendConfiguration) {
         self.backendConfig = backendConfig
         self.offeringsCallbacksCache = .init()
         self.webOfferingProductsCallbacksCache = .init()
-        self.webProductsCallbacksCache = .init()
+        self.webBillingProductsCallbackCache = .init()
     }
 
     func getOfferings(appUserID: String,
@@ -84,12 +84,12 @@ class OfferingsAPI {
                                                                 appUserID: appUserID)
         let factory = GetWebBillingProductsOperation.createFactory(
             configuration: config,
-            webProductsCallbackCache: self.webProductsCallbacksCache,
+            webBillingProductsCallbackCache: self.webBillingProductsCallbackCache,
             productIds: productIds
         )
 
-        let webProductsCallback = WebProductsCallback(cacheKey: factory.cacheKey, completion: completion)
-        let cacheStatus = self.webProductsCallbacksCache.add(webProductsCallback)
+        let webProductsCallback = WebBillingProductsCallback(cacheKey: factory.cacheKey, completion: completion)
+        let cacheStatus = self.webBillingProductsCallbackCache.add(webProductsCallback)
 
         self.backendConfig.addCacheableOperation(
             with: factory,
