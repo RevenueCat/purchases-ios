@@ -58,6 +58,7 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         self.dateProvider = dateProvider
     }
 
+    // swiftlint:disable:next function_body_length
     func checkEligibility(productIdentifiers: Set<String>,
                           completion: @escaping ReceiveIntroEligibilityBlock) {
         guard !self.systemInfo.dangerousSettings.uiPreviewMode else {

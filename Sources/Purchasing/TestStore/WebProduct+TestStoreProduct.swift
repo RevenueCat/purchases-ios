@@ -79,7 +79,8 @@ extension WebProductsResponse.Product {
     }
 
     private func formatPrice(_ price: Decimal, currencyCode: String, locale: Locale) -> String {
-        let formatter = Self.priceFormatterProvider.priceFormatterForWebProducts(withCurrencyCode: currencyCode, locale: locale)
+        let formatter = Self.priceFormatterProvider.priceFormatterForWebProducts(withCurrencyCode: currencyCode,
+                                                                                 locale: locale)
         return formatter.string(from: price as NSDecimalNumber) ?? ""
     }
 

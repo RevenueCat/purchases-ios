@@ -15,6 +15,7 @@ import Foundation
 
 enum ProductsManagerFactory {
 
+    // swiftlint:disable:next function_parameter_count
     static func createManager(apiKeyValidationResult: Configuration.APIKeyValidationResult,
                               diagnosticsTracker: DiagnosticsTrackerType?,
                               systemInfo: SystemInfo,
