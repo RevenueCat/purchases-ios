@@ -29,6 +29,9 @@ enum TestStoreMockData {
         cycleCount: 1
     )
 
+    private static let oneTimePurchasePrice = WebProductsResponse.Price(
+        amountMicros: 199_900_000, currency: "GBP")
+
     private static let yearlyPurchaseOption = WebProductsResponse.PurchaseOption(
         basePrice: .init(wrappedValue: nil),
         base: .init(wrappedValue: yearlyPricingPhase),
@@ -39,6 +42,13 @@ enum TestStoreMockData {
     private static let monthlyPurchaseOption = WebProductsResponse.PurchaseOption(
         basePrice: .init(wrappedValue: nil),
         base: .init(wrappedValue: monthlyPricingPhase),
+        trial: .init(wrappedValue: nil),
+        introPrice: .init(wrappedValue: nil)
+    )
+
+    private static let oneTimePurchaseOption = WebProductsResponse.PurchaseOption(
+        basePrice: .init(wrappedValue: oneTimePurchasePrice),
+        base: .init(wrappedValue: nil),
         trial: .init(wrappedValue: nil),
         introPrice: .init(wrappedValue: nil)
     )
@@ -70,6 +80,17 @@ enum TestStoreMockData {
         defaultPurchaseOptionId: "base_option",
         purchaseOptions: [
             "base_option": monthlyPurchaseOption
+        ]
+    )
+
+    static let lifetimeProduct = WebProductsResponse.Product(
+        identifier: "lifetime",
+        productType: .nonConsumable,
+        title: "Test Lifetime Product",
+        description: "A test lifetime product",
+        defaultPurchaseOptionId: "one_time_purchase",
+        purchaseOptions: [
+            "one_time_purchase": oneTimePurchaseOption
         ]
     )
 

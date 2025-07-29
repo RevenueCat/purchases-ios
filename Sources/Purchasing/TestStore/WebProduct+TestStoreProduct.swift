@@ -27,7 +27,7 @@ extension WebProductsResponse.Product {
         }
     }
 
-    func convertToStoreProduct() throws -> StoreProduct {
+    func convertToStoreProduct(locale: Locale = .autoupdatingCurrent) throws -> StoreProduct {
         guard let purchaseOption = self.purchaseOption else {
             throw ErrorUtils.productNotAvailableForPurchaseError(
                 withMessage: "No purchase option found for product \(self.identifier)"
@@ -55,8 +55,8 @@ extension WebProductsResponse.Product {
             }
         }
 
-        let decimalPrice = Decimal(price.amountMicros / 1_000_000)
-        let localizedPriceString = formatPrice(decimalPrice, currencyCode: price.currency)
+        let decimalPrice = Decimal(Double(price.amountMicros) / 1_000_000)
+        let localizedPriceString = formatPrice(decimalPrice, currencyCode: price.currency, locale: locale)
 
         let testStoreProduct = TestStoreProduct(localizedTitle: self.title,
                                                 price: decimalPrice,
@@ -78,8 +78,8 @@ extension WebProductsResponse.Product {
         }
     }
 
-    private func formatPrice(_ price: Decimal, currencyCode: String) -> String {
-        let formatter = Self.priceFormatterProvider.priceFormatterForWebProducts(withCurrencyCode: currencyCode)
+    private func formatPrice(_ price: Decimal, currencyCode: String, locale: Locale) -> String {
+        let formatter = Self.priceFormatterProvider.priceFormatterForWebProducts(withCurrencyCode: currencyCode, locale: locale)
         return formatter.string(from: price as NSDecimalNumber) ?? ""
     }
 

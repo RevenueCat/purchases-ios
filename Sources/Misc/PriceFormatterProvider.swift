@@ -83,10 +83,10 @@ final class PriceFormatterProvider: Sendable {
             guard let formatter = formatter, formatter.currencyCode == currencyCode, formatter.locale == locale else {
                 let newFormatter = makePriceFormatterForWebProducts(with: currencyCode)
                 formatter = newFormatter
-                
+
                 return newFormatter
             }
-            
+
             return formatter
         }
     }
