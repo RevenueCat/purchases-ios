@@ -9,8 +9,8 @@
 import Combine
 import StoreKit
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private class SubscriptionHistoryTracker {
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
+final class SubscriptionHistoryTracker {
 
     public struct Update: Equatable {
         public let hasAnySubscriptionHistory: Bool
@@ -19,48 +19,50 @@ private class SubscriptionHistoryTracker {
     public let updateSubject = CurrentValueSubject<Update, Never>(.init(hasAnySubscriptionHistory: false))
 
     private var cancellables = Set<AnyCancellable>()
-    private var transactionUpdateTask: Task<Void, Never>? = nil
+    private var transactionUpdateTask: Task<Void, Never>?
 
     public init() {
-        evaluateSubscriptionHistory()
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+            evaluateSubscriptionHistory()
 
-        // Subscribe to real-time SK2 transaction updates
-        transactionUpdateTask = Task {
-            for await _ in StoreKit.Transaction.updates {
-                self.evaluateSubscriptionHistory()
+            transactionUpdateTask = Task {
+                for await _ in StoreKit.Transaction.updates {
+                    self.evaluateSubscriptionHistory()
+                }
             }
         }
     }
 
     deinit {
-        self.transactionUpdateTask?.cancel()
+        transactionUpdateTask?.cancel()
     }
 
     private func evaluateSubscriptionHistory() {
-        Task {
-            var found = false
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+            Task {
+                var found = false
 
-            for await result in StoreKit.Transaction.currentEntitlements {
-                if case .verified(let transaction) = result,
-                   transaction.productType == .autoRenewable {
-                    found = true
-                    break
-                }
-            }
-
-            if !found {
-                for await result in StoreKit.Transaction.all {
+                for await result in StoreKit.Transaction.currentEntitlements {
                     if case .verified(let transaction) = result,
                        transaction.productType == .autoRenewable {
                         found = true
                         break
                     }
                 }
+
+                if !found {
+                    for await result in StoreKit.Transaction.all {
+                        if case .verified(let transaction) = result,
+                           transaction.productType == .autoRenewable {
+                            found = true
+                            break
+                        }
+                    }
+                }
+
+                print("JOSH update subject \(found)")
+                updateSubject.send(.init(hasAnySubscriptionHistory: found))
             }
-
-            print("JOSH update subject \(found)")
-
-            updateSubject.send(.init(hasAnySubscriptionHistory: found))
         }
     }
 }
