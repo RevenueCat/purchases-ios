@@ -11,7 +11,7 @@
 //
 //  Created by Nacho Soto on 9/12/23.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 #if DEBUG
 
@@ -36,6 +36,8 @@ final class MockPurchases: PaywallPurchasesType {
         get { return _purchasesAreCompletedBy }
         set { _ = newValue }
     }
+
+    let subscriptionHistoryObserver = SubscriptionHistoryObserver()
 
     init(
         purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat,

@@ -83,89 +83,6 @@ enum FallbackContent {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-internal final class PaywallPromoOfferCacheV2: ObservableObject {
-
-    typealias ProductID = String
-    @_spi(Internal) public typealias PackageInfo = (package: Package, promotionalOfferProductCode: String?)
-
-    public enum Status: Equatable {
-        case unknown
-        case ineligible
-        case signedEligible(PromotionalOffer)
-    }
-
-    private var cache: [ProductID: Status] = [:]
-    private var hasAnySubscriptionHistory: Bool = false
-
-    // MARK: - Init
-
-    @_spi(Internal) public init(hasAnySubscriptionHistory: Bool = false) {
-        self.hasAnySubscriptionHistory = hasAnySubscriptionHistory
-    }
-
-    public func update(_ hasAnySubscriptionHistory: Bool) {
-        self.hasAnySubscriptionHistory = hasAnySubscriptionHistory
-    }
-
-    // MARK: - Public API
-
-    @_spi(Internal) public func computeEligibility(for packageInfos: [PackageInfo]) async {
-        await self.checkSignedEligibility(packageInfos: packageInfos)
-    }
-
-    @_spi(Internal) public func isMostLikelyEligible(for package: Package?) -> Bool {
-        guard let package else { return false }
-
-        let status = cache[package.storeProduct.productIdentifier] ?? .ineligible
-        switch status {
-        case .unknown, .signedEligible:
-            return true
-        case .ineligible:
-            return hasAnySubscriptionHistory
-        }
-    }
-
-    @_spi(Internal) public func get(for package: Package?) -> PromotionalOffer? {
-        guard let package else { return nil }
-
-        if case .signedEligible(let promoOffer) = cache[package.storeProduct.productIdentifier] {
-            return promoOffer
-        }
-
-        return nil
-    }
-
-    // MARK: - Internal Logic
-
-    private func checkSignedEligibility(packageInfos: [PackageInfo]) async {
-        for packageInfo in packageInfos {
-            let storeProduct = packageInfo.package.storeProduct
-            if let productCode = packageInfo.promotionalOfferProductCode,
-               let discount = storeProduct.discounts.first(where: { $0.offerIdentifier == productCode }) {
-
-                do {
-                    let promoOffer = try await Purchases.shared.promotionalOffer(
-                        forProductDiscount: discount,
-                        product: storeProduct
-                    )
-                    cache[storeProduct.productIdentifier] = .signedEligible(promoOffer)
-                } catch {
-                    cache[storeProduct.productIdentifier] = .ineligible
-                }
-            }
-        }
-    }
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@MainActor
-class MyViewModel: ObservableObject {
-
-    @Published var data: PaywallPromoOfferCacheV2?
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct PaywallsV2View: View {
 
     @Environment(\.horizontalSizeClass)
@@ -188,7 +105,7 @@ struct PaywallsV2View: View {
     private let fallbackContent: FallbackContent
 
     @StateObject
-    private var paywallPromoOfferCache = PaywallPromoOfferCacheV2()
+    private var paywallPromoOfferCache = PaywallPromoOfferCache()
 
     public init(
         paywallComponents: Offering.PaywallComponents,
@@ -246,51 +163,49 @@ struct PaywallsV2View: View {
             } else {
                 switch self.paywallStateManager.state {
                 case .success(let paywallState):
-//                    if let paywallPromoOfferCache = myViewModel.data {
-                        LoadedPaywallsV2View(
-                            introOfferEligibilityContext: introOfferEligibilityContext,
-                            paywallState: paywallState,
-                            uiConfigProvider: self.uiConfigProvider,
-                            onDismiss: self.onDismiss
+                    LoadedPaywallsV2View(
+                        introOfferEligibilityContext: introOfferEligibilityContext,
+                        paywallState: paywallState,
+                        uiConfigProvider: self.uiConfigProvider,
+                        onDismiss: self.onDismiss
+                    )
+                    .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
+                    .environmentObject(self.purchaseHandler)
+                    .environmentObject(self.introOfferEligibilityContext)
+                    .environmentObject(self.paywallPromoOfferCache)
+                    .disabled(self.purchaseHandler.actionInProgress)
+                    .onAppear {
+                        self.purchaseHandler.trackPaywallImpression(
+                            self.createEventData()
                         )
-                        .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
-                        .environmentObject(self.purchaseHandler)
-                        .environmentObject(self.introOfferEligibilityContext)
-                        .environmentObject(self.paywallPromoOfferCache)
-                        .disabled(self.purchaseHandler.actionInProgress)
-                        .onAppear {
-                            self.purchaseHandler.trackPaywallImpression(
-                                self.createEventData()
-                            )
+                    }
+                    .onDisappear { self.purchaseHandler.trackPaywallClose() }
+                    .onChangeOf(self.purchaseHandler.purchased) { purchased in
+                        if purchased {
+                            self.onDismiss()
                         }
-                        .onDisappear { self.purchaseHandler.trackPaywallClose() }
-                        .onChangeOf(self.purchaseHandler.purchased) { purchased in
-                            if purchased {
-                                self.onDismiss()
-                            }
-                        }
-                        .task {
-                            await self.introOfferEligibilityContext.computeEligibility(for: paywallState.packages)
-                        }
-                        .task {
-                            await self.paywallPromoOfferCache.computeEligibility(
-                                for: paywallState.packageInfos.map { ($0.package, $0.promotionalOfferProductCode) }
-                            )
-                        }
-                        // Note: preferences need to be applied after `.toolbar` call
-                        .preference(key: PurchaseInProgressPreferenceKey.self,
-                                    value: self.purchaseHandler.packageBeingPurchased)
-                        .preference(key: PurchasedResultPreferenceKey.self,
-                                    value: .init(data: self.purchaseHandler.purchaseResult))
-                        .preference(key: RestoredCustomerInfoPreferenceKey.self,
-                                    value: self.purchaseHandler.restoredCustomerInfo)
-                        .preference(key: RestoreInProgressPreferenceKey.self,
-                                    value: self.purchaseHandler.restoreInProgress)
-                        .preference(key: PurchaseErrorPreferenceKey.self,
-                                    value: self.purchaseHandler.purchaseError as NSError?)
-                        .preference(key: RestoreErrorPreferenceKey.self,
-                                    value: self.purchaseHandler.restoreError as NSError?)
-//                    }
+                    }
+                    .task {
+                        await self.introOfferEligibilityContext.computeEligibility(for: paywallState.packages)
+                    }
+                    .task {
+                        await self.paywallPromoOfferCache.computeEligibility(
+                            for: paywallState.packageInfos.map { ($0.package, $0.promotionalOfferProductCode) }
+                        )
+                    }
+                    // Note: preferences need to be applied after `.toolbar` call
+                    .preference(key: PurchaseInProgressPreferenceKey.self,
+                                value: self.purchaseHandler.packageBeingPurchased)
+                    .preference(key: PurchasedResultPreferenceKey.self,
+                                value: .init(data: self.purchaseHandler.purchaseResult))
+                    .preference(key: RestoredCustomerInfoPreferenceKey.self,
+                                value: self.purchaseHandler.restoredCustomerInfo)
+                    .preference(key: RestoreInProgressPreferenceKey.self,
+                                value: self.purchaseHandler.restoreInProgress)
+                    .preference(key: PurchaseErrorPreferenceKey.self,
+                                value: self.purchaseHandler.purchaseError as NSError?)
+                    .preference(key: RestoreErrorPreferenceKey.self,
+                                value: self.purchaseHandler.restoreError as NSError?)
                 case .failure(let error):
                     // Show fallback paywall and debug error message that
                     // occurred while validating data and view models
@@ -300,11 +215,9 @@ struct PaywallsV2View: View {
                 }
             }
         }
-        .onAppear {
-            let historyObserver = Purchases.shared.subscriptionHistoryObserver
-
-            print("JOSH thing \(historyObserver.status)")
-            let valueEnum = historyObserver.status
+        .task {
+            let historyObserver = self.purchaseHandler.subscriptionHistoryObserver
+            let valueEnum = await historyObserver.status
 
             let value: Bool
             switch valueEnum {
@@ -313,6 +226,8 @@ struct PaywallsV2View: View {
             case .hasHistory:
                 value = true
             case .noHistory:
+                value = false
+            @unknown default:
                 value = false
             }
 

@@ -62,7 +62,7 @@ private class SubscriptionHistoryTracker {
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
 @_spi(Internal)
-public final class SubscriptionHistoryObserver: ObservableObject {
+public actor SubscriptionHistoryObserver: ObservableObject, Sendable {
 
     public enum Status: Equatable {
         case unknown
@@ -70,7 +70,7 @@ public final class SubscriptionHistoryObserver: ObservableObject {
         case noHistory
     }
 
-    @Published public var status: Status = .unknown
+    public private(set) var status: Status = .unknown
 
     private var subscriptionTracker: Any?
     private var cancellables = Set<AnyCancellable>()
@@ -79,11 +79,17 @@ public final class SubscriptionHistoryObserver: ObservableObject {
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
             let tracker = SubscriptionHistoryTracker()
             self.subscriptionTracker = tracker
-            bind(tracker)
+            Task { [weak self]in
+                await self?.bind(tracker)
+            }
         } else {
             // On older versions, we don't have access to SK2
             self.status = .unknown
         }
+    }
+
+    func setStatus(_ newStatus: Status) {
+        self.status = newStatus
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -92,7 +98,9 @@ public final class SubscriptionHistoryObserver: ObservableObject {
             .map { $0.hasAnySubscriptionHistory ? Status.hasHistory : Status.noHistory }
             .receive(on: DispatchQueue.main)
             .sink { [weak self] status in
-                self?.status = status
+                Task { [weak self] in
+                    await self?.setStatus(status)
+                }
             }
             .store(in: &cancellables)
     }
