@@ -70,6 +70,7 @@ class BackendGetWebBillingProductsTests: BaseBackendTests {
         self.webBilling.getWebBillingProducts(appUserID: Self.userID, productIds: self.productIds) { _ in }
 
         expect(self.httpClient.calls).toEventually(haveCount(1))
+        expect(self.httpClient.calls).toNever(haveCount(2))
     }
 
     func testRepeatedRequestsLogDebugMessage() {
