@@ -15,6 +15,7 @@
 
 // swiftlint:disable file_length type_body_length function_body_length
 
+import Combine
 import Nimble
 @_spi(Internal) @testable import RevenueCat
 @_spi(Internal) @testable import RevenueCatUI
@@ -533,6 +534,145 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
                 loadPromotionalOfferUseCase.mockedPromotionalOffer?.discount.offerIdentifier
             ) == expectedOfferIdentifierInProduct
         }
+    }
+
+    func testCustomActionPathHandling() async throws {
+        let purchaseInformation = PurchaseInformation.subscription
+        let actionWrapper = CustomerCenterActionWrapper()
+        var capturedCustomActionData: CustomActionData?
+
+        // Set up expectation to capture custom action
+        let expectation = XCTestExpectation(description: "Custom action triggered")
+
+        // Monitor the customActionSelected publisher
+        let cancellable = actionWrapper.customActionSelected
+            .sink { actionIdentifier, purchaseIdentifier in
+                capturedCustomActionData = CustomActionData(
+                    actionIdentifier: actionIdentifier,
+                    purchaseIdentifier: purchaseIdentifier
+                )
+                expectation.fulfill()
+            }
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: Self.managementScreen(refundWindowDuration: .forever),
+            actionWrapper: actionWrapper,
+            purchaseInformation: purchaseInformation,
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        // Create a custom action path
+        let customActionPath = CustomerCenterConfigData.HelpPath(
+            id: "custom_delete_user",
+            title: "Delete Account",
+            type: .customAction,
+            detail: nil,
+            customActionIdentifier: "delete_user"
+        )
+
+        // Call handleHelpPath with the custom action
+        await viewModel.handleHelpPath(customActionPath, withActiveProductId: purchaseInformation.productIdentifier)
+
+        // Wait for the action to be triggered
+        await fulfillment(of: [expectation], timeout: 1.0)
+
+        // Verify that the correct custom action was triggered
+        let customActionData = try XCTUnwrap(capturedCustomActionData)
+        expect(customActionData.actionIdentifier) == "delete_user"
+        expect(customActionData.purchaseIdentifier) == purchaseInformation.productIdentifier
+
+        cancellable.cancel()
+    }
+
+    func testCustomActionPathWithoutActionIdentifier() async throws {
+        let purchaseInformation = PurchaseInformation.subscription
+        let actionWrapper = CustomerCenterActionWrapper()
+        var wasActionTriggered = false
+
+        // Set up expectation that should NOT be fulfilled
+        let expectation = XCTestExpectation(description: "Custom action should not be triggered")
+        expectation.isInverted = true
+
+        // Monitor the customActionSelected publisher
+        let cancellable = actionWrapper.customActionSelected
+            .sink { _, _ in
+                wasActionTriggered = true
+                expectation.fulfill() // This should not happen
+            }
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: Self.managementScreen(refundWindowDuration: .forever),
+            actionWrapper: actionWrapper,
+            purchaseInformation: purchaseInformation,
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        // Create a custom action path without action identifier
+        let customActionPath = CustomerCenterConfigData.HelpPath(
+            id: "custom_no_identifier",
+            title: "Custom Action",
+            type: .customAction,
+            detail: nil,
+            customActionIdentifier: nil
+        )
+
+        // Call handleHelpPath with the custom action - should not trigger action due to missing identifier
+        await viewModel.handleHelpPath(customActionPath, withActiveProductId: purchaseInformation.productIdentifier)
+
+        // Wait to ensure no action is triggered
+        await fulfillment(of: [expectation], timeout: 0.5)
+
+        // Verify that no custom action was triggered due to missing identifier
+        expect(wasActionTriggered) == false
+
+        cancellable.cancel()
+    }
+
+    func testCustomActionPathWithNilActivePurchaseId() async throws {
+        let actionWrapper = CustomerCenterActionWrapper()
+        var capturedCustomActionData: CustomActionData?
+
+        // Set up expectation to capture custom action
+        let expectation = XCTestExpectation(description: "Custom action triggered without purchase ID")
+
+        // Monitor the customActionSelected publisher
+        let cancellable = actionWrapper.customActionSelected
+            .sink { actionIdentifier, purchaseIdentifier in
+                capturedCustomActionData = CustomActionData(
+                    actionIdentifier: actionIdentifier,
+                    purchaseIdentifier: purchaseIdentifier
+                )
+                expectation.fulfill()
+            }
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: Self.managementScreen(refundWindowDuration: .forever),
+            actionWrapper: actionWrapper,
+            purchaseInformation: nil, // No purchase information
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        // Create a custom action path
+        let customActionPath = CustomerCenterConfigData.HelpPath(
+            id: "custom_rate_app",
+            title: "Rate App",
+            type: .customAction,
+            detail: nil,
+            customActionIdentifier: "rate_app"
+        )
+
+        // Call handleHelpPath without active purchase ID
+        await viewModel.handleHelpPath(customActionPath, withActiveProductId: nil)
+
+        // Wait for the action to be triggered
+        await fulfillment(of: [expectation], timeout: 1.0)
+
+        // Verify that the custom action was triggered with nil purchase ID
+        let customActionData = try XCTUnwrap(capturedCustomActionData)
+        expect(customActionData.actionIdentifier) == "rate_app"
+        expect(customActionData.purchaseIdentifier).to(beNil())
+
+        cancellable.cancel()
     }
 
 }
