@@ -19,16 +19,21 @@ private class SubscriptionHistoryTracker {
     public let updateSubject = CurrentValueSubject<Update, Never>(.init(hasAnySubscriptionHistory: false))
 
     private var cancellables = Set<AnyCancellable>()
+    private var transactionUpdateTask: Task<Void, Never>? = nil
 
     public init() {
         evaluateSubscriptionHistory()
 
         // Subscribe to real-time SK2 transaction updates
-        Task.detached {
+        transactionUpdateTask = Task {
             for await _ in StoreKit.Transaction.updates {
                 self.evaluateSubscriptionHistory()
             }
         }
+    }
+
+    deinit {
+        self.transactionUpdateTask?.cancel()
     }
 
     private func evaluateSubscriptionHistory() {
