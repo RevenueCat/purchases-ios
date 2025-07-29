@@ -18,7 +18,9 @@ class MockWebBillingAPI: WebBillingAPI {
 
     var invokedGetWebBillingProducts = false
     var invokedGetWebBillingProductsCount = 0
-    var invokedGetWebBillingProductsParameters: (appUserID: String?, productIds: Set<String>?, completion: WebBillingProductsResponseHandler?)?
+    var invokedGetWebBillingProductsParameters: (appUserID: String?,
+                                                 productIds: Set<String>?,
+                                                 completion: WebBillingProductsResponseHandler?)?
     var invokedGetWebBillingProductsParametersList = [(appUserID: String?,
                                                        productIds: Set<String>?,
                                                        completion: WebBillingProductsResponseHandler?)]()

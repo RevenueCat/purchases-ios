@@ -74,7 +74,6 @@ class OfferingsAPI {
         )
     }
 
-
     func getIntroEligibility(appUserID: String,
                              receiptData: Data,
                              productIdentifiers: Set<String>,
