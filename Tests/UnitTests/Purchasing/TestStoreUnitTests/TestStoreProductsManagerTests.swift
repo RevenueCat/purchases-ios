@@ -37,11 +37,11 @@ class TestStoreProductsManagerTests: TestCase {
         self.offerings = try XCTUnwrap(self.backend.offerings as? MockOfferingsAPI)
     }
 
-    func testFetchTestStoreProductsWithIdentifiersTriggersTheCorrectRequest() throws {
+    func testFetchTestStoreProductsWithIdentifiersTriggersTheCorrectRequest() async throws {
         self.offerings.stubbedGetWebProductsCompletionResult = .failure(BackendError.networkError(.offlineConnection()))
 
         let manager = self.createManager()
-        waitUntil { completed in
+        await waitUntil { completed in
             manager.products(withIdentifiers: ["product1", "product2"]) { _ in
                 completed()
             }
@@ -54,16 +54,68 @@ class TestStoreProductsManagerTests: TestCase {
         expect(params.productIds).to(equal(Set(["product1", "product2"])))
     }
 
-    func testFetchTestStoreProductsDoesNothingIfEmptyIdentifiers() throws {
-
+    func testFetchTestStoreProductsDoesNothingIfEmptyIdentifiers() async throws {
         let manager = self.createManager()
-        waitUntil { completed in
+        await waitUntil { completed in
             manager.products(withIdentifiers: []) { _ in
                 completed()
             }
         }
 
         expect(self.offerings.invokedGetWebProducts).to(beFalse())
+    }
+
+    func testFetchTestStoreProductsWithSuccessfulResponseReturnsProducts() throws {
+        self.offerings.stubbedGetWebProductsCompletionResult = .success(
+            TestStoreMockData.yearlyAndMonthlyWebProductsResponse
+        )
+        let productIds: Set = [TestStoreMockData.yearlyProduct.identifier,
+                               TestStoreMockData.monthlyProduct.identifier]
+
+        let manager = self.createManager()
+        let result = waitUntilValue { completed in
+            manager.products(withIdentifiers: productIds) { result in
+                completed(result)
+            }
+        }
+
+        expect(result).to(beSuccess())
+        let products = try XCTUnwrap(result?.value)
+        expect(products.count) == 2
+        let productIdentifiers = Set(products.map(\.productIdentifier))
+        expect(productIdentifiers).to(equal(productIds))
+    }
+
+    func testFetchTestStoreProductsWithBackendErrorPropagatesError() throws {
+        let expectedError = BackendError.networkError(.serverDown())
+        self.offerings.stubbedGetWebProductsCompletionResult = .failure(expectedError)
+
+        let manager = self.createManager()
+        let result = waitUntilValue { completed in
+            manager.products(withIdentifiers: ["product1"]) { result in
+                completed(result)
+            }
+        }
+
+        expect(result).to(beFailure())
+        expect(result?.error).to(matchError(expectedError.asPurchasesError))
+    }
+
+    func testFetchTestStoreProductsWithToStoreProductConversionErrorPropagatesError() throws {
+        // This represents a scenario where the backend returns a response that cannot be converted to StoreProduct
+        self.offerings.stubbedGetWebProductsCompletionResult = .success(
+            TestStoreMockData.noBasePricesWebProductsResponse
+        )
+        let productId = TestStoreMockData.productWithoutBasePrices.identifier
+
+        let manager = self.createManager()
+        let result = waitUntilValue { completed in
+            manager.products(withIdentifiers: [productId]) { result in
+                completed(result)
+            }
+        }
+
+        expect(result).to(beFailure())
     }
 
     fileprivate func createManager() -> TestStoreProductsManager {

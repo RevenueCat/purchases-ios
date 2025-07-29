@@ -43,26 +43,68 @@ enum TestStoreMockData {
         introPrice: .init(wrappedValue: nil)
     )
 
-    static let yearlyProduct = WebProductsResponse.Product(identifier: "product_annual",
-                                                           productType: .subscription,
-                                                           title: "Test Yearly Subscription",
-                                                           description: "A test yearly subscription product",
-                                                           defaultPurchaseOptionId: "base_option",
-                                                           purchaseOptions: [
-                                                            "base_option": yearlyPurchaseOption
-                                                           ])
+    /// Can be used to test errors when converting `WebProductsResponse.Product` to `StoreProduct`.
+    private static let noBasePricePurchaseOption = WebProductsResponse.PurchaseOption(
+        basePrice: .init(wrappedValue: nil),
+        base: .init(wrappedValue: nil),
+        trial: .init(wrappedValue: nil),
+        introPrice: .init(wrappedValue: nil)
+    )
 
-    static let monthlyProduct = WebProductsResponse.Product(identifier: "product_monthly",
-                                                            productType: .subscription,
-                                                            title: "Test Monthly Subscription",
-                                                            description: "A test monthly subscription product",
-                                                            defaultPurchaseOptionId: "base_option",
-                                                            purchaseOptions: [
-                                                                "base_option": monthlyPurchaseOption
-                                                            ])
+    static let yearlyProduct = WebProductsResponse.Product(
+        identifier: "product_annual",
+        productType: .subscription,
+        title: "Test Yearly Subscription",
+        description: "A test yearly subscription product",
+        defaultPurchaseOptionId: "base_option",
+        purchaseOptions: [
+            "base_option": yearlyPurchaseOption
+        ]
+    )
+
+    static let monthlyProduct = WebProductsResponse.Product(
+        identifier: "product_monthly",
+        productType: .subscription,
+        title: "Test Monthly Subscription",
+        description: "A test monthly subscription product",
+        defaultPurchaseOptionId: "base_option",
+        purchaseOptions: [
+            "base_option": monthlyPurchaseOption
+        ]
+    )
+
+    /// Can be used to test errors when converting `WebProductsResponse.Product` to `StoreProduct`.
+    static let productWithoutPurchaseOptions = WebProductsResponse.Product(
+        identifier: "product_no_purchase_options",
+        productType: .subscription,
+        title: "Test No Purchase Options",
+        description: "A test product with no purchase options",
+        defaultPurchaseOptionId: "inexistent_option",
+        purchaseOptions: [:]
+    )
+
+    /// Can be used to test errors when converting `WebProductsResponse.Product` to `StoreProduct`.
+    static let productWithoutBasePrices = WebProductsResponse.Product(
+        identifier: "product_no_base_prices",
+        productType: .subscription,
+        title: "Test No Base Prices",
+        description: "A test product with no base prices",
+        defaultPurchaseOptionId: "no_base_prices_option",
+        purchaseOptions: ["no_base_prices_option": noBasePricePurchaseOption]
+    )
 
     static let yearlyAndMonthlyWebProductsResponse = WebProductsResponse(
         productDetails: [yearlyProduct, monthlyProduct]
+    )
+
+    /// Can be used to test errors when converting `WebProductsResponse.Product` to `StoreProduct`.
+    static let noPurchaseOptionsWebProductsResponse = WebProductsResponse(
+        productDetails: [productWithoutPurchaseOptions]
+    )
+
+    /// Can be used to test errors when converting `WebProductsResponse.Product` to `StoreProduct`.
+    static let noBasePricesWebProductsResponse = WebProductsResponse(
+        productDetails: [productWithoutBasePrices]
     )
 
 }
