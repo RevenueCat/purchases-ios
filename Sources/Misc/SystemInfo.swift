@@ -23,6 +23,7 @@ import WatchKit
 import AppKit
 #endif
 
+// swiftlint:disable file_length
 class SystemInfo {
 
     // swiftlint:disable:next force_unwrapping
@@ -34,6 +35,13 @@ class SystemInfo {
     }
 
     let storeKitVersion: StoreKitVersion
+    private let apiKeyValidationResult: Configuration.APIKeyValidationResult
+
+    /// Whether the API key used to configure the SDK is a Test Store API key.
+    var isTestStoreAPIKey: Bool {
+        return self.apiKeyValidationResult == .testStore
+    }
+
     let operationDispatcher: OperationDispatcher
     let platformFlavor: String
     let platformFlavorVersion: String?
@@ -86,7 +94,7 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "5.33.0-SNAPSHOT"
+        return "5.34.0-SNAPSHOT"
     }
 
     static var systemVersion: String {
@@ -160,6 +168,7 @@ class SystemInfo {
          sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default,
          storefrontProvider: StorefrontProviderType = DefaultStorefrontProvider(),
          storeKitVersion: StoreKitVersion = .default,
+         apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform,
          responseVerificationMode: Signing.ResponseVerificationMode = .default,
          dangerousSettings: DangerousSettings? = nil,
          isAppBackgrounded: Bool? = nil,
@@ -173,6 +182,7 @@ class SystemInfo {
         self._isAppBackgroundedState = .init(isAppBackgrounded ?? false)
         self.operationDispatcher = operationDispatcher
         self.storeKitVersion = storeKitVersion
+        self.apiKeyValidationResult = apiKeyValidationResult
         self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
         self.storefrontProvider = storefrontProvider
         self.responseVerificationMode = responseVerificationMode
@@ -263,14 +273,13 @@ class SystemInfo {
     }
 }
 
-#if os(iOS) || VISION_OS
+#if os(iOS) || os(tvOS) || VISION_OS
 extension SystemInfo {
 
-    @available(iOS 13.0, macCatalystApplicationExtension 13.1, *)
+    @available(iOS 13.0, macCatalyst 13.1, tvOS 13.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(watchOSApplicationExtension, unavailable)
-    @available(tvOS, unavailable)
     @MainActor
     var currentWindowScene: UIWindowScene {
         get throws {
@@ -303,9 +312,6 @@ extension SystemInfo {
     #elseif VISION_OS
     static let platformHeaderConstant = "visionOS"
     #endif
-}
-
-extension SystemInfo {
 
     static var applicationWillEnterForegroundNotification: Notification.Name {
         #if os(iOS) || os(tvOS) || VISION_OS

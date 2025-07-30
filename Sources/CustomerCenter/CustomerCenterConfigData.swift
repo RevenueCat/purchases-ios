@@ -24,6 +24,7 @@ import Foundation
     @_spi(Internal) public let appearance: Appearance
     @_spi(Internal) public let localization: Localization
     @_spi(Internal) public let support: Support
+    @_spi(Internal) public let changePlans: [ChangePlan]
     @_spi(Internal) public let lastPublishedAppVersion: String?
     @_spi(Internal) public let productId: UInt?
 
@@ -32,6 +33,7 @@ import Foundation
         appearance: Appearance,
         localization: Localization,
         support: Support,
+        changePlans: [ChangePlan],
         lastPublishedAppVersion: String?,
         productId: UInt?
     ) {
@@ -39,6 +41,7 @@ import Foundation
         self.appearance = appearance
         self.localization = localization
         self.support = support
+        self.changePlans = changePlans
         self.lastPublishedAppVersion = lastPublishedAppVersion
         self.productId = productId
     }
@@ -417,6 +420,7 @@ import Foundation
         @_spi(Internal) public let type: PathType
         @_spi(Internal) public let detail: PathDetail?
         @_spi(Internal) public let refundWindowDuration: RefundWindowDuration?
+        @_spi(Internal) public let customActionIdentifier: String?
 
         @_spi(Internal) public init(
             id: String,
@@ -425,7 +429,8 @@ import Foundation
             openMethod: OpenMethod? = nil,
             type: PathType,
             detail: PathDetail?,
-            refundWindowDuration: RefundWindowDuration? = nil
+            refundWindowDuration: RefundWindowDuration? = nil,
+            customActionIdentifier: String? = nil
         ) {
             self.id = id
             self.title = title
@@ -434,6 +439,7 @@ import Foundation
             self.type = type
             self.detail = detail
             self.refundWindowDuration = refundWindowDuration
+            self.customActionIdentifier = customActionIdentifier
         }
 
         @_spi(Internal) public enum PathDetail: Equatable {
@@ -455,6 +461,7 @@ import Foundation
             case changePlans = "CHANGE_PLANS"
             case cancel = "CANCEL"
             case customUrl = "CUSTOM_URL"
+            case customAction = "CUSTOM_ACTION"
             case unknown
 
             init(from rawValue: String) {
@@ -469,6 +476,8 @@ import Foundation
                     self = .cancel
                 case "CUSTOM_URL":
                     self = .customUrl
+                case "CUSTOM_ACTION":
+                    self = .customAction
                 default:
                     self = .unknown
                 }
@@ -673,6 +682,34 @@ import Foundation
 
     }
 
+    @_spi(Internal) public struct ChangePlan: Equatable {
+        @_spi(Internal) public let groupId: String
+        @_spi(Internal) public let groupName: String
+        @_spi(Internal) public let products: [ChangePlanProduct]
+
+        @_spi(Internal) public init(
+            groupId: String,
+            groupName: String,
+            products: [ChangePlanProduct]
+        ) {
+            self.groupId = groupId
+            self.groupName = groupName
+            self.products = products
+        }
+    }
+
+    @_spi(Internal) public struct ChangePlanProduct: Equatable {
+        @_spi(Internal) public let productId: String
+        @_spi(Internal) public let selected: Bool
+
+        @_spi(Internal) public init(
+            productId: String,
+            selected: Bool
+        ) {
+            self.productId = productId
+            self.selected = selected
+        }
+    }
 }
 
 @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
@@ -689,6 +726,11 @@ extension CustomerCenterConfigData {
         self.support = Support(from: response.customerCenter.support)
         self.lastPublishedAppVersion = response.lastPublishedAppVersion
         self.productId = response.itunesTrackId
+        self.changePlans = response.customerCenter.changePlans.map {
+            .init(groupId: $0.groupId, groupName: $0.groupName, products: $0.products.map {
+                .init(productId: $0.productId, selected: $0.selected)
+            })
+        }
     }
 
 }
@@ -768,6 +810,8 @@ extension CustomerCenterConfigData.HelpPath {
         } else {
             self.refundWindowDuration = nil
         }
+
+        self.customActionIdentifier = response.actionIdentifier
     }
 }
 

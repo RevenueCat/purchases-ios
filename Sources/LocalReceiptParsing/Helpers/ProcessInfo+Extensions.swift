@@ -26,6 +26,8 @@ enum EnvironmentKey: String {
     case RCRunningIntegrationTests = "RCRunningIntegrationTests"
     case RCMockAdServicesToken = "RCMockAdServicesToken"
     case XCCloud = "XCODE_CLOUD"
+    case xcodeRunningForPreviews = "XCODE_RUNNING_FOR_PREVIEWS"
+    case emergeIsRunningForSnapshots = "EMERGE_IS_RUNNING_FOR_SNAPSHOTS"
 
 }
 
@@ -61,6 +63,11 @@ extension ProcessInfo {
 
     static var isXcodeCloud: Bool {
         return self[.XCCloud] == "1"
+    }
+
+    /// `true` when running as part of an Xcode Preview (either in Xcode or on Emerge Tool's servers)
+    @_spi(Internal) public static var isRunningForPreviews: Bool {
+        return self[.xcodeRunningForPreviews] == "1" || self[.emergeIsRunningForSnapshots] == "1"
     }
 
     /// Returns a string identifying the platform and environment

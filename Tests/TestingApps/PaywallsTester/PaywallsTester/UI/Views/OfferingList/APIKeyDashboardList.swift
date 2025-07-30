@@ -207,15 +207,7 @@ struct APIKeyDashboardList: View {
                 }
         }
         #endif
-        .overlay {
-            if offeringToPresent != nil {
-                VStack {}.presentPaywallIfNeeded(offering: offeringToPresent,
-                                        shouldDisplay: { _ in true },
-                                        onDismiss: { offeringToPresent = nil }
-                                        )
-            }
-        }
-       
+                .presentPaywallIfNeededModifier(offering: $offeringToPresent)       
     }
 
     #if !os(watchOS)
@@ -302,4 +294,24 @@ extension APIKeyDashboardList.PresentedPaywall: Identifiable {
         return "\(self.offering.id)-\(self.mode.name)"
     }
 
+}
+// Custom view modifier for conditional paywall presentation
+private struct PresentPaywallIfNeededModifier: ViewModifier {
+    @Binding var offering: Offering?
+    
+    func body(content: Content) -> some View {
+        if let offering = offering {
+            content.presentPaywallIfNeeded(offering: offering,
+                                         shouldDisplay: { _ in true },
+                                         onDismiss: { self.offering = nil })
+        } else {
+            content
+        }
+    }
+}
+
+private extension View {
+    func presentPaywallIfNeededModifier(offering: Binding<Offering?>) -> some View {
+        self.modifier(PresentPaywallIfNeededModifier(offering: offering))
+    }
 }

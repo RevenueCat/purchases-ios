@@ -32,7 +32,7 @@ extension VirtualCurrencyStrings: LogMessage {
         case .invalidating_virtual_currencies_cache:
             return "Invalidating VirtualCurrencies cache."
         case .no_cached_virtual_currencies:
-            return "No cached VirtualCurrencies, fetching from network."
+            return "There are no cached VirtualCurrencies."
         case .virtual_currencies_stale_updating_from_network:
             return "VirtualCurrencies cache is stale, updating from network."
         case .vending_from_cache:

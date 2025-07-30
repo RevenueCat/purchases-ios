@@ -12,7 +12,7 @@
 //  Created by Josh Holtz on 9/27/24.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -145,7 +145,7 @@ struct PurchaseButtonComponentView: View {
 
     private var isInPreview: Bool {
         #if DEBUG
-        let isInPreview: Bool = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+        let isInPreview: Bool = ProcessInfo.isRunningForPreviews
 
         return isInPreview
         #else

@@ -120,6 +120,12 @@ struct PurchaseInformation {
     /// The unique identifier for the transaction created by the Store.
     let storeTransactionIdentifier: String?
 
+    /// Remote configured set of product ids to handle change plans flow.
+    let changePlan: CustomerCenterConfigData.ChangePlan?
+
+    /// Indicates the product lasts forever
+    let isLifetime: Bool
+
     private let dateFormatter: DateFormatter
     private let numberFormatter: NumberFormatter
 
@@ -149,7 +155,9 @@ struct PurchaseInformation {
          gracePeriodExpiresDate: Date? = nil,
          refundedAtDate: Date? = nil,
          transactionIdentifier: String? = nil,
-         storeTransactionIdentifier: String? = nil
+         storeTransactionIdentifier: String? = nil,
+         changePlan: CustomerCenterConfigData.ChangePlan? = nil,
+         isLifetime: Bool = false
     ) {
         self.title = title
         self.pricePaid = pricePaid
@@ -178,6 +186,8 @@ struct PurchaseInformation {
         self.refundedAtDate = refundedAtDate
         self.transactionIdentifier = transactionIdentifier
         self.storeTransactionIdentifier = storeTransactionIdentifier
+        self.changePlan = changePlan
+        self.isLifetime = isLifetime
     }
 
     // swiftlint:disable:next function_body_length
@@ -188,11 +198,13 @@ struct PurchaseInformation {
          customerInfoRequestedDate: Date,
          dateFormatter: DateFormatter = Self.defaultDateFormatter,
          numberFormatter: NumberFormatter = Self.defaultNumberFormatter,
-         managementURL: URL?
+         managementURL: URL?,
+         changePlan: CustomerCenterConfigData.ChangePlan? = nil
     ) {
         self.dateFormatter = dateFormatter
         self.numberFormatter = numberFormatter
 
+        self.changePlan = changePlan
         // Title and duration from product if available
         if transaction.store == .promotional {
             self.title = entitlement?.identifier ?? transaction.productIdentifier
@@ -204,6 +216,7 @@ struct PurchaseInformation {
         self.customerInfoRequestedDate = customerInfoRequestedDate
         self.managementURL = managementURL
         self.isSubscription = transaction.isSubscrition && transaction.store != .promotional
+        self.isLifetime = subscribedProduct?.productType == .nonConsumable
 
         // Use entitlement data if available, otherwise derive from transaction
         if let entitlement = entitlement {
@@ -344,6 +357,7 @@ extension PurchaseInformation {
     /// - Returns: A `PurchaseInformation` object containing the purchase details, including the renewal price.
     ///
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
+    // swiftlint:disable:next function_parameter_count
     static func purchaseInformationUsingRenewalInfo(
         entitlement: EntitlementInfo? = nil,
         subscribedProduct: StoreProduct,
@@ -352,7 +366,8 @@ extension PurchaseInformation {
         customerInfoRequestedDate: Date,
         dateFormatter: DateFormatter = Self.defaultDateFormatter,
         numberFormatter: NumberFormatter = Self.defaultNumberFormatter,
-        managementURL: URL?
+        managementURL: URL?,
+        changePlan: CustomerCenterConfigData.ChangePlan?
     ) async -> PurchaseInformation {
         let renewalPriceDetails = await Self.extractPriceDetailsFromRenewalInfo(
             forProduct: subscribedProduct,
@@ -367,7 +382,8 @@ extension PurchaseInformation {
             customerInfoRequestedDate: customerInfoRequestedDate,
             dateFormatter: dateFormatter,
             numberFormatter: numberFormatter,
-            managementURL: managementURL
+            managementURL: managementURL,
+            changePlan: changePlan
         )
     }
 
@@ -523,10 +539,6 @@ extension PurchaseInformation {
 }
 
 extension PurchaseInformation {
-
-    var isLifetimeSubscription: Bool {
-        expirationDate == nil && isSubscription
-    }
 
     var storeLocalizationKey: CCLocalizedString {
         switch store {

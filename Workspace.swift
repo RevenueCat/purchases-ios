@@ -9,7 +9,8 @@ var projects: [Path] = [
     "./Examples/testCustomEntitlementsComputation/",
     "./Examples/PurchaseTester/",
     "./Projects/PaywallTester",
-    "./Projects/APITesters"
+    "./Projects/APITesters",
+    "./Projects/PaywallValidationTester"
 ]
 
 if Environment.local {
@@ -23,7 +24,8 @@ if Environment.local {
 
 var additionalFiles: [FileElement] = [
     .glob(pattern: "Global.xcconfig"),
-    .glob(pattern: "Tests/TestPlans/**/*.xctestplan")
+    .glob(pattern: "Tests/TestPlans/**/*.xctestplan"),
+    .glob(pattern: "Tests/RevenueCatUITests/TestPlans/**/*.xctestplan")
 ]
 if FileManager.default.fileExists(atPath: "Local.xcconfig") {
     additionalFiles.append(.glob(pattern: "Local.xcconfig"))

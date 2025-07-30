@@ -28,10 +28,14 @@ class TabControlContext: ObservableObject {
     let tabIds: [String]
 
     init(controlStackViewModel: StackComponentViewModel,
-         tabIds: [String]) {
+         tabIds: [String],
+         defaultTabId: String?) {
         self.controlStackViewModel = controlStackViewModel
         self.tabIds = tabIds
-        self._selectedTabId = .init(initialValue: tabIds.first ?? "")
+
+        let calculatedDefaultTabId = defaultTabId ?? tabIds.first ?? ""
+
+        self._selectedTabId = .init(initialValue: calculatedDefaultTabId)
     }
 
 }
@@ -96,7 +100,8 @@ struct LoadedTabsComponentView: View {
 
         self._tabControlContext = .init(wrappedValue: TabControlContext(
             controlStackViewModel: viewModel.controlStackViewModel,
-            tabIds: viewModel.tabIds
+            tabIds: viewModel.tabIds,
+            defaultTabId: viewModel.defaultTabId
         ))
 
         self._tierPackageContexts = .init(initialValue: Dictionary(

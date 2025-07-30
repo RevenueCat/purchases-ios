@@ -304,11 +304,15 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let receiptRefreshRequestFactory = ReceiptRefreshRequestFactory()
         let fetcher = StoreKitRequestFetcher(requestFactory: receiptRefreshRequestFactory,
                                              operationDispatcher: operationDispatcher)
+
+        let apiKeyValidationResult = Configuration.validateAndLog(apiKey: apiKey)
+
         let systemInfo = SystemInfo(
             platformInfo: platformInfo,
             finishTransactions: !observerMode,
             operationDispatcher: operationDispatcher,
             storeKitVersion: storeKitVersion,
+            apiKeyValidationResult: apiKeyValidationResult,
             responseVerificationMode: responseVerificationMode,
             dangerousSettings: dangerousSettings,
             preferredLocalesProvider: PreferredLocalesProvider(preferredLocaleOverride: preferredLocale)
@@ -369,16 +373,19 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 diagnosticsTracker: diagnosticsTracker
             ))
 
+        let testStorePurchaseHandler = TestStorePurchaseHandler(systemInfo: systemInfo)
+
         let offeringsFactory = OfferingsFactory()
         let receiptParser = PurchasesReceiptParser.default
         let transactionsManager = TransactionsManager(receiptParser: receiptParser)
 
-        let productsRequestFactory = ProductsRequestFactory()
         let productsManager = CachingProductsManager(
-            manager: ProductsManager(productsRequestFactory: productsRequestFactory,
-                                     diagnosticsTracker: diagnosticsTracker,
-                                     systemInfo: systemInfo,
-                                     requestTimeout: storeKitTimeout)
+            manager: ProductsManagerFactory.createManager(apiKeyValidationResult: apiKeyValidationResult,
+                                                          diagnosticsTracker: diagnosticsTracker,
+                                                          systemInfo: systemInfo,
+                                                          backend: backend,
+                                                          deviceCache: deviceCache,
+                                                          requestTimeout: storeKitTimeout)
         )
 
         let transactionPoster = TransactionPoster(
@@ -521,6 +528,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 return .init(
                     productsManager: productsManager,
                     paymentQueueWrapper: paymentQueueWrapper,
+                    testStorePurchaseHandler: testStorePurchaseHandler,
                     systemInfo: systemInfo,
                     subscriberAttributes: subscriberAttributes,
                     operationDispatcher: operationDispatcher,
@@ -553,6 +561,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 return .init(
                     productsManager: productsManager,
                     paymentQueueWrapper: paymentQueueWrapper,
+                    testStorePurchaseHandler: testStorePurchaseHandler,
                     systemInfo: systemInfo,
                     subscriberAttributes: subscriberAttributes,
                     operationDispatcher: operationDispatcher,

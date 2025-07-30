@@ -117,13 +117,14 @@ extension PlatformImage {
     }
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
 
   func asImage(wait duration: TimeInterval = 0.1) -> PlatformImage {
 
     #if canImport(UIKit)
       
-    let controller = UIHostingController(rootView: self)
+    let controller = UIHostingController(rootView: self.ignoresSafeArea())
     let view = controller.view
     let targetSize = controller.view.intrinsicContentSize
     let bounds = CGRect(origin: .zero, size: targetSize)
@@ -174,7 +175,10 @@ extension View {
 
 extension UIView {
   func asImage() -> UIImage {
-    let renderer = UIGraphicsImageRenderer(bounds: bounds)
+    let format = UIGraphicsImageRendererFormat()
+    format.preferredRange = .standard // Ensures 8-bit sRGB, even on Mac Catalyst where the default is Generic RGB
+
+    let renderer = UIGraphicsImageRenderer(bounds: bounds, format: format)
     return renderer.image { _ in
         drawHierarchy(in: bounds, afterScreenUpdates: true)
     }
