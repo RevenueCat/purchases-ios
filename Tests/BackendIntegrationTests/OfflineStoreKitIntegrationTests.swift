@@ -250,6 +250,8 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         self.serverDown()
 
         try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
+        // Add 1s delay to ensure the renewal transaction has a later purchase date than the original one
+        try await Task.sleep(for: .seconds(1))
         try self.testSession.forceRenewalOfSubscription(
             productIdentifier: await self.monthlyPackage.storeProduct.productIdentifier
         )

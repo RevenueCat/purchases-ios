@@ -181,4 +181,16 @@ class LocaleFinderTest: TestCase {
         let foundLocalizations = localizations.findLocale(locale)
         expect(foundLocalizations).to(beNil())
     }
+
+    func test_az_AZ() {
+        let localizations = [
+            "az": Self.expectedTranslations,
+            "en": ["wrong": "this is en"]
+        ]
+
+        let locale = Locale(identifier: "az_AZ")
+
+        let foundLocalizations = localizations.findLocale(locale)
+        expect(foundLocalizations).to(equal(Self.expectedTranslations))
+    }
 }

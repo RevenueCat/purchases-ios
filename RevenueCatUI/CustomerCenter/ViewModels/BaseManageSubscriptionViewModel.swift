@@ -94,9 +94,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
 
 #if os(iOS) || targetEnvironment(macCatalyst)
     func handleHelpPath(_ path: CustomerCenterConfigData.HelpPath, withActiveProductId: String? = nil) async {
-        // Convert the path to an appropriate action using the extension
         if let action = path.asAction() {
-            // Send the action through the action wrapper
             self.actionWrapper.handleAction(.buttonTapped(action: action))
         }
 
@@ -156,30 +154,16 @@ class BaseManageSubscriptionViewModel: ObservableObject {
 private extension BaseManageSubscriptionViewModel {
 
 #if os(iOS) || targetEnvironment(macCatalyst)
-    // swiftlint:disable:next cyclomatic_complexity
     private func onPathSelected(path: CustomerCenterConfigData.HelpPath) async {
         switch path.type {
         case .missingPurchase:
             self.showRestoreAlert = true
 
         case .refundRequest:
-            guard let purchaseInformation = self.purchaseInformation else { return }
-            let productId = purchaseInformation.productIdentifier
-            do {
-                self.actionWrapper.handleAction(.refundRequestStarted(productId))
-
-                let status = try await self.purchasesProvider.beginRefundRequest(forProduct: productId)
-                self.refundRequestStatus = status
-                self.actionWrapper.handleAction(.refundRequestCompleted(productId, status))
-            } catch {
-                self.refundRequestStatus = .error
-                self.actionWrapper.handleAction(.refundRequestCompleted(productId, .error))
-            }
+            await handleRefundRequest()
 
         case .cancel where purchaseInformation?.store != .appStore:
-            if let url = purchaseInformation?.managementURL {
-                self.inAppBrowserURL = IdentifiableURL(url: url)
-            }
+            handleNonAppStoreCancel()
 
         case .changePlans:
             self.actionWrapper.handleAction(.showingChangePlans(purchaseInformation?.subscriptionGroupID))
@@ -188,26 +172,65 @@ private extension BaseManageSubscriptionViewModel {
             self.actionWrapper.handleAction(.showingManageSubscriptions)
 
         case .customUrl:
-            guard let url = path.url,
-                  let openMethod = path.openMethod else {
-                Logger.warning("Found a custom URL path without a URL or open method. Ignoring tap.")
+            handleCustomUrl(path: path)
+
+        case .customAction:
+            guard let actionIdentifier = path.customActionIdentifier else {
                 return
             }
-            switch openMethod {
-            case .external,
-                _ where !url.isWebLink:
-                URLUtilities.openURLIfNotAppExtension(url)
-            case .inApp:
-                self.inAppBrowserURL = .init(url: url)
-            @unknown default:
-                Logger.warning(Strings.could_not_determine_type_of_custom_url)
-                URLUtilities.openURLIfNotAppExtension(url)
-            }
+            self.actionWrapper.handleAction(
+                .customActionSelected(
+                    CustomActionData(
+                        actionIdentifier: actionIdentifier,
+                        purchaseIdentifier: purchaseInformation?.productIdentifier
+                    )
+                )
+            )
 
         default:
             break
         }
     }
+
+    private func handleRefundRequest() async {
+        guard let purchaseInformation = self.purchaseInformation else { return }
+        let productId = purchaseInformation.productIdentifier
+        do {
+            self.actionWrapper.handleAction(.refundRequestStarted(productId))
+
+            let status = try await self.purchasesProvider.beginRefundRequest(forProduct: productId)
+            self.refundRequestStatus = status
+            self.actionWrapper.handleAction(.refundRequestCompleted(productId, status))
+        } catch {
+            self.refundRequestStatus = .error
+            self.actionWrapper.handleAction(.refundRequestCompleted(productId, .error))
+        }
+    }
+
+    private func handleNonAppStoreCancel() {
+        if let url = purchaseInformation?.managementURL {
+            self.inAppBrowserURL = IdentifiableURL(url: url)
+        }
+    }
+
+    private func handleCustomUrl(path: CustomerCenterConfigData.HelpPath) {
+        guard let url = path.url,
+              let openMethod = path.openMethod else {
+            Logger.warning("Found a custom URL path without a URL or open method. Ignoring tap.")
+            return
+        }
+        switch openMethod {
+        case .external,
+            _ where !url.isWebLink:
+            URLUtilities.openURLIfNotAppExtension(url)
+        case .inApp:
+            self.inAppBrowserURL = .init(url: url)
+        @unknown default:
+            Logger.warning(Strings.could_not_determine_type_of_custom_url)
+            URLUtilities.openURLIfNotAppExtension(url)
+        }
+    }
+
 #endif
 
 }
@@ -225,7 +248,7 @@ extension BaseManageSubscriptionViewModel {
     var changePlanProductIDs: [String] {
         purchaseInformation?
             .changePlan
-            .map { $0.products.map(\.productId) } ?? []
+            .map { $0.products.filter { $0.selected }.map(\.productId) } ?? []
     }
 }
 

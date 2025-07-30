@@ -105,7 +105,8 @@ extension HTTPRequest {
 
     enum WebBillingPath: Hashable {
 
-        case getWebProducts(appUserID: String)
+        case getWebOfferingProducts(appUserID: String)
+        case getWebBillingProducts(userId: String, productIds: Set<String>)
 
     }
 

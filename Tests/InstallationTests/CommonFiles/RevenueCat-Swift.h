@@ -1322,8 +1322,8 @@ SWIFT_CLASS("_TtC10RevenueCat29GetVirtualCurrenciesOperation")
 
 
 
-SWIFT_CLASS("_TtC10RevenueCat23GetWebProductsOperation")
-@interface GetWebProductsOperation : CacheableNetworkOperation
+SWIFT_CLASS("_TtC10RevenueCat31GetWebOfferingProductsOperation")
+@interface GetWebOfferingProductsOperation : CacheableNetworkOperation
 @end
 
 
