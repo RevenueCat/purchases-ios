@@ -61,6 +61,7 @@ struct PackageComponentView: View {
                     variableContext: packageContext.variableContext)
                 )
             }
+            .fixMacButtons()
         } else {
             EmptyView()
         }
