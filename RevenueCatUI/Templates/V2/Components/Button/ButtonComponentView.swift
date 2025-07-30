@@ -23,6 +23,7 @@ struct ButtonComponentView: View {
     @Environment(\.openSheet) private var openSheet
     @State private var inAppBrowserURL: URL?
     @State private var showCustomerCenter = false
+    @State private var offerCodeRedemptionSheet = false
     @State private var showingWebPaywallLinkAlert = false
 
     @EnvironmentObject
@@ -123,7 +124,9 @@ struct ButtonComponentView: View {
     private func navigateTo(destination: ButtonComponentViewModel.Destination) {
         switch destination {
         case .customerCenter:
-            showCustomerCenter = true
+            self.showCustomerCenter = true
+        case .offerCodeRedemptionSheet:
+            self.openCodeREDemptionSheet()
         case .url(let url, let method),
                 .privacyPolicy(let url, let method),
                 .terms(let url, let method):
@@ -134,8 +137,13 @@ struct ButtonComponentView: View {
         case .unknown:
             break
         case .webPaywallLink(url: let url, method: let method):
-            openWebPaywallLink(url: url, method: method)
+            self.openWebPaywallLink(url: url, method: method)
         }
+    }
+
+    private func openCodeREDemptionSheet() {
+        Purchases.shared.presentCodeRedemptionSheet()
+        Purchases.shared.invalidateCustomerInfoCache()
     }
 
     private func openWebPaywallLink(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) {

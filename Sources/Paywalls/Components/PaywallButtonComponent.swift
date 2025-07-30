@@ -114,6 +114,7 @@ public extension PaywallComponent {
 
         public enum Destination: Codable, Sendable, Hashable, Equatable {
             case customerCenter
+            case offerCode
             case privacyPolicy(urlLid: String, method: URLMethod)
             case sheet(sheet: Sheet)
             case terms(urlLid: String, method: URLMethod)
@@ -134,6 +135,8 @@ public extension PaywallComponent {
                 switch self {
                 case .customerCenter:
                     try container.encode("customer_center", forKey: .destination)
+                case .offerCode:
+                    try container.encode("offer_code", forKey: .destination)
                 case .terms(let urlLid, let method):
                     try container.encode("terms", forKey: .destination)
                     try container.encode(URLPayload(urlLid: urlLid, method: method), forKey: .url)
@@ -160,6 +163,8 @@ public extension PaywallComponent {
                 switch destination {
                 case "customer_center":
                     self = .customerCenter
+                case "offer_code":
+                    self = .offerCode
                 case "sheet":
                     let sheet = try container.decode(Sheet.self, forKey: .sheet)
                     self = .sheet(sheet: sheet)
