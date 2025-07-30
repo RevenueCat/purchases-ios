@@ -193,7 +193,7 @@ private extension TestStorePurchaseHandler {
             completion(.failure(self.testPurchaseFailureError))
         }
 
-        let purchaseAction = WKAlertAction(title: Self.purchaseActionTitle, style: .default) { [weak self] _ in
+        let purchaseAction = WKAlertAction(title: Self.purchaseActionTitle, style: .default) { [weak self] in
             self?.completePurchase(product: product, completion: completion)
         }
 
