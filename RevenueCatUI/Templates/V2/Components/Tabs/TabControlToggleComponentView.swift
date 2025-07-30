@@ -102,6 +102,13 @@ private struct CustomToggleStyle: ToggleStyle {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TabControlToggleComponentView_Previews: PreviewProvider {
 
+    static let controlStackViewModel = try! StackComponentViewModel(
+        component: .init(components: []),
+        localizationProvider: .init(
+            locale: .init(identifier: "en-US"),
+            localizedStrings: [:])
+    )
+
     static var previews: some View {
         // Off
         TabControlToggleComponentView(
@@ -120,6 +127,13 @@ struct TabControlToggleComponentView_Previews: PreviewProvider {
         )
         .padding()
         .previewRequiredEnvironmentProperties()
+        .environmentObject(
+            TabControlContext(
+                controlStackViewModel: controlStackViewModel,
+                tabIds: ["1", "2"],
+                defaultTabId: "1"
+            )
+        )
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Off")
 
@@ -139,6 +153,14 @@ struct TabControlToggleComponentView_Previews: PreviewProvider {
             onDismiss: {}
         )
         .padding()
+        .previewRequiredEnvironmentProperties()
+        .environmentObject(
+            TabControlContext(
+                controlStackViewModel: controlStackViewModel,
+                tabIds: ["1", "2"],
+                defaultTabId: "2"
+            )
+        )
         .previewLayout(.sizeThatFits)
         .previewDisplayName("On")
     }
