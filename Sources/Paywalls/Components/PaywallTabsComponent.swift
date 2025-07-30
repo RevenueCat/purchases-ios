@@ -42,7 +42,6 @@ public extension PaywallComponent {
     final class TabControlToggleComponent: Codable, Sendable, Hashable, Equatable {
 
         let type: ComponentType
-        public let defaultValue: Bool
         public let thumbColorOn: ColorScheme
         public let thumbColorOff: ColorScheme
         public let trackColorOn: ColorScheme
@@ -54,7 +53,6 @@ public extension PaywallComponent {
                     trackColorOn: ColorScheme,
                     trackColorOff: ColorScheme) {
             self.type = .tabControlToggle
-            self.defaultValue = defaultValue
             self.thumbColorOn = thumbColorOn
             self.thumbColorOff = thumbColorOff
             self.trackColorOn = trackColorOn
@@ -63,7 +61,6 @@ public extension PaywallComponent {
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
-            hasher.combine(defaultValue)
             hasher.combine(thumbColorOn)
             hasher.combine(thumbColorOff)
             hasher.combine(trackColorOn)
@@ -72,7 +69,6 @@ public extension PaywallComponent {
 
         public static func == (lhs: TabControlToggleComponent, rhs: TabControlToggleComponent) -> Bool {
             return lhs.type == rhs.type &&
-                   lhs.defaultValue == rhs.defaultValue &&
                    lhs.thumbColorOn == rhs.thumbColorOn &&
                    lhs.thumbColorOff == rhs.thumbColorOff &&
                    lhs.trackColorOn == rhs.trackColorOn &&
@@ -157,6 +153,7 @@ public extension PaywallComponent {
 
         public let control: TabControl
         public let tabs: [Tab]
+        public let defaultTabId: String?
 
         public let overrides: ComponentOverrides<PartialTabsComponent>?
 
@@ -172,6 +169,7 @@ public extension PaywallComponent {
 
             control: TabControl,
             tabs: [Tab],
+            defaultTabId: String? = nil,
 
             overrides: ComponentOverrides<PartialTabsComponent>? = nil
         ) {
@@ -187,6 +185,7 @@ public extension PaywallComponent {
 
             self.control = control
             self.tabs = tabs
+            self.defaultTabId = defaultTabId
 
             self.overrides = overrides
         }
@@ -203,6 +202,7 @@ public extension PaywallComponent {
             hasher.combine(shadow)
             hasher.combine(control)
             hasher.combine(tabs)
+            hasher.combine(defaultTabId)
             hasher.combine(overrides)
         }
 
@@ -218,6 +218,7 @@ public extension PaywallComponent {
                    lhs.shadow == rhs.shadow &&
                    lhs.control == rhs.control &&
                    lhs.tabs == rhs.tabs &&
+                   lhs.defaultTabId == rhs.defaultTabId &&
                    lhs.overrides == rhs.overrides
         }
     }

@@ -21,7 +21,9 @@ extension Array<CustomerCenterConfigData.HelpPath> {
     ) -> [CustomerCenterConfigData.HelpPath] {
         guard let purchaseInformation else {
             return filter {
-                $0.type == .missingPurchase || $0.type == .customAction
+                $0.type == .missingPurchase
+                    || $0.type == .customAction
+                    || $0.type == .customUrl
             }
         }
 
