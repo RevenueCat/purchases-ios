@@ -58,6 +58,7 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         self.dateProvider = dateProvider
     }
 
+    // swiftlint:disable:next function_body_length
     func checkEligibility(productIdentifiers: Set<String>,
                           completion: @escaping ReceiveIntroEligibilityBlock) {
         guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
@@ -73,6 +74,15 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         guard !productIdentifiers.isEmpty else {
             Logger.warn(Strings.eligibility.check_eligibility_no_identifiers)
             completion([:])
+            return
+        }
+
+        guard !self.systemInfo.isTestStoreAPIKey else {
+            // For now, all products in the Test Store are ineligible for trial or intro discount
+            let result = productIdentifiers.reduce(into: [:]) { resultDict, productId in
+                resultDict[productId] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.ineligible)
+            }
+            completion(result)
             return
         }
 

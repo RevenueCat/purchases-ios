@@ -54,17 +54,17 @@ class MockOfferingsAPI: OfferingsAPI {
         completion(self.stubbedGetOfferingsCompletionResult!)
     }
 
-    var invokedGetWebProducts = false
-    var invokedGetWebProductsCount = 0
-    var invokedGetWebProductsParameters: (appUserID: String,
-                                          completion: WebOfferingProductsResponseHandler)?
+    var invokedGetWebOfferingProducts = false
+    var invokedGetWebOfferingProductsCount = 0
+    var invokedGetWebOfferingProductsParameters: (appUserID: String,
+                                                  completion: WebOfferingProductsResponseHandler)?
     var stubbedGetWebOfferingProductsCompletionResult: Result<WebOfferingProductsResponse, BackendError>?
 
     override func getWebOfferingProducts(appUserID: String,
                                          completion: @escaping WebOfferingProductsResponseHandler) {
-        self.invokedGetWebProducts = true
-        self.invokedGetWebProductsCount += 1
-        self.invokedGetWebProductsParameters = (appUserID, completion)
+        self.invokedGetWebOfferingProducts = true
+        self.invokedGetWebOfferingProductsCount += 1
+        self.invokedGetWebOfferingProductsParameters = (appUserID, completion)
 
         completion(self.stubbedGetWebOfferingProductsCompletionResult!)
     }

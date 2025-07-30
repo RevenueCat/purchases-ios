@@ -88,6 +88,7 @@ enum PurchaseStrings {
     case sk2_observer_mode_error_processing_transaction(Error)
 
     case unable_to_find_root_view_controller_for_test_purchase
+    case error_message_for_simulating_test_purchase_failure
 }
 
 extension PurchaseStrings: LogMessage {
@@ -344,6 +345,9 @@ extension PurchaseStrings: LogMessage {
 
         case .unable_to_find_root_view_controller_for_test_purchase:
             return "Unable to find root view controller to present test purchase alert."
+
+        case .error_message_for_simulating_test_purchase_failure:
+            return "Simulated test purchase failure: no real transaction occurred"
         }
     }
 

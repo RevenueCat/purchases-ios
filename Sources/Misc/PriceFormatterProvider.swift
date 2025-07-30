@@ -65,4 +65,30 @@ final class PriceFormatterProvider: Sendable {
         }
     }
 
+    private let cachedPriceFormatterForWebProducts: Atomic<NumberFormatter?> = nil
+
+    func priceFormatterForWebProducts(
+        withCurrencyCode currencyCode: String,
+        locale: Locale = .autoupdatingCurrent
+    ) -> NumberFormatter {
+        func makePriceFormatterForWebProducts(with currencyCode: String) -> NumberFormatter {
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .currency
+            formatter.locale = locale
+            formatter.currencyCode = currencyCode
+            return formatter
+        }
+
+        return self.cachedPriceFormatterForWebProducts.modify { formatter in
+            guard let formatter = formatter, formatter.currencyCode == currencyCode, formatter.locale == locale else {
+                let newFormatter = makePriceFormatterForWebProducts(with: currencyCode)
+                formatter = newFormatter
+
+                return newFormatter
+            }
+
+            return formatter
+        }
+    }
+
 }
