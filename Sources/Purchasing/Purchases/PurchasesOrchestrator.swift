@@ -1963,7 +1963,10 @@ private extension PurchasesOrchestrator {
                     case .cancel:
                         completion(nil, nil, ErrorUtils.purchaseCancelledError().asPublicError, true)
                     case .failure:
-                        completion(nil, nil, ErrorUtils.productNotAvailableForPurchaseError().asPublicError, false)
+                        let purchasesError = ErrorUtils.productNotAvailableForPurchaseError(
+                            withMessage: Strings.purchase.error_message_for_simulating_test_purchase_failure.description
+                        )
+                        completion(nil, nil, purchasesError.asPublicError, false)
                     case .success:
                         // WIP: Implement actual test purchase completion logic
                         // For now, we'll simulate a successful purchase with a hardcoded response
@@ -1982,9 +1985,7 @@ private extension PurchasesOrchestrator {
             completion(
                 nil,
                 nil,
-                ErrorUtils.productNotAvailableForPurchaseError(
-                    withMessage: Strings.purchase.unable_to_find_root_view_controller_for_test_purchase.description
-                ).asPublicError,
+                ErrorUtils.productNotAvailableForPurchaseError().asPublicError,
                 false
             )
         }
