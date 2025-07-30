@@ -469,7 +469,9 @@ final class PurchasesOrchestrator {
                           metadata: metadata,
                           completion: completionWithTracking)
         } else if let testStoreProduct = product.testStoreProduct {
-            self.handlePurchase(testStoreProduct: testStoreProduct, completion: completionWithTracking)
+            self.handlePurchase(testStoreProduct: testStoreProduct,
+                                metadata: metadata,
+                                completion: completionWithTracking)
         } else {
             fatalError("Unrecognized product: \(product)")
         }
@@ -1942,10 +1944,12 @@ private extension PurchasesOrchestrator {
 
 private extension PurchasesOrchestrator {
 
-    func handlePurchase(testStoreProduct: TestStoreProduct, completion: @escaping PurchaseCompletedBlock) {
+    func handlePurchase(testStoreProduct: TestStoreProduct,
+                        metadata: [String: String]?,
+                        completion: @escaping PurchaseCompletedBlock) {
         #if TEST_STORE
         if self.systemInfo.isTestStoreAPIKey {
-            self.purchase(testStoreProduct: testStoreProduct, completion: completion)
+            self.purchase(testStoreProduct: testStoreProduct, metadata: metadata, completion: completion)
         } else {
             self.handleTestProductNotAvailableForPurchase(completion)
         }
@@ -1955,7 +1959,9 @@ private extension PurchasesOrchestrator {
     }
 
     #if TEST_STORE
-    private func purchase(testStoreProduct: TestStoreProduct, completion: @escaping PurchaseCompletedBlock) {
+    private func purchase(testStoreProduct: TestStoreProduct,
+                          metadata: [String: String]?,
+                          completion: @escaping PurchaseCompletedBlock) {
         Task {
             let result = await self.testStorePurchaseHandler.purchase(product: testStoreProduct)
             switch result {
@@ -1967,10 +1973,14 @@ private extension PurchasesOrchestrator {
                 let customerInfo = try? await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
                                                                                    fetchPolicy: .cachedOrFetched)
                 await completion(nil, customerInfo, purchasesError.asPublicError, false)
-            case .success:
-                // WIP: Implement actual test purchase completion logic
-                // For now, we'll simulate a successful purchase with a hardcoded response
-                await completion(nil, CustomerInfoManager.createPreviewCustomerInfo(), nil, false)
+            case .success(let transaction):
+                do {
+                    let customerInfo = try await self.handlePurchasedTransaction(transaction, .purchase, metadata)
+                    await completion(transaction, customerInfo, nil, false)
+                } catch {
+                    let purchasesError = ErrorUtils.purchasesError(withUntypedError: error)
+                    await completion(nil, nil, purchasesError.asPublicError, false)
+                }
             }
         }
     }

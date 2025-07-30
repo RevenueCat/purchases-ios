@@ -19,7 +19,7 @@ import AppKit
 enum TestPurchaseResult {
     case cancel
     case failure(PurchasesError)
-    case success
+    case success(StoreTransaction)
 }
 
 protocol TestStorePurchaseHandlerType: AnyObject, Sendable {
@@ -71,6 +71,30 @@ actor TestStorePurchaseHandler: TestStorePurchaseHandlerType {
     }
 
     #endif // TEST_STORE
+
+    nonisolated private func completePurchase(product: TestStoreProduct, completion: @escaping (TestPurchaseResult) -> Void) {
+        Task {
+            let transaction = await self.createStoreTransaction(product: product)
+            completion(.success(transaction))
+        }
+    }
+
+    private func createStoreTransaction(product: TestStoreProduct) async -> StoreTransaction {
+        let transactionId = "test_order_" + UUID().uuidString
+        let storefront = await Storefront.currentStorefront
+        let testStoreTransaction = TestStoreTransaction(productIdentifier: product.productIdentifier,
+                                                        purchaseDate: Date(),
+                                                        transactionIdentifier: transactionId,
+                                                        quantity: 1,
+                                                        storefront: storefront,
+                                                        jwsRepresentation: nil)
+        return StoreTransaction(testStoreTransaction)
+    }
+
+    nonisolated private var testPurchaseFailureError: PurchasesError {
+        return ErrorUtils.productNotAvailableForPurchaseError(
+            withMessage: Strings.purchase.error_message_for_simulating_test_purchase_failure.description)
+    }
 }
 
 // MARK: - Purchase Alert Presentation
@@ -115,15 +139,15 @@ private extension TestStorePurchaseHandler {
                                                 preferredStyle: .alert)
 
         alertController.addAction(UIAlertAction(title: Self.failureActionTitle, style: .destructive) { _ in
-            completion(.failure(Self.testPurchaseFailureError))
+            completion(.failure(self.testPurchaseFailureError))
         })
 
         alertController.addAction(UIAlertAction(title: Self.cancelActionTitle, style: .cancel) { _ in
             completion(.cancel)
         })
 
-        alertController.addAction(UIAlertAction(title: Self.purchaseActionTitle, style: .default) { _ in
-            completion(.success)
+        alertController.addAction(UIAlertAction(title: Self.purchaseActionTitle, style: .default) { [weak self] _ in
+            self?.completePurchase(product: product, completion: completion)
         })
 
         viewController.present(alertController, animated: true)
@@ -166,11 +190,11 @@ private extension TestStorePurchaseHandler {
     ) {
 
         let failureAction = WKAlertAction(title: Self.failureActionTitle, style: .destructive) {
-            completion(.failure(Self.testPurchaseFailureError))
+            completion(.failure(self.testPurchaseFailureError))
         }
 
-        let purchaseAction = WKAlertAction(title: Self.purchaseActionTitle, style: .default) {
-            completion(.success)
+        let purchaseAction = WKAlertAction(title: Self.purchaseActionTitle, style: .default) { [weak self] _ in
+            self?.completePurchase(product: product, completion: completion)
         }
 
         let cancelAction = WKAlertAction(title: Self.cancelActionTitle, style: .cancel) {
@@ -203,27 +227,25 @@ private extension TestStorePurchaseHandler {
 
         let response = alert.runModal()
 
-        let testPurchaseResult: TestPurchaseResult
+        Task {
 
-        switch response {
-        case .alertFirstButtonReturn:
-            testPurchaseResult = .success
-        case .alertSecondButtonReturn:
-            testPurchaseResult = .cancel
-        case .alertThirdButtonReturn:
-            testPurchaseResult = .failure(Self.testPurchaseFailureError)
-        default:
-            testPurchaseResult = .success // Fallback case
+            let testPurchaseResult: TestPurchaseResult
+
+            switch response {
+            case .alertFirstButtonReturn:
+                testPurchaseResult = await .success(self.createStoreTransaction(product: product))
+            case .alertSecondButtonReturn:
+                testPurchaseResult = .cancel
+            case .alertThirdButtonReturn:
+                testPurchaseResult = .failure(self.testPurchaseFailureError)
+            default:
+                testPurchaseResult = await .success(self.createStoreTransaction(product: product)) // Fallback case
+            }
+
+            completion(testPurchaseResult)
         }
-
-        completion(testPurchaseResult)
     }
     #endif
-
-    private static var testPurchaseFailureError: PurchasesError {
-        return ErrorUtils.productNotAvailableForPurchaseError(
-            withMessage: Strings.purchase.error_message_for_simulating_test_purchase_failure.description)
-    }
 
 }
 
