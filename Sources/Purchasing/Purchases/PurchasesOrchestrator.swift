@@ -1981,9 +1981,7 @@ private extension PurchasesOrchestrator {
             completion(
                 nil,
                 nil,
-                ErrorUtils.productNotAvailableForPurchaseError(
-                    withMessage: Strings.purchase.unable_to_find_root_view_controller_for_test_purchase.description
-                ).asPublicError,
+                ErrorUtils.productNotAvailableForPurchaseError().asPublicError,
                 false
             )
         }

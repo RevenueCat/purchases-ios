@@ -52,7 +52,7 @@ class WebProductToStoreProductConversionTests: TestCase {
         expect(storeProduct.price) == 199.90
         expect(storeProduct.localizedPriceString) == "£199.90"
         expect(storeProduct.productIdentifier) == product.identifier
-        if #available(iOS 14.0, *) {
+        if #available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *) {
             expect(storeProduct.isFamilyShareable) == false
         }
         expect(storeProduct.subscriptionGroupIdentifier) == nil
