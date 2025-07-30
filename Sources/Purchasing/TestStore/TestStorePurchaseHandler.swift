@@ -22,55 +22,84 @@ enum TestPurchaseResult {
     case success
 }
 
-protocol TestStorePurchaseHandlerType: AnyObject {
+protocol TestStorePurchaseHandlerType: AnyObject, Sendable {
 
     #if TEST_STORE
     /// - Throws: a `PurchasesError` if there's an error when trying to make the test purchase
     /// (e.g. there's already a purchase in progress).
     @MainActor
-    func purchase(product: TestStoreProduct, completion: @escaping (TestPurchaseResult) -> Void) throws
+    func purchase(product: TestStoreProduct) async throws -> TestPurchaseResult
     #endif // TEST_STORE
 }
 
 /// The object that handles purchases in the Test Store.
 ///
 /// This class is used to handle purchases when using a Test Store API key.
-class TestStorePurchaseHandler: TestStorePurchaseHandlerType {
+actor TestStorePurchaseHandler: TestStorePurchaseHandlerType {
 
     private let systemInfo: SystemInfo
 
-    @MainActor
-    private var purchaseInProgress: Bool = false
+    private var currentPurchaseTask: Task<TestPurchaseResult, Error>?
+    private var purchaseInProgress: Bool {
+        return self.currentPurchaseTask != nil
+    }
 
     init(systemInfo: SystemInfo) {
         self.systemInfo = systemInfo
     }
 
     #if TEST_STORE
-    @MainActor
-    func purchase(product: TestStoreProduct, completion: @escaping (TestPurchaseResult) -> Void) throws {
+
+    func purchase(product: TestStoreProduct) async throws -> TestPurchaseResult {
         guard !self.purchaseInProgress else {
             throw ErrorUtils.operationAlreadyInProgressError()
         }
-        self.purchaseInProgress = true
-        let completionWrapper: (TestPurchaseResult) -> Void = { @MainActor [weak self] result in
-            self?.purchaseInProgress = false
-            completion(result)
+
+        let newPurchaseTask = Task<TestPurchaseResult, Error> { [weak self] in
+            guard let self else {
+                throw ErrorUtils.unknownError()
+            }
+
+            return await self.presentPurchaseAlert(for: product)
         }
 
-        #if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)
-        self.purchaseWithUIKit(product: product, completion: completionWrapper)
-        #elseif os(watchOS)
-        self.purchaseWithWatchKit(product: product, completion: completionWrapper)
-        #elseif os(macOS)
-        self.purchaseWithAppKit(product: product, completion: completionWrapper)
-        #endif
+        self.currentPurchaseTask = newPurchaseTask
+        let purchaseResult = try await newPurchaseTask.value
+        self.currentPurchaseTask = nil
+
+        return purchaseResult
     }
+
     #endif // TEST_STORE
+}
+
+// MARK: - Purchase Alert Presentation
+
+private extension TestStorePurchaseHandler {
+
+    /// Presents a purchase alert for the given product.
+    func presentPurchaseAlert(for product: TestStoreProduct) async -> TestPurchaseResult {
+        await Task { @MainActor in
+            return await withUnsafeContinuation { (continuation: UnsafeContinuation<TestPurchaseResult, Never>) in
+
+                let completion: (TestPurchaseResult) -> Void = { result in
+                    continuation.resume(returning: result)
+                }
+
+                #if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)
+                self.purchaseWithUIKit(product: product, completion: completion)
+                #elseif os(watchOS)
+                self.purchaseWithWatchKit(product: product, completion: completion)
+                #elseif os(macOS)
+                self.purchaseWithAppKit(product: product, completion: completion)
+                #endif
+            }
+        }.value
+    }
 
     #if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)
     @MainActor
-    private func purchaseWithUIKit(
+    func purchaseWithUIKit(
         product: TestStoreProduct, completion: @escaping @MainActor (TestPurchaseResult) -> Void
     ) {
         guard let viewController = self.findTopViewController() else {
@@ -99,7 +128,7 @@ class TestStorePurchaseHandler: TestStorePurchaseHandlerType {
     }
 
     @MainActor
-    private func findTopViewController() -> UIViewController? {
+    func findTopViewController() -> UIViewController? {
         guard let application = self.systemInfo.sharedUIApplication else {
             return nil
         }
@@ -130,7 +159,7 @@ class TestStorePurchaseHandler: TestStorePurchaseHandlerType {
 
     #if os(watchOS)
     @MainActor
-    private func purchaseWithWatchKit(
+    func purchaseWithWatchKit(
         product: TestStoreProduct, completion: @escaping @MainActor (TestPurchaseResult) -> Void
     ) {
 
@@ -158,7 +187,7 @@ class TestStorePurchaseHandler: TestStorePurchaseHandlerType {
 
     #if os(macOS)
     @MainActor
-    private func purchaseWithAppKit(
+    func purchaseWithAppKit(
         product: TestStoreProduct, completion: @escaping @MainActor (TestPurchaseResult) -> Void
     ) {
         let alert = NSAlert()
@@ -191,7 +220,9 @@ class TestStorePurchaseHandler: TestStorePurchaseHandlerType {
 }
 
 #if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)
+
 // MARK: - UIViewController Extensions
+
 private extension UIViewController {
 
     func topMostViewController() -> UIViewController {
@@ -212,7 +243,7 @@ private extension UIViewController {
 }
 #endif
 
-// MARK: - Building the Purchase alert
+// MARK: - Purchase Alert Details
 
 fileprivate extension TestStorePurchaseHandler {
 

@@ -1956,22 +1956,21 @@ private extension PurchasesOrchestrator {
 
     #if TEST_STORE
     private func purchase(testStoreProduct: TestStoreProduct, completion: @escaping PurchaseCompletedBlock) {
-        self.operationDispatcher.dispatchOnMainActor {
+        Task {
             do {
-                try self.testStorePurchaseHandler.purchase(product: testStoreProduct) { result in
-                    switch result {
-                    case .cancel:
-                        completion(nil, nil, ErrorUtils.purchaseCancelledError().asPublicError, true)
-                    case .failure:
-                        completion(nil, nil, ErrorUtils.productNotAvailableForPurchaseError().asPublicError, false)
-                    case .success:
-                        // WIP: Implement actual test purchase completion logic
-                        // For now, we'll simulate a successful purchase with a hardcoded response
-                        completion(nil, CustomerInfoManager.createPreviewCustomerInfo(), nil, false)
-                    }
+                let result = try await self.testStorePurchaseHandler.purchase(product: testStoreProduct)
+                switch result {
+                case .cancel:
+                    await completion(nil, nil, ErrorUtils.purchaseCancelledError().asPublicError, true)
+                case .failure:
+                    await completion(nil, nil, ErrorUtils.productNotAvailableForPurchaseError().asPublicError, false)
+                case .success:
+                    // WIP: Implement actual test purchase completion logic
+                    // For now, we'll simulate a successful purchase with a hardcoded response
+                    await completion(nil, CustomerInfoManager.createPreviewCustomerInfo(), nil, false)
                 }
             } catch {
-                completion(nil, nil, ErrorUtils.purchasesError(withUntypedError: error).asPublicError, false)
+                await completion(nil, nil, ErrorUtils.purchasesError(withUntypedError: error).asPublicError, false)
             }
         }
     }
