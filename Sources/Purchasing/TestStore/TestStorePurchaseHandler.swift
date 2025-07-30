@@ -18,17 +18,17 @@ import AppKit
 
 enum TestPurchaseResult {
     case cancel
-    case failure
+    case failure(PurchasesError)
     case success
 }
 
 protocol TestStorePurchaseHandlerType: AnyObject, Sendable {
 
     #if TEST_STORE
-    /// - Throws: a `PurchasesError` if there's an error when trying to make the test purchase
-    /// (e.g. there's already a purchase in progress).
+
     @MainActor
-    func purchase(product: TestStoreProduct) async throws -> TestPurchaseResult
+    func purchase(product: TestStoreProduct) async -> TestPurchaseResult
+
     #endif // TEST_STORE
 }
 
@@ -39,7 +39,7 @@ actor TestStorePurchaseHandler: TestStorePurchaseHandlerType {
 
     private let systemInfo: SystemInfo
 
-    private var currentPurchaseTask: Task<TestPurchaseResult, Error>?
+    private var currentPurchaseTask: Task<TestPurchaseResult, Never>?
     private var purchaseInProgress: Bool {
         return self.currentPurchaseTask != nil
     }
@@ -50,21 +50,21 @@ actor TestStorePurchaseHandler: TestStorePurchaseHandlerType {
 
     #if TEST_STORE
 
-    func purchase(product: TestStoreProduct) async throws -> TestPurchaseResult {
+    func purchase(product: TestStoreProduct) async -> TestPurchaseResult {
         guard !self.purchaseInProgress else {
-            throw ErrorUtils.operationAlreadyInProgressError()
+            return .failure(ErrorUtils.operationAlreadyInProgressError())
         }
 
-        let newPurchaseTask = Task<TestPurchaseResult, Error> { [weak self] in
+        let newPurchaseTask = Task<TestPurchaseResult, Never> { [weak self] in
             guard let self else {
-                throw ErrorUtils.unknownError()
+                return .failure(ErrorUtils.unknownError())
             }
 
             return await self.presentPurchaseAlert(for: product)
         }
 
         self.currentPurchaseTask = newPurchaseTask
-        let purchaseResult = try await newPurchaseTask.value
+        let purchaseResult = await newPurchaseTask.value
         self.currentPurchaseTask = nil
 
         return purchaseResult
@@ -104,7 +104,9 @@ private extension TestStorePurchaseHandler {
     ) {
         guard let viewController = self.findTopViewController() else {
             Logger.warn(Strings.purchase.unable_to_find_root_view_controller_for_test_purchase)
-            completion(.failure)
+            completion(.failure(ErrorUtils.unknownError(
+                message: Strings.purchase.unable_to_find_root_view_controller_for_test_purchase.description
+            )))
             return
         }
 
@@ -113,7 +115,7 @@ private extension TestStorePurchaseHandler {
                                                 preferredStyle: .alert)
 
         alertController.addAction(UIAlertAction(title: Self.failureActionTitle, style: .destructive) { _ in
-            completion(.failure)
+            completion(.failure(Self.testPurchaseFailureError))
         })
 
         alertController.addAction(UIAlertAction(title: Self.cancelActionTitle, style: .cancel) { _ in
@@ -164,7 +166,7 @@ private extension TestStorePurchaseHandler {
     ) {
 
         let failureAction = WKAlertAction(title: Self.failureActionTitle, style: .destructive) {
-            completion(.failure)
+            completion(.failure(Self.testPurchaseFailureError))
         }
 
         let purchaseAction = WKAlertAction(title: Self.purchaseActionTitle, style: .default) {
@@ -209,7 +211,7 @@ private extension TestStorePurchaseHandler {
         case .alertSecondButtonReturn:
             testPurchaseResult = .cancel
         case .alertThirdButtonReturn:
-            testPurchaseResult = .failure
+            testPurchaseResult = .failure(Self.testPurchaseFailureError)
         default:
             testPurchaseResult = .success // Fallback case
         }
@@ -217,6 +219,12 @@ private extension TestStorePurchaseHandler {
         completion(testPurchaseResult)
     }
     #endif
+
+    private static var testPurchaseFailureError: PurchasesError {
+        return ErrorUtils.productNotAvailableForPurchaseError(
+            withMessage: Strings.purchase.error_message_for_simulating_test_purchase_failure.description)
+    }
+
 }
 
 #if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)

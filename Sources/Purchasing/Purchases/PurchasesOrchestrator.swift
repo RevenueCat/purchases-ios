@@ -1957,20 +1957,20 @@ private extension PurchasesOrchestrator {
     #if TEST_STORE
     private func purchase(testStoreProduct: TestStoreProduct, completion: @escaping PurchaseCompletedBlock) {
         Task {
-            do {
-                let result = try await self.testStorePurchaseHandler.purchase(product: testStoreProduct)
-                switch result {
-                case .cancel:
-                    await completion(nil, nil, ErrorUtils.purchaseCancelledError().asPublicError, true)
-                case .failure:
-                    await completion(nil, nil, ErrorUtils.productNotAvailableForPurchaseError().asPublicError, false)
-                case .success:
-                    // WIP: Implement actual test purchase completion logic
-                    // For now, we'll simulate a successful purchase with a hardcoded response
-                    await completion(nil, CustomerInfoManager.createPreviewCustomerInfo(), nil, false)
-                }
-            } catch {
-                await completion(nil, nil, ErrorUtils.purchasesError(withUntypedError: error).asPublicError, false)
+            let result = await self.testStorePurchaseHandler.purchase(product: testStoreProduct)
+            switch result {
+            case .cancel:
+                let customerInfo = try? await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
+                                                                                   fetchPolicy: .cachedOrFetched)
+                await completion(nil, customerInfo, ErrorUtils.purchaseCancelledError().asPublicError, true)
+            case .failure(let purchasesError):
+                let customerInfo = try? await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
+                                                                                   fetchPolicy: .cachedOrFetched)
+                await completion(nil, customerInfo, purchasesError.asPublicError, false)
+            case .success:
+                // WIP: Implement actual test purchase completion logic
+                // For now, we'll simulate a successful purchase with a hardcoded response
+                await completion(nil, CustomerInfoManager.createPreviewCustomerInfo(), nil, false)
             }
         }
     }
