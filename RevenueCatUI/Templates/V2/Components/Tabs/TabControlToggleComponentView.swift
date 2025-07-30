@@ -102,6 +102,7 @@ private struct CustomToggleStyle: ToggleStyle {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TabControlToggleComponentView_Previews: PreviewProvider {
 
+    // swiftlint:disable:next force_try
     static let controlStackViewModel = try! StackComponentViewModel(
         component: .init(components: []),
         localizationProvider: .init(
