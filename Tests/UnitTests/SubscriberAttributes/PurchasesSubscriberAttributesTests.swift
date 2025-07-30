@@ -23,6 +23,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
     var mockProductsManager: MockProductsManager!
     let mockBackend = MockBackend()
     let mockStoreKit1Wrapper = MockStoreKit1Wrapper()
+    let mockTestStorePurchaseHandler = MockTestStorePurchaseHandler()
     let mockNotificationCenter = MockNotificationCenter()
     var userDefaults: UserDefaults! = nil
     let mockOfferingsFactory = MockOfferingsFactory()
@@ -182,6 +183,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
         let purchasesOrchestrator = PurchasesOrchestrator(
             productsManager: self.mockProductsManager,
             paymentQueueWrapper: self.paymentQueueWrapper,
+            testStorePurchaseHandler: self.mockTestStorePurchaseHandler,
             systemInfo: self.systemInfo,
             subscriberAttributes: self.attribution,
             operationDispatcher: self.mockOperationDispatcher,

@@ -34,6 +34,7 @@ internal enum CustomerCenterInternalAction {
     case buttonTapped(action: CustomerCenterActionable)
     // Internal action for when a promotional offer succeeds
     case promotionalOfferSuccess
+    case customActionSelected(CustomActionData)
 
     /// Converts this internal action to the corresponding legacy action if one exists
     /// Returns nil for actions that don't have a legacy CustomerCenterAction equivalent
@@ -53,7 +54,10 @@ internal enum CustomerCenterInternalAction {
             return .refundRequestCompleted(status)
         case .feedbackSurveyCompleted(let optionId):
             return .feedbackSurveyCompleted(optionId)
-        case .buttonTapped, .promotionalOfferSuccess, .showingChangePlans:
+        case .buttonTapped,
+                .promotionalOfferSuccess,
+                .showingChangePlans,
+                .customActionSelected:
             return nil // No public equivalent
         }
     }
@@ -76,6 +80,7 @@ final class CustomerCenterActionWrapper {
     let refundRequestCompleted = PassthroughSubject<(String, RefundRequestStatus), Never>()
     let feedbackSurveyCompleted = PassthroughSubject<String, Never>()
     let managementOptionSelected = PassthroughSubject<CustomerCenterActionable, Never>()
+    let customActionSelected = PassthroughSubject<(String, String?), Never>()
     let promotionalOfferSuccess = PassthroughSubject<Void, Never>()
 
     init(legacyActionHandler: DeprecatedCustomerCenterActionHandler? = nil) {
@@ -113,6 +118,9 @@ final class CustomerCenterActionWrapper {
         case .buttonTapped(let action):
             managementOptionSelected.send(action)
 
+        case .customActionSelected(let customActionData):
+            customActionSelected.send((customActionData.actionIdentifier, customActionData.purchaseIdentifier))
+
         case .promotionalOfferSuccess:
             promotionalOfferSuccess.send(())
 
@@ -130,6 +138,7 @@ final class CustomerCenterActionWrapper {
 extension CustomerCenterConfigData.HelpPath {
 
     /// Converts this HelpPath to an appropriate CustomerCenterActionable
+    /// - Parameter purchaseIdentifier: The optional active purchase ID for the context
     /// - Returns: A CustomerCenterActionable representing this path
     func asAction() -> CustomerCenterActionable? {
         switch self.type {

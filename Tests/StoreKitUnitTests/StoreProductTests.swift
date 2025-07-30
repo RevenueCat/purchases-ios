@@ -101,7 +101,7 @@ class StoreProductTests: StoreKitConfigTestCase {
 
         expect(storeProduct.sk1Product) === sk1Product.underlyingSK1Product
 
-        expect(storeProduct.isTestProduct) == false
+        XCTAssertNil(storeProduct.testStoreProduct)
 
         expect(storeProduct.productIdentifier) == Self.productID
         expect(storeProduct.productCategory) == .subscription
@@ -155,7 +155,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         // Can't use `===` because `SK2Product` is a `struct`
         expect(storeProduct.sk2Product) == storeProduct.sk2Product
 
-        expect(storeProduct.isTestProduct) == false
+        XCTAssertNil(storeProduct.testStoreProduct)
 
         expect(storeProduct.productIdentifier) == Self.productID
         expect(storeProduct.productCategory) == .subscription
@@ -400,7 +400,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         )
         let storeProduct = product.toStoreProduct()
 
-        expect(storeProduct.isTestProduct) == true
+        XCTAssertNotNil(storeProduct.testStoreProduct)
         expect(storeProduct.localizedTitle) == title
         expect(storeProduct.price) == price
         expect(storeProduct.localizedPriceString) == localizedPrice
