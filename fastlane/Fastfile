@@ -206,8 +206,8 @@ platform :ios do
       commit_push_and_create_pr_if_necessary(
         repo: target_repository_name,
         branch_name: target_repository_branch,
-        commit_message: "[Automated] Updates template screenshots for all platforms (commit: #{this_commit_hash})",
-        title: "[AUTOMATIC] Updates template screenshots for all platforms",
+        commit_message: "[Automated] Updates template screenshots for all Apple platforms (commit: #{this_commit_hash})",
+        title: "[AUTOMATIC] Updates template screenshots for all Apple platforms",
         body: "This is an automatic update of the template screenshots for iOS, iPhone app on Mac, iPad app on Mac, Mac Catalyst optimized for Mac, and Mac Catalyst scaled to match iPad platforms.",
         team_reviewers: ["coresdk", "monetization"]
       )
