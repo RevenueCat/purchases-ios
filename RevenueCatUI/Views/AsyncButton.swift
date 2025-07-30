@@ -46,6 +46,7 @@ struct AsyncButton<Label>: View where Label: View {
         } label: {
             self.label
         }
+        .fixMacButtons()
         .displayError(self.$error)
     }
 

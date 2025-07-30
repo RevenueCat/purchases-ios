@@ -57,6 +57,7 @@ struct TabControlButtonComponentView: View {
             )
             .environment(\.componentViewState, self.selectedState)
         }
+        .fixMacButtons()
 
     }
 
