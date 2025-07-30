@@ -1967,11 +1967,11 @@ private extension PurchasesOrchestrator {
             switch result {
             case .cancel:
                 let customerInfo = try? await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
-                                                                                   fetchPolicy: .cachedOrFetched)
+                                                                                    fetchPolicy: .cachedOrFetched)
                 await completion(nil, customerInfo, ErrorUtils.purchaseCancelledError().asPublicError, true)
             case .failure(let purchasesError):
                 let customerInfo = try? await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
-                                                                                   fetchPolicy: .cachedOrFetched)
+                                                                                    fetchPolicy: .cachedOrFetched)
                 await completion(nil, customerInfo, purchasesError.asPublicError, false)
             case .success(let transaction):
                 do {

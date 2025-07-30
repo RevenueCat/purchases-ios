@@ -30,5 +30,4 @@ struct TestStoreTransaction: StoreTransactionType {
         completion()
     }
 
-
 }

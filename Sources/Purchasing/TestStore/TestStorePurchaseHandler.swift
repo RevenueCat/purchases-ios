@@ -72,7 +72,9 @@ actor TestStorePurchaseHandler: TestStorePurchaseHandlerType {
 
     #endif // TEST_STORE
 
-    nonisolated private func completePurchase(product: TestStoreProduct, completion: @escaping (TestPurchaseResult) -> Void) {
+    nonisolated private func completePurchase(
+        product: TestStoreProduct, completion: @escaping (TestPurchaseResult) -> Void
+    ) {
         Task {
             let transaction = await self.createStoreTransaction(product: product)
             completion(.success(transaction))
