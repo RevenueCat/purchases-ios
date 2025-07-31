@@ -19,7 +19,7 @@ import AppKit
 typealias PlatformBezierPath = NSBezierPath
 #endif
 
-#if canImport(AppKit)
+#if !canImport(UIKit) && canImport(AppKit)
 extension NSBezierPath {
     func reversing() -> NSBezierPath {
         self.reversed

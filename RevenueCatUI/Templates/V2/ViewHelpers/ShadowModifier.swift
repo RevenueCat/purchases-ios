@@ -93,7 +93,43 @@ extension View {
 // LayerShadowView tries to work around these limitations by rendering the shadow in a backing UIView,
 // and using a Shape to mask off the inner part of the shadow.
 
-#if canImport(AppKit)
+#if canImport(UIKit)
+
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+private struct LayerShadowView: UIViewRepresentable {
+    let shape: any Shape
+    let color: Color
+    let xOffset: CGFloat
+    let yOffset: CGFloat
+    let blur: CGFloat
+    let spread: CGFloat
+    let rect: CGRect
+
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        view.layer.applyShadow(shape: shape,
+                                color: color,
+                                xOffset: xOffset,
+                                yOffset: yOffset,
+                                blur: blur,
+                                spread: spread,
+                                rect: rect)
+        return view
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {
+        uiView.layer.applyShadow(shape: shape,
+                                  color: color,
+                                  xOffset: xOffset,
+                                  yOffset: yOffset,
+                                  blur: blur,
+                                  spread: spread,
+                                  rect: rect)
+    }
+}
+
+#elseif canImport(AppKit)
 
 @available(macOS 14.0, *)
 @available(iOS, unavailable)
@@ -131,43 +167,6 @@ private struct LayerShadowView: NSViewRepresentable {
                                   rect: rect)
     }
 }
-
-#elseif canImport(UIKit)
-
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
-private struct LayerShadowView: UIViewRepresentable {
-    let shape: any Shape
-    let color: Color
-    let xOffset: CGFloat
-    let yOffset: CGFloat
-    let blur: CGFloat
-    let spread: CGFloat
-    let rect: CGRect
-
-    func makeUIView(context: Context) -> UIView {
-        let view = UIView()
-        view.layer.applyShadow(shape: shape,
-                                color: color,
-                                xOffset: xOffset,
-                                yOffset: yOffset,
-                                blur: blur,
-                                spread: spread,
-                                rect: rect)
-        return view
-    }
-
-    func updateUIView(_ uiView: UIView, context: Context) {
-        uiView.layer.applyShadow(shape: shape,
-                                  color: color,
-                                  xOffset: xOffset,
-                                  yOffset: yOffset,
-                                  blur: blur,
-                                  spread: spread,
-                                  rect: rect)
-    }
-}
-
 
 #endif
 
