@@ -203,7 +203,7 @@ struct BottomSheetViewTestView: View {
             }
             .edgesIgnoringSafeArea(.all)
         }
-        .previewRequiredPaywallComponentProperties()
+        .previewRequiredPaywallsV2Properties()
     }
 }
 

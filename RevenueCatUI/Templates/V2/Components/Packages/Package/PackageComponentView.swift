@@ -159,7 +159,7 @@ struct PackageComponentView_Previews: PreviewProvider {
                                 webCheckoutUrl: nil)
             ), onDismiss: {}
         )
-        .previewRequiredPaywallComponentProperties(
+        .previewRequiredPaywallsV2Properties(
             packageContext: packageContext
         )
         .previewLayout(.sizeThatFits)
@@ -187,7 +187,7 @@ struct PackageComponentView_Previews: PreviewProvider {
                                 webCheckoutUrl: nil)
             ), onDismiss: {}
         )
-        .previewRequiredPaywallComponentProperties(
+        .previewRequiredPaywallsV2Properties(
             packageContext: packageContextSelected
         )
         .previewLayout(.sizeThatFits)
