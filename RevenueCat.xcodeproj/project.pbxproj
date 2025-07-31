@@ -923,6 +923,8 @@
 		83675A712E1E73C40012B894 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 83675A6C2E1E73C40012B894 /* Assets.xcassets */; };
 		83675A722E1E73C40012B894 /* PaywallValidationTesterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83675A6E2E1E73C40012B894 /* PaywallValidationTesterApp.swift */; };
 		83675A732E1E73C40012B894 /* PaywallValidationTesterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83675A6F2E1E73C40012B894 /* PaywallValidationTesterView.swift */; };
+		839F34392E3BC575006355B0 /* PlatformColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 839F34382E3BC574006355B0 /* PlatformColor.swift */; };
+		839F343B2E3BC5C8006355B0 /* PlatformBezierPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 839F343A2E3BC5C4006355B0 /* PlatformBezierPath.swift */; };
 		83B2775D2E1E3CC800E1E821 /* paywall-preview-resources in Resources */ = {isa = PBXBuildFile; fileRef = 8337DD6D2E0A7CFE000798BF /* paywall-preview-resources */; };
 		83B2775E2E1E3CCD00E1E821 /* background.heic in Resources */ = {isa = PBXBuildFile; fileRef = 2C5F71F62C3D6C2600B0FE4B /* background.heic */; };
 		83B2775F2E1E3CD300E1E821 /* header.heic in Resources */ = {isa = PBXBuildFile; fileRef = 2C5F71F52C3D6C2600B0FE4B /* header.heic */; };
@@ -2381,6 +2383,8 @@
 		83675A6D2E1E73C40012B894 /* PaywallValidationTester.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PaywallValidationTester.entitlements; sourceTree = "<group>"; };
 		83675A6E2E1E73C40012B894 /* PaywallValidationTesterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallValidationTesterApp.swift; sourceTree = "<group>"; };
 		83675A6F2E1E73C40012B894 /* PaywallValidationTesterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallValidationTesterView.swift; sourceTree = "<group>"; };
+		839F34382E3BC574006355B0 /* PlatformColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformColor.swift; sourceTree = "<group>"; };
+		839F343A2E3BC5C4006355B0 /* PlatformBezierPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformBezierPath.swift; sourceTree = "<group>"; };
 		83B277512E1E3C8700E1E821 /* PaywallValidationTester.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PaywallValidationTester.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		83EE33252E1E20360011CF1C /* PaywallPreviewResourcesLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallPreviewResourcesLoader.swift; sourceTree = "<group>"; };
 		84C3F1AC1D7E1E64341D3936 /* Pods_RevenueCat_PurchasesTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RevenueCat_PurchasesTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -5087,6 +5091,8 @@
 		830003FD2E26160D00143F9F /* CrossPlatform */ = {
 			isa = PBXGroup;
 			children = (
+				839F343A2E3BC5C4006355B0 /* PlatformBezierPath.swift */,
+				839F34382E3BC574006355B0 /* PlatformColor.swift */,
 				830004002E261ABE00143F9F /* PlatformImage.swift */,
 				830003FE2E26161D00143F9F /* PlatformFont.swift */,
 			);
@@ -7503,6 +7509,7 @@
 				887A60CD2C1D037000E1A461 /* PaywallView.swift in Sources */,
 				887A60C12C1D037000E1A461 /* DebugErrorView.swift in Sources */,
 				887A607C2C1D037000E1A461 /* ColorInformation+MultiScheme.swift in Sources */,
+				839F343B2E3BC5C8006355B0 /* PlatformBezierPath.swift in Sources */,
 				88B1BAFE2C813A3C001B7EE5 /* ImageComponentViewModel.swift in Sources */,
 				2C7457422CE81107004ACE52 /* IntroOfferEligibilityContext.swift in Sources */,
 				2C08B3072CD55D660024857B /* FlexHStack.swift in Sources */,
@@ -7570,6 +7577,7 @@
 				5798C9542DF1985700F44400 /* CompatibilityLabeledContent.swift in Sources */,
 				5798C9552DF1985700F44400 /* CompatibilityNavigationStack.swift in Sources */,
 				5798C9562DF1985700F44400 /* PromotionalOfferData.swift in Sources */,
+				839F34392E3BC575006355B0 /* PlatformColor.swift in Sources */,
 				5798C9572DF1985700F44400 /* FeedbackSurveyViewModel.swift in Sources */,
 				5798C9582DF1985700F44400 /* PurchaseCardView.swift in Sources */,
 				5798C9592DF1985700F44400 /* CustomerCenterConfigDataSupport+URL.swift in Sources */,

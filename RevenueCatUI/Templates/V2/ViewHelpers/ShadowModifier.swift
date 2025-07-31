@@ -42,29 +42,30 @@ struct ShadowModifier: ViewModifier {
     let shape: (any Shape)?
 
     func body(content: Content) -> some View {
-        #if !os(watchOS) && !os(macOS)
         if let shadow {
-            content
-                .background {
-                    GeometryReader { geometry in
-                        let rect = geometry.frame(in: .local)
-                        LayerShadowView(shape: shape ?? Rectangle(),
-                                        color: shadow.color,
-                                        xOffset: shadow.x,
-                                        yOffset: shadow.y,
-                                        blur: shadow.radius * 2,
-                                        spread: 0,
-                                        rect: rect)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+            if #available(macOS 14.0, *) {
+                content
+                    .background {
+                        GeometryReader { geometry in
+                            let rect = geometry.frame(in: .local)
+                            LayerShadowView(shape: shape ?? Rectangle(),
+                                            color: shadow.color,
+                                            xOffset: shadow.x,
+                                            yOffset: shadow.y,
+                                            blur: shadow.radius * 2,
+                                            spread: 0,
+                                            rect: rect)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        }
                     }
-                }
+            }
+            else {
+                // Fallback to default shadow on older versions of macOS where CGPath conversion for NSBezierPath is unavailable.
+                content.shadow(color: shadow.color, radius: shadow.radius, x: shadow.x, y: shadow.y)
+            }
         } else {
             content
         }
-        #else
-        //TODO: See how we can handle shadows on macOS
-        content
-        #endif
     }
 }
 
@@ -81,7 +82,7 @@ extension View {
     }
 }
 
-#if !os(watchOS) && !os(macOS)
+#if !os(watchOS)
 
 // Using the .shadow() modifier to add a drop shadow in SwiftUI has multiple downsides:
 // - The shadow is applied to all children views (can be worked around with .compositingGroup())
@@ -91,7 +92,50 @@ extension View {
 //
 // LayerShadowView tries to work around these limitations by rendering the shadow in a backing UIView,
 // and using a Shape to mask off the inner part of the shadow.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+
+#if canImport(AppKit)
+
+@available(macOS 14.0, *)
+@available(iOS, unavailable)
+@available(watchOS, unavailable)
+@available(tvOS, unavailable)
+private struct LayerShadowView: NSViewRepresentable {
+    let shape: any Shape
+    let color: Color
+    let xOffset: CGFloat
+    let yOffset: CGFloat
+    let blur: CGFloat
+    let spread: CGFloat
+    let rect: CGRect
+
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView()
+        view.wantsLayer = true
+        view.layer?.applyShadow(shape: shape,
+                                color: color,
+                                xOffset: xOffset,
+                                yOffset: -yOffset, // Coordinate space is reversed in AppKit
+                                blur: blur,
+                                spread: spread,
+                                rect: rect)
+        return view
+    }
+
+    func updateNSView(_ nsView: NSView, context: Context) {
+        nsView.layer?.applyShadow(shape: shape,
+                                  color: color,
+                                  xOffset: xOffset,
+                                  yOffset: -yOffset, // Coordinate space is reversed in AppKit
+                                  blur: blur,
+                                  spread: spread,
+                                  rect: rect)
+    }
+}
+
+#elseif canImport(UIKit)
+
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
 private struct LayerShadowView: UIViewRepresentable {
     let shape: any Shape
     let color: Color
@@ -103,61 +147,59 @@ private struct LayerShadowView: UIViewRepresentable {
 
     func makeUIView(context: Context) -> UIView {
         let view = UIView()
-        view.backgroundColor = .clear
-        view.layer.shadowColor = UIColor(color).cgColor
-        view.layer.shadowOpacity = 1
-        view.layer.shadowOffset = CGSize(width: xOffset, height: yOffset)
-        view.layer.shadowRadius = blur / 2
-
-        // Create path for the shape
-        let path = shape.path(in: rect)
-        let shadowPath = path.cgPath
-
-        // Create expanded path for shadow with spread
-        let expandedRect = rect.insetBy(dx: -spread, dy: -spread)
-        let expandedPath = shape.path(in: expandedRect).cgPath
-        view.layer.shadowPath = expandedPath
-
-        // Create mask to cut out inner shape
-        let maskRect = rect.insetBy(dx: -spread - blur * 2 - abs(xOffset),
-                                    dy: -spread - blur * 2 - abs(yOffset))
-        let maskPath = UIBezierPath(rect: maskRect)
-        let innerPath = UIBezierPath(cgPath: shadowPath)
-        maskPath.append(innerPath.reversing())
-
-        let maskLayer = CAShapeLayer()
-        maskLayer.path = maskPath.cgPath
-        maskLayer.fillRule = .evenOdd
-        view.layer.mask = maskLayer
-
+        view.layer.applyShadow(shape: shape,
+                                color: color,
+                                xOffset: xOffset,
+                                yOffset: yOffset,
+                                blur: blur,
+                                spread: spread,
+                                rect: rect)
         return view
     }
 
     func updateUIView(_ uiView: UIView, context: Context) {
-        uiView.layer.shadowColor = UIColor(color).cgColor
-        uiView.layer.shadowOpacity = 1
-        uiView.layer.shadowOffset = CGSize(width: xOffset, height: yOffset)
-        uiView.layer.shadowRadius = blur / 2
+        uiView.layer.applyShadow(shape: shape,
+                                  color: color,
+                                  xOffset: xOffset,
+                                  yOffset: yOffset,
+                                  blur: blur,
+                                  spread: spread,
+                                  rect: rect)
+    }
+}
 
-        // Update shadow path
-        let expandedRect = rect.insetBy(dx: -spread, dy: -spread)
-        let expandedPath = shape.path(in: expandedRect).cgPath
-        uiView.layer.shadowPath = expandedPath
 
-        // Update mask
+#endif
+
+private extension CALayer {
+    
+    @available(iOS 15.0, macOS 14.0, tvOS 15.0, watchOS 8.0, *)
+    func applyShadow(shape: any Shape, color: Color, xOffset: CGFloat, yOffset: CGFloat, blur: CGFloat, spread: CGFloat, rect: CGRect) {
+        self.shadowColor = PlatformColor(color).cgColor
+        self.shadowOpacity = 1
+        self.shadowOffset = CGSize(width: xOffset, height: yOffset)
+        self.shadowRadius = blur / 2
+        
+        // Create path for the shape
         let path = shape.path(in: rect)
         let shadowPath = path.cgPath
-
+        
+        // Create expanded path for shadow with spread
+        let expandedRect = rect.insetBy(dx: -spread, dy: -spread)
+        let expandedPath = shape.path(in: expandedRect).cgPath
+        self.shadowPath = expandedPath
+        
+        // Create mask to cut out inner shape
         let maskRect = rect.insetBy(dx: -spread - blur * 2 - abs(xOffset),
                                     dy: -spread - blur * 2 - abs(yOffset))
-        let maskPath = UIBezierPath(rect: maskRect)
-        let innerPath = UIBezierPath(cgPath: shadowPath)
+        let maskPath = PlatformBezierPath(rect: maskRect)
+        let innerPath = PlatformBezierPath(cgPath: shadowPath)
         maskPath.append(innerPath.reversing())
-
+        
         let maskLayer = CAShapeLayer()
         maskLayer.path = maskPath.cgPath
         maskLayer.fillRule = .evenOdd
-        uiView.layer.mask = maskLayer
+        self.mask = maskLayer
     }
 }
 
