@@ -11,7 +11,7 @@ import StoreKit
 // swiftlint:disable missing_docs
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
-@_spi(Internal) public actor SubscriptionHistoryTracker: Sendable {
+@_spi(Internal) public actor SubscriptionHistoryTracker {
 
     @_spi(Internal) public enum Status: Equatable, Sendable {
         case hasHistory
