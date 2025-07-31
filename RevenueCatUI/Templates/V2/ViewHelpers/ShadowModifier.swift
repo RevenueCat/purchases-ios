@@ -259,6 +259,20 @@ struct Shadow_Previews: PreviewProvider {
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Black, 0 radius, x & y offset")
 
+        // Black, 20% opacity
+        VStack {
+            Text("Hello")
+                .padding(.vertical, 10)
+                .padding(.horizontal, 20)
+                .background(.yellow)
+                .compositingGroup()
+                .opacity(0.2)
+                .shadow(shadow: .init(color: Color.black, radius: 10, x: 0, y: 0), shape: Rectangle())
+                .padding()
+        }
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Black, 20% opacity")
+
     }
 }
 
