@@ -14,19 +14,25 @@
 import Foundation
 @testable import RevenueCat
 
-class MockTestStorePurchaseHandler: TestStorePurchaseHandlerType {
+actor MockTestStorePurchaseHandler: TestStorePurchaseHandlerType {
 
     #if TEST_STORE
 
-    var stubbedPurchaseResult: Bool = true
+    var stubbedPurchaseResult: TestPurchaseResult = .cancel
     private var invokedPurchase: Bool = false
     private var invokedPurchaseProduct: TestStoreProduct?
 
     @MainActor
-    func purchase(product: TestStoreProduct, completion: @escaping (Bool) -> Void) throws {
-        invokedPurchase = true
-        invokedPurchaseProduct = product
-        completion(self.stubbedPurchaseResult)
+    func purchase(product: TestStoreProduct, completion: @escaping (TestPurchaseResult) -> Void) throws {
+        Task {
+            await self.didInvokePurchase(product: product)
+            await completion(self.stubbedPurchaseResult)
+        }
+    }
+
+    private func didInvokePurchase(product: TestStoreProduct) {
+        self.invokedPurchase = true
+        self.invokedPurchaseProduct = product
     }
 
     #endif // TEST_STORE
