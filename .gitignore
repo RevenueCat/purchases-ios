@@ -88,3 +88,6 @@ Projects/**/*.xcworkspacedata
 Examples/**/.xcworkspacedata
 Examples/**/*.xcscheme
 Examples/**/xcshareddata/**
+
+# Avoid xcscheme pollution when integrating SDK with SPM
+.swiftpm/xcode/xcshareddata/xcschemes
