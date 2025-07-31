@@ -88,7 +88,7 @@ struct PackageComponentView_Previews: PreviewProvider {
     )
     @MainActor
     static let packageContextSelected = PackageContext(
-        package: nil,
+        package: Self.package,
         variableContext: .init()
     )
 
