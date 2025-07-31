@@ -143,7 +143,6 @@ struct ButtonComponentView: View {
 
     private func openCodeREDemptionSheet() {
         Purchases.shared.presentCodeRedemptionSheet()
-        Purchases.shared.invalidateCustomerInfoCache()
     }
 
     private func openWebPaywallLink(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) {
