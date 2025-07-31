@@ -90,4 +90,6 @@ Examples/**/*.xcscheme
 Examples/**/xcshareddata/**
 
 # Avoid xcscheme pollution when integrating SDK with SPM
-.swiftpm/xcode/xcshareddata/xcschemes
+# We can't avoid the whole folder yet because RC and RCUI need to be tested through the package, rather than the workspace
+.swiftpm/xcode/xcshareddata/xcschemes/ReceiptParser.xcscheme
+.swiftpm/xcode/xcshareddata/xcschemes/RevenueCat_CustomEntitlementComputation.xcscheme
