@@ -196,7 +196,7 @@ struct ButtonComponentView_Previews: PreviewProvider {
                 onDismiss: { }
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallComponentProperties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Default")
     }

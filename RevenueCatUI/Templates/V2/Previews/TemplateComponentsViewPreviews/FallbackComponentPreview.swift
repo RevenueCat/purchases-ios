@@ -153,7 +153,7 @@ struct FallbackComponentPreview_Previews: PreviewProvider {
             ],
             onDismiss: {}
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallComponentProperties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Component With Fallback")
     }
