@@ -22,7 +22,7 @@ public extension PaywallComponent {
         let type: ComponentType
         public let packageID: String
         public let isSelectedByDefault: Bool
-        public let applePromoOfferProductCode: String?
+        @_spi(Internal) public let applePromoOfferProductCode: String?
         public let stack: PaywallComponent.StackComponent
 
         public init(

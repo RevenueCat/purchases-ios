@@ -162,12 +162,7 @@ extension PurchaseHandler {
 
     @MainActor
     func purchase(package: Package) async throws {
-        switch self.purchases.purchasesAreCompletedBy {
-        case .revenueCat:
-            try await performPurchase(package: package, promotionalOffer: nil)
-        case .myApp:
-            try await performExternalPurchaseLogic(package: package, promotionalOffer: nil)
-        }
+        try await purchase(package: package, promotionalOffer: nil)
     }
 
     @MainActor

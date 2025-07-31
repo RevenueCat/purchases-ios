@@ -12,7 +12,7 @@
 //  Created by Mark Villacampa on 15/1/25.
 
 import Foundation
-@_spi(Internal) import RevenueCat
+import RevenueCat
 import SwiftUI
 
 #if !os(macOS) && !os(tvOS) // For Paywalls V2

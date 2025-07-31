@@ -11,7 +11,7 @@
 //
 //  Created by James Borthwick on 2024-08-20.
 
-@_spi(Internal) import RevenueCat
+import RevenueCat
 import SwiftUI
 
 // swiftlint:disable file_length
