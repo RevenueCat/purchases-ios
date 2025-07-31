@@ -105,7 +105,7 @@ struct PaywallsV2View: View {
     private let fallbackContent: FallbackContent
 
     @StateObject
-    private var paywallPromoOfferCache = PaywallPromoOfferCache()
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
 
     public init(
         paywallComponents: Offering.PaywallComponents,
@@ -128,6 +128,9 @@ struct PaywallsV2View: View {
         self.purchaseHandler = purchaseHandler
         self.onDismiss = onDismiss
         self.fallbackContent = fallbackContent
+        self._paywallPromoOfferCache = .init(wrappedValue: PaywallPromoOfferCache(
+            subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker
+        ))
         self._introOfferEligibilityContext = .init(
             wrappedValue: .init(introEligibilityChecker: introEligibilityChecker)
         )
@@ -214,24 +217,6 @@ struct PaywallsV2View: View {
                     )
                 }
             }
-        }
-        .task {
-            let historyObserver = self.purchaseHandler.subscriptionHistoryObserver
-            let valueEnum = await historyObserver.status
-
-            let value: Bool
-            switch valueEnum {
-            case .unknown:
-                value = false
-            case .hasHistory:
-                value = true
-            case .noHistory:
-                value = false
-            @unknown default:
-                value = false
-            }
-
-            self.paywallPromoOfferCache.update(value)
         }
     }
 

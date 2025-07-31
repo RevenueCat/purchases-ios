@@ -11,7 +11,8 @@
 //
 //  Created by Josh Holtz on 7/28/25.
 
-import RevenueCat
+import Combine
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -28,15 +29,16 @@ internal final class PaywallPromoOfferCache: ObservableObject {
 
     private var cache: [ProductID: Status] = [:]
     private var hasAnySubscriptionHistory: Bool = false
+    private var cancellable: AnyCancellable?
 
     // MARK: - Init
 
-    init(hasAnySubscriptionHistory: Bool = false) {
-        self.hasAnySubscriptionHistory = hasAnySubscriptionHistory
-    }
-
-    func update(_ hasAnySubscriptionHistory: Bool) {
-        self.hasAnySubscriptionHistory = hasAnySubscriptionHistory
+    init(subscriptionHistoryTracker: SubscriptionHistoryTracker) {
+        Task {
+            self.cancellable = await subscriptionHistoryTracker.status.sink { [weak self] status in
+                self?.hasAnySubscriptionHistory = status == .hasHistory
+            }
+        }
     }
 
     // MARK: - Public API

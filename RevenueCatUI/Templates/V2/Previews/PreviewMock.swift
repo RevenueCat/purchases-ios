@@ -86,7 +86,7 @@ struct PreviewRequiredEnvironmentProperties: ViewModifier {
     func body(content: Content) -> some View {
         content
             .environmentObject(IntroOfferEligibilityContext(introEligibilityChecker: .default()))
-            .environmentObject(PaywallPromoOfferCache())
+            .environmentObject(PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker()))
             .environmentObject(PurchaseHandler.default())
             .environmentObject(self.packageContext ?? Self.defaultPackageContext)
             .environment(\.screenCondition, screenCondition)

@@ -280,7 +280,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let diagnosticsTracker: DiagnosticsTrackerType?
     private let virtualCurrencyManager: VirtualCurrencyManagerType
 
-    @_spi(Internal) public let subscriptionHistoryObserver = SubscriptionHistoryObserver()
+    @_spi(Internal) public let subscriptionHistoryTracker = SubscriptionHistoryTracker()
 
     // swiftlint:disable:next function_body_length cyclomatic_complexity
     convenience init(apiKey: String,

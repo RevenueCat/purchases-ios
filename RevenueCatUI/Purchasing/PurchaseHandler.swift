@@ -34,8 +34,8 @@ final class PurchaseHandler: ObservableObject {
         purchases.purchasesAreCompletedBy
     }
 
-    var subscriptionHistoryObserver: RevenueCat.SubscriptionHistoryObserver {
-        purchases.subscriptionHistoryObserver
+    var subscriptionHistoryTracker: SubscriptionHistoryTracker {
+        purchases.subscriptionHistoryTracker
     }
 
     /// `false` if this `PurchaseHandler` is not backend by a configured `Purchases`instance.
@@ -435,8 +435,8 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
 
     var preferredLocaleOverride: String? { nil }
 
-    var subscriptionHistoryObserver: RevenueCat.SubscriptionHistoryObserver {
-        SubscriptionHistoryObserver()
+    var subscriptionHistoryTracker: RevenueCat.SubscriptionHistoryTracker {
+        SubscriptionHistoryTracker()
     }
 
     init(customerInfo: CustomerInfo? = nil, purchasesAreCompletedBy: PurchasesAreCompletedBy) {
