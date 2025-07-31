@@ -32,10 +32,16 @@ import StoreKit
             self.statusSubject = CurrentValueSubject(.noHistory)
 
             Task {
-                await self.initialize()
+                await self.initializeIfAvailable()
             }
         } else {
             self.statusSubject = CurrentValueSubject(.unknown)
+        }
+    }
+
+    private func initializeIfAvailable() async {
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+            self.initialize()
         }
     }
 
