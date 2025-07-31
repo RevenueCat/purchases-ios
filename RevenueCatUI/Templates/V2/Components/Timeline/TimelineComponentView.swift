@@ -359,7 +359,7 @@ struct ContentView_Previews: PreviewProvider {
                     ]
                 ), uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
             ))
-            .previewRequiredEnvironmentProperties()
+            .previewRequiredPaywallComponentProperties()
             .previewDisplayName("Timeline - \(alignment)")
         }
 

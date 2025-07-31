@@ -215,7 +215,7 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
             ),
             onDismiss: {}
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallComponentProperties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Pill")
 
@@ -260,7 +260,7 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
             ),
             onDismiss: {}
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallComponentProperties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Rounded Rectangle")
     }

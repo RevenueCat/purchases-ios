@@ -61,7 +61,6 @@ struct PackageComponentView: View {
                     variableContext: packageContext.variableContext)
                 )
             }
-            .fixMacButtons()
         } else {
             EmptyView()
         }
@@ -160,7 +159,7 @@ struct PackageComponentView_Previews: PreviewProvider {
                                 webCheckoutUrl: nil)
             ), onDismiss: {}
         )
-        .previewRequiredEnvironmentProperties(
+        .previewRequiredPaywallComponentProperties(
             packageContext: packageContext
         )
         .previewLayout(.sizeThatFits)
@@ -188,7 +187,7 @@ struct PackageComponentView_Previews: PreviewProvider {
                                 webCheckoutUrl: nil)
             ), onDismiss: {}
         )
-        .previewRequiredEnvironmentProperties(
+        .previewRequiredPaywallComponentProperties(
             packageContext: packageContextSelected
         )
         .previewLayout(.sizeThatFits)

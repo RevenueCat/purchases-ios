@@ -262,6 +262,7 @@ private struct LoadedPaywallsV2View: View {
                     componentViewModels: [.root(paywallState.rootViewModel)],
                     onDismiss: self.onDismiss
                 )
+                .fixMacButtons()
             }
             // Used for header image and sticky footer
             .environment(\.safeAreaInsets, proxy.safeAreaInsets)
