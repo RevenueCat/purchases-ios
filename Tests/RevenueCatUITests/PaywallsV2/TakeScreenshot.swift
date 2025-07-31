@@ -84,6 +84,7 @@ class TakeScreenshotTests: BaseSnapshotTest {
 extension PlatformImage {
     func resized(toWidth width: CGFloat) -> PlatformImage {
         #if canImport(UIKit)
+
         let scale = width / self.size.width
         let height = self.size.height * scale
         let newSize = CGSize(width: width, height: height)
@@ -95,13 +96,13 @@ extension PlatformImage {
         return renderer.image { _ in
             self.draw(in: CGRect(origin: .zero, size: newSize))
         }
-        
+
         #elseif canImport(AppKit)
-        
+
         let scale = width / self.size.width
         let height = self.size.height * scale
         let newSize = NSSize(width: width, height: height)
-        
+
         let newImage = NSImage(size: newSize)
         newImage.lockFocus()
         defer { newImage.unlockFocus() }
@@ -111,7 +112,7 @@ extension PlatformImage {
                   from: NSRect(origin: .zero, size: self.size),
                   operation: .copy,
                   fraction: 1.0)
-        
+
         return newImage
         #endif
     }
@@ -123,7 +124,7 @@ extension View {
   func asImage(wait duration: TimeInterval = 0.1) -> PlatformImage {
 
     #if canImport(UIKit)
-      
+
     let controller = UIHostingController(rootView: self.ignoresSafeArea())
     let view = controller.view
     let targetSize = controller.view.intrinsicContentSize
@@ -143,16 +144,16 @@ extension View {
     let image = controller.view.asImage()
 
     return image
-      
+
     #elseif canImport(AppKit)
-      
+
     let controller = NSHostingController(rootView: self)
     let view = controller.view
     let targetSize = controller.view.intrinsicContentSize
     let bounds = CGRect(origin: .zero, size: targetSize)
 
     view.frame.size = view.fittingSize
-      
+
     let window = NSWindow(contentViewController: controller)
     window.setContentSize(view.fittingSize)
     window.makeKeyAndOrderFront(nil)
@@ -162,11 +163,11 @@ extension View {
     RunLoop.main.run(until: Date().addingTimeInterval(duration))
 
     let image = controller.view.asImage()
-      
+
     window.close()
-      
+
     return image
-      
+
     #endif
   }
 }

@@ -74,7 +74,6 @@ open class DefaultPaywallFontProvider: PaywallFontProvider {
 
 }
 
-
 /// A ``PaywallFontProvider`` implementation that allows you to provide a custom
 /// font name, and it will automatically scale up based on the size category.
 open class CustomPaywallFontProvider: PaywallFontProvider {

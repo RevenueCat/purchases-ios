@@ -50,7 +50,7 @@ extension NSImage {
            let bitmap = NSBitmapImageRep(data: tiffRepresentation) {
             return bitmap.representation(using: .png, properties: [:])
         }
-        
+
         return nil
     }
 }

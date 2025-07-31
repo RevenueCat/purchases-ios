@@ -58,9 +58,9 @@ struct ShadowModifier: ViewModifier {
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                         }
                     }
-            }
-            else {
-                // Fallback to default shadow on older versions of macOS where CGPath conversion for NSBezierPath is unavailable.
+            } else {
+                // Fallback to default shadow on older versions of macOS where CGPath conversion for
+                // NSBezierPath is unavailable.
                 content.shadow(color: shadow.color, radius: shadow.radius, x: shadow.x, y: shadow.y)
             }
         } else {
@@ -109,23 +109,23 @@ private struct LayerShadowView: UIViewRepresentable {
     func makeUIView(context: Context) -> UIView {
         let view = UIView()
         view.layer.applyShadow(shape: shape,
-                                color: color,
-                                xOffset: xOffset,
-                                yOffset: yOffset,
-                                blur: blur,
-                                spread: spread,
-                                rect: rect)
+                               color: color,
+                               xOffset: xOffset,
+                               yOffset: yOffset,
+                               blur: blur,
+                               spread: spread,
+                               rect: rect)
         return view
     }
 
     func updateUIView(_ uiView: UIView, context: Context) {
         uiView.layer.applyShadow(shape: shape,
-                                  color: color,
-                                  xOffset: xOffset,
-                                  yOffset: yOffset,
-                                  blur: blur,
-                                  spread: spread,
-                                  rect: rect)
+                                 color: color,
+                                 xOffset: xOffset,
+                                 yOffset: yOffset,
+                                 blur: blur,
+                                 spread: spread,
+                                 rect: rect)
     }
 }
 
@@ -171,30 +171,37 @@ private struct LayerShadowView: NSViewRepresentable {
 #endif
 
 private extension CALayer {
-    
+
     @available(iOS 15.0, macOS 14.0, tvOS 15.0, watchOS 8.0, *)
-    func applyShadow(shape: any Shape, color: Color, xOffset: CGFloat, yOffset: CGFloat, blur: CGFloat, spread: CGFloat, rect: CGRect) {
+    // swiftlint:disable:next function_parameter_count
+    func applyShadow(shape: any Shape,
+                     color: Color,
+                     xOffset: CGFloat,
+                     yOffset: CGFloat,
+                     blur: CGFloat,
+                     spread: CGFloat,
+                     rect: CGRect) {
         self.shadowColor = PlatformColor(color).cgColor
         self.shadowOpacity = 1
         self.shadowOffset = CGSize(width: xOffset, height: yOffset)
         self.shadowRadius = blur / 2
-        
+
         // Create path for the shape
         let path = shape.path(in: rect)
         let shadowPath = path.cgPath
-        
+
         // Create expanded path for shadow with spread
         let expandedRect = rect.insetBy(dx: -spread, dy: -spread)
         let expandedPath = shape.path(in: expandedRect).cgPath
         self.shadowPath = expandedPath
-        
+
         // Create mask to cut out inner shape
         let maskRect = rect.insetBy(dx: -spread - blur * 2 - abs(xOffset),
                                     dy: -spread - blur * 2 - abs(yOffset))
         let maskPath = PlatformBezierPath(rect: maskRect)
         let innerPath = PlatformBezierPath(cgPath: shadowPath)
         maskPath.append(innerPath.reversing())
-        
+
         let maskLayer = CAShapeLayer()
         maskLayer.path = maskPath.cgPath
         maskLayer.fillRule = .evenOdd

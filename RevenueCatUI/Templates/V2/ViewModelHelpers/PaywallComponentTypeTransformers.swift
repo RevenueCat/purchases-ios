@@ -70,7 +70,7 @@ extension PaywallComponent.FontSize {
         #if canImport(UIKit)
         return UIFontMetrics(forTextStyle: self.textStyle).scaledFont(for: baseFont)
         #else
-        //TODO: Figure out how to apply dynamic type scaling on macOS
+        // TODO: Figure out how to apply dynamic type scaling on macOS
         return baseFont
         #endif
     }

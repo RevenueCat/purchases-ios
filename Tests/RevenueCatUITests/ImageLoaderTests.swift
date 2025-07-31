@@ -17,7 +17,6 @@ import Nimble
 import SwiftUI
 import XCTest
 
-
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 @MainActor
 class ImageLoaderTests: TestCase {
@@ -310,4 +309,3 @@ private extension Image {
     }
 
 }
-
