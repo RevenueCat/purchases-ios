@@ -62,7 +62,8 @@ enum PurchaseInformationFixtures {
                 )),
                 refundWindowDuration: .forever
             )
-        ]
+        ],
+        preferredPaywallId: nil
     )
 
     static func screenWithPromo(offerID: String) -> CustomerCenterConfigData.Screen {
@@ -86,7 +87,8 @@ enum PurchaseInformationFixtures {
                     )),
                     refundWindowDuration: .forever
                 )
-            ]
+            ],
+            preferredPaywallId: nil
         )
     }
 

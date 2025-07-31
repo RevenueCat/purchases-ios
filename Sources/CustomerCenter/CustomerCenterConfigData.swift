@@ -631,12 +631,20 @@ import Foundation
         @_spi(Internal) public let title: String
         @_spi(Internal) public let subtitle: String?
         @_spi(Internal) public let paths: [HelpPath]
+        @_spi(Internal) public let preferredOfferingId: String?
 
-        @_spi(Internal) public init(type: ScreenType, title: String, subtitle: String?, paths: [HelpPath]) {
+        @_spi(Internal) public init(
+            type: ScreenType,
+            title: String,
+            subtitle: String?,
+            paths: [HelpPath],
+            preferredPaywallId: String?
+        ) {
             self.type = type
             self.title = title
             self.subtitle = subtitle
             self.paths = paths
+            self.preferredOfferingId = preferredPaywallId
         }
 
         @_spi(Internal) public enum ScreenType: String, Equatable {
@@ -743,6 +751,7 @@ extension CustomerCenterConfigData.Screen {
         self.title = response.title
         self.subtitle = response.subtitle
         self.paths = response.paths.compactMap { CustomerCenterConfigData.HelpPath(from: $0) }
+        self.preferredOfferingId = response.preferredOfferingId
     }
 
 }

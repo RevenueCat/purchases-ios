@@ -63,7 +63,10 @@ struct FallbackNoSubscriptionsView: View {
     var body: some View {
         ScrollViewWithOSBackground {
             LazyVStack(spacing: 0) {
-                NoSubscriptionsCardView(localization: localization)
+                NoSubscriptionsCardView(
+                    paywallId: nil,
+                    localization: localization
+                )
                     .cornerRadius(10)
                     .padding(.horizontal)
                     .padding(.bottom, 32)

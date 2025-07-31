@@ -200,6 +200,13 @@ import Foundation
             let configuration = try await self.loadCustomerCenterConfig()
             try await self.loadPurchases(customerInfo: customerInfo, changePlans: configuration.changePlans)
 
+            if let offeringId = configuration.screens[.noActive]?.preferredOfferingId {
+                let offerings = try await Purchases.shared.offerings()
+                print(offerings)
+
+                let offering = offerings.offering(identifier: offeringId)
+            }
+
             if shouldShowVirtualCurrencies {
                 purchasesProvider.invalidateVirtualCurrenciesCache()
                 self.virtualCurrencies = try? await purchasesProvider.virtualCurrencies()

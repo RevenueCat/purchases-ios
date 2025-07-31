@@ -97,7 +97,8 @@ extension CustomerCenterConfigData {
                                     )),
                                     refundWindowDuration: nil
                                 )
-                            ]
+                            ],
+                            preferredPaywallId: nil
                         ),
                 .noActive: .init(
                     type: .noActive,
@@ -113,7 +114,8 @@ extension CustomerCenterConfigData {
                             detail: nil,
                             refundWindowDuration: nil
                         )
-                    ]
+                    ],
+                    preferredPaywallId: nil
                 )
             ],
             appearance: standardAppearance,
