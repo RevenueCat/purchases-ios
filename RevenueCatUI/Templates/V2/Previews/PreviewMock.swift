@@ -15,7 +15,7 @@
 
 #if DEBUG
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import StoreKit
 import SwiftUI
 
@@ -73,7 +73,11 @@ enum PreviewUIConfig {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct PreviewRequiredEnvironmentProperties: ViewModifier {
 
-    static let defaultPackageContext = PackageContext(package: nil, variableContext: .init(packages: []))
+    @MainActor
+    static let defaultPackageContext = PackageContext(
+        package: nil,
+        variableContext: .init(packages: [])
+    )
 
     let screenCondition: ScreenCondition
     let componentViewState: ComponentViewState
@@ -82,6 +86,7 @@ struct PreviewRequiredEnvironmentProperties: ViewModifier {
     func body(content: Content) -> some View {
         content
             .environmentObject(IntroOfferEligibilityContext(introEligibilityChecker: .default()))
+            .environmentObject(PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker()))
             .environmentObject(PurchaseHandler.default())
             .environmentObject(self.packageContext ?? Self.defaultPackageContext)
             .environment(\.screenCondition, screenCondition)

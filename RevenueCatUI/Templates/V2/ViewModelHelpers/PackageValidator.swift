@@ -19,12 +19,12 @@ import RevenueCat
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class PackageValidator {
 
-    typealias PackageInfo = (package: Package, isSelectedByDefault: Bool)
+    typealias PackageInfo = (package: Package, isSelectedByDefault: Bool, promotionalOfferProductCode: String?)
 
     private(set) var packageInfos: [PackageInfo] = []
 
-    func add(_ package: Package, isSelectedByDefault: Bool) {
-        self.packageInfos.append((package, isSelectedByDefault))
+    func add(_ packageInfo: PackageInfo) {
+        self.packageInfos.append(packageInfo)
     }
 
     var isValid: Bool {
