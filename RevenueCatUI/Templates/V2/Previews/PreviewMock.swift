@@ -71,7 +71,7 @@ enum PreviewUIConfig {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct PreviewRequiredPaywallComponentProperties: ViewModifier {
+struct PreviewRequiredPaywallsV2Properties: ViewModifier {
 
     static let defaultPackageContext = PackageContext(package: nil, variableContext: .init(packages: []))
 
@@ -94,12 +94,12 @@ struct PreviewRequiredPaywallComponentProperties: ViewModifier {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
-    func previewRequiredPaywallComponentProperties(
+    func previewRequiredPaywallsV2Properties(
         screenCondition: ScreenCondition = .compact,
         componentViewState: ComponentViewState = .default,
         packageContext: PackageContext? = nil
     ) -> some View {
-        self.modifier(PreviewRequiredPaywallComponentProperties(
+        self.modifier(PreviewRequiredPaywallsV2Properties(
             screenCondition: screenCondition,
             componentViewState: componentViewState,
             packageContext: packageContext

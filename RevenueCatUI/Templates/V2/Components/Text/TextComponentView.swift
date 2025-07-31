@@ -134,7 +134,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredPaywallComponentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
 
     }
@@ -157,7 +157,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredPaywallComponentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
 
     }
@@ -187,7 +187,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredPaywallComponentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Markdown")
 
@@ -208,7 +208,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredPaywallComponentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Markdown - Invalid")
 
@@ -229,7 +229,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredPaywallComponentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Blank line")
 
@@ -322,7 +322,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredPaywallComponentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Custom Font")
 
@@ -397,7 +397,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredPaywallComponentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Custom Font - Generic")
 
@@ -451,7 +451,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredPaywallComponentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Custom Color")
 
@@ -484,7 +484,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredPaywallComponentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Gradient")
 
@@ -518,7 +518,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredPaywallComponentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Customizations")
 
@@ -557,7 +557,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredPaywallComponentProperties(
+        .previewRequiredPaywallsV2Properties(
             componentViewState: .selected
         )
         .previewLayout(.sizeThatFits)
@@ -588,7 +588,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredPaywallComponentProperties(
+        .previewRequiredPaywallsV2Properties(
             screenCondition: .medium
         )
         .previewLayout(.sizeThatFits)
@@ -619,7 +619,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredPaywallComponentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Condition - Has medium but not medium")
 
@@ -668,7 +668,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredPaywallComponentProperties(
+        .previewRequiredPaywallsV2Properties(
             packageContext: .init(
                 package: PreviewMock.annualStandardPackage,
                 variableContext: .init(packages: [

@@ -314,7 +314,7 @@ struct StackComponentView_Previews: PreviewProvider {
             ),
             onDismiss: {}
         )
-        .previewRequiredPaywallComponentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Default - Fill")
 
@@ -343,7 +343,7 @@ struct StackComponentView_Previews: PreviewProvider {
             ),
             onDismiss: {}
         )
-        .previewRequiredPaywallComponentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Default - Fit")
 
@@ -449,7 +449,7 @@ struct StackComponentView_Previews: PreviewProvider {
                 onDismiss: {}
             )
         }
-        .previewRequiredPaywallComponentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Default - Fill Fit Fixed Fill")
 
@@ -507,7 +507,7 @@ struct StackComponentView_Previews: PreviewProvider {
                 onDismiss: {}
             )
         }
-        .previewRequiredPaywallComponentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Scrollable - HStack")
 
@@ -550,7 +550,7 @@ struct StackComponentView_Previews: PreviewProvider {
                 onDismiss: {},
                 showActivityIndicatorOverContent: true
             )
-            .previewRequiredPaywallComponentProperties()
+            .previewRequiredPaywallsV2Properties()
             .previewLayout(.sizeThatFits)
             .previewDisplayName("Progress - \(colorPair.0)")
         }
@@ -623,7 +623,7 @@ struct StackComponentView_Previews: PreviewProvider {
             ),
             onDismiss: {}
         )
-        .previewRequiredPaywallComponentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Fits don't expand")
     }
@@ -684,7 +684,7 @@ func stackAlignmentAndDistributionPreviews(dimensions: [PaywallComponent.Dimensi
                 ),
                 onDismiss: {}
             )
-            .previewRequiredPaywallComponentProperties()
+            .previewRequiredPaywallsV2Properties()
             .previewLayout(.sizeThatFits)
             .previewDisplayName(displayName(dimension: dimension,
                                             overflow: overflow))

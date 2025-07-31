@@ -432,7 +432,7 @@ struct BadgePreviews: View {
         .previewLayout(.sizeThatFits)
         .padding(30)
         .padding(.vertical, 50)
-        .previewRequiredPaywallComponentProperties()
+        .previewRequiredPaywallsV2Properties()
     }
 }
 
