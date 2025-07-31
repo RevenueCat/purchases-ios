@@ -159,8 +159,8 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
         set { _ = newValue }
     }
 
-    var subscriptionHistoryObserver: RevenueCat.SubscriptionHistoryObserver {
-        SubscriptionHistoryObserver()
+    var subscriptionHistoryTracker: RevenueCat.SubscriptionHistoryTracker {
+        SubscriptionHistoryTracker()
     }
 
     func customerInfo() async throws -> RevenueCat.CustomerInfo {

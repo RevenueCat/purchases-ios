@@ -37,7 +37,7 @@ final class MockPurchases: PaywallPurchasesType {
         set { _ = newValue }
     }
 
-    let subscriptionHistoryObserver = SubscriptionHistoryObserver()
+    let subscriptionHistoryTracker = SubscriptionHistoryTracker()
 
     init(
         purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat,
