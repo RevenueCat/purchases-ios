@@ -238,6 +238,30 @@ class MockSubscriberAttributesManager: SubscriberAttributesManager {
         invokedSetPostHogUserIDParametersList.append((postHogUserID, appUserID))
     }
 
+    var invokedSetAmplitudeUserID = false
+    var invokedSetAmplitudeUserIDCount = 0
+    var invokedSetAmplitudeUserIDParameters: (amplitudeUserID: String?, appUserID: String?)?
+    var invokedSetAmplitudeUserIDParametersList = [(amplitudeUserID: String?, appUserID: String?)]()
+
+    override func setAmplitudeUserID(_ amplitudeUserID: String?, appUserID: String) {
+        invokedSetAmplitudeUserID = true
+        invokedSetAmplitudeUserIDCount += 1
+        invokedSetAmplitudeUserIDParameters = (amplitudeUserID, appUserID)
+        invokedSetAmplitudeUserIDParametersList.append((amplitudeUserID, appUserID))
+    }
+
+    var invokedSetAmplitudeDeviceID = false
+    var invokedSetAmplitudeDeviceIDCount = 0
+    var invokedSetAmplitudeDeviceIDParameters: (amplitudeDeviceID: String?, appUserID: String?)?
+    var invokedSetAmplitudeDeviceIDParametersList = [(amplitudeDeviceID: String?, appUserID: String?)]()
+
+    override func setAmplitudeDeviceID(_ amplitudeDeviceID: String?, appUserID: String) {
+        invokedSetAmplitudeDeviceID = true
+        invokedSetAmplitudeDeviceIDCount += 1
+        invokedSetAmplitudeDeviceIDParameters = (amplitudeDeviceID, appUserID)
+        invokedSetAmplitudeDeviceIDParametersList.append((amplitudeDeviceID, appUserID))
+    }
+
     var invokedSetMediaSource = false
     var invokedSetMediaSourceCount = 0
     var invokedSetMediaSourceParameters: (mediaSource: String?, appUserID: String?)?

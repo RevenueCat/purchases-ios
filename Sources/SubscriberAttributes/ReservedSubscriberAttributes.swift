@@ -45,6 +45,8 @@ enum ReservedSubscriberAttribute: String {
     case firebaseAppInstanceID = "$firebaseAppInstanceId"
     case tenjinAnalyticsInstallationID = "$tenjinId"
     case postHogUserID = "$posthogUserId"
+    case amplitudeUserID = "$amplitudeUserId"
+    case amplitudeDeviceID = "$amplitudeDeviceId"
 
     case mediaSource = "$mediaSource"
     case campaign = "$campaign"
