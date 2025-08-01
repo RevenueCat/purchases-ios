@@ -33,15 +33,24 @@ class TestStorePurchaseHandlerTests: TestCase {
     }
 
     func testSubsequentPurchaseProductCallsOnlyCallPurchaseUIOnce() async {
+
+        let expectation = self.expectation(description: "All purchase product calls happened")
+
         mockTestStorePurchaseUI.stubbedPurchaseResult.value = {
-            try! await Task.sleep(nanoseconds: 1_000_000_000) // 1 second delay
+            await self.fulfillment(of: [expectation])
             return .cancel
         }
         let hander = TestStorePurchaseHandler(purchaseUI: mockTestStorePurchaseUI)
 
         async let result0 = hander.purchase(product: Self.testStoreProduct)
+
+        await expect(self.mockTestStorePurchaseUI.invokedPresentPurchaseUI.value).toEventually(beTrue())
+        await expect(self.mockTestStorePurchaseUI.invokedPresentPurchaseUICount.value).toEventually(equal(1))
+
         async let result1 = hander.purchase(product: Self.testStoreProduct)
         async let result2 = hander.purchase(product: Self.testStoreProduct)
+
+        expectation.fulfill()
 
         let results = await (result0, result1, result2)
 
