@@ -2374,8 +2374,6 @@
 		830004002E261ABE00143F9F /* PlatformImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformImage.swift; sourceTree = "<group>"; };
 		831660B52E3AAA4900855312 /* FixMacButtonsModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FixMacButtonsModifier.swift; sourceTree = "<group>"; };
 		8337DD6D2E0A7CFE000798BF /* paywall-preview-resources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "paywall-preview-resources"; sourceTree = "<group>"; };
-		83675A6C2E1E73C40012B894 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		83675A6D2E1E73C40012B894 /* PaywallValidationTester.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PaywallValidationTester.entitlements; sourceTree = "<group>"; };
 		83675A6E2E1E73C40012B894 /* PaywallValidationTesterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallValidationTesterApp.swift; sourceTree = "<group>"; };
 		83675A6F2E1E73C40012B894 /* PaywallValidationTesterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallValidationTesterView.swift; sourceTree = "<group>"; };
 		839F34382E3BC574006355B0 /* PlatformColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformColor.swift; sourceTree = "<group>"; };
@@ -5088,8 +5086,6 @@
 		83675A702E1E73C40012B894 /* PaywallValidationTester */ = {
 			isa = PBXGroup;
 			children = (
-				83675A6C2E1E73C40012B894 /* Assets.xcassets */,
-				83675A6D2E1E73C40012B894 /* PaywallValidationTester.entitlements */,
 				83675A6E2E1E73C40012B894 /* PaywallValidationTesterApp.swift */,
 				83675A6F2E1E73C40012B894 /* PaywallValidationTesterView.swift */,
 			);
