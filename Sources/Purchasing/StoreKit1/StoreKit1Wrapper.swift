@@ -64,18 +64,19 @@ class StoreKit1Wrapper: NSObject {
 
     private let paymentQueue: SKPaymentQueue
     private let operationDispatcher: OperationDispatcher
-    private let observerMode: Bool
     private let systemInfo: SystemInfo
     private let diagnosticsTracker: DiagnosticsTrackerType?
 
+    private var observerMode: Bool {
+        return self.systemInfo.observerMode
+    }
+
     init(paymentQueue: SKPaymentQueue = .default(),
          operationDispatcher: OperationDispatcher = .default,
-         observerMode: Bool,
          systemInfo: SystemInfo,
          diagnosticsTracker: DiagnosticsTrackerType?) {
         self.paymentQueue = paymentQueue
         self.operationDispatcher = operationDispatcher
-        self.observerMode = observerMode
         self.systemInfo = systemInfo
         self.diagnosticsTracker = diagnosticsTracker
 

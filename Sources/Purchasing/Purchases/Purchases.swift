@@ -370,7 +370,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             ? .right(.init(systemInfo: systemInfo))
             : .left(.init(
                 operationDispatcher: operationDispatcher,
-                observerMode: observerMode,
                 systemInfo: systemInfo,
                 diagnosticsTracker: diagnosticsTracker
             ))
