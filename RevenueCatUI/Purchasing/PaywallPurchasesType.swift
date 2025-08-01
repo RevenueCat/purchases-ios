@@ -15,7 +15,7 @@
 
 /// A simplified protocol for the subset of `PurchasesType` needed for `RevenueCatUI`.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-protocol PaywallPurchasesType: AnyObject, Sendable {
+protocol PaywallPurchasesType: Sendable {
 
     var purchasesAreCompletedBy: PurchasesAreCompletedBy { get }
 
@@ -38,11 +38,6 @@ protocol PaywallPurchasesType: AnyObject, Sendable {
     @Sendable
     func track(paywallEvent: PaywallEvent) async
 
-    @available(iOS 15.0, *)
-    @available(watchOS, unavailable)
-    @available(tvOS, unavailable)
-    @available(macOS, unavailable)
-    @available(macCatalyst, unavailable)
     func presentCodeRedemptionSheet()
 
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
@@ -56,6 +51,13 @@ protocol PaywallPurchasesType: AnyObject, Sendable {
 
 #endif
 
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension PaywallPurchasesType {
+    func presentCodeRedemptionSheet() {
+
+    }
 }
 
 extension Purchases: PaywallPurchasesType {}
