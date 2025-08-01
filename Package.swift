@@ -61,7 +61,7 @@ let package = Package(
     name: "RevenueCat",
     defaultLocalization: "en",
     platforms: [
-        .macOS(.v11),
+        .macOS(.v10_15),
         .watchOS("6.2"),
         .tvOS(.v13),
         .iOS(.v13),
