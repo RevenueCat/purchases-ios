@@ -345,7 +345,7 @@ public extension Attribution {
      * Optional for the RevenueCat Amplitude integration.
      *
      * #### Related Articles
-     * - [Amplitude RevenueCat Integration](https://www.revenuecat.com/docs/integrations/third-party-integrations/amplitude)
+     * - [Amplitude RevenueCat Integration](https://www.revenuecat.com/docs/amplitude)
      *
      *- Parameter amplitudeUserID: Empty String or `nil` will delete the subscriber attribute.
      */
@@ -358,7 +358,7 @@ public extension Attribution {
      * Optional for the RevenueCat Amplitude integration.
      *
      * #### Related Articles
-     * - [Amplitude RevenueCat Integration](https://www.revenuecat.com/docs/integrations/third-party-integrations/amplitude)
+     * - [Amplitude RevenueCat Integration](https://www.revenuecat.com/docs/amplitude)
      *
      *- Parameter amplitudeDeviceID: Empty String or `nil` will delete the subscriber attribute.
      */
