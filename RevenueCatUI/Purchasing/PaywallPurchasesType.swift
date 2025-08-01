@@ -38,8 +38,6 @@ protocol PaywallPurchasesType: Sendable {
     @Sendable
     func track(paywallEvent: PaywallEvent) async
 
-    func presentCodeRedemptionSheet()
-
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func invalidateCustomerInfoCache()
 #endif
@@ -51,13 +49,6 @@ protocol PaywallPurchasesType: Sendable {
 
 #endif
 
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension PaywallPurchasesType {
-    func presentCodeRedemptionSheet() {
-
-    }
 }
 
 extension Purchases: PaywallPurchasesType {}

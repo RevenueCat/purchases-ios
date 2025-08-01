@@ -71,10 +71,6 @@ final class MockPurchases: PaywallPurchasesType {
         await self.trackEventBlock(paywallEvent)
     }
 
-    func presentCodeRedemptionSheet() {
-        // No-op, this is a mock implementation.
-    }
-
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func invalidateCustomerInfoCache() {
         // No-op, this is a mock implementation.

@@ -142,7 +142,7 @@ struct ButtonComponentView: View {
     }
 
     private func openCodeRedemptionSheet() {
-        self.purchaseHandler.presentCodeRedemptionSheet()
+        Purchases.shared.presentCodeRedemptionSheet()
     }
 
     private func openWebPaywallLink(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) {
