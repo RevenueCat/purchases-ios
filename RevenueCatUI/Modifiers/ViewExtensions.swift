@@ -71,11 +71,7 @@ extension View {
         #if swift(>=5.9)
         if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
             AnyView(self.onChange(of: value) { old, new in
-                if old == new {
-                    action(.new(new))
-                } else {
-                    action(.changed(old: old, new: new))
-                }
+                action(.changed(old: old, new: new))
             })
         } else {
             AnyView(self.onChange(of: value) { new in
