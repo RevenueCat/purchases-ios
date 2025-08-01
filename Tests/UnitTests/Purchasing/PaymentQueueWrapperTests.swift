@@ -43,7 +43,7 @@ class PaymentQueueWrapperTests: TestCase {
         try super.setUpWithError()
 
         self.paymentQueue = MockPaymentQueue()
-        self.wrapper = .init(paymentQueue: self.paymentQueue)
+        self.wrapper = .init(paymentQueue: self.paymentQueue, systemInfo: MockSystemInfo(finishTransactions: true))
         self.delegate = WrapperDelegate()
     }
 

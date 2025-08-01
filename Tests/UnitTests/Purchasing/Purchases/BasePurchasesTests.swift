@@ -32,7 +32,6 @@ class BasePurchasesTests: TestCase {
         self.notificationCenter = MockNotificationCenter()
         self.purchasesDelegate = MockPurchasesDelegate()
 
-        self.mockPaymentQueueWrapper = MockPaymentQueueWrapper()
         self.mockTestStorePurchaseHandler = MockTestStorePurchaseHandler()
 
         self.userDefaults = UserDefaults(suiteName: Self.userDefaultsSuiteName)
@@ -40,7 +39,8 @@ class BasePurchasesTests: TestCase {
         self.systemInfo = MockSystemInfo(finishTransactions: true,
                                          storeKitVersion: self.storeKitVersion,
                                          clock: self.clock)
-        self.storeKit1Wrapper = MockStoreKit1Wrapper(observerMode: self.systemInfo.observerMode)
+        self.mockPaymentQueueWrapper = MockPaymentQueueWrapper(systemInfo: self.systemInfo)
+        self.storeKit1Wrapper = MockStoreKit1Wrapper(systemInfo: self.systemInfo)
         self.deviceCache = MockDeviceCache(systemInfo: self.systemInfo,
                                            userDefaults: self.userDefaults)
         self.paywallCache = .init()
@@ -260,7 +260,7 @@ class BasePurchasesTests: TestCase {
                                          finishTransactions: false,
                                          storeKitVersion: self.storeKitVersion,
                                          clock: self.clock)
-        self.storeKit1Wrapper = MockStoreKit1Wrapper(observerMode: true)
+        self.storeKit1Wrapper = MockStoreKit1Wrapper(systemInfo: self.systemInfo)
         self.initializePurchasesInstance(appUserId: nil)
     }
 

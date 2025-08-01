@@ -44,8 +44,7 @@ class StoreKit1WrapperTests: TestCase, StoreKit1WrapperDelegate {
 
         self.wrapper = StoreKit1Wrapper(paymentQueue: self.paymentQueue,
                                         operationDispatcher: self.operationDispatcher,
-                                        observerMode: false,
-                                        sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
+                                        systemInfo: MockSystemInfo(finishTransactions: true),
                                         diagnosticsTracker: self.diagnosticsTracker)
         self.wrapper.delegate = self
     }

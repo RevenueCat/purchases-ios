@@ -22,7 +22,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
     let mockRequestFetcher = MockRequestFetcher()
     var mockProductsManager: MockProductsManager!
     let mockBackend = MockBackend()
-    let mockStoreKit1Wrapper = MockStoreKit1Wrapper()
+    var mockStoreKit1Wrapper: MockStoreKit1Wrapper!
     let mockTestStorePurchaseHandler = MockTestStorePurchaseHandler()
     let mockNotificationCenter = MockNotificationCenter()
     var userDefaults: UserDefaults! = nil
@@ -77,6 +77,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
         self.userDefaults = UserDefaults(suiteName: "TestDefaults")
         self.clock = TestClock()
         self.systemInfo = MockSystemInfo(finishTransactions: true, clock: self.clock)
+        self.mockStoreKit1Wrapper = MockStoreKit1Wrapper(systemInfo: self.systemInfo)
 
         self.mockDeviceCache = MockDeviceCache(systemInfo: self.systemInfo,
                                                userDefaults: self.userDefaults)

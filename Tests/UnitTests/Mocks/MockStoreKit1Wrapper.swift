@@ -7,8 +7,8 @@
 import StoreKit
 
 class MockStoreKit1Wrapper: StoreKit1Wrapper {
-    init(observerMode: Bool = false) {
-        super.init(observerMode: observerMode, diagnosticsTracker: nil)
+    init(systemInfo: SystemInfo) {
+        super.init(systemInfo: systemInfo, diagnosticsTracker: nil)
     }
 
     var payment: SKPayment?
