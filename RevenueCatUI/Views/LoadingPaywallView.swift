@@ -11,7 +11,7 @@
 //
 //  Created by Nacho Soto on 7/21/23.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS)
@@ -157,11 +157,19 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
         set { _ = newValue }
     }
 
+    var subscriptionHistoryTracker: RevenueCat.SubscriptionHistoryTracker {
+        SubscriptionHistoryTracker()
+    }
+
     func customerInfo() async throws -> RevenueCat.CustomerInfo {
         fatalError("Should not be able to purchase")
     }
 
     func purchase(package: Package) async throws -> PurchaseResultData {
+        fatalError("Should not be able to purchase")
+    }
+
+    func purchase(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
         fatalError("Should not be able to purchase")
     }
 
@@ -171,6 +179,10 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
 
     func track(paywallEvent: PaywallEvent) async {
         // Ignoring events from loading paywall view
+    }
+
+    func invalidateCustomerInfoCache() {
+        // No-op, this is a mock implementation.
     }
 
     func failedToLoadFontWithConfig(_ fontConfig: RevenueCat.UIConfig.FontsConfig) {

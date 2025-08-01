@@ -11,7 +11,7 @@
 //
 //  Created by Nacho Soto on 9/12/23.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 #if DEBUG
 
@@ -36,6 +36,8 @@ final class MockPurchases: PaywallPurchasesType {
         get { return _purchasesAreCompletedBy }
         set { _ = newValue }
     }
+
+    let subscriptionHistoryTracker = SubscriptionHistoryTracker()
 
     init(
         purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat,
@@ -63,6 +65,10 @@ final class MockPurchases: PaywallPurchasesType {
         return try await self.purchaseBlock(package)
     }
 
+    func purchase(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
+        return try await self.purchaseBlock(package)
+    }
+
     func restorePurchases() async throws -> CustomerInfo {
         return try await self.restoreBlock()
     }
@@ -70,6 +76,12 @@ final class MockPurchases: PaywallPurchasesType {
     func track(paywallEvent: PaywallEvent) async {
         await self.trackEventBlock(paywallEvent)
     }
+
+#if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    func invalidateCustomerInfoCache() {
+        // No-op, this is a mock implementation.
+    }
+#endif
 
 #if !os(tvOS)
 

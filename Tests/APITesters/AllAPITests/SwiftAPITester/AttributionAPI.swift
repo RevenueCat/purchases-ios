@@ -64,6 +64,12 @@ func checkAttributionAPI() {
     attribution.setPostHogUserID("")
     attribution.setPostHogUserID(nil)
 
+    attribution.setAmplitudeUserID("")
+    attribution.setAmplitudeUserID(nil)
+
+    attribution.setAmplitudeDeviceID("")
+    attribution.setAmplitudeDeviceID(nil)
+
     attribution.setMediaSource("")
     attribution.setMediaSource(nil)
 

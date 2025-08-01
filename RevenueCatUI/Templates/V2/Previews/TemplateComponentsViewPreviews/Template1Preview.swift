@@ -92,6 +92,7 @@ private enum Template1Preview {
     static let package = PaywallComponent.PackageComponent(
         packageID: "weekly",
         isSelectedByDefault: false,
+        applePromoOfferProductCode: nil,
         stack: packageStack
     )
 

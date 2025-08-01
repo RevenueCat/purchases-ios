@@ -459,6 +459,14 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
+    func setAmplitudeUserID(_ amplitudeUserID: String?) {
+        self.unimplemented()
+    }
+
+    func setAmplitudeDeviceID(_ amplitudeDeviceID: String?) {
+        self.unimplemented()
+    }
+
     func collectDeviceIdentifiers() {
         self.unimplemented()
     }
