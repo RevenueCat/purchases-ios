@@ -39,6 +39,11 @@ protocol PaywallPurchasesType: Sendable {
     func track(paywallEvent: PaywallEvent) async
 
 #if os(iOS)
+    @available(iOS 15.0, *)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(macOS, unavailable)
+    @available(macCatalyst, unavailable)
     func presentCodeRedemptionSheet()
 #endif
 
