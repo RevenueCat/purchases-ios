@@ -26,6 +26,7 @@ import SwiftUI
 // swiftlint:disable:next type_body_length
 private enum FamilySharingTogglePreview {
 
+    @MainActor
     static let paywallState = PackageContext(
         package: nil,
         variableContext: .init()
@@ -156,6 +157,7 @@ private enum FamilySharingTogglePreview {
         return PaywallComponent.PackageComponent(
             packageID: packageID,
             isSelectedByDefault: isSelectedByDefault,
+            applePromoOfferProductCode: nil,
             stack: stack
         )
     }

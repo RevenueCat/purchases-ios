@@ -24,6 +24,7 @@ import SwiftUI
 // swiftlint:disable:next type_body_length
 private enum MultiTierPreview {
 
+    @MainActor
     static let paywallState = PackageContext(
         package: nil,
         variableContext: .init()
@@ -124,6 +125,7 @@ private enum MultiTierPreview {
         return PaywallComponent.PackageComponent(
             packageID: packageID,
             isSelectedByDefault: isSelectedByDefault,
+            applePromoOfferProductCode: nil,
             stack: stack
         )
     }
