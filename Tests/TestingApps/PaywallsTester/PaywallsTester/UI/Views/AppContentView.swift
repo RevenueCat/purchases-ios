@@ -19,13 +19,14 @@ struct AppContentView: View {
     var body: some View {
         TabView {
 
+            #if !os(macOS)
             SamplePaywallsList()
                 .tabItem {
                     Image("logo")
                         .renderingMode(.template)
                     Text("Examples")
                 }
-
+            #endif
             AppList()
                 .tabItem {
                     Label("My Apps", systemImage: "network")

@@ -63,6 +63,9 @@ enum FallbackContent {
     func view() -> some View {
         switch self {
         case .paywallV1View(let data):
+            #if os(macOS)
+            EmptyView()
+            #else
             LoadedOfferingPaywallView(
                 offering: data.offering,
                 activelySubscribedProductIdentifiers: data.activelySubscribedProductIdentifiers,
@@ -76,6 +79,7 @@ enum FallbackContent {
                 locale: data.locale,
                 showZeroDecimalPlacePrices: data.showZeroDecimalPlacePrices
             )
+            #endif
         case .customView(let view):
             view
         }

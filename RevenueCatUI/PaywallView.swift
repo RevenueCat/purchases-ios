@@ -228,6 +228,9 @@ public struct PaywallView: View {
                                      purchaseHandler: self.purchaseHandler)
                     .transition(Self.transition)
                 } else {
+                    #if os(macOS)
+                    EmptyView()
+                    #else
                     LoadingPaywallView(mode: self.mode,
                                        displayCloseButton: self.displayCloseButton)
                         .transition(Self.transition)
@@ -248,6 +251,7 @@ public struct PaywallView: View {
                                 self.error = error
                             }
                         }
+                    #endif
                 }
             } else {
                 DebugErrorView("Purchases has not been configured.", releaseBehavior: .fatalError)
@@ -294,6 +298,7 @@ public struct PaywallView: View {
 
             switch self.mode {
             // Show the default/fallback paywall for Paywalls V2 footer views
+            #if !os(macOS)
             case .footer, .condensedFooter:
                 LoadedOfferingPaywallView(
                     offering: offering,
@@ -308,6 +313,7 @@ public struct PaywallView: View {
                     locale: purchaseHandler.preferredLocaleOverride ?? .current,
                     showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
                 )
+            #endif
             // Show the actually V2 paywall for full screen
             case .fullScreen:
                 let dataForV1DefaultPaywall = DataForV1DefaultPaywall(
@@ -346,7 +352,9 @@ public struct PaywallView: View {
                 )
             }
         } else {
-
+            #if os(macOS)
+            EmptyView()
+            #else
             let (paywall, displayedLocale, template, error) = offering.validatedPaywall(
                 locale: purchaseHandler.preferredLocaleOverride ?? .current
             )
@@ -376,6 +384,7 @@ public struct PaywallView: View {
             } else {
                 paywallView
             }
+            #endif
         }
     }
 
@@ -448,6 +457,7 @@ private extension PaywallViewConfiguration.Content {
 // MARK: -
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable, message: "Legacy paywalls are unavailable on macOS")
 @available(tvOS, unavailable)
 struct LoadedOfferingPaywallView: View {
 
@@ -566,9 +576,7 @@ struct LoadedOfferingPaywallView: View {
                                 color: self.getCloseButtonColor(configuration: configuration)
                             )
                         }
-                        #if !os(macOS)
                         .toolbarBackground(.hidden, for: .navigationBar)
-                        #endif
                 } else {
                     view
                         .toolbar {
@@ -578,9 +586,7 @@ struct LoadedOfferingPaywallView: View {
                         }
                 }
             }
-            #if !os(macOS)
             .navigationViewStyle(.stack)
-            #endif
         } else {
             view
         }

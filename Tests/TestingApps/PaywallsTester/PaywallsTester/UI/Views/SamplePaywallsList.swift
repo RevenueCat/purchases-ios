@@ -55,7 +55,7 @@ struct SamplePaywallsList: View {
             case .presentIfNeeded:
                 fatalError()
 
-            #if !os(watchOS)
+            #if !os(watchOS) && !os(macOS)
             case .footer, .condensedFooter:
                 CustomPaywall(offering: Self.loader.offering(for: template),
                               customerInfo: Self.loader.customerInfo,
@@ -148,7 +148,7 @@ struct SamplePaywallsList: View {
             }
 
             Section("Other") {
-                #if !os(watchOS)
+                #if !os(watchOS) && !os(macOS)
                 Button {
                     self.display = .customPaywall(.footer)
                 } label: {

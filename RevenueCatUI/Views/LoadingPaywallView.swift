@@ -18,6 +18,7 @@ import SwiftUI
 
 /// A `PaywallView` suitable to be displayed as a loading placeholder.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable, message: "Legacy paywalls are unavailable in macOS")
 @available(tvOS, unavailable)
 @MainActor
 struct LoadingPaywallView: View {
@@ -81,6 +82,7 @@ struct LoadingPaywallView: View {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable, message: "Legacy paywalls are unavailable in macOS")
 @available(tvOS, unavailable)
 private extension LoadingPaywallView {
 
