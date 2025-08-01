@@ -25,7 +25,7 @@ public enum PaywallPresentationMode {
     /// Paywall presented using SwiftUI's `.sheet`.
     case sheet
 
-    /// Paywall presented using SwiftUI's `.fullScreenCover`.
+    /// Paywall presented using SwiftUI's `.fullScreenCover`. `.fullScreenCover` is unavailable on macOS.
     @available(macOS, unavailable)
     case fullScreen
 
