@@ -143,7 +143,11 @@ struct ButtonComponentView: View {
 
     private func openCodeRedemptionSheet() {
 #if os(iOS)
+        // Call the method only if available
         Purchases.shared.presentCodeRedemptionSheet()
+#else
+        // Handle the case for unsupported platforms (e.g., watchOS, macOS)
+        print("presentCodeRedemptionSheet is unavailable on this platform")
 #endif
     }
 
