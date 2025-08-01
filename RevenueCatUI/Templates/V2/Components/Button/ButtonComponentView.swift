@@ -142,7 +142,7 @@ struct ButtonComponentView: View {
     }
 
     private func openCodeRedemptionSheet() {
-#if os(iOS)
+#if os(iOS) && !targetEnvironment(macCatalyst)
         // Call the method only if available
         Purchases.shared.presentCodeRedemptionSheet()
 #else
