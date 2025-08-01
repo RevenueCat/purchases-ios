@@ -183,6 +183,10 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
         // Ignoring events from loading paywall view
     }
 
+    func invalidateCustomerInfoCache() {
+        // No-op, this is a mock implementation.
+    }
+
     func failedToLoadFontWithConfig(_ fontConfig: RevenueCat.UIConfig.FontsConfig) {
         // Ignoring font loading errors from paywall view
     }
