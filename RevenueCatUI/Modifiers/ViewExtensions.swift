@@ -55,6 +55,38 @@ extension View {
 
 }
 
+enum ChangeOf<Value> {
+    case new(Value)
+    case changed(old: Value, new: Value)
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension View {
+
+    @ViewBuilder
+    func onChangeOfWithChange<V>(
+        _ value: V,
+        perform action: @escaping (_ change: ChangeOf<V>) -> Void
+    ) -> some View where V: Equatable {
+        #if swift(>=5.9)
+        if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
+            AnyView(self.onChange(of: value) { old, new in
+                action(.changed(old: old, new: new))
+            })
+        } else {
+            AnyView(self.onChange(of: value) { new in
+                action(.new(new))
+            })
+        }
+        #else
+        self.onChange(of: value) { new in
+            action(.new(new))
+        }
+        #endif
+    }
+
+}
+
 // MARK: - Scrolling
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

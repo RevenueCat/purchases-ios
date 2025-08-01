@@ -390,6 +390,8 @@ extension View {
 @available(tvOS, unavailable)
 private struct PresentingPaywallModifier: ViewModifier {
 
+    @Environment(\.scenePhase) var scenePhase
+
     private struct Data: Identifiable {
         var customerInfo: CustomerInfo
         var id: String { self.customerInfo.originalAppUserId }
@@ -480,17 +482,40 @@ private struct PresentingPaywallModifier: ViewModifier {
             }
         }
         .task {
-            guard let info = try? await self.customerInfoFetcher() else { return }
-
-            Logger.debug(Strings.determining_whether_to_display_paywall)
-
-            if self.shouldDisplay(info) {
-                Logger.debug(Strings.displaying_paywall)
-
-                self.data = .init(customerInfo: info)
-            } else {
-                Logger.debug(Strings.not_displaying_paywall)
+            await self.updateCustomerInfo()
+        }
+        .onChangeOfWithChange(self.scenePhase) { value in
+            // Used when Offer Code Redemption sheet dismisses
+            switch value {
+            case .new(let newPhase):
+                if newPhase == .active {
+                    Task {
+                        await self.updateCustomerInfo()
+                    }
+                }
+            case .changed(old: let oldPhase, new: let newPhase):
+                // Used when Offer Code Redemption sheet dismisses
+                if newPhase == .active && oldPhase == .inactive {
+                    Task {
+                        await self.updateCustomerInfo()
+                    }
+                }
             }
+        }
+    }
+
+    private func updateCustomerInfo() async {
+        guard let info = try? await self.customerInfoFetcher() else { return }
+
+        Logger.debug(Strings.determining_whether_to_display_paywall)
+
+        if self.shouldDisplay(info) {
+            Logger.debug(Strings.displaying_paywall)
+
+            self.data = .init(customerInfo: info)
+        } else {
+            Logger.debug(Strings.not_displaying_paywall)
+            self.data = nil
         }
     }
 

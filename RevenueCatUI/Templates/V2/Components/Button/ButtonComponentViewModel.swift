@@ -34,6 +34,7 @@ class ButtonComponentViewModel {
     /// This way the view layer doesn't need to handle this error scenario.
     enum Destination {
         case customerCenter
+        case offerCodeRedemptionSheet
         case url(url: URL, method: PaywallComponent.ButtonComponent.URLMethod)
         case privacyPolicy(url: URL, method: PaywallComponent.ButtonComponent.URLMethod)
         case terms(url: URL, method: PaywallComponent.ButtonComponent.URLMethod)
@@ -71,6 +72,8 @@ class ButtonComponentViewModel {
             switch destination {
             case .customerCenter:
                 self.action = .navigateTo(destination: .customerCenter)
+            case .offerCode:
+                self.action = .navigateTo(destination: .offerCodeRedemptionSheet)
             case .url(let urlLid, let method):
                 self.action = .navigateTo(
                     destination: .url(url: try localizedStrings.urlFromLid(urlLid), method: method)
@@ -101,6 +104,16 @@ class ButtonComponentViewModel {
 
     var hasUnknownAction: Bool {
         switch self.action {
+        case .navigateTo(destination: let destination):
+            if case .offerCodeRedemptionSheet = destination {
+#if os(iOS) && !targetEnvironment(macCatalyst)
+                    return false
+#else
+                    return true
+#endif
+            } else {
+                return false
+            }
         case .unknown: return true
         default: return false
         }
