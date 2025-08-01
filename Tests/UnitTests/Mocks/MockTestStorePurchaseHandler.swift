@@ -18,19 +18,15 @@ actor MockTestStorePurchaseHandler: TestStorePurchaseHandlerType {
 
     #if TEST_STORE
 
-    var stubbedPurchaseResult: TestPurchaseResult = .cancel
-    private var invokedPurchase: Bool = false
-    private var invokedPurchaseProduct: TestStoreProduct?
+    let stubbedPurchaseResult: Atomic<TestPurchaseResult> = .init(.cancel)
+    private let invokedPurchase: Atomic<Bool> = .init(false)
+    private let invokedPurchaseProduct: Atomic<TestStoreProduct?> = .init(nil)
 
     @MainActor
     func purchase(product: TestStoreProduct) async -> TestPurchaseResult {
-        await didInvokePurchase(product: product)
-        return await self.stubbedPurchaseResult
-    }
-
-    private func didInvokePurchase(product: TestStoreProduct) {
-        self.invokedPurchase = true
-        self.invokedPurchaseProduct = product
+        self.invokedPurchase.value = true
+        self.invokedPurchaseProduct.value = product
+        return self.stubbedPurchaseResult.value
     }
 
     #endif // TEST_STORE
