@@ -174,6 +174,28 @@ struct TextComponentView_Previews: PreviewProvider {
 
         platformPreview
         .previewDisplayName("Detected Platform")
+        
+        // Dynamic Type
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_1": .string("This Text should be larger than normal")
+                    ]
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(
+                    text: "id_1",
+                    color: .init(light: .hex("#000000"))
+                )
+            )
+        )
+        .previewRequiredEnvironmentProperties()
+        .dynamicTypeSize(.accessibility1)
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Dynamic Type")
 
         // Markdown
         TextComponentView(
