@@ -751,7 +751,7 @@ extension CustomerCenterConfigData.Screen {
         self.title = response.title
         self.subtitle = response.subtitle
         self.paths = response.paths.compactMap { CustomerCenterConfigData.HelpPath(from: $0) }
-        self.preferredOfferingId = response.preferredOfferingId
+        self.preferredOfferingId = response.offeringId
     }
 
 }

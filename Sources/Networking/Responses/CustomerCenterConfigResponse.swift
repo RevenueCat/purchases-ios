@@ -128,7 +128,7 @@ struct CustomerCenterConfigResponse {
         let type: ScreenType
         let subtitle: String?
         let paths: [HelpPath]
-        let preferredOfferingId: String?
+        let offeringId: String?
 
         enum ScreenType: String {
 

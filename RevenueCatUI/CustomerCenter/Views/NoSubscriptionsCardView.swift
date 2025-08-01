@@ -28,6 +28,12 @@ struct NoSubscriptionsCardView: View {
     @State
     private var offering: Offering?
 
+    @State
+    private var showOffering = false
+
+    @State
+    private var isLoadingOffering = true
+
     private let title: String
     private let subtitle: String
     private let paywallId: String?
@@ -68,11 +74,17 @@ struct NoSubscriptionsCardView: View {
                 .frame(alignment: .leading)
                 .multilineTextAlignment(.center)
 
-            if let paywallId, let offering = Purchases.shared.cachedOfferings?[paywallId] {
+            if !isLoadingOffering || offering != nil {
                 Button("Buy Subscription") {
-                    self.offering = offering
+                    self.showOffering = true
                 }
                 .buttonStyle(BuySubscriptionButtonStyle())
+                .disabled(isLoadingOffering)
+                .overlay(content: {
+                    if isLoadingOffering {
+                        TintedProgressView()
+                    }
+                })
                 .padding(.top)
             }
         }
@@ -80,7 +92,7 @@ struct NoSubscriptionsCardView: View {
         .background(Color(colorScheme == .light
                           ? UIColor.systemBackground
                           : UIColor.secondarySystemBackground))
-        .sheet(item: $offering, content: { offering in
+        .sheet(isPresented: $showOffering, content: {
             PaywallView(
                 configuration: .init(
                     offering: offering,
@@ -88,6 +100,20 @@ struct NoSubscriptionsCardView: View {
                 )
             )
         })
+        .task(priority: .userInitiated) {
+            await refreshOffering()
+        }
+    }
+
+    private func refreshOffering() async {
+        isLoadingOffering = true
+        defer { isLoadingOffering = false }
+        do {
+            let offerings = try await Purchases.shared.offerings()
+            self.offering = offerings.offering(identifier: "V2 Offering")
+        } catch {
+            Logger.debug("Error fetching offerings: \(error)")
+        }
     }
 }
 
