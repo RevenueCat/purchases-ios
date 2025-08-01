@@ -515,6 +515,26 @@ class PurchasesSubscriberAttributesTests: TestCase {
         (nil, purchases.appUserID)
     }
 
+    func testSetAndClearAmplitudeUserID() {
+        setupPurchases()
+        purchases.attribution.setAmplitudeUserID("amplitude")
+        purchases.attribution.setAmplitudeUserID(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetAmplitudeUserIDParametersList[0]) ==
+        ("amplitude", purchases.appUserID)
+        expect(self.mockSubscriberAttributesManager.invokedSetAmplitudeUserIDParametersList[1]) ==
+        (nil, purchases.appUserID)
+    }
+
+    func testSetAndClearAmplitudeDeviceID() {
+        setupPurchases()
+        purchases.attribution.setAmplitudeDeviceID("amplitude")
+        purchases.attribution.setAmplitudeDeviceID(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetAmplitudeDeviceIDParametersList[0]) ==
+        ("amplitude", purchases.appUserID)
+        expect(self.mockSubscriberAttributesManager.invokedSetAmplitudeDeviceIDParametersList[1]) ==
+        (nil, purchases.appUserID)
+    }
+
     func testSetAndClearMediaSource() {
         setupPurchases()
         purchases.attribution.setMediaSource("media")
@@ -727,6 +747,28 @@ class PurchasesSubscriberAttributesTests: TestCase {
         expect(self.mockSubscriberAttributesManager.invokedSetPostHogUserIDParameters?.postHogUserID) ==
         "123abc"
         expect(self.mockSubscriberAttributesManager.invokedSetPostHogUserIDParameters?.appUserID) ==
+        mockIdentityManager.currentAppUserID
+    }
+
+    func testSetAmplitudeUserIDMakesRightCalls() {
+        setupPurchases()
+
+        Purchases.shared.attribution.setAmplitudeUserID("123abc")
+        expect(self.mockSubscriberAttributesManager.invokedSetAmplitudeUserIDCount) == 1
+        expect(self.mockSubscriberAttributesManager.invokedSetAmplitudeUserIDParameters?.amplitudeUserID) ==
+        "123abc"
+        expect(self.mockSubscriberAttributesManager.invokedSetAmplitudeUserIDParameters?.appUserID) ==
+        mockIdentityManager.currentAppUserID
+    }
+
+    func testSetAmplitudeDeviceIDMakesRightCalls() {
+        setupPurchases()
+
+        Purchases.shared.attribution.setAmplitudeDeviceID("123abc")
+        expect(self.mockSubscriberAttributesManager.invokedSetAmplitudeDeviceIDCount) == 1
+        expect(self.mockSubscriberAttributesManager.invokedSetAmplitudeDeviceIDParameters?.amplitudeDeviceID) ==
+        "123abc"
+        expect(self.mockSubscriberAttributesManager.invokedSetAmplitudeDeviceIDParameters?.appUserID) ==
         mockIdentityManager.currentAppUserID
     }
 
