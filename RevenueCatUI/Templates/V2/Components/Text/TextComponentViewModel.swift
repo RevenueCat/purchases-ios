@@ -44,17 +44,20 @@ class TextComponentViewModel {
 
     @ViewBuilder
     @MainActor
+    // swiftlint:disable:next function_parameter_count
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
         packageContext: PackageContext,
         isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
         @ViewBuilder apply: @escaping (TextComponentStyle) -> some View
     ) -> some View {
         let localizedPartial = LocalizedTextPartial.buildPartial(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
             with: self.presentedOverrides
         )
         let partial = localizedPartial?.partial
@@ -269,11 +272,17 @@ enum GenericFont: String {
     func makeFont(fontSize: CGFloat) -> Font {
         switch self {
         case .serif:
-            return Font.system(size: fontSize, weight: .regular, design: .serif)
+            return Font.system(size: UIFontMetrics.default.scaledValue(for: fontSize),
+                               weight: .regular,
+                               design: .serif)
         case .monospace:
-            return Font.system(size: fontSize, weight: .regular, design: .monospaced)
+            return Font.system(size: UIFontMetrics.default.scaledValue(for: fontSize),
+                               weight: .regular,
+                               design: .monospaced)
         case .sansSerif:
-            return Font.system(size: fontSize, weight: .regular, design: .default)
+            return Font.system(size: UIFontMetrics.default.scaledValue(for: fontSize),
+                               weight: .regular,
+                               design: .default)
         }
     }
 
