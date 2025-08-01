@@ -126,10 +126,10 @@ extension SKPaymentQueue {
     @available(macOS, unavailable)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
-    func presentCodeRedemptionSheetIfAvailable(systemInfo: SystemInfo) async {
+    @MainActor func presentCodeRedemptionSheetIfAvailable(systemInfo: SystemInfo) async {
         if #available(iOS 16.0, *) {
             do {
-                let currentWindowScene = try await systemInfo.currentWindowScene
+                let currentWindowScene = try systemInfo.currentWindowScene
                 Logger.debug(Strings.purchase.presenting_code_redemption_sheet)
                 try await AppStore.presentOfferCodeRedeemSheet(in: currentWindowScene)
             } catch {
