@@ -142,7 +142,9 @@ struct ButtonComponentView: View {
     }
 
     private func openCodeRedemptionSheet() {
+#if os(iOS)
         Purchases.shared.presentCodeRedemptionSheet()
+#endif
     }
 
     private func openWebPaywallLink(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) {
