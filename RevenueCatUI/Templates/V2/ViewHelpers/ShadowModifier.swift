@@ -42,6 +42,7 @@ struct ShadowModifier: ViewModifier {
     let shape: (any Shape)?
 
     func body(content: Content) -> some View {
+        #if !os(watchOS)
         if let shadow {
             if #available(macOS 14.0, *) {
                 content
@@ -66,6 +67,9 @@ struct ShadowModifier: ViewModifier {
         } else {
             content
         }
+        #else
+        content
+        #endif
     }
 }
 
