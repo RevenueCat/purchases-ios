@@ -106,11 +106,11 @@ class ButtonComponentViewModel {
         switch self.action {
         case .navigateTo(destination: let destination):
             if case .offerCodeRedemptionSheet = destination {
-                #if os(iOS)
+#if os(iOS) && !targetEnvironment(macCatalyst)
                     return true
-                #else
+#else
                     return false
-                #endif
+#endif
             } else {
                 return false
             }
