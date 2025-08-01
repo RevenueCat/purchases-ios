@@ -82,7 +82,7 @@ struct UIConfigProvider {
         let uiFont = UIFontMetrics.default.scaledFont(for: customFont)
         return Font(uiFont)
         #else
-        // TODO: Figure out how to apply dynamic type scaling on Mac
+        // macOS does not support dynamic type (see https://developer.apple.com/design/human-interface-guidelines/typography)
         return Font(customFont)
         #endif
     }
