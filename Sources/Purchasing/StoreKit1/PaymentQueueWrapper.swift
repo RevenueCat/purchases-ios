@@ -38,11 +38,10 @@ protocol PaymentQueueWrapperType: AnyObject {
     func showPriceConsentIfNeeded()
     #endif
 
-    @available(iOS 14.0, *)
+    @available(iOS 14.0, macCatalyst 16.0, *)
     @available(macOS, unavailable)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
-    @available(macCatalyst, unavailable)
     func presentCodeRedemptionSheet()
 
 }
@@ -56,6 +55,7 @@ typealias EitherPaymentQueueWrapper = Either<StoreKit1Wrapper, PaymentQueueWrapp
 class PaymentQueueWrapper: NSObject, PaymentQueueWrapperType {
 
     private let paymentQueue: SKPaymentQueue
+    private let systemInfo: SystemInfo
 
     private lazy var purchaseIntentsAPIAvailable: Bool = {
         // PurchaseIntents was introduced in macOS with macOS 14.4, which was first shipped with Xcode 15.3,
@@ -98,8 +98,10 @@ class PaymentQueueWrapper: NSObject, PaymentQueueWrapperType {
         }
     }
 
-    init(paymentQueue: SKPaymentQueue = .default()) {
+    init(paymentQueue: SKPaymentQueue = .default(),
+         systemInfo: SystemInfo) {
         self.paymentQueue = paymentQueue
+        self.systemInfo = systemInfo
 
         super.init()
     }
@@ -121,10 +123,12 @@ class PaymentQueueWrapper: NSObject, PaymentQueueWrapperType {
     }
     #endif
 
-    #if (os(iOS) && !targetEnvironment(macCatalyst)) || VISION_OS
-    @available(iOS 14.0, *)
+    #if os(iOS) || VISION_OS
+    @available(iOS 14.0, macCatalyst 16.0, *)
     func presentCodeRedemptionSheet() {
-        self.paymentQueue.presentCodeRedemptionSheetIfAvailable()
+        Task {
+            await self.paymentQueue.presentCodeRedemptionSheetIfAvailable(systemInfo: systemInfo)
+        }
     }
     #endif
 

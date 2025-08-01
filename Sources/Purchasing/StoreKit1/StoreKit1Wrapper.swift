@@ -65,18 +65,18 @@ class StoreKit1Wrapper: NSObject {
     private let paymentQueue: SKPaymentQueue
     private let operationDispatcher: OperationDispatcher
     private let observerMode: Bool
-    private let sandboxEnvironmentDetector: SandboxEnvironmentDetector
+    private let systemInfo: SystemInfo
     private let diagnosticsTracker: DiagnosticsTrackerType?
 
     init(paymentQueue: SKPaymentQueue = .default(),
          operationDispatcher: OperationDispatcher = .default,
          observerMode: Bool,
-         sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default,
+         systemInfo: SystemInfo,
          diagnosticsTracker: DiagnosticsTrackerType?) {
         self.paymentQueue = paymentQueue
         self.operationDispatcher = operationDispatcher
         self.observerMode = observerMode
-        self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
+        self.systemInfo = systemInfo
         self.diagnosticsTracker = diagnosticsTracker
 
         super.init()
@@ -168,10 +168,12 @@ extension StoreKit1Wrapper: PaymentQueueWrapperType {
     }
     #endif
 
-    #if (os(iOS) && !targetEnvironment(macCatalyst)) || VISION_OS
-    @available(iOS 14.0, *)
+    #if os(iOS) || VISION_OS
+    @available(iOS 14.0, macCatalyst 16.0, *)
     func presentCodeRedemptionSheet() {
-        self.paymentQueue.presentCodeRedemptionSheetIfAvailable()
+        Task {
+            await self.paymentQueue.presentCodeRedemptionSheetIfAvailable(systemInfo: systemInfo)
+        }
     }
     #endif
 
@@ -185,7 +187,7 @@ extension StoreKit1Wrapper: SKPaymentTransactionObserver {
         if transactions.count >= Self.highTransactionCountThreshold {
             Logger.appleWarning(Strings.storeKit.sk1_payment_queue_too_many_transactions(
                 count: transactions.count,
-                isSandbox: self.sandboxEnvironmentDetector.isSandbox
+                isSandbox: self.systemInfo.isSandbox
             ))
         }
 

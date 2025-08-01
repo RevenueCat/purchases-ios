@@ -850,11 +850,10 @@ public protocol PurchasesType: AnyObject {
      * when, in fact, it crashes when called both from Catalyst and also when running as "Designed for iPad".
      * This is why RevenueCat's SDK makes it unavailable in mac catalyst.
      */
-    @available(iOS 14.0, *)
+    @available(iOS 14.0, macCatalyst 16.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @available(macOS, unavailable)
-    @available(macCatalyst, unavailable)
     func presentCodeRedemptionSheet()
 
     #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS

@@ -367,11 +367,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         )
 
         let paymentQueueWrapper: EitherPaymentQueueWrapper = systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable
-            ? .right(.init())
+            ? .right(.init(systemInfo: systemInfo))
             : .left(.init(
                 operationDispatcher: operationDispatcher,
                 observerMode: observerMode,
-                sandboxEnvironmentDetector: systemInfo,
+                systemInfo: systemInfo,
                 diagnosticsTracker: diagnosticsTracker
             ))
 
@@ -1202,11 +1202,10 @@ public extension Purchases {
 
 #if os(iOS) || VISION_OS
 
-    @available(iOS 14.0, *)
+    @available(iOS 14.0, macCatalyst 16.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @available(macOS, unavailable)
-    @available(macCatalyst, unavailable)
     @objc func presentCodeRedemptionSheet() {
         if #available(iOS 15.0, *) {
             self.diagnosticsTracker?.trackApplePresentCodeRedemptionSheetRequest()
