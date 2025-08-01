@@ -12,7 +12,7 @@
 //  Created by Josh Holtz on 9/27/24.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
@@ -81,10 +81,12 @@ struct PackageComponentView_Previews: PreviewProvider {
                      webCheckoutUrl: nil)
     }
 
+    @MainActor
     static let packageContext = PackageContext(
         package: nil,
         variableContext: .init()
     )
+    @MainActor
     static let packageContextSelected = PackageContext(
         package: Self.package,
         variableContext: .init()
@@ -144,6 +146,7 @@ struct PackageComponentView_Previews: PreviewProvider {
                 component: .init(
                     packageID: "weekly",
                     isSelectedByDefault: false,
+                    applePromoOfferProductCode: nil,
                     stack: stack
                 ),
                 localizationProvider: .init(
@@ -172,6 +175,7 @@ struct PackageComponentView_Previews: PreviewProvider {
                 component: .init(
                     packageID: "weekly",
                     isSelectedByDefault: false,
+                    applePromoOfferProductCode: nil,
                     stack: stack
                 ),
                 localizationProvider: .init(

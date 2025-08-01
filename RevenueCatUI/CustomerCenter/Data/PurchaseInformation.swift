@@ -548,8 +548,11 @@ extension PurchaseInformation {
         case .promotional: return .cardStorePromotional
         case .amazon: return .storeAmazon
         case .unknownStore: return .storeUnknownStore
-        case .paddle, .stripe, .rcBilling, .external:
-            return .storeWeb
+        case .paddle, .stripe, .rcBilling, .external: return .storeWeb
+
+        #if TEST_STORE
+        case .testStore: return .testStore
+        #endif
         }
     }
 }

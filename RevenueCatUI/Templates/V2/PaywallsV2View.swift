@@ -6,7 +6,7 @@
 //
 // swiftlint:disable missing_docs file_length
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
@@ -21,13 +21,19 @@ private class PaywallStateManager: ObservableObject {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct PaywallState {
+struct PaywallState {
+
+    typealias PackageInfo = (package: Package, promotionalOfferProductCode: String?)
 
     let componentsConfig: PaywallComponentsData.PaywallComponentsConfig
     let viewModelFactory: ViewModelFactory
-    let packages: [Package]
+    let packageInfos: [PackageInfo]
     let rootViewModel: RootViewModel
     let showZeroDecimalPlacePrices: Bool
+
+    var packages: [Package] {
+        self.packageInfos.map(\.package)
+    }
 
 }
 
@@ -98,7 +104,10 @@ struct PaywallsV2View: View {
     private let onDismiss: () -> Void
     private let fallbackContent: FallbackContent
 
-    init(
+    @StateObject
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
+
+    public init(
         paywallComponents: Offering.PaywallComponents,
         offering: Offering,
         purchaseHandler: PurchaseHandler,
@@ -119,6 +128,9 @@ struct PaywallsV2View: View {
         self.purchaseHandler = purchaseHandler
         self.onDismiss = onDismiss
         self.fallbackContent = fallbackContent
+        self._paywallPromoOfferCache = .init(wrappedValue: PaywallPromoOfferCache(
+            subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker
+        ))
         self._introOfferEligibilityContext = .init(
             wrappedValue: .init(introEligibilityChecker: introEligibilityChecker)
         )
@@ -144,57 +156,66 @@ struct PaywallsV2View: View {
     }
 
     public var body: some View {
-        if let errorInfo = self.paywallComponentsData.errorInfo, !errorInfo.isEmpty {
-            // Show fallback paywall and debug error message that
-            // occurred while decoding the paywall
-            self.fallbackViewWithErrorMessage(
-                "Error decoding paywall response on: \(errorInfo.keys.joined(separator: ", "))"
-            )
-        } else {
-            switch self.paywallStateManager.state {
-            case .success(let paywallState):
-                LoadedPaywallsV2View(
-                    paywallState: paywallState,
-                    uiConfigProvider: self.uiConfigProvider,
-                    onDismiss: self.onDismiss
+        VStack(spacing: 0) {
+            if let errorInfo = self.paywallComponentsData.errorInfo, !errorInfo.isEmpty {
+                // Show fallback paywall and debug error message that
+                // occurred while decoding the paywall
+                self.fallbackViewWithErrorMessage(
+                    "Error decoding paywall response on: \(errorInfo.keys.joined(separator: ", "))"
                 )
-                .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
-                .environmentObject(self.purchaseHandler)
-                .environmentObject(self.introOfferEligibilityContext)
-                .disabled(self.purchaseHandler.actionInProgress)
-                .onAppear {
-                    self.purchaseHandler.trackPaywallImpression(
-                        self.createEventData()
+            } else {
+                switch self.paywallStateManager.state {
+                case .success(let paywallState):
+                    LoadedPaywallsV2View(
+                        introOfferEligibilityContext: introOfferEligibilityContext,
+                        paywallState: paywallState,
+                        uiConfigProvider: self.uiConfigProvider,
+                        onDismiss: self.onDismiss
+                    )
+                    .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
+                    .environmentObject(self.purchaseHandler)
+                    .environmentObject(self.introOfferEligibilityContext)
+                    .environmentObject(self.paywallPromoOfferCache)
+                    .disabled(self.purchaseHandler.actionInProgress)
+                    .onAppear {
+                        self.purchaseHandler.trackPaywallImpression(
+                            self.createEventData()
+                        )
+                    }
+                    .onDisappear { self.purchaseHandler.trackPaywallClose() }
+                    .onChangeOf(self.purchaseHandler.purchased) { purchased in
+                        if purchased {
+                            self.onDismiss()
+                        }
+                    }
+                    .task {
+                        await self.introOfferEligibilityContext.computeEligibility(for: paywallState.packages)
+                    }
+                    .task {
+                        await self.paywallPromoOfferCache.computeEligibility(
+                            for: paywallState.packageInfos.map { ($0.package, $0.promotionalOfferProductCode) }
+                        )
+                    }
+                    // Note: preferences need to be applied after `.toolbar` call
+                    .preference(key: PurchaseInProgressPreferenceKey.self,
+                                value: self.purchaseHandler.packageBeingPurchased)
+                    .preference(key: PurchasedResultPreferenceKey.self,
+                                value: .init(data: self.purchaseHandler.purchaseResult))
+                    .preference(key: RestoredCustomerInfoPreferenceKey.self,
+                                value: self.purchaseHandler.restoredCustomerInfo)
+                    .preference(key: RestoreInProgressPreferenceKey.self,
+                                value: self.purchaseHandler.restoreInProgress)
+                    .preference(key: PurchaseErrorPreferenceKey.self,
+                                value: self.purchaseHandler.purchaseError as NSError?)
+                    .preference(key: RestoreErrorPreferenceKey.self,
+                                value: self.purchaseHandler.restoreError as NSError?)
+                case .failure(let error):
+                    // Show fallback paywall and debug error message that
+                    // occurred while validating data and view models
+                    self.fallbackViewWithErrorMessage(
+                        "Error validating paywall: \(error.localizedDescription)"
                     )
                 }
-                .onDisappear { self.purchaseHandler.trackPaywallClose() }
-                .onChangeOf(self.purchaseHandler.purchased) { purchased in
-                    if purchased {
-                        self.onDismiss()
-                    }
-                }
-                .task {
-                    await self.introOfferEligibilityContext.computeEligibility(for: paywallState.packages)
-                }
-                // Note: preferences need to be applied after `.toolbar` call
-                .preference(key: PurchaseInProgressPreferenceKey.self,
-                            value: self.purchaseHandler.packageBeingPurchased)
-                .preference(key: PurchasedResultPreferenceKey.self,
-                            value: .init(data: self.purchaseHandler.purchaseResult))
-                .preference(key: RestoredCustomerInfoPreferenceKey.self,
-                            value: self.purchaseHandler.restoredCustomerInfo)
-                .preference(key: RestoreInProgressPreferenceKey.self,
-                            value: self.purchaseHandler.restoreInProgress)
-                .preference(key: PurchaseErrorPreferenceKey.self,
-                            value: self.purchaseHandler.purchaseError as NSError?)
-                .preference(key: RestoreErrorPreferenceKey.self,
-                            value: self.purchaseHandler.restoreError as NSError?)
-            case .failure(let error):
-                // Show fallback paywall and debug error message that
-                // occurred while validating data and view models
-                self.fallbackViewWithErrorMessage(
-                    "Error validating paywall: \(error.localizedDescription)"
-                )
             }
         }
     }
@@ -232,6 +253,8 @@ struct PaywallsV2View: View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct LoadedPaywallsV2View: View {
 
+    private let introOfferEligibilityContext: IntroOfferEligibilityContext
+
     private let paywallState: PaywallState
     private let uiConfigProvider: UIConfigProvider
     private let onDismiss: () -> Void
@@ -239,7 +262,13 @@ private struct LoadedPaywallsV2View: View {
     @StateObject
     private var selectedPackageContext: PackageContext
 
-    init(paywallState: PaywallState, uiConfigProvider: UIConfigProvider, onDismiss: @escaping () -> Void) {
+    init(
+        introOfferEligibilityContext: IntroOfferEligibilityContext,
+        paywallState: PaywallState,
+        uiConfigProvider: UIConfigProvider,
+        onDismiss: @escaping () -> Void
+    ) {
+        self.introOfferEligibilityContext = introOfferEligibilityContext
         self.paywallState = paywallState
         self.uiConfigProvider = uiConfigProvider
         self.onDismiss = onDismiss
@@ -335,13 +364,15 @@ fileprivate extension PaywallsV2View {
 //                throw PackageGroupValidationError.noAvailablePackages("No available packages found")
 //            }
 
-            let packages = factory.packageValidator.packages
+            let packageInfos = factory.packageValidator.packageInfos.map { info in
+                return (package: info.package, promotionalOfferProductCode: info.promotionalOfferProductCode)
+            }
 
             return .success(
                 .init(
                     componentsConfig: componentsConfig,
                     viewModelFactory: factory,
-                    packages: packages,
+                    packageInfos: packageInfos,
                     rootViewModel: root,
                     showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
                 )
