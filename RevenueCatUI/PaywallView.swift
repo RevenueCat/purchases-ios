@@ -229,7 +229,7 @@ public struct PaywallView: View {
                     .transition(Self.transition)
                 } else {
                     #if os(macOS)
-                    EmptyView()
+                    DebugErrorView("Legacy paywalls are unsupported on macOS.", releaseBehavior: .emptyView)
                     #else
                     LoadingPaywallView(mode: self.mode,
                                        displayCloseButton: self.displayCloseButton)
@@ -353,7 +353,7 @@ public struct PaywallView: View {
             }
         } else {
             #if os(macOS)
-            EmptyView()
+            DebugErrorView("Legacy paywalls are unsupported on macOS.", releaseBehavior: .emptyView)
             #else
             let (paywall, displayedLocale, template, error) = offering.validatedPaywall(
                 locale: purchaseHandler.preferredLocaleOverride ?? .current

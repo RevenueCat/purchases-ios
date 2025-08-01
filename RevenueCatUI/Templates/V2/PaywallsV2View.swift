@@ -64,7 +64,7 @@ enum FallbackContent {
         switch self {
         case .paywallV1View(let data):
             #if os(macOS)
-            EmptyView()
+            DebugErrorView("Fallback paywalls are unsupported on macOS.", releaseBehavior: .emptyView)
             #else
             LoadedOfferingPaywallView(
                 offering: data.offering,
