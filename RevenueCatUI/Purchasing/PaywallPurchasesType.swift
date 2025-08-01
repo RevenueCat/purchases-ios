@@ -15,7 +15,7 @@
 
 /// A simplified protocol for the subset of `PurchasesType` needed for `RevenueCatUI`.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-protocol PaywallPurchasesType: Sendable {
+protocol PaywallPurchasesType: AnyObject, Sendable {
 
     var purchasesAreCompletedBy: PurchasesAreCompletedBy { get }
 
