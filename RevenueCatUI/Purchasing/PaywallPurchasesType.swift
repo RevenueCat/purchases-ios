@@ -38,14 +38,12 @@ protocol PaywallPurchasesType: AnyObject, Sendable {
     @Sendable
     func track(paywallEvent: PaywallEvent) async
 
-#if os(iOS)
     @available(iOS 15.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @available(macOS, unavailable)
     @available(macCatalyst, unavailable)
     func presentCodeRedemptionSheet()
-#endif
 
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func invalidateCustomerInfoCache()
