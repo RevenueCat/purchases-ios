@@ -116,6 +116,14 @@ class SubscriberAttributesManager {
         setReservedAttribute(.postHogUserID, value: postHogUserID, appUserID: appUserID)
     }
 
+    func setAmplitudeUserID(_ amplitudeUserID: String?, appUserID: String) {
+        setReservedAttribute(.amplitudeUserID, value: amplitudeUserID, appUserID: appUserID)
+    }
+
+    func setAmplitudeDeviceID(_ amplitudeDeviceID: String?, appUserID: String) {
+        setReservedAttribute(.amplitudeDeviceID, value: amplitudeDeviceID, appUserID: appUserID)
+    }
+
     func setMediaSource(_ mediaSource: String?, appUserID: String) {
         setReservedAttribute(.mediaSource, value: mediaSource, appUserID: appUserID)
     }
