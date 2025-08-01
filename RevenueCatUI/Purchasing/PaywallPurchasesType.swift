@@ -38,6 +38,14 @@ protocol PaywallPurchasesType: Sendable {
     @Sendable
     func track(paywallEvent: PaywallEvent) async
 
+#if os(iOS)
+    func presentCodeRedemptionSheet()
+#endif
+
+#if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    func invalidateCustomerInfoCache()
+#endif
+
 #if !os(macOS) && !os(tvOS)
 
     @Sendable

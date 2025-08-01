@@ -126,7 +126,7 @@ struct ButtonComponentView: View {
         case .customerCenter:
             self.showCustomerCenter = true
         case .offerCodeRedemptionSheet:
-            self.openCodeREDemptionSheet()
+            self.openCodeRedemptionSheet()
         case .url(let url, let method),
                 .privacyPolicy(let url, let method),
                 .terms(let url, let method):
@@ -141,12 +141,12 @@ struct ButtonComponentView: View {
         }
     }
 
-    private func openCodeREDemptionSheet() {
-        Purchases.shared.presentCodeRedemptionSheet()
+    private func openCodeRedemptionSheet() {
+        self.purchaseHandler.presentCodeRedemptionSheet()
     }
 
     private func openWebPaywallLink(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) {
-        Purchases.shared.invalidateCustomerInfoCache()
+        self.purchaseHandler.invalidateCustomerInfoCache()
 #if os(watchOS)
         // watchOS doesn't support openURL with a completion handler, so we're just opening the URL.
         openURL(url)

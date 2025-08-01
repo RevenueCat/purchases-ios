@@ -484,11 +484,21 @@ private struct PresentingPaywallModifier: ViewModifier {
         .task {
             await self.updateCustomerInfo()
         }
-        .onChange(of: scenePhase) { newPhase in
+        .onChangeOfWithChange(self.scenePhase) { value in
             // Used when Offer Code Redemption sheet dismisses
-            if newPhase == .active {
-                Task {
-                    await self.updateCustomerInfo()
+            switch value {
+            case .new(let newPhase):
+                if newPhase == .active {
+                    Task {
+                        await self.updateCustomerInfo()
+                    }
+                }
+            case .changed(old: let oldPhase, new: let newPhase):
+                // Used when Offer Code Redemption sheet dismisses
+                if newPhase == .active && oldPhase == .inactive {
+                    Task {
+                        await self.updateCustomerInfo()
+                    }
                 }
             }
         }

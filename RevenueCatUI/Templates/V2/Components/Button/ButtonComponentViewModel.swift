@@ -104,6 +104,16 @@ class ButtonComponentViewModel {
 
     var hasUnknownAction: Bool {
         switch self.action {
+        case .navigateTo(destination: let destination):
+            if case .offerCodeRedemptionSheet = destination {
+                #if os(iOS)
+                    return true
+                #else
+                    return false
+                #endif
+            } else {
+                return false
+            }
         case .unknown: return true
         default: return false
         }

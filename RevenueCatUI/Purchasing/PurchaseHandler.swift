@@ -154,6 +154,23 @@ final class PurchaseHandler: ObservableObject {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PurchaseHandler {
 
+#if os(iOS)
+    func presentCodeRedemptionSheet() {
+        self.purchases.presentCodeRedemptionSheet()
+    }
+#endif
+
+#if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    func invalidateCustomerInfoCache() {
+        self.purchases.invalidateCustomerInfoCache()
+    }
+#endif
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension PurchaseHandler {
+
     // MARK: - Purchase
 
     @MainActor
@@ -432,6 +449,14 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
     }
 
     func track(paywallEvent: PaywallEvent) async {}
+
+#if os(iOS)
+    func presentCodeRedemptionSheet() {}
+#endif
+
+#if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    func invalidateCustomerInfoCache() {}
+#endif
 
 #if !os(macOS) && !os(tvOS)
 
