@@ -23,11 +23,9 @@ actor MockTestStorePurchaseHandler: TestStorePurchaseHandlerType {
     private var invokedPurchaseProduct: TestStoreProduct?
 
     @MainActor
-    func purchase(product: TestStoreProduct, completion: @escaping (TestPurchaseResult) -> Void) throws {
-        Task {
-            await self.didInvokePurchase(product: product)
-            await completion(self.stubbedPurchaseResult)
-        }
+    func purchase(product: TestStoreProduct) async -> TestPurchaseResult {
+        await didInvokePurchase(product: product)
+        return await self.stubbedPurchaseResult
     }
 
     private func didInvokePurchase(product: TestStoreProduct) {
