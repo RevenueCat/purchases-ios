@@ -82,10 +82,11 @@ actor TestStorePurchaseHandler: TestStorePurchaseHandlerType {
     }
 
     private func createStoreTransaction(product: TestStoreProduct) async -> StoreTransaction {
-        let transactionId = "test_\(Date().millisecondsSince1970)_\(UUID().uuidString)"
+        let purchaseDate = Date()
+        let transactionId = "test_\(purchaseDate.millisecondsSince1970)_\(UUID().uuidString)"
         let storefront = await Storefront.currentStorefront
         let testStoreTransaction = TestStoreTransaction(productIdentifier: product.productIdentifier,
-                                                        purchaseDate: Date(),
+                                                        purchaseDate: purchaseDate,
                                                         transactionIdentifier: transactionId,
                                                         quantity: 1,
                                                         storefront: storefront,
