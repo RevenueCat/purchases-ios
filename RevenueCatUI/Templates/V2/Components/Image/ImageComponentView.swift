@@ -275,7 +275,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                           fitMode: .fill, width: 22, height: 21)
             }.background(.blue)
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Image stretching horizontally beyond bounds")
 
@@ -306,7 +306,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                 }.frame(width: 300, height: 300).border(.green)
             }.background(.blue)
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Image streching vertically when height=fit")
 
@@ -343,7 +343,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Light - Fit")
 
@@ -380,7 +380,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Light - Fill")
 
@@ -421,7 +421,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Light - Gradient")
 
@@ -462,7 +462,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Light - Rounded Corner")
 
@@ -500,7 +500,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Light - Circle")
 
@@ -538,7 +538,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Light - Fit with Convex")
 
@@ -576,7 +576,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Light - Fit with Concave")
     }

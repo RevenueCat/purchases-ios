@@ -127,7 +127,7 @@ struct TabControlToggleComponentView_Previews: PreviewProvider {
             onDismiss: {}
         )
         .padding()
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .environmentObject(
             TabControlContext(
                 controlStackViewModel: controlStackViewModel,
@@ -154,7 +154,7 @@ struct TabControlToggleComponentView_Previews: PreviewProvider {
             onDismiss: {}
         )
         .padding()
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .environmentObject(
             TabControlContext(
                 controlStackViewModel: controlStackViewModel,

@@ -71,7 +71,7 @@ enum PreviewUIConfig {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct PreviewRequiredEnvironmentProperties: ViewModifier {
+struct PreviewRequiredPaywallsV2Properties: ViewModifier {
 
     @MainActor
     static let defaultPackageContext = PackageContext(
@@ -92,18 +92,19 @@ struct PreviewRequiredEnvironmentProperties: ViewModifier {
             .environment(\.screenCondition, screenCondition)
             .environment(\.componentViewState, componentViewState)
             .environment(\.safeAreaInsets, EdgeInsets())
+            .fixMacButtons() // Matches the properties applied in LoadedPaywallsV2View
     }
 
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
-    func previewRequiredEnvironmentProperties(
+    func previewRequiredPaywallsV2Properties(
         screenCondition: ScreenCondition = .compact,
         componentViewState: ComponentViewState = .default,
         packageContext: PackageContext? = nil
     ) -> some View {
-        self.modifier(PreviewRequiredEnvironmentProperties(
+        self.modifier(PreviewRequiredPaywallsV2Properties(
             screenCondition: screenCondition,
             componentViewState: componentViewState,
             packageContext: packageContext

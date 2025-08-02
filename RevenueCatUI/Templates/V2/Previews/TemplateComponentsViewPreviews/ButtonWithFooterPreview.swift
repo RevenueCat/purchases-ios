@@ -512,7 +512,7 @@ struct ButtonWithSheetPreview_Previews: PreviewProvider {
             fallbackContent: .customView(AnyView(Text("Fallback paywall"))),
             failedToLoadFont: { _ in }
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 800))
         .previewDisplayName("Template 1")
     }
