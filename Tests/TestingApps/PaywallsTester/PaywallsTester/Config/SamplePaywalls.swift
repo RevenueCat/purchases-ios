@@ -11,7 +11,11 @@ import RevenueCat
 #if DEBUG
 @testable import RevenueCatUI
 
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 
 final class SamplePaywallLoader {
 
@@ -39,7 +43,7 @@ final class SamplePaywallLoader {
         )
     }
 
-    #if !os(macOS) && !os(tvOS) // For Paywalls V2
+    #if !os(tvOS) // For Paywalls V2
     func offering(with components: PaywallComponentsData) -> Offering {
         return .init(
             identifier: Self.offeringIdentifier,
