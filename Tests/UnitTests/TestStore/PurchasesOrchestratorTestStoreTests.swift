@@ -285,7 +285,7 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
             orchestrator.purchase(
                 product: testProduct,
                 package: nil,
-                trackDiagnostics: false,) { transaction, customerInfo, error, userCancelled in
+                trackDiagnostics: false) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }
@@ -307,7 +307,7 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
             orchestrator.purchase(
                 product: testProduct,
                 package: nil,
-                trackDiagnostics: false,) { transaction, customerInfo, error, userCancelled in
+                trackDiagnostics: false) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }
@@ -329,7 +329,7 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
             orchestrator.purchase(
                 product: testProduct,
                 package: nil,
-                trackDiagnostics: false,) { transaction, customerInfo, error, userCancelled in
+                trackDiagnostics: false) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }
@@ -352,7 +352,7 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
             orchestrator.purchase(
                 product: testProduct,
                 package: nil,
-                trackDiagnostics: false,) { transaction, customerInfo, error, userCancelled in
+                trackDiagnostics: false) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }
@@ -375,7 +375,7 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
             orchestrator.purchase(
                 product: testProduct,
                 package: nil,
-                trackDiagnostics: false,) { transaction, customerInfo, error, userCancelled in
+                trackDiagnostics: false) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }
@@ -394,14 +394,13 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
             orchestrator.purchase(
                 product: testProduct,
                 package: nil,
-                trackDiagnostics: false,) { transaction, customerInfo, error, userCancelled in
+                trackDiagnostics: false) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }
 
         XCTAssertFalse(self.backend.invokedPostReceiptData)
     }
-
 
 #endif
 

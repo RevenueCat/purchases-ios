@@ -39,6 +39,7 @@ protocol TestStorePurchaseUI: Sendable {
 
 }
 
+/// Contains the logic to present a system alert for the confirmation of Test Store products purchases.
 struct DefaultTestStorePurchaseUI: TestStorePurchaseUI {
 
     private let systemInfo: SystemInfo
@@ -49,7 +50,7 @@ struct DefaultTestStorePurchaseUI: TestStorePurchaseUI {
 
     func presentPurchaseUI(for product: TestStoreProduct) async -> TestStorePurchaseUIResult {
         await Task { @MainActor in
-            return await withUnsafeContinuation { (continuation: UnsafeContinuation<TestStorePurchaseUIResult, Never>) in
+            return await withUnsafeContinuation { continuation in
 
                 let completion: (TestStorePurchaseUIResult) -> Void = { result in
                     continuation.resume(returning: result)
@@ -193,8 +194,6 @@ struct DefaultTestStorePurchaseUI: TestStorePurchaseUI {
     #endif
 
 }
-
-
 
 #if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)
 
