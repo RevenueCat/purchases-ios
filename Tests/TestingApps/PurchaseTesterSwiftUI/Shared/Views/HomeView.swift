@@ -89,7 +89,7 @@ struct HomeView: View {
                                 Text(policy.label).tag(policy)
                             }
                         }
-                        #if os(iOS)
+                        #if os(iOS) && !targetEnvironment(macCatalyst)
                         .pickerStyle(WheelPickerStyle())
                         .frame(height: 80)
                         #endif
