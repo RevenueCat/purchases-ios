@@ -136,11 +136,11 @@ struct DefaultTestStorePurchaseUI: TestStorePurchaseUI {
     ) {
 
         let failureAction = WKAlertAction(title: Self.failureActionTitle, style: .destructive) {
-            completion(.failure(self.testPurchaseFailureError))
+            completion(.simulateFailure)
         }
 
-        let purchaseAction = WKAlertAction(title: Self.purchaseActionTitle, style: .default) { [weak self] in
-            self?.completePurchase(product: product, completion: completion)
+        let purchaseAction = WKAlertAction(title: Self.purchaseActionTitle, style: .default) {
+            completion(.simulateSuccess)
         }
 
         let cancelAction = WKAlertAction(title: Self.cancelActionTitle, style: .cancel) {
@@ -175,20 +175,20 @@ struct DefaultTestStorePurchaseUI: TestStorePurchaseUI {
 
         Task {
 
-            let testPurchaseResult: TestPurchaseResult
+            let simulatedResult: TestStorePurchaseUIResult
 
             switch response {
             case .alertFirstButtonReturn:
-                testPurchaseResult = await .success(self.createStoreTransaction(product: product))
+                simulatedResult = .simulateSuccess
             case .alertSecondButtonReturn:
-                testPurchaseResult = .cancel
+                simulatedResult = .cancel
             case .alertThirdButtonReturn:
-                testPurchaseResult = .failure(self.testPurchaseFailureError)
+                simulatedResult = .simulateFailure
             default:
-                testPurchaseResult = await .success(self.createStoreTransaction(product: product)) // Fallback case
+                simulatedResult = .simulateSuccess // Fallback case
             }
 
-            completion(testPurchaseResult)
+            completion(simulatedResult)
         }
     }
     #endif
