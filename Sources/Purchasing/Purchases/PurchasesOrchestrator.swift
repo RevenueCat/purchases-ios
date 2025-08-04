@@ -2083,6 +2083,8 @@ extension PurchasesOrchestrator {
             .get()
     }
 
+    // Do not use this method from outside this class, use `syncPurchases` instead.
+    // This method is only intended to be used from unit tests.
     func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
                        isRestore: Bool,
                        initiationSource: ProductRequestData.InitiationSource) async throws -> CustomerInfo {
