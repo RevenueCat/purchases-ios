@@ -304,6 +304,17 @@ final class PurchasesOrchestrator {
     }
 
     func restorePurchases(completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
+        #if TEST_STORE
+
+        if self.systemInfo.isTestStoreAPIKey {
+            Logger.debug(Strings.purchase.restore_purchases_test_store)
+            self.customerInfoManager.customerInfo(appUserID: self.appUserID, fetchPolicy: .default) { result in
+                completion?(result.mapError({ $0.asPurchasesError }))
+            }
+            return
+        }
+
+        #endif // TEST_STORE
         self.syncPurchases(receiptRefreshPolicy: .always,
                            isRestore: true,
                            initiationSource: .restore,
@@ -311,6 +322,17 @@ final class PurchasesOrchestrator {
     }
 
     func syncPurchases(completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)? = nil) {
+        #if TEST_STORE
+
+        if self.systemInfo.isTestStoreAPIKey {
+            Logger.debug(Strings.purchase.sync_purchases_test_store)
+            self.customerInfoManager.customerInfo(appUserID: self.appUserID, fetchPolicy: .default) { result in
+                completion?(result.mapError({ $0.asPurchasesError }))
+            }
+            return
+        }
+
+        #endif // TEST_STORE
         self.syncPurchases(receiptRefreshPolicy: .never,
                            isRestore: allowSharingAppStoreAccount,
                            initiationSource: .restore,

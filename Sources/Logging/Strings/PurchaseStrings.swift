@@ -89,6 +89,10 @@ enum PurchaseStrings {
 
     case unable_to_find_root_view_controller_for_test_purchase
     case error_message_for_simulating_test_purchase_failure
+
+    // Test Store
+    case sync_purchases_test_store
+    case restore_purchases_test_store
 }
 
 extension PurchaseStrings: LogMessage {
@@ -348,6 +352,12 @@ extension PurchaseStrings: LogMessage {
 
         case .error_message_for_simulating_test_purchase_failure:
             return "Simulated test purchase failure: no real transaction occurred"
+
+        case .sync_purchases_test_store:
+            return "Syncing purchases not available in test store. Returning current CustomerInfo."
+
+        case .restore_purchases_test_store:
+            return "Restoring purchases not available in test store. Returning current CustomerInfo."
         }
     }
 
