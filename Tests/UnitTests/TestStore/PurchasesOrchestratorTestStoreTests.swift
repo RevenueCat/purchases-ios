@@ -406,7 +406,9 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
 
     func testSyncPurchasesOnTestStoreDoesNotSyncPurchases() async throws {
         let orchestrator = self.createOrchestrator()
-        self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = StoreTransaction(Self.createMockTestStoreTransaction())
+        self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = StoreTransaction(
+            Self.createMockTestStoreTransaction()
+        )
 
         _ = await withCheckedContinuation { continuation in
             orchestrator.syncPurchases { customerInfo in
@@ -436,7 +438,9 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
 
     func testRestorePurchasesOnTestStoreDoesNotRestorePurchases() async throws {
         let orchestrator = self.createOrchestrator()
-        self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = StoreTransaction(Self.createMockTestStoreTransaction())
+        self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = StoreTransaction(
+            Self.createMockTestStoreTransaction()
+        )
 
         _ = await withCheckedContinuation { continuation in
             orchestrator.restorePurchases { customerInfo in
