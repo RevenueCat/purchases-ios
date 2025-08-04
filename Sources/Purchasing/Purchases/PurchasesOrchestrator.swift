@@ -1505,10 +1505,10 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
-                       isRestore: Bool,
-                       initiationSource: ProductRequestData.InitiationSource,
-                       completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
+    private func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
+                               isRestore: Bool,
+                               initiationSource: ProductRequestData.InitiationSource,
+                               completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
         self.trackSyncOrRestorePurchasesStartedIfNeeded(receiptRefreshPolicy)
         let startTime = self.dateProvider.now()
         // Don't log anything unless the flag was explicitly set.
