@@ -392,7 +392,12 @@ extension Configuration {
         #if TEST_STORE
         if apiKey.hasPrefix(testStoreKeyPrefix) {
             // Test Store key format: "test_CtDdmbdWBySmqJeeQUTyrNxETUVkajsJ"
+
+            #if DEBUG
             return .testStore
+            #else
+            fatalError("[RevenueCat]: Test Store API key used in RELEASE build. Please configure a valid API key before releasing.")
+            #endif
         }
         #endif // TEST_STORE
 
