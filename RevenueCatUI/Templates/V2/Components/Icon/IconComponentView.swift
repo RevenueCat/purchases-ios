@@ -136,7 +136,7 @@ struct IconComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 100, height: 100))
         .previewDisplayName("Default")
 
@@ -175,7 +175,7 @@ struct IconComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 200, height: 200))
         .previewDisplayName("Default - Background")
 

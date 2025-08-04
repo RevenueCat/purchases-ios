@@ -629,7 +629,7 @@ struct TabsComponentView_Previews: PreviewProvider {
             ),
             onDismiss: {}
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Segment Tabs")
 
@@ -665,7 +665,7 @@ struct TabsComponentView_Previews: PreviewProvider {
             ),
             onDismiss: {}
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Button Tabs")
 
@@ -702,7 +702,7 @@ struct TabsComponentView_Previews: PreviewProvider {
             ),
             onDismiss: {}
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Toggle Tabs")
     }

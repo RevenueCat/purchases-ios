@@ -791,7 +791,7 @@ struct CarouselComponentView_Previews: PreviewProvider {
             )
         }
         .padding(.vertical)
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Examples")
     }
