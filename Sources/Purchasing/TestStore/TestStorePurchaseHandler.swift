@@ -88,7 +88,6 @@ actor TestStorePurchaseHandler: TestStorePurchaseHandlerType {
         let testStoreTransaction = TestStoreTransaction(productIdentifier: product.productIdentifier,
                                                         purchaseDate: purchaseDate,
                                                         transactionIdentifier: transactionId,
-                                                        quantity: 1,
                                                         storefront: storefront,
                                                         jwsRepresentation: nil)
         return StoreTransaction(testStoreTransaction)
