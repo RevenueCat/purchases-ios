@@ -402,6 +402,69 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
         XCTAssertFalse(self.backend.invokedPostReceiptData)
     }
 
+    // MARK: - Sync & Restore purchases
+
+    func testSyncPurchasesOnTestStoreDoesNotSyncPurchases() async throws {
+        let orchestrator = self.createOrchestrator()
+        self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = StoreTransaction(Self.createMockTestStoreTransaction())
+
+        _ = await withCheckedContinuation { continuation in
+            orchestrator.syncPurchases { customerInfo in
+                continuation.resume(returning: customerInfo)
+            }
+        }
+
+        XCTAssertFalse(self.backend.invokedPostReceiptData)
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            try XCTAssertEqual(self.mockDiagnosticsTracker.trackedSyncPurchasesStartedCalls.value, 0)
+            try XCTAssertTrue(self.mockDiagnosticsTracker.trackedSyncPurchasesResultParams.value.isEmpty)
+        }
+        XCTAssertFalse(self.productsManager.invokedProducts)
+    }
+
+    func testSyncPurchasesOnTestStoreFetchesCustomerInfo() async throws {
+        let orchestrator = self.createOrchestrator()
+
+        _ = await withCheckedContinuation { continuation in
+            orchestrator.syncPurchases { customerInfo in
+                continuation.resume(returning: customerInfo)
+            }
+        }
+
+        XCTAssertTrue(self.customerInfoManager.invokedCustomerInfo)
+    }
+
+    func testRestorePurchasesOnTestStoreDoesNotRestorePurchases() async throws {
+        let orchestrator = self.createOrchestrator()
+        self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = StoreTransaction(Self.createMockTestStoreTransaction())
+
+        _ = await withCheckedContinuation { continuation in
+            orchestrator.restorePurchases { customerInfo in
+                continuation.resume(returning: customerInfo)
+            }
+        }
+
+        XCTAssertFalse(self.backend.invokedPostReceiptData)
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            try XCTAssertEqual(self.mockDiagnosticsTracker.trackedRestorePurchasesStartedCalls.value, 0)
+            try XCTAssertTrue(self.mockDiagnosticsTracker.trackedRestorePurchasesResultParams.value.isEmpty)
+        }
+
+        XCTAssertFalse(self.productsManager.invokedProducts)
+    }
+
+    func testRestorePurchasesOnTestStoreFetchesCustomerInfo() async throws {
+        let orchestrator = self.createOrchestrator()
+
+        _ = await withCheckedContinuation { continuation in
+            orchestrator.restorePurchases { customerInfo in
+                continuation.resume(returning: customerInfo)
+            }
+        }
+
+        XCTAssertTrue(self.customerInfoManager.invokedCustomerInfo)
+    }
+
 #endif
 
 #if !TEST_STORE
@@ -462,7 +525,7 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
                                     transactionIdentifier: "test_transaction_id",
                                     quantity: 1,
                                     storefront: Storefront(mockStorefront),
-                                    jwsRepresentation: nil)
+                                    jwsRepresentation: "test_jws_representation")
     }
 
     private static var mockCustomerInfo: CustomerInfo { .emptyInfo }
