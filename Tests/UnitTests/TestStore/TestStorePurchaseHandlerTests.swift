@@ -15,6 +15,8 @@ import Nimble
 @_spi(Internal) @testable import RevenueCat
 import XCTest
 
+#if TEST_STORE
+
 class TestStorePurchaseHandlerTests: TestCase {
 
     private var mockTestStorePurchaseUI: MockTestStorePurchaseUI!
@@ -147,3 +149,5 @@ class TestStorePurchaseHandlerTests: TestCase {
                                                            productType: .autoRenewableSubscription,
                                                            localizedDescription: "Description")
 }
+
+#endif // TEST_STORE

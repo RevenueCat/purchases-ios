@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct TestStoreTransaction: StoreTransactionType {
+struct TestStoreTransaction: StoreTransactionType, Equatable {
 
     let productIdentifier: String
     let purchaseDate: Date
