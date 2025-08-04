@@ -2082,6 +2082,18 @@ extension PurchasesOrchestrator {
             .mapError(\.asPurchasesError)
             .get()
     }
+
+    func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
+                       isRestore: Bool,
+                       initiationSource: ProductRequestData.InitiationSource) async throws -> CustomerInfo {
+        return try await Async.call { completion in
+            self.syncPurchases(receiptRefreshPolicy: receiptRefreshPolicy,
+                               isRestore: isRestore,
+                               initiationSource: initiationSource,
+                               completion: completion)
+        }
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
