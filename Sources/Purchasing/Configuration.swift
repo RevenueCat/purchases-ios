@@ -396,7 +396,10 @@ extension Configuration {
             #if DEBUG
             return .testStore
             #else
-            // In release builds, we intentionally crash to prevent submitting an app with a Test Store API key
+            // In release builds, we intentionally crash to prevent submitting an app with a Test Store API key.
+            //
+            // Also note that developing with a Test Store API key isn’t supported when adding the SDK dependency
+            // as an XCFramework, since the XCFramework is built using the Release configuration..
             fatalError("[RevenueCat]: Test Store API key used in Release build. Please configure the App Store " +
                        " app on the RevenueCat dashboard and use its corresponding Apple API key before releasing.")
             #endif
