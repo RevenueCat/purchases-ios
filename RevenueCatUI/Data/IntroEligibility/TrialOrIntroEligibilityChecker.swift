@@ -13,6 +13,7 @@
 
 import Foundation
 import RevenueCat
+import Combine
 
 @_spi(Internal) public final class TrialOrIntroEligibilityChecker: ObservableObject {
 
