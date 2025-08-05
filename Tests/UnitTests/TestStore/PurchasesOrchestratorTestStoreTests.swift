@@ -175,17 +175,15 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
         let mockTransaction = Self.createMockTestStoreTransaction()
         self.testStorePurchaseHandler.stubbedPurchaseResult.value = .success(StoreTransaction(mockTransaction))
 
-        let expectation = XCTestExpectation(description: "Purchase completion")
-
-        orchestrator.purchase(
-            product: testProduct,
-            package: nil,
-            trackDiagnostics: false
-        ) { _, _, _, _ in
-            expectation.fulfill()
+        await waitUntil { completion in
+            orchestrator.purchase(
+                product: testProduct,
+                package: nil,
+                trackDiagnostics: false
+            ) { _, _, _, _ in
+                completion()
+            }
         }
-
-        await fulfillment(of: [expectation], timeout: 1)
 
         XCTAssertTrue(self.testStorePurchaseHandler.invokedPurchase.value)
         XCTAssertEqual(self.testStorePurchaseHandler.invokedPurchaseProduct.value?.productIdentifier, "test.product")
@@ -200,18 +198,16 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
         let orchestrator = self.createOrchestrator()
         let testProduct = self.createTestStoreProduct()
 
-        let expectation = XCTestExpectation(description: "Purchase completion")
-
-        orchestrator.purchase(
-            product: testProduct,
-            package: nil,
-            trackDiagnostics: false
-        ) { _, _, error, _ in
-            expect(error?.code) == ErrorCode.productNotAvailableForPurchaseError.rawValue
-            expectation.fulfill()
+        await waitUntil { completion in
+            orchestrator.purchase(
+                product: testProduct,
+                package: nil,
+                trackDiagnostics: false
+            ) { _, _, error, _ in
+                expect(error?.code) == ErrorCode.productNotAvailableForPurchaseError.rawValue
+                completion()
+            }
         }
-
-        await fulfillment(of: [expectation], timeout: 1)
 
         XCTAssertFalse(self.testStorePurchaseHandler.invokedPurchase.value)
     }
@@ -225,18 +221,16 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
         let orchestrator = self.createOrchestrator()
         let testProduct = self.createTestStoreProduct()
 
-        let expectation = XCTestExpectation(description: "Purchase completion")
-
-        orchestrator.purchase(
-            product: testProduct,
-            package: nil,
-            trackDiagnostics: false
-        ) { _, _, error, _ in
-            expect(error?.code) == ErrorCode.productNotAvailableForPurchaseError.rawValue
-            expectation.fulfill()
+        await waitUntil { completion in
+            orchestrator.purchase(
+                product: testProduct,
+                package: nil,
+                trackDiagnostics: false
+            ) { _, _, error, _ in
+                expect(error?.code) == ErrorCode.productNotAvailableForPurchaseError.rawValue
+                completion()
+            }
         }
-
-        await fulfillment(of: [expectation], timeout: 1)
 
         XCTAssertFalse(self.testStorePurchaseHandler.invokedPurchase.value)
     }
@@ -255,17 +249,15 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
         let mockTransaction = Self.createMockTestStoreTransaction()
         self.testStorePurchaseHandler.stubbedPurchaseResult.value = .success(StoreTransaction(mockTransaction))
 
-        let expectation = XCTestExpectation(description: "Purchase completion")
-
-        orchestrator.purchase(
-            product: testProduct,
-            package: package,
-            trackDiagnostics: false
-        ) { _, _, _, _ in
-            expectation.fulfill()
+        await waitUntil { completion in
+            orchestrator.purchase(
+                product: testProduct,
+                package: package,
+                trackDiagnostics: false
+            ) { _, _, _, _ in
+                completion()
+            }
         }
-
-        await fulfillment(of: [expectation], timeout: 1)
 
         XCTAssertTrue(self.testStorePurchaseHandler.invokedPurchase.value)
         XCTAssertEqual(self.testStorePurchaseHandler.invokedPurchaseProduct.value?.productIdentifier, "test.product")
@@ -476,17 +468,17 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
         let orchestrator = self.createOrchestrator()
         let testProduct = self.createTestStoreProduct()
 
-        let expectation = XCTestExpectation(description: "Purchase completion")
-        orchestrator.purchase(
-            product: testProduct,
-            package: nil,
-            trackDiagnostics: false
-        ) { _, _, error, _ in
-            expect(error?.code) == ErrorCode.productNotAvailableForPurchaseError.rawValue
-            expectation.fulfill()
+        await waitUntil { completion in
+            orchestrator.purchase(
+                product: testProduct,
+                package: nil,
+                trackDiagnostics: false
+            ) { _, _, error, _ in
+                expect(error?.code) == ErrorCode.productNotAvailableForPurchaseError.rawValue
+                completion()
+            }
         }
 
-        await fulfillment(of: [expectation], timeout: 1)
     }
 #endif
 
