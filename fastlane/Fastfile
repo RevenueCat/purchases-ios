@@ -462,6 +462,13 @@ platform :ios do
     xcargs = "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
     xcargs << " TARGETED_DEVICE_FAMILY='#{device_families}'"
     
+    # Remove macosx from SUPPORTED_PLATFORMS in project.pbxproj. xcodebuild will fail if macosx is in the list, even
+    # if we override it in xcargs.
+    project_file_path = File.absolute_path("../Tests/TestingApps/PaywallsTester/PaywallsTester.xcodeproj/project.pbxproj")
+    file_content = File.read(project_file_path)
+    modified_content = file_content.gsub(/SUPPORTED_PLATFORMS = "[^"]*";/, 'SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";')
+    File.write(project_file_path, modified_content)
+    
     archive_path = File.absolute_path("build/PaywallsTester-#{platform}.xcarchive")
 
     gym(
