@@ -396,7 +396,9 @@ extension Configuration {
             #if DEBUG
             return .testStore
             #else
-            fatalError("[RevenueCat]: Test Store API key used in RELEASE build. Please configure a valid API key before releasing.")
+            // In release builds, we intentionally crash to prevent submitting an app with a Test Store API key
+            fatalError("[RevenueCat]: Test Store API key used in RELEASE build." +
+                       "Please configure a valid API key before releasing.")
             #endif
         }
         #endif // TEST_STORE
