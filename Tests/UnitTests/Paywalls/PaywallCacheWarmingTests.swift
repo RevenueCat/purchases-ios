@@ -12,11 +12,11 @@
 //  Created by Nacho Soto on 8/7/23.
 
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import XCTest
 
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-class PaywallCacheWarmingTests: TestCase {
+final class PaywallCacheWarmingTests: TestCase {
 
     private var eligibilityChecker: MockTrialOrIntroPriceEligibilityChecker!
     private var imageFetcher: MockPaywallImageFetcher!
@@ -175,6 +175,154 @@ class PaywallCacheWarmingTests: TestCase {
         expect(self.imageFetcher.imageDownloadRequestCount.value) == 3
     }
 
+#if !os(macOS) && !os(tvOS) // For Paywalls V2
+
+    func testTriggerFontDownload_DeduplicatesConcurrentDownloads() async throws {
+        let font = DownloadableFont(
+            name: "MockFont",
+            fontFamily: "fontFamily",
+            url: URL(string: "https://example.com/font.ttf")!,
+            hash: "abc123"
+        )
+
+        let fontsManager = MockFontsManager(installDelayInSeconds: 1.0)
+
+        let cache = PaywallCacheWarming(
+            introEligibiltyChecker: self.eligibilityChecker,
+            imageFetcher: self.imageFetcher,
+            fontsManager: fontsManager
+        )
+
+        // Launch two tasks installing the same font concurrently
+        let fontsConfig = UIConfig.FontsConfig(
+            ios: UIConfig.FontInfo(
+                name: font.name,
+                webFontInfo: UIConfig.WebFontInfo(url: font.url.absoluteString, hash: font.hash)
+            )
+        )
+
+        async let firstCall: () = cache.triggerFontDownloadIfNeeded(fontsConfig: fontsConfig)
+        async let secondCall: () = cache.triggerFontDownloadIfNeeded(fontsConfig: fontsConfig)
+        _ = await (firstCall, secondCall)
+
+        let callCount = await fontsManager.installCallCount
+        XCTAssertEqual(callCount, 1, "Expected only one font installation")
+
+        self.logger.verifyMessageWasLogged(
+            PaywallsStrings.font_download_already_in_progress(name: font.name, fontURL: font.url),
+            level: .debug,
+            expectedCount: 1
+        )
+    }
+
+#endif
+
+    func testDownloadFont_PerformsExpectedActions() async throws {
+        let mockSession = MockSession()
+        mockSession.urlResponse = HTTPURLResponse(
+            url: URL(string: "https://example.com/font.ttf")!,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: nil
+        )
+        let mockFileManager = MockFileManager()
+        let mockRegistrar = MockRegistrar()
+
+        let string = "abc123"
+        let data = string.data(using: .utf8)!
+        mockSession.dataFromURL = data
+        let hash = data.md5String
+
+        let sut = DefaultPaywallFontsManager(
+            fileManager: mockFileManager,
+            session: mockSession,
+            registrar: mockRegistrar
+        )
+
+        let url = URL(string: "https://example.com/font.ttf")!
+        mockFileManager.fileExistsAtPath = false
+        let font = DownloadableFont(name: "font-bold", fontFamily: "font", url: url, hash: hash)
+
+        try await sut.installFont(font)
+
+        expect(mockSession.didCallDataFrom).to(beTrue())
+        expect(mockFileManager.didWriteData).to(beTrue())
+        expect(mockRegistrar.didRegister).to(beTrue())
+    }
+
+    func testDownloadFont_ThrowsHashValidationError() async {
+        let mockSession = MockSession()
+        mockSession.urlResponse = HTTPURLResponse(
+            url: URL(string: "https://example.com/font.ttf")!,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: nil
+        )
+        mockSession.dataFromURL = Data("bad font".utf8)
+
+        let mockFileManager = MockFileManager()
+        mockFileManager.fileExistsAtPath = false
+
+        let mockRegistrar = MockRegistrar()
+
+        let sut = DefaultPaywallFontsManager(
+            fileManager: mockFileManager,
+            session: mockSession,
+            registrar: mockRegistrar
+        )
+
+        let url = URL(string: "https://example.com/font.ttf")!
+        let font = DownloadableFont(name: "font-bold", fontFamily: "font", url: url, hash: "expectedhash")
+        do {
+            try await sut.installFont(font)
+            fail("Expected to throw hashValidationError")
+        } catch let error as DefaultPaywallFontsManager.FontsManagerError {
+            guard case .hashValidationError(let expected, let actual) = error else {
+                fail("Expected hashValidationError, got \(error)")
+                return
+            }
+            expect(expected).to(equal("expectedhash"))
+            expect(actual).to(equal(mockSession.dataFromURL!.md5String))
+        } catch {
+            fail("Unexpected error: \(error)")
+        }
+    }
+
+    func testInstallFont_DownloadsOnce_RegistersTwice() async throws {
+        let fontData = Data("valid font".utf8)
+        let hash = fontData.md5String
+
+        let session = MockSession()
+        session.dataFromURL = fontData
+        session.urlResponse = HTTPURLResponse(
+            url: URL(string: "https://example.com/font.ttf")!,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: nil
+        )
+
+        let fileManager = MockFileManager()
+        let registrar = MockRegistrar()
+
+        let sut = DefaultPaywallFontsManager(
+            fileManager: fileManager,
+            session: session,
+            registrar: registrar
+        )
+
+        let url = URL(string: "https://example.com/font.ttf")!
+        let font = DownloadableFont(name: "font-bold", fontFamily: "font", url: url, hash: hash)
+
+        // First install: should download, write, register
+        try await sut.installFont(font)
+        fileManager.fileExistsAtPath = true
+
+        // Second install: should skip download/write, but still register
+        try await sut.installFont(font)
+
+        expect(session.dataFromURLCallCount).to(equal(1))
+        expect(registrar.registerFontCallCount).to(equal(2))
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
@@ -246,4 +394,77 @@ private final class MockPaywallImageFetcher: PaywallImageFetcherType {
         self.imageDownloadRequestCount.modify { $0 += 1 }
     }
 
+}
+
+private final class MockSession: FontDownloadSession {
+
+    var didCallDataFrom = false
+
+    var dataFromURL: Data?
+    var dataFromURLCallCount = 0
+
+    var urlResponse: URLResponse?
+
+    func data(from url: URL) async throws -> (Data, URLResponse) {
+        didCallDataFrom = true
+        dataFromURLCallCount += 1
+        return (dataFromURL ?? Data(), urlResponse ?? URLResponse())
+    }
+}
+
+private final class MockFileManager: FontsFileManaging {
+    func cachesDirectory() throws -> URL {
+        return URL(fileURLWithPath: "/tmp/RevenueCatTestSupport", isDirectory: true)
+    }
+
+    var fileExistsAtPath = false
+    func fileExists(atPath path: String) -> Bool {
+        fileExistsAtPath
+    }
+
+    func createDirectory(at url: URL) throws {}
+
+    var didWriteData = false
+    var didWriteDataToURL: URL?
+    func write(_ data: Data, to url: URL) throws {
+        didWriteData = true
+        didWriteDataToURL = url
+    }
+}
+
+private final class MockRegistrar: FontRegistrar {
+
+    var didRegister = false
+    var shouldThrow = false
+    var registerFontCallCount = 0
+    func registerFont(at url: URL) throws {
+        registerFontCallCount += 1
+        guard !shouldThrow else {
+            throw DefaultPaywallFontsManager.FontsManagerError.registrationError(NSError(domain: "", code: 0))
+        }
+        didRegister = true
+    }
+}
+
+final actor MockFontsManager: PaywallFontManagerType {
+    private(set) var installCallCount = 0
+    var installDelayInSeconds: TimeInterval = 0
+
+    init(installDelayInSeconds: TimeInterval, fontIsAlreadyInstalled: Bool = false) {
+        self.installDelayInSeconds = installDelayInSeconds
+        self.fontIsAlreadyInstalled = fontIsAlreadyInstalled
+    }
+
+    let fontIsAlreadyInstalled: Bool
+
+    nonisolated func fontIsAlreadyInstalled(fontName: String, fontFamily: String?) -> Bool {
+        return self.fontIsAlreadyInstalled
+    }
+
+    func installFont(_ font: RevenueCat.DownloadableFont) async throws {
+        installCallCount += 1
+
+        let duration = UInt64(installDelayInSeconds * 1_000_000_000)
+        try await Task.sleep(nanoseconds: duration)
+    }
 }

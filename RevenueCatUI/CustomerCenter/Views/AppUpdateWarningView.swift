@@ -11,7 +11,7 @@
 //
 //  Created by JayShortway on 16/08/2024.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if os(iOS)

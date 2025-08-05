@@ -43,17 +43,21 @@ class TextComponentViewModel {
     }
 
     @ViewBuilder
+    @MainActor
+    // swiftlint:disable:next function_parameter_count
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
         packageContext: PackageContext,
         isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
         @ViewBuilder apply: @escaping (TextComponentStyle) -> some View
     ) -> some View {
         let localizedPartial = LocalizedTextPartial.buildPartial(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
             with: self.presentedOverrides
         )
         let partial = localizedPartial?.partial
@@ -70,7 +74,7 @@ class TextComponentViewModel {
                 localizations: self.uiConfigProvider.getLocalizations(for: self.localizationProvider.locale)
             ),
             fontName: partial?.fontName ?? self.component.fontName,
-            fontWeight: partial?.fontWeight ?? self.component.fontWeight,
+            fontWeight: partial?.fontWeightResolved ?? self.component.fontWeightResolved,
             color: partial?.color ?? self.component.color,
             backgroundColor: partial?.backgroundColor ?? self.component.backgroundColor,
             size: partial?.size ?? self.component.size,
@@ -183,7 +187,7 @@ struct LocalizedTextPartial: PresentedPartial {
                 visible: otherPartial?.visible ?? basePartial?.visible,
                 text: otherPartial?.text ?? basePartial?.text,
                 fontName: otherPartial?.fontName ?? basePartial?.fontName,
-                fontWeight: otherPartial?.fontWeight ?? basePartial?.fontWeight,
+                fontWeight: otherPartial?.fontWeightResolved ?? basePartial?.fontWeightResolved,
                 color: otherPartial?.color ?? basePartial?.color,
                 backgroundColor: otherPartial?.backgroundColor ?? basePartial?.backgroundColor,
                 padding: otherPartial?.padding ?? basePartial?.padding,
@@ -213,6 +217,7 @@ extension LocalizedTextPartial {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@MainActor
 struct TextComponentStyle {
 
     let visible: Bool
@@ -280,39 +285,15 @@ enum GenericFont: String {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension TextComponentStyle {
 
+    @MainActor
     static func makeFont(size fontSize: CGFloat, name: String?, uiConfigProvider: UIConfigProvider) -> Font {
         // Use default font if no name given
         guard let name = name else {
             return GenericFont.sansSerif.makeFont(fontSize: fontSize)
         }
 
-        let customFont = self.resolveFont(size: fontSize, name: name, uiConfigProvider: uiConfigProvider)
+        let customFont = uiConfigProvider.resolveFont(size: fontSize, name: name)
         return customFont ?? GenericFont.sansSerif.makeFont(fontSize: fontSize)
-    }
-
-    static private func resolveFont(
-        size fontSize: CGFloat,
-        name: String,
-        uiConfigProvider: UIConfigProvider
-    ) -> Font? {
-        guard let familyName = uiConfigProvider.getFontFamily(for: name)  else {
-            Logger.warning("Mapping for '\(name)' could not be found. Falling back to system font.")
-            return nil
-        }
-
-        // Check if the family name is a generic font (serif, sans-serif, monospace)
-        if let genericFont = GenericFont(rawValue: familyName) {
-            return genericFont.makeFont(fontSize: fontSize)
-        }
-
-        guard let customFont = UIFont(name: familyName, size: fontSize) else {
-            Logger.warning("Custom font '\(familyName)' could not be loaded. Falling back to system font.")
-            return nil
-        }
-
-        // Apply dynamic type scaling
-        let uiFont = UIFontMetrics.default.scaledFont(for: customFont)
-        return Font(uiFont)
     }
 
 }

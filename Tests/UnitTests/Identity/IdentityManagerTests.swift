@@ -37,7 +37,7 @@ class IdentityManagerTests: TestCase {
 
         self.mockSystemInfo = MockSystemInfo(finishTransactions: false)
 
-        self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.mockSystemInfo)
+        self.mockDeviceCache = MockDeviceCache(systemInfo: self.mockSystemInfo)
         self.mockCustomerInfoManager = MockCustomerInfoManager(
             offlineEntitlementsManager: MockOfflineEntitlementsManager(),
             operationDispatcher: MockOperationDispatcher(),
@@ -400,7 +400,8 @@ class IdentityManagerTests: TestCase {
         self.mockSystemInfo = MockSystemInfo(
             platformInfo: nil,
             finishTransactions: false,
-            dangerousSettings: dangerousSettings
+            dangerousSettings: dangerousSettings,
+            preferredLocalesProvider: .mock()
         )
 
         let manager = create(appUserID: nil)
@@ -414,7 +415,8 @@ class IdentityManagerTests: TestCase {
         self.mockSystemInfo = MockSystemInfo(
             platformInfo: nil,
             finishTransactions: false,
-            dangerousSettings: dangerousSettings
+            dangerousSettings: dangerousSettings,
+            preferredLocalesProvider: .mock()
         )
 
         let manager = create(appUserID: "test_user")

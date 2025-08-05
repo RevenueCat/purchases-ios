@@ -11,7 +11,7 @@
 //
 //  Created by Nacho Soto on 9/12/23.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 #if DEBUG
 
@@ -29,14 +29,20 @@ final class MockPurchases: PaywallPurchasesType {
     private let restoreBlock: RestoreBlock
     private let trackEventBlock: TrackEventBlock
     private let _purchasesAreCompletedBy: PurchasesAreCompletedBy
+    let preferredLocales: [String]
+    let preferredLocaleOverride: String?
 
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
         get { return _purchasesAreCompletedBy }
         set { _ = newValue }
     }
 
+    let subscriptionHistoryTracker = SubscriptionHistoryTracker()
+
     init(
         purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat,
+        preferredLocales: [String] = ["en_US"],
+        preferredLocaleOverride: String? = nil,
         purchase: @escaping PurchaseBlock,
         restorePurchases: @escaping RestoreBlock,
         trackEvent: @escaping TrackEventBlock,
@@ -47,6 +53,8 @@ final class MockPurchases: PaywallPurchasesType {
         self.trackEventBlock = trackEvent
         self.customerInfoBlock = customerInfo
         self._purchasesAreCompletedBy = purchasesAreCompletedBy
+        self.preferredLocales = preferredLocales
+        self.preferredLocaleOverride = preferredLocaleOverride
     }
 
     func customerInfo() async throws -> RevenueCat.CustomerInfo {
@@ -57,6 +65,10 @@ final class MockPurchases: PaywallPurchasesType {
         return try await self.purchaseBlock(package)
     }
 
+    func purchase(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
+        return try await self.purchaseBlock(package)
+    }
+
     func restorePurchases() async throws -> CustomerInfo {
         return try await self.restoreBlock()
     }
@@ -64,6 +76,20 @@ final class MockPurchases: PaywallPurchasesType {
     func track(paywallEvent: PaywallEvent) async {
         await self.trackEventBlock(paywallEvent)
     }
+
+#if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    func invalidateCustomerInfoCache() {
+        // No-op, this is a mock implementation.
+    }
+#endif
+
+#if !os(macOS) && !os(tvOS)
+
+    func failedToLoadFontWithConfig(_ fontConfig: UIConfig.FontsConfig) {
+        // No-op, this is a mock implementation.
+    }
+
+#endif
 
 }
 

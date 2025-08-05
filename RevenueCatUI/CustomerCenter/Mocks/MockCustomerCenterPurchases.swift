@@ -12,7 +12,7 @@
 //  Created by Cesar de la Vega on 28/11/24.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
@@ -116,6 +116,18 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
     func restorePurchases() async throws -> CustomerInfo {
         restorePurchasesCallCount += 1
         return try restorePurchasesResult.get()
+    }
+
+    var invalidateVirtualCurrenciesCacheCallCount = 0
+    func invalidateVirtualCurrenciesCache() {
+        invalidateVirtualCurrenciesCacheCallCount += 1
+    }
+
+    var virtualCurrenciesCallCount = 0
+    var virtualCurrenciesResult: Result<VirtualCurrencies, Error>?
+    func virtualCurrencies() async throws -> VirtualCurrencies {
+        virtualCurrenciesCallCount += 1
+        return try virtualCurrenciesResult?.get() ?? VirtualCurrenciesFixtures.noVirtualCurrencies
     }
 
     func showManageSubscriptions() async throws {

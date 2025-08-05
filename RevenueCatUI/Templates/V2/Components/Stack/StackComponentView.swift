@@ -22,10 +22,13 @@ import SwiftUI
 struct StackComponentView: View {
 
     @EnvironmentObject
+    private var packageContext: PackageContext
+
+    @EnvironmentObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
     @EnvironmentObject
-    private var packageContext: PackageContext
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
 
     @Environment(\.componentViewState)
     private var componentViewState
@@ -64,6 +67,9 @@ struct StackComponentView: View {
             condition: self.screenCondition,
             isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                 package: self.packageContext.package
+            ),
+            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                for: self.packageContext.package
             )
         ) { style in
             if style.visible {
@@ -314,7 +320,7 @@ struct StackComponentView_Previews: PreviewProvider {
             ),
             onDismiss: {}
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Default - Fill")
 
@@ -343,7 +349,7 @@ struct StackComponentView_Previews: PreviewProvider {
             ),
             onDismiss: {}
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Default - Fit")
 
@@ -449,7 +455,7 @@ struct StackComponentView_Previews: PreviewProvider {
                 onDismiss: {}
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Default - Fill Fit Fixed Fill")
 
@@ -507,7 +513,7 @@ struct StackComponentView_Previews: PreviewProvider {
                 onDismiss: {}
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Scrollable - HStack")
 
@@ -550,7 +556,7 @@ struct StackComponentView_Previews: PreviewProvider {
                 onDismiss: {},
                 showActivityIndicatorOverContent: true
             )
-            .previewRequiredEnvironmentProperties()
+            .previewRequiredPaywallsV2Properties()
             .previewLayout(.sizeThatFits)
             .previewDisplayName("Progress - \(colorPair.0)")
         }
@@ -623,7 +629,7 @@ struct StackComponentView_Previews: PreviewProvider {
             ),
             onDismiss: {}
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Fits don't expand")
     }
@@ -684,7 +690,7 @@ func stackAlignmentAndDistributionPreviews(dimensions: [PaywallComponent.Dimensi
                 ),
                 onDismiss: {}
             )
-            .previewRequiredEnvironmentProperties()
+            .previewRequiredPaywallsV2Properties()
             .previewLayout(.sizeThatFits)
             .previewDisplayName(displayName(dimension: dimension,
                                             overflow: overflow))
@@ -775,8 +781,7 @@ extension StackComponentViewModel {
             component: component,
             viewModels: viewModels,
             badgeViewModels: badgeViewModels ?? [],
-            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-            localizationProvider: localizationProvider
+            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
         )
     }
 

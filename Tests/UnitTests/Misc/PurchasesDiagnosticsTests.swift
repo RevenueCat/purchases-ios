@@ -178,7 +178,11 @@ class PurchasesDiagnosticsTests: TestCase {
         let error = PurchasesDiagnostics.SDKHealthError.noOfferings
 
         expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
-        expect(error.localizedDescription) == "No offerings configured"
+        expect(error.localizedDescription) == """
+        Your app doesn't have any offerings configured in RevenueCat. This means users can't see available \
+        product options through offerings. If you plan on using offerings to show products to your users, \
+        please configure them in the RevenueCat website.
+        """
     }
 
     func testOfferingConfigurationError() {
@@ -202,7 +206,12 @@ class PurchasesDiagnosticsTests: TestCase {
         )
 
         expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
-        let expected = "Offering 'test_offering' uses 1 products that are not ready in App Store Connect"
+        let expected = """
+        Offering 'test_offering' uses 1 products that are not approved \
+        in App Store Connect yet. While such products may work while testing, users won't be able to \
+        make purchases in production. Please ensure all products are approved and available in App Store \
+        Connect.
+        """
         expect(error.localizedDescription) == expected
     }
 
@@ -218,7 +227,10 @@ class PurchasesDiagnosticsTests: TestCase {
         )
 
         expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
-        let expected = "Offering 'test_offering' has no packages"
+        let expected = """
+        Offering 'test_offering' has no packages configured, so users won't see any product \
+        options. Please add packages to this offering in the RevenueCat website.
+        """
         expect(error.localizedDescription) == expected
     }
 
@@ -226,7 +238,38 @@ class PurchasesDiagnosticsTests: TestCase {
         let error = PurchasesDiagnostics.SDKHealthError.offeringConfiguration([])
 
         expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
-        let expected = "Default offering is not configured correctly"
+        let expected = """
+        Some offerings have configuration issues that may prevent users from seeing product options or making purchases.
+        """
+        expect(error.localizedDescription) == expected
+    }
+
+    func testWarningOfferingConfigurationError() {
+        let error = PurchasesDiagnostics.SDKHealthError.offeringConfiguration(
+            [
+                .init(
+                    identifier: "offering_one",
+                    packages: [],
+                    status: .warning
+                ),
+                .init(
+                    identifier: "offering_two",
+                    packages: [],
+                    status: .warning
+                ),
+                .init(
+                    identifier: "offering_three",
+                    packages: [],
+                    status: .passed
+                )
+            ]
+        )
+
+        expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
+        let expected = """
+        The offerings 'offering_one', 'offering_two' have configuration issues that may prevent users from \
+        seeing product options or making purchases.
+        """
         expect(error.localizedDescription) == expected
     }
 
@@ -240,8 +283,9 @@ class PurchasesDiagnosticsTests: TestCase {
 
         expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
         let expected = """
-        Bundle ID in your app 'sdk_bundle_id' does not match \
-        the RevenueCat app Bundle ID 'app_bundle_id'
+        Your app's Bundle ID 'sdk_bundle_id' doesn't match the RevenueCat configuration 'app_bundle_id'. \
+        This will cause the SDK to not show any products and won't allow users to make purchases. Please \
+        update your Bundle ID in either your app or the RevenueCat website to match.
         """
         expect(error.localizedDescription) == expected
     }
@@ -250,7 +294,11 @@ class PurchasesDiagnosticsTests: TestCase {
         let error = PurchasesDiagnostics.SDKHealthError.invalidBundleId(nil)
 
         expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
-        let expected = "Bundle ID in your app does not match the Bundle ID in the RevenueCat Website"
+        let expected = """
+        Your app's Bundle ID doesn't match the one configured in RevenueCat. This will cause the SDK \
+        to not show any products and won't allow users to make purchases. Please update your Bundle ID \
+        in either your app or the RevenueCat website to match.
+        """
         expect(error.localizedDescription) == expected
     }
 
@@ -258,7 +306,10 @@ class PurchasesDiagnosticsTests: TestCase {
         let error = PurchasesDiagnostics.SDKHealthError.invalidProducts([])
 
         expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
-        let expected = "Your app has no products"
+        let expected = """
+        Your app doesn't have any products set up, so users can't make any purchases. Please create \
+        and configure products in the RevenueCat website.
+        """
         expect(error.localizedDescription) == expected
     }
 
@@ -268,7 +319,11 @@ class PurchasesDiagnosticsTests: TestCase {
         ])
 
         expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSNull).toNot(beNil())
-        let expected = "You must have at least one product approved in App Store Connect"
+        let expected = """
+        Your products are configured in RevenueCat but aren't approved in App Store Connect yet. This \
+        prevents users from making purchases in production. Please ensure all products are approved and \
+        available for sale in App Store Connect.
+        """
         expect(error.localizedDescription) == expected
     }
 

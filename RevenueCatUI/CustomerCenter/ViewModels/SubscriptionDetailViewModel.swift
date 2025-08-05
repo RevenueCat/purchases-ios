@@ -13,6 +13,7 @@
 //  Created by Facundo Menzella on 3/5/25.
 //
 
+import Combine
 import Foundation
 @_spi(Internal) import RevenueCat
 import SwiftUI
@@ -26,21 +27,40 @@ import SwiftUI
 @MainActor
 final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
 
+    @Published
+    var isRefreshing: Bool = false
+
     let showPurchaseHistory: Bool
+    let showVirtualCurrencies: Bool
 
     var shouldShowContactSupport: Bool {
         purchaseInformation?.store != .appStore
     }
 
+    override var allowMissingPurchase: Bool {
+        allowsMissingPurchaseAction
+    }
+
+    private var allowsMissingPurchaseAction: Bool = true
+
+    private var cancellable: AnyCancellable?
+    private let customerInfoViewModel: CustomerCenterViewModel
+
     init(
+        customerInfoViewModel: CustomerCenterViewModel,
         screen: CustomerCenterConfigData.Screen,
         showPurchaseHistory: Bool,
+        showVirtualCurrencies: Bool,
+        allowsMissingPurchaseAction: Bool,
         actionWrapper: CustomerCenterActionWrapper,
         purchaseInformation: PurchaseInformation? = nil,
         refundRequestStatus: RefundRequestStatus? = nil,
         purchasesProvider: CustomerCenterPurchasesType,
         loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
-        self.showPurchaseHistory = showPurchaseHistory
+            self.showVirtualCurrencies = showVirtualCurrencies
+            self.showPurchaseHistory = showPurchaseHistory
+            self.allowsMissingPurchaseAction = allowsMissingPurchaseAction
+            self.customerInfoViewModel = customerInfoViewModel
 
         super.init(
             screen: screen,
@@ -52,20 +72,40 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
         )
     }
 
-    func reloadPurchaseInformation(_ purchaseInformation: PurchaseInformation?) {
-        self.purchaseInformation = purchaseInformation
+    func refreshPurchase() {
+        cancellable = customerInfoViewModel.publisher(for: purchaseInformation)?
+            .dropFirst() // skip current value
+            .sink(receiveValue: { [weak self] in
+                defer { self?.isRefreshing = false }
+
+                self?.purchaseInformation = $0
+            })
+
+        isRefreshing = true
+
+        Task {
+            await customerInfoViewModel.loadScreen(shouldSync: true)
+            // In case loadScreen does not trigger a new update (error)
+            isRefreshing = false
+        }
     }
 
     // Previews
     convenience init(
+        customerInfoViewModel: CustomerCenterViewModel,
         screen: CustomerCenterConfigData.Screen,
         showPurchaseHistory: Bool,
+        showVirtualCurrencies: Bool,
+        allowsMissingPurchaseAction: Bool,
         purchaseInformation: PurchaseInformation? = nil,
         refundRequestStatus: RefundRequestStatus? = nil
     ) {
         self.init(
+            customerInfoViewModel: customerInfoViewModel,
             screen: screen,
             showPurchaseHistory: showPurchaseHistory,
+            showVirtualCurrencies: showVirtualCurrencies,
+            allowsMissingPurchaseAction: allowsMissingPurchaseAction,
             actionWrapper: CustomerCenterActionWrapper(),
             purchaseInformation: purchaseInformation,
             refundRequestStatus: refundRequestStatus,

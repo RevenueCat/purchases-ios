@@ -11,6 +11,7 @@
 //
 //  Created by Nacho Soto on 11/14/22.
 
+import Foundation
 @testable import RevenueCat
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)

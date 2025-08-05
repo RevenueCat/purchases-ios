@@ -12,8 +12,8 @@
 //  Created by Antonio Rico Diez on 2024-10-23.
 
 import Nimble
-import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) import RevenueCat
+@_spi(Internal)@testable import RevenueCatUI
 import XCTest
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -26,6 +26,7 @@ class ContactSupportUtilitiesTest: TestCase {
         email: "support@example.com",
         shouldWarnCustomerToUpdate: false,
         displayPurchaseHistoryLink: false,
+        displayVirtualCurrencies: false,
         shouldWarnCustomersAboutMultipleSubscriptions: false
     )
     private let localization: CustomerCenterConfigData.Localization = .init(locale: "en_US", localizedStrings: [:])

@@ -21,10 +21,26 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 
 
+### prepare_for_carthage
+
+```sh
+[bundle exec] fastlane prepare_for_carthage
+```
+
+Removes the Examples directory before building with Carthage to prevent unnecessary or problematic scheme resolution (e.g., Magic Weather SwiftUI.xcodeproj)
+
 ### load_spm_dependencies
 
 ```sh
 [bundle exec] fastlane load_spm_dependencies
+```
+
+
+
+### send_slack_load_shedder_integration_test_v3
+
+```sh
+[bundle exec] fastlane send_slack_load_shedder_integration_test_v3
 ```
 
 
@@ -74,6 +90,30 @@ Creates PR changing version to next minor adding a -SNAPSHOT suffix
 
 Setup development environment
 
+### ios update_paywall_preview_resources_commit
+
+```sh
+[bundle exec] fastlane ios update_paywall_preview_resources_commit
+```
+
+Updates paywall-preview-resources-commit to point to latest commit on main and creates/updates PR
+
+### ios record_and_push_paywall_template_screenshots
+
+```sh
+[bundle exec] fastlane ios record_and_push_paywall_template_screenshots
+```
+
+Records Paywall template screenshots and pushes them to the repository at target_repository_path
+
+### ios record_paywall_screenshots
+
+```sh
+[bundle exec] fastlane ios record_paywall_screenshots
+```
+
+Records screenshots for paywalls
+
 ### ios build_paywalls_tester_for_emerge
 
 ```sh
@@ -82,13 +122,13 @@ Setup development environment
 
 Build the Paywalls Test app for Emerge Snapshots
 
-### ios build_maestro_app
+### ios build_paywalls_tester_for_emerge_ios
 
 ```sh
-[bundle exec] fastlane ios build_maestro_app
+[bundle exec] fastlane ios build_paywalls_tester_for_emerge_ios
 ```
 
-Build Maestro App
+
 
 ### ios test_ios
 
@@ -337,6 +377,14 @@ Build and deploy PurchaseTesterSwiftUI
 ```
 
 Clones or updates snapshots repo
+
+### ios fetch_paywall_preview_resources
+
+```sh
+[bundle exec] fastlane ios fetch_paywall_preview_resources
+```
+
+Clones or updates paywall-preview-resources repo
 
 ### ios update_snapshots_repo
 

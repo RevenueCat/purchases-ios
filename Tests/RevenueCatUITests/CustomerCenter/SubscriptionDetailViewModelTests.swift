@@ -12,8 +12,8 @@
 //  Created by Facundo Menzella on 13/5/25.
 
 import Nimble
-@_spi(Internal) @testable import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) import RevenueCat
+@_spi(Internal) @testable import RevenueCatUI
 import StoreKit
 import XCTest
 
@@ -28,12 +28,18 @@ final class SubscriptionDetailViewModelTests: TestCase {
 
     func testShouldShowContactSupport() {
         let viewModelAppStore = SubscriptionDetailViewModel(
+            customerInfoViewModel: CustomerCenterViewModel(
+                uiPreviewPurchaseProvider: MockCustomerCenterPurchases()
+            ),
             screen: CustomerCenterConfigData.default.screens[.management]!,
             showPurchaseHistory: false,
-            purchaseInformation: .yearlyExpiring(store: .appStore)
+            showVirtualCurrencies: false,
+            allowsMissingPurchaseAction: false,
+            purchaseInformation: .mock(store: .appStore, isExpired: false)
         )
 
         expect(viewModelAppStore.shouldShowContactSupport).to(beFalse())
+        expect(viewModelAppStore.allowMissingPurchase).to(beFalse())
 
         let otherStores = [
             Store.macAppStore,
@@ -48,12 +54,18 @@ final class SubscriptionDetailViewModelTests: TestCase {
 
         otherStores.forEach {
             let viewModelOther = SubscriptionDetailViewModel(
+                customerInfoViewModel: CustomerCenterViewModel(
+                    uiPreviewPurchaseProvider: MockCustomerCenterPurchases()
+                ),
                 screen: CustomerCenterConfigData.default.screens[.management]!,
                 showPurchaseHistory: false,
-                purchaseInformation: .yearlyExpiring(store: $0)
+                showVirtualCurrencies: false,
+                allowsMissingPurchaseAction: true,
+                purchaseInformation: .mock(store: $0, isExpired: false)
             )
 
             expect(viewModelOther.shouldShowContactSupport).to(beTrue())
+            expect(viewModelOther.allowMissingPurchase).to(beTrue())
         }
     }
 }

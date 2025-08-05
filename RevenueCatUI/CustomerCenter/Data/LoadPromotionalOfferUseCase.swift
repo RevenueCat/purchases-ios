@@ -19,11 +19,12 @@
 //
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 protocol LoadPromotionalOfferUseCaseType {
     func execute(
-        promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer
+        promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer,
+        forProductId productIdentifier: String?
     ) async -> Result<PromotionalOfferData, Error>
 }
 
@@ -34,7 +35,7 @@ protocol LoadPromotionalOfferUseCaseType {
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @MainActor
-class LoadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType {
+final class LoadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType {
 
     private let purchasesProvider: CustomerCenterPurchasesType
 
@@ -43,16 +44,15 @@ class LoadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType {
     }
 
     func execute(
-        promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer
+        promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer,
+        forProductId productIdentifier: String?
     ) async -> Result<PromotionalOfferData, Error> {
         do {
-            let customerInfo = try await self.purchasesProvider.customerInfo(fetchPolicy: .default)
-
-            guard let activeTransaction = customerInfo.earliestExpiringTransaction() else {
+            guard let productIdentifier else {
                 return .failure(CustomerCenterError.couldNotFindOfferForActiveProducts)
             }
 
-            let subscribedProduct = try await getActiveSubscription(activeTransaction.productIdentifier)
+            let subscribedProduct = try await getActiveSubscription(productIdentifier)
 
             let discountFinder = DiscountsHandler(purchasesProvider: self.purchasesProvider)
             let (discount, targetProduct) = try await discountFinder.findDiscount(

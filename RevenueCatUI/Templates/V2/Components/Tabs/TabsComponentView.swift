@@ -22,15 +22,20 @@ import SwiftUI
 class TabControlContext: ObservableObject {
 
     @Published
-    var selectedIndex: Int = 0
+    var selectedTabId: String = ""
 
     let controlStackViewModel: StackComponentViewModel
-    let tabControlStackViewModels: [StackComponentViewModel]
+    let tabIds: [String]
 
     init(controlStackViewModel: StackComponentViewModel,
-         tabControlStackViewModels: [StackComponentViewModel]) {
+         tabIds: [String],
+         defaultTabId: String?) {
         self.controlStackViewModel = controlStackViewModel
-        self.tabControlStackViewModels = tabControlStackViewModels
+        self.tabIds = tabIds
+
+        let calculatedDefaultTabId = defaultTabId ?? tabIds.first ?? ""
+
+        self._selectedTabId = .init(initialValue: calculatedDefaultTabId)
     }
 
 }
@@ -80,10 +85,11 @@ struct LoadedTabsComponentView: View {
     private var tabControlContext: TabControlContext
 
     @State
-    private var tierPackageContexts: [PackageContext]
+    private var tierPackageContexts: [String: PackageContext]
 
-    var activeTabViewModel: TabViewModel {
-        return self.viewModel.tabViewModels[self.tabControlContext.selectedIndex]
+    var activeTabViewModel: TabViewModel? {
+        return self.viewModel.tabViewModels[self.tabControlContext.selectedTabId] ??
+            self.viewModel.tabViewModels.values.first
     }
 
     init(viewModel: TabsComponentViewModel,
@@ -94,45 +100,39 @@ struct LoadedTabsComponentView: View {
 
         self._tabControlContext = .init(wrappedValue: TabControlContext(
             controlStackViewModel: viewModel.controlStackViewModel,
-            tabControlStackViewModels: viewModel.tabViewModels.map({ tabViewModel in
-                tabViewModel.stackViewModel
-            })
+            tabIds: viewModel.tabIds,
+            defaultTabId: viewModel.defaultTabId
         ))
 
-        let variableContext = parentPackageContext.variableContext
-        self._tierPackageContexts = .init(initialValue: viewModel.tabViewModels.map({ tvm in
-            return .init(
-                package: tvm.defaultSelectedPackage,
-                variableContext: .init(
-                    packages: tvm.packages,
-                    showZeroDecimalPlacePrices: variableContext.showZeroDecimalPlacePrices
+        self._tierPackageContexts = .init(initialValue: Dictionary(
+            uniqueKeysWithValues: viewModel.tabViewModels.map { key, tabViewModel in
+                let packageContext = PackageContext(
+                    package: tabViewModel.defaultSelectedPackage,
+                    variableContext: .init(
+                        packages: tabViewModel.packages,
+                        showZeroDecimalPlacePrices: parentPackageContext.variableContext.showZeroDecimalPlacePrices
+                    )
                 )
-            )
-        }))
+                return (key, packageContext)
+            }
+        ))
     }
 
     var body: some View {
-        self.viewModel.styles(
-            state: self.componentViewState,
-            condition: self.screenCondition,
-            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
-                package: self.packageContext.package
+        if let activeTabViewModel,
+            let tierPackageContext = self.tierPackageContexts[self.tabControlContext.selectedTabId] {
+            LoadedTabComponentView(
+                stackViewModel: activeTabViewModel.stackViewModel,
+                onChange: { context in
+                    self.packageContext.update(
+                        package: context.package,
+                        variableContext: context.variableContext
+                    )
+                },
+                onDismiss: self.onDismiss
             )
-        ) { style in
-            if style.visible {
-                LoadedTabComponentView(
-                    stackViewModel: self.activeTabViewModel.stackViewModel,
-                    onChange: { context in
-                        self.packageContext.update(
-                            package: context.package,
-                            variableContext: context.variableContext
-                        )
-                    },
-                    onDismiss: self.onDismiss
-                )
-                .environmentObject(self.tabControlContext)
-                .environmentObject(self.tierPackageContexts[self.tabControlContext.selectedIndex])
-            }
+            .environmentObject(self.tabControlContext)
+            .environmentObject(tierPackageContext)
         }
     }
 
@@ -185,7 +185,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                         // Tab 1
                         .tabControlButton(
                             .init(
-                                tabIndex: 0,
+                                tabId: "1",
                                 stack: .init(
                                     components: [
                                         .text(.init(
@@ -223,7 +223,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                         // Tab 2
                         .tabControlButton(
                             .init(
-                                tabIndex: 1,
+                                tabId: "2",
                                 stack: .init(
                                     components: [
                                         .text(.init(
@@ -261,7 +261,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                         // Tab 3
                         .tabControlButton(
                             .init(
-                                tabIndex: 2,
+                                tabId: "3",
                                 stack: .init(
                                     components: [
                                         .text(.init(
@@ -300,7 +300,7 @@ struct TabsComponentView_Previews: PreviewProvider {
             ),
             tabs: [
                 // Tab 1
-                .init(stack: .init(
+                .init(id: "1", stack: .init(
                     components: [
                         .text(.init(
                             text: "tab_1_text_1",
@@ -316,7 +316,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                     ]
                 )),
                 // Tab 2
-                .init(stack: .init(
+                .init(id: "2", stack: .init(
                     components: [
                         .text(.init(
                             text: "tab_2_text_1",
@@ -332,7 +332,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                     ]
                 )),
                 // Tab 3
-                .init(stack: .init(
+                .init(id: "3", stack: .init(
                     components: [
                         .text(.init(
                             text: "tab_3_text_1",
@@ -360,7 +360,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                         // Tab 1
                         .tabControlButton(
                             .init(
-                                tabIndex: 0,
+                                tabId: "1",
                                 stack: .init(
                                     components: [
                                         .text(.init(
@@ -395,7 +395,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                         // Tab 2
                         .tabControlButton(
                             .init(
-                                tabIndex: 1,
+                                tabId: "2",
                                 stack: .init(
                                     components: [
                                         .text(.init(
@@ -430,7 +430,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                         // Tab 3
                         .tabControlButton(
                             .init(
-                                tabIndex: 2,
+                                tabId: "3",
                                 stack: .init(
                                     components: [
                                         .text(.init(
@@ -469,7 +469,7 @@ struct TabsComponentView_Previews: PreviewProvider {
             ),
             tabs: [
                 // Tab 1
-                .init(stack: .init(
+                .init(id: "1", stack: .init(
                     components: [
                         .text(.init(
                             text: "tab_1_text_1",
@@ -485,7 +485,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                     ]
                 )),
                 // Tab 2
-                .init(stack: .init(
+                .init(id: "2", stack: .init(
                     components: [
                         .text(.init(
                             text: "tab_2_text_1",
@@ -501,7 +501,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                     ]
                 )),
                 // Tab 3
-                .init(stack: .init(
+                .init(id: "3", stack: .init(
                     components: [
                         .text(.init(
                             text: "tab_3_text_1",
@@ -545,7 +545,7 @@ struct TabsComponentView_Previews: PreviewProvider {
             ),
             tabs: [
                 // Tab 1
-                .init(stack: .init(
+                .init(id: "1", stack: .init(
                     components: [
                         .text(.init(
                             text: "tab_1_text_1",
@@ -561,7 +561,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                     ]
                 )),
                 // Tab 2
-                .init(stack: .init(
+                .init(id: "2", stack: .init(
                     components: [
                         .text(.init(
                             text: "tab_2_text_1",
@@ -577,7 +577,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                     ]
                 )),
                 // Tab 3
-                .init(stack: .init(
+                .init(id: "3", stack: .init(
                     components: [
                         .text(.init(
                             text: "tab_3_text_1",
@@ -629,7 +629,7 @@ struct TabsComponentView_Previews: PreviewProvider {
             ),
             onDismiss: {}
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Segment Tabs")
 
@@ -665,7 +665,7 @@ struct TabsComponentView_Previews: PreviewProvider {
             ),
             onDismiss: {}
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Button Tabs")
 
@@ -702,7 +702,7 @@ struct TabsComponentView_Previews: PreviewProvider {
             ),
             onDismiss: {}
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Toggle Tabs")
     }

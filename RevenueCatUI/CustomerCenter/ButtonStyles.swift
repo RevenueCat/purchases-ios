@@ -14,7 +14,7 @@
 //
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if os(iOS)
@@ -42,7 +42,40 @@ struct ProminentButtonStyle: PrimitiveButtonStyle {
         .applyIf(background != nil, apply: { $0.tint(background) })
         .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
     }
+}
 
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+struct CustomerCenterButtonStyle: ButtonStyle {
+    let normalColor: Color
+    let pressedColor: Color
+
+    func makeBody(configuration: ButtonStyleConfiguration) -> some View {
+        configuration.label
+            .padding(.horizontal)
+            .padding(.vertical, 12)
+            .background(configuration.isPressed ? pressedColor : normalColor)
+            .cornerRadius(10)
+    }
+}
+
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension ButtonStyle where Self == CustomerCenterButtonStyle {
+    static func customerCenterButtonStyle(for colorScheme: ColorScheme) -> CustomerCenterButtonStyle {
+        CustomerCenterButtonStyle(
+            normalColor: Color(colorScheme == .light
+                               ? UIColor.systemBackground
+                               : UIColor.secondarySystemBackground),
+            pressedColor: Color(colorScheme == .light
+                                ? UIColor.secondarySystemBackground
+                                : UIColor.systemBackground)
+        )
+    }
 }
 
 @available(iOS 15.0, *)
@@ -78,6 +111,7 @@ struct DismissCircleButton: View {
                 )
             }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("circled_close_button")
         .accessibilityLabel(Text(localization[.dismiss]))
     }
 

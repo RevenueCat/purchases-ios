@@ -46,6 +46,16 @@ import Foundation
     /// For entitlements granted via RevenueCat's External Purchases API.
     @objc(RCExternal) case external = 8
 
+    /// For entitlements granted via Paddle.
+    @objc(RCPaddle) case paddle = 9
+
+    #if TEST_STORE
+
+    /// For entitlements granted via the Test Store.
+    @objc(RCTestStore) case testStore = 10
+
+    #endif
+
 }
 
 extension Store: CaseIterable {}

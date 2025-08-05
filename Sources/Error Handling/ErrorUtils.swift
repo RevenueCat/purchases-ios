@@ -390,10 +390,12 @@ enum ErrorUtils {
      * - [`StoreKitError.notAvailableInStorefront`](https://rev.cat/storekit-error-not-available-in-storefront)
      */
     static func productNotAvailableForPurchaseError(
+        withMessage message: String? = nil,
         error: Error? = nil,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> PurchasesError {
         return ErrorUtils.error(with: .productNotAvailableForPurchaseError,
+                                message: message,
                                 underlyingError: error)
     }
 

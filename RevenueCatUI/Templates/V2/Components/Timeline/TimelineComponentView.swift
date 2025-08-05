@@ -23,10 +23,13 @@ struct TimelineComponentView: View {
     private let viewModel: TimelineComponentViewModel
 
     @EnvironmentObject
+    private var packageContext: PackageContext
+
+    @EnvironmentObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
     @EnvironmentObject
-    private var packageContext: PackageContext
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
 
     @Environment(\.componentViewState)
     private var componentViewState
@@ -49,6 +52,9 @@ struct TimelineComponentView: View {
             condition: self.screenCondition,
             isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                 package: self.packageContext.package
+            ),
+            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                for: self.packageContext.package
             )
         ) { style in
             if style.visible {
@@ -68,6 +74,9 @@ struct TimelineComponentView: View {
                     condition: self.screenCondition,
                     isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                         package: self.packageContext.package
+                    ),
+                    isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                        for: self.packageContext.package
                     )
                 ) { itemStyle in
                     if itemStyle.visible {
@@ -90,6 +99,9 @@ struct TimelineComponentView: View {
                         condition: self.screenCondition,
                         isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                             package: self.packageContext.package
+                        ),
+                        isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                            for: self.packageContext.package
                         )
                     ) { itemStyle in
                         if itemStyle.visible {
@@ -359,7 +371,7 @@ struct ContentView_Previews: PreviewProvider {
                     ]
                 ), uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
             ))
-            .previewRequiredEnvironmentProperties()
+            .previewRequiredPaywallsV2Properties()
             .previewDisplayName("Timeline - \(alignment)")
         }
 

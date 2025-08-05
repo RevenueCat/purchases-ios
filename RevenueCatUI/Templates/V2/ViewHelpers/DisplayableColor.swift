@@ -17,6 +17,7 @@ import SwiftUI
 
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallComponent.Background {
 
     func asDisplayable(uiConfigProvider: UIConfigProvider) -> BackgroundStyle {
@@ -61,6 +62,7 @@ enum DisplayableColorInfo: Codable, Sendable, Hashable {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension DisplayableColorScheme {
 
     static func from(colorScheme: PaywallComponent.ColorScheme,
@@ -73,6 +75,7 @@ extension DisplayableColorScheme {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallComponent.ColorScheme {
 
     func asDisplayable(uiConfigProvider: UIConfigProvider) -> DisplayableColorScheme {
@@ -86,6 +89,7 @@ extension PaywallComponent.ColorScheme {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallComponent.ColorInfo {
 
     func asDisplayable(forLight: Bool, uiConfigProvider: UIConfigProvider) throws -> DisplayableColorInfo {

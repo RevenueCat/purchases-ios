@@ -30,7 +30,7 @@ class WebPurchaseRedemptionHelperTests: TestCase {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let systemInfo = MockSystemInfo(finishTransactions: true)
-        let deviceCache = MockDeviceCache(sandboxEnvironmentDetector: systemInfo)
+        let deviceCache = MockDeviceCache(systemInfo: systemInfo)
 
         self.backend = MockBackend()
         // swiftlint:disable:next force_cast

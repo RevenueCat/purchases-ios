@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1E37C7842C65187B0009D546 /* CustomerCenterConfigDataAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E37C7812C6518410009D546 /* CustomerCenterConfigDataAPI.swift */; };
 		1E8A60812CDCF29D0034ACF3 /* RedeemWebPurchasesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E8A60802CDCF29D0034ACF3 /* RedeemWebPurchasesAPI.swift */; };
 		1EB697C22CD26218003000FC /* WebPurchaseRedemptionResultAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EB697C12CD26218003000FC /* WebPurchaseRedemptionResultAPI.swift */; };
 		2D4C60E12C5AD1BC00A29FD2 /* AllAPITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C60D82C5AD1BC00A29FD2 /* AllAPITests.framework */; };
@@ -127,8 +126,15 @@
 		35370AC52CFF8304004F0A64 /* RCSubscriptionInfoAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = 35370AC42CFF82F8004F0A64 /* RCSubscriptionInfoAPI.h */; };
 		35370AC82CFF8317004F0A64 /* RCSubscriptionInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 35370AC72CFF8312004F0A64 /* RCSubscriptionInfoAPI.m */; };
 		75C1B6AD2D48D4550011512D /* DangerousSettingsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C1B6AC2D48D4550011512D /* DangerousSettingsAPI.swift */; };
+		FD181EF12D72451000A8EBE2 /* VirtualCurrencyAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD181EF02D72451000A8EBE2 /* VirtualCurrencyAPI.swift */; };
+		FD2A4F982D721D2100ED3367 /* RCVirtualCurrencyAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = FD2A4F972D721D2100ED3367 /* RCVirtualCurrencyAPI.m */; };
+		FD2A4F9A2D721D3D00ED3367 /* RCVirtualCurrencyAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = FD2A4F992D721D3D00ED3367 /* RCVirtualCurrencyAPI.h */; };
+		75D7048D2DFC3F9400F02803 /* Purchases+RevenueCatUI_API.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D7048C2DFC3F9400F02803 /* Purchases+RevenueCatUI_API.swift */; };
 		FD33CD732D03587E000D13A4 /* CustomerCenterViewControllerAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD33CD722D035876000D13A4 /* CustomerCenterViewControllerAPI.swift */; };
 		FDCC983A2D0A0FD500F5854B /* CustomerCenterViewAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDCC98392D0A0FD500F5854B /* CustomerCenterViewAPI.swift */; };
+		FDE57B082DF8B9C900101CE2 /* VirtualCurrenciesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDE57B072DF8B9C900101CE2 /* VirtualCurrenciesAPI.swift */; };
+		FDE57B0A2DF8BA9400101CE2 /* RCVirtualCurrenciesAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = FDE57B092DF8BA9400101CE2 /* RCVirtualCurrenciesAPI.h */; };
+		FDE57B0C2DF8BAB100101CE2 /* RCVirtualCurrenciesAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = FDE57B0B2DF8BAB100101CE2 /* RCVirtualCurrenciesAPI.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -215,7 +221,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		1E37C7812C6518410009D546 /* CustomerCenterConfigDataAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomerCenterConfigDataAPI.swift; sourceTree = "<group>"; };
 		1E8A60802CDCF29D0034ACF3 /* RedeemWebPurchasesAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RedeemWebPurchasesAPI.swift; sourceTree = "<group>"; };
 		1EB697C12CD26218003000FC /* WebPurchaseRedemptionResultAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebPurchaseRedemptionResultAPI.swift; sourceTree = "<group>"; };
 		2D4C60D82C5AD1BC00A29FD2 /* AllAPITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AllAPITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -357,8 +362,15 @@
 		35370AC72CFF8312004F0A64 /* RCSubscriptionInfoAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCSubscriptionInfoAPI.m; sourceTree = "<group>"; };
 		75C1B6AC2D48D4550011512D /* DangerousSettingsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DangerousSettingsAPI.swift; sourceTree = "<group>"; };
 		75C1B6AE2D48D4DB0011512D /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		FD181EF02D72451000A8EBE2 /* VirtualCurrencyAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyAPI.swift; sourceTree = "<group>"; };
+		FD2A4F972D721D2100ED3367 /* RCVirtualCurrencyAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCVirtualCurrencyAPI.m; sourceTree = "<group>"; };
+		FD2A4F992D721D3D00ED3367 /* RCVirtualCurrencyAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCVirtualCurrencyAPI.h; sourceTree = "<group>"; };
+		75D7048C2DFC3F9400F02803 /* Purchases+RevenueCatUI_API.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Purchases+RevenueCatUI_API.swift"; sourceTree = "<group>"; };
 		FD33CD722D035876000D13A4 /* CustomerCenterViewControllerAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterViewControllerAPI.swift; sourceTree = "<group>"; };
 		FDCC98392D0A0FD500F5854B /* CustomerCenterViewAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterViewAPI.swift; sourceTree = "<group>"; };
+		FDE57B072DF8B9C900101CE2 /* VirtualCurrenciesAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrenciesAPI.swift; sourceTree = "<group>"; };
+		FDE57B092DF8BA9400101CE2 /* RCVirtualCurrenciesAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCVirtualCurrenciesAPI.h; sourceTree = "<group>"; };
+		FDE57B0B2DF8BAB100101CE2 /* RCVirtualCurrenciesAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCVirtualCurrenciesAPI.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -529,6 +541,10 @@
 				2D4C61782C5AD31A00A29FD2 /* RCStoreKitVersionAPI.h */,
 				2D4C61562C5AD31600A29FD2 /* RCStoreKitVersionAPI.m */,
 				2D4C613F2C5AD30400A29FD2 /* ObjcAPITester.h */,
+				FD2A4F972D721D2100ED3367 /* RCVirtualCurrencyAPI.m */,
+				FD2A4F992D721D3D00ED3367 /* RCVirtualCurrencyAPI.h */,
+				FDE57B092DF8BA9400101CE2 /* RCVirtualCurrenciesAPI.h */,
+				FDE57B0B2DF8BAB100101CE2 /* RCVirtualCurrenciesAPI.m */,
 			);
 			path = ObjcAPITester;
 			sourceTree = "<group>";
@@ -553,7 +569,6 @@
 				2D4C61D32C5AD62900A29FD2 /* AttributionNetworkAPI.swift */,
 				2D4C61CC2C5AD62900A29FD2 /* AttributionAPI.swift */,
 				2D4C61D42C5AD62900A29FD2 /* ConfigurationAPI.swift */,
-				1E37C7812C6518410009D546 /* CustomerCenterConfigDataAPI.swift */,
 				2D4C61C92C5AD62800A29FD2 /* CustomerInfoAPI.swift */,
 				75C1B6AC2D48D4550011512D /* DangerousSettingsAPI.swift */,
 				2D4C61CA2C5AD62900A29FD2 /* EntitlementInfoAPI.swift */,
@@ -585,6 +600,8 @@
 				2D4C61BA2C5AD62700A29FD2 /* VerificationResultAPI.swift */,
 				2D4C61C32C5AD62800A29FD2 /* StoreKitVersionAPI.swift */,
 				2D4C61B52C5AD61800A29FD2 /* SwiftAPITester.h */,
+				FDE57B072DF8B9C900101CE2 /* VirtualCurrenciesAPI.swift */,
+				FD181EF02D72451000A8EBE2 /* VirtualCurrencyAPI.swift */,
 			);
 			path = SwiftAPITester;
 			sourceTree = "<group>";
@@ -610,6 +627,7 @@
 				2D4C622C2C5ADA6700A29FD2 /* main.swift */,
 				2D4C62232C5ADA2400A29FD2 /* RevenueCatUISwiftAPITester.h */,
 				FDCC98392D0A0FD500F5854B /* CustomerCenterViewAPI.swift */,
+				75D7048C2DFC3F9400F02803 /* Purchases+RevenueCatUI_API.swift */,
 			);
 			path = RevenueCatUISwiftAPITester;
 			sourceTree = "<group>";
@@ -663,7 +681,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				2D4C61402C5AD30400A29FD2 /* ObjcAPITester.h in Headers */,
+				FD2A4F9A2D721D3D00ED3367 /* RCVirtualCurrencyAPI.h in Headers */,
 				35370AC52CFF8304004F0A64 /* RCSubscriptionInfoAPI.h in Headers */,
+				FDE57B0A2DF8BA9400101CE2 /* RCVirtualCurrenciesAPI.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -979,6 +999,7 @@
 				2D4C617D2C5AD31A00A29FD2 /* RCConfigurationAPI.m in Sources */,
 				2D4C617E2C5AD31A00A29FD2 /* RCPromotionalOfferAPI.m in Sources */,
 				2D4C61912C5AD31A00A29FD2 /* RCIntroEligibilityAPI.m in Sources */,
+				FD2A4F982D721D2100ED3367 /* RCVirtualCurrencyAPI.m in Sources */,
 				2D4C61882C5AD31A00A29FD2 /* RCTransactionAPI.m in Sources */,
 				2D4C617F2C5AD31A00A29FD2 /* RCEntitlementInfoAPI.m in Sources */,
 				2D4C61812C5AD31A00A29FD2 /* RCAttributionAPI.m in Sources */,
@@ -990,6 +1011,7 @@
 				2D4C61892C5AD31A00A29FD2 /* RCStorefrontAPI.m in Sources */,
 				2D4C61922C5AD31A00A29FD2 /* RCSubscriptionPeriodAPI.m in Sources */,
 				2D4C61802C5AD31A00A29FD2 /* RCStoreProductAPI.m in Sources */,
+				FDE57B0C2DF8BAB100101CE2 /* RCVirtualCurrenciesAPI.m in Sources */,
 				2D4C61792C5AD31A00A29FD2 /* RCRefundRequestStatusAPI.m in Sources */,
 				2D4C618B2C5AD31A00A29FD2 /* RCCustomerInfoAPI.m in Sources */,
 				2D4C617A2C5AD31A00A29FD2 /* RCOfferingsAPI.m in Sources */,
@@ -1018,11 +1040,11 @@
 				2D4C61F52C5AD62A00A29FD2 /* PromotionalOfferAPI.swift in Sources */,
 				2D4C61E92C5AD62A00A29FD2 /* StoreProductAPI.swift in Sources */,
 				3502630E2CF61E9F00894270 /* SubscriptionInfoAPI.swift in Sources */,
+				FDE57B082DF8B9C900101CE2 /* VirtualCurrenciesAPI.swift in Sources */,
 				2D4C61EA2C5AD62A00A29FD2 /* StorefrontAPI.swift in Sources */,
 				2D4C61E42C5AD62A00A29FD2 /* main.swift in Sources */,
 				2D4C61E62C5AD62A00A29FD2 /* StoreProductDiscountAPI.swift in Sources */,
 				2D4C61EE2C5AD62A00A29FD2 /* ConfigurationAPI.swift in Sources */,
-				1E37C7842C65187B0009D546 /* CustomerCenterConfigDataAPI.swift in Sources */,
 				2D4C61E32C5AD62A00A29FD2 /* PurchasesDiagnosticsAPI.swift in Sources */,
 				2D4C61E22C5AD62A00A29FD2 /* CustomerInfoAPI.swift in Sources */,
 				2D4C61DC2C5AD62A00A29FD2 /* StoreTransactionAPI.swift in Sources */,
@@ -1033,6 +1055,7 @@
 				2D4C61DF2C5AD62A00A29FD2 /* OfferingAPI.swift in Sources */,
 				2D4C61F22C5AD62A00A29FD2 /* PurchasesAPI.swift in Sources */,
 				2D4C61F12C5AD62A00A29FD2 /* PresentedOfferingContextAPI.swift in Sources */,
+				FD181EF12D72451000A8EBE2 /* VirtualCurrencyAPI.swift in Sources */,
 				2D4C61D92C5AD62A00A29FD2 /* TestStoreProductAPI.swift in Sources */,
 				1EB697C22CD26218003000FC /* WebPurchaseRedemptionResultAPI.swift in Sources */,
 				2D4C61F32C5AD62A00A29FD2 /* VerificationResultAPI.swift in Sources */,
@@ -1066,6 +1089,7 @@
 				2D4C622F2C5ADA6700A29FD2 /* main.swift in Sources */,
 				FDCC983A2D0A0FD500F5854B /* CustomerCenterViewAPI.swift in Sources */,
 				2D4C62302C5ADA6700A29FD2 /* PaywallViewControllerAPI.swift in Sources */,
+				75D7048D2DFC3F9400F02803 /* Purchases+RevenueCatUI_API.swift in Sources */,
 				1E8A60812CDCF29D0034ACF3 /* RedeemWebPurchasesAPI.swift in Sources */,
 				2D4C622E2C5ADA6700A29FD2 /* PaywallViewAPI.swift in Sources */,
 			);

@@ -8,10 +8,11 @@
 //      https://opensource.org/licenses/MIT
 //
 //  CustomerCenterActionWrapper.swift
-//  
+//
 //  Created by Cesar de la Vega on 2024-06-17.
 
-import RevenueCat
+import Combine
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 /// Internal enum that represents all possible actions in the Customer Center
@@ -24,6 +25,7 @@ internal enum CustomerCenterInternalAction {
     case restoreFailed(Error)
     case restoreCompleted(CustomerInfo)
     case showingManageSubscriptions
+    case showingChangePlans(String?)
     case refundRequestStarted(String)
     case refundRequestCompleted(String, RefundRequestStatus)
     case feedbackSurveyCompleted(String)
@@ -32,6 +34,7 @@ internal enum CustomerCenterInternalAction {
     case buttonTapped(action: CustomerCenterActionable)
     // Internal action for when a promotional offer succeeds
     case promotionalOfferSuccess
+    case customActionSelected(CustomActionData)
 
     /// Converts this internal action to the corresponding legacy action if one exists
     /// Returns nil for actions that don't have a legacy CustomerCenterAction equivalent
@@ -51,7 +54,10 @@ internal enum CustomerCenterInternalAction {
             return .refundRequestCompleted(status)
         case .feedbackSurveyCompleted(let optionId):
             return .feedbackSurveyCompleted(optionId)
-        case .buttonTapped, .promotionalOfferSuccess:
+        case .buttonTapped,
+                .promotionalOfferSuccess,
+                .showingChangePlans,
+                .customActionSelected:
             return nil // No public equivalent
         }
     }
@@ -62,57 +68,64 @@ internal enum CustomerCenterInternalAction {
 @MainActor
 final class CustomerCenterActionWrapper {
 
-    // Direct setter closures that will be set by the preference connector
-    var setRestoreStarted: () -> Void = {}
-    var setRestoreFailed: (Error) -> Void = { _ in }
-    var setRestoreCompleted: (CustomerInfo) -> Void = { _ in }
-    var setShowingManageSubscriptions: () -> Void = {}
-    var setRefundRequestStarted: (String) -> Void = { _ in }
-    var setRefundRequestCompleted: (String, RefundRequestStatus) -> Void = { _, _ in }
-    var setFeedbackSurveyCompleted: (String) -> Void = { _ in }
-    var setManagementOptionSelected: (CustomerCenterActionable) -> Void = { _ in }
-    var setPromotionalOfferSuccess: () -> Void = { }
-
-    // The handler for legacy actions
     private let legacyActionHandler: DeprecatedCustomerCenterActionHandler?
+
+    // Combine publishers for each action
+    let restoreStarted = PassthroughSubject<Void, Never>()
+    let restoreFailed = PassthroughSubject<NSError, Never>()
+    let restoreCompleted = PassthroughSubject<CustomerInfo, Never>()
+    let showingManageSubscriptions = PassthroughSubject<Void, Never>()
+    let showingChangePlans = PassthroughSubject<String?, Never>()
+    let refundRequestStarted = PassthroughSubject<String, Never>()
+    let refundRequestCompleted = PassthroughSubject<(String, RefundRequestStatus), Never>()
+    let feedbackSurveyCompleted = PassthroughSubject<String, Never>()
+    let managementOptionSelected = PassthroughSubject<CustomerCenterActionable, Never>()
+    let customActionSelected = PassthroughSubject<(String, String?), Never>()
+    let promotionalOfferSuccess = PassthroughSubject<Void, Never>()
 
     init(legacyActionHandler: DeprecatedCustomerCenterActionHandler? = nil) {
         self.legacyActionHandler = legacyActionHandler
     }
 
-    /// Main entry point for handling all actions
-    /// For legacy CustomerCenterAction, calls the legacy handler and triggers callbacks
-    /// For non-legacy actions, only triggers callbacks
+    // swiftlint:disable:next cyclomatic_complexity
     func handleAction(_ action: CustomerCenterInternalAction) {
-        // For actions with a legacy equivalent, call the legacy handler
         if let legacyAction = action.asLegacyAction {
             legacyActionHandler?(legacyAction)
         }
 
-        // Trigger callbacks for all actions
-        triggerCallbacks(for: action)
-    }
-
-    private func triggerCallbacks(for action: CustomerCenterInternalAction) {
         switch action {
         case .restoreStarted:
-            setRestoreStarted()
+            restoreStarted.send(())
+
         case .restoreFailed(let error):
-            setRestoreFailed(error)
-        case .restoreCompleted(let customerInfo):
-            setRestoreCompleted(customerInfo)
+            restoreFailed.send(error as NSError)
+
+        case .restoreCompleted(let info):
+            restoreCompleted.send(info)
+
         case .showingManageSubscriptions:
-            setShowingManageSubscriptions()
+            showingManageSubscriptions.send(())
+
         case .refundRequestStarted(let productId):
-            setRefundRequestStarted(productId)
+            refundRequestStarted.send(productId)
+
         case .refundRequestCompleted(let productId, let status):
-            setRefundRequestCompleted(productId, status)
-        case .feedbackSurveyCompleted(let optionId):
-            setFeedbackSurveyCompleted(optionId)
+            refundRequestCompleted.send((productId, status))
+
+        case .feedbackSurveyCompleted(let reason):
+            feedbackSurveyCompleted.send(reason)
+
         case .buttonTapped(let action):
-            setManagementOptionSelected(action)
+            managementOptionSelected.send(action)
+
+        case .customActionSelected(let customActionData):
+            customActionSelected.send((customActionData.actionIdentifier, customActionData.purchaseIdentifier))
+
         case .promotionalOfferSuccess:
-            setPromotionalOfferSuccess()
+            promotionalOfferSuccess.send(())
+
+        case .showingChangePlans(let subscriptionGroupID):
+            showingChangePlans.send(subscriptionGroupID)
         }
     }
 }
@@ -125,6 +138,7 @@ final class CustomerCenterActionWrapper {
 extension CustomerCenterConfigData.HelpPath {
 
     /// Converts this HelpPath to an appropriate CustomerCenterActionable
+    /// - Parameter purchaseIdentifier: The optional active purchase ID for the context
     /// - Returns: A CustomerCenterActionable representing this path
     func asAction() -> CustomerCenterActionable? {
         switch self.type {

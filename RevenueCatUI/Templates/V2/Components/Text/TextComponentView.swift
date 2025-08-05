@@ -14,7 +14,7 @@
 // swiftlint:disable file_length
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
@@ -23,10 +23,13 @@ import SwiftUI
 struct TextComponentView: View {
 
     @EnvironmentObject
+    private var packageContext: PackageContext
+
+    @EnvironmentObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
     @EnvironmentObject
-    private var packageContext: PackageContext
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
 
     @Environment(\.componentViewState)
     private var componentViewState
@@ -47,6 +50,9 @@ struct TextComponentView: View {
             packageContext: self.packageContext,
             isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                 package: self.packageContext.package
+            ),
+            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                for: self.packageContext.package
             )
         ) { style in
             if style.visible {
@@ -75,15 +81,11 @@ private struct NonLocalizedMarkdownText: View {
 
     var markdownText: AttributedString? {
         #if swift(>=5.7)
-        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-            return try? AttributedString(
-                markdown: self.text,
-                // We want to only process inline markdown, preserving line feeds in the original text.
-                options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnly)
-            )
-        } else {
-            return nil
-        }
+        return try? AttributedString(
+            markdown: self.text,
+            // We want to only process inline markdown, preserving line feeds in the original text.
+            options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnly)
+        )
         #else
         return nil
         #endif
@@ -121,8 +123,29 @@ private struct NonLocalizedMarkdownText: View {
 // swiftlint:disable type_body_length
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TextComponentView_Previews: PreviewProvider {
+    private static var platformPreview: some View {
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_1": .string(ProcessInfo.processInfo.platformString)
+                    ]
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(
+                    text: "id_1",
+                    color: .init(light: .hex("#000000"))
+                )
+            )
+        )
+        .previewRequiredPaywallsV2Properties()
+        .previewLayout(.sizeThatFits)
 
-    static var previews: some View {
+    }
+
+    private static var defaultPreview: some View {
         // Default
         TextComponentView(
             // swiftlint:disable:next force_try
@@ -140,9 +163,17 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
+
+    }
+
+    static var previews: some View {
+        defaultPreview
         .previewDisplayName("Default")
+
+        platformPreview
+        .previewDisplayName("Detected Platform")
 
         // Markdown
         TextComponentView(
@@ -162,7 +193,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Markdown")
 
@@ -183,7 +214,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Markdown - Invalid")
 
@@ -204,7 +235,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Blank line")
 
@@ -239,7 +270,7 @@ struct TextComponentView_Previews: PreviewProvider {
                     ),
                     uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
                         fonts: [
-                            "primary": .init(ios: .name("Chalkduster"))
+                            "primary": UIConfig.FontsConfig(ios: UIConfig.FontInfo(name: "Chalkduster"))
                         ]
                     )),
                     component: .init(
@@ -262,7 +293,7 @@ struct TextComponentView_Previews: PreviewProvider {
                     ),
                     uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
                         fonts: [
-                            "primary": .init(ios: .name("Chalkduster"))
+                            "primary": UIConfig.FontsConfig(ios: UIConfig.FontInfo(name: "Chalkduster"))
                         ]
                     )),
                     component: .init(
@@ -285,7 +316,7 @@ struct TextComponentView_Previews: PreviewProvider {
                     ),
                     uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
                         fonts: [
-                            "primary": .init(ios: .name("This Font Does Not Exist"))
+                            "primary": UIConfig.FontsConfig(ios: UIConfig.FontInfo(name: "This Font Does Not Exist"))
                         ]
                     )),
                     component: .init(
@@ -297,7 +328,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Custom Font")
 
@@ -314,7 +345,7 @@ struct TextComponentView_Previews: PreviewProvider {
                     ),
                     uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
                         fonts: [
-                            "generic": .init(ios: .name("serif"))
+                            "generic": UIConfig.FontsConfig(ios: UIConfig.FontInfo(name: "serif"))
                         ]
                     )),
                     component: .init(
@@ -337,7 +368,7 @@ struct TextComponentView_Previews: PreviewProvider {
                     ),
                     uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
                         fonts: [
-                            "generic": .init(ios: .name("sans-serif"))
+                            "generic": UIConfig.FontsConfig(ios: UIConfig.FontInfo(name: "sans-serif"))
                         ]
                     )),
                     component: .init(
@@ -360,7 +391,7 @@ struct TextComponentView_Previews: PreviewProvider {
                     ),
                     uiConfigProvider: .init(uiConfig: PreviewUIConfig.make(
                         fonts: [
-                            "generic": .init(ios: .name("monospace"))
+                            "generic": UIConfig.FontsConfig(ios: UIConfig.FontInfo(name: "monospace"))
                         ]
                     )),
                     component: .init(
@@ -372,7 +403,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Custom Font - Generic")
 
@@ -426,7 +457,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Custom Color")
 
@@ -459,7 +490,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Gradient")
 
@@ -493,7 +524,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Customizations")
 
@@ -532,7 +563,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredEnvironmentProperties(
+        .previewRequiredPaywallsV2Properties(
             componentViewState: .selected
         )
         .previewLayout(.sizeThatFits)
@@ -563,7 +594,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredEnvironmentProperties(
+        .previewRequiredPaywallsV2Properties(
             screenCondition: .medium
         )
         .previewLayout(.sizeThatFits)
@@ -594,7 +625,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Condition - Has medium but not medium")
 
@@ -643,7 +674,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredEnvironmentProperties(
+        .previewRequiredPaywallsV2Properties(
             packageContext: .init(
                 package: PreviewMock.annualStandardPackage,
                 variableContext: .init(packages: [

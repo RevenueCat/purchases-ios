@@ -92,6 +92,7 @@ private enum ButtonWithSheetPreview {
     static let package = PaywallComponent.PackageComponent(
         packageID: "weekly",
         isSelectedByDefault: false,
+        applePromoOfferProductCode: nil,
         stack: packageStack
     )
 
@@ -367,6 +368,7 @@ private enum ButtonWithSheetPreview {
         return PaywallComponent.PackageComponent(
             packageID: packageID,
             isSelectedByDefault: isSelectedByDefault,
+            applePromoOfferProductCode: nil,
             stack: stack
         )
     }
@@ -507,9 +509,10 @@ struct ButtonWithSheetPreview_Previews: PreviewProvider {
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,
             onDismiss: { },
-            fallbackContent: .customView(AnyView(Text("Fallback paywall")))
+            fallbackContent: .customView(AnyView(Text("Fallback paywall"))),
+            failedToLoadFont: { _ in }
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 800))
         .previewDisplayName("Template 1")
     }

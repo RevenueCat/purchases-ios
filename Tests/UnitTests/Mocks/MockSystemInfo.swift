@@ -21,23 +21,48 @@ class MockSystemInfo: SystemInfo {
     convenience init(platformInfo: Purchases.PlatformInfo? = nil,
                      finishTransactions: Bool,
                      customEntitlementsComputation: Bool = false,
+                     storeKitVersion: StoreKitVersion = .default,
+                     apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform,
+                     responseVerificationMode: Signing.ResponseVerificationMode = .disabled,
+                     dangerousSettings: DangerousSettings,
+                     clock: ClockType = TestClock(),
+                     preferredLocalesProvider: PreferredLocalesProvider = .mock()) {
+        self.init(platformInfo: platformInfo,
+                  finishTransactions: finishTransactions,
+                  storeKitVersion: storeKitVersion,
+                  apiKeyValidationResult: apiKeyValidationResult,
+                  responseVerificationMode: responseVerificationMode,
+                  dangerousSettings: dangerousSettings,
+                  isAppBackgrounded: false,
+                  clock: clock,
+                  preferredLocalesProvider: preferredLocalesProvider)
+    }
+
+    convenience init(platformInfo: Purchases.PlatformInfo? = nil,
+                     finishTransactions: Bool,
+                     customEntitlementsComputation: Bool = false,
                      uiPreviewMode: Bool = false,
                      storeKitVersion: StoreKitVersion = .default,
+                     apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform,
                      responseVerificationMode: Signing.ResponseVerificationMode = .disabled,
-                     clock: ClockType = TestClock()) {
+                     clock: ClockType = TestClock(),
+                     preferredLocalesProvider: PreferredLocalesProvider = .mock()) {
         let dangerousSettings = DangerousSettings(
             autoSyncPurchases: true,
             customEntitlementComputation: customEntitlementsComputation,
             internalSettings: DangerousSettings.Internal.default,
             uiPreviewMode: uiPreviewMode
         )
+
         self.init(platformInfo: platformInfo,
                   finishTransactions: finishTransactions,
+                  customEntitlementsComputation: customEntitlementsComputation,
                   storeKitVersion: storeKitVersion,
+                  apiKeyValidationResult: apiKeyValidationResult,
                   responseVerificationMode: responseVerificationMode,
                   dangerousSettings: dangerousSettings,
-                  isAppBackgrounded: false,
-                  clock: clock)
+                  clock: clock,
+                  preferredLocalesProvider: preferredLocalesProvider)
     }
 
     override var isAppBackgroundedState: Bool {
@@ -78,7 +103,7 @@ class MockSystemInfo: SystemInfo {
 
 extension MockSystemInfo: @unchecked Sendable {}
 
-extension RevenueCat.OperatingSystemVersion: Swift.Comparable {
+extension OperatingSystemVersion: Swift.Comparable {
 
     public static func < (lhs: OperatingSystemVersion, rhs: OperatingSystemVersion) -> Bool {
         if lhs.majorVersion == rhs.majorVersion {

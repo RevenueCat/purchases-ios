@@ -53,11 +53,10 @@ import Foundation
     let platformInfo: Purchases.PlatformInfo?
     let responseVerificationMode: Signing.ResponseVerificationMode
     let showStoreMessagesAutomatically: Bool
+    let preferredLocale: String?
     internal let diagnosticsEnabled: Bool
 
     private init(with builder: Builder) {
-        Self.verify(apiKey: builder.apiKey)
-
         self.apiKey = builder.apiKey
         self.appUserID = builder.appUserID
         self.observerMode = builder.observerMode
@@ -70,6 +69,7 @@ import Foundation
         self.responseVerificationMode = builder.responseVerificationMode
         self.showStoreMessagesAutomatically = builder.showStoreMessagesAutomatically
         self.diagnosticsEnabled = builder.diagnosticsEnabled
+        self.preferredLocale = builder.preferredLocale
     }
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
@@ -113,6 +113,7 @@ import Foundation
         private(set) var showStoreMessagesAutomatically: Bool = true
         private(set) var diagnosticsEnabled: Bool = false
         private(set) var storeKitVersion: StoreKitVersion = .default
+        private(set) var preferredLocale: String?
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
@@ -317,6 +318,13 @@ import Foundation
             return timeout
         }
 
+        /// Sets the preferred locale for the requests.
+        ///
+        /// This locale is included in all requests made by `HTTPClient`.
+        @_spi(Internal) public func with(preferredLocale: String?) -> Builder {
+            self.preferredLocale = preferredLocale
+            return self
+        }
     }
 
 }
@@ -366,11 +374,38 @@ extension Configuration {
 
     enum APIKeyValidationResult {
         case validApplePlatform
+        case testStore
         case otherPlatforms
         case legacy
     }
 
-    static func validate(apiKey: String) -> APIKeyValidationResult {
+    static func validateAndLog(apiKey: String) -> APIKeyValidationResult {
+        let validationResult = self.validate(apiKey: apiKey)
+        validationResult.logIfNeeded()
+        return validationResult
+    }
+
+    private static let applePlatformKeyPrefixes: Set<String> = ["appl_", "mac_"]
+    private static let testStoreKeyPrefix = "test_"
+
+    private static func validate(apiKey: String) -> APIKeyValidationResult {
+        #if TEST_STORE
+        if apiKey.hasPrefix(testStoreKeyPrefix) {
+            // Test Store key format: "test_CtDdmbdWBySmqJeeQUTyrNxETUVkajsJ"
+
+            #if DEBUG
+            return .testStore
+            #else
+            // In release builds, we intentionally crash to prevent submitting an app with a Test Store API key.
+            //
+            // Also note that developing with a Test Store API key isn’t supported when adding the SDK dependency
+            // as an XCFramework, since the XCFramework is built using the Release configuration..
+            fatalError("[RevenueCat]: Test Store API key used in Release build. Please configure the App Store " +
+                       " app on the RevenueCat dashboard and use its corresponding Apple API key before releasing.")
+            #endif
+        }
+        #endif // TEST_STORE
+
         if applePlatformKeyPrefixes.contains(where: { prefix in apiKey.hasPrefix(prefix) }) {
             // Apple key format: "apple_CtDdmbdWBySmqJeeQUTyrNxETUVkajsJ"
             return .validApplePlatform
@@ -382,16 +417,18 @@ extension Configuration {
             return .legacy
         }
     }
+}
 
-    fileprivate static func verify(apiKey: String) {
-        switch self.validate(apiKey: apiKey) {
+extension Configuration.APIKeyValidationResult {
+
+    fileprivate func logIfNeeded() {
+        switch self {
         case .validApplePlatform: break
+        case .testStore: Logger.warn(Strings.configure.testStoreAPIKey)
         case .legacy: Logger.debug(Strings.configure.legacyAPIKey)
         case .otherPlatforms: Logger.error(Strings.configure.invalidAPIKey)
         }
     }
-
-    private static let applePlatformKeyPrefixes: Set<String> = ["appl_", "mac_"]
 
 }
 

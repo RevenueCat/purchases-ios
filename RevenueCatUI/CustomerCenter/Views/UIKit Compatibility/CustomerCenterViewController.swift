@@ -11,6 +11,7 @@
 //
 //  Created by Will Taylor on 12/6/24.
 
+import Combine
 import RevenueCat
 import SwiftUI
 
@@ -32,6 +33,8 @@ import SwiftUI
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 public class CustomerCenterViewController: UIHostingController<CustomerCenterView> {
+
+    private var cancellables: Set<AnyCancellable> = []
 
     // MARK: - Initialization
 
@@ -66,32 +69,57 @@ public class CustomerCenterViewController: UIHostingController<CustomerCenterVie
         refundRequestCompleted: CustomerCenterView.RefundRequestCompletedHandler? = nil,
         feedbackSurveyCompleted: CustomerCenterView.FeedbackSurveyCompletedHandler? = nil
     ) {
-        // Initialize with a basic view first
-
         let actionWrapper = CustomerCenterActionWrapper()
+
+        // Set up Combine subscriptions to emit handler calls
         if let restoreStarted {
-            actionWrapper.setRestoreStarted = restoreStarted
-        }
-        if let restoreCompleted {
-            actionWrapper.setRestoreCompleted = restoreCompleted
-        }
-        if let restoreFailed {
-            actionWrapper.setRestoreFailed = restoreFailed
-        }
-        if let showingManageSubscriptions {
-            actionWrapper.setShowingManageSubscriptions = showingManageSubscriptions
-        }
-        if let refundRequestStarted {
-            actionWrapper.setRefundRequestStarted = refundRequestStarted
-        }
-        if let refundRequestCompleted {
-            actionWrapper.setRefundRequestCompleted = refundRequestCompleted
-        }
-        if let feedbackSurveyCompleted {
-            actionWrapper.setFeedbackSurveyCompleted = feedbackSurveyCompleted
+            actionWrapper.restoreStarted
+                .sink { _ in restoreStarted() }
+                .store(in: &cancellables)
         }
 
-        let view = CustomerCenterView(actionWrapper: actionWrapper, mode: .default, navigationOptions: .default)
+        if let restoreCompleted {
+            actionWrapper.restoreCompleted
+                .sink { restoreCompleted($0) }
+                .store(in: &cancellables)
+        }
+
+        if let restoreFailed {
+            actionWrapper.restoreFailed
+                .sink { restoreFailed($0) }
+                .store(in: &cancellables)
+        }
+
+        if let showingManageSubscriptions {
+            actionWrapper.showingManageSubscriptions
+                .sink { _ in showingManageSubscriptions() }
+                .store(in: &cancellables)
+        }
+
+        if let refundRequestStarted {
+            actionWrapper.refundRequestStarted
+                .sink { refundRequestStarted($0) }
+                .store(in: &cancellables)
+        }
+
+        if let refundRequestCompleted {
+            actionWrapper.refundRequestCompleted
+                .sink { refundRequestCompleted($0.0, $0.1) }
+                .store(in: &cancellables)
+        }
+
+        if let feedbackSurveyCompleted {
+            actionWrapper.feedbackSurveyCompleted
+                .sink { feedbackSurveyCompleted($0) }
+                .store(in: &cancellables)
+        }
+
+        let view = CustomerCenterView(
+            actionWrapper: actionWrapper,
+            mode: .default,
+            navigationOptions: .default
+        )
+
         super.init(rootView: view)
     }
 

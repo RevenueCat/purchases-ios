@@ -15,9 +15,9 @@ import Foundation
 import Nimble
 import XCTest
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
-class BackendGetCustomerCenterConfigTests: BaseBackendTests {
+final class BackendGetCustomerCenterConfigTests: BaseBackendTests {
 
     override func createClient() -> MockHTTPClient {
         super.createClient(#file)
@@ -41,7 +41,7 @@ class BackendGetCustomerCenterConfigTests: BaseBackendTests {
     }
 
     func testGetCustomerCenterConfigPassesLocales() {
-        self.createDependencies(localesProvider: MockPreferredLocalesProvider(stubbedLocales: ["en_EN", "es_ES"]))
+        self.createDependencies(localesProvider: .mock(locales: ["en_EN", "es_ES"]))
 
         self.httpClient.mock(
             requestPath: .getCustomerCenterConfig(appUserID: Self.userID),
@@ -57,6 +57,27 @@ class BackendGetCustomerCenterConfigTests: BaseBackendTests {
         expect(result).to(beSuccess())
         expect(self.httpClient.calls).to(haveCount(1))
         expect(self.httpClient.calls[0].headers["X-Preferred-Locales"]) == "en_EN,es_ES"
+    }
+
+    func testGetCustomerCenterConfigPassesLocalesWithOverride() {
+        let localesProvider: PreferredLocalesProvider = .mock(preferredLocaleOverride: "fr_FR",
+                                                              locales: ["en_EN", "es_ES"])
+        self.createDependencies(localesProvider: localesProvider)
+
+        self.httpClient.mock(
+            requestPath: .getCustomerCenterConfig(appUserID: Self.userID),
+            response: .init(statusCode: .success, response: Self.customerCenterResponse as [String: Any])
+        )
+
+        let result = waitUntilValue { completed in
+            self.customerCenterConfig.getCustomerCenterConfig(appUserID: Self.userID,
+                                                              isAppBackgrounded: false,
+                                                              completion: completed)
+        }
+
+        expect(result).to(beSuccess())
+        expect(self.httpClient.calls).to(haveCount(1))
+        expect(self.httpClient.calls[0].headers["X-Preferred-Locales"]) == "fr_FR,en_EN,es_ES"
     }
 
     func testGetCustomerCenterConfigCallsHTTPMethodWithRandomDelay() {
@@ -219,6 +240,7 @@ class BackendGetCustomerCenterConfigTests: BaseBackendTests {
         expect(support.email) == "support@revenuecat.com"
         expect(support.displayPurchaseHistoryLink) == true
         expect(support.shouldWarnCustomerToUpdate) == false
+        expect(support.displayVirtualCurrencies) == true
     }
 
     func testGetCustomerCenterConfigFailSendsNil() {
@@ -390,8 +412,31 @@ private extension BackendGetCustomerCenterConfigTests {
             "support": [
                 "email": "support@revenuecat.com",
                 "should_warn_customer_to_update": false,
-                "display_purchase_history_link": true
-            ] as [String: Any]
+                "display_purchase_history_link": true,
+                "display_virtual_currencies": true
+            ] as [String: Any],
+            "change_plans": [
+                [
+                    "group_id": "group_id",
+                    "group_name": "group_name",
+                    "products": [
+                        [
+                        "product_id": "product_id",
+                        "selected": false
+                        ]
+                    ]
+                ],
+                [
+                    "group_id": "group_id2",
+                    "group_name": "group_name2",
+                    "products": [
+                        [
+                        "product_id": "product_id",
+                        "selected": false
+                        ]
+                    ]
+                ]
+            ] as [Any]
         ] as [String: Any]
     ]
 

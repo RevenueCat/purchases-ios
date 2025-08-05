@@ -90,7 +90,8 @@ extension CustomerInfoResponse {
         var store: Store
         var isSandbox: Bool
         var displayName: String?
-
+        /// Price paid for the subscription
+        var price: PurchasePaidPrice?
     }
 
     struct Entitlement {
@@ -141,7 +142,7 @@ extension CustomerInfoResponse.Transaction: Codable, Hashable {
         case store
         case isSandbox
         case displayName
-
+        case price
     }
 
 }

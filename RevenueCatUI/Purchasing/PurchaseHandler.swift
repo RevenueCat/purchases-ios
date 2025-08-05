@@ -11,7 +11,7 @@
 //  
 //  Created by Nacho Soto on 7/13/23.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import StoreKit
 import SwiftUI
 
@@ -34,8 +34,20 @@ final class PurchaseHandler: ObservableObject {
         purchases.purchasesAreCompletedBy
     }
 
+    var subscriptionHistoryTracker: SubscriptionHistoryTracker {
+        purchases.subscriptionHistoryTracker
+    }
+
     /// `false` if this `PurchaseHandler` is not backend by a configured `Purchases`instance.
     let isConfigured: Bool
+
+    var preferredLocales: [Locale] {
+        return purchases.preferredLocales.map(Locale.init)
+    }
+
+    var preferredLocaleOverride: Locale? {
+        return purchases.preferredLocaleOverride.map(Locale.init)
+    }
 
     /// Whether a purchase is currently in progress
     @Published
@@ -146,20 +158,36 @@ final class PurchaseHandler: ObservableObject {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PurchaseHandler {
 
+#if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    func invalidateCustomerInfoCache() {
+        self.purchases.invalidateCustomerInfoCache()
+    }
+#endif
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension PurchaseHandler {
+
     // MARK: - Purchase
 
     @MainActor
     func purchase(package: Package) async throws {
+        try await purchase(package: package, promotionalOffer: nil)
+    }
+
+    @MainActor
+    func purchase(package: Package, promotionalOffer: PromotionalOffer?) async throws {
         switch self.purchases.purchasesAreCompletedBy {
         case .revenueCat:
-            try await performPurchase(package: package)
+            try await performPurchase(package: package, promotionalOffer: promotionalOffer)
         case .myApp:
-            try await performExternalPurchaseLogic(package: package)
+            try await performExternalPurchaseLogic(package: package, promotionalOffer: promotionalOffer)
         }
     }
 
     @MainActor
-    func performPurchase(package: Package) async throws {
+    func performPurchase(package: Package, promotionalOffer: PromotionalOffer?) async throws {
         Logger.debug(Strings.executing_purchase_logic)
         self.packageBeingPurchased = package
         self.purchaseResult = nil
@@ -173,7 +201,14 @@ extension PurchaseHandler {
         self.startAction(.purchase)
 
         do {
-            let result = try await self.purchases.purchase(package: package)
+            let result: PurchaseResultData
+
+            if let promotionalOffer {
+                result = try await self.purchases.purchase(package: package, promotionalOffer: promotionalOffer)
+            } else {
+                result = try await self.purchases.purchase(package: package)
+            }
+
             self.purchaseResult = result
 
             if result.userCancelled {
@@ -191,9 +226,10 @@ extension PurchaseHandler {
     }
 
     @MainActor
-    func performExternalPurchaseLogic(package: Package) async throws {
+    func performExternalPurchaseLogic(package: Package, promotionalOffer: PromotionalOffer?) async throws {
         Logger.debug(Strings.executing_external_purchase_logic)
 
+        // WIP: Handle promotionalOffer in performPurchase
         guard let externalPurchaseMethod = self.performPurchase else {
             throw PaywallError.performPurchaseAndRestoreHandlersNotDefined(missingBlocks: "performPurchase is")
         }
@@ -401,6 +437,14 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
 
     let customerInfo: CustomerInfo?
 
+    var preferredLocales: [String] { Locale.preferredLanguages }
+
+    var preferredLocaleOverride: String? { nil }
+
+    var subscriptionHistoryTracker: RevenueCat.SubscriptionHistoryTracker {
+        SubscriptionHistoryTracker()
+    }
+
     init(customerInfo: CustomerInfo? = nil, purchasesAreCompletedBy: PurchasesAreCompletedBy) {
         self.customerInfo = customerInfo
         self.purchasesAreCompletedBy = purchasesAreCompletedBy
@@ -415,11 +459,25 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
         throw ErrorCode.configurationError
     }
 
+    func purchase(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
+        throw ErrorCode.configurationError
+    }
+
     func restorePurchases() async throws -> CustomerInfo {
         throw ErrorCode.configurationError
     }
 
     func track(paywallEvent: PaywallEvent) async {}
+
+#if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    func invalidateCustomerInfoCache() {}
+#endif
+
+#if !os(macOS) && !os(tvOS)
+
+    func failedToLoadFontWithConfig(_ fontConfig: UIConfig.FontsConfig) {}
+
+#endif
 
 }
 

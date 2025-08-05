@@ -21,7 +21,7 @@ class DeviceCache {
     var cachedLegacyAppUserID: String? { return self._cachedLegacyAppUserID.value }
     var cachedOfferings: Offerings? { self.offeringsCachedObject.cachedInstance }
 
-    private let sandboxEnvironmentDetector: SandboxEnvironmentDetector
+    private let systemInfo: SystemInfo
     private let userDefaults: SynchronizedUserDefaults
     private let offeringsCachedObject: InMemoryCachedObject<Offerings>
 
@@ -30,11 +30,13 @@ class DeviceCache {
 
     private var userDefaultsObserver: NSObjectProtocol?
 
-    init(sandboxEnvironmentDetector: SandboxEnvironmentDetector,
+    private var offeringsCachePreferredLocales: [String] = []
+
+    init(systemInfo: SystemInfo,
          userDefaults: UserDefaults,
          offeringsCachedObject: InMemoryCachedObject<Offerings> = .init()) {
-        self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
         self.offeringsCachedObject = offeringsCachedObject
+        self.systemInfo = systemInfo
         self.userDefaults = .init(userDefaults: userDefaults)
         self._cachedAppUserID = .init(userDefaults.string(forKey: CacheKeys.appUserDefaults))
         self._cachedLegacyAppUserID = .init(userDefaults.string(forKey: CacheKeys.legacyGeneratedAppUserDefaults))
@@ -89,6 +91,9 @@ class DeviceCache {
             self.offeringsCachedObject.clearCache()
             userDefaults.removeObject(forKey: CacheKey.offerings(oldAppUserID))
 
+            // Clear virtual currencies cache
+            userDefaults.removeObject(forKey: CacheKey.virtualCurrencies(oldAppUserID))
+
             // Delete attributes if synced for the old app user id.
             if Self.unsyncedAttributesByKey(userDefaults, appUserID: oldAppUserID).isEmpty {
                 var attributes = Self.storedAttributesForAllUsers(userDefaults)
@@ -127,7 +132,7 @@ class DeviceCache {
             let timeSinceLastCheck = cachesLastUpdated.timeIntervalSinceNow * -1
             let cacheDurationInSeconds = self.cacheDurationInSeconds(
                 isAppBackgrounded: isAppBackgrounded,
-                isSandbox: self.sandboxEnvironmentDetector.isSandbox
+                isSandbox: self.systemInfo.isSandbox
             )
 
             return timeSinceLastCheck >= cacheDurationInSeconds
@@ -161,8 +166,12 @@ class DeviceCache {
         }
     }
 
-    func cache(offerings: Offerings, appUserID: String) {
+    func cache(offerings: Offerings, preferredLocales: [String], appUserID: String) {
+        // We can't get the preferred locales from the `systemInfo` object because they may change
+        // during the get offerings request, before this cache method gets called.
+        // For the cache we need the preferred locales that were used in the request.
         self.cacheInMemory(offerings: offerings)
+        self.offeringsCachePreferredLocales = preferredLocales
         self.userDefaults.write {
             $0.set(codable: offerings.response, forKey: CacheKey.offerings(appUserID))
         }
@@ -174,20 +183,25 @@ class DeviceCache {
 
     func clearOfferingsCache(appUserID: String) {
         self.offeringsCachedObject.clearCache()
+        self.offeringsCachePreferredLocales = []
         self.userDefaults.write {
             $0.removeObject(forKey: CacheKey.offerings(appUserID))
         }
     }
 
     func isOfferingsCacheStale(isAppBackgrounded: Bool) -> Bool {
+        // Time-based staleness, or
         return self.offeringsCachedObject.isCacheStale(
             durationInSeconds: self.cacheDurationInSeconds(isAppBackgrounded: isAppBackgrounded,
-                                                           isSandbox: self.sandboxEnvironmentDetector.isSandbox)
-        )
+                                                           isSandbox: self.systemInfo.isSandbox)
+        ) ||
+        // Locale-based staleness
+        self.offeringsCachePreferredLocales != self.systemInfo.preferredLocales
     }
 
-    func clearOfferingsCacheTimestamp() {
+    func forceOfferingsCacheStale() {
         self.offeringsCachedObject.clearCacheTimestamp()
+        self.offeringsCachePreferredLocales = []
     }
 
     func offeringsCacheStatus(isAppBackgrounded: Bool) -> CacheStatus {
@@ -378,8 +392,63 @@ class DeviceCache {
         }
     }
 
-    // MARK: - Helper functions
+    // MARK: - Virtual Currencies
 
+    func cache(
+        virtualCurrencies: Data,
+        appUserID: String
+    ) {
+        self.userDefaults.write {
+            $0.set(virtualCurrencies, forKey: CacheKey.virtualCurrencies(appUserID))
+            Self.setVirtualCurrenciesCacheLastUpdatedTimestampToNow($0, appUserID: appUserID)
+        }
+    }
+
+    func cachedVirtualCurrenciesData(forAppUserID appUserID: String) -> Data? {
+        return self.userDefaults.read {
+            $0.data(forKey: CacheKey.virtualCurrencies(appUserID))
+        }
+    }
+
+    func isVirtualCurrenciesCacheStale(appUserID: String, isAppBackgrounded: Bool) -> Bool {
+        return self.userDefaults.read {
+            guard let cachesLastUpdated = Self.virtualCurrenciesLastUpdated($0, appUserID: appUserID) else {
+                return true
+            }
+
+            let timeSinceLastCheck = cachesLastUpdated.timeIntervalSinceNow * -1
+            let cacheDurationInSeconds = self.cacheDurationInSeconds(
+                isAppBackgrounded: isAppBackgrounded,
+                isSandbox: self.systemInfo.isSandbox
+            )
+
+            return timeSinceLastCheck >= cacheDurationInSeconds
+        }
+    }
+
+    func clearVirtualCurrenciesCache(appUserID: String) {
+        self.userDefaults.write {
+            Self.clearVirtualCurrenciesCacheLastUpdatedTimestamp($0, appUserID: appUserID)
+            $0.removeObject(forKey: CacheKey.virtualCurrencies(appUserID))
+        }
+    }
+
+    func clearVirtualCurrenciesCacheLastUpdatedTimestamp(appUserID: String) {
+        self.userDefaults.write {
+            Self.clearVirtualCurrenciesCacheLastUpdatedTimestamp($0, appUserID: appUserID)
+        }
+    }
+
+    func setVirtualCurrenciesCacheLastUpdatedTimestamp(
+        timestamp: Date,
+        appUserID: String
+    ) {
+        self.userDefaults.write {
+            Self.setVirtualCurrenciesCacheLastUpdatedTimestamp($0, timestamp: timestamp, appUserID: appUserID)
+        }
+    }
+
+    // MARK: - Helper functions
     internal enum CacheKeys: String, DeviceCacheKeyType {
 
         case legacyGeneratedAppUserDefaults = "com.revenuecat.userdefaults.appUserID"
@@ -401,6 +470,8 @@ class DeviceCache {
         case legacySubscriberAttributes(String)
         case attributionDataDefaults(String)
         case syncedSK2ObserverModeTransactionIDs
+        case virtualCurrencies(String)
+        case virtualCurrenciesLastUpdated(String)
 
         var rawValue: String {
             switch self {
@@ -411,6 +482,8 @@ class DeviceCache {
             case let .attributionDataDefaults(userID): return "\(Self.base)attribution.\(userID)"
             case .syncedSK2ObserverModeTransactionIDs:
                 return "\(Self.base)syncedSK2ObserverModeTransactionIDs"
+            case let .virtualCurrencies(userID): return "\(Self.base)virtualCurrencies.\(userID)"
+            case let .virtualCurrenciesLastUpdated(userID): return "\(Self.base)virtualCurrenciesLastUpdated.\(userID)"
             }
         }
 
@@ -619,6 +692,34 @@ private extension DeviceCache {
         }
     }
 
+    static func virtualCurrenciesLastUpdated(
+        _ userDefaults: UserDefaults,
+        appUserID: String
+    ) -> Date? {
+        return userDefaults.date(forKey: CacheKey.virtualCurrenciesLastUpdated(appUserID))
+    }
+
+    static func setVirtualCurrenciesCacheLastUpdatedTimestamp(
+        _ userDefaults: UserDefaults,
+        timestamp: Date,
+        appUserID: String
+    ) {
+        userDefaults.set(timestamp, forKey: CacheKey.virtualCurrenciesLastUpdated(appUserID))
+    }
+
+    static func setVirtualCurrenciesCacheLastUpdatedTimestampToNow(
+        _ userDefaults: UserDefaults,
+        appUserID: String
+    ) {
+        Self.setVirtualCurrenciesCacheLastUpdatedTimestamp(userDefaults, timestamp: Date(), appUserID: appUserID)
+    }
+
+    static func clearVirtualCurrenciesCacheLastUpdatedTimestamp(
+        _ userDefaults: UserDefaults,
+        appUserID: String
+    ) {
+        userDefaults.removeObject(forKey: CacheKey.virtualCurrenciesLastUpdated(appUserID))
+    }
 }
 
 fileprivate extension UserDefaults {

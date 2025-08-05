@@ -34,8 +34,7 @@ class StackComponentViewModel {
         viewModels: [PaywallComponentViewModel],
         badgeViewModels: [PaywallComponentViewModel],
         shouldApplySafeAreaInset: Bool = false,
-        uiConfigProvider: UIConfigProvider,
-        localizationProvider: LocalizationProvider
+        uiConfigProvider: UIConfigProvider
     ) throws {
         self.component = component
         self.viewModels = viewModels
@@ -45,17 +44,29 @@ class StackComponentViewModel {
         self.presentedOverrides = try self.component.overrides?.toPresentedOverrides { $0 }
     }
 
+    func copy(withViewModels newViewModels: [PaywallComponentViewModel]) throws -> StackComponentViewModel {
+        return try StackComponentViewModel(
+            component: self.component,
+            viewModels: newViewModels,
+            badgeViewModels: self.badgeViewModels,
+            shouldApplySafeAreaInset: self.shouldApplySafeAreaInset,
+            uiConfigProvider: self.uiConfigProvider
+        )
+    }
+
     @ViewBuilder
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
         @ViewBuilder apply: @escaping (StackComponentStyle) -> some View
     ) -> some View {
         let partial = PresentedStackPartial.buildPartial(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
             with: self.presentedOverrides
         )
 

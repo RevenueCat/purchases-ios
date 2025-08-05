@@ -24,33 +24,22 @@ import SwiftUI
 @MainActor
 final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
 
-    @Published
-    private(set) var activeSubscriptionPurchases: [PurchaseInformation] = []
+    static let maxNonSubscriptionsToShow = 2
 
-    @Published
-    private(set) var activeNonSubscriptionPurchases: [PurchaseInformation] = []
+    let shouldShowSeeAllPurchases: Bool
 
-    var isEmpty: Bool {
-        activeSubscriptionPurchases.isEmpty && activeNonSubscriptionPurchases.isEmpty
+    override var relevantPathsForPurchase: [CustomerCenterConfigData.HelpPath] {
+        paths.relevantPaths(for: nil, allowMissingPurchase: allowMissingPurchase)
     }
-
-    let originalAppUserId: String
-    let originalPurchaseDate: Date?
 
     init(
         screen: CustomerCenterConfigData.Screen,
         actionWrapper: CustomerCenterActionWrapper,
-        activePurchases: [PurchaseInformation] = [],
-        nonSubscriptionPurchases: [PurchaseInformation] = [],
-        originalAppUserId: String,
-        originalPurchaseDate: Date?,
+        shouldShowSeeAllPurchases: Bool,
         refundRequestStatus: RefundRequestStatus? = nil,
         purchasesProvider: CustomerCenterPurchasesType,
         loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
-            self.activeSubscriptionPurchases = activePurchases
-            self.activeNonSubscriptionPurchases = nonSubscriptionPurchases
-            self.originalAppUserId = originalAppUserId
-            self.originalPurchaseDate = originalPurchaseDate
+            self.shouldShowSeeAllPurchases = shouldShowSeeAllPurchases
 
             super.init(
                 screen: screen,
@@ -65,26 +54,17 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
     // Used for Previews
     convenience init(
         screen: CustomerCenterConfigData.Screen,
-        originalAppUserId: String,
         activePurchases: [PurchaseInformation] = [],
         nonSubscriptionPurchases: [PurchaseInformation] = [],
+        shouldShowSeeAllPurchases: Bool,
         originalPurchaseDate: Date? = nil
     ) {
         self.init(
             screen: screen,
             actionWrapper: CustomerCenterActionWrapper(),
-            activePurchases: activePurchases,
-            nonSubscriptionPurchases: nonSubscriptionPurchases,
-            originalAppUserId: originalAppUserId,
-            originalPurchaseDate: originalPurchaseDate,
+            shouldShowSeeAllPurchases: shouldShowSeeAllPurchases,
             purchasesProvider: MockCustomerCenterPurchases()
         )
-    }
-
-    func updatePurchases(_ activeSubscriptionPurchases: [PurchaseInformation]) {
-        self.activeSubscriptionPurchases = activeSubscriptionPurchases
-        // go back to the list
-        self.purchaseInformation = nil
     }
 }
 

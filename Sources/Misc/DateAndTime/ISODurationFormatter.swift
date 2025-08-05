@@ -31,41 +31,60 @@ import Foundation
 /// - `"P1Y2M3DT4H5M6S"`: 1 year, 2 months, 3 days, 4 hours, 5 minutes, 6 seconds.
 /// - `"P3W"`: 3 weeks.
 /// - `"PT15M"`: 15 minutes.
-public struct ISODuration: Equatable {
+@_spi(Internal) public struct ISODuration: Equatable {
     /// The number of years in the duration.
     ///
     /// Example: For `"P1Y"`, this will be `1`.
-    public let years: Int
+    @_spi(Internal) public let years: Int
 
     /// The number of months in the duration.
     ///
     /// Example: For `"P2M"`, this will be `2`.
-    public let months: Int
+    @_spi(Internal) public let months: Int
 
     /// The number of weeks in the duration.
     ///
     /// Example: For `"P3W"`, this will be `3`.
-    public let weeks: Int
+    @_spi(Internal) public let weeks: Int
 
     /// The number of days in the duration.
     ///
     /// Example: For `"P4D"`, this will be `4`.
-    public let days: Int
+    @_spi(Internal) public let days: Int
 
     /// The number of hours in the duration.
     ///
     /// Example: For `"PT5H"`, this will be `5`.
-    public let hours: Int
+    @_spi(Internal) public let hours: Int
 
     /// The number of minutes in the duration.
     ///
     /// Example: For `"PT6M"`, this will be `6`.
-    public let minutes: Int
+    @_spi(Internal) public let minutes: Int
 
     /// The number of seconds in the duration.
     ///
     /// Example: For `"PT7S"`, this will be `7`.
-    public let seconds: Int
+    @_spi(Internal) public let seconds: Int
+
+    // swiftlint:disable:next missing_docs
+    @_spi(Internal) public init(
+        years: Int,
+        months: Int,
+        weeks: Int,
+        days: Int,
+        hours: Int,
+        minutes: Int,
+        seconds: Int
+    ) {
+        self.years = years
+        self.months = months
+        self.weeks = weeks
+        self.days = days
+        self.hours = hours
+        self.minutes = minutes
+        self.seconds = seconds
+    }
 }
 
 @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *)

@@ -21,10 +21,13 @@ import SwiftUI
 struct ImageComponentView: View {
 
     @EnvironmentObject
+    private var packageContext: PackageContext
+
+    @EnvironmentObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
     @EnvironmentObject
-    private var packageContext: PackageContext
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
 
     @Environment(\.componentViewState)
     private var componentViewState
@@ -37,33 +40,72 @@ struct ImageComponentView: View {
 
     let viewModel: ImageComponentViewModel
 
+    @State var maxWidth: CGFloat?
+
     var body: some View {
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
             isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                 package: self.packageContext.package
+            ),
+            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                for: self.packageContext.package
             )
         ) { style in
             if style.visible {
-                RemoteImage(
-                    url: style.url,
-                    lowResUrl: style.lowResUrl,
-                    darkUrl: style.darkUrl,
-                    darkLowResUrl: style.darkLowResUrl
-                ) { (image, size) in
-                    self.renderImage(image, size, with: style)
+                if let maxWidth = self.maxWidth {
+                    RemoteImage(
+                        url: style.url,
+                        lowResUrl: style.lowResUrl,
+                        darkUrl: style.darkUrl,
+                        darkLowResUrl: style.darkLowResUrl
+                    ) { (image, size) in
+                        self.renderImage(
+                            image,
+                            size,
+                            maxWidth: self.calculateMaxWidth(parentWidth: maxWidth,
+                                                             style: style),
+                            with: style
+                        )
+                    }
+                    .applyImageWidth(size: style.size)
+                    .applyImageHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
+                    .clipped()
+                    .padding(style.padding.extend(by: style.border?.width ?? 0))
+                    .shape(border: style.border,
+                           shape: style.shape)
+                    .shadow(shadow: style.shadow,
+                            shape: style.shape?.toInsettableShape())
+                    .padding(style.margin)
+                    .background(
+                        GeometryReader { proxy in
+                            Color.clear
+                                .onAppear {
+                                    self.maxWidth = proxy.size.width
+                                }
+                                .onChangeOf(proxy.size.width) { newWidth in
+                                    self.maxWidth = newWidth
+                                }
+                        }
+                    )
+                } else {
+                    GeometryReader { proxy in
+                        Color.clear
+                            .onAppear {
+                                self.maxWidth = proxy.size.width
+                            }
+                    }
                 }
-                .size(style.size)
-                .clipped()
-                .padding(style.padding.extend(by: style.border?.width ?? 0))
-                .shape(border: style.border,
-                       shape: style.shape)
-                .shadow(shadow: style.shadow,
-                        shape: style.shape?.toInsettableShape())
-                .padding(style.margin)
             }
         }
+    }
+
+    private func calculateMaxWidth(parentWidth: CGFloat, style: ImageComponentStyle) -> CGFloat {
+        let totalBorderWidth = (style.border?.width ?? 0) * 2
+        return parentWidth - totalBorderWidth
+            - style.margin.leading - style.margin.trailing
+            - style.padding.leading - style.padding.trailing
     }
 
     private func aspectRatio(style: ImageComponentStyle) -> Double {
@@ -82,14 +124,19 @@ struct ImageComponentView: View {
         }
     }
 
-    private func renderImage(_ image: Image, _ size: CGSize, with style: ImageComponentStyle) -> some View {
+    private func renderImage(
+        _ image: Image,
+        _ size: CGSize,
+        maxWidth: CGFloat,
+        with style: ImageComponentStyle
+    ) -> some View {
         image
             .fitToAspect(
                 self.aspectRatio(style: style),
                 contentMode: style.contentMode,
                 containerContentMode: style.contentMode
             )
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: maxWidth)
             // WIP: Fix this later when accessibility info is available
             .accessibilityHidden(true)
             .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
@@ -101,15 +148,168 @@ struct ImageComponentView: View {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+fileprivate extension View {
+
+    @ViewBuilder
+    func applyImageWidth(size: PaywallComponent.Size) -> some View {
+        switch size.width {
+        case .fit:
+            self
+        case .fill:
+            self.frame(maxWidth: .infinity)
+        case .fixed(let value):
+            self.frame(width: Double(value))
+        case .relative:
+            self
+        }
+    }
+
+    @ViewBuilder
+    func applyImageHeight(size: PaywallComponent.Size, aspectRatio: Double) -> some View {
+        switch size.height {
+        case .fit:
+            switch size.width {
+            case .fit:
+                self
+            case .fill:
+                self
+            case .fixed(let value):
+                // This is the only change versus the regular .size() modifier.
+                // When the image has height=fit and fixed width, we manually set a
+                // fixed height according to the aspect ratio.
+                // Otherwise the image would grow vertically to occupy available space.
+                // See "Image streching vertically" preview
+                self.frame(height: Double(value) / aspectRatio)
+            case .relative:
+                self
+            }
+        case .fill:
+            self.frame(maxHeight: .infinity)
+        case .fixed(let value):
+            self.frame(height: Double(value))
+        case .relative:
+            self
+        }
+    }
+
+}
+
 #if DEBUG
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 // swiftlint:disable:next type_body_length
 struct ImageComponentView_Previews: PreviewProvider {
     static let catUrl = URL(string: "https://assets.pawwalls.com/954459_1701163461.jpg")!
+    static let bigImageUrl = URL(string: "https://assets.pawwalls.com/1172568_1741034533.heic")!
+    static let smallImage = URL(string: "https://assets.pawwalls.com/1172568_1734493671.heic")!
+
+    @ViewBuilder
+    static func imageView(
+        url: URL,
+        size: PaywallComponent.Size,
+        fitMode: PaywallComponent.FitMode,
+        width: Int,
+        height: Int
+    ) -> some View {
+        ImageComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [:]
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(
+                    source: .init(
+                        light: .init(
+                            width: width,
+                            height: height,
+                            original: url,
+                            heic: url,
+                            heicLowRes: url
+                        )
+                    ),
+                    size: size,
+                    fitMode: fitMode,
+                    border: .init(color: .init(light: .hex("#ff0000")), width: 4)
+                )
+            )
+        )
+        Text(.init("width: **\(size.width)** height: **\(size.height)**\n" +
+                   "fitMode: **\(fitMode)**\n" +
+                   "width: **\(width)** height: **\(height)**"))
+    }
+
+    static var fixedHeight: UInt = 360
 
     // Need to wrap in VStack otherwise preview rerenders and images won't show
     static var previews: some View {
+
+        ScrollView {
+            VStack {
+                imageView(url: bigImageUrl,
+                          size: .init(width: .fit, height: .fixed(fixedHeight)),
+                          fitMode: .fit, width: 1080, height: 599)
+                imageView(url: bigImageUrl,
+                          size: .init(width: .fill, height: .fixed(fixedHeight)),
+                          fitMode: .fit, width: 1080, height: 599)
+                imageView(url: bigImageUrl,
+                          size: .init(width: .fit, height: .fixed(fixedHeight)),
+                          fitMode: .fill, width: 1080, height: 599)
+                imageView(url: bigImageUrl,
+                          size: .init(width: .fill, height: .fixed(fixedHeight)),
+                          fitMode: .fill, width: 1080, height: 599)
+
+                imageView(url: smallImage,
+                          size: .init(width: .fit, height: .fixed(fixedHeight)),
+                          fitMode: .fit, width: 22, height: 21)
+                imageView(url: smallImage,
+                          size: .init(width: .fill, height: .fixed(fixedHeight)),
+                          fitMode: .fit, width: 22, height: 21)
+                imageView(url: smallImage,
+                          size: .init(width: .fill, height: .fixed(fixedHeight)),
+                          fitMode: .fill, width: 22, height: 21)
+                imageView(url: smallImage,
+                          size: .init(width: .fit, height: .fixed(fixedHeight)),
+                          fitMode: .fill, width: 22, height: 21)
+            }.background(.blue)
+        }
+        .previewRequiredPaywallsV2Properties()
+        .previewLayout(.fixed(width: 400, height: 400))
+        .previewDisplayName("Image stretching horizontally beyond bounds")
+
+        ScrollView {
+            VStack {
+                VStack {
+                    imageView(url: smallImage,
+                              size: .init(width: .fixed(32), height: .fit),
+                              fitMode: .fill, width: 22, height: 21)
+                }.frame(width: 300, height: 300).border(.green)
+
+                VStack {
+                    imageView(url: smallImage,
+                              size: .init(width: .fixed(32), height: .fit),
+                              fitMode: .fit, width: 22, height: 21)
+                }.frame(width: 300, height: 300).border(.green)
+
+                VStack {
+                    imageView(url: smallImage,
+                              size: .init(width: .fixed(32), height: .fill),
+                              fitMode: .fill, width: 22, height: 21)
+                }.frame(width: 300, height: 300).border(.green)
+
+                VStack {
+                    imageView(url: smallImage,
+                              size: .init(width: .fixed(32), height: .fill),
+                              fitMode: .fit, width: 22, height: 21)
+                }.frame(width: 300, height: 300).border(.green)
+            }.background(.blue)
+        }
+        .previewRequiredPaywallsV2Properties()
+        .previewLayout(.fixed(width: 400, height: 400))
+        .previewDisplayName("Image streching vertically when height=fit")
+
         // Light - Fit
         VStack {
             ImageComponentView(
@@ -143,7 +343,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Light - Fit")
 
@@ -180,7 +380,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Light - Fill")
 
@@ -221,7 +421,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Light - Gradient")
 
@@ -262,7 +462,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Light - Rounded Corner")
 
@@ -300,7 +500,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Light - Circle")
 
@@ -338,7 +538,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Light - Fit with Convex")
 
@@ -376,7 +576,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Light - Fit with Concave")
     }

@@ -1,44 +1,34 @@
 ## RevenueCat SDK
-### 🐞 Bugfixes
-* Fix offerings not being returned in the `offerings` property of the SDK Health Report (#5043) via Pol Piella Abadia (@polpielladev)
 ### Customer Center
 #### ✨ New Features
-* Add management URL to PurchaseInformation (#5080) via Facundo Menzella (@facumenzella)
-* feat: Show subscription list instead of only the active subscription (#5050) via Facundo Menzella (@facumenzella)
+* Introduce custom actions to customer center (#5407) via Facundo Menzella (@facumenzella)
 #### 🐞 Bugfixes
-* Split `PurchaseInformation.price` into `pricePaid` and `renewalPrice` (#5069) via Cesar de la Vega (@vegaro)
-### Paywallv2
-#### 🐞 Bugfixes
-* Fix sheet view in v2 paywall not covering bottom safe area (#5064) via Antonio Pallares (@ajpallares)
+* Use navigation options in feedback survey in customer center (#5431) via Facundo Menzella (@facumenzella)
+* Allow custom URL for empty screen in customer center (#5432) via Facundo Menzella (@facumenzella)
+* Add fallback for change plans id and only display selected (#5422) via Facundo Menzella (@facumenzella)
 
 ## RevenueCatUI SDK
+### ✨ New Features
+* Add Azerbaijani locale support for Paywalls (#5435) via Franco Correa (@francocorreasosa)
+### 🐞 Bugfixes
+* Improve paywall tabs default state and toggle behavior (#5430) via Josh Holtz (@joshdholtz)
 ### Paywallv2
 #### ✨ New Features
-* Allow custom url on purchase button (#5092) via Josh Holtz (@joshdholtz)
-### Customer Center
-#### ✨ New Features
-* Add support for cross product promotional offers (#5031) via Cesar de la Vega (@vegaro)
-* feat: Introducing billing information for PurchaseInformation in CustomerCenter (#5066) via Facundo Menzella (@facumenzella)
+* Add offer code redemption support to paywall buttons (#5437) via Josh Holtz (@joshdholtz)
+* Add promotional offers to paywalls (#5296) via Josh Holtz (@joshdholtz)
 
 ### 🔄 Other Changes
-* Move RevenueCatUI CustomerCenter mocks from test target to RevenueCatUI (#5103) via Facundo Menzella (@facumenzella)
-* Bump fastlane-plugin-emerge from 0.10.6 to 0.10.8 (#5099) via dependabot[bot] (@dependabot[bot])
-* Introduce ScrollViewWithOSBackground to reuse in Customer Center Views (#5102) via Facundo Menzella (@facumenzella)
-* Add billingInformation for PurchaseInformation (#5100) via Facundo Menzella (@facumenzella)
-* Fix watchOS tests (#5098) via Cesar de la Vega (@vegaro)
-* PurchaseInformation conforms to Identifiable & Hashable (#5095) via Facundo Menzella (@facumenzella)
-* Introduce SubscriptionDetailViewModel & BaseManageSubscriptionViewModel (#5091) via Facundo Menzella (@facumenzella)
-* Fix some flaky tests (#5082) via Antonio Pallares (@ajpallares)
-* Allow previews of paywalls without offerings previews (#4968) via Antonio Pallares (@ajpallares)
-* Introduce PurchaseInformationCardView (#5090) via Facundo Menzella (@facumenzella)
-* Compute active subscriptions for CustomerCenter (#5089) via Facundo Menzella (@facumenzella)
-* Fix build issue of PaywallsTester app in visionOS (#5087) via Antonio Pallares (@ajpallares)
-* Use dateFormatter inside PurchaseInformation (#5088) via Facundo Menzella (@facumenzella)
-* Add expirationDate and renewalDate to PurchaseInformation (#5085) via Facundo Menzella (@facumenzella)
-* Improve mock interface for CustomerCenterConfigData (#5079) via Facundo Menzella (@facumenzella)
-* Fix build of RevenueCatUI from Xcode workspace (#5075) via Antonio Pallares (@ajpallares)
-* Fix flakiness of `uuid` implementation (#5074) via Antonio Pallares (@ajpallares)
-* revert 4087a9c (#5078) via Facundo Menzella (@facumenzella)
-* Fix build issue in Xcode 14.3 (#5071) via Antonio Pallares (@ajpallares)
-* Revert CircleCI machine type to medium (#5065) via Mark Villacampa (@MarkVillacampa)
-* Split logic between webBilling and stripe (#5057) via Cesar de la Vega (@vegaro)
+* Delete .swiftpm scheme folder to avoid scheme pollution (#5440) via Facundo Menzella (@facumenzella)
+* Add Test Store enum case to `Store` (#5438) via Antonio Pallares (@ajpallares)
+* [EXTERNAL] Adds a convenience method to set the Amplitude User ID and Amplitude Device ID (#5425) via @alpennec (#5446) via Antonio Pallares (@ajpallares)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5445) via RevenueCat Git Bot (@RCGitBot)
+* Add Mac Catalyst and iPad/iPhone app on Mac Paywall Validation Screenshot Generation (#5371) via Chris Lindsay (@clindsay3)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5436) via RevenueCat Git Bot (@RCGitBot)
+* Add simulate failure button to Test Store purchase UI (#5429) via Antonio Pallares (@ajpallares)
+* Add missing availability condition in unit tests (#5433) via Antonio Pallares (@ajpallares)
+* Add Test Store Products Manager (#5426) via Antonio Pallares (@ajpallares)
+* Add GetWebBillingProductsOperation (#5419) via Antonio Pallares (@ajpallares)
+* Add missing file to old project (#5428) via Facundo Menzella (@facumenzella)
+* Add Test Store purchase UI (#5403) via Antonio Pallares (@ajpallares)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5423) via RevenueCat Git Bot (@RCGitBot)
+* Display VC Name in Customer Center (#5383) via Will Taylor (@fire-at-will)

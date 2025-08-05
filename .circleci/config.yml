@@ -1,6 +1,7 @@
 orbs:
   macos: circleci/macos@2.5.1
   slack: circleci/slack@5.0.0
+  revenuecat: revenuecat/sdks-common-config@3.2.0
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -9,7 +10,16 @@ version: 2.1
 parameters:
   action:
     type: enum
-    enum: [default, bump, run-manual-tests, run-manual-docs-deploy]
+    enum:
+      [
+        default,
+        bump,
+        run-manual-tests,
+        run-manual-docs-deploy,
+        update_paywall_templates,
+        record_paywall_screenshots,
+        tuist
+      ]
     default: default
   generate_snapshots:
     default: false
@@ -18,7 +28,7 @@ parameters:
     default: false
     type: boolean
 
-# params used by the trigger CircleCI Pipeline GitHub Action: https://github.com/marketplace/actions/trigger-circleci-pipeline
+  # params used by the trigger CircleCI Pipeline GitHub Action: https://github.com/marketplace/actions/trigger-circleci-pipeline
   GHA_Event:
     type: string
     default: ""
@@ -37,8 +47,23 @@ executors:
     parameters:
       xcode_version:
         type: string
-        default: '16.0'
+        default: "16.0"
     macos:
+      # circleci-lint: disable=unknown-xcode-version
+      xcode: << parameters.xcode_version >>
+    resource_class: m4pro.medium
+    environment:
+      CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.generate_snapshots >>
+      CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
+  macos-executor-for-macos-12_6:
+    parameters:
+      xcode_version:
+        type: string
+        default: "16.0"
+    macos:
+      # circleci-lint: disable=unknown-xcode-version
       xcode: << parameters.xcode_version >>
     resource_class: macos.m1.medium.gen1
     environment:
@@ -50,10 +75,11 @@ executors:
     parameters:
       xcode_version:
         type: string
-        default: '16.0'
+        default: "16.0"
     macos:
+      # circleci-lint: disable=unknown-xcode-version
       xcode: << parameters.xcode_version >>
-    resource_class: macos.m1.large.gen1
+    resource_class: m4pro.medium
     environment:
       CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.generate_snapshots >>
       CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
@@ -96,7 +122,7 @@ commands:
     steps:
       - slack/notify:
           branch_pattern: main
-          channel: 'feed-circleci-ios-failures'
+          channel: "feed-circleci-ios-failures"
           event: fail
           template: basic_fail_1
   set-maximum-duration:
@@ -118,13 +144,13 @@ commands:
       runtime-name:
         type: string
     steps:
-       - install-brew-dependency:
-           dependency_name: 'xcodes'
-       - run:
-           name: Install simulator
-           command: | # Print all available simulators and install required one
-               xcodes runtimes
-               sudo xcodes runtimes install "<< parameters.runtime-name >>"
+      - install-brew-dependency:
+          dependency_name: "xcodes"
+      - run:
+          name: Install simulator
+          command: | # Print all available simulators and install required one
+            xcodes runtimes
+            sudo xcodes runtimes install "<< parameters.runtime-name >>"
 
   install-bundle-dependencies:
     parameters:
@@ -134,7 +160,8 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - v3-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}
+            # This cache key should be updated whenever we change the Ruby version
+            - v4-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}-ruby-3.2.0
       # CircleCI images fail on Ruby 3.3
       # https://github.com/fastlane/fastlane/issues/21794#issuecomment-2021331335
       # Also, not using macos/switch-ruby because its broken
@@ -157,11 +184,12 @@ commands:
             bundle config set --local path 'vendor/bundle'
             bundle install
       - save_cache:
-          key: v3-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}
+          # This cache key should be updated whenever we change the Ruby version
+          key: v4-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}-ruby-3.2.0
           paths:
             - vendor/bundle
-            
-            
+            - ~/.rbenv/versions/3.2.0
+
   install-dependencies:
     parameters:
       directory:
@@ -171,6 +199,9 @@ commands:
         type: boolean
         default: true
       install_mint:
+        type: boolean
+        default: false
+      install_mint_0_17_5:
         type: boolean
         default: false
       install_swiftlint:
@@ -192,6 +223,10 @@ commands:
           steps:
             - install-brew-dependency:
                 dependency_name: "mint"
+      - when:
+          condition: << parameters.install_mint_0_17_5 >>
+          steps:
+            - install-mint-0_17_5
       - when:
           condition: << parameters.install_swiftlint >>
           steps:
@@ -223,6 +258,16 @@ commands:
             brew install << parameters.dependency_name >>
           environment:
             HOMEBREW_NO_INSTALL_CLEANUP: 1
+
+  install-mint-0_17_5:
+    steps:
+      - run:
+          name: Install Mint 0.17.5
+          command: |
+            git clone https://github.com/yonaskolb/Mint.git
+            cd Mint
+            git checkout 0.17.5
+            make
 
   install-xcbeautify-for-xcode14:
     description: "Installs xcbeautify using Mint"
@@ -367,6 +412,16 @@ commands:
           command: |
             bundle exec fastlane update_carthage_commit
 
+  tuist-generate-workspace:
+    description: "Install Tuist and generate workspace"
+    steps:
+      - revenuecat/install-tuist
+      - run:
+          name: Generate Tuist workspace
+          command: |
+            export PATH="$HOME/.local/share/mise/shims:$PATH"
+            tuist install && tuist generate --no-open
+
   create-snapshot-pr-if-needed:
     parameters:
       version:
@@ -407,15 +462,35 @@ commands:
           path: fastlane/test_output/xctest
           destination: scan-test-output
 
-jobs:
+  checkout-with-minimal-permissions:
+    steps:
+      - revenuecat/remove-all-ssh-keys
+      - revenuecat/checkout-with-key:
+          fingerprint: "SHA256:TY+ziSK99HtCkgT7rILg/o2G05KSV8BxmQht0ApvYng"
+      - revenuecat/assert-git-clone-fails:
+          repository: paywall-preview-resources
+      - revenuecat/assert-git-clone-fails:
+          repository: paywall-rendering-validation
+      - revenuecat/assert-git-clone-fails:
+          repository: khepri
+      - set-signing-repo-deploy-key-for-git
 
+  # Will configure git to use the deploy key for the private certificates repo from now on.
+  set-signing-repo-deploy-key-for-git:
+    steps:
+      - revenuecat/set-ssh-key-for-git:
+          fingerprint: "SHA256:UYi3gsOInLRPZy6MPho7Yr/YK1VmjDvPGo7sJvIcnPM"
+
+jobs:
   validate-package-swift:
     parameters:
-       xcode_version:
-         type: string
+      xcode_version:
+        type: string
+      mac_os_executor_name:
+        type: string
     executor:
-      name: macos-executor
-      xcode_version: << parameters.xcode_version >> 
+      name: << parameters.mac_os_executor_name >>
+      xcode_version: << parameters.xcode_version >>
     steps:
       - checkout
       - run:
@@ -425,7 +500,7 @@ jobs:
   spm-release-build-xcode-14:
     executor:
       name: macos-executor
-      xcode_version: '14.3.0'
+      xcode_version: "14.3.1"
 
     steps:
       - checkout
@@ -438,7 +513,7 @@ jobs:
   spm-release-build-xcode-16:
     executor:
       name: macos-executor
-      xcode_version: '16.0.0'
+      xcode_version: "16.0.0"
 
     steps:
       - checkout
@@ -451,7 +526,7 @@ jobs:
   spm-release-build-xcode-15:
     executor:
       name: macos-executor
-      xcode_version: '15.2.0'
+      xcode_version: "15.2.0"
 
     steps:
       - checkout
@@ -463,8 +538,8 @@ jobs:
 
   spm-xcode-14-1:
     executor:
-      name: macos-executor
-      xcode_version: '14.1.0'
+      name: macos-executor-for-macos-12_6
+      xcode_version: "14.1.0"
 
     steps:
       - checkout
@@ -528,7 +603,7 @@ jobs:
   spm-revenuecat-ui-ios-15:
     executor:
       name: macos-executor
-      xcode_version: '14.3.0'
+      xcode_version: "14.3.1"
 
     steps:
       - checkout
@@ -558,7 +633,7 @@ jobs:
   spm-revenuecat-ui-ios-16:
     executor:
       name: macos-executor
-      xcode_version: '15.4.0'
+      xcode_version: "15.4.0"
 
     steps:
       - checkout
@@ -592,7 +667,7 @@ jobs:
   run-revenuecat-ui-ios-17:
     executor:
       name: macos-executor
-      xcode_version: '15.2.0'
+      xcode_version: "15.2.0"
 
     steps:
       - checkout
@@ -625,7 +700,7 @@ jobs:
   run-revenuecat-ui-ios-18:
     executor:
       name: macos-executor
-      xcode_version: '16.0'
+      xcode_version: "16.0"
 
     steps:
       - checkout
@@ -707,7 +782,7 @@ jobs:
   run-test-ios-18:
     executor:
       name: macos-executor
-      xcode_version: '16.0'
+      xcode_version: "16.0"
 
     steps:
       - checkout
@@ -735,7 +810,7 @@ jobs:
   run-test-ios-17:
     executor:
       name: macos-executor
-      xcode_version: '15.2.0'
+      xcode_version: "15.2.0"
 
     steps:
       - checkout
@@ -763,7 +838,7 @@ jobs:
   run-test-ios-16:
     executor:
       name: macos-executor
-      xcode_version: '15.4.0'
+      xcode_version: "15.4.0"
 
     steps:
       - checkout
@@ -797,7 +872,7 @@ jobs:
     executor:
       name: macos-executor
       # Needs to be 15.2.0 because if not running on Swift 5.9, the tests fail
-      xcode_version: '15.2.0'
+      xcode_version: "15.2.0"
 
     steps:
       - checkout
@@ -876,16 +951,17 @@ jobs:
 
   run-test-ios-14:
     executor:
-      name: macos-executor
-    # Pre-iOS 15 requires macOS 12 which requires Xcode 14.2
-    # See https://circleci.com/docs/using-macos/#supported-xcode-versions
-      xcode_version: '14.2.0'
+      name: macos-executor-for-macos-12_6
+      # Pre-iOS 15 requires macOS 12 which requires Xcode 14.2
+      # See https://circleci.com/docs/using-macos/#supported-xcode-versions
+      xcode_version: "14.2.0"
 
     steps:
       - checkout
       - install-dependencies:
           install_xcbeautify: false
-          install_mint: true
+          # Mint 0.17.5 is required here as newer versions of Mint don't support macOS 12.
+          install_mint_0_17_5: true
           install_swiftlint: false
       - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
@@ -913,8 +989,8 @@ jobs:
 
   run-test-ios-13:
     executor:
-      name: macos-executor
-      xcode_version: '14.2.0'
+      name: macos-executor-for-macos-12_6
+      xcode_version: "14.2.0"
 
     steps:
       - checkout
@@ -1052,7 +1128,7 @@ jobs:
       name: macos-executor
       # needs to be xcode 14 since we couldn't get xcode 15 to get along with --additional-symbol-graph-dir
       # https://github.com/RevenueCat/purchases-ios/pull/1997
-      xcode_version: '14.3.0'
+      xcode_version: "14.3.1"
     steps:
       - setup-git-credentials
       - checkout
@@ -1069,7 +1145,7 @@ jobs:
       name: macos-executor
       # needs to be xcode 14 since we couldn't get xcode 15 to get along with --additional-symbol-graph-dir
       # https://github.com/RevenueCat/purchases-ios/pull/1997
-      xcode_version: '14.3.0'
+      xcode_version: "14.3.1"
     steps:
       - setup-git-credentials
       - checkout
@@ -1138,7 +1214,7 @@ jobs:
     executor:
       name: macos-executor
     steps:
-      - checkout
+      - checkout-with-minimal-permissions
       - install-dependencies
       - install-dependencies:
           directory: Tests/InstallationTests/CocoapodsInstallation
@@ -1147,6 +1223,7 @@ jobs:
           working_directory: Tests/InstallationTests/CocoapodsInstallation/
           command: |
             bundle exec pod install
+      - set-signing-repo-deploy-key-for-git
       - scan-and-archive:
           directory: Tests/InstallationTests/CocoapodsInstallation
       - slack-notify-on-fail
@@ -1155,12 +1232,12 @@ jobs:
     executor:
       name: macos-executor
     steps:
-      - checkout
-      - trust-github-key
+      - checkout-with-minimal-permissions
       - install-dependencies
       - update-spm-installation-commit
       - install-dependencies:
           directory: Tests/InstallationTests/SPMInstallation/
+      - set-signing-repo-deploy-key-for-git
       - scan-and-archive-all-platforms:
           directory: Tests/InstallationTests/SPMInstallation/
       - slack-notify-on-fail
@@ -1169,8 +1246,7 @@ jobs:
     executor:
       name: macos-executor
     steps:
-      - checkout
-      - trust-github-key
+      - checkout-with-minimal-permissions
       - install-dependencies
       - update-spm-installation-commit
       - install-dependencies:
@@ -1183,12 +1259,12 @@ jobs:
     executor:
       name: macos-executor
     steps:
-      - checkout
-      - trust-github-key
+      - checkout-with-minimal-permissions
       - install-dependencies
       - update-spm-installation-commit
       - install-dependencies:
           directory: Tests/InstallationTests/ReceiptParserInstallation/
+      - set-signing-repo-deploy-key-for-git
       - scan-and-archive-all-platforms:
           directory: Tests/InstallationTests/ReceiptParserInstallation/
       - slack-notify-on-fail
@@ -1197,8 +1273,7 @@ jobs:
     executor:
       name: macos-executor-large
     steps:
-      - checkout
-      - trust-github-key
+      - checkout-with-minimal-permissions
       - run:
           name: Upgrade Carthage
           command: |
@@ -1211,7 +1286,7 @@ jobs:
           working_directory: Tests/InstallationTests/CarthageInstallation/
           command: |
             bundle exec fastlane installation_tests
-
+      - set-signing-repo-deploy-key-for-git
       - install-dependencies-scan-and-archive:
           directory: Tests/InstallationTests/CarthageInstallation/
       - slack-notify-on-fail
@@ -1222,8 +1297,8 @@ jobs:
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
-      - checkout
-
+      - checkout-with-minimal-permissions
+      - set-signing-repo-deploy-key-for-git
       - install-dependencies-scan-and-archive:
           directory: Tests/InstallationTests/XcodeDirectInstallation/
       - slack-notify-on-fail
@@ -1250,7 +1325,7 @@ jobs:
 
   danger:
     docker:
-      - image: cimg/ruby:3.1.2
+      - image: cimg/ruby:3.2.0
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -1262,7 +1337,7 @@ jobs:
 
   tag-release-branch:
     docker:
-      - image: cimg/ruby:3.1.2
+      - image: cimg/ruby:3.2.0
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -1357,6 +1432,53 @@ jobs:
           name: Build Paywalls Tester
           command: bundle exec fastlane build_paywalls_tester_for_emerge
 
+  test-tuist-generate-workspace:
+    executor:
+      name: macos-executor
+      xcode_version: "16.4"
+    steps:
+      - checkout
+      - tuist-generate-workspace
+
+  record-and-push-paywall-template-screenshots:
+    description: "Record new paywall template screenshots with Paparazzi and push them to the paywall-rendering-validation repository"
+    executor:
+      name: macos-executor
+      xcode_version: "16.0"
+
+    steps:
+      - checkout
+      - install-dependencies:
+          install_swiftlint: false
+      - run:
+          name: Fetch paywall-preview-resources
+          command: bundle exec fastlane ios fetch_paywall_preview_resources
+      - run:
+          name: Clone paywall-rendering-validation repository
+          command: git clone git@github.com:RevenueCat/paywall-rendering-validation.git ../Tests/paywall-rendering-validation
+      - revenuecat/setup-git-credentials
+      - run:
+          name: Set GitHub token environment variable
+          command: |
+            echo "export GITHUB_TOKEN=$GH_TOKEN_PAYWALL_RENDERING_VALIDATION_PR_RW" >> $BASH_ENV
+            source $BASH_ENV
+      - run:
+          name: Run tests
+          command: bundle exec fastlane record_and_push_paywall_template_screenshots target_repository_path:../Tests/paywall-rendering-validation
+          no_output_timeout: 15m
+
+  update-paywall-preview-resources-commit:
+    docker:
+      - image: cimg/ruby:3.2.0
+    steps:
+      - checkout
+      - revenuecat/install-gem-unix-dependencies:
+          cache-version: v1
+      - revenuecat/setup-git-credentials
+      - run:
+          name: Update paywall templates
+          command: bundle exec fastlane ios update_paywall_preview_resources_commit
+
   deploy-to-spm:
     docker:
       - image: cimg/base:stable
@@ -1408,9 +1530,11 @@ workflows:
       - validate-package-swift:
           name: validate-package-swift-5.7
           xcode_version: "14.0.1"
+          mac_os_executor_name: macos-executor-for-macos-12_6
       - validate-package-swift:
           name: validate-package-swift-5.8
           xcode_version: "14.3.1"
+          mac_os_executor_name: macos-executor
       - run-test-ios-17
       - run-test-ios-18
       - pod-lib-lint
@@ -1492,7 +1616,9 @@ workflows:
         - equal:
             ["load_shedder_integration_tests", << pipeline.schedule.name >>]
     jobs:
-      - loadshedder-integration-tests-v3
+      - loadshedder-integration-tests-v3:
+          context:
+            - slack-secrets
       - integration-tests-all
 
   manual-trigger-bump:
@@ -1500,6 +1626,27 @@ workflows:
       equal: [bump, << pipeline.parameters.action >>]
     jobs:
       - release-train
+
+  record-and-push-paywall-template-screenshots:
+    when:
+      or:
+        - equal:
+            ["record_paywall_screenshots", << pipeline.parameters.action >>]
+        - and:
+            - not:
+                equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+            - equal: ["main", << pipeline.git.branch >>]
+            - equal: ["default", << pipeline.parameters.action >>]
+    jobs:
+      - record-and-push-paywall-template-screenshots:
+          context:
+            - paywall-rendering-validation-pr-rw
+
+  update-paywall-templates:
+    when:
+      equal: [update_paywall_templates, << pipeline.parameters.action >>]
+    jobs:
+      - update-paywall-preview-resources-commit
 
   manual-trigger-docs-deploy:
     when:
@@ -1520,7 +1667,8 @@ workflows:
             pattern: "^(release/.*|main)$"
             value: << pipeline.git.branch >>
         - equal: ["run-manual-tests", << pipeline.parameters.action >>]
-        - equal: ["run-from-github-comments", << pipeline.parameters.GHA_Meta >>]
+        - equal:
+            ["run-from-github-comments", << pipeline.parameters.GHA_Meta >>]
     jobs:
       - backend-integration-tests-SK1:
           context:
@@ -1611,3 +1759,8 @@ workflows:
           context:
             - slack-secrets-ios
 
+  test-tuist-workflow:
+    when:
+      equal: [tuist, << pipeline.parameters.action >>]
+    jobs:
+      - test-tuist-generate-workspace

@@ -11,6 +11,7 @@
 //
 //  Created by Facundo Menzella on 20/5/25.
 
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if os(iOS)
@@ -33,9 +34,107 @@ struct ScrollViewSection<Content: View>: View {
             .padding(.horizontal, 32)
             .frame(maxWidth: .infinity, alignment: .leading)
             .multilineTextAlignment(.leading)
-            .padding(.top, 16)
+            .padding(.bottom, 12)
 
         content()
+    }
+}
+
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+struct PurchasesInformationSection: View {
+
+    let title: String
+    let items: [PurchaseInformation]
+    let localization: CustomerCenterConfigData.Localization
+    let action: (PurchaseInformation) -> Void
+
+    var body: some View {
+        ScrollViewSection(title: title) {
+            ForEach(Array(items.enumerated()), id: \.element) { (offset, purchase) in
+                Button {
+                    action(purchase)
+                } label: {
+                    PurchaseInformationCardView(
+                        purchaseInformation: purchase,
+                        localization: localization,
+                        accessibilityIdentifier: "purchase_card_\(offset)"
+                    )
+                    .cornerRadius(10)
+                    .padding(.horizontal)
+                }
+                .padding(.bottom, 16)
+            }
+
+            Spacer().frame(height: 16)
+        }
+    }
+}
+
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+struct AccountDetailsSection: View {
+
+    @Environment(\.colorScheme)
+    private var colorScheme
+
+    let originalPurchaseDate: Date?
+    let originalAppUserId: String
+    let localization: CustomerCenterConfigData.Localization
+
+    init(
+        originalPurchaseDate: Date?,
+        originalAppUserId: String,
+        localization: CustomerCenterConfigData.Localization
+    ) {
+        self.originalPurchaseDate = originalPurchaseDate
+        self.originalAppUserId = originalAppUserId
+        self.localization = localization
+    }
+
+    var body: some View {
+        ScrollViewSection(title: localization[.accountDetails]) {
+            VStack {
+                if let originalPurchaseDate {
+                    CompatibilityLabeledContent(
+                        localization[.dateWhenAppWasPurchased],
+                        content: Self.dateFormatter.string(from: originalPurchaseDate)
+                    )
+
+                    Divider()
+                }
+
+                CompatibilityLabeledContent(
+                    localization[.userId],
+                    content: originalAppUserId
+                )
+                .contextMenu {
+                    Button {
+                        UIPasteboard.general.string = originalAppUserId
+                    } label: {
+                        Text(localization[.copy])
+                        Image(systemName: "doc.on.clipboard")
+                    }
+                }
+            }
+            .padding()
+            .background(Color(colorScheme == .light
+                              ? UIColor.systemBackground
+                              : UIColor.secondarySystemBackground))
+            .cornerRadius(10)
+            .padding(.horizontal)
+        }
+    }
+
+    private static var dateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return formatter
     }
 }
 

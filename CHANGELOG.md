@@ -1,3 +1,310 @@
+## 5.34.0
+## RevenueCat SDK
+### Customer Center
+#### ✨ New Features
+* Introduce custom actions to customer center (#5407) via Facundo Menzella (@facumenzella)
+#### 🐞 Bugfixes
+* Use navigation options in feedback survey in customer center (#5431) via Facundo Menzella (@facumenzella)
+* Allow custom URL for empty screen in customer center (#5432) via Facundo Menzella (@facumenzella)
+* Add fallback for change plans id and only display selected (#5422) via Facundo Menzella (@facumenzella)
+
+## RevenueCatUI SDK
+### ✨ New Features
+* Add Azerbaijani locale support for Paywalls (#5435) via Franco Correa (@francocorreasosa)
+### 🐞 Bugfixes
+* Improve paywall tabs default state and toggle behavior (#5430) via Josh Holtz (@joshdholtz)
+### Paywallv2
+#### ✨ New Features
+* Add offer code redemption support to paywall buttons (#5437) via Josh Holtz (@joshdholtz)
+* Add promotional offers to paywalls (#5296) via Josh Holtz (@joshdholtz)
+
+### 🔄 Other Changes
+* Delete .swiftpm scheme folder to avoid scheme pollution (#5440) via Facundo Menzella (@facumenzella)
+* Add Test Store enum case to `Store` (#5438) via Antonio Pallares (@ajpallares)
+* [EXTERNAL] Adds a convenience method to set the Amplitude User ID and Amplitude Device ID (#5425) via @alpennec (#5446) via Antonio Pallares (@ajpallares)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5445) via RevenueCat Git Bot (@RCGitBot)
+* Add Mac Catalyst and iPad/iPhone app on Mac Paywall Validation Screenshot Generation (#5371) via Chris Lindsay (@clindsay3)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5436) via RevenueCat Git Bot (@RCGitBot)
+* Add simulate failure button to Test Store purchase UI (#5429) via Antonio Pallares (@ajpallares)
+* Add missing availability condition in unit tests (#5433) via Antonio Pallares (@ajpallares)
+* Add Test Store Products Manager (#5426) via Antonio Pallares (@ajpallares)
+* Add GetWebBillingProductsOperation (#5419) via Antonio Pallares (@ajpallares)
+* Add missing file to old project (#5428) via Facundo Menzella (@facumenzella)
+* Add Test Store purchase UI (#5403) via Antonio Pallares (@ajpallares)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5423) via RevenueCat Git Bot (@RCGitBot)
+* Display VC Name in Customer Center (#5383) via Will Taylor (@fire-at-will)
+
+## 5.33.1
+## RevenueCat SDK
+### Customer Center
+#### 🐞 Bugfixes
+* Replace isLifetimeSubscription for isLifetime (#5417) via Facundo Menzella (@facumenzella)
+* Dont show cancel if non-sub for customer center (#5415) via Facundo Menzella (@facumenzella)
+### Virtual Currencies
+#### 🐞 Bugfixes
+* Update VC Caching Log Message (#5404) via Will Taylor (@fire-at-will)
+
+### 🔄 Other Changes
+* Fix color space on Mac screenshots. (#5375) via Chris Lindsay (@clindsay3)
+* Fix issue where previews running on Emerge servers were not following specialized codepaths for previews (#5413) via Chris Lindsay (@clindsay3)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5418) via RevenueCat Git Bot (@RCGitBot)
+* Add missing RevenueCatUI test plans (#5414) via Facundo Menzella (@facumenzella)
+* Rename internal WebProducts APIs to WebOfferingProducts (#5416) via Antonio Pallares (@ajpallares)
+* Introduce tuist-generate-workspace for CircleCI (#5412) via Facundo Menzella (@facumenzella)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5411) via RevenueCat Git Bot (@RCGitBot)
+* Add an app to run paywall validation tests locally (#5370) via Chris Lindsay (@clindsay3)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5408) via RevenueCat Git Bot (@RCGitBot)
+* Bump danger from 9.5.1 to 9.5.3 (#5409) via dependabot[bot] (@dependabot[bot])
+* Bump fastlane from 2.227.2 to 2.228.0 (#5410) via dependabot[bot] (@dependabot[bot])
+* Bump nokogiri from 1.18.8 to 1.18.9 (#5406) via dependabot[bot] (@dependabot[bot])
+* Bump nokogiri from 1.18.8 to 1.18.9 in /Tests/InstallationTests/CocoapodsInstallation (#5405) via dependabot[bot] (@dependabot[bot])
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5402) via RevenueCat Git Bot (@RCGitBot)
+* Magic Weather Example App - Files reference correction (#5397) via Alejandra Wetsch (@mawr92)
+* Fix a flaky test (#5401) via Antonio Pallares (@ajpallares)
+* Tuist: fix some setup issues (#5400) via Antonio Pallares (@ajpallares)
+* When taking screenshots for validation, ignore safe area. (#5376) via Chris Lindsay (@clindsay3)
+* Tuist: prevent MagicWeather Xcode projects names clashing (#5398) via Antonio Pallares (@ajpallares)
+* Tuist: fix compilation of RevenueCat and RevenueCatUI projects in visionOS (#5399) via Antonio Pallares (@ajpallares)
+* Add date to failure messages of entitlement verification in tests (#5396) via Antonio Pallares (@ajpallares)
+* Tuist: unify project settings (#5393) via Antonio Pallares (@ajpallares)
+* Potential fix for flaky test (#5395) via Antonio Pallares (@ajpallares)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5394) via RevenueCat Git Bot (@RCGitBot)
+* Store API key validation in memory (#5386) via Antonio Pallares (@ajpallares)
+* Increase simulated renewal time in some StoreKit integration tests (#5382) via Antonio Pallares (@ajpallares)
+* Add validation of Test Store API keys (#5385) via Antonio Pallares (@ajpallares)
+* Fix PurchaseTester compilation in tvOS (#5390) via Antonio Pallares (@ajpallares)
+* Add a mechanism to test the presentIfNeeded API in the Paywalls tester. (#5377) via Chris Lindsay (@clindsay3)
+
+## 5.33.0
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Fix rendering of buttons in Mac Catalyst mode when optimized for Mac. (#5372) via Chris Lindsay (@clindsay3)
+* Update default height of paywalls when using .presentIfNeeded on Mac Catalyst to something that is more reasonable. (#5378) via Chris Lindsay (@clindsay3)
+### Customer Center
+#### ✨ New Features
+* Add custom change plans support for customer center (#5379) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Fix VirtualCurrencyBalancesScreen Preview on Catalyst (Optimized For Mac) (#5387) via Will Taylor (@fire-at-will)
+* Add `@_spi` to initializers of virtual currencies APIs (#5384) via Antonio Pallares (@ajpallares)
+* Use SwiftUI instead of UIKit to present an alert in Paywall Tester app (#5381) via Chris Lindsay (@clindsay3)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5380) via RevenueCat Git Bot (@RCGitBot)
+* Add build configurations for tuist workspace (#5364) via Facundo Menzella (@facumenzella)
+* Adding deep link for testing in Paywalls Tester (#5238) via Josh Holtz (@joshdholtz)
+* Wait a max of 20 minutes for TestFlight processing (#5153) via Josh Holtz (@joshdholtz)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5373) via RevenueCat Git Bot (@RCGitBot)
+* Generate Mac Catalyst screenshots of Paywall components to be sent to EmergeTools (#5303) via Chris Lindsay (@clindsay3)
+* Use a more accurate method for generating a screenshot of a UIView (#5352) via Chris Lindsay (@clindsay3)
+* Upload screenshots to Emerge in addition to pushing them to the paywall validation repo. (#5351) via Chris Lindsay (@clindsay3)
+* Add a few additional VC integration tests (#5367) via Will Taylor (@fire-at-will)
+* [CI] Use m1 instead of m2 executor (#5369) via Mark Villacampa (@MarkVillacampa)
+
+## 5.32.0
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Fixes API tests after changes to public API (#5365) via Pol Piella Abadia (@polpielladev)
+### Virtual Currencies
+#### ✨ New Features
+* Virtual Currency Support (#5108) via Will Taylor (@fire-at-will)
+
+### 🔄 Other Changes
+* [DX-457] Re-apply Health SDK logging on app launch (#5360) via Pol Piella Abadia (@polpielladev)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5361) via RevenueCat Git Bot (@RCGitBot)
+* Add basics for a working tuist workspace (#5248) via Facundo Menzella (@facumenzella)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5357) via RevenueCat Git Bot (@RCGitBot)
+* Fix one flaky unit test (#5356) via Antonio Pallares (@ajpallares)
+
+## 5.31.0
+## RevenueCat SDK
+### Customer Center
+#### ✨ New Features
+* Add smoother loading animation to SubscriptionDetailView (#5329) via Facundo Menzella (@facumenzella)
+#### 🐞 Bugfixes
+* Fix google products display for customer center (#5349) via Facundo Menzella (@facumenzella)
+
+## RevenueCatUI SDK
+### Customer Center
+#### ✨ New Features
+* Preferred UI locale for UI components (#5292) via Antonio Pallares (@ajpallares)
+* Remove trailing text for PurchaseCardView, and simplify billing information.  (#5300) via Facundo Menzella (@facumenzella)
+* Add account details to single purchase view (#5327) via Facundo Menzella (@facumenzella)
+#### 🐞 Bugfixes
+* Fix broken Customer Center strings (#5311) via Cesar de la Vega (@vegaro)
+
+### 🔄 Other Changes
+* Temporary revert of automatic health reporting in the SDK (#5353) via Pol Piella Abadia (@polpielladev)
+* fix `Purchases` temporary leak when running SDK health check (#5350) via Antonio Pallares (@ajpallares)
+* Consider Offerings cache stale when preferred locales change (#5312) via Antonio Pallares (@ajpallares)
+* [DX-457] Log the SDK configuration report on every `#DEBUG` run (#5317) via Pol Piella Abadia (@polpielladev)
+* Update workflows/issue-notifications.yml@v2 (#5346) via Josh Holtz (@joshdholtz)
+* Fix some failing tests (#5344) via Antonio Pallares (@ajpallares)
+* Preferred locale override (#5288) via Antonio Pallares (@ajpallares)
+* [CI] use M4 Pro Medium (#5321) via Mark Villacampa (@MarkVillacampa)
+* Add shared ack workflow (#5340) via Josh Holtz (@joshdholtz)
+* Use NewErrorUtils instead of RevenueCat.ErrorUtils (#5293) via Facundo Menzella (@facumenzella)
+* Bump ack action to v15 (#5339) via Josh Holtz (@joshdholtz)
+* Bump ack action to v11 (#5336) via Josh Holtz (@joshdholtz)
+* New issue template form and issue monitoring job (#5333) via Josh Holtz (@joshdholtz)
+* Add Intro Eligibility Functions to CEC Mode (#5322) via Will Taylor (@fire-at-will)
+
+## 5.29.0
+## RevenueCat SDK
+### Customer Center
+#### ✨ New Features
+* Use `card_store_promotional` for RC Promos in card & history (#5275) via Facundo Menzella (@facumenzella)
+* Refactor PurchaseHistory to use PurchaseInformation (#5260) via Facundo Menzella (@facumenzella)
+#### 🐞 Bugfixes
+* Add tests for PurchaseInformationView.Badge + rc promo (#5273) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* [Paywalls] Update ImageComponent max width after initial layout if it changes. (#5291) via Mark Villacampa (@MarkVillacampa)
+* Fix index and mgiration guides docs not being updated (#5298) via Mark Villacampa (@MarkVillacampa)
+* Add .yield to `PaywallViewEventsFullscreenLightModeTests` (#5294) via Facundo Menzella (@facumenzella)
+* Add missing `@_spi` to import in backend tests (#5297) via Antonio Pallares (@ajpallares)
+* Use minimal permissions for installation tests (#5274) via JayShortway (@JayShortway)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5295) via RevenueCat Git Bot (@RCGitBot)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5289) via RevenueCat Git Bot (@RCGitBot)
+* Delete Examples folder from carthage checkout (#5287) via Facundo Menzella (@facumenzella)
+* Remove CustomerCenterConfigDataAPI from API Tests (#5286) via Facundo Menzella (@facumenzella)
+* Delete duplicate OfferingsList.swift from PaywallTester (#5249) via Facundo Menzella (@facumenzella)
+* Add abbrev to Gemfile (#5207) via Facundo Menzella (@facumenzella)
+* Test removing example apps before Carthage installation test (#5268) via Facundo Menzella (@facumenzella)
+* Add _spi(Internal) to Customer Center (#5270) via Facundo Menzella (@facumenzella)
+
+## 5.28.1
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Enable markdown in paywalls in iOS 15 and watchOS 8 (#5267) via Antonio Pallares (@ajpallares)
+### Customer Center
+#### 🐞 Bugfixes
+* Trigger promotional offer callback from `PromotionalOfferViewModel` (#5263) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* FIx image load in paywall rendering validation (#5264) via Antonio Pallares (@ajpallares)
+* Include commit hash in commit message for paywall-rendering-validation (#5265) via Antonio Pallares (@ajpallares)
+* Bring back paywall rendering validation (no submodules) (#5252) via Antonio Pallares (@ajpallares)
+* Rename duplicate CachingProductsManagerTests to CachingProductsManagerIntegrationTests (#5244) via Facundo Menzella (@facumenzella)
+* Update CustomerInfo sample with is_sandbox to make sure it works (#5203) via Facundo Menzella (@facumenzella)
+* Add originalPurchaseDate & isSandbox to PurchaseInformation (#5259) via Facundo Menzella (@facumenzella)
+
+## 5.28.0
+## RevenueCat SDK
+### Customer Center
+#### ✨ New Features
+* Show most recent expired if no active subscriptions (#5198) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Use Mint 0.17.5 for `run-test-ios-14` CI job (#5256) via Antonio Pallares (@ajpallares)
+* Fix Xcode 16 compilation error (#5254) via Antonio Pallares (@ajpallares)
+* Add Danger rule to avoid submodules (#5250) via Antonio Pallares (@ajpallares)
+
+## 5.27.1
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Remove submodules temporarily to fix SPM (#5246) via Toni Rico (@tonidero)
+
+### 🔄 Other Changes
+* Add accessibility identifier to PurchaseCardView (#5176) via Facundo Menzella (@facumenzella)
+
+## 5.26.0
+## RevenueCat SDK
+### ✨ New Features
+* Add Paddle Store enum case (#4981) via Will Taylor (@fire-at-will)
+### Customer Center
+#### 🐞 Bugfixes
+* Use env openURL instead of SFSafariVC to open mailto (#5221) via Facundo Menzella (@facumenzella)
+### Paywall Components
+#### 🐞 Bugfixes
+* [Paywalls] do not ignore all safe areas when applying the zstack in bottom sheet (#5201) via Mark Villacampa (@MarkVillacampa)
+
+### 🔄 Other Changes
+* Fix StoreKitVersionTests on iOS 15 (#5226) via Will Taylor (@fire-at-will)
+* Add @_spi(Internal) to ClockTests (#5212) via Facundo Menzella (@facumenzella)
+* Use effectiveVersion.debugDescription in StoreKitVersionTests (#5213) via Facundo Menzella (@facumenzella)
+* add missing import Foundation in Tests (#5206) via Facundo Menzella (@facumenzella)
+
+## 5.25.3
+## RevenueCat SDK
+### 🐞 Bugfixes
+* CAT-1975: Dont Call POST Receipt with No Receipt or AppTransaction when Syncing Purchases with SK2 (#5161) via Will Taylor (@fire-at-will)
+
+### 🔄 Other Changes
+* Add isSanbox to NonSubscriptionTransaction (#5199) via Facundo Menzella (@facumenzella)
+* Add missing fields to PurchaseInformation (#5184) via Facundo Menzella (@facumenzella)
+* Improve descriptions for SDK Health errors (#5185) via Pol Piella Abadia (@polpielladev)
+* fix pre-commit hook to lint files with spaces in the path (#5186) via Facundo Menzella (@facumenzella)
+* Delete earliestExpiringTransaction from Customer Center code (#5183) via Facundo Menzella (@facumenzella)
+* Remove unused durationTitle from PurchaseInformation (#5181) via Facundo Menzella (@facumenzella)
+* Add new test cases for maestro + customer center (#5177) via Facundo Menzella (@facumenzella)
+
+## 5.25.2
+## RevenueCat SDK
+### Customer Center
+#### 🐞 Bugfixes
+* Pass productIdentifier for promo offer flow (#5179) via Facundo Menzella (@facumenzella)
+* return .free for CustomerCenterStoreKitUtilities if price.isZero (#5174) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Use scrollBounceBehaviorBasedOnSize for CustomerCenter scrollview (#5175) via Facundo Menzella (@facumenzella)
+* Refactor NoSubscriptionsView in CustomerCenter (#5173) via Facundo Menzella (@facumenzella)
+* Add consumable and non consumable for Customer Center test app (#5172) via Facundo Menzella (@facumenzella)
+* Add a push navigation to Customer Center maestro app (#5157) via Facundo Menzella (@facumenzella)
+
+## 5.25.1
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Use correct title for section (#5168) via Facundo Menzella (@facumenzella)
+
+## 5.25.0
+## RevenueCat SDK
+### 🐞 Bugfixes
+* reload customer center after re-syncing customer info (#5166) via Facundo Menzella (@facumenzella)
+### Customer Center
+#### ✨ New Features
+* Add price to NonSubscriptionTransaction (#5131) via Facundo Menzella (@facumenzella)
+* Show other purchases in Purchases List (#5126) via Facundo Menzella (@facumenzella)
+* Include PurchaseInformationCardView in SubscriptionDetail (#5121) via Facundo Menzella (@facumenzella)
+#### 🐞 Bugfixes
+* fix: Do not reload actions when selecting purchase (#5164) via Facundo Menzella (@facumenzella)
+* Show feedback for as a sheet instead of a push (#5156) via Facundo Menzella (@facumenzella)
+* Introduce CustomerCenterButtonStyle to highlight CustomerCenter buttons (#5158) via Facundo Menzella (@facumenzella)
+* Minor UI tweaks for CustomerCenter 2.0 (#5159) via Facundo Menzella (@facumenzella)
+* Pass CustomerCenterViewModel as observed object to RestoreAlert (#5146) via Facundo Menzella (@facumenzella)
+* Pass CustomerCenterViewModel as a ObservedObject to the detail screen (#5154) via Facundo Menzella (@facumenzella)
+* Add isActive to PurchaseInformation for CustomerCenter (#5152) via Facundo Menzella (@facumenzella)
+* Minor UI tweaks for Customer Center subscription list (#5150) via Facundo Menzella (@facumenzella)
+* Dont show `see all purchases` button if there's nothing else to show (#5134) via Facundo Menzella (@facumenzella)
+* Filter changePlans path for lifetime purchases in CustomerCenter (#5133) via Facundo Menzella (@facumenzella)
+* Add restore overlay to RelevantPurchasesListView (#5130) via Facundo Menzella (@facumenzella)
+
+## RevenueCatUI SDK
+### Customer Center
+#### ✨ New Features
+* Introduce purchase card badges (#5118) via Facundo Menzella (@facumenzella)
+* Show account details in active subscription list (#5115) via Facundo Menzella (@facumenzella)
+* Deprecate ManageSubscriptionView in favor of ActiveSubscriptionList (#5101) via Facundo Menzella (@facumenzella)
+#### 🐞 Bugfixes
+* Fix contact support button UI to match ButtonsView (#5129) via Facundo Menzella (@facumenzella)
+* Show list if all purchases together are more than one (#5128) via Facundo Menzella (@facumenzella)
+* Update margins and copies for SubscriptionList (#5127) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Make latestPurchaseDate non-optional in PurchaseInformation (#5144) via Facundo Menzella (@facumenzella)
+* CircleCI: save Ruby 3.2.0 installation in cache (#5163) via Antonio Pallares (@ajpallares)
+* Add README to Maestro app (#5165) via Facundo Menzella (@facumenzella)
+* Fix some flaky tests (Part 3) (#5155) via Antonio Pallares (@ajpallares)
+* Send slack message for load shedder v3 tests report (#5145) via Antonio Pallares (@ajpallares)
+* Add ownership type to PurchaseInformation (#5143) via Facundo Menzella (@facumenzella)
+* Change to use new endpoint to fetch web product info (#5135) via Toni Rico (@tonidero)
+* Fixed locale in RevenueCatUI test data (#5125) via Antonio Pallares (@ajpallares)
+* Introduce ActiveSubscriptionButtonsView to use it inside a scrollview (#5123) via Facundo Menzella (@facumenzella)
+* Add DEBUG check to SDK Health API tests (#5122) via Antonio Pallares (@ajpallares)
+* [DX-404] Adds API Tests for SDK Health Report (#5117) via Pol Piella Abadia (@polpielladev)
+* Fix some flaky tests (Part 2) (#5104) via Antonio Pallares (@ajpallares)
+* add missing files to Xcode workspace (#5116) via Antonio Pallares (@ajpallares)
+* Remove ObservableObject from FeedbackSurveyData (#5106) via Facundo Menzella (@facumenzella)
+* Update Nimble dependency to v13.7.1 (#5096) via Antonio Pallares (@ajpallares)
+
 ## 5.24.0
 ## RevenueCat SDK
 ### 🐞 Bugfixes
@@ -1174,6 +1481,10 @@ or if using the modifier:
 The RevenueCat iOS SDK v5 is here!! Version 5.0 of the RevenueCat SDK enables full StoreKit 2 flow on the SDK and the RevenueCat backend by default.
 
 See our [RevenueCat v5 Migration Guide](Sources/DocCDocumentation/DocCDocumentation.docc/V5_API_Migration_guide.md) for all the details.
+
+## 4.43.6
+### 🔄 Other Changes
+* Adds `showStoreMessagesAutomatically` parameter to CEC mode (#5222) via JayShortway (@JayShortway)
 
 ## 4.43.5
 ### Other Changes

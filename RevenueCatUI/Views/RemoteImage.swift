@@ -11,6 +11,7 @@
 //  
 //  Created by Nacho Soto on 7/19/23.
 
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -37,7 +38,16 @@ struct RemoteImage<Content: View>: View {
         lowResUrl != nil
     }
 
-    private let transition: AnyTransition = .opacity.animation(Constants.defaultAnimation)
+    private var transition: AnyTransition {
+        #if DEBUG
+        if ProcessInfo.isRunningRevenueCatTests && self.url.isFileURL {
+            // No transition for the load of the local image
+            // This is used for paywall screenshot validation
+            return .identity
+        }
+        #endif
+        return .opacity.animation(Constants.defaultAnimation)
+    }
 
     init(
         url: URL,
@@ -87,9 +97,31 @@ struct RemoteImage<Content: View>: View {
         }
     }
 
+    var localImage: (Image, CGSize)? {
+        guard url.isFileURL else {
+            return nil
+        }
+
+        #if os(macOS)
+        if let image = NSImage(contentsOfFile: url.path) {
+            return (Image(nsImage: image), image.size)
+        } else {
+            return nil
+        }
+        #else
+        if let image = UIImage(contentsOfFile: url.path) {
+            return (Image(uiImage: image), image.size)
+        } else {
+            return nil
+        }
+        #endif
+    }
+
     var body: some View {
         Group {
-            if case let .success(result) = highResLoader.result {
+            if let imageAndSize = self.localImage {
+                content(imageAndSize.0, imageAndSize.1)
+            } else if case let .success(result) = highResLoader.result {
                 content(result.image, result.size)
             } else if case let .success(result) = lowResLoader.result {
                 content(result.image, result.size)
@@ -107,6 +139,14 @@ struct RemoteImage<Content: View>: View {
         }
         .transition(self.transition)
         .task(id: self.url) { // This cancels the previous task when the URL changes.
+            #if DEBUG
+            // Don't attempt to load if local image
+            // This is used for paywall screenshot validation
+            guard self.localImage == nil else {
+                return
+            }
+            #endif
+
             switch self.colorScheme {
             case .dark:
                 await loadImages(

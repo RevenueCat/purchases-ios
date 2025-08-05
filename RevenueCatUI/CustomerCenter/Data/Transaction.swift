@@ -23,27 +23,61 @@ protocol Transaction {
     var managementURL: URL? { get }
     var price: ProductPaidPrice? { get }
     var periodType: PeriodType { get }
+    var purchaseDate: Date { get }
+    var unsubscribeDetectedAt: Date? { get }
+    var billingIssuesDetectedAt: Date? { get }
+    var gracePeriodExpiresDate: Date? { get }
+    var refundedAtDate: Date? { get }
+    var storeIdentifier: String? { get }
+    var identifier: String? { get }
+    var isSandbox: Bool { get }
+    var originalPurchaseDate: Date? { get }
+    var isSubscrition: Bool { get }
 }
 
 enum TransactionType {
 
-    case subscription(isActive: Bool, willRenew: Bool, expiresDate: Date?, isTrial: Bool)
+    case subscription(
+        isActive: Bool,
+        willRenew: Bool,
+        expiresDate: Date?,
+        isTrial: Bool,
+        ownershipType: PurchaseOwnershipType
+    )
     case nonSubscription
 }
 
 @_spi(Internal) extension RevenueCat.SubscriptionInfo: Transaction {
 
     var type: TransactionType {
-        .subscription(isActive: isActive,
-                      willRenew: willRenew,
-                      expiresDate: expiresDate,
-                      isTrial: periodType == .trial)
+        .subscription(
+            isActive: isActive,
+            willRenew: willRenew,
+            expiresDate: expiresDate,
+            isTrial: periodType == .trial,
+            ownershipType: ownershipType
+        )
     }
 
     var isCancelled: Bool {
         unsubscribeDetectedAt != nil && !willRenew
     }
 
+    var refundedAtDate: Date? {
+        refundedAt
+    }
+
+    var storeIdentifier: String? {
+        storeTransactionId
+    }
+
+    var identifier: String? {
+        nil
+    }
+
+    var isSubscrition: Bool {
+        true
+    }
 }
 
 extension NonSubscriptionTransaction: Transaction {
@@ -60,13 +94,39 @@ extension NonSubscriptionTransaction: Transaction {
         nil
     }
 
-    var price: ProductPaidPrice? {
-        // We don't have that information in the CustomerInfo
-        nil
-    }
-
     var periodType: PeriodType {
         .normal
     }
 
+    var unsubscribeDetectedAt: Date? {
+        nil
+    }
+
+    var billingIssuesDetectedAt: Date? {
+        nil
+    }
+
+    var gracePeriodExpiresDate: Date? {
+        nil
+    }
+
+    var refundedAtDate: Date? {
+        nil
+    }
+
+    var storeIdentifier: String? {
+        storeTransactionIdentifier
+    }
+
+    var identifier: String? {
+        transactionIdentifier
+    }
+
+    var originalPurchaseDate: Date? {
+        nil
+    }
+
+    var isSubscrition: Bool {
+        false
+    }
 }

@@ -13,7 +13,7 @@
 //  Created by Cesar de la Vega on 17/6/24.
 //
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import StoreKit
 import SwiftUI
 
@@ -45,6 +45,7 @@ struct PromotionalOfferView: View {
          product: StoreProduct,
          promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer,
          purchasesProvider: CustomerCenterPurchasesType,
+         actionWrapper: CustomerCenterActionWrapper,
          onDismissPromotionalOfferView: @escaping (PromotionalOfferViewAction) -> Void
     ) {
         _viewModel = StateObject(wrappedValue: PromotionalOfferViewModel(
@@ -53,7 +54,8 @@ struct PromotionalOfferView: View {
                 product: product,
                 promoOfferDetails: promoOfferDetails
             ),
-            purchasesProvider: purchasesProvider
+            purchasesProvider: purchasesProvider,
+            actionWrapper: actionWrapper
         ))
         self.onDismissPromotionalOfferView = onDismissPromotionalOfferView
     }
@@ -95,9 +97,15 @@ struct PromotionalOfferView: View {
                 }
             }
         }
+        .navigationBarBackButtonHidden(true)
+        .applyIf(tintColor != nil, apply: { $0.tint(tintColor) })
         .onAppear {
             self.viewModel.onPromotionalOfferPurchaseFlowComplete = self.dismissPromotionalOfferView
         }
+    }
+
+    private var tintColor: Color? {
+        Color.from(colorInformation: appearance.accentColor, for: self.colorScheme)
     }
 
     // Called when the promotional offer flow is purchased, successfully or not

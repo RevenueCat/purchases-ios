@@ -12,7 +12,7 @@
 //  Created by Facundo Menzella on 19/5/25.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if os(iOS)
@@ -22,6 +22,9 @@ import SwiftUI
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct ActiveSubscriptionButtonsView: View {
+
+    @Environment(\.appearance)
+    private var appearance: CustomerCenterConfigData.Appearance
 
     @Environment(\.colorScheme)
     private var colorScheme
@@ -53,12 +56,16 @@ struct ActiveSubscriptionButtonsView: View {
                 }
             }
         }
+        .applyIf(tintColor != nil, apply: { $0.tint(tintColor) })
         .background(Color(colorScheme == .light
                           ? UIColor.systemBackground
                           : UIColor.secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 
+    private var tintColor: Color? {
+        Color.from(colorInformation: appearance.accentColor, for: self.colorScheme)
+    }
 }
 
 #endif

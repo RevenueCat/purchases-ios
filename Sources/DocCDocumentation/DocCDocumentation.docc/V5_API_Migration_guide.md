@@ -2,7 +2,7 @@
 
 ## StoreKit 2
 
-> Warning: When upgrading to v5, you **must** configure your [In-App Purchase Key](/service-credentials/itunesconnect-app-specific-shared-secret/in-app-purchase-key-configuration) in the RevenueCat dashboard. **Purchases will fail if the key is not configured**.
+> Warning: When upgrading to v5, you **must** configure your [In-App Purchase Key](https://www.revenuecat.com/docs/service-credentials/itunesconnect-app-specific-shared-secret/in-app-purchase-key-configuration) in the RevenueCat dashboard. **Purchases will fail if the key is not configured**.
 
 Version 5.0 of the RevenueCat SDK enables full StoreKit 2 flow on the SDK and the RevenueCat backend by default.
 
@@ -31,13 +31,13 @@ Purchases.configure(with: .builder(withAPIKey: apiKey)
 
 ### 3rd Party Analytics SDKs
 
-If you are using any 3rd party analytics SDKs to automatically track in-app purchases, you need to be aware most of them do not completely support logging purchases made with StoreKit 2. This is the case for some popular SDKs like Facebook, Mixpanel, OneSignal, Segment or Firebase. For these services, we recommend you use our [data integrations](https://www.revenuecat.com/integrations/).
+If you are using any 3rd party analytics SDKs to automatically track in-app purchases, you need to be aware most of them do not completely support logging purchases made with StoreKit 2. This is the case for some popular SDKs like Facebook, Mixpanel, OneSignal, Segment or Firebase. For these services, we recommend you use our [data integrations](https://www.revenuecat.com/docs/integrations/third-party-integrations).
 
 If you're using the Firebase SDK, you'll need to follow [these instructions](https://firebase.google.com/docs/analytics/measure-in-app-purchases#swift) to log purchases made with StoreKit 2.
 
 ### Observer Mode is now PurchasesAreCompletedBy
 
-Version 5.0 of the SDK  deprecates the term "Observer Mode" (and the APIs where this term was used), and replaces it
+Version 5.0 of the SDK deprecates the term "Observer Mode" (and the APIs where this term was used), and replaces it
 with `PurchasesAreCompletedBy` (either RevenueCat or your app).
 
 Version 5.0 of the SDK also introduces support for tracking purchases made directly by your app calling StoreKit 2.

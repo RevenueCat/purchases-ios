@@ -14,9 +14,8 @@
 //
 
 import Foundation
-import SwiftUI
-
 import RevenueCat
+import SwiftUI
 
 #if os(iOS)
 
@@ -26,45 +25,61 @@ import RevenueCat
 @available(watchOS, unavailable)
 final class PurchaseHistoryViewModel: ObservableObject {
 
-    @Published var selectedPurchase: PurchaseInfo?
+    @Published
+    var selectedPurchase: PurchaseInformation?
 
-    @Published var customerInfo: CustomerInfo? {
-        didSet {
-            isLoading = false
-            updateActiveAndNonActiveSubscriptions()
-        }
+    @Published
+    var errorMessage: String?
+
+    @Published
+    var isLoading: Bool = true
+
+    @Published
+    var activeSubscriptions: [PurchaseInformation] = []
+
+    @Published
+    var inactiveSubscriptions: [PurchaseInformation] = []
+
+    @Published
+    var nonSubscriptions: [PurchaseInformation] = []
+
+    var isEmpty: Bool {
+        activeSubscriptions.isEmpty && inactiveSubscriptions.isEmpty && nonSubscriptions.isEmpty
     }
-    @Published var errorMessage: String?
-    @Published var isLoading: Bool = true
-
-    var activeSubscriptions: [PurchaseInfo] = []
-    var inactiveSubscriptions: [PurchaseInfo] = []
-    var nonSubscriptions: [PurchaseInfo] = []
 
     let purchasesProvider: CustomerCenterPurchasesType
+    private let customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
 
     init(
-        selectedPurchase: PurchaseInfo? = nil,
-        customerInfo: CustomerInfo? = nil,
+        selectedPurchase: PurchaseInformation? = nil,
         errorMessage: String? = nil,
         isLoading: Bool = true,
-        activeSubscriptions: [PurchaseInfo] = [],
-        inactiveSubscriptions: [PurchaseInfo] = [],
-        nonSubscriptions: [PurchaseInfo] = [],
-        purchasesProvider: CustomerCenterPurchasesType
+        activeSubscriptions: [PurchaseInformation] = [],
+        inactiveSubscriptions: [PurchaseInformation] = [],
+        nonSubscriptions: [PurchaseInformation] = [],
+        purchasesProvider: CustomerCenterPurchasesType,
+        customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType = CustomerCenterStoreKitUtilities()
     ) {
         self.selectedPurchase = selectedPurchase
-        self.customerInfo = customerInfo
         self.errorMessage = errorMessage
         self.isLoading = isLoading
         self.activeSubscriptions = activeSubscriptions
         self.inactiveSubscriptions = inactiveSubscriptions
         self.nonSubscriptions = nonSubscriptions
         self.purchasesProvider = purchasesProvider
+        self.customerCenterStoreKitUtilities = customerCenterStoreKitUtilities
     }
 
     func didAppear() async {
+        await MainActor.run {
+            isLoading = true
+        }
+
         await fetchCustomerInfo()
+
+        await MainActor.run {
+            isLoading = false
+        }
     }
 }
 
@@ -73,44 +88,77 @@ private extension PurchaseHistoryViewModel {
     func fetchCustomerInfo() async {
         do {
             let customerInfo = try await self.purchasesProvider.customerInfo()
+            let (active, inactive, nonSubscriptions) = await updateActiveAndNonActiveSubscriptions(
+                customerInfo: customerInfo
+            )
             await MainActor.run {
-                self.customerInfo = customerInfo
+                self.activeSubscriptions = active
+                self.inactiveSubscriptions = inactive
+                self.nonSubscriptions = nonSubscriptions
             }
         } catch {
+            self.activeSubscriptions = []
+            self.inactiveSubscriptions = []
+            self.nonSubscriptions = []
+
             await MainActor.run {
                 self.errorMessage = error.localizedDescription
             }
         }
     }
 
-    func updateActiveAndNonActiveSubscriptions() {
-        activeSubscriptions = customerInfo.map {
-            $0.subscriptionsByProductIdentifier
-                .filter { $0.value.isActive }
-                .values
-                .sorted(by: { sub1, sub2 in
-                    sub1.purchaseDate < sub2.purchaseDate
-                })
-                .map {
-                    PurchaseInfo.subscription($0)
-                }
-        } ?? []
+    func updateActiveAndNonActiveSubscriptions(customerInfo: CustomerInfo) async -> (
+        [PurchaseInformation],
+        [PurchaseInformation],
+        [PurchaseInformation]
+    ) {
+        var activeSubscriptions: [PurchaseInformation] = []
+        var inactiveSubscriptions: [PurchaseInformation] = []
+        var nonSubscriptions: [PurchaseInformation] = []
 
-        inactiveSubscriptions = customerInfo.map {
-            $0.subscriptionsByProductIdentifier
-                .filter { !$0.value.isActive }
-                .values
-                .sorted(by: { sub1, sub2 in
-                    sub1.purchaseDate < sub2.purchaseDate
-                })
-                .map {
-                    PurchaseInfo.subscription($0)
-                }
-        } ?? []
+        for subscription in customerInfo.subscriptionsByProductIdentifier where subscription.value.isActive {
+            await activeSubscriptions.append(.from(
+                transaction: subscription.value,
+                customerInfo: customerInfo,
+                purchasesProvider: purchasesProvider,
+                changePlans: [], // ignored on purpose because there's no change plan flow from history
+                customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
+            ))
+        }
 
-        nonSubscriptions = customerInfo?.nonSubscriptions.map {
-            .nonSubscription($0)
-        } ?? []
+        activeSubscriptions = activeSubscriptions.sorted(by: { sub1, sub2 in
+            sub1.latestPurchaseDate < sub2.latestPurchaseDate
+        })
+
+        for subscription in customerInfo.subscriptionsByProductIdentifier where !subscription.value.isActive {
+            await inactiveSubscriptions.append(.from(
+                transaction: subscription.value,
+                customerInfo: customerInfo,
+                purchasesProvider: purchasesProvider,
+                // ignored on purpose because there's no change plan flow from purchase history
+                changePlans: [],
+                customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
+            ))
+        }
+
+        inactiveSubscriptions = inactiveSubscriptions.sorted(by: { sub1, sub2 in
+            sub1.latestPurchaseDate < sub2.latestPurchaseDate
+        })
+
+        for purchase in customerInfo.nonSubscriptions {
+            await nonSubscriptions.append(.from(
+                transaction: purchase,
+                customerInfo: customerInfo,
+                purchasesProvider: purchasesProvider,
+                changePlans: [], // ignored on purpose because there's no change plan flow from purchase history
+                customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
+            ))
+        }
+        nonSubscriptions = nonSubscriptions.sorted(by: { sub1, sub2 in
+            sub1.latestPurchaseDate < sub2.latestPurchaseDate
+        })
+
+        return (activeSubscriptions, inactiveSubscriptions, nonSubscriptions)
     }
 }
 

@@ -15,13 +15,13 @@ import Foundation
 import Nimble
 import XCTest
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-class CustomerCenterConfigDataTests: TestCase {
+final class CustomerCenterConfigDataTests: TestCase {
 
     func testCustomerCenterConfigDataConversion() throws {
         let mockResponse = CustomerCenterConfigResponse(
@@ -52,7 +52,8 @@ class CustomerCenterConfigDataTests: TestCase {
                                 openMethod: nil,
                                 promotionalOffer: nil,
                                 feedbackSurvey: nil,
-                                refundWindow: nil
+                                refundWindow: nil,
+                                actionIdentifier: nil
                             ),
                             .init(
                                 id: "path2",
@@ -72,7 +73,8 @@ class CustomerCenterConfigDataTests: TestCase {
                                                                              targetProductId: "annual")
                                                         ]),
                                 feedbackSurvey: nil,
-                                refundWindow: nil
+                                refundWindow: nil,
+                                actionIdentifier: nil
                             ),
                             .init(
                                 id: "path3",
@@ -100,7 +102,8 @@ class CustomerCenterConfigDataTests: TestCase {
                                                                                         )
                                                                                       ])
                                                              )]),
-                                refundWindow: nil
+                                refundWindow: nil,
+                                actionIdentifier: nil
                             ),
                             .init(
                                 id: "path4",
@@ -119,7 +122,8 @@ class CustomerCenterConfigDataTests: TestCase {
                                                             "monthly": .init(storeOfferIdentifier: "offer_id",
                                                                              targetProductId: "annual")]),
                                 feedbackSurvey: nil,
-                                refundWindow: nil
+                                refundWindow: nil,
+                                actionIdentifier: nil
                             )
                         ]
                     )
@@ -131,8 +135,10 @@ class CustomerCenterConfigDataTests: TestCase {
                     email: "support@example.com",
                     shouldWarnCustomerToUpdate: false,
                     displayPurchaseHistoryLink: true,
+                    displayVirtualCurrencies: true,
                     shouldWarnCustomersAboutMultipleSubscriptions: false
-                )
+                ),
+                changePlans: []
             ),
             lastPublishedAppVersion: "1.2.3",
             itunesTrackId: 123
@@ -251,7 +257,8 @@ class CustomerCenterConfigDataTests: TestCase {
                 },
                 "support": {
                     "email": "support@example.com"
-                }
+                },
+                "changePlans": []
             },
             "lastPublishedAppVersion": "1.0.0",
             "itunesTrackId": 123

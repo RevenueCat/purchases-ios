@@ -390,6 +390,8 @@ extension View {
 @available(tvOS, unavailable)
 private struct PresentingPaywallModifier: ViewModifier {
 
+    @Environment(\.scenePhase) var scenePhase
+
     private struct Data: Identifiable {
         var customerInfo: CustomerInfo
         var id: String { self.customerInfo.originalAppUserId }
@@ -462,6 +464,15 @@ private struct PresentingPaywallModifier: ViewModifier {
                 content
                     .sheet(item: self.$data, onDismiss: self.onDismiss) { data in
                         self.paywallView(data)
+                        // The default height given to sheets on Mac Catalyst is too small, and looks terrible.
+                        // So we need to give it a more reasonable default size. This is the height of an
+                        // iPhone 6/7/8 screen. This aligns with our documentation that we will show a paywall
+                        // in a modal that is "roughly iPhone sized", and if you want to customize further you
+                        // can use PaywallView.
+                        // https://www.revenuecat.com/docs/tools/paywalls/displaying-paywalls
+                        #if targetEnvironment(macCatalyst)
+                            .frame(height: 667)
+                        #endif
                     }
             case .fullScreen:
                 content
@@ -471,17 +482,40 @@ private struct PresentingPaywallModifier: ViewModifier {
             }
         }
         .task {
-            guard let info = try? await self.customerInfoFetcher() else { return }
-
-            Logger.debug(Strings.determining_whether_to_display_paywall)
-
-            if self.shouldDisplay(info) {
-                Logger.debug(Strings.displaying_paywall)
-
-                self.data = .init(customerInfo: info)
-            } else {
-                Logger.debug(Strings.not_displaying_paywall)
+            await self.updateCustomerInfo()
+        }
+        .onChangeOfWithChange(self.scenePhase) { value in
+            // Used when Offer Code Redemption sheet dismisses
+            switch value {
+            case .new(let newPhase):
+                if newPhase == .active {
+                    Task {
+                        await self.updateCustomerInfo()
+                    }
+                }
+            case .changed(old: let oldPhase, new: let newPhase):
+                // Used when Offer Code Redemption sheet dismisses
+                if newPhase == .active && oldPhase == .inactive {
+                    Task {
+                        await self.updateCustomerInfo()
+                    }
+                }
             }
+        }
+    }
+
+    private func updateCustomerInfo() async {
+        guard let info = try? await self.customerInfoFetcher() else { return }
+
+        Logger.debug(Strings.determining_whether_to_display_paywall)
+
+        if self.shouldDisplay(info) {
+            Logger.debug(Strings.displaying_paywall)
+
+            self.data = .init(customerInfo: info)
+        } else {
+            Logger.debug(Strings.not_displaying_paywall)
+            self.data = nil
         }
     }
 

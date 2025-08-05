@@ -39,7 +39,7 @@ struct TabControlButtonComponentView: View {
     private let onDismiss: () -> Void
 
     private var selectedState: ComponentViewState {
-        return self.tabControlContext.selectedIndex == self.viewModel.component.tabIndex ? .selected : .default
+        return self.tabControlContext.selectedTabId == self.viewModel.component.tabId ? .selected : .default
     }
 
     init(viewModel: TabControlButtonComponentViewModel, onDismiss: @escaping () -> Void) {
@@ -49,7 +49,7 @@ struct TabControlButtonComponentView: View {
 
     var body: some View {
         Button {
-            self.tabControlContext.selectedIndex = self.viewModel.component.tabIndex
+            self.tabControlContext.selectedTabId = self.viewModel.component.tabId
         } label: {
             StackComponentView(
                 viewModel: self.viewModel.stackViewModel,

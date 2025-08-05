@@ -32,6 +32,7 @@ class FeedbackSurveyViewModelTests: TestCase {
 
     func testInitialState() {
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: Self.path,
             onOptionSelected: {}
@@ -48,6 +49,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let option = Self.option
 
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: Self.path,
             onOptionSelected: {}
@@ -75,6 +77,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let option = Self.option
 
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: Self.path,
             onOptionSelected: {}
@@ -101,6 +104,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let onOptionSelectedExpectation = expectation(description: "OnOptionSelected should be called")
 
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: Self.path,
             onOptionSelected: {
@@ -127,6 +131,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let option = Self.option
         let path = Self.path
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: path,
             onOptionSelected: {}
@@ -162,6 +167,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let option = Self.option
         let path = Self.path
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: path,
             onOptionSelected: {}
@@ -197,6 +203,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let option = Self.option
         let path = Self.path
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: path,
             onOptionSelected: {}
@@ -233,6 +240,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let option = Self.optionWithPromo
         let path = Self.path
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: path,
             onOptionSelected: {}
@@ -268,6 +276,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let option = Self.optionWithPromo
         let path = Self.path
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: path,
             onOptionSelected: {}
@@ -303,6 +312,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let option = Self.optionWithPromo
         let path = Self.path
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: path,
             onOptionSelected: {}
@@ -340,6 +350,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let path = Self.path
         var optionCalled: Bool = false
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: path,
             onOptionSelected: {
@@ -392,6 +403,7 @@ class FeedbackSurveyViewModelTests: TestCase {
         let path = Self.path
         var optionCalled: Bool = false
         let data = FeedbackSurveyData(
+            productIdentifier: "",
             configuration: Self.feedbackSurvey,
             path: path,
             onOptionSelected: {

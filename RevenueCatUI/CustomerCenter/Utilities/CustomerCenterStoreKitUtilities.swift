@@ -17,7 +17,7 @@ import StoreKit
 import RevenueCat
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
-class CustomerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType {
+final class CustomerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType {
 
     func renewalPriceFromRenewalInfo(for product: StoreProduct) async -> (price: Decimal, currencyCode: String)? {
 

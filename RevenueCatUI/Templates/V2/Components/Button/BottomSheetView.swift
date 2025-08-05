@@ -101,7 +101,12 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         onDismiss: {
                             self.sheetViewModel = nil
                         },
-                        additionalPadding: self.safeAreaInsets
+                        additionalPadding: EdgeInsets(
+                            top: 0,
+                            leading: 0,
+                            bottom: safeAreaInsets.bottom,
+                            trailing: 0
+                        )
                     )
                     .applyIfLet(self.sheetHeight, apply: { view, height in
                         view.frame(height: height)
@@ -120,7 +125,6 @@ struct BottomSheetOverlayModifier: ViewModifier {
             )
             .animation(.spring(response: 0.35, dampingFraction: 0.7), value: sheetViewModel)
         }
-        .ignoresSafeArea()
     }
 }
 
@@ -187,17 +191,19 @@ struct BottomSheetViewTestView: View {
             ]
         )))
     var body: some View {
-        ZStack {
-            Color.gray.opacity(0.2)
+        GeometryReader { proxy in
+            ZStack {
+                Color.gray.opacity(0.2)
 
-            VStack {
-                Text("This view will have a sheet over it")
-                    .bottomSheet(sheet: $sheetViewModel,
-                                 safeAreaInsets: .init(top: 0, leading: 0, bottom: 0, trailing: 0))
+                VStack {
+                    Text("This view will have a sheet over it")
+                        .bottomSheet(sheet: $sheetViewModel,
+                                     safeAreaInsets: proxy.safeAreaInsets)
+                }
             }
+            .edgesIgnoringSafeArea(.all)
         }
-        .edgesIgnoringSafeArea(.all)
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
     }
 }
 

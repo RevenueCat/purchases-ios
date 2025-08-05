@@ -209,10 +209,16 @@ private func checkAsyncMethods(purchases: Purchases) async {
             let _: RefundRequestStatus = try await purchases.beginRefundRequestForActiveEntitlement()
 #endif
         }
+
+        let _: [String: IntroEligibility] = await purchases.checkTrialOrIntroDiscountEligibility(productIdentifiers: [""])
+        let _: [Package: IntroEligibility] = await purchases.checkTrialOrIntroDiscountEligibility(packages: [pack])
+        let _: IntroEligibilityStatus = await purchases.checkTrialOrIntroDiscountEligibility(product: stp)
     } catch {}
 }
 
 func checkNonAsyncMethods(_ purchases: Purchases) {
+    let storeProduct: StoreProduct! = nil
+
     if #available(iOS 15.0, *) {
 #if os(iOS)
         purchases.beginRefundRequest(forProduct: "") { (_: Result<RefundRequestStatus, PublicError>) in }
@@ -220,13 +226,30 @@ func checkNonAsyncMethods(_ purchases: Purchases) {
         purchases.beginRefundRequestForActiveEntitlement { (_: Result<RefundRequestStatus, PublicError>) in }
 #endif
     }
+
+    purchases.checkTrialOrIntroDiscountEligibility(
+        productIdentifiers: [""],
+        completion: { eligibilityDictionary in
+            let _: [String: IntroEligibility] = eligibilityDictionary
+        }
+    )
+    purchases.checkTrialOrIntroDiscountEligibility(product: storeProduct) { introEligibilityStatus in
+        let _: IntroEligibilityStatus = introEligibilityStatus
+    }
 }
 
 private func checkConfigure() -> Purchases! {
+    Purchases.configureInCustomEntitlementsComputationMode(
+        apiKey: "",
+        appUserID: ""
+    )
+    Purchases.configureInCustomEntitlementsComputationMode(
+        apiKey: "",
+        appUserID: "",
+        showStoreMessagesAutomatically: false
+    )
+    
     let configuration = Configuration.Builder(withAPIKey: "", appUserID: "").build()
-    Purchases.configureInCustomEntitlementsComputationMode(apiKey: "", appUserID: "")
-    Purchases.configureInCustomEntitlementsComputationMode(apiKey: "",
-                                                           appUserID: "")
     Purchases.configure(with: configuration)
 
     return nil

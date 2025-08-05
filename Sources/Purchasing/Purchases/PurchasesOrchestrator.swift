@@ -27,7 +27,7 @@ import StoreKit
 
 }
 
-// swiftlint:disable file_length type_body_length
+// swiftlint:disable file_length type_body_length function_body_length
 final class PurchasesOrchestrator {
 
     var finishTransactions: Bool { self.systemInfo.finishTransactions }
@@ -53,6 +53,7 @@ final class PurchasesOrchestrator {
 
     private let productsManager: ProductsManagerType
     private let paymentQueueWrapper: EitherPaymentQueueWrapper
+    private let testStorePurchaseHandler: TestStorePurchaseHandlerType
     private let systemInfo: SystemInfo
     private let attribution: Attribution
     private let operationDispatcher: OperationDispatcher
@@ -123,6 +124,7 @@ final class PurchasesOrchestrator {
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     convenience init(productsManager: ProductsManagerType,
                      paymentQueueWrapper: EitherPaymentQueueWrapper,
+                     testStorePurchaseHandler: TestStorePurchaseHandlerType,
                      systemInfo: SystemInfo,
                      subscriberAttributes: Attribution,
                      operationDispatcher: OperationDispatcher,
@@ -152,6 +154,7 @@ final class PurchasesOrchestrator {
         self.init(
             productsManager: productsManager,
             paymentQueueWrapper: paymentQueueWrapper,
+            testStorePurchaseHandler: testStorePurchaseHandler,
             systemInfo: systemInfo,
             subscriberAttributes: subscriberAttributes,
             operationDispatcher: operationDispatcher,
@@ -209,6 +212,7 @@ final class PurchasesOrchestrator {
 
     init(productsManager: ProductsManagerType,
          paymentQueueWrapper: EitherPaymentQueueWrapper,
+         testStorePurchaseHandler: TestStorePurchaseHandlerType,
          systemInfo: SystemInfo,
          subscriberAttributes: Attribution,
          operationDispatcher: OperationDispatcher,
@@ -233,6 +237,7 @@ final class PurchasesOrchestrator {
     ) {
         self.productsManager = productsManager
         self.paymentQueueWrapper = paymentQueueWrapper
+        self.testStorePurchaseHandler = testStorePurchaseHandler
         self.systemInfo = systemInfo
         self.attribution = subscriberAttributes
         self.operationDispatcher = operationDispatcher
@@ -299,6 +304,17 @@ final class PurchasesOrchestrator {
     }
 
     func restorePurchases(completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
+        #if TEST_STORE
+
+        if self.systemInfo.isTestStoreAPIKey {
+            Logger.debug(Strings.purchase.restore_purchases_test_store)
+            self.customerInfoManager.customerInfo(appUserID: self.appUserID, fetchPolicy: .default) { result in
+                completion?(result.mapError({ $0.asPurchasesError }))
+            }
+            return
+        }
+
+        #endif // TEST_STORE
         self.syncPurchases(receiptRefreshPolicy: .always,
                            isRestore: true,
                            initiationSource: .restore,
@@ -306,6 +322,17 @@ final class PurchasesOrchestrator {
     }
 
     func syncPurchases(completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)? = nil) {
+        #if TEST_STORE
+
+        if self.systemInfo.isTestStoreAPIKey {
+            Logger.debug(Strings.purchase.sync_purchases_test_store)
+            self.customerInfoManager.customerInfo(appUserID: self.appUserID, fetchPolicy: .default) { result in
+                completion?(result.mapError({ $0.asPurchasesError }))
+            }
+            return
+        }
+
+        #endif // TEST_STORE
         self.syncPurchases(receiptRefreshPolicy: .never,
                            isRestore: allowSharingAppStoreAccount,
                            initiationSource: .restore,
@@ -463,8 +490,10 @@ final class PurchasesOrchestrator {
                           winBackOffer: winBackOffer,
                           metadata: metadata,
                           completion: completionWithTracking)
-        } else if product.isTestProduct {
-            self.handleTestProduct(completionWithTracking)
+        } else if let testStoreProduct = product.testStoreProduct {
+            self.handlePurchase(testStoreProduct: testStoreProduct,
+                                metadata: metadata,
+                                completion: completionWithTracking)
         } else {
             fatalError("Unrecognized product: \(product)")
         }
@@ -1476,10 +1505,10 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
-                       isRestore: Bool,
-                       initiationSource: ProductRequestData.InitiationSource,
-                       completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
+    private func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
+                               isRestore: Bool,
+                               initiationSource: ProductRequestData.InitiationSource,
+                               completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
         self.trackSyncOrRestorePurchasesStartedIfNeeded(receiptRefreshPolicy)
         let startTime = self.dateProvider.now()
         // Don't log anything unless the flag was explicitly set.
@@ -1596,6 +1625,40 @@ private extension PurchasesOrchestrator {
                         completion?(.success(cachedCustomerInfo))
                     }
                     return
+                }
+
+                guard let appTransactionJWS else {
+                    // The AppTransaction is not present, and the cached CustomerInfo is either nil
+                    // or is missing the originalPurchaseDate and/or originalApplicationVersion.
+                    //
+                    // In this scenario, we don't want to POST a receipt to the backend since we are missing
+                    // both a receipt and an AppTransaction.
+                    Logger.warn(Strings.storeKit.sk2_sync_purchases_no_transaction_or_apptransaction_found)
+
+                    if let cachedCustomerInfo {
+                        // If we have a cached CustomerInfo, it's unlikely that the backend has received
+                        // originalPurchaseDate or originalApplicationVersion since the cache was last
+                        // updated, so return the cached copy.
+                        self.operationDispatcher.dispatchOnMainActor {
+                            completion?(.success(cachedCustomerInfo))
+                        }
+                        return
+                    } else {
+                        self.customerInfoManager.customerInfo(
+                            appUserID: currentAppUserID,
+                            fetchPolicy: .fetchCurrent
+                        ) { result in
+                            switch result {
+                            case .success(let customerInfo):
+                                completion?(.success(customerInfo))
+                                return
+                            case .failure(let backendError):
+                                completion?(.failure(backendError.asPurchasesError))
+                                return
+                            }
+                        }
+                        return
+                    }
                 }
 
                 let transactionData: PurchasedTransactionData = .init(
@@ -1806,17 +1869,6 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    func handleTestProduct(_ completion: @escaping PurchaseCompletedBlock) {
-        self.operationDispatcher.dispatchOnMainActor {
-            completion(
-                nil,
-                nil,
-                ErrorUtils.productNotAvailableForPurchaseError().asPublicError,
-                false
-            )
-        }
-    }
-
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func sk2PromotionalOffer(forProductDiscount productDiscount: StoreProductDiscountType,
                              discountIdentifier: String,
@@ -1910,6 +1962,65 @@ private extension PurchasesOrchestrator {
 
 }
 
+// MARK: - Test Store Purchases
+
+private extension PurchasesOrchestrator {
+
+    func handlePurchase(testStoreProduct: TestStoreProduct,
+                        metadata: [String: String]?,
+                        completion: @escaping PurchaseCompletedBlock) {
+        #if TEST_STORE
+        if self.systemInfo.isTestStoreAPIKey {
+            self.purchase(testStoreProduct: testStoreProduct, metadata: metadata, completion: completion)
+        } else {
+            self.handleTestProductNotAvailableForPurchase(completion)
+        }
+        #else
+        self.handleTestProductNotAvailableForPurchase(completion)
+        #endif // TEST_STORE
+    }
+
+    #if TEST_STORE
+    private func purchase(testStoreProduct: TestStoreProduct,
+                          metadata: [String: String]?,
+                          completion: @escaping PurchaseCompletedBlock) {
+        Task {
+            let result = await self.testStorePurchaseHandler.purchase(product: testStoreProduct)
+            switch result {
+            case .cancel:
+                let customerInfo = try? await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
+                                                                                    fetchPolicy: .cachedOrFetched)
+                await completion(nil, customerInfo, ErrorUtils.purchaseCancelledError().asPublicError, true)
+            case .failure(let purchasesError):
+                let customerInfo = try? await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
+                                                                                    fetchPolicy: .cachedOrFetched)
+                await completion(nil, customerInfo, purchasesError.asPublicError, false)
+            case .success(let transaction):
+                do {
+                    let customerInfo = try await self.handlePurchasedTransaction(transaction, .purchase, metadata)
+                    await completion(transaction, customerInfo, nil, false)
+                } catch {
+                    let purchasesError = ErrorUtils.purchasesError(withUntypedError: error)
+                    await completion(nil, nil, purchasesError.asPublicError, false)
+                }
+            }
+        }
+    }
+    #endif // TEST_STORE
+
+    private func handleTestProductNotAvailableForPurchase(_ completion: @escaping PurchaseCompletedBlock) {
+        self.operationDispatcher.dispatchOnMainActor {
+            completion(
+                nil,
+                nil,
+                ErrorUtils.productNotAvailableForPurchaseError().asPublicError,
+                false
+            )
+        }
+    }
+
+}
+
 private extension PurchasesOrchestrator {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -1972,6 +2083,8 @@ extension PurchasesOrchestrator {
             .get()
     }
 
+    // Do not use this method from outside this class, use `syncPurchases` instead.
+    // This method is only intended to be used from unit tests.
     func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
                        isRestore: Bool,
                        initiationSource: ProductRequestData.InitiationSource) async throws -> CustomerInfo {

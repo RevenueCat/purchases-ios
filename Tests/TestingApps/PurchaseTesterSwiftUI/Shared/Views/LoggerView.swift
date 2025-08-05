@@ -25,7 +25,9 @@ struct LoggerView: View {
         NavigationView {
             self.list
         }
+        #if !os(tvOS)
         .navigationBarTitleDisplayMode(.inline)
+        #endif
         .navigationViewStyle(.stack)
         #endif
     }
@@ -35,7 +37,7 @@ struct LoggerView: View {
             self.item(entry)
         }
         .navigationTitle("Logs")
-        #if !os(watchOS)
+        #if !os(watchOS) && !os(tvOS)
         .listRowSeparator(.hidden)
         #endif
         .transition(.slide)
