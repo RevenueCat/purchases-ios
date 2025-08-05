@@ -304,6 +304,17 @@ final class PurchasesOrchestrator {
     }
 
     func restorePurchases(completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
+        #if TEST_STORE
+
+        if self.systemInfo.isTestStoreAPIKey {
+            Logger.debug(Strings.purchase.restore_purchases_test_store)
+            self.customerInfoManager.customerInfo(appUserID: self.appUserID, fetchPolicy: .default) { result in
+                completion?(result.mapError({ $0.asPurchasesError }))
+            }
+            return
+        }
+
+        #endif // TEST_STORE
         self.syncPurchases(receiptRefreshPolicy: .always,
                            isRestore: true,
                            initiationSource: .restore,
@@ -311,6 +322,17 @@ final class PurchasesOrchestrator {
     }
 
     func syncPurchases(completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)? = nil) {
+        #if TEST_STORE
+
+        if self.systemInfo.isTestStoreAPIKey {
+            Logger.debug(Strings.purchase.sync_purchases_test_store)
+            self.customerInfoManager.customerInfo(appUserID: self.appUserID, fetchPolicy: .default) { result in
+                completion?(result.mapError({ $0.asPurchasesError }))
+            }
+            return
+        }
+
+        #endif // TEST_STORE
         self.syncPurchases(receiptRefreshPolicy: .never,
                            isRestore: allowSharingAppStoreAccount,
                            initiationSource: .restore,
@@ -1483,10 +1505,10 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
-                       isRestore: Bool,
-                       initiationSource: ProductRequestData.InitiationSource,
-                       completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
+    private func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
+                               isRestore: Bool,
+                               initiationSource: ProductRequestData.InitiationSource,
+                               completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
         self.trackSyncOrRestorePurchasesStartedIfNeeded(receiptRefreshPolicy)
         let startTime = self.dateProvider.now()
         // Don't log anything unless the flag was explicitly set.
@@ -2061,6 +2083,8 @@ extension PurchasesOrchestrator {
             .get()
     }
 
+    // Do not use this method from outside this class, use `syncPurchases` instead.
+    // This method is only intended to be used from unit tests.
     func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
                        isRestore: Bool,
                        initiationSource: ProductRequestData.InitiationSource) async throws -> CustomerInfo {
