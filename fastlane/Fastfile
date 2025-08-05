@@ -487,6 +487,9 @@ platform :ios do
         app_id_suffix: platform,
         archive_path: archive_path
     )
+  ensure
+    # Reset project file changes
+    sh("git checkout -- ../Tests/TestingApps/PaywallsTester/PaywallsTester.xcodeproj/project.pbxproj")
   end
 
   private_lane :build_mac_native_version do |options|
