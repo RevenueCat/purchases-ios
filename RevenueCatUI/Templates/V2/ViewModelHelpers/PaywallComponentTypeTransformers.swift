@@ -71,7 +71,8 @@ extension PaywallComponent.FontSize {
         #if canImport(UIKit)
         return UIFontMetrics(forTextStyle: self.textStyle).scaledFont(for: baseFont)
         #else
-        // macOS does not support dynamic type (see https://developer.apple.com/design/human-interface-guidelines/typography)
+        // macOS does not support dynamic type (see
+        // https://developer.apple.com/design/human-interface-guidelines/typography)
         return baseFont
         #endif
     }

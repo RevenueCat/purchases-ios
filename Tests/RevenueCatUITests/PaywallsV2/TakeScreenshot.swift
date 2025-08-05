@@ -192,7 +192,7 @@ extension NSView {
     func asImage() -> NSImage {
         let rep = bitmapImageRepForCachingDisplay(in: bounds)!
         cacheDisplay(in: bounds, to: rep)
-        
+
         let image = NSImage(size: bounds.size)
         image.addRepresentation(rep)
         return image
