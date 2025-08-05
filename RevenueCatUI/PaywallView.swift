@@ -123,6 +123,7 @@ public struct PaywallView: View {
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
         useDraftPaywall: Bool,
+        introEligibility: TrialOrIntroEligibilityChecker = .default(),
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil
     ) {
@@ -134,6 +135,7 @@ public struct PaywallView: View {
                 fonts: fonts,
                 displayCloseButton: displayCloseButton,
                 useDraftPaywall: useDraftPaywall,
+                introEligibility: introEligibility,
                 purchaseHandler: purchaseHandler
             )
         )

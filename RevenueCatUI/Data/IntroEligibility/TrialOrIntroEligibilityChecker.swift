@@ -14,9 +14,9 @@
 import Foundation
 import RevenueCat
 
-final class TrialOrIntroEligibilityChecker: ObservableObject {
+@_spi(Internal) public final class TrialOrIntroEligibilityChecker: ObservableObject {
 
-    typealias Checker = @Sendable ([Package]) async -> [Package: IntroEligibilityStatus]
+    @_spi(Internal) public typealias Checker = @Sendable ([Package]) async -> [Package: IntroEligibilityStatus]
 
     /// `false` if this `TrialOrIntroEligibilityChecker` is not backend by a configured `Purchases`instance.
     let isConfigured: Bool
@@ -31,7 +31,7 @@ final class TrialOrIntroEligibilityChecker: ObservableObject {
     }
 
     /// Creates an instance with a custom checker, useful for testing or previews.
-    init(isConfigured: Bool = true, checker: @escaping Checker) {
+    @_spi(Internal) public init(isConfigured: Bool = true, checker: @escaping Checker) {
         self.isConfigured = isConfigured
         self.checker = checker
     }
