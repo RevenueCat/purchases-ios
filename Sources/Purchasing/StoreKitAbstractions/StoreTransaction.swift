@@ -156,6 +156,10 @@ extension StoreTransaction {
         return (self.transaction as? SK2StoreTransaction)?.underlyingSK2Transaction
     }
 
+    internal var testStoreTransaction: TestStoreTransaction? {
+        return self.transaction as? TestStoreTransaction
+    }
+
 }
 
 extension StoreTransactionType {
