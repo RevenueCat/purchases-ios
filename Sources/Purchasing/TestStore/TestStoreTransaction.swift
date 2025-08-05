@@ -14,10 +14,9 @@ struct TestStoreTransaction: StoreTransactionType, Equatable {
     let purchaseDate: Date
     let transactionIdentifier: String
 
-    var hasKnownPurchaseDate: Bool { return true}
+    var hasKnownPurchaseDate: Bool { return true }
     var hasKnownTransactionIdentifier: Bool { return true }
-
-    let quantity: Int
+    var quantity: Int { return 1 }
 
     let storefront: Storefront?
 

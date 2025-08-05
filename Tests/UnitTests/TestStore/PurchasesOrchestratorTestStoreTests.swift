@@ -527,7 +527,6 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
         return TestStoreTransaction(productIdentifier: "test_product_id",
                                     purchaseDate: self.eventTimestamp1,
                                     transactionIdentifier: "test_transaction_id",
-                                    quantity: 1,
                                     storefront: Storefront(mockStorefront),
                                     jwsRepresentation: "test_jws_representation")
     }
