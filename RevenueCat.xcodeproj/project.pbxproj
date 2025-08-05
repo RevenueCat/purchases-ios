@@ -4866,14 +4866,12 @@
 				FD15AF5A2DF9A8F30062467E /* Virtual Currencies */,
 				5798C91A2DF1985700F44400 /* ActiveSubscriptionButtonsView.swift */,
 				5798C91B2DF1985700F44400 /* AppUpdateWarningView.swift */,
-				5798C91C2DF1985700F44400 /* CompatibilityContentUnavailableView.swift */,
 				5798C91D2DF1985700F44400 /* CompatibilityLabeledContent.swift */,
 				5798C91E2DF1985700F44400 /* CompatibilityNavigationStack.swift */,
 				5798C91F2DF1985700F44400 /* CompatibilityTopBarTrailing.swift */,
 				5798C9202DF1985700F44400 /* CustomerCenterNavigationLink.swift */,
 				5798C9212DF1985700F44400 /* CustomerCenterNavigationOptions.swift */,
 				5798C9222DF1985700F44400 /* CustomerCenterView.swift */,
-				5798C9232DF1985700F44400 /* ErrorView.swift */,
 				5798C9242DF1985700F44400 /* FallbackNoSubscriptionsView.swift */,
 				5798C9252DF1985700F44400 /* FeedbackSurveyView.swift */,
 				5798C9262DF1985700F44400 /* ManageSubscriptionsButtonsView.swift */,
@@ -5282,6 +5280,8 @@
 				887A605E2C1D037000E1A461 /* TemplateBackgroundImageView.swift */,
 				88A543E62C37A4C40039C6A5 /* TierSelectorView.swift */,
 				1ED4CA9E2CC25A5F0021AB8F /* SafariView.swift */,
+				5798C9232DF1985700F44400 /* ErrorView.swift */,
+				5798C91C2DF1985700F44400 /* CompatibilityContentUnavailableView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
