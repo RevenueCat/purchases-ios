@@ -459,7 +459,7 @@ platform :ios do
   private_lane :build_mac_catalyst_version do |options|
     platform = options[:platform]
     device_families = options[:device_families]
-    xcargs = "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
+    xcargs = "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO SUPPORTED_PLATFORMS='iphoneos iphonesimulator'"
     xcargs << " TARGETED_DEVICE_FAMILY='#{device_families}'"
     
     archive_path = File.absolute_path("build/PaywallsTester-#{platform}.xcarchive")
