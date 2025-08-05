@@ -142,8 +142,6 @@ struct Template5View: TemplateViewType {
     private var scrollableContent: some View {
         VStack(spacing: self.defaultVerticalPaddingLength) {
             if self.configuration.mode.isFullScreen {
-                Spacer()
-
                 self.title
                     .frame(maxWidth: .infinity, alignment: .leading)
 
