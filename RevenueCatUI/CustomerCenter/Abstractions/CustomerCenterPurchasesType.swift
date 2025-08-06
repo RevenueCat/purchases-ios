@@ -60,6 +60,8 @@ import SwiftUI
 
     func virtualCurrencies() async throws -> RevenueCat.VirtualCurrencies
 
+    func offerings() async throws -> RevenueCat.Offerings
+
     // MARK: - Subscription Management
 
     #if os(iOS) || os(visionOS)

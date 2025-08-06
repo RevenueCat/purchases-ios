@@ -149,4 +149,9 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
         syncPurchasesCount += 1
         return syncPurchasesResult
     }
+
+    var offeringsError: Error!
+    func offerings() async throws -> Offerings {
+        throw offeringsError
+    }
 }

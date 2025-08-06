@@ -143,8 +143,9 @@ struct RelevantPurchasesListView: View {
                 } else {
                     ScrollViewSection(title: localization[.subscriptionsSectionTitle]) {
                         NoSubscriptionsCardView(
-                            paywallId: viewModel.screen.preferredOfferingId,
-                            localization: localization
+                            offeringId: viewModel.screen.offeringIdentifier,
+                            localization: localization,
+                            purchasesProvider: viewModel.purchasesProvider
                         )
                         .cornerRadius(10)
                         .padding(.horizontal)

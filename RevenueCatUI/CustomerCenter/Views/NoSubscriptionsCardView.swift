@@ -28,28 +28,44 @@ struct NoSubscriptionsCardView: View {
     @State
     private var offering: Offering?
 
+    @State
+    private var showOffering = false
+
+    @State
+    private var isLoadingOffering = true
+
     private let title: String
     private let subtitle: String
-    private let paywallId: String?
+    private let buySubscriptionTitle: String
+    private let offeringId: String?
+
+    private let purchasesProvider: CustomerCenterPurchasesType
 
     init(
         title: String,
         subtitle: String,
-        paywallId: String?
+        buySubscriptionTitle: String,
+        offeringId: String?,
+        purchasesProvider: CustomerCenterPurchasesType = MockCustomerCenterPurchases()
     ) {
         self.title = title
         self.subtitle = subtitle
-        self.paywallId = paywallId
+        self.buySubscriptionTitle = buySubscriptionTitle
+        self.offeringId = offeringId
+        self.purchasesProvider = purchasesProvider
     }
 
     init(
-        paywallId: String?,
-        localization: CustomerCenterConfigData.Localization
+        offeringId: String?,
+        localization: CustomerCenterConfigData.Localization,
+        purchasesProvider: CustomerCenterPurchasesType
     ) {
         self.init(
             title: localization[.noSubscriptionsFound],
             subtitle: localization[.tryCheckRestore],
-            paywallId: paywallId
+            buySubscriptionTitle: localization[.buySubscription],
+            offeringId: offeringId,
+            purchasesProvider: purchasesProvider
         )
     }
 
@@ -68,19 +84,27 @@ struct NoSubscriptionsCardView: View {
                 .frame(alignment: .leading)
                 .multilineTextAlignment(.center)
 
-            if let paywallId, let offering = Purchases.shared.cachedOfferings?[paywallId] {
-                Button("Buy Subscription") {
-                    self.offering = offering
+            if offering != nil || isLoadingOffering {
+                Button(buySubscriptionTitle) {
+                    self.showOffering = true
                 }
                 .buttonStyle(BuySubscriptionButtonStyle())
+                .disabled(isLoadingOffering)
                 .padding(.top)
+                .opacity(isLoadingOffering ? 0 : 1.0)
+                .overlay(content: {
+                    if isLoadingOffering {
+                        TintedProgressView()
+                    }
+                })
             }
         }
         .padding(16)
         .background(Color(colorScheme == .light
                           ? UIColor.systemBackground
                           : UIColor.secondarySystemBackground))
-        .sheet(item: $offering, content: { offering in
+        .animation(.easeInOut(duration: 0.3), value: isLoadingOffering)
+        .sheet(isPresented: $showOffering, content: {
             PaywallView(
                 configuration: .init(
                     offering: offering,
@@ -88,6 +112,31 @@ struct NoSubscriptionsCardView: View {
                 )
             )
         })
+        .task(priority: .userInitiated) {
+            await refreshOffering()
+        }
+    }
+
+    private func refreshOffering() async {
+        guard let offeringId else {
+            isLoadingOffering = false
+            return
+        }
+
+        isLoadingOffering = true
+        defer { isLoadingOffering = false }
+
+        do {
+            let offerings = try await purchasesProvider.offerings()
+            if offeringId == "current" {
+                self.offering = offerings.current
+            } else {
+                self.offering = offerings.offering(identifier: offeringId)
+            }
+        } catch {
+            Logger.debug("Error fetching offerings: \(error)")
+            self.offering = nil
+        }
     }
 }
 
@@ -173,20 +222,24 @@ struct NoSubscriptionsCardView_Previews: PreviewProvider {
         ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
             ScrollViewWithOSBackground {
                 NoSubscriptionsCardView(
-                    paywallId: "paywallId",
-                    localization: CustomerCenterConfigData.default.localization)
-                    .cornerRadius(10)
-                    .padding([.leading, .trailing])
+                    offeringId: "offeringId",
+                    localization: CustomerCenterConfigData.default.localization,
+                    purchasesProvider: MockCustomerCenterPurchases()
+                )
+                .cornerRadius(10)
+                .padding([.leading, .trailing])
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("NoSubscriptionsCardView - Paywall")
 
             ScrollViewWithOSBackground {
                 NoSubscriptionsCardView(
-                    paywallId: nil,
-                    localization: CustomerCenterConfigData.default.localization)
-                    .cornerRadius(10)
-                    .padding([.leading, .trailing])
+                    offeringId: nil,
+                    localization: CustomerCenterConfigData.default.localization,
+                    purchasesProvider: MockCustomerCenterPurchases()
+                )
+                .cornerRadius(10)
+                .padding([.leading, .trailing])
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("NoSubscriptionsCardView - No Paywall")

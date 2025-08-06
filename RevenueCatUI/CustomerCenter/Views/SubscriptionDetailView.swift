@@ -204,8 +204,9 @@ struct SubscriptionDetailView: View {
                     .padding(.vertical, 32)
                 } else {
                     NoSubscriptionsCardView(
-                        paywallId: nil, // if we're in this screen, there should be purchases
-                        localization: localization
+                        offeringId: viewModel.screen.offeringIdentifier,
+                        localization: localization,
+                        purchasesProvider: viewModel.purchasesProvider
                     )
                     .cornerRadius(10)
                     .padding(.horizontal)
