@@ -15,7 +15,7 @@ import SwiftUI
 
 import RevenueCat
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 /// A view that presents content in a sheet-like interface with customizable height and background.
 ///

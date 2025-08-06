@@ -15,7 +15,7 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 final class PartialComponentTests: TestCase {
 

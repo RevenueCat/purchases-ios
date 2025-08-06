@@ -17,7 +17,7 @@ import SwiftUI
 #if os(iOS)
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
+@available(macOS, unavailable, message: "CustomerCenterView does not support macOS yet")
 @available(tvOS, unavailable, message: "RevenueCatUI does not support tvOS yet")
 @available(watchOS, unavailable, message: "CustomerCenterView does not support watchOS yet")
 #if swift(>=5.9)

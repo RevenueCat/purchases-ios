@@ -9,7 +9,7 @@
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private class PaywallStateManager: ObservableObject {
@@ -63,6 +63,9 @@ enum FallbackContent {
     func view() -> some View {
         switch self {
         case .paywallV1View(let data):
+            #if os(macOS)
+            DebugErrorView("Fallback paywalls are unsupported on macOS.", releaseBehavior: .errorView)
+            #else
             LoadedOfferingPaywallView(
                 offering: data.offering,
                 activelySubscribedProductIdentifiers: data.activelySubscribedProductIdentifiers,
@@ -76,6 +79,7 @@ enum FallbackContent {
                 locale: data.locale,
                 showZeroDecimalPlacePrices: data.showZeroDecimalPlacePrices
             )
+            #endif
         case .customView(let view):
             view
         }
