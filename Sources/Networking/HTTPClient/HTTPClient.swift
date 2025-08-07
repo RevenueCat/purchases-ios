@@ -96,14 +96,12 @@ class HTTPClient {
         }
         #endif
 
-        Task {
-            self.perform(request: .init(httpRequest: request,
-                                        authHeaders: self.authHeaders,
-                                        defaultHeaders: await self.defaultHeaders,
-                                        verificationMode: verificationMode ?? self.systemInfo.responseVerificationMode,
-                                        internalSettings: self.systemInfo.dangerousSettings.internalSettings,
-                                        completionHandler: completionHandler))
-        }
+        self.perform(request: .init(httpRequest: request,
+                                    authHeaders: self.authHeaders,
+                                    defaultHeaders: self.defaultHeaders,
+                                    verificationMode: verificationMode ?? self.systemInfo.responseVerificationMode,
+                                    internalSettings: self.systemInfo.dangerousSettings.internalSettings,
+                                    completionHandler: completionHandler))
     }
 
     func clearCaches() {
@@ -116,52 +114,68 @@ class HTTPClient {
 
     // Visible for tests
     var defaultHeaders: RequestHeaders {
-        get async {
-            let preferredLocales = self.systemInfo.preferredLocales.prefix(3).map {
-                $0.replacingOccurrences(of: "-", with: "_")
-            }.joined(separator: ",")
-            var headers: RequestHeaders = [
-                "content-type": "application/json",
-                "X-Version": SystemInfo.frameworkVersion,
-                "X-Platform": SystemInfo.platformHeader,
-                "X-Platform-Version": SystemInfo.systemVersion,
-                "X-Platform-Flavor": self.systemInfo.platformFlavor,
-                "X-Platform-Device": SystemInfo.deviceVersion,
-                "X-Client-Version": SystemInfo.appVersion,
-                "X-Client-Build-Version": SystemInfo.buildVersion,
-                "X-Client-Bundle-ID": SystemInfo.bundleIdentifier,
-                "X-Preferred-Locales": preferredLocales,
-                "X-StoreKit2-Enabled": "\(self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable)",
-                "X-StoreKit-Version": "\(self.systemInfo.storeKitVersion.effectiveVersion)",
-                "X-Observer-Mode-Enabled": "\(self.systemInfo.observerMode)",
-                RequestHeader.retryCount.rawValue: "0",
-                RequestHeader.sandbox.rawValue: "\(self.systemInfo.isSandbox)",
-                "X-Is-Backgrounded": "\(self.systemInfo.isAppBackgroundedState)",
-                "X-Is-Debug-Build": "\(self.systemInfo.isDebugBuild)"
-            ]
+        let preferredLocales = self.systemInfo.preferredLocales.prefix(3).map {
+            $0.replacingOccurrences(of: "-", with: "_")
+        }.joined(separator: ",")
+        var headers: RequestHeaders = [
+            "content-type": "application/json",
+            "X-Version": SystemInfo.frameworkVersion,
+            "X-Platform": SystemInfo.platformHeader,
+            "X-Platform-Version": SystemInfo.systemVersion,
+            "X-Platform-Flavor": self.systemInfo.platformFlavor,
+            "X-Platform-Device": SystemInfo.deviceVersion,
+            "X-Client-Version": SystemInfo.appVersion,
+            "X-Client-Build-Version": SystemInfo.buildVersion,
+            "X-Client-Bundle-ID": SystemInfo.bundleIdentifier,
+            "X-Preferred-Locales": preferredLocales,
+            "X-StoreKit2-Enabled": "\(self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable)",
+            "X-StoreKit-Version": "\(self.systemInfo.storeKitVersion.effectiveVersion)",
+            "X-Observer-Mode-Enabled": "\(self.systemInfo.observerMode)",
+            RequestHeader.retryCount.rawValue: "0",
+            RequestHeader.sandbox.rawValue: "\(self.systemInfo.isSandbox)",
+            "X-Is-Backgrounded": "\(self.systemInfo.isAppBackgroundedState)",
+            "X-Is-Debug-Build": "\(self.systemInfo.isDebugBuild)"
+        ]
 
-            if let storefront = await self.systemInfo.storefront {
-                headers["X-Storefront"] = storefront.countryCode
-            }
-
-            if let platformFlavorVersion = self.systemInfo.platformFlavorVersion {
-                headers["X-Platform-Flavor-Version"] = platformFlavorVersion
-            }
-
-            if let idfv = self.systemInfo.identifierForVendor {
-                headers["X-Apple-Device-Identifier"] = idfv
-            }
-
-            if self.systemInfo.dangerousSettings.customEntitlementComputation {
-                headers["X-Custom-Entitlements-Computation"] = "\(true)"
-            }
-
-            if self.systemInfo.dangerousSettings.uiPreviewMode {
-                headers["X-UI-Preview-Mode"] = "\(true)"
-            }
-
-            return headers
+        if let storefront = self.getStorefrontSynchronously() {
+            headers["X-Storefront"] = storefront.countryCode
         }
+
+        if let platformFlavorVersion = self.systemInfo.platformFlavorVersion {
+            headers["X-Platform-Flavor-Version"] = platformFlavorVersion
+        }
+
+        if let idfv = self.systemInfo.identifierForVendor {
+            headers["X-Apple-Device-Identifier"] = idfv
+        }
+
+        if self.systemInfo.dangerousSettings.customEntitlementComputation {
+            headers["X-Custom-Entitlements-Computation"] = "\(true)"
+        }
+
+        if self.systemInfo.dangerousSettings.uiPreviewMode {
+            headers["X-UI-Preview-Mode"] = "\(true)"
+        }
+
+        return headers
+    }
+
+    /// Returns the current storefront synchronously.
+    ///
+    /// Because this method is synchronous, it should be used only from a background thread to avoid blocking
+    /// the main thread.
+    private func getStorefrontSynchronously() -> StorefrontType? {
+        var storefront: StorefrontType?
+        let semaphore = DispatchSemaphore(value: 0)
+
+        Task {
+            storefront = await self.systemInfo.storefront
+            semaphore.signal()
+        }
+
+        semaphore.wait()
+
+        return storefront
     }
 
 }
