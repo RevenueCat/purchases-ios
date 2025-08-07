@@ -80,37 +80,40 @@ class MockHTTPClient: HTTPClient {
         with verificationMode: Signing.ResponseVerificationMode? = nil,
         completionHandler: Completion<Value>?
     ) {
+        Task {
         let verificationMode = verificationMode ?? self.systemInfo.responseVerificationMode
 
         let request = request
             .requestAddingNonceIfRequired(with: verificationMode)
             .withHardcodedNonce
 
-        let call = Call(request: request,
-                        headers: request.headers(with: self.authHeaders,
-                                                 defaultHeaders: self.defaultHeaders,
-                                                 verificationMode: verificationMode,
-                                                 internalSettings: self.systemInfo.dangerousSettings.internalSettings))
 
-        DispatchQueue.main.async {
-            self.calls.append(call)
+            let call = Call(request: request,
+                            headers: request.headers(with: self.authHeaders,
+                                                     defaultHeaders: await self.defaultHeaders,
+                                                     verificationMode: verificationMode,
+                                                     internalSettings: self.systemInfo.dangerousSettings.internalSettings))
 
-            assertSnapshot(matching: call,
-                           as: .formattedJson,
-                           file: self.sourceTestFile,
-                           testName: CurrentTestCaseTracker.osVersionAndTestName)
+            DispatchQueue.main.async {
+                self.calls.append(call)
 
-            let mock = self.mocks[request.path.url!] ?? .init(statusCode: .success)
+                assertSnapshot(matching: call,
+                               as: .formattedJson,
+                               file: self.sourceTestFile,
+                               testName: CurrentTestCaseTracker.osVersionAndTestName)
 
-            if let completionHandler = completionHandler {
-                let response: VerifiedHTTPResponse<Value>.Result = mock.response.parseResponse()
+                let mock = self.mocks[request.path.url!] ?? .init(statusCode: .success)
 
-                if mock.delay != .never {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + mock.delay) {
+                if let completionHandler = completionHandler {
+                    let response: VerifiedHTTPResponse<Value>.Result = mock.response.parseResponse()
+
+                    if mock.delay != .never {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + mock.delay) {
+                            completionHandler(response)
+                        }
+                    } else {
                         completionHandler(response)
                     }
-                } else {
-                    completionHandler(response)
                 }
             }
         }
@@ -134,19 +137,21 @@ class MockHTTPClient: HTTPClient {
 
     /// Override headers that depend on the environment to make them stable.
     override var defaultHeaders: RequestHeaders {
-        var result = super.defaultHeaders
-        result["X-Version"] = "4.0.0"
-        // Snapshots are shared across platforms so we need this to be stable.
-        result["X-Platform"] = "iOS"
-        result["X-Client-Build-Version"] = "12345"
-        result["X-Client-Version"] = "17.0.0"
-        result["X-Platform-Version"] = "Version 17.0.0 (Build 21A342)"
+        get async {
+            var result = await super.defaultHeaders
+            result["X-Version"] = "4.0.0"
+            // Snapshots are shared across platforms so we need this to be stable.
+            result["X-Platform"] = "iOS"
+            result["X-Client-Build-Version"] = "12345"
+            result["X-Client-Version"] = "17.0.0"
+            result["X-Platform-Version"] = "Version 17.0.0 (Build 21A342)"
 
-        if result.keys.contains("X-Apple-Device-Identifier") {
-            result["X-Apple-Device-Identifier"] = "5D7C0074-07E4-4564-AAA4-4008D0640881"
+            if result.keys.contains("X-Apple-Device-Identifier") {
+                result["X-Apple-Device-Identifier"] = "5D7C0074-07E4-4564-AAA4-4008D0640881"
+            }
+
+            return result
         }
-
-        return result
     }
 
 }
