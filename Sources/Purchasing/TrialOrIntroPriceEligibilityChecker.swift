@@ -312,7 +312,7 @@ private extension TrialOrIntroPriceEligibilityChecker {
             return
         }
 
-        var unknownCount, ineligibleCount, eligibleCount, noIntroOfferCount: Int?
+        let unknownCount, ineligibleCount, eligibleCount, noIntroOfferCount: Int?
         if !result.isEmpty {
             (unknownCount, ineligibleCount, eligibleCount, noIntroOfferCount) = result.reduce(into: (0, 0, 0, 0)) {
                 switch $1.value.status {
@@ -326,6 +326,8 @@ private extension TrialOrIntroPriceEligibilityChecker {
                     $0.3 += 1
                 }
             }
+        } else {
+            (unknownCount, ineligibleCount, eligibleCount, noIntroOfferCount) = (nil, nil, nil, nil)
         }
 
         let errorCode: Int?
