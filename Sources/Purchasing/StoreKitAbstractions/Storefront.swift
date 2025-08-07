@@ -74,19 +74,23 @@ extension Storefront: Sendable {}
 public extension Storefront {
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, macCatalyst 13.1, *)
-    private static var currentStorefrontType: StorefrontType? {
+    internal static var currentStorefrontType: StorefrontType? {
         get async {
             if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
                 let sk2Storefront = await StoreKit.Storefront.current
                 return sk2Storefront.map(SK2Storefront.init)
             } else {
-                return Self.sk1CurrentStorefrontType
+                return await Task.detached {
+                    return Self.sk1CurrentStorefrontType
+                }.value
             }
         }
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, macCatalyst 13.1, *)
     internal static var sk1CurrentStorefrontType: StorefrontType? {
+        // As stated in the documentation, SKPaymentQueue's storefront is a synchronous API that may take significant
+        // time to return. Please, use `currentStorefrontType` instead, if possible.
         return SKPaymentQueue.default().storefront.map(SK1Storefront.init)
     }
 

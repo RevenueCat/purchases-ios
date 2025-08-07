@@ -348,16 +348,19 @@ private extension TrialOrIntroPriceEligibilityChecker {
 
         let responseTime = self.dateProvider.now().timeIntervalSince(startTime)
 
-        diagnosticsTracker.trackAppleTrialOrIntroEligibilityRequest(storeKitVersion: storeKitVersion,
-                                                                    requestedProductIds: requestedProductIds,
-                                                                    eligibilityUnknownCount: unknownCount,
-                                                                    eligibilityIneligibleCount: ineligibleCount,
-                                                                    eligibilityEligibleCount: eligibleCount,
-                                                                    eligibilityNoIntroOfferCount: noIntroOfferCount,
-                                                                    errorMessage: errorMessage,
-                                                                    errorCode: errorCode,
-                                                                    storefront: self.systemInfo.storefront?.countryCode,
-                                                                    responseTime: responseTime)
+        Task {
+            let storefront = await self.systemInfo.storefront?.countryCode
+            diagnosticsTracker.trackAppleTrialOrIntroEligibilityRequest(storeKitVersion: storeKitVersion,
+                                                                        requestedProductIds: requestedProductIds,
+                                                                        eligibilityUnknownCount: unknownCount,
+                                                                        eligibilityIneligibleCount: ineligibleCount,
+                                                                        eligibilityEligibleCount: eligibleCount,
+                                                                        eligibilityNoIntroOfferCount: noIntroOfferCount,
+                                                                        errorMessage: errorMessage,
+                                                                        errorCode: errorCode,
+                                                                        storefront: storefront,
+                                                                        responseTime: responseTime)
+        }
     }
 
 }
