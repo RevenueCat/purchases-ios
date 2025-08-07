@@ -125,7 +125,21 @@ extension PaywallComponent {
 
         // Attempt to convert raw string into our `ComponentType` enum
         if let type = ComponentType(rawValue: typeString) {
-            self = try Self.decodeType(from: decoder, type: type)
+            let component = try Self.decodeType(from: decoder, type: type)
+            if case let .package(package) = component, package.stack.components
+                .containsPurchaseButton() {
+                self = .package(
+                    .init(
+                        packageID: package.packageID,
+                        isSelectable: false,
+                        isSelectedByDefault: package.isSelectedByDefault,
+                        applePromoOfferProductCode: package.applePromoOfferProductCode,
+                        stack: package.stack
+                    )
+                )
+                return
+            }
+            self = component
         } else {
             if !container.contains(.fallback) {
                 let context = DecodingError.Context(
@@ -198,4 +212,44 @@ extension PaywallComponent {
         }
     }
 
+}
+
+
+private extension Array where Element == PaywallComponent {
+    func containsPurchaseButton() -> Bool {
+        contains(where: \.containsPurchaseButton)
+    }
+}
+
+extension PaywallComponent {
+    var containsPurchaseButton: Bool {
+         // Base case: Check if the component itself is a purchase button.
+         if case .purchaseButton = self {
+             return true
+         }
+         // Recursive step: Check if any of the direct children contain a purchase button.
+         // The `children` computed property provides the next level of components to check.
+         return children.containsPurchaseButton()
+     }
+
+    var children: [PaywallComponent] {
+        switch self {
+        case .text, .image, .icon, .timeline, .tabs, .tabControl, .tabControlToggle:
+            []
+        case .stack(let stackComponent):
+            stackComponent.components
+        case .button(let buttonComponent):
+            buttonComponent.stack.components
+        case .package(let packageComponent):
+            packageComponent.stack.components
+        case .purchaseButton(let purchaseButtonComponent):
+            purchaseButtonComponent.stack.components
+        case .stickyFooter(let stickyFooterComponent):
+            stickyFooterComponent.stack.components
+        case .tabControlButton(let tabControlButtonComponent):
+            tabControlButtonComponent.stack.components
+        case .carousel(let carouselComponent):
+            carouselComponent.pages.flatMap(\.components)
+        }
+    }
 }

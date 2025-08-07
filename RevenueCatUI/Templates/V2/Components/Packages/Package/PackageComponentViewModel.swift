@@ -19,6 +19,7 @@ import Foundation
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class PackageComponentViewModel {
 
+    let isSelectable: Bool
     let isSelectedByDefault: Bool
     let promotionalOfferProductCode: String?
     let package: Package?
@@ -29,6 +30,7 @@ class PackageComponentViewModel {
         offering: Offering,
         stackViewModel: StackComponentViewModel
     ) {
+        self.isSelectable = component.isSelectable
         self.isSelectedByDefault = component.isSelectedByDefault
         self.promotionalOfferProductCode = component.applePromoOfferProductCode
 

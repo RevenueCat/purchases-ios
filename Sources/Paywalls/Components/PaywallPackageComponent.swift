@@ -17,22 +17,25 @@ import Foundation
 
 public extension PaywallComponent {
 
-    final class PackageComponent: PaywallComponentBase {
+    final class PackageComponent: PaywallComponentBase, @unchecked Sendable {
 
         let type: ComponentType
         public let packageID: String
         public let isSelectedByDefault: Bool
+        public private(set) var isSelectable: Bool = true
         @_spi(Internal) public let applePromoOfferProductCode: String?
         public let stack: PaywallComponent.StackComponent
 
         public init(
             packageID: String,
+            isSelectable: Bool,
             isSelectedByDefault: Bool,
             applePromoOfferProductCode: String?,
             stack: PaywallComponent.StackComponent
         ) {
             self.type = .package
             self.packageID = packageID
+            self.isSelectable = isSelectable
             self.isSelectedByDefault = isSelectedByDefault
             self.applePromoOfferProductCode = applePromoOfferProductCode
             self.stack = stack
@@ -41,6 +44,7 @@ public extension PaywallComponent {
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
             hasher.combine(packageID)
+            hasher.combine(isSelectable)
             hasher.combine(isSelectedByDefault)
             hasher.combine(applePromoOfferProductCode)
             hasher.combine(stack)
