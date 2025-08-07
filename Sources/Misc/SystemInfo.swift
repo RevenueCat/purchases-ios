@@ -90,7 +90,15 @@ class SystemInfo {
     }
 
     var storefront: StorefrontType? {
-        return self.storefrontProvider.currentStorefront
+        get async {
+            return await self.storefrontProvider.currentStorefront
+        }
+    }
+
+    /// - Important: This is a synchronous API that uses StoreKit 1, and may block the current thread.
+    /// The preferred way to access the current storefront is via `storefront`.
+    var syncStorefront: StorefrontType? {
+        return self.storefrontProvider.syncStorefront
     }
 
     static var frameworkVersion: String {

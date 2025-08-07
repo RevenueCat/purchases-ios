@@ -307,24 +307,20 @@ private extension TrialOrIntroPriceEligibilityChecker {
                                                      result: [String: IntroEligibility],
                                                      error: Error?,
                                                      storeKitVersion: StoreKitVersion) {
-        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
-              let diagnosticsTracker = self.diagnosticsTracker else {
+        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *), let diagnosticsTracker else {
             return
         }
 
-        var unknownCount, ineligibleCount, eligibleCount, noIntroOfferCount: Int?
-        if !result.isEmpty {
-            (unknownCount, ineligibleCount, eligibleCount, noIntroOfferCount) = result.reduce(into: (0, 0, 0, 0)) {
-                switch $1.value.status {
-                case .unknown:
-                    $0.0 += 1
-                case .ineligible:
-                    $0.1 += 1
-                case .eligible:
-                    $0.2 += 1
-                case .noIntroOfferExists:
-                    $0.3 += 1
-                }
+        let (unknownCount, ineligibleCount, eligibleCount, noIntroOfferCount) = result.reduce(into: (0, 0, 0, 0)) {
+            switch $1.value.status {
+            case .unknown:
+                $0.0 += 1
+            case .ineligible:
+                $0.1 += 1
+            case .eligible:
+                $0.2 += 1
+            case .noIntroOfferExists:
+                $0.3 += 1
             }
         }
 
@@ -348,16 +344,19 @@ private extension TrialOrIntroPriceEligibilityChecker {
 
         let responseTime = self.dateProvider.now().timeIntervalSince(startTime)
 
-        diagnosticsTracker.trackAppleTrialOrIntroEligibilityRequest(storeKitVersion: storeKitVersion,
-                                                                    requestedProductIds: requestedProductIds,
-                                                                    eligibilityUnknownCount: unknownCount,
-                                                                    eligibilityIneligibleCount: ineligibleCount,
-                                                                    eligibilityEligibleCount: eligibleCount,
-                                                                    eligibilityNoIntroOfferCount: noIntroOfferCount,
-                                                                    errorMessage: errorMessage,
-                                                                    errorCode: errorCode,
-                                                                    storefront: self.systemInfo.storefront?.countryCode,
-                                                                    responseTime: responseTime)
+        Task {
+            let storefront = await self.systemInfo.storefront?.countryCode
+            diagnosticsTracker.trackAppleTrialOrIntroEligibilityRequest(storeKitVersion: storeKitVersion,
+                                                                        requestedProductIds: requestedProductIds,
+                                                                        eligibilityUnknownCount: unknownCount,
+                                                                        eligibilityIneligibleCount: ineligibleCount,
+                                                                        eligibilityEligibleCount: eligibleCount,
+                                                                        eligibilityNoIntroOfferCount: noIntroOfferCount,
+                                                                        errorMessage: errorMessage,
+                                                                        errorCode: errorCode,
+                                                                        storefront: storefront,
+                                                                        responseTime: responseTime)
+        }
     }
 
 }

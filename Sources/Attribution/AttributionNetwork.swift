@@ -17,7 +17,7 @@ import Foundation
 /**
  Enum of supported attribution networks
  */
-@objc(RCAttributionNetwork) public enum AttributionNetwork: Int {
+@objc(RCAttributionNetwork) public enum AttributionNetwork: Int, Sendable {
 
     /**
      Apple's search ads

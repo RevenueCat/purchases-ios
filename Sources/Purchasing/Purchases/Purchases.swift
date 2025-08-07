@@ -248,7 +248,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     }
 
     @objc public var storeFrontCountryCode: String? {
-        systemInfo.storefront?.countryCode
+        systemInfo.syncStorefront?.countryCode
     }
 
     private let attributionFetcher: AttributionFetcher

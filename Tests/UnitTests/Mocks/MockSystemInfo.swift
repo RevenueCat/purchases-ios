@@ -97,7 +97,9 @@ class MockSystemInfo: SystemInfo {
     }
 
     override var storefront: StorefrontType? {
-        return self.stubbedStorefront
+        get async {
+            return self.stubbedStorefront
+        }
     }
 }
 
