@@ -36,6 +36,22 @@ struct PackageComponentView: View {
         return selectedPackage.identifier == package.identifier ? .selected : .default
     }
 
+    private func stack(_ package: Package) -> some View {
+        StackComponentView(
+            viewModel: self.viewModel.stackViewModel,
+            onDismiss: self.onDismiss
+        )
+        .environment(\.componentViewState, componentViewState)
+        // Overrides the existing PackageContext
+        .environmentObject(PackageContext(
+            // This is needed so text component children use this
+            // package and not selected package for processing variables
+            package: package,
+            // However, reusing the same package variable context from parent
+            variableContext: packageContext.variableContext)
+        )
+    }
+    
     var body: some View {
         if let package = self.viewModel.package {
             if viewModel.isSelectable {
@@ -48,34 +64,10 @@ struct PackageComponentView: View {
                         variableContext: self.packageContext.variableContext
                     )
                 } label: {
-                    StackComponentView(
-                        viewModel: self.viewModel.stackViewModel,
-                        onDismiss: self.onDismiss
-                    )
-                    .environment(\.componentViewState, componentViewState)
-                    // Overrides the existing PackageContext
-                    .environmentObject(PackageContext(
-                        // This is needed so text component children use this
-                        // package and not selected package for processing variables
-                        package: package,
-                        // However, reusing the same package variable context from parent
-                        variableContext: packageContext.variableContext)
-                    )
+                    stack(package)
                 }
             } else {
-                StackComponentView(
-                        viewModel: self.viewModel.stackViewModel,
-                        onDismiss: self.onDismiss
-                    )
-                    .environment(\.componentViewState, componentViewState)
-                    // Overrides the existing PackageContext
-                    .environmentObject(PackageContext(
-                        // This is needed so text component children use this
-                        // package and not selected package for processing variables
-                        package: package,
-                        // However, reusing the same package variable context from parent
-                        variableContext: packageContext.variableContext)
-                    )
+                stack(package)
             }
         } else {
             EmptyView()
