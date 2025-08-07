@@ -81,11 +81,11 @@ class MockHTTPClient: HTTPClient {
         completionHandler: Completion<Value>?
     ) {
         Task {
-        let verificationMode = verificationMode ?? self.systemInfo.responseVerificationMode
+            let verificationMode = verificationMode ?? self.systemInfo.responseVerificationMode
 
-        let request = request
-            .requestAddingNonceIfRequired(with: verificationMode)
-            .withHardcodedNonce
+            let request = request
+                .requestAddingNonceIfRequired(with: verificationMode)
+                .withHardcodedNonce
 
             let call = Call(request: request,
                             headers: request.headers(
