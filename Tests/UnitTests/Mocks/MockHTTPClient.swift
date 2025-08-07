@@ -80,41 +80,37 @@ class MockHTTPClient: HTTPClient {
         with verificationMode: Signing.ResponseVerificationMode? = nil,
         completionHandler: Completion<Value>?
     ) {
-        Task {
-            let verificationMode = verificationMode ?? self.systemInfo.responseVerificationMode
+        let verificationMode = verificationMode ?? self.systemInfo.responseVerificationMode
 
-            let request = request
-                .requestAddingNonceIfRequired(with: verificationMode)
-                .withHardcodedNonce
+        let request = request
+            .requestAddingNonceIfRequired(with: verificationMode)
+            .withHardcodedNonce
 
-            let call = Call(request: request,
-                            headers: request.headers(
-                                with: self.authHeaders,
-                                defaultHeaders: await self.defaultHeaders,
-                                verificationMode: verificationMode,
-                                internalSettings: self.systemInfo.dangerousSettings.internalSettings)
-            )
+        let call = Call(request: request,
+                        headers: request.headers(with: self.authHeaders,
+                                                 defaultHeaders: self.defaultHeaders,
+                                                 verificationMode: verificationMode,
+                                                 internalSettings: self.systemInfo.dangerousSettings.internalSettings))
 
-            DispatchQueue.main.async {
-                self.calls.append(call)
+        DispatchQueue.main.async {
+            self.calls.append(call)
 
-                assertSnapshot(matching: call,
-                               as: .formattedJson,
-                               file: self.sourceTestFile,
-                               testName: CurrentTestCaseTracker.osVersionAndTestName)
+            assertSnapshot(matching: call,
+                           as: .formattedJson,
+                           file: self.sourceTestFile,
+                           testName: CurrentTestCaseTracker.osVersionAndTestName)
 
-                let mock = self.mocks[request.path.url!] ?? .init(statusCode: .success)
+            let mock = self.mocks[request.path.url!] ?? .init(statusCode: .success)
 
-                if let completionHandler = completionHandler {
-                    let response: VerifiedHTTPResponse<Value>.Result = mock.response.parseResponse()
+            if let completionHandler = completionHandler {
+                let response: VerifiedHTTPResponse<Value>.Result = mock.response.parseResponse()
 
-                    if mock.delay != .never {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + mock.delay) {
-                            completionHandler(response)
-                        }
-                    } else {
+                if mock.delay != .never {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + mock.delay) {
                         completionHandler(response)
                     }
+                } else {
+                    completionHandler(response)
                 }
             }
         }

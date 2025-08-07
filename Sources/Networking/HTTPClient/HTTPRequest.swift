@@ -14,7 +14,7 @@
 import Foundation
 
 /// A request to be made by ``HTTPClient``
-struct HTTPRequest: Sendable {
+struct HTTPRequest {
 
     typealias Headers = [String: String]
 
@@ -82,7 +82,7 @@ struct HTTPRequest: Sendable {
 
 extension HTTPRequest {
 
-    enum Method: Sendable {
+    enum Method {
 
         case get
         case post(HTTPRequestBody)
