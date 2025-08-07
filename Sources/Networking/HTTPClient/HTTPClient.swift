@@ -165,17 +165,17 @@ class HTTPClient {
     /// Because this method is synchronous, it should be used only from a background thread to avoid blocking
     /// the main thread.
     private func getStorefrontSynchronously() -> StorefrontType? {
-        var storefront: StorefrontType?
+        let storefront: Atomic<StorefrontType?> = .init(nil)
         let semaphore = DispatchSemaphore(value: 0)
 
         Task {
-            storefront = await self.systemInfo.storefront
+            storefront.value = await self.systemInfo.storefront
             semaphore.signal()
         }
 
         semaphore.wait()
 
-        return storefront
+        return storefront.value
     }
 
 }
