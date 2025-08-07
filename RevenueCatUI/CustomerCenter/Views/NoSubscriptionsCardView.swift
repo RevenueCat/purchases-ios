@@ -36,35 +36,35 @@ struct NoSubscriptionsCardView: View {
 
     private let title: String
     private let subtitle: String
-    private let buySubscriptionTitle: String
-    private let offeringId: String?
+    private let subscribeTitle: String
+    private let screenOffering: CustomerCenterConfigData.ScreenOffering?
 
     private let purchasesProvider: CustomerCenterPurchasesType
 
     init(
         title: String,
         subtitle: String,
-        buySubscriptionTitle: String,
-        offeringId: String?,
+        subscribeTitle: String,
+        screenOffering: CustomerCenterConfigData.ScreenOffering?,
         purchasesProvider: CustomerCenterPurchasesType = MockCustomerCenterPurchases()
     ) {
         self.title = title
         self.subtitle = subtitle
-        self.buySubscriptionTitle = buySubscriptionTitle
-        self.offeringId = offeringId
+        self.subscribeTitle = subscribeTitle
+        self.screenOffering = screenOffering
         self.purchasesProvider = purchasesProvider
     }
 
     init(
-        offeringId: String?,
+        screenOffering: CustomerCenterConfigData.ScreenOffering?,
         localization: CustomerCenterConfigData.Localization,
         purchasesProvider: CustomerCenterPurchasesType
     ) {
         self.init(
             title: localization[.noSubscriptionsFound],
             subtitle: localization[.tryCheckRestore],
-            buySubscriptionTitle: localization[.buySubscription],
-            offeringId: offeringId,
+            subscribeTitle: localization[.subscribe],
+            screenOffering: screenOffering,
             purchasesProvider: purchasesProvider
         )
     }
@@ -85,7 +85,7 @@ struct NoSubscriptionsCardView: View {
                 .multilineTextAlignment(.center)
 
             if offering != nil || isLoadingOffering {
-                Button(buySubscriptionTitle) {
+                Button(subscribeTitle) {
                     self.showOffering = true
                 }
                 .buttonStyle(BuySubscriptionButtonStyle())
@@ -118,7 +118,7 @@ struct NoSubscriptionsCardView: View {
     }
 
     private func refreshOffering() async {
-        guard let offeringId else {
+        guard let screenOffering else {
             isLoadingOffering = false
             return
         }
@@ -128,10 +128,16 @@ struct NoSubscriptionsCardView: View {
 
         do {
             let offerings = try await purchasesProvider.offerings()
-            if offeringId == "current" {
+            switch screenOffering.type {
+            case .current:
                 self.offering = offerings.current
-            } else {
-                self.offering = offerings.offering(identifier: offeringId)
+            case .specific:
+                if let offeringId = screenOffering.offeringId {
+                    self.offering = offerings.offering(identifier: offeringId)
+                } else {
+                    Logger.debug("ScreenOffering type is .specific but offeringId is nil")
+                    self.offering = nil
+                }
             }
         } catch {
             Logger.debug("Error fetching offerings: \(error)")
@@ -222,7 +228,10 @@ struct NoSubscriptionsCardView_Previews: PreviewProvider {
         ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
             ScrollViewWithOSBackground {
                 NoSubscriptionsCardView(
-                    offeringId: "offeringId",
+                    screenOffering: CustomerCenterConfigData.ScreenOffering(
+                        type: .specific,
+                        offeringId: "offeringId"
+                    ),
                     localization: CustomerCenterConfigData.default.localization,
                     purchasesProvider: MockCustomerCenterPurchases()
                 )
@@ -234,7 +243,7 @@ struct NoSubscriptionsCardView_Previews: PreviewProvider {
 
             ScrollViewWithOSBackground {
                 NoSubscriptionsCardView(
-                    offeringId: nil,
+                    screenOffering: nil,
                     localization: CustomerCenterConfigData.default.localization,
                     purchasesProvider: MockCustomerCenterPurchases()
                 )

@@ -68,7 +68,7 @@ struct FallbackNoSubscriptionsView: View {
         ScrollViewWithOSBackground {
             LazyVStack(spacing: 0) {
                 NoSubscriptionsCardView(
-                    offeringId: nil,
+                    screenOffering: nil,
                     localization: localization,
                     purchasesProvider: purchasesProvider
                 )

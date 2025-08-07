@@ -143,7 +143,7 @@ struct RelevantPurchasesListView: View {
                 } else {
                     ScrollViewSection(title: localization[.subscriptionsSectionTitle]) {
                         NoSubscriptionsCardView(
-                            offeringId: viewModel.screen.offeringIdentifier,
+                            screenOffering: viewModel.screen.offering,
                             localization: localization,
                             purchasesProvider: viewModel.purchasesProvider
                         )

@@ -204,7 +204,7 @@ struct SubscriptionDetailView: View {
                     .padding(.vertical, 32)
                 } else {
                     NoSubscriptionsCardView(
-                        offeringId: viewModel.screen.offeringIdentifier,
+                        screenOffering: viewModel.screen.offering,
                         localization: localization,
                         purchasesProvider: viewModel.purchasesProvider
                     )

@@ -98,7 +98,7 @@ extension CustomerCenterConfigData {
                                     refundWindowDuration: nil
                                 )
                             ],
-                            offeringIdentifier: nil
+                            offering: nil
                         ),
                 .noActive: .init(
                     type: .noActive,
@@ -115,7 +115,7 @@ extension CustomerCenterConfigData {
                             refundWindowDuration: nil
                         )
                     ],
-                    offeringIdentifier: nil
+                    offering: nil
                 )
             ],
             appearance: standardAppearance,
