@@ -233,7 +233,7 @@ extension StoreKitStrings: LogMessage {
         case .sk2_sync_purchases_no_transaction_or_apptransaction_found:
             return "Couldn't find previous transactions or an AppTransaction."
 
-        case let .sk_storefront_country_code(countryCode, systemPreferredLocale):
+        case let .sk_storefront_country_code(countryCode):
             return "Storefront country code: \(countryCode ?? "Unknown")"
         }
     }
