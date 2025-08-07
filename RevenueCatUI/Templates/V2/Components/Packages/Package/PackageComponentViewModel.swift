@@ -23,11 +23,13 @@ class PackageComponentViewModel {
     let promotionalOfferProductCode: String?
     let package: Package?
     let stackViewModel: StackComponentViewModel
+    let hasPurchaseButton: Bool
 
     init(
         component: PaywallComponent.PackageComponent,
         offering: Offering,
-        stackViewModel: StackComponentViewModel
+        stackViewModel: StackComponentViewModel,
+        hasPurchaseButton: Bool
     ) {
         self.isSelectedByDefault = component.isSelectedByDefault
         self.promotionalOfferProductCode = component.applePromoOfferProductCode
@@ -38,6 +40,7 @@ class PackageComponentViewModel {
         }
 
         self.stackViewModel = stackViewModel
+        self.hasPurchaseButton = hasPurchaseButton
     }
 
 }

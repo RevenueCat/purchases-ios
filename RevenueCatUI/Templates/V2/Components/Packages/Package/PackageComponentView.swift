@@ -38,34 +38,73 @@ struct PackageComponentView: View {
 
     var body: some View {
         if let package = self.viewModel.package {
-            Button {
-                // Updating package with same variable context
-                // This will be needed when different sets of packages
-                // in different tiers
-                self.packageContext.update(
-                    package: package,
-                    variableContext: self.packageContext.variableContext
-                )
-            } label: {
-                StackComponentView(
-                    viewModel: self.viewModel.stackViewModel,
-                    onDismiss: self.onDismiss
-                )
-                .environment(\.componentViewState, componentViewState)
-                // Overrides the existing PackageContext
-                .environmentObject(PackageContext(
-                    // This is needed so text component children use this
-                    // package and not selected package for processing variables
-                    package: package,
-                    // However, reusing the same package variable context from parent
-                    variableContext: packageContext.variableContext)
-                )
-            }
+            StackComponentView(
+                viewModel: self.viewModel.stackViewModel,
+                onDismiss: self.onDismiss
+            )
+            .environment(\.componentViewState, componentViewState)
+            // Overrides the existing PackageContext
+            .environmentObject(PackageContext(
+                // This is needed so text component children use this
+                // package and not selected package for processing variables
+                package: package,
+                // However, reusing the same package variable context from parent
+                variableContext: packageContext.variableContext)
+            )
+            .packageSelectorIfNeeded(
+                packageContext: self.packageContext,
+                package: package,
+                hasPurchaseButton: self.viewModel.hasPurchaseButton
+            )
+
         } else {
             EmptyView()
         }
     }
 
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension View {
+
+    func packageSelectorIfNeeded(
+        packageContext: PackageContext,
+        package: Package,
+        hasPurchaseButton: Bool
+    ) -> some View {
+        modifier(PackageSelectorIfNeeded(
+            packageContext: packageContext,
+            package: package,
+            hasPurchaseButton: hasPurchaseButton
+        ))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct PackageSelectorIfNeeded: ViewModifier {
+
+    let packageContext: PackageContext
+    let package: Package
+    let hasPurchaseButton: Bool
+
+    func body(content: Content) -> some View {
+        if hasPurchaseButton {
+            content
+        } else {
+            Button {
+                // Updating package with same variable context
+                // This will be needed when different sets of packages
+                // in different tiers
+                self.packageContext.update(
+                    package: self.package,
+                    variableContext: self.packageContext.variableContext
+                )
+            } label: {
+                content
+            }
+        }
+    }
 }
 
 #if DEBUG
@@ -159,7 +198,8 @@ struct PackageComponentView_Previews: PreviewProvider {
                 offering: .init(identifier: "default",
                                 serverDescription: "",
                                 availablePackages: [package],
-                                webCheckoutUrl: nil)
+                                webCheckoutUrl: nil),
+                hasPurchaseButton: false
             ), onDismiss: {}
         )
         .previewRequiredPaywallsV2Properties(
@@ -188,7 +228,8 @@ struct PackageComponentView_Previews: PreviewProvider {
                 offering: .init(identifier: "default",
                                 serverDescription: "",
                                 availablePackages: [package],
-                                webCheckoutUrl: nil)
+                                webCheckoutUrl: nil),
+                hasPurchaseButton: false
             ), onDismiss: {}
         )
         .previewRequiredPaywallsV2Properties(
@@ -205,13 +246,15 @@ fileprivate extension PackageComponentViewModel {
     convenience init(
         component: PaywallComponent.PackageComponent,
         localizationProvider: LocalizationProvider,
-        offering: Offering
+        offering: Offering,
+        hasPurchaseButton: Bool
     ) throws {
         let factory = ViewModelFactory()
         let stackViewModel = try factory.toStackViewModel(
             component: component.stack,
             packageValidator: factory.packageValidator,
             firstImageInfo: nil,
+            purchaseButtonCollector: nil,
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
             offering: offering
@@ -220,7 +263,8 @@ fileprivate extension PackageComponentViewModel {
         self.init(
             component: component,
             offering: offering,
-            stackViewModel: stackViewModel
+            stackViewModel: stackViewModel,
+            hasPurchaseButton: hasPurchaseButton
         )
     }
 
