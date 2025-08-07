@@ -87,12 +87,13 @@ class MockHTTPClient: HTTPClient {
             .requestAddingNonceIfRequired(with: verificationMode)
             .withHardcodedNonce
 
-
             let call = Call(request: request,
-                            headers: request.headers(with: self.authHeaders,
-                                                     defaultHeaders: await self.defaultHeaders,
-                                                     verificationMode: verificationMode,
-                                                     internalSettings: self.systemInfo.dangerousSettings.internalSettings))
+                            headers: request.headers(
+                                with: self.authHeaders,
+                                defaultHeaders: await self.defaultHeaders,
+                                verificationMode: verificationMode,
+                                internalSettings: self.systemInfo.dangerousSettings.internalSettings)
+            )
 
             DispatchQueue.main.async {
                 self.calls.append(call)
