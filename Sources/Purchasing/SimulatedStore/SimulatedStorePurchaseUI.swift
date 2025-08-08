@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  TestStorePurchaseUI.swift
+//  SimulatedStorePurchaseUI.swift
 //
 //  Created by Antonio Pallares on 1/8/25.
 
@@ -21,26 +21,26 @@ import WatchKit
 import AppKit
 #endif
 
-enum TestStorePurchaseUIResult: Sendable {
+enum SimulatedStorePurchaseUIResult: Sendable {
     case cancel
     case simulateFailure
     case simulateSuccess
     case error(PurchasesError)
 }
 
-protocol TestStorePurchaseUI: Sendable {
+protocol SimulatedStorePurchaseUI: Sendable {
 
     /// Presents the purchase UI for the given product.
     ///
     /// - Parameters:
     ///   - product: The product to be purchased.
     /// - Returns: A result indicating the selected outcome of the purchase UI interaction.
-    func presentPurchaseUI(for product: TestStoreProduct) async -> TestStorePurchaseUIResult
+    func presentPurchaseUI(for product: SimulatedStoreProduct) async -> SimulatedStorePurchaseUIResult
 
 }
 
-/// Contains the logic to present a system alert for the confirmation of Test Store products purchases.
-struct DefaultTestStorePurchaseUI: TestStorePurchaseUI {
+/// Contains the logic to present a system alert for the confirmation of Simulated Store products purchases.
+struct DefaultSimulatedStorePurchaseUI: SimulatedStorePurchaseUI {
 
     private let systemInfo: SystemInfo
 
@@ -48,11 +48,11 @@ struct DefaultTestStorePurchaseUI: TestStorePurchaseUI {
         self.systemInfo = systemInfo
     }
 
-    func presentPurchaseUI(for product: TestStoreProduct) async -> TestStorePurchaseUIResult {
+    func presentPurchaseUI(for product: SimulatedStoreProduct) async -> SimulatedStorePurchaseUIResult {
         await Task { @MainActor in
             return await withUnsafeContinuation { continuation in
 
-                let completion: (TestStorePurchaseUIResult) -> Void = { result in
+                let completion: (SimulatedStorePurchaseUIResult) -> Void = { result in
                     continuation.resume(returning: result)
                 }
 
@@ -70,12 +70,12 @@ struct DefaultTestStorePurchaseUI: TestStorePurchaseUI {
     #if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)
     @MainActor
     func purchaseWithUIKit(
-        product: TestStoreProduct, completion: @escaping @MainActor (TestStorePurchaseUIResult) -> Void
+        product: SimulatedStoreProduct, completion: @escaping @MainActor (SimulatedStorePurchaseUIResult) -> Void
     ) {
         guard let viewController = self.findTopViewController() else {
-            Logger.warn(Strings.purchase.unable_to_find_root_view_controller_for_test_purchase)
+            Logger.warn(Strings.purchase.unable_to_find_root_view_controller_for_simulated_purchase)
             completion(.error(ErrorUtils.unknownError(
-                message: Strings.purchase.unable_to_find_root_view_controller_for_test_purchase.description
+                message: Strings.purchase.unable_to_find_root_view_controller_for_simulated_purchase.description
             )))
             return
         }
@@ -132,7 +132,7 @@ struct DefaultTestStorePurchaseUI: TestStorePurchaseUI {
     #if os(watchOS)
     @MainActor
     func purchaseWithWatchKit(
-        product: TestStoreProduct, completion: @escaping @MainActor (TestStorePurchaseUIResult) -> Void
+        product: SimulatedStoreProduct, completion: @escaping @MainActor (SimulatedStorePurchaseUIResult) -> Void
     ) {
 
         let failureAction = WKAlertAction(title: Self.failureActionTitle, style: .destructive) {
@@ -160,7 +160,7 @@ struct DefaultTestStorePurchaseUI: TestStorePurchaseUI {
     #if os(macOS)
     @MainActor
     func purchaseWithAppKit(
-        product: TestStoreProduct, completion: @escaping @MainActor (TestStorePurchaseUIResult) -> Void
+        product: SimulatedStoreProduct, completion: @escaping @MainActor (SimulatedStorePurchaseUIResult) -> Void
     ) {
         let alert = NSAlert()
         alert.messageText = Self.purchaseAlertTitle
@@ -175,7 +175,7 @@ struct DefaultTestStorePurchaseUI: TestStorePurchaseUI {
 
         Task {
 
-            let simulatedResult: TestStorePurchaseUIResult
+            let simulatedResult: SimulatedStorePurchaseUIResult
 
             switch response {
             case .alertFirstButtonReturn:
@@ -221,19 +221,19 @@ private extension UIViewController {
 
 // MARK: - Purchase Alert Details
 
-fileprivate extension DefaultTestStorePurchaseUI {
+fileprivate extension DefaultSimulatedStorePurchaseUI {
 
-    static let purchaseAlertTitle = "Test Purchase"
-    static let purchaseActionTitle = "Test valid purchase"
+    static let purchaseAlertTitle = "Simulated Purchase"
+    static let purchaseActionTitle = "Simulate valid purchase"
     static let cancelActionTitle = "Cancel"
-    static let failureActionTitle = "Test failed purchase"
+    static let failureActionTitle = "Simulate failed purchase"
 
 }
 
-fileprivate extension TestStoreProduct {
+fileprivate extension SimulatedStoreProduct {
 
     var purchaseAlertMessage: String {
-        var message = "This is a test purchase and should only be used during development. In production, " +
+        var message = "This is a simulated purchase and should only be used during development. In production, " +
         "use an Apple API key from RevenueCat.\n\n"
         message += "Product ID: \(self.productIdentifier)\n"
         message += "Title: \(self.localizedTitle)\n"

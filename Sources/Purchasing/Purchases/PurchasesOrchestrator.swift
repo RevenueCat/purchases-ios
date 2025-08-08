@@ -53,7 +53,7 @@ final class PurchasesOrchestrator {
 
     private let productsManager: ProductsManagerType
     private let paymentQueueWrapper: EitherPaymentQueueWrapper
-    private let testStorePurchaseHandler: TestStorePurchaseHandlerType
+    private let simulatedStorePurchaseHandler: SimulatedStorePurchaseHandlerType
     private let systemInfo: SystemInfo
     private let attribution: Attribution
     private let operationDispatcher: OperationDispatcher
@@ -124,7 +124,7 @@ final class PurchasesOrchestrator {
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     convenience init(productsManager: ProductsManagerType,
                      paymentQueueWrapper: EitherPaymentQueueWrapper,
-                     testStorePurchaseHandler: TestStorePurchaseHandlerType,
+                     simulatedStorePurchaseHandler: SimulatedStorePurchaseHandlerType,
                      systemInfo: SystemInfo,
                      subscriberAttributes: Attribution,
                      operationDispatcher: OperationDispatcher,
@@ -154,7 +154,7 @@ final class PurchasesOrchestrator {
         self.init(
             productsManager: productsManager,
             paymentQueueWrapper: paymentQueueWrapper,
-            testStorePurchaseHandler: testStorePurchaseHandler,
+            simulatedStorePurchaseHandler: simulatedStorePurchaseHandler,
             systemInfo: systemInfo,
             subscriberAttributes: subscriberAttributes,
             operationDispatcher: operationDispatcher,
@@ -212,7 +212,7 @@ final class PurchasesOrchestrator {
 
     init(productsManager: ProductsManagerType,
          paymentQueueWrapper: EitherPaymentQueueWrapper,
-         testStorePurchaseHandler: TestStorePurchaseHandlerType,
+         simulatedStorePurchaseHandler: SimulatedStorePurchaseHandlerType,
          systemInfo: SystemInfo,
          subscriberAttributes: Attribution,
          operationDispatcher: OperationDispatcher,
@@ -237,7 +237,7 @@ final class PurchasesOrchestrator {
     ) {
         self.productsManager = productsManager
         self.paymentQueueWrapper = paymentQueueWrapper
-        self.testStorePurchaseHandler = testStorePurchaseHandler
+        self.simulatedStorePurchaseHandler = simulatedStorePurchaseHandler
         self.systemInfo = systemInfo
         self.attribution = subscriberAttributes
         self.operationDispatcher = operationDispatcher
@@ -304,17 +304,17 @@ final class PurchasesOrchestrator {
     }
 
     func restorePurchases(completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
-        #if TEST_STORE
+        #if SIMULATED_STORE
 
-        if self.systemInfo.isTestStoreAPIKey {
-            Logger.debug(Strings.purchase.restore_purchases_test_store)
+        if self.systemInfo.isSimulatedStoreAPIKey {
+            Logger.debug(Strings.purchase.restore_purchases_simulated_store)
             self.customerInfoManager.customerInfo(appUserID: self.appUserID, fetchPolicy: .default) { result in
                 completion?(result.mapError({ $0.asPurchasesError }))
             }
             return
         }
 
-        #endif // TEST_STORE
+        #endif // SIMULATED_STORE
         self.syncPurchases(receiptRefreshPolicy: .always,
                            isRestore: true,
                            initiationSource: .restore,
@@ -322,17 +322,17 @@ final class PurchasesOrchestrator {
     }
 
     func syncPurchases(completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)? = nil) {
-        #if TEST_STORE
+        #if SIMULATED_STORE
 
-        if self.systemInfo.isTestStoreAPIKey {
-            Logger.debug(Strings.purchase.sync_purchases_test_store)
+        if self.systemInfo.isSimulatedStoreAPIKey {
+            Logger.debug(Strings.purchase.sync_purchases_simulated_store)
             self.customerInfoManager.customerInfo(appUserID: self.appUserID, fetchPolicy: .default) { result in
                 completion?(result.mapError({ $0.asPurchasesError }))
             }
             return
         }
 
-        #endif // TEST_STORE
+        #endif // SIMULATED_STORE
         self.syncPurchases(receiptRefreshPolicy: .never,
                            isRestore: allowSharingAppStoreAccount,
                            initiationSource: .restore,
@@ -1962,30 +1962,30 @@ private extension PurchasesOrchestrator {
 
 }
 
-// MARK: - Test Store Purchases
+// MARK: - Simulated Store Purchases
 
 private extension PurchasesOrchestrator {
 
     func handlePurchase(testStoreProduct: TestStoreProduct,
                         metadata: [String: String]?,
                         completion: @escaping PurchaseCompletedBlock) {
-        #if TEST_STORE
-        if self.systemInfo.isTestStoreAPIKey {
-            self.purchase(testStoreProduct: testStoreProduct, metadata: metadata, completion: completion)
+        #if SIMULATED_STORE
+        if self.systemInfo.isSimulatedStoreAPIKey {
+            self.purchase(simulatedStoreProduct: testStoreProduct, metadata: metadata, completion: completion)
         } else {
             self.handleTestProductNotAvailableForPurchase(completion)
         }
         #else
         self.handleTestProductNotAvailableForPurchase(completion)
-        #endif // TEST_STORE
+        #endif // SIMULATED_STORE
     }
 
-    #if TEST_STORE
-    private func purchase(testStoreProduct: TestStoreProduct,
+    #if SIMULATED_STORE
+    private func purchase(simulatedStoreProduct: SimulatedStoreProduct,
                           metadata: [String: String]?,
                           completion: @escaping PurchaseCompletedBlock) {
         Task {
-            let result = await self.testStorePurchaseHandler.purchase(product: testStoreProduct)
+            let result = await self.simulatedStorePurchaseHandler.purchase(product: simulatedStoreProduct)
             switch result {
             case .cancel:
                 let customerInfo = try? await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
@@ -2006,7 +2006,7 @@ private extension PurchasesOrchestrator {
             }
         }
     }
-    #endif // TEST_STORE
+    #endif // SIMULATED_STORE
 
     private func handleTestProductNotAvailableForPurchase(_ completion: @escaping PurchaseCompletedBlock) {
         self.operationDispatcher.dispatchOnMainActor {

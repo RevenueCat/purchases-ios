@@ -375,7 +375,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 diagnosticsTracker: diagnosticsTracker
             ))
 
-        let testStorePurchaseHandler = TestStorePurchaseHandler(systemInfo: systemInfo)
+        let simulatedStorePurchaseHandler = SimulatedStorePurchaseHandler(systemInfo: systemInfo)
 
         let offeringsFactory = OfferingsFactory()
         let receiptParser = PurchasesReceiptParser.default
@@ -530,7 +530,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 return .init(
                     productsManager: productsManager,
                     paymentQueueWrapper: paymentQueueWrapper,
-                    testStorePurchaseHandler: testStorePurchaseHandler,
+                    simulatedStorePurchaseHandler: simulatedStorePurchaseHandler,
                     systemInfo: systemInfo,
                     subscriberAttributes: subscriberAttributes,
                     operationDispatcher: operationDispatcher,
@@ -563,7 +563,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 return .init(
                     productsManager: productsManager,
                     paymentQueueWrapper: paymentQueueWrapper,
-                    testStorePurchaseHandler: testStorePurchaseHandler,
+                    simulatedStorePurchaseHandler: simulatedStorePurchaseHandler,
                     systemInfo: systemInfo,
                     subscriberAttributes: subscriberAttributes,
                     operationDispatcher: operationDispatcher,

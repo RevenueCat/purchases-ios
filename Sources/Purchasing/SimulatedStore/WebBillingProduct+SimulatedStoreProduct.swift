@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  WebBillingProduct+TestStoreProduct.swift
+//  WebBillingProduct+SimulatedStoreProduct.swift
 //
 //  Created by Antonio Pallares on 25/7/25.
 
@@ -36,7 +36,7 @@ extension WebBillingProductsResponse.Product {
 
         let price: WebBillingProductsResponse.Price
         var period: SubscriptionPeriod?
-        let introDiscount: TestStoreProductDiscount? = nil // Not supported in Test Store products for now
+        let introDiscount: SimulatedStoreProductDiscount? = nil // Not supported in Simulated Store products for now
 
         if let basePrice = purchaseOption.basePrice {
             price = basePrice
@@ -45,7 +45,7 @@ extension WebBillingProductsResponse.Product {
                   let basePrice = basePhase.price else {
                 throw ErrorUtils.productNotAvailableForPurchaseError(
                     withMessage: "No base price found for product \(self.identifier). " +
-                    "Base price is required for test subscription products"
+                    "Base price is required for test subscription products" // TODO: test vs simulated naming?
                 )
             }
 
@@ -58,15 +58,15 @@ extension WebBillingProductsResponse.Product {
         let decimalPrice = Decimal(Double(price.amountMicros) / 1_000_000)
         let localizedPriceString = formatPrice(decimalPrice, currencyCode: price.currency, locale: locale)
 
-        let testStoreProduct = TestStoreProduct(localizedTitle: self.title,
-                                                price: decimalPrice,
-                                                localizedPriceString: localizedPriceString,
-                                                productIdentifier: self.identifier,
-                                                productType: self.productType.storeProductType,
-                                                localizedDescription: self.description ?? "",
-                                                subscriptionPeriod: period,
-                                                introductoryDiscount: introDiscount)
-        return testStoreProduct.toStoreProduct()
+        let simulatedStoreProduct = SimulatedStoreProduct(localizedTitle: self.title,
+                                                          price: decimalPrice,
+                                                          localizedPriceString: localizedPriceString,
+                                                          productIdentifier: self.identifier,
+                                                          productType: self.productType.storeProductType,
+                                                          localizedDescription: self.description ?? "",
+                                                          subscriptionPeriod: period,
+                                                          introductoryDiscount: introDiscount)
+        return simulatedStoreProduct.toStoreProduct()
     }
 
     private var purchaseOption: WebBillingProductsResponse.PurchaseOption? {

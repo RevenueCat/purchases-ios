@@ -35,7 +35,7 @@ class ConfigurationTests: TestCase {
         expect(Configuration.validateAndLog(apiKey: "swRTCezdEzjnJSxdexDNJfcfiFrMXwqZ")) == .legacy
     }
 
-    #if TEST_STORE
+    #if SIMULATED_STORE
     func testValidateAPIKeyWithTestStoreKey() {
         expect(Configuration.validateAndLog(apiKey: "test_eg2t9g3098bgqqn")) == .testStore
     }

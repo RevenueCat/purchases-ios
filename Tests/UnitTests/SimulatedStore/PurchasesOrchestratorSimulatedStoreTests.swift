@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PurchasesOrchestratorTestStoreTests.swift
+//  PurchasesOrchestratorSimulatedStoreTests.swift
 //
 //  Created by Antonio Pallares on 4/8/25.
 
@@ -16,12 +16,12 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-class PurchasesOrchestratorTestStoreTests: TestCase {
+class PurchasesOrchestratorSimulatedStoreTests: TestCase {
 
     private var systemInfo: MockSystemInfo!
     private var productsManager: MockProductsManager!
     private var paymentQueueWrapper: MockPaymentQueueWrapper!
-    private var testStorePurchaseHandler: MockTestStorePurchaseHandler!
+    private var simulatedStorePurchaseHandler: MockSimulatedStorePurchaseHandler!
     private var subscriberAttributesManager: MockSubscriberAttributesManager!
     private var backend: MockBackend!
     private var deviceCache: MockDeviceCache!
@@ -70,7 +70,7 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
         self.systemInfo = MockSystemInfo(platformInfo: Purchases.PlatformInfo(flavor: "xyz", version: "1.2.3"),
                                          finishTransactions: true,
                                          storeKitVersion: .storeKit2,
-                                         apiKeyValidationResult: .testStore)
+                                         apiKeyValidationResult: .simulatedStore)
 
         self.productsManager = MockProductsManager(diagnosticsTracker: nil,
                                                    systemInfo: self.systemInfo,
@@ -78,7 +78,7 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
 
         self.paymentQueueWrapper = .init()
 
-        self.testStorePurchaseHandler = MockTestStorePurchaseHandler()
+        self.simulatedStorePurchaseHandler = MockSimulatedStorePurchaseHandler()
 
         self.backend = MockBackend()
         self.deviceCache = MockDeviceCache(systemInfo: self.systemInfo)
@@ -164,16 +164,16 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
         return testProduct.toStoreProduct()
     }
 
-#if TEST_STORE
+#if SIMULATED_STORE
 
     // MARK: - PurchasesOrchestrator + API Key type
 
-    func testPurchaseWithTestStoreProductAndTestAPIKeyCallsTestStorePurchaseHandler() async {
+    func testPurchaseWithSimulatedStoreProductAndTestAPIKeyCallsSimulatedStorePurchaseHandler() async {
         let orchestrator = self.createOrchestrator()
         let testProduct = self.createTestStoreProduct()
 
-        let mockTransaction = Self.createMockTestStoreTransaction()
-        self.testStorePurchaseHandler.stubbedPurchaseResult.value = .success(StoreTransaction(mockTransaction))
+        let mockTransaction = Self.createMockSimulatedStoreTransaction()
+        self.simulatedStorePurchaseHandler.stubbedPurchaseResult.value = .success(StoreTransaction(mockTransaction))
 
         await waitUntil { completion in
             orchestrator.purchase(
@@ -185,11 +185,11 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
             }
         }
 
-        XCTAssertTrue(self.testStorePurchaseHandler.invokedPurchase.value)
-        XCTAssertEqual(self.testStorePurchaseHandler.invokedPurchaseProduct.value?.productIdentifier, "test.product")
+        XCTAssertTrue(self.simulatedStorePurchaseHandler.invokedPurchase.value)
+        XCTAssertEqual(self.simulatedStorePurchaseHandler.invokedPurchaseProduct.value?.productIdentifier, "test.product")
     }
 
-    func testPurchaseWithTestStoreProductAndNonTestAPIKeyReturnsError() async {
+    func testPurchaseWithSimulatedStoreProductAndNonTestAPIKeyReturnsError() async {
         self.systemInfo = MockSystemInfo(platformInfo: Purchases.PlatformInfo(flavor: "xyz", version: "1.2.3"),
                                          finishTransactions: true,
                                          storeKitVersion: .storeKit2,
@@ -209,10 +209,10 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
             }
         }
 
-        XCTAssertFalse(self.testStorePurchaseHandler.invokedPurchase.value)
+        XCTAssertFalse(self.simulatedStorePurchaseHandler.invokedPurchase.value)
     }
 
-    func testPurchaseWithTestStoreProductAndOtherPlatformsAPIKeyReturnsError() async {
+    func testPurchaseWithSimulatedStoreProductAndOtherPlatformsAPIKeyReturnsError() async {
         self.systemInfo = MockSystemInfo(platformInfo: Purchases.PlatformInfo(flavor: "xyz", version: "1.2.3"),
                                          finishTransactions: true,
                                          storeKitVersion: .storeKit2,
@@ -232,10 +232,10 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
             }
         }
 
-        XCTAssertFalse(self.testStorePurchaseHandler.invokedPurchase.value)
+        XCTAssertFalse(self.simulatedStorePurchaseHandler.invokedPurchase.value)
     }
 
-    func testPurchaseWithPackageContainingTestStoreProductAndTestAPIKeyCallsTestStorePurchaseHandler() async {
+    func testPurchaseWithPackageContainingSimulatedStoreProductAndTestAPIKeyCallsSimulatedStorePurchaseHandler() async {
         let orchestrator = self.createOrchestrator()
         let testProduct = self.createTestStoreProduct()
         let package = Package(
@@ -246,8 +246,8 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
             webCheckoutUrl: nil
         )
 
-        let mockTransaction = Self.createMockTestStoreTransaction()
-        self.testStorePurchaseHandler.stubbedPurchaseResult.value = .success(StoreTransaction(mockTransaction))
+        let mockTransaction = Self.createMockSimulatedStoreTransaction()
+        self.simulatedStorePurchaseHandler.stubbedPurchaseResult.value = .success(StoreTransaction(mockTransaction))
 
         await waitUntil { completion in
             orchestrator.purchase(
@@ -259,16 +259,16 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
             }
         }
 
-        XCTAssertTrue(self.testStorePurchaseHandler.invokedPurchase.value)
-        XCTAssertEqual(self.testStorePurchaseHandler.invokedPurchaseProduct.value?.productIdentifier, "test.product")
+        XCTAssertTrue(self.simulatedStorePurchaseHandler.invokedPurchase.value)
+        XCTAssertEqual(self.simulatedStorePurchaseHandler.invokedPurchaseProduct.value?.productIdentifier, "test.product")
     }
 
-    // MARK: - Purchase of Test Store Products
+    // MARK: - Purchase of Simulated Store Products
 
     func testSuccessfulPurchaseOfTestStoreProductReturnsCorrectValues() async throws {
         self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
-        let mockTransaction = Self.createMockTestStoreTransaction()
-        self.testStorePurchaseHandler.stubbedPurchaseResult.value = .success(StoreTransaction(mockTransaction))
+        let mockTransaction = Self.createMockSimulatedStoreTransaction()
+        self.simulatedStorePurchaseHandler.stubbedPurchaseResult.value = .success(StoreTransaction(mockTransaction))
 
         let orchestrator = self.createOrchestrator()
         let testProduct = self.createTestStoreProduct()
@@ -282,7 +282,7 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
             }
         }
 
-        XCTAssertEqual(transaction?.testStoreTransaction, mockTransaction)
+        XCTAssertEqual(transaction?.simulatedStoreTransaction, mockTransaction)
         XCTAssertFalse(userCancelled)
         XCTAssertNil(error)
         XCTAssertEqual(customerInfo, Self.mockCustomerInfo)
@@ -290,7 +290,7 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
 
     func testCancelledPurchaseOfTestStoreProductReturnsCorrectValues() async throws {
         self.customerInfoManager.stubbedCustomerInfoResult = .success(Self.mockCustomerInfo)
-        self.testStorePurchaseHandler.stubbedPurchaseResult.value = .cancel
+        self.simulatedStorePurchaseHandler.stubbedPurchaseResult.value = .cancel
 
         let orchestrator = self.createOrchestrator()
         let testProduct = self.createTestStoreProduct()
@@ -312,7 +312,7 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
 
     func testFailedPurchaseOfTestStoreProductReturnsCorrectValues() async throws {
         self.customerInfoManager.stubbedCustomerInfoResult = .success(Self.mockCustomerInfo)
-        self.testStorePurchaseHandler.stubbedPurchaseResult.value = .failure(ErrorUtils.ineligibleError())
+        self.simulatedStorePurchaseHandler.stubbedPurchaseResult.value = .failure(ErrorUtils.ineligibleError())
 
         let orchestrator = self.createOrchestrator()
         let testProduct = self.createTestStoreProduct()
@@ -334,8 +334,8 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
 
     func testSuccessfulPurchaseOfTestStoreProductPostsReceipt() async throws {
         self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
-        let mockTransaction = Self.createMockTestStoreTransaction()
-        self.testStorePurchaseHandler.stubbedPurchaseResult.value = .success(StoreTransaction(mockTransaction))
+        let mockTransaction = Self.createMockSimulatedStoreTransaction()
+        self.simulatedStorePurchaseHandler.stubbedPurchaseResult.value = .success(StoreTransaction(mockTransaction))
 
         let orchestrator = self.createOrchestrator()
         let testProduct = self.createTestStoreProduct()
@@ -358,7 +358,7 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
 
     func testCancelledPurchaseOfTestStoreProductDoesNotPostReceipt() async throws {
         self.customerInfoManager.stubbedCustomerInfoResult = .success(Self.mockCustomerInfo)
-        self.testStorePurchaseHandler.stubbedPurchaseResult.value = .cancel
+        self.simulatedStorePurchaseHandler.stubbedPurchaseResult.value = .cancel
 
         let orchestrator = self.createOrchestrator()
         let testProduct = self.createTestStoreProduct()
@@ -377,7 +377,7 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
 
     func testFailedPurchaseOfTestStoreProductDoesNotPostReceipt() async throws {
         self.customerInfoManager.stubbedCustomerInfoResult = .success(Self.mockCustomerInfo)
-        self.testStorePurchaseHandler.stubbedPurchaseResult.value = .failure(ErrorUtils.ineligibleError())
+        self.simulatedStorePurchaseHandler.stubbedPurchaseResult.value = .failure(ErrorUtils.ineligibleError())
 
         let orchestrator = self.createOrchestrator()
         let testProduct = self.createTestStoreProduct()
@@ -399,7 +399,7 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
     func testSyncPurchasesOnTestStoreDoesNotSyncPurchases() async throws {
         let orchestrator = self.createOrchestrator()
         self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = StoreTransaction(
-            Self.createMockTestStoreTransaction()
+            Self.createMockSimulatedStoreTransaction()
         )
 
         _ = await withCheckedContinuation { continuation in
@@ -431,7 +431,7 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
     func testRestorePurchasesOnTestStoreDoesNotRestorePurchases() async throws {
         let orchestrator = self.createOrchestrator()
         self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = StoreTransaction(
-            Self.createMockTestStoreTransaction()
+            Self.createMockSimulatedStoreTransaction()
         )
 
         _ = await withCheckedContinuation { continuation in
@@ -463,7 +463,7 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
 
 #endif
 
-#if !TEST_STORE
+#if !SIMULATED_STORE
     func testPurchaseWithTestStoreProductAndTestAPIKeyWhenTestStoreFlagDisabledReturnsError() async {
         let orchestrator = self.createOrchestrator()
         let testProduct = self.createTestStoreProduct()
@@ -486,7 +486,7 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
         let orchestrator = PurchasesOrchestrator(
             productsManager: self.productsManager,
             paymentQueueWrapper: .right(self.paymentQueueWrapper),
-            testStorePurchaseHandler: self.testStorePurchaseHandler,
+            simulatedStorePurchaseHandler: self.simulatedStorePurchaseHandler,
             systemInfo: self.systemInfo,
             subscriberAttributes: self.attribution,
             operationDispatcher: MockOperationDispatcher(),
@@ -515,12 +515,12 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
 
     private static let mockStorefront = MockStorefront(countryCode: "USA")
 
-    private static func createMockTestStoreTransaction() -> TestStoreTransaction {
-        return TestStoreTransaction(productIdentifier: "test_product_id",
-                                    purchaseDate: self.eventTimestamp1,
-                                    transactionIdentifier: "test_transaction_id",
-                                    storefront: Storefront(mockStorefront),
-                                    jwsRepresentation: "test_jws_representation")
+    private static func createMockSimulatedStoreTransaction() -> SimulatedStoreTransaction {
+        return SimulatedStoreTransaction(productIdentifier: "test_product_id",
+                                         purchaseDate: self.eventTimestamp1,
+                                         transactionIdentifier: "test_transaction_id",
+                                         storefront: Storefront(mockStorefront),
+                                         jwsRepresentation: "test_jws_representation")
     }
 
     private static var mockCustomerInfo: CustomerInfo { .emptyInfo }

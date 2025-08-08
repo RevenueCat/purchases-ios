@@ -1,5 +1,5 @@
 //
-//  TestStoreTransaction.swift
+//  SimulatedStoreTransaction.swift
 //  RevenueCat
 //
 //  Created by Antonio Pallares on 30/7/25.
@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct TestStoreTransaction: StoreTransactionType, Equatable {
+struct SimulatedStoreTransaction: StoreTransactionType, Equatable {
 
     let productIdentifier: String
     let purchaseDate: Date
