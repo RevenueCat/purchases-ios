@@ -41,7 +41,7 @@ final class CustomerCenterConfigDataTests: TestCase {
                 screens: [
                     "MANAGEMENT": .init(
                         title: "Management Screen",
-                        type: .management,
+                        type: CustomerCenterConfigResponse.Screen.ScreenType.management,
                         subtitle: "Manage your account",
                         paths: [
                             .init(
@@ -110,7 +110,7 @@ final class CustomerCenterConfigDataTests: TestCase {
                                 title: "Path 4",
                                 type: .customUrl,
                                 url: "https://revenuecat.com",
-                                openMethod: .external,
+                                openMethod: CustomerCenterConfigResponse.HelpPath.OpenMethod.external,
                                 promotionalOffer: .init(iosOfferId: "offer_id",
                                                         eligible: true,
                                                         title: "Wait!",
@@ -125,7 +125,8 @@ final class CustomerCenterConfigDataTests: TestCase {
                                 refundWindow: nil,
                                 actionIdentifier: nil
                             )
-                        ]
+                        ],
+                        offering: nil
                     )
                 ],
                 localization: CustomerCenterConfigResponse.Localization(
@@ -161,7 +162,7 @@ final class CustomerCenterConfigDataTests: TestCase {
         expect(configData.appearance.buttonBackgroundColor.dark!.stringRepresentation) == "#8B4513"
 
         expect(configData.screens.count) == 1
-        let managementScreen = try XCTUnwrap(configData.screens[.management])
+        let managementScreen = try XCTUnwrap(configData.screens[CustomerCenterConfigData.Screen.ScreenType.management])
         expect(managementScreen.type.rawValue) == "MANAGEMENT"
         expect(managementScreen.title) == "Management Screen"
         expect(managementScreen.subtitle) == "Manage your account"
@@ -206,7 +207,7 @@ final class CustomerCenterConfigDataTests: TestCase {
         expect(paths[3].title) == "Path 4"
         expect(paths[3].type.rawValue) == "CUSTOM_URL"
         expect(paths[3].url?.absoluteString) == "https://revenuecat.com"
-        expect(paths[3].openMethod) == .external
+        expect(paths[3].openMethod) == CustomerCenterConfigData.HelpPath.OpenMethod.external
 
         expect(configData.lastPublishedAppVersion) == "1.2.3"
         expect(configData.productId) == 123

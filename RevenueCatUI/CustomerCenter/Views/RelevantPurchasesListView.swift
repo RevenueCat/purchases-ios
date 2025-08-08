@@ -142,10 +142,14 @@ struct RelevantPurchasesListView: View {
                     .tint(colorScheme == .dark ? .white : .black)
                 } else {
                     ScrollViewSection(title: localization[.subscriptionsSectionTitle]) {
-                        NoSubscriptionsCardView(localization: localization)
-                            .cornerRadius(10)
-                            .padding(.horizontal)
-                            .padding(.bottom, 32)
+                        NoSubscriptionsCardView(
+                            screenOffering: viewModel.screen.offering,
+                            localization: localization,
+                            purchasesProvider: viewModel.purchasesProvider
+                        )
+                        .cornerRadius(10)
+                        .padding(.horizontal)
+                        .padding(.bottom, 32)
                     }
                 }
 
