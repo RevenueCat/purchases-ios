@@ -150,7 +150,7 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
         return syncPurchasesResult
     }
 
-    var offeringsError: Error!
+    var offeringsError: Error = NSError(domain: "", code: -1)
     func offerings() async throws -> Offerings {
         throw offeringsError
     }
