@@ -188,7 +188,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.orchestrator = PurchasesOrchestrator(
             productsManager: self.productsManager,
             paymentQueueWrapper: self.paymentQueueWrapper,
-            testStorePurchaseHandler: self.mockSimulatedStorePurchaseHandler,
+            simulatedStorePurchaseHandler: self.mockSimulatedStorePurchaseHandler,
             systemInfo: self.systemInfo,
             subscriberAttributes: self.attribution,
             operationDispatcher: self.operationDispatcher,
@@ -223,7 +223,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.orchestrator = PurchasesOrchestrator(
             productsManager: self.productsManager,
             paymentQueueWrapper: self.paymentQueueWrapper,
-            testStorePurchaseHandler: self.mockSimulatedStorePurchaseHandler,
+            simulatedStorePurchaseHandler: self.mockSimulatedStorePurchaseHandler,
             systemInfo: self.systemInfo,
             subscriberAttributes: self.attribution,
             operationDispatcher: self.operationDispatcher,
