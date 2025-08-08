@@ -171,11 +171,11 @@ final class MockStorefrontProvider: StorefrontProviderType {
 
     var currentStorefront: StorefrontType? {
         // Simulate `DefaultStorefrontProvider` availability.
-        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, macCatalyst 13.1, *) {
-            return MockStorefront(countryCode: "USA")
-        } else {
-            return nil
-        }
+        return MockStorefront(countryCode: "USA")
+    }
+
+    var syncStorefront: StorefrontType? {
+        return currentStorefront
     }
 
 }
