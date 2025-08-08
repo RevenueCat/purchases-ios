@@ -11,12 +11,14 @@
 //
 //  Created by Nacho Soto on 7/13/23.
 
+import Combine
 import Foundation
 import RevenueCat
-import Combine
 
+// swiftlint:disable:next missing_docs
 @_spi(Internal) public final class TrialOrIntroEligibilityChecker: ObservableObject {
 
+    // swiftlint:disable:next missing_docs
     @_spi(Internal) public typealias Checker = @Sendable ([Package]) async -> [Package: IntroEligibilityStatus]
 
     /// `false` if this `TrialOrIntroEligibilityChecker` is not backend by a configured `Purchases`instance.
