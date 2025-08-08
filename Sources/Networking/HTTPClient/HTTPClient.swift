@@ -168,7 +168,7 @@ class HTTPClient {
         let storefront: Atomic<StorefrontType?> = .init(nil)
         let semaphore = DispatchSemaphore(value: 0)
 
-        Task {
+        Task.detached(priority: .high) {
             storefront.value = await self.systemInfo.storefront
             semaphore.signal()
         }
