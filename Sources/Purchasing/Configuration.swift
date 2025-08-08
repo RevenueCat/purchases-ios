@@ -375,7 +375,7 @@ extension Configuration {
     enum APIKeyValidationResult {
         case validApplePlatform
 
-        /// This is a key used for the Simulated Store.
+        /// An API key used for the Simulated Store.
         ///
         /// Note that "Simulated Store" is the internal name of the "Test Store".
         case simulatedStore
