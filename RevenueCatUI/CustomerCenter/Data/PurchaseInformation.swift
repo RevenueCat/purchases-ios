@@ -550,8 +550,8 @@ extension PurchaseInformation {
         case .unknownStore: return .storeUnknownStore
         case .paddle, .stripe, .rcBilling, .external: return .storeWeb
 
-        #if TEST_STORE
-        case .testStore: return .testStore
+        #if SIMULATED_STORE
+        case .testStore: return .simulatedStore
         #endif
         }
     }

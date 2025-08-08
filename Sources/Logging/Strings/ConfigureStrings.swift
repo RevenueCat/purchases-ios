@@ -51,7 +51,7 @@ enum ConfigureStrings {
 
     case is_simulator(Bool)
 
-    case testStoreAPIKey
+    case simulatedStoreAPIKey
 
     case legacyAPIKey
 
@@ -137,7 +137,7 @@ extension ConfigureStrings: LogMessage {
                 "file set up before trying to fetch products or make purchases.\n" +
                 "See https://errors.rev.cat/testing-in-simulator for more details."
                 : "Not using a simulator."
-        case .testStoreAPIKey:
+        case .simulatedStoreAPIKey:
             return "Using a Test Store API key.\n" +
             "The Test Store is for development only. Never use a Test Store API key in production. " +
             "Test Store purchases are simulated, do not use StoreKit, and generate no revenue. " +

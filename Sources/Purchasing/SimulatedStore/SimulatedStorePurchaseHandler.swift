@@ -1,5 +1,5 @@
 //
-//  TestStorePurchaseHandler.swift
+//  SimulatedStorePurchaseHandler.swift
 //  RevenueCat
 //
 //  Created by Antonio Pallares on 16/7/25.
@@ -14,22 +14,22 @@ enum TestPurchaseResult {
     case success(StoreTransaction)
 }
 
-protocol TestStorePurchaseHandlerType: AnyObject, Sendable {
+protocol SimulatedStorePurchaseHandlerType: AnyObject, Sendable {
 
-    #if TEST_STORE
+    #if SIMULATED_STORE
 
     @MainActor
     func purchase(product: TestStoreProduct) async -> TestPurchaseResult
 
-    #endif // TEST_STORE
+    #endif // SIMULATED_STORE
 }
 
-/// The object that handles purchases in the Test Store.
+/// The object that handles purchases in the Simulated Store.
 ///
-/// This class is used to handle purchases when using a Test Store API key.
-actor TestStorePurchaseHandler: TestStorePurchaseHandlerType {
+/// This class is used to handle purchases when using a Simulated Store API key.
+actor SimulatedStorePurchaseHandler: SimulatedStorePurchaseHandlerType {
 
-    private let purchaseUI: TestStorePurchaseUI
+    private let purchaseUI: SimulatedStorePurchaseUI
 
     private var currentPurchaseTask: Task<TestPurchaseResult, Never>?
     private var purchaseInProgress: Bool {
@@ -37,15 +37,15 @@ actor TestStorePurchaseHandler: TestStorePurchaseHandlerType {
     }
 
     init(systemInfo: SystemInfo) {
-        self.purchaseUI = DefaultTestStorePurchaseUI(systemInfo: systemInfo)
+        self.purchaseUI = DefaultSimulatedStorePurchaseUI(systemInfo: systemInfo)
     }
 
     // For testing purposes
-    init(purchaseUI: TestStorePurchaseUI) {
+    init(purchaseUI: SimulatedStorePurchaseUI) {
         self.purchaseUI = purchaseUI
     }
 
-    #if TEST_STORE
+    #if SIMULATED_STORE
 
     func purchase(product: TestStoreProduct) async -> TestPurchaseResult {
         guard !self.purchaseInProgress else {
@@ -85,24 +85,24 @@ actor TestStorePurchaseHandler: TestStorePurchaseHandlerType {
         let purchaseDate = Date()
         let transactionId = "test_\(purchaseDate.millisecondsSince1970)_\(UUID().uuidString)"
         let storefront = await Storefront.currentStorefront
-        let testStoreTransaction = TestStoreTransaction(productIdentifier: product.productIdentifier,
-                                                        purchaseDate: purchaseDate,
-                                                        transactionIdentifier: transactionId,
-                                                        storefront: storefront,
-                                                        jwsRepresentation: nil)
-        return StoreTransaction(testStoreTransaction)
+        let simulatedStoreTransaction = SimulatedStoreTransaction(productIdentifier: product.productIdentifier,
+                                                                  purchaseDate: purchaseDate,
+                                                                  transactionIdentifier: transactionId,
+                                                                  storefront: storefront,
+                                                                  jwsRepresentation: nil)
+        return StoreTransaction(simulatedStoreTransaction)
     }
 
     nonisolated private var simulatedError: PurchasesError {
         return ErrorUtils.productNotAvailableForPurchaseError(
-            withMessage: Strings.purchase.error_message_for_simulating_test_purchase_failure.description)
+            withMessage: Strings.purchase.error_message_for_simulating_purchase_failure.description)
     }
 
-    #endif // TEST_STORE
+    #endif // SIMULATED_STORE
 }
 
 // MARK: - Purchase Alert Presentation
 
-private extension TestStorePurchaseHandler {
+private extension SimulatedStorePurchaseHandler {
 
 }
