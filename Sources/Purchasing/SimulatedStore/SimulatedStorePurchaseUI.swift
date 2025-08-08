@@ -223,17 +223,17 @@ private extension UIViewController {
 
 fileprivate extension DefaultSimulatedStorePurchaseUI {
 
-    static let purchaseAlertTitle = "Simulated Purchase"
-    static let purchaseActionTitle = "Simulate valid purchase"
+    static let purchaseAlertTitle = "Test Purchase"
+    static let purchaseActionTitle = "Test valid purchase"
     static let cancelActionTitle = "Cancel"
-    static let failureActionTitle = "Simulate failed purchase"
+    static let failureActionTitle = "Test failed purchase"
 
 }
 
 fileprivate extension SimulatedStoreProduct {
 
     var purchaseAlertMessage: String {
-        var message = "This is a simulated purchase and should only be used during development. In production, " +
+        var message = "This is a test purchase and should only be used during development. In production, " +
         "use an Apple API key from RevenueCat.\n\n"
         message += "Product ID: \(self.productIdentifier)\n"
         message += "Title: \(self.localizedTitle)\n"
