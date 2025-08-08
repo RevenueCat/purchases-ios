@@ -170,6 +170,7 @@ class PurchasesRestoreTests: BasePurchasesTests {
 
         expect(self.receiptFetcher.receiptDataTimesCalled) == 1
 
+        expect(self.backend.postReceiptDataCalled).toEventually(beTrue())
         expect(self.backend.postedReceiptData) == EncodedAppleReceipt.receipt(self.receiptFetcher.mockReceiptData)
         expect(self.backend.postedProductID) == productIdentifier
         expect(self.backend.postedPrice) == product.price as Decimal
