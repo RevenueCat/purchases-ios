@@ -45,7 +45,7 @@ extension WebBillingProductsResponse.Product {
                   let basePrice = basePhase.price else {
                 throw ErrorUtils.productNotAvailableForPurchaseError(
                     withMessage: "No base price found for product \(self.identifier). " +
-                    "Base price is required for test subscription products" // TODO: test vs simulated naming?
+                    "Base price is required for test subscription products"
                 )
             }
 

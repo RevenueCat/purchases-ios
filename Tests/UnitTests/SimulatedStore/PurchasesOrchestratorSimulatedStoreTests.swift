@@ -186,7 +186,8 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
         }
 
         XCTAssertTrue(self.simulatedStorePurchaseHandler.invokedPurchase.value)
-        XCTAssertEqual(self.simulatedStorePurchaseHandler.invokedPurchaseProduct.value?.productIdentifier, "test.product")
+        XCTAssertEqual(self.simulatedStorePurchaseHandler.invokedPurchaseProduct.value?.productIdentifier,
+                       "test.product")
     }
 
     func testPurchaseWithSimulatedStoreProductAndNonTestAPIKeyReturnsError() async {
@@ -260,7 +261,8 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
         }
 
         XCTAssertTrue(self.simulatedStorePurchaseHandler.invokedPurchase.value)
-        XCTAssertEqual(self.simulatedStorePurchaseHandler.invokedPurchaseProduct.value?.productIdentifier, "test.product")
+        XCTAssertEqual(self.simulatedStorePurchaseHandler.invokedPurchaseProduct.value?.productIdentifier,
+                       "test.product")
     }
 
     // MARK: - Purchase of Simulated Store Products

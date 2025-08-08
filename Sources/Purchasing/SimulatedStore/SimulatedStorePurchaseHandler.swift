@@ -86,10 +86,10 @@ actor SimulatedStorePurchaseHandler: SimulatedStorePurchaseHandlerType {
         let transactionId = "test_\(purchaseDate.millisecondsSince1970)_\(UUID().uuidString)"
         let storefront = await Storefront.currentStorefront
         let simulatedStoreTransaction = SimulatedStoreTransaction(productIdentifier: product.productIdentifier,
-                                                               purchaseDate: purchaseDate,
-                                                               transactionIdentifier: transactionId,
-                                                               storefront: storefront,
-                                                               jwsRepresentation: nil)
+                                                                  purchaseDate: purchaseDate,
+                                                                  transactionIdentifier: transactionId,
+                                                                  storefront: storefront,
+                                                                  jwsRepresentation: nil)
         return StoreTransaction(simulatedStoreTransaction)
     }
 
