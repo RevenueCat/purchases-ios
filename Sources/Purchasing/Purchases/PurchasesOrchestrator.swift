@@ -208,6 +208,11 @@ final class PurchasesOrchestrator {
         Task {
             await syncDiagnosticsIfNeeded()
         }
+
+        Task {
+            let countryCode = await systemInfo.storefront?.countryCode
+            Logger.debug(Strings.storeKit.sk_storefront_country_code(countryCode: countryCode))
+        }
     }
 
     init(productsManager: ProductsManagerType,
