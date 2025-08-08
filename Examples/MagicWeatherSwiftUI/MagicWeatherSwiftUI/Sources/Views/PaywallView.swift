@@ -204,15 +204,18 @@ struct PaywallView_Previews: PreviewProvider {
                 identifier: "monthly",
                 packageType: .monthly,
                 storeProduct: product1.toStoreProduct(),
-                offeringIdentifier: Self.offeringIdentifier
+                offeringIdentifier: Self.offeringIdentifier,
+                webCheckoutUrl: nil
             ),
             .init(
                 identifier: "annual",
                 packageType: .annual,
                 storeProduct: product2.toStoreProduct(),
-                offeringIdentifier: Self.offeringIdentifier
+                offeringIdentifier: Self.offeringIdentifier,
+                webCheckoutUrl: nil
             )
-        ]
+        ],
+        webCheckoutUrl: nil
     )
 
     private static let offeringIdentifier = "offering"
