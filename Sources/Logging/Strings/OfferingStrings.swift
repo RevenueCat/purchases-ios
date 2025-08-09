@@ -160,8 +160,8 @@ extension OfferingStrings: LogMessage {
         case .known_issue_ios_18_4_simulator_products_not_found:
             return "None of the products registered in the RevenueCat dashboard could be fetched from App Store " +
             "Connect (or the StoreKit Configuration file if one is being used)." +
-            "\nThis issue is widely reported by iOS 18.4 simulator users. Try using a different iOS version with " +
-            "your simulator." +
+            "\nThis issue is widely reported by iOS 18.4 and 18.5 simulator users. Try using a different iOS " +
+            "\nversion with your simulator." +
             "\nMore information: https://rev.cat/ios-18-4-simulator-issue"
         }
     }
