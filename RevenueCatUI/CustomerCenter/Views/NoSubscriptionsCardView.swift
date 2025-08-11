@@ -28,9 +28,6 @@ struct NoSubscriptionsCardView: View {
     @StateObject
     private var viewModel: NoSubscriptionsCardViewModel
 
-    @State
-    private var showOffering = false
-
     private let title: String
     private let subtitle: String
     private let subscribeTitle: String
@@ -82,7 +79,7 @@ struct NoSubscriptionsCardView: View {
 
             if viewModel.offering != nil || viewModel.isLoadingOffering {
                 Button(subscribeTitle) {
-                    self.showOffering = true
+                    viewModel.showPaywall()
                 }
                 .buttonStyle(BuySubscriptionButtonStyle())
                 .disabled(viewModel.isLoadingOffering)
@@ -100,7 +97,7 @@ struct NoSubscriptionsCardView: View {
                           ? UIColor.systemBackground
                           : UIColor.secondarySystemBackground))
         .animation(.easeInOut(duration: 0.3), value: viewModel.isLoadingOffering)
-        .sheet(isPresented: $showOffering, content: {
+        .sheet(isPresented: $viewModel.showOffering, content: {
             PaywallView(
                 configuration: .init(
                     offering: viewModel.offering,
@@ -108,45 +105,8 @@ struct NoSubscriptionsCardView: View {
                 )
             )
         })
-        .task(priority: .userInitiated) {
-            await viewModel.refreshOffering()
-        }
-    }
-}
-
-private extension PurchaseInformation {
-    var shoulShowPricePaid: Bool {
-        renewalPrice != nil || expirationDate != nil
-    }
-}
-
-private extension RefundRequestStatus {
-
-    var icon: Image? {
-        switch self {
-        case .error:
-            return Image(systemName: "exclamationmark.triangle.fill")
-        case .success:
-            return Image(systemName: "info.circle.fill")
-        case .userCancelled:
-            return nil
-        @unknown default:
-            return nil
-        }
-    }
-
-    func subtitle(
-        localization: CustomerCenterConfigData.Localization
-    ) -> String? {
-        switch self {
-        case .error:
-            return localization[.refundErrorGeneric]
-        case .success:
-            return localization[.refundSuccess]
-        case .userCancelled:
-            return nil
-        @unknown default:
-            return nil
+        .onAppear {
+            viewModel.refreshOffering()
         }
     }
 }

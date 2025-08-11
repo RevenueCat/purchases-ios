@@ -19,10 +19,10 @@ final class NoSubscriptionsCardViewModel: ObservableObject {
 
     @Published var offering: Offering?
     @Published var isLoadingOffering = true
+    @Published var showOffering = false
 
     private let screenOffering: CustomerCenterConfigData.ScreenOffering?
     private let purchasesProvider: CustomerCenterPurchasesType
-
     init(
         screenOffering: CustomerCenterConfigData.ScreenOffering?,
         purchasesProvider: CustomerCenterPurchasesType
@@ -31,32 +31,44 @@ final class NoSubscriptionsCardViewModel: ObservableObject {
         self.purchasesProvider = purchasesProvider
     }
 
-    func refreshOffering() async {
+    func refreshOffering() {
         guard let screenOffering else {
             isLoadingOffering = false
             return
         }
 
         isLoadingOffering = true
-        defer { isLoadingOffering = false }
 
-        do {
-            let offerings = try await purchasesProvider.offerings()
-            switch screenOffering.type {
-            case .current:
-                self.offering = offerings.current
-            case .specific:
-                if let offeringId = screenOffering.offeringId {
-                    self.offering = offerings.offering(identifier: offeringId)
-                } else {
-                    Logger.debug("ScreenOffering type is .specific but offeringId is nil")
-                    self.offering = nil
+        Task { @MainActor in
+            defer { isLoadingOffering = false }
+
+            do {
+                let offerings = try await purchasesProvider.offerings()
+
+                switch screenOffering.type {
+                case .current:
+                    self.offering = offerings.current
+                case .specific:
+                    if let offeringId = screenOffering.offeringId {
+                        self.offering = offerings.offering(identifier: offeringId)
+                    } else {
+                        Logger.debug("ScreenOffering type is .specific but offeringId is nil")
+                        self.offering = nil
+                    }
                 }
+            } catch {
+                Logger.debug("Error fetching offerings: \(error)")
+                self.offering = nil
             }
-        } catch {
-            Logger.debug("Error fetching offerings: \(error)")
-            self.offering = nil
         }
+    }
+
+    func showPaywall() {
+        showOffering = true
+    }
+
+    func hidePaywall() {
+        showOffering = false
     }
 }
 
