@@ -156,21 +156,6 @@ struct NoSubscriptionsCardView_Previews: PreviewProvider {
         ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
             ScrollViewWithOSBackground {
                 NoSubscriptionsCardView(
-                    screenOffering: CustomerCenterConfigData.ScreenOffering(
-                        type: .specific,
-                        offeringId: "offeringId"
-                    ),
-                    localization: CustomerCenterConfigData.default.localization,
-                    purchasesProvider: MockCustomerCenterPurchases()
-                )
-                .cornerRadius(10)
-                .padding([.leading, .trailing])
-            }
-            .preferredColorScheme(colorScheme)
-            .previewDisplayName("NoSubscriptionsCardView - Paywall")
-
-            ScrollViewWithOSBackground {
-                NoSubscriptionsCardView(
                     screenOffering: nil,
                     localization: CustomerCenterConfigData.default.localization,
                     purchasesProvider: MockCustomerCenterPurchases()
