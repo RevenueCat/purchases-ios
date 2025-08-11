@@ -25,21 +25,15 @@ struct NoSubscriptionsCardView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
-    @State
-    private var offering: Offering?
+    @StateObject
+    private var viewModel: NoSubscriptionsCardViewModel
 
     @State
     private var showOffering = false
 
-    @State
-    private var isLoadingOffering = true
-
     private let title: String
     private let subtitle: String
     private let subscribeTitle: String
-    private let screenOffering: CustomerCenterConfigData.ScreenOffering?
-
-    private let purchasesProvider: CustomerCenterPurchasesType
 
     init(
         title: String,
@@ -51,8 +45,10 @@ struct NoSubscriptionsCardView: View {
         self.title = title
         self.subtitle = subtitle
         self.subscribeTitle = subscribeTitle
-        self.screenOffering = screenOffering
-        self.purchasesProvider = purchasesProvider
+        self._viewModel = StateObject(wrappedValue: NoSubscriptionsCardViewModel(
+            screenOffering: screenOffering,
+            purchasesProvider: purchasesProvider
+        ))
     }
 
     init(
@@ -84,16 +80,16 @@ struct NoSubscriptionsCardView: View {
                 .frame(alignment: .leading)
                 .multilineTextAlignment(.center)
 
-            if offering != nil || isLoadingOffering {
+            if viewModel.offering != nil || viewModel.isLoadingOffering {
                 Button(subscribeTitle) {
                     self.showOffering = true
                 }
                 .buttonStyle(BuySubscriptionButtonStyle())
-                .disabled(isLoadingOffering)
+                .disabled(viewModel.isLoadingOffering)
                 .padding(.top)
-                .opacity(isLoadingOffering ? 0 : 1.0)
+                .opacity(viewModel.isLoadingOffering ? 0 : 1.0)
                 .overlay(content: {
-                    if isLoadingOffering {
+                    if viewModel.isLoadingOffering {
                         TintedProgressView()
                     }
                 })
@@ -103,45 +99,17 @@ struct NoSubscriptionsCardView: View {
         .background(Color(colorScheme == .light
                           ? UIColor.systemBackground
                           : UIColor.secondarySystemBackground))
-        .animation(.easeInOut(duration: 0.3), value: isLoadingOffering)
+        .animation(.easeInOut(duration: 0.3), value: viewModel.isLoadingOffering)
         .sheet(isPresented: $showOffering, content: {
             PaywallView(
                 configuration: .init(
-                    offering: offering,
+                    offering: viewModel.offering,
                     displayCloseButton: false
                 )
             )
         })
         .task(priority: .userInitiated) {
-            await refreshOffering()
-        }
-    }
-
-    private func refreshOffering() async {
-        guard let screenOffering else {
-            isLoadingOffering = false
-            return
-        }
-
-        isLoadingOffering = true
-        defer { isLoadingOffering = false }
-
-        do {
-            let offerings = try await purchasesProvider.offerings()
-            switch screenOffering.type {
-            case .current:
-                self.offering = offerings.current
-            case .specific:
-                if let offeringId = screenOffering.offeringId {
-                    self.offering = offerings.offering(identifier: offeringId)
-                } else {
-                    Logger.debug("ScreenOffering type is .specific but offeringId is nil")
-                    self.offering = nil
-                }
-            }
-        } catch {
-            Logger.debug("Error fetching offerings: \(error)")
-            self.offering = nil
+            await viewModel.refreshOffering()
         }
     }
 }
