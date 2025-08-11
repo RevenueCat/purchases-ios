@@ -87,6 +87,8 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                 urls += carousel.pages.flatMap({ stack in
                     self.collectAllImageURLs(in: stack)
                 })
+            case .video:
+                break
             }
         }
 
