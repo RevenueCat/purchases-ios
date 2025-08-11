@@ -17,6 +17,12 @@ import RevenueCat
 
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
 
+class PurchaseButtonCollector {
+
+    var hasPurchaseButton = false
+
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 // swiftlint:disable:next type_body_length
 struct ViewModelFactory {
@@ -35,6 +41,7 @@ struct ViewModelFactory {
             component: componentsConfig.stack,
             packageValidator: self.packageValidator,
             firstImageInfo: firstImageInfo,
+            purchaseButtonCollector: nil,
             localizationProvider: localizationProvider,
             uiConfigProvider: uiConfigProvider,
             offering: offering
@@ -45,6 +52,7 @@ struct ViewModelFactory {
                 component: $0.stack,
                 packageValidator: self.packageValidator,
                 firstImageInfo: nil,
+                purchaseButtonCollector: nil,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
                 offering: offering
@@ -68,6 +76,7 @@ struct ViewModelFactory {
         component: PaywallComponent,
         packageValidator: PackageValidator,
         firstImageInfo: RootViewModel.FirstImageInfo?,
+        purchaseButtonCollector: PurchaseButtonCollector? = nil,
         offering: Offering,
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider
@@ -103,6 +112,7 @@ struct ViewModelFactory {
                     component: component,
                     packageValidator: packageValidator,
                     firstImageInfo: firstImageInfo,
+                    purchaseButtonCollector: purchaseButtonCollector,
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     offering: offering
@@ -113,6 +123,7 @@ struct ViewModelFactory {
                 component: component.stack,
                 packageValidator: packageValidator,
                 firstImageInfo: firstImageInfo,
+                purchaseButtonCollector: purchaseButtonCollector,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
                 offering: offering
@@ -125,6 +136,7 @@ struct ViewModelFactory {
                     component: sheet.stack,
                     packageValidator: packageValidator,
                     firstImageInfo: nil,
+                    purchaseButtonCollector: purchaseButtonCollector,
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     offering: offering
@@ -141,31 +153,48 @@ struct ViewModelFactory {
                 )
             )
         case .package(let component):
+            // Specifically override the parent PurchaseButtonCollector so that
+            // we can see if the package has a purchase button inside of it
+            let packagePurchaseButtonCollector = PurchaseButtonCollector()
+
             let stackViewModel = try toStackViewModel(
                 component: component.stack,
                 packageValidator: packageValidator,
                 firstImageInfo: firstImageInfo,
+                purchaseButtonCollector: packagePurchaseButtonCollector,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
                 offering: offering
             )
 
+            let hasPurchaseButton = packagePurchaseButtonCollector.hasPurchaseButton
+
             let viewModel = PackageComponentViewModel(
                 component: component,
                 offering: offering,
-                stackViewModel: stackViewModel
+                stackViewModel: stackViewModel,
+                hasPurchaseButton: hasPurchaseButton
             )
 
             if let package = viewModel.package {
-                packageValidator.add(package, isSelectedByDefault: viewModel.isSelectedByDefault)
+                let packageInfo = PackageValidator.PackageInfo(
+                    package: package,
+                    isSelectedByDefault: viewModel.isSelectedByDefault,
+                    promotionalOfferProductCode: viewModel.promotionalOfferProductCode
+                )
+                packageValidator.add(packageInfo)
             }
 
             return .package(viewModel)
         case .purchaseButton(let component):
+            // Set hasPurchaseButton if the parent cares about it
+            purchaseButtonCollector?.hasPurchaseButton = true
+
             let stackViewModel = try toStackViewModel(
                 component: component.stack,
                 packageValidator: packageValidator,
                 firstImageInfo: firstImageInfo,
+                purchaseButtonCollector: purchaseButtonCollector,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
                 offering: offering
@@ -184,6 +213,7 @@ struct ViewModelFactory {
                 component: component.stack,
                 packageValidator: packageValidator,
                 firstImageInfo: firstImageInfo,
+                purchaseButtonCollector: purchaseButtonCollector,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
                 offering: offering
@@ -233,6 +263,7 @@ struct ViewModelFactory {
                 component: component.control.stack,
                 packageValidator: packageValidator,
                 firstImageInfo: firstImageInfo,
+                purchaseButtonCollector: purchaseButtonCollector,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
                 offering: offering
@@ -279,6 +310,7 @@ struct ViewModelFactory {
                 component: tabsStackComponent,
                 packageValidator: PackageValidator(),
                 firstImageInfo: firstImageInfo,
+                purchaseButtonCollector: purchaseButtonCollector,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
                 offering: offering
@@ -291,14 +323,15 @@ struct ViewModelFactory {
                     component: tab.stack,
                     packageValidator: tabPackageValidator,
                     firstImageInfo: firstImageInfo,
+                    purchaseButtonCollector: purchaseButtonCollector,
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     offering: offering
                 )
 
                 // Merging into entire paywall package validator
-                for (pkg, isSelectedByDefault) in tabPackageValidator.packageInfos {
-                    packageValidator.add(pkg, isSelectedByDefault: isSelectedByDefault)
+                for packageInfo in tabPackageValidator.packageInfos {
+                    packageValidator.add(packageInfo)
                 }
 
                 return try .init(
@@ -330,6 +363,7 @@ struct ViewModelFactory {
                 component: component.stack,
                 packageValidator: packageValidator,
                 firstImageInfo: firstImageInfo,
+                purchaseButtonCollector: purchaseButtonCollector,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
                 offering: offering
@@ -355,6 +389,7 @@ struct ViewModelFactory {
                     component: stackComponent,
                     packageValidator: packageValidator,
                     firstImageInfo: firstImageInfo,
+                    purchaseButtonCollector: purchaseButtonCollector,
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     offering: offering
@@ -377,6 +412,7 @@ struct ViewModelFactory {
         component: PaywallComponent.StackComponent,
         packageValidator: PackageValidator,
         firstImageInfo: RootViewModel.FirstImageInfo?,
+        purchaseButtonCollector: PurchaseButtonCollector?,
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,
         offering: Offering
@@ -386,6 +422,7 @@ struct ViewModelFactory {
                 component: component,
                 packageValidator: packageValidator,
                 firstImageInfo: firstImageInfo,
+                purchaseButtonCollector: purchaseButtonCollector,
                 offering: offering,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider
@@ -397,6 +434,8 @@ struct ViewModelFactory {
                 component: component,
                 packageValidator: packageValidator,
                 firstImageInfo: firstImageInfo,
+                // Explicitly not looking for purchase button in badge
+                purchaseButtonCollector: nil,
                 offering: offering,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider

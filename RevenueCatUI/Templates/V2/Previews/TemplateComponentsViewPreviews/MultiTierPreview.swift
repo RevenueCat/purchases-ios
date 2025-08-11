@@ -24,6 +24,7 @@ import SwiftUI
 // swiftlint:disable:next type_body_length
 private enum MultiTierPreview {
 
+    @MainActor
     static let paywallState = PackageContext(
         package: nil,
         variableContext: .init()
@@ -124,6 +125,7 @@ private enum MultiTierPreview {
         return PaywallComponent.PackageComponent(
             packageID: packageID,
             isSelectedByDefault: isSelectedByDefault,
+            applePromoOfferProductCode: nil,
             stack: stack
         )
     }
@@ -405,7 +407,7 @@ struct MultiTierPreview_Previews: PreviewProvider {
             fallbackContent: .customView(AnyView(Text("Fallback paywall"))),
             failedToLoadFont: { _ in }
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 800))
         .previewDisplayName("Template 5")
     }

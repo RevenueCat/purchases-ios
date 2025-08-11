@@ -39,12 +39,11 @@ struct TabControlToggleComponentView: View {
     private let onDismiss: () -> Void
 
     @State
-    private var isOn: Bool
+    private var isOn: Bool = false
 
     init(viewModel: TabControlToggleComponentViewModel, onDismiss: @escaping () -> Void) {
         self.viewModel = viewModel
         self.onDismiss = onDismiss
-        self._isOn = .init(wrappedValue: viewModel.defaultValue)
     }
 
     var body: some View {
@@ -58,10 +57,17 @@ struct TabControlToggleComponentView: View {
                 )
             )
             .labelsHidden()
-        .onChangeOf(self.isOn) { newValue in
-            self.tabControlContext.selectedTabId =
-                newValue ? self.tabControlContext.tabIds[1] : self.tabControlContext.tabIds[0]
-        }
+            .onAppear {
+                let tabIds = tabControlContext.tabIds
+                let selectedId = tabControlContext.selectedTabId
+                self.isOn = tabIds.indices.contains(1) && selectedId == tabIds[1]
+            }
+            .onChangeOf(self.isOn) { newValue in
+                let tabIds = tabControlContext.tabIds
+                guard tabIds.count >= 2 else { return }
+
+                tabControlContext.selectedTabId = newValue ? tabIds[1] : tabIds[0]
+            }
     }
 
 }
@@ -96,6 +102,14 @@ private struct CustomToggleStyle: ToggleStyle {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TabControlToggleComponentView_Previews: PreviewProvider {
 
+    // swiftlint:disable:next force_try
+    static let controlStackViewModel = try! StackComponentViewModel(
+        component: .init(components: []),
+        localizationProvider: .init(
+            locale: .init(identifier: "en-US"),
+            localizedStrings: [:])
+    )
+
     static var previews: some View {
         // Off
         TabControlToggleComponentView(
@@ -113,7 +127,14 @@ struct TabControlToggleComponentView_Previews: PreviewProvider {
             onDismiss: {}
         )
         .padding()
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
+        .environmentObject(
+            TabControlContext(
+                controlStackViewModel: controlStackViewModel,
+                tabIds: ["1", "2"],
+                defaultTabId: "1"
+            )
+        )
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Off")
 
@@ -133,6 +154,14 @@ struct TabControlToggleComponentView_Previews: PreviewProvider {
             onDismiss: {}
         )
         .padding()
+        .previewRequiredPaywallsV2Properties()
+        .environmentObject(
+            TabControlContext(
+                controlStackViewModel: controlStackViewModel,
+                tabIds: ["1", "2"],
+                defaultTabId: "2"
+            )
+        )
         .previewLayout(.sizeThatFits)
         .previewDisplayName("On")
     }

@@ -24,10 +24,10 @@ struct PurchaseButtonComponentView: View {
     private var openURL
 
     @EnvironmentObject
-    private var introOfferEligibilityContext: IntroOfferEligibilityContext
+    private var packageContext: PackageContext
 
     @EnvironmentObject
-    private var packageContext: PackageContext
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
 
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
@@ -107,7 +107,9 @@ struct PurchaseButtonComponentView: View {
             return
         }
 
-        _ = try await self.purchaseHandler.purchase(package: selectedPackage)
+        let promoOffer = self.paywallPromoOfferCache.get(for: selectedPackage)
+
+        _ = try await self.purchaseHandler.purchase(package: selectedPackage, promotionalOffer: promoOffer)
     }
 
     private func purchaseInWeb() async throws {
@@ -215,7 +217,7 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
             ),
             onDismiss: {}
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Pill")
 
@@ -260,7 +262,7 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
             ),
             onDismiss: {}
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Rounded Rectangle")
     }
@@ -279,6 +281,7 @@ fileprivate extension PurchaseButtonComponentViewModel {
             component: component.stack,
             packageValidator: factory.packageValidator,
             firstImageInfo: nil,
+            purchaseButtonCollector: nil,
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
             offering: offering

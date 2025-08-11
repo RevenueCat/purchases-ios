@@ -23,6 +23,7 @@ struct ButtonComponentView: View {
     @Environment(\.openSheet) private var openSheet
     @State private var inAppBrowserURL: URL?
     @State private var showCustomerCenter = false
+    @State private var offerCodeRedemptionSheet = false
     @State private var showingWebPaywallLinkAlert = false
 
     @EnvironmentObject
@@ -123,7 +124,9 @@ struct ButtonComponentView: View {
     private func navigateTo(destination: ButtonComponentViewModel.Destination) {
         switch destination {
         case .customerCenter:
-            showCustomerCenter = true
+            self.showCustomerCenter = true
+        case .offerCodeRedemptionSheet:
+            self.openCodeRedemptionSheet()
         case .url(let url, let method),
                 .privacyPolicy(let url, let method),
                 .terms(let url, let method):
@@ -134,12 +137,22 @@ struct ButtonComponentView: View {
         case .unknown:
             break
         case .webPaywallLink(url: let url, method: let method):
-            openWebPaywallLink(url: url, method: method)
+            self.openWebPaywallLink(url: url, method: method)
         }
     }
 
+    private func openCodeRedemptionSheet() {
+#if os(iOS) && !targetEnvironment(macCatalyst)
+        // Call the method only if available
+        Purchases.shared.presentCodeRedemptionSheet()
+#else
+        // Handle the case for unsupported platforms (e.g., watchOS, macOS)
+        print("presentCodeRedemptionSheet is unavailable on this platform")
+#endif
+    }
+
     private func openWebPaywallLink(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) {
-        Purchases.shared.invalidateCustomerInfoCache()
+        self.purchaseHandler.invalidateCustomerInfoCache()
 #if os(watchOS)
         // watchOS doesn't support openURL with a completion handler, so we're just opening the URL.
         openURL(url)
@@ -196,7 +209,7 @@ struct ButtonComponentView_Previews: PreviewProvider {
                 onDismiss: { }
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 400))
         .previewDisplayName("Default")
     }
@@ -215,6 +228,7 @@ fileprivate extension ButtonComponentViewModel {
             component: component.stack,
             packageValidator: factory.packageValidator,
             firstImageInfo: nil,
+            purchaseButtonCollector: nil,
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
             offering: offering
