@@ -141,7 +141,7 @@ struct CachingVideoPlayer: View {
             } else {
                 Color.clear
                     .onAppear {
-                        VideoCache.shared.getVideoURL(for: url) { url in
+                        VideoRepository.shared.getVideoURL(for: url) { url in
                             self.loadFromURL = url
                         }
                     }
