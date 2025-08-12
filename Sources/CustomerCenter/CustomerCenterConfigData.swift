@@ -777,7 +777,7 @@ extension CustomerCenterConfigData.Screen {
         self.paths = response.paths.compactMap { CustomerCenterConfigData.HelpPath(from: $0) }
         self.offering = response.offering.map { offering in
             switch offering.type {
-            case "SPECIFIC":
+            case CustomerCenterConfigData.ScreenOffering.OfferingType.specific.rawValue:
                 return CustomerCenterConfigData.ScreenOffering(
                     type: .specific,
                     offeringId: offering.offeringId
