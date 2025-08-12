@@ -199,18 +199,24 @@ struct PurchaseInformation {
          dateFormatter: DateFormatter = Self.defaultDateFormatter,
          numberFormatter: NumberFormatter = Self.defaultNumberFormatter,
          managementURL: URL?,
-         changePlan: CustomerCenterConfigData.ChangePlan? = nil
+         changePlan: CustomerCenterConfigData.ChangePlan? = nil,
+         localization: CustomerCenterConfigData.Localization
     ) {
         self.dateFormatter = dateFormatter
         self.numberFormatter = numberFormatter
 
         self.changePlan = changePlan
-        // Title and duration from product if available
-        if transaction.store == .promotional {
-            self.title = entitlement?.identifier ?? transaction.productIdentifier
-        } else {
-            self.title = subscribedProduct?.localizedTitle ?? transaction.productIdentifier
-        }
+
+        // Determine subscription type first to use in title logic
+        let isSubscriptionType = transaction.isSubscrition && transaction.store != .promotional
+
+        self.title = Self.determineTitle(
+            entitlement: entitlement,
+            subscribedProduct: subscribedProduct,
+            transaction: transaction,
+            isSubscription: isSubscriptionType,
+            localization: localization
+        )
         self.subscriptionGroupID = subscribedProduct?.subscriptionGroupIdentifier
 
         self.customerInfoRequestedDate = customerInfoRequestedDate
@@ -281,7 +287,11 @@ struct PurchaseInformation {
             self.renewalPrice = transaction.determineRenewalPrice(numberFormatter: numberFormatter)
         }
 
-        self.pricePaid = transaction.paidPrice(numberFormatter: numberFormatter)
+        self.pricePaid = Self.determinePricePaid(
+            transaction: transaction,
+            subscribedProduct: subscribedProduct,
+            numberFormatter: numberFormatter
+        )
     }
 
     enum PricePaid: Equatable, Hashable {
@@ -367,7 +377,8 @@ extension PurchaseInformation {
         dateFormatter: DateFormatter = Self.defaultDateFormatter,
         numberFormatter: NumberFormatter = Self.defaultNumberFormatter,
         managementURL: URL?,
-        changePlan: CustomerCenterConfigData.ChangePlan?
+        changePlan: CustomerCenterConfigData.ChangePlan?,
+        localization: CustomerCenterConfigData.Localization
     ) async -> PurchaseInformation {
         let renewalPriceDetails = await Self.extractPriceDetailsFromRenewalInfo(
             forProduct: subscribedProduct,
@@ -383,7 +394,8 @@ extension PurchaseInformation {
             dateFormatter: dateFormatter,
             numberFormatter: numberFormatter,
             managementURL: managementURL,
-            changePlan: changePlan
+            changePlan: changePlan,
+            localization: localization
         )
     }
 
@@ -536,9 +548,79 @@ extension PurchaseInformation {
         return string
             .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: expirationDate))
     }
+
 }
 
 extension PurchaseInformation {
+
+    /// Determines the title for a purchase with improved logic for non-iOS purchases
+    /// Priority: StoreKit localizedTitle > Purchase type > Transaction productIdentifier
+    private static func determineTitle(
+        entitlement: EntitlementInfo?,
+        subscribedProduct: StoreProduct?,
+        transaction: Transaction,
+        isSubscription: Bool,
+        localization: CustomerCenterConfigData.Localization
+    ) -> String {
+        if transaction.store == .promotional, let entitlement = entitlement {
+            return entitlement.identifier
+        }
+
+        if let localizedTitle = subscribedProduct?.localizedTitle, !localizedTitle.isEmpty {
+            return localizedTitle
+        }
+
+        let purchaseTypeKey: CCLocalizedString = isSubscription ? .typeSubscription : .typeOneTimePurchase
+        return localization[purchaseTypeKey]
+    }
+
+    /// Determines the price paid using the transaction's price information
+    private static func determinePricePaid(
+        transaction: Transaction,
+        subscribedProduct: StoreProduct?,
+        numberFormatter: NumberFormatter
+    ) -> PricePaid {
+        // Promotional purchases are always free
+        if transaction.store == .promotional {
+            return .free
+        }
+
+        // Try transaction price first
+        let transactionPrice = transaction.paidPrice(numberFormatter: numberFormatter)
+        switch transactionPrice {
+        case .nonFree:
+            // Transaction has a non-zero price, use it
+            return transactionPrice
+        case .free:
+            // In sandbox, we don't know if the price is actually free or not (it's always 0)
+            // So we fall back to the product price.
+            // For non-sandbox with 0 price, it's genuinely free
+            if !transaction.isSandbox {
+                return .free
+            }
+            // Continue to product fallback for sandbox
+        case .unknown:
+            // Continue to product fallback for unknown transaction price
+            break
+        }
+
+        // Fallback to product price if available
+        if let subscribedProduct = subscribedProduct {
+            if subscribedProduct.price == 0 {
+                return .free
+            } else {
+                return .nonFree(subscribedProduct.localizedPriceString)
+            }
+        }
+
+        // Final fallback
+        return transactionPrice
+    }
+
+    /// Returns the localization key for the purchase type (subscription vs one-time purchase)
+    var purchaseTypeLocalizationKey: CCLocalizedString {
+        return isSubscription ? .typeSubscription : .typeOneTimePurchase
+    }
 
     var storeLocalizationKey: CCLocalizedString {
         switch store {
