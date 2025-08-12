@@ -203,10 +203,14 @@ struct SubscriptionDetailView: View {
                     .padding(.horizontal)
                     .padding(.vertical, 32)
                 } else {
-                    NoSubscriptionsCardView(localization: localization)
-                        .cornerRadius(10)
-                        .padding(.horizontal)
-                        .padding(.vertical, 32)
+                    NoSubscriptionsCardView(
+                        screenOffering: viewModel.screen.offering,
+                        localization: localization,
+                        purchasesProvider: viewModel.purchasesProvider
+                    )
+                    .cornerRadius(10)
+                    .padding(.horizontal)
+                    .padding(.vertical, 32)
                 }
 
                 if let virtualCurrencies = customerInfoViewModel.virtualCurrencies,
