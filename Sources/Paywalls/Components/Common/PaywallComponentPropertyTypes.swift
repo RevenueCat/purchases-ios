@@ -70,6 +70,13 @@ public extension PaywallComponent {
         public let height: Int
         public let original: URL
         public let lowRes: URL
+
+        // swiftlint:disable:next nesting
+        enum CodingKeys: String, CodingKey {
+            case width, height
+            case original = "url"
+            case lowRes = "url_low_res"
+        }
     }
 
     struct GradientPoint: Codable, Sendable, Hashable, Equatable {
