@@ -436,7 +436,7 @@ private extension Transaction {
             return nil
         }
 
-        guard isSubscrition else {
+        if unableToInferRenewalPrice {
             return nil
         }
 
@@ -469,6 +469,15 @@ private extension Transaction {
         guard let formattedPrice = numberFormatter.string(from: price.amount as NSNumber) else { return .unknown }
 
         return .nonFree(formattedPrice)
+    }
+
+    var unableToInferRenewalPrice: Bool {
+        if case let .subscription(_, willRenew, _, isTrial, _) = self.type {
+            return !willRenew || isTrial
+        }
+
+        // For non-subscriptions, always return true
+        return true
     }
 }
 
