@@ -15,8 +15,12 @@ def check_swift_files_in_project
     return
   end
   
-  # Get all added Swift files in this PR
-  added_swift_files = git.added_files.select { |file| file.end_with?('.swift') }
+  # Get all added Swift files in this PR that belong to relevant directories
+  added_swift_files = git.added_files.select do |file| 
+    file.end_with?('.swift') && 
+    (file.start_with?('Sources/') || file.start_with?('RevenueCatUI/') || file.start_with?('Tests/') ||
+     file.start_with?('./Sources/') || file.start_with?('./RevenueCatUI/') || file.start_with?('./Tests/'))
+  end
   
   return if added_swift_files.empty?
   
@@ -32,7 +36,7 @@ def check_swift_files_in_project
   unless missing_files.empty?
     message = "The following Swift files were added but don't appear to be included in RevenueCat.xcodeproj:\n"
     missing_files.each { |file| message += "• #{file}\n" }
-    message += "\nPlease make sure to add these files to the Xcode project, or verify they should be excluded (e.g., if they're in test directories that use a different project)."
+    message += "\nIf you've added new swift files using the tuist project, make sure those are added to the RevenueCat.xcodeproj, or double-check if they should be excluded."
     warn(message)
   end
 end
