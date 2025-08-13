@@ -43,11 +43,11 @@ extension Array<CustomerCenterConfigData.HelpPath> {
 
             if $0.type == .cancel {
                 // don't show cancel if there's no URL
-                if isNonAppStorePurchase && purchaseInformation.managementURL == nil {
-                     return false
+                if isNonAppStorePurchase {
+                    return purchaseInformation.managementURL != nil
                 }
 
-                return purchaseInformation.isSubscription
+                return purchaseInformation.isAppStoreRenewableSubscription
                     && !purchaseInformation.isCancelled
                     && purchaseInformation.renewalDate != nil
             }
@@ -62,9 +62,10 @@ extension Array<CustomerCenterConfigData.HelpPath> {
             let refundWindowIsValid = $0.refundWindowDuration?.isWithin(purchaseInformation) ?? true
 
             // can't change plans if it's not a subscription
-            if $0.type == .changePlans &&
-                (!purchaseInformation.isSubscription || purchaseInformation.isLifetime) {
-                return false
+            if $0.type == .changePlans {
+                if !purchaseInformation.isAppStoreRenewableSubscription || purchaseInformation.isLifetime {
+                    return false
+                }
             }
 
             return (!isRefund || isRefundEligible) && refundWindowIsValid
