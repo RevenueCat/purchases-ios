@@ -18,10 +18,12 @@ final class DeferredValueStoresTests: TestCase {
     private let subject = KeyedDeferredValueStore<String, Int>()
     var keyedWasCalled = false
 
-    func test_getOrPut_setsValue() async {
-        _ = await subject.getOrPut(Task { 1 }, forKey: "X")
-        let dictionary = await subject.deferred
-        XCTAssertNotNil(dictionary["X"])
+    func test_getOrPut_getAndSetsByKey() async {
+        let value = try? await subject.getOrPut(Task { 44 }, forKey: "X").value
+        let value2 = try? await subject.getOrPut(Task { 42 }, forKey: "Y").value
+
+        XCTAssertEqual(44, value)
+        XCTAssertEqual(42, value2)
     }
 
     func test_getOrPut_retrievesStoredValue_fromHashedValueStore() async {
