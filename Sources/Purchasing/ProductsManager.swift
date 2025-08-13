@@ -128,15 +128,17 @@ private extension ProductsManager {
                 ?? error?.localizedDescription
             let errorCode = error?.errorCode
             let storeKitErrorDescription = StoreKitErrorUtils.extractStoreKitErrorDescription(from: error)
-            diagnosticsTracker.trackProductsRequest(wasSuccessful: error == nil,
-                                                    storeKitVersion: storeKitVersion,
-                                                    errorMessage: errorMessage,
-                                                    errorCode: errorCode,
-                                                    storeKitErrorDescription: storeKitErrorDescription,
-                                                    storefront: self.systemInfo.storefront?.countryCode,
-                                                    requestedProductIds: requestedProductIds,
-                                                    notFoundProductIds: notFoundProductIds,
-                                                    responseTime: responseTime)
+            Task {
+                diagnosticsTracker.trackProductsRequest(wasSuccessful: error == nil,
+                                                        storeKitVersion: storeKitVersion,
+                                                        errorMessage: errorMessage,
+                                                        errorCode: errorCode,
+                                                        storeKitErrorDescription: storeKitErrorDescription,
+                                                        storefront: await self.systemInfo.storefront?.countryCode,
+                                                        requestedProductIds: requestedProductIds,
+                                                        notFoundProductIds: notFoundProductIds,
+                                                        responseTime: responseTime)
+            }
         }
     }
 
