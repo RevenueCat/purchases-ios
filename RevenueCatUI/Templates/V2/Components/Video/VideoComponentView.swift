@@ -46,12 +46,7 @@ struct VideoComponentView: View {
                 for: self.packageContext.package
             )
         ) { style in
-            let url = URL(string: style.videoID)!
-            CachingVideoPlayer(
-                url: url,
-                shouldAutoPlay: style.autoplay,
-                shouldShowControls: style.showControls
-            )
+            CachingVideoPlayer(style: style)
             // T_O_D_O: Determine the best way to manage the size and aspect ratio.
             //        .applySize(size: self.style.size)
             //        .applyShape(self.style.shape)
@@ -64,7 +59,6 @@ struct VideoComponentView: View {
     }
 }
 
-// Custom UIView for the video player
 class VideoPlayerViewUIView: UIView {
     var playerLayer: AVPlayerLayer?
     var queuePlayer: AVQueuePlayer?
@@ -79,19 +73,12 @@ class VideoPlayerViewUIView: UIView {
             layer.addSublayer(playerLayer)
         }
 
-        // Create the player item and looper for seamless looping
         let playerItem = AVPlayerItem(url: url)
         looper = AVPlayerLooper(player: queuePlayer!, templateItem: playerItem)
 
-        // Mute the video (common for backgrounds)
+        // TO DO: Figure out if we want this server driven Mute the video (common for backgrounds)
         queuePlayer?.isMuted = true
 
-        // to do: Autoplay based on input
-        queuePlayer?.play()
-
-        // to do: Determine aspect ratio based on input
-        playerLayer?.videoGravity = .resizeAspectFill
-        playerLayer?.videoGravity = .resizeAspect
     }
 
     required init?(coder: NSCoder) {
@@ -121,7 +108,6 @@ class VideoPlayerViewUIView: UIView {
     }
 }
 
-// SwiftUI wrapper for the UIView
 struct VideoPlayerView: UIViewRepresentable {
     let videoURL: URL
     var shouldAutoPlay = true
@@ -134,6 +120,7 @@ struct VideoPlayerView: UIViewRepresentable {
 
     func makeUIView(context: Context) -> VideoPlayerViewUIView {
         let view = VideoPlayerViewUIView(url: videoURL)
+
         view.playerLayer?.videoGravity = shouldFillParent ? .resizeAspectFill : .resizeAspect
 
         if shouldAutoPlay && !reduceMotion {
@@ -154,13 +141,9 @@ struct VideoPlayerView: UIViewRepresentable {
     func updateUIView(_ uiView: VideoPlayerViewUIView, context: Context) { }
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct CachingVideoPlayer: View {
-    let url: URL
-    var shouldAutoPlay = true
-    var shouldShowControls = false
-    // to do: rename this and make it the aspect ratio type instead
-    var shouldFillParent: Bool = false
-    var loopVideo: Bool = false
+    let style: VideoComponentStyle
 
     @State private var loadFromURL: URL?
 
@@ -169,18 +152,20 @@ struct CachingVideoPlayer: View {
             if let tempURL = loadFromURL {
                 VideoPlayerView(
                     videoURL: tempURL,
-                    shouldAutoPlay: shouldAutoPlay,
-                    shouldFillParent: shouldFillParent
+                    shouldAutoPlay: style.autoplay,
+                    shouldFillParent: style.contentMode == .fill,
+                    showControls: style.showControls,
+                    loopVideo: style.loop
                 )
             } else {
                 Color.clear
                     .onAppear {
-                        FileRepository.shared.getCachedURL(for: url) { result in
+                        FileRepository.shared.getCachedURL(for: style.url) { result in
                             switch result {
                             case .success(let cachedURL):
                                 self.loadFromURL = cachedURL
                             case .failure:
-                                self.loadFromURL = self.url // Fallback to manually load the video
+                                self.loadFromURL = self.style.url // Fallback to manually load the video
                             }
                         }
                     }
