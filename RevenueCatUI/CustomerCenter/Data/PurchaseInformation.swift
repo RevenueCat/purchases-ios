@@ -220,7 +220,7 @@ struct PurchaseInformation {
 
         self.customerInfoRequestedDate = customerInfoRequestedDate
         self.managementURL = managementURL
-        self.isSubscription = transaction.isSubscrition
+        self.isSubscription = transaction.isSubscription
             && transaction.store != .promotional
         self.productType = subscribedProduct?.productType
 
