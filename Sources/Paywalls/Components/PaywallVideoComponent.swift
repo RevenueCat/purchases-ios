@@ -17,6 +17,7 @@ extension PaywallComponent {
         public let videoID: String
         public let showControls: Bool
         public let autoplay: Bool
+        public let loop: Bool
         public let size: Size
         public let fitMode: FitMode
         public let maskShape: MaskShape?
@@ -33,6 +34,7 @@ extension PaywallComponent {
             videoID: String,
             showControls: Bool = false,
             autoplay: Bool = true,
+            loop: Bool = true,
             size: Size = .init(width: .fill, height: .fit),
             fitMode: FitMode = .fit,
             maskShape: MaskShape? = nil,
@@ -48,6 +50,7 @@ extension PaywallComponent {
             self.videoID = videoID
             self.showControls = showControls
             self.autoplay = autoplay
+            self.loop = loop
             self.size = size
             self.fitMode = fitMode
             self.maskShape = maskShape
@@ -65,6 +68,7 @@ extension PaywallComponent {
             hasher.combine(videoID)
             hasher.combine(showControls)
             hasher.combine(autoplay)
+            hasher.combine(loop)
             hasher.combine(size)
             hasher.combine(fitMode)
             hasher.combine(maskShape)
@@ -82,6 +86,7 @@ extension PaywallComponent {
                    lhs.videoID == rhs.videoID &&
                    lhs.showControls == rhs.showControls &&
                    lhs.autoplay == rhs.autoplay &&
+                   lhs.loop == rhs.loop &&
                    lhs.size == rhs.size &&
                    lhs.fitMode == rhs.fitMode &&
                    lhs.maskShape == rhs.maskShape &&
@@ -100,6 +105,7 @@ extension PaywallComponent {
         public let videoID: String?
         public let showControls: Bool?
         public let autoplay: Bool?
+        public let loop: Bool?
         public let size: Size?
         public let fitMode: FitMode?
         public let maskShape: MaskShape?
@@ -114,6 +120,7 @@ extension PaywallComponent {
             videoID: String? = nil,
             showControls: Bool? = nil,
             autoplay: Bool? = nil,
+            loop: Bool? = nil,
             size: Size? = nil,
             fitMode: FitMode? = nil,
             maskShape: MaskShape? = nil,
@@ -127,6 +134,7 @@ extension PaywallComponent {
             self.videoID = videoID
             self.showControls = showControls
             self.autoplay = autoplay
+            self.loop = loop
             self.size = size
             self.fitMode = fitMode
             self.maskShape = maskShape
@@ -142,6 +150,7 @@ extension PaywallComponent {
             hasher.combine(videoID)
             hasher.combine(showControls)
             hasher.combine(autoplay)
+            hasher.combine(loop)
             hasher.combine(size)
             hasher.combine(fitMode)
             hasher.combine(maskShape)
@@ -157,6 +166,7 @@ extension PaywallComponent {
                    lhs.videoID == rhs.videoID &&
                    lhs.showControls == rhs.showControls &&
                    lhs.autoplay == rhs.autoplay &&
+                   lhs.loop == rhs.loop &&
                    lhs.size == rhs.size &&
                    lhs.fitMode == rhs.fitMode &&
                    lhs.maskShape == rhs.maskShape &&

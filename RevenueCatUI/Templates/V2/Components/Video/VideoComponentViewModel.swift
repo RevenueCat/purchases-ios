@@ -55,6 +55,7 @@ class VideoComponentViewModel {
             videoID: partial?.videoID ?? self.component.videoID,
             showControls: partial?.showControls ?? self.component.showControls,
             autoplay: partial?.autoplay ?? self.component.autoplay,
+            loop: partial?.loop ?? self.component.loop,
             size: partial?.size ?? self.component.size,
             fitMode: partial?.fitMode ?? self.component.fitMode,
             maskShape: partial?.maskShape ?? self.component.maskShape,
@@ -85,6 +86,7 @@ struct LocalizedVideoPartial: PresentedPartial {
                 videoID: otherPartial?.videoID ?? basePartial?.videoID,
                 showControls: otherPartial?.showControls ?? basePartial?.showControls,
                 autoplay: otherPartial?.autoplay ?? basePartial?.autoplay,
+                loop: otherPartial?.loop ?? basePartial?.loop,
                 size: otherPartial?.size ?? basePartial?.size,
                 fitMode: otherPartial?.fitMode ?? basePartial?.fitMode,
                 maskShape: otherPartial?.maskShape ?? basePartial?.maskShape,
@@ -119,6 +121,7 @@ struct VideoComponentStyle {
     let videoID: String
     let showControls: Bool
     let autoplay: Bool
+    let loop: Bool
     let size: PaywallComponent.Size
     let shape: ShapeModifier.Shape?
     let colorOverlay: DisplayableColorScheme?
@@ -133,6 +136,7 @@ struct VideoComponentStyle {
         videoID: String,
         showControls: Bool,
         autoplay: Bool,
+        loop: Bool,
         size: PaywallComponent.Size,
         fitMode: PaywallComponent.FitMode,
         maskShape: PaywallComponent.MaskShape? = nil,
@@ -147,6 +151,7 @@ struct VideoComponentStyle {
         self.videoID = videoID
         self.showControls = showControls
         self.autoplay = autoplay
+        self.loop = loop
         self.size = size
         self.shape = maskShape?.shape
         self.colorOverlay = colorOverlay?.asDisplayable(uiConfigProvider: uiConfigProvider)
