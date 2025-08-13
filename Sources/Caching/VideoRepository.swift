@@ -25,7 +25,7 @@ class VideoRepository: @unchecked Sendable {
         cacheDirectory?.appendingPathComponent(url.lastPathComponent)
     }
 
-    init(networkService: SimpleNetworkService = URLSession.sharedAndWaitsForConnectivity) {
+    init(networkService: SimpleNetworkService = URLSession.shared) {
         self.networkService = networkService
     }
 
@@ -105,10 +105,4 @@ extension URLSession: @retroactive SimpleNetworkService {
         }
         return data
     }
-
-    static let sharedAndWaitsForConnectivity: URLSession = {
-        var configuration = URLSessionConfiguration.default
-        configuration.waitsForConnectivity = true
-        return URLSession(configuration: configuration)
-    }()
 }

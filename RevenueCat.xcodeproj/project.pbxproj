@@ -5165,7 +5165,6 @@
 		887A5FE72C1D037000E1A461 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
-				16E77CCD2E4B8C6700144B1B /* VideoRepository.swift */,
 				57F7DAAA2D9E906100855622 /* RuntimeUtils.swift */,
 				358DECA22D9BEF85003B1CC0 /* EmergeRenderingMode.swift */,
 				353FDC102CA447270055F328 /* StoreProduct+Extensions.swift */,
@@ -5677,6 +5676,7 @@
 		B3B5FBBD269E080A00104A0C /* Caching */ = {
 			isa = PBXGroup;
 			children = (
+				16E77CCD2E4B8C6700144B1B /* VideoRepository.swift */,
 				16E77CCB2E4B72C000144B1B /* KeyedDeferredValueStore.swift */,
 				B3B5FBC0269E17CE00104A0C /* DeviceCache.swift */,
 				B3B5FBBE269E081E00104A0C /* InMemoryCachedObject.swift */,
