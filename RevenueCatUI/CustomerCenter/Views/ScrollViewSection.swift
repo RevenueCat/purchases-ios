@@ -77,6 +77,25 @@ struct PurchasesInformationSection: View {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
+private struct CardStyleModifier: ViewModifier {
+    @Environment(\.colorScheme)
+    private var colorScheme
+
+    func body(content: Content) -> some View {
+        content
+            .padding()
+            .background(Color(colorScheme == .light
+                              ? UIColor.systemBackground
+                              : UIColor.secondarySystemBackground))
+            .cornerRadius(10)
+            .padding(.horizontal)
+    }
+}
+
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
 struct AccountDetailsSection: View {
 
     @Environment(\.colorScheme)
@@ -108,12 +127,7 @@ struct AccountDetailsSection: View {
                         content: Self.dateFormatter.string(from: originalPurchaseDate)
                     )
                 }
-                .padding()
-                .background(Color(colorScheme == .light
-                                  ? UIColor.systemBackground
-                                  : UIColor.secondarySystemBackground))
-                .cornerRadius(10)
-                .padding(.horizontal)
+                .modifier(CardStyleModifier())
             }
         }
 #endif
@@ -133,12 +147,7 @@ struct AccountDetailsSection: View {
 
                 userIdView
             }
-            .padding()
-            .background(Color(colorScheme == .light
-                              ? UIColor.systemBackground
-                              : UIColor.secondarySystemBackground))
-            .cornerRadius(10)
-            .padding(.horizontal)
+            .modifier(CardStyleModifier())
         }
     }
 
