@@ -184,6 +184,25 @@ import Foundation
         identifier: String,
         serverDescription: String,
         metadata: [String: Any] = [:],
+        availablePackages: [Package]
+    ) {
+        self.init(
+            identifier: identifier,
+            serverDescription: serverDescription,
+            metadata: metadata,
+            paywall: nil,
+            paywallComponents: nil,
+            availablePackages: availablePackages,
+            webCheckoutUrl: nil
+        )
+    }
+
+    /// Initialize an ``Offering`` given a list of ``Package``s.
+    @objc
+    public convenience init(
+        identifier: String,
+        serverDescription: String,
+        metadata: [String: Any] = [:],
         availablePackages: [Package],
         webCheckoutUrl: URL?
     ) {
@@ -195,6 +214,27 @@ import Foundation
             paywallComponents: nil,
             availablePackages: availablePackages,
             webCheckoutUrl: webCheckoutUrl
+        )
+    }
+
+    /// Initialize an ``Offering`` given a list of ``Package``s.
+    public convenience init(
+        identifier: String,
+        serverDescription: String,
+        metadata: [String: Any] = [:],
+        paywall: PaywallData? = nil,
+        paywallComponents: PaywallComponents? = nil,
+        availablePackages: [Package]
+    ) {
+        self.init(
+            identifier: identifier,
+            serverDescription: serverDescription,
+            metadata: metadata,
+            paywall: paywall,
+            paywallComponents: paywallComponents,
+            draftPaywallComponents: nil,
+            availablePackages: availablePackages,
+            webCheckoutUrl: nil
         )
     }
 
