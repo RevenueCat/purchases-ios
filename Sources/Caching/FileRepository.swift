@@ -6,11 +6,12 @@
 //
 
 import Foundation
-import RevenueCat
 
-/// A file cache that stores videos
-class FileRepository: @unchecked Sendable {
-    static let shared = FileRepository()
+/// A file cache that stores Files
+public class FileRepository: @unchecked Sendable {
+    // Will likely not stick with a shared instance, but it's helpful to get things working at the moment
+    /// A shared instance of the file repository
+    public static let shared = FileRepository()
 
     let networkService: SimpleNetworkService
 
@@ -29,13 +30,24 @@ class FileRepository: @unchecked Sendable {
         self.networkService = networkService
     }
 
+    /// Prefetch files at the given urls
+    /// - Parameter urls: An array of URL to fetch data from
+    public func prefetch(urls: [InputURL]) {
+        for url in urls {
+            getCachedURL(for: url) { _ in }
+        }
+    }
+
     /// Create and/or get the cached file url
     /// - Parameters:
     ///   - url: The url for the remote data to cache into a file
     ///   - completion: A callback that contains the cached object if cacheing was successful, nil if not
-    func getCachedURL(for url: URL, completion: @escaping (URL?) -> Void) {
+    public func getCachedURL(
+        for url: InputURL,
+        completion: @escaping (Result<URL, Swift.Error>) -> Void
+    ) {
         Task(priority: .high) { @Queue in
-            let value = try? await store.getOrPut(
+            let value = await store.getOrPut(
                 Task(priority: .high) { [weak self] in
                     guard let self, let cachedUrl = cacheUrl(for: url) else {
                         Logger.error("Failed to create cache directory for \(url.absoluteString)")
@@ -46,46 +58,55 @@ class FileRepository: @unchecked Sendable {
                         return cachedUrl
                     }
 
-                    let data = try await downloadVideo(from: url)
-                    try data.write(to: cachedUrl)
+                    let data = try await downloadFile(from: url)
+                    try saveCachedFile(url: cachedUrl, data: data)
                     return cachedUrl
                 },
                 forKey: url
-            ).value
+            ).result
 
             completion(value)
         }
     }
 
-    private func downloadVideo(from url: URL) async throws -> Data {
+    private func downloadFile(from url: URL) async throws(FileRepository.Error) -> Data {
         do {
             return try await URLSession.shared.data(from: url).0
         } catch {
-            let message = "Failed to download video from \(url.absoluteString): \(error)"
+            let message = "Failed to download File from \(url.absoluteString): \(error)"
             Logger.error(message)
-            throw Error.failedToFetchVideo(message)
+            throw Error.failedToFetchFileFromRemoteSource(message)
         }
     }
 
-    private func saveCachedVideo(url: URL, data: Data) throws {
+    private func saveCachedFile(url: URL, data: Data) throws(FileRepository.Error) {
         do {
             try data.write(to: url)
         } catch {
-            let message = "Failed to save video to \(url.absoluteString): \(error)"
+            let message = "Failed to save File to \(url.absoluteString): \(error)"
             Logger.error(message)
-            throw Error.failedToSaveCachedVideo(message)
+            throw Error.failedToSaveCachedFile(message)
         }
     }
 }
 
 extension FileRepository {
-    typealias InputURL = URL
-    typealias OutputURL = URL
+    /// The input URL is the URL that the repository will read remote data from
+    public typealias InputURL = URL
 
-    enum Error: Swift.Error {
+    /// The output URL is the local file's URL where the data can be found after caching is complete
+    public typealias OutputURL = URL
+
+    /// File repository error cases
+    public enum Error: Swift.Error {
+        /// Used when creating the folder on disk fails
         case failedToCreateCacheDirectory(String)
-        case failedToSaveCachedVideo(String)
-        case failedToFetchVideo(String)
+
+        /// Used when saving the file on disk fails
+        case failedToSaveCachedFile(String)
+
+        /// Used when fetching the data fails
+        case failedToFetchFileFromRemoteSource(String)
     }
 
     @globalActor actor Queue {

@@ -56,6 +56,10 @@ class VideoComponentViewModel {
             showControls: partial?.showControls ?? self.component.showControls,
             autoplay: partial?.autoplay ?? self.component.autoplay,
             loop: partial?.loop ?? self.component.loop,
+            url: partial?.source?.light.original ?? self.component.source.light.original,
+            lowResUrl: partial?.source?.light.lowRes ?? self.component.source.light.lowRes,
+            darkUrl: partial?.source?.dark?.original ?? self.component.source.dark?.original,
+            darkLowResUrl: partial?.source?.dark?.lowRes ?? self.component.source.dark?.lowRes,
             size: partial?.size ?? self.component.size,
             fitMode: partial?.fitMode ?? self.component.fitMode,
             maskShape: partial?.maskShape ?? self.component.maskShape,
@@ -82,6 +86,7 @@ struct LocalizedVideoPartial: PresentedPartial {
 
         return LocalizedVideoPartial(
             partial: PaywallComponent.PartialVideoComponent(
+                source: otherPartial?.source ?? basePartial?.source,
                 visible: otherPartial?.visible ?? basePartial?.visible,
                 videoID: otherPartial?.videoID ?? basePartial?.videoID,
                 showControls: otherPartial?.showControls ?? basePartial?.showControls,
@@ -122,6 +127,10 @@ struct VideoComponentStyle {
     let showControls: Bool
     let autoplay: Bool
     let loop: Bool
+    let url: URL
+    let lowResUrl: URL?
+    let darkUrl: URL?
+    let darkLowResUrl: URL?
     let size: PaywallComponent.Size
     let shape: ShapeModifier.Shape?
     let colorOverlay: DisplayableColorScheme?
@@ -137,6 +146,10 @@ struct VideoComponentStyle {
         showControls: Bool,
         autoplay: Bool,
         loop: Bool,
+        url: URL,
+        lowResUrl: URL,
+        darkUrl: URL? = nil,
+        darkLowResUrl: URL? = nil,
         size: PaywallComponent.Size,
         fitMode: PaywallComponent.FitMode,
         maskShape: PaywallComponent.MaskShape? = nil,
@@ -152,6 +165,10 @@ struct VideoComponentStyle {
         self.showControls = showControls
         self.autoplay = autoplay
         self.loop = loop
+        self.url = url
+        self.lowResUrl = lowResUrl
+        self.darkLowResUrl = darkLowResUrl
+        self.darkUrl = darkUrl
         self.size = size
         self.shape = maskShape?.shape
         self.colorOverlay = colorOverlay?.asDisplayable(uiConfigProvider: uiConfigProvider)

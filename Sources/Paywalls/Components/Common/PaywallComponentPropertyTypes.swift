@@ -45,6 +45,33 @@ public extension PaywallComponent {
         public let heicLowRes: URL
     }
 
+    struct ThemeVideoUrls: Codable, Sendable, Hashable, Equatable {
+
+        public init(light: VideoUrls, dark: VideoUrls? = nil) {
+            self.light = light
+            self.dark = dark
+        }
+
+        public let light: VideoUrls
+        public let dark: VideoUrls?
+
+    }
+
+    struct VideoUrls: Codable, Sendable, Hashable, Equatable {
+
+        public init(width: Int, height: Int, original: URL, lowRes: URL) {
+            self.width = width
+            self.height = height
+            self.original = original
+            self.lowRes = lowRes
+        }
+
+        public let width: Int
+        public let height: Int
+        public let original: URL
+        public let lowRes: URL
+    }
+
     struct GradientPoint: Codable, Sendable, Hashable, Equatable {
 
         public let color: ColorHex

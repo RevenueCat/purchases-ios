@@ -87,8 +87,9 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                 urls += carousel.pages.flatMap({ stack in
                     self.collectAllImageURLs(in: stack)
                 })
-            case .video:
-                break
+            case .video(let video):
+                // This should move somewhere else but we need to consolodate the image and font cacheing first
+                FileRepository.shared.prefetch(urls: video.source.videoUrls)
             }
         }
 
@@ -145,6 +146,19 @@ private extension PaywallComponent.ThemeImageUrls {
         return [
             self.light.heicLowRes,
             self.dark?.heicLowRes
+        ].compactMap { $0 }
+    }
+
+}
+
+private extension PaywallComponent.ThemeVideoUrls {
+
+    var videoUrls: [URL] {
+        [
+            self.light.original,
+            self.light.lowRes,
+            self.dark?.original,
+            self.dark?.lowRes
         ].compactMap { $0 }
     }
 

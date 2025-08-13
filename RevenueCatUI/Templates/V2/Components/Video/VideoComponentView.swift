@@ -175,8 +175,13 @@ struct CachingVideoPlayer: View {
             } else {
                 Color.clear
                     .onAppear {
-                        FileRepository.shared.getVideoURL(for: url) { url in
-                            self.loadFromURL = url
+                        FileRepository.shared.getCachedURL(for: url) { result in
+                            switch result {
+                            case .success(let cachedURL):
+                                self.loadFromURL = cachedURL
+                            case .failure:
+                                self.loadFromURL = self.url // Fallback to manually load the video
+                            }
                         }
                     }
             }

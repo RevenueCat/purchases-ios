@@ -10,9 +10,12 @@ import Foundation
 
 extension PaywallComponent {
 
+    // Need to add source with the urls
+
     public final class VideoComponent: PaywallComponentBase {
 
         let type: ComponentType
+        public let source: ThemeVideoUrls
         public let visible: Bool?
         public let videoID: String
         public let showControls: Bool
@@ -31,6 +34,7 @@ extension PaywallComponent {
 
         public init(
             visible: Bool? = nil,
+            source: ThemeVideoUrls,
             videoID: String,
             showControls: Bool = false,
             autoplay: Bool = true,
@@ -46,6 +50,7 @@ extension PaywallComponent {
             overrides: ComponentOverrides<PartialVideoComponent>? = nil
         ) {
             self.type = .video
+            self.source = source
             self.visible = visible
             self.videoID = videoID
             self.showControls = showControls
@@ -78,6 +83,7 @@ extension PaywallComponent {
             hasher.combine(border)
             hasher.combine(shadow)
             hasher.combine(overrides)
+            hasher.combine(source)
         }
 
         public static func == (lhs: VideoComponent, rhs: VideoComponent) -> Bool {
@@ -96,11 +102,13 @@ extension PaywallComponent {
                    lhs.border == rhs.border &&
                    lhs.shadow == rhs.shadow &&
                    lhs.overrides == rhs.overrides
+                   lhs.source == rhs.source
         }
     }
 
     public final class PartialVideoComponent: PaywallPartialComponent {
 
+        public let source: ThemeVideoUrls?
         public let visible: Bool?
         public let videoID: String?
         public let showControls: Bool?
@@ -116,6 +124,7 @@ extension PaywallComponent {
         public let shadow: Shadow?
 
         public init(
+            source: ThemeVideoUrls? = nil,
             visible: Bool? = true,
             videoID: String? = nil,
             showControls: Bool? = nil,
@@ -130,6 +139,7 @@ extension PaywallComponent {
             border: Border? = nil,
             shadow: Shadow? = nil
         ) {
+            self.source = source
             self.visible = visible
             self.videoID = videoID
             self.showControls = showControls
@@ -146,6 +156,7 @@ extension PaywallComponent {
         }
 
         public func hash(into hasher: inout Hasher) {
+            hasher.combine(source)
             hasher.combine(visible)
             hasher.combine(videoID)
             hasher.combine(showControls)
@@ -175,6 +186,7 @@ extension PaywallComponent {
                    lhs.margin == rhs.margin &&
                    lhs.border == rhs.border &&
                    lhs.shadow == rhs.shadow
+                   lhs.source == rhs.source
         }
     }
 }
