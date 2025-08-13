@@ -425,8 +425,7 @@ extension PurchaseInformation {
 private extension Transaction {
 
     func determineRenewalPrice(numberFormatter: NumberFormatter) -> PurchaseInformation.RenewalPrice? {
-        if self.productIdentifier.isPromotionalLifetime(store: self.store),
-           self.productIdentifier.isPromotional(store: self.store) {
+        if store == .promotional {
             return nil
         }
 
@@ -437,7 +436,7 @@ private extension Transaction {
             return nil
         }
 
-        if unableToInferRenewalPrice {
+        guard isSubscrition else {
             return nil
         }
 
@@ -461,8 +460,7 @@ private extension Transaction {
             return .free
         }
 
-        guard let price = self.price,
-              price.amount != 0 else {
+        guard let price = self.price, price.amount != 0 else {
             return .unknown
         }
 
@@ -472,32 +470,12 @@ private extension Transaction {
 
         return .nonFree(formattedPrice)
     }
-
-    var unableToInferRenewalPrice: Bool {
-        if case let .subscription(_, willRenew, _, isTrial, _) = self.type {
-            return !willRenew || isTrial
-        }
-
-        // For non-subscriptions, always return true
-        return true
-    }
 }
 
 private extension EntitlementInfo {
 
     var isCancelled: Bool {
         unsubscribeDetectedAt != nil && !willRenew
-    }
-}
-
-private extension String {
-
-    func isPromotionalLifetime(store: Store) -> Bool {
-        return self.hasSuffix("_lifetime") && store == .promotional
-    }
-
-    func isPromotional(store: Store) -> Bool {
-        return self.hasPrefix("rc_promo") && store == .promotional
     }
 }
 
@@ -580,29 +558,7 @@ extension PurchaseInformation {
         subscribedProduct: StoreProduct?,
         numberFormatter: NumberFormatter
     ) -> PricePaid {
-        // Promotional purchases are always free
-        if transaction.store == .promotional {
-            return .free
-        }
-
-        // Try transaction price first
-        let transactionPrice = transaction.paidPrice(numberFormatter: numberFormatter)
-        switch transactionPrice {
-        case .nonFree:
-            // Transaction has a non-zero price, use it
-            return transactionPrice
-        case .free:
-            // In sandbox, we don't know if the price is actually free or not (it's always 0)
-            // So we fall back to the product price.
-            // For non-sandbox with 0 price, it's genuinely free
-            if !transaction.isSandbox {
-                return .free
-            }
-        case .unknown:
-            return .unknown
-        }
-
-        return transactionPrice
+        return transaction.paidPrice(numberFormatter: numberFormatter)
     }
 
     /// Returns the localization key for the purchase type (subscription vs one-time purchase)
