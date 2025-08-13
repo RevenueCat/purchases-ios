@@ -16,18 +16,17 @@ public class FileRepository: @unchecked Sendable {
     let networkService: SimpleNetworkService
 
     private let store = KeyedDeferredValueStore<InputURL, OutputURL>()
-    private let fileManager = FileManager.default
+    private let fileManager: Caching
 
-    private lazy var cacheDirectory: URL? = fileManager
-        .urls(for: .cachesDirectory, in: .userDomainMask)
-        .first
+    private lazy var cacheDirectory: URL? = fileManager.cacheDirectory
 
     private func cacheUrl(for url: URL) -> URL? {
         cacheDirectory?.appendingPathComponent(url.lastPathComponent)
     }
 
-    init(networkService: SimpleNetworkService = URLSession.shared) {
+    init(networkService: SimpleNetworkService = URLSession.shared, fileManager: Caching = FileManager.default) {
         self.networkService = networkService
+        self.fileManager = fileManager
     }
 
     /// Prefetch files at the given urls
@@ -54,7 +53,7 @@ public class FileRepository: @unchecked Sendable {
                         throw Error.failedToCreateCacheDirectory(url.absoluteString)
                     }
 
-                    if fileManager.fileExists(atPath: cachedUrl.path) {
+                    if fileManager.cachedContentExists(at: cachedUrl.path) {
                         return cachedUrl
                     }
 
@@ -81,7 +80,7 @@ public class FileRepository: @unchecked Sendable {
 
     private func saveCachedFile(url: URL, data: Data) throws(FileRepository.Error) {
         do {
-            try data.write(to: url)
+            try fileManager.saveData(data, to: url)
         } catch {
             let message = "Failed to save File to \(url.absoluteString): \(error)"
             Logger.error(message)
@@ -125,5 +124,35 @@ extension URLSession: @retroactive SimpleNetworkService {
             throw URLError(.badServerResponse)
         }
         return data
+    }
+}
+
+/// An inteface representing a simple cache
+public protocol Caching {
+
+    /// A URL for a cache directory if one is present
+    var cacheDirectory: URL? { get }
+
+    /// Store data to a url
+    func saveData(_ data: Data, to url: URL) throws
+
+    /// Check if there is content cached at the given path
+    func cachedContentExists(at path: String) -> Bool
+}
+
+extension FileManager: Caching {
+    /// A URL for a cache directory if one is present
+    public var cacheDirectory: URL? {
+        urls(for: .cachesDirectory, in: .userDomainMask).first
+    }
+
+    /// Store data to a url
+    public func saveData(_ data: Data, to url: URL) throws {
+        try data.write(to: url)
+    }
+
+    /// Check if there is content cached at the given path
+    public func cachedContentExists(at path: String) -> Bool {
+        fileExists(atPath: path)
     }
 }
