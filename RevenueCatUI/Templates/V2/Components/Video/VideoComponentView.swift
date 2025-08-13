@@ -12,32 +12,55 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct VideoComponentView: View {
 
-    private let model: VideoComponentViewModel
-    private let style: VideoComponentStyle
+    private let viewModel: VideoComponentViewModel
+
+    @EnvironmentObject
+    private var packageContext: PackageContext
+
+    @EnvironmentObject
+    private var introOfferEligibilityContext: IntroOfferEligibilityContext
+
+    @EnvironmentObject
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
+
+    @Environment(\.componentViewState)
+    private var componentViewState
+
+    @Environment(\.screenCondition)
+    private var screenCondition
 
     init(
-        model: VideoComponentViewModel,
-        style: VideoComponentStyle
+        viewModel: VideoComponentViewModel
     ) {
-        self.model = model
-        self.style = style
+        self.viewModel = viewModel
     }
 
     var body: some View {
-        let url = URL(string: self.style.videoID)!
-        CachingVideoPlayer(
-            url: url,
-            shouldAutoPlay: self.style.autoplay,
-            shouldShowControls: self.style.showControls
-        )
-        // T_O_D_O: Determine the best way to manage the size and aspect ratio.
-        //        .applySize(size: self.style.size)
-        //        .applyShape(self.style.shape)
-        //        .applyColorOverlay(self.style.colorOverlay)
-        //        .applyPadding(self.style.padding)
-        //        .applyMargin(self.style.margin)
-        //        .applyBorder(self.style.border)
-        //        .applyShadow(self.style.shadow)
+        viewModel.styles(
+            state: componentViewState,
+            condition: screenCondition,
+            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
+                package: self.packageContext.package
+            ),
+            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                for: self.packageContext.package
+            )
+        ) { style in
+            let url = URL(string: style.videoID)!
+            CachingVideoPlayer(
+                url: url,
+                shouldAutoPlay: style.autoplay,
+                shouldShowControls: style.showControls
+            )
+            // T_O_D_O: Determine the best way to manage the size and aspect ratio.
+            //        .applySize(size: self.style.size)
+            //        .applyShape(self.style.shape)
+            //        .applyColorOverlay(self.style.colorOverlay)
+            //        .applyPadding(self.style.padding)
+            //        .applyMargin(self.style.margin)
+            //        .applyBorder(self.style.border)
+            //        .applyShadow(self.style.shadow)
+        }
     }
 }
 
