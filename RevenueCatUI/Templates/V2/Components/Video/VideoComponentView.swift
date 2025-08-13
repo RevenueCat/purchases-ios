@@ -73,10 +73,8 @@ class VideoPlayerViewUIView: UIView {
     required init(url: URL) {
         super.init(frame: .zero)
 
-        // Create the queue player and layer
         queuePlayer = AVQueuePlayer()
         playerLayer = AVPlayerLayer(player: queuePlayer)
-        playerLayer?.videoGravity = .resizeAspectFill
         if let playerLayer = playerLayer {
             layer.addSublayer(playerLayer)
         }
@@ -88,9 +86,11 @@ class VideoPlayerViewUIView: UIView {
         // Mute the video (common for backgrounds)
         queuePlayer?.isMuted = true
 
-        // Autoplay
+        // to do: Autoplay based on input
         queuePlayer?.play()
 
+        // to do: Determine aspect ratio based on input
+        playerLayer?.videoGravity = .resizeAspectFill
         playerLayer?.videoGravity = .resizeAspect
     }
 
@@ -113,10 +113,11 @@ class VideoPlayerViewUIView: UIView {
 
     deinit {
         looper?.disableLooping()
+        looper = nil
         queuePlayer?.pause()
         queuePlayer = nil
         playerLayer?.removeFromSuperlayer()
-        NotificationCenter.default.removeObserver(self)
+        playerLayer = nil
     }
 }
 
@@ -124,7 +125,11 @@ class VideoPlayerViewUIView: UIView {
 struct VideoPlayerView: UIViewRepresentable {
     let videoURL: URL
     var shouldAutoPlay = true
+    // to do: rename this and make it the aspect ratio type instead
     var shouldFillParent: Bool = false
+    // show controls
+    // loop
+
     @Environment(\.accessibilityReduceMotion) var reduceMotion
 
     func makeUIView(context: Context) -> VideoPlayerViewUIView {
@@ -136,13 +141,13 @@ struct VideoPlayerView: UIViewRepresentable {
         }
 
         // Need to determine how to show the controls in a way that doesn't add the big black background
+        // perhaps I do that in the caching video player, I just need to determine how to hook into the class… perhaps
+        // doing the old school delegate pattern is best here.
 
         return view
     }
 
-    func updateUIView(_ uiView: VideoPlayerViewUIView, context: Context) {
-        // No updates needed
-    }
+    func updateUIView(_ uiView: VideoPlayerViewUIView, context: Context) { }
 }
 
 struct CachingVideoPlayer: View {
