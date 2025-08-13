@@ -988,10 +988,10 @@ SWIFT_CLASS_NAMED("CustomerInfo")
 
 
 
+
 @interface RCCustomerInfo (SWIFT_EXTENSION(RevenueCat))
 @property (nonatomic, readonly, copy) NSDictionary<NSString *, id> * _Nonnull rawData;
 @end
-
 
 @class RCStoreTransaction;
 
@@ -3000,7 +3000,6 @@ SWIFT_CLASS_NAMED("PlatformInfo")
 @end
 
 
-
 SWIFT_AVAILABILITY(visionos,introduced=2.0) SWIFT_AVAILABILITY(watchos,introduced=11.0) SWIFT_AVAILABILITY(tvos,introduced=18.0) SWIFT_AVAILABILITY(macos,introduced=15.0) SWIFT_AVAILABILITY(ios,introduced=18.0)
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
 /// Returns the win-back offers that the subscriber is eligible for on the provided product.
@@ -3022,6 +3021,7 @@ SWIFT_AVAILABILITY(visionos,introduced=2.0) SWIFT_AVAILABILITY(watchos,introduce
 ///
 - (void)eligibleWinBackOffersForPackage:(RCPackage * _Nonnull)package completion:(void (^ _Nonnull)(NSArray<RCWinBackOffer *> * _Nullable, NSError * _Nullable))completion SWIFT_AVAILABILITY(visionos,introduced=2.0) SWIFT_AVAILABILITY(watchos,introduced=11.0) SWIFT_AVAILABILITY(tvos,introduced=18.0) SWIFT_AVAILABILITY(macos,introduced=15.0) SWIFT_AVAILABILITY(ios,introduced=18.0);
 @end
+
 
 
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
@@ -3173,7 +3173,6 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 @end
 
 
-
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
 /// Parses a deep link URL to verify it’s a RevenueCat web purchase redemption link
 /// seealso:
@@ -3186,6 +3185,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 - (void)offeringsWithCompletionHandler:(void (^ _Nonnull)(RCOfferings * _Nullable, NSError * _Nullable))completionHandler;
 @property (nonatomic, readonly, strong) RCOfferings * _Nullable cachedOfferings;
 @end
+
 
 
 
@@ -3948,13 +3948,13 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCDiscountType, "DiscountType", open) {
 
 
 
+
 @interface RCStoreProductDiscount (SWIFT_EXTENSION(RevenueCat))
 /// The discount price of the product in the local currency.
 /// note:
 /// this is meant for  Objective-C. For Swift, use <code>price</code> instead.
 @property (nonatomic, readonly, strong) NSDecimalNumber * _Nonnull price;
 @end
-
 
 
 
