@@ -43,7 +43,7 @@ public class FileRepository: @unchecked Sendable {
     ///   - completion: A callback that contains the cached object if cacheing was successful, nil if not
     public func getCachedURL(
         for url: InputURL,
-        completion: @escaping (Result<URL, Swift.Error>) -> Void
+        completion: @Sendable @escaping (Result<URL, Swift.Error>) -> Void
     ) {
         Task(priority: .high) { @Queue in
             let value = await store.getOrPut(
