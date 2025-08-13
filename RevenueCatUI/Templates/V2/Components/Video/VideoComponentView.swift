@@ -127,8 +127,8 @@ struct VideoPlayerView: UIViewRepresentable {
     var shouldAutoPlay = true
     // to do: rename this and make it the aspect ratio type instead
     var shouldFillParent: Bool = false
-    // show controls
-    // loop
+    var showControls: Bool = false
+    var loopVideo: Bool = false
 
     @Environment(\.accessibilityReduceMotion) var reduceMotion
 
@@ -138,6 +138,10 @@ struct VideoPlayerView: UIViewRepresentable {
 
         if shouldAutoPlay && !reduceMotion {
             view.queuePlayer?.play()
+        }
+
+        if !loopVideo {
+            view.looper?.disableLooping()
         }
 
         // Need to determine how to show the controls in a way that doesn't add the big black background
@@ -154,7 +158,9 @@ struct CachingVideoPlayer: View {
     let url: URL
     var shouldAutoPlay = true
     var shouldShowControls = false
+    // to do: rename this and make it the aspect ratio type instead
     var shouldFillParent: Bool = false
+    var loopVideo: Bool = false
 
     @State private var loadFromURL: URL?
 
