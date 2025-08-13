@@ -598,22 +598,10 @@ extension PurchaseInformation {
             if !transaction.isSandbox {
                 return .free
             }
-            // Continue to product fallback for sandbox
         case .unknown:
-            // Continue to product fallback for unknown transaction price
-            break
+            return .unknown
         }
 
-        // Fallback to product price if available
-        if let subscribedProduct = subscribedProduct {
-            if subscribedProduct.price == 0 {
-                return .free
-            } else {
-                return .nonFree(subscribedProduct.localizedPriceString)
-            }
-        }
-
-        // Final fallback
         return transactionPrice
     }
 

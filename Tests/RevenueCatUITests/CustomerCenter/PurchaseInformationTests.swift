@@ -1362,7 +1362,6 @@ final class PurchaseInformationTests: TestCase {
             localization: Self.mockLocalization
         )
 
-        // Should return unknown when transaction price is unavailable
         expect(purchaseInfo.pricePaid) == .unknown
     }
 
