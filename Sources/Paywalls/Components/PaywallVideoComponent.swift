@@ -101,7 +101,7 @@ extension PaywallComponent {
                    lhs.margin == rhs.margin &&
                    lhs.border == rhs.border &&
                    lhs.shadow == rhs.shadow &&
-                   lhs.overrides == rhs.overrides
+                   lhs.overrides == rhs.overrides &&
                    lhs.source == rhs.source
         }
     }
@@ -185,7 +185,7 @@ extension PaywallComponent {
                    lhs.padding == rhs.padding &&
                    lhs.margin == rhs.margin &&
                    lhs.border == rhs.border &&
-                   lhs.shadow == rhs.shadow
+                   lhs.shadow == rhs.shadow &&
                    lhs.source == rhs.source
         }
     }
