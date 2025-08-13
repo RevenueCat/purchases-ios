@@ -97,6 +97,29 @@ struct AccountDetailsSection: View {
     }
 
     var body: some View {
+#if DEBUG
+        debugBody
+#else
+        if let originalPurchaseDate {
+            ScrollViewSection(title: localization[.accountDetails]) {
+                VStack {
+                    CompatibilityLabeledContent(
+                        localization[.dateWhenAppWasPurchased],
+                        content: Self.dateFormatter.string(from: originalPurchaseDate)
+                    )
+                }
+                .padding()
+                .background(Color(colorScheme == .light
+                                  ? UIColor.systemBackground
+                                  : UIColor.secondarySystemBackground))
+                .cornerRadius(10)
+                .padding(.horizontal)
+            }
+        }
+#endif
+    }
+
+    var debugBody: some View {
         ScrollViewSection(title: localization[.accountDetails]) {
             VStack {
                 if let originalPurchaseDate {
@@ -108,18 +131,7 @@ struct AccountDetailsSection: View {
                     Divider()
                 }
 
-                CompatibilityLabeledContent(
-                    localization[.userId],
-                    content: originalAppUserId
-                )
-                .contextMenu {
-                    Button {
-                        UIPasteboard.general.string = originalAppUserId
-                    } label: {
-                        Text(localization[.copy])
-                        Image(systemName: "doc.on.clipboard")
-                    }
-                }
+                userIdView
             }
             .padding()
             .background(Color(colorScheme == .light
@@ -127,6 +139,21 @@ struct AccountDetailsSection: View {
                               : UIColor.secondarySystemBackground))
             .cornerRadius(10)
             .padding(.horizontal)
+        }
+    }
+
+    var userIdView: some View {
+        CompatibilityLabeledContent(
+            localization[.userId],
+            content: originalAppUserId
+        )
+        .contextMenu {
+            Button {
+                UIPasteboard.general.string = originalAppUserId
+            } label: {
+                Text(localization[.copy])
+                Image(systemName: "doc.on.clipboard")
+            }
         }
     }
 
