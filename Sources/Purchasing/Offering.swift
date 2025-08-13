@@ -14,6 +14,7 @@
 
 import Foundation
 
+// swiftlint:disable file_length
 /**
  * An offering is a collection of ``Package``s, and they let you control which products
  * are shown to users without requiring an app update.
@@ -26,7 +27,6 @@ import Foundation
  * - ``Offerings``
  * - ``Package``
  */
-// swiftlint:disable:next file_length
 @objc(RCOffering) public final class Offering: NSObject {
 
     /// Initialize a ``PaywallComponents``
