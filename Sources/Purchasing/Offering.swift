@@ -26,6 +26,7 @@ import Foundation
  * - ``Offerings``
  * - ``Package``
  */
+// swiftlint:disable:next file_length
 @objc(RCOffering) public final class Offering: NSObject {
 
     /// Initialize a ``PaywallComponents``
