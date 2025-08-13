@@ -99,7 +99,11 @@ extension URLSession: @retroactive SimpleNetworkService {
     /// - Parameter url: The URL to fetch data from
     /// - Returns: Data upon success
     public func data(from url: URL) async throws -> Data {
-        return try await URLSession.shared.data(from: url).0
+        let (data, response) = try await URLSession.shared.data(from: url)
+        if let httpURLResponse = response as? HTTPURLResponse, !(200..<300).contains(httpURLResponse.statusCode) {
+            throw URLError(.badServerResponse)
+        }
+        return data
     }
 
     static let sharedAndWaitsForConnectivity: URLSession = {
