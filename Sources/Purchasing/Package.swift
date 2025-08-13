@@ -124,6 +124,23 @@ import Foundation
         identifier: String,
         packageType: PackageType,
         storeProduct: StoreProduct,
+        offeringIdentifier: String
+    ) {
+        self.init(
+            identifier: identifier,
+            packageType: packageType,
+            storeProduct: storeProduct,
+            presentedOfferingContext: .init(offeringIdentifier: offeringIdentifier),
+            webCheckoutUrl: nil
+        )
+    }
+
+    /// Initialize a ``Package``.
+    @objc
+    public convenience init(
+        identifier: String,
+        packageType: PackageType,
+        storeProduct: StoreProduct,
         offeringIdentifier: String,
         webCheckoutUrl: URL?
     ) {
@@ -134,6 +151,23 @@ import Foundation
             presentedOfferingContext: .init(offeringIdentifier: offeringIdentifier),
             webCheckoutUrl: webCheckoutUrl
         )
+    }
+
+    /// Initialize a ``Package``.
+    @objc
+    public init(
+        identifier: String,
+        packageType: PackageType,
+        storeProduct: StoreProduct,
+        presentedOfferingContext: PresentedOfferingContext
+    ) {
+        self.identifier = identifier
+        self.packageType = packageType
+        self.storeProduct = storeProduct
+        self.presentedOfferingContext = presentedOfferingContext
+        self.webCheckoutUrl = nil
+
+        super.init()
     }
 
     /// Initialize a ``Package``.
