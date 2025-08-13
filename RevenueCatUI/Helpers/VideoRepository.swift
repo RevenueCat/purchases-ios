@@ -12,6 +12,8 @@ import RevenueCat
 class VideoRepository: @unchecked Sendable {
     static let shared = VideoRepository()
 
+    let networkService: SimpleNetworkService
+
     private let store = KeyedDeferredValueStore<InputURL, OutputURL>()
     private let fileManager = FileManager.default
 
@@ -21,6 +23,10 @@ class VideoRepository: @unchecked Sendable {
 
     private func cacheUrl(for url: URL) -> URL? {
         cacheDirectory?.appendingPathComponent(url.lastPathComponent)
+    }
+
+    init(networkService: SimpleNetworkService = URLSession.shared) {
+        self.networkService = networkService
     }
 
     /// Create and/or get the cached video url
@@ -85,5 +91,14 @@ extension VideoRepository {
     @globalActor actor Queue {
         private init() { }
         static let shared = Queue()
+    }
+}
+
+extension URLSession: @retroactive SimpleNetworkService {
+    /// Fetch data from the network
+    /// - Parameter url: The URL to fetch data from
+    /// - Returns: Data upon success
+    public func data(from url: URL) async throws -> Data {
+        return try await URLSession.shared.data(from: url).0
     }
 }
