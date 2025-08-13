@@ -1,5 +1,5 @@
 //
-//  VideoRepository.swift
+//  FileRepository.swift
 //
 //
 //  Created by Jacob Rakidzich on 8/11/25.
@@ -9,8 +9,8 @@ import Foundation
 import RevenueCat
 
 /// A file cache that stores videos
-class VideoRepository: @unchecked Sendable {
-    static let shared = VideoRepository()
+class FileRepository: @unchecked Sendable {
+    static let shared = FileRepository()
 
     let networkService: SimpleNetworkService
 
@@ -29,11 +29,11 @@ class VideoRepository: @unchecked Sendable {
         self.networkService = networkService
     }
 
-    /// Create and/or get the cached video url
+    /// Create and/or get the cached file url
     /// - Parameters:
-    ///   - url: The url for video to cache
-    ///   - completion: A callback that contains the cached video if cacheing was successful, nil if not
-    func getVideoURL(for url: URL, completion: @escaping (URL?) -> Void) {
+    ///   - url: The url for the remote data to cache into a file
+    ///   - completion: A callback that contains the cached object if cacheing was successful, nil if not
+    func getCachedURL(for url: URL, completion: @escaping (URL?) -> Void) {
         Task(priority: .high) { @Queue in
             let value = try? await store.getOrPut(
                 Task(priority: .high) { [weak self] in
@@ -78,7 +78,7 @@ class VideoRepository: @unchecked Sendable {
     }
 }
 
-extension VideoRepository {
+extension FileRepository {
     typealias InputURL = URL
     typealias OutputURL = URL
 
