@@ -151,6 +151,8 @@ import Foundation
             case storeUnknownStore = "unknown_store"
             case storePaddle = "store_paddle"
             case storeWeb = "store_web"
+            case typeSubscription = "type_subscription"
+            case typeOneTimePurchase = "type_one_time_purchase"
             case debugHeaderTitle = "Debug"
             case seeAllVirtualCurrencies = "see_all_virtual_currencies"
             case virtualCurrencyBalancesScreenHeader = "virtual_currency_balances_screen_header"
@@ -363,6 +365,10 @@ import Foundation
                     return "Paddle"
                 case .storeWeb:
                     return "Web"
+                case .typeSubscription:
+                    return "Subscription"
+                case .typeOneTimePurchase:
+                    return "One-time Purchase"
                 case .debugHeaderTitle:
                     return "Debug"
                 case .virtualCurrencyBalancesScreenHeader:

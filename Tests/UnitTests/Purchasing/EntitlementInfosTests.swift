@@ -83,7 +83,7 @@ class EntitlementInfosTests: TestCase {
         try verifyEntitlementActive(true, entitlement: "lifetime_cat")
         try verifyRenewal(false, entitlement: "lifetime_cat")
         try verifyPeriodType(PeriodType.normal, expectedEntitlement: "lifetime_cat")
-        try verifyStore(Store.appStore, expectedEntitlement: "lifetime_cat")
+        try verifyStore(.appStore, expectedEntitlement: "lifetime_cat")
         try verifySandbox(false, expectedEntitlement: "lifetime_cat")
         try verifyProduct(expectedIdentifier: "lifetime",
                           expectedLatestPurchaseDate: Self.formatter.date(from: "2019-07-26T23:45:40Z"),

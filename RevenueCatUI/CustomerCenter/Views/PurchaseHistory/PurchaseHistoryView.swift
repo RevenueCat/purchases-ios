@@ -139,7 +139,8 @@ struct PurchaseHistoryView_Previews: PreviewProvider {
                     nonSubscriptions: [
                         .consumable
                     ],
-                    purchasesProvider: mock
+                    purchasesProvider: mock,
+                    localization: CustomerCenterConfigData.mock().localization
                 )
             )
             .navigationBarTitleDisplayMode(.inline)

@@ -19,12 +19,14 @@ extension PurchaseInformation {
     @available(macOS, unavailable)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
+    // swiftlint:disable:next function_parameter_count
     static func from(
         transaction: RevenueCatUI.Transaction,
         customerInfo: CustomerInfo,
         purchasesProvider: CustomerCenterPurchasesType,
         changePlans: [CustomerCenterConfigData.ChangePlan],
-        customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
+        customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType,
+        localization: CustomerCenterConfigData.Localization
     ) async -> PurchaseInformation {
         let entitlement = customerInfo.entitlements.all.values
             .first(where: { $0.productIdentifier == transaction.productIdentifier })
@@ -44,7 +46,8 @@ extension PurchaseInformation {
                     customerCenterStoreKitUtilities: customerCenterStoreKitUtilities,
                     customerInfoRequestedDate: customerInfo.requestDate,
                     managementURL: transaction.managementURL,
-                    changePlan: changePlan
+                    changePlan: changePlan,
+                    localization: localization
                 )
             } else {
                 Logger.warning(
@@ -56,7 +59,8 @@ extension PurchaseInformation {
                     transaction: transaction,
                     customerInfoRequestedDate: customerInfo.requestDate,
                     managementURL: transaction.managementURL,
-                    changePlan: nil
+                    changePlan: nil,
+                    localization: localization
                 )
             }
         }
@@ -67,7 +71,8 @@ extension PurchaseInformation {
             entitlement: entitlement,
             transaction: transaction,
             customerInfoRequestedDate: customerInfo.requestDate,
-            managementURL: transaction.managementURL
+            managementURL: transaction.managementURL,
+            localization: localization
         )
     }
 }

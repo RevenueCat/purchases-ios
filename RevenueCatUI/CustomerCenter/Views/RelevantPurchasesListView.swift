@@ -99,7 +99,10 @@ struct RelevantPurchasesListView: View {
                 usesNavigationStack: navigationOptions.usesNavigationStack
             ) {
                 PurchaseHistoryView(
-                    viewModel: PurchaseHistoryViewModel(purchasesProvider: self.viewModel.purchasesProvider)
+                    viewModel: PurchaseHistoryViewModel(
+                        purchasesProvider: self.viewModel.purchasesProvider,
+                        localization: localization
+                    )
                 )
                 .environment(\.appearance, appearance)
                 .environment(\.localization, localization)
