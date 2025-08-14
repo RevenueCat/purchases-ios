@@ -38,7 +38,11 @@ let project = Project(
                 .revenueCat,
                 .revenueCatUI,
             ],
-            settings: .appTarget
+            settings: .appTarget(including: [
+                    "APPLICATION_EXTENSION_API_ONLY": "YES",
+                    "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "$(inherited) ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION"
+                ]
+            )
         )
     ],
 )
