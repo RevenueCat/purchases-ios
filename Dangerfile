@@ -1,4 +1,4 @@
-danger.import_dangerfile(github: 'RevenueCat/Dangerfile')
+danger.import_dangerfile(github: 'RevenueCat/Dangerfile', branch: 'feat/auto-label')
 
 # Check for submodules
 submodules = `git submodule status`.strip

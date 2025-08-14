@@ -17,7 +17,7 @@ let project = Project(
             name: "testCustomEntitlementsComputation",
             destinations: allDestinations,
             product: .app,
-            bundleId: "com.revenuecat.sampleapp2",
+            bundleId: "com.revenuecat.sampleapp",
             deploymentTargets: .iOS("15.0"),
             infoPlist: .extendingDefault(
                 with: [
