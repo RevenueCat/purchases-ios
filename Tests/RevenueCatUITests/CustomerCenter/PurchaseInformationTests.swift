@@ -1125,7 +1125,7 @@ final class PurchaseInformationTests: TestCase {
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
-            isSubscrition: true
+            isSubscription: true
         )
 
         let purchaseInfo = PurchaseInformation(
@@ -1178,7 +1178,7 @@ final class PurchaseInformationTests: TestCase {
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
-            isSubscrition: true
+            isSubscription: true
         )
 
         let purchaseInfo = PurchaseInformation(
@@ -1227,7 +1227,7 @@ final class PurchaseInformationTests: TestCase {
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
-            isSubscrition: true
+            isSubscription: true
         )
 
         let purchaseInfo = PurchaseInformation(
@@ -1263,7 +1263,7 @@ final class PurchaseInformationTests: TestCase {
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
-            isSubscrition: true
+            isSubscription: true
         )
 
         let purchaseInfo = PurchaseInformation(
@@ -1299,7 +1299,7 @@ final class PurchaseInformationTests: TestCase {
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: true, // Sandbox purchase
-            isSubscrition: true
+            isSubscription: true
         )
 
         let purchaseInfo = PurchaseInformation(
@@ -1348,7 +1348,7 @@ final class PurchaseInformationTests: TestCase {
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
-            isSubscrition: true
+            isSubscription: true
         )
 
         let purchaseInfo = PurchaseInformation(
@@ -1383,7 +1383,7 @@ final class PurchaseInformationTests: TestCase {
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
-            isSubscrition: true
+            isSubscription: true
         )
 
         let purchaseInfo = PurchaseInformation(
@@ -1419,7 +1419,7 @@ final class PurchaseInformationTests: TestCase {
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
-            isSubscrition: true
+            isSubscription: true
         )
 
         let purchaseInfo = PurchaseInformation(
@@ -1459,7 +1459,7 @@ final class PurchaseInformationTests: TestCase {
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
-            isSubscrition: true
+            isSubscription: true
         )
 
         let subscriptionInfo = PurchaseInformation(
@@ -1473,7 +1473,6 @@ final class PurchaseInformationTests: TestCase {
             localization: Self.mockLocalization
         )
 
-        expect(subscriptionInfo.purchaseTypeLocalizationKey) == CCLocalizedString.typeSubscription
         expect(subscriptionInfo.isSubscription) == true
 
         // Test one-time purchase type
@@ -1488,7 +1487,7 @@ final class PurchaseInformationTests: TestCase {
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
-            isSubscrition: false
+            isSubscription: false
         )
 
         let oneTimeInfo = PurchaseInformation(
@@ -1502,7 +1501,6 @@ final class PurchaseInformationTests: TestCase {
             localization: Self.mockLocalization
         )
 
-        expect(oneTimeInfo.purchaseTypeLocalizationKey) == CCLocalizedString.typeOneTimePurchase
         expect(oneTimeInfo.isSubscription) == false
         expect(oneTimeInfo.title) == "One-time Purchase"
     }
