@@ -11,7 +11,7 @@
 //
 //  Created by Jacob Zivan Rakidzich on 8/12/25.
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import XCTest
 
 final class DeferredValueStoresTests: TestCase {

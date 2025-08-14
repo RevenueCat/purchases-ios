@@ -20,12 +20,6 @@ import Foundation
     private let store = KeyedDeferredValueStore<InputURL, OutputURL>()
     private let fileManager: Caching
 
-    private lazy var cacheDirectory: URL? = fileManager.cacheDirectory
-
-    private func cacheUrl(for url: URL) -> URL? {
-        cacheDirectory?.appendingPathComponent(url.lastPathComponent)
-    }
-
     /// Create a file repository
     /// - Parameters:
     ///   - networkService: A service capable of fetching data from a URL
@@ -54,7 +48,7 @@ import Foundation
     @_spi(Internal) public func getCachedURL(for url: InputURL) async throws -> OutputURL {
         try await store.getOrPut(
             Task(priority: .high) { [weak self] in
-                guard let self, let cachedUrl = cacheUrl(for: url) else {
+                guard let self, let cachedUrl = self.fileManager.generateLocalFilesystemURL(forRemoteURL: url) else {
                     Logger.error("Failed to create cache directory for \(url.absoluteString)")
                     throw Error.failedToCreateCacheDirectory(url.absoluteString)
                 }

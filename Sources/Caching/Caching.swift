@@ -16,19 +16,22 @@ import Foundation
 /// An inteface representing a simple cache
 @_spi(Internal) public protocol Caching {
 
-    /// A URL for a cache directory if one is present
-    var cacheDirectory: URL? { get }
-
     /// Store data to a url
     func saveData(_ data: Data, to url: URL) throws
 
     /// Check if there is content cached at the given path
     func cachedContentExists(at path: String) -> Bool
+
+    /// Load data from url
+    func loadFile(at url: URL) throws -> Data
+
+    /// Generate a url for a location on disk based in the input URL
+    func generateLocalFilesystemURL(forRemoteURL url: URL) -> URL?
 }
 
 @_spi(Internal) extension FileManager: Caching {
     /// A URL for a cache directory if one is present
-    public var cacheDirectory: URL? {
+    private var cacheDirectory: URL? {
         urls(for: .cachesDirectory, in: .userDomainMask).first
     }
 
@@ -40,5 +43,15 @@ import Foundation
     /// Check if there is content cached at the given path
     public func cachedContentExists(at path: String) -> Bool {
         fileExists(atPath: path)
+    }
+
+    /// Generate a url for a location on disk based in the input URL
+    public func generateLocalFilesystemURL(forRemoteURL url: URL) -> URL? {
+        cacheDirectory?.appendingPathComponent(url.pathComponents.joined(separator: "/"))
+    }
+
+    /// Load data from url
+    public func loadFile(at url: URL) throws -> Data {
+        try Data(contentsOf: url)
     }
 }

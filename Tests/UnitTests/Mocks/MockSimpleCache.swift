@@ -12,7 +12,7 @@
 //  Created by Jacob Zivan Rakidzich on 8/13/25.
 
 import Foundation
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 class MockSimpleCache: Caching, @unchecked Sendable {
     var cacheDirectory: URL?
@@ -61,9 +61,17 @@ class MockSimpleCache: Caching, @unchecked Sendable {
         }
     }
 
+    func loadFile(at url: URL) throws -> Data {
+        assert(false, "to do: implement later when used")
+        return Data()
+    }
+
+    func generateLocalFilesystemURL(forRemoteURL url: URL) -> URL? {
+        cacheDirectory?.appendingPathComponent(url.lastPathComponent)
+    }
+
     struct SaveData: Equatable {
         var data: Data
         var url: URL
     }
-
 }
