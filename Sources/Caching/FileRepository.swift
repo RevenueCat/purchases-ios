@@ -36,7 +36,7 @@ import Foundation
     /// - Parameter urls: An array of URL to fetch data from
     @_spi(Internal) public func prefetch(urls: [InputURL]) {
         for url in urls {
-            Task(priority: .high) { [weak self] in
+            Task { [weak self] in
                 try await self?.getCachedURL(for: url)
             }
         }
@@ -47,7 +47,7 @@ import Foundation
     ///   - url: The url for the remote data to cache into a file
     @_spi(Internal) public func getCachedURL(for url: InputURL) async throws -> OutputURL {
         try await store.getOrPut(
-            Task(priority: .high) { [weak self] in
+            Task { [weak self] in
                 guard let self, let cachedUrl = self.fileManager.generateLocalFilesystemURL(forRemoteURL: url) else {
                     Logger.error(Strings.fileRepository.failedToCreateCacheDirectory(url).description)
                     throw Error.failedToCreateCacheDirectory(url.absoluteString)
