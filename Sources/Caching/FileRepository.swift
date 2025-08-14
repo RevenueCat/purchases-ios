@@ -49,7 +49,7 @@ import Foundation
         try await store.getOrPut(
             Task(priority: .high) { [weak self] in
                 guard let self, let cachedUrl = self.fileManager.generateLocalFilesystemURL(forRemoteURL: url) else {
-                    Logger.error("Failed to create cache directory for \(url.absoluteString)")
+                    Logger.error(Strings.fileRepository.failedToCreateCacheDirectory(url).description)
                     throw Error.failedToCreateCacheDirectory(url.absoluteString)
                 }
 
@@ -69,7 +69,7 @@ import Foundation
         do {
             return try await networkService.data(from: url)
         } catch {
-            let message = "Failed to download File from \(url.absoluteString): \(error)"
+            let message = Strings.fileRepository.failedToFetchFileFromRemoteSource(url, error).description
             Logger.error(message)
             throw Error.failedToFetchFileFromRemoteSource(message)
         }
@@ -79,7 +79,7 @@ import Foundation
         do {
             try fileManager.saveData(data, to: url)
         } catch {
-            let message = "Failed to save File to \(url.absoluteString): \(error)"
+            let message = Strings.fileRepository.failedToSaveCachedFile(url, error).description
             Logger.error(message)
             throw Error.failedToSaveCachedFile(message)
         }
