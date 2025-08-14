@@ -53,7 +53,7 @@ import Foundation
                     throw Error.failedToCreateCacheDirectory(url.absoluteString)
                 }
 
-                if fileManager.cachedContentExists(at: cachedUrl.path) {
+                if fileManager.cachedContentExists(at: cachedUrl) {
                     return cachedUrl
                 }
 

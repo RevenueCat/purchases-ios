@@ -21,7 +21,7 @@ class MockSimpleCache: LargeItemCacheType, @unchecked Sendable {
     var saveDataInvocations: [SaveData] = []
     var saveDataResponses: [Result<SaveData, Error>] = []
 
-    var cachedContentExistsInvocations: [String] = []
+    var cachedContentExistsInvocations: [URL] = []
     var cachedContentExistsResponses: [Bool] = []
 
     init(cacheDirectory: URL? = URL(string: "data:sample")) {
@@ -41,10 +41,10 @@ class MockSimpleCache: LargeItemCacheType, @unchecked Sendable {
         }
     }
 
-    func cachedContentExists(at path: String) -> Bool {
+    func cachedContentExists(at url: URL) -> Bool {
         lock.withLock {
             let count = cachedContentExistsInvocations.count
-            cachedContentExistsInvocations.append(path)
+            cachedContentExistsInvocations.append(url)
             return cachedContentExistsResponses[count]
         }
     }

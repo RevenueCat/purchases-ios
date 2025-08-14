@@ -19,8 +19,8 @@ import Foundation
     /// Store data to a url
     func saveData(_ data: Data, to url: URL) throws
 
-    /// Check if there is content cached at the given path
-    func cachedContentExists(at path: String) -> Bool
+    /// Check if there is content cached at the url
+    func cachedContentExists(at url: URL) -> Bool
 
     /// Load data from url
     func loadFile(at url: URL) throws -> Data
@@ -41,8 +41,8 @@ import Foundation
     }
 
     /// Check if there is content cached at the given path
-    public func cachedContentExists(at path: String) -> Bool {
-        fileExists(atPath: path)
+    public func cachedContentExists(at url: URL) -> Bool {
+        (try? loadFile(at: url)) != nil
     }
 
     /// Generate a url for a location on disk based in the input URL
