@@ -26,7 +26,7 @@ import Foundation
     /// - Parameter url: The URL to fetch data from
     /// - Returns: Data upon success
     public func data(from url: URL) async throws -> Data {
-        let (data, response) = try await URLSession.shared.data(from: url)
+        let (data, response) = try await data(from: url)
         if let httpURLResponse = response as? HTTPURLResponse, !(200..<300).contains(httpURLResponse.statusCode) {
             throw URLError(.badServerResponse)
         }
