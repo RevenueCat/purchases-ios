@@ -144,6 +144,7 @@ struct VideoPlayerView: UIViewRepresentable {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct CachingVideoPlayer: View {
     let style: VideoComponentStyle
+    let repository = FileRepository()
 
     @State private var loadFromURL: URL?
 
@@ -159,14 +160,11 @@ struct CachingVideoPlayer: View {
                 )
             } else {
                 Color.clear
-                    .onAppear {
-                        FileRepository.shared.getCachedURL(for: style.url) { result in
-                            switch result {
-                            case .success(let cachedURL):
-                                self.loadFromURL = cachedURL
-                            case .failure:
-                                self.loadFromURL = self.style.url // Fallback to manually load the video
-                            }
+                    .task {
+                        if let cachedURL = try? await repository.getCachedURL(for: style.url) {
+                            self.loadFromURL = cachedURL
+                        } else {
+                            self.loadFromURL = self.style.url // Fallback to manually load the video
                         }
                     }
             }

@@ -89,7 +89,7 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                 })
             case .video(let video):
                 // This should move somewhere else but we need to consolodate the image and font cacheing first
-                FileRepository.shared.prefetch(urls: video.source.videoUrls)
+                FileRepository().prefetch(urls: video.source.videoUrls)
             }
         }
 

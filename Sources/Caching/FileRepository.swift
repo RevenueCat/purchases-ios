@@ -9,10 +9,6 @@ import Foundation
 
 /// A file cache that stores Files
 public class FileRepository: @unchecked Sendable {
-    // Will likely not stick with a shared instance, but it's helpful to get things working at the moment
-    /// A shared instance of the file repository
-    public static let shared = FileRepository()
-
     let networkService: SimpleNetworkService
 
     private let store = KeyedDeferredValueStore<InputURL, OutputURL>()
@@ -24,7 +20,11 @@ public class FileRepository: @unchecked Sendable {
         cacheDirectory?.appendingPathComponent(url.lastPathComponent)
     }
 
-    init(networkService: SimpleNetworkService = URLSession.shared, fileManager: Caching = FileManager.default) {
+    /// Create a file repository
+    /// - Parameters:
+    ///   - networkService: A service capable of fetching data from a URL
+    ///   - fileManager: A service capable of storing data and returning the URL where that stored data exists
+    public init(networkService: SimpleNetworkService = URLSession.shared, fileManager: Caching = FileManager.default) {
         self.networkService = networkService
         self.fileManager = fileManager
     }
@@ -33,44 +33,38 @@ public class FileRepository: @unchecked Sendable {
     /// - Parameter urls: An array of URL to fetch data from
     public func prefetch(urls: [InputURL]) {
         for url in urls {
-            getCachedURL(for: url) { _ in }
+            Task(priority: .high) {
+                try await getCachedURL(for: url)
+            }
         }
     }
 
     /// Create and/or get the cached file url
     /// - Parameters:
     ///   - url: The url for the remote data to cache into a file
-    ///   - completion: A callback that contains the cached object if cacheing was successful, nil if not
-    public func getCachedURL(
-        for url: InputURL,
-        completion: @Sendable @escaping (Result<URL, Swift.Error>) -> Void
-    ) {
-        Task(priority: .high) { @Queue in
-            let value = await store.getOrPut(
-                Task(priority: .high) { [weak self] in
-                    guard let self, let cachedUrl = cacheUrl(for: url) else {
-                        Logger.error("Failed to create cache directory for \(url.absoluteString)")
-                        throw Error.failedToCreateCacheDirectory(url.absoluteString)
-                    }
+    public func getCachedURL(for url: InputURL) async throws -> OutputURL {
+        try await store.getOrPut(
+            Task(priority: .high) { [weak self] in
+                guard let self, let cachedUrl = cacheUrl(for: url) else {
+                    Logger.error("Failed to create cache directory for \(url.absoluteString)")
+                    throw Error.failedToCreateCacheDirectory(url.absoluteString)
+                }
 
-                    if fileManager.cachedContentExists(at: cachedUrl.path) {
-                        return cachedUrl
-                    }
-
-                    let data = try await downloadFile(from: url)
-                    try saveCachedFile(url: cachedUrl, data: data)
+                if fileManager.cachedContentExists(at: cachedUrl.path) {
                     return cachedUrl
-                },
-                forKey: url
-            ).result
+                }
 
-            completion(value)
-        }
+                let data = try await downloadFile(from: url)
+                try saveCachedFile(url: cachedUrl, data: data)
+                return cachedUrl
+            },
+            forKey: url
+        ).value
     }
 
     private func downloadFile(from url: URL) async throws(FileRepository.Error) -> Data {
         do {
-            return try await URLSession.shared.data(from: url).0
+            return try await networkService.data(from: url)
         } catch {
             let message = "Failed to download File from \(url.absoluteString): \(error)"
             Logger.error(message)
@@ -106,53 +100,5 @@ extension FileRepository {
 
         /// Used when fetching the data fails
         case failedToFetchFileFromRemoteSource(String)
-    }
-
-    @globalActor actor Queue {
-        private init() { }
-        static let shared = Queue()
-    }
-}
-
-extension URLSession: @retroactive SimpleNetworkService {
-    /// Fetch data from the network
-    /// - Parameter url: The URL to fetch data from
-    /// - Returns: Data upon success
-    public func data(from url: URL) async throws -> Data {
-        let (data, response) = try await URLSession.shared.data(from: url)
-        if let httpURLResponse = response as? HTTPURLResponse, !(200..<300).contains(httpURLResponse.statusCode) {
-            throw URLError(.badServerResponse)
-        }
-        return data
-    }
-}
-
-/// An inteface representing a simple cache
-public protocol Caching {
-
-    /// A URL for a cache directory if one is present
-    var cacheDirectory: URL? { get }
-
-    /// Store data to a url
-    func saveData(_ data: Data, to url: URL) throws
-
-    /// Check if there is content cached at the given path
-    func cachedContentExists(at path: String) -> Bool
-}
-
-extension FileManager: Caching {
-    /// A URL for a cache directory if one is present
-    public var cacheDirectory: URL? {
-        urls(for: .cachesDirectory, in: .userDomainMask).first
-    }
-
-    /// Store data to a url
-    public func saveData(_ data: Data, to url: URL) throws {
-        try data.write(to: url)
-    }
-
-    /// Check if there is content cached at the given path
-    public func cachedContentExists(at path: String) -> Bool {
-        fileExists(atPath: path)
     }
 }

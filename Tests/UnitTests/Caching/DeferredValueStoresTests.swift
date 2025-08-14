@@ -107,11 +107,5 @@ final class DeferredValueStoresTests: TestCase {
         }
     }
 
-    func yield() async {
-        await Task(priority: .low) {
-            await Task.yield()
-        }.value
-    }
-
     struct SampleError: Error { }
 }

@@ -20,3 +20,16 @@ public protocol SimpleNetworkService {
     /// - Returns: Data upon success
     func data(from url: URL) async throws -> Data
 }
+
+extension URLSession: SimpleNetworkService {
+    /// Fetch data from the network
+    /// - Parameter url: The URL to fetch data from
+    /// - Returns: Data upon success
+    public func data(from url: URL) async throws -> Data {
+        let (data, response) = try await URLSession.shared.data(from: url)
+        if let httpURLResponse = response as? HTTPURLResponse, !(200..<300).contains(httpURLResponse.statusCode) {
+            throw URLError(.badServerResponse)
+        }
+        return data
+    }
+}
