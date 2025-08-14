@@ -14,14 +14,14 @@
 import Foundation
 
 /// A protocol representing a simple network service
-public protocol SimpleNetworkService {
+@_spi(Internal) public protocol SimpleNetworkService {
     /// Fetch data from the network
     /// - Parameter url: The URL to fetch data from
     /// - Returns: Data upon success
     func data(from url: URL) async throws -> Data
 }
 
-extension URLSession: SimpleNetworkService {
+@_spi(Internal) extension URLSession: SimpleNetworkService {
     /// Fetch data from the network
     /// - Parameter url: The URL to fetch data from
     /// - Returns: Data upon success

@@ -14,7 +14,7 @@
 import Foundation
 
 /// An inteface representing a simple cache
-public protocol Caching {
+@_spi(Internal) public protocol Caching {
 
     /// A URL for a cache directory if one is present
     var cacheDirectory: URL? { get }
@@ -26,7 +26,7 @@ public protocol Caching {
     func cachedContentExists(at path: String) -> Bool
 }
 
-extension FileManager: Caching {
+@_spi(Internal) extension FileManager: Caching {
     /// A URL for a cache directory if one is present
     public var cacheDirectory: URL? {
         urls(for: .cachesDirectory, in: .userDomainMask).first

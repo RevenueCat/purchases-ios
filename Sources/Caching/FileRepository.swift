@@ -14,7 +14,7 @@
 import Foundation
 
 /// A file cache
-public class FileRepository: @unchecked Sendable {
+@_spi(Internal) public class FileRepository: @unchecked Sendable {
     let networkService: SimpleNetworkService
 
     private let store = KeyedDeferredValueStore<InputURL, OutputURL>()
@@ -30,14 +30,17 @@ public class FileRepository: @unchecked Sendable {
     /// - Parameters:
     ///   - networkService: A service capable of fetching data from a URL
     ///   - fileManager: A service capable of storing data and returning the URL where that stored data exists
-    public init(networkService: SimpleNetworkService = URLSession.shared, fileManager: Caching = FileManager.default) {
+    @_spi(Internal) public init(
+        networkService: SimpleNetworkService = URLSession.shared,
+        fileManager: Caching = FileManager.default
+    ) {
         self.networkService = networkService
         self.fileManager = fileManager
     }
 
     /// Prefetch files at the given urls
     /// - Parameter urls: An array of URL to fetch data from
-    public func prefetch(urls: [InputURL]) {
+    @_spi(Internal) public func prefetch(urls: [InputURL]) {
         for url in urls {
             Task(priority: .high) { [weak self] in
                 try await self?.getCachedURL(for: url)
@@ -48,7 +51,7 @@ public class FileRepository: @unchecked Sendable {
     /// Create and/or get the cached file url
     /// - Parameters:
     ///   - url: The url for the remote data to cache into a file
-    public func getCachedURL(for url: InputURL) async throws -> OutputURL {
+    @_spi(Internal) public func getCachedURL(for url: InputURL) async throws -> OutputURL {
         try await store.getOrPut(
             Task(priority: .high) { [weak self] in
                 guard let self, let cachedUrl = cacheUrl(for: url) else {
@@ -91,13 +94,13 @@ public class FileRepository: @unchecked Sendable {
 
 extension FileRepository {
     /// The input URL is the URL that the repository will read remote data from
-    public typealias InputURL = URL
+    @_spi(Internal) public typealias InputURL = URL
 
     /// The output URL is the local file's URL where the data can be found after caching is complete
-    public typealias OutputURL = URL
+    @_spi(Internal) public typealias OutputURL = URL
 
     /// File repository error cases
-    public enum Error: Swift.Error {
+    @_spi(Internal) public enum Error: Swift.Error {
         /// Used when creating the folder on disk fails
         case failedToCreateCacheDirectory(String)
 

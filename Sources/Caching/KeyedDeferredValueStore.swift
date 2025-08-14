@@ -14,10 +14,10 @@
 import Foundation
 
 /// Some Task in which the value is Sendable and it can result in an error
-public typealias AnyTask<T: Sendable> = Task<T, Error>
+@_spi(Internal) public typealias AnyTask<T: Sendable> = Task<T, Error>
 
 /// Holds onto ``AnyTask`` objects by key, autoclearing on failure
-public actor KeyedDeferredValueStore<H: Hashable, T: Sendable> {
+@_spi(Internal) public actor KeyedDeferredValueStore<H: Hashable, T: Sendable> {
     var deferred: [H: AnyTask<T>] = [:]
 
     /// Sets the task in the cache if one is not found
@@ -25,7 +25,10 @@ public actor KeyedDeferredValueStore<H: Hashable, T: Sendable> {
     ///   - task: The function that should execute if one is not found
     ///   - key: The key to look up the result by
     /// - Returns: The stored task
-    public func getOrPut(_ task: @escaping @Sendable @autoclosure () -> AnyTask<T>, forKey key: H) -> AnyTask<T> {
+    @_spi(Internal) public func getOrPut(
+        _ task: @escaping @Sendable @autoclosure () -> AnyTask<T>,
+        forKey key: H
+    ) -> AnyTask<T> {
         guard let result = self.deferred[key] else {
             let wrapped: AnyTask<T> = self.forgettingFailure(task, forKey: key)
             self.deferred[key] = wrapped
@@ -38,18 +41,24 @@ public actor KeyedDeferredValueStore<H: Hashable, T: Sendable> {
     /// - Parameter task: The new function to store
     /// - Parameter key: The key to look up the result by
     /// - Returns: The stored task
-    public func replaceValue(_ task: @escaping @Sendable @autoclosure () -> AnyTask<T>, forKey key: H) -> AnyTask<T> {
+    @_spi(Internal) public func replaceValue(
+        _ task: @escaping @Sendable @autoclosure () -> AnyTask<T>,
+        forKey key: H
+    ) -> AnyTask<T> {
         let result = self.forgettingFailure(task, forKey: key)
         self.deferred[key] = result
         return result
     }
 
     /// Removes all cached tasks
-    public func clear() {
+    @_spi(Internal) public func clear() {
         self.deferred = [:]
     }
 
-    private func forgettingFailure(_ task: @escaping @Sendable () -> AnyTask<T>, forKey key: H) -> AnyTask<T> {
+    private func forgettingFailure(
+        _ task: @escaping @Sendable () -> AnyTask<T>,
+        forKey key: H
+    ) -> AnyTask<T> {
         Task {
             do {
                 return try await task().value
@@ -61,5 +70,5 @@ public actor KeyedDeferredValueStore<H: Hashable, T: Sendable> {
     }
 
     /// Create a KeyedDeferredValueStore
-    public init() {}
+    @_spi(Internal) public init() {}
 }
