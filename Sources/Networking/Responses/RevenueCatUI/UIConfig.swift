@@ -14,7 +14,7 @@
 
 import Foundation
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 public struct UIConfig: Codable, Equatable, Sendable {
 

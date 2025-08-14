@@ -16,7 +16,7 @@
 import RevenueCat
 import SwiftUI
 
-#if !os(watchOS) && !os(tvOS) && !os(macOS)
+#if !os(watchOS) && !os(tvOS)
 
 /// A closure used for notifying of changes to the current tier.
 /// Useful when creating custom paywalls using `.paywallFooter`.
@@ -42,7 +42,7 @@ extension View {
     @available(iOS, deprecated: 1, renamed: "paywallFooter(condensed:fonts:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
     @available(tvOS, deprecated: 1, renamed: "paywallFooter(condensed:fonts:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
     @available(watchOS, deprecated: 1, renamed: "paywallFooter(condensed:fonts:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
-    @available(macOS, deprecated: 1, renamed: "paywallFooter(condensed:fonts:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
+    @available(macOS, unavailable, message: "Legacy paywalls are unavailable in macOS")
     @available(macCatalyst, deprecated: 1, renamed: "paywallFooter(condensed:fonts:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
     // swiftlint:enable line_length
     public func paywallFooter(
@@ -84,7 +84,7 @@ extension View {
     @available(iOS, deprecated: 1, renamed: "originalTemplatePaywallFooter(condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
     @available(tvOS, deprecated: 1, renamed: "originalTemplatePaywallFooter(condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
     @available(watchOS, deprecated: 1, renamed: "originalTemplatePaywallFooter(condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
-    @available(macOS, deprecated: 1, renamed: "originalTemplatePaywallFooter(condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
+    @available(macOS, unavailable, message: "Legacy paywalls are unavailable in macOS")
     @available(macCatalyst, deprecated: 1, renamed: "originalTemplatePaywallFooter(condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
     // swiftlint:enable line_length
     public func paywallFooter(
@@ -126,6 +126,7 @@ extension View {
     ///
     /// ### Related Articles
     /// [Documentation](https://rev.cat/paywalls)
+    @available(macOS, unavailable, message: "Legacy paywalls are unavailable in macOS")
     public func originalTemplatePaywallFooter(
         condensed: Bool = false,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
@@ -171,7 +172,7 @@ extension View {
     @available(iOS, deprecated: 1, renamed: "paywallFooter(offering:condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
     @available(tvOS, deprecated: 1, renamed: "paywallFooter(offering:condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
     @available(watchOS, deprecated: 1, renamed: "paywallFooter(offering:condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
-    @available(macOS, deprecated: 1, renamed: "paywallFooter(offering:condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
+    @available(macOS, unavailable, message: "Legacy paywalls are unavailable in macOS")
     @available(macCatalyst, deprecated: 1, renamed: "paywallFooter(offering:condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
     // swiftlint:enable line_length
     @_disfavoredOverload
@@ -220,7 +221,7 @@ extension View {
     @available(iOS, deprecated: 1, renamed: "originalTemplatePaywallFooter(offering:condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
     @available(tvOS, deprecated: 1, renamed: "originalTemplatePaywallFooter(offering:condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
     @available(watchOS, deprecated: 1, renamed: "originalTemplatePaywallFooter(offering:condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
-    @available(macOS, deprecated: 1, renamed: "originalTemplatePaywallFooter(offering:condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
+    @available(macOS, unavailable, message: "Legacy paywalls are unavailable in macOS")
     @available(macCatalyst, deprecated: 1, renamed: "originalTemplatePaywallFooter(offering:condensed:fonts:myAppPurchaseLogic:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
     // swiftlint:enable line_length
     public func paywallFooter(
@@ -264,6 +265,7 @@ extension View {
     ///
     /// ### Related Articles
     /// [Documentation](https://rev.cat/paywalls)
+    @available(macOS, unavailable, message: "Legacy paywalls are unavailable in macOS")
     public func originalTemplatePaywallFooter(
         offering: Offering,
         condensed: Bool = false,
@@ -296,6 +298,7 @@ extension View {
         )
     }
 
+    @available(macOS, unavailable, message: "Legacy paywalls are unavailable in macOS")
     func originalTemplatePaywallFooter(
         offering: Offering?,
         customerInfo: CustomerInfo?,
