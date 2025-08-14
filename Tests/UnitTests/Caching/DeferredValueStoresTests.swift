@@ -16,7 +16,6 @@ import XCTest
 
 final class DeferredValueStoresTests: TestCase {
     private let subject = KeyedDeferredValueStore<String, Int>()
-    var keyedWasCalled = false
 
     func test_getOrPut_getAndSetsByKey() async {
         let value = try? await subject.getOrPut(Task { 44 }, forKey: "X").value
@@ -27,11 +26,11 @@ final class DeferredValueStoresTests: TestCase {
     }
 
     func test_getOrPut_retrievesStoredValue_fromHashedValueStore() async {
+        let spy = Spy()
         _ = try? await subject.getOrPut(Task { 44 }, forKey: "X").value
-        var keyedWasCalled = false
         _ = await subject.getOrPut(
-            Task { @MainActor in
-                keyedWasCalled = true
+            Task {
+                await spy.increment()
                 return 1
             },
             forKey: "X"
@@ -39,15 +38,16 @@ final class DeferredValueStoresTests: TestCase {
         let value = try? await subject.deferred["X"]?.value
 
         XCTAssertEqual(44, value)
-        XCTAssertFalse(keyedWasCalled)
+
+        let wasCalled = await spy.wasInvoked
+        XCTAssertFalse(wasCalled)
     }
 
     func test_getOrPut_protectsAgainstMultipleInvocations() async {
-        var callCount = 0
-
+        let spy = Spy()
         _ = try? await subject.getOrPut(
-            Task { @MainActor in
-                callCount += 1
+            Task {
+                await spy.increment()
                 return 44
             },
             forKey: "X"
@@ -57,16 +57,17 @@ final class DeferredValueStoresTests: TestCase {
             let value = try? await subject.deferred["X"]?.value
 
             XCTAssertEqual(44, value)
+            let callCount = await spy.count
             XCTAssertEqual(callCount, 1)
         }
     }
 
     func test_replaceValue_hashedValueStore() async {
         _ = try? await subject.getOrPut(Task { 44 }, forKey: "X").value
-        var keyedWasCalled = false
+        let spy = Spy()
         _ = await subject.replaceValue(
-            Task { @MainActor in
-                keyedWasCalled = true
+            Task {
+                await spy.increment()
                 return 1
             },
             forKey: "X"
@@ -74,7 +75,8 @@ final class DeferredValueStoresTests: TestCase {
         let value = try? await subject.deferred["X"]?.value
 
         XCTAssertEqual(1, value)
-        XCTAssertTrue(keyedWasCalled)
+        let wasCalled = await spy.wasInvoked
+        XCTAssertTrue(wasCalled)
     }
 
     func test_clear_removesValues() async throws {
@@ -108,4 +110,18 @@ final class DeferredValueStoresTests: TestCase {
     }
 
     struct SampleError: Error { }
+}
+
+actor Spy {
+    var count = 0
+    var wasInvoked: Bool = false
+
+    init() { }
+
+    func increment() async {
+        if count == 0 {
+            wasInvoked = true
+        }
+        count += 1
+    }
 }
