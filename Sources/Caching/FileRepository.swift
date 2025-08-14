@@ -7,7 +7,7 @@
 
 import Foundation
 
-/// A file cache that stores Files
+/// A file cache
 public class FileRepository: @unchecked Sendable {
     let networkService: SimpleNetworkService
 
