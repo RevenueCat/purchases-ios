@@ -1,9 +1,15 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  VideoComponentView.swift
 //
-//
-//  Created by Jacob Rakidzich on 8/11/25.
-//
+//  Created by Jacob Zivan Rakidzich on 8/11/25.
 
 import AVKit
 import RevenueCat
