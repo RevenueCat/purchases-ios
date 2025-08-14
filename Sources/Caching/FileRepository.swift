@@ -33,8 +33,8 @@ public class FileRepository: @unchecked Sendable {
     /// - Parameter urls: An array of URL to fetch data from
     public func prefetch(urls: [InputURL]) {
         for url in urls {
-            Task(priority: .high) {
-                try await getCachedURL(for: url)
+            Task(priority: .high) { [weak self] in
+                try await self?.getCachedURL(for: url)
             }
         }
     }
