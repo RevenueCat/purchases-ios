@@ -14,7 +14,7 @@
 import XCTest
 
 extension XCTestCase {
-    /// Create an object, track it for memory leaks, and assign use it in your test function
+    /// Create an object, track it for memory leaks, and use it in your test function
     /// - Parameters:
     ///   - file: The file the test is run in
     ///   - line: The line the test is calling this function from

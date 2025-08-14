@@ -18,7 +18,7 @@ extension XCTestCase {
 
     /// A helper method that will reliably cause the operating system to pick up another asynchronous task
     ///
-    /// > Important: This works by awaiting alow priority task yielding to a higher priority task.
+    /// > Important: This works by awaiting a low priority task yielding to a higher priority task.
     /// > This will not be reliable when attempting to pick up low priority tasks.
     func yield() async {
         await Task(priority: .low) {

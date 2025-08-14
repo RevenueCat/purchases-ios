@@ -68,7 +68,7 @@ public class FileRepository: @unchecked Sendable {
         ).value
     }
 
-    private func downloadFile(from url: URL) async throws(FileRepository.Error) -> Data {
+    private func downloadFile(from url: URL) async throws -> Data {
         do {
             return try await networkService.data(from: url)
         } catch {
@@ -78,7 +78,7 @@ public class FileRepository: @unchecked Sendable {
         }
     }
 
-    private func saveCachedFile(url: URL, data: Data) throws(FileRepository.Error) {
+    private func saveCachedFile(url: URL, data: Data) throws {
         do {
             try fileManager.saveData(data, to: url)
         } catch {
