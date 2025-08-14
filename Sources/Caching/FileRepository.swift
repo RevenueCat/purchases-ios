@@ -14,19 +14,19 @@
 import Foundation
 
 /// A file cache
-@_spi(Internal) public class FileRepository: @unchecked Sendable {
-    let networkService: SimpleNetworkService
+@_spi(Internal) public class FileRepository: FileRepositoryType, @unchecked Sendable {
+    let networkService: SimpleNetworkServiceType
 
     private let store = KeyedDeferredValueStore<InputURL, OutputURL>()
-    private let fileManager: Caching
+    private let fileManager: LargeItemCacheType
 
     /// Create a file repository
     /// - Parameters:
     ///   - networkService: A service capable of fetching data from a URL
     ///   - fileManager: A service capable of storing data and returning the URL where that stored data exists
     @_spi(Internal) public init(
-        networkService: SimpleNetworkService = URLSession.shared,
-        fileManager: Caching = FileManager.default
+        networkService: SimpleNetworkServiceType = URLSession.shared,
+        fileManager: LargeItemCacheType = FileManager.default
     ) {
         self.networkService = networkService
         self.fileManager = fileManager
@@ -86,12 +86,26 @@ import Foundation
     }
 }
 
-extension FileRepository {
-    /// The input URL is the URL that the repository will read remote data from
-    @_spi(Internal) public typealias InputURL = URL
+/// A file cache
+@_spi(Internal) public protocol FileRepositoryType {
 
-    /// The output URL is the local file's URL where the data can be found after caching is complete
-    @_spi(Internal) public typealias OutputURL = URL
+    /// Prefetch files at the given urls
+    /// - Parameter urls: An array of URL to fetch data from
+    func prefetch(urls: [InputURL])
+
+    /// Create and/or get the cached file url
+    /// - Parameters:
+    ///   - url: The url for the remote data to cache into a file
+    func getCachedURL(for url: InputURL) async throws -> OutputURL
+}
+
+/// The input URL is the URL that the repository will read remote data from
+@_spi(Internal) public typealias InputURL = URL
+
+/// The output URL is the local file's URL where the data can be found after caching is complete
+@_spi(Internal) public typealias OutputURL = URL
+
+extension FileRepository {
 
     /// File repository error cases
     @_spi(Internal) public enum Error: Swift.Error {

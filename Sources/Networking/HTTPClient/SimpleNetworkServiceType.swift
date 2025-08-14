@@ -7,21 +7,21 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  SimpleNetworkService.swift
+//  SimpleNetworkServiceType.swift
 //
 //  Created by Jacob Zivan Rakidzich on 8/12/25.
 
 import Foundation
 
 /// A protocol representing a simple network service
-@_spi(Internal) public protocol SimpleNetworkService {
+@_spi(Internal) public protocol SimpleNetworkServiceType {
     /// Fetch data from the network
     /// - Parameter url: The URL to fetch data from
     /// - Returns: Data upon success
     func data(from url: URL) async throws -> Data
 }
 
-@_spi(Internal) extension URLSession: SimpleNetworkService {
+@_spi(Internal) extension URLSession: SimpleNetworkServiceType {
     /// Fetch data from the network
     /// - Parameter url: The URL to fetch data from
     /// - Returns: Data upon success

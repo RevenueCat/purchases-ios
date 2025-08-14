@@ -14,7 +14,7 @@
 import Foundation
 @_spi(Internal) @testable import RevenueCat
 
-class MockSimpleNetworkService: SimpleNetworkService, @unchecked Sendable {
+class MockSimpleNetworkService: SimpleNetworkServiceType, @unchecked Sendable {
     let lock = NSLock()
     var invocations: [URL] = []
     var stubResponses: [Result<Data, Error>] = []

@@ -14,7 +14,7 @@
 import Foundation
 @_spi(Internal) @testable import RevenueCat
 
-class MockSimpleCache: Caching, @unchecked Sendable {
+class MockSimpleCache: LargeItemCacheType, @unchecked Sendable {
     var cacheDirectory: URL?
     let lock = NSLock()
 
