@@ -211,9 +211,7 @@ struct PurchaseInformation {
         let isSubscriptionType = transaction.isSubscrition && transaction.store != .promotional
 
         self.title = Self.determineTitle(
-            entitlement: entitlement,
             subscribedProduct: subscribedProduct,
-            transaction: transaction,
             isSubscription: isSubscriptionType,
             localization: localization
         )
@@ -287,11 +285,7 @@ struct PurchaseInformation {
             self.renewalPrice = transaction.determineRenewalPrice(numberFormatter: numberFormatter)
         }
 
-        self.pricePaid = Self.determinePricePaid(
-            transaction: transaction,
-            subscribedProduct: subscribedProduct,
-            numberFormatter: numberFormatter
-        )
+        self.pricePaid = transaction.paidPrice(numberFormatter: numberFormatter)
     }
 
     enum PricePaid: Equatable, Hashable {
@@ -540,39 +534,17 @@ extension PurchaseInformation {
 
 extension PurchaseInformation {
 
-    /// Determines the title for a purchase with improved logic for non-iOS purchases
-    /// Priority: StoreKit localizedTitle > Purchase type > Transaction productIdentifier
     private static func determineTitle(
-        entitlement: EntitlementInfo?,
         subscribedProduct: StoreProduct?,
-        transaction: Transaction,
         isSubscription: Bool,
         localization: CustomerCenterConfigData.Localization
     ) -> String {
-        if transaction.store == .promotional, let entitlement = entitlement {
-            return entitlement.identifier
-        }
-
         if let localizedTitle = subscribedProduct?.localizedTitle, !localizedTitle.isEmpty {
             return localizedTitle
         }
 
         let purchaseTypeKey: CCLocalizedString = isSubscription ? .typeSubscription : .typeOneTimePurchase
         return localization[purchaseTypeKey]
-    }
-
-    /// Determines the price paid using the transaction's price information
-    private static func determinePricePaid(
-        transaction: Transaction,
-        subscribedProduct: StoreProduct?,
-        numberFormatter: NumberFormatter
-    ) -> PricePaid {
-        return transaction.paidPrice(numberFormatter: numberFormatter)
-    }
-
-    /// Returns the localization key for the purchase type (subscription vs one-time purchase)
-    var purchaseTypeLocalizationKey: CCLocalizedString {
-        return isSubscription ? .typeSubscription : .typeOneTimePurchase
     }
 
     var storeLocalizationKey: CCLocalizedString {
