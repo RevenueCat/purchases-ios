@@ -95,7 +95,7 @@ final class PurchaseInformationTests: TestCase {
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
-            isSubscrition: false
+            isSubscription: false
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -158,7 +158,7 @@ final class PurchaseInformationTests: TestCase {
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
-            isSubscrition: true
+            isSubscription: true
         )
 
         let subscriptionInfoNullable = await PurchaseInformation.purchaseInformationUsingRenewalInfo(
@@ -218,7 +218,7 @@ final class PurchaseInformationTests: TestCase {
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
-            isSubscrition: true
+            isSubscription: true
         )
 
         let subscriptionInfoNullable = await PurchaseInformation.purchaseInformationUsingRenewalInfo(
@@ -279,7 +279,7 @@ final class PurchaseInformationTests: TestCase {
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
-            isSubscrition: true
+            isSubscription: true
         )
 
         let subscriptionInfoNullable = await PurchaseInformation.purchaseInformationUsingRenewalInfo(
@@ -338,7 +338,7 @@ final class PurchaseInformationTests: TestCase {
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
-            isSubscrition: true
+            isSubscription: true
         )
 
         let subscriptionInfoNullable = await PurchaseInformation.purchaseInformationUsingRenewalInfo(
@@ -385,7 +385,7 @@ final class PurchaseInformationTests: TestCase {
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
-            isSubscrition: true
+            isSubscription: true
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -431,7 +431,7 @@ final class PurchaseInformationTests: TestCase {
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
-            isSubscrition: true
+            isSubscription: true
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -477,7 +477,7 @@ final class PurchaseInformationTests: TestCase {
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
-            isSubscrition: true
+            isSubscription: true
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -523,7 +523,7 @@ final class PurchaseInformationTests: TestCase {
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
-            isSubscrition: true
+            isSubscription: true
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -570,7 +570,7 @@ final class PurchaseInformationTests: TestCase {
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
-            isSubscrition: true
+            isSubscription: true
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -617,7 +617,7 @@ final class PurchaseInformationTests: TestCase {
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
-            isSubscrition: true
+            isSubscription: true
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -663,7 +663,7 @@ final class PurchaseInformationTests: TestCase {
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
-            isSubscrition: true
+            isSubscription: true
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -709,7 +709,7 @@ final class PurchaseInformationTests: TestCase {
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
-            isSubscrition: true
+            isSubscription: true
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -755,7 +755,7 @@ final class PurchaseInformationTests: TestCase {
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
-            isSubscrition: true
+            isSubscription: true
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -801,7 +801,7 @@ final class PurchaseInformationTests: TestCase {
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
-            isSubscrition: true
+            isSubscription: true
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -847,7 +847,7 @@ final class PurchaseInformationTests: TestCase {
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
-            isSubscrition: true
+            isSubscription: true
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -893,7 +893,7 @@ final class PurchaseInformationTests: TestCase {
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
-            isSubscrition: true
+            isSubscription: true
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -939,7 +939,7 @@ final class PurchaseInformationTests: TestCase {
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
-            isSubscrition: true
+            isSubscription: true
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -985,7 +985,7 @@ final class PurchaseInformationTests: TestCase {
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
-            isSubscrition: true
+            isSubscription: true
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -1028,7 +1028,7 @@ final class PurchaseInformationTests: TestCase {
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
-            isSubscrition: true
+            isSubscription: true
         )
 
         let subscriptionInfo = try XCTUnwrap(
@@ -1072,7 +1072,7 @@ final class PurchaseInformationTests: TestCase {
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
-            isSubscrition: true
+            isSubscription: true
         )
 
         let subscriptionInfo = try XCTUnwrap(
