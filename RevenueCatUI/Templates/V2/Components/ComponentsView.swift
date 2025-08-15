@@ -87,10 +87,6 @@ struct ComponentsView: View {
             TabControlToggleComponentView(viewModel: viewModel, onDismiss: onDismiss)
         case .carousel(let viewModel):
             CarouselComponentView(viewModel: viewModel, onDismiss: onDismiss)
-        case .video:
-            EmptyView().onAppear {
-                assert(false, "failure: video support in progress")
-            }
         }
     }
 }

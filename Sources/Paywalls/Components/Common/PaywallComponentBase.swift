@@ -28,7 +28,7 @@ public enum PaywallComponent: Codable, Sendable, Hashable, Equatable {
 
     case carousel(CarouselComponent)
 
-    case video(VideoComponent)
+    // case video(VideoComponent) to do: Add the component here
 
     public enum ComponentType: String, Codable, Sendable {
 
@@ -117,9 +117,6 @@ extension PaywallComponent {
         case .carousel(let component):
             try container.encode(ComponentType.carousel, forKey: .type)
             try component.encode(to: encoder)
-        case .video(let component):
-            try container.encode(ComponentType.video, forKey: .type)
-            try component.encode(to: encoder)
         }
     }
 
@@ -201,8 +198,6 @@ extension PaywallComponent {
             return .tabControlToggle(try TabControlToggleComponent(from: decoder))
         case .carousel:
             return .carousel(try CarouselComponent(from: decoder))
-        case .video:
-            return .video(try VideoComponent(from: decoder))
         }
     }
 
