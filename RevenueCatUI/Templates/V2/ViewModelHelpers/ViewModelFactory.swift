@@ -404,6 +404,9 @@ struct ViewModelFactory {
                     pageStackViewModels: pageStackViewModels
                 )
             )
+        case .video:
+            assert(false, "Video component not supported yet")
+            throw CocoaError(.featureUnsupported)
         }
     }
 
@@ -518,6 +521,9 @@ struct ViewModelFactory {
                 return nil
             }
             return self.findFullWidthImageViewIfItsTheFirst(first)
+        case .video:
+            assert(false, "Video component not supported yet")
+            return nil
         }
     }
 
