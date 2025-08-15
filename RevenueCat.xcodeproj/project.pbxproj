@@ -59,6 +59,8 @@
 		16DA8ECD2E4EE33700283940 /* ImageComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16DA8ECC2E4EE33700283940 /* ImageComponentTests.swift */; };
 		16DA8EDF2E4F6A6600283940 /* PaywallVideoComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16DA8EDE2E4F6A6600283940 /* PaywallVideoComponent.swift */; };
 		16DA8EF42E4F7A2500283940 /* VideoComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16DA8EF32E4F7A2500283940 /* VideoComponentTests.swift */; };
+		16DA8F1E2E4FB6E200283940 /* ImageComponent.json in Resources */ = {isa = PBXBuildFile; fileRef = 16DA8F1B2E4FB6E200283940 /* ImageComponent.json */; };
+		16DA8F1F2E4FB6E200283940 /* VideoComponent.json in Resources */ = {isa = PBXBuildFile; fileRef = 16DA8F1C2E4FB6E200283940 /* VideoComponent.json */; };
 		1E2F911B2CC918ED00BDB016 /* ContactSupportUtilitiesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E2F911A2CC918ED00BDB016 /* ContactSupportUtilitiesTests.swift */; };
 		1E2F91722CCFA98C00BDB016 /* WebRedemptionStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E2F91712CCFA98C00BDB016 /* WebRedemptionStrings.swift */; };
 		1E42CC6C2D7F1A0500E0EE8D /* CacheStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E42CC6B2D7F1A0500E0EE8D /* CacheStatus.swift */; };
@@ -1512,6 +1514,8 @@
 		16DA8ECC2E4EE33700283940 /* ImageComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageComponentTests.swift; sourceTree = "<group>"; };
 		16DA8EDE2E4F6A6600283940 /* PaywallVideoComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallVideoComponent.swift; sourceTree = "<group>"; };
 		16DA8EF32E4F7A2500283940 /* VideoComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoComponentTests.swift; sourceTree = "<group>"; };
+		16DA8F1B2E4FB6E200283940 /* ImageComponent.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ImageComponent.json; sourceTree = "<group>"; };
+		16DA8F1C2E4FB6E200283940 /* VideoComponent.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = VideoComponent.json; sourceTree = "<group>"; };
 		1E2F911A2CC918ED00BDB016 /* ContactSupportUtilitiesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactSupportUtilitiesTests.swift; sourceTree = "<group>"; };
 		1E2F91712CCFA98C00BDB016 /* WebRedemptionStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRedemptionStrings.swift; sourceTree = "<group>"; };
 		1E42CC6B2D7F1A0500E0EE8D /* CacheStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheStatus.swift; sourceTree = "<group>"; };
@@ -2718,10 +2722,6 @@
 		FECF627761D375C8431EB866 /* StoreProduct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreProduct.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		16DA8ECF2E4EE5F200283940 /* JSON */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = JSON; sourceTree = "<group>"; };
-/* End PBXFileSystemSynchronizedRootGroup section */
-
 /* Begin PBXFrameworksBuildPhase section */
 		2DAC5F6F26F13C9800C5258F /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
@@ -2944,6 +2944,15 @@
 			path = Helpers;
 			sourceTree = "<group>";
 		};
+		16DA8F1D2E4FB6E200283940 /* JSON */ = {
+			isa = PBXGroup;
+			children = (
+				16DA8F1B2E4FB6E200283940 /* ImageComponent.json */,
+				16DA8F1C2E4FB6E200283940 /* VideoComponent.json */,
+			);
+			path = JSON;
+			sourceTree = "<group>";
+		};
 		1E8A60402CDBD73E0034ACF3 /* WebPurchaseRedemption */ = {
 			isa = PBXGroup;
 			children = (
@@ -3059,7 +3068,7 @@
 		2C8EC6AD2CCBD33800D6CCF8 /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				16DA8ECF2E4EE5F200283940 /* JSON */,
+				16DA8F1D2E4FB6E200283940 /* JSON */,
 				16DA8EC82E4EE24100283940 /* JsonLoader.swift */,
 				16DA8EC72E4EE22A00283940 /* Helpers */,
 				03F446222D2FE0B90046129A /* Properties */,
@@ -5865,9 +5874,6 @@
 				2DC5622124EC63430031F69B /* PBXTargetDependency */,
 				2DFF6C55270CA11400ECAFAB /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				16DA8ECF2E4EE5F200283940 /* JSON */,
-			);
 			name = UnitTests;
 			packageProductDependencies = (
 				2D803F6226F144830069D717 /* Nimble */,
@@ -6301,6 +6307,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				2D4D6AF624F7193700B656BE /* verifyReceiptSample1.txt in Resources */,
+				16DA8F1E2E4FB6E200283940 /* ImageComponent.json in Resources */,
+				16DA8F1F2E4FB6E200283940 /* VideoComponent.json in Resources */,
 				75D9DE072D79FC0E0068554F /* testEncoding.1.json in Resources */,
 				2D4D6AF724F7193700B656BE /* base64encodedreceiptsample1.txt in Resources */,
 				5774F9BE2805E71100997128 /* Fixtures in Resources */,
