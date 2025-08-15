@@ -5,12 +5,6 @@
       "value": "primary"
     }
   },
-  "corner_radiuses": {
-    "bottom_leading": 5,
-    "bottom_trailing": 6,
-    "top_leading": 7,
-    "top_trailing": 8
-  },
   "fit_mode": "fill",
   "id": "P0Tzh3p6d3",
   "mask_shape": {

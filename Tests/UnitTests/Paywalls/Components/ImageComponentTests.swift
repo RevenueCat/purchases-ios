@@ -33,6 +33,11 @@ class ImageComponentTests: TestCase {
             "https://assets.pawwalls.com/1151049_1732039548.png"
         )
         XCTAssertNil(image.source.dark)
+        XCTAssertNotNil(image.colorOverlay)
+        XCTAssertEqual(image.fitMode, PaywallComponent.FitMode.fill)
+        XCTAssertNotNil(image.maskShape)
+        XCTAssertNotNil(image.shadow)
+        XCTAssertNotNil(image.size)
         XCTAssertEqual(image, image2)
 
     }

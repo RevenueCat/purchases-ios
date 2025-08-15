@@ -25,10 +25,10 @@ extension PaywallComponent {
         public let source: ThemeVideoUrls
         public let fallbackSource: ThemeImageUrls?
         public let visible: Bool?
-        public let videoID: String
         public let showControls: Bool
         public let autoplay: Bool
         public let loop: Bool
+        public let muteAudio: Bool
         public let size: Size
         public let fitMode: FitMode
         public let maskShape: MaskShape?
@@ -44,10 +44,10 @@ extension PaywallComponent {
             visible: Bool? = nil,
             source: ThemeVideoUrls,
             fallbackSource: ThemeImageUrls? = nil,
-            videoID: String,
             showControls: Bool = false,
             autoplay: Bool = true,
             loop: Bool = true,
+            muteAudio: Bool = true,
             size: Size = .init(width: .fill, height: .fit),
             fitMode: FitMode = .fit,
             maskShape: MaskShape? = nil,
@@ -62,10 +62,10 @@ extension PaywallComponent {
             self.source = source
             self.fallbackSource = fallbackSource
             self.visible = visible
-            self.videoID = videoID
             self.showControls = showControls
             self.autoplay = autoplay
             self.loop = loop
+            self.muteAudio = muteAudio
             self.size = size
             self.fitMode = fitMode
             self.maskShape = maskShape
@@ -80,10 +80,10 @@ extension PaywallComponent {
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
             hasher.combine(visible)
-            hasher.combine(videoID)
             hasher.combine(showControls)
             hasher.combine(autoplay)
             hasher.combine(loop)
+            hasher.combine(muteAudio)
             hasher.combine(size)
             hasher.combine(fitMode)
             hasher.combine(maskShape)
@@ -100,10 +100,10 @@ extension PaywallComponent {
         public static func == (lhs: VideoComponent, rhs: VideoComponent) -> Bool {
             return lhs.type == rhs.type &&
             lhs.visible == rhs.visible &&
-            lhs.videoID == rhs.videoID &&
             lhs.showControls == rhs.showControls &&
             lhs.autoplay == rhs.autoplay &&
             lhs.loop == rhs.loop &&
+            lhs.muteAudio == rhs.muteAudio &&
             lhs.size == rhs.size &&
             lhs.fitMode == rhs.fitMode &&
             lhs.maskShape == rhs.maskShape &&
@@ -123,10 +123,10 @@ extension PaywallComponent {
         public let source: ThemeVideoUrls?
         public let fallbackSource: ThemeImageUrls?
         public let visible: Bool?
-        public let videoID: String?
         public let showControls: Bool?
         public let autoplay: Bool?
         public let loop: Bool?
+        public let muteAudio: Bool?
         public let size: Size?
         public let fitMode: FitMode?
         public let maskShape: MaskShape?
@@ -140,10 +140,10 @@ extension PaywallComponent {
             source: ThemeVideoUrls? = nil,
             fallbackSource: ThemeImageUrls? = nil,
             visible: Bool? = true,
-            videoID: String? = nil,
             showControls: Bool? = nil,
             autoplay: Bool? = nil,
             loop: Bool? = nil,
+            muteAudio: Bool? = nil,
             size: Size? = nil,
             fitMode: FitMode? = nil,
             maskShape: MaskShape? = nil,
@@ -156,10 +156,10 @@ extension PaywallComponent {
             self.source = source
             self.fallbackSource = fallbackSource
             self.visible = visible
-            self.videoID = videoID
             self.showControls = showControls
             self.autoplay = autoplay
             self.loop = loop
+            self.muteAudio = muteAudio
             self.size = size
             self.fitMode = fitMode
             self.maskShape = maskShape
@@ -174,10 +174,10 @@ extension PaywallComponent {
             hasher.combine(source)
             hasher.combine(fallbackSource)
             hasher.combine(visible)
-            hasher.combine(videoID)
             hasher.combine(showControls)
             hasher.combine(autoplay)
             hasher.combine(loop)
+            hasher.combine(muteAudio)
             hasher.combine(size)
             hasher.combine(fitMode)
             hasher.combine(maskShape)
@@ -190,10 +190,10 @@ extension PaywallComponent {
 
         public static func == (lhs: PartialVideoComponent, rhs: PartialVideoComponent) -> Bool {
             return lhs.visible == rhs.visible &&
-            lhs.videoID == rhs.videoID &&
             lhs.showControls == rhs.showControls &&
             lhs.autoplay == rhs.autoplay &&
             lhs.loop == rhs.loop &&
+            lhs.muteAudio == rhs.muteAudio &&
             lhs.size == rhs.size &&
             lhs.fitMode == rhs.fitMode &&
             lhs.maskShape == rhs.maskShape &&
