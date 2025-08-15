@@ -404,9 +404,6 @@ struct ViewModelFactory {
                     pageStackViewModels: pageStackViewModels
                 )
             )
-        case .video:
-            assert(false, "failure: video support in progress")
-            throw CocoaError(.featureUnsupported)
         }
     }
 
@@ -521,9 +518,6 @@ struct ViewModelFactory {
                 return nil
             }
             return self.findFullWidthImageViewIfItsTheFirst(first)
-        case .video:
-            assert(false, "failure: video support in progress")
-            return nil
         }
     }
 
