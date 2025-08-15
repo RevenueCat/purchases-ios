@@ -37,7 +37,7 @@ enum PaywallComponentViewModel {
     case tabControlToggle(TabControlToggleComponentViewModel)
 
     case carousel(CarouselComponentViewModel)
-    case video(VideoComponentViewModel)
+    case video(Any) // will update in a future pr
 }
 
 #endif
