@@ -57,7 +57,7 @@
   "source": {
     "light": {
       "height": 400,
-      "ulr_low_res": "https://videos.pexels.com/video-files/5532767/5532767-uhd_1440_2732_25fps.mp4",
+      "url_low_res": "https://videos.pexels.com/video-files/5532767/5532767-uhd_1440_2732_25fps.mp4",
       "url": "https://videos.pexels.com/video-files/5532767/5532767-uhd_1440_2732_25fps.mp4",
       "width": 200
     }
