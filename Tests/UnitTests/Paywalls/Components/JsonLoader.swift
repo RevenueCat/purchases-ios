@@ -15,7 +15,6 @@ import Foundation
 import XCTest
 
 enum JsonLoader {
-    private class BundleToken { }
 
     static func data(
         for fileName: String,
