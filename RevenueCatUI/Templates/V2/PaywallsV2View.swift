@@ -107,6 +107,9 @@ struct PaywallsV2View: View {
     @StateObject
     private var paywallPromoOfferCache: PaywallPromoOfferCache
 
+    @StateObject
+    private var viewRegistery = ViewRegistry.shared
+
     public init(
         paywallComponents: Offering.PaywallComponents,
         offering: Offering,
@@ -176,6 +179,7 @@ struct PaywallsV2View: View {
                     .environmentObject(self.purchaseHandler)
                     .environmentObject(self.introOfferEligibilityContext)
                     .environmentObject(self.paywallPromoOfferCache)
+                    .environmentObject(self.viewRegistery)
                     .disabled(self.purchaseHandler.actionInProgress)
                     .onAppear {
                         self.purchaseHandler.trackPaywallImpression(
