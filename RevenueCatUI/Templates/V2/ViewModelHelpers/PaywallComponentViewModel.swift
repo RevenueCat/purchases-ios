@@ -38,6 +38,9 @@ enum PaywallComponentViewModel {
 
     case carousel(CarouselComponentViewModel)
 
+    case slot(SlotComponentViewModel)
+    case slotLottie(SlotLottieComponentViewModel)
+
 }
 
 #endif
