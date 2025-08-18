@@ -17,9 +17,6 @@ import SwiftUI
 
 /// A plugin that can register custom UI components with PurchasesUI.
 public protocol PurchasesUIPlugin: Equatable {
-    /// Unique identifier for this plugin.
-    var id: String { get }
-
     /// Register the plugin's custom UI components.
     func register()
 }
