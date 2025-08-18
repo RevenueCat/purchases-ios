@@ -1507,7 +1507,7 @@ jobs:
       - run:
           name: Compare API changes
           command: |
-            if ! ~/bin/public-api-diff revenuecat-api.swiftinterface /tmp/pr-swiftinterface/RevenueCat.swiftinterface; then
+            if ! ~/bin/public-api-diff project --old "revenuecat-api.swiftinterface" --new "/tmp/pr-swiftinterface/RevenueCat.swiftinterface"; then
               echo "❌ API changes detected! This PR introduces breaking changes to the public API."
               exit 1
             fi
