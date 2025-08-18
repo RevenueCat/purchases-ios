@@ -103,7 +103,7 @@ struct SlotLottieComponentStyle {
         value: PaywallComponent.SlotLottieComponent.Value,
         size: PaywallComponent.Size?,
         padding: PaywallComponent.Padding?,
-        margin: PaywallComponent.Padding?,
+        margin: PaywallComponent.Padding?
     ) {
         self.visible = visible
         self.value = value
