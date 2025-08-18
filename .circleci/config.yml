@@ -1511,7 +1511,7 @@ jobs:
               local suffix=$1
               local platform=$2
               echo "Checking API changes for $platform..."
-              if ! ~/bin/public-api-diff swift-interface --new "revenuecat-api${suffix}.swiftinterface" --old "/tmp/pr-swiftinterface/RevenueCat${suffix}.swiftinterface"; then
+              if ! ~/bin/public-api-diff swift-interface --old "revenuecat-api${suffix}.swiftinterface" --new "/tmp/pr-swiftinterface/RevenueCat${suffix}.swiftinterface"; then
                 echo "❌ API changes detected for $platform! This PR introduces breaking changes to the public API."
                 return 1
               fi
