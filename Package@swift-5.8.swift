@@ -15,7 +15,8 @@ var dependencies: [Package.Dependency] = [
     .package(
         url: "https://github.com/pointfreeco/swift-snapshot-testing",
         revision: "26ed3a2b4a2df47917ca9b790a57f91285b923fb"
-    )
+    ),
+    .package(url: "https://github.com/airbnb/lottie-spm", from: "4.0.0")
 ]
 if shouldIncludeDocCPlugin {
     // Versions 1.4.0 and 1.4.1 are failing to compile, so we are pinning it to 1.3.0 for now
@@ -43,7 +44,9 @@ let package = Package(
         .library(name: "ReceiptParser",
                  targets: ["ReceiptParser"]),
         .library(name: "RevenueCatUI",
-                 targets: ["RevenueCatUI"])
+                 targets: ["RevenueCatUI"]),
+        .library(name: "RevenueCatUILottie",
+                 targets: ["RevenueCatUILottie"])
     ],
     dependencies: dependencies,
     targets: [
@@ -77,6 +80,13 @@ let package = Package(
                     .copy("Resources/background.jpg"),
                     .process("Resources/icons.xcassets")
                 ]),
+        // RevenueCatUILottie
+        .target(name: "RevenueCatUILottie",
+                dependencies: [
+                    "RevenueCatUI",
+                    .product(name: "Lottie", package: "lottie-spm")
+                ],
+                path: "RevenueCatUILottie"),
         .testTarget(name: "RevenueCatUITests",
                     dependencies: [
                         "RevenueCatUI",

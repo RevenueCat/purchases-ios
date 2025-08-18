@@ -2969,6 +2969,13 @@
 			path = SlotLottie;
 			sourceTree = "<group>";
 		};
+		03E133542E5331990028D9FD /* RevenueCatUILottie */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = RevenueCatUILottie;
+			sourceTree = "<group>";
+		};
 		03F446222D2FE0B90046129A /* Properties */ = {
 			isa = PBXGroup;
 			children = (
@@ -4015,6 +4022,7 @@
 				7707A93B2CAD8AA2006E0313 /* Local.xcconfig */,
 				77607FD72CAD87D60066C23C /* Global.xcconfig */,
 				887A60652C1D037000E1A461 /* RevenueCatUI */,
+				03E133542E5331990028D9FD /* RevenueCatUILottie */,
 				2DC5621724EC63420031F69B /* Sources */,
 				2DDE870027E5238500D8B390 /* Tests */,
 				887A5FBB2C1D036200E1A461 /* RevenueCatUIDev */,
