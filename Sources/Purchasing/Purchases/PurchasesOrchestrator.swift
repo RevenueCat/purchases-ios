@@ -273,9 +273,15 @@ final class PurchasesOrchestrator {
     }
 
     func redeemWebPurchase(_ webPurchaseRedemption: WebPurchaseRedemption) async -> WebPurchaseRedemptionResult {
-        return await self.webPurchaseRedemptionHelper.handleRedeemWebPurchase(
+        let redemptionResult = await self.webPurchaseRedemptionHelper.handleRedeemWebPurchase(
             redemptionToken: webPurchaseRedemption.redemptionToken
         )
+
+        if case .success = redemptionResult {
+            self.virtualCurrencyManager.invalidateVirtualCurrenciesCache()
+        }
+
+        return redemptionResult
     }
 
     func redeemWebPurchase(
