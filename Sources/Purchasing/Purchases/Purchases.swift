@@ -40,6 +40,9 @@ public typealias PurchaseCompletedBlock = @MainActor @Sendable (StoreTransaction
                                                                 PublicError?,
                                                                 Bool) -> Void
 
+public class A { }
+public class B { }
+
 /**
  Completion block for ``Purchases/getStorefront(completion:)``
  */
