@@ -61,10 +61,10 @@ class VideoComponentViewModel {
             showControls: partial?.showControls ?? self.component.showControls,
             autoplay: partial?.autoplay ?? self.component.autoplay,
             loop: partial?.loop ?? self.component.loop,
-            url: partial?.source?.light.original ?? self.component.source.light.original,
-            lowResUrl: partial?.source?.light.lowRes ?? self.component.source.light.lowRes,
-            darkUrl: partial?.source?.dark?.original ?? self.component.source.dark?.original,
-            darkLowResUrl: partial?.source?.dark?.lowRes ?? self.component.source.dark?.lowRes,
+            url: partial?.source?.light.url ?? self.component.source.light.url,
+            lowResUrl: partial?.source?.light.urlLowRes ?? self.component.source.light.urlLowRes,
+            darkUrl: partial?.source?.dark?.url ?? self.component.source.dark?.url,
+            darkLowResUrl: partial?.source?.dark?.urlLowRes ?? self.component.source.dark?.urlLowRes,
             size: partial?.size ?? self.component.size,
             fitMode: partial?.fitMode ?? self.component.fitMode,
             maskShape: partial?.maskShape ?? self.component.maskShape,
@@ -93,7 +93,6 @@ struct LocalizedVideoPartial: PresentedPartial {
             partial: PaywallComponent.PartialVideoComponent(
                 source: otherPartial?.source ?? basePartial?.source,
                 visible: otherPartial?.visible ?? basePartial?.visible,
-                videoID: otherPartial?.videoID ?? basePartial?.videoID,
                 showControls: otherPartial?.showControls ?? basePartial?.showControls,
                 autoplay: otherPartial?.autoplay ?? basePartial?.autoplay,
                 loop: otherPartial?.loop ?? basePartial?.loop,
@@ -128,7 +127,6 @@ extension LocalizedVideoPartial {
 struct VideoComponentStyle {
 
     let visible: Bool
-    let videoID: String
     let showControls: Bool
     let autoplay: Bool
     let loop: Bool
@@ -147,12 +145,11 @@ struct VideoComponentStyle {
 
     init(
         visible: Bool = true,
-        videoID: String,
         showControls: Bool,
         autoplay: Bool,
         loop: Bool,
         url: URL,
-        lowResUrl: URL,
+        lowResUrl: URL?,
         darkUrl: URL? = nil,
         darkLowResUrl: URL? = nil,
         size: PaywallComponent.Size,
@@ -166,7 +163,6 @@ struct VideoComponentStyle {
         uiConfigProvider: UIConfigProvider
     ) {
         self.visible = visible
-        self.videoID = videoID
         self.showControls = showControls
         self.autoplay = autoplay
         self.loop = loop
