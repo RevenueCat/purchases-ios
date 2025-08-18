@@ -1503,19 +1503,44 @@ jobs:
             # Generate PR branch swiftinterface
             ./scripts/generate-swiftinterface.sh
             
-      # Compare API changes
+      # Compare API changes for each platform
       - run:
           name: Compare API changes
           command: |
-            if ! ~/bin/public-api-diff swift-interface --old "revenuecat-api.swiftinterface" --new "/tmp/pr-swiftinterface/RevenueCat.swiftinterface"; then
-              echo "❌ API changes detected! This PR introduces breaking changes to the public API."
-              exit 1
-            fi
+            check_api_changes() {
+              local suffix=$1
+              local platform=$2
+              echo "Checking API changes for $platform..."
+              if ! ~/bin/public-api-diff swift-interface --new "revenuecat-api${suffix}.swiftinterface" --old "/tmp/pr-swiftinterface/RevenueCat${suffix}.swiftinterface"; then
+                echo "❌ API changes detected for $platform! This PR introduces breaking changes to the public API."
+                return 1
+              fi
+              return 0
+            }
+
+            # Check each platform
+            check_api_changes "-ios-simulator" "iOS Simulator" || exit 1
+            check_api_changes "-ios" "iOS" || exit 1
+            check_api_changes "-macos" "macOS" || exit 1
+            check_api_changes "-watchos-simulator" "watchOS Simulator" || exit 1
+            check_api_changes "-watchos" "watchOS" || exit 1
             
       # Store artifacts for inspection
       - store_artifacts:
-          path: revenuecat-api.swiftinterface
-          destination: revenuecat-api.swiftinterface
+          path: revenuecat-api-ios-simulator.swiftinterface
+          destination: revenuecat-api-ios-simulator.swiftinterface
+      - store_artifacts:
+          path: revenuecat-api-ios.swiftinterface
+          destination: revenuecat-api-ios.swiftinterface
+      - store_artifacts:
+          path: revenuecat-api-macos.swiftinterface
+          destination: revenuecat-api-macos.swiftinterface
+      - store_artifacts:
+          path: revenuecat-api-watchos-simulator.swiftinterface
+          destination: revenuecat-api-watchos-simulator.swiftinterface
+      - store_artifacts:
+          path: revenuecat-api-watchos.swiftinterface
+          destination: revenuecat-api-watchos.swiftinterface
       - slack-notify-on-fail
 
   deploy-to-spm:

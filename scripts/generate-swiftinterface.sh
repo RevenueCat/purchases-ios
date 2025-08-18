@@ -3,39 +3,44 @@
 # Exit on error
 set -e
 
-# Build RevenueCat framework
-echo "Building RevenueCat framework..."
-xcodebuild clean build \
-    -scheme "RevenueCat" \
-    -configuration Release \
-    -sdk iphonesimulator \
-    BUILD_LIBRARY_FOR_DISTRIBUTION=YES
+# Create temporary directory for PR swiftinterface files
+mkdir -p /tmp/pr-swiftinterface
 
-# Copy the generated .swiftinterface file
-echo "Looking for .swiftinterface file..."
+# Function to build for a specific platform and copy the interface file
+build_and_copy_interface() {
+    local sdk=$1
+    local platform=$2
+    local suffix=$3
 
-# Get build settings and derived data directory
-echo "Getting build settings..."
-BUILD_SETTINGS=$(xcodebuild -scheme RevenueCat -showBuildSettings)
-echo "Build settings paths:"
-echo "$BUILD_SETTINGS" | grep -E "OBJROOT|CONFIGURATION_BUILD_DIR|TARGET_BUILD_DIR"
+    echo "Building RevenueCat framework for $platform..."
+    xcodebuild clean build \
+        -scheme "RevenueCat" \
+        -derivedDataPath ".build" \
+        -configuration Release \
+        -sdk "$(xcrun --sdk $sdk --show-sdk-path)" \
+        -destination "generic/platform=$platform" \
+        BUILD_LIBRARY_FOR_DISTRIBUTION=YES
 
-DERIVED_DATA_DIR=$(echo "$BUILD_SETTINGS" | grep -m 1 "OBJROOT" | cut -d'=' -f2 | xargs)
-echo "Derived data directory: $DERIVED_DATA_DIR"
+    # Find and copy the interface file
+    echo "Looking for .swiftinterface file for $platform..."
+    DERIVED_DATA_DIR=".build"
+    SWIFTINTERFACE_PATH=$(find "$DERIVED_DATA_DIR" -type f -name "RevenueCat.swiftinterface" | grep -v "private" | head -n 1)
 
-echo "Searching for all .swiftinterface files..."
-find "$DERIVED_DATA_DIR" -type f -name "*.swiftinterface" 2>/dev/null
+    if [ -f "$SWIFTINTERFACE_PATH" ]; then
+        echo "Found swiftinterface at: $SWIFTINTERFACE_PATH"
+        cp "$SWIFTINTERFACE_PATH" "/tmp/pr-swiftinterface/RevenueCat${suffix}.swiftinterface"
+        echo "Generated .swiftinterface file has been copied to /tmp/pr-swiftinterface/RevenueCat${suffix}.swiftinterface"
+    else
+        echo "Error: Could not find RevenueCat.swiftinterface file for $platform"
+        echo "Contents of derived data directory:"
+        find "$DERIVED_DATA_DIR" -type f -name "*.swiftinterface" -o -name "RevenueCat*"
+        exit 1
+    fi
+}
 
-echo "Looking specifically for RevenueCat.swiftinterface (excluding private)..."
-SWIFTINTERFACE_PATH=$(find "$DERIVED_DATA_DIR" -type f -name "RevenueCat.swiftinterface" | grep -v "private" | head -n 1)
-
-if [ -f "$SWIFTINTERFACE_PATH" ]; then
-    echo "Found swiftinterface at: $SWIFTINTERFACE_PATH"
-    cp "$SWIFTINTERFACE_PATH" ./revenuecat-api.swiftinterface
-    echo "Generated .swiftinterface file has been copied to ./revenuecat-api.swiftinterface"
-else
-    echo "Error: Could not find RevenueCat.swiftinterface file"
-    echo "Contents of build directory (recursive):"
-    find "$DERIVED_DATA_DIR" -type f -name "*.swiftinterface" -o -name "RevenueCat*" 2>/dev/null
-    exit 1
-fi
+# Build for each platform
+build_and_copy_interface "iphonesimulator" "iOS" "-ios-simulator"
+build_and_copy_interface "iphoneos" "iOS" "-ios"
+build_and_copy_interface "macosx" "macOS" "-macos"
+build_and_copy_interface "watchsimulator" "watchOS" "-watchos-simulator"
+build_and_copy_interface "watchos" "watchOS" "-watchos"
