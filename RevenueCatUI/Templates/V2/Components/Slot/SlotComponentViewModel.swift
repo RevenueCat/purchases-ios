@@ -102,7 +102,7 @@ struct SlotComponentStyle {
         visible: Bool,
         size: PaywallComponent.Size?,
         padding: PaywallComponent.Padding?,
-        margin: PaywallComponent.Padding?,
+        margin: PaywallComponent.Padding?
     ) {
         self.visible = visible
         self.size = size ?? .init(width: .fit, height: .fit)
