@@ -79,7 +79,7 @@ public extension PaywallComponent {
             visible: Bool? = true,
             size: Size? = nil,
             padding: Padding? = nil,
-            margin: Padding? = nil,
+            margin: Padding? = nil
         ) {
             self.visible = visible
             self.size = size

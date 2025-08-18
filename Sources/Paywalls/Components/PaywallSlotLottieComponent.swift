@@ -119,7 +119,7 @@ public extension PaywallComponent {
             value: SlotLottieComponent.Value? = nil,
             size: Size? = nil,
             padding: Padding? = nil,
-            margin: Padding? = nil,
+            margin: Padding? = nil
         ) {
             self.visible = visible
             self.value = value
