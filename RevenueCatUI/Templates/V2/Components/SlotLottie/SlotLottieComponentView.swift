@@ -68,13 +68,11 @@ struct SlotLottieComponentView: View {
 struct SlotLottieComponentView_Previews: PreviewProvider {
 
     static let viewRegistry: ViewRegistry = {
-        let vr = ViewRegistry()
-
-        vr.register(type: .slotLottie) { component in
+        let viewRegister = ViewRegistry()
+        viewRegister.register(type: .slotLottie) { _ in
             Text("Lottie goes here")
         }
-
-        return vr
+        return viewRegister
     }()
 
     // Need to wrap in VStack otherwise preview rerenders and images won't show
@@ -105,6 +103,5 @@ struct SlotLottieComponentView_Previews: PreviewProvider {
 }
 
 #endif
-
 
 #endif

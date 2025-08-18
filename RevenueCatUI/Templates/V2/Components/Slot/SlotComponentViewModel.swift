@@ -68,7 +68,6 @@ class SlotComponentViewModel {
 
 }
 
-
 extension PresentedSlotPartial: PresentedPartial {
 
     static func combine(
