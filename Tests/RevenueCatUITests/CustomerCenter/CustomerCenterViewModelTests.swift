@@ -43,7 +43,7 @@ final class CustomerCenterViewModelTests: TestCase {
         let viewModel = CustomerCenterViewModel(actionWrapper: CustomerCenterActionWrapper())
 
         expect(viewModel.state) == .notLoaded
-        expect(viewModel.hasPurchases).to(beFalse())
+        expect(viewModel.hasAnyPurchases).to(beFalse())
         expect(viewModel.subscriptionsSection).to(beEmpty())
         expect(viewModel.nonSubscriptionsSection).to(beEmpty())
         expect(viewModel.state) == .notLoaded
@@ -137,7 +137,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         await viewModel.loadScreen()
 
-        expect(viewModel.hasPurchases).to(beTrue())
+        expect(viewModel.hasAnyPurchases).to(beTrue())
         let purchaseInformation = try XCTUnwrap(viewModel.subscriptionsSection.first)
         expect(purchaseInformation.productIdentifier) == "test_msmath_premium_v1"
 
@@ -158,7 +158,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         await viewModel.loadScreen()
 
-        expect(viewModel.hasPurchases).to(beFalse())
+        expect(viewModel.hasAnyPurchases).to(beFalse())
         expect(viewModel.subscriptionsSection).to(beEmpty())
         expect(viewModel.nonSubscriptionsSection).to(beEmpty())
 

@@ -131,48 +131,44 @@ struct RelevantPurchasesListView: View {
     var content: some View {
         ScrollViewWithOSBackground {
             LazyVStack(spacing: 0) {
-                if !customerInfoViewModel.subscriptionsSection.isEmpty {
-                    PurchasesInformationSection(
-                        title: localization[.subscriptionsSectionTitle],
-                        items: customerInfoViewModel.subscriptionsSection,
-                        localization: localization
-                    ) {
-                        viewModel.purchaseInformation = $0
-                    }
-                    .tint(colorScheme == .dark ? .white : .black)
-                } else {
-                    ScrollViewSection(title: localization[.subscriptionsSectionTitle]) {
-                        NoSubscriptionsCardView(
-                            screenOffering: viewModel.screen.offering,
-                            localization: localization,
-                            purchasesProvider: viewModel.purchasesProvider
-                        )
+                if !customerInfoViewModel.hasAnyPurchases {
+                    emptyView
                         .cornerRadius(10)
                         .padding(.horizontal)
                         .padding(.bottom, 32)
+                } else {
+                    if !customerInfoViewModel.subscriptionsSection.isEmpty {
+                        PurchasesInformationSection(
+                            title: localization[.subscriptionsSectionTitle],
+                            items: customerInfoViewModel.subscriptionsSection,
+                            localization: localization
+                        ) {
+                            viewModel.purchaseInformation = $0
+                        }
+                        .tint(colorScheme == .dark ? .white : .black)
                     }
-                }
 
-                if !customerInfoViewModel.nonSubscriptionsSection.isEmpty {
-                    PurchasesInformationSection(
-                        title: localization[.purchasesSectionTitle],
-                        items: activeNonSubscriptionPurchasesToShow,
-                        localization: localization
-                    ) {
-                        viewModel.purchaseInformation = $0
+                    if !customerInfoViewModel.nonSubscriptionsSection.isEmpty {
+                        PurchasesInformationSection(
+                            title: localization[.purchasesSectionTitle],
+                            items: activeNonSubscriptionPurchasesToShow,
+                            localization: localization
+                        ) {
+                            viewModel.purchaseInformation = $0
+                        }
+                        .tint(colorScheme == .dark ? .white : .black)
                     }
-                    .tint(colorScheme == .dark ? .white : .black)
-                }
 
-                if let virtualCurrencies = customerInfoViewModel.virtualCurrencies,
-                   !virtualCurrencies.all.isEmpty,
-                    customerInfoViewModel.shouldShowVirtualCurrencies {
-                    VirtualCurrenciesScrollViewWithOSBackgroundSection(
-                        virtualCurrencies: virtualCurrencies,
-                        onSeeAllInAppCurrenciesButtonTapped: self.viewModel.displayAllInAppCurrenciesScreen
-                    )
+                    if let virtualCurrencies = customerInfoViewModel.virtualCurrencies,
+                       !virtualCurrencies.all.isEmpty,
+                        customerInfoViewModel.shouldShowVirtualCurrencies {
+                        VirtualCurrenciesScrollViewWithOSBackgroundSection(
+                            virtualCurrencies: virtualCurrencies,
+                            onSeeAllInAppCurrenciesButtonTapped: self.viewModel.displayAllInAppCurrenciesScreen
+                        )
 
-                    Spacer().frame(height: 16)
+                        Spacer().frame(height: 16)
+                    }
                 }
 
                 ScrollViewSection(title: localization[.actionsSectionTitle]) {
@@ -196,6 +192,14 @@ struct RelevantPurchasesListView: View {
             }
             .padding(.top, 16)
         }
+    }
+
+    private var emptyView: some View {
+        NoSubscriptionsCardView(
+            screenOffering: viewModel.screen.offering,
+            localization: localization,
+            purchasesProvider: viewModel.purchasesProvider
+        )
     }
 
     private var activeNonSubscriptionPurchasesToShow: [PurchaseInformation] {
