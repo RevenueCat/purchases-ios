@@ -45,6 +45,7 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
     private var webPurchaseRedemptionHelper: MockWebPurchaseRedemptionHelper!
     private let mockDateProvider = MockDateProvider(stubbedNow: eventTimestamp1,
                                                     subsequentNows: eventTimestamp2)
+    private var virtualCurrencyManager: MockVirtualCurrencyManager!
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     var mockPaywallEventsManager: MockPaywallEventsManager {
@@ -150,6 +151,7 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
         self.mockStoreMessagesHelper = .init()
         self.mockWinBackOfferEligibilityCalculator = MockWinBackOfferEligibilityCalculator()
         self.webPurchaseRedemptionHelper = MockWebPurchaseRedemptionHelper()
+        self.virtualCurrencyManager = MockVirtualCurrencyManager()
     }
 
     private func createTestStoreProduct() -> StoreProduct {
@@ -507,7 +509,8 @@ class PurchasesOrchestratorTestStoreTests: TestCase {
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
             paywallEventsManager: self.paywallEventsManager,
             webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper,
-            dateProvider: self.mockDateProvider
+            dateProvider: self.mockDateProvider,
+            virtualCurrencyManager: self.virtualCurrencyManager
         )
 
         return orchestrator

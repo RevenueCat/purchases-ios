@@ -291,7 +291,8 @@ class BasePurchasesTests: TestCase {
             diagnosticsTracker: self.diagnosticsTracker,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
             paywallEventsManager: self.paywallEventsManager,
-            webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper
+            webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper,
+            virtualCurrencyManager: self.mockVirtualCurrencyManager
         )
         self.trialOrIntroPriceEligibilityChecker = MockTrialOrIntroPriceEligibilityChecker(
             systemInfo: self.systemInfo,

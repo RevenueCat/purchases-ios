@@ -48,6 +48,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
     private var paywallEventsManager: PaywallEventsManagerType!
     var webPurchaseRedemptionHelper: MockWebPurchaseRedemptionHelper!
     var mockDiagnosticsTracker: DiagnosticsTrackerType!
+    var mockVirtualCurrencyManager: MockVirtualCurrencyManager!
 
     static let eventTimestamp1: Date = .init(timeIntervalSince1970: 1694029328)
     static let eventTimestamp2: Date = .init(timeIntervalSince1970: 1694022321)
@@ -133,6 +134,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
         let identityManager = MockIdentityManager(mockAppUserID: "test-user-id",
                                                   mockDeviceCache: self.deviceCache)
         self.webPurchaseRedemptionHelper = MockWebPurchaseRedemptionHelper()
+        self.mockVirtualCurrencyManager = MockVirtualCurrencyManager()
         self.setUpStoreKit1Wrapper()
         self.setUpAttribution()
         self.setUpOrchestrator()
@@ -208,7 +210,9 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
             diagnosticsTracker: self.mockDiagnosticsTracker,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
             paywallEventsManager: self.paywallEventsManager,
-            webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper)
+            webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper,
+            virtualCurrencyManager: self.mockVirtualCurrencyManager
+        )
         self.storeKit1Wrapper.delegate = self.orchestrator
     }
 
@@ -248,7 +252,8 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
             paywallEventsManager: self.paywallEventsManager,
             webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper,
-            dateProvider: self.mockDateProvider
+            dateProvider: self.mockDateProvider,
+            virtualCurrencyManager: self.mockVirtualCurrencyManager
         )
         self.storeKit1Wrapper.delegate = self.orchestrator
     }
