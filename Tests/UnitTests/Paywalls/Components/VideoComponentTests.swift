@@ -30,7 +30,7 @@ class VideoComponentTests: TestCase {
         // Validate some data
         XCTAssertEqual(
             video.source.light.url.absoluteString,
-            "https://videos.pexels.com/video-files/5532767/5532767-uhd_1440_2732_25fps.mp4"
+            "https://RevenueCat.com/video-files/herding_cats.mp4"
         )
         XCTAssertNil(video.source.dark)
         XCTAssertNotNil(video.colorOverlay)
