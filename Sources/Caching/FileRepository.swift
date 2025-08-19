@@ -24,12 +24,20 @@ import Foundation
     /// - Parameters:
     ///   - networkService: A service capable of fetching data from a URL
     ///   - fileManager: A service capable of storing data and returning the URL where that stored data exists
-    @_spi(Internal) public init(
+    init(
         networkService: SimpleNetworkServiceType = URLSession.shared,
         fileManager: LargeItemCacheType = FileManager.default
     ) {
         self.networkService = networkService
         self.fileManager = fileManager
+    }
+
+    /// Create a file repository
+    @_spi(Internal) public convenience init() {
+        self.init(
+            networkService: URLSession.shared,
+            fileManager: FileManager.default
+        )
     }
 
     /// Prefetch files at the given urls

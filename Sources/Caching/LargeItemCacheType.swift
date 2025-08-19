@@ -14,7 +14,7 @@
 import Foundation
 
 /// An inteface representing a simple cache
-@_spi(Internal) public protocol LargeItemCacheType {
+protocol LargeItemCacheType {
 
     /// Store data to a url
     func saveData(_ data: Data, to url: URL) throws
@@ -29,7 +29,7 @@ import Foundation
     func generateLocalFilesystemURL(forRemoteURL url: URL) -> URL?
 }
 
-@_spi(Internal) extension FileManager: LargeItemCacheType {
+extension FileManager: LargeItemCacheType {
     /// A URL for a cache directory if one is present
     private var cacheDirectory: URL? {
         urls(for: .cachesDirectory, in: .userDomainMask).first

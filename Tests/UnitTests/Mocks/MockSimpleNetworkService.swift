@@ -12,7 +12,7 @@
 //  Created by Jacob Zivan Rakidzich on 8/13/25.
 
 import Foundation
-@_spi(Internal) @testable import RevenueCat
+@testable import RevenueCat
 
 class MockSimpleNetworkService: SimpleNetworkServiceType, @unchecked Sendable {
     let lock = NSLock()
