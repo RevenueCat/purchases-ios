@@ -14,10 +14,10 @@
 import Foundation
 
 /// Some Task in which the value is Sendable and it can result in an error
-@_spi(Internal) public typealias AnyTask<T: Sendable> = Task<T, Error>
+typealias AnyTask<T: Sendable> = Task<T, Error>
 
 /// Holds onto ``AnyTask`` objects by key, autoclearing on failure
-@_spi(Internal) public actor KeyedDeferredValueStore<H: Hashable, T: Sendable> {
+actor KeyedDeferredValueStore<H: Hashable, T: Sendable> {
     var deferred: [H: AnyTask<T>] = [:]
 
     /// Sets the task in the cache if one is not found
@@ -25,7 +25,7 @@ import Foundation
     ///   - task: The function that should execute if one is not found
     ///   - key: The key to look up the result by
     /// - Returns: The stored task
-    @_spi(Internal) public func getOrPut(
+    func getOrPut(
         _ task: @escaping @Sendable @autoclosure () -> AnyTask<T>,
         forKey key: H
     ) -> AnyTask<T> {
@@ -41,7 +41,7 @@ import Foundation
     /// - Parameter task: The new function to store
     /// - Parameter key: The key to look up the result by
     /// - Returns: The stored task
-    @_spi(Internal) public func replaceValue(
+    func replaceValue(
         _ task: @escaping @Sendable @autoclosure () -> AnyTask<T>,
         forKey key: H
     ) -> AnyTask<T> {
@@ -51,7 +51,7 @@ import Foundation
     }
 
     /// Removes all cached tasks
-    @_spi(Internal) public func clear() {
+    func clear() {
         self.deferred = [:]
     }
 
@@ -70,5 +70,5 @@ import Foundation
     }
 
     /// Create a KeyedDeferredValueStore
-    @_spi(Internal) public init() {}
+    init() {}
 }
