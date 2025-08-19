@@ -1480,8 +1480,17 @@ platform :ios do
     UI.message("Checking for API changes across all platforms...")
     
     # Ensure the API diff tool is available
-    unless File.exist?(File.expand_path("~/bin/public-api-diff"))
-      UI.user_error!("API diff tool not found at ~/bin/public-api-diff. Please install it first.")
+    api_diff_tool = File.expand_path("~/bin/public-api-diff")
+    unless File.exist?(api_diff_tool)
+      UI.error("API diff tool not found at #{api_diff_tool}")
+      UI.important("To install the API diff tool locally, run:")
+      UI.important("git clone https://github.com/Adyen/adyen-swift-public-api-diff.git ~/tools/adyen-swift-public-api-diff")
+      UI.important("cd ~/tools/adyen-swift-public-api-diff")
+      UI.important("swift build -c release")
+      UI.important("mkdir -p ~/bin")
+      UI.important("cp .build/release/public-api-diff ~/bin/")
+      UI.message("Skipping API diff check (tool not available locally - this will work in CI)")
+      return
     end
     
     platforms = [
@@ -1524,10 +1533,11 @@ platform :ios do
       # Run the API diff
       success = false
       begin
-        sh("~/bin/public-api-diff", "swift-interface", "--old", old_file, "--new", new_file)
+        output = sh(api_diff_tool, "swift-interface", "--old", old_file, "--new", new_file)
         success = true
         UI.success("✅ No breaking API changes detected for #{platform[:name]}")
-        diff_results << { platform: platform[:name], result: "✅ No breaking changes", diff: "No API changes detected for #{platform[:name]}" }
+        UI.message("Success output for #{platform[:name]}: #{output}")
+        diff_results << { platform: platform[:name], result: "✅ No breaking changes", diff: output.empty? ? "No API changes detected for #{platform[:name]}" : output }
       rescue => e
         UI.error("❌ API changes detected for #{platform[:name]}!")
         overall_result = false
@@ -1535,10 +1545,22 @@ platform :ios do
         # Try to capture the diff output
         diff_output = ""
         begin
-          diff_output = sh("~/bin/public-api-diff", "swift-interface", "--old", old_file, "--new", new_file, error_callback: ->(result) { result })
+          diff_output = sh(api_diff_tool, "swift-interface", "--old", old_file, "--new", new_file, error_callback: ->(result) { result })
         rescue => diff_e
           diff_output = diff_e.message
         end
+        
+        # Log the raw diff output for debugging
+        UI.message("Raw diff output for #{platform[:name]}:")
+        UI.message("--- START DIFF ---")
+        puts diff_output
+        UI.message("--- END DIFF ---")
+        UI.message("Diff output length: #{diff_output.length} characters")
+        
+        # Clean up any problematic characters that could cause encoding issues
+        diff_output = diff_output.encode('UTF-8', invalid: :replace, undef: :replace) if diff_output
+        
+        UI.message("Cleaned diff output length: #{diff_output.length} characters")
         
         diff_results << { platform: platform[:name], result: "❌ Breaking changes detected", diff: diff_output }
         File.write(diff_file, diff_output)
@@ -1546,11 +1568,18 @@ platform :ios do
     end
     
     # Generate report
+    UI.message("Generating report with #{diff_results.length} platform results...")
+    diff_results.each_with_index do |result, index|
+      UI.message("Result #{index + 1}: #{result[:platform]} - #{result[:result]} (#{result[:diff].length} chars)")
+    end
+    
     report = generate_api_diff_report(diff_results)
+    UI.message("Generated report length: #{report.length} characters")
     
     # Check if we're in CI (Circle CI) and this is a PR
     is_ci = !ENV["CIRCLECI"].nil?
     is_pr = !ENV["CIRCLE_PULL_REQUEST"].nil? && !ENV["CIRCLE_PULL_REQUEST"].empty?
+    UI.message("Environment check - CI: #{is_ci}, PR: #{is_pr}")
     
     if is_ci && is_pr
       # In CI + PR: Post comment to GitHub
