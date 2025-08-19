@@ -1621,9 +1621,22 @@ platform :ios do
   end
   
   def generate_api_diff_report(diff_results)
+    # Check if any platform has breaking changes or non-empty diff output
+    platforms_with_changes = diff_results.select do |result| 
+      result[:result].include?("❌") || 
+      (!result[:diff].nil? && !result[:diff].empty? && result[:diff] != "No API changes detected for #{result[:platform]}")
+    end
+    
+    if platforms_with_changes.empty?
+      # No changes detected across all platforms
+      platform_names = diff_results.map { |result| result[:platform] }.join(", ")
+      return "# API Changes Report\n\n✅ No changes detected for any of these platforms: #{platform_names}\n\n"
+    end
+    
+    # Only show details for platforms with changes
     report = "# API Changes Report\n\n"
     
-    diff_results.each do |result|
+    platforms_with_changes.each do |result|
       report << "## #{result[:platform]}\n\n"
       report << "**Status:** #{result[:result]}\n\n"
       report << "```\n#{result[:diff]}\n```\n\n"
@@ -1643,16 +1656,37 @@ platform :ios do
     end
     
     begin
-      # Post comment using GitHub API
-      github_api(
+      # Look for existing API Changes Report comment
+      existing_comments = github_api(
         api_token: ENV["GITHUB_TOKEN"],
-        path: "/repos/RevenueCat/purchases-ios/issues/#{pr_number}/comments",
-        http_method: "POST",
-        body: { body: report }
+        path: "/repos/RevenueCat/purchases-ios/issues/#{pr_number}/comments"
       )
-      UI.success("Posted API diff comment to PR ##{pr_number}")
+      
+      api_diff_comment = existing_comments[:json].find do |comment|
+        comment["body"] && comment["body"].include?("# API Changes Report")
+      end
+      
+      if api_diff_comment
+        # Update existing comment
+        github_api(
+          api_token: ENV["GITHUB_TOKEN"],
+          path: "/repos/RevenueCat/purchases-ios/issues/comments/#{api_diff_comment["id"]}",
+          http_method: "PATCH",
+          body: { body: report }
+        )
+        UI.success("Updated existing API diff comment on PR ##{pr_number}")
+      else
+        # Create new comment
+        github_api(
+          api_token: ENV["GITHUB_TOKEN"],
+          path: "/repos/RevenueCat/purchases-ios/issues/#{pr_number}/comments",
+          http_method: "POST",
+          body: { body: report }
+        )
+        UI.success("Posted new API diff comment to PR ##{pr_number}")
+      end
     rescue => e
-      UI.error("Failed to post comment: #{e.message}")
+      UI.error("Failed to post/update comment: #{e.message}")
       # Still show the results locally as fallback
       UI.important("API Diff Results (failed to post to PR):")
       puts "\n" + report + "\n"
