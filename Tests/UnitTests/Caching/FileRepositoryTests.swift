@@ -21,7 +21,7 @@ class FileRepositoryTests: TestCase {
     func test_ifContentExists_networkServiceIsNotCalled() async throws {
         let sut = await makeSystemUnderTest()
         sut.cache.stubCachedContentExists(with: true)
-        let data = try await sut.fileRepository.getCachedURL(for: someURL)
+        let data = try await sut.fileRepository.generateOrGetCachedFileURL(for: someURL)
 
         XCTAssertNotNil(data)
         XCTAssertEqual(sut.networkService.invocations, [])
@@ -45,7 +45,7 @@ class FileRepositoryTests: TestCase {
     func test_whenCacheURLCannotBeAssembled_returnsNil() async throws {
         let sut = await makeSystemUnderTest(cacheDirectoryURL: nil)
         do {
-            _ = try await sut.fileRepository.getCachedURL(for: someURL)
+            _ = try await sut.fileRepository.generateOrGetCachedFileURL(for: someURL)
         } catch {
             switch error as? FileRepository.Error {
             case .failedToCreateCacheDirectory: break
@@ -63,7 +63,7 @@ class FileRepositoryTests: TestCase {
         sut.cache.stubCachedContentExists(with: false)
         sut.networkService.stubResponse(at: 0, result: .failure(SampleError()))
         do {
-            _ = try await sut.fileRepository.getCachedURL(for: someURL)
+            _ = try await sut.fileRepository.generateOrGetCachedFileURL(for: someURL)
             XCTFail(#function)
         } catch {
             switch error as? FileRepository.Error {
@@ -81,7 +81,7 @@ class FileRepositoryTests: TestCase {
         sut.cache.stubCachedContentExists(with: false)
         sut.cache.stubSaveData(with: .success(.init(data: data, url: someURL)))
         sut.networkService.stubResponse(at: 0, result: .success(data))
-        let result = try await sut.fileRepository.getCachedURL(for: someURL)
+        let result = try await sut.fileRepository.generateOrGetCachedFileURL(for: someURL)
 
         let expectedCachedURL = URL(string: "data:sample/someurl").unsafelyUnwrapped
 

@@ -45,7 +45,7 @@ import Foundation
     @_spi(Internal) public func prefetch(urls: [InputURL]) {
         for url in urls {
             Task { [weak self] in
-                try await self?.getCachedURL(for: url)
+                try await self?.generateOrGetCachedFileURL(for: url)
             }
         }
     }
@@ -53,7 +53,7 @@ import Foundation
     /// Create and/or get the cached file url
     /// - Parameters:
     ///   - url: The url for the remote data to cache into a file
-    @_spi(Internal) public func getCachedURL(for url: InputURL) async throws -> OutputURL {
+    @_spi(Internal) public func generateOrGetCachedFileURL(for url: InputURL) async throws -> OutputURL {
         try await store.getOrPut(
             Task { [weak self] in
                 guard let self, let cachedUrl = self.fileManager.generateLocalFilesystemURL(forRemoteURL: url) else {
@@ -104,7 +104,7 @@ import Foundation
     /// Create and/or get the cached file url
     /// - Parameters:
     ///   - url: The url for the remote data to cache into a file
-    func getCachedURL(for url: InputURL) async throws -> OutputURL
+    func generateOrGetCachedFileURL(for url: InputURL) async throws -> OutputURL
 }
 
 /// The input URL is the URL that the repository will read remote data from
