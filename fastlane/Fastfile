@@ -1558,7 +1558,14 @@ platform :ios do
         success = true
         UI.success("✅ No breaking API changes detected for #{platform[:name]}")
         UI.message("Success output for #{platform[:name]}: #{output}")
-        diff_results << { platform: platform[:name], result: "✅ No breaking changes", diff: output.empty? ? "No API changes detected for #{platform[:name]}" : output }
+        # Check if the output indicates no changes
+        no_changes = output.include?("# ✅ No changes detected") || output.empty?
+        diff_results << { 
+          platform: platform[:name], 
+          result: "✅ No breaking changes", 
+          diff: output,
+          no_changes: no_changes
+        }
       rescue => e
         UI.error("❌ API changes detected for #{platform[:name]}!")
         overall_result = false
@@ -1583,7 +1590,7 @@ platform :ios do
         
         UI.message("Cleaned diff output length: #{diff_output.length} characters")
         
-        diff_results << { platform: platform[:name], result: "❌ Breaking changes detected", diff: diff_output }
+        diff_results << { platform: platform[:name], result: "❌ Breaking changes detected", diff: diff_output, no_changes: false }
         File.write(diff_file, diff_output)
       end
     end
@@ -1621,16 +1628,12 @@ platform :ios do
   end
   
   def generate_api_diff_report(diff_results)
-    # Check if any platform has breaking changes or non-empty diff output
-    platforms_with_changes = diff_results.select do |result| 
-      result[:result].include?("❌") || 
-      (!result[:diff].nil? && !result[:diff].empty? && result[:diff] != "No API changes detected for #{result[:platform]}")
-    end
+    # Check if any platform has actual changes (not just "no changes detected" output)
+    platforms_with_changes = diff_results.select { |result| !result[:no_changes] }
     
     if platforms_with_changes.empty?
       # No changes detected across all platforms
-      platform_names = diff_results.map { |result| result[:platform] }.join(", ")
-      return "# API Changes Report\n\n✅ No changes detected for any of these platforms: #{platform_names}\n\n"
+      return "✅ No changes detected for any of these platforms\n"
     end
     
     # Only show details for platforms with changes
