@@ -58,6 +58,7 @@
 		1664E20A2E53B3FC00103AAC /* VideoPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1664E2092E53B3FC00103AAC /* VideoPlayerView.swift */; };
 		1664E20C2E53B41000103AAC /* VideoPlayerViewUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1664E20B2E53B41000103AAC /* VideoPlayerViewUIView.swift */; };
 		1664E20E2E53B41900103AAC /* VideoPlayerViewNSView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1664E20D2E53B41900103AAC /* VideoPlayerViewNSView.swift */; };
+		1664E2502E549BF600103AAC /* NoOpPaywallComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1664E24F2E549BF600103AAC /* NoOpPaywallComponentViewModel.swift */; };
 		16DA8EC92E4EE24100283940 /* JsonLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16DA8EC82E4EE24100283940 /* JsonLoader.swift */; };
 		16DA8ECD2E4EE33700283940 /* ImageComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16DA8ECC2E4EE33700283940 /* ImageComponentTests.swift */; };
 		16DA8EDF2E4F6A6600283940 /* PaywallVideoComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16DA8EDE2E4F6A6600283940 /* PaywallVideoComponent.swift */; };
@@ -1517,6 +1518,7 @@
 		1664E2092E53B3FC00103AAC /* VideoPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerView.swift; sourceTree = "<group>"; };
 		1664E20B2E53B41000103AAC /* VideoPlayerViewUIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerViewUIView.swift; sourceTree = "<group>"; };
 		1664E20D2E53B41900103AAC /* VideoPlayerViewNSView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerViewNSView.swift; sourceTree = "<group>"; };
+		1664E24F2E549BF600103AAC /* NoOpPaywallComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoOpPaywallComponentViewModel.swift; sourceTree = "<group>"; };
 		16DA8EC82E4EE24100283940 /* JsonLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JsonLoader.swift; sourceTree = "<group>"; };
 		16DA8ECC2E4EE33700283940 /* ImageComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageComponentTests.swift; sourceTree = "<group>"; };
 		16DA8EDE2E4F6A6600283940 /* PaywallVideoComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallVideoComponent.swift; sourceTree = "<group>"; };
@@ -3069,6 +3071,7 @@
 				2C8EC6DC2CCC7C5500D6CCF8 /* PackageValidator.swift */,
 				88B1BAE72C813A3C001B7EE5 /* PaywallComponentTypeTransformers.swift */,
 				2C08B3342CDD16550024857B /* PaywallComponentViewModel.swift */,
+				1664E24F2E549BF600103AAC /* NoOpPaywallComponentViewModel.swift */,
 			);
 			path = ViewModelHelpers;
 			sourceTree = "<group>";
@@ -7454,6 +7457,7 @@
 				03C06FCA2D479C7400600693 /* CarouselComponentView.swift in Sources */,
 				353FDC0F2CA446FA0055F328 /* StoreProductDiscount+Extensions.swift in Sources */,
 				03A98CF12D222F5F009BCA61 /* FallbackComponentPreview.swift in Sources */,
+				1664E2502E549BF600103AAC /* NoOpPaywallComponentViewModel.swift in Sources */,
 				887A60862C1D037000E1A461 /* FooterHidingModifier.swift in Sources */,
 				4D3BA5882D432E5900668AFC /* Fill.swift in Sources */,
 				887A60C02C1D037000E1A461 /* AsyncButton.swift in Sources */,

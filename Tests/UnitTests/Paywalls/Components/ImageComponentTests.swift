@@ -30,7 +30,7 @@ class ImageComponentTests: TestCase {
         // Validate some data
         XCTAssertEqual(
             image.source.light.original.absoluteString,
-            "https://assets.pawwalls.com/1151049_1732039548.png"
+            "https://assets.rc.com/_caaaattss_original_.png"
         )
         XCTAssertNil(image.source.dark)
         XCTAssertNotNil(image.colorOverlay)

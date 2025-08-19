@@ -41,12 +41,12 @@
   },
   "source": {
     "light": {
-      "heic": "https://assets.pawwalls.com/1151049_1732039548.heic",
-      "heic_low_res": "https://assets.pawwalls.com/1151049_low_res_1732039548.heic",
+      "heic": "https://assets.rc.com/_caaaattss_heic.heic",
+      "heic_low_res": "https://assets.rc.com/_caaaattss_heic_low_res.heic",
       "height": 200,
-      "original": "https://assets.pawwalls.com/1151049_1732039548.png",
-      "webp": "https://assets.pawwalls.com/1151049_1732039548.webp",
-      "webp_low_res": "https://assets.pawwalls.com/1151049_low_res_1732039548.webp",
+      "original": "https://assets.rc.com/_caaaattss_original_.png",
+      "webp": "https://assets.rc.com/_caaaattss_webp.webp",
+      "webp_low_res": "https://assets.rc.com/_caaaattss_webp_low_res.webp",
       "width": 400
     }
   },
