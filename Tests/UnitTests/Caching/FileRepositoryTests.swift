@@ -19,7 +19,7 @@ class FileRepositoryTests: TestCase {
     let someURL = URL(string: "https://somesite.com/someurl").unsafelyUnwrapped
 
     func test_ifContentExists_networkServiceIsNotCalled() async throws {
-        let sut = await makeSUT()
+        let sut = await makeSystemUnderTest()
         sut.cache.stubCachedContentExists(with: true)
         let data = try await sut.fileRepository.getCachedURL(for: someURL)
 
@@ -28,7 +28,7 @@ class FileRepositoryTests: TestCase {
     }
 
     func test_prefetch_invokesNetwork() async throws {
-        let sut = await makeSUT()
+        let sut = await makeSystemUnderTest()
         let data = "SomeData".data(using: .utf8).unsafelyUnwrapped
 
         sut.cache.stubSaveData(with: .success(.init(data: data, url: someURL)))
@@ -43,7 +43,7 @@ class FileRepositoryTests: TestCase {
     }
 
     func test_whenCacheURLCannotBeAssembled_returnsNil() async throws {
-        let sut = await makeSUT(cacheDirectoryURL: nil)
+        let sut = await makeSystemUnderTest(cacheDirectoryURL: nil)
         do {
             _ = try await sut.fileRepository.getCachedURL(for: someURL)
         } catch {
@@ -58,7 +58,7 @@ class FileRepositoryTests: TestCase {
     }
 
     func test_whenNetworkServiceFails_completesWithError() async {
-        let sut = await makeSUT()
+        let sut = await makeSystemUnderTest()
 
         sut.cache.stubCachedContentExists(with: false)
         sut.networkService.stubResponse(at: 0, result: .failure(SampleError()))
@@ -76,7 +76,7 @@ class FileRepositoryTests: TestCase {
     }
 
     func test_savingData_mapsURLToNewURLType_andReturnsIt() async throws {
-        let sut = await makeSUT()
+        let sut = await makeSystemUnderTest()
         let data = "SomeData".data(using: .utf8).unsafelyUnwrapped
         sut.cache.stubCachedContentExists(with: false)
         sut.cache.stubSaveData(with: .success(.init(data: data, url: someURL)))
@@ -91,7 +91,7 @@ class FileRepositoryTests: TestCase {
         XCTAssertNotEqual(someURL, expectedCachedURL)
     }
 
-    func makeSUT(
+    func makeSystemUnderTest(
         cacheDirectoryURL: URL? = URL(string: "data:sample"),
         file: StaticString = #filePath,
         line: UInt = #line
