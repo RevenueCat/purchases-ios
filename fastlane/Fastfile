@@ -1388,6 +1388,10 @@ platform :ios do
     Dir.mktmpdir("pr-swiftinterface-") do |temp_dir|
       UI.message("Using temporary directory: #{temp_dir}")
 
+      # Clean temp directory to make sure it's not polluted
+      UI.message("Cleaning temporary directory...")
+      sh("rm", "-rf", "#{temp_dir}/*") if Dir.exist?(temp_dir)
+
     platforms = [
       {
         sdk: "iphonesimulator",
@@ -1428,7 +1432,7 @@ platform :ios do
         # Get SDK path
         sdk_path = sh("xcrun --sdk #{platform_config[:sdk]} --show-sdk-path").strip
         
-        # Run xcodebuild from the project root directory
+        # Run xcodebuild from the project root directory (clean build for each platform)
         Dir.chdir("..") do
           sh("xcodebuild", "clean", "build",
              "-scheme", "RevenueCat",
@@ -1442,8 +1446,25 @@ platform :ios do
         UI.message("Looking for .swiftinterface file for #{platform_config[:platform]}...")
         derived_data_dir = "../.build"
 
-        # Find the RevenueCat.swiftinterface file (excluding private interfaces)
-        swiftinterface_files = Dir.glob("#{derived_data_dir}/**/RevenueCat.swiftinterface").reject { |path| path.include?("private") }
+        # Find the RevenueCat.swiftinterface file for this specific platform build
+        # Look in the build intermediates directory where xcodebuild generates them
+        platform_pattern = case platform_config[:sdk]
+        when "iphonesimulator"
+          "**/Release-iphonesimulator/**/Objects-normal/**/RevenueCat.swiftinterface"
+        when "iphoneos" 
+          "**/Release-iphoneos/**/Objects-normal/**/RevenueCat.swiftinterface"
+        when "macosx"
+          "**/Release/**/Objects-normal/**/RevenueCat.swiftinterface"
+        when "watchsimulator"
+          "**/Release-watchsimulator/**/Objects-normal/**/RevenueCat.swiftinterface"
+        when "watchos"
+          "**/Release-watchos/**/Objects-normal/**/RevenueCat.swiftinterface"
+        else
+          "**/RevenueCat.swiftinterface"
+        end
+        
+        swiftinterface_files = Dir.glob("#{derived_data_dir}/#{platform_pattern}")
+          .reject { |path| path.include?("private") }
 
         if swiftinterface_files.empty?
           UI.message("Contents of derived data directory:")
