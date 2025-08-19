@@ -1161,6 +1161,53 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(viewModel.shouldShowList).to(beTrue())
     }
 
+    func testShouldShowListWithVirtualCurrencies() async throws {
+        // Test with only 1 virtual currency -> should be false
+        var mockPurchases = MockCustomerCenterPurchases(
+            customerInfo: CustomerCenterViewModelTests.customerInfoWithoutSubscriptions,
+            customerCenterConfigData: CustomerCenterConfigData.mock(displayVirtualCurrencies: true)
+        )
+        mockPurchases.virtualCurrenciesResult = .success(VirtualCurrenciesFixtures.oneVirtualCurrency)
+
+        var viewModel = CustomerCenterViewModel(
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchasesProvider: mockPurchases
+        )
+
+        await viewModel.loadScreen()
+        expect(viewModel.shouldShowList).to(beFalse())
+
+        // Test with multiple virtual currencies -> should be true
+        mockPurchases = MockCustomerCenterPurchases(
+            customerInfo: CustomerCenterViewModelTests.customerInfoWithoutSubscriptions,
+            customerCenterConfigData: CustomerCenterConfigData.mock(displayVirtualCurrencies: true)
+        )
+        mockPurchases.virtualCurrenciesResult = .success(VirtualCurrenciesFixtures.fourVirtualCurrencies)
+
+        viewModel = CustomerCenterViewModel(
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchasesProvider: mockPurchases
+        )
+
+        await viewModel.loadScreen()
+        expect(viewModel.shouldShowList).to(beTrue())
+
+        // Test with 1 subscription + virtual currencies -> should be true
+        mockPurchases = MockCustomerCenterPurchases(
+            customerInfo: CustomerCenterViewModelTests.customerInfoWithAppleSubscriptions,
+            customerCenterConfigData: CustomerCenterConfigData.mock(displayVirtualCurrencies: true)
+        )
+        mockPurchases.virtualCurrenciesResult = .success(VirtualCurrenciesFixtures.oneVirtualCurrency)
+
+        viewModel = CustomerCenterViewModel(
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchasesProvider: mockPurchases
+        )
+
+        await viewModel.loadScreen()
+        expect(viewModel.shouldShowList).to(beTrue())
+    }
+
     private func formatted(price: Decimal, currencyCode: String = "USD") -> String {
         PurchaseInformation.defaultNumberFormatter.currencyCode = currencyCode
         return PurchaseInformation.defaultNumberFormatter.string(from: price as NSNumber)!
