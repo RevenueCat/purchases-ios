@@ -20,7 +20,6 @@ import SwiftUI
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-// swiftlint:disable file_length
 struct RelevantPurchasesListView: View {
 
     @Environment(\.appearance)
@@ -276,7 +275,7 @@ struct RelevantPurchasesListView_Previews: PreviewProvider {
                 .environment(\.supportInformation, warningOffMock.support)
             }
             .preferredColorScheme(colorScheme)
-            .previewDisplayName("Active subs - \(colorScheme)")
+            .previewDisplayName("Subscriptions only - \(colorScheme)")
 
             CompatibilityNavigationStack {
                 RelevantPurchasesListView(
@@ -293,7 +292,7 @@ struct RelevantPurchasesListView_Previews: PreviewProvider {
                 .environment(\.supportInformation, warningOffMock.support)
             }
             .preferredColorScheme(colorScheme)
-            .previewDisplayName("No subscriptions - \(colorScheme)")
+            .previewDisplayName("Purchases only - \(colorScheme)")
 
             CompatibilityNavigationStack {
                 RelevantPurchasesListView(
@@ -311,23 +310,6 @@ struct RelevantPurchasesListView_Previews: PreviewProvider {
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Empty - \(colorScheme)")
-
-            CompatibilityNavigationStack {
-                RelevantPurchasesListView(
-                    customerInfoViewModel: CustomerCenterViewModel(
-                        activeSubscriptionPurchases: [],
-                        activeNonSubscriptionPurchases: [.consumable, .lifetime],
-                        configuration: .default
-                    ),
-                    viewModel: RelevantPurchasesListViewModel(
-                        screen: warningOffMock.screens[.management]!,
-                        shouldShowSeeAllPurchases: true
-                    )
-                )
-                .environment(\.supportInformation, warningOffMock.support)
-            }
-            .preferredColorScheme(colorScheme)
-            .previewDisplayName("No subscriptions - \(colorScheme)")
 
             CompatibilityNavigationStack {
                 RelevantPurchasesListView(
@@ -346,25 +328,7 @@ struct RelevantPurchasesListView_Previews: PreviewProvider {
                 .environment(\.supportInformation, warningOffMock.support)
             }
             .preferredColorScheme(colorScheme)
-            .previewDisplayName("Active subs & other - \(colorScheme)")
-
-            CompatibilityNavigationStack {
-                RelevantPurchasesListView(
-                    customerInfoViewModel: CustomerCenterViewModel(
-                        activeSubscriptionPurchases: [],
-                        activeNonSubscriptionPurchases: [],
-                        configuration: .default
-                    ),
-                    viewModel: RelevantPurchasesListViewModel(
-                        screen: warningOffMock.screens[.management]!,
-                        activePurchases: [],
-                        shouldShowSeeAllPurchases: false
-                    )
-                )
-                .environment(\.supportInformation, warningOffMock.support)
-            }
-            .preferredColorScheme(colorScheme)
-            .previewDisplayName("Empty - \(colorScheme)")
+            .previewDisplayName("Subscriptions & other - \(colorScheme)")
 
             CompatibilityNavigationStack {
                 RelevantPurchasesListView(
