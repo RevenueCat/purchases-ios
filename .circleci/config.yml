@@ -1509,21 +1509,21 @@ jobs:
           command: |
             bundle exec fastlane ios check_api_changes
             
-      # Store artifacts for inspection
+      # Store generated artifacts for inspection
       - store_artifacts:
-          path: revenuecat-api-ios-simulator.swiftinterface
+          path: /tmp/pr-swiftinterface/RevenueCat-ios-simulator.swiftinterface
           destination: revenuecat-api-ios-simulator.swiftinterface
       - store_artifacts:
-          path: revenuecat-api-ios.swiftinterface
+          path: /tmp/pr-swiftinterface/RevenueCat-ios.swiftinterface
           destination: revenuecat-api-ios.swiftinterface
       - store_artifacts:
-          path: revenuecat-api-macos.swiftinterface
+          path: /tmp/pr-swiftinterface/RevenueCat-macos.swiftinterface
           destination: revenuecat-api-macos.swiftinterface
       - store_artifacts:
-          path: revenuecat-api-watchos-simulator.swiftinterface
+          path: /tmp/pr-swiftinterface/RevenueCat-watchos-simulator.swiftinterface
           destination: revenuecat-api-watchos-simulator.swiftinterface
       - store_artifacts:
-          path: revenuecat-api-watchos.swiftinterface
+          path: /tmp/pr-swiftinterface/RevenueCat-watchos.swiftinterface
           destination: revenuecat-api-watchos.swiftinterface
       - slack-notify-on-fail
 
