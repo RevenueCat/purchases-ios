@@ -88,7 +88,7 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                     self.collectAllImageURLs(in: stack)
                 })
             case .video:
-                assert(false, "Video component not supported yet")
+                // TO DO - prewarm cache
             }
         }
 
