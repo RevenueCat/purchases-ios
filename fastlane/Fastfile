@@ -1381,6 +1381,234 @@ platform :ios do
     end
   end
 
+  desc "Generate Swift interface files for API change detection"
+  lane :generate_swiftinterface do
+    require 'tmpdir'
+    
+    Dir.mktmpdir("pr-swiftinterface-") do |temp_dir|
+      UI.message("Using temporary directory: #{temp_dir}")
+
+    platforms = [
+      {
+        sdk: "iphonesimulator",
+        platform: "iOS",
+        suffix: "-ios-simulator",
+        destination: "generic/platform=iOS Simulator"
+      },
+      {
+        sdk: "iphoneos",
+        platform: "iOS",
+        suffix: "-ios",
+        destination: "generic/platform=iOS"
+      },
+      {
+        sdk: "macosx",
+        platform: "macOS",
+        suffix: "-macos",
+        destination: "generic/platform=macOS"
+      },
+      {
+        sdk: "watchsimulator",
+        platform: "watchOS",
+        suffix: "-watchos-simulator",
+        destination: "generic/platform=watchOS Simulator"
+      },
+      {
+        sdk: "watchos",
+        platform: "watchOS",
+        suffix: "-watchos",
+        destination: "generic/platform=watchOS"
+      }
+    ]
+
+    platforms.each do |platform_config|
+      UI.message("Building RevenueCat framework for #{platform_config[:platform]}...")
+
+      begin
+        # Get SDK path
+        sdk_path = sh("xcrun --sdk #{platform_config[:sdk]} --show-sdk-path").strip
+        
+        # Run xcodebuild from the project root directory
+        Dir.chdir("..") do
+          sh("xcodebuild", "clean", "build",
+             "-scheme", "RevenueCat",
+             "-derivedDataPath", ".build",
+             "-configuration", "Release", 
+             "-sdk", sdk_path,
+             "-destination", platform_config[:destination],
+             "BUILD_LIBRARY_FOR_DISTRIBUTION=YES")
+        end
+
+        UI.message("Looking for .swiftinterface file for #{platform_config[:platform]}...")
+        derived_data_dir = "../.build"
+
+        # Find the RevenueCat.swiftinterface file (excluding private interfaces)
+        swiftinterface_files = Dir.glob("#{derived_data_dir}/**/RevenueCat.swiftinterface").reject { |path| path.include?("private") }
+
+        if swiftinterface_files.empty?
+          UI.message("Contents of derived data directory:")
+          Dir.chdir("..") do
+            sh("find", ".build", "-type", "f", "-name", "*.swiftinterface", "-o", "-name", "RevenueCat*")
+          end
+          UI.user_error!("Could not find RevenueCat.swiftinterface file for #{platform_config[:platform]}")
+        end
+
+        swiftinterface_path = swiftinterface_files.first
+        output_path = "#{temp_dir}/RevenueCat#{platform_config[:suffix]}.swiftinterface"
+
+        UI.message("Found swiftinterface at: #{swiftinterface_path}")
+        FileUtils.cp(swiftinterface_path, output_path)
+        UI.success("Generated .swiftinterface file has been copied to #{output_path}")
+
+      rescue => e
+        UI.user_error!("Failed to build or find Swift interface for #{platform_config[:platform]}: #{e.message}")
+      end
+    end
+
+      UI.success("All Swift interface files generated successfully in #{temp_dir}")
+      
+      # Copy files to the expected location for Circle CI
+      expected_dir = "/tmp/pr-swiftinterface"
+      sh("mkdir", "-p", expected_dir)
+      sh("cp", "-r", "#{temp_dir}/.", expected_dir)
+      UI.success("Swift interface files copied to #{expected_dir} for Circle CI")
+    end
+  end
+
+  desc "Check API changes and report results"
+  lane :check_api_changes do
+    UI.message("Checking for API changes across all platforms...")
+    
+    # Ensure the API diff tool is available
+    unless File.exist?(File.expand_path("~/bin/public-api-diff"))
+      UI.user_error!("API diff tool not found at ~/bin/public-api-diff. Please install it first.")
+    end
+    
+    platforms = [
+      { suffix: "-ios-simulator", name: "iOS Simulator" },
+      { suffix: "-ios", name: "iOS" },
+      { suffix: "-macos", name: "macOS" },
+      { suffix: "-watchos-simulator", name: "watchOS Simulator" },
+      { suffix: "-watchos", name: "watchOS" }
+    ]
+    
+    # Create directory for diff results
+    diff_dir = "/tmp/api-diffs"
+    sh("mkdir", "-p", diff_dir)
+    
+    overall_result = true
+    diff_results = []
+    
+    platforms.each do |platform|
+      UI.message("Checking API changes for #{platform[:name]}...")
+      
+      old_file = "../revenuecat-api#{platform[:suffix]}.swiftinterface"
+      new_file = "/tmp/pr-swiftinterface/RevenueCat#{platform[:suffix]}.swiftinterface"
+      diff_file = "#{diff_dir}/diff#{platform[:suffix]}.txt"
+      
+      # Check if files exist
+      unless File.exist?(old_file)
+        UI.error("Baseline interface file not found: #{old_file}")
+        overall_result = false
+        diff_results << { platform: platform[:name], result: "❌ Baseline file missing", diff: "Baseline interface file not found: #{old_file}" }
+        next
+      end
+      
+      unless File.exist?(new_file)
+        UI.error("New interface file not found: #{new_file}")
+        overall_result = false  
+        diff_results << { platform: platform[:name], result: "❌ New file missing", diff: "New interface file not found: #{new_file}" }
+        next
+      end
+      
+      # Run the API diff
+      success = false
+      begin
+        sh("~/bin/public-api-diff", "swift-interface", "--old", old_file, "--new", new_file)
+        success = true
+        UI.success("✅ No breaking API changes detected for #{platform[:name]}")
+        diff_results << { platform: platform[:name], result: "✅ No breaking changes", diff: "No API changes detected for #{platform[:name]}" }
+      rescue => e
+        UI.error("❌ API changes detected for #{platform[:name]}!")
+        overall_result = false
+        
+        # Try to capture the diff output
+        diff_output = ""
+        begin
+          diff_output = sh("~/bin/public-api-diff", "swift-interface", "--old", old_file, "--new", new_file, error_callback: ->(result) { result })
+        rescue => diff_e
+          diff_output = diff_e.message
+        end
+        
+        diff_results << { platform: platform[:name], result: "❌ Breaking changes detected", diff: diff_output }
+        File.write(diff_file, diff_output)
+      end
+    end
+    
+    # Generate report
+    report = generate_api_diff_report(diff_results)
+    
+    # Check if we're in CI (Circle CI) and this is a PR
+    is_ci = !ENV["CIRCLECI"].nil?
+    is_pr = !ENV["CIRCLE_PULL_REQUEST"].nil? && !ENV["CIRCLE_PULL_REQUEST"].empty?
+    
+    if is_ci && is_pr
+      # In CI + PR: Post comment to GitHub
+      UI.message("Running in CI for a PR, posting comment...")
+      post_api_diff_comment(report)
+    else
+      # Local or non-PR: Print to terminal
+      UI.important("API Diff Results:")
+      puts "\n" + report + "\n"
+    end
+    
+    # Fail the lane if there were breaking changes
+    if !overall_result
+      UI.user_error!("Breaking API changes detected! Check the diff output above.")
+    else
+      UI.success("All API checks passed!")
+    end
+  end
+  
+  def generate_api_diff_report(diff_results)
+    report = "# API Changes Report\n\n"
+    
+    diff_results.each do |result|
+      report << "## #{result[:platform]}\n\n"
+      report << "**Status:** #{result[:result]}\n\n"
+      report << "```\n#{result[:diff]}\n```\n\n"
+    end
+    
+    report
+  end
+  
+  def post_api_diff_comment(report)
+    pr_url = ENV["CIRCLE_PULL_REQUEST"]
+    
+    # Extract PR number from URL
+    pr_number = pr_url.match(/\/pull\/(\d+)/)[1] rescue nil
+    if pr_number.nil?
+      UI.error("Could not extract PR number from: #{pr_url}")
+      return
+    end
+    
+    begin
+      # Post comment using GitHub API
+      github_api(
+        api_token: ENV["GITHUB_TOKEN"],
+        path: "/repos/RevenueCat/purchases-ios/issues/#{pr_number}/comments",
+        http_method: "POST",
+        body: { body: report }
+      )
+      UI.success("Posted API diff comment to PR ##{pr_number}")
+    rescue => e
+      UI.error("Failed to post comment: #{e.message}")
+      # Still show the results locally as fallback
+      UI.important("API Diff Results (failed to post to PR):")
+      puts "\n" + report + "\n"
+    end
+  end
+
   desc "Updates purchases-ios-snapshots-commit to point to latest commit on main"
   lane :update_snapshots_repo do
     new_hash = ""

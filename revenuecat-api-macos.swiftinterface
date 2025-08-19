@@ -2005,6 +2005,12 @@ public protocol RawDataContainer {
 }
 public typealias PurchaseResultData = (transaction: RevenueCat.StoreTransaction?, customerInfo: RevenueCat.CustomerInfo, userCancelled: Swift.Bool)
 public typealias PurchaseCompletedBlock = @_Concurrency.MainActor @Sendable (RevenueCat.StoreTransaction?, RevenueCat.CustomerInfo?, RevenueCat.PublicError?, Swift.Bool) -> Swift.Void
+@_hasMissingDesignatedInitializers public class A {
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class B {
+  @objc deinit
+}
 public typealias GetStorefrontBlock = @_Concurrency.MainActor @Sendable (RevenueCat.Storefront?) -> Swift.Void
 public typealias StartPurchaseBlock = (@escaping RevenueCat.PurchaseCompletedBlock) -> Swift.Void
 @_hasMissingDesignatedInitializers @objc(RCPurchases) final public class Purchases : ObjectiveC.NSObject, RevenueCat.PurchasesType, RevenueCat.PurchasesSwiftType {

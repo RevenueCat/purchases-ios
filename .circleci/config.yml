@@ -1501,29 +1501,13 @@ jobs:
             cd -
 
             # Generate PR branch swiftinterface
-            ./scripts/generate-swiftinterface.sh
+            bundle exec fastlane ios generate_swiftinterface
             
       # Compare API changes for each platform
       - run:
-          name: Compare API changes
+          name: Check API changes
           command: |
-            check_api_changes() {
-              local suffix=$1
-              local platform=$2
-              echo "Checking API changes for $platform..."
-              if ! ~/bin/public-api-diff swift-interface --old "revenuecat-api${suffix}.swiftinterface" --new "/tmp/pr-swiftinterface/RevenueCat${suffix}.swiftinterface"; then
-                echo "❌ API changes detected for $platform! This PR introduces breaking changes to the public API."
-                return 1
-              fi
-              return 0
-            }
-
-            # Check each platform
-            check_api_changes "-ios-simulator" "iOS Simulator" || exit 1
-            check_api_changes "-ios" "iOS" || exit 1
-            check_api_changes "-macos" "macOS" || exit 1
-            check_api_changes "-watchos-simulator" "watchOS Simulator" || exit 1
-            check_api_changes "-watchos" "watchOS" || exit 1
+            bundle exec fastlane ios check_api_changes
             
       # Store artifacts for inspection
       - store_artifacts:

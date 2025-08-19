@@ -1,6 +1,6 @@
 // swift-interface-format-version: 1.0
 // swift-compiler-version: Apple Swift version 6.1 effective-5.10 (swiftlang-6.1.0.110.21 clang-1700.0.13.3)
-// swift-module-flags: -target armv7k-apple-watchos6.2 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -module-name RevenueCat
+// swift-module-flags: -target arm64-apple-watchos6.2-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -module-name RevenueCat
 // swift-module-flags-ignorable: -no-verify-emitted-module-interface -interface-compiler-version 6.1
 import Combine
 import CommonCrypto
@@ -2006,6 +2006,12 @@ public protocol RawDataContainer {
 }
 public typealias PurchaseResultData = (transaction: RevenueCat.StoreTransaction?, customerInfo: RevenueCat.CustomerInfo, userCancelled: Swift.Bool)
 public typealias PurchaseCompletedBlock = @_Concurrency.MainActor @Sendable (RevenueCat.StoreTransaction?, RevenueCat.CustomerInfo?, RevenueCat.PublicError?, Swift.Bool) -> Swift.Void
+@_hasMissingDesignatedInitializers public class A {
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class B {
+  @objc deinit
+}
 public typealias GetStorefrontBlock = @_Concurrency.MainActor @Sendable (RevenueCat.Storefront?) -> Swift.Void
 public typealias StartPurchaseBlock = (@escaping RevenueCat.PurchaseCompletedBlock) -> Swift.Void
 @_hasMissingDesignatedInitializers @objc(RCPurchases) final public class Purchases : ObjectiveC.NSObject, RevenueCat.PurchasesType, RevenueCat.PurchasesSwiftType {
