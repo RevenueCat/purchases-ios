@@ -36,22 +36,22 @@ extension FileManager: LargeItemCacheType {
     }
 
     /// Store data to a url
-    public func saveData(_ data: Data, to url: URL) throws {
+    func saveData(_ data: Data, to url: URL) throws {
         try data.write(to: url)
     }
 
     /// Check if there is content cached at the given path
-    public func cachedContentExists(at url: URL) -> Bool {
+    func cachedContentExists(at url: URL) -> Bool {
         (try? loadFile(at: url)) != nil
     }
 
     /// Generate a url for a location on disk based in the input URL
-    public func generateLocalFilesystemURL(forRemoteURL url: URL) -> URL? {
+    func generateLocalFilesystemURL(forRemoteURL url: URL) -> URL? {
         cacheDirectory?.appendingPathComponent(url.pathComponents.joined(separator: "/"))
     }
 
     /// Load data from url
-    public func loadFile(at url: URL) throws -> Data {
+    func loadFile(at url: URL) throws -> Data {
         try Data(contentsOf: url)
     }
 }
