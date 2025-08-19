@@ -58,6 +58,8 @@
 		1664E20A2E53B3FC00103AAC /* VideoPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1664E2092E53B3FC00103AAC /* VideoPlayerView.swift */; };
 		1664E20C2E53B41000103AAC /* VideoPlayerViewUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1664E20B2E53B41000103AAC /* VideoPlayerViewUIView.swift */; };
 		1664E20E2E53B41900103AAC /* VideoPlayerViewNSView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1664E20D2E53B41900103AAC /* VideoPlayerViewNSView.swift */; };
+		1664E21F2E53BC8A00103AAC /* VideoComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1664E21E2E53BC8A00103AAC /* VideoComponentView.swift */; };
+		1664E2212E53C0FC00103AAC /* SizeReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1664E2202E53C0FC00103AAC /* SizeReader.swift */; };
 		1664E2502E549BF600103AAC /* NoOpPaywallComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1664E24F2E549BF600103AAC /* NoOpPaywallComponentViewModel.swift */; };
 		16DA8EC92E4EE24100283940 /* JsonLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16DA8EC82E4EE24100283940 /* JsonLoader.swift */; };
 		16DA8ECD2E4EE33700283940 /* ImageComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16DA8ECC2E4EE33700283940 /* ImageComponentTests.swift */; };
@@ -1518,6 +1520,8 @@
 		1664E2092E53B3FC00103AAC /* VideoPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerView.swift; sourceTree = "<group>"; };
 		1664E20B2E53B41000103AAC /* VideoPlayerViewUIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerViewUIView.swift; sourceTree = "<group>"; };
 		1664E20D2E53B41900103AAC /* VideoPlayerViewNSView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerViewNSView.swift; sourceTree = "<group>"; };
+		1664E21E2E53BC8A00103AAC /* VideoComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoComponentView.swift; sourceTree = "<group>"; };
+		1664E2202E53C0FC00103AAC /* SizeReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SizeReader.swift; sourceTree = "<group>"; };
 		1664E24F2E549BF600103AAC /* NoOpPaywallComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoOpPaywallComponentViewModel.swift; sourceTree = "<group>"; };
 		16DA8EC82E4EE24100283940 /* JsonLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JsonLoader.swift; sourceTree = "<group>"; };
 		16DA8ECC2E4EE33700283940 /* ImageComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageComponentTests.swift; sourceTree = "<group>"; };
@@ -2970,6 +2974,7 @@
 				1664E20B2E53B41000103AAC /* VideoPlayerViewUIView.swift */,
 				1664E2092E53B3FC00103AAC /* VideoPlayerView.swift */,
 				16DA8F212E4FC0E100283940 /* VideoComponentViewModel.swift */,
+				1664E21E2E53BC8A00103AAC /* VideoComponentView.swift */,
 			);
 			path = Video;
 			sourceTree = "<group>";
@@ -3046,6 +3051,7 @@
 		2C7457442CEA652B004ACE52 /* ViewHelpers */ = {
 			isa = PBXGroup;
 			children = (
+				1664E2202E53C0FC00103AAC /* SizeReader.swift */,
 				831660B52E3AAA4900855312 /* FixMacButtonsModifier.swift */,
 				03F0B6702DD6363B00E82199 /* NavigatetoURL.swift */,
 				030F93B22D5ED90B0085103F /* ProgressViewModifier.swift */,
@@ -7488,6 +7494,7 @@
 				887A60CA2C1D037000E1A461 /* RemoteImage.swift in Sources */,
 				887A607B2C1D037000E1A461 /* Bundle+Extensions.swift in Sources */,
 				16DA8F232E4FC0E100283940 /* VideoComponentViewModel.swift in Sources */,
+				1664E21F2E53BC8A00103AAC /* VideoComponentView.swift in Sources */,
 				03C72F6D2D32CDFB00297FEC /* FamilySharingTogglePreview.swift in Sources */,
 				030F918A2D55C1D20085103F /* LocaleFinder.swift in Sources */,
 				887A60CF2C1D037000E1A461 /* View+PresentPaywallFooter.swift in Sources */,
@@ -7606,6 +7613,7 @@
 				5798C96E2DF1985700F44400 /* CompatibilityContentUnavailableView.swift in Sources */,
 				5798C96F2DF1985700F44400 /* PurchaseDetailView.swift in Sources */,
 				5798C9702DF1985700F44400 /* SubscriptionDetailViewModel.swift in Sources */,
+				1664E2212E53C0FC00103AAC /* SizeReader.swift in Sources */,
 				5798C9712DF1985700F44400 /* PurchaseInformation+History.swift in Sources */,
 				5798C9722DF1985700F44400 /* DiscountsHandler.swift in Sources */,
 				75D7048B2DFC33A900F02803 /* Purchases+RevenueCatUI.swift in Sources */,

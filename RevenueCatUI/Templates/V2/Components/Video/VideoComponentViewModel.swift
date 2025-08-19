@@ -20,9 +20,11 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class VideoComponentViewModel {
 
-    private let localizationProvider: LocalizationProvider
+    let localizationProvider: LocalizationProvider
     let uiConfigProvider: UIConfigProvider
     private let component: PaywallComponent.VideoComponent
+
+    var imageSource: PaywallComponent.ThemeImageUrls? { component.fallbackSource }
 
     private let presentedOverrides: PresentedOverrides<LocalizedVideoPartial>?
 
@@ -34,6 +36,7 @@ class VideoComponentViewModel {
         self.localizationProvider = localizationProvider
         self.uiConfigProvider = uiConfigProvider
         self.component = component
+
         self.presentedOverrides = try self.component.overrides?.toPresentedOverrides {
             try LocalizedVideoPartial.create(from: $0, using: localizationProvider.localizedStrings)
         }
@@ -66,6 +69,11 @@ class VideoComponentViewModel {
             darkUrl: partial?.source?.dark?.url ?? self.component.source.dark?.url,
             darkLowResUrl: partial?.source?.dark?.urlLowRes ?? self.component.source.dark?.urlLowRes,
             size: partial?.size ?? self.component.size,
+            widthLight: partial?.source?.light.width ?? self.component.source.light.width,
+            heightLight: partial?.source?.light.height ?? self.component.source.light.height,
+            widthDark: partial?.source?.dark?.width ?? self.component.source.dark?.width,
+            heightDark: partial?.source?.dark?.height ?? self.component.source.dark?.height,
+            muteAudio: partial?.muteAudio ?? self.component.muteAudio,
             fitMode: partial?.fitMode ?? self.component.fitMode,
             maskShape: partial?.maskShape ?? self.component.maskShape,
             colorOverlay: partial?.colorOverlay ?? self.component.colorOverlay,
@@ -135,6 +143,11 @@ struct VideoComponentStyle {
     let darkUrl: URL?
     let darkLowResUrl: URL?
     let size: PaywallComponent.Size
+    let widthLight: Int
+    let heightLight: Int
+    let widthDark: Int?
+    let heightDark: Int?
+    let muteAudio: Bool
     let shape: ShapeModifier.Shape?
     let colorOverlay: DisplayableColorScheme?
     let padding: EdgeInsets
@@ -153,6 +166,11 @@ struct VideoComponentStyle {
         darkUrl: URL? = nil,
         darkLowResUrl: URL? = nil,
         size: PaywallComponent.Size,
+        widthLight: Int,
+        heightLight: Int,
+        widthDark: Int?,
+        heightDark: Int?,
+        muteAudio: Bool,
         fitMode: PaywallComponent.FitMode,
         maskShape: PaywallComponent.MaskShape? = nil,
         colorOverlay: PaywallComponent.ColorScheme? = nil,
@@ -171,6 +189,11 @@ struct VideoComponentStyle {
         self.darkLowResUrl = darkLowResUrl
         self.darkUrl = darkUrl
         self.size = size
+        self.widthLight = widthLight
+        self.heightLight = heightLight
+        self.widthDark = widthDark
+        self.heightDark = heightDark
+        self.muteAudio = muteAudio
         self.shape = maskShape?.shape
         self.colorOverlay = colorOverlay?.asDisplayable(uiConfigProvider: uiConfigProvider)
         self.padding = (padding ?? .zero).edgeInsets

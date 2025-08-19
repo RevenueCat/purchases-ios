@@ -89,6 +89,7 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                 })
             case .video:
                 // TO DO - prewarm cache
+                break
             }
         }
 
