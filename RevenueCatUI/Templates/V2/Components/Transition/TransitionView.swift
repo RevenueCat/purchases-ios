@@ -14,6 +14,7 @@
 import RevenueCat
 import SwiftUI
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TransitionView<Content: View>: View {
     let transition: PaywallComponent.Transition
     let content: () -> Content
@@ -26,8 +27,15 @@ struct TransitionView<Content: View>: View {
                 content()
                     .transition(transition.toTransition)
             } else {
-                EmptyView()
-                    .transition(transition.toTransition)
+                if transition.displacementStrategy == .greedy {
+                    content()
+                        .hidden()
+                        .accessibilityHidden(true)
+                        .transition(transition.toTransition)
+                } else {
+                    EmptyView()
+                        .transition(transition.toTransition)
+                }
             }
         }.onAppear {
             withAnimation(transition.animation?.toAnimation ?? .none) {
@@ -37,6 +45,7 @@ struct TransitionView<Content: View>: View {
     }
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
 
     @ViewBuilder

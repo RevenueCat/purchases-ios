@@ -17,29 +17,40 @@ import Foundation
 public extension PaywallComponent {
     struct Transition: PaywallComponentBase {
         public let type: TransitionType
+        public let displacementStrategy: DisplacementStrategy
         public let animation: PaywallComponent.Animation?
 
         public init(from decoder: any Decoder) throws {
             let passthrough = try TransitionCodingContainer(from: decoder)
 
             self.type = TransitionType.from(passthrough.type) ?? .fade
+            self.displacementStrategy = passthrough.displacementStrategy
             self.animation = passthrough.animation
         }
 
         public func encode(to encoder: any Encoder) throws {
-            try TransitionCodingContainer(type: type.codingContainer, animation: animation)
-                .encode(to: encoder)
+            try TransitionCodingContainer(
+                type: type.codingContainer,
+                displacementStrategy: displacementStrategy,
+                animation: animation
+            )
+            .encode(to: encoder)
         }
     }
 
     internal struct TransitionCodingContainer: Codable {
         let type: TransitionTypeContainer
+        let displacementStrategy: DisplacementStrategy
         let animation: PaywallComponent.Animation?
     }
 
     internal struct TransitionTypeContainer: Codable {
         let type: String
         let value: String?
+    }
+
+    enum DisplacementStrategy: String, PaywallComponentBase {
+        case greedy, lazy
     }
 
     enum TransitionType: PaywallComponentBase {
