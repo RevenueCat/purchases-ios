@@ -228,6 +228,7 @@ fileprivate extension ButtonComponentViewModel {
             component: component.stack,
             packageValidator: factory.packageValidator,
             firstImageInfo: nil,
+            purchaseButtonCollector: nil,
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
             offering: offering

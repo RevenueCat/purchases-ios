@@ -207,7 +207,8 @@ private extension CustomerCenterView {
                 FallbackNoSubscriptionsView(
                     customerCenterViewModel: viewModel,
                     actionWrapper: self.viewModel.actionWrapper,
-                    virtualCurrencies: self.viewModel.virtualCurrencies
+                    virtualCurrencies: self.viewModel.virtualCurrencies,
+                    purchasesProvider: self.viewModel.purchasesProvider
                 )
             }
         }
