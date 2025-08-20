@@ -56,7 +56,7 @@ struct ShadowModifier: ViewModifier {
                                             blur: shadow.radius * 2,
                                             spread: 0,
                                             rect: rect)
-                            #if os(macOS)
+                            #if os(macOS) && DEBUG
                             // On macOS, CALayer shadows are not rendered properly using the
                             // default emerge rendering techniques
                             .emergeRenderingMode(.window)
