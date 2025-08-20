@@ -1486,30 +1486,15 @@ jobs:
     steps:
       - checkout
       - install-dependencies
-      
-      # Generate PR branch swiftinterface
+      - revenuecat/install-public-api-diff
       - run:
           name: Generate PR branch swiftinterface
           command: |
-            # Install adyen-swift-public-api-diff tool
-            git clone https://github.com/Adyen/adyen-swift-public-api-diff.git ~/tools/adyen-swift-public-api-diff
-            cd ~/tools/adyen-swift-public-api-diff
-            swift build -c release
-            mkdir -p ~/bin
-            cp .build/release/public-api-diff ~/bin/
-            export PATH="$PATH:~/bin"
-            cd -
-
-            # Generate PR branch swiftinterface
             bundle exec fastlane ios generate_swiftinterface
-            
-      # Compare API changes for each platform
       - run:
           name: Check API changes
           command: |
             bundle exec fastlane ios check_api_changes
-            
-      # Store generated artifacts for inspection
       - store_artifacts:
           path: /tmp/pr-swiftinterface/RevenueCat-ios-simulator.swiftinterface
           destination: revenuecat-api-ios-simulator.swiftinterface

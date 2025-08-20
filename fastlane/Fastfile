@@ -1633,7 +1633,8 @@ platform :ios do
     
     if platforms_with_changes.empty?
       # No changes detected across all platforms
-      return "✅ No changes detected for any of these platforms\n"
+      platform_names = diff_results.map { |result| result[:platform] }.join(", ")
+      return "✅ No changes detected for #{platform_names}\n"
     end
     
     # Only show details for platforms with changes
