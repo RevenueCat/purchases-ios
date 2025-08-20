@@ -1,0 +1,93 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  PaywallTransition.swift
+//
+//  Created by Jacob Zivan Rakidzich on 8/20/25.
+// swiftlint:disable missing_docs
+
+import Foundation
+
+public extension PaywallComponent {
+    struct Transition: PaywallComponentBase {
+        public let type: TransitionType
+        public let animation: PaywallComponent.Animation?
+
+        public init(from decoder: any Decoder) throws {
+            let passthrough = try TransitionCodingContainer(from: decoder)
+
+            self.type = TransitionType.from(passthrough.type) ?? .fade
+            self.animation = passthrough.animation
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            try TransitionCodingContainer(type: type.codingContainer, animation: animation)
+                .encode(to: encoder)
+        }
+    }
+
+    internal struct TransitionCodingContainer: Codable {
+        let type: TransitionTypeContainer
+        let animation: PaywallComponent.Animation?
+    }
+
+    internal struct TransitionTypeContainer: Codable {
+        let type: String
+        let value: String?
+    }
+
+    enum TransitionType: PaywallComponentBase {
+        case fade
+        case fadeAndScale
+        case scale
+        case slide
+        case custom(String)
+
+        var codingContainer: TransitionTypeContainer {
+            let type: String
+            var value: String?
+            switch self {
+            case .fade:
+                type = "fade"
+            case .fadeAndScale:
+                type = "fadeAndScale"
+            case .scale:
+                type = "scale"
+            case .slide:
+                type = "slide"
+            case .custom(let transition):
+                type = "custom"
+                value = transition
+            }
+            return TransitionTypeContainer(type: type, value: value)
+        }
+
+        static func from(_ container: TransitionTypeContainer) -> TransitionType? {
+            switch container.type {
+            case "fade":
+                .fade
+            case "fadeAndScale":
+                .fadeAndScale
+            case "scale":
+                .scale
+            case "slide":
+                .slide
+            case "custom":
+                if let value = container.value {
+                    .custom(value)
+                } else {
+                    nil
+                }
+            default:
+                nil
+            }
+        }
+
+    }
+}
