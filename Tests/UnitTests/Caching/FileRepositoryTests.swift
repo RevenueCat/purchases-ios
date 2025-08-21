@@ -35,7 +35,9 @@ class FileRepositoryTests: TestCase {
         sut.cache.stubCachedContentExists(with: false)
         sut.networkService.stubResponse(at: 0, result: .success(data))
 
-        sut.fileRepository.prefetch(urls: [someURL])
+        await Task(priority: .userInitiated) {
+            sut.fileRepository.prefetch(urls: [someURL])
+        }.value
 
         await yield()
 
