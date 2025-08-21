@@ -49,6 +49,15 @@ public extension PaywallComponent {
         let value: String?
     }
 
+    ///
+    /// Determines how the view being animated out is displaced by the view being animated in.
+    ///
+    /// A `greedy` displacement will result in the space being taken up by the incoming view
+    /// *before* it attempts to transition into the view hierarchy.
+    ///
+    /// A `lazy` displacement will not do this, instead it will result in shifting the layout
+    /// as the new view inserts itself.
+    ///
     enum DisplacementStrategy: String, PaywallComponentBase {
         case greedy, lazy
     }
