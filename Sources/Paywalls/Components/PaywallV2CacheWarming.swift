@@ -88,7 +88,7 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                     self.collectAllImageURLs(in: stack)
                 })
             case .video:
-                // TO DO - prewarm cache
+                // WIP: - prewarm cache
                 break
             }
         }
