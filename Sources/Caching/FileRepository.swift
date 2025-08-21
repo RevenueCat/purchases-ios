@@ -61,12 +61,12 @@ import Foundation
                     throw Error.failedToCreateCacheDirectory(url.absoluteString)
                 }
 
-                if fileManager.cachedContentExists(at: cachedUrl) {
+                if self.fileManager.cachedContentExists(at: cachedUrl) {
                     return cachedUrl
                 }
 
-                let data = try await downloadFile(from: url)
-                try saveCachedFile(url: cachedUrl, data: data)
+                let data = try await self.downloadFile(from: url)
+                try self.saveCachedFile(url: cachedUrl, data: data)
                 return cachedUrl
             },
             forKey: url
