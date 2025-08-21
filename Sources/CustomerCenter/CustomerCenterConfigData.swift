@@ -58,6 +58,7 @@ import Foundation
 
         @_spi(Internal) public enum CommonLocalizedString: String, Equatable {
 
+            case buySubscrition = "buy_subscription"
             case copy = "copy"
             case noThanks = "no_thanks"
             case noSubscriptionsFound = "no_subscriptions_found"
@@ -174,6 +175,8 @@ import Foundation
 
             @_spi(Internal) public var defaultValue: String {
                 switch self {
+                case .buySubscrition:
+                    return "Subscribe"
                 case .copy:
                     return "Copy"
                 case .noThanks:
@@ -634,12 +637,20 @@ import Foundation
         @_spi(Internal) public let title: String
         @_spi(Internal) public let subtitle: String?
         @_spi(Internal) public let paths: [HelpPath]
+        @_spi(Internal) public let offering: ScreenOffering?
 
-        @_spi(Internal) public init(type: ScreenType, title: String, subtitle: String?, paths: [HelpPath]) {
+        @_spi(Internal) public init(
+            type: ScreenType,
+            title: String,
+            subtitle: String?,
+            paths: [HelpPath],
+            offering: ScreenOffering?
+        ) {
             self.type = type
             self.title = title
             self.subtitle = subtitle
             self.paths = paths
+            self.offering = offering
         }
 
         @_spi(Internal) public enum ScreenType: String, Equatable {
@@ -713,6 +724,24 @@ import Foundation
             self.selected = selected
         }
     }
+
+    @_spi(Internal) public struct ScreenOffering: Equatable {
+        @_spi(Internal) public let type: OfferingType
+        @_spi(Internal) public let offeringId: String?
+
+        @_spi(Internal) public init(
+            type: OfferingType,
+            offeringId: String?
+        ) {
+            self.type = type
+            self.offeringId = offeringId
+        }
+
+        @_spi(Internal) public enum OfferingType: String, Equatable {
+            case current = "CURRENT"
+            case specific = "SPECIFIC"
+        }
+    }
 }
 
 @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
@@ -746,6 +775,21 @@ extension CustomerCenterConfigData.Screen {
         self.title = response.title
         self.subtitle = response.subtitle
         self.paths = response.paths.compactMap { CustomerCenterConfigData.HelpPath(from: $0) }
+        self.offering = response.offering.map { offering in
+            switch offering.type {
+            case CustomerCenterConfigData.ScreenOffering.OfferingType.specific.rawValue:
+                return CustomerCenterConfigData.ScreenOffering(
+                    type: .specific,
+                    offeringId: offering.offeringId
+                )
+
+            default:
+                return CustomerCenterConfigData.ScreenOffering(
+                    type: .current,
+                    offeringId: nil
+                )
+            }
+        }
     }
 
 }

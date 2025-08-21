@@ -40,8 +40,11 @@ struct PurchaseInformation {
     /// The store from which the purchase was made (e.g., App Store, Play Store).
     let store: Store
 
-    /// Indicates whether the purchase is a subscription or not.
+    /// Indicates whether the purchase is a subscription (renewable or non-renewable).
     let isSubscription: Bool
+
+    /// The product type from StoreKit (autoRenewableSubscription, nonRenewableSubscription, etc.)
+    let productType: StoreProduct.ProductType?
 
     /// Indicates whether the purchase is under a trial period.
     /// - `true` for purchases within the trial period.
@@ -135,6 +138,7 @@ struct PurchaseInformation {
          productIdentifier: String,
          store: Store,
          isSubscription: Bool,
+         productType: StoreProduct.ProductType?,
          isTrial: Bool,
          isCancelled: Bool,
          isExpired: Bool,
@@ -165,6 +169,7 @@ struct PurchaseInformation {
         self.productIdentifier = productIdentifier
         self.store = store
         self.isSubscription = isSubscription
+        self.productType = productType
         self.isTrial = isTrial
         self.isCancelled = isCancelled
         self.isSandbox = isSandbox
@@ -215,7 +220,10 @@ struct PurchaseInformation {
 
         self.customerInfoRequestedDate = customerInfoRequestedDate
         self.managementURL = managementURL
-        self.isSubscription = transaction.isSubscrition && transaction.store != .promotional
+        self.isSubscription = transaction.isSubscription
+            && transaction.store != .promotional
+        self.productType = subscribedProduct?.productType
+
         self.isLifetime = subscribedProduct?.productType == .nonConsumable
 
         // Use entitlement data if available, otherwise derive from transaction
@@ -318,6 +326,7 @@ extension PurchaseInformation: Hashable {
         hasher.combine(productIdentifier)
         hasher.combine(store)
         hasher.combine(isSubscription)
+        hasher.combine(productType)
         hasher.combine(isCancelled)
         hasher.combine(latestPurchaseDate)
         hasher.combine(customerInfoRequestedDate)
@@ -539,6 +548,10 @@ extension PurchaseInformation {
 }
 
 extension PurchaseInformation {
+
+    var isAppStoreRenewableSubscription: Bool {
+        return productType == .autoRenewableSubscription && store == .appStore
+    }
 
     var storeLocalizationKey: CCLocalizedString {
         switch store {
