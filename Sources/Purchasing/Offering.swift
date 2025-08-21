@@ -291,6 +291,40 @@ import Foundation
 
 }
 
+@_spi(Internal)
+public extension Offering {
+    
+    func withPresentedOfferingContext(_ presentedOfferingContext: PresentedOfferingContext) -> Self {
+        return Self(
+            identifier: identifier,
+            serverDescription: serverDescription,
+            metadata: metadata,
+            paywall: paywall,
+            paywallComponents: paywallComponents,
+            draftPaywallComponents: draftPaywallComponents,
+            availablePackages: availablePackages.map { $0.withPresentedOfferingContext(presentedOfferingContext) },
+            webCheckoutUrl: webCheckoutUrl
+        )
+    }
+    
+    func withPresentedOfferingContext(_ presentedOfferingContext: PresentedOfferingContext?) -> Self {
+        guard let presentedOfferingContext else { return self }
+        return withPresentedOfferingContext(presentedOfferingContext)
+    }
+}
+
+fileprivate extension Package {
+    func withPresentedOfferingContext(_ presentedOfferingContext: PresentedOfferingContext) -> Self {
+        return Self(
+            identifier: identifier,
+            packageType: packageType,
+            storeProduct: storeProduct,
+            presentedOfferingContext: presentedOfferingContext,
+            webCheckoutUrl: webCheckoutUrl
+        )
+    }
+}
+
 extension Offering {
 
     /// - Returns: The `metadata` value associated to `key` for the expected type,

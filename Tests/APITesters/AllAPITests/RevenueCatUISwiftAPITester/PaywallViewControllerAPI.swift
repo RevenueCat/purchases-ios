@@ -6,7 +6,7 @@
 //
 
 import RevenueCat
-import RevenueCatUI
+@_spi(Internal) import RevenueCatUI
 import SwiftUI
 
 #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
@@ -59,10 +59,15 @@ func paywallViewControllerAPI(_ delegate: Delegate,
                                                     displayCloseButton: true,
                                                     shouldBlockTouchEvents: true,
                                                     dismissRequestedHandler: dismissRequestedHandler)
-    let _: UIViewController = PaywallFooterViewController(offeringIdentifier: "offering", fontName: "Papyrus")
-
+    let _: UIViewController = PaywallViewController(offeringIdentifier: "offering",
+                                                    presentedOfferingContext: .init(offeringIdentifier: "offering"),
+                                                    fonts: fontProvider,
+                                                    displayCloseButton: true,
+                                                    shouldBlockTouchEvents: true,
+                                                    dismissRequestedHandler: dismissRequestedHandler)
     controller.update(with: offering!)
     controller.update(with: "offering_identifier")
+    controller.update(with: "offering_identifier", presentedOfferingContext: .init(offeringIdentifier: "offering_identifier"))
     controller.updateFont(with: "Papyrus")
 }
 
@@ -81,6 +86,13 @@ func paywallFooterViewControllerAPI(_ delegate: Delegate,
                                                           dismissRequestedHandler: dismissRequestedHandler)
     let _: UIViewController = PaywallFooterViewController(offeringIdentifier: "offering",
                                                           fontName: "Papyrus",
+                                                          dismissRequestedHandler: dismissRequestedHandler)
+    let _: UIViewController = PaywallFooterViewController(offeringIdentifier: "offering",
+                                                          presentedOfferingContext: .init(offeringIdentifier: "offering"),
+                                                          dismissRequestedHandler: dismissRequestedHandler)
+    let _: UIViewController = PaywallFooterViewController(offeringIdentifier: "offering",
+                                                          presentedOfferingContext: .init(offeringIdentifier: "offering"),
+                                                          fontName: "",
                                                           dismissRequestedHandler: dismissRequestedHandler)
 }
 

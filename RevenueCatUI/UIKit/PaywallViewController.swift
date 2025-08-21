@@ -96,6 +96,7 @@ public class PaywallViewController: UIViewController {
     /// - Parameter shouldBlockTouchEvents: Whether to interecept all touch events propagated through this VC
     /// - Parameter dismissRequestedHandler: If this is not set, the paywall will close itself automatically
     /// after a successful purchase. Otherwise use this handler to handle dismissals of the paywall
+    @available(*, deprecated, message: "use init with Offering instead")
     public convenience init(
         offeringIdentifier: String,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
@@ -104,7 +105,33 @@ public class PaywallViewController: UIViewController {
         dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
     ) {
         self.init(
-            content: .offeringIdentifier(offeringIdentifier),
+            content: .offeringIdentifier(offeringIdentifier, presentedOfferingContext: nil),
+            fonts: fonts,
+            displayCloseButton: displayCloseButton,
+            shouldBlockTouchEvents: shouldBlockTouchEvents,
+            dismissRequestedHandler: dismissRequestedHandler
+        )
+    }
+    
+    /// Initialize a `PaywallViewController` with an offering identifier.
+    /// - Parameter offeringIdentifier: The identifier for the offering with paywall to display.
+    /// - Parameter presentedOfferingContext: Information about how the offering is presented..
+    /// - Parameter fonts: A ``PaywallFontProvider``.
+    /// - Parameter displayCloseButton: Set this to `true` to automatically include a close button.
+    /// - Parameter shouldBlockTouchEvents: Whether to interecept all touch events propagated through this VC
+    /// - Parameter dismissRequestedHandler: If this is not set, the paywall will close itself automatically
+    /// after a successful purchase. Otherwise use this handler to handle dismissals of the paywall
+    @_spi(Internal)
+    public convenience init(
+        offeringIdentifier: String,
+        presentedOfferingContext: PresentedOfferingContext,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        displayCloseButton: Bool = false,
+        shouldBlockTouchEvents: Bool = false,
+        dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
+    ) {
+        self.init(
+            content: .offeringIdentifier(offeringIdentifier, presentedOfferingContext: presentedOfferingContext),
             fonts: fonts,
             displayCloseButton: displayCloseButton,
             shouldBlockTouchEvents: shouldBlockTouchEvents,
@@ -161,9 +188,17 @@ public class PaywallViewController: UIViewController {
     }
 
     /// - Warning: For internal use only
+    @available(*, deprecated, message: "use init with Offering instead")
     @objc(updateWithOfferingIdentifier:)
     public func update(with offeringIdentifier: String) {
-        self.configuration.content = .offeringIdentifier(offeringIdentifier)
+        self.configuration.content = .offeringIdentifier(offeringIdentifier, presentedOfferingContext: nil)
+    }
+    
+    /// - Warning: For internal use only
+    @_spi(Internal)
+    @objc(updateWithOfferingIdentifier:presentedOfferingContext:)
+    public func update(with offeringIdentifier: String, presentedOfferingContext: PresentedOfferingContext?) {
+        self.configuration.content = .offeringIdentifier(offeringIdentifier, presentedOfferingContext: presentedOfferingContext)
     }
 
     /// - Warning: For internal use only
