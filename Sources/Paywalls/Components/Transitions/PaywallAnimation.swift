@@ -46,22 +46,16 @@ public extension PaywallComponent {
     }
 
     enum AnimationType: Equatable, Hashable, Sendable {
-        case bouncy
         case easeIn
         case easeInOut
         case easeOut
         case linear
-        case smooth
-        case snappy
-        case spring
         case custom(String)
 
         var codingContainer: AnimationTypeContainer {
             let type: String
             var value: String?
             switch self {
-            case .bouncy:
-                type = "bouncy"
             case .easeIn:
                 type = "easeIn"
             case .easeInOut:
@@ -70,12 +64,6 @@ public extension PaywallComponent {
                 type = "easeOut"
             case .linear:
                 type = "linear"
-            case .smooth:
-                type = "smooth"
-            case .snappy:
-                type = "snappy"
-            case .spring:
-                type = "spring"
             case .custom(let animation):
                 type = "custom"
                 value = animation
@@ -83,33 +71,24 @@ public extension PaywallComponent {
             return AnimationTypeContainer(type: type, value: value)
         }
 
-        // swiftlint:disable:next cyclomatic_complexity
         static func from(_ container: AnimationTypeContainer) -> AnimationType? {
             switch container.type {
-            case "bouncy":
-                .bouncy
             case "easeIn":
-                .easeIn
+                return .easeIn
             case "easeInOut":
-                .easeInOut
+                return .easeInOut
             case "easeOut":
-                .easeOut
+                return .easeOut
             case "linear":
-                .linear
-            case "smooth":
-                .smooth
-            case "snappy":
-                .snappy
-            case "spring":
-                .spring
+                return .linear
             case "custom":
                 if let value = container.value {
-                    .custom(value)
+                    return .custom(value)
                 } else {
-                    nil
+                    return nil
                 }
             default:
-                nil
+                return nil
             }
         }
 

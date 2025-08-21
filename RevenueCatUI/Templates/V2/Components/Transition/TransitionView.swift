@@ -84,11 +84,6 @@ extension PaywallComponent.Transition {
 extension PaywallComponent.Animation {
     var toAnimation: SwiftUI.Animation {
         switch self.type {
-        case .bouncy:
-            if let duration = msDuration?.seconds {
-                return .bouncy(duration: duration).delay(msDelay?.seconds ?? 0)
-            }
-            return .bouncy.delay(msDelay?.seconds ?? 0)
         case .easeIn:
             if let duration = msDuration?.seconds {
                 return .easeIn(duration: duration).delay(msDelay?.seconds ?? 0)
@@ -109,21 +104,6 @@ extension PaywallComponent.Animation {
                 return .linear(duration: duration).delay(msDelay?.seconds ?? 0)
             }
             return .linear.delay(msDelay?.seconds ?? 0)
-        case .smooth:
-            if let duration = msDuration?.seconds {
-                return .smooth(duration: duration).delay(msDelay?.seconds ?? 0)
-            }
-            return .smooth.delay(msDelay?.seconds ?? 0)
-        case .snappy:
-            if let duration = msDuration?.seconds {
-                return .snappy(duration: duration).delay(msDelay?.seconds ?? 0)
-            }
-            return .snappy.delay(msDelay?.seconds ?? 0)
-        case .spring:
-            if let duration = msDuration?.seconds {
-                return .spring(duration: duration).delay(msDelay?.seconds ?? 0)
-            }
-            return .spring.delay(msDelay?.seconds ?? 0)
         case .custom:
             // WIP: will add this later
             return .default

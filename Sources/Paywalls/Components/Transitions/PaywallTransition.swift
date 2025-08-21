@@ -82,21 +82,21 @@ public extension PaywallComponent {
         static func from(_ container: TransitionTypeContainer) -> TransitionType? {
             switch container.type {
             case "fade":
-                .fade
+                return .fade
             case "fadeAndScale":
-                .fadeAndScale
+                return .fadeAndScale
             case "scale":
-                .scale
+                return .scale
             case "slide":
-                .slide
+                return .slide
             case "custom":
                 if let value = container.value {
-                    .custom(value)
+                    return .custom(value)
                 } else {
-                    nil
+                    return nil
                 }
             default:
-                nil
+                return nil
             }
         }
 
