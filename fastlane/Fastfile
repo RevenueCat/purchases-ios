@@ -1560,9 +1560,16 @@ platform :ios do
         UI.message("Success output for #{platform[:name]}: #{output}")
         # Check if the output indicates no changes
         no_changes = output.include?("# ✅ No changes detected") || output.empty?
+        
+        # If there are any changes (even non-breaking), we want to fail the CI
+        if !no_changes
+          UI.error("❌ API changes detected for #{platform[:name]}!")
+          overall_result = false
+        end
+        
         diff_results << { 
           platform: platform[:name], 
-          result: "✅ No breaking changes", 
+          result: no_changes ? "✅ No changes" : "❌ Changes detected", 
           diff: output,
           no_changes: no_changes
         }
@@ -1619,11 +1626,11 @@ platform :ios do
       puts "\n" + report + "\n"
     end
     
-    # Fail the lane if there were breaking changes
+    # Fail the lane if there were any API changes
     if !overall_result
-      UI.user_error!("Breaking API changes detected! Check the diff output above.")
+      UI.user_error!("API changes detected! This CI job fails when any API modifications are found. Check the diff output above and update the baseline files if these changes are intentional.")
     else
-      UI.success("All API checks passed!")
+      UI.success("No API changes detected - CI passing!")
     end
   end
   
