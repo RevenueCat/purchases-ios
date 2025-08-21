@@ -20,7 +20,7 @@ class MockSimpleNetworkService: SimpleNetworkServiceType, @unchecked Sendable {
     var stubResponses: [Result<Data, Error>] = []
 
     func data(from url: URL) async throws -> Data {
-        try lock.withLock {
+        return try lock.withLock {
             let count = invocations.count
             self.invocations.append(url)
             switch stubResponses[count] {
