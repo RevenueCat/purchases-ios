@@ -98,4 +98,22 @@ internal enum VirtualCurrenciesFixtures {
         // swiftlint:disable:next force_try force_unwrapping
         return try! JSONDecoder().decode(RevenueCat.VirtualCurrencies.self, from: jsonData!)
     }
+
+    static var oneVirtualCurrency: RevenueCat.VirtualCurrencies {
+        let jsonData = """
+                {
+                  "all": {
+                    "GLD": {
+                      "balance": 100,
+                      "code": "GLD",
+                      "description": "It's gold",
+                      "name": "Gold"
+                    }
+                  }
+                }
+                """.data(using: .utf8)
+
+        // swiftlint:disable:next force_try force_unwrapping
+        return try! JSONDecoder().decode(RevenueCat.VirtualCurrencies.self, from: jsonData!)
+    }
 }
