@@ -1628,22 +1628,23 @@ platform :ios do
   end
   
   def generate_api_diff_report(diff_results)
+    # Always start with the unique header for easy identification
+    report = "## 👁️‍🗨️ API DIFF\n\n"
+    
     # Check if any platform has actual changes (not just "no changes detected" output)
     platforms_with_changes = diff_results.select { |result| !result[:no_changes] }
     
     if platforms_with_changes.empty?
       # No changes detected across all platforms
       platform_names = diff_results.map { |result| result[:platform] }.join(", ")
-      return "✅ No changes detected for #{platform_names}\n"
-    end
-    
-    # Only show details for platforms with changes
-    report = "# API Changes Report\n\n"
-    
-    platforms_with_changes.each do |result|
-      report << "## #{result[:platform]}\n\n"
-      report << "**Status:** #{result[:result]}\n\n"
-      report << "```\n#{result[:diff]}\n```\n\n"
+      report << "✅ No changes detected for #{platform_names}\n"
+    else
+      # Show details for platforms with changes
+      platforms_with_changes.each do |result|
+        report << "### #{result[:platform]}\n\n"
+        report << "**Status:** #{result[:result]}\n\n"
+        report << "```\n#{result[:diff]}\n```\n\n"
+      end
     end
     
     report
@@ -1666,8 +1667,9 @@ platform :ios do
         path: "/repos/RevenueCat/purchases-ios/issues/#{pr_number}/comments"
       )
       
+      # Look for existing API diff comment by the unique header
       api_diff_comment = existing_comments[:json].find do |comment|
-        comment["body"] && comment["body"].include?("# API Changes Report")
+        comment["body"] && comment["body"].include?("## 👁️‍🗨️ API DIFF")
       end
       
       if api_diff_comment
