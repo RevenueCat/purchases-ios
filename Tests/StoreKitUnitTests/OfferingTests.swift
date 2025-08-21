@@ -17,9 +17,9 @@ import XCTest
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 class OfferingTests: StoreKitConfigTestCase {
-    
+
     func testOfferingWithPresentedOfferingContext() async throws {
-        
+
         let monthlyProduct = try await fetchSk2Product("com.revenuecat.monthly_4.99.1_week_intro")
         let monthlyPackage = Package(
             identifier: "monthlyPackage",
@@ -30,7 +30,7 @@ class OfferingTests: StoreKitConfigTestCase {
             offeringIdentifier: "offering",
             webCheckoutUrl: nil
         )
-        
+
         let annualProduct = try await fetchSk2Product("com.revenuecat.annual_39.99.2_week_intro")
         let annualPackage = Package(
             identifier: "annualPackage",
@@ -41,7 +41,7 @@ class OfferingTests: StoreKitConfigTestCase {
             offeringIdentifier: "offering",
             webCheckoutUrl: nil
         )
-        
+
         let offering = Offering(
             identifier: "onboardingOffering",
             serverDescription: "",
@@ -51,10 +51,7 @@ class OfferingTests: StoreKitConfigTestCase {
             ],
             webCheckoutUrl: nil
         )
-        
-        // should leave the offering unchanged
-        XCTAssertEqual(offering.withPresentedOfferingContext(nil), offering)
-        
+
         let presentedOfferingContext = PresentedOfferingContext(
             offeringIdentifier: "onboardingOffering",
             placementIdentifier: "onboarding",
@@ -63,9 +60,11 @@ class OfferingTests: StoreKitConfigTestCase {
                 ruleId: "onboarding-rule-1"
             )
         )
-        
+
         // all `availablePackages` should use the given `presentedOfferingContext`
         let offeringWithPresentedOfferingContext = offering.withPresentedOfferingContext(presentedOfferingContext)
-        XCTAssert(offeringWithPresentedOfferingContext.availablePackages.allSatisfy { $0.presentedOfferingContext == presentedOfferingContext })
+        XCTAssert(offeringWithPresentedOfferingContext.availablePackages.allSatisfy {
+            $0.presentedOfferingContext == presentedOfferingContext
+        })
     }
 }

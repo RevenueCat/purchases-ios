@@ -55,8 +55,9 @@ public final class PaywallFooterViewController: PaywallViewController {
                    shouldBlockTouchEvents: false,
                    dismissRequestedHandler: dismissRequestedHandler)
     }
-    
-    /// Initialize a `PaywallFooterViewController` with an `Offering` identifier and a presentedOfferingContext
+
+    /// Initialize a `PaywallFooterViewController` with an `offeringIdentifier` and `presentedOfferingContext`.
+    /// - Parameter presentedOfferingContext: the context in which this offer was presented
     @_spi(Internal)
     @objc
     public init(
@@ -86,8 +87,9 @@ public final class PaywallFooterViewController: PaywallViewController {
                    shouldBlockTouchEvents: false,
                    dismissRequestedHandler: dismissRequestedHandler)
     }
-    
-    /// Initialize a `PaywallFooterViewController` with an `offeringIdentifier`, `presentedOfferingContext` and custom `fontName`.
+
+    /// Initialize a `PaywallFooterViewController` with an `offeringIdentifier`,
+    /// `presentedOfferingContext` and custom `fontName`.
     /// - Parameter presentedOfferingContext: the context in which this offer was presented
     /// - Parameter fontName: a custom font name for this paywall. See ``CustomPaywallFontProvider``.
     @_spi(Internal)
