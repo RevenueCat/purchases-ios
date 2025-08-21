@@ -407,10 +407,16 @@ private extension PaywallView {
         case .defaultOffering:
             return try await Purchases.shared.offerings().current.orThrow(PaywallError.noCurrentOffering)
 
-        case let .offeringIdentifier(identifier):
-            return try await Purchases.shared.offerings()
+        case let .offeringIdentifier(identifier, presentedOfferingContext):
+            let offering = try await Purchases.shared.offerings()
                 .offering(identifier: identifier)
                 .orThrow(PaywallError.offeringNotFound(identifier: identifier))
+
+            if let presentedOfferingContext {
+                return offering.withPresentedOfferingContext(presentedOfferingContext)
+            }
+
+            return offering
         }
     }
 
@@ -423,9 +429,20 @@ private extension PaywallViewConfiguration.Content {
 
     func extractInitialOffering() -> Offering? {
         switch self {
-        case let .offering(offering): return offering
-        case .defaultOffering: return Self.loadCachedCurrentOfferingIfPossible()
-        case let .offeringIdentifier(identifier): return Self.loadCachedOfferingIfPossible(identifier: identifier)
+        case let .offering(offering):
+            return offering
+        case .defaultOffering:
+            return Self.loadCachedCurrentOfferingIfPossible()
+        case let .offeringIdentifier(identifier, presentedOfferingContext):
+            let offering = Self.loadCachedOfferingIfPossible(
+                identifier: identifier
+            )
+
+            if let presentedOfferingContext {
+                return offering?.withPresentedOfferingContext(presentedOfferingContext)
+            }
+
+            return offering
         }
     }
 

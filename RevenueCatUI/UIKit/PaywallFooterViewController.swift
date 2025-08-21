@@ -43,12 +43,29 @@ public final class PaywallFooterViewController: PaywallViewController {
     }
 
     /// Initialize a `PaywallFooterViewController` with an `Offering` identifier.
+    @available(*, deprecated, message: "use init with Offering instead")
     @objc
     public init(
         offeringIdentifier: String,
         dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
     ) {
-        super.init(content: .offeringIdentifier(offeringIdentifier),
+        super.init(content: .offeringIdentifier(offeringIdentifier, presentedOfferingContext: nil),
+                   fonts: DefaultPaywallFontProvider(),
+                   displayCloseButton: false,
+                   shouldBlockTouchEvents: false,
+                   dismissRequestedHandler: dismissRequestedHandler)
+    }
+
+    /// Initialize a `PaywallFooterViewController` with an `offeringIdentifier` and `presentedOfferingContext`.
+    /// - Parameter presentedOfferingContext: the context in which this offer was presented
+    @_spi(Internal)
+    @objc
+    public init(
+        offeringIdentifier: String,
+        presentedOfferingContext: PresentedOfferingContext? = nil,
+        dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
+    ) {
+        super.init(content: .offeringIdentifier(offeringIdentifier, presentedOfferingContext: presentedOfferingContext),
                    fonts: DefaultPaywallFontProvider(),
                    displayCloseButton: false,
                    shouldBlockTouchEvents: false,
@@ -57,13 +74,33 @@ public final class PaywallFooterViewController: PaywallViewController {
 
     /// Initialize a `PaywallFooterViewController` with an `offeringIdentifier` and custom `fontName`.
     /// - Parameter fontName: a custom font name for this paywall. See ``CustomPaywallFontProvider``.
+    @available(*, deprecated, message: "use init with Offering instead")
     @objc
     public init(
         offeringIdentifier: String,
         fontName: String,
         dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
     ) {
-        super.init(content: .offeringIdentifier(offeringIdentifier),
+        super.init(content: .offeringIdentifier(offeringIdentifier, presentedOfferingContext: nil),
+                   fonts: CustomPaywallFontProvider(fontName: fontName),
+                   displayCloseButton: false,
+                   shouldBlockTouchEvents: false,
+                   dismissRequestedHandler: dismissRequestedHandler)
+    }
+
+    /// Initialize a `PaywallFooterViewController` with an `offeringIdentifier`,
+    /// `presentedOfferingContext` and custom `fontName`.
+    /// - Parameter presentedOfferingContext: the context in which this offer was presented
+    /// - Parameter fontName: a custom font name for this paywall. See ``CustomPaywallFontProvider``.
+    @_spi(Internal)
+    @objc
+    public init(
+        offeringIdentifier: String,
+        presentedOfferingContext: PresentedOfferingContext? = nil,
+        fontName: String,
+        dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
+    ) {
+        super.init(content: .offeringIdentifier(offeringIdentifier, presentedOfferingContext: presentedOfferingContext),
                    fonts: CustomPaywallFontProvider(fontName: fontName),
                    displayCloseButton: false,
                    shouldBlockTouchEvents: false,
