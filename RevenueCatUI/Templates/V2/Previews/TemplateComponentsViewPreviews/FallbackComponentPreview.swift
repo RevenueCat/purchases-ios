@@ -16,7 +16,7 @@ import SwiftUI
 
 // swiftlint:disable force_try
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 #if DEBUG
 
