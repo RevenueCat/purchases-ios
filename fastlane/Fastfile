@@ -1552,29 +1552,37 @@ platform :ios do
       end
       
       # Run the API diff
-      success = false
       begin
         output = sh(api_diff_tool, "swift-interface", "--old", old_file, "--new", new_file)
-        success = true
-        UI.success("✅ No breaking API changes detected for #{platform[:name]}")
+        # Tool succeeded (exit code 0), check if there are actually no changes
+        UI.message("API diff tool succeeded for #{platform[:name]}")
         UI.message("Success output for #{platform[:name]}: #{output}")
+        
         # Check if the output indicates no changes
         no_changes = output.include?("# ✅ No changes detected") || output.empty?
         
-        # If there are any changes (even non-breaking), we want to fail the CI
-        if !no_changes
+        if no_changes
+          UI.success("✅ No API changes detected for #{platform[:name]}")
+          diff_results << { 
+            platform: platform[:name], 
+            result: "✅ No changes", 
+            diff: output,
+            no_changes: true
+          }
+        else
+          # There are changes, fail the build
           UI.error("❌ API changes detected for #{platform[:name]}!")
           overall_result = false
+          diff_results << { 
+            platform: platform[:name], 
+            result: "❌ Changes detected", 
+            diff: output,
+            no_changes: false
+          }
         end
-        
-        diff_results << { 
-          platform: platform[:name], 
-          result: no_changes ? "✅ No changes" : "❌ Changes detected", 
-          diff: output,
-          no_changes: no_changes
-        }
       rescue => e
-        UI.error("❌ API changes detected for #{platform[:name]}!")
+        # Tool failed (non-zero exit code), indicating breaking changes
+        UI.error("❌ Breaking API changes detected for #{platform[:name]}!")
         overall_result = false
         
         # Try to capture the diff output
@@ -1628,9 +1636,9 @@ platform :ios do
     
     # Fail the lane if there were any API changes
     if !overall_result
-      UI.user_error!("API changes detected! This CI job fails when any API modifications are found. Check the diff output above and update the baseline files if these changes are intentional.")
+      UI.user_error!("❌ BUILD FAILED: API changes detected! This job fails when ANY API modifications are found (breaking or non-breaking). Check the diff output above and update the baseline files if these changes are intentional.")
     else
-      UI.success("No API changes detected - CI passing!")
+      UI.success("✅ BUILD PASSED: No API changes detected - CI passing!")
     end
   end
   

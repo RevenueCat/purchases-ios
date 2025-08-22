@@ -22,6 +22,8 @@ import StoreKit
 
 // MARK: Block definitions
 
+public class TestPublicInterfaceError {}
+
 /**
  Result for ``Purchases/purchase(product:)``.
  Counterpart of `PurchaseCompletedBlock` for `async` APIs.
