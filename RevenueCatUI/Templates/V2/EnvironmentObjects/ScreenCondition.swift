@@ -11,8 +11,8 @@
 //
 //  Created by Josh Holtz on 11/14/24.
 
-import SwiftUI
 @_spi(Internal) import RevenueCat
+import SwiftUI
 
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
 
@@ -20,8 +20,8 @@ class ScreenCondition: ObservableObject {
 
     static let defaultScreenSizes: [UIConfig.ScreenSize] = [
         .init(name: "mobile", width: 375),
-        .init(name: "tablet", width: 834),
-        .init(name: "desktop", width: 1440)
+        .init(name: "tablet", width: 700),
+        .init(name: "desktop", width: 1024)
     ]
 
     static let `default` = ScreenCondition(screenSizes: ScreenCondition.defaultScreenSizes)
@@ -70,7 +70,7 @@ class ScreenCondition: ObservableObject {
         #endif
     }
 
-    init(screenSizes: [UIConfig.ScreenSize] = ScreenCondition.defaultScreenSizes) {
+    init(screenSizes: [UIConfig.ScreenSize] = []) {
         self.screenSizes = screenSizes
     }
 
@@ -108,16 +108,21 @@ class ScreenCondition: ObservableObject {
         // 3) Compute effective width according to policy
         let effectiveWidth: CGFloat = useActualWidth ? size.width : min(size.width, size.height)
 
+        let screenSizeWithDefault = self.screenSizes.isEmpty ? ScreenCondition.defaultScreenSizes : self.screenSizes
+
         // 4) Treat class.width as a MIN breakpoint
-        self.screenSize = self.screenSizes.last(where: {
+        self.screenSize = screenSizeWithDefault.last(where: {
             CGFloat($0.width) <= effectiveWidth
         }) ?? self.screenSizes.first
+
+        print("effectiveWidth: \(effectiveWidth)")
+        print("JOSH: screenSize: \(String(describing: self.screenSize))")
     }
 
 }
 
 struct ScreenConditionKey: EnvironmentKey {
-    static let defaultValue = ScreenCondition.init()
+    static let defaultValue = ScreenCondition()
 }
 
 extension EnvironmentValues {

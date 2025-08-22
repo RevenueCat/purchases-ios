@@ -13,7 +13,7 @@
 //
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
 
@@ -74,6 +74,7 @@ extension PresentedPartial {
         return presentedPartial
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     private static func shouldApply(
         for conditions: [PaywallComponent.Condition],
         state: ComponentViewState,
@@ -84,12 +85,26 @@ extension PresentedPartial {
         // Early return when any condition evaluates to false
         for condition in conditions {
             switch condition {
-            case .orientation:
-                // TODO: Logic
-                return false
-            case .screenSize:
-                // TODO: Logic
-                return false
+            case .orientation(let operand, let orientations):
+                let active = activeCondition.orientation.rawValue
+
+                switch operand {
+                case .in:
+                    return orientations.contains(where: { $0.rawValue == active })
+                case .notIn:
+                    return !orientations.contains(where: { $0.rawValue == active })
+                }
+            case .screenSize(let operand, let sizes):
+                guard let active = activeCondition.screenSize?.name else {
+                    return false
+                }
+
+                switch operand {
+                case .in:
+                    return sizes.contains(where: { $0 == active })
+                case .notIn:
+                    return !sizes.contains(where: { $0 == active })
+                }
             case .selectedPackage:
                 // TODO: Logic
                 return false
@@ -114,19 +129,6 @@ extension PresentedPartial {
     }
 
 }
-
-//private extension ScreenCondition {
-//
-//    /// Returns applicable condition types based on current screen condition
-//    var applicableConditions: [PaywallComponent.Condition] {
-//        switch self {
-//        case .compact: return [.compact]
-//        case .medium: return [.compact, .medium]
-//        case .expanded: return [.compact, .medium, .expanded]
-//        }
-//    }
-//
-//}
 
 extension Array {
 

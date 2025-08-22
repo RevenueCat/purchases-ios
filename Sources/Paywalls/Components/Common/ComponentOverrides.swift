@@ -42,8 +42,6 @@ public extension PaywallComponent {
         case promoOffer
         case selected
 
-
-
         // For unknown cases
         case unsupported
 
@@ -51,14 +49,14 @@ public extension PaywallComponent {
             var container = encoder.container(keyedBy: CodingKeys.self)
 
             switch self {
-            case .orientation(let op, let orientations):
+            case .orientation(let operand, let orientations):
                 try container.encode(ConditionType.orientation.rawValue, forKey: .type)
-                try container.encode(op, forKey: .operator)
+                try container.encode(operand, forKey: .operator)
                 try container.encode(orientations, forKey: .orientations)
-            case .screenSize(let op, let screenSizes):
+            case .screenSize(let operand, let screenSizes):
                 try container.encode(ConditionType.screenSize.rawValue, forKey: .type)
-                try container.encode(op, forKey: .operator)
-                try container.encode(screenSizes, forKey: .screenSize)
+                try container.encode(operand, forKey: .operator)
+                try container.encode(screenSizes, forKey: .sizes)
             case .selectedPackage:
                 try container.encode(ConditionType.selectedPackage.rawValue, forKey: .type)
             case .introOffer:
@@ -80,13 +78,13 @@ public extension PaywallComponent {
             if let conditionType = ConditionType(rawValue: rawValue) {
                 switch conditionType {
                 case .orientation:
-                    let op = try container.decode(ArrayOperatorType.self, forKey: .operator)
+                    let operand = try container.decode(ArrayOperatorType.self, forKey: .operator)
                     let orientations = try container.decode([OrientationType].self, forKey: .orientations)
-                    self = .orientation(op, orientations)
+                    self = .orientation(operand, orientations)
                 case .screenSize:
-                    let op = try container.decode(ArrayOperatorType.self, forKey: .operator)
-                    let sizes = try container.decode([String].self, forKey: .screenSize)
-                    self = .screenSize(op, sizes)
+                    let operand = try container.decode(ArrayOperatorType.self, forKey: .operator)
+                    let sizes = try container.decode([String].self, forKey: .sizes)
+                    self = .screenSize(operand, sizes)
                 case .selectedPackage:
                     self = .selectedPackage
                 case .introOffer:
@@ -105,7 +103,7 @@ public extension PaywallComponent {
         private enum CodingKeys: String, CodingKey {
 
             case type
-            case screenSize
+            case sizes
             case `operator`
             case orientations
 
@@ -123,13 +121,16 @@ public extension PaywallComponent {
 
         }
 
+        // swiftlint:disable:next nesting
         public enum ArrayOperatorType: String, Codable, Sendable, Hashable, Equatable {
 
+            // swiftlint:disable:next identifier_name
             case `in` = "in"
             case notIn = "not_in"
 
         }
 
+        // swiftlint:disable:next nesting
         public enum EqualityOperatorType: String, Codable, Sendable, Hashable, Equatable {
 
             case `equals` = "="
@@ -137,10 +138,11 @@ public extension PaywallComponent {
 
         }
 
+        // swiftlint:disable:next nesting
         public enum OrientationType: String, Codable, Sendable, Hashable, Equatable {
 
-            case portrait = "portrait"
-            case landscape = "landscape"
+            case portrait
+            case landscape
 
         }
 

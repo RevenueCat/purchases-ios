@@ -168,7 +168,9 @@ struct PaywallsV2View: View {
                 // occurred while decoding the paywall
                 self.fallbackViewWithErrorMessage(
                     "Error decoding paywall response on: \(errorInfo.keys.joined(separator: ", "))"
-                )
+                ).onAppear {
+                    print(errorInfo)
+                }
             } else {
                 switch self.paywallStateManager.state {
                 case .success(let paywallState):
