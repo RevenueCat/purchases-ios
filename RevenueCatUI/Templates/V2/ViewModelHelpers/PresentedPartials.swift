@@ -93,10 +93,6 @@ extension PresentedPartial {
             case .selectedPackage:
                 // TODO: Logic
                 return false
-//            case .compact, .medium, .expanded:
-//                if !activeCondition.applicableConditions.contains(condition) {
-//                    return false
-//                }
             case .introOffer:
                 if !isEligibleForIntroOffer {
                     return false

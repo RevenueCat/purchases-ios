@@ -35,8 +35,8 @@ public extension PaywallComponent {
 
     enum Condition: Codable, Sendable, Hashable, Equatable {
 
-        case orientation
-        case screenSize
+        case orientation(ArrayOperatorType, [OrientationType])
+        case screenSize(ArrayOperatorType, [String])
         case selectedPackage
         case introOffer
         case promoOffer
@@ -51,10 +51,14 @@ public extension PaywallComponent {
             var container = encoder.container(keyedBy: CodingKeys.self)
 
             switch self {
-            case .orientation:
+            case .orientation(let op, let orientations):
                 try container.encode(ConditionType.orientation.rawValue, forKey: .type)
-            case .screenSize:
+                try container.encode(op, forKey: .operator)
+                try container.encode(orientations, forKey: .orientations)
+            case .screenSize(let op, let screenSizes):
                 try container.encode(ConditionType.screenSize.rawValue, forKey: .type)
+                try container.encode(op, forKey: .operator)
+                try container.encode(screenSizes, forKey: .screenSize)
             case .selectedPackage:
                 try container.encode(ConditionType.selectedPackage.rawValue, forKey: .type)
             case .introOffer:
@@ -76,9 +80,13 @@ public extension PaywallComponent {
             if let conditionType = ConditionType(rawValue: rawValue) {
                 switch conditionType {
                 case .orientation:
-                    self = .orientation
+                    let op = try container.decode(ArrayOperatorType.self, forKey: .operator)
+                    let orientations = try container.decode([OrientationType].self, forKey: .orientations)
+                    self = .orientation(op, orientations)
                 case .screenSize:
-                    self = .screenSize
+                    let op = try container.decode(ArrayOperatorType.self, forKey: .operator)
+                    let sizes = try container.decode([String].self, forKey: .screenSize)
+                    self = .screenSize(op, sizes)
                 case .selectedPackage:
                     self = .selectedPackage
                 case .introOffer:
@@ -97,6 +105,9 @@ public extension PaywallComponent {
         private enum CodingKeys: String, CodingKey {
 
             case type
+            case screenSize
+            case `operator`
+            case orientations
 
         }
 
@@ -109,6 +120,27 @@ public extension PaywallComponent {
             case introOffer = "intro_offer"
             case promoOffer = "promo_offer"
             case selected
+
+        }
+
+        public enum ArrayOperatorType: String, Codable, Sendable, Hashable, Equatable {
+
+            case `in` = "in"
+            case notIn = "not_in"
+
+        }
+
+        public enum EqualityOperatorType: String, Codable, Sendable, Hashable, Equatable {
+
+            case `equals` = "="
+            case notEquals = "!="
+
+        }
+
+        public enum OrientationType: String, Codable, Sendable, Hashable, Equatable {
+
+            case portrait = "portrait"
+            case landscape = "landscape"
 
         }
 
