@@ -32,6 +32,10 @@ extension PaywallComponentsData {
         return imageUrls
     }
 
+    var allAssetURLs: [URL] {
+        return self.componentsConfig.base.allAssetURLs
+    }
+
 }
 
 extension PaywallComponentsData.PaywallComponentsConfig {
@@ -96,6 +100,70 @@ extension PaywallComponentsData.PaywallComponentsConfig {
 
         return urls
     }
+
+}
+
+extension PaywallComponentsData.PaywallComponentsConfig {
+
+   var allAssetURLs: [URL] {
+       let rootStackAssetURLs = self.collectAllAssetURLs(in: self.stack)
+       let stickFooterAssetURLs = self.stickyFooter.flatMap { self.collectAllAssetURLs(in: $0.stack) } ?? []
+
+       return rootStackAssetURLs + stickFooterAssetURLs
+   }
+
+   // swiftlint:disable:next cyclomatic_complexity
+   private func collectAllAssetURLs(in stack: PaywallComponent.StackComponent) -> [URL] {
+
+       var urls: [URL] = []
+       for component in stack.components {
+           switch component {
+           case .text:
+               break
+           case .icon(let icon):
+               break
+           case .image(let image):
+               break
+           case .stack(let stack):
+               urls += self.collectAllAssetURLs(in: stack)
+           case .button(let button):
+               urls += self.collectAllAssetURLs(in: button.stack)
+           case .package(let package):
+               urls += self.collectAllAssetURLs(in: package.stack)
+           case .purchaseButton(let purchaseButton):
+               urls += self.collectAllAssetURLs(in: purchaseButton.stack)
+           case .stickyFooter(let stickyFooter):
+               urls += self.collectAllAssetURLs(in: stickyFooter.stack)
+           case .timeline(let component):
+               break
+           case .tabs(let tabs):
+               for tab in tabs.tabs {
+                   urls += self.collectAllAssetURLs(in: tab.stack)
+               }
+           case .tabControl:
+               break
+           case .tabControlButton(let controlButton):
+               urls += self.collectAllAssetURLs(in: controlButton.stack)
+           case .tabControlToggle:
+               break
+           case .carousel(let carousel):
+               urls += carousel.pages.flatMap({ stack in
+                   self.collectAllAssetURLs(in: stack)
+               })
+           case .slot:
+               break
+           case .slotLottie(let lottie):
+               switch lottie.value {
+               case .url(let url):
+                   urls += [url]
+               case .unknown:
+                   break
+               }
+           }
+       }
+
+       return urls
+   }
 
 }
 

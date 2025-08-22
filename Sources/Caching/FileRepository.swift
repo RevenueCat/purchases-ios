@@ -62,6 +62,7 @@ import Foundation
                 }
 
                 if fileManager.cachedContentExists(at: cachedUrl) {
+                    print("JOSH cached")
                     return cachedUrl
                 }
 

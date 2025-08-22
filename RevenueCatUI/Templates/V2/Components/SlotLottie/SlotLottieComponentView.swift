@@ -12,6 +12,7 @@
 //  Created by Josh Holtz on 8/15/25.
 
 import Foundation
+@_spi(Internal) import RevenueCat
 import SwiftUI
 import WebKit
 
@@ -37,6 +38,16 @@ struct SlotLottieComponentView: View {
 
     let viewModel: SlotLottieComponentViewModel
 
+    @State private var webView: WKWebView?
+
+    @State
+    private var url: URL?
+
+    @State
+    private var scriptFileURL: URL?
+
+    let scriptURL = URL(string: "https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js")!
+
     var body: some View {
         self.viewModel.styles(
             state: self.componentViewState,
@@ -50,17 +61,37 @@ struct SlotLottieComponentView: View {
         ) { style in
             switch style.value {
             case .url(let url):
-                LottieWebView(
-                    source: .url(url),
-                    loop: true,
-                    autoplay: true,
-                    explicitWidth: style.explicitWidth,
-                    explicitHeight: style.explicitHeight
-                )
-                .clipped()
-                // Style the carousel
-                .padding(style.padding)
-                .padding(style.margin)
+                Group {
+                    if let url = self.url, let scriptURL = self.scriptFileURL {
+                        LottieWebView(
+                            source: .url(url),
+                            lottieScriptURL: scriptURL,
+                            loop: true,
+                            autoplay: true,
+                            explicitWidth: style.explicitWidth,
+                            explicitHeight: style.explicitHeight
+                        )
+                        .clipped()
+                        // Style the carousel
+                        .padding(style.padding)
+                        .padding(style.margin)
+                    } else {
+                        Text("no url yet")
+                    }
+                }.task {
+                    do {
+                        print("JOSH 5")
+                        self.url = try await PaywallCache.shared.generateOrGetCachedFileURL(for: url)
+                        self.scriptFileURL = try await PaywallCache.shared.generateOrGetCachedFileURL(for: self.scriptURL)
+
+                        print("JOSH", self.url)
+                        print("JOSH", self.scriptFileURL)
+
+                        print("JOSH 6")
+                    } catch {
+                        print("JOSH 7", error)
+                    }
+                }
             case .unknown:
                 EmptyView()
             }
@@ -81,8 +112,89 @@ typealias PlatformColor = NSColor
 private let platformNoIntrinsicMetric = NSView.noIntrinsicMetric
 #endif
 
+// MARK: - Shared WebKit infra (process + pool)
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+final class WebViewPool {
+    static let shared = WebViewPool(capacity: 3) // tune to your max concurrent on-screen
+
+    let processPool = WKProcessPool()
+
+    private var pool: [SizingWKWebView] = []
+    private let capacity: Int
+
+    init(capacity: Int) {
+        self.capacity = max(1, capacity)
+    }
+
+    /// Call once early (e.g. app start) to prewarm N views & the WebKit process.
+    func warmUp() {
+        guard pool.isEmpty else { return }
+        for _ in 0..<capacity {
+            let wv = makeWebView()
+            // Spin up the WebKit process quickly
+            wv.loadHTMLString("<!doctype html><html></html>", baseURL: nil)
+            pool.append(wv)
+        }
+    }
+
+    func acquire() -> SizingWKWebView {
+        if let wv = pool.popLast() {
+            return wv
+        }
+        return makeWebView()
+    }
+
+    func `return`(_ webView: SizingWKWebView) {
+        // Pause any running animation
+        webView.evaluateJavaScript("window.pause && window.pause()")
+        if pool.count < capacity {
+            pool.append(webView)
+        }
+        // else let ARC drop it
+    }
+
+    private func makeWebView() -> SizingWKWebView {
+        let cfg = WKWebViewConfiguration()
+        cfg.processPool = processPool
+        cfg.defaultWebpagePreferences.allowsContentJavaScript = true
+        cfg.allowsInlineMediaPlayback = true
+        let wv = SizingWKWebView(frame: .zero, configuration: cfg)
+        #if os(iOS)
+        wv.isOpaque = false
+        wv.scrollView.isScrollEnabled = false
+        #elseif os(macOS)
+        wv.setValue(false, forKey: "drawsBackground")
+        #endif
+        return wv
+    }
+}
+
+// MARK: - Intrinsic sizing WKWebView
+
+final class SizingWKWebView: WKWebView {
+    var preferredSize: CGSize? {
+        didSet { invalidateIntrinsicContentSize() }
+    }
+
+    // Convenience init with configuration
+    override init(frame: CGRect, configuration: WKWebViewConfiguration) {
+        super.init(frame: frame, configuration: configuration)
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    override var intrinsicContentSize: CGSize {
+        if let s = preferredSize, s.width > 0, s.height > 0 {
+            return s
+        }
+        return CGSize(width: platformNoIntrinsicMetric, height: platformNoIntrinsicMetric)
+    }
+}
+
 // MARK: - LottieWebView
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct LottieWebView: PlatformViewRepresentable {
 
     // MARK: API
@@ -105,6 +217,12 @@ struct LottieWebView: PlatformViewRepresentable {
     var explicitWidth: CGFloat? = nil
     var explicitHeight: CGFloat? = nil
 
+    /// Use pooled webviews for instant display (recommended when showing many / in sheets)
+    var usePool: Bool = true
+
+    // (Keeping your property as-is; it's not used here but harmless if you keep it)
+    @State private var webView: WKWebView? = nil
+
     init(
         source: Source,
         lottieScriptURL: URL? = LottieWebView.defaultScript,
@@ -112,7 +230,8 @@ struct LottieWebView: PlatformViewRepresentable {
         autoplay: Bool = true,
         backgroundColor: PlatformColor = .clear,
         explicitWidth: CGFloat? = nil,
-        explicitHeight: CGFloat? = nil
+        explicitHeight: CGFloat? = nil,
+        usePool: Bool = true
     ) {
         self.source = source
         self.lottieScriptURL = lottieScriptURL
@@ -121,6 +240,7 @@ struct LottieWebView: PlatformViewRepresentable {
         self.backgroundColor = backgroundColor
         self.explicitWidth = explicitWidth
         self.explicitHeight = explicitHeight
+        self.usePool = usePool
     }
 
     // MARK: - Representable conformance
@@ -130,21 +250,38 @@ struct LottieWebView: PlatformViewRepresentable {
     #if os(iOS)
     func makeUIView(context: Context) -> SizingWKWebView { makeWebView(context: context) }
     func updateUIView(_ uiView: SizingWKWebView, context: Context) { updateWebView(uiView, context: context) }
+    static func dismantleUIView(_ uiView: SizingWKWebView, coordinator: Coordinator) {
+        coordinator.pause(uiView)
+        if coordinator.usePool { WebViewPool.shared.return(uiView) }
+    }
     #elseif os(macOS)
     func makeNSView(context: Context) -> SizingWKWebView { makeWebView(context: context) }
     func updateNSView(_ nsView: SizingWKWebView, context: Context) { updateWebView(nsView, context: context) }
+    static func dismantleNSView(_ nsView: SizingWKWebView, coordinator: Coordinator) {
+        coordinator.pause(nsView)
+        if coordinator.usePool { WebViewPool.shared.return(nsView) }
+    }
     #endif
 
     private func makeWebView(context: Context) -> SizingWKWebView {
-        let webView = SizingWKWebView(frame: .zero)
+        let webView: SizingWKWebView
+        if usePool {
+            // Acquire a hot instance
+            webView = WebViewPool.shared.acquire()
+        } else {
+            // Fresh instance that still reuses the shared process pool
+            let cfg = WKWebViewConfiguration()
+            cfg.processPool = WebViewPool.shared.processPool
+            cfg.defaultWebpagePreferences.allowsContentJavaScript = true
+            cfg.allowsInlineMediaPlayback = true
+            webView = SizingWKWebView(frame: .zero, configuration: cfg)
+        }
 
-        // Transparent background
         #if os(iOS)
         webView.isOpaque = false
         webView.backgroundColor = backgroundColor
         webView.scrollView.isScrollEnabled = false
         #elseif os(macOS)
-        // WKWebView on macOS draws its own background; disable it for transparency
         webView.setValue(false, forKey: "drawsBackground")
         #endif
 
@@ -197,10 +334,18 @@ struct LottieWebView: PlatformViewRepresentable {
         private let parent: LottieWebView
         fileprivate var lastKey: Key?
         private var lastIntrinsic: CGSize? // from Lottie meta
+        let usePool: Bool
 
-        init(_ parent: LottieWebView) { self.parent = parent }
+        init(_ parent: LottieWebView) {
+            self.parent = parent
+            self.usePool = parent.usePool
+        }
 
         private struct LottieMeta: Decodable { let w: CGFloat; let h: CGFloat }
+
+        func pause(_ webView: WKWebView) {
+            webView.evaluateJavaScript("window.pause && window.pause()")
+        }
 
         func load(
             into webView: SizingWKWebView,
@@ -322,7 +467,7 @@ struct LottieWebView: PlatformViewRepresentable {
                 }
             }()
 
-            // The web content fills the native WKWebView bounds; the native view dictates final size.
+            // Expose simple pause/play hooks for pooling/visibility control.
             return """
             <!doctype html>
             <html>
@@ -340,13 +485,15 @@ struct LottieWebView: PlatformViewRepresentable {
                   try {
                     const jsonText = atob("\(b64)");
                     const animationData = JSON.parse(jsonText);
-                    lottie.loadAnimation({
+                    const anim = lottie.loadAnimation({
                       container: document.getElementById('lottie'),
                       renderer: 'svg',
                       loop: \(loopFlag),
                       autoplay: \(autoplayFlag),
                       animationData
                     });
+                    window.pause = () => anim.pause();
+                    window.play = () => anim.play();
                   } catch (e) {
                     document.body.innerHTML = "<pre style='font-family: -apple-system; padding:16px'>Failed to load Lottie: " + e + "</pre>";
                   }
@@ -364,21 +511,6 @@ struct LottieWebView: PlatformViewRepresentable {
             </body></html>
             """
         }
-    }
-}
-
-// MARK: - Intrinsic sizing WKWebView
-
-final class SizingWKWebView: WKWebView {
-    var preferredSize: CGSize? {
-        didSet { invalidateIntrinsicContentSize() }
-    }
-
-    override var intrinsicContentSize: CGSize {
-        if let s = preferredSize, s.width > 0, s.height > 0 {
-            return s
-        }
-        return CGSize(width: platformNoIntrinsicMetric, height: platformNoIntrinsicMetric)
     }
 }
 

@@ -2250,6 +2250,9 @@ private extension Purchases {
 						group.addTask {
                             await cache.warmUpPaywallFontsCache(offerings: offerings)
                         }
+                        group.addTask {
+                            await cache.warmUpPaywallAssetsCache(offerings: offerings)
+                        }
                     }
                 }
             }

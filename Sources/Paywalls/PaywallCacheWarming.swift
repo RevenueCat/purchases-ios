@@ -14,6 +14,15 @@
 
 import Foundation
 
+@_spi(Internal) public enum PaywallCache {
+
+    public static let shared = FileRepository(
+        networkService: URLSession.shared,
+        fileManager: FileManager.default
+    )
+
+}
+
 protocol PaywallCacheWarmingType: Sendable {
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
@@ -24,6 +33,9 @@ protocol PaywallCacheWarmingType: Sendable {
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func warmUpPaywallFontsCache(offerings: Offerings) async
+
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+    func warmUpPaywallAssetsCache(offerings: Offerings) async
 
 #if !os(macOS) && !os(tvOS) // For Paywalls
 
@@ -97,6 +109,17 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
                 Logger.error(Strings.paywalls.error_prefetching_image(url, error))
             }
         }
+    }
+
+    func warmUpPaywallAssetsCache(offerings: Offerings) async {
+        print("JOSH 1")
+
+        let assetURLs = offerings.allAssetsInPaywallsV2
+        guard !assetURLs.isEmpty else { return }
+
+        print("JOSH 2", assetURLs)
+
+        PaywallCache.shared.prefetch(urls: Array(assetURLs))
     }
 
     func warmUpPaywallFontsCache(offerings: Offerings) async {
@@ -280,6 +303,21 @@ private extension Offerings {
                 .lazy
                 .compactMap(\.paywallComponents)
                 .flatMap(\.data.allImageURLs)
+        )
+    }
+
+    var allAssetsInPaywallsV2: Set<URL> {
+        // Attempting to warm up all low res images for all offerings for Paywalls V2.
+        // Paywalls V2 paywall are explicitly published so anything that
+        // is here is intended to be displayed.
+        // Also only prewarming low res urls
+        return .init(
+            self
+                .all
+                .values
+                .lazy
+                .compactMap(\.paywallComponents)
+                .flatMap(\.data.allAssetURLs)
         )
     }
 

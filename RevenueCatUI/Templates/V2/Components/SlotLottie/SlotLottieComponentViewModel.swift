@@ -124,19 +124,22 @@ struct SlotLottieComponentStyle {
         self.padding = (padding ?? .zero).edgeInsets
         self.margin = (margin ?? .zero).edgeInsets
 
-        switch forSureSize.width {
-        case .fit, .fill, .relative:
-            self.explicitWidth = nil
-        case .fixed(let value):
-            self.explicitWidth = CGFloat(value)
-        }
+//        switch forSureSize.width {
+//        case .fit, .fill, .relative:
+//            self.explicitWidth = nil
+//        case .fixed(let value):
+//            self.explicitWidth = CGFloat(value)
+//        }
+//
+//        switch forSureSize.height {
+//        case .fit, .fill, .relative:
+//            self.explicitHeight = nil
+//        case .fixed(let value):
+//            self.explicitHeight = CGFloat(value)
+//        }
 
-        switch forSureSize.height {
-        case .fit, .fill, .relative:
-            self.explicitHeight = nil
-        case .fixed(let value):
-            self.explicitHeight = CGFloat(value)
-        }
+        self.explicitWidth = 100
+        self.explicitHeight = 100
     }
 
 }

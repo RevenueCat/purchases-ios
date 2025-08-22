@@ -47,7 +47,10 @@ extension FileManager: LargeItemCacheType {
 
     /// Generate a url for a location on disk based in the input URL
     func generateLocalFilesystemURL(forRemoteURL url: URL) -> URL? {
-        cacheDirectory?.appendingPathComponent(url.pathComponents.joined(separator: "/"))
+        cacheDirectory?
+            // TODO: append a path for RevenueCat
+            .appendingPathComponent(url.absoluteString.asData.md5String)
+            .appendingPathExtension(url.pathExtension)
     }
 
     /// Load data from url

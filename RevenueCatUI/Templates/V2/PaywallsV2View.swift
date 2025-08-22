@@ -182,6 +182,8 @@ struct PaywallsV2View: View {
                     .environmentObject(self.viewRegistery)
                     .disabled(self.purchaseHandler.actionInProgress)
                     .onAppear {
+                        WebViewPool.shared.warmUp()
+
                         self.purchaseHandler.trackPaywallImpression(
                             self.createEventData()
                         )
