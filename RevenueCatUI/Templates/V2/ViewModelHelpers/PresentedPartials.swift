@@ -93,6 +93,8 @@ extension PresentedPartial {
                     return orientations.contains(where: { $0.rawValue == active })
                 case .notIn:
                     return !orientations.contains(where: { $0.rawValue == active })
+                @unknown default:
+                    return false
                 }
             case .screenSize(let operand, let sizes):
                 guard let active = activeCondition.screenSize?.name else {
@@ -104,6 +106,8 @@ extension PresentedPartial {
                     return sizes.contains(where: { $0 == active })
                 case .notIn:
                     return !sizes.contains(where: { $0 == active })
+                @unknown default:
+                    return false
                 }
             case .selectedPackage:
                 // TODO: Logic
@@ -121,6 +125,8 @@ extension PresentedPartial {
                     return false
                 }
             case .unsupported:
+                return false
+            @unknown default:
                 return false
             }
         }
