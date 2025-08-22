@@ -88,7 +88,7 @@ struct ComponentsView: View {
         case .carousel(let viewModel):
             CarouselComponentView(viewModel: viewModel, onDismiss: onDismiss)
         case .video:
-            EmptyView() // TO DO
+            EmptyView()
         }
     }
 }

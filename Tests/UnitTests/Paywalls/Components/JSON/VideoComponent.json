@@ -8,12 +8,12 @@
   },
   "fallback_source": {
     "light": {
-      "heic": "https://assets.pawwalls.com/1151049_1732039548.heic",
-      "heic_low_res": "https://assets.pawwalls.com/1151049_low_res_1732039548.heic",
+      "heic": "https://assets.revenuecat.com/1151049_1732039548.heic",
+      "heic_low_res": "https://assets.revenuecat.com/1151049_low_res_1732039548.heic",
       "height": 200,
-      "original": "https://assets.pawwalls.com/1151049_1732039548.png",
-      "webp": "https://assets.pawwalls.com/1151049_1732039548.webp",
-      "webp_low_res": "https://assets.pawwalls.com/1151049_low_res_1732039548.webp",
+      "original": "https://assets.revenuecat.com/1151049_1732039548.png",
+      "webp": "https://assets.revenuecat.com/1151049_1732039548.webp",
+      "webp_low_res": "https://assets.revenuecat.com/1151049_low_res_1732039548.webp",
       "width": 400
     }
   },

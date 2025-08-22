@@ -7,10 +7,10 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  NoOpPaywallComponentViewModel.swift
+//  VideoComponentViewModel.swift
 //
 //  Created by Jacob Zivan Rakidzich on 8/19/25.
 
 import Foundation
 
-struct NoOpPaywallComponentViewModel {}
+struct VideoComponentViewModel {}
