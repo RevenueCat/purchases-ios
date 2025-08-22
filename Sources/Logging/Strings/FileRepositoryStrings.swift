@@ -25,11 +25,11 @@ extension FileRepositoryStrings: LogMessage {
     var description: String {
         switch self {
         case .failedToSaveCachedFile(let url, let error):
-            "Failed to save file to \(url.absoluteString): \(error)"
+            return "Failed to save file to \(url.absoluteString): \(error)"
         case .failedToFetchFileFromRemoteSource(let url, let error):
-            "Failed to download file from \(url.absoluteString): \(error)"
+            return "Failed to download file from \(url.absoluteString): \(error)"
         case .failedToCreateCacheDirectory(let url):
-            "Failed to create cache directory for \(url.absoluteString)"
+            return "Failed to create cache directory for \(url.absoluteString)"
         }
     }
 

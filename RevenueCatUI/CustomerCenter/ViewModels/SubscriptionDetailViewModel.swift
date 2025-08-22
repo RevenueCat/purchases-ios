@@ -75,10 +75,9 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
     func refreshPurchase() {
         cancellable = customerInfoViewModel.publisher(for: purchaseInformation)?
             .dropFirst() // skip current value
-            .sink(receiveValue: { [weak self] in
-                defer { self?.isRefreshing = false }
-
+            .sink(receiveValue: { @MainActor [weak self] in
                 self?.purchaseInformation = $0
+                self?.isRefreshing = false
             })
 
         isRefreshing = true
