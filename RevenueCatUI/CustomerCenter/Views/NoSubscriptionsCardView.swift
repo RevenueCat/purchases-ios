@@ -56,7 +56,7 @@ struct NoSubscriptionsCardView: View {
         self.init(
             title: localization[.noSubscriptionsFound],
             subtitle: localization[.tryCheckRestore],
-            subscribeTitle: localization[.subscribe],
+            subscribeTitle: localization[.buySubscrition],
             screenOffering: screenOffering,
             purchasesProvider: purchasesProvider
         )
