@@ -1,0 +1,179 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  VideoComponent.swift
+//
+//  Created by Jacob Zivan Rakidzich on 8/18/25.
+
+import RevenueCat
+import SwiftUI
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct VideoComponentView: View {
+    let viewModel: VideoComponentViewModel
+
+    @EnvironmentObject
+    private var packageContext: PackageContext
+
+    @EnvironmentObject
+    private var introOfferEligibilityContext: IntroOfferEligibilityContext
+
+    @EnvironmentObject
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
+
+    @Environment(\.componentViewState)
+    private var componentViewState
+
+    @Environment(\.screenCondition)
+    private var screenCondition
+
+    @Environment(\.colorScheme)
+    private var colorScheme
+
+    @State var size: CGSize = .zero
+
+    var body: some View {
+        viewModel
+            .styles(
+                state: componentViewState,
+                condition: screenCondition,
+                isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
+                    package: self.packageContext.package
+                ),
+                isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                    for: self.packageContext.package
+                )
+            ) { style in
+                if style.visible {
+                    ZStack {
+                        //                     to do cached image view
+                        if let source = viewModel.imageSource, let imageViewModel = try? ImageComponentViewModel(
+                            localizationProvider: viewModel.localizationProvider,
+                            uiConfigProvider: viewModel.uiConfigProvider,
+                            component: .init(source: source)
+                        ) {
+                            ImageComponentView(viewModel: imageViewModel)
+                        }
+
+                        renderVideo(
+                            VideoPlayerView(
+                                // To do: cached video view
+                                videoURL: style.url,
+                                shouldAutoPlay: style.autoplay,
+                                contentMode: style.contentMode,
+                                showControls: style.showControls,
+                                loopVideo: style.loop,
+                                muteAudio: style.muteAudio
+                            ),
+                            with: style
+                        )
+
+                    }
+                    .applyVideoWidth(size: style.size)
+                    .applyVideoHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
+                    .clipped()
+                    .padding(style.padding.extend(by: style.border?.width ?? 0))
+                    .shape(border: style.border,
+                           shape: style.shape)
+                    .shadow(shadow: style.shadow,
+                            shape: style.shape?.toInsettableShape())
+                    .padding(style.margin)
+                    .sizeReader($size)
+                }
+            }
+    }
+
+    private func aspectRatio(style: VideoComponentStyle) -> Double {
+        let (width, height) = self.videoSize(style: style)
+        return Double(width) / Double(height)
+    }
+
+    private func videoSize(style: VideoComponentStyle) -> (width: Int, height: Int) {
+        switch self.colorScheme {
+        case .light:
+            return (style.widthLight, style.heightLight)
+        case .dark:
+            return (style.widthDark ?? style.widthLight, style.heightDark ?? style.heightLight)
+        @unknown default:
+            return (style.widthLight, style.heightLight)
+        }
+    }
+
+    private func renderVideo<Video: View>(
+        _ video: Video,
+        with style: VideoComponentStyle
+    ) -> some View {
+        video
+            .fitToAspectRatio(
+                aspectRatio: self.aspectRatio(style: style),
+                contentMode: style.contentMode,
+                containerContentMode: style.contentMode
+            )
+            .frame(maxWidth: calculateMaxWidth(parentWidth: size.width, style: style))
+            .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
+                view.overlay(
+                    Color.clear.backgroundStyle(.color(colorOverlay))
+                )
+            })
+    }
+
+    private func calculateMaxWidth(parentWidth: CGFloat, style: VideoComponentStyle) -> CGFloat {
+        let totalBorderWidth = (style.border?.width ?? 0) * 2
+        return parentWidth - totalBorderWidth
+            - style.margin.leading - style.margin.trailing
+            - style.padding.leading - style.padding.trailing
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+fileprivate extension View {
+
+    @ViewBuilder
+    func applyVideoWidth(size: PaywallComponent.Size) -> some View {
+        switch size.width {
+        case .fit:
+            self
+        case .fill:
+            self.frame(maxWidth: .infinity)
+        case .fixed(let value):
+            self.frame(width: Double(value))
+        default:
+            self
+        }
+    }
+
+    @ViewBuilder
+    func applyVideoHeight(size: PaywallComponent.Size, aspectRatio: Double) -> some View {
+        switch size.height {
+        case .fit:
+            switch size.width {
+            case .fit:
+                self
+            case .fill:
+                self
+            case .fixed(let value):
+                // This is the only change versus the regular .size() modifier.
+                // When the image has height=fit and fixed width, we manually set a
+                // fixed height according to the aspect ratio.
+                // Otherwise the view would grow vertically to occupy available space.
+                // See "Image streching vertically" preview
+                self.frame(height: Double(value) / aspectRatio)
+            default:
+                self
+            }
+        case .fill:
+            self.frame(maxHeight: .infinity)
+        case .fixed(let value):
+            self.frame(height: Double(value))
+        default:
+            self
+        }
+    }
+
+}

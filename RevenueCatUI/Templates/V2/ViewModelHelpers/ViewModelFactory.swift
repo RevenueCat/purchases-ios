@@ -404,8 +404,14 @@ struct ViewModelFactory {
                     pageStackViewModels: pageStackViewModels
                 )
             )
-        case .video:
-            return .video(.init())
+        case .video(let component):
+            return .video(
+                try VideoComponentViewModel(
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider,
+                    component: component
+                )
+            )
         }
     }
 
