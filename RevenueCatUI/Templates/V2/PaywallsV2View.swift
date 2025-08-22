@@ -88,6 +88,9 @@ struct PaywallsV2View: View {
     @Environment(\.horizontalSizeClass)
     private var horizontalSizeClass
 
+    @Environment(\.verticalSizeClass)
+    private var verticalSizeClass
+
     @Environment(\.colorScheme)
     private var colorScheme
 
@@ -106,6 +109,9 @@ struct PaywallsV2View: View {
 
     @StateObject
     private var paywallPromoOfferCache: PaywallPromoOfferCache
+
+    @StateObject
+    private var screenCondition = ScreenCondition()
 
     public init(
         paywallComponents: Offering.PaywallComponents,
@@ -172,7 +178,7 @@ struct PaywallsV2View: View {
                         uiConfigProvider: self.uiConfigProvider,
                         onDismiss: self.onDismiss
                     )
-                    .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
+                    .environment(\.screenCondition, self.screenCondition)
                     .environmentObject(self.purchaseHandler)
                     .environmentObject(self.introOfferEligibilityContext)
                     .environmentObject(self.paywallPromoOfferCache)
@@ -217,6 +223,10 @@ struct PaywallsV2View: View {
                     )
                 }
             }
+        }.onSizeChange { size in
+            self.screenCondition.paywallSize = size
+        }.onChangeOf(self.verticalSizeClass) { newValue in
+            self.screenCondition.verticalSizeClass = newValue
         }
     }
 

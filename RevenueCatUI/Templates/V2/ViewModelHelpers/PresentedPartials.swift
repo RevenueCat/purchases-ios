@@ -84,10 +84,19 @@ extension PresentedPartial {
         // Early return when any condition evaluates to false
         for condition in conditions {
             switch condition {
-            case .compact, .medium, .expanded:
-                if !activeCondition.applicableConditions.contains(condition) {
-                    return false
-                }
+            case .orientation:
+                // TODO: Logic
+                return false
+            case .screenSize:
+                // TODO: Logic
+                return false
+            case .selectedPackage:
+                // TODO: Logic
+                return false
+//            case .compact, .medium, .expanded:
+//                if !activeCondition.applicableConditions.contains(condition) {
+//                    return false
+//                }
             case .introOffer:
                 if !isEligibleForIntroOffer {
                     return false
@@ -110,18 +119,18 @@ extension PresentedPartial {
 
 }
 
-private extension ScreenCondition {
-
-    /// Returns applicable condition types based on current screen condition
-    var applicableConditions: [PaywallComponent.Condition] {
-        switch self {
-        case .compact: return [.compact]
-        case .medium: return [.compact, .medium]
-        case .expanded: return [.compact, .medium, .expanded]
-        }
-    }
-
-}
+//private extension ScreenCondition {
+//
+//    /// Returns applicable condition types based on current screen condition
+//    var applicableConditions: [PaywallComponent.Condition] {
+//        switch self {
+//        case .compact: return [.compact]
+//        case .medium: return [.compact, .medium]
+//        case .expanded: return [.compact, .medium, .expanded]
+//        }
+//    }
+//
+//}
 
 extension Array {
 

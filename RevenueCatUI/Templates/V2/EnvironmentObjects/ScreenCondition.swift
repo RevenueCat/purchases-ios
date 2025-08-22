@@ -12,32 +12,112 @@
 //  Created by Josh Holtz on 11/14/24.
 
 import SwiftUI
+@_spi(Internal) import RevenueCat
 
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
 
-enum ScreenCondition {
+class ScreenCondition: ObservableObject {
 
-    case compact, medium, expanded
+    static let defaultScreenSizes: [UIConfig.ScreenSize] = [
+        .init(name: "mobile", width: 375),
+        .init(name: "tablet", width: 834),
+        .init(name: "desktop", width: 1440)
+    ]
 
-    static func from(_ sizeClass: UserInterfaceSizeClass?) -> Self {
-        guard let sizeClass else {
-            return .compact
+    static let `default` = ScreenCondition(screenSizes: ScreenCondition.defaultScreenSizes)
+    static let medium = ScreenCondition(screenSizes: ScreenCondition.defaultScreenSizes)
+
+    enum Orientation: String {
+        case portrait
+        case landscape
+        case unknown
+    }
+
+    let screenSizes: [UIConfig.ScreenSize]
+
+    @Published var paywallSize: CGSize? {
+        didSet { recalc() }
+    }
+    @Published var verticalSizeClass: UserInterfaceSizeClass? {
+        didSet { recalc() }
+    }
+
+    @Published private(set) var orientation: Orientation = .unknown
+    @Published private(set) var screenSize: UIConfig.ScreenSize?
+
+    // MARK: - Platform/idiom helpers
+    private var isPhone: Bool {
+        #if os(iOS)
+        return UIDevice.current.userInterfaceIdiom == .phone
+        #else
+        return false
+        #endif
+    }
+
+    /// Treat iPhone landscape as “use landscape layout”.
+    /// tvOS/macOS/watchOS handled explicitly.
+    private var shouldUseLandscapeLayout: Bool {
+        #if os(tvOS)
+        // tvOS never reports .compact; we want wide/horizontal layouts.
+        return true
+        #elseif os(macOS)
+        return false
+        #elseif os(watchOS)
+        return false
+        #else
+        // On iPhone this is `.compact` in landscape. On iPad it’s often `.regular`.
+        return self.verticalSizeClass == .compact
+        #endif
+    }
+
+    init(screenSizes: [UIConfig.ScreenSize] = ScreenCondition.defaultScreenSizes) {
+        self.screenSizes = screenSizes
+    }
+
+    private func recalc() {
+        guard let size = paywallSize, size.width > 0, size.height > 0 else {
+            self.orientation = .unknown
+            self.screenSize  = nil
+            return
         }
 
-        switch sizeClass {
-        case .compact:
-            return .compact
-        case .regular:
-            return .medium
-        @unknown default:
-            return .compact
+        // 1) Derive current orientation from the actual rendered size
+        if size.width > size.height {
+            self.orientation = .landscape
+        } else if size.height > size.width {
+            self.orientation = .portrait
+        } else {
+            self.orientation = .portrait // square -> treat as portrait
         }
+
+        // 2) Choose bucketing policy
+        // - iPhone portrait -> short side (stable)
+        // - iPhone landscape -> actual width (let it “grow”)
+        // - Everyone else -> short side (stable across rotation / windowing)
+        let useActualWidth: Bool = {
+            #if os(iOS)
+            if isPhone {
+                // Prefer size class when available (most reliable on iPhone),
+                // fall back to inferred orientation from geometry.
+                return shouldUseLandscapeLayout || orientation == .landscape
+            }
+            #endif
+            return false
+        }()
+
+        // 3) Compute effective width according to policy
+        let effectiveWidth: CGFloat = useActualWidth ? size.width : min(size.width, size.height)
+
+        // 4) Treat class.width as a MIN breakpoint
+        self.screenSize = self.screenSizes.last(where: {
+            CGFloat($0.width) <= effectiveWidth
+        }) ?? self.screenSizes.first
     }
 
 }
 
 struct ScreenConditionKey: EnvironmentKey {
-    static let defaultValue = ScreenCondition.compact
+    static let defaultValue = ScreenCondition.init()
 }
 
 extension EnvironmentValues {

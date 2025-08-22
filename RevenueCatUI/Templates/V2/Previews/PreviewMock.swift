@@ -100,7 +100,7 @@ struct PreviewRequiredPaywallsV2Properties: ViewModifier {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
     func previewRequiredPaywallsV2Properties(
-        screenCondition: ScreenCondition = .compact,
+        screenCondition: ScreenCondition = .default,
         componentViewState: ComponentViewState = .default,
         packageContext: PackageContext? = nil
     ) -> some View {

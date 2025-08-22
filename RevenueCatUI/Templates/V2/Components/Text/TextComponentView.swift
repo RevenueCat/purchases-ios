@@ -586,7 +586,7 @@ struct TextComponentView_Previews: PreviewProvider {
                     color: .init(light: .hex("#000000")),
                     overrides: [
                         .init(conditions: [
-                            .medium
+//                            .medium
                         ], properties: .init(
                             text: "id_2"
                         ))
@@ -617,7 +617,7 @@ struct TextComponentView_Previews: PreviewProvider {
                     color: .init(light: .hex("#000000")),
                     overrides: [
                         .init(conditions: [
-                            .medium
+//                            .medium
                         ], properties: .init(
                             text: "id_2"
                         ))
