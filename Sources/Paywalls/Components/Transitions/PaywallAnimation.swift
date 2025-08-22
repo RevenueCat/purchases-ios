@@ -57,11 +57,11 @@ public extension PaywallComponent {
             var value: String?
             switch self {
             case .easeIn:
-                type = "easeIn"
+                type = "ease_in"
             case .easeInOut:
-                type = "easeInOut"
+                type = "ease_in_out"
             case .easeOut:
-                type = "easeOut"
+                type = "ease_out"
             case .linear:
                 type = "linear"
             case .custom(let animation):
@@ -73,11 +73,11 @@ public extension PaywallComponent {
 
         static func from(_ container: AnimationTypeContainer) -> AnimationType? {
             switch container.type {
-            case "easeIn":
+            case "ease_in":
                 return .easeIn
-            case "easeInOut":
+            case "ease_in_out":
                 return .easeInOut
-            case "easeOut":
+            case "ease_out":
                 return .easeOut
             case "linear":
                 return .linear

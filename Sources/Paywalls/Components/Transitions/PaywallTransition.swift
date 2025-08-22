@@ -76,7 +76,7 @@ public extension PaywallComponent {
             case .fade:
                 type = "fade"
             case .fadeAndScale:
-                type = "fadeAndScale"
+                type = "fade_and_scale"
             case .scale:
                 type = "scale"
             case .slide:
@@ -92,7 +92,7 @@ public extension PaywallComponent {
             switch container.type {
             case "fade":
                 return .fade
-            case "fadeAndScale":
+            case "fade_and_scale":
                 return .fadeAndScale
             case "scale":
                 return .scale
