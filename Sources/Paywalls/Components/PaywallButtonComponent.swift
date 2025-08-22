@@ -47,7 +47,7 @@ public extension PaywallComponent {
             self.type = try container.decode(ComponentType.self, forKey: .type)
             self.action = try container.decode(Action.self, forKey: .action)
             self.stack = try container.decode(PaywallComponent.StackComponent.self, forKey: .stack)
-            self.transition = try container.decode(PaywallComponent.Transition.self, forKey: .transition)
+            self.transition = try container.decodeIfPresent(PaywallComponent.Transition.self, forKey: .transition)
         }
 
         public func encode(to encoder: Encoder) throws {
