@@ -12,15 +12,11 @@
 //  Created by Jacob Zivan Rakidzich on 8/21/25.
 
 @testable import RevenueCat
-import Testing
+import XCTest
 
-@Suite
-struct PaywallTransitionTest {
-
-    @Test(
-        "Serializes Transitions",
-        arguments: [
-            (
+final class PaywallTransitionTest: TestCase {
+    let arguments =  [
+        (
                """
                {
                  "animation": {
@@ -44,8 +40,8 @@ struct PaywallTransitionTest {
                     msDuration: nil
                 )
                )
-            ),
-            (
+        ),
+        (
                """
                {
                  "displacement_strategy": "lazy",
@@ -59,8 +55,8 @@ struct PaywallTransitionTest {
                 displacementStrategy: PaywallComponent.DisplacementStrategy.lazy,
                 animation: nil
                )
-            ),
-            (
+        ),
+        (
                """
                {
                  "animation": {
@@ -84,18 +80,20 @@ struct PaywallTransitionTest {
                     type: PaywallComponent.AnimationType.custom("some random animation"),
                     msDelay: 1500,
                     msDuration: nil
-                    )
+                )
                )
-            )
-            ]
-    )
-    func codable(json: String, transition: PaywallComponent.Transition) async throws {
-        let data = json.data(using: .utf8).unsafelyUnwrapped
-        #expect(try JSONDecoder.default.decode(PaywallComponent.Transition.self, from: data) == transition)
+        )
+    ]
 
-        let transition2 = try transition.encodeAndDecode()
+    func test_codable() async throws {
+        for (json, transition) in arguments {
+            let data = json.data(using: .utf8).unsafelyUnwrapped
+            let decoded = try JSONDecoder.default.decode(PaywallComponent.Transition.self, from: data)
+            XCTAssertEqual(decoded, transition)
 
-        #expect(transition == transition2)
+            let transition2 = try transition.encodeAndDecode()
+
+            XCTAssertEqual(transition, transition2)
+        }
     }
-
 }
