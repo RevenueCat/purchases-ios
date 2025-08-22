@@ -36,6 +36,15 @@ class SlotLottieComponentViewModel {
         self.presentedOverrides = try self.component.overrides?.toPresentedOverrides { $0 }
     }
 
+    var url: URL? {
+        switch self.component.value {
+        case .url(let url):
+            return url
+        case .unknown:
+            return nil
+        }
+    }
+
     @ViewBuilder
     func styles(
         state: ComponentViewState,
@@ -95,6 +104,8 @@ struct SlotLottieComponentStyle {
     let visible: Bool
     let value: PaywallComponent.SlotLottieComponent.Value
     let size: PaywallComponent.Size
+    let explicitWidth: CGFloat?
+    let explicitHeight: CGFloat?
     let padding: EdgeInsets
     let margin: EdgeInsets
 
@@ -105,11 +116,27 @@ struct SlotLottieComponentStyle {
         padding: PaywallComponent.Padding?,
         margin: PaywallComponent.Padding?
     ) {
+        let forSureSize = size ?? .init(width: .fit, height: .fit)
+
         self.visible = visible
         self.value = value
-        self.size = size ?? .init(width: .fit, height: .fit)
+        self.size = forSureSize
         self.padding = (padding ?? .zero).edgeInsets
         self.margin = (margin ?? .zero).edgeInsets
+
+        switch forSureSize.width {
+        case .fit, .fill, .relative:
+            self.explicitWidth = nil
+        case .fixed(let value):
+            self.explicitWidth = CGFloat(value)
+        }
+
+        switch forSureSize.height {
+        case .fit, .fill, .relative:
+            self.explicitHeight = nil
+        case .fixed(let value):
+            self.explicitHeight = CGFloat(value)
+        }
     }
 
 }

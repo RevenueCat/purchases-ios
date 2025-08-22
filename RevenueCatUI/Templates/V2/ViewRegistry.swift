@@ -59,6 +59,15 @@ public enum PurchasesUI {
 private typealias ViewProvider = (String) -> AnyView
 private typealias ViewOtherProvider = (PaywallComponent) -> AnyView
 
+struct SlotWrapperView<Content: View>: View {
+
+    let content: Content
+
+    var body: some View {
+        self.content
+    }
+}
+
 final class ViewRegistry: ObservableObject {
 
     static let shared = ViewRegistry()
@@ -74,7 +83,6 @@ final class ViewRegistry: ObservableObject {
         type: PaywallComponent.ComponentType,
         @ViewBuilder _ callback: @escaping (PaywallComponent) -> Content
     ) {
-
         self.otherCallback[type] = { component in
             AnyView(callback(component))
         }
