@@ -1,0 +1,101 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  PaywallComponent.TransitionTest.swift
+//
+//  Created by Jacob Zivan Rakidzich on 8/21/25.
+
+@testable import RevenueCat
+import Testing
+
+@Suite
+struct PaywallTransitionTest {
+
+    @Test(
+        "Serializes Transitions",
+        arguments: [
+            (
+               """
+               {
+                 "animation": {
+                   "ms_delay": 1500,
+                   "type": {
+                     "type": "ease_in_out"
+                   }
+                 },
+                 "displacement_strategy": "greedy",
+                 "type": {
+                   "type": "fade_and_scale"
+                 }
+               }
+               """,
+               PaywallComponent.Transition(
+                type: PaywallComponent.TransitionType.fadeAndScale,
+                displacementStrategy: PaywallComponent.DisplacementStrategy.greedy,
+                animation: PaywallComponent.Animation(
+                    type: PaywallComponent.AnimationType.easeInOut,
+                    msDelay: 1500,
+                    msDuration: nil
+                )
+               )
+            ),
+            (
+               """
+               {
+                 "displacement_strategy": "lazy",
+                 "type": {
+                   "type": "fade"
+                 }
+               }
+               """,
+               PaywallComponent.Transition(
+                type: PaywallComponent.TransitionType.fade,
+                displacementStrategy: PaywallComponent.DisplacementStrategy.lazy,
+                animation: nil
+               )
+            ),
+            (
+               """
+               {
+                 "animation": {
+                   "ms_delay": 1500,
+                   "type": {
+                     "type": "custom",
+                     "value": "some random animation"
+                   }
+                 },
+                 "displacement_strategy": "greedy",
+                 "type": {
+                   "type": "custom",
+                   "value": "some random transition"
+                 }
+               }
+               """,
+               PaywallComponent.Transition(
+                type: PaywallComponent.TransitionType.custom("some random transition"),
+                displacementStrategy: PaywallComponent.DisplacementStrategy.greedy,
+                animation: PaywallComponent.Animation(
+                    type: PaywallComponent.AnimationType.custom("some random animation"),
+                    msDelay: 1500,
+                    msDuration: nil
+                    )
+               )
+            )
+            ]
+    )
+    func codable(json: String, transition: PaywallComponent.Transition) async throws {
+        let data = json.data(using: .utf8).unsafelyUnwrapped
+        #expect(try JSONDecoder.default.decode(PaywallComponent.Transition.self, from: data) == transition)
+
+        let transition2 = try transition.encodeAndDecode()
+
+        #expect(transition == transition2)
+    }
+
+}

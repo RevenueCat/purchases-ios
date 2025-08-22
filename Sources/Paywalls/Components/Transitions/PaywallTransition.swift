@@ -20,6 +20,16 @@ public extension PaywallComponent {
         public let displacementStrategy: DisplacementStrategy
         public let animation: PaywallComponent.Animation?
 
+        init (
+            type: TransitionType = .fade,
+            displacementStrategy: DisplacementStrategy = .greedy,
+            animation: PaywallComponent.Animation? = nil
+        ) {
+            self.type = type
+            self.displacementStrategy = displacementStrategy
+            self.animation = animation
+        }
+
         public init(from decoder: any Decoder) throws {
             let passthrough = try TransitionCodingContainer(from: decoder)
 
