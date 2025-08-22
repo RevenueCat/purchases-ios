@@ -54,7 +54,7 @@ import Foundation
     /// - Parameters:
     ///   - url: The url for the remote data to cache into a file
     @_spi(Internal) public func generateOrGetCachedFileURL(for url: InputURL) async throws -> OutputURL {
-        try await store.getOrPut(
+        return try await store.getOrPut(
             Task { [weak self] in
                 guard let self, let cachedUrl = self.fileManager.generateLocalFilesystemURL(forRemoteURL: url) else {
                     Logger.error(Strings.fileRepository.failedToCreateCacheDirectory(url).description)
