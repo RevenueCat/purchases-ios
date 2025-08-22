@@ -35,9 +35,6 @@ struct SlotLottieComponentView: View {
     @Environment(\.screenCondition)
     private var screenCondition
 
-    @EnvironmentObject
-    private var viewRegistry: ViewRegistry
-
     let viewModel: SlotLottieComponentViewModel
 
     var body: some View {
@@ -72,7 +69,21 @@ struct SlotLottieComponentView: View {
 
 }
 
-struct LottieWebView: UIViewRepresentable {
+// MARK: - Platform bridges
+
+#if os(iOS)
+typealias PlatformViewRepresentable = UIViewRepresentable
+typealias PlatformColor = UIColor
+private let platformNoIntrinsicMetric = UIView.noIntrinsicMetric
+#elseif os(macOS)
+typealias PlatformViewRepresentable = NSViewRepresentable
+typealias PlatformColor = NSColor
+private let platformNoIntrinsicMetric = NSView.noIntrinsicMetric
+#endif
+
+// MARK: - LottieWebView
+
+struct LottieWebView: PlatformViewRepresentable {
 
     // MARK: API
 
@@ -82,14 +93,14 @@ struct LottieWebView: UIViewRepresentable {
 
     let source: Source
 
-    /// Lottie *web* SDK to use (remote or local). If file://, it’s inlined.
+    /// Lottie *web* SDK to use (remote or local). If file://, it’s inlined into the HTML.
     var lottieScriptURL: URL? = LottieWebView.defaultScript
 
     var loop: Bool = true
     var autoplay: Bool = true
-    var backgroundColor: UIColor = .clear
+    var backgroundColor: PlatformColor = .clear
 
-    /// Optional explicit sizing. If only one dimension is provided, the other will be computed
+    /// Optional explicit sizing. If only one dimension is provided, the other is computed
     /// from the animation's intrinsic aspect ratio (w/h) once known.
     var explicitWidth: CGFloat? = nil
     var explicitHeight: CGFloat? = nil
@@ -99,7 +110,7 @@ struct LottieWebView: UIViewRepresentable {
         lottieScriptURL: URL? = LottieWebView.defaultScript,
         loop: Bool = true,
         autoplay: Bool = true,
-        backgroundColor: UIColor = .clear,
+        backgroundColor: PlatformColor = .clear,
         explicitWidth: CGFloat? = nil,
         explicitHeight: CGFloat? = nil
     ) {
@@ -112,15 +123,31 @@ struct LottieWebView: UIViewRepresentable {
         self.explicitHeight = explicitHeight
     }
 
-    // MARK: UIViewRepresentable
+    // MARK: - Representable conformance
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
-    func makeUIView(context: Context) -> SizingWKWebView {
+    #if os(iOS)
+    func makeUIView(context: Context) -> SizingWKWebView { makeWebView(context: context) }
+    func updateUIView(_ uiView: SizingWKWebView, context: Context) { updateWebView(uiView, context: context) }
+    #elseif os(macOS)
+    func makeNSView(context: Context) -> SizingWKWebView { makeWebView(context: context) }
+    func updateNSView(_ nsView: SizingWKWebView, context: Context) { updateWebView(nsView, context: context) }
+    #endif
+
+    private func makeWebView(context: Context) -> SizingWKWebView {
         let webView = SizingWKWebView(frame: .zero)
+
+        // Transparent background
+        #if os(iOS)
         webView.isOpaque = false
         webView.backgroundColor = backgroundColor
         webView.scrollView.isScrollEnabled = false
+        #elseif os(macOS)
+        // WKWebView on macOS draws its own background; disable it for transparency
+        webView.setValue(false, forKey: "drawsBackground")
+        #endif
+
         context.coordinator.load(
             into: webView,
             source: source,
@@ -133,7 +160,7 @@ struct LottieWebView: UIViewRepresentable {
         return webView
     }
 
-    func updateUIView(_ uiView: SizingWKWebView, context: Context) {
+    private func updateWebView(_ webView: SizingWKWebView, context: Context) {
         let newKey = Coordinator.Key(
             source: source,
             loop: loop,
@@ -144,7 +171,7 @@ struct LottieWebView: UIViewRepresentable {
         )
         if context.coordinator.lastKey != newKey {
             context.coordinator.load(
-                into: uiView,
+                into: webView,
                 source: source,
                 loop: loop,
                 autoplay: autoplay,
@@ -200,7 +227,7 @@ struct LottieWebView: UIViewRepresentable {
             }
 
             func handleData(_ data: Data) {
-                // Decode intrinsic size
+                // Decode intrinsic size from JSON (best-effort)
                 let intrinsic: CGSize? = {
                     if let meta = try? JSONDecoder().decode(LottieMeta.self, from: data),
                        meta.w > 0, meta.h > 0 {
@@ -209,6 +236,7 @@ struct LottieWebView: UIViewRepresentable {
                     return nil
                 }()
 
+                // Update native view size before rendering
                 applyPreferredSize(intrinsic: intrinsic)
 
                 // Build HTML (embed JSON as base64 to avoid CORS)
@@ -222,7 +250,9 @@ struct LottieWebView: UIViewRepresentable {
             case .url(let url):
                 if url.isFileURL {
                     do { handleData(try Data(contentsOf: url)) }
-                    catch { webView.loadHTMLString(Self.errorHTML("Failed to read local Lottie: \(error)"), baseURL: nil) }
+                    catch {
+                        webView.loadHTMLString(Self.errorHTML("Failed to read local Lottie: \(error)"), baseURL: nil)
+                    }
                 } else {
                     var req = URLRequest(url: url)
                     req.cachePolicy = .returnCacheDataElseLoad
@@ -243,32 +273,43 @@ struct LottieWebView: UIViewRepresentable {
             }
         }
 
+        // Compute final preferred size from explicit and intrinsic inputs.
         private func computePreferredSize(intrinsic: CGSize?, explicitWidth: CGFloat?, explicitHeight: CGFloat?) -> CGSize? {
+            // Both provided -> exact
             if let w = explicitWidth, let h = explicitHeight, w > 0, h > 0 {
                 return CGSize(width: w, height: h)
             }
+            // Only width -> compute height when intrinsic known
             if let w = explicitWidth, w > 0 {
                 if let intr = intrinsic, intr.width > 0, intr.height > 0 {
                     let ratio = intr.height / intr.width
                     return CGSize(width: w, height: w * ratio)
                 }
-                return nil
+                return nil // wait for intrinsic
             }
+            // Only height -> compute width when intrinsic known
             if let h = explicitHeight, h > 0 {
                 if let intr = intrinsic, intr.width > 0, intr.height > 0 {
                     let ratio = intr.width / intr.height
                     return CGSize(width: h * ratio, height: h)
                 }
-                return nil
+                return nil // wait for intrinsic
             }
+            // Neither provided -> use intrinsic (if known)
             return intrinsic
         }
+
+        // MARK: - HTML builder
 
         private static func html(for jsonData: Data, loop: Bool, autoplay: Bool, lottieScriptURL: URL?) -> String {
             let b64 = jsonData.base64EncodedString()
             let loopFlag = loop ? "true" : "false"
             let autoplayFlag = autoplay ? "true" : "false"
 
+            // Include lottie-web:
+            // - file://  -> inline JS inside <script>…</script>
+            // - https://  -> <script src="…"></script>
+            // - nil       -> fallback CDN
             let scriptTag: String = {
                 if let url = lottieScriptURL {
                     if url.isFileURL, let js = (try? String(contentsOf: url, encoding: .utf8)) {
@@ -281,6 +322,7 @@ struct LottieWebView: UIViewRepresentable {
                 }
             }()
 
+            // The web content fills the native WKWebView bounds; the native view dictates final size.
             return """
             <!doctype html>
             <html>
@@ -333,14 +375,10 @@ final class SizingWKWebView: WKWebView {
     }
 
     override var intrinsicContentSize: CGSize {
-        if let s = preferredSize, s.width > 0, s.height > 0 { return s }
-        return UIView.noIntrinsicMetricSize
-    }
-}
-
-private extension UIView {
-    static var noIntrinsicMetricSize: CGSize {
-        CGSize(width: UIView.noIntrinsicMetric, height: UIView.noIntrinsicMetric)
+        if let s = preferredSize, s.width > 0, s.height > 0 {
+            return s
+        }
+        return CGSize(width: platformNoIntrinsicMetric, height: platformNoIntrinsicMetric)
     }
 }
 
@@ -348,14 +386,6 @@ private extension UIView {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct SlotLottieComponentView_Previews: PreviewProvider {
-
-    static let viewRegistry: ViewRegistry = {
-        let viewRegister = ViewRegistry()
-        viewRegister.register(type: .slotLottie) { _ in
-            Text("Lottie goes here")
-        }
-        return viewRegister
-    }()
 
     // Need to wrap in VStack otherwise preview rerenders and images won't show
     static var previews: some View {
@@ -371,12 +401,11 @@ struct SlotLottieComponentView_Previews: PreviewProvider {
                     ),
                     component: .init(
                         identifier: "",
-                        value: .url(URL(string: "https://something.com")!)
+                        value: .url(URL(string: "https://lottie.host/c255f574-25eb-4fa9-848a-5797950d3eff/lxodHspupk.json")!)
                     )
                 )
             )
         }
-        .environmentObject(viewRegistry)
         .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 100, height: 100))
         .previewDisplayName("Default")
