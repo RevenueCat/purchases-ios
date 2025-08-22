@@ -32,26 +32,26 @@ protocol LargeItemCacheType {
 extension FileManager: LargeItemCacheType {
     /// A URL for a cache directory if one is present
     private var cacheDirectory: URL? {
-        urls(for: .cachesDirectory, in: .userDomainMask).first
+        return urls(for: .cachesDirectory, in: .userDomainMask).first
     }
 
     /// Store data to a url
     func saveData(_ data: Data, to url: URL) throws {
-        try data.write(to: url)
+        return try data.write(to: url)
     }
 
     /// Check if there is content cached at the given path
     func cachedContentExists(at url: URL) -> Bool {
-        (try? loadFile(at: url)) != nil
+        return (try? loadFile(at: url)) != nil
     }
 
     /// Generate a url for a location on disk based in the input URL
     func generateLocalFilesystemURL(forRemoteURL url: URL) -> URL? {
-        cacheDirectory?.appendingPathComponent(url.pathComponents.joined(separator: "/"))
+        return cacheDirectory?.appendingPathComponent(url.pathComponents.joined(separator: "/"))
     }
 
     /// Load data from url
     func loadFile(at url: URL) throws -> Data {
-        try Data(contentsOf: url)
+        return try Data(contentsOf: url)
     }
 }

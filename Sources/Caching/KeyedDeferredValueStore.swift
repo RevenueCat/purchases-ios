@@ -59,7 +59,7 @@ actor KeyedDeferredValueStore<H: Hashable, T: Sendable> {
         _ task: @escaping @Sendable () -> AnyTask<T>,
         forKey key: H
     ) -> AnyTask<T> {
-        Task {
+        return Task {
             do {
                 return try await task().value
             } catch {
