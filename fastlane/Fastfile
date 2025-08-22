@@ -1658,7 +1658,7 @@ platform :ios do
       platforms_with_changes.each do |result|
         report << "### #{result[:platform]}\n\n"
         report << "**Status:** #{result[:result]}\n\n"
-        report << "```\n#{result[:diff]}\n```\n\n"
+        report << "#{result[:diff]}\n\n"
       end
     end
     
