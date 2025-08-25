@@ -55,7 +55,7 @@ func checkEntitlementInfoEnums() {
          .external,
          .paddle:
         print(store!)
-    #if TEST_STORE
+    #if SIMULATED_STORE
     case .testStore:
         print(store!)
     #endif
