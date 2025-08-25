@@ -71,9 +71,6 @@ extension PaywallComponent.Transition {
             return AnyTransition.scale
         case .slide:
             return AnyTransition.slide
-        case .custom:
-            // WIP: will add this later
-            return AnyTransition.identity
         @unknown default:
             return AnyTransition.identity
         }
@@ -104,9 +101,6 @@ extension PaywallComponent.Animation {
                 return .linear(duration: duration).delay(msDelay?.seconds ?? 0)
             }
             return .linear.delay(msDelay?.seconds ?? 0)
-        case .custom:
-            // WIP: will add this later
-            return .default
         @unknown default:
                 return .default
         }
