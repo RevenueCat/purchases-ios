@@ -20,7 +20,7 @@ import SwiftUI
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-// swiftlint:disable file_length
+// swiftlint:disable file_length type_body_length
 struct SubscriptionDetailView: View {
 
     @Environment(\.appearance)
@@ -135,7 +135,10 @@ struct SubscriptionDetailView: View {
                 usesNavigationStack: navigationOptions.usesNavigationStack
             ) {
                 PurchaseHistoryView(
-                    viewModel: PurchaseHistoryViewModel(purchasesProvider: self.viewModel.purchasesProvider)
+                    viewModel: PurchaseHistoryViewModel(
+                        purchasesProvider: self.viewModel.purchasesProvider,
+                        localization: localization
+                    )
                 )
                 .environment(\.appearance, appearance)
                 .environment(\.localization, localization)

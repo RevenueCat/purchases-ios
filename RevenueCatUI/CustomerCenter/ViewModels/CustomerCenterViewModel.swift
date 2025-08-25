@@ -202,7 +202,7 @@ import Foundation
             try await purchasesProvider.customerInfo(fetchPolicy: .fetchCurrent)
 
             let configuration = try await self.loadCustomerCenterConfig()
-            try await self.loadPurchases(customerInfo: customerInfo, changePlans: configuration.changePlans)
+            try await self.loadPurchases(customerInfo: customerInfo, configuration: configuration)
 
             if shouldShowVirtualCurrencies {
                 purchasesProvider.invalidateVirtualCurrenciesCache()
@@ -244,7 +244,7 @@ import Foundation
 @available(watchOS, unavailable)
 private extension CustomerCenterViewModel {
 
-    func loadPurchases(customerInfo: CustomerInfo, changePlans: [CustomerCenterConfigData.ChangePlan]) async throws {
+    func loadPurchases(customerInfo: CustomerInfo, configuration: CustomerCenterConfigData) async throws {
         self.customerInfo = customerInfo
 
         let hasActiveProducts =  !customerInfo.activeSubscriptions.isEmpty || !customerInfo.nonSubscriptions.isEmpty
@@ -256,11 +256,11 @@ private extension CustomerCenterViewModel {
             return
         }
 
-        await loadSubscriptionsSection(customerInfo: customerInfo, changePlans: changePlans)
-        await loadNonSubscriptionsSection(customerInfo: customerInfo)
+        await loadSubscriptionsSection(customerInfo: customerInfo, configuration: configuration)
+        await loadNonSubscriptionsSection(customerInfo: customerInfo, configuration: configuration)
     }
 
-    func loadNonSubscriptionsSection(customerInfo: CustomerInfo) async {
+    func loadNonSubscriptionsSection(customerInfo: CustomerInfo, configuration: CustomerCenterConfigData) async {
         var activeNonSubscriptionPurchases: [PurchaseInformation] = []
         for subscription in customerInfo.nonSubscriptions {
 
@@ -269,14 +269,15 @@ private extension CustomerCenterViewModel {
                 customerInfo: customerInfo,
                 purchasesProvider: purchasesProvider,
                 changePlans: [],
-                customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
+                customerCenterStoreKitUtilities: customerCenterStoreKitUtilities,
+                localization: configuration.localization
             )
             activeNonSubscriptionPurchases.append(purchaseInfo)
         }
         self.nonSubscriptionsSection = activeNonSubscriptionPurchases
     }
 
-    func loadMostRecentExpiredTransaction(customerInfo: CustomerInfo) async {
+    func loadMostRecentExpiredTransaction(customerInfo: CustomerInfo, configuration: CustomerCenterConfigData) async {
         let inactive = customerInfo.subscriptionsByProductIdentifier
             .filter { !$0.value.isActive }
             .sorted { sub1, sub2 in
@@ -306,7 +307,8 @@ private extension CustomerCenterViewModel {
             customerInfo: customerInfo,
             purchasesProvider: purchasesProvider,
             changePlans: [],
-            customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
+            customerCenterStoreKitUtilities: customerCenterStoreKitUtilities,
+            localization: configuration.localization
         )
 
         self.subscriptionsSection = [purchaseInfo]
@@ -314,7 +316,7 @@ private extension CustomerCenterViewModel {
 
     func loadSubscriptionsSection(
         customerInfo: CustomerInfo,
-        changePlans: [CustomerCenterConfigData.ChangePlan]
+        configuration: CustomerCenterConfigData
     ) async {
         var activeSubscriptionPurchases: [PurchaseInformation] = []
         let subscriptions = customerInfo.activeSubscriptions
@@ -337,15 +339,16 @@ private extension CustomerCenterViewModel {
                 transaction: subscription,
                 customerInfo: customerInfo,
                 purchasesProvider: purchasesProvider,
-                changePlans: changePlans,
-                customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
+                changePlans: configuration.changePlans,
+                customerCenterStoreKitUtilities: customerCenterStoreKitUtilities,
+                localization: configuration.localization
             )
 
             activeSubscriptionPurchases.append(purchaseInfo)
         }
 
         if activeSubscriptionPurchases.isEmpty {
-            await loadMostRecentExpiredTransaction(customerInfo: customerInfo)
+            await loadMostRecentExpiredTransaction(customerInfo: customerInfo, configuration: configuration)
         } else {
             self.subscriptionsSection = activeSubscriptionPurchases
         }
