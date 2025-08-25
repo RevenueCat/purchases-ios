@@ -17,21 +17,22 @@ import XCTest
 final class PaywallTransitionTest: TestCase {
     let arguments =  [
         (
-               """
-               {
-                 "animation": {
-                   "ms_delay": 1500,
-                   "type": {
-                     "type": "ease_in_out"
-                   }
-                 },
-                 "displacement_strategy": "greedy",
-                 "type": {
-                   "type": "fade_and_scale"
-                 }
+            "EaseInOut, greedy, fade and scale",
+            """
+            {
+             "animation": {
+               "ms_delay": 1500,
+               "type": {
+                 "type": "ease_in_out"
                }
-               """,
-               PaywallComponent.Transition(
+             },
+             "displacement_strategy": "greedy",
+             "type": {
+               "type": "fade_and_scale"
+             }
+            }
+            """,
+            PaywallComponent.Transition(
                 type: PaywallComponent.TransitionType.fadeAndScale,
                 displacementStrategy: PaywallComponent.DisplacementStrategy.greedy,
                 animation: PaywallComponent.Animation(
@@ -39,61 +40,63 @@ final class PaywallTransitionTest: TestCase {
                     msDelay: 1500,
                     msDuration: nil
                 )
-               )
+            )
         ),
         (
-               """
-               {
-                 "displacement_strategy": "lazy",
-                 "type": {
-                   "type": "fade"
-                 }
-               }
-               """,
-               PaywallComponent.Transition(
+            "no animation, lazy, fade",
+            """
+            {
+             "displacement_strategy": "lazy",
+             "type": {
+               "type": "fade"
+             }
+            }
+            """,
+            PaywallComponent.Transition(
                 type: PaywallComponent.TransitionType.fade,
                 displacementStrategy: PaywallComponent.DisplacementStrategy.lazy,
                 animation: nil
-               )
+            )
         ),
         (
-               """
-               {
-                 "animation": {
-                   "ms_delay": 1500,
-                   "type": {
-                     "type": "custom",
-                     "value": "some random animation"
-                   }
-                 },
-                 "displacement_strategy": "greedy",
-                 "type": {
-                   "type": "custom",
-                   "value": "some random transition"
-                 }
+            "custom + custom, fallback serialiization",
+            """
+            {
+             "animation": {
+               "ms_delay": 1500,
+               "type": {
+                 "type": "custom",
+                 "value": "some random animation"
                }
-               """,
-               PaywallComponent.Transition(
-                type: PaywallComponent.TransitionType.custom("some random transition"),
+             },
+             "displacement_strategy": "greedy",
+             "type": {
+               "type": "custom",
+               "value": "some random transition"
+             }
+            }
+            """,
+            PaywallComponent.Transition(
+                type: PaywallComponent.TransitionType.fade,
                 displacementStrategy: PaywallComponent.DisplacementStrategy.greedy,
                 animation: PaywallComponent.Animation(
-                    type: PaywallComponent.AnimationType.custom("some random animation"),
+                    type: PaywallComponent.AnimationType.easeInOut,
                     msDelay: 1500,
                     msDuration: nil
                 )
-               )
+            )
         )
     ]
 
     func test_codable() async throws {
-        for (json, transition) in arguments {
+        for (title, json, transition) in arguments {
             let data = json.data(using: .utf8).unsafelyUnwrapped
             let decoded = try JSONDecoder.default.decode(PaywallComponent.Transition.self, from: data)
-            XCTAssertEqual(decoded, transition)
+            XCTAssertEqual(decoded, transition, "\(title) Failed")
 
             let transition2 = try transition.encodeAndDecode()
 
-            XCTAssertEqual(transition, transition2)
+            XCTAssertEqual(transition, transition2, "\(title) Failed")
         }
     }
 }

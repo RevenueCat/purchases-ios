@@ -56,7 +56,6 @@ public extension PaywallComponent {
 
     internal struct TransitionTypeContainer: Codable {
         let type: String
-        let value: String?
     }
 
     ///
@@ -77,11 +76,9 @@ public extension PaywallComponent {
         case fadeAndScale
         case scale
         case slide
-        case custom(String)
 
         var codingContainer: TransitionTypeContainer {
             let type: String
-            var value: String?
             switch self {
             case .fade:
                 type = "fade"
@@ -91,11 +88,8 @@ public extension PaywallComponent {
                 type = "scale"
             case .slide:
                 type = "slide"
-            case .custom(let transition):
-                type = "custom"
-                value = transition
             }
-            return TransitionTypeContainer(type: type, value: value)
+            return TransitionTypeContainer(type: type)
         }
 
         static func from(_ container: TransitionTypeContainer) -> TransitionType? {
@@ -108,12 +102,6 @@ public extension PaywallComponent {
                 return .scale
             case "slide":
                 return .slide
-            case "custom":
-                if let value = container.value {
-                    return .custom(value)
-                } else {
-                    return nil
-                }
             default:
                 return nil
             }

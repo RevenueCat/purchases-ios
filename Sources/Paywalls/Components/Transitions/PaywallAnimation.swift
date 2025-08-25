@@ -48,7 +48,6 @@ public extension PaywallComponent {
 
     internal struct AnimationTypeContainer: Codable {
         let type: String
-        let value: String?
     }
 
     enum AnimationType: Equatable, Hashable, Sendable {
@@ -56,11 +55,9 @@ public extension PaywallComponent {
         case easeInOut
         case easeOut
         case linear
-        case custom(String)
 
         var codingContainer: AnimationTypeContainer {
             let type: String
-            var value: String?
             switch self {
             case .easeIn:
                 type = "ease_in"
@@ -70,11 +67,8 @@ public extension PaywallComponent {
                 type = "ease_out"
             case .linear:
                 type = "linear"
-            case .custom(let animation):
-                type = "custom"
-                value = animation
             }
-            return AnimationTypeContainer(type: type, value: value)
+            return AnimationTypeContainer(type: type)
         }
 
         static func from(_ container: AnimationTypeContainer) -> AnimationType? {
@@ -87,12 +81,6 @@ public extension PaywallComponent {
                 return .easeOut
             case "linear":
                 return .linear
-            case "custom":
-                if let value = container.value {
-                    return .custom(value)
-                } else {
-                    return nil
-                }
             default:
                 return nil
             }
