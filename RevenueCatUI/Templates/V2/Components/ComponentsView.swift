@@ -76,6 +76,10 @@ struct ComponentsView: View {
                     TabControlToggleComponentView(viewModel: viewModel, onDismiss: onDismiss)
                 case .carousel(let viewModel):
                     CarouselComponentView(viewModel: viewModel, onDismiss: onDismiss)
+                case .slot(let viewModel):
+                    SlotComponentView(viewModel: viewModel)
+                case .slotLottie(let viewModel):
+                    SlotLottieComponentView(viewModel: viewModel)
                 }
             }
             // Applies a top padding to mimmic safe area insets
