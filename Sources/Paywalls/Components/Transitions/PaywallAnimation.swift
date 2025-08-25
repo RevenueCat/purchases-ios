@@ -1,0 +1,94 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  PaywallAnimation.swift
+//
+//  Created by Jacob Zivan Rakidzich on 8/20/25.
+// swiftlint:disable missing_docs
+
+import Foundation
+
+public extension PaywallComponent {
+    struct Animation: PaywallComponentBase {
+        public let type: AnimationType
+        public let msDelay: Int?
+        public let msDuration: Int?
+
+        init(type: AnimationType, msDelay: Int?, msDuration: Int?) {
+            self.type = type
+            self.msDelay = msDelay
+            self.msDuration = msDuration
+        }
+
+        public init(from decoder: any Decoder) throws {
+            let passthrough = try AnimationCodingContainer(from: decoder)
+
+            self.type = AnimationType.from(passthrough.type) ?? .easeInOut
+            self.msDelay = passthrough.msDelay
+            self.msDuration = passthrough.msDuration
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            try AnimationCodingContainer(type: type.codingContainer, msDelay: msDelay, msDuration: msDuration)
+                .encode(to: encoder)
+        }
+    }
+
+    internal struct AnimationCodingContainer: Codable {
+        let type: AnimationTypeContainer
+        let msDelay: Int?
+        let msDuration: Int?
+    }
+
+    internal struct AnimationTypeContainer: Codable {
+        let type: String
+    }
+
+    /// Defines the type of animation to use for paywall transitions.
+    ///
+    /// [NOTE] This is not a plain string enum because we see a future where we may want
+    /// to pass back more verbose instructions to the view layer than a simple enum case 
+    enum AnimationType: Equatable, Hashable, Sendable {
+        case easeIn
+        case easeInOut
+        case easeOut
+        case linear
+
+        var codingContainer: AnimationTypeContainer {
+            let type: String
+            switch self {
+            case .easeIn:
+                type = "ease_in"
+            case .easeInOut:
+                type = "ease_in_out"
+            case .easeOut:
+                type = "ease_out"
+            case .linear:
+                type = "linear"
+            }
+            return AnimationTypeContainer(type: type)
+        }
+
+        static func from(_ container: AnimationTypeContainer) -> AnimationType? {
+            switch container.type {
+            case "ease_in":
+                return .easeIn
+            case "ease_in_out":
+                return .easeInOut
+            case "ease_out":
+                return .easeOut
+            case "linear":
+                return .linear
+            default:
+                return nil
+            }
+        }
+
+    }
+}
