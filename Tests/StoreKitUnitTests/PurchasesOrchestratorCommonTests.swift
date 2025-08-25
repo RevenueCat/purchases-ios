@@ -247,6 +247,34 @@ class PurchasesOrchestratorCommonTests: BasePurchasesOrchestratorTests {
         expect(expectedResultCalled) == true
     }
 
+    func testRedeemWebPurchaseInvalidatesVirtualCurrenciesCacheOnSuccess() async {
+        self.setUpOrchestrator()
+
+        self.webPurchaseRedemptionHelper.stubbedHandleRedeemWebPurchaseResult = .success(mockCustomerInfo)
+
+        _ = await self.orchestrator.redeemWebPurchase(.init(redemptionToken: "test-redemption-token"))
+
+        expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCalled) == true
+        expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount) == 1
+    }
+
+    func testRedeemWebPurchaseDoesNotInvalidateVirtualCurrenciesCacheOnNonSuccess() async {
+        func executeTest(with result: WebPurchaseRedemptionResult) async {
+            self.webPurchaseRedemptionHelper.stubbedHandleRedeemWebPurchaseResult = .purchaseBelongsToOtherUser
+
+            _ = await self.orchestrator.redeemWebPurchase(.init(redemptionToken: "test-redemption-token"))
+
+            expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCalled) == false
+            expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount) == 0
+        }
+
+        self.setUpOrchestrator()
+
+        await executeTest(with: .error(NSError(domain: "test", code: -1)))
+        await executeTest(with: .invalidToken)
+        await executeTest(with: .purchaseBelongsToOtherUser)
+        await executeTest(with: .expired("vc_user@revenuecat.com"))
+    }
 }
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
