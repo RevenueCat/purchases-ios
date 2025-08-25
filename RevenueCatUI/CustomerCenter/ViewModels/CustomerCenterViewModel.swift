@@ -86,12 +86,16 @@ import Foundation
         return !appIsLatestVersion && (configuration?.support.shouldWarnCustomerToUpdate ?? true)
     }
 
-    var hasPurchases: Bool {
-        !subscriptionsSection.isEmpty || !nonSubscriptionsSection.isEmpty
+    /// Whether or not the user has any purchases (subscriptions, non-subscriptions, virtual currencies)
+    var hasAnyPurchases: Bool {
+        !subscriptionsSection.isEmpty || !nonSubscriptionsSection.isEmpty || !(virtualCurrencies?.all.isEmpty ?? true)
     }
 
     var shouldShowList: Bool {
-        subscriptionsSection.count + nonSubscriptionsSection.count > 1
+        let virtualCurrenciesCount = virtualCurrencies.map { $0.all.count } ?? 0
+        let nonVirtualCurrencyCount = subscriptionsSection.count + nonSubscriptionsSection.count
+
+        return nonVirtualCurrencyCount + virtualCurrenciesCount > 1
     }
 
     var originalAppUserId: String {

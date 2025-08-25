@@ -182,7 +182,7 @@ private extension CustomerCenterView {
 
     @ViewBuilder
     func destinationContent(configuration: CustomerCenterConfigData) -> some View {
-        if viewModel.hasPurchases,
+        if viewModel.hasAnyPurchases,
            let screen = configuration.screens[.management] {
             if let onUpdateAppClick = viewModel.onUpdateAppClick,
                !ignoreAppUpdateWarning

@@ -43,7 +43,7 @@ final class CustomerCenterViewModelTests: TestCase {
         let viewModel = CustomerCenterViewModel(actionWrapper: CustomerCenterActionWrapper())
 
         expect(viewModel.state) == .notLoaded
-        expect(viewModel.hasPurchases).to(beFalse())
+        expect(viewModel.hasAnyPurchases).to(beFalse())
         expect(viewModel.subscriptionsSection).to(beEmpty())
         expect(viewModel.nonSubscriptionsSection).to(beEmpty())
         expect(viewModel.state) == .notLoaded
@@ -137,7 +137,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         await viewModel.loadScreen()
 
-        expect(viewModel.hasPurchases).to(beTrue())
+        expect(viewModel.hasAnyPurchases).to(beTrue())
         let purchaseInformation = try XCTUnwrap(viewModel.subscriptionsSection.first)
         expect(purchaseInformation.productIdentifier) == "test_msmath_premium_v1"
 
@@ -158,7 +158,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         await viewModel.loadScreen()
 
-        expect(viewModel.hasPurchases).to(beFalse())
+        expect(viewModel.hasAnyPurchases).to(beFalse())
         expect(viewModel.subscriptionsSection).to(beEmpty())
         expect(viewModel.nonSubscriptionsSection).to(beEmpty())
 
@@ -272,6 +272,26 @@ final class CustomerCenterViewModelTests: TestCase {
         )
 
         expect(viewModel.shouldShowVirtualCurrencies).to(beFalse())
+    }
+
+    func testHasAnyPurchasesIsTrueWithOnlyVirtualCurrencies() async throws {
+        let mockPurchases = MockCustomerCenterPurchases(
+            customerInfo: CustomerCenterViewModelTests.customerInfoWithoutSubscriptions,
+            customerCenterConfigData: CustomerCenterConfigData.mock(displayVirtualCurrencies: true)
+        )
+        mockPurchases.virtualCurrenciesResult = .success(VirtualCurrenciesFixtures.fourVirtualCurrencies)
+
+        let viewModel = CustomerCenterViewModel(
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchasesProvider: mockPurchases
+        )
+
+        await viewModel.loadScreen()
+
+        expect(viewModel.subscriptionsSection).to(beEmpty())
+        expect(viewModel.nonSubscriptionsSection).to(beEmpty())
+        expect(viewModel.virtualCurrencies).toNot(beNil())
+        expect(viewModel.hasAnyPurchases).to(beTrue())
     }
 
     func testShouldShowActiveSubscription_whenUserHasOneActiveSubscriptionOneEntitlement() async throws {
@@ -1138,6 +1158,53 @@ final class CustomerCenterViewModelTests: TestCase {
             activeNonSubscriptionPurchases: [.consumable],
             configuration: CustomerCenterConfigData.default
         )
+        expect(viewModel.shouldShowList).to(beTrue())
+    }
+
+    func testShouldShowListWithVirtualCurrencies() async throws {
+        // Test with only 1 virtual currency -> should be false
+        var mockPurchases = MockCustomerCenterPurchases(
+            customerInfo: CustomerCenterViewModelTests.customerInfoWithoutSubscriptions,
+            customerCenterConfigData: CustomerCenterConfigData.mock(displayVirtualCurrencies: true)
+        )
+        mockPurchases.virtualCurrenciesResult = .success(VirtualCurrenciesFixtures.oneVirtualCurrency)
+
+        var viewModel = CustomerCenterViewModel(
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchasesProvider: mockPurchases
+        )
+
+        await viewModel.loadScreen()
+        expect(viewModel.shouldShowList).to(beFalse())
+
+        // Test with multiple virtual currencies -> should be true
+        mockPurchases = MockCustomerCenterPurchases(
+            customerInfo: CustomerCenterViewModelTests.customerInfoWithoutSubscriptions,
+            customerCenterConfigData: CustomerCenterConfigData.mock(displayVirtualCurrencies: true)
+        )
+        mockPurchases.virtualCurrenciesResult = .success(VirtualCurrenciesFixtures.fourVirtualCurrencies)
+
+        viewModel = CustomerCenterViewModel(
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchasesProvider: mockPurchases
+        )
+
+        await viewModel.loadScreen()
+        expect(viewModel.shouldShowList).to(beTrue())
+
+        // Test with 1 subscription + virtual currencies -> should be true
+        mockPurchases = MockCustomerCenterPurchases(
+            customerInfo: CustomerCenterViewModelTests.customerInfoWithAppleSubscriptions,
+            customerCenterConfigData: CustomerCenterConfigData.mock(displayVirtualCurrencies: true)
+        )
+        mockPurchases.virtualCurrenciesResult = .success(VirtualCurrenciesFixtures.oneVirtualCurrency)
+
+        viewModel = CustomerCenterViewModel(
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchasesProvider: mockPurchases
+        )
+
+        await viewModel.loadScreen()
         expect(viewModel.shouldShowList).to(beTrue())
     }
 

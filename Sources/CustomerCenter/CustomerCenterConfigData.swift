@@ -58,7 +58,7 @@ import Foundation
 
         @_spi(Internal) public enum CommonLocalizedString: String, Equatable {
 
-            case subscribe = "subscribe"
+            case buySubscrition = "buy_subscription"
             case copy = "copy"
             case noThanks = "no_thanks"
             case noSubscriptionsFound = "no_subscriptions_found"
@@ -177,7 +177,7 @@ import Foundation
 
             @_spi(Internal) public var defaultValue: String {
                 switch self {
-                case .subscribe:
+                case .buySubscrition:
                     return "Subscribe"
                 case .copy:
                     return "Copy"
