@@ -14,7 +14,7 @@
 
 import Nimble
 import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 import SwiftUI
 import XCTest
 
