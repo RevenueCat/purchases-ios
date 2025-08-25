@@ -64,18 +64,18 @@ extension PaywallComponent.Transition {
     var toTransition: SwiftUI.AnyTransition {
         switch self.type {
         case .fade:
-            .opacity
+            return AnyTransition.opacity
         case .fadeAndScale:
-            .opacity.combined(with: .scale)
+            return AnyTransition.opacity.combined(with: .scale)
         case .scale:
-            .scale
+            return AnyTransition.scale
         case .slide:
-            .slide
+            return AnyTransition.slide
         case .custom:
             // WIP: will add this later
-            .identity
+            return AnyTransition.identity
         @unknown default:
-            .identity
+            return AnyTransition.identity
         }
     }
 
@@ -115,6 +115,6 @@ extension PaywallComponent.Animation {
 
 private extension Int {
     var seconds: TimeInterval {
-        TimeInterval(Double(self) / 1000)
+        return TimeInterval(Double(self) / 1000)
     }
 }
