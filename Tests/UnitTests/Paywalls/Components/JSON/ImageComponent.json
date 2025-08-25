@@ -1,0 +1,55 @@
+{
+  "color_overlay": {
+    "light": {
+      "type": "alias",
+      "value": "primary"
+    }
+  },
+  "fit_mode": "fill",
+  "id": "P0Tzh3p6d3",
+  "mask_shape": {
+    "corners": {
+      "bottom_leading": 1,
+      "bottom_trailing": 2,
+      "top_leading": 3,
+      "top_trailing": 4
+    },
+    "type": "rectangle"
+  },
+  "name": "",
+  "override_source_lid": "abc123",
+  "shadow": {
+    "color": {
+      "light": {
+        "type": "alias",
+        "value": "tertiary"
+      }
+    },
+    "radius": 20.1,
+    "x": 23.6,
+    "y": 45.2
+  },
+  "size": {
+    "height": {
+      "type": "fit",
+      "value": null
+    },
+    "width": {
+      "type": "fill",
+      "value": null
+    }
+  },
+  "source": {
+    "light": {
+      "heic": "https://assets.revenuecat.com/_caaaattss_heic.heic",
+      "heic_low_res": "https://assets.revenuecat.com/_caaaattss_heic_low_res.heic",
+      "height": 200,
+      "original": "https://assets.revenuecat.com/_caaaattss_original_.png",
+      "webp": "https://assets.revenuecat.com/_caaaattss_webp.webp",
+      "webp_low_res": "https://assets.revenuecat.com/_caaaattss_webp_low_res.webp",
+      "width": 400
+    }
+  },
+  "type": "image",
+  "visible": false
+}
