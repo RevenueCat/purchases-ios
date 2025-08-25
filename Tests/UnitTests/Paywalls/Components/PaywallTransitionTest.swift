@@ -59,7 +59,7 @@ final class PaywallTransitionTest: TestCase {
             )
         ),
         (
-            "custom + custom, fallback serialiization",
+            "Example custom animation and transition (not currently supported) fallsback to safe serialiization",
             """
             {
              "animation": {

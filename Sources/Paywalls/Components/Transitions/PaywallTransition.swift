@@ -71,6 +71,10 @@ public extension PaywallComponent {
         case greedy, lazy
     }
 
+    /// Defines the type of transition to use for paywall transitions.
+    ///
+    /// [NOTE] This is not a plain string enum because we see a future where we may want
+    /// to pass back more verbose instructions to the view layer than a simple enum case
     enum TransitionType: PaywallComponentBase {
         case fade
         case fadeAndScale

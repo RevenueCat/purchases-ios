@@ -50,6 +50,10 @@ public extension PaywallComponent {
         let type: String
     }
 
+    /// Defines the type of animation to use for paywall transitions.
+    ///
+    /// [NOTE] This is not a plain string enum because we see a future where we may want
+    /// to pass back more verbose instructions to the view layer than a simple enum case 
     enum AnimationType: Equatable, Hashable, Sendable {
         case easeIn
         case easeInOut
