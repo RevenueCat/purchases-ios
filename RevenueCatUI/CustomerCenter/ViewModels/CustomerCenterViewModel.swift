@@ -245,9 +245,7 @@ import Foundation
 private extension VirtualCurrencies {
 
     var balanceIsZero: Bool {
-        all.reduce(into: 0) {
-            $0 += $1.value.balance
-        } <= 0
+        all.map(\.value.balance).reduce(0, +) <= 0
     }
 }
 
