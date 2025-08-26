@@ -796,7 +796,7 @@ extension CustomerCenterConfigData.Screen {
             default:
                 return CustomerCenterConfigData.ScreenOffering(
                     type: .current,
-                    offeringId: offering.offeringId,
+                    offeringId: nil,
                     buttonText: offering.buttonText
                 )
             }
