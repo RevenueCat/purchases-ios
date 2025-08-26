@@ -294,6 +294,26 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(viewModel.hasAnyPurchases).to(beTrue())
     }
 
+    func testHasAnyPurchasesIsFalseWithVirtualCurrenciesHavingZeroBalance() async throws {
+        let mockPurchases = MockCustomerCenterPurchases(
+            customerInfo: CustomerCenterViewModelTests.customerInfoWithoutSubscriptions,
+            customerCenterConfigData: CustomerCenterConfigData.mock(displayVirtualCurrencies: true)
+        )
+        mockPurchases.virtualCurrenciesResult = .success(VirtualCurrenciesFixtures.virtualCurrenciesWithZeroBalance)
+
+        let viewModel = CustomerCenterViewModel(
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchasesProvider: mockPurchases
+        )
+
+        await viewModel.loadScreen()
+
+        expect(viewModel.subscriptionsSection).to(beEmpty())
+        expect(viewModel.nonSubscriptionsSection).to(beEmpty())
+        expect(viewModel.virtualCurrencies).toNot(beNil())
+        expect(viewModel.hasAnyPurchases).to(beFalse())
+    }
+
     func testShouldShowActiveSubscription_whenUserHasOneActiveSubscriptionOneEntitlement() async throws {
         let productId = "com.revenuecat.product"
         let purchaseDate = "2022-04-12T00:03:28Z"
