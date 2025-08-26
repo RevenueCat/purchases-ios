@@ -17,6 +17,8 @@ import Combine
 import Foundation
 @_spi(Internal) import RevenueCat
 
+// swiftlint:disable file_length
+
 #if os(iOS)
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -88,7 +90,9 @@ import Foundation
 
     /// Whether or not the user has any purchases (subscriptions, non-subscriptions, virtual currencies)
     var hasAnyPurchases: Bool {
-        !subscriptionsSection.isEmpty || !nonSubscriptionsSection.isEmpty || !(virtualCurrencies?.all.isEmpty ?? true)
+        !subscriptionsSection.isEmpty
+            || !nonSubscriptionsSection.isEmpty
+            || !(virtualCurrencies?.balanceIsZero ?? true)
     }
 
     var shouldShowList: Bool {
@@ -235,6 +239,15 @@ import Foundation
 
         let event = CustomerCenterEvent.impression(CustomerCenterEventCreationData(), eventData)
         purchasesProvider.track(customerCenterEvent: event)
+    }
+}
+
+private extension VirtualCurrencies {
+
+    var balanceIsZero: Bool {
+        all.reduce(into: 0) {
+            $0 += $1.value.balance
+        } <= 0
     }
 }
 

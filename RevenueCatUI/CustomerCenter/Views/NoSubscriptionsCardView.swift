@@ -68,6 +68,7 @@ struct NoSubscriptionsCardView: View {
                 .font(.headline)
                 .foregroundStyle(.primary)
                 .frame(alignment: .center)
+                .frame(maxWidth: .infinity)
                 .multilineTextAlignment(.center)
 
             Text(subtitle)
@@ -75,6 +76,7 @@ struct NoSubscriptionsCardView: View {
                 .foregroundStyle(.secondary)
                 .padding(.bottom, 4)
                 .frame(alignment: .leading)
+                .frame(maxWidth: .infinity)
                 .multilineTextAlignment(.center)
 
             if viewModel.offering != nil || viewModel.isLoadingOffering {
