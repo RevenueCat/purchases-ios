@@ -734,13 +734,16 @@ import Foundation
     @_spi(Internal) public struct ScreenOffering: Equatable {
         @_spi(Internal) public let type: OfferingType
         @_spi(Internal) public let offeringId: String?
+        @_spi(Internal) public let buttonText: String?
 
         @_spi(Internal) public init(
             type: OfferingType,
-            offeringId: String?
+            offeringId: String?,
+            buttonText: String?
         ) {
             self.type = type
             self.offeringId = offeringId
+            self.buttonText = buttonText
         }
 
         @_spi(Internal) public enum OfferingType: String, Equatable {
@@ -786,13 +789,15 @@ extension CustomerCenterConfigData.Screen {
             case CustomerCenterConfigData.ScreenOffering.OfferingType.specific.rawValue:
                 return CustomerCenterConfigData.ScreenOffering(
                     type: .specific,
-                    offeringId: offering.offeringId
+                    offeringId: offering.offeringId,
+                    buttonText: offering.buttonText
                 )
 
             default:
                 return CustomerCenterConfigData.ScreenOffering(
                     type: .current,
-                    offeringId: nil
+                    offeringId: offering.offeringId,
+                    buttonText: offering.buttonText
                 )
             }
         }
