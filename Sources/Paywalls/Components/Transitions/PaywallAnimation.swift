@@ -15,7 +15,9 @@
 import Foundation
 
 public extension PaywallComponent {
+
     struct Animation: PaywallComponentBase {
+
         public let type: AnimationType
         public let msDelay: Int?
         public let msDuration: Int?
@@ -38,6 +40,7 @@ public extension PaywallComponent {
             try AnimationCodingContainer(type: type.codingContainer, msDelay: msDelay, msDuration: msDuration)
                 .encode(to: encoder)
         }
+
     }
 
     internal struct AnimationCodingContainer: Codable {
@@ -55,6 +58,7 @@ public extension PaywallComponent {
     /// [NOTE] This is not a plain string enum because we see a future where we may want
     /// to pass back more verbose instructions to the view layer than a simple enum case 
     enum AnimationType: Equatable, Hashable, Sendable {
+
         case easeIn
         case easeInOut
         case easeOut
@@ -91,4 +95,5 @@ public extension PaywallComponent {
         }
 
     }
+
 }

@@ -15,7 +15,9 @@
 import Foundation
 
 public extension PaywallComponent {
+
     struct Transition: PaywallComponentBase {
+
         public let type: TransitionType
         public let displacementStrategy: DisplacementStrategy
         public let animation: PaywallComponent.Animation?
@@ -46,12 +48,15 @@ public extension PaywallComponent {
             )
             .encode(to: encoder)
         }
+
     }
 
     internal struct TransitionCodingContainer: Codable {
+
         let type: TransitionTypeContainer
         let displacementStrategy: DisplacementStrategy
         let animation: PaywallComponent.Animation?
+
     }
 
     internal struct TransitionTypeContainer: Codable {
@@ -76,6 +81,7 @@ public extension PaywallComponent {
     /// [NOTE] This is not a plain string enum because we see a future where we may want
     /// to pass back more verbose instructions to the view layer than a simple enum case
     enum TransitionType: PaywallComponentBase {
+
         case fade
         case fadeAndScale
         case scale
@@ -112,4 +118,5 @@ public extension PaywallComponent {
         }
 
     }
+
 }
