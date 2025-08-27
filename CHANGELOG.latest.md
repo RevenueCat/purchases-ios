@@ -1,13 +1,16 @@
+## RevenueCat SDK
+### 🐞 Bugfixes
+* fix compilation errors for Xcode 14.2 (swift 5.7) (#5494) via Facundo Menzella (@facumenzella)
+
 ## RevenueCatUI SDK
 ### Customer Center
+#### ✨ New Features
+* Add button_text to ScreenOffering (#5501) via Facundo Menzella (@facumenzella)
 #### 🐞 Bugfixes
-* Don't show subscriptions title if there are no subscriptions (#5485) via Facundo Menzella (@facumenzella)
-* Rename subscribe to buy_subscription in customer center (#5483) via Facundo Menzella (@facumenzella)
+* Fix dark mode button for featured offering + localized header (#5502) via Facundo Menzella (@facumenzella)
+* Address virtual currencies with zero units in customer center (#5500) via Facundo Menzella (@facumenzella)
+* Fix title and price of non-Google purchases in Customer Center (#5465) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Fix the tests and implicit returns that broke our CI on main (#5493) via Jacob Rakidzich (@JZDesign)
-* Added APIs for hybrid SDKs to set presentedOfferingContext (#5491) via Rick (@rickvdl)
-* Create File Repository for use in upcoming feature work (#5477) via Jacob Rakidzich (@JZDesign)
-* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5488) via RevenueCat Git Bot (@RCGitBot)
-* Add tag RevenueCatTests to enable tuist generate tag:RevenueCatTests (#5471) via Facundo Menzella (@facumenzella)
-* Add danger rule to show a warning if new files are not added to Revenuecat.xcodeproj (#5473) via Facundo Menzella (@facumenzella)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5498) via RevenueCat Git Bot (@RCGitBot)
+* Fix spelling errors in the style guide (#5497) via Jacob Rakidzich (@JZDesign)
