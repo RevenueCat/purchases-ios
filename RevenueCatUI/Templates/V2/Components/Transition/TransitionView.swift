@@ -27,15 +27,19 @@ struct TransitionView<Content: View>: View {
                 content()
                     .transition(transition.toTransition)
             } else {
-                if transition.displacementStrategy == .greedy {
-                    content()
-                        .hidden()
-                        .accessibilityHidden(true)
-                        .transition(transition.toTransition)
-                } else {
-                    EmptyView()
-                        .transition(transition.toTransition)
+                Group {
+                    switch transition.displacementStrategy {
+                    case .greedy:
+                        content()
+                            .hidden()
+                            .accessibilityHidden(true)
+                    case .lazy:
+                        EmptyView()
+                    @unknown default:
+                        EmptyView()
+                    }
                 }
+                .transition(transition.toTransition)
             }
         }.onAppear {
             withAnimation(transition.animation?.toAnimation ?? .none) {
