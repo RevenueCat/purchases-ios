@@ -199,6 +199,7 @@ struct RelevantPurchasesListView: View {
     private var emptyView: some View {
         NoSubscriptionsCardView(
             screenOffering: viewModel.screen.offering,
+            screen: viewModel.screen,
             localization: localization,
             purchasesProvider: viewModel.purchasesProvider
         )

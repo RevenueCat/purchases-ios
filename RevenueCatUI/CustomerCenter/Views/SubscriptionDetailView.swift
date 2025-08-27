@@ -208,6 +208,7 @@ struct SubscriptionDetailView: View {
                 } else {
                     NoSubscriptionsCardView(
                         screenOffering: viewModel.screen.offering,
+                        screen: viewModel.screen,
                         localization: localization,
                         purchasesProvider: viewModel.purchasesProvider
                     )

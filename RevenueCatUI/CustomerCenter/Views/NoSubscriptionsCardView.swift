@@ -50,12 +50,13 @@ struct NoSubscriptionsCardView: View {
 
     init(
         screenOffering: CustomerCenterConfigData.ScreenOffering?,
+        screen: CustomerCenterConfigData.Screen?,
         localization: CustomerCenterConfigData.Localization,
         purchasesProvider: CustomerCenterPurchasesType
     ) {
         self.init(
-            title: localization[.noSubscriptionsFound],
-            subtitle: localization[.tryCheckRestore],
+            title: screen?.title ?? localization[.noSubscriptionsFound],
+            subtitle: screen?.subtitle ?? localization[.tryCheckRestore],
             subscribeTitle: screenOffering?.buttonText ?? localization[.buySubscrition],
             screenOffering: screenOffering,
             purchasesProvider: purchasesProvider
@@ -127,6 +128,11 @@ private struct BuySubscriptionButtonStyle: ButtonStyle {
 
     func makeBody(configuration: ButtonStyleConfiguration) -> some View {
         configuration.label
+            .foregroundStyle(
+                Color(colorScheme == .light
+                                  ? UIColor.systemBackground
+                                  : UIColor.secondarySystemBackground)
+            )
             .font(.system(size: 17, weight: .semibold))
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)
@@ -154,11 +160,13 @@ private struct BuySubscriptionButtonStyle: ButtonStyle {
 @available(watchOS, unavailable)
 struct NoSubscriptionsCardView_Previews: PreviewProvider {
 
+    // swiftlint:disable force_unwrapping
     static var previews: some View {
         ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
             ScrollViewWithOSBackground {
                 NoSubscriptionsCardView(
                     screenOffering: nil,
+                    screen: CustomerCenterConfigData.default.screens[.management]!,
                     localization: CustomerCenterConfigData.default.localization,
                     purchasesProvider: MockCustomerCenterPurchases()
                 )
