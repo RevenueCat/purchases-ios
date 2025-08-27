@@ -194,36 +194,39 @@ struct SubscriptionDetailView: View {
                         .animation(.easeInOut(duration: 0.3), value: viewModel.isRefreshing)
                 }
 
-                if let purchaseInformation = self.viewModel.purchaseInformation {
-                    PurchaseInformationCardView(
-                        purchaseInformation: purchaseInformation,
-                        localization: localization,
-                        accessibilityIdentifier: "0",
-                        refundStatus: viewModel.refundRequestStatus,
-                        showChevron: false
-                    )
-                    .cornerRadius(10)
-                    .padding(.horizontal)
-                    .padding(.vertical, 32)
-                } else {
+                if !customerInfoViewModel.hasAnyPurchases {
                     NoSubscriptionsCardView(
                         screenOffering: viewModel.screen.offering,
+                        screen: viewModel.screen,
                         localization: localization,
                         purchasesProvider: viewModel.purchasesProvider
                     )
                     .cornerRadius(10)
                     .padding(.horizontal)
                     .padding(.vertical, 32)
-                }
+                } else {
+                    if let purchaseInformation = self.viewModel.purchaseInformation {
+                        PurchaseInformationCardView(
+                            purchaseInformation: purchaseInformation,
+                            localization: localization,
+                            accessibilityIdentifier: "0",
+                            refundStatus: viewModel.refundRequestStatus,
+                            showChevron: false
+                        )
+                        .cornerRadius(10)
+                        .padding(.horizontal)
+                        .padding(.vertical, 32)
+                    }
 
-                if let virtualCurrencies = customerInfoViewModel.virtualCurrencies,
-                   !virtualCurrencies.all.isEmpty,
-                   viewModel.showVirtualCurrencies {
-                    VirtualCurrenciesScrollViewWithOSBackgroundSection(
-                        virtualCurrencies: virtualCurrencies,
-                        onSeeAllInAppCurrenciesButtonTapped: self.viewModel.displayAllInAppCurrenciesScreen
-                    )
-                    Spacer().frame(height: 32)
+                    if let virtualCurrencies = customerInfoViewModel.virtualCurrencies,
+                       !virtualCurrencies.all.isEmpty,
+                       viewModel.showVirtualCurrencies {
+                        VirtualCurrenciesScrollViewWithOSBackgroundSection(
+                            virtualCurrencies: virtualCurrencies,
+                            onSeeAllInAppCurrenciesButtonTapped: self.viewModel.displayAllInAppCurrenciesScreen
+                        )
+                        Spacer().frame(height: 32)
+                    }
                 }
 
                 ActiveSubscriptionButtonsView(viewModel: viewModel)

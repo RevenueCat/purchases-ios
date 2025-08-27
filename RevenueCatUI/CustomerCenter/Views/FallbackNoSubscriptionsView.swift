@@ -69,6 +69,7 @@ struct FallbackNoSubscriptionsView: View {
             LazyVStack(spacing: 0) {
                 NoSubscriptionsCardView(
                     screenOffering: nil,
+                    screen: nil,
                     localization: localization,
                     purchasesProvider: purchasesProvider
                 )
