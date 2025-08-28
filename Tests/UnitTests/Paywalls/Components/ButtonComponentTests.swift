@@ -44,14 +44,11 @@ class ButtonComponentCodableTests: TestCase {
             "transition": {
                 "animation": {
                     "ms_delay": 1500,
-                    "type": {
-                        "type": "ease_in_out"
-                    }
+                    "ms_duration": 1500,
+                    "type": "ease_in_out"
                 },
                 "displacement_strategy": "greedy",
-                "type": {
-                    "type": "fade_and_scale"
-                }
+                "type": "fade_and_scale"
             }
         }
     """
