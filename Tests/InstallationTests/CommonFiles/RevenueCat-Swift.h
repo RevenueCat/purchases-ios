@@ -745,6 +745,17 @@ SWIFT_CLASS_NAMED("Builder")
 ///   </li>
 /// </ul>
 - (RCConfigurationBuilder * _Nonnull)withStoreKitVersion:(enum RCStoreKitVersion)version SWIFT_WARN_UNUSED_RESULT;
+/// Set <code>automaticDeviceIdentifierCollectionEnabled</code>. This is enabled by default.
+/// Enable this setting to allow the collection of identifiers when setting the identifier for an
+/// attribution network. For example, when calling<code>Purchases/setAdjustID(_:)</code>
+/// or <code>Purchases/setAppsflyerID(_:)</code>, the SDK would collect the device identifiers like
+/// IDFA, IDFV or IP, if available, and send them to RevenueCat.
+/// This is required by some attribution networks to attribute installs and re-installs.
+/// Enabling this setting does NOT mean we will always collect the identifiers. We will only do so when
+/// setting an attribution network ID and the user has not limited tracking on their device.
+/// With this option disabled you can still collect device identifiers
+/// by calling <code>Purchases/collectDeviceIdentifiers()</code>
+- (RCConfigurationBuilder * _Nonnull)withAutomaticDeviceIdentifierCollectionEnabled:(BOOL)automaticDeviceIdentifierCollectionEnabled SWIFT_WARN_UNUSED_RESULT;
 /// Generate a <code>Configuration</code> object given the values configured by this builder.
 - (RCConfiguration * _Nonnull)build SWIFT_WARN_UNUSED_RESULT;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
