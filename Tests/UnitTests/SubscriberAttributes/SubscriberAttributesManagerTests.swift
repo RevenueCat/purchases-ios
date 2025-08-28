@@ -42,7 +42,8 @@ class SubscriberAttributesManagerTests: TestCase {
             deviceCache: mockDeviceCache,
             operationDispatcher: MockOperationDispatcher(),
             attributionFetcher: mockAttributionFetcher,
-            attributionDataMigrator: mockAttributionDataMigrator
+            attributionDataMigrator: mockAttributionDataMigrator,
+            automaticDeviceIdentifierCollectionEnabled: true,
         )
         self.subscriberAttributeHeight = SubscriberAttribute(withKey: "height",
                                                              value: "183")
@@ -622,6 +623,24 @@ class SubscriberAttributesManagerTests: TestCase {
 
         checkDeviceIdentifiersAreSet()
     }
+
+    func testSetAdjustIDDoesNotSetDeviceIdentifiersIfOptionDisabled() {
+        self.subscriberAttributesManager = SubscriberAttributesManager(
+            backend: mockBackend,
+            deviceCache: mockDeviceCache,
+            operationDispatcher: MockOperationDispatcher(),
+            attributionFetcher: mockAttributionFetcher,
+            attributionDataMigrator: mockAttributionDataMigrator,
+            automaticDeviceIdentifierCollectionEnabled: false,
+        )
+        let adjustID = "adjustID"
+        self.subscriberAttributesManager.setAdjustID(adjustID, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 1
+
+        checkDeviceIdentifiersAreNotSet()
+    }
     // endregion
     // region AppsflyerID
     func testSetAppsflyerID() {
@@ -694,6 +713,24 @@ class SubscriberAttributesManagerTests: TestCase {
         expect(self.mockDeviceCache.invokedStoreParametersList.count) == 5
 
         checkDeviceIdentifiersAreSet()
+    }
+
+    func testSetAppsflyerIDDoesNotSetDeviceIdentifiersIfOptionDisabled() {
+        self.subscriberAttributesManager = SubscriberAttributesManager(
+            backend: mockBackend,
+            deviceCache: mockDeviceCache,
+            operationDispatcher: MockOperationDispatcher(),
+            attributionFetcher: mockAttributionFetcher,
+            attributionDataMigrator: mockAttributionDataMigrator,
+            automaticDeviceIdentifierCollectionEnabled: false,
+        )
+        let appsflyerID = "appsflyerID"
+        self.subscriberAttributesManager.setAppsflyerID(appsflyerID, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 1
+
+        checkDeviceIdentifiersAreNotSet()
     }
     // endregion
     // region FBAnonymousID
@@ -768,6 +805,24 @@ class SubscriberAttributesManagerTests: TestCase {
 
         checkDeviceIdentifiersAreSet()
     }
+
+    func testSetFBAnonymousIDDoesNotSetDeviceIdentifiersIfOptionDisabled() {
+        self.subscriberAttributesManager = SubscriberAttributesManager(
+            backend: mockBackend,
+            deviceCache: mockDeviceCache,
+            operationDispatcher: MockOperationDispatcher(),
+            attributionFetcher: mockAttributionFetcher,
+            attributionDataMigrator: mockAttributionDataMigrator,
+            automaticDeviceIdentifierCollectionEnabled: false,
+        )
+        let fbAnonID = "fbAnonID"
+        self.subscriberAttributesManager.setFBAnonymousID(fbAnonID, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 1
+
+        checkDeviceIdentifiersAreNotSet()
+    }
     // endregion
     // region mParticle
     func testSetMparticleID() {
@@ -840,6 +895,24 @@ class SubscriberAttributesManagerTests: TestCase {
         expect(self.mockDeviceCache.invokedStoreParametersList.count) == 5
 
         checkDeviceIdentifiersAreSet()
+    }
+
+    func testSetMparticleIDDoesNotSetDeviceIdentifiersIfOptionDisabled() {
+        self.subscriberAttributesManager = SubscriberAttributesManager(
+            backend: mockBackend,
+            deviceCache: mockDeviceCache,
+            operationDispatcher: MockOperationDispatcher(),
+            attributionFetcher: mockAttributionFetcher,
+            attributionDataMigrator: mockAttributionDataMigrator,
+            automaticDeviceIdentifierCollectionEnabled: false,
+        )
+        let mparticleID = "mparticleID"
+        self.subscriberAttributesManager.setMparticleID(mparticleID, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 1
+
+        checkDeviceIdentifiersAreNotSet()
     }
     // endregion
     // region OnesignalID
@@ -1205,6 +1278,24 @@ class SubscriberAttributesManagerTests: TestCase {
         expect(self.mockDeviceCache.invokedStoreParametersList.count) == 5
 
         checkDeviceIdentifiersAreSet()
+    }
+
+    func testSetKochavaDeviceIDDoesNotSetDeviceIdentifiersIfOptionDisabled() {
+        self.subscriberAttributesManager = SubscriberAttributesManager(
+            backend: mockBackend,
+            deviceCache: mockDeviceCache,
+            operationDispatcher: MockOperationDispatcher(),
+            attributionFetcher: mockAttributionFetcher,
+            attributionDataMigrator: mockAttributionDataMigrator,
+            automaticDeviceIdentifierCollectionEnabled: false,
+        )
+        let kochavaDeviceId = "kochavaDeviceID"
+        self.subscriberAttributesManager.setKochavaDeviceID(kochavaDeviceId, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 1
+
+        checkDeviceIdentifiersAreNotSet()
     }
     // endregion
     // region MixpanelDistinctID
