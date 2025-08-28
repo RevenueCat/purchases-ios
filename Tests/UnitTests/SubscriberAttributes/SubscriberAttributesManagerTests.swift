@@ -43,7 +43,7 @@ class SubscriberAttributesManagerTests: TestCase {
             operationDispatcher: MockOperationDispatcher(),
             attributionFetcher: mockAttributionFetcher,
             attributionDataMigrator: mockAttributionDataMigrator,
-            automaticDeviceIdentifierCollectionEnabled: true,
+            automaticDeviceIdentifierCollectionEnabled: true
         )
         self.subscriberAttributeHeight = SubscriberAttribute(withKey: "height",
                                                              value: "183")
@@ -631,7 +631,7 @@ class SubscriberAttributesManagerTests: TestCase {
             operationDispatcher: MockOperationDispatcher(),
             attributionFetcher: mockAttributionFetcher,
             attributionDataMigrator: mockAttributionDataMigrator,
-            automaticDeviceIdentifierCollectionEnabled: false,
+            automaticDeviceIdentifierCollectionEnabled: false
         )
         let adjustID = "adjustID"
         self.subscriberAttributesManager.setAdjustID(adjustID, appUserID: "kratos")
@@ -722,7 +722,7 @@ class SubscriberAttributesManagerTests: TestCase {
             operationDispatcher: MockOperationDispatcher(),
             attributionFetcher: mockAttributionFetcher,
             attributionDataMigrator: mockAttributionDataMigrator,
-            automaticDeviceIdentifierCollectionEnabled: false,
+            automaticDeviceIdentifierCollectionEnabled: false
         )
         let appsflyerID = "appsflyerID"
         self.subscriberAttributesManager.setAppsflyerID(appsflyerID, appUserID: "kratos")
@@ -813,7 +813,7 @@ class SubscriberAttributesManagerTests: TestCase {
             operationDispatcher: MockOperationDispatcher(),
             attributionFetcher: mockAttributionFetcher,
             attributionDataMigrator: mockAttributionDataMigrator,
-            automaticDeviceIdentifierCollectionEnabled: false,
+            automaticDeviceIdentifierCollectionEnabled: false
         )
         let fbAnonID = "fbAnonID"
         self.subscriberAttributesManager.setFBAnonymousID(fbAnonID, appUserID: "kratos")
@@ -904,7 +904,7 @@ class SubscriberAttributesManagerTests: TestCase {
             operationDispatcher: MockOperationDispatcher(),
             attributionFetcher: mockAttributionFetcher,
             attributionDataMigrator: mockAttributionDataMigrator,
-            automaticDeviceIdentifierCollectionEnabled: false,
+            automaticDeviceIdentifierCollectionEnabled: false
         )
         let mparticleID = "mparticleID"
         self.subscriberAttributesManager.setMparticleID(mparticleID, appUserID: "kratos")
@@ -1287,7 +1287,7 @@ class SubscriberAttributesManagerTests: TestCase {
             operationDispatcher: MockOperationDispatcher(),
             attributionFetcher: mockAttributionFetcher,
             attributionDataMigrator: mockAttributionDataMigrator,
-            automaticDeviceIdentifierCollectionEnabled: false,
+            automaticDeviceIdentifierCollectionEnabled: false
         )
         let kochavaDeviceId = "kochavaDeviceID"
         self.subscriberAttributesManager.setKochavaDeviceID(kochavaDeviceId, appUserID: "kratos")
