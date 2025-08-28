@@ -19,10 +19,10 @@ public extension PaywallComponent {
     struct Animation: PaywallComponentBase {
 
         public let type: AnimationType
-        public let msDelay: Int?
-        public let msDuration: Int?
+        public let msDelay: Int
+        public let msDuration: Int
 
-        init(type: AnimationType, msDelay: Int?, msDuration: Int?) {
+        init(type: AnimationType, msDelay: Int, msDuration: Int) {
             self.type = type
             self.msDelay = msDelay
             self.msDuration = msDuration

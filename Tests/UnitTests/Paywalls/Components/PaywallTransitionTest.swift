@@ -22,6 +22,7 @@ final class PaywallTransitionTest: TestCase {
             {
              "animation": {
                "ms_delay": 1500,
+               "ms_duration": 300,
                "type": "ease_in_out"
              },
              "displacement_strategy": "greedy",
@@ -34,7 +35,7 @@ final class PaywallTransitionTest: TestCase {
                 animation: PaywallComponent.Animation(
                     type: PaywallComponent.AnimationType.easeInOut,
                     msDelay: 1500,
-                    msDuration: nil
+                    msDuration: 300
                 )
             )
         ),
@@ -58,6 +59,7 @@ final class PaywallTransitionTest: TestCase {
             {
              "animation": {
                "ms_delay": 1500,
+               "ms_duration": 300,
                "type": "custom"
              },
              "displacement_strategy": "greedy",
@@ -70,7 +72,7 @@ final class PaywallTransitionTest: TestCase {
                 animation: PaywallComponent.Animation(
                     type: PaywallComponent.AnimationType.easeInOut,
                     msDelay: 1500,
-                    msDuration: nil
+                    msDuration: 300
                 )
             )
         )
