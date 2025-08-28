@@ -1741,7 +1741,7 @@ public extension Purchases {
         showStoreMessagesAutomatically: Bool,
         diagnosticsEnabled: Bool,
         preferredLocale: String?,
-        automaticDeviceIdentifierCollectionEnabled: Bool
+        automaticDeviceIdentifierCollectionEnabled: Bool = true
     ) -> Purchases {
         return self.setDefaultInstance(
             .init(apiKey: apiKey,
