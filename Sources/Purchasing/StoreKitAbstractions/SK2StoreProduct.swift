@@ -43,7 +43,10 @@ internal struct SK2StoreProduct: StoreProductType {
 
     var price: Decimal { underlyingSK2Product.price }
 
-    var localizedPriceString: String { underlyingSK2Product.displayPrice }
+    var localizedPriceString: String { 
+        // Ensure consistent formatting with price_per_month by using the same formatter
+        return self.priceFormatter?.string(from: NSDecimalNumber(decimal: self.price)) ?? underlyingSK2Product.displayPrice
+    }
 
     var productIdentifier: String { underlyingSK2Product.id }
 
