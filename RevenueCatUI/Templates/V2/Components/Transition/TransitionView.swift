@@ -86,27 +86,15 @@ extension PaywallComponent.Animation {
     var toAnimation: SwiftUI.Animation {
         switch self.type {
         case .easeIn:
-            if let duration = msDuration?.seconds {
-                return .easeIn(duration: duration).delay(msDelay?.seconds ?? 0)
-            }
-            return .easeIn.delay(msDelay?.seconds ?? 0)
+            return .easeIn(duration: msDuration.seconds).delay(msDelay.seconds)
         case .easeInOut:
-            if let duration = msDuration?.seconds {
-                return .easeInOut(duration: duration).delay(msDelay?.seconds ?? 0)
-            }
-            return .easeInOut.delay(msDelay?.seconds ?? 0)
+            return .easeInOut(duration: msDuration.seconds).delay(msDelay.seconds)
         case .easeOut:
-            if let duration = msDuration?.seconds {
-                return .easeOut(duration: duration).delay(msDelay?.seconds ?? 0)
-            }
-            return .easeOut.delay(msDelay?.seconds ?? 0)
+            return .easeOut(duration: msDuration.seconds).delay(msDelay.seconds)
         case .linear:
-            if let duration = msDuration?.seconds {
-                return .linear(duration: duration).delay(msDelay?.seconds ?? 0)
-            }
-            return .linear.delay(msDelay?.seconds ?? 0)
+            return .linear(duration: msDuration.seconds).delay(msDelay.seconds)
         @unknown default:
-                return .default
+            return .default
         }
     }
 }
