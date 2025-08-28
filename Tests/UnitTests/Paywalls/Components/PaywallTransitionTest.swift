@@ -22,14 +22,10 @@ final class PaywallTransitionTest: TestCase {
             {
              "animation": {
                "ms_delay": 1500,
-               "type": {
-                 "type": "ease_in_out"
-               }
+               "type": "ease_in_out"
              },
              "displacement_strategy": "greedy",
-             "type": {
-               "type": "fade_and_scale"
-             }
+             "type": "fade_and_scale"
             }
             """,
             PaywallComponent.Transition(
@@ -47,9 +43,7 @@ final class PaywallTransitionTest: TestCase {
             """
             {
              "displacement_strategy": "lazy",
-             "type": {
-               "type": "fade"
-             }
+             "type": "fade"
             }
             """,
             PaywallComponent.Transition(
@@ -64,16 +58,10 @@ final class PaywallTransitionTest: TestCase {
             {
              "animation": {
                "ms_delay": 1500,
-               "type": {
-                 "type": "custom",
-                 "value": "some random animation"
-               }
+               "type": "custom"
              },
              "displacement_strategy": "greedy",
-             "type": {
-               "type": "custom",
-               "value": "some random transition"
-             }
+             "type": "custom"
             }
             """,
             PaywallComponent.Transition(

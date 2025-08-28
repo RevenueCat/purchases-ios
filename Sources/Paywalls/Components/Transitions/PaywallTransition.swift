@@ -31,36 +31,6 @@ public extension PaywallComponent {
             self.displacementStrategy = displacementStrategy
             self.animation = animation
         }
-
-        public init(from decoder: any Decoder) throws {
-            let passthrough = try TransitionCodingContainer(from: decoder)
-
-            self.type = TransitionType.from(passthrough.type) ?? .fade
-            self.displacementStrategy = passthrough.displacementStrategy
-            self.animation = passthrough.animation
-        }
-
-        public func encode(to encoder: any Encoder) throws {
-            try TransitionCodingContainer(
-                type: type.codingContainer,
-                displacementStrategy: displacementStrategy,
-                animation: animation
-            )
-            .encode(to: encoder)
-        }
-
-    }
-
-    internal struct TransitionCodingContainer: Codable {
-
-        let type: TransitionTypeContainer
-        let displacementStrategy: DisplacementStrategy
-        let animation: PaywallComponent.Animation?
-
-    }
-
-    internal struct TransitionTypeContainer: Codable {
-        let type: String
     }
 
     ///
@@ -77,44 +47,17 @@ public extension PaywallComponent {
     }
 
     /// Defines the type of transition to use for paywall transitions.
-    ///
-    /// [NOTE] This is not a plain string enum because we see a future where we may want
-    /// to pass back more verbose instructions to the view layer than a simple enum case
-    enum TransitionType: PaywallComponentBase {
+    enum TransitionType: String, PaywallComponentBase {
 
         case fade
-        case fadeAndScale
+        case fadeAndScale = "fade_and_scale"
         case scale
         case slide
 
-        var codingContainer: TransitionTypeContainer {
-            let type: String
-            switch self {
-            case .fade:
-                type = "fade"
-            case .fadeAndScale:
-                type = "fade_and_scale"
-            case .scale:
-                type = "scale"
-            case .slide:
-                type = "slide"
-            }
-            return TransitionTypeContainer(type: type)
-        }
-
-        static func from(_ container: TransitionTypeContainer) -> TransitionType? {
-            switch container.type {
-            case "fade":
-                return .fade
-            case "fade_and_scale":
-                return .fadeAndScale
-            case "scale":
-                return .scale
-            case "slide":
-                return .slide
-            default:
-                return nil
-            }
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            let rawValue = try? container.decode(String.self)
+            self = TransitionType(rawValue: rawValue ?? "") ?? .fade
         }
 
     }
