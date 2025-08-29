@@ -330,6 +330,7 @@ private enum FamilySharingTogglePreview {
     )
 
     static let data: PaywallComponentsData = .init(
+        id: "components",
         templateName: "components",
         assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
         componentsConfig: .init(

@@ -431,6 +431,7 @@ private enum ButtonWithSheetPreview {
     )
 
     static let data: PaywallComponentsData = .init(
+        identifier: "components",
         templateName: "components",
         assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
         componentsConfig: .init(
