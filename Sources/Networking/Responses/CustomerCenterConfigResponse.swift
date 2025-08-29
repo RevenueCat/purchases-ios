@@ -143,6 +143,7 @@ struct CustomerCenterConfigResponse {
     struct ScreenOffering {
         let type: String
         let offeringId: String?
+        let buttonText: String?
     }
 
     struct Support {
