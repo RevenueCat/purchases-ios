@@ -74,6 +74,7 @@ final class PurchasesOrchestrator {
     private let paywallEventsManager: PaywallEventsManagerType?
     private let webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType
     private let dateProvider: DateProvider
+    private let virtualCurrencyManager: VirtualCurrencyManagerType
 
     // Can't have these properties with `@available`.
     // swiftlint:disable identifier_name
@@ -149,7 +150,8 @@ final class PurchasesOrchestrator {
                      winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
                      paywallEventsManager: PaywallEventsManagerType?,
                      webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType,
-                     dateProvider: DateProvider = DateProvider()
+                     dateProvider: DateProvider = DateProvider(),
+                     virtualCurrencyManager: VirtualCurrencyManagerType
     ) {
         self.init(
             productsManager: productsManager,
@@ -175,7 +177,8 @@ final class PurchasesOrchestrator {
             winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
             paywallEventsManager: paywallEventsManager,
             webPurchaseRedemptionHelper: webPurchaseRedemptionHelper,
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            virtualCurrencyManager: virtualCurrencyManager
         )
 
         self._diagnosticsSynchronizer = diagnosticsSynchronizer
@@ -233,7 +236,8 @@ final class PurchasesOrchestrator {
          winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
          paywallEventsManager: PaywallEventsManagerType?,
          webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType,
-         dateProvider: DateProvider = DateProvider()
+         dateProvider: DateProvider = DateProvider(),
+         virtualCurrencyManager: VirtualCurrencyManagerType
     ) {
         self.productsManager = productsManager
         self.paymentQueueWrapper = paymentQueueWrapper
@@ -259,6 +263,7 @@ final class PurchasesOrchestrator {
         self.paywallEventsManager = paywallEventsManager
         self.webPurchaseRedemptionHelper = webPurchaseRedemptionHelper
         self.dateProvider = dateProvider
+        self.virtualCurrencyManager = virtualCurrencyManager
 
         Logger.verbose(Strings.purchase.purchases_orchestrator_init(self))
     }
@@ -268,9 +273,15 @@ final class PurchasesOrchestrator {
     }
 
     func redeemWebPurchase(_ webPurchaseRedemption: WebPurchaseRedemption) async -> WebPurchaseRedemptionResult {
-        return await self.webPurchaseRedemptionHelper.handleRedeemWebPurchase(
+        let redemptionResult = await self.webPurchaseRedemptionHelper.handleRedeemWebPurchase(
             redemptionToken: webPurchaseRedemption.redemptionToken
         )
+
+        if case .success = redemptionResult {
+            self.virtualCurrencyManager.invalidateVirtualCurrenciesCache()
+        }
+
+        return redemptionResult
     }
 
     func redeemWebPurchase(
