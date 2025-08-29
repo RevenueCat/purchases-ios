@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  TransitionView.swift
+//  TransitionModifier.swift
 //
 //  Created by Jacob Zivan Rakidzich on 8/20/25.
 
@@ -15,22 +15,21 @@ import RevenueCat
 import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct TransitionView<Content: View>: View {
+struct TransitionModifier: ViewModifier {
     let transition: PaywallComponent.Transition
-    let content: () -> Content
 
     @State var isPresented: Bool = false
 
-    var body: some View {
+    func body(content: Content) -> some View {
         ZStack {
             if isPresented {
-                content()
+                content
                     .transition(transition.toTransition)
             } else {
                 Group {
                     switch transition.displacementStrategy {
                     case .greedy:
-                        content()
+                        content
                             .hidden()
                             .accessibilityHidden(true)
                     case .lazy:
@@ -55,9 +54,7 @@ extension View {
     @ViewBuilder
     func withTransition(_ transition: PaywallComponent.Transition?) -> some View {
         if let transition {
-            TransitionView(transition: transition) {
-                self
-            }
+            self.modifier(TransitionModifier(transition: transition))
         } else {
             self
         }
