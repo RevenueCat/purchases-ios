@@ -73,6 +73,9 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
         }
     }
 
+    // The unique id for this paywall
+    public let id: String
+
     public var templateName: String
 
     /// The base remote URL where assets for this paywall are stored.
@@ -94,6 +97,7 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
     public var errorInfo: [String: EquatableError]?
 
     private enum CodingKeys: String, CodingKey {
+        case id
         case templateName
         case componentsConfig
         case componentsLocalizations
@@ -102,12 +106,14 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
         case _revision = "revision"
     }
 
-    public init(templateName: String,
+    public init(id: String,
+                templateName: String,
                 assetBaseURL: URL,
                 componentsConfig: ComponentsConfig,
                 componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary],
                 revision: Int,
                 defaultLocaleIdentifier: String) {
+        self.id = id
         self.templateName = templateName
         self.assetBaseURL = assetBaseURL
         self.componentsConfig = componentsConfig
@@ -120,9 +126,17 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
 
 extension PaywallComponentsData {
 
+    // swiftlint:disable:next function_body_length
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         var errors: [String: EquatableError] = [:]
+
+        do {
+            id = try container.decode(String.self, forKey: .id)
+        } catch {
+            errors["id"] = .init(error)
+            id = ""
+        }
 
         do {
             templateName = try container.decode(String.self, forKey: .templateName)
@@ -182,6 +196,7 @@ extension PaywallComponentsData {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
+        try container.encode(id, forKey: .id)
         try container.encode(templateName, forKey: .templateName)
         try container.encode(assetBaseURL, forKey: .assetBaseURL)
         try container.encode(componentsConfig, forKey: .componentsConfig)
