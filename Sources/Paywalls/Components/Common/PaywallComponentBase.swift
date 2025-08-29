@@ -28,6 +28,8 @@ public enum PaywallComponent: Codable, Sendable, Hashable, Equatable {
 
     case carousel(CarouselComponent)
 
+    case video(VideoComponent)
+
     public enum ComponentType: String, Codable, Sendable {
 
         case text
@@ -46,6 +48,7 @@ public enum PaywallComponent: Codable, Sendable, Hashable, Equatable {
         case tabControlToggle = "tab_control_toggle"
 
         case carousel
+        case video
 
     }
 
@@ -113,6 +116,9 @@ extension PaywallComponent {
             try component.encode(to: encoder)
         case .carousel(let component):
             try container.encode(ComponentType.carousel, forKey: .type)
+            try component.encode(to: encoder)
+        case .video(let component):
+            try container.encode(ComponentType.video, forKey: .type)
             try component.encode(to: encoder)
         }
     }
@@ -195,6 +201,8 @@ extension PaywallComponent {
             return .tabControlToggle(try TabControlToggleComponent(from: decoder))
         case .carousel:
             return .carousel(try CarouselComponent(from: decoder))
+        case .video:
+            return .video(try VideoComponent(from: decoder))
         }
     }
 
