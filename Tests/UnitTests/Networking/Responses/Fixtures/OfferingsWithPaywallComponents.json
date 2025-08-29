@@ -11,7 +11,7 @@
                 }
             ],
             "paywall_components": {
-                "id": "components-test1",
+                "identifier": "components-test1",
                 "default_locale": "en_US",
                 "revision": 3,
                 "template_name": "componentsTEST",
@@ -62,7 +62,7 @@
                 }
             ],
             "paywall_components": {
-                "id": "components-test2",
+                "identifier": "components-test2",
                 "default_locale": "en_US",
                 "revision": 3,
                 "template_name": "componentsTEST",
@@ -127,7 +127,7 @@
                 }
             },
             "draft_paywall_components": {
-                "id": "draft-components-test2",
+                "identifier": "draft-components-test2",
                 "default_locale": "en_US",
                 "revision": 4,
                 "template_name": "newComponentsTEST",
@@ -202,7 +202,7 @@
                 }
             ],
             "draft_paywall_components": {
-                "id": "draft-components-test3",
+                "identifier": "draft-components-test3",
                 "default_locale": "en_US",
                 "revision": 4,
                 "template_name": "newComponentsTEST",

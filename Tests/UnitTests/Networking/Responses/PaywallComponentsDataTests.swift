@@ -34,7 +34,7 @@ class PaywallComponentsDecodingTests: BaseHTTPResponseTest {
         expect(offering.packages).to(haveCount(1))
 
         let components = try XCTUnwrap(offering.paywallComponents)
-        expect(components.id) == "components-test1"
+        expect(components.identifier) == "components-test1"
         expect(components.templateName) == "componentsTEST"
         expect(components.revision) == 3
         expect(components.componentsConfig.base.background) == .color(.init(light: .hex("#220000ff"), dark: nil))
@@ -55,7 +55,7 @@ class PaywallComponentsDecodingTests: BaseHTTPResponseTest {
         expect(offering.packages).to(haveCount(1))
 
         let components = try XCTUnwrap(offering.paywallComponents)
-        expect(components.id) == "components-test2"
+        expect(components.identifier) == "components-test2"
         expect(components.templateName) == "componentsTEST"
         expect(components.revision) == 3
         expect(components.componentsConfig.base.background) == .color(.init(light: .hex("#220000ff"), dark: nil))
@@ -65,7 +65,7 @@ class PaywallComponentsDecodingTests: BaseHTTPResponseTest {
         expect(components.componentsConfig.base.stack.components).to(haveCount(1))
 
         let draftComponents = try XCTUnwrap(offering.draftPaywallComponents)
-        expect(draftComponents.id) == "draft-components-test2"
+        expect(draftComponents.identifier) == "draft-components-test2"
         expect(draftComponents.templateName) == "newComponentsTEST"
         expect(draftComponents.revision) == 4
         expect(draftComponents.componentsConfig.base.background) == .color(.init(light: .hex("#110000ff"), dark: nil))
@@ -86,7 +86,7 @@ class PaywallComponentsDecodingTests: BaseHTTPResponseTest {
         XCTAssertNil(offering.paywallComponents)
 
         let draftComponents = try XCTUnwrap(offering.draftPaywallComponents)
-        expect(draftComponents.id) == "draft-components-test3"
+        expect(draftComponents.identifier) == "draft-components-test3"
         expect(draftComponents.templateName) == "newComponentsTEST"
         expect(draftComponents.revision) == 4
         expect(draftComponents.componentsConfig.base.background) == .color(.init(light: .hex("#110000ff"), dark: nil))
