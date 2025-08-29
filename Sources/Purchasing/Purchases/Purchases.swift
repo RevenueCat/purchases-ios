@@ -277,6 +277,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let healthManager: SDKHealthManager
 
     private let syncAttributesAndOfferingsIfNeededRateLimiter = RateLimiter(maxCalls: 5, period: 60)
+    private let overridePreferredUILocaleRateLimiter = RateLimiter(maxCalls: 2, period: 60)
     private let diagnosticsTracker: DiagnosticsTrackerType?
     private let virtualCurrencyManager: VirtualCurrencyManagerType
 
@@ -1931,6 +1932,13 @@ extension Purchases {
     // swiftlint:disable missing_docs
     @_spi(Internal) public func overridePreferredLocale(_ locale: String?) {
         self.systemInfo.overridePreferredLocale(locale)
+
+        if self.overridePreferredUILocaleRateLimiter.shouldProceed() {
+            // Refetches new offerings with preferred locale
+            self.getOfferings(fetchPolicy: .default, fetchCurrent: true) { _, _ in
+                // No-op
+            }
+        }
     }
 
 }
