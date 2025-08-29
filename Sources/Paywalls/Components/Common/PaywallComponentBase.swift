@@ -28,6 +28,9 @@ public enum PaywallComponent: Codable, Sendable, Hashable, Equatable {
 
     case carousel(CarouselComponent)
 
+    case slot(SlotComponent)
+    case slotLottie(SlotLottieComponent)
+
     public enum ComponentType: String, Codable, Sendable {
 
         case text
@@ -46,6 +49,9 @@ public enum PaywallComponent: Codable, Sendable, Hashable, Equatable {
         case tabControlToggle = "tab_control_toggle"
 
         case carousel
+
+        case slot
+        case slotLottie = "lottie"
 
     }
 
@@ -67,7 +73,7 @@ extension PaywallComponent {
 
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
+    // swiftlint:disable:next cyclomatic_complexity function_body_length
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
@@ -113,6 +119,12 @@ extension PaywallComponent {
             try component.encode(to: encoder)
         case .carousel(let component):
             try container.encode(ComponentType.carousel, forKey: .type)
+            try component.encode(to: encoder)
+        case .slot(let component):
+            try container.encode(ComponentType.slot, forKey: .type)
+            try component.encode(to: encoder)
+        case .slotLottie(let component):
+            try container.encode(ComponentType.slotLottie, forKey: .type)
             try component.encode(to: encoder)
         }
     }
@@ -195,6 +207,10 @@ extension PaywallComponent {
             return .tabControlToggle(try TabControlToggleComponent(from: decoder))
         case .carousel:
             return .carousel(try CarouselComponent(from: decoder))
+        case .slot:
+            return .slot(try SlotComponent(from: decoder))
+        case .slotLottie:
+            return .slotLottie(try SlotLottieComponent(from: decoder))
         }
     }
 
