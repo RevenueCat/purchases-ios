@@ -45,7 +45,9 @@ struct APIKeyDashboardList: View {
         NavigationView {
             self.content
                 .navigationTitle("Live Paywalls")
+                #if !os(macOS)
                 .navigationBarTitleDisplayMode(.inline)
+                #endif
                 .toolbar {
                     ToolbarItem(placement: .automatic) {
                         Button {
@@ -192,6 +194,7 @@ struct APIKeyDashboardList: View {
                     }
                 }
         }
+        #if !os(macOS)
         .fullScreenCover(item: self.$presentedPaywallCover) { paywall in
             PaywallPresenter(offering: paywall.offering, mode: paywall.mode, introEligility: .eligible)
                 .onRestoreCompleted { _ in
@@ -203,7 +206,8 @@ struct APIKeyDashboardList: View {
                     }
                 }
         }
-        .presentPaywallIfNeededModifier(offering: $offeringToPresent)
+        #endif
+                .presentPaywallIfNeededModifier(offering: $offeringToPresent)       
     }
 
     #if !os(watchOS)

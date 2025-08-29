@@ -14,11 +14,11 @@
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS)
+#if !os(tvOS)
 
 /// A `PaywallView` suitable to be displayed as a loading placeholder.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
+@available(macOS, unavailable, message: "Legacy paywalls are unavailable in macOS")
 @available(tvOS, unavailable)
 @MainActor
 struct LoadingPaywallView: View {
@@ -82,7 +82,7 @@ struct LoadingPaywallView: View {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
+@available(macOS, unavailable, message: "Legacy paywalls are unavailable in macOS")
 @available(tvOS, unavailable)
 private extension LoadingPaywallView {
 
@@ -259,7 +259,7 @@ private extension View {
 
 // MARK: -
 
-#if DEBUG
+#if DEBUG && !os(macOS) && !os(tvOS)
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
