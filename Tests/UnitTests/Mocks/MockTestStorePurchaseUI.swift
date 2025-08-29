@@ -14,15 +14,15 @@
 import Foundation
 @testable import RevenueCat
 
-final class MockTestStorePurchaseUI: TestStorePurchaseUI {
+final class MockSimulatedStorePurchaseUI: SimulatedStorePurchaseUI {
 
-    // Wrapping a closure instead of the TestStorePurchaseUIResult directly to allow for async stubbing
-    let stubbedPurchaseResult: Atomic<() async -> TestStorePurchaseUIResult> = .init({ return .simulateSuccess })
+    // Wrapping a closure instead of the SimulatedStorePurchaseUI directly to allow for async stubbing
+    let stubbedPurchaseResult: Atomic<() async -> SimulatedStorePurchaseUIResult> = .init({ return .simulateSuccess })
     let invokedPresentPurchaseUI: Atomic<Bool> = .init(false)
     let invokedPresentPurchaseUICount: Atomic<Int> = .init(0)
     let invokedPresentPurchaseUIProduct: Atomic<TestStoreProduct?> = .init(nil)
 
-    func presentPurchaseUI(for product: TestStoreProduct) async -> TestStorePurchaseUIResult {
+    func presentPurchaseUI(for product: SimulatedStoreProduct) async -> SimulatedStorePurchaseUIResult {
         self.invokedPresentPurchaseUI.value = true
         self.invokedPresentPurchaseUICount.value += 1
         self.invokedPresentPurchaseUIProduct.value = product

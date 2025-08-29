@@ -142,7 +142,7 @@ import Foundation
             case storeAppStore = "app_store"
             case storeMacAppStore = "mac_app_store"
             case storePlayStore = "google_play_store"
-            case testStore = "test_store"
+            case simulatedStore = "simulated_store"
             case storeStripe = "stripe"
             case storePromotional = "promotional"
             case storeAmazon = "amazon_store"
@@ -412,7 +412,7 @@ import Foundation
                     return "Subscriptions"
                 case .purchasesSectionTitle:
                     return "Purchases"
-                case .testStore:
+                case .simulatedStore:
                     return "Test Store"
                 }
             }

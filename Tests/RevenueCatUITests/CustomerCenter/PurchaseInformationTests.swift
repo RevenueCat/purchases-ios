@@ -1051,8 +1051,8 @@ final class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.store) == .stripe
     }
 
-    func testInitWithTestStoreEntitlement() throws {
-        let customerInfo = CustomerInfoFixtures.customerInfoWithTestStoreSubscriptions
+    func testInitWithSimulatedStoreEntitlement() throws {
+        let customerInfo = CustomerInfoFixtures.customerInfoWithSimulatedStoreSubscriptions
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
 
         let mockTransaction = MockTransaction(
@@ -1094,7 +1094,7 @@ final class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.isLifetime).to(beFalse())
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
-        #if TEST_STORE
+        #if SIMULATED_STORE
         expect(subscriptionInfo.store) == .testStore
         #else
         expect(subscriptionInfo.store) == .unknownStore

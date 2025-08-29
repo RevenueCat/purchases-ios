@@ -395,7 +395,11 @@ extension Configuration {
 
     enum APIKeyValidationResult {
         case validApplePlatform
-        case testStore
+
+        /// An API key used for the Simulated Store.
+        ///
+        /// Note that "Simulated Store" is the internal name of the "Test Store".
+        case simulatedStore
         case otherPlatforms
         case legacy
     }
@@ -407,25 +411,25 @@ extension Configuration {
     }
 
     private static let applePlatformKeyPrefixes: Set<String> = ["appl_", "mac_"]
-    private static let testStoreKeyPrefix = "test_"
+    private static let simulatedStoreKeyPrefix = "test_"
 
     private static func validate(apiKey: String) -> APIKeyValidationResult {
-        #if TEST_STORE
-        if apiKey.hasPrefix(testStoreKeyPrefix) {
-            // Test Store key format: "test_CtDdmbdWBySmqJeeQUTyrNxETUVkajsJ"
+        #if SIMULATED_STORE
+        if apiKey.hasPrefix(simulatedStoreKeyPrefix) {
+            // Simulated Store key format: "test_CtDdmbdWBySmqJeeQUTyrNxETUVkajsJ"
 
             #if DEBUG
-            return .testStore
+            return .simulatedStore
             #else
             // In release builds, we intentionally crash to prevent submitting an app with a Test Store API key.
             //
-            // Also note that developing with a Test Store API key isn’t supported when adding the SDK dependency
-            // as an XCFramework, since the XCFramework is built using the Release configuration..
+            // Also note that developing with a Test Store API key isn't supported when adding the SDK dependency
+            // as an XCFramework, since the XCFramework is built using the Release configuration.
             fatalError("[RevenueCat]: Test Store API key used in Release build. Please configure the App Store " +
                        " app on the RevenueCat dashboard and use its corresponding Apple API key before releasing.")
             #endif
         }
-        #endif // TEST_STORE
+        #endif // SIMULATED_STORE
 
         if applePlatformKeyPrefixes.contains(where: { prefix in apiKey.hasPrefix(prefix) }) {
             // Apple key format: "apple_CtDdmbdWBySmqJeeQUTyrNxETUVkajsJ"
@@ -445,7 +449,7 @@ extension Configuration.APIKeyValidationResult {
     fileprivate func logIfNeeded() {
         switch self {
         case .validApplePlatform: break
-        case .testStore: Logger.warn(Strings.configure.testStoreAPIKey)
+        case .simulatedStore: Logger.warn(Strings.configure.simulatedStoreAPIKey)
         case .legacy: Logger.debug(Strings.configure.legacyAPIKey)
         case .otherPlatforms: Logger.error(Strings.configure.invalidAPIKey)
         }

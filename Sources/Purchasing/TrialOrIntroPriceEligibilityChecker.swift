@@ -77,8 +77,8 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
             return
         }
 
-        guard !self.systemInfo.isTestStoreAPIKey else {
-            // For now, all products in the Test Store are ineligible for trial or intro discount
+        guard !self.systemInfo.isSimulatedStoreAPIKey else {
+            // For now, all products in the Simulated Store are ineligible for trial or intro discount
             let result = productIdentifiers.reduce(into: [:]) { resultDict, productId in
                 resultDict[productId] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.ineligible)
             }

@@ -7,16 +7,16 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  TestStoreProductsManager.swift
+//  SimulatedStoreProductsManager.swift
 //
 //  Created by Antonio Pallares on 21/7/25.
 
 import Foundation
 
-#if TEST_STORE
+#if SIMULATED_STORE
 
-/// Implementation of `ProductsManagerType` for the Test Store.
-final class TestStoreProductsManager: ProductsManagerType {
+/// Implementation of `ProductsManagerType` for the Simulated Store.
+final class SimulatedStoreProductsManager: ProductsManagerType {
 
     let requestTimeout: TimeInterval
     let backend: Backend
@@ -68,4 +68,4 @@ final class TestStoreProductsManager: ProductsManagerType {
     func clearCache() { }
 }
 
-#endif // TEST_STORE
+#endif // SIMULATED_STORE
