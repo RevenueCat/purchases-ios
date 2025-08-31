@@ -42,7 +42,6 @@ class PurchasesSubscriberAttributesTests: TestCase {
     var mockTransactionsManager: MockTransactionsManager!
     var mockOperationDispatcher: MockOperationDispatcher!
     var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
-    var mockVirtualCurrencyManager: MockVirtualCurrencyManager!
     var transactionPoster: TransactionPoster!
 
     // swiftlint:disable:next weak_delegate
@@ -68,6 +67,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
     var mockStoreMessagesHelper: MockStoreMessagesHelper!
     var mockWinBackOfferEligibilityCalculator: MockWinBackOfferEligibilityCalculator!
     var webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper!
+    var mockVirtualCurrencyManager: MockVirtualCurrencyManager!
 
     var purchases: Purchases!
 
@@ -165,6 +165,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
         self.webPurchaseRedemptionHelper = .init(backend: self.mockBackend,
                                                  identityManager: self.mockIdentityManager,
                                                  customerInfoManager: self.customerInfoManager)
+        self.mockVirtualCurrencyManager = MockVirtualCurrencyManager()
     }
 
     override func tearDown() {
@@ -203,7 +204,9 @@ class PurchasesSubscriberAttributesTests: TestCase {
             diagnosticsTracker: nil,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
             paywallEventsManager: nil,
-            webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper)
+            webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper,
+            virtualCurrencyManager: self.mockVirtualCurrencyManager
+        )
         let trialOrIntroductoryPriceEligibilityChecker = TrialOrIntroPriceEligibilityChecker(
             systemInfo: systemInfo,
             receiptFetcher: mockReceiptFetcher,
