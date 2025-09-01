@@ -9,9 +9,9 @@
 
 import RevenueCat
 #if DEBUG
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 #else
-import RevenueCatUI
+@_spi(Internal) import RevenueCatUI
 #endif
 
 import SwiftUI
