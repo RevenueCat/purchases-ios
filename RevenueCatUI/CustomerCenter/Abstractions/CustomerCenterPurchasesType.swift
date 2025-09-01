@@ -45,7 +45,7 @@ import SwiftUI
 
     func purchase(
         product: StoreProduct,
-        promotionalOffer: PromotionalOffer
+        promotionalOffer: PromotionalOffer?
     ) async throws -> PurchaseResultData
 
     func track(customerCenterEvent: any CustomerCenterEventType)

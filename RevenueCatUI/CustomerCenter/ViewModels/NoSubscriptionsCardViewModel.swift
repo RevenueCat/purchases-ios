@@ -71,6 +71,26 @@ final class NoSubscriptionsCardViewModel: ObservableObject {
     func hidePaywall() {
         showOffering = false
     }
+
+    @Sendable @MainActor
+    func performPurchase(packageToPurchase: Package) async -> (userCancelled: Bool, error: Error?) {
+        do {
+            let result = try await purchasesProvider.purchase(product: packageToPurchase.storeProduct, promotionalOffer: nil)
+            return (result.userCancelled, nil)
+        } catch {
+            return (false, error)
+        }
+    }
+
+    @Sendable @MainActor
+    func performRestore() async -> (success: Bool, error: Error?) {
+        do {
+            _ = try await purchasesProvider.restorePurchases()
+            return (true, nil)
+        } catch {
+            return (false, error)
+        }
+    }
 }
 
 #endif
