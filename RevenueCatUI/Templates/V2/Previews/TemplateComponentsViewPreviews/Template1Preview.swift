@@ -195,7 +195,8 @@ private enum Template1Preview {
             "cta_intro": .string("Claim Free Trial")
         ]],
         revision: 1,
-        defaultLocaleIdentifier: "en_US"
+        defaultLocaleIdentifier: "en_US",
+        deepLinkID: "components"
     )
 }
 

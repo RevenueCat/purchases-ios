@@ -301,7 +301,8 @@ private enum PurchaseButtonInPackagePreview {
             "cta_lifetime": .string("Buy Lifetime")
         ]],
         revision: 1,
-        defaultLocaleIdentifier: "en_US"
+        defaultLocaleIdentifier: "en_US",
+        deepLinkID: "components"
     )
 }
 

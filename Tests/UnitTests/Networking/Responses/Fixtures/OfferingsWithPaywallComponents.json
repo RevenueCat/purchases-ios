@@ -11,6 +11,7 @@
                 }
             ],
             "paywall_components": {
+                "deep_link_id": "components-test1",
                 "default_locale": "en_US",
                 "revision": 3,
                 "template_name": "componentsTEST",
@@ -61,6 +62,7 @@
                 }
             ],
             "paywall_components": {
+                "deep_link_id": "components-test2",
                 "default_locale": "en_US",
                 "revision": 3,
                 "template_name": "componentsTEST",
@@ -125,6 +127,7 @@
                 }
             },
             "draft_paywall_components": {
+                "deep_link_id": "draft-components-test2",
                 "default_locale": "en_US",
                 "revision": 4,
                 "template_name": "newComponentsTEST",
@@ -199,6 +202,7 @@
                 }
             ],
             "draft_paywall_components": {
+                "deep_link_id": "draft-components-test3",
                 "default_locale": "en_US",
                 "revision": 4,
                 "template_name": "newComponentsTEST",

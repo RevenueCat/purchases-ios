@@ -470,7 +470,8 @@ private enum ButtonWithSheetPreview {
             "close": .string("X")
         ]],
         revision: 1,
-        defaultLocaleIdentifier: "en_US"
+        defaultLocaleIdentifier: "en_US",
+        deepLinkID: "components"
     )
 }
 

@@ -378,7 +378,8 @@ private enum MultiTierPreview {
             "tab_2_button": .string("Premium")
         ]],
         revision: 1,
-        defaultLocaleIdentifier: "en_US"
+        defaultLocaleIdentifier: "en_US",
+        deepLinkID: "components"
     )
 }
 

@@ -88,6 +88,10 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
     public var componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary]
     public var defaultLocale: String
 
+    // The ID used for deeplinking
+    @_spi(Internal)
+    public let deepLinkID: String
+
     @DefaultDecodable.Zero
     internal private(set) var _revision: Int = 0
 
@@ -100,6 +104,7 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
         case defaultLocale
         case assetBaseURL = "assetBaseUrl"
         case _revision = "revision"
+        case deepLinkID = "deep_link_id"
     }
 
     public init(templateName: String,
@@ -107,19 +112,22 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
                 componentsConfig: ComponentsConfig,
                 componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary],
                 revision: Int,
-                defaultLocaleIdentifier: String) {
+                defaultLocaleIdentifier: String,
+                deepLinkID: String) {
         self.templateName = templateName
         self.assetBaseURL = assetBaseURL
         self.componentsConfig = componentsConfig
         self.componentsLocalizations = componentsLocalizations
         self._revision = revision
         self.defaultLocale = defaultLocaleIdentifier
+        self.deepLinkID = deepLinkID
     }
 
 }
 
 extension PaywallComponentsData {
 
+    // swiftlint:disable:next function_body_length
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         var errors: [String: EquatableError] = [:]
@@ -174,6 +182,13 @@ extension PaywallComponentsData {
             _revision = 0
         }
 
+        do {
+            deepLinkID = try container.decode(String.self, forKey: .deepLinkID)
+        } catch {
+            errors["deep_link_id"] = .init(error)
+            deepLinkID = ""
+        }
+
         if !errors.isEmpty {
             errorInfo = errors
         }
@@ -188,6 +203,7 @@ extension PaywallComponentsData {
         try container.encode(componentsLocalizations, forKey: .componentsLocalizations)
         try container.encode(defaultLocale, forKey: .defaultLocale)
         try container.encode(_revision, forKey: ._revision)
+        try container.encode(deepLinkID, forKey: .deepLinkID)
     }
 
 }

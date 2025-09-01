@@ -12,7 +12,7 @@
 //  Created by Antonio Pallares on 13/2/25.
 
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import XCTest
 
 class PaywallComponentsDecodingTests: BaseHTTPResponseTest {
@@ -41,6 +41,7 @@ class PaywallComponentsDecodingTests: BaseHTTPResponseTest {
         expect(components.componentsConfig.base.stack.spacing) == 16
         expect(components.componentsConfig.base.stack.dimension) == .vertical(.center, .center)
         expect(components.componentsConfig.base.stack.components).to(haveCount(0))
+        expect(components.deepLinkID) == "components-test1"
 
         expect(offering.draftPaywallComponents) == nil
     }
@@ -61,6 +62,7 @@ class PaywallComponentsDecodingTests: BaseHTTPResponseTest {
         expect(components.componentsConfig.base.stack.spacing) == 16
         expect(components.componentsConfig.base.stack.dimension) == .vertical(.center, .center)
         expect(components.componentsConfig.base.stack.components).to(haveCount(1))
+        expect(components.deepLinkID) == "components-test2"
 
         let draftComponents = try XCTUnwrap(offering.draftPaywallComponents)
         expect(draftComponents.templateName) == "newComponentsTEST"
@@ -70,6 +72,7 @@ class PaywallComponentsDecodingTests: BaseHTTPResponseTest {
         expect(draftComponents.componentsConfig.base.stack.spacing) == 0
         expect(draftComponents.componentsConfig.base.stack.dimension) == .vertical(.leading, .end)
         expect(draftComponents.componentsConfig.base.stack.components).to(haveCount(1))
+        expect(draftComponents.deepLinkID) == "draft-components-test2"
     }
 
     func testDecodesPaywallComponentsWithOnlyDraftPaywallComponents() throws {
@@ -90,5 +93,6 @@ class PaywallComponentsDecodingTests: BaseHTTPResponseTest {
         expect(draftComponents.componentsConfig.base.stack.spacing) == 0
         expect(draftComponents.componentsConfig.base.stack.dimension) == .vertical(.leading, .end)
         expect(draftComponents.componentsConfig.base.stack.components).to(haveCount(1))
+        expect(draftComponents.deepLinkID) == "draft-components-test3"
     }
 }

@@ -371,7 +371,8 @@ private enum FamilySharingTogglePreview {
             "toggle_text": .string("Family Sharing?")
         ]],
         revision: 1,
-        defaultLocaleIdentifier: "en_US"
+        defaultLocaleIdentifier: "en_US",
+        deepLinkID: "components"
     )
 }
 
