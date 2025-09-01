@@ -75,7 +75,8 @@ final class NoSubscriptionsCardViewModel: ObservableObject {
     @Sendable @MainActor
     func performPurchase(packageToPurchase: Package) async -> (userCancelled: Bool, error: Error?) {
         do {
-            let result = try await purchasesProvider.purchase(product: packageToPurchase.storeProduct, promotionalOffer: nil)
+            let result = try await purchasesProvider.purchase(product: packageToPurchase.storeProduct,
+                                                              promotionalOffer: nil)
             return (result.userCancelled, nil)
         } catch {
             return (false, error)
