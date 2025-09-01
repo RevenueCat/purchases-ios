@@ -7,13 +7,13 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  TestStoreMockData.swift
+//  SimulatedStoreMockData.swift
 //
 //  Created by Antonio Pallares on 28/7/25.
 
 @testable import RevenueCat
 
-enum TestStoreMockData {
+enum SimulatedStoreMockData {
 
     private static let yearlyPricingPhase = WebBillingProductsResponse.PricingPhase(
         periodDuration: "P1Y",

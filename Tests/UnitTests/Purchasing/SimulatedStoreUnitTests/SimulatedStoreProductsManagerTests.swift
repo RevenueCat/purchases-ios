@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  TestStoreProductsManagerTests.swift
+//  SimulatedStoreProductsManagerTests.swift
 //
 //  Created by Antonio Pallares on 28/7/25.
 
@@ -15,9 +15,9 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-#if TEST_STORE
+#if SIMULATED_STORE
 
-class TestStoreProductsManagerTests: TestCase {
+class SimulatedStoreProductsManagerTests: TestCase {
 
     static var requestTimeout: TimeInterval = 60
 
@@ -37,7 +37,7 @@ class TestStoreProductsManagerTests: TestCase {
         self.webBilling = try XCTUnwrap(self.backend.webBilling as? MockWebBillingAPI)
     }
 
-    func testFetchTestStoreProductsWithIdentifiersTriggersTheCorrectRequest() async throws {
+    func testFetchSimulatedStoreProductsWithIdentifiersTriggersTheCorrectRequest() async throws {
         self.webBilling.stubbedGetWebBillingProductsCompletionResult =
             .failure(BackendError.networkError(.offlineConnection()))
 
@@ -55,7 +55,7 @@ class TestStoreProductsManagerTests: TestCase {
         expect(params.productIds).to(equal(Set(["product1", "product2"])))
     }
 
-    func testFetchTestStoreProductsDoesNothingIfEmptyIdentifiers() async throws {
+    func testFetchSimulatedStoreProductsDoesNothingIfEmptyIdentifiers() async throws {
         let manager = self.createManager()
         await waitUntil { completed in
             manager.products(withIdentifiers: []) { _ in
@@ -66,12 +66,12 @@ class TestStoreProductsManagerTests: TestCase {
         expect(self.webBilling.invokedGetWebBillingProducts).to(beFalse())
     }
 
-    func testFetchTestStoreProductsWithSuccessfulResponseReturnsProducts() throws {
+    func testFetchSimulatedStoreProductsWithSuccessfulResponseReturnsProducts() throws {
         self.webBilling.stubbedGetWebBillingProductsCompletionResult = .success(
-            TestStoreMockData.yearlyAndMonthlyWebBillingProductsResponse
+            SimulatedStoreMockData.yearlyAndMonthlyWebBillingProductsResponse
         )
-        let productIds: Set = [TestStoreMockData.yearlyProduct.identifier,
-                               TestStoreMockData.monthlyProduct.identifier]
+        let productIds: Set = [SimulatedStoreMockData.yearlyProduct.identifier,
+                               SimulatedStoreMockData.monthlyProduct.identifier]
 
         let manager = self.createManager()
         let result = waitUntilValue { completed in
@@ -87,7 +87,7 @@ class TestStoreProductsManagerTests: TestCase {
         expect(productIdentifiers).to(equal(productIds))
     }
 
-    func testFetchTestStoreProductsWithBackendErrorPropagatesError() throws {
+    func testFetchSimulatedStoreProductsWithBackendErrorPropagatesError() throws {
         let expectedError = BackendError.networkError(.serverDown())
         self.webBilling.stubbedGetWebBillingProductsCompletionResult = .failure(expectedError)
 
@@ -102,12 +102,12 @@ class TestStoreProductsManagerTests: TestCase {
         expect(result?.error).to(matchError(expectedError.asPurchasesError))
     }
 
-    func testFetchTestStoreProductsWithToStoreProductConversionErrorPropagatesError() throws {
+    func testFetchSimulatedStoreProductsWithToStoreProductConversionErrorPropagatesError() throws {
         // This represents a scenario where the backend returns a response that cannot be converted to StoreProduct
         self.webBilling.stubbedGetWebBillingProductsCompletionResult = .success(
-            TestStoreMockData.noBasePricesWebBillingProductsResponse
+            SimulatedStoreMockData.noBasePricesWebBillingProductsResponse
         )
-        let productId = TestStoreMockData.productWithoutBasePrices.identifier
+        let productId = SimulatedStoreMockData.productWithoutBasePrices.identifier
 
         let manager = self.createManager()
         let result = waitUntilValue { completed in
@@ -119,11 +119,11 @@ class TestStoreProductsManagerTests: TestCase {
         expect(result).to(beFailure())
     }
 
-    fileprivate func createManager() -> TestStoreProductsManager {
-        return TestStoreProductsManager(backend: self.backend,
-                                        deviceCache: self.deviceCache,
-                                        requestTimeout: Self.requestTimeout)
+    fileprivate func createManager() -> SimulatedStoreProductsManager {
+        return SimulatedStoreProductsManager(backend: self.backend,
+                                             deviceCache: self.deviceCache,
+                                             requestTimeout: Self.requestTimeout)
     }
 }
 
-#endif // TEST_STORE
+#endif // SIMULATED_STORE
