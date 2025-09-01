@@ -115,4 +115,17 @@ class ConfigurationTests: TestCase {
         expect(configuration.storeKitVersion) == .default
     }
 
+    func testAutomaticDeviceIdentifierCollectionEnabledIsTrueByDefault() {
+        let configuration = Configuration.Builder(withAPIKey: "test")
+            .build()
+        expect(configuration.automaticDeviceIdentifierCollectionEnabled) == true
+    }
+
+    func testAutomaticDeviceIdentifierCollectionEnabledCanBeSet() {
+        let configuration = Configuration.Builder(withAPIKey: "test")
+            .with(automaticDeviceIdentifierCollectionEnabled: false)
+            .build()
+        expect(configuration.automaticDeviceIdentifierCollectionEnabled) == false
+    }
+
 }

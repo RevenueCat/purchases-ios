@@ -98,7 +98,10 @@ struct RelevantPurchasesListView: View {
                 usesNavigationStack: navigationOptions.usesNavigationStack
             ) {
                 PurchaseHistoryView(
-                    viewModel: PurchaseHistoryViewModel(purchasesProvider: self.viewModel.purchasesProvider)
+                    viewModel: PurchaseHistoryViewModel(
+                        purchasesProvider: self.viewModel.purchasesProvider,
+                        localization: localization
+                    )
                 )
                 .environment(\.appearance, appearance)
                 .environment(\.localization, localization)
@@ -196,6 +199,7 @@ struct RelevantPurchasesListView: View {
     private var emptyView: some View {
         NoSubscriptionsCardView(
             screenOffering: viewModel.screen.offering,
+            screen: viewModel.screen,
             localization: localization,
             purchasesProvider: viewModel.purchasesProvider
         )

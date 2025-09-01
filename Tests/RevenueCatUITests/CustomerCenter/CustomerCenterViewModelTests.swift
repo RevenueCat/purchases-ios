@@ -294,6 +294,26 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(viewModel.hasAnyPurchases).to(beTrue())
     }
 
+    func testHasAnyPurchasesIsFalseWithVirtualCurrenciesHavingZeroBalance() async throws {
+        let mockPurchases = MockCustomerCenterPurchases(
+            customerInfo: CustomerCenterViewModelTests.customerInfoWithoutSubscriptions,
+            customerCenterConfigData: CustomerCenterConfigData.mock(displayVirtualCurrencies: true)
+        )
+        mockPurchases.virtualCurrenciesResult = .success(VirtualCurrenciesFixtures.virtualCurrenciesWithZeroBalance)
+
+        let viewModel = CustomerCenterViewModel(
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchasesProvider: mockPurchases
+        )
+
+        await viewModel.loadScreen()
+
+        expect(viewModel.subscriptionsSection).to(beEmpty())
+        expect(viewModel.nonSubscriptionsSection).to(beEmpty())
+        expect(viewModel.virtualCurrencies).toNot(beNil())
+        expect(viewModel.hasAnyPurchases).to(beFalse())
+    }
+
     func testShouldShowActiveSubscription_whenUserHasOneActiveSubscriptionOneEntitlement() async throws {
         let productId = "com.revenuecat.product"
         let purchaseDate = "2022-04-12T00:03:28Z"
@@ -602,10 +622,12 @@ final class CustomerCenterViewModelTests: TestCase {
         let purchaseDateLifetime = "2024-11-21T16:04:20Z"
 
         let products = [
-            PurchaseInformationFixtures.product(id: productIdLifetime,
-                                                title: "lifetime",
-                                                duration: nil,
-                                                price: 29.99)
+            PurchaseInformationFixtures.product(
+                id: productIdLifetime,
+                title: "lifetime",
+                duration: nil,
+                price: 29.99
+            )
         ]
 
         let customerInfo = CustomerInfoFixtures.customerInfo(
@@ -622,7 +644,7 @@ final class CustomerCenterViewModelTests: TestCase {
                 CustomerInfoFixtures.NonSubscriptionTransaction(
                     productId: productIdLifetime,
                     id: "2fdd18f128",
-                    store: "app_store",
+                    store: "play_store",
                     purchaseDate: purchaseDateLifetime
                 )
             ]
@@ -641,11 +663,11 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(viewModel.state) == .success
 
         expect(viewModel.subscriptionsSection.count) == 0
+
         let purchaseInformation = try XCTUnwrap(viewModel.nonSubscriptionsSection.first)
         expect(viewModel.nonSubscriptionsSection.count) == 1
-
-        expect(purchaseInformation.title) == "lifetime"
-        expect(purchaseInformation.pricePaid) == .unknown // no info about non-subscriptions in customer info
+        expect(purchaseInformation.title) == "One-time Purchase"
+        expect(purchaseInformation.pricePaid) == .unknown
         expect(purchaseInformation.productIdentifier) == productIdLifetime
     }
 
@@ -815,8 +837,6 @@ final class CustomerCenterViewModelTests: TestCase {
     }
 
     func testShouldShowActiveSubscription_withoutProductInformation() async throws {
-        // If product can't load because maybe it's from another app in same project
-
         let productId = "com.revenuecat.product"
         let purchaseDate = "2022-04-12T00:03:28Z"
         let expirationDate = "2062-04-12T00:03:35Z"
@@ -856,7 +876,7 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(viewModel.subscriptionsSection.count) == 1
         expect(viewModel.subscriptionsSection.first?.productIdentifier) == purchaseInformation.productIdentifier
 
-        expect(purchaseInformation.title) == "com.revenuecat.product" // product identifier
+        expect(purchaseInformation.title) == "Subscription"
         expect(purchaseInformation.store) == .appStore
         expect(purchaseInformation.pricePaid) == .nonFree(formatted(price: 1.99)) // from transaction
 
@@ -1099,7 +1119,7 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(mockPurchases.loadCustomerCenterCallCount) == 2
     }
 
-    func testMultiplePurchases() {
+    func testShouldShowListWithMultipleSubscriptions() {
         // empty
         var viewModel = CustomerCenterViewModel(
             activeSubscriptionPurchases: [],

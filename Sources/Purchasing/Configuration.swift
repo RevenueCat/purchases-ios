@@ -54,6 +54,7 @@ import Foundation
     let responseVerificationMode: Signing.ResponseVerificationMode
     let showStoreMessagesAutomatically: Bool
     let preferredLocale: String?
+    let automaticDeviceIdentifierCollectionEnabled: Bool
     internal let diagnosticsEnabled: Bool
 
     private init(with builder: Builder) {
@@ -70,6 +71,7 @@ import Foundation
         self.showStoreMessagesAutomatically = builder.showStoreMessagesAutomatically
         self.diagnosticsEnabled = builder.diagnosticsEnabled
         self.preferredLocale = builder.preferredLocale
+        self.automaticDeviceIdentifierCollectionEnabled = builder.automaticDeviceIdentifierCollectionEnabled
     }
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
@@ -114,6 +116,7 @@ import Foundation
         private(set) var diagnosticsEnabled: Bool = false
         private(set) var storeKitVersion: StoreKitVersion = .default
         private(set) var preferredLocale: String?
+        private(set) var automaticDeviceIdentifierCollectionEnabled: Bool = true
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
@@ -296,6 +299,24 @@ import Foundation
         /// - ``StoreKitVersion``
         @objc public func with(storeKitVersion version: StoreKitVersion) -> Builder {
             self.storeKitVersion = version
+            return self
+        }
+
+        /// Set `automaticDeviceIdentifierCollectionEnabled`. This is enabled by default.
+        ///
+        /// Enable this setting to allow the collection of identifiers when setting the identifier for an
+        /// attribution network. For example, when calling``Purchases/setAdjustID(_:)``
+        /// or ``Purchases/setAppsflyerID(_:)``, the SDK would collect the device identifiers like
+        /// IDFA, IDFV or IP, if available, and send them to RevenueCat.
+        /// This is required by some attribution networks to attribute installs and re-installs.
+        ///
+        /// Enabling this setting does NOT mean we will always collect the identifiers. We will only do so when
+        /// setting an attribution network ID and the user has not limited tracking on their device.
+        ///
+        /// With this option disabled you can still collect device identifiers
+        /// by calling ``Purchases/collectDeviceIdentifiers()``
+        @objc public func with(automaticDeviceIdentifierCollectionEnabled: Bool) -> Builder {
+            self.automaticDeviceIdentifierCollectionEnabled = automaticDeviceIdentifierCollectionEnabled
             return self
         }
 
