@@ -104,7 +104,7 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
         case defaultLocale
         case assetBaseURL = "assetBaseUrl"
         case _revision = "revision"
-        case deepLinkID = "deep_link_id"
+        case deepLinkID = "deepLinkId"
     }
 
     public init(templateName: String,
