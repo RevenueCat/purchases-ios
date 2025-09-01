@@ -61,12 +61,12 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
         promotionalOffer: PromotionalOffer?
     ) async throws -> PurchaseResultData {
         if let promotionalOffer = promotionalOffer {
-            try await Purchases.shared.purchase(
+            return try await Purchases.shared.purchase(
                 product: product,
                 promotionalOffer: promotionalOffer
             )
         } else {
-            try await Purchases.shared.purchase(product: product)
+            return try await Purchases.shared.purchase(product: product)
         }
     }
 
