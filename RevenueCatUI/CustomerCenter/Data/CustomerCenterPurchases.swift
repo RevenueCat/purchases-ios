@@ -58,12 +58,16 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
 
     func purchase(
         product: StoreProduct,
-        promotionalOffer: PromotionalOffer
+        promotionalOffer: PromotionalOffer?
     ) async throws -> PurchaseResultData {
-        try await Purchases.shared.purchase(
-            product: product,
-            promotionalOffer: promotionalOffer
-        )
+        if let promotionalOffer = promotionalOffer {
+            try await Purchases.shared.purchase(
+                product: product,
+                promotionalOffer: promotionalOffer
+            )
+        } else {
+            try await Purchases.shared.purchase(product: product)
+        }
     }
 
     func track(customerCenterEvent: any CustomerCenterEventType) {

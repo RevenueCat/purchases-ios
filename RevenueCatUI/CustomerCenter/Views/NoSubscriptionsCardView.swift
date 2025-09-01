@@ -104,7 +104,9 @@ struct NoSubscriptionsCardView: View {
             PaywallView(
                 configuration: .init(
                     offering: viewModel.offering,
-                    displayCloseButton: false
+                    displayCloseButton: false,
+                    purchaseHandler: .default(performPurchase: viewModel.performPurchase(packageToPurchase:),
+                                              performRestore: viewModel.performRestore)
                 )
             )
         })
