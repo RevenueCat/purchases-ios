@@ -115,6 +115,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
     func testCancelledDoesNotShowCancelAndRefund() {
         let purchase = PurchaseInformation.mock(
             isSubscription: true,
+            productType: .autoRenewableSubscription,
             isCancelled: true
         )
 
@@ -130,7 +131,8 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
 
     func testShowsRefundIfRefundWindowIsForever() {
         let purchase = PurchaseInformation.mock(
-            isSubscription: true
+            isSubscription: true,
+            productType: .autoRenewableSubscription
         )
 
         let viewModel = BaseManageSubscriptionViewModel(
@@ -160,6 +162,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         let twoDays: TimeInterval = 2 * 24 * 60 * 60
         let purchase = PurchaseInformation.mock(
             isSubscription: true,
+            productType: .autoRenewableSubscription,
             latestPurchaseDate: latestPurchaseDate,
             customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays)
         )
@@ -182,6 +185,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         let purchase = PurchaseInformation.mock(
             pricePaid: .free,
             isSubscription: true,
+            productType: .autoRenewableSubscription,
             latestPurchaseDate: latestPurchaseDate,
             customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
 
@@ -202,6 +206,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         let purchase = PurchaseInformation.mock(
             pricePaid: .nonFree(""), // just to prove price is ignored if is in trial
             isSubscription: true,
+            productType: .autoRenewableSubscription,
             isTrial: true,
             latestPurchaseDate: latestPurchaseDate,
             customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays))
@@ -232,6 +237,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         let twoDays: TimeInterval = 2 * 24 * 60 * 60
         let purchase = PurchaseInformation.mock(
             isSubscription: true,
+            productType: .autoRenewableSubscription,
             latestPurchaseDate: latestPurchaseDate,
             customerInfoRequestedDate: latestPurchaseDate.addingTimeInterval(twoDays)
         )
@@ -673,6 +679,124 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         expect(customActionData.purchaseIdentifier).to(beNil())
 
         cancellable.cancel()
+    }
+
+    // MARK: - Product Type Path Filtering Tests
+
+    func testNonRenewableSubscriptionDoesNotShowCancelPath() {
+        let purchase = PurchaseInformation.mock(
+            store: .appStore,
+            isSubscription: true,
+            productType: .nonRenewableSubscription,
+            renewalDate: Date().addingTimeInterval(86400) // has renewal date but non-renewable
+        )
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        expect(viewModel.relevantPathsForPurchase.count) == 1
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beTrue())
+    }
+
+    func testAutoRenewableSubscriptionShowsCancelPath() {
+        let purchase = PurchaseInformation.mock(
+            store: .appStore,
+            isSubscription: true,
+            productType: .autoRenewableSubscription,
+            isCancelled: false,
+            renewalDate: Date().addingTimeInterval(86400)
+        )
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        // Auto-renewable App Store subscriptions should show cancel path
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beTrue())
+    }
+
+    func testNonAppStoreAutoRenewableSubscriptionShowsCancelPath() {
+        let purchase = PurchaseInformation.mock(
+            store: .playStore,
+            isSubscription: true,
+            productType: nil, // Non-App Store, so no productType available
+            isCancelled: false,
+            renewalDate: Date().addingTimeInterval(86400)
+        )
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        // Non-App Store subscriptions should show cancel path (they don't have productType info)
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beTrue())
+    }
+
+    func testConsumableProductDoesNotShowCancelPath() {
+        let purchase = PurchaseInformation.mock(
+            store: .appStore,
+            isSubscription: false,
+            productType: .consumable,
+            isCancelled: false
+        )
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        // Consumable products should not show cancel path
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beFalse())
+    }
+
+    func testNonConsumableProductDoesNotShowCancelPath() {
+        let purchase = PurchaseInformation.mock(
+            store: .appStore,
+            isSubscription: false,
+            productType: .nonConsumable,
+            isCancelled: false
+        )
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        // Non-consumable (lifetime) products should not show cancel path
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beFalse())
+    }
+
+    func testAutoRenewableSubscriptionDoesNotShowChangePlansIfLifetime() {
+        let purchase = PurchaseInformation.mock(
+            store: .appStore,
+            isSubscription: true,
+            productType: .autoRenewableSubscription,
+            isLifetime: true
+        )
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        // Lifetime subscriptions should not show change plans
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .changePlans })).to(beFalse())
     }
 
 }

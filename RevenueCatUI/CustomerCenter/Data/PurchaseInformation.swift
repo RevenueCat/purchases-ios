@@ -40,8 +40,11 @@ struct PurchaseInformation {
     /// The store from which the purchase was made (e.g., App Store, Play Store).
     let store: Store
 
-    /// Indicates whether the purchase is a subscription or not.
+    /// Indicates whether the purchase is a subscription (renewable or non-renewable).
     let isSubscription: Bool
+
+    /// The product type from StoreKit (autoRenewableSubscription, nonRenewableSubscription, etc.)
+    let productType: StoreProduct.ProductType?
 
     /// Indicates whether the purchase is under a trial period.
     /// - `true` for purchases within the trial period.
@@ -135,6 +138,7 @@ struct PurchaseInformation {
          productIdentifier: String,
          store: Store,
          isSubscription: Bool,
+         productType: StoreProduct.ProductType?,
          isTrial: Bool,
          isCancelled: Bool,
          isExpired: Bool,
@@ -165,6 +169,7 @@ struct PurchaseInformation {
         self.productIdentifier = productIdentifier
         self.store = store
         self.isSubscription = isSubscription
+        self.productType = productType
         self.isTrial = isTrial
         self.isCancelled = isCancelled
         self.isSandbox = isSandbox
@@ -199,23 +204,30 @@ struct PurchaseInformation {
          dateFormatter: DateFormatter = Self.defaultDateFormatter,
          numberFormatter: NumberFormatter = Self.defaultNumberFormatter,
          managementURL: URL?,
-         changePlan: CustomerCenterConfigData.ChangePlan? = nil
+         changePlan: CustomerCenterConfigData.ChangePlan? = nil,
+         localization: CustomerCenterConfigData.Localization
     ) {
         self.dateFormatter = dateFormatter
         self.numberFormatter = numberFormatter
 
         self.changePlan = changePlan
-        // Title and duration from product if available
-        if transaction.store == .promotional {
-            self.title = entitlement?.identifier ?? transaction.productIdentifier
-        } else {
-            self.title = subscribedProduct?.localizedTitle ?? transaction.productIdentifier
-        }
+
+        // Determine subscription type first to use in title logic
+        let isSubscriptionType = transaction.isSubscription && transaction.store != .promotional
+
+        self.title = Self.determineTitle(
+            subscribedProduct: subscribedProduct,
+            isSubscription: isSubscriptionType,
+            localization: localization
+        )
         self.subscriptionGroupID = subscribedProduct?.subscriptionGroupIdentifier
 
         self.customerInfoRequestedDate = customerInfoRequestedDate
         self.managementURL = managementURL
-        self.isSubscription = transaction.isSubscrition && transaction.store != .promotional
+        self.isSubscription = transaction.isSubscription
+            && transaction.store != .promotional
+        self.productType = subscribedProduct?.productType
+
         self.isLifetime = subscribedProduct?.productType == .nonConsumable
 
         // Use entitlement data if available, otherwise derive from transaction
@@ -318,6 +330,7 @@ extension PurchaseInformation: Hashable {
         hasher.combine(productIdentifier)
         hasher.combine(store)
         hasher.combine(isSubscription)
+        hasher.combine(productType)
         hasher.combine(isCancelled)
         hasher.combine(latestPurchaseDate)
         hasher.combine(customerInfoRequestedDate)
@@ -367,7 +380,8 @@ extension PurchaseInformation {
         dateFormatter: DateFormatter = Self.defaultDateFormatter,
         numberFormatter: NumberFormatter = Self.defaultNumberFormatter,
         managementURL: URL?,
-        changePlan: CustomerCenterConfigData.ChangePlan?
+        changePlan: CustomerCenterConfigData.ChangePlan?,
+        localization: CustomerCenterConfigData.Localization
     ) async -> PurchaseInformation {
         let renewalPriceDetails = await Self.extractPriceDetailsFromRenewalInfo(
             forProduct: subscribedProduct,
@@ -383,7 +397,8 @@ extension PurchaseInformation {
             dateFormatter: dateFormatter,
             numberFormatter: numberFormatter,
             managementURL: managementURL,
-            changePlan: changePlan
+            changePlan: changePlan,
+            localization: localization
         )
     }
 
@@ -413,8 +428,7 @@ extension PurchaseInformation {
 private extension Transaction {
 
     func determineRenewalPrice(numberFormatter: NumberFormatter) -> PurchaseInformation.RenewalPrice? {
-        if self.productIdentifier.isPromotionalLifetime(store: self.store),
-           self.productIdentifier.isPromotional(store: self.store) {
+        if store == .promotional {
             return nil
         }
 
@@ -449,8 +463,7 @@ private extension Transaction {
             return .free
         }
 
-        guard let price = self.price,
-              price.amount != 0 else {
+        guard let price = self.price, price.amount != 0 else {
             return .unknown
         }
 
@@ -475,17 +488,6 @@ private extension EntitlementInfo {
 
     var isCancelled: Bool {
         unsubscribeDetectedAt != nil && !willRenew
-    }
-}
-
-private extension String {
-
-    func isPromotionalLifetime(store: Store) -> Bool {
-        return self.hasSuffix("_lifetime") && store == .promotional
-    }
-
-    func isPromotional(store: Store) -> Bool {
-        return self.hasPrefix("rc_promo") && store == .promotional
     }
 }
 
@@ -536,9 +538,27 @@ extension PurchaseInformation {
         return string
             .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: expirationDate))
     }
+
 }
 
 extension PurchaseInformation {
+
+    private static func determineTitle(
+        subscribedProduct: StoreProduct?,
+        isSubscription: Bool,
+        localization: CustomerCenterConfigData.Localization
+    ) -> String {
+        if let localizedTitle = subscribedProduct?.localizedTitle, !localizedTitle.isEmpty {
+            return localizedTitle
+        }
+
+        let purchaseTypeKey: CCLocalizedString = isSubscription ? .typeSubscription : .typeOneTimePurchase
+        return localization[purchaseTypeKey]
+    }
+
+    var isAppStoreRenewableSubscription: Bool {
+        return productType == .autoRenewableSubscription && store == .appStore
+    }
 
     var storeLocalizationKey: CCLocalizedString {
         switch store {

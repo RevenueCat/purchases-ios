@@ -22,6 +22,7 @@ func checkConfigurationAPI() {
         .with(platformInfo: Purchases.PlatformInfo(flavor: "", version: ""))
         .with(storeKitVersion: .default)
         .with(entitlementVerificationMode: .informational)
+        .with(automaticDeviceIdentifierCollectionEnabled: true)
 
     let _: Configuration = builder.build()
 

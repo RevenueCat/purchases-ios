@@ -182,7 +182,7 @@ private extension CustomerCenterView {
 
     @ViewBuilder
     func destinationContent(configuration: CustomerCenterConfigData) -> some View {
-        if viewModel.hasPurchases,
+        if viewModel.hasAnyPurchases,
            let screen = configuration.screens[.management] {
             if let onUpdateAppClick = viewModel.onUpdateAppClick,
                !ignoreAppUpdateWarning
@@ -207,7 +207,8 @@ private extension CustomerCenterView {
                 FallbackNoSubscriptionsView(
                     customerCenterViewModel: viewModel,
                     actionWrapper: self.viewModel.actionWrapper,
-                    virtualCurrencies: self.viewModel.virtualCurrencies
+                    virtualCurrencies: self.viewModel.virtualCurrencies,
+                    purchasesProvider: self.viewModel.purchasesProvider
                 )
             }
         }
