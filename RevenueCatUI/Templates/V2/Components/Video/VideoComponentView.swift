@@ -39,6 +39,7 @@ struct VideoComponentView: View {
     @State var size: CGSize = .zero
 
     @State var cachedURL: URL?
+    @State var imageSource: PaywallComponent.ThemeImageUrls?
 
     var body: some View {
         viewModel
@@ -54,6 +55,7 @@ struct VideoComponentView: View {
             ) { style in
                 Color.clear
                     .task {
+                        self.imageSource = viewModel.imageSource
                         let fileRepository = FileRepository()
                         if let lowResUrl = style.lowResUrl {
                             let lowResCachedURL = try? await fileRepository.generateOrGetCachedFileURL(for: lowResUrl)
@@ -61,13 +63,13 @@ struct VideoComponentView: View {
                         }
                         let cachedURL = try? await fileRepository.generateOrGetCachedFileURL(for: style.url)
                         self.cachedURL = cachedURL ?? style.url
+                        self.imageSource = nil
                     }
                 if style.visible {
                     ZStack {
                         if let cachedURL {
                             renderVideo(
                                 VideoPlayerView(
-                                    // To do: cached video view
                                     videoURL: cachedURL,
                                     shouldAutoPlay: style.autoplay,
                                     contentMode: style.contentMode,
@@ -78,10 +80,10 @@ struct VideoComponentView: View {
                                 size: size,
                                 with: style
                             )
-                        } else if let source = viewModel.imageSource, let imageViewModel = try? ImageComponentViewModel(
+                        } else if let imageSource, let imageViewModel = try? ImageComponentViewModel(
                             localizationProvider: viewModel.localizationProvider,
                             uiConfigProvider: viewModel.uiConfigProvider,
-                            component: .init(source: source)
+                            component: .init(source: imageSource)
                         ) {
                             ImageComponentView(viewModel: imageViewModel)
                         }
@@ -90,11 +92,11 @@ struct VideoComponentView: View {
                     .applyVideoWidth(size: style.size)
                     .applyVideoHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
                     .clipped()
-                    .padding(style.padding.extend(by: style.border?.width ?? 0))
                     .shape(border: style.border,
                            shape: style.shape)
                     .shadow(shadow: style.shadow,
                             shape: style.shape?.toInsettableShape())
+                    .padding(style.padding.extend(by: style.border?.width ?? 0))
                     .padding(style.margin)
                 }
             }
@@ -126,10 +128,11 @@ struct VideoComponentView: View {
         video
             .frame(maxWidth: calculateMaxWidth(parentWidth: size.width, style: style))
             .fitToAspectRatio(
-                aspectRatio: self.aspectRatio(style: style),
-                contentMode: style.contentMode,
-                containerContentMode: style.contentMode
+                aspectRatio: aspectRatio(style: style),
+                contentMode: .fill, // This must be set to fill for the modifier to work correctly
+                containerContentMode: style.contentMode // the container is what truly controls this
             )
+
             .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
                 view.overlay(
                     Color.clear.backgroundStyle(.color(colorOverlay))

@@ -20,7 +20,7 @@ import UIKit
 class VideoPlayerViewUIView: UIView {
     var playerLayer: AVPlayerLayer?
     var looper: AVPlayerLooper?
-    @State var player: AVPlayer
+    let player: AVPlayer
 
     required  init(
         url: URL,
@@ -43,9 +43,11 @@ class VideoPlayerViewUIView: UIView {
 
         self.player = avPlayer
 
+
         super.init(frame: .zero)
 
         self.playerLayer = AVPlayerLayer(player: avPlayer)
+
 
         if let playerLayer = playerLayer {
             layer.addSublayer(playerLayer)
