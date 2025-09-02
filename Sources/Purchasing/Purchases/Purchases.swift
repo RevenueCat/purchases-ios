@@ -296,7 +296,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      dangerousSettings: DangerousSettings? = nil,
                      showStoreMessagesAutomatically: Bool,
                      diagnosticsEnabled: Bool = false,
-                     preferredLocale: String?
+                     preferredLocale: String?,
+                     automaticDeviceIdentifierCollectionEnabled: Bool = true
     ) {
         if userDefaults != nil {
             Logger.debug(Strings.configure.using_custom_user_defaults)
@@ -375,7 +376,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 diagnosticsTracker: diagnosticsTracker
             ))
 
-        let testStorePurchaseHandler = TestStorePurchaseHandler(systemInfo: systemInfo)
+        let simulatedStorePurchaseHandler = SimulatedStorePurchaseHandler(systemInfo: systemInfo)
 
         let offeringsFactory = OfferingsFactory()
         let receiptParser = PurchasesReceiptParser.default
@@ -426,17 +427,20 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         }
 
         let attributionDataMigrator = AttributionDataMigrator()
-        let subscriberAttributesManager = SubscriberAttributesManager(backend: backend,
-                                                                      deviceCache: deviceCache,
-                                                                      operationDispatcher: operationDispatcher,
-                                                                      attributionFetcher: attributionFetcher,
-                                                                      attributionDataMigrator: attributionDataMigrator)
+        let subscriberAttributesManager = SubscriberAttributesManager(
+            backend: backend,
+            deviceCache: deviceCache,
+            operationDispatcher: operationDispatcher,
+            attributionFetcher: attributionFetcher,
+            attributionDataMigrator: attributionDataMigrator,
+            automaticDeviceIdentifierCollectionEnabled: automaticDeviceIdentifierCollectionEnabled)
         let identityManager = IdentityManager(deviceCache: deviceCache,
                                               systemInfo: systemInfo,
                                               backend: backend,
                                               customerInfoManager: customerInfoManager,
                                               attributeSyncing: subscriberAttributesManager,
-                                              appUserID: appUserID)
+                                              appUserID: appUserID
+        )
 
         let paywallEventsManager: PaywallEventsManagerType?
         do {
@@ -530,7 +534,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 return .init(
                     productsManager: productsManager,
                     paymentQueueWrapper: paymentQueueWrapper,
-                    testStorePurchaseHandler: testStorePurchaseHandler,
+                    simulatedStorePurchaseHandler: simulatedStorePurchaseHandler,
                     systemInfo: systemInfo,
                     subscriberAttributes: subscriberAttributes,
                     operationDispatcher: operationDispatcher,
@@ -563,7 +567,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 return .init(
                     productsManager: productsManager,
                     paymentQueueWrapper: paymentQueueWrapper,
-                    testStorePurchaseHandler: testStorePurchaseHandler,
+                    simulatedStorePurchaseHandler: simulatedStorePurchaseHandler,
                     systemInfo: systemInfo,
                     subscriberAttributes: subscriberAttributes,
                     operationDispatcher: operationDispatcher,
@@ -1468,7 +1472,8 @@ public extension Purchases {
                   dangerousSettings: configuration.dangerousSettings,
                   showStoreMessagesAutomatically: configuration.showStoreMessagesAutomatically,
                   diagnosticsEnabled: configuration.diagnosticsEnabled,
-                  preferredLocale: configuration.preferredLocale
+                  preferredLocale: configuration.preferredLocale,
+                  automaticDeviceIdentifierCollectionEnabled: configuration.automaticDeviceIdentifierCollectionEnabled
         )
     }
 
@@ -1735,7 +1740,8 @@ public extension Purchases {
         dangerousSettings: DangerousSettings?,
         showStoreMessagesAutomatically: Bool,
         diagnosticsEnabled: Bool,
-        preferredLocale: String?
+        preferredLocale: String?,
+        automaticDeviceIdentifierCollectionEnabled: Bool = true
     ) -> Purchases {
         return self.setDefaultInstance(
             .init(apiKey: apiKey,
@@ -1751,7 +1757,8 @@ public extension Purchases {
                   dangerousSettings: dangerousSettings,
                   showStoreMessagesAutomatically: showStoreMessagesAutomatically,
                   diagnosticsEnabled: diagnosticsEnabled,
-                  preferredLocale: preferredLocale)
+                  preferredLocale: preferredLocale,
+                  automaticDeviceIdentifierCollectionEnabled: automaticDeviceIdentifierCollectionEnabled)
         )
     }
 

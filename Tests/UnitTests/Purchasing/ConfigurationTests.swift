@@ -35,9 +35,9 @@ class ConfigurationTests: TestCase {
         expect(Configuration.validateAndLog(apiKey: "swRTCezdEzjnJSxdexDNJfcfiFrMXwqZ")) == .legacy
     }
 
-    #if TEST_STORE
+    #if SIMULATED_STORE
     func testValidateAPIKeyWithTestStoreKey() {
-        expect(Configuration.validateAndLog(apiKey: "test_eg2t9g3098bgqqn")) == .testStore
+        expect(Configuration.validateAndLog(apiKey: "test_eg2t9g3098bgqqn")) == .simulatedStore
     }
     #endif
 
@@ -113,6 +113,19 @@ class ConfigurationTests: TestCase {
             .build()
 
         expect(configuration.storeKitVersion) == .default
+    }
+
+    func testAutomaticDeviceIdentifierCollectionEnabledIsTrueByDefault() {
+        let configuration = Configuration.Builder(withAPIKey: "test")
+            .build()
+        expect(configuration.automaticDeviceIdentifierCollectionEnabled) == true
+    }
+
+    func testAutomaticDeviceIdentifierCollectionEnabledCanBeSet() {
+        let configuration = Configuration.Builder(withAPIKey: "test")
+            .with(automaticDeviceIdentifierCollectionEnabled: false)
+            .build()
+        expect(configuration.automaticDeviceIdentifierCollectionEnabled) == false
     }
 
 }

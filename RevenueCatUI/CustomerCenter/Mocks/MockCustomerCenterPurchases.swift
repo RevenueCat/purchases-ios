@@ -91,7 +91,7 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
     var purchaseCallCount = 0
     var purchaseResult: Result<PurchaseResultData, Error> = .failure(NSError(domain: "", code: -1))
     func purchase(product: StoreProduct,
-                  promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
+                  promotionalOffer: PromotionalOffer?) async throws -> PurchaseResultData {
         purchaseCallCount += 1
         return try purchaseResult.get()
     }
@@ -148,5 +148,10 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
     func syncPurchases() async throws -> CustomerInfo {
         syncPurchasesCount += 1
         return syncPurchasesResult
+    }
+
+    var offeringsError: Error = NSError(domain: "", code: -1)
+    func offerings() async throws -> Offerings {
+        throw offeringsError
     }
 }

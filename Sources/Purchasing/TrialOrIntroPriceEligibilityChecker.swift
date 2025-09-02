@@ -77,8 +77,8 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
             return
         }
 
-        guard !self.systemInfo.isTestStoreAPIKey else {
-            // For now, all products in the Test Store are ineligible for trial or intro discount
+        guard !self.systemInfo.isSimulatedStoreAPIKey else {
+            // For now, all products in the Simulated Store are ineligible for trial or intro discount
             let result = productIdentifiers.reduce(into: [:]) { resultDict, productId in
                 resultDict[productId] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.ineligible)
             }
@@ -302,6 +302,7 @@ extension TrialOrIntroPriceEligibilityChecker: @unchecked Sendable {}
 
 private extension TrialOrIntroPriceEligibilityChecker {
 
+    // swiftlint:disable:next function_body_length
     func trackTrialOrIntroEligibilityRequestIfNeeded(startTime: Date,
                                                      requestedProductIds: Set<String>,
                                                      result: [String: IntroEligibility],
@@ -311,17 +312,22 @@ private extension TrialOrIntroPriceEligibilityChecker {
             return
         }
 
-        let (unknownCount, ineligibleCount, eligibleCount, noIntroOfferCount) = result.reduce(into: (0, 0, 0, 0)) {
-            switch $1.value.status {
-            case .unknown:
-                $0.0 += 1
-            case .ineligible:
-                $0.1 += 1
-            case .eligible:
-                $0.2 += 1
-            case .noIntroOfferExists:
-                $0.3 += 1
+        let unknownCount, ineligibleCount, eligibleCount, noIntroOfferCount: Int?
+        if !result.isEmpty {
+            (unknownCount, ineligibleCount, eligibleCount, noIntroOfferCount) = result.reduce(into: (0, 0, 0, 0)) {
+                switch $1.value.status {
+                case .unknown:
+                    $0.0 += 1
+                case .ineligible:
+                    $0.1 += 1
+                case .eligible:
+                    $0.2 += 1
+                case .noIntroOfferExists:
+                    $0.3 += 1
+                }
             }
+        } else {
+            (unknownCount, ineligibleCount, eligibleCount, noIntroOfferCount) = (nil, nil, nil, nil)
         }
 
         let errorCode: Int?

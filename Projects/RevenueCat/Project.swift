@@ -79,6 +79,7 @@ let project = Project(
                 .snapshotTesting,
                 .ohHTTPStubsSwift
             ],
+            metadata: .metadata(tags: ["RevenueCatTests"])
         ),
 
         .target(
@@ -157,6 +158,7 @@ let project = Project(
                 "../../Tests/UnitTestsHostApp/**/*.swift"
             ],
             dependencies: [],
+            metadata: .metadata(tags: ["RevenueCatTests"])
         ),
 
         // MARK: – StoreKit Unit Tests
@@ -187,7 +189,8 @@ let project = Project(
             ],
             additionalFiles: [
                 "../../Tests/StoreKitUnitTests/UnitTestsConfiguration.storekit"
-            ]
+            ],
+            metadata: .metadata(tags: ["RevenueCatTests"]),
         ),
 
         // MARK: – BackendIntegrationTests Host App
@@ -213,7 +216,8 @@ let project = Project(
                     "APPLICATION_EXTENSION_API_ONLY": "YES",
                     "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "$(inherited) ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION"
                 ]
-            )
+            ),
+            metadata: .metadata(tags: ["RevenueCatTests"]),
         ),
 
         .target(
@@ -251,7 +255,8 @@ let project = Project(
                 base: [
                     "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "$(inherited) ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION"
                 ]
-            )
+            ),
+            metadata: .metadata(tags: ["RevenueCatTests"]),
         ),
 
         .target(
@@ -293,7 +298,8 @@ let project = Project(
             additionalFiles: [
                 "../../Tests/BackendIntegrationTests/RevenueCat_IntegrationPurchaseTesterConfiguration.storekit",
                 "../../BackendIntegrationTests/**.xctestplan"
-            ]
+            ],
+            metadata: .metadata(tags: ["RevenueCatTests"])
         )
 
     ],

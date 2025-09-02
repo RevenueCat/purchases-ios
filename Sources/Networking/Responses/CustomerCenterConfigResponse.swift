@@ -128,6 +128,7 @@ struct CustomerCenterConfigResponse {
         let type: ScreenType
         let subtitle: String?
         let paths: [HelpPath]
+        let offering: ScreenOffering?
 
         enum ScreenType: String {
 
@@ -137,6 +138,12 @@ struct CustomerCenterConfigResponse {
 
         }
 
+    }
+
+    struct ScreenOffering {
+        let type: String
+        let offeringId: String?
+        let buttonText: String?
     }
 
     struct Support {
@@ -174,6 +181,7 @@ extension CustomerCenterConfigResponse.HelpPath.FeedbackSurvey.Option: Codable, 
 extension CustomerCenterConfigResponse.Appearance: Codable, Equatable {}
 extension CustomerCenterConfigResponse.Appearance.AppearanceCustomColors: Codable, Equatable {}
 extension CustomerCenterConfigResponse.Screen: Codable, Equatable {}
+extension CustomerCenterConfigResponse.ScreenOffering: Codable, Equatable {}
 extension CustomerCenterConfigResponse.Screen.ScreenType: Equatable {}
 extension CustomerCenterConfigResponse.Support: Codable, Equatable {}
 extension CustomerCenterConfigResponse.ChangePlan: Codable, Equatable {}

@@ -29,6 +29,7 @@ extension PurchaseInformation {
         productIdentifier: String = "com.revenuecat.pro",
         store: Store = .appStore,
         isSubscription: Bool = false,
+        productType: StoreProduct.ProductType? = nil,
         isTrial: Bool = false,
         isCancelled: Bool = false,
         isExpired: Bool = false,
@@ -57,6 +58,7 @@ extension PurchaseInformation {
             productIdentifier: productIdentifier,
             store: store,
             isSubscription: isSubscription,
+            productType: productType,
             isTrial: isTrial,
             isCancelled: isCancelled,
             isExpired: isExpired,
@@ -85,18 +87,19 @@ extension PurchaseInformation {
         renewalPrice: .nonFree("$4.99"),
         store: .appStore,
         isSubscription: true,
+        productType: .autoRenewableSubscription,
         isCancelled: false,
         expirationDate: nil,
         renewalDate: Self.defaulRenewalDate
     )
 
     static let expired = PurchaseInformation.mock(
-
         pricePaid: .nonFree("$4.99"),
         renewalPrice: .nonFree("$4.99"),
         productIdentifier: "product_id_expired",
         store: .appStore,
         isSubscription: true,
+        productType: .autoRenewableSubscription,
         isExpired: true,
         expirationDate: Self.defaultExpirationDate,
         renewalDate: nil
@@ -107,6 +110,7 @@ extension PurchaseInformation {
         pricePaid: .nonFree("$4.99"),
         productIdentifier: "product_id_lifetime",
         isSubscription: true,
+        productType: .nonConsumable,
         expirationDate: nil,
         renewalDate: nil,
         isLifetime: true
@@ -130,6 +134,7 @@ extension PurchaseInformation {
         productIdentifier: "product_id",
         store: .appStore,
         isSubscription: false,
+        productType: .consumable,
         isExpired: false,
         isSandbox: false,
         managementURL: URL(string: "https://www.revenuecat.com"),

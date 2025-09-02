@@ -13,7 +13,7 @@
 
 import Foundation
 
-protocol HTTPRequestPath: Sendable {
+protocol HTTPRequestPath {
 
     /// The base URL for requests to this path.
     static var serverHostURL: URL { get }
@@ -70,7 +70,7 @@ extension HTTPRequestPath {
 
 extension HTTPRequest {
 
-    enum Path: Hashable, Sendable {
+    enum Path: Hashable {
 
         case getCustomerInfo(appUserID: String)
         case getOfferings(appUserID: String)
@@ -91,19 +91,19 @@ extension HTTPRequest {
 
     }
 
-    enum PaywallPath: Hashable, Sendable {
+    enum PaywallPath: Hashable {
 
         case postEvents
 
     }
 
-    enum DiagnosticsPath: Hashable, Sendable {
+    enum DiagnosticsPath: Hashable {
 
         case postDiagnostics
 
     }
 
-    enum WebBillingPath: Hashable, Sendable {
+    enum WebBillingPath: Hashable {
 
         case getWebOfferingProducts(appUserID: String)
         case getWebBillingProducts(userId: String, productIds: Set<String>)

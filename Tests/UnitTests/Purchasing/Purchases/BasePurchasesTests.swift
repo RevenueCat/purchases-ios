@@ -33,7 +33,7 @@ class BasePurchasesTests: TestCase {
         self.purchasesDelegate = MockPurchasesDelegate()
 
         self.mockPaymentQueueWrapper = MockPaymentQueueWrapper()
-        self.mockTestStorePurchaseHandler = MockTestStorePurchaseHandler()
+        self.mockSimulatedStorePurchaseHandler = MockSimulatedStorePurchaseHandler()
 
         self.userDefaults = UserDefaults(suiteName: Self.userDefaultsSuiteName)
         self.clock = TestClock()
@@ -165,7 +165,7 @@ class BasePurchasesTests: TestCase {
     var backend: MockBackend!
     var storeKit1Wrapper: MockStoreKit1Wrapper!
     var mockPaymentQueueWrapper: MockPaymentQueueWrapper!
-    var mockTestStorePurchaseHandler: MockTestStorePurchaseHandler!
+    var mockSimulatedStorePurchaseHandler: MockSimulatedStorePurchaseHandler!
     var notificationCenter: MockNotificationCenter!
     var userDefaults: UserDefaults! = nil
     let offeringsFactory = MockOfferingsFactory()
@@ -271,7 +271,7 @@ class BasePurchasesTests: TestCase {
         self.purchasesOrchestrator = PurchasesOrchestrator(
             productsManager: self.mockProductsManager,
             paymentQueueWrapper: self.paymentQueueWrapper,
-            testStorePurchaseHandler: self.mockTestStorePurchaseHandler,
+            simulatedStorePurchaseHandler: self.mockSimulatedStorePurchaseHandler,
             systemInfo: self.systemInfo,
             subscriberAttributes: self.attribution,
             operationDispatcher: self.mockOperationDispatcher,
@@ -573,7 +573,7 @@ private extension BasePurchasesTests {
     func clearReferences() {
         self.mockOperationDispatcher = nil
         self.mockPaymentQueueWrapper = nil
-        self.mockTestStorePurchaseHandler = nil
+        self.mockSimulatedStorePurchaseHandler = nil
         self.requestFetcher = nil
         self.receiptFetcher = nil
         self.mockProductsManager = nil
