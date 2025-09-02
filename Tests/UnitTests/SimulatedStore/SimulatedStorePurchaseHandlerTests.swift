@@ -185,7 +185,7 @@ class SimulatedStorePurchaseHandlerTests: TestCase {
                                                            productType: .autoRenewableSubscription,
                                                            localizedDescription: "Description")
 
-    private static let mockDate = Date(millisecondsSince1970: 1756796794912)
+    private static let mockDate = Date(millisecondsSince1970: 1756796794912) // Sep 02 2025 07:06:34.912 UTC
 }
 
 #endif // SIMULATED_STORE
