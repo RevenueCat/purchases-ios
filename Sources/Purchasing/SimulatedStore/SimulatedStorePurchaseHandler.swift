@@ -30,6 +30,7 @@ protocol SimulatedStorePurchaseHandlerType: AnyObject, Sendable {
 actor SimulatedStorePurchaseHandler: SimulatedStorePurchaseHandlerType {
 
     private let purchaseUI: SimulatedStorePurchaseUI
+    private let dateProvider: DateProvider
 
     private var currentPurchaseTask: Task<TestPurchaseResult, Never>?
     private var purchaseInProgress: Bool {
@@ -38,11 +39,13 @@ actor SimulatedStorePurchaseHandler: SimulatedStorePurchaseHandlerType {
 
     init(systemInfo: SystemInfo) {
         self.purchaseUI = DefaultSimulatedStorePurchaseUI(systemInfo: systemInfo)
+        self.dateProvider = DateProvider()
     }
 
     // For testing purposes
-    init(purchaseUI: SimulatedStorePurchaseUI) {
+    init(purchaseUI: SimulatedStorePurchaseUI, dateProvider: DateProvider) {
         self.purchaseUI = purchaseUI
+        self.dateProvider = dateProvider
     }
 
     #if SIMULATED_STORE
@@ -82,7 +85,7 @@ actor SimulatedStorePurchaseHandler: SimulatedStorePurchaseHandlerType {
     }
 
     private func createStoreTransaction(product: TestStoreProduct) async -> StoreTransaction {
-        let purchaseDate = Date()
+        let purchaseDate = self.dateProvider.now()
         let purchaseToken = "test_\(purchaseDate.millisecondsSince1970)_\(UUID().uuidString)"
         let storefront = await Storefront.currentStorefront
         let simulatedStoreTransaction = SimulatedStoreTransaction(productIdentifier: product.productIdentifier,
