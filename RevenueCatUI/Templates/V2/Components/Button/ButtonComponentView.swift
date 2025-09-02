@@ -68,6 +68,7 @@ struct ButtonComponentView: View {
                     showActivityIndicatorOverContent: self.showActivityIndicatorOverContent
                 )
             }
+            .withTransition(viewModel.component.transition)
             .applyIf(self.shouldBeDisabled, apply: { view in
                 view
                     .disabled(true)
@@ -228,6 +229,7 @@ fileprivate extension ButtonComponentViewModel {
             component: component.stack,
             packageValidator: factory.packageValidator,
             firstImageInfo: nil,
+            purchaseButtonCollector: nil,
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
             offering: offering

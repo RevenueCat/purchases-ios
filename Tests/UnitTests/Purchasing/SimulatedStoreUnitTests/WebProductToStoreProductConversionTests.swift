@@ -18,7 +18,7 @@ import XCTest
 class WebProductToStoreProductConversionTests: TestCase {
 
     func testSubscriptionWebProductToStoreProductConversion() throws {
-        let product = TestStoreMockData.yearlyProduct
+        let product = SimulatedStoreMockData.yearlyProduct
 
         let storeProduct = try product.convertToStoreProduct(locale: Locale(identifier: "es_ES"))
 
@@ -41,7 +41,7 @@ class WebProductToStoreProductConversionTests: TestCase {
     }
 
     func testOneTimePurchaseWebProductToStoreProductConversion() throws {
-        let product = TestStoreMockData.lifetimeProduct
+        let product = SimulatedStoreMockData.lifetimeProduct
 
         let storeProduct = try product.convertToStoreProduct(locale: Locale(identifier: "en_GB"))
 

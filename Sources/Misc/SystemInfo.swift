@@ -37,9 +37,9 @@ class SystemInfo {
     let storeKitVersion: StoreKitVersion
     private let apiKeyValidationResult: Configuration.APIKeyValidationResult
 
-    /// Whether the API key used to configure the SDK is a Test Store API key.
-    var isTestStoreAPIKey: Bool {
-        return self.apiKeyValidationResult == .testStore
+    /// Whether the API key used to configure the SDK is a Simulated Store API key.
+    var isSimulatedStoreAPIKey: Bool {
+        return self.apiKeyValidationResult == .simulatedStore
     }
 
     let operationDispatcher: OperationDispatcher
@@ -102,7 +102,7 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "5.35.0-SNAPSHOT"
+        return "5.37.0-SNAPSHOT"
     }
 
     static var systemVersion: String {

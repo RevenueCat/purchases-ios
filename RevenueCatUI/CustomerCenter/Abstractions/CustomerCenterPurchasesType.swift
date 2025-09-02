@@ -43,9 +43,24 @@ import SwiftUI
     func promotionalOffer(forProductDiscount discount: StoreProductDiscount,
                           product: StoreProduct) async throws -> PromotionalOffer
 
+/// Initiates a purchase.
+///
+/// This method is used in two main contexts:
+/// - **PromotionalOfferViewModel**: To handle promotional offers that a customer is
+///   eligible for.
+/// - **NoSubscriptionCardView**: To serve purchases directly through your paywall UI.
+///
+/// If a `PromotionalOffer` is provided, the system will attempt to apply it.
+/// Otherwise, a standard purchase flow is executed.
+///
+/// - Parameters:
+///   - product: The `StoreProduct` the customer intends to purchase.
+///   - promotionalOffer: An optional `PromotionalOffer` to apply
+/// - Returns: A `PurchaseResultData` object containing the result of the purchase.
+/// - Throws: An error if the purchase flow fails or is cancelled.
     func purchase(
         product: StoreProduct,
-        promotionalOffer: PromotionalOffer
+        promotionalOffer: PromotionalOffer?
     ) async throws -> PurchaseResultData
 
     func track(customerCenterEvent: any CustomerCenterEventType)
@@ -59,6 +74,8 @@ import SwiftUI
     func invalidateVirtualCurrenciesCache()
 
     func virtualCurrencies() async throws -> RevenueCat.VirtualCurrencies
+
+    func offerings() async throws -> RevenueCat.Offerings
 
     // MARK: - Subscription Management
 
