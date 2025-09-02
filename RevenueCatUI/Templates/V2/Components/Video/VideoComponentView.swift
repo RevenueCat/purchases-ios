@@ -11,7 +11,7 @@
 //
 //  Created by Jacob Zivan Rakidzich on 8/18/25.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -38,6 +38,8 @@ struct VideoComponentView: View {
 
     @State var size: CGSize = .zero
 
+    @State var cachedURL: URL?
+
     var body: some View {
         viewModel
             .styles(
@@ -50,29 +52,39 @@ struct VideoComponentView: View {
                     for: self.packageContext.package
                 )
             ) { style in
+                Color.clear
+                    .task {
+                        let fileRepository = FileRepository()
+                        if let lowResUrl = style.lowResUrl {
+                            let lowResCachedURL = try? await fileRepository.generateOrGetCachedFileURL(for: lowResUrl)
+                            self.cachedURL = lowResCachedURL
+                        }
+                        let cachedURL = try? await fileRepository.generateOrGetCachedFileURL(for: style.url)
+                        self.cachedURL = cachedURL ?? style.url
+                    }
                 if style.visible {
                     ZStack {
-                        //                     to do cached image view
-                        if let source = viewModel.imageSource, let imageViewModel = try? ImageComponentViewModel(
+                        if let cachedURL {
+                            renderVideo(
+                                VideoPlayerView(
+                                    // To do: cached video view
+                                    videoURL: cachedURL,
+                                    shouldAutoPlay: style.autoplay,
+                                    contentMode: style.contentMode,
+                                    showControls: style.showControls,
+                                    loopVideo: style.loop,
+                                    muteAudio: style.muteAudio
+                                ),
+                                size: size,
+                                with: style
+                            )
+                        } else if let source = viewModel.imageSource, let imageViewModel = try? ImageComponentViewModel(
                             localizationProvider: viewModel.localizationProvider,
                             uiConfigProvider: viewModel.uiConfigProvider,
                             component: .init(source: source)
                         ) {
                             ImageComponentView(viewModel: imageViewModel)
                         }
-
-                        renderVideo(
-                            VideoPlayerView(
-                                // To do: cached video view
-                                videoURL: style.url,
-                                shouldAutoPlay: style.autoplay,
-                                contentMode: style.contentMode,
-                                showControls: style.showControls,
-                                loopVideo: style.loop,
-                                muteAudio: style.muteAudio
-                            ),
-                            with: style
-                        )
 
                     }
                     .applyVideoWidth(size: style.size)
@@ -84,9 +96,10 @@ struct VideoComponentView: View {
                     .shadow(shadow: style.shadow,
                             shape: style.shape?.toInsettableShape())
                     .padding(style.margin)
-                    .sizeReader($size)
                 }
             }
+            .sizeReader($size)
+
     }
 
     private func aspectRatio(style: VideoComponentStyle) -> Double {
@@ -107,15 +120,16 @@ struct VideoComponentView: View {
 
     private func renderVideo<Video: View>(
         _ video: Video,
+        size: CGSize,
         with style: VideoComponentStyle
     ) -> some View {
         video
+            .frame(maxWidth: calculateMaxWidth(parentWidth: size.width, style: style))
             .fitToAspectRatio(
                 aspectRatio: self.aspectRatio(style: style),
                 contentMode: style.contentMode,
                 containerContentMode: style.contentMode
             )
-            .frame(maxWidth: calculateMaxWidth(parentWidth: size.width, style: style))
             .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
                 view.overlay(
                     Color.clear.backgroundStyle(.color(colorOverlay))

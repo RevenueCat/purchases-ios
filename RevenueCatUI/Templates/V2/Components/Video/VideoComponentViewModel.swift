@@ -62,7 +62,7 @@ class VideoComponentViewModel {
         let style = VideoComponentStyle(
             visible: partial?.visible ?? self.component.visible ?? true,
             showControls: partial?.showControls ?? self.component.showControls,
-            autoplay: partial?.autoplay ?? self.component.autoplay,
+            autoplay: partial?.autoplay ?? self.component.autoPlay,
             loop: partial?.loop ?? self.component.loop,
             url: partial?.source?.light.url ?? self.component.source.light.url,
             lowResUrl: partial?.source?.light.urlLowRes ?? self.component.source.light.urlLowRes,
