@@ -83,13 +83,13 @@ actor SimulatedStorePurchaseHandler: SimulatedStorePurchaseHandlerType {
 
     private func createStoreTransaction(product: TestStoreProduct) async -> StoreTransaction {
         let purchaseDate = Date()
-        let transactionId = "test_\(purchaseDate.millisecondsSince1970)_\(UUID().uuidString)"
+        let purchaseToken = "test_\(purchaseDate.millisecondsSince1970)_\(UUID().uuidString)"
         let storefront = await Storefront.currentStorefront
         let simulatedStoreTransaction = SimulatedStoreTransaction(productIdentifier: product.productIdentifier,
                                                                   purchaseDate: purchaseDate,
-                                                                  transactionIdentifier: transactionId,
+                                                                  transactionIdentifier: purchaseToken,
                                                                   storefront: storefront,
-                                                                  jwsRepresentation: nil)
+                                                                  jwsRepresentation: purchaseToken)
         return StoreTransaction(simulatedStoreTransaction)
     }
 
