@@ -43,11 +43,9 @@ class VideoPlayerViewUIView: UIView {
 
         self.player = avPlayer
 
-
         super.init(frame: .zero)
 
         self.playerLayer = AVPlayerLayer(player: avPlayer)
-
 
         if let playerLayer = playerLayer {
             layer.addSublayer(playerLayer)
