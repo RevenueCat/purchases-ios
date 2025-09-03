@@ -115,7 +115,7 @@ private struct NonLocalizedMarkdownText: View {
         }
 
         return attrString
-        
+
         #else
         return nil
         #endif
