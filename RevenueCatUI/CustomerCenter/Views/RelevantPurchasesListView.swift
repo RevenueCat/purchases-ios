@@ -135,7 +135,6 @@ struct RelevantPurchasesListView: View {
             LazyVStack(spacing: 0) {
                 if !customerInfoViewModel.hasAnyPurchases {
                     emptyView
-                        .cornerRadius(10)
                         .padding(.horizontal)
                         .padding(.bottom, 32)
                 } else {

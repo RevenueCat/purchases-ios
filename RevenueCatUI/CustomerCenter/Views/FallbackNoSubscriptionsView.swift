@@ -73,9 +73,8 @@ struct FallbackNoSubscriptionsView: View {
                     localization: localization,
                     purchasesProvider: purchasesProvider
                 )
-                    .cornerRadius(10)
-                    .padding(.horizontal)
-                    .padding(.bottom, 32)
+                .padding(.horizontal)
+                .padding(.bottom, 32)
 
                 if let virtualCurrencies, !virtualCurrencies.all.isEmpty {
                     VirtualCurrenciesScrollViewWithOSBackgroundSection(

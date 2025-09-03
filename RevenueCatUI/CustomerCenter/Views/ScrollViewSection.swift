@@ -62,7 +62,6 @@ struct PurchasesInformationSection: View {
                         localization: localization,
                         accessibilityIdentifier: "purchase_card_\(offset)"
                     )
-                    .cornerRadius(10)
                     .padding(.horizontal)
                 }
                 .padding(.bottom, 16)

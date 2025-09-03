@@ -201,7 +201,6 @@ struct SubscriptionDetailView: View {
                         localization: localization,
                         purchasesProvider: viewModel.purchasesProvider
                     )
-                    .cornerRadius(10)
                     .padding(.horizontal)
                     .padding(.vertical, 32)
                 } else {
@@ -213,7 +212,6 @@ struct SubscriptionDetailView: View {
                             refundStatus: viewModel.refundRequestStatus,
                             showChevron: false
                         )
-                        .cornerRadius(10)
                         .padding(.horizontal)
                         .padding(.vertical, 32)
                     }

@@ -64,6 +64,16 @@ struct NoSubscriptionsCardView: View {
     }
 
     var body: some View {
+        if #available(iOS 26.0, *) {
+            content
+                .cornerRadius(26)
+        } else {
+            content
+                .cornerRadius(10)
+        }
+    }
+
+    private var content: some View {
         VStack(alignment: .center, spacing: 8) {
             Text(title)
                 .font(.headline)
@@ -172,7 +182,6 @@ struct NoSubscriptionsCardView_Previews: PreviewProvider {
                     localization: CustomerCenterConfigData.default.localization,
                     purchasesProvider: MockCustomerCenterPurchases()
                 )
-                .cornerRadius(10)
                 .padding([.leading, .trailing])
             }
             .preferredColorScheme(colorScheme)
