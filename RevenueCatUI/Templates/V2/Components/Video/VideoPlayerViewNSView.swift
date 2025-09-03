@@ -86,12 +86,10 @@ struct VideoPlayerNSView: NSViewRepresentable {
     let loopVideo: Bool
     let muteAudio: Bool
 
-    @Environment(\.accessibilityReduceMotion) var reduceMotion
-
     func makeNSView(context: Context) -> VideoPlayerViewNSView {
         let view = VideoPlayerViewNSView(
             url: videoURL,
-            shouldAutoPlay: shouldAutoPlay && !reduceMotion,
+            shouldAutoPlay: shouldAutoPlay,
             contentMode: contentMode,
             loopVideo: loopVideo,
             muteAudio: muteAudio

@@ -24,8 +24,6 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
     let player: AVPlayer
     let looper: AVPlayerLooper?
 
-    @Environment(\.accessibilityReduceMotion) var reduceMotion
-
     init(
         videoURL: URL,
         shouldAutoPlay: Bool,
@@ -55,7 +53,7 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
 
         self.player = avPlayer
 
-        if shouldAutoPlay && !reduceMotion {
+        if shouldAutoPlay {
             avPlayer.play()
         }
     }

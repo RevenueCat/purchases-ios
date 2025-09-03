@@ -29,19 +29,21 @@ struct VideoPlayerView: View {
     let loopVideo: Bool
     let muteAudio: Bool
 
+    @Environment(\.accessibilityReduceMotion) var reduceMotion
+
     var body: some View {
 #if os(macOS)
         if showControls {
             ViewWithControls(
                 url: videoURL,
-                shouldAutoPlay: shouldAutoPlay,
+                shouldAutoPlay: shouldAutoPlay && !reduceMotion,
                 loopVideo: loopVideo,
                 muteAudio: muteAudio
             )
         } else {
             VideoPlayerNSView(
                 videoURL: videoURL,
-                shouldAutoPlay: shouldAutoPlay,
+                shouldAutoPlay: shouldAutoPlay && !reduceMotion,
                 contentMode: contentMode,
                 loopVideo: loopVideo,
                 muteAudio: muteAudio
@@ -50,7 +52,7 @@ struct VideoPlayerView: View {
 #elseif canImport(UIKit)
         VideoPlayerUIView(
             videoURL: videoURL,
-            shouldAutoPlay: shouldAutoPlay,
+            shouldAutoPlay: shouldAutoPlay && !reduceMotion,
             contentMode: contentMode,
             loopVideo: loopVideo,
             showControls: showControls,
