@@ -32,15 +32,27 @@ struct ProminentButtonStyle: PrimitiveButtonStyle {
         let background = Color.from(colorInformation: appearance.buttonBackgroundColor, for: colorScheme)
         let textColor = Color.from(colorInformation: appearance.buttonTextColor, for: colorScheme)
 
-        Button(action: { configuration.trigger() }, label: {
-            configuration.label.frame(maxWidth: .infinity)
-        })
-        .font(.body.weight(.medium))
-        .buttonStyle(.borderedProminent)
-        .controlSize(.large)
-        .buttonBorderShape(.roundedRectangle(radius: 16))
-        .applyIf(background != nil, apply: { $0.tint(background) })
-        .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
+        if #available(iOS 26.0, *) {
+            Button(action: { configuration.trigger() }, label: {
+                configuration.label.frame(maxWidth: .infinity)
+            })
+            .font(.body.weight(.medium))
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .applyIf(background != nil, apply: { $0.tint(background) })
+            .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
+        } else {
+            Button(action: { configuration.trigger() }, label: {
+                configuration.label.frame(maxWidth: .infinity)
+            })
+            .font(.body.weight(.medium))
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .buttonBorderShape(.roundedRectangle(radius: 16))
+            .applyIf(background != nil, apply: { $0.tint(background) })
+            .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
+        }
+        
     }
 }
 
@@ -93,26 +105,39 @@ struct DismissCircleButton: View {
     var customDismiss: (() -> Void)?
 
     var body: some View {
-        Button {
-            if let customDismiss {
-                customDismiss()
-            } else {
-                self.dismiss()
+        
+        if #available(iOS 26.0, *) {
+            Button(role: .close) {
+                if let customDismiss {
+                    customDismiss()
+                } else {
+                    self.dismiss()
+                }
             }
-        } label: {
-            Circle()
-                .fill(Color(uiColor: .secondarySystemFill))
-                .frame(width: 28, height: 28)
-                .overlay(
-                    Image(systemName: "xmark")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(.secondary)
-                        .imageScale(.medium)
-                )
-            }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("circled_close_button")
-        .accessibilityLabel(Text(localization[.dismiss]))
+            .accessibilityIdentifier("circled_close_button")
+            .accessibilityLabel(Text(localization[.dismiss]))
+        } else {
+            Button {
+                if let customDismiss {
+                    customDismiss()
+                } else {
+                    self.dismiss()
+                }
+            } label: {
+                Circle()
+                    .fill(Color(uiColor: .secondarySystemFill))
+                    .frame(width: 28, height: 28)
+                    .overlay(
+                        Image(systemName: "xmark")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(.secondary)
+                            .imageScale(.medium)
+                    )
+                }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("circled_close_button")
+            .accessibilityLabel(Text(localization[.dismiss]))
+        }
     }
 
 }
@@ -130,7 +155,7 @@ struct DismissCircleButtonToolbarModifier: ViewModifier {
         if navigationOptions.shouldShowCloseButton {
             content
                 .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
+                    ToolbarItem(placement: .topBarTrailing) {
                         DismissCircleButton(customDismiss: navigationOptions.onCloseHandler)
                     }
                 }
