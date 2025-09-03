@@ -81,13 +81,18 @@ private struct CardStyleModifier: ViewModifier {
     private var colorScheme
 
     func body(content: Content) -> some View {
-        content
-            .padding()
-            .background(Color(colorScheme == .light
-                              ? UIColor.systemBackground
-                              : UIColor.secondarySystemBackground))
-            .cornerRadius(10)
-            .padding(.horizontal)
+        if #available(iOS 26.0, *) {
+            content
+                .padding()
+                .background(Color(colorScheme == .light ? UIColor.systemBackground : UIColor.secondarySystemBackground), in: .rect(cornerRadius: 26))
+                .padding(.horizontal)
+        } else {
+            content
+                .padding()
+                .background(Color(colorScheme == .light ? UIColor.systemBackground : UIColor.secondarySystemBackground), in: .rect(cornerRadius: 10))
+                .padding(.horizontal)
+        }
+        
     }
 }
 
@@ -104,6 +109,9 @@ struct AccountDetailsSection: View {
     let originalAppUserId: String
     let localization: CustomerCenterConfigData.Localization
 
+    @State
+    private var didCopyID = false
+    
     init(
         originalPurchaseDate: Date?,
         originalAppUserId: String,
@@ -150,19 +158,49 @@ struct AccountDetailsSection: View {
         }
     }
 
+    @ViewBuilder
     var userIdView: some View {
-        CompatibilityLabeledContent(
-            localization[.userId],
-            content: originalAppUserId
-        )
-        .contextMenu {
-            Button {
-                UIPasteboard.general.string = originalAppUserId
-            } label: {
-                Text(localization[.copy])
-                Image(systemName: "doc.on.clipboard")
+        if #available(iOS 17.0, *) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text(localization[.userId])
+                    Spacer()
+                    Button(localization[.copy], systemImage: didCopyID ? "checkmark" : "doc.on.clipboard") {
+                        UIPasteboard.general.string = originalAppUserId
+                        withAnimation {
+                            didCopyID = true
+                        }
+                        
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                            withAnimation {
+                                self.didCopyID = false
+                            }
+                        }
+                    }
+                    .labelStyle(.iconOnly)
+                    .frame(minHeight: 24)
+                    .contentTransition(.symbolEffect(.replace))
+                }
+
+                Text(originalAppUserId)
+                    .textSelection(.enabled)
+                    .foregroundStyle(.secondary)
+            }
+        } else {
+            HStack {
+                Text(localization[.userId])
+                Spacer()
+                Text(originalAppUserId)
+                    .textSelection(.enabled)
+            }
+            .contentShape(.rect(cornerRadius: 26))
+            .contextMenu {
+                Button(localization[.copy], systemImage: "doc.on.clipboard") {
+                    UIPasteboard.general.string = originalAppUserId
+                }
             }
         }
+        
     }
 
     private static var dateFormatter: DateFormatter {
