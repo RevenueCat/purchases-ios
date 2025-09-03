@@ -11,8 +11,8 @@
 //
 //  Created by Facundo Menzella on 16/6/25.
 
-import RevenueCat
 import Nimble
+import RevenueCat
 @testable import RevenueCatUI
 import SwiftUI
 import XCTest
@@ -152,11 +152,11 @@ final class CustomerCenterActionWrapperTests: TestCase {
         await fulfillment(of: [expectation], timeout: 1.0)
     }
 
- 
     func testNestedActionWrappers() async throws {
         let actionWrapper = await CustomerCenterActionWrapper()
-        let expectation1 = XCTestExpectation(description: "promotionalOfferSuccess")
-        let expectation2 = XCTestExpectation(description: "promotionalOfferSuccess")
+        let expectation1 = XCTestExpectation(description: "inner promotionalOfferSuccess should not fire")
+        expectation1.isInverted = true
+        let expectation2 = XCTestExpectation(description: "outer promotionalOfferSuccess should fire")
 
         let windowHolder = await WindowHolder()
 
@@ -294,7 +294,7 @@ final class CustomerCenterActionWrapperTests: TestCase {
 
         await fulfillment(of: [customActionExpectation], timeout: 1.0)
     }
- 
+
 }
 
 #endif
