@@ -33,6 +33,17 @@ struct ActiveSubscriptionButtonsView: View {
     var viewModel: BaseManageSubscriptionViewModel
 
     var body: some View {
+        if #available(iOS 26.0, *) {
+            content
+                .background(Color(colorScheme == .light ? UIColor.systemBackground : UIColor.secondarySystemBackground), in: .rect(cornerRadius: 26))
+        } else {
+            content
+                .background(Color(colorScheme == .light ? UIColor.systemBackground : UIColor.secondarySystemBackground), in: .rect(cornerRadius: 10))
+        }
+        
+    }
+    
+    private var content: some View {
         VStack(alignment: .leading, spacing: 0) {
             ForEach(self.viewModel.relevantPathsForPurchase, id: \.id) { path in
                 AsyncButton(action: {
@@ -43,9 +54,14 @@ struct ActiveSubscriptionButtonsView: View {
                     if self.viewModel.loadingPath?.id == path.id {
                         TintedProgressView()
                     } else {
-                        CompatibilityLabeledContent(path.title)
-                            .padding(.horizontal)
-                            .padding(.vertical, 12)
+                        if #available(iOS 26.0, *) {
+                            CompatibilityLabeledContent(path.title)
+                                .padding()
+                        } else {
+                            CompatibilityLabeledContent(path.title)
+                                .padding(.horizontal)
+                                .padding(.vertical, 12)
+                        }
                     }
                 })
                 .disabled(self.viewModel.loadingPath != nil)
@@ -57,10 +73,6 @@ struct ActiveSubscriptionButtonsView: View {
             }
         }
         .applyIf(tintColor != nil, apply: { $0.tint(tintColor) })
-        .background(Color(colorScheme == .light
-                          ? UIColor.systemBackground
-                          : UIColor.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 
     private var tintColor: Color? {
