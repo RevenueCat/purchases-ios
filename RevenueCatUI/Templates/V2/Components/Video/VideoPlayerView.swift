@@ -41,6 +41,8 @@ struct VideoPlayerView: View {
                 muteAudio: muteAudio
             )
         } else {
+
+            // WIP: Need to create a macOS version of the view with controls and a clear background.
             VideoPlayerNSView(
                 videoURL: videoURL,
                 shouldAutoPlay: shouldAutoPlay && !reduceMotion,
