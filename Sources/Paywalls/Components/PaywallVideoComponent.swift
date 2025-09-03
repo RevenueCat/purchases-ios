@@ -26,7 +26,7 @@ extension PaywallComponent {
         public let fallbackSource: ThemeImageUrls?
         public let visible: Bool?
         public let showControls: Bool
-        public let autoplay: Bool
+        public let autoPlay: Bool
         public let loop: Bool
         public let muteAudio: Bool
         public let size: Size
@@ -45,7 +45,7 @@ extension PaywallComponent {
             source: ThemeVideoUrls,
             fallbackSource: ThemeImageUrls? = nil,
             showControls: Bool = false,
-            autoplay: Bool = true,
+            autoPlay: Bool = true,
             loop: Bool = true,
             muteAudio: Bool = true,
             size: Size = .init(width: .fill, height: .fit),
@@ -63,7 +63,7 @@ extension PaywallComponent {
             self.fallbackSource = fallbackSource
             self.visible = visible
             self.showControls = showControls
-            self.autoplay = autoplay
+            self.autoPlay = autoPlay
             self.loop = loop
             self.muteAudio = muteAudio
             self.size = size
@@ -81,7 +81,7 @@ extension PaywallComponent {
             hasher.combine(type)
             hasher.combine(visible)
             hasher.combine(showControls)
-            hasher.combine(autoplay)
+            hasher.combine(autoPlay)
             hasher.combine(loop)
             hasher.combine(muteAudio)
             hasher.combine(size)
@@ -101,7 +101,7 @@ extension PaywallComponent {
             return lhs.type == rhs.type &&
             lhs.visible == rhs.visible &&
             lhs.showControls == rhs.showControls &&
-            lhs.autoplay == rhs.autoplay &&
+            lhs.autoPlay == rhs.autoPlay &&
             lhs.loop == rhs.loop &&
             lhs.muteAudio == rhs.muteAudio &&
             lhs.size == rhs.size &&
@@ -124,7 +124,7 @@ extension PaywallComponent {
         public let fallbackSource: ThemeImageUrls?
         public let visible: Bool?
         public let showControls: Bool?
-        public let autoplay: Bool?
+        public let autoPlay: Bool?
         public let loop: Bool?
         public let muteAudio: Bool?
         public let size: Size?
@@ -141,7 +141,7 @@ extension PaywallComponent {
             fallbackSource: ThemeImageUrls? = nil,
             visible: Bool? = true,
             showControls: Bool? = nil,
-            autoplay: Bool? = nil,
+            autoPlay: Bool? = nil,
             loop: Bool? = nil,
             muteAudio: Bool? = nil,
             size: Size? = nil,
@@ -157,7 +157,7 @@ extension PaywallComponent {
             self.fallbackSource = fallbackSource
             self.visible = visible
             self.showControls = showControls
-            self.autoplay = autoplay
+            self.autoPlay = autoPlay
             self.loop = loop
             self.muteAudio = muteAudio
             self.size = size
@@ -175,7 +175,7 @@ extension PaywallComponent {
             hasher.combine(fallbackSource)
             hasher.combine(visible)
             hasher.combine(showControls)
-            hasher.combine(autoplay)
+            hasher.combine(autoPlay)
             hasher.combine(loop)
             hasher.combine(muteAudio)
             hasher.combine(size)
@@ -191,7 +191,7 @@ extension PaywallComponent {
         public static func == (lhs: PartialVideoComponent, rhs: PartialVideoComponent) -> Bool {
             return lhs.visible == rhs.visible &&
             lhs.showControls == rhs.showControls &&
-            lhs.autoplay == rhs.autoplay &&
+            lhs.autoPlay == rhs.autoPlay &&
             lhs.loop == rhs.loop &&
             lhs.muteAudio == rhs.muteAudio &&
             lhs.size == rhs.size &&
