@@ -165,7 +165,7 @@ struct AccountDetailsSection: View {
                 HStack {
                     Text(localization[.userId])
                     Spacer()
-                    Button(localization[.copy], systemImage: didCopyID ? "checkmark" : "doc.on.clipboard") {
+                    Button(localization[.copy], systemImage: didCopyID ? "checkmark" : "document.on.document") {
                         UIPasteboard.general.string = originalAppUserId
                         withAnimation {
                             didCopyID = true
@@ -180,6 +180,7 @@ struct AccountDetailsSection: View {
                     .labelStyle(.iconOnly)
                     .frame(minHeight: 24)
                     .contentTransition(.symbolEffect(.replace))
+                    .imageScale(.small)
                 }
 
                 Text(originalAppUserId)
@@ -195,7 +196,7 @@ struct AccountDetailsSection: View {
             }
             .contentShape(.rect(cornerRadius: 26))
             .contextMenu {
-                Button(localization[.copy], systemImage: "doc.on.clipboard") {
+                Button(localization[.copy], systemImage: "document.on.document") {
                     UIPasteboard.general.string = originalAppUserId
                 }
             }
