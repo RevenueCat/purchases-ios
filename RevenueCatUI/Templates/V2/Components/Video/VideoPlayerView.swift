@@ -64,33 +64,36 @@ struct VideoPlayerView: View {
     }
 
     private struct ViewWithControls: View {
-            let player: AVPlayer
-            let loop: Bool
+        let player: AVPlayer
+        let looper: AVPlayerLooper?
 
-            init(url: URL, shouldAutoPlay: Bool, loopVideo: Bool, muteAudio: Bool) {
-                let item = AVPlayerItem(url: url)
-                self.player = AVPlayer(playerItem: item)
-                player.isMuted = muteAudio
-                loop = loopVideo
-                if shouldAutoPlay {
-                    player.play()
-                }
+        init(url: URL, shouldAutoPlay: Bool, loopVideo: Bool, muteAudio: Bool) {
+            let item = AVPlayerItem(url: url)
+
+            let avPlayer: AVPlayer
+            if loopVideo {
+                let aVQueuePlayer = AVQueuePlayer()
+                self.looper = AVPlayerLooper(player: aVQueuePlayer, templateItem: item)
+                avPlayer = aVQueuePlayer
+            } else {
+                avPlayer = AVPlayer(playerItem: item)
+                avPlayer.actionAtItemEnd = .pause
+                self.looper = nil
             }
 
-            var body: some View {
-                VideoPlayer(player: player)
-                    .onReceive(
-                        NotificationCenter.default
-                            .publisher(for: AVPlayerItem.didPlayToEndTimeNotification)
-                            .receive(on: RunLoop.main)
-                    ) { _ in
-                        if loop {
-                            player.seek(to: .zero)
-                            player.play()
-                        }
-                    }
+            avPlayer.isMuted = muteAudio
+
+            self.player = avPlayer
+
+            if shouldAutoPlay {
+                player.play()
             }
         }
+
+        var body: some View {
+            VideoPlayer(player: player)
+        }
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
