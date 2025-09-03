@@ -55,8 +55,8 @@
 		03F446262D2FE1510046129A /* MaskShapePropertyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F446252D2FE1510046129A /* MaskShapePropertyTests.swift */; };
 		03F446552D303E350046129A /* PaddingPropertyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F446542D303E350046129A /* PaddingPropertyTests.swift */; };
 		03F446572D303FA10046129A /* CornerRadiusesPropertyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F446562D303FA10046129A /* CornerRadiusesPropertyTests.swift */; };
-		1664E2502E549BF600103AAC /* VideoComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1664E24F2E549BF600103AAC /* VideoComponentViewModel.swift */; };
 		164933242E5808BE00CE43A9 /* PaywallTransitionTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164933232E5808BE00CE43A9 /* PaywallTransitionTest.swift */; };
+		1664E2502E549BF600103AAC /* VideoComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1664E24F2E549BF600103AAC /* VideoComponentViewModel.swift */; };
 		16A7F4C12E563B89001F9FC8 /* PaywallTransition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A7F4BF2E563B89001F9FC8 /* PaywallTransition.swift */; };
 		16A7F4C32E563B91001F9FC8 /* PaywallAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A7F4C22E563B91001F9FC8 /* PaywallAnimation.swift */; };
 		16A7F4C62E564B97001F9FC8 /* TransitionModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A7F4C52E564B97001F9FC8 /* TransitionModifier.swift */; };
@@ -1529,8 +1529,8 @@
 		03F446252D2FE1510046129A /* MaskShapePropertyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaskShapePropertyTests.swift; sourceTree = "<group>"; };
 		03F446542D303E350046129A /* PaddingPropertyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaddingPropertyTests.swift; sourceTree = "<group>"; };
 		03F446562D303FA10046129A /* CornerRadiusesPropertyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerRadiusesPropertyTests.swift; sourceTree = "<group>"; };
-		1664E24F2E549BF600103AAC /* VideoComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoComponentViewModel.swift; sourceTree = "<group>"; };
 		164933232E5808BE00CE43A9 /* PaywallTransitionTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallTransitionTest.swift; sourceTree = "<group>"; };
+		1664E24F2E549BF600103AAC /* VideoComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoComponentViewModel.swift; sourceTree = "<group>"; };
 		16A7F4BF2E563B89001F9FC8 /* PaywallTransition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallTransition.swift; sourceTree = "<group>"; };
 		16A7F4C22E563B91001F9FC8 /* PaywallAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallAnimation.swift; sourceTree = "<group>"; };
 		16A7F4C52E564B97001F9FC8 /* TransitionModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransitionModifier.swift; sourceTree = "<group>"; };
@@ -2973,6 +2973,15 @@
 			path = Properties;
 			sourceTree = "<group>";
 		};
+		16A7F4C02E563B89001F9FC8 /* Transitions */ = {
+			isa = PBXGroup;
+			children = (
+				16A7F4BF2E563B89001F9FC8 /* PaywallTransition.swift */,
+				16A7F4C22E563B91001F9FC8 /* PaywallAnimation.swift */,
+			);
+			path = Transitions;
+			sourceTree = "<group>";
+		};
 		16DA8EC72E4EE22A00283940 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
@@ -2987,15 +2996,6 @@
 				16DA8F1C2E4FB6E200283940 /* VideoComponent.json */,
 			);
 			path = JSON;
-      sourceTree = "<group>";
-		};
-		16A7F4C02E563B89001F9FC8 /* Transitions */ = {
-			isa = PBXGroup;
-			children = (
-				16A7F4BF2E563B89001F9FC8 /* PaywallTransition.swift */,
-				16A7F4C22E563B91001F9FC8 /* PaywallAnimation.swift */,
-			);
-			path = Transitions;
 			sourceTree = "<group>";
 		};
 		1E8A60402CDBD73E0034ACF3 /* WebPurchaseRedemption */ = {
