@@ -1931,6 +1931,10 @@ extension Purchases {
 
     // swiftlint:disable missing_docs
     @_spi(Internal) public func overridePreferredLocale(_ locale: String?) {
+        guard locale != self.systemInfo.preferredLocaleOverride else {
+            return
+        }
+
         self.systemInfo.overridePreferredLocale(locale)
 
         if self.overridePreferredUILocaleRateLimiter.shouldProceed() {
