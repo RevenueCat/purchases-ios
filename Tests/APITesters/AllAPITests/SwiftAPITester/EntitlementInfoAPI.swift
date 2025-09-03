@@ -55,6 +55,10 @@ func checkEntitlementInfoEnums() {
          .external,
          .paddle:
         print(store!)
+    #if SIMULATED_STORE
+    case .testStore:
+        print(store!)
+    #endif
     @unknown default:
         fatalError()
     }

@@ -13,7 +13,7 @@
 
 import Nimble
 import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 import SnapshotTesting
 import SwiftUI
 import XCTest
@@ -58,8 +58,22 @@ class BaseSnapshotTest: TestCase {
         mode: PaywallViewMode = .default,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         introEligibility: TrialOrIntroEligibilityChecker = BaseSnapshotTest.eligibleChecker,
-        purchaseHandler: PurchaseHandler = BaseSnapshotTest.purchaseHandler,
-        locale: Locale = .current
+        localeOverride: String? = nil
+    ) -> some View {
+        let purchaseHandler: PurchaseHandler = .mock(preferredLocaleOverride: localeOverride)
+        return self.createPaywall(offering: offering,
+                                  mode: mode,
+                                  fonts: fonts,
+                                  introEligibility: introEligibility,
+                                  purchaseHandler: purchaseHandler)
+    }
+
+    static func createPaywall(
+        offering: Offering,
+        mode: PaywallViewMode = .default,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        introEligibility: TrialOrIntroEligibilityChecker = BaseSnapshotTest.eligibleChecker,
+        purchaseHandler: PurchaseHandler
     ) -> some View {
         return PaywallView(
             configuration: .init(
@@ -68,8 +82,7 @@ class BaseSnapshotTest: TestCase {
                 mode: mode,
                 fonts: fonts,
                 introEligibility: introEligibility,
-                purchaseHandler: purchaseHandler,
-                locale: locale
+                purchaseHandler: purchaseHandler
             )
         )
             .environment(\.isRunningSnapshots, true)
@@ -89,7 +102,6 @@ extension BaseSnapshotTest {
 
     nonisolated static let eligibleChecker: TrialOrIntroEligibilityChecker = .producing(eligibility: .eligible)
     static let ineligibleChecker: TrialOrIntroEligibilityChecker = .producing(eligibility: .ineligible)
-    nonisolated static let purchaseHandler: PurchaseHandler = .mock()
     static let fonts: PaywallFontProvider = CustomPaywallFontProvider(fontName: "Papyrus")
 
     static let fullScreenSize: CGSize = .init(width: 460, height: 950)

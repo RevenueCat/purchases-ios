@@ -59,7 +59,6 @@ func paywallViewControllerAPI(_ delegate: Delegate,
                                                     displayCloseButton: true,
                                                     shouldBlockTouchEvents: true,
                                                     dismissRequestedHandler: dismissRequestedHandler)
-    let _: UIViewController = PaywallFooterViewController(offeringIdentifier: "offering", fontName: "Papyrus")
 
     controller.update(with: offering!)
     controller.update(with: "offering_identifier")

@@ -23,10 +23,13 @@ import SwiftUI
 struct TextComponentView: View {
 
     @EnvironmentObject
+    private var packageContext: PackageContext
+
+    @EnvironmentObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
     @EnvironmentObject
-    private var packageContext: PackageContext
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
 
     @Environment(\.componentViewState)
     private var componentViewState
@@ -47,6 +50,9 @@ struct TextComponentView: View {
             packageContext: self.packageContext,
             isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                 package: self.packageContext.package
+            ),
+            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                for: self.packageContext.package
             )
         ) { style in
             if style.visible {
@@ -117,8 +123,29 @@ private struct NonLocalizedMarkdownText: View {
 // swiftlint:disable type_body_length
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TextComponentView_Previews: PreviewProvider {
+    private static var platformPreview: some View {
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_1": .string(ProcessInfo.processInfo.platformString)
+                    ]
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(
+                    text: "id_1",
+                    color: .init(light: .hex("#000000"))
+                )
+            )
+        )
+        .previewRequiredPaywallsV2Properties()
+        .previewLayout(.sizeThatFits)
 
-    static var previews: some View {
+    }
+
+    private static var defaultPreview: some View {
         // Default
         TextComponentView(
             // swiftlint:disable:next force_try
@@ -136,9 +163,17 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
+
+    }
+
+    static var previews: some View {
+        defaultPreview
         .previewDisplayName("Default")
+
+        platformPreview
+        .previewDisplayName("Detected Platform")
 
         // Markdown
         TextComponentView(
@@ -158,7 +193,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Markdown")
 
@@ -179,7 +214,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Markdown - Invalid")
 
@@ -200,7 +235,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Blank line")
 
@@ -293,7 +328,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Custom Font")
 
@@ -368,7 +403,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Custom Font - Generic")
 
@@ -422,7 +457,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Custom Color")
 
@@ -455,7 +490,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Gradient")
 
@@ -489,7 +524,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Customizations")
 
@@ -528,7 +563,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredEnvironmentProperties(
+        .previewRequiredPaywallsV2Properties(
             componentViewState: .selected
         )
         .previewLayout(.sizeThatFits)
@@ -559,7 +594,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredEnvironmentProperties(
+        .previewRequiredPaywallsV2Properties(
             screenCondition: .medium
         )
         .previewLayout(.sizeThatFits)
@@ -590,7 +625,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Condition - Has medium but not medium")
 
@@ -639,7 +674,7 @@ struct TextComponentView_Previews: PreviewProvider {
                 )
             )
         }
-        .previewRequiredEnvironmentProperties(
+        .previewRequiredPaywallsV2Properties(
             packageContext: .init(
                 package: PreviewMock.annualStandardPackage,
                 variableContext: .init(packages: [

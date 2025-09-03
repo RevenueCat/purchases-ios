@@ -20,8 +20,8 @@ class OfferingsManagerTests: TestCase {
 
     var mockDeviceCache: MockDeviceCache!
     let mockOperationDispatcher = MockOperationDispatcher()
-    let mockSystemInfo = MockSystemInfo(platformInfo: .init(flavor: "iOS", version: "3.2.1"),
-                                        finishTransactions: true)
+    let preferredLocalesProvider: PreferredLocalesProvider = .mock(locales: ["de_DE"])
+    var mockSystemInfo: MockSystemInfo!
     let mockBackend = MockBackend()
     var mockOfferings: MockOfferingsAPI!
     let mockOfferingsFactory = MockOfferingsFactory()
@@ -32,7 +32,10 @@ class OfferingsManagerTests: TestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
         self.mockOfferings = try XCTUnwrap(self.mockBackend.offerings as? MockOfferingsAPI)
-        self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.mockSystemInfo)
+        self.mockSystemInfo = MockSystemInfo(platformInfo: .init(flavor: "iOS", version: "3.2.1"),
+                                             finishTransactions: true,
+                                             preferredLocalesProvider: self.preferredLocalesProvider)
+        self.mockDeviceCache = MockDeviceCache(systemInfo: self.mockSystemInfo)
         self.mockProductsManager = MockProductsManager(diagnosticsTracker: nil,
                                                        systemInfo: self.mockSystemInfo,
                                                        requestTimeout: Configuration.storeKitRequestTimeoutDefault)
@@ -363,6 +366,7 @@ extension OfferingsManagerTests {
         // then
         expect(self.mockOfferings.invokedGetOfferingsForAppUserIDCount) == expectedCallCount
         expect(self.mockDeviceCache.cacheOfferingsCount) == expectedCallCount
+        expect(self.mockDeviceCache.latestCachePreferredLocales) == ["de_DE"]
         expect(self.mockOfferings.invokedGetOfferingsForAppUserIDParameters?.isAppBackgrounded) == true
         expect(result).to(beSuccess())
 

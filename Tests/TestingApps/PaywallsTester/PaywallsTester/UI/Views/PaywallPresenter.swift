@@ -8,9 +8,9 @@
 import SwiftUI
 import RevenueCat
 #if DEBUG
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 #else
-import RevenueCatUI
+@_spi(Internal) import RevenueCatUI
 #endif
 
 
@@ -81,8 +81,10 @@ struct PaywallPresenter: View {
             CustomPaywallContent()
                 .originalTemplatePaywallFooter(offering: self.offering,
                                                condensed: true)
-
 #endif
+        case .presentIfNeeded:
+            fatalError()
+
 #endif
         }
     }

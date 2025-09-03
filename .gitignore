@@ -73,3 +73,23 @@ Local.xcconfig
 /buildServer.json
 
 *.orig
+
+# tuist
+**/Derived/
+
+# Tuist workspaces
+RevenueCat-Workspace.xcworkspace/
+Projects/**/*.xcodeproj
+Examples/**/*.xcodeproj
+
+Projects/**/xcshareddata/
+Projects/**/*.xcworkspacedata
+
+Examples/**/.xcworkspacedata
+Examples/**/*.xcscheme
+Examples/**/xcshareddata/**
+
+# Avoid xcscheme pollution when integrating SDK with SPM
+# We can't avoid the whole folder yet because RC and RCUI need to be tested through the package, rather than the workspace
+.swiftpm/xcode/xcshareddata/xcschemes/ReceiptParser.xcscheme
+.swiftpm/xcode/xcshareddata/xcschemes/RevenueCat_CustomEntitlementComputation.xcscheme

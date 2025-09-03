@@ -235,7 +235,7 @@ class CustomerInfoManager {
 
     func cachedCustomerInfo(appUserID: String) throws -> CustomerInfo? {
         guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
-            return self.createPreviewCustomerInfo()
+            return Self.createPreviewCustomerInfo()
         }
 
         let cachedCustomerInfoData = self.withData {
@@ -420,7 +420,7 @@ private extension CustomerInfoManager {
                                      isAppBackgrounded: Bool,
                                      completion: @escaping @Sendable (CustomerInfoDataResult) -> Void) {
         guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
-            let previewCustomerInfo = self.createPreviewCustomerInfo()
+            let previewCustomerInfo = Self.createPreviewCustomerInfo()
             completion(CustomerInfoDataResult(result: .success(previewCustomerInfo)))
             return
         }
@@ -520,8 +520,8 @@ private extension CustomerInfoManager {
 
         guard !isCacheStale, let customerInfo = try? self.cachedCustomerInfo(appUserID: appUserID) else {
             Logger.debug(isAppBackgrounded
-                            ? Strings.customerInfo.customerinfo_stale_updating_in_background
-                            : Strings.customerInfo.customerinfo_stale_updating_in_foreground)
+                         ? Strings.customerInfo.customerinfo_stale_updating_in_background
+                         : Strings.customerInfo.customerinfo_stale_updating_in_foreground)
             self.fetchAndCacheCustomerInfoData(appUserID: appUserID,
                                                isAppBackgrounded: isAppBackgrounded,
                                                completion: completion)
@@ -560,11 +560,14 @@ private extension CustomerInfoManager {
         // won't validate that the product is present in the receipt.
         initiationSource: .queue
     )
+}
 
-    // MARK: - For UI Preview mode
+// MARK: - For UI Preview mode
+
+extension CustomerInfoManager {
 
     /// Generates a dummy `CustomerInfo` with hardcoded information exclusively for UI Preview mode.
-    private func createPreviewCustomerInfo() -> CustomerInfo {
+    static func createPreviewCustomerInfo() -> CustomerInfo {
         let previewSubscriber = CustomerInfoResponse.Subscriber(
             originalAppUserId: IdentityManager.uiPreviewModeAppUserID,
             firstSeen: Date(),
@@ -580,6 +583,12 @@ private extension CustomerInfoManager {
                                                sandboxEnvironmentDetector: BundleSandboxEnvironmentDetector.default)
         return previewCustomerInfo
     }
+
+}
+
+// MARK: - Diagnostics
+
+private extension CustomerInfoManager {
 
     private func trackGetCustomerInfoStartedIfNeeded(trackDiagnostics: Bool) {
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *), trackDiagnostics {

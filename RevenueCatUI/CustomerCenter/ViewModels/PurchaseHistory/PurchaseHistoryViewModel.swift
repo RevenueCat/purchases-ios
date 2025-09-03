@@ -14,7 +14,7 @@
 //
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if os(iOS)
@@ -49,6 +49,7 @@ final class PurchaseHistoryViewModel: ObservableObject {
 
     let purchasesProvider: CustomerCenterPurchasesType
     private let customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
+    private let localization: CustomerCenterConfigData.Localization
 
     init(
         selectedPurchase: PurchaseInformation? = nil,
@@ -58,7 +59,8 @@ final class PurchaseHistoryViewModel: ObservableObject {
         inactiveSubscriptions: [PurchaseInformation] = [],
         nonSubscriptions: [PurchaseInformation] = [],
         purchasesProvider: CustomerCenterPurchasesType,
-        customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType = CustomerCenterStoreKitUtilities()
+        customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType = CustomerCenterStoreKitUtilities(),
+        localization: CustomerCenterConfigData.Localization
     ) {
         self.selectedPurchase = selectedPurchase
         self.errorMessage = errorMessage
@@ -68,6 +70,7 @@ final class PurchaseHistoryViewModel: ObservableObject {
         self.nonSubscriptions = nonSubscriptions
         self.purchasesProvider = purchasesProvider
         self.customerCenterStoreKitUtilities = customerCenterStoreKitUtilities
+        self.localization = localization
     }
 
     func didAppear() async {
@@ -121,7 +124,9 @@ private extension PurchaseHistoryViewModel {
                 transaction: subscription.value,
                 customerInfo: customerInfo,
                 purchasesProvider: purchasesProvider,
-                customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
+                changePlans: [], // ignored on purpose because there's no change plan flow from history
+                customerCenterStoreKitUtilities: customerCenterStoreKitUtilities,
+                localization: localization
             ))
         }
 
@@ -134,7 +139,10 @@ private extension PurchaseHistoryViewModel {
                 transaction: subscription.value,
                 customerInfo: customerInfo,
                 purchasesProvider: purchasesProvider,
-                customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
+                // ignored on purpose because there's no change plan flow from purchase history
+                changePlans: [],
+                customerCenterStoreKitUtilities: customerCenterStoreKitUtilities,
+                localization: localization
             ))
         }
 
@@ -147,7 +155,9 @@ private extension PurchaseHistoryViewModel {
                 transaction: purchase,
                 customerInfo: customerInfo,
                 purchasesProvider: purchasesProvider,
-                customerCenterStoreKitUtilities: customerCenterStoreKitUtilities
+                changePlans: [], // ignored on purpose because there's no change plan flow from purchase history
+                customerCenterStoreKitUtilities: customerCenterStoreKitUtilities,
+                localization: localization
             ))
         }
         nonSubscriptions = nonSubscriptions.sorted(by: { sub1, sub2 in

@@ -26,6 +26,7 @@ import SwiftUI
 // swiftlint:disable:next type_body_length
 private enum FamilySharingTogglePreview {
 
+    @MainActor
     static let paywallState = PackageContext(
         package: nil,
         variableContext: .init()
@@ -156,6 +157,7 @@ private enum FamilySharingTogglePreview {
         return PaywallComponent.PackageComponent(
             packageID: packageID,
             isSelectedByDefault: isSelectedByDefault,
+            applePromoOfferProductCode: nil,
             stack: stack
         )
     }
@@ -398,7 +400,7 @@ struct FamilySharingTogglePreview_Previews: PreviewProvider {
             fallbackContent: .customView(AnyView(Text("Fallback paywall"))),
             failedToLoadFont: { _ in }
         )
-        .previewRequiredEnvironmentProperties()
+        .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 800))
         .previewDisplayName("Family Sharing Toggle")
     }

@@ -120,7 +120,7 @@ public struct CustomerCenterView: View {
             }
             .onAppear {
 #if DEBUG
-                guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else { return }
+                guard !ProcessInfo.isRunningForPreviews else { return }
 #endif
                 self.trackImpression()
             }
@@ -141,6 +141,7 @@ private extension CustomerCenterView {
             case .error:
                 ErrorView()
                     .environment(\.customerCenterPresentationMode, self.mode)
+                    .environment(\.customerCenterActions, CustomerCenterEnvironmentActions())
                     .environment(\.navigationOptions, self.navigationOptions)
                     .dismissCircleButtonToolbarIfNeeded()
 
@@ -150,6 +151,7 @@ private extension CustomerCenterView {
             case .success:
                 if let configuration = self.viewModel.configuration {
                     destinationView(configuration: configuration)
+                        .environment(\.customerCenterActions, CustomerCenterEnvironmentActions())
                         .environment(\.appearance, configuration.appearance)
                         .environment(\.localization, configuration.localization)
                         .environment(\.customerCenterPresentationMode, self.mode)
@@ -182,7 +184,7 @@ private extension CustomerCenterView {
 
     @ViewBuilder
     func destinationContent(configuration: CustomerCenterConfigData) -> some View {
-        if viewModel.hasPurchases,
+        if viewModel.hasAnyPurchases,
            let screen = configuration.screens[.management] {
             if let onUpdateAppClick = viewModel.onUpdateAppClick,
                !ignoreAppUpdateWarning
@@ -206,7 +208,9 @@ private extension CustomerCenterView {
             } else {
                 FallbackNoSubscriptionsView(
                     customerCenterViewModel: viewModel,
-                    actionWrapper: self.viewModel.actionWrapper
+                    actionWrapper: self.viewModel.actionWrapper,
+                    virtualCurrencies: self.viewModel.virtualCurrencies,
+                    purchasesProvider: self.viewModel.purchasesProvider
                 )
             }
         }
@@ -225,8 +229,6 @@ private extension CustomerCenterView {
         RelevantPurchasesListView(
             customerInfoViewModel: viewModel,
             screen: screen,
-            originalAppUserId: viewModel.originalAppUserId,
-            originalPurchaseDate: viewModel.originalPurchaseDate,
             shouldShowSeeAllPurchases: viewModel.shouldShowSeeAllPurchases,
             purchasesProvider: self.viewModel.purchasesProvider,
             actionWrapper: self.viewModel.actionWrapper
@@ -241,6 +243,7 @@ private extension CustomerCenterView {
             purchaseInformation: viewModel.subscriptionsSection.first
                 ?? viewModel.nonSubscriptionsSection.first,
             showPurchaseHistory: viewModel.shouldShowSeeAllPurchases,
+            showVirtualCurrencies: viewModel.shouldShowVirtualCurrencies,
             allowsMissingPurchaseAction: true,
             purchasesProvider: self.viewModel.purchasesProvider,
             actionWrapper: self.viewModel.actionWrapper
@@ -266,7 +269,7 @@ struct CustomerCenterView_Previews: PreviewProvider {
     static var previews: some View {
         CustomerCenterView(
             viewModel: CustomerCenterViewModel(
-                activeSubscriptionPurchases: [.monthlyRenewing],
+                activeSubscriptionPurchases: [.subscription],
                 activeNonSubscriptionPurchases: [],
                 configuration: CustomerCenterConfigData.default
             )

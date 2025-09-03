@@ -54,7 +54,8 @@ class BackendSubscriberAttributesTests: TestCase {
         storefrontProvider: MockStorefrontProvider(),
         storeKitVersion: .versionForTests,
         responseVerificationMode: .disabled,
-        isAppBackgrounded: false
+        isAppBackgrounded: false,
+        preferredLocalesProvider: .mock(locales: ["en-US"])
     )
 
     override func setUpWithError() throws {

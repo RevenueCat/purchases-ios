@@ -11,7 +11,7 @@
 //
 //  Created by Facundo Menzella on 21/5/25.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 extension PurchaseInformation {
 
@@ -19,24 +19,35 @@ extension PurchaseInformation {
     @available(macOS, unavailable)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
+    // swiftlint:disable:next function_parameter_count
     static func from(
         transaction: RevenueCatUI.Transaction,
         customerInfo: CustomerInfo,
         purchasesProvider: CustomerCenterPurchasesType,
-        customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
+        changePlans: [CustomerCenterConfigData.ChangePlan],
+        customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType,
+        localization: CustomerCenterConfigData.Localization
     ) async -> PurchaseInformation {
         let entitlement = customerInfo.entitlements.all.values
             .first(where: { $0.productIdentifier == transaction.productIdentifier })
 
         if transaction.store == .appStore {
             if let product = await purchasesProvider.products([transaction.productIdentifier]).first {
+                let changePlan = changePlans
+                    .first(where: { product.subscriptionGroupIdentifier == $0.groupId })
+                ?? changePlans.first(
+                    where: { $0.products.contains(where: { $0.productId == product.productIdentifier }) }
+                )
+
                 return await PurchaseInformation.purchaseInformationUsingRenewalInfo(
                     entitlement: entitlement,
                     subscribedProduct: product,
                     transaction: transaction,
                     customerCenterStoreKitUtilities: customerCenterStoreKitUtilities,
                     customerInfoRequestedDate: customerInfo.requestDate,
-                    managementURL: transaction.managementURL
+                    managementURL: transaction.managementURL,
+                    changePlan: changePlan,
+                    localization: localization
                 )
             } else {
                 Logger.warning(
@@ -47,7 +58,9 @@ extension PurchaseInformation {
                     entitlement: entitlement,
                     transaction: transaction,
                     customerInfoRequestedDate: customerInfo.requestDate,
-                    managementURL: transaction.managementURL
+                    managementURL: transaction.managementURL,
+                    changePlan: nil,
+                    localization: localization
                 )
             }
         }
@@ -58,7 +71,8 @@ extension PurchaseInformation {
             entitlement: entitlement,
             transaction: transaction,
             customerInfoRequestedDate: customerInfo.requestDate,
-            managementURL: transaction.managementURL
+            managementURL: transaction.managementURL,
+            localization: localization
         )
     }
 }

@@ -178,22 +178,26 @@ platform :ios do
     end
     UI.user_error!("Failed to determine target repository name") if target_repository_name.nil? || target_repository_name.empty?
 
-    # Loop over all PNG files in the tmp_dir, parse the offering ID from the file names, and move them into the target repository
-    output_dir = record_paywall_screenshots
-
-    UI.message("Output directory: #{output_dir}")
+    # Loop over all platforms and generate screenshots for each
+    platforms = ["ios", 
+                # These platforms work locally but we have been unable to figure out how to get them to work on CI due to codesigning issues.
+                #  "iphone-app-on-mac",
+                #  "ipad-app-on-mac", 
+                 "mac-catalyst-optimized-for-mac", 
+                 "mac-catalyst-scaled-to-match-ipad"]
     
-    # Process the screenshots from the output directory
-    Dir.glob("#{output_dir}/images/*.png").each do |file_path|
-      offering_id = File.basename(file_path, File.extname(file_path))
-      target_dir = "#{target_repository_path}/screenshots/templates/#{offering_id}"
-
-      target_path = "#{target_dir}/ios.png"
-
-      UI.message("Moving #{file_path} to #{target_path}")
-
-      FileUtils.mkdir_p(target_dir)
-      FileUtils.cp(file_path, target_path)
+    platforms.each do |platform|
+      UI.message("Generating screenshots for platform: #{platform}")
+      
+      output_dir = record_paywall_screenshots(platform: platform)
+      UI.message("Output directory for #{platform}: #{output_dir}")
+      
+      # Process the screenshots from the output directory
+      process_paywall_screenshots(
+        output_dir: output_dir,
+        target_repository_path: target_repository_path,
+        platform: platform
+      )
     end
 
     # Commit, push, and create a PR in the target repository
@@ -201,12 +205,39 @@ platform :ios do
       commit_push_and_create_pr_if_necessary(
         repo: target_repository_name,
         branch_name: target_repository_branch,
-        commit_message: "[Automated] Updates iOS template screenshots (commit: #{this_commit_hash})",
-        title: "[AUTOMATIC] Updates iOS template screenshots",
-        body: "This is an automatic update of the iOS template screenshots.",
-        team_reviewers: ["coresdk", "monetization", "bab-s"]
+        commit_message: "[Automated] Updates template screenshots for all Apple platforms (commit: #{this_commit_hash})",
+        title: "[AUTOMATIC] Updates template screenshots for all Apple platforms",
+        body: "This is an automatic update of the template screenshots for iOS, iPhone app on Mac, iPad app on Mac, Mac Catalyst optimized for Mac, and Mac Catalyst scaled to match iPad platforms.",
+        team_reviewers: ["coresdk", "monetization"]
       )
     end
+  end
+
+  
+  private_lane :process_paywall_screenshots do |options|
+    output_dir = options[:output_dir] || UI.user_error!("No output_dir provided")
+    target_repository_path = options[:target_repository_path] || UI.user_error!("No target_repository_path provided")
+    platform = options[:platform] || UI.user_error!("No platform provided")
+
+    Dir.glob("#{output_dir}/images/*.png").each do |file_path|
+      offering_id = File.basename(file_path, File.extname(file_path))
+      target_dir = "#{target_repository_path}/screenshots/templates/#{offering_id}"
+
+      target_path = "#{target_dir}/#{platform}.png"
+
+      UI.message("Moving #{file_path} to #{target_path}")
+
+      FileUtils.mkdir_p(target_dir)
+      FileUtils.cp(file_path, target_path)
+    end
+
+    # Upload snapshots to Emerge
+    UI.message("Uploading snapshots to Emerge for platform: #{platform}")
+    sh("bundle", "exec", "emerge", "upload", "snapshots", 
+       "--name", "RevenueCat", 
+       "--id", "com.revenuecat.paywall-rendering-validation.#{platform}", 
+       "--repo-name", "RevenueCat/purchases-ios", 
+       "#{output_dir}/images")
   end
 
   private_lane :create_or_checkout_branch do |options|
@@ -317,23 +348,55 @@ platform :ios do
 
   desc "Records screenshots for paywalls"
   lane :record_paywall_screenshots do |options|
+    platform = options[:platform] || UI.user_error!("No platform provided. Use one of: ios, iphone-app-on-mac, ipad-app-on-mac, mac-catalyst-optimized-for-mac, mac-catalyst-scaled-to-match-ipad")
+    
+    # Map platform to destination
+    destinations = {
+      "ios" => "platform=iOS Simulator,name=iPhone 16",
+      "iphone-app-on-mac" => "platform=macOS,arch=arm64,variant=Designed for iPhone",
+      "ipad-app-on-mac" => "platform=macOS,arch=arm64,variant=Designed for iPad",
+      "mac-catalyst-optimized-for-mac" => "platform=macOS,arch=arm64,variant=Mac Catalyst",
+      "mac-catalyst-scaled-to-match-ipad" => "platform=macOS,arch=arm64,variant=Mac Catalyst"
+    }
+    
+    # Map platform to TARGETED_DEVICE_FAMILY build setting. This overrides the setting in the Xcode Project,
+    # if we ever change the list of supported platforms we'll need to make sure to update this as well.
+    targeted_device_families = {
+      "mac-catalyst-optimized-for-mac" => "1,2,3,4,6",
+      "mac-catalyst-scaled-to-match-ipad" => "1,2,3,4"
+    }
+    
+    destination = destinations[platform]
+    UI.user_error!("Invalid platform '#{platform}'. Use one of: #{destinations.keys.join(', ')}") unless destination
+    
     output_dir = File.absolute_path("../fastlane/test_output/xctest/paywall-screenshots")
     FileUtils.rm_rf(output_dir)
     FileUtils.mkdir_p(output_dir)
 
-    device = ENV['SCAN_DEVICE'] || "iPhone 12 (15.2)"
     result_bundle_path = "#{output_dir}/RevenueCatUITests.xcresult"
 
-    # Using xcodebuild because scan couldn't find RevenueCatUI scheme locally (even though shared)
-    # This is due to RevenueCatUI scheme belonging to purchases-ios and not an actual project
-    xcodebuild(
-      workspace: '.',
-      scheme: 'RevenueCatUI',
-      destination: "platform=iOS Simulator,name=#{device}",
-      sdk: 'iphonesimulator',
-      test: true,
-      xcargs: "-testPlan Paywall-Screenshots -resultBundlePath #{result_bundle_path}"
-    )
+    xcargs = []
+    if targeted_device_families[platform]
+      xcargs += ["TARGETED_DEVICE_FAMILY='#{targeted_device_families[platform]}'"]
+    end
+
+    Dir.chdir("../Tests/UnitTestsHostApp/fastlane") do
+      match(type: "development", readonly: true)
+    end
+
+    scan_options = {
+      workspace: 'RevenueCat.xcworkspace',
+      scheme: 'RevenueCatUITestsDev',
+      testplan: 'Paywall-Screenshots',
+      destination: destination,
+      result_bundle: true,
+      result_bundle_path: result_bundle_path,
+    }
+    
+    # Add xcargs only if we have build settings to apply
+    scan_options[:xcargs] = xcargs.join(' ') unless xcargs.empty?
+    
+    scan(scan_options)
 
     image_output_dir = "#{output_dir}/images"
     FileUtils.mkdir_p(image_output_dir)
@@ -347,12 +410,137 @@ platform :ios do
 
   desc "Build the Paywalls Test app for Emerge Snapshots"
   lane :build_paywalls_tester_for_emerge do |options|
+    build_paywalls_tester_for_emerge_ios(options)
+    build_paywalls_tester_for_emerge_mac(platform: "mac-catalyst-scaled-to-match-ipad")
+    build_paywalls_tester_for_emerge_mac(platform: "mac-catalyst-optimized-for-mac")
+
+    # As of July 2025, Emerge Tools does not support iOS apps on Mac yet.
+    # build_paywalls_tester_for_emerge_mac(platform: "ipad-app-on-mac")
+    # build_paywalls_tester_for_emerge_mac(platform: "iphone-app-on-mac")
+  end
+  
+  lane :build_paywalls_tester_for_emerge_ios do |options|
     scan(
       workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
       scheme: "PaywallsTester - Live Config",
       build_for_testing: true,
     )
 
+    send_to_emerge(
+        app_id_suffix: ""
+    )
+  end
+
+  private_lane :build_paywalls_tester_for_emerge_mac do |options|
+    platform = options[:platform]
+    
+    # As of July 2025, Emerge Tools has explicitly enabled Catalyst support for apps with the bundle identifiers com.revenuecat.PaywallsTester-<platform> for these 4 platform values.
+    # If you change one of these values, you will need to verify that Catalyst support has been enabled for all bundle identifiers, or tell them the new bundle identiifer.
+    case platform
+    when "mac-catalyst-scaled-to-match-ipad"
+      build_mac_catalyst_version(platform: platform, device_families: "1,2,3,4,5,7")
+    when "mac-catalyst-optimized-for-mac"
+      build_mac_catalyst_version(platform: platform, device_families: "1,2,3,4,5,6,7")
+    when "ipad-app-on-mac"
+      build_ios_app_on_mac_version(platform: platform, include_ipad: true)
+    when "iphone-app-on-mac"
+      build_ios_app_on_mac_version(platform: platform, include_ipad: false)
+    else
+      UI.user_error!("Invalid platform: #{platform}. Must be one of: mac-catalyst-scaled-to-match-ipad, mac-catalyst-optimized-for-mac, ipad-app-on-mac, iphone-app-on-mac")
+    end
+  end
+
+  private_lane :build_mac_catalyst_version do |options|
+    platform = options[:platform]
+    device_families = options[:device_families]
+    xcargs = "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
+    xcargs << " TARGETED_DEVICE_FAMILY='#{device_families}'"
+    
+    archive_path = File.absolute_path("build/PaywallsTester-#{platform}.xcarchive")
+
+    gym(
+      workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
+      scheme: "PaywallsTester - Live Config",
+      configuration: "Debug",
+      destination: "platform=macOS,arch=arm64,variant=Mac Catalyst",
+      xcargs: xcargs,
+      skip_codesigning: true,
+      archive_path: archive_path,
+      skip_package_pkg: true,
+      skip_package_ipa: false
+    )
+
+    send_to_emerge(
+        app_id_suffix: platform,
+        archive_path: archive_path
+    )
+  end
+
+  private_lane :build_ios_app_on_mac_version do |options|
+    platform = options[:platform]
+    include_ipad = options[:include_ipad]
+    
+    # Build iOS version first with appropriate device family targeting
+    device_families = include_ipad ? "1,2" : "1"
+    xcargs = "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
+    xcargs << " TARGETED_DEVICE_FAMILY='#{device_families}'"
+    
+    ios_archive_path = File.absolute_path("build/PaywallsTester-#{platform}-ios.xcarchive")
+
+    # Build the iOS version
+    gym(
+      workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
+      scheme: "PaywallsTester - Live Config",
+      configuration: "Debug",
+      destination: "generic/platform=iOS",
+      xcargs: xcargs,
+      archive_path: ios_archive_path,
+      skip_codesigning: true,
+      skip_package_pkg: true,
+      skip_package_ipa: true
+    )
+
+    # Extract the .app file from the archive
+    ios_app_path = "#{ios_archive_path}/Products/Applications/PaywallsTester.app"
+    
+    unless File.exist?(ios_app_path)
+      UI.user_error!("Could not find iOS .app at expected path: #{ios_app_path}")
+    end
+
+    # Create the Mac app wrapper structure
+    mac_app_path = File.absolute_path("build/PaywallsTester-#{platform}.app")
+    wrapper_dir = "#{mac_app_path}/Wrapper"
+    wrapped_app_path = "#{wrapper_dir}/PaywallsTester.app"
+    symlink_path = "#{mac_app_path}/WrappedBundle"
+
+    # Clean up any existing structure
+    FileUtils.rm_rf(mac_app_path) if File.exist?(mac_app_path)
+
+    # Create the directory structure
+    FileUtils.mkdir_p(wrapper_dir)
+
+    # Copy the iOS .app to the Wrapper directory
+    UI.message("Copying iOS .app from #{ios_app_path} to #{wrapped_app_path}")
+    FileUtils.cp_r(ios_app_path, wrapped_app_path)
+
+    # Create the symlink
+    UI.message("Creating symlink from #{symlink_path} to Wrapper/PaywallsTester.app")
+    File.symlink("Wrapper/PaywallsTester.app", symlink_path)
+
+    # Verify the structure was created correctly
+    unless File.exist?(wrapped_app_path) && File.symlink?(symlink_path)
+      UI.user_error!("Failed to create proper Mac app structure")
+    end
+
+    UI.success("Successfully created Mac app structure at #{mac_app_path}")
+
+    send_to_emerge(
+        app_id_suffix: platform,
+        file_path: mac_app_path
+    )
+  end
+  
+  private_lane :send_to_emerge do |options|
     pr_url = ENV["CIRCLE_PULL_REQUEST"]
     branch_name = sh("git rev-parse --abbrev-ref HEAD").strip
     pr_number = nil
@@ -367,6 +555,25 @@ platform :ios do
 
     emerge_args = {repo_name: "RevenueCat/purchases-ios"}
     emerge_args[:pr_number] = pr_number if pr_number
+    emerge_args[:app_id_suffix] = options[:app_id_suffix]
+
+    # Add emerge_config.yaml to .xcarchive files
+    if options[:archive_path] && options[:archive_path].end_with?('.xcarchive')
+      emerge_config_source = File.absolute_path("../emerge/emerge_config.yaml")
+      emerge_config_dest = "#{options[:archive_path]}/emerge_config.yaml"
+      
+      if File.exist?(emerge_config_source)
+        FileUtils.cp(emerge_config_source, emerge_config_dest)
+        UI.message("Added emerge_config.yaml to #{File.basename(options[:archive_path])}")
+      else
+        UI.important("emerge_config.yaml not found at #{emerge_config_source}")
+      end
+      
+      emerge_args[:file_path] = options[:archive_path]
+    elsif options[:archive_path] || options[:file_path]
+      emerge_args[:file_path] = options[:archive_path] || options[:file_path]
+    end
+    
     emerge(emerge_args)
   end
 
@@ -1089,10 +1296,14 @@ platform :ios do
       }
     )
 
+    # Wait 20 minutes for the build to be processed by Apple otherwise fail
+    wait_processing_timeout_duration_in_seconds = 60 * 20
+
     if not dry_run
       upload_to_testflight(
       changelog: changelog,
       app_identifier: "com.revenuecat.sampleapp",
+      wait_processing_timeout_duration: wait_processing_timeout_duration_in_seconds
     )
     else
       UI.message("Dry run mode enabled. Skipping upload to TestFlight")
@@ -1127,6 +1338,7 @@ platform :ios do
         changelog: changelog,
         app_platform: 'osx',
         app_identifier: "com.revenuecat.sampleapp",
+        wait_processing_timeout_duration: wait_processing_timeout_duration_in_seconds
       )
     else
         UI.message("Dry run mode enabled. Skipping upload to TestFlight")
@@ -1320,6 +1532,7 @@ platform :mac do
       raise e if !generate_snapshots
     end
   end
+
 end
 
 def check_no_git_tag_exists(version_number)

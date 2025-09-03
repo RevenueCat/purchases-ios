@@ -313,6 +313,26 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(self.backend.getCustomerInfoCallCount).toEventually(equal(1))
     }
 
+    func testFirstInitializationFromBackgroundAndDefaultConfigurationDoesNotLogHealth() {
+        self.systemInfo.stubbedIsApplicationBackgrounded = true
+        self.setupPurchases()
+        expect(self.backend.healthReportRequests).toEventually(equal([]))
+    }
+
+    func testFirstInitializationFromForegroundAndDefaultConfigurationLogsHealth() {
+        self.systemInfo.stubbedIsApplicationBackgrounded = false
+        self.setupPurchases()
+        expect(self.backend.healthReportRequests).toEventually(equal([self.identityManager.currentAppUserID]))
+    }
+
+    func testFirstInitializationFromForegroundAndDefaultConfigurationWithNoAvailabilityDoesNotLogHealth() {
+        self.systemInfo.stubbedIsApplicationBackgrounded = false
+        self.backend.overrideHealthReportAvailabilityResponse = HealthReportAvailability(reportLogs: false)
+        self.setupPurchases()
+        expect(self.backend.healthReportAvailabilityRequests).toEventually(equal([identityManager.currentAppUserID]))
+        expect(self.backend.healthReportRequests).toEventually(equal([]))
+    }
+
     func testFirstInitializationFromForegroundUpdatesCustomerInfoCacheIfUserDefaultsCacheStale() {
         let staleCacheDateForForeground = Calendar.current.date(byAdding: .minute, value: -20, to: Date())!
         self.deviceCache.setCustomerInfoCache(timestamp: staleCacheDateForForeground,
@@ -416,7 +436,8 @@ class PurchasesConfiguringTests: BasePurchasesTests {
                           observerMode: false,
                           responseVerificationMode: .default,
                           dangerousSettings: .init(customEntitlementComputation: true),
-                          showStoreMessagesAutomatically: true)
+                          showStoreMessagesAutomatically: true,
+                          preferredLocale: nil)
         }.to(throwAssertion())
     }
 

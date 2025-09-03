@@ -12,7 +12,7 @@ import RevenueCat
 
 
 // this @testable access should used for the SwiftUI previews only
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 import SwiftUI
 
 struct CustomPaywall: View {

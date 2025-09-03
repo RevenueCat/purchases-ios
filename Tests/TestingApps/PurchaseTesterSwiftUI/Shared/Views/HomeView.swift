@@ -89,7 +89,7 @@ struct HomeView: View {
                                 Text(policy.label).tag(policy)
                             }
                         }
-                        #if os(iOS)
+                        #if os(iOS) && !targetEnvironment(macCatalyst)
                         .pickerStyle(WheelPickerStyle())
                         .frame(height: 80)
                         #endif
@@ -117,7 +117,7 @@ struct HomeView: View {
                     }
                     #endif
                     
-                    #if !os(watchOS)
+                    #if !os(watchOS) && !os(tvOS)
                     Button {
                         Task<Void, Never> {
                             do {
@@ -236,7 +236,7 @@ struct HomeView: View {
 
 
     var body: some View {
-        #if DEBUG && !os(visionOS) && !os(watchOS)
+        #if DEBUG && !os(visionOS) && !os(watchOS) && !os(tvOS)
         if #available(iOS 16.0, macOS 13.0, *) {
             self.content
                 .debugRevenueCatOverlay(isPresented: self.$debugOverlayVisible)

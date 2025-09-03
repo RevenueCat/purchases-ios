@@ -1,7 +1,7 @@
 orbs:
   macos: circleci/macos@2.5.1
   slack: circleci/slack@5.0.0
-  revenuecat: revenuecat/sdks-common-config@3.1.0
+  revenuecat: revenuecat/sdks-common-config@3.2.0
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -17,6 +17,8 @@ parameters:
         run-manual-tests,
         run-manual-docs-deploy,
         update_paywall_templates,
+        record_paywall_screenshots,
+        tuist
       ]
     default: default
   generate_snapshots:
@@ -47,6 +49,21 @@ executors:
         type: string
         default: "16.0"
     macos:
+      # circleci-lint: disable=unknown-xcode-version
+      xcode: << parameters.xcode_version >>
+    resource_class: m4pro.medium
+    environment:
+      CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.generate_snapshots >>
+      CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
+  macos-executor-for-macos-12_6:
+    parameters:
+      xcode_version:
+        type: string
+        default: "16.0"
+    macos:
+      # circleci-lint: disable=unknown-xcode-version
       xcode: << parameters.xcode_version >>
     resource_class: macos.m1.medium.gen1
     environment:
@@ -60,8 +77,9 @@ executors:
         type: string
         default: "16.0"
     macos:
+      # circleci-lint: disable=unknown-xcode-version
       xcode: << parameters.xcode_version >>
-    resource_class: macos.m1.large.gen1
+    resource_class: m4pro.medium
     environment:
       CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.generate_snapshots >>
       CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
@@ -394,6 +412,16 @@ commands:
           command: |
             bundle exec fastlane update_carthage_commit
 
+  tuist-generate-workspace:
+    description: "Install Tuist and generate workspace"
+    steps:
+      - revenuecat/install-tuist
+      - run:
+          name: Generate Tuist workspace
+          command: |
+            export PATH="$HOME/.local/share/mise/shims:$PATH"
+            tuist install && tuist generate --no-open
+
   create-snapshot-pr-if-needed:
     parameters:
       version:
@@ -458,8 +486,10 @@ jobs:
     parameters:
       xcode_version:
         type: string
+      mac_os_executor_name:
+        type: string
     executor:
-      name: macos-executor
+      name: << parameters.mac_os_executor_name >>
       xcode_version: << parameters.xcode_version >>
     steps:
       - checkout
@@ -470,7 +500,7 @@ jobs:
   spm-release-build-xcode-14:
     executor:
       name: macos-executor
-      xcode_version: "14.3.0"
+      xcode_version: "14.3.1"
 
     steps:
       - checkout
@@ -508,7 +538,7 @@ jobs:
 
   spm-xcode-14-1:
     executor:
-      name: macos-executor
+      name: macos-executor-for-macos-12_6
       xcode_version: "14.1.0"
 
     steps:
@@ -573,7 +603,7 @@ jobs:
   spm-revenuecat-ui-ios-15:
     executor:
       name: macos-executor
-      xcode_version: "14.3.0"
+      xcode_version: "14.3.1"
 
     steps:
       - checkout
@@ -921,7 +951,7 @@ jobs:
 
   run-test-ios-14:
     executor:
-      name: macos-executor
+      name: macos-executor-for-macos-12_6
       # Pre-iOS 15 requires macOS 12 which requires Xcode 14.2
       # See https://circleci.com/docs/using-macos/#supported-xcode-versions
       xcode_version: "14.2.0"
@@ -959,7 +989,7 @@ jobs:
 
   run-test-ios-13:
     executor:
-      name: macos-executor
+      name: macos-executor-for-macos-12_6
       xcode_version: "14.2.0"
 
     steps:
@@ -1098,7 +1128,7 @@ jobs:
       name: macos-executor
       # needs to be xcode 14 since we couldn't get xcode 15 to get along with --additional-symbol-graph-dir
       # https://github.com/RevenueCat/purchases-ios/pull/1997
-      xcode_version: "14.3.0"
+      xcode_version: "14.3.1"
     steps:
       - setup-git-credentials
       - checkout
@@ -1115,7 +1145,7 @@ jobs:
       name: macos-executor
       # needs to be xcode 14 since we couldn't get xcode 15 to get along with --additional-symbol-graph-dir
       # https://github.com/RevenueCat/purchases-ios/pull/1997
-      xcode_version: "14.3.0"
+      xcode_version: "14.3.1"
     steps:
       - setup-git-credentials
       - checkout
@@ -1295,7 +1325,7 @@ jobs:
 
   danger:
     docker:
-      - image: cimg/ruby:3.1.2
+      - image: cimg/ruby:3.2.0
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -1307,7 +1337,7 @@ jobs:
 
   tag-release-branch:
     docker:
-      - image: cimg/ruby:3.1.2
+      - image: cimg/ruby:3.2.0
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -1402,6 +1432,14 @@ jobs:
           name: Build Paywalls Tester
           command: bundle exec fastlane build_paywalls_tester_for_emerge
 
+  test-tuist-generate-workspace:
+    executor:
+      name: macos-executor
+      xcode_version: "16.4"
+    steps:
+      - checkout
+      - tuist-generate-workspace
+
   record-and-push-paywall-template-screenshots:
     description: "Record new paywall template screenshots with Paparazzi and push them to the paywall-rendering-validation repository"
     executor:
@@ -1428,8 +1466,6 @@ jobs:
           name: Run tests
           command: bundle exec fastlane record_and_push_paywall_template_screenshots target_repository_path:../Tests/paywall-rendering-validation
           no_output_timeout: 15m
-          environment:
-            SCAN_DEVICE: iPhone 16
 
   update-paywall-preview-resources-commit:
     docker:
@@ -1494,9 +1530,11 @@ workflows:
       - validate-package-swift:
           name: validate-package-swift-5.7
           xcode_version: "14.0.1"
+          mac_os_executor_name: macos-executor-for-macos-12_6
       - validate-package-swift:
           name: validate-package-swift-5.8
           xcode_version: "14.3.1"
+          mac_os_executor_name: macos-executor
       - run-test-ios-17
       - run-test-ios-18
       - pod-lib-lint
@@ -1591,11 +1629,14 @@ workflows:
 
   record-and-push-paywall-template-screenshots:
     when:
-      and:
-        - not:
-            equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-        - equal: ["main", << pipeline.git.branch >>]
-        - equal: ["default", << pipeline.parameters.action >>]
+      or:
+        - equal:
+            ["record_paywall_screenshots", << pipeline.parameters.action >>]
+        - and:
+            - not:
+                equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+            - equal: ["main", << pipeline.git.branch >>]
+            - equal: ["default", << pipeline.parameters.action >>]
     jobs:
       - record-and-push-paywall-template-screenshots:
           context:
@@ -1717,3 +1758,9 @@ workflows:
           dry_run: true
           context:
             - slack-secrets-ios
+
+  test-tuist-workflow:
+    when:
+      equal: [tuist, << pipeline.parameters.action >>]
+    jobs:
+      - test-tuist-generate-workspace

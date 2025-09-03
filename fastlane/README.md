@@ -21,6 +21,14 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 
 
+### prepare_for_carthage
+
+```sh
+[bundle exec] fastlane prepare_for_carthage
+```
+
+Removes the Examples directory before building with Carthage to prevent unnecessary or problematic scheme resolution (e.g., Magic Weather SwiftUI.xcodeproj)
+
 ### load_spm_dependencies
 
 ```sh
@@ -82,13 +90,13 @@ Creates PR changing version to next minor adding a -SNAPSHOT suffix
 
 Setup development environment
 
-### ios update_paywall_preview_resources_submodule
+### ios update_paywall_preview_resources_commit
 
 ```sh
-[bundle exec] fastlane ios update_paywall_preview_resources_submodule
+[bundle exec] fastlane ios update_paywall_preview_resources_commit
 ```
 
-Updates paywall-preview-resources submodule and creates/updates PR
+Updates paywall-preview-resources-commit to point to latest commit on main and creates/updates PR
 
 ### ios record_and_push_paywall_template_screenshots
 
@@ -113,6 +121,14 @@ Records screenshots for paywalls
 ```
 
 Build the Paywalls Test app for Emerge Snapshots
+
+### ios build_paywalls_tester_for_emerge_ios
+
+```sh
+[bundle exec] fastlane ios build_paywalls_tester_for_emerge_ios
+```
+
+
 
 ### ios test_ios
 
@@ -361,6 +377,14 @@ Build and deploy PurchaseTesterSwiftUI
 ```
 
 Clones or updates snapshots repo
+
+### ios fetch_paywall_preview_resources
+
+```sh
+[bundle exec] fastlane ios fetch_paywall_preview_resources
+```
+
+Clones or updates paywall-preview-resources repo
 
 ### ios update_snapshots_repo
 

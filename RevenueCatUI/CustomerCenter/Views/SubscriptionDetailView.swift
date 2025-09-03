@@ -20,6 +20,7 @@ import SwiftUI
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
+// swiftlint:disable file_length type_body_length
 struct SubscriptionDetailView: View {
 
     @Environment(\.appearance)
@@ -54,6 +55,7 @@ struct SubscriptionDetailView: View {
         screen: CustomerCenterConfigData.Screen,
         purchaseInformation: PurchaseInformation?,
         showPurchaseHistory: Bool,
+        showVirtualCurrencies: Bool,
         allowsMissingPurchaseAction: Bool,
         purchasesProvider: CustomerCenterPurchasesType,
         actionWrapper: CustomerCenterActionWrapper) {
@@ -61,6 +63,7 @@ struct SubscriptionDetailView: View {
                 customerInfoViewModel: customerInfoViewModel,
                 screen: screen,
                 showPurchaseHistory: showPurchaseHistory,
+                showVirtualCurrencies: showVirtualCurrencies,
                 allowsMissingPurchaseAction: allowsMissingPurchaseAction,
                 actionWrapper: actionWrapper,
                 purchaseInformation: purchaseInformation,
@@ -89,17 +92,66 @@ struct SubscriptionDetailView: View {
                 .manageSubscriptionsSheetViewModifier(isPresented: .init(
                     get: { customerInfoViewModel.manageSubscriptionsSheet },
                     set: { manage in DispatchQueue.main.async {
-                        customerInfoViewModel.manageSubscriptionsSheet = manage }
-                    }
+                        customerInfoViewModel.manageSubscriptionsSheet = manage
+                    }}
                 ), subscriptionGroupID: viewModel.purchaseInformation?.subscriptionGroupID
                 )
             )
+            .modifier(self.customerInfoViewModel.purchasesProvider
+                .changePlansSheetViewModifier(
+                    isPresented: .init(
+                        get: { customerInfoViewModel.changePlansSheet },
+                        set: { manage in DispatchQueue.main.async {
+                            customerInfoViewModel.changePlansSheet = manage
+                        }}
+                    ),
+                    subscriptionGroupID: viewModel.purchaseSubscriptionGroupID,
+                    productIDs: viewModel.changePlanProductIDs
+                )
+            )
+            .onCustomerCenterPromotionalOfferSuccess {
+                viewModel.refreshPurchase()
+            }
+            .onCustomerCenterShowingManageSubscriptions {
+                Task { @MainActor in
+                    customerInfoViewModel.manageSubscriptionsSheet = true
+                }
+            }
+            .onCustomerCenterChangePlansSelected({ _ in
+                customerInfoViewModel.changePlansSheet = true
+            })
+            .onChangeOf(customerInfoViewModel.manageSubscriptionsSheet) { manageSubscriptionsSheet in
+                if !manageSubscriptionsSheet {
+                    viewModel.refreshPurchase()
+                }
+            }
+            .onChangeOf(customerInfoViewModel.changePlansSheet) { changePlansSheet in
+                if !changePlansSheet {
+                    viewModel.refreshPurchase()
+                }
+            }
             .compatibleNavigation(
                 isPresented: $viewModel.showAllPurchases,
                 usesNavigationStack: navigationOptions.usesNavigationStack
             ) {
                 PurchaseHistoryView(
-                    viewModel: PurchaseHistoryViewModel(purchasesProvider: self.viewModel.purchasesProvider)
+                    viewModel: PurchaseHistoryViewModel(
+                        purchasesProvider: self.viewModel.purchasesProvider,
+                        localization: localization
+                    )
+                )
+                .environment(\.appearance, appearance)
+                .environment(\.localization, localization)
+                .environment(\.navigationOptions, navigationOptions)
+            }
+            .compatibleNavigation(
+                isPresented: $viewModel.showAllInAppCurrenciesScreen,
+                usesNavigationStack: navigationOptions.usesNavigationStack
+            ) {
+                VirtualCurrencyBalancesScreen(
+                    viewModel: VirtualCurrencyBalancesScreenViewModel(
+                        purchasesProvider: self.viewModel.purchasesProvider
+                    )
                 )
                 .environment(\.appearance, appearance)
                 .environment(\.localization, localization)
@@ -138,23 +190,43 @@ struct SubscriptionDetailView: View {
                 if viewModel.isRefreshing {
                     ProgressView()
                         .padding(.vertical)
+                        .transition(.opacity.combined(with: .scale))
+                        .animation(.easeInOut(duration: 0.3), value: viewModel.isRefreshing)
                 }
-                if let purchaseInformation = self.viewModel.purchaseInformation {
-                    PurchaseInformationCardView(
-                        purchaseInformation: purchaseInformation,
+
+                if !customerInfoViewModel.hasAnyPurchases {
+                    NoSubscriptionsCardView(
+                        screenOffering: viewModel.screen.offering,
+                        screen: viewModel.screen,
                         localization: localization,
-                        accessibilityIdentifier: "0",
-                        refundStatus: viewModel.refundRequestStatus,
-                        showChevron: false
+                        purchasesProvider: viewModel.purchasesProvider
                     )
                     .cornerRadius(10)
                     .padding(.horizontal)
                     .padding(.vertical, 32)
                 } else {
-                    NoSubscriptionsCardView(localization: localization)
+                    if let purchaseInformation = self.viewModel.purchaseInformation {
+                        PurchaseInformationCardView(
+                            purchaseInformation: purchaseInformation,
+                            localization: localization,
+                            accessibilityIdentifier: "0",
+                            refundStatus: viewModel.refundRequestStatus,
+                            showChevron: false
+                        )
                         .cornerRadius(10)
                         .padding(.horizontal)
                         .padding(.vertical, 32)
+                    }
+
+                    if let virtualCurrencies = customerInfoViewModel.virtualCurrencies,
+                       !virtualCurrencies.all.isEmpty,
+                       viewModel.showVirtualCurrencies {
+                        VirtualCurrenciesScrollViewWithOSBackgroundSection(
+                            virtualCurrencies: virtualCurrencies,
+                            onSeeAllInAppCurrenciesButtonTapped: self.viewModel.displayAllInAppCurrenciesScreen
+                        )
+                        Spacer().frame(height: 32)
+                    }
                 }
 
                 ActiveSubscriptionButtonsView(viewModel: viewModel)
@@ -162,7 +234,7 @@ struct SubscriptionDetailView: View {
 
                 if viewModel.showPurchaseHistory {
                     seeAllSubscriptionsButton
-                        .padding(.top, 16)
+                        .padding(.vertical, 16)
                 }
 
                 if let url = support?.supportURL(
@@ -172,9 +244,13 @@ struct SubscriptionDetailView: View {
                    viewModel.shouldShowContactSupport,
                    URLUtilities.canOpenURL(url) || RuntimeUtils.isSimulator {
                     contactSupportView(url)
-                        .padding(.top)
+                        .padding(.vertical, 16)
                 }
+
+                accountDetailsView
             }
+            .opacity(viewModel.isRefreshing ? 0.5 : 1)
+            .animation(.easeInOut(duration: 0.3), value: viewModel.isRefreshing)
         }
         .overlay {
             RestorePurchasesAlert(
@@ -190,6 +266,17 @@ struct SubscriptionDetailView: View {
         .onAppear {
             viewModel.didAppear()
         }
+    }
+
+    @ViewBuilder
+    private var accountDetailsView: some View {
+        Spacer().frame(height: 16)
+
+        AccountDetailsSection(
+            originalPurchaseDate: customerInfoViewModel.originalPurchaseDate,
+            originalAppUserId: customerInfoViewModel.originalAppUserId,
+            localization: localization
+        )
     }
 
     @ViewBuilder
@@ -234,7 +321,7 @@ struct SubscriptionDetailView: View {
             CompatibilityNavigationStack {
                 SubscriptionDetailView(
                     customerInfoViewModel: CustomerCenterViewModel(
-                        activeSubscriptionPurchases: [.monthlyRenewing],
+                        activeSubscriptionPurchases: [.subscription],
                         activeNonSubscriptionPurchases: [],
                         configuration: .default
                     ),
@@ -244,8 +331,9 @@ struct SubscriptionDetailView: View {
                         ),
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
+                        showVirtualCurrencies: false,
                         allowsMissingPurchaseAction: false,
-                        purchaseInformation: .monthlyRenewing,
+                        purchaseInformation: .subscription,
                         refundRequestStatus: .success
                     )
                 )
@@ -266,6 +354,7 @@ struct SubscriptionDetailView: View {
                         ),
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
+                        showVirtualCurrencies: false,
                         allowsMissingPurchaseAction: false,
                         purchaseInformation: .free
                     )
@@ -287,6 +376,7 @@ struct SubscriptionDetailView: View {
                         ),
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: false,
+                        showVirtualCurrencies: false,
                         allowsMissingPurchaseAction: false,
                         purchaseInformation: .consumable
                     )
@@ -308,6 +398,7 @@ struct SubscriptionDetailView: View {
                         ),
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
+                        showVirtualCurrencies: false,
                         allowsMissingPurchaseAction: false,
                         purchaseInformation: nil
                     )
@@ -329,6 +420,7 @@ struct SubscriptionDetailView: View {
                         ),
                         screen: CustomerCenterConfigData.default.screens[.management]!,
                         showPurchaseHistory: true,
+                        showVirtualCurrencies: false,
                         allowsMissingPurchaseAction: false,
                         purchaseInformation: .mock(store: .playStore, isExpired: false)
                     )
@@ -336,6 +428,52 @@ struct SubscriptionDetailView: View {
             }
             .preferredColorScheme(colorScheme)
             .previewDisplayName("Play Store - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                SubscriptionDetailView(
+                    customerInfoViewModel: CustomerCenterViewModel(
+                        activeSubscriptionPurchases: [.mock(store: .playStore, isExpired: false)],
+                        activeNonSubscriptionPurchases: [],
+                        virtualCurrencies: VirtualCurrenciesFixtures.fourVirtualCurrencies,
+                        configuration: .default
+                    ),
+                    viewModel: SubscriptionDetailViewModel(
+                        customerInfoViewModel: CustomerCenterViewModel(
+                            uiPreviewPurchaseProvider: MockCustomerCenterPurchases()
+                        ),
+                        screen: CustomerCenterConfigData.default.screens[.management]!,
+                        showPurchaseHistory: true,
+                        showVirtualCurrencies: true,
+                        allowsMissingPurchaseAction: false,
+                        purchaseInformation: .mock(store: .playStore, isExpired: false)
+                    )
+                )
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("4 VCs - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                SubscriptionDetailView(
+                    customerInfoViewModel: CustomerCenterViewModel(
+                        activeSubscriptionPurchases: [.mock(store: .playStore, isExpired: false)],
+                        activeNonSubscriptionPurchases: [],
+                        virtualCurrencies: VirtualCurrenciesFixtures.fiveVirtualCurrencies,
+                        configuration: .default
+                    ),
+                    viewModel: SubscriptionDetailViewModel(
+                        customerInfoViewModel: CustomerCenterViewModel(
+                            uiPreviewPurchaseProvider: MockCustomerCenterPurchases()
+                        ),
+                        screen: CustomerCenterConfigData.default.screens[.management]!,
+                        showPurchaseHistory: true,
+                        showVirtualCurrencies: true,
+                        allowsMissingPurchaseAction: false,
+                        purchaseInformation: .mock(store: .playStore, isExpired: false)
+                    )
+                )
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("5 VCs - \(colorScheme)")
         }
         .environment(\.localization, CustomerCenterConfigData.default.localization)
         .environment(\.appearance, CustomerCenterConfigData.default.appearance)

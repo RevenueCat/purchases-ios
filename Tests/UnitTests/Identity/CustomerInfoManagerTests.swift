@@ -55,7 +55,7 @@ class BaseCustomerInfoManagerTests: TestCase {
         ])
 
         self.mockOfflineEntitlementsManager = MockOfflineEntitlementsManager()
-        self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.mockSystemInfo)
+        self.mockDeviceCache = MockDeviceCache(systemInfo: self.mockSystemInfo)
         self.mockTransationFetcher = MockStoreKit2TransactionFetcher()
         self.mockTransactionPoster = MockTransactionPoster()
 
@@ -701,7 +701,7 @@ class CustomerInfoManagerGetCustomerInfoTests: BaseCustomerInfoManagerTests {
                                                                      fetchPolicy: .cachedOrFetched)
 
         expect(result) == self.mockCustomerInfo
-        expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
+        await expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(1))
     }
 
     func testCustomerInfoCachedOrFetchedFetchesIfNoCache() async throws {

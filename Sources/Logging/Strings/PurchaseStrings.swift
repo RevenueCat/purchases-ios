@@ -87,6 +87,12 @@ enum PurchaseStrings {
     case restorepurchases_called_with_allow_sharing_appstore_account_false
     case sk2_observer_mode_error_processing_transaction(Error)
 
+    case unable_to_find_root_view_controller_for_simulated_purchase
+    case error_message_for_simulating_purchase_failure
+
+    // Test Store
+    case sync_purchases_simulated_store
+    case restore_purchases_simulated_store
 }
 
 extension PurchaseStrings: LogMessage {
@@ -340,6 +346,18 @@ extension PurchaseStrings: LogMessage {
             "Are you sure you want to do this?"
         case let .sk2_observer_mode_error_processing_transaction(error):
             return "RevenueCat could not process transaction completed by your app: \(error)"
+
+        case .unable_to_find_root_view_controller_for_simulated_purchase:
+            return "Unable to find root view controller to present Test Store purchase alert."
+
+        case .error_message_for_simulating_purchase_failure:
+            return "Test Store purchase failure: no real transaction occurred"
+
+        case .sync_purchases_simulated_store:
+            return "Syncing purchases not available in Test Store. Returning current CustomerInfo."
+
+        case .restore_purchases_simulated_store:
+            return "Restoring purchases not available in Test Store. Returning current CustomerInfo."
         }
     }
 

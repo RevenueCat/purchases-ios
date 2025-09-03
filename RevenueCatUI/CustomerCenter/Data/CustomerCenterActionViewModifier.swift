@@ -37,79 +37,74 @@ extension UniqueWrapper: Equatable {
 struct CustomerCenterActionViewModifier: ViewModifier {
 
     let actionWrapper: CustomerCenterActionWrapper
-
-    @State private var restoreStarted: UniqueWrapper<Void>?
-    @State private var restoreFailed: UniqueWrapper<NSError>?
-    @State private var restoreCompleted: UniqueWrapper<CustomerInfo>?
-    @State private var showingManageSubscriptions: UniqueWrapper<Void>?
-    @State private var refundRequestStarted: UniqueWrapper<String>?
-    @State private var refundRequestCompleted: UniqueWrapper<(String, RefundRequestStatus)>?
-    @State private var feedbackSurveyCompleted: UniqueWrapper<String>?
-    @State private var managementOptionSelected: UniqueWrapper<CustomerCenterActionable>?
-    @State private var promotionalOfferSuccess: UniqueWrapper<Void>?
+    @Environment(\.customerCenterActions) private var actions: CustomerCenterEnvironmentActions
 
     func body(content: Content) -> some View {
         content
             .onAppear {
                 subscribeToActionWrapper()
             }
-        // Apply preferences based on state
-            .preference(key: CustomerCenterView.RestoreStartedPreferenceKey.self,
-                        value: restoreStarted)
-            .preference(key: CustomerCenterView.RestoreFailedPreferenceKey.self,
-                        value: restoreFailed)
-            .preference(key: CustomerCenterView.RestoreCompletedPreferenceKey.self,
-                        value: restoreCompleted)
-            .preference(key: CustomerCenterView.ShowingManageSubscriptionsPreferenceKey.self,
-                        value: showingManageSubscriptions)
-            .preference(key: CustomerCenterView.RefundRequestStartedPreferenceKey.self,
-                        value: refundRequestStarted)
-            .preference(key: CustomerCenterView.RefundRequestCompletedPreferenceKey.self,
-                        value: refundRequestCompleted)
-            .preference(key: CustomerCenterView.FeedbackSurveyCompletedPreferenceKey.self,
-                        value: feedbackSurveyCompleted)
-            .preference(key: CustomerCenterView.ManagementOptionSelectedPreferenceKey.self,
-                        value: managementOptionSelected)
-            .preference(key: CustomerCenterView.PromotionalOfferSuccessPreferenceKey.self,
-                        value: promotionalOfferSuccess)
     }
 
     @MainActor
     private func subscribeToActionWrapper() {
+        subscribeToRestoreActions()
+        subscribeToRefundActions()
+        subscribeToOtherActions()
+    }
+
+    @MainActor
+    private func subscribeToRestoreActions() {
         actionWrapper.onCustomerCenterRestoreStarted {
-            restoreStarted = UniqueWrapper(value: ())
+            actions.restoreStarted()
         }
 
         actionWrapper.onCustomerCenterRestoreFailed { error in
-            restoreFailed = UniqueWrapper(value: error as NSError)
+            actions.restoreFailed(error)
         }
 
         actionWrapper.onCustomerCenterRestoreCompleted { info in
-            restoreCompleted = UniqueWrapper(value: info)
+            actions.restoreCompleted(info)
         }
+    }
 
+    @MainActor
+    private func subscribeToRefundActions() {
         actionWrapper.onCustomerCenterShowingManageSubscriptions {
-            showingManageSubscriptions = UniqueWrapper(value: ())
+            actions.showingManageSubscriptions()
         }
 
         actionWrapper.onCustomerCenterRefundRequestStarted { productId in
-            refundRequestStarted = UniqueWrapper(value: productId)
+            actions.refundRequestStarted(productId)
         }
 
         actionWrapper.onCustomerCenterRefundRequestCompleted { productId, status in
-            refundRequestCompleted = UniqueWrapper(value: (productId, status))
+            actions.refundRequestCompleted(productId, status)
         }
+    }
 
+    @MainActor
+    private func subscribeToOtherActions() {
         actionWrapper.onCustomerCenterFeedbackSurveyCompleted { reason in
-            feedbackSurveyCompleted = UniqueWrapper(value: reason)
+            actions.feedbackSurveyCompleted(reason)
         }
 
         actionWrapper.onCustomerCenterManagementOptionSelected { action in
-            managementOptionSelected = UniqueWrapper(value: action)
+            actions.managementOptionSelected(action)
         }
 
         actionWrapper.onCustomerCenterPromotionalOfferSuccess {
-            promotionalOfferSuccess = UniqueWrapper(value: ())
+            actions.promotionalOfferSuccess()
+        }
+
+        actionWrapper.onCustomerCenterChangePlansSelected { subscriptionGroupID in
+            if let id = subscriptionGroupID {
+                actions.changePlansSelected(id)
+            }
+        }
+
+        actionWrapper.onCustomerCenterCustomActionSelected { actionIdentifier, activePurchaseId in
+            actions.customActionSelected(actionIdentifier, activePurchaseId)
         }
     }
 }

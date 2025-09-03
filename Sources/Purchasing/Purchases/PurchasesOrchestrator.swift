@@ -27,7 +27,7 @@ import StoreKit
 
 }
 
-// swiftlint:disable file_length type_body_length
+// swiftlint:disable file_length type_body_length function_body_length
 final class PurchasesOrchestrator {
 
     var finishTransactions: Bool { self.systemInfo.finishTransactions }
@@ -53,6 +53,7 @@ final class PurchasesOrchestrator {
 
     private let productsManager: ProductsManagerType
     private let paymentQueueWrapper: EitherPaymentQueueWrapper
+    private let simulatedStorePurchaseHandler: SimulatedStorePurchaseHandlerType
     private let systemInfo: SystemInfo
     private let attribution: Attribution
     private let operationDispatcher: OperationDispatcher
@@ -123,6 +124,7 @@ final class PurchasesOrchestrator {
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     convenience init(productsManager: ProductsManagerType,
                      paymentQueueWrapper: EitherPaymentQueueWrapper,
+                     simulatedStorePurchaseHandler: SimulatedStorePurchaseHandlerType,
                      systemInfo: SystemInfo,
                      subscriberAttributes: Attribution,
                      operationDispatcher: OperationDispatcher,
@@ -152,6 +154,7 @@ final class PurchasesOrchestrator {
         self.init(
             productsManager: productsManager,
             paymentQueueWrapper: paymentQueueWrapper,
+            simulatedStorePurchaseHandler: simulatedStorePurchaseHandler,
             systemInfo: systemInfo,
             subscriberAttributes: subscriberAttributes,
             operationDispatcher: operationDispatcher,
@@ -209,6 +212,7 @@ final class PurchasesOrchestrator {
 
     init(productsManager: ProductsManagerType,
          paymentQueueWrapper: EitherPaymentQueueWrapper,
+         simulatedStorePurchaseHandler: SimulatedStorePurchaseHandlerType,
          systemInfo: SystemInfo,
          subscriberAttributes: Attribution,
          operationDispatcher: OperationDispatcher,
@@ -233,6 +237,7 @@ final class PurchasesOrchestrator {
     ) {
         self.productsManager = productsManager
         self.paymentQueueWrapper = paymentQueueWrapper
+        self.simulatedStorePurchaseHandler = simulatedStorePurchaseHandler
         self.systemInfo = systemInfo
         self.attribution = subscriberAttributes
         self.operationDispatcher = operationDispatcher
@@ -299,6 +304,17 @@ final class PurchasesOrchestrator {
     }
 
     func restorePurchases(completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
+        #if SIMULATED_STORE
+
+        if self.systemInfo.isSimulatedStoreAPIKey {
+            Logger.debug(Strings.purchase.restore_purchases_simulated_store)
+            self.customerInfoManager.customerInfo(appUserID: self.appUserID, fetchPolicy: .default) { result in
+                completion?(result.mapError({ $0.asPurchasesError }))
+            }
+            return
+        }
+
+        #endif // SIMULATED_STORE
         self.syncPurchases(receiptRefreshPolicy: .always,
                            isRestore: true,
                            initiationSource: .restore,
@@ -306,6 +322,17 @@ final class PurchasesOrchestrator {
     }
 
     func syncPurchases(completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)? = nil) {
+        #if SIMULATED_STORE
+
+        if self.systemInfo.isSimulatedStoreAPIKey {
+            Logger.debug(Strings.purchase.sync_purchases_simulated_store)
+            self.customerInfoManager.customerInfo(appUserID: self.appUserID, fetchPolicy: .default) { result in
+                completion?(result.mapError({ $0.asPurchasesError }))
+            }
+            return
+        }
+
+        #endif // SIMULATED_STORE
         self.syncPurchases(receiptRefreshPolicy: .never,
                            isRestore: allowSharingAppStoreAccount,
                            initiationSource: .restore,
@@ -463,8 +490,10 @@ final class PurchasesOrchestrator {
                           winBackOffer: winBackOffer,
                           metadata: metadata,
                           completion: completionWithTracking)
-        } else if product.isTestProduct {
-            self.handleTestProduct(completionWithTracking)
+        } else if let testStoreProduct = product.testStoreProduct {
+            self.handlePurchase(testStoreProduct: testStoreProduct,
+                                metadata: metadata,
+                                completion: completionWithTracking)
         } else {
             fatalError("Unrecognized product: \(product)")
         }
@@ -1476,10 +1505,10 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
-                       isRestore: Bool,
-                       initiationSource: ProductRequestData.InitiationSource,
-                       completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
+    private func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
+                               isRestore: Bool,
+                               initiationSource: ProductRequestData.InitiationSource,
+                               completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
         self.trackSyncOrRestorePurchasesStartedIfNeeded(receiptRefreshPolicy)
         let startTime = self.dateProvider.now()
         // Don't log anything unless the flag was explicitly set.
@@ -1840,17 +1869,6 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    func handleTestProduct(_ completion: @escaping PurchaseCompletedBlock) {
-        self.operationDispatcher.dispatchOnMainActor {
-            completion(
-                nil,
-                nil,
-                ErrorUtils.productNotAvailableForPurchaseError().asPublicError,
-                false
-            )
-        }
-    }
-
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func sk2PromotionalOffer(forProductDiscount productDiscount: StoreProductDiscountType,
                              discountIdentifier: String,
@@ -1944,6 +1962,65 @@ private extension PurchasesOrchestrator {
 
 }
 
+// MARK: - Simulated Store Purchases
+
+private extension PurchasesOrchestrator {
+
+    func handlePurchase(testStoreProduct: TestStoreProduct,
+                        metadata: [String: String]?,
+                        completion: @escaping PurchaseCompletedBlock) {
+        #if SIMULATED_STORE
+        if self.systemInfo.isSimulatedStoreAPIKey {
+            self.purchase(simulatedStoreProduct: testStoreProduct, metadata: metadata, completion: completion)
+        } else {
+            self.handleTestProductNotAvailableForPurchase(completion)
+        }
+        #else
+        self.handleTestProductNotAvailableForPurchase(completion)
+        #endif // SIMULATED_STORE
+    }
+
+    #if SIMULATED_STORE
+    private func purchase(simulatedStoreProduct: SimulatedStoreProduct,
+                          metadata: [String: String]?,
+                          completion: @escaping PurchaseCompletedBlock) {
+        Task {
+            let result = await self.simulatedStorePurchaseHandler.purchase(product: simulatedStoreProduct)
+            switch result {
+            case .cancel:
+                let customerInfo = try? await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
+                                                                                    fetchPolicy: .cachedOrFetched)
+                await completion(nil, customerInfo, ErrorUtils.purchaseCancelledError().asPublicError, true)
+            case .failure(let purchasesError):
+                let customerInfo = try? await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
+                                                                                    fetchPolicy: .cachedOrFetched)
+                await completion(nil, customerInfo, purchasesError.asPublicError, false)
+            case .success(let transaction):
+                do {
+                    let customerInfo = try await self.handlePurchasedTransaction(transaction, .purchase, metadata)
+                    await completion(transaction, customerInfo, nil, false)
+                } catch {
+                    let purchasesError = ErrorUtils.purchasesError(withUntypedError: error)
+                    await completion(nil, nil, purchasesError.asPublicError, false)
+                }
+            }
+        }
+    }
+    #endif // SIMULATED_STORE
+
+    private func handleTestProductNotAvailableForPurchase(_ completion: @escaping PurchaseCompletedBlock) {
+        self.operationDispatcher.dispatchOnMainActor {
+            completion(
+                nil,
+                nil,
+                ErrorUtils.productNotAvailableForPurchaseError().asPublicError,
+                false
+            )
+        }
+    }
+
+}
+
 private extension PurchasesOrchestrator {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -2006,6 +2083,8 @@ extension PurchasesOrchestrator {
             .get()
     }
 
+    // Do not use this method from outside this class, use `syncPurchases` instead.
+    // This method is only intended to be used from unit tests.
     func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
                        isRestore: Bool,
                        initiationSource: ProductRequestData.InitiationSource) async throws -> CustomerInfo {

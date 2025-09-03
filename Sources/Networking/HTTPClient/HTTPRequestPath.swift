@@ -83,8 +83,10 @@ extension HTTPRequest {
         case postAdServicesToken(appUserID: String)
         case health
         case appHealthReport(appUserID: String)
+        case appHealthReportAvailability(appUserID: String)
         case getProductEntitlementMapping
         case getCustomerCenterConfig(appUserID: String)
+        case getVirtualCurrencies(appUserID: String)
         case postRedeemWebPurchase
 
     }
@@ -103,7 +105,8 @@ extension HTTPRequest {
 
     enum WebBillingPath: Hashable {
 
-        case getWebProducts(appUserID: String)
+        case getWebOfferingProducts(appUserID: String)
+        case getWebBillingProducts(userId: String, productIds: Set<String>)
 
     }
 
@@ -138,10 +141,12 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postRedeemWebPurchase,
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
+                .getVirtualCurrencies,
                 .appHealthReport:
             return true
 
-        case .health:
+        case .health,
+             .appHealthReportAvailability:
             return false
         }
     }
@@ -160,9 +165,11 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postRedeemWebPurchase,
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
+                .getVirtualCurrencies,
                 .appHealthReport:
             return true
-        case .health:
+        case .health,
+             .appHealthReportAvailability:
             return false
         }
     }
@@ -175,7 +182,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .health,
                 .getOfferings,
                 .getProductEntitlementMapping,
-                .appHealthReport:
+                .getVirtualCurrencies,
+                .appHealthReport,
+                .appHealthReportAvailability:
             return true
         case .getIntroEligibility,
                 .postSubscriberAttributes,
@@ -193,7 +202,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .getCustomerInfo,
                 .logIn,
                 .postReceiptData,
-                .health:
+                .getVirtualCurrencies,
+                .health,
+                .appHealthReportAvailability:
             return true
         case .getOfferings,
                 .getIntroEligibility,
@@ -227,6 +238,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case let .appHealthReport(appUserID):
             return "subscribers/\(Self.escape(appUserID))/health_report"
 
+        case let .appHealthReportAvailability(appUserID):
+            return "subscribers/\(Self.escape(appUserID))/health_report_availability"
+
         case .logIn:
             return "subscribers/identify"
 
@@ -257,6 +271,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .postRedeemWebPurchase:
             return "subscribers/redeem_purchase"
 
+        case let .getVirtualCurrencies(appUserID):
+            return "subscribers/\(Self.escape(appUserID))/virtual_currencies"
         }
     }
 
@@ -303,6 +319,12 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .appHealthReport:
             return "get_app_health_report"
+
+        case .getVirtualCurrencies:
+            return "get_virtual_currencies"
+
+        case .appHealthReportAvailability:
+            return "get_app_health_report_availability"
 
         }
     }

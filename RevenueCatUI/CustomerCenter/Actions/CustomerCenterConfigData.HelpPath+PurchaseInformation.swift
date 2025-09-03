@@ -22,6 +22,8 @@ extension Array<CustomerCenterConfigData.HelpPath> {
         guard let purchaseInformation else {
             return filter {
                 $0.type == .missingPurchase
+                    || $0.type == .customAction
+                    || $0.type == .customUrl
             }
         }
 
@@ -34,9 +36,21 @@ extension Array<CustomerCenterConfigData.HelpPath> {
             let isNonAppStorePurchase = purchaseInformation.store != .appStore
             let isAppStoreOnlyPath = $0.type.isAppStoreOnly
 
-            let isCancel = $0.type == .cancel
-            // if it's cancel, it cannot be a lifetime subscription
-            let isEligibleCancel = !purchaseInformation.isLifetime && !purchaseInformation.isCancelled
+            // skip AppStore only paths if the purchase is not from App Store
+            if isNonAppStorePurchase && isAppStoreOnlyPath {
+                return false
+            }
+
+            if $0.type == .cancel {
+                // don't show cancel if there's no URL
+                if isNonAppStorePurchase {
+                    return purchaseInformation.managementURL != nil
+                }
+
+                return purchaseInformation.isAppStoreRenewableSubscription
+                    && !purchaseInformation.isCancelled
+                    && purchaseInformation.renewalDate != nil
+            }
 
             // if it's refundRequest, it cannot be free nor within trial period
             let isRefund = $0.type == .refundRequest
@@ -47,24 +61,14 @@ extension Array<CustomerCenterConfigData.HelpPath> {
             // if it has a refundDuration, check it's still valid
             let refundWindowIsValid = $0.refundWindowDuration?.isWithin(purchaseInformation) ?? true
 
-            // skip AppStore only paths if the purchase is not from App Store
-            if isNonAppStorePurchase && isAppStoreOnlyPath {
-                return false
-            }
-
-            // don't show cancel if there's no URL
-            if isCancel && isNonAppStorePurchase && purchaseInformation.managementURL == nil {
-                 return false
-            }
-
             // can't change plans if it's not a subscription
-            if $0.type == .changePlans && purchaseInformation.isLifetime {
-                return false
+            if $0.type == .changePlans {
+                if !purchaseInformation.isAppStoreRenewableSubscription || purchaseInformation.isLifetime {
+                    return false
+                }
             }
 
-            return (!isCancel || isEligibleCancel) &&
-                    (!isRefund || isRefundEligible) &&
-                    refundWindowIsValid
+            return (!isRefund || isRefundEligible) && refundWindowIsValid
         }
     }
 }
@@ -73,7 +77,7 @@ private extension CustomerCenterConfigData.HelpPath.PathType {
 
     var isAppStoreOnly: Bool {
         switch self {
-        case .cancel, .customUrl:
+        case .cancel, .customUrl, .customAction:
             return false
 
         case .changePlans, .refundRequest, .missingPurchase, .unknown:

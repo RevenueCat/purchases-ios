@@ -33,8 +33,6 @@ public struct PaywallView: View {
     private let paywallViewOwnsPurchaseHandler: Bool
     private let useDraftPaywall: Bool
 
-    private var locale: Locale
-
     @StateObject
     private var internalPurchaseHandler: PurchaseHandler
 
@@ -55,6 +53,9 @@ public struct PaywallView: View {
     private var customerInfo: CustomerInfo?
     @State
     private var error: NSError?
+
+//    @StateObject
+//    private var defaultPaywallPromoOfferCache = PaywallPromoOfferCache()
 
     private var initializationError: NSError?
 
@@ -122,16 +123,19 @@ public struct PaywallView: View {
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
         useDraftPaywall: Bool,
+        introEligibility: TrialOrIntroEligibilityChecker? = nil,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil
     ) {
         let purchaseHandler = PurchaseHandler.default(performPurchase: performPurchase, performRestore: performRestore)
+
         self.init(
             configuration: .init(
                 offering: offering,
                 fonts: fonts,
                 displayCloseButton: displayCloseButton,
                 useDraftPaywall: useDraftPaywall,
+                introEligibility: introEligibility,
                 purchaseHandler: purchaseHandler
             )
         )
@@ -165,8 +169,6 @@ public struct PaywallView: View {
         self.useDraftPaywall = configuration.useDraftPaywall
 
         self.initializationError = Self.checkForConfigurationConsistency(purchaseHandler: configuration.purchaseHandler)
-
-        self.locale = configuration.locale
     }
 
     private static func checkForConfigurationConsistency(purchaseHandler: PurchaseHandler) -> NSError? {
@@ -264,6 +266,14 @@ public struct PaywallView: View {
         }
     }
 
+//    var paywallPromoOfferCache: PaywallPromoOfferCache {
+//        if Purchases.isConfigured, let cache = Purchases.shared.paywallPromoOfferCache as? PaywallPromoOfferCache {
+//            return cache
+//        } else {
+//            return self.defaultPaywallPromoOfferCache
+//        }
+//    }
+
     @ViewBuilder
     // swiftlint:disable:next function_body_length function_parameter_count
     private func paywallView(
@@ -283,7 +293,7 @@ public struct PaywallView: View {
 
             // For fallback view or footer
             let paywall: PaywallData = .createDefault(with: offering.availablePackages,
-                                                      locale: self.locale)
+                                                      locale: purchaseHandler.preferredLocaleOverride ?? .current)
 
             switch self.mode {
             // Show the default/fallback paywall for Paywalls V2 footer views
@@ -298,7 +308,7 @@ public struct PaywallView: View {
                     displayCloseButton: self.displayCloseButton,
                     introEligibility: checker,
                     purchaseHandler: purchaseHandler,
-                    locale: locale,
+                    locale: purchaseHandler.preferredLocaleOverride ?? .current,
                     showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
                 )
             // Show the actually V2 paywall for full screen
@@ -313,7 +323,7 @@ public struct PaywallView: View {
                     displayCloseButton: self.displayCloseButton,
                     introEligibility: checker,
                     purchaseHandler: purchaseHandler,
-                    locale: self.locale,
+                    locale: purchaseHandler.preferredLocaleOverride ?? .current,
                     showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
                 )
 
@@ -340,7 +350,9 @@ public struct PaywallView: View {
             }
         } else {
 
-            let (paywall, displayedLocale, template, error) = offering.validatedPaywall(locale: self.locale)
+            let (paywall, displayedLocale, template, error) = offering.validatedPaywall(
+                locale: purchaseHandler.preferredLocaleOverride ?? .current
+            )
 
             let paywallView = LoadedOfferingPaywallView(
                 offering: offering,
@@ -397,10 +409,16 @@ private extension PaywallView {
         case .defaultOffering:
             return try await Purchases.shared.offerings().current.orThrow(PaywallError.noCurrentOffering)
 
-        case let .offeringIdentifier(identifier):
-            return try await Purchases.shared.offerings()
+        case let .offeringIdentifier(identifier, presentedOfferingContext):
+            let offering = try await Purchases.shared.offerings()
                 .offering(identifier: identifier)
                 .orThrow(PaywallError.offeringNotFound(identifier: identifier))
+
+            if let presentedOfferingContext {
+                return offering.withPresentedOfferingContext(presentedOfferingContext)
+            }
+
+            return offering
         }
     }
 
@@ -413,9 +431,20 @@ private extension PaywallViewConfiguration.Content {
 
     func extractInitialOffering() -> Offering? {
         switch self {
-        case let .offering(offering): return offering
-        case .defaultOffering: return Self.loadCachedCurrentOfferingIfPossible()
-        case let .offeringIdentifier(identifier): return Self.loadCachedOfferingIfPossible(identifier: identifier)
+        case let .offering(offering):
+            return offering
+        case .defaultOffering:
+            return Self.loadCachedCurrentOfferingIfPossible()
+        case let .offeringIdentifier(identifier, presentedOfferingContext):
+            let offering = Self.loadCachedOfferingIfPossible(
+                identifier: identifier
+            )
+
+            if let presentedOfferingContext {
+                return offering?.withPresentedOfferingContext(presentedOfferingContext)
+            }
+
+            return offering
         }
     }
 

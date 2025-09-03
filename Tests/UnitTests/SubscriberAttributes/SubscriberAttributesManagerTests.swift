@@ -32,7 +32,7 @@ class SubscriberAttributesManagerTests: TestCase {
         let platformInfo = Purchases.PlatformInfo(flavor: "iOS", version: "3.2.1")
         let systemInfo = MockSystemInfo(platformInfo: platformInfo, finishTransactions: true)
 
-        self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: systemInfo)
+        self.mockDeviceCache = MockDeviceCache(systemInfo: systemInfo)
         self.mockBackend = MockBackend()
         self.mockAttributionFetcher = MockAttributionFetcher(attributionFactory: AttributionTypeFactory(),
                                                              systemInfo: systemInfo)
@@ -42,7 +42,8 @@ class SubscriberAttributesManagerTests: TestCase {
             deviceCache: mockDeviceCache,
             operationDispatcher: MockOperationDispatcher(),
             attributionFetcher: mockAttributionFetcher,
-            attributionDataMigrator: mockAttributionDataMigrator
+            attributionDataMigrator: mockAttributionDataMigrator,
+            automaticDeviceIdentifierCollectionEnabled: true
         )
         self.subscriberAttributeHeight = SubscriberAttribute(withKey: "height",
                                                              value: "183")
@@ -622,6 +623,24 @@ class SubscriberAttributesManagerTests: TestCase {
 
         checkDeviceIdentifiersAreSet()
     }
+
+    func testSetAdjustIDDoesNotSetDeviceIdentifiersIfOptionDisabled() {
+        self.subscriberAttributesManager = SubscriberAttributesManager(
+            backend: mockBackend,
+            deviceCache: mockDeviceCache,
+            operationDispatcher: MockOperationDispatcher(),
+            attributionFetcher: mockAttributionFetcher,
+            attributionDataMigrator: mockAttributionDataMigrator,
+            automaticDeviceIdentifierCollectionEnabled: false
+        )
+        let adjustID = "adjustID"
+        self.subscriberAttributesManager.setAdjustID(adjustID, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 1
+
+        checkDeviceIdentifiersAreNotSet()
+    }
     // endregion
     // region AppsflyerID
     func testSetAppsflyerID() {
@@ -694,6 +713,24 @@ class SubscriberAttributesManagerTests: TestCase {
         expect(self.mockDeviceCache.invokedStoreParametersList.count) == 5
 
         checkDeviceIdentifiersAreSet()
+    }
+
+    func testSetAppsflyerIDDoesNotSetDeviceIdentifiersIfOptionDisabled() {
+        self.subscriberAttributesManager = SubscriberAttributesManager(
+            backend: mockBackend,
+            deviceCache: mockDeviceCache,
+            operationDispatcher: MockOperationDispatcher(),
+            attributionFetcher: mockAttributionFetcher,
+            attributionDataMigrator: mockAttributionDataMigrator,
+            automaticDeviceIdentifierCollectionEnabled: false
+        )
+        let appsflyerID = "appsflyerID"
+        self.subscriberAttributesManager.setAppsflyerID(appsflyerID, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 1
+
+        checkDeviceIdentifiersAreNotSet()
     }
     // endregion
     // region FBAnonymousID
@@ -768,6 +805,24 @@ class SubscriberAttributesManagerTests: TestCase {
 
         checkDeviceIdentifiersAreSet()
     }
+
+    func testSetFBAnonymousIDDoesNotSetDeviceIdentifiersIfOptionDisabled() {
+        self.subscriberAttributesManager = SubscriberAttributesManager(
+            backend: mockBackend,
+            deviceCache: mockDeviceCache,
+            operationDispatcher: MockOperationDispatcher(),
+            attributionFetcher: mockAttributionFetcher,
+            attributionDataMigrator: mockAttributionDataMigrator,
+            automaticDeviceIdentifierCollectionEnabled: false
+        )
+        let fbAnonID = "fbAnonID"
+        self.subscriberAttributesManager.setFBAnonymousID(fbAnonID, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 1
+
+        checkDeviceIdentifiersAreNotSet()
+    }
     // endregion
     // region mParticle
     func testSetMparticleID() {
@@ -840,6 +895,24 @@ class SubscriberAttributesManagerTests: TestCase {
         expect(self.mockDeviceCache.invokedStoreParametersList.count) == 5
 
         checkDeviceIdentifiersAreSet()
+    }
+
+    func testSetMparticleIDDoesNotSetDeviceIdentifiersIfOptionDisabled() {
+        self.subscriberAttributesManager = SubscriberAttributesManager(
+            backend: mockBackend,
+            deviceCache: mockDeviceCache,
+            operationDispatcher: MockOperationDispatcher(),
+            attributionFetcher: mockAttributionFetcher,
+            attributionDataMigrator: mockAttributionDataMigrator,
+            automaticDeviceIdentifierCollectionEnabled: false
+        )
+        let mparticleID = "mparticleID"
+        self.subscriberAttributesManager.setMparticleID(mparticleID, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 1
+
+        checkDeviceIdentifiersAreNotSet()
     }
     // endregion
     // region OnesignalID
@@ -1206,6 +1279,24 @@ class SubscriberAttributesManagerTests: TestCase {
 
         checkDeviceIdentifiersAreSet()
     }
+
+    func testSetKochavaDeviceIDDoesNotSetDeviceIdentifiersIfOptionDisabled() {
+        self.subscriberAttributesManager = SubscriberAttributesManager(
+            backend: mockBackend,
+            deviceCache: mockDeviceCache,
+            operationDispatcher: MockOperationDispatcher(),
+            attributionFetcher: mockAttributionFetcher,
+            attributionDataMigrator: mockAttributionDataMigrator,
+            automaticDeviceIdentifierCollectionEnabled: false
+        )
+        let kochavaDeviceId = "kochavaDeviceID"
+        self.subscriberAttributesManager.setKochavaDeviceID(kochavaDeviceId, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 1
+
+        checkDeviceIdentifiersAreNotSet()
+    }
     // endregion
     // region MixpanelDistinctID
     func testSetMixpanelDistinctID() throws {
@@ -1503,6 +1594,152 @@ class SubscriberAttributesManagerTests: TestCase {
     func testSetPostHogUserIDDoesNotSetDeviceIdentifiers() {
         let postHogUserID = "postHogUserID"
         self.subscriberAttributesManager.setPostHogUserID(postHogUserID, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 1
+
+        checkDeviceIdentifiersAreNotSet()
+    }
+    // endregion
+    // region AmplitudeUserID
+    func testSetAmplitudeUserID() throws {
+        let amplitudeUserID = "amplitudeUserID"
+
+        self.subscriberAttributesManager.setAmplitudeUserID(amplitudeUserID, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        let receivedAttribute = invokedParams.attribute
+
+        expect(receivedAttribute.key) == "$amplitudeUserId"
+        expect(receivedAttribute.value) == amplitudeUserID
+        expect(receivedAttribute.isSynced) == false
+    }
+
+    func testSetAmplitudeUserIDSetsEmptyIfNil() throws {
+        let amplitudeUserID = "amplitudeUserID"
+
+        self.subscriberAttributesManager.setAmplitudeUserID(amplitudeUserID, appUserID: "kratos")
+        self.subscriberAttributesManager.setAmplitudeUserID(nil, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 2
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        let receivedAttribute = invokedParams.attribute
+
+        expect(receivedAttribute.key) == "$amplitudeUserId"
+        expect(receivedAttribute.value) == ""
+        expect(receivedAttribute.isSynced) == false
+    }
+
+    func testSetAmplitudeUserIDSkipsIfSameValue() {
+        let amplitudeUserID = "amplitudeUserID"
+
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$amplitudeUserId",
+                                                                                    value: amplitudeUserID)
+        self.subscriberAttributesManager.setAmplitudeUserID(amplitudeUserID, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 0
+    }
+
+    func testSetAmplitudeUserIDOverwritesIfNewValue() throws {
+        let oldSyncTime = Date()
+        let amplitudeUserID = "amplitudeUserID"
+
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$amplitudeUserId",
+                                                                                    value: "old_id",
+                                                                                    isSynced: true,
+                                                                                    setTime: oldSyncTime)
+
+        self.subscriberAttributesManager.setAmplitudeUserID(amplitudeUserID, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        let receivedAttribute = invokedParams.attribute
+
+        expect(receivedAttribute.key) == "$amplitudeUserId"
+        expect(receivedAttribute.value) == amplitudeUserID
+        expect(receivedAttribute.isSynced) == false
+        expect(receivedAttribute.setTime) > oldSyncTime
+    }
+
+    func testSetAmplitudeUserIDDoesNotSetDeviceIdentifiers() {
+        let amplitudeUserID = "amplitudeUserID"
+        self.subscriberAttributesManager.setAmplitudeUserID(amplitudeUserID, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 1
+
+        checkDeviceIdentifiersAreNotSet()
+    }
+    // endregion
+    // region AmplitudeDeviceID
+    func testSetAmplitudeDeviceID() throws {
+        let amplitudeDeviceID = "amplitudeDeviceID"
+
+        self.subscriberAttributesManager.setAmplitudeDeviceID(amplitudeDeviceID, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        let receivedAttribute = invokedParams.attribute
+
+        expect(receivedAttribute.key) == "$amplitudeDeviceId"
+        expect(receivedAttribute.value) == amplitudeDeviceID
+        expect(receivedAttribute.isSynced) == false
+    }
+
+    func testSetAmplitudeDeviceIDSetsEmptyIfNil() throws {
+        let amplitudeDeviceID = "amplitudeDeviceID"
+
+        self.subscriberAttributesManager.setAmplitudeDeviceID(amplitudeDeviceID, appUserID: "kratos")
+        self.subscriberAttributesManager.setAmplitudeDeviceID(nil, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 2
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        let receivedAttribute = invokedParams.attribute
+
+        expect(receivedAttribute.key) == "$amplitudeDeviceId"
+        expect(receivedAttribute.value) == ""
+        expect(receivedAttribute.isSynced) == false
+    }
+
+    func testSetAmplitudeDeviceIDSkipsIfSameValue() {
+        let amplitudeDeviceID = "amplitudeDeviceID"
+
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$amplitudeDeviceId",
+                                                                                    value: amplitudeDeviceID)
+        self.subscriberAttributesManager.setAmplitudeDeviceID(amplitudeDeviceID, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 0
+    }
+
+    func testSetAmplitudeDeviceIDOverwritesIfNewValue() throws {
+        let oldSyncTime = Date()
+        let amplitudeDeviceID = "amplitudeDeviceID"
+
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$amplitudeDeviceId",
+                                                                                    value: "old_id",
+                                                                                    isSynced: true,
+                                                                                    setTime: oldSyncTime)
+
+        self.subscriberAttributesManager.setAmplitudeDeviceID(amplitudeDeviceID, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        let receivedAttribute = invokedParams.attribute
+
+        expect(receivedAttribute.key) == "$amplitudeDeviceId"
+        expect(receivedAttribute.value) == amplitudeDeviceID
+        expect(receivedAttribute.isSynced) == false
+        expect(receivedAttribute.setTime) > oldSyncTime
+    }
+
+    func testSetAmplitudeDeviceIDDoesNotSetDeviceIdentifiers() {
+        let amplitudeDeviceID = "amplitudeDeviceID"
+        self.subscriberAttributesManager.setAmplitudeDeviceID(amplitudeDeviceID, appUserID: "kratos")
         expect(self.mockDeviceCache.invokedStoreCount) == 1
 
         expect(self.mockDeviceCache.invokedStoreParametersList.count) == 1

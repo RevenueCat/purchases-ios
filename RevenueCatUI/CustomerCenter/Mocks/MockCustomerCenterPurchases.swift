@@ -91,7 +91,7 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
     var purchaseCallCount = 0
     var purchaseResult: Result<PurchaseResultData, Error> = .failure(NSError(domain: "", code: -1))
     func purchase(product: StoreProduct,
-                  promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
+                  promotionalOffer: PromotionalOffer?) async throws -> PurchaseResultData {
         purchaseCallCount += 1
         return try purchaseResult.get()
     }
@@ -118,6 +118,18 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
         return try restorePurchasesResult.get()
     }
 
+    var invalidateVirtualCurrenciesCacheCallCount = 0
+    func invalidateVirtualCurrenciesCache() {
+        invalidateVirtualCurrenciesCacheCallCount += 1
+    }
+
+    var virtualCurrenciesCallCount = 0
+    var virtualCurrenciesResult: Result<VirtualCurrencies, Error>?
+    func virtualCurrencies() async throws -> VirtualCurrencies {
+        virtualCurrenciesCallCount += 1
+        return try virtualCurrenciesResult?.get() ?? VirtualCurrenciesFixtures.noVirtualCurrencies
+    }
+
     func showManageSubscriptions() async throws {
         if let showManageSubscriptionsError {
             throw showManageSubscriptionsError
@@ -136,5 +148,10 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
     func syncPurchases() async throws -> CustomerInfo {
         syncPurchasesCount += 1
         return syncPurchasesResult
+    }
+
+    var offeringsError: Error = NSError(domain: "", code: -1)
+    func offerings() async throws -> Offerings {
+        throw offeringsError
     }
 }

@@ -48,6 +48,10 @@
     [a setTenjinAnalyticsInstallationID: @""];
     [a setPostHogUserID:nil];
     [a setPostHogUserID:@""];
+    [a setAmplitudeUserID:nil];
+    [a setAmplitudeUserID:@""];
+    [a setAmplitudeDeviceID:nil];
+    [a setAmplitudeDeviceID:@""];
     [a setMediaSource: nil];
     [a setMediaSource: @""];
     [a setCampaign: nil];

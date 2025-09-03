@@ -73,4 +73,105 @@ struct PurchasesInformationSection: View {
     }
 }
 
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+private struct CardStyleModifier: ViewModifier {
+    @Environment(\.colorScheme)
+    private var colorScheme
+
+    func body(content: Content) -> some View {
+        content
+            .padding()
+            .background(Color(colorScheme == .light
+                              ? UIColor.systemBackground
+                              : UIColor.secondarySystemBackground))
+            .cornerRadius(10)
+            .padding(.horizontal)
+    }
+}
+
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+struct AccountDetailsSection: View {
+
+    @Environment(\.colorScheme)
+    private var colorScheme
+
+    let originalPurchaseDate: Date?
+    let originalAppUserId: String
+    let localization: CustomerCenterConfigData.Localization
+
+    init(
+        originalPurchaseDate: Date?,
+        originalAppUserId: String,
+        localization: CustomerCenterConfigData.Localization
+    ) {
+        self.originalPurchaseDate = originalPurchaseDate
+        self.originalAppUserId = originalAppUserId
+        self.localization = localization
+    }
+
+    var body: some View {
+#if DEBUG
+        debugBody
+#else
+        if let originalPurchaseDate {
+            ScrollViewSection(title: localization[.accountDetails]) {
+                VStack {
+                    CompatibilityLabeledContent(
+                        localization[.dateWhenAppWasPurchased],
+                        content: Self.dateFormatter.string(from: originalPurchaseDate)
+                    )
+                }
+                .modifier(CardStyleModifier())
+            }
+        }
+#endif
+    }
+
+    var debugBody: some View {
+        ScrollViewSection(title: localization[.accountDetails]) {
+            VStack {
+                if let originalPurchaseDate {
+                    CompatibilityLabeledContent(
+                        localization[.dateWhenAppWasPurchased],
+                        content: Self.dateFormatter.string(from: originalPurchaseDate)
+                    )
+
+                    Divider()
+                }
+
+                userIdView
+            }
+            .modifier(CardStyleModifier())
+        }
+    }
+
+    var userIdView: some View {
+        CompatibilityLabeledContent(
+            localization[.userId],
+            content: originalAppUserId
+        )
+        .contextMenu {
+            Button {
+                UIPasteboard.general.string = originalAppUserId
+            } label: {
+                Text(localization[.copy])
+                Image(systemName: "doc.on.clipboard")
+            }
+        }
+    }
+
+    private static var dateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return formatter
+    }
+}
+
 #endif
