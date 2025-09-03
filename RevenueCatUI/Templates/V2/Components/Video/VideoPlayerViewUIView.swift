@@ -17,85 +17,65 @@ import SwiftUI
 #if canImport(UIKit)
 import UIKit
 
-class VideoPlayerViewUIView: UIView {
-    var playerLayer: AVPlayerLayer?
-    var looper: AVPlayerLooper?
+struct VideoPlayerUIView: UIViewControllerRepresentable {
+    let videoURL: URL
+    let contentMode: ContentMode
+    let showControls: Bool
     let player: AVPlayer
+    let looper: AVPlayerLooper?
 
-    required  init(
-        url: URL,
+    @Environment(\.accessibilityReduceMotion) var reduceMotion
+
+    init(
+        videoURL: URL,
         shouldAutoPlay: Bool,
-        contentMode: SwiftUI.ContentMode,
+        contentMode: ContentMode,
         loopVideo: Bool,
+        showControls: Bool,
         muteAudio: Bool
     ) {
-        let playerItem = AVPlayerItem(url: url)
+        self.videoURL = videoURL
+        self.contentMode = contentMode
+        self.showControls = showControls
+
+        let playerItem = AVPlayerItem(url: videoURL)
 
         let avPlayer: AVPlayer
         if loopVideo {
             let aVQueuePlayer = AVQueuePlayer()
-            looper = AVPlayerLooper(player: aVQueuePlayer, templateItem: playerItem)
+            self.looper = AVPlayerLooper(player: aVQueuePlayer, templateItem: playerItem)
             avPlayer = aVQueuePlayer
         } else {
             avPlayer = AVPlayer(playerItem: playerItem)
             avPlayer.actionAtItemEnd = .pause
-        }
-
-        self.player = avPlayer
-
-        super.init(frame: .zero)
-
-        self.playerLayer = AVPlayerLayer(player: avPlayer)
-
-        if let playerLayer = playerLayer {
-            layer.addSublayer(playerLayer)
+            self.looper = nil
         }
 
         avPlayer.isMuted = muteAudio
 
-        playerLayer?.videoGravity = switch contentMode {
-        case .fit:
-            .resizeAspect
-        case .fill:
-            .resizeAspectFill
-        }
+        self.player = avPlayer
 
-        if shouldAutoPlay {
+        if shouldAutoPlay && !reduceMotion {
             avPlayer.play()
         }
     }
 
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    func makeUIViewController(context: Context) -> AVPlayerViewController {
+        let controller = AVPlayerViewController()
+        controller.player = player
+        controller.view.backgroundColor = .clear
+        controller.showsPlaybackControls = showControls
+        DispatchQueue.main.async {
+            switch contentMode {
+            case .fit:
+                controller.videoGravity = .resizeAspect
+            case .fill:
+                controller.videoGravity = .resizeAspectFill
+            }
+        }
+        return controller
     }
 
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        playerLayer?.frame = bounds
-    }
+    func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) { }
 }
-
-struct VideoPlayerUIView: UIViewRepresentable {
-    let videoURL: URL
-    let shouldAutoPlay: Bool
-    let contentMode: ContentMode
-    let loopVideo: Bool
-    let muteAudio: Bool
-
-    @Environment(\.accessibilityReduceMotion) var reduceMotion
-
-    func makeUIView(context: Context) -> VideoPlayerViewUIView {
-        VideoPlayerViewUIView(
-            url: videoURL,
-            shouldAutoPlay: shouldAutoPlay && !reduceMotion,
-            contentMode: contentMode,
-            loopVideo: loopVideo,
-            muteAudio: muteAudio
-        )
-    }
-
-    func updateUIView(_ uiView: VideoPlayerViewUIView, context: Context) {
-    }
-}
-
 #endif

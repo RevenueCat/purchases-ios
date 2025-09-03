@@ -30,65 +30,63 @@ struct VideoPlayerView: View {
     let muteAudio: Bool
 
     var body: some View {
-        Group {
-            if showControls {
-                ViewWithControls(
-                    url: videoURL,
-                    shouldAutoPlay: shouldAutoPlay,
-                    loopVideo: loopVideo,
-                    muteAudio: muteAudio
-                )
-            } else {
 #if os(macOS)
-                VideoPlayerNSView(
-                    videoURL: videoURL,
-                    shouldAutoPlay: shouldAutoPlay,
-                    contentMode: contentMode,
-                    loopVideo: loopVideo,
-                    muteAudio: muteAudio
-                )
-#elseif canImport(UIKit)
-                VideoPlayerUIView(
-                    videoURL: videoURL,
-                    shouldAutoPlay: shouldAutoPlay,
-                    contentMode: contentMode,
-                    loopVideo: loopVideo,
-                    muteAudio: muteAudio
-                )
-#endif
-            }
+        if showControls {
+            ViewWithControls(
+                url: videoURL,
+                shouldAutoPlay: shouldAutoPlay,
+                loopVideo: loopVideo,
+                muteAudio: muteAudio
+            )
+        } else {
+            VideoPlayerNSView(
+                videoURL: videoURL,
+                shouldAutoPlay: shouldAutoPlay,
+                contentMode: contentMode,
+                loopVideo: loopVideo,
+                muteAudio: muteAudio
+            )
         }
-        // TO DO: apply content mode
+#elseif canImport(UIKit)
+        VideoPlayerUIView(
+            videoURL: videoURL,
+            shouldAutoPlay: shouldAutoPlay,
+            contentMode: contentMode,
+            loopVideo: loopVideo,
+            showControls: showControls,
+            muteAudio: muteAudio
+        )
+#endif
     }
 
     private struct ViewWithControls: View {
-        let player: AVPlayer
-        let loop: Bool
+            let player: AVPlayer
+            let loop: Bool
 
-        init(url: URL, shouldAutoPlay: Bool, loopVideo: Bool, muteAudio: Bool) {
-            let item = AVPlayerItem(url: url)
-            self.player = AVPlayer(playerItem: item)
-            player.isMuted = muteAudio
-            loop = loopVideo
-            if shouldAutoPlay {
-                player.play()
+            init(url: URL, shouldAutoPlay: Bool, loopVideo: Bool, muteAudio: Bool) {
+                let item = AVPlayerItem(url: url)
+                self.player = AVPlayer(playerItem: item)
+                player.isMuted = muteAudio
+                loop = loopVideo
+                if shouldAutoPlay {
+                    player.play()
+                }
+            }
+
+            var body: some View {
+                VideoPlayer(player: player)
+                    .onReceive(
+                        NotificationCenter.default
+                            .publisher(for: AVPlayerItem.didPlayToEndTimeNotification)
+                            .receive(on: RunLoop.main)
+                    ) { _ in
+                        if loop {
+                            player.seek(to: .zero)
+                            player.play()
+                        }
+                    }
             }
         }
-
-        var body: some View {
-            VideoPlayer(player: player)
-                .onReceive(
-                    NotificationCenter.default
-                        .publisher(for: AVPlayerItem.didPlayToEndTimeNotification)
-                        .receive(on: RunLoop.main)
-                ) { _ in
-                    if loop {
-                        player.seek(to: .zero)
-                        player.play()
-                    }
-                }
-        }
-    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -102,7 +100,7 @@ struct VideoPlayerView: View {
             loopVideo: false,
             muteAudio: true
         )
-    }
+    }.background(Color.accentColor)
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -116,7 +114,7 @@ struct VideoPlayerView: View {
             loopVideo: true,
             muteAudio: true
         )
-    }
+    }.background(Color.accentColor)
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -130,7 +128,8 @@ struct VideoPlayerView: View {
             loopVideo: false,
             muteAudio: true
         )
-    }
+        .padding()
+    }.background(Color.accentColor)
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -144,5 +143,6 @@ struct VideoPlayerView: View {
             loopVideo: true,
             muteAudio: true
         )
-    }
+        .padding()
+    }.background(Color.accentColor)
 }
