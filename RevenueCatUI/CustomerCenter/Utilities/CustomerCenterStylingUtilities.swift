@@ -15,12 +15,8 @@ import SwiftUI
 
 #if os(iOS)
 
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-
-/// To help with different styling between iOS 26 and older
+/// A namespace for Customer Center UI styling utilities.
+/// Provides shared constants and styling helpers across the module.
 public enum CustomerCenterStylingUtilities {
     /// Default corner radius for Customer Center UI components.
     /// - Returns: `26.0` on iOS 26 and later; otherwise `10`.
