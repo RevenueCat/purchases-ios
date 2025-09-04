@@ -83,7 +83,10 @@ private struct CardStyleModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .padding()
-            .background(Color(colorScheme == .light ? UIColor.systemBackground : UIColor.secondarySystemBackground), in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
+            .background(Color(colorScheme == .light
+                              ? UIColor.systemBackground
+                              : UIColor.secondarySystemBackground),
+                        in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
             .padding(.horizontal)
     }
 }

@@ -62,7 +62,10 @@ struct ActiveSubscriptionButtonsView: View {
             }
         }
         .applyIf(tintColor != nil, apply: { $0.tint(tintColor) })
-        .background(Color(colorScheme == .light ? UIColor.systemBackground : UIColor.secondarySystemBackground), in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
+        .background(Color(colorScheme == .light
+                          ? UIColor.systemBackground
+                          : UIColor.secondarySystemBackground),
+                    in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
     }
 
     private var tintColor: Color? {
