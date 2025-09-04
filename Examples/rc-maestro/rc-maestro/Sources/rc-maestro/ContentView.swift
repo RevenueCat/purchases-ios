@@ -50,9 +50,7 @@ public struct ContentView: View {
             })
             .ignoresSafeArea(.all)
             .presentCustomerCenter(isPresented: $presentCustomerCenter, onCustomAction: { actionIdentifier, purchase in
-                print("""
-                    Action \(actionIdentifier) triggered for \(purchase)
-                    """)
+                print("🙌 Custom Action \(actionIdentifier) triggered for \(purchase)")
             })
             .manageSubscriptionsSheet(isPresented: $manageSubscriptions)
             .confirmationDialog(

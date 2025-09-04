@@ -163,12 +163,12 @@ final class CustomerCenterActionWrapperTests: TestCase {
     }
 
     func testNestedActionWrappers() async throws {
-        let actionWrapper = await CustomerCenterActionWrapper()
-        let expectation1 = XCTestExpectation(description: "inner promotionalOfferSuccess should not fire")
-        expectation1.isInverted = true
-        let expectation2 = XCTestExpectation(description: "outer promotionalOfferSuccess should fire")
+        let actionWrapper = CustomerCenterActionWrapper()
+        let expectation1 = XCTestExpectation(description: "inner promotionalOfferSuccess should fire")
+        let expectation2 = XCTestExpectation(description: "outer promotionalOfferSuccess should not fire")
+        expectation2.isInverted = true
 
-        let windowHolder = await WindowHolder()
+        let windowHolder = WindowHolder()
 
         await MainActor.run {
             let testView = VStack {
@@ -199,10 +199,10 @@ final class CustomerCenterActionWrapperTests: TestCase {
     }
 
     func testCustomActionSelected() async throws {
-        let actionWrapper = await CustomerCenterActionWrapper()
+        let actionWrapper = CustomerCenterActionWrapper()
         let expectation = XCTestExpectation(description: "customActionSelected")
 
-        let windowHolder = await WindowHolder()
+        let windowHolder = WindowHolder()
 
         await MainActor.run {
             let testView = Text("test")
@@ -232,10 +232,10 @@ final class CustomerCenterActionWrapperTests: TestCase {
     }
 
     func testCustomActionSelectedWithNilPurchase() async throws {
-        let actionWrapper = await CustomerCenterActionWrapper()
+        let actionWrapper = CustomerCenterActionWrapper()
         let expectation = XCTestExpectation(description: "customActionSelected with nil purchase")
 
-        let windowHolder = await WindowHolder()
+        let windowHolder = WindowHolder()
 
         await MainActor.run {
             let testView = Text("test")
@@ -265,10 +265,10 @@ final class CustomerCenterActionWrapperTests: TestCase {
     }
 
     func testManagementOptionSelectedWithCustomAction() async throws {
-        let actionWrapper = await CustomerCenterActionWrapper()
+        let actionWrapper = CustomerCenterActionWrapper()
         let customActionExpectation = XCTestExpectation(description: "customActionSelected")
 
-        let windowHolder = await WindowHolder()
+        let windowHolder = WindowHolder()
 
         await MainActor.run {
             let testView = Text("test")

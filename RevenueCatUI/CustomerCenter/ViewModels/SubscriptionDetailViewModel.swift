@@ -84,11 +84,18 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
 
         actionWrapper
             .onCustomerCenterShowingManageSubscriptions { [weak self] in
-            self?.customerInfoViewModel.manageSubscriptionsSheet = true
-        }
+                self?.customerInfoViewModel.manageSubscriptionsSheet = true
+            }
             .store(in: &cancellables)
 
-        customerInfoViewModel.$manageSubscriptionsSheet
+        actionWrapper.onCustomerCenterChangePlansSelected { [weak self] _ in
+            self?.customerInfoViewModel.changePlansSheet = true
+        }
+        .store(in: &cancellables)
+
+        customerInfoViewModel.$changePlansSheet
+            .merge(with: customerInfoViewModel.$manageSubscriptionsSheet)
+            .throttle(for: .milliseconds(200), scheduler: DispatchQueue.main, latest: true)
             .sink { [weak self] in
                 if !$0 { self?.refreshPurchase() }
             }

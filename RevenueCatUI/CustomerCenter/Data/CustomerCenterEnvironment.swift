@@ -161,6 +161,57 @@ final class CustomerCenterEnvironmentActions: @unchecked Sendable {
     }
 }
 
+// Conform environment actions to the internal action sink used by ViewModels
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension CustomerCenterEnvironmentActions: CustomerCenterActionSink {
+    func actionRestoreStarted() {
+        self.restoreStarted()
+    }
+
+    func actionRestoreFailed(_ error: Error) {
+        self.restoreFailed(error)
+    }
+
+    func actionRestoreCompleted(_ info: CustomerInfo) {
+        self.restoreCompleted(info)
+    }
+
+    func actionShowingManageSubscriptions() {
+        self.showingManageSubscriptions()
+    }
+
+    func actionRefundRequestStarted(_ productId: String) {
+        self.refundRequestStarted(productId)
+    }
+
+    func actionRefundRequestCompleted(_ productId: String, _ status: RefundRequestStatus) {
+        self.refundRequestCompleted(productId, status)
+    }
+
+    func actionFeedbackSurveyCompleted(_ reason: String) {
+        self.feedbackSurveyCompleted(reason)
+    }
+
+    func actionManagementOptionSelected(_ action: CustomerCenterActionable) {
+        self.managementOptionSelected(action)
+    }
+
+    func actionPromotionalOfferSuccess() {
+        self.promotionalOfferSuccess()
+    }
+
+    func actionChangePlansSelected(_ subscriptionGroupID: String) {
+        self.changePlansSelected(subscriptionGroupID)
+    }
+
+    func actionCustomActionSelected(_ actionIdentifier: String, _ activePurchaseId: String?) {
+        self.customActionSelected(actionIdentifier, activePurchaseId)
+    }
+}
+
 @available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)

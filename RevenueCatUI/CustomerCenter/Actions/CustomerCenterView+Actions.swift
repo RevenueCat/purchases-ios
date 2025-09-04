@@ -316,12 +316,26 @@ extension View {
         return self.modifier(CustomerCenterView.OnManagementOptionModifier(handler: handler))
     }
 
+    /// Invokes the given closure when a promotional offer succeeds
+    /// ```swift
+    /// CustomerCenterView()
+    ///     .onCustomerCenterPromotionalOfferSuccess {
+    ///         // handle succees
+    ///     }
+    /// ```
     func onCustomerCenterPromotionalOfferSuccess(
         _ handler: @escaping CustomerCenterView.PromotionalOfferSuccessHandler
     ) -> some View {
         return self.modifier(CustomerCenterView.OnPromotionalOfferSuccess(handler: handler))
     }
 
+    /// Invokes the given closure when change plan button is selected
+    /// ```swift
+    /// CustomerCenterView()
+    ///     .onCustomerCenterChangePlansSelected { optionId in
+    ///         // handle change plan
+    ///     }
+    /// ```
     func onCustomerCenterChangePlansSelected(
         _ handler: @escaping CustomerCenterView.ChangePlansHandler
     ) -> some View {
