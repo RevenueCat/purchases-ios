@@ -101,7 +101,7 @@ struct DismissCircleButton: View {
     var customDismiss: (() -> Void)?
 
     var body: some View {
-        
+#if swift(>=6.2)
         if #available(iOS 26.0, *) {
             Button(role: .close) {
                 if let customDismiss {
@@ -134,6 +134,28 @@ struct DismissCircleButton: View {
             .accessibilityIdentifier("circled_close_button")
             .accessibilityLabel(Text(localization[.dismiss]))
         }
+        #else
+        Button {
+            if let customDismiss {
+                customDismiss()
+            } else {
+                self.dismiss()
+            }
+        } label: {
+            Circle()
+                .fill(Color(uiColor: .secondarySystemFill))
+                .frame(width: 28, height: 28)
+                .overlay(
+                    Image(systemName: "xmark")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(.secondary)
+                        .imageScale(.medium)
+                )
+            }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("circled_close_button")
+        .accessibilityLabel(Text(localization[.dismiss]))
+        #endif
     }
 
 }
