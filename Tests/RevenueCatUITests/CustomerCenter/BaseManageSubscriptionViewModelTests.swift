@@ -32,12 +32,19 @@ import XCTest
 final class BaseManageSubscriptionViewModelTests: TestCase {
 
     private let error = TestError(message: "An error occurred")
+    private var cancellables = Set<AnyCancellable>()
 
     private struct TestError: Error, Equatable {
         let message: String
         var localizedDescription: String {
             return message
         }
+    }
+
+    override func setUp() {
+        super.setUp()
+
+        cancellables.removeAll()
     }
 
     func testInitialState() {
@@ -551,14 +558,15 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         let expectation = XCTestExpectation(description: "Custom action triggered")
 
         // Monitor the customActionSelected publisher
-        let cancellable = actionWrapper.customActionSelected
-            .sink { actionIdentifier, purchaseIdentifier in
+        actionWrapper
+            .onCustomerCenterCustomActionSelected({  actionIdentifier, purchaseIdentifier in
                 capturedCustomActionData = CustomActionData(
                     actionIdentifier: actionIdentifier,
                     purchaseIdentifier: purchaseIdentifier
                 )
                 expectation.fulfill()
-            }
+            })
+            .store(in: &cancellables)
 
         let viewModel = BaseManageSubscriptionViewModel(
             screen: Self.managementScreen(refundWindowDuration: .forever),
@@ -586,8 +594,6 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         let customActionData = try XCTUnwrap(capturedCustomActionData)
         expect(customActionData.actionIdentifier) == "delete_user"
         expect(customActionData.purchaseIdentifier) == purchaseInformation.productIdentifier
-
-        cancellable.cancel()
     }
 
     func testCustomActionPathWithoutActionIdentifier() async throws {
@@ -600,11 +606,12 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         expectation.isInverted = true
 
         // Monitor the customActionSelected publisher
-        let cancellable = actionWrapper.customActionSelected
-            .sink { _, _ in
+        actionWrapper
+            .onCustomerCenterCustomActionSelected { _, _ in
                 wasActionTriggered = true
                 expectation.fulfill() // This should not happen
             }
+        .store(in: &cancellables)
 
         let viewModel = BaseManageSubscriptionViewModel(
             screen: Self.managementScreen(refundWindowDuration: .forever),
@@ -630,8 +637,6 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
 
         // Verify that no custom action was triggered due to missing identifier
         expect(wasActionTriggered) == false
-
-        cancellable.cancel()
     }
 
     func testCustomActionPathWithNilActivePurchaseId() async throws {
@@ -642,14 +647,15 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         let expectation = XCTestExpectation(description: "Custom action triggered without purchase ID")
 
         // Monitor the customActionSelected publisher
-        let cancellable = actionWrapper.customActionSelected
-            .sink { actionIdentifier, purchaseIdentifier in
+        actionWrapper
+            .onCustomerCenterCustomActionSelected({ actionIdentifier, purchaseIdentifier in
                 capturedCustomActionData = CustomActionData(
                     actionIdentifier: actionIdentifier,
                     purchaseIdentifier: purchaseIdentifier
                 )
                 expectation.fulfill()
-            }
+            })
+            .store(in: &cancellables)
 
         let viewModel = BaseManageSubscriptionViewModel(
             screen: Self.managementScreen(refundWindowDuration: .forever),
@@ -677,8 +683,6 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         let customActionData = try XCTUnwrap(capturedCustomActionData)
         expect(customActionData.actionIdentifier) == "rate_app"
         expect(customActionData.purchaseIdentifier).to(beNil())
-
-        cancellable.cancel()
     }
 
     // MARK: - Product Type Path Filtering Tests

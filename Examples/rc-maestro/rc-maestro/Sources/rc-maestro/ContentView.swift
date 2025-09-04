@@ -38,12 +38,19 @@ public struct ContentView: View {
                         shouldShowCloseButton: false
                     )
                 )
+                .onCustomerCenterRestoreStarted {
+                    print("🙌 Restore started")
+                }
+                .onCustomerCenterRestoreCompleted { customerInfo in
+                    print("🙌 Restore completed")
+                }
+                .onCustomerCenterCustomActionSelected { actionIdentifier, purchaseIdentifier in
+                    print("🙌 Custom Action")
+                }
             })
             .ignoresSafeArea(.all)
             .presentCustomerCenter(isPresented: $presentCustomerCenter, onCustomAction: { actionIdentifier, purchase in
-                print("""
-                    Action \(actionIdentifier) triggered for \(purchase)
-                    """)
+                print("🙌 Custom Action \(actionIdentifier) triggered for \(purchase)")
             })
             .manageSubscriptionsSheet(isPresented: $manageSubscriptions)
             .confirmationDialog(
