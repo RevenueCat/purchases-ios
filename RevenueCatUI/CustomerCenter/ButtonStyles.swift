@@ -27,6 +27,13 @@ struct ProminentButtonStyle: PrimitiveButtonStyle {
 
     @Environment(\.appearance) private var appearance: CustomerCenterConfigData.Appearance
     @Environment(\.colorScheme) private var colorScheme
+    private var needsLegacyBorderShape: Bool {
+        #if swift(>=6.2)
+        if #available(iOS 26.0, *) { false } else { true }
+        #else
+        true
+        #endif
+    }
 
     func makeBody(configuration: PrimitiveButtonStyleConfiguration) -> some View {
         let background = Color.from(colorInformation: appearance.buttonBackgroundColor, for: colorScheme)
@@ -38,9 +45,9 @@ struct ProminentButtonStyle: PrimitiveButtonStyle {
         .font(.body.weight(.medium))
         .buttonStyle(.borderedProminent)
         .controlSize(.large)
-        .buttonBorderShape(.roundedRectangle(radius: 16))
         .applyIf(background != nil, apply: { $0.tint(background) })
         .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
+        .applyIf(needsLegacyBorderShape, apply: { $0 .buttonBorderShape(.roundedRectangle(radius: 16)) })
     }
 }
 
@@ -93,6 +100,40 @@ struct DismissCircleButton: View {
     var customDismiss: (() -> Void)?
 
     var body: some View {
+#if swift(>=6.2)
+        if #available(iOS 26.0, *) {
+            Button(role: .close) {
+                if let customDismiss {
+                    customDismiss()
+                } else {
+                    self.dismiss()
+                }
+            }
+            .accessibilityIdentifier("circled_close_button")
+            .accessibilityLabel(Text(localization[.dismiss]))
+        } else {
+            Button {
+                if let customDismiss {
+                    customDismiss()
+                } else {
+                    self.dismiss()
+                }
+            } label: {
+                Circle()
+                    .fill(Color(uiColor: .secondarySystemFill))
+                    .frame(width: 28, height: 28)
+                    .overlay(
+                        Image(systemName: "xmark")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(.secondary)
+                            .imageScale(.medium)
+                    )
+                }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("circled_close_button")
+            .accessibilityLabel(Text(localization[.dismiss]))
+        }
+        #else
         Button {
             if let customDismiss {
                 customDismiss()
@@ -113,6 +154,7 @@ struct DismissCircleButton: View {
         .buttonStyle(.plain)
         .accessibilityIdentifier("circled_close_button")
         .accessibilityLabel(Text(localization[.dismiss]))
+        #endif
     }
 
 }
@@ -130,7 +172,7 @@ struct DismissCircleButtonToolbarModifier: ViewModifier {
         if navigationOptions.shouldShowCloseButton {
             content
                 .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
+                    ToolbarItem(placement: .topBarTrailing) {
                         DismissCircleButton(customDismiss: navigationOptions.onCloseHandler)
                     }
                 }

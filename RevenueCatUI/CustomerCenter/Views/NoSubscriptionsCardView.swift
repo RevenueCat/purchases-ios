@@ -98,7 +98,8 @@ struct NoSubscriptionsCardView: View {
         .padding(16)
         .background(Color(colorScheme == .light
                           ? UIColor.systemBackground
-                          : UIColor.secondarySystemBackground))
+                          : UIColor.secondarySystemBackground),
+                    in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
         .animation(.easeInOut(duration: 0.3), value: viewModel.isLoadingOffering)
         .sheet(isPresented: $viewModel.showOffering, content: {
             PaywallView(
@@ -172,7 +173,6 @@ struct NoSubscriptionsCardView_Previews: PreviewProvider {
                     localization: CustomerCenterConfigData.default.localization,
                     purchasesProvider: MockCustomerCenterPurchases()
                 )
-                .cornerRadius(10)
                 .padding([.leading, .trailing])
             }
             .preferredColorScheme(colorScheme)

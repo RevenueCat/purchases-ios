@@ -31,7 +31,6 @@ struct ActiveSubscriptionButtonsView: View {
 
     @ObservedObject
     var viewModel: BaseManageSubscriptionViewModel
-
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             ForEach(self.viewModel.relevantPathsForPurchase, id: \.id) { path in
@@ -43,9 +42,14 @@ struct ActiveSubscriptionButtonsView: View {
                     if self.viewModel.loadingPath?.id == path.id {
                         TintedProgressView()
                     } else {
-                        CompatibilityLabeledContent(path.title)
-                            .padding(.horizontal)
-                            .padding(.vertical, 12)
+                        if #available(iOS 26.0, *) {
+                            CompatibilityLabeledContent(path.title)
+                                .padding()
+                        } else {
+                            CompatibilityLabeledContent(path.title)
+                                .padding(.horizontal)
+                                .padding(.vertical, 12)
+                        }
                     }
                 })
                 .disabled(self.viewModel.loadingPath != nil)
@@ -59,8 +63,8 @@ struct ActiveSubscriptionButtonsView: View {
         .applyIf(tintColor != nil, apply: { $0.tint(tintColor) })
         .background(Color(colorScheme == .light
                           ? UIColor.systemBackground
-                          : UIColor.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+                          : UIColor.secondarySystemBackground),
+                    in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
     }
 
     private var tintColor: Color? {

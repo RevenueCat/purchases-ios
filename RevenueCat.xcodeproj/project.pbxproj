@@ -936,6 +936,7 @@
 		77BA1AB12CCBAB80009BF0EA /* RootViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BA1AB02CCBAB80009BF0EA /* RootViewModel.swift */; };
 		77BA1AB32CCBB6EE009BF0EA /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BA1AB22CCBB6EE009BF0EA /* RootView.swift */; };
 		805B60C97993B311CEC93EAF /* ProductsFetcherSK2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3628C1F100BB3C1782860D24 /* ProductsFetcherSK2.swift */; };
+		80CDB7B62E69C35100D7DB9E /* CustomerCenterStylingUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80CDB7B52E69C35100D7DB9E /* CustomerCenterStylingUtilities.swift */; };
 		80E80EF226970E04008F245A /* ReceiptFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E80EF026970DC3008F245A /* ReceiptFetcher.swift */; };
 		831660B62E3AAA4E00855312 /* FixMacButtonsModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 831660B52E3AAA4900855312 /* FixMacButtonsModifier.swift */; };
 		8337D6B62E0A7890000798BF /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DC5621624EC63420031F69B /* RevenueCat.framework */; };
@@ -2413,6 +2414,7 @@
 		7783607A2CCA88E4000785B8 /* StickyFooterComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StickyFooterComponentView.swift; sourceTree = "<group>"; };
 		77BA1AB02CCBAB80009BF0EA /* RootViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewModel.swift; sourceTree = "<group>"; };
 		77BA1AB22CCBB6EE009BF0EA /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		80CDB7B52E69C35100D7DB9E /* CustomerCenterStylingUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterStylingUtilities.swift; sourceTree = "<group>"; };
 		80E80EF026970DC3008F245A /* ReceiptFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptFetcher.swift; sourceTree = "<group>"; };
 		831660B52E3AAA4900855312 /* FixMacButtonsModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FixMacButtonsModifier.swift; sourceTree = "<group>"; };
 		8337DD6D2E0A7CFE000798BF /* paywall-preview-resources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "paywall-preview-resources"; sourceTree = "<group>"; };
@@ -4866,6 +4868,7 @@
 		5798C9032DF1985700F44400 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				80CDB7B52E69C35100D7DB9E /* CustomerCenterStylingUtilities.swift */,
 				5798C8FF2DF1985700F44400 /* CustomerCenterLocalizationStrings.swift */,
 				5798C9002DF1985700F44400 /* CustomerCenterStoreKitUtilities.swift */,
 				5798C9012DF1985700F44400 /* CustomerCenterStoreKitUtilitiesType.swift */,
@@ -7542,6 +7545,7 @@
 				887A60832C1D037000E1A461 /* VersionDetector.swift in Sources */,
 				030F93B32D5ED90B0085103F /* ProgressViewModifier.swift in Sources */,
 				88B1BAFC2C813A3C001B7EE5 /* ImageComponentView.swift in Sources */,
+				80CDB7B62E69C35100D7DB9E /* CustomerCenterStylingUtilities.swift in Sources */,
 				2C91068A2CE22D3500189565 /* FlexVStack.swift in Sources */,
 				4D3BA5B22D47AB4400668AFC /* TimelineComponentView.swift in Sources */,
 				4D3BA5B32D47AB4400668AFC /* TimelineComponentViewModel.swift in Sources */,

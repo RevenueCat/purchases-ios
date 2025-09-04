@@ -135,7 +135,6 @@ struct RelevantPurchasesListView: View {
             LazyVStack(spacing: 0) {
                 if !customerInfoViewModel.hasAnyPurchases {
                     emptyView
-                        .cornerRadius(10)
                         .padding(.horizontal)
                         .padding(.bottom, 32)
                 } else {
@@ -181,6 +180,8 @@ struct RelevantPurchasesListView: View {
 
                 if viewModel.shouldShowSeeAllPurchases {
                     seeAllSubscriptionsButton
+                        .tint(colorScheme == .dark ? .white : .black)
+                        .padding(.horizontal)
                         .padding(.bottom, 32)
                 } else {
                     Spacer().frame(height: 16)
@@ -210,22 +211,36 @@ struct RelevantPurchasesListView: View {
             .prefix(RelevantPurchasesListViewModel.maxNonSubscriptionsToShow))
     }
 
+    @ViewBuilder
     private var seeAllSubscriptionsButton: some View {
-        Button {
-            viewModel.showAllPurchases = true
-        } label: {
-            CompatibilityLabeledContent(localization[.seeAllPurchases]) {
-                Image(systemName: "chevron.forward")
+        if #available(iOS 26.0, *) {
+            Button {
+                viewModel.showAllPurchases = true
+            } label: {
+                CompatibilityLabeledContent(localization[.seeAllPurchases]) {
+                    Image(systemName: "chevron.forward")
+                }
+                .padding()
+                .background(Color(colorScheme == .light
+                                  ? UIColor.systemBackground
+                                  : UIColor.secondarySystemBackground),
+                            in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
             }
-            .padding(.horizontal)
-            .padding(.vertical, 12)
-            .background(Color(colorScheme == .light
-                              ? UIColor.systemBackground
-                              : UIColor.secondarySystemBackground))
-            .cornerRadius(10)
-            .padding(.horizontal)
+        } else {
+            Button {
+                viewModel.showAllPurchases = true
+            } label: {
+                CompatibilityLabeledContent(localization[.seeAllPurchases]) {
+                    Image(systemName: "chevron.forward")
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 12)
+                .background(Color(colorScheme == .light
+                                  ? UIColor.systemBackground
+                                  : UIColor.secondarySystemBackground),
+                            in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
+            }
         }
-        .tint(colorScheme == .dark ? .white : .black)
     }
 
     private var dateFormatter: DateFormatter {
