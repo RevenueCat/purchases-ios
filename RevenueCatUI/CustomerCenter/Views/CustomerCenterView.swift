@@ -123,13 +123,11 @@ public struct CustomerCenterView: View {
                 await loadInformationIfNeeded()
             }
             .onAppear {
-                Task { @MainActor in
 #if DEBUG
                     guard !ProcessInfo.isRunningForPreviews else { return }
 #endif
                     self.trackImpression()
                     viewModel.setUpActions(sink: actions)
-                }
             }
     }
 
