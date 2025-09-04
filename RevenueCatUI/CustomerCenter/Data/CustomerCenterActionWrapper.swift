@@ -70,20 +70,17 @@ final class CustomerCenterActionWrapper {
 
     private let legacyActionHandler: DeprecatedCustomerCenterActionHandler?
 
-    // Combine publishers for each action
-    let restoreStarted = PassthroughSubject<Void, Never>()
-    let restoreFailed = PassthroughSubject<NSError, Never>()
-    let restoreCompleted = PassthroughSubject<CustomerInfo, Never>()
-    let showingManageSubscriptions = PassthroughSubject<Void, Never>()
-    let showingChangePlans = PassthroughSubject<String?, Never>()
-    let refundRequestStarted = PassthroughSubject<String, Never>()
-    let refundRequestCompleted = PassthroughSubject<(String, RefundRequestStatus), Never>()
-    let feedbackSurveyCompleted = PassthroughSubject<String, Never>()
-    let managementOptionSelected = PassthroughSubject<CustomerCenterActionable, Never>()
-    let customActionSelected = PassthroughSubject<(String, String?), Never>()
-    let promotionalOfferSuccess = PassthroughSubject<Void, Never>()
-
-    private var cancellables: Set<AnyCancellable> = []
+    private let restoreStarted = PassthroughSubject<Void, Never>()
+    private let restoreFailed = PassthroughSubject<NSError, Never>()
+    private let restoreCompleted = PassthroughSubject<CustomerInfo, Never>()
+    private let showingManageSubscriptions = PassthroughSubject<Void, Never>()
+    private let showingChangePlans = PassthroughSubject<String?, Never>()
+    private let refundRequestStarted = PassthroughSubject<String, Never>()
+    private let refundRequestCompleted = PassthroughSubject<(String, RefundRequestStatus), Never>()
+    private let feedbackSurveyCompleted = PassthroughSubject<String, Never>()
+    private let managementOptionSelected = PassthroughSubject<CustomerCenterActionable, Never>()
+    private let customActionSelected = PassthroughSubject<(String, String?), Never>()
+    private let promotionalOfferSuccess = PassthroughSubject<Void, Never>()
 
     init(legacyActionHandler: DeprecatedCustomerCenterActionHandler? = nil) {
         self.legacyActionHandler = legacyActionHandler
@@ -184,85 +181,74 @@ extension CustomerCenterActionWrapper {
 
     func onCustomerCenterRestoreStarted(
         _ handler: @escaping () -> Void
-    ) {
-        restoreStarted.sink(receiveValue: handler)
-            .store(in: &cancellables)
+    ) -> AnyCancellable {
+        return restoreStarted.sink(receiveValue: handler)
     }
 
     func onCustomerCenterRestoreFailed(
         _ handler: @escaping CustomerCenterView.RestoreFailedHandler
-    ) {
-        restoreFailed.sink(receiveValue: handler)
-            .store(in: &cancellables)
+    ) -> AnyCancellable {
+        return restoreFailed.sink(receiveValue: handler)
     }
 
     func onCustomerCenterRestoreCompleted(
         _ handler: @escaping (CustomerInfo) -> Void
-    ) {
-        restoreCompleted.sink(receiveValue: handler)
-            .store(in: &cancellables)
+    ) -> AnyCancellable {
+        return restoreCompleted.sink(receiveValue: handler)
     }
 
     func onCustomerCenterShowingManageSubscriptions(
         _ handler: @escaping () -> Void
-    ) {
-        showingManageSubscriptions.sink(receiveValue: handler)
-            .store(in: &cancellables)
+    ) -> AnyCancellable {
+        return showingManageSubscriptions.sink(receiveValue: handler)
     }
 
     func onCustomerCenterRefundRequestStarted(
         _ handler: @escaping (String) -> Void
-    ) {
-        refundRequestStarted.sink(receiveValue: handler)
-            .store(in: &cancellables)
+    ) -> AnyCancellable {
+        return refundRequestStarted.sink(receiveValue: handler)
     }
 
     func onCustomerCenterRefundRequestCompleted(
         _ handler: @escaping (String, RefundRequestStatus) -> Void
-    ) {
-        refundRequestCompleted
+    ) -> AnyCancellable {
+        return refundRequestCompleted
             .sink { (productId, status) in
                 handler(productId, status)
             }
-            .store(in: &cancellables)
     }
 
     func onCustomerCenterFeedbackSurveyCompleted(
         _ handler: @escaping (String) -> Void
-    ) {
-        feedbackSurveyCompleted.sink(receiveValue: handler)
-            .store(in: &cancellables)
+    ) -> AnyCancellable {
+        return feedbackSurveyCompleted.sink(receiveValue: handler)
     }
 
     func onCustomerCenterManagementOptionSelected(
         _ handler: @escaping (CustomerCenterActionable) -> Void
-    ) {
-        managementOptionSelected.sink(receiveValue: handler)
-            .store(in: &cancellables)
+    ) -> AnyCancellable {
+        return managementOptionSelected.sink(receiveValue: handler)
     }
 
     func onCustomerCenterPromotionalOfferSuccess(
         _ handler: @escaping () -> Void
-    ) {
-        promotionalOfferSuccess.sink(receiveValue: handler)
-            .store(in: &cancellables)
+    ) -> AnyCancellable {
+        return promotionalOfferSuccess.sink(receiveValue: handler)
     }
 
     func onCustomerCenterChangePlansSelected(
         _ handler: @escaping (String?) -> Void
-    ) {
-        showingChangePlans.sink(receiveValue: handler)
-            .store(in: &cancellables)
+    ) -> AnyCancellable {
+        return showingChangePlans.sink(receiveValue: handler)
     }
 
     func onCustomerCenterCustomActionSelected(
         _ handler: @escaping (String, String?) -> Void
-    ) {
-        customActionSelected
+    ) -> AnyCancellable {
+        return customActionSelected
             .sink { (identifier, purchaseId) in
                 handler(identifier, purchaseId)
             }
-            .store(in: &cancellables)
     }
 }
 

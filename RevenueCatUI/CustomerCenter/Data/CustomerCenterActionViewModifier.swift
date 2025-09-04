@@ -38,6 +38,7 @@ struct CustomerCenterActionViewModifier: ViewModifier {
 
     let actionWrapper: CustomerCenterActionWrapper
     @Environment(\.customerCenterActions) private var actions: CustomerCenterEnvironmentActions
+    @State private var cancellables: Set<AnyCancellable> = []
 
     func body(content: Content) -> some View {
         content
@@ -57,55 +58,55 @@ struct CustomerCenterActionViewModifier: ViewModifier {
     private func subscribeToRestoreActions() {
         actionWrapper.onCustomerCenterRestoreStarted {
             actions.restoreStarted()
-        }
+        }.store(in: &cancellables)
 
         actionWrapper.onCustomerCenterRestoreFailed { error in
             actions.restoreFailed(error)
-        }
+        }.store(in: &cancellables)
 
         actionWrapper.onCustomerCenterRestoreCompleted { info in
             actions.restoreCompleted(info)
-        }
+        }.store(in: &cancellables)
     }
 
     @MainActor
     private func subscribeToRefundActions() {
         actionWrapper.onCustomerCenterShowingManageSubscriptions {
             actions.showingManageSubscriptions()
-        }
+        }.store(in: &cancellables)
 
         actionWrapper.onCustomerCenterRefundRequestStarted { productId in
             actions.refundRequestStarted(productId)
-        }
+        }.store(in: &cancellables)
 
         actionWrapper.onCustomerCenterRefundRequestCompleted { productId, status in
             actions.refundRequestCompleted(productId, status)
-        }
+        }.store(in: &cancellables)
     }
 
     @MainActor
     private func subscribeToOtherActions() {
         actionWrapper.onCustomerCenterFeedbackSurveyCompleted { reason in
             actions.feedbackSurveyCompleted(reason)
-        }
+        }.store(in: &cancellables)
 
         actionWrapper.onCustomerCenterManagementOptionSelected { action in
             actions.managementOptionSelected(action)
-        }
+        }.store(in: &cancellables)
 
         actionWrapper.onCustomerCenterPromotionalOfferSuccess {
             actions.promotionalOfferSuccess()
-        }
+        }.store(in: &cancellables)
 
         actionWrapper.onCustomerCenterChangePlansSelected { subscriptionGroupID in
             if let id = subscriptionGroupID {
                 actions.changePlansSelected(id)
             }
-        }
+        }.store(in: &cancellables)
 
         actionWrapper.onCustomerCenterCustomActionSelected { actionIdentifier, activePurchaseId in
             actions.customActionSelected(actionIdentifier, activePurchaseId)
-        }
+        }.store(in: &cancellables)
     }
 }
 

@@ -75,43 +75,43 @@ public class CustomerCenterViewController: UIHostingController<CustomerCenterVie
         if let restoreStarted {
             actionWrapper.onCustomerCenterRestoreStarted {
                 restoreStarted()
-            }
+            }.store(in: &cancellables)
         }
 
         if let restoreCompleted {
             actionWrapper.onCustomerCenterRestoreCompleted {
                 restoreCompleted($0)
-            }
+            }.store(in: &cancellables)
         }
 
         if let restoreFailed {
             actionWrapper.onCustomerCenterRestoreFailed {
                 restoreFailed($0)
-            }
+            }.store(in: &cancellables)
         }
 
         if let showingManageSubscriptions {
             actionWrapper.onCustomerCenterShowingManageSubscriptions {
                 showingManageSubscriptions()
-            }
+            }.store(in: &cancellables)
         }
 
         if let refundRequestStarted {
             actionWrapper.onCustomerCenterRefundRequestStarted {
                 refundRequestStarted($0)
-            }
+            }.store(in: &cancellables)
         }
 
         if let refundRequestCompleted {
             actionWrapper.onCustomerCenterRefundRequestCompleted({ productId, status in
                 refundRequestCompleted(productId, status)
-            })
+            }).store(in: &cancellables)
         }
 
         if let feedbackSurveyCompleted {
             actionWrapper.onCustomerCenterFeedbackSurveyCompleted {
                 feedbackSurveyCompleted($0)
-            }
+            }.store(in: &cancellables)
         }
 
         let view = CustomerCenterView(

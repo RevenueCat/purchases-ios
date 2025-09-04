@@ -11,6 +11,7 @@
 //
 //  Created by Facundo Menzella on 16/6/25.
 
+import Combine
 import Nimble
 import RevenueCat
 @testable import RevenueCatUI
@@ -31,10 +32,11 @@ final class CustomerCenterActionWrapperTests: TestCase {
     func testRestoreStarted() async throws {
         let wrapper = CustomerCenterActionWrapper()
         let expectation = XCTestExpectation(description: "onCustomerCenterRestoreStarted called")
+        var cancellables: Set<AnyCancellable> = []
 
         wrapper.onCustomerCenterRestoreStarted {
             expectation.fulfill()
-        }
+        }.store(in: &cancellables)
 
         wrapper.handleAction(.restoreStarted)
         await fulfillment(of: [expectation], timeout: 1.0)
@@ -43,12 +45,13 @@ final class CustomerCenterActionWrapperTests: TestCase {
     func testRestoreFailed() async throws {
         let wrapper = CustomerCenterActionWrapper()
         let expectation = XCTestExpectation(description: "onCustomerCenterRestoreFailed called")
+        var cancellables: Set<AnyCancellable> = []
 
         wrapper.onCustomerCenterRestoreFailed { error in
             // swiftlint:disable:next force_cast
             XCTAssertEqual((error as! TestError), TestError.error)
             expectation.fulfill()
-        }
+        }.store(in: &cancellables)
 
         wrapper.handleAction(.restoreFailed(TestError.error))
         await fulfillment(of: [expectation], timeout: 1.0)
@@ -57,13 +60,14 @@ final class CustomerCenterActionWrapperTests: TestCase {
     func testRestoreCompleted() async throws {
         let wrapper = CustomerCenterActionWrapper()
         let expectation = XCTestExpectation(description: "onCustomerCenterRestoreCompleted called")
+        var cancellables: Set<AnyCancellable> = []
 
         let expectedInfo = CustomerInfoFixtures.customerInfoWithGoogleSubscriptions
 
         wrapper.onCustomerCenterRestoreCompleted { info in
             XCTAssertEqual(info, expectedInfo)
             expectation.fulfill()
-        }
+        }.store(in: &cancellables)
 
         wrapper.handleAction(.restoreCompleted(expectedInfo))
         await fulfillment(of: [expectation], timeout: 1.0)
@@ -72,10 +76,11 @@ final class CustomerCenterActionWrapperTests: TestCase {
     func testShowingManageSubscriptions() async throws {
         let wrapper = CustomerCenterActionWrapper()
         let expectation = XCTestExpectation(description: "onCustomerCenterShowingManageSubscriptions called")
+        var cancellables: Set<AnyCancellable> = []
 
         wrapper.onCustomerCenterShowingManageSubscriptions {
             expectation.fulfill()
-        }
+        }.store(in: &cancellables)
 
         wrapper.handleAction(.showingManageSubscriptions)
         await fulfillment(of: [expectation], timeout: 1.0)
@@ -84,13 +89,14 @@ final class CustomerCenterActionWrapperTests: TestCase {
     func testRefundRequestStarted() async throws {
         let wrapper = CustomerCenterActionWrapper()
         let expectation = XCTestExpectation(description: "onCustomerCenterRefundRequestStarted called")
+        var cancellables: Set<AnyCancellable> = []
 
         let productId = "test_product"
 
         wrapper.onCustomerCenterRefundRequestStarted { id in
             XCTAssertEqual(id, productId)
             expectation.fulfill()
-        }
+        }.store(in: &cancellables)
 
         wrapper.handleAction(.refundRequestStarted(productId))
         await fulfillment(of: [expectation], timeout: 1.0)
@@ -99,6 +105,7 @@ final class CustomerCenterActionWrapperTests: TestCase {
     func testRefundRequestCompleted() async throws {
         let wrapper = CustomerCenterActionWrapper()
         let expectation = XCTestExpectation(description: "onCustomerCenterRefundRequestCompleted called")
+        var cancellables: Set<AnyCancellable> = []
 
         let productId = "completed_product"
         let status: RefundRequestStatus = .success
@@ -107,7 +114,7 @@ final class CustomerCenterActionWrapperTests: TestCase {
             XCTAssertEqual(id, productId)
             XCTAssertEqual(result, status)
             expectation.fulfill()
-        }
+        }.store(in: &cancellables)
 
         wrapper.handleAction(.refundRequestCompleted(productId, status))
         await fulfillment(of: [expectation], timeout: 1.0)
@@ -116,13 +123,14 @@ final class CustomerCenterActionWrapperTests: TestCase {
     func testFeedbackSurveyCompleted() async throws {
         let wrapper = CustomerCenterActionWrapper()
         let expectation = XCTestExpectation(description: "onCustomerCenterFeedbackSurveyCompleted called")
+        var cancellables: Set<AnyCancellable> = []
 
         let option = "option-id"
 
         wrapper.onCustomerCenterFeedbackSurveyCompleted { value in
             XCTAssertEqual(value, option)
             expectation.fulfill()
-        }
+        }.store(in: &cancellables)
 
         wrapper.handleAction(.feedbackSurveyCompleted(option))
         await fulfillment(of: [expectation], timeout: 1.0)
@@ -131,10 +139,11 @@ final class CustomerCenterActionWrapperTests: TestCase {
     func testManagementOptionSelected() async throws {
         let wrapper = CustomerCenterActionWrapper()
         let expectation = XCTestExpectation(description: "onCustomerCenterManagementOptionSelected called")
+        var cancellables: Set<AnyCancellable> = []
 
         wrapper.onCustomerCenterManagementOptionSelected { _ in
             expectation.fulfill()
-        }
+        }.store(in: &cancellables)
 
         wrapper.handleAction(.buttonTapped(action: CustomerCenterManagementOption.MissingPurchase()))
         await fulfillment(of: [expectation], timeout: 1.0)
@@ -143,10 +152,11 @@ final class CustomerCenterActionWrapperTests: TestCase {
     func testPromotionalOfferSuccess() async throws {
         let wrapper = CustomerCenterActionWrapper()
         let expectation = XCTestExpectation(description: "onCustomerCenterPromotionalOfferSuccess called")
+        var cancellables: Set<AnyCancellable> = []
 
         wrapper.onCustomerCenterPromotionalOfferSuccess {
             expectation.fulfill()
-        }
+        }.store(in: &cancellables)
 
         wrapper.handleAction(.promotionalOfferSuccess)
         await fulfillment(of: [expectation], timeout: 1.0)
