@@ -19,13 +19,14 @@ struct AppContentView: View {
     var body: some View {
         TabView {
 
+            #if !os(macOS)
             SamplePaywallsList()
                 .tabItem {
                     Image("logo")
                         .renderingMode(.template)
                     Text("Examples")
                 }
-
+            #endif
             AppList()
                 .tabItem {
                     Label("My Apps", systemImage: "network")
@@ -59,7 +60,7 @@ struct AppContentView: View {
 }
 
 
-#if !os(watchOS)
+#if !os(macOS) && !os(watchOS)
 
 private extension UIApplication {
 

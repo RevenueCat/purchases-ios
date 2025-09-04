@@ -15,15 +15,16 @@
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallComponent.FontSize {
 
     func makeFont(familyName: String?) -> Font {
-        return Font(self.makeUIFont(familyName: familyName))
+        return Font(self.makePlatformFont(familyName: familyName))
     }
 
-    private var textStyle: UIFont.TextStyle {
+    private var textStyle: PlatformFont.TextStyle {
         switch self {
         case .headingXXL: return .largeTitle
         case .headingXL: return .title1
@@ -38,7 +39,7 @@ extension PaywallComponent.FontSize {
     }
 
     // swiftlint:disable cyclomatic_complexity
-    private func makeUIFont(familyName: String?) -> UIFont {
+    private func makePlatformFont(familyName: String?) -> PlatformFont {
         let fontSize: CGFloat
         switch self {
         case .headingXXL: fontSize = 40
@@ -54,20 +55,26 @@ extension PaywallComponent.FontSize {
         }
 
         // Create the base font, with fallback to the system font
-        let baseFont: UIFont
+        let baseFont: PlatformFont
         if let familyName = familyName {
-            if let customFont = UIFont(name: familyName, size: fontSize) {
+            if let customFont = PlatformFont(name: familyName, size: fontSize) {
                 baseFont = customFont
             } else {
                 Logger.warning("Custom font '\(familyName)' could not be loaded. Falling back to system font.")
-                baseFont = UIFont.systemFont(ofSize: fontSize, weight: .regular)
+                baseFont = PlatformFont.systemFont(ofSize: fontSize, weight: .regular)
             }
         } else {
-            baseFont = UIFont.systemFont(ofSize: fontSize, weight: .regular)
+            baseFont = PlatformFont.systemFont(ofSize: fontSize, weight: .regular)
         }
 
         // Apply dynamic type scaling
+        #if canImport(UIKit)
         return UIFontMetrics(forTextStyle: self.textStyle).scaledFont(for: baseFont)
+        #else
+        // macOS does not support dynamic type (see
+        // https://developer.apple.com/design/human-interface-guidelines/typography)
+        return baseFont
+        #endif
     }
 
 }

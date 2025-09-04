@@ -14,14 +14,13 @@
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS)
+#if !os(tvOS)
 
 /// A SwiftUI view for displaying the paywall for an `Offering`.
 ///
 /// ### Related Articles
 /// [Documentation](https://rev.cat/paywalls)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
 @available(tvOS, unavailable, message: "RevenueCatUI does not support tvOS yet")
 // swiftlint:disable:next type_body_length
 public struct PaywallView: View {
@@ -231,6 +230,9 @@ public struct PaywallView: View {
                                      purchaseHandler: self.purchaseHandler)
                     .transition(Self.transition)
                 } else {
+                    #if os(macOS)
+                    DebugErrorView("Legacy paywalls are unsupported on macOS.", releaseBehavior: .errorView)
+                    #else
                     LoadingPaywallView(mode: self.mode,
                                        displayCloseButton: self.displayCloseButton)
                         .transition(Self.transition)
@@ -251,6 +253,7 @@ public struct PaywallView: View {
                                 self.error = error
                             }
                         }
+                    #endif
                 }
             } else {
                 DebugErrorView("Purchases has not been configured.", releaseBehavior: .fatalError)
@@ -297,6 +300,7 @@ public struct PaywallView: View {
 
             switch self.mode {
             // Show the default/fallback paywall for Paywalls V2 footer views
+            #if !os(macOS)
             case .footer, .condensedFooter:
                 LoadedOfferingPaywallView(
                     offering: offering,
@@ -311,6 +315,7 @@ public struct PaywallView: View {
                     locale: purchaseHandler.preferredLocaleOverride ?? .current,
                     showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
                 )
+            #endif
             // Show the actually V2 paywall for full screen
             case .fullScreen:
                 let dataForV1DefaultPaywall = DataForV1DefaultPaywall(
@@ -349,7 +354,9 @@ public struct PaywallView: View {
                 )
             }
         } else {
-
+            #if os(macOS)
+            DebugErrorView("Legacy paywalls are unsupported on macOS.", releaseBehavior: .errorView)
+            #else
             let (paywall, displayedLocale, template, error) = offering.validatedPaywall(
                 locale: purchaseHandler.preferredLocaleOverride ?? .current
             )
@@ -379,6 +386,7 @@ public struct PaywallView: View {
             } else {
                 paywallView
             }
+            #endif
         }
     }
 
@@ -389,7 +397,6 @@ public struct PaywallView: View {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
 @available(tvOS, unavailable)
 private extension PaywallView {
 
@@ -469,7 +476,7 @@ private extension PaywallViewConfiguration.Content {
 // MARK: -
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
+@available(macOS, unavailable, message: "Legacy paywalls are unavailable on macOS")
 @available(tvOS, unavailable)
 struct LoadedOfferingPaywallView: View {
 

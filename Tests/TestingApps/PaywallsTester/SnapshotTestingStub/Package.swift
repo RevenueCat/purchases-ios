@@ -22,7 +22,7 @@ let package = Package(
     // It is not possible to add a package to an Xcode project conditionally on the Swift version used, but we can create a stub package that only depends on SnapshotPreviews,
     // and only pulls the dependency for Swift 5.8.
     dependencies: [
-        .package(url: "https://github.com/EmergeTools/SnapshotPreviews.git", .upToNextMajor(from: "0.10.20")),
+        .package(url: "https://github.com/EmergeTools/SnapshotPreviews.git", .upToNextMajor(from: "0.10.24")),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.

@@ -15,6 +15,7 @@ import RevenueCat
 @_spi(Internal) @testable import RevenueCatUI
 import SwiftUI
 
+@available(macOS, unavailable, message: "Legacy paywalls are unavailable in macOS")
 struct CustomPaywall: View {
 
     var offering: Offering?
@@ -47,6 +48,7 @@ struct CustomPaywall: View {
 
 }
 
+@available(macOS, unavailable, message: "Legacy paywalls are unavailable in macOS")
 struct CustomPaywall_Previews: PreviewProvider {
     
     static var previews: some View {

@@ -184,7 +184,8 @@ platform :ios do
                 #  "iphone-app-on-mac",
                 #  "ipad-app-on-mac", 
                  "mac-catalyst-optimized-for-mac", 
-                 "mac-catalyst-scaled-to-match-ipad"]
+                 "mac-catalyst-scaled-to-match-ipad",
+                 "mac-native"]
     
     platforms.each do |platform|
       UI.message("Generating screenshots for platform: #{platform}")
@@ -356,7 +357,8 @@ platform :ios do
       "iphone-app-on-mac" => "platform=macOS,arch=arm64,variant=Designed for iPhone",
       "ipad-app-on-mac" => "platform=macOS,arch=arm64,variant=Designed for iPad",
       "mac-catalyst-optimized-for-mac" => "platform=macOS,arch=arm64,variant=Mac Catalyst",
-      "mac-catalyst-scaled-to-match-ipad" => "platform=macOS,arch=arm64,variant=Mac Catalyst"
+      "mac-catalyst-scaled-to-match-ipad" => "platform=macOS,arch=arm64,variant=Mac Catalyst",
+      "mac-native" => "platform=macOS,arch=arm64"
     }
     
     # Map platform to TARGETED_DEVICE_FAMILY build setting. This overrides the setting in the Xcode Project,
@@ -413,6 +415,8 @@ platform :ios do
     build_paywalls_tester_for_emerge_ios(options)
     build_paywalls_tester_for_emerge_mac(platform: "mac-catalyst-scaled-to-match-ipad")
     build_paywalls_tester_for_emerge_mac(platform: "mac-catalyst-optimized-for-mac")
+    build_paywalls_tester_for_emerge_mac(platform: "mac-native")
+
 
     # As of July 2025, Emerge Tools does not support iOS apps on Mac yet.
     # build_paywalls_tester_for_emerge_mac(platform: "ipad-app-on-mac")
@@ -445,6 +449,8 @@ platform :ios do
       build_ios_app_on_mac_version(platform: platform, include_ipad: true)
     when "iphone-app-on-mac"
       build_ios_app_on_mac_version(platform: platform, include_ipad: false)
+    when "mac-native"
+      build_mac_native_version(platform: platform)
     else
       UI.user_error!("Invalid platform: #{platform}. Must be one of: mac-catalyst-scaled-to-match-ipad, mac-catalyst-optimized-for-mac, ipad-app-on-mac, iphone-app-on-mac")
     end
@@ -456,6 +462,13 @@ platform :ios do
     xcargs = "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
     xcargs << " TARGETED_DEVICE_FAMILY='#{device_families}'"
     
+    # Remove macosx from SUPPORTED_PLATFORMS in project.pbxproj. xcodebuild will fail if macosx is in the list, even
+    # if we override it in xcargs.
+    project_file_path = File.absolute_path("../Tests/TestingApps/PaywallsTester/PaywallsTester.xcodeproj/project.pbxproj")
+    file_content = File.read(project_file_path)
+    modified_content = file_content.gsub(/SUPPORTED_PLATFORMS = "[^"]*";/, 'SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";')
+    File.write(project_file_path, modified_content)
+    
     archive_path = File.absolute_path("build/PaywallsTester-#{platform}.xcarchive")
 
     gym(
@@ -463,6 +476,33 @@ platform :ios do
       scheme: "PaywallsTester - Live Config",
       configuration: "Debug",
       destination: "platform=macOS,arch=arm64,variant=Mac Catalyst",
+      xcargs: xcargs,
+      skip_codesigning: true,
+      archive_path: archive_path,
+      skip_package_pkg: true,
+      skip_package_ipa: false
+    )
+
+    send_to_emerge(
+        app_id_suffix: platform,
+        archive_path: archive_path
+    )
+  ensure
+    # Reset project file changes
+    sh("git checkout -- ../Tests/TestingApps/PaywallsTester/PaywallsTester.xcodeproj/project.pbxproj")
+  end
+
+  private_lane :build_mac_native_version do |options|
+    platform = options[:platform]
+    xcargs = "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
+    
+    archive_path = File.absolute_path("build/PaywallsTester-#{platform}.xcarchive")
+
+    gym(
+      workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
+      scheme: "PaywallsTester - Live Config",
+      configuration: "Debug",
+      destination: "platform=macOS,arch=arm64",
       xcargs: xcargs,
       skip_codesigning: true,
       archive_path: archive_path,

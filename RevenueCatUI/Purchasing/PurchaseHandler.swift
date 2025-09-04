@@ -473,7 +473,7 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
     func invalidateCustomerInfoCache() {}
 #endif
 
-#if !os(macOS) && !os(tvOS)
+#if !os(tvOS)
 
     func failedToLoadFontWithConfig(_ fontConfig: UIConfig.FontsConfig) {}
 
