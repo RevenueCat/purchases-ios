@@ -17,10 +17,10 @@ import SwiftUI
 
 /// A namespace for Customer Center UI styling utilities.
 /// Provides shared constants and styling helpers across the module.
-public enum CustomerCenterStylingUtilities {
+enum CustomerCenterStylingUtilities {
     /// Default corner radius for Customer Center UI components.
     /// - Returns: `26.0` on iOS 26 and later; otherwise `10`.
-    public static var cornerRadius: CGFloat {
+    static var cornerRadius: CGFloat {
 #if swift(>=6.2)
         if #available(iOS 26.0, *) {
             26.0

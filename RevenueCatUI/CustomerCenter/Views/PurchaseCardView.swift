@@ -95,15 +95,6 @@ struct PurchaseInformationCardView: View {
     }
 
     var body: some View {
-        if #available(iOS 26.0, *) {
-            content
-                .cornerRadius(26)
-        } else {
-            content
-                .cornerRadius(10)
-        }
-    }
-    private var content: some View {
         VStack(alignment: .leading, spacing: 0) {
             CompatibilityLabeledContent {
                 VStack(alignment: .leading, spacing: 0) {
@@ -172,7 +163,8 @@ struct PurchaseInformationCardView: View {
         }
         .background(Color(colorScheme == .light
                           ? UIColor.secondarySystemFill
-                          : UIColor.tertiarySystemBackground))
+                          : UIColor.tertiarySystemBackground),
+                    in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
     }
 }
 
