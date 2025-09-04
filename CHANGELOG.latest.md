@@ -1,19 +1,20 @@
 ## RevenueCat SDK
 ### ✨ New Features
-* Add option to disable automatic ID collection when setting attribution network IDs at configuration time (#5504) via Toni Rico (@tonidero)
-### 🐞 Bugfixes
-* fix compilation errors for Xcode 14.2 (swift 5.7) (#5494) via Facundo Menzella (@facumenzella)
+* MON-1193 Optional transitions (delayed back button) (#5490) via Jacob Rakidzich (@JZDesign)
 
 ## RevenueCatUI SDK
-### Customer Center
-#### ✨ New Features
-* Add button_text to ScreenOffering (#5501) via Facundo Menzella (@facumenzella)
+### 🐞 Bugfixes
+* Fix Paywall from Customer Center when `purchasesAreCompletedBy == .myApp` (#5512) via Antonio Pallares (@ajpallares)
+### Paywallv2
 #### 🐞 Bugfixes
-* Fix dark mode button for featured offering + localized header (#5502) via Facundo Menzella (@facumenzella)
-* Address virtual currencies with zero units in customer center (#5500) via Facundo Menzella (@facumenzella)
-* Fix title and price of non-Google purchases in Customer Center (#5465) via Facundo Menzella (@facumenzella)
+* Fix markdown bold text in paywalls (#5517) via Antonio Pallares (@ajpallares)
 
 ### 🔄 Other Changes
-* Fix backend integration tests (#5505) via Toni Rico (@tonidero)
-* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5498) via RevenueCat Git Bot (@RCGitBot)
-* Fix spelling errors in the style guide (#5497) via Jacob Rakidzich (@JZDesign)
+* Refetch offerings when preferred locale is set (#5511) via Josh Holtz (@joshdholtz)
+* Post receipt in for purchases in Test Store (#5515) via Antonio Pallares (@ajpallares)
+* Rename Test Store to Simulated Store internally (#5459) via Antonio Pallares (@ajpallares)
+* Untrack testEntitlementsComputation xcodeproj (#5514) via Facundo Menzella (@facumenzella)
+* Extend appTarget settings to pass custom settings (#5470) via Facundo Menzella (@facumenzella)
+* Fix compilation error in Xcode 14 (#5513) via Antonio Pallares (@ajpallares)
+* Make TrialOrIntroEligibilityChecker @_spi public (#5461) via Antonio Pallares (@ajpallares)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5510) via RevenueCat Git Bot (@RCGitBot)
