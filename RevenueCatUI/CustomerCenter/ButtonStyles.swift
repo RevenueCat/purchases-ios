@@ -27,32 +27,28 @@ struct ProminentButtonStyle: PrimitiveButtonStyle {
 
     @Environment(\.appearance) private var appearance: CustomerCenterConfigData.Appearance
     @Environment(\.colorScheme) private var colorScheme
+    
+    private var needsLegacyBorderShape: Bool {
+        #if swift(>=6.2)
+        if #available(iOS 26.0, *) { false } else { true }
+        #else
+        true
+        #endif
+    }
 
     func makeBody(configuration: PrimitiveButtonStyleConfiguration) -> some View {
         let background = Color.from(colorInformation: appearance.buttonBackgroundColor, for: colorScheme)
         let textColor = Color.from(colorInformation: appearance.buttonTextColor, for: colorScheme)
 
-        if #available(iOS 26.0, *) {
-            Button(action: { configuration.trigger() }, label: {
-                configuration.label.frame(maxWidth: .infinity)
-            })
-            .font(.body.weight(.medium))
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .applyIf(background != nil, apply: { $0.tint(background) })
-            .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
-        } else {
-            Button(action: { configuration.trigger() }, label: {
-                configuration.label.frame(maxWidth: .infinity)
-            })
-            .font(.body.weight(.medium))
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .buttonBorderShape(.roundedRectangle(radius: 16))
-            .applyIf(background != nil, apply: { $0.tint(background) })
-            .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
-        }
-        
+        Button(action: { configuration.trigger() }, label: {
+            configuration.label.frame(maxWidth: .infinity)
+        })
+        .font(.body.weight(.medium))
+        .buttonStyle(.borderedProminent)
+        .controlSize(.large)
+        .applyIf(background != nil, apply: { $0.tint(background) })
+        .applyIf(textColor != nil, apply: { $0.foregroundColor(textColor) })
+        .applyIf(needsLegacyBorderShape, apply: { $0 .buttonBorderShape(.roundedRectangle(radius: 16)) })
     }
 }
 

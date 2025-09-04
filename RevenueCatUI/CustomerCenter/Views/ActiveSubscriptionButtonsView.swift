@@ -31,19 +31,8 @@ struct ActiveSubscriptionButtonsView: View {
 
     @ObservedObject
     var viewModel: BaseManageSubscriptionViewModel
-
-    var body: some View {
-        if #available(iOS 26.0, *) {
-            content
-                .background(Color(colorScheme == .light ? UIColor.systemBackground : UIColor.secondarySystemBackground), in: .rect(cornerRadius: 26))
-        } else {
-            content
-                .background(Color(colorScheme == .light ? UIColor.systemBackground : UIColor.secondarySystemBackground), in: .rect(cornerRadius: 10))
-        }
-        
-    }
     
-    private var content: some View {
+    var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             ForEach(self.viewModel.relevantPathsForPurchase, id: \.id) { path in
                 AsyncButton(action: {
@@ -73,6 +62,7 @@ struct ActiveSubscriptionButtonsView: View {
             }
         }
         .applyIf(tintColor != nil, apply: { $0.tint(tintColor) })
+        .background(Color(colorScheme == .light ? UIColor.systemBackground : UIColor.secondarySystemBackground), in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
     }
 
     private var tintColor: Color? {

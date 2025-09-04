@@ -64,16 +64,6 @@ struct NoSubscriptionsCardView: View {
     }
 
     var body: some View {
-        if #available(iOS 26.0, *) {
-            content
-                .cornerRadius(26)
-        } else {
-            content
-                .cornerRadius(10)
-        }
-    }
-
-    private var content: some View {
         VStack(alignment: .center, spacing: 8) {
             Text(title)
                 .font(.headline)
@@ -106,9 +96,7 @@ struct NoSubscriptionsCardView: View {
             }
         }
         .padding(16)
-        .background(Color(colorScheme == .light
-                          ? UIColor.systemBackground
-                          : UIColor.secondarySystemBackground))
+        .background(Color(colorScheme == .light ? UIColor.systemBackground : UIColor.secondarySystemBackground), in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
         .animation(.easeInOut(duration: 0.3), value: viewModel.isLoadingOffering)
         .sheet(isPresented: $viewModel.showOffering, content: {
             PaywallView(

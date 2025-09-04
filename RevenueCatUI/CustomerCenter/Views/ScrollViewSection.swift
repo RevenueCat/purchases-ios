@@ -81,18 +81,10 @@ private struct CardStyleModifier: ViewModifier {
     private var colorScheme
 
     func body(content: Content) -> some View {
-        if #available(iOS 26.0, *) {
-            content
-                .padding()
-                .background(Color(colorScheme == .light ? UIColor.systemBackground : UIColor.secondarySystemBackground), in: .rect(cornerRadius: 26))
-                .padding(.horizontal)
-        } else {
-            content
-                .padding()
-                .background(Color(colorScheme == .light ? UIColor.systemBackground : UIColor.secondarySystemBackground), in: .rect(cornerRadius: 10))
-                .padding(.horizontal)
-        }
-        
+        content
+            .padding()
+            .background(Color(colorScheme == .light ? UIColor.systemBackground : UIColor.secondarySystemBackground), in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
+            .padding(.horizontal)
     }
 }
 
