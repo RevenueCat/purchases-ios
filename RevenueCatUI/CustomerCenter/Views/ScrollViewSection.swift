@@ -106,7 +106,6 @@ struct AccountDetailsSection: View {
 
     @State
     private var didCopyID = false
-    
     init(
         originalPurchaseDate: Date?,
         originalAppUserId: String,
@@ -165,7 +164,6 @@ struct AccountDetailsSection: View {
                         withAnimation {
                             didCopyID = true
                         }
-                        
                         DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
                             withAnimation {
                                 self.didCopyID = false
@@ -196,9 +194,7 @@ struct AccountDetailsSection: View {
                 }
             }
         }
-        
     }
-
     private static var dateFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium

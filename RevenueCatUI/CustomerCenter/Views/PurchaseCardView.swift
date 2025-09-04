@@ -103,7 +103,6 @@ struct PurchaseInformationCardView: View {
                 .cornerRadius(10)
         }
     }
-    
     private var content: some View {
         VStack(alignment: .leading, spacing: 0) {
             CompatibilityLabeledContent {

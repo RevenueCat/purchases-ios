@@ -241,7 +241,6 @@ struct RelevantPurchasesListView: View {
                             in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
             }
         }
-       
     }
 
     private var dateFormatter: DateFormatter {

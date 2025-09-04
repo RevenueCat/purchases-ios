@@ -31,7 +31,6 @@ struct ActiveSubscriptionButtonsView: View {
 
     @ObservedObject
     var viewModel: BaseManageSubscriptionViewModel
-    
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             ForEach(self.viewModel.relevantPathsForPurchase, id: \.id) { path in

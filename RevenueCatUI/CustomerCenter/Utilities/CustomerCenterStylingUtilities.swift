@@ -11,7 +11,6 @@
 //
 //  Created by Hidde van der Ploeg on 04/09/2025.
 
-
 import SwiftUI
 
 #if os(iOS)
@@ -20,7 +19,11 @@ import SwiftUI
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-public struct CustomerCenterStylingUtilities {
+
+/// To help with different styling between iOS 26 and older
+public enum CustomerCenterStylingUtilities {
+    /// Default corner radius for Customer Center UI components.
+    /// - Returns: `26.0` on iOS 26 and later; otherwise `10`.
     public static var cornerRadius: CGFloat {
 #if swift(>=6.2)
         if #available(iOS 26.0, *) {
@@ -33,4 +36,5 @@ public struct CustomerCenterStylingUtilities {
 #endif
     }
 }
-#endif 
+
+#endif
