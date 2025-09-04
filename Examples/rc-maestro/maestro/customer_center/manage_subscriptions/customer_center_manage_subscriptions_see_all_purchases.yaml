@@ -22,7 +22,10 @@ name: See purchase details
         PRODUCT_ID: "maestro.consumable.tests.01"
 - runFlow: "../../utils/open_customer_center.yaml"
 - tapOn: "See all purchases"
-- assertVisible: "ACTIVE SUBSCRIPTIONS"
+- assertVisible: "SUBSCRIPTIONS"
 - tapOn: Product 1 [Weekly]
 - assertVisible: Active
-
+- tapOn: Purchase History
+- tapOn: How can we help?
+- tapOn:
+    id: "circled_close_button"

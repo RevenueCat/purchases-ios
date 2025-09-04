@@ -2,19 +2,21 @@ appId: com.revenuecat.maestro.ios
 name: Change Subscription Plan
 
 onFlowComplete:
-  - runFlow: ../../utils/cancel_subscription.yaml
+  - runFlow: 
+        file: ../../utils/cancel_subscription_group.yaml
+        env:
+            SUBSCRIPTION_GROUP: "subscription.group.1"
 
 ---
 - launchApp
-- runFlow: 
-    file: "../../utils/buy_product.yaml"
-    env:
-        PRODUCT_ID: "maestro.weekly.tests.01"
 - runFlow: "../../utils/open_customer_center.yaml"
+- tapOn: "Product 1 [Weekly]"
 - tapOn: "Change plans"
-- tapOn: "Product 1 [Monthly] (1 month)"
-- tapOn: Subscribe
-- tapOn: \b[Oo][Kk]\b
-- tapOn: Cancel
+- tapOn: "Change Plan to Product 1 [Yearly], €2.99 per year, Product 1 on yearly basis"
+- tapOn: "Change Plan"
+- tapOn: "Subscribe"
+- tapOn: "\\b[Oo][Kk]\\b"
+- tapOn: "Close"
+- tapOn: "How can we help?"
 - tapOn:
     id: "circled_close_button"

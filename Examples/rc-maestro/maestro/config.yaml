@@ -5,6 +5,12 @@ executionOrder:
   flowsOrder:
     - Manage Subscriptions Empty
     - Manage Subscriptions Restore Purchases
+    - Accept Promo Offer
+    - Reject Promo Offer
+    - See purchase details
+    - Change Subscription Plan
+    - Accept Promo Offer with multiple subscriptions
+    - Reject Promo Offer with multiple subscriptions
 
 flows:
   - customer_center/manage_subscriptions/*

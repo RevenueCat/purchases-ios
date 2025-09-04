@@ -47,7 +47,7 @@
   ],
   "settings" : {
     "_failTransactionsEnabled" : false,
-    "_locale" : "pt_BR",
+    "_locale" : "en_US",
     "_storefront" : "ESP",
     "_storeKitErrors" : [
       {
