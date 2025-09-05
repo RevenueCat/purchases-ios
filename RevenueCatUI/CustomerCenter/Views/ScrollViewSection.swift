@@ -156,6 +156,7 @@ struct AccountDetailsSection: View {
 
     @ViewBuilder
     var userIdView: some View {
+        #if compiler(>=5.9)
         if #available(iOS 17.0, *) {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
@@ -196,6 +197,7 @@ struct AccountDetailsSection: View {
                 }
             }
         }
+        #endif
     }
     private static var dateFormatter: DateFormatter {
         let formatter = DateFormatter()
