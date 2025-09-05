@@ -433,6 +433,11 @@ private func checkPaywallsAPI(_ purchases: Purchases, _ event: PaywallEvent) asy
     }
 }
 
+private func checkPreferredUILocaleAPIs(purchases: Purchases) {
+    purchases.overridePreferredUILocale("de_DE")
+    purchases.overridePreferredUILocale(nil)
+}
+
 private func checkVirtualCurrenciesAPI(_ purchases: Purchases) async throws {
 
     // Fetching Virtual Currencies

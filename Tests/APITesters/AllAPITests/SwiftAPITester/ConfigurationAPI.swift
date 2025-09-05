@@ -23,6 +23,9 @@ func checkConfigurationAPI() {
         .with(storeKitVersion: .default)
         .with(entitlementVerificationMode: .informational)
         .with(automaticDeviceIdentifierCollectionEnabled: true)
+        .with(preferredUILocaleOverride: "de_DE")
+        .with(preferredUILocaleOverride: nil)
+
 
     let _: Configuration = builder.build()
 
