@@ -115,6 +115,10 @@ import Foundation
         private(set) var showStoreMessagesAutomatically: Bool = true
         private(set) var diagnosticsEnabled: Bool = false
         private(set) var storeKitVersion: StoreKitVersion = .default
+
+        /// The preferred locale for the requests.
+        ///
+        /// This locale is included in all requests made by `HTTPClient`.
         private(set) var preferredLocale: String?
         private(set) var automaticDeviceIdentifierCollectionEnabled: Bool = true
 
@@ -339,11 +343,13 @@ import Foundation
             return timeout
         }
 
-        /// Sets the preferred locale for the requests.
+        /// Overrides the preferred locale for RevenueCatUI components.
         ///
-        /// This locale is included in all requests made by `HTTPClient`.
-        @_spi(Internal) public func with(preferredLocale: String?) -> Builder {
-            self.preferredLocale = preferredLocale
+        /// - Parameter preferredUILocaleOverride: A locale string in the format "language_region" (e.g., "en_US").
+        ///
+        /// Defaults to `nil`, which means using the default user locale for RevenueCatUI components.
+        public func with(preferredUILocaleOverride: String?) -> Builder {
+            self.preferredLocale = preferredUILocaleOverride
             return self
         }
     }

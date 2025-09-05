@@ -1431,6 +1431,31 @@ public extension Purchases {
 
 }
 
+// MARK: - Preferred locale
+
+extension Purchases {
+    /// Overrides the preferred locale for RevenueCatUI components.
+    /// - Parameter locale: A locale string in the format "language_region" (e.g., "en_US").
+    /// Use `nil` to remove the override and use the default user locale determined by the system.
+    ///
+    /// Setting this will affect the display of RevenueCat UI components, such as the Paywalls.
+    /// - Important: This method only takes effect after `Purchases` has been configured.
+    public func overridePreferredUILocale(_ locale: String?) {
+        guard locale != self.systemInfo.preferredLocaleOverride else {
+            return
+        }
+
+        self.systemInfo.overridePreferredLocale(locale)
+
+        if self.overridePreferredUILocaleRateLimiter.shouldProceed() {
+            // Refetches new offerings with preferred locale
+            self.getOfferings(fetchPolicy: .default, fetchCurrent: true) { _, _ in
+                // No-op
+            }
+        }
+    }
+}
+
 // MARK: Configuring Purchases
 
 public extension Purchases {
@@ -1927,22 +1952,6 @@ extension Purchases {
     // swiftlint:disable missing_docs
     @_spi(Internal) public var preferredLocaleOverride: String? {
         return self.systemInfo.preferredLocaleOverride
-    }
-
-    // swiftlint:disable missing_docs
-    @_spi(Internal) public func overridePreferredLocale(_ locale: String?) {
-        guard locale != self.systemInfo.preferredLocaleOverride else {
-            return
-        }
-
-        self.systemInfo.overridePreferredLocale(locale)
-
-        if self.overridePreferredUILocaleRateLimiter.shouldProceed() {
-            // Refetches new offerings with preferred locale
-            self.getOfferings(fetchPolicy: .default, fetchCurrent: true) { _, _ in
-                // No-op
-            }
-        }
     }
 
 }
