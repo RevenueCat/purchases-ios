@@ -87,9 +87,12 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                 urls += carousel.pages.flatMap({ stack in
                     self.collectAllImageURLs(in: stack)
                 })
-            case .video:
-                // WIP: - prewarm cache
-                break
+            case .video(let video):
+                Task {
+                    // WIP: Need to inject the file repository so we can potentially share the work in the view layer
+                    let fileRepository = FileRepository()
+                    try await fileRepository.generateOrGetCachedFileURL(for: video.source.light.url)
+                }
             }
         }
 

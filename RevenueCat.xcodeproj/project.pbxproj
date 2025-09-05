@@ -55,6 +55,12 @@
 		03F446262D2FE1510046129A /* MaskShapePropertyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F446252D2FE1510046129A /* MaskShapePropertyTests.swift */; };
 		03F446552D303E350046129A /* PaddingPropertyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F446542D303E350046129A /* PaddingPropertyTests.swift */; };
 		03F446572D303FA10046129A /* CornerRadiusesPropertyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F446562D303FA10046129A /* CornerRadiusesPropertyTests.swift */; };
+		164681CE2E6B577600854AA5 /* VideoPlayerViewNSView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164681CB2E6B577600854AA5 /* VideoPlayerViewNSView.swift */; };
+		164681CF2E6B577600854AA5 /* VideoPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164681CA2E6B577600854AA5 /* VideoPlayerView.swift */; };
+		164681D02E6B577600854AA5 /* VideoComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164681C82E6B577600854AA5 /* VideoComponentView.swift */; };
+		164681D12E6B577600854AA5 /* VideoPlayerViewUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164681CC2E6B577600854AA5 /* VideoPlayerViewUIView.swift */; };
+		164681D22E6B577600854AA5 /* VideoComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164681C92E6B577600854AA5 /* VideoComponentViewModel.swift */; };
+		164681D42E6B578F00854AA5 /* SizeReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164681D32E6B578F00854AA5 /* SizeReader.swift */; };
 		164933242E5808BE00CE43A9 /* PaywallTransitionTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164933232E5808BE00CE43A9 /* PaywallTransitionTest.swift */; };
 		1664E2502E549BF600103AAC /* VideoComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1664E24F2E549BF600103AAC /* VideoComponentViewModel.swift */; };
 		16A7F4C12E563B89001F9FC8 /* PaywallTransition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A7F4BF2E563B89001F9FC8 /* PaywallTransition.swift */; };
@@ -1530,6 +1536,12 @@
 		03F446252D2FE1510046129A /* MaskShapePropertyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaskShapePropertyTests.swift; sourceTree = "<group>"; };
 		03F446542D303E350046129A /* PaddingPropertyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaddingPropertyTests.swift; sourceTree = "<group>"; };
 		03F446562D303FA10046129A /* CornerRadiusesPropertyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerRadiusesPropertyTests.swift; sourceTree = "<group>"; };
+		164681C82E6B577600854AA5 /* VideoComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoComponentView.swift; sourceTree = "<group>"; };
+		164681C92E6B577600854AA5 /* VideoComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoComponentViewModel.swift; sourceTree = "<group>"; };
+		164681CA2E6B577600854AA5 /* VideoPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerView.swift; sourceTree = "<group>"; };
+		164681CB2E6B577600854AA5 /* VideoPlayerViewNSView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerViewNSView.swift; sourceTree = "<group>"; };
+		164681CC2E6B577600854AA5 /* VideoPlayerViewUIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerViewUIView.swift; sourceTree = "<group>"; };
+		164681D32E6B578F00854AA5 /* SizeReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SizeReader.swift; sourceTree = "<group>"; };
 		164933232E5808BE00CE43A9 /* PaywallTransitionTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallTransitionTest.swift; sourceTree = "<group>"; };
 		1664E24F2E549BF600103AAC /* VideoComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoComponentViewModel.swift; sourceTree = "<group>"; };
 		16A7F4BF2E563B89001F9FC8 /* PaywallTransition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallTransition.swift; sourceTree = "<group>"; };
@@ -2975,6 +2987,18 @@
 			path = Properties;
 			sourceTree = "<group>";
 		};
+		164681CD2E6B577600854AA5 /* Video */ = {
+			isa = PBXGroup;
+			children = (
+				164681C82E6B577600854AA5 /* VideoComponentView.swift */,
+				164681C92E6B577600854AA5 /* VideoComponentViewModel.swift */,
+				164681CA2E6B577600854AA5 /* VideoPlayerView.swift */,
+				164681CB2E6B577600854AA5 /* VideoPlayerViewNSView.swift */,
+				164681CC2E6B577600854AA5 /* VideoPlayerViewUIView.swift */,
+			);
+			path = Video;
+			sourceTree = "<group>";
+		};
 		16A7F4C02E563B89001F9FC8 /* Transitions */ = {
 			isa = PBXGroup;
 			children = (
@@ -3052,6 +3076,7 @@
 		2C7457432CEA6470004ACE52 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				164681CD2E6B577600854AA5 /* Video */,
 				2C7457472CEA66AB004ACE52 /* ComponentsView.swift */,
 				7707A94A2CAD936A006E0313 /* Button */,
 				03C06FC82D479C6300600693 /* Carousel */,
@@ -3071,6 +3096,7 @@
 		2C7457442CEA652B004ACE52 /* ViewHelpers */ = {
 			isa = PBXGroup;
 			children = (
+				164681D32E6B578F00854AA5 /* SizeReader.swift */,
 				16A7F4C52E564B97001F9FC8 /* TransitionModifier.swift */,
 				831660B52E3AAA4900855312 /* FixMacButtonsModifier.swift */,
 				03F0B6702DD6363B00E82199 /* NavigatetoURL.swift */,
@@ -7550,6 +7576,7 @@
 				887A60CF2C1D037000E1A461 /* View+PresentPaywallFooter.swift in Sources */,
 				887A60BB2C1D037000E1A461 /* Template4View.swift in Sources */,
 				887A607E2C1D037000E1A461 /* Logger.swift in Sources */,
+				164681D42E6B578F00854AA5 /* SizeReader.swift in Sources */,
 				887A60852C1D037000E1A461 /* FitToAspectRatio.swift in Sources */,
 				FD9BCEBC2DC946C400408A5D /* BottomSheetView.swift in Sources */,
 				03F0B6512DD5700D00E82199 /* LocalizationDictionaryExtensions.swift in Sources */,
@@ -7571,6 +7598,11 @@
 				887A60C12C1D037000E1A461 /* DebugErrorView.swift in Sources */,
 				887A607C2C1D037000E1A461 /* ColorInformation+MultiScheme.swift in Sources */,
 				88B1BAFE2C813A3C001B7EE5 /* ImageComponentViewModel.swift in Sources */,
+				164681CE2E6B577600854AA5 /* VideoPlayerViewNSView.swift in Sources */,
+				164681CF2E6B577600854AA5 /* VideoPlayerView.swift in Sources */,
+				164681D02E6B577600854AA5 /* VideoComponentView.swift in Sources */,
+				164681D12E6B577600854AA5 /* VideoPlayerViewUIView.swift in Sources */,
+				164681D22E6B577600854AA5 /* VideoComponentViewModel.swift in Sources */,
 				2C7457422CE81107004ACE52 /* IntroOfferEligibilityContext.swift in Sources */,
 				2C08B3072CD55D660024857B /* FlexHStack.swift in Sources */,
 				887A60672C1D037000E1A461 /* PaywallError.swift in Sources */,

@@ -22,15 +22,33 @@ extension Image {
                      containerContentMode: SwiftUI.ContentMode? = nil) -> some View {
         self.resizable()
             .scaledToFill()
-            .modifier(FitToAspectRatio(aspectRatio: aspectRatio,
-                                       contentMode: contentMode,
-                                       containerContentMode: containerContentMode))
+            .fitToAspectRatio(
+                aspectRatio: aspectRatio,
+                contentMode: contentMode,
+                containerContentMode: containerContentMode
+            )
     }
-
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-private struct FitToAspectRatio: ViewModifier {
+extension View {
+    func fitToAspectRatio(
+        aspectRatio: Double,
+        contentMode: SwiftUI.ContentMode,
+        containerContentMode: SwiftUI.ContentMode? = nil
+    ) -> some View {
+        modifier(
+            FitToAspectRatio(
+                aspectRatio: aspectRatio,
+                contentMode: contentMode,
+                containerContentMode: containerContentMode
+            )
+        )
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+internal struct FitToAspectRatio: ViewModifier {
 
     let aspectRatio: Double
     let contentMode: SwiftUI.ContentMode
