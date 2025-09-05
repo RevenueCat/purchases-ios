@@ -96,10 +96,12 @@ struct NoSubscriptionsCardView: View {
             }
         }
         .padding(16)
+        #if compiler(>=5.9)
         .background(Color(colorScheme == .light
                           ? UIColor.systemBackground
                           : UIColor.secondarySystemBackground),
                     in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
+        #endif
         .animation(.easeInOut(duration: 0.3), value: viewModel.isLoadingOffering)
         .sheet(isPresented: $viewModel.showOffering, content: {
             PaywallView(
