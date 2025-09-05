@@ -83,10 +83,12 @@ private struct CardStyleModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .padding()
+            #if compiler(>=5.9)
             .background(Color(colorScheme == .light
                               ? UIColor.systemBackground
                               : UIColor.secondarySystemBackground),
                         in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
+            #endif
             .padding(.horizontal)
     }
 }
@@ -154,6 +156,7 @@ struct AccountDetailsSection: View {
 
     @ViewBuilder
     var userIdView: some View {
+        #if compiler(>=5.9)
         if #available(iOS 17.0, *) {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
@@ -194,6 +197,7 @@ struct AccountDetailsSection: View {
                 }
             }
         }
+        #endif
     }
     private static var dateFormatter: DateFormatter {
         let formatter = DateFormatter()

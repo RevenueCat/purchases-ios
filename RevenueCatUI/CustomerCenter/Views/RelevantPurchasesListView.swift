@@ -221,10 +221,12 @@ struct RelevantPurchasesListView: View {
                     Image(systemName: "chevron.forward")
                 }
                 .padding()
+                #if compiler(>=5.9)
                 .background(Color(colorScheme == .light
                                   ? UIColor.systemBackground
                                   : UIColor.secondarySystemBackground),
                             in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
+                #endif
             }
         } else {
             Button {
@@ -235,10 +237,12 @@ struct RelevantPurchasesListView: View {
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 12)
+                #if compiler(>=5.9)
                 .background(Color(colorScheme == .light
                                   ? UIColor.systemBackground
                                   : UIColor.secondarySystemBackground),
                             in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
+                #endif
             }
         }
     }
@@ -390,9 +394,7 @@ struct RelevantPurchasesListView_Previews: PreviewProvider {
         .environment(\.localization, CustomerCenterConfigData.default.localization)
         .environment(\.appearance, CustomerCenterConfigData.default.appearance)
     }
-
 }
-
 #endif
 
 #endif
