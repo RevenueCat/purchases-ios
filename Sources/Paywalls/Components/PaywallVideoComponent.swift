@@ -17,8 +17,6 @@ import Foundation
 
 extension PaywallComponent {
 
-    // Need to add source with the urls
-
     public final class VideoComponent: PaywallComponentBase {
 
         let type: ComponentType
