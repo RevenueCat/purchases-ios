@@ -161,10 +161,12 @@ struct PurchaseInformationCardView: View {
                 .padding()
             }
         }
+        #if compiler(>=5.9)
         .background(Color(colorScheme == .light
                           ? UIColor.secondarySystemFill
                           : UIColor.tertiarySystemBackground),
                     in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
+        #endif
     }
 }
 
@@ -228,11 +230,13 @@ extension PurchaseInformationCardView {
                     .bold()
                     .padding(.vertical, 3)
                     .padding(.horizontal, 6)
+                    #if compiler(>=5.9)
                     .background(backgroundColor ?? Color(
                         colorScheme == .light
                         ? UIColor.systemBackground
                         : UIColor.secondarySystemBackground
                     ), in: .capsule)
+                    #endif
                     .overlay(
                         Capsule()
                             .stroke(borderColor, lineWidth: 1)
@@ -244,11 +248,13 @@ extension PurchaseInformationCardView {
                     .bold()
                     .padding(.vertical, 2)
                     .padding(.horizontal, 4)
+                    #if compiler(>=5.9)
                     .background(backgroundColor ?? Color(
                         colorScheme == .light
                         ? UIColor.systemBackground
                         : UIColor.secondarySystemBackground
                     ), in: .rect(cornerRadius: 4))
+                    #endif
                     .overlay(
                         RoundedRectangle(cornerRadius: 4)
                             .stroke(borderColor, lineWidth: 1)
