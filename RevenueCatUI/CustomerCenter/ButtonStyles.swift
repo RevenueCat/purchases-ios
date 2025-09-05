@@ -169,6 +169,7 @@ struct DismissCircleButtonToolbarModifier: ViewModifier {
     var navigationOptions
 
     func body(content: Content) -> some View {
+        #if compiler(>=5.9)
         if navigationOptions.shouldShowCloseButton {
             content
                 .toolbar {
@@ -179,7 +180,9 @@ struct DismissCircleButtonToolbarModifier: ViewModifier {
         } else {
             content
         }
-
+        #else
+        content
+        #endif
     }
 }
 

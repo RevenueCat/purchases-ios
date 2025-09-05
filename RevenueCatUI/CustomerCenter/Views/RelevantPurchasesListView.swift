@@ -221,10 +221,12 @@ struct RelevantPurchasesListView: View {
                     Image(systemName: "chevron.forward")
                 }
                 .padding()
+                #if compiler(>=5.9)
                 .background(Color(colorScheme == .light
                                   ? UIColor.systemBackground
                                   : UIColor.secondarySystemBackground),
                             in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
+                #endif
             }
         } else {
             Button {
