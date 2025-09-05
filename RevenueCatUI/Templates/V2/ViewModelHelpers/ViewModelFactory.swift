@@ -404,6 +404,20 @@ struct ViewModelFactory {
                     pageStackViewModels: pageStackViewModels
                 )
             )
+        case .slot(let slot):
+            return .slot(
+                try SlotComponentViewModel(
+                    localizationProvider: localizationProvider,
+                    component: slot
+                )
+            )
+        case .slotLottie(let slotLottie):
+            return .slotLottie(
+                try SlotLottieComponentViewModel(
+                    localizationProvider: localizationProvider,
+                    component: slotLottie
+                )
+            )
         }
     }
 
@@ -518,6 +532,10 @@ struct ViewModelFactory {
                 return nil
             }
             return self.findFullWidthImageViewIfItsTheFirst(first)
+        case .slot:
+            return nil
+        case .slotLottie:
+            return nil
         }
     }
 
