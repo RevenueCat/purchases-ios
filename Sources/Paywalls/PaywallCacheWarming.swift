@@ -90,6 +90,15 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
         Logger.verbose(Strings.paywalls.warming_up_images(imageURLs: imageURLs))
 
+        // Preferred method - load with FileRepository
+        let fileRepository = FileRepository()
+        for url in imageURLs {
+            Task {
+                _ = try await fileRepository.generateOrGetCachedFileURL(for: url)
+            }
+        }
+
+        // Legacy method - load with URLSession
         for url in imageURLs {
             do {
                 try await self.imageFetcher.downloadImage(url)

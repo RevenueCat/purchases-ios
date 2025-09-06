@@ -40,17 +40,7 @@ extension PaywallComponentsData.PaywallComponentsConfig {
         let rootStackImageURLs = self.collectAllImageURLs(in: self.stack)
         let stickFooterImageURLs = self.stickyFooter.flatMap { self.collectAllImageURLs(in: $0.stack) } ?? []
 
-        let all = rootStackImageURLs + stickFooterImageURLs
-
-        // Also load FileRepository with images
-        let fileRepository = FileRepository()
-        for url in all {
-            Task {
-                _ = try await fileRepository.generateOrGetCachedFileURL(for: url)
-            }
-        }
-
-        return all
+        return rootStackImageURLs + stickFooterImageURLs
     }
 
     // swiftlint:disable:next cyclomatic_complexity

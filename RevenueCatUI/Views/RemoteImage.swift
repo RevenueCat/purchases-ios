@@ -143,7 +143,6 @@ struct RemoteImage<Content: View>: View {
         let cachedUrl = fullResCachedUrl ?? lowResCachedUrl
 
         return cachedUrl?.asImageAndSize
-//        return nil
     }
 
     var body: some View {
