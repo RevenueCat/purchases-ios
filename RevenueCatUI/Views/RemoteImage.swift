@@ -26,6 +26,7 @@ struct RemoteImage<Content: View>: View {
     let darkLowResUrl: URL?
     let aspectRatio: CGFloat?
     let maxWidth: CGFloat?
+    let expectedSize: CGSize?
     let content: (Image, CGSize) -> Content
 
     @StateObject
@@ -33,6 +34,12 @@ struct RemoteImage<Content: View>: View {
 
     @StateObject
     private var lowResLoader: ImageLoader = .init()
+
+    @State
+    private var highResCachedImage: (Image, CGSize)? = nil
+
+    @State
+    private var lowResCachedImage: (Image, CGSize)? = nil
 
     var fetchLowRes: Bool {
         lowResUrl != nil
@@ -54,6 +61,7 @@ struct RemoteImage<Content: View>: View {
         lowResUrl: URL? = nil,
         darkUrl: URL? = nil,
         darkLowResUrl: URL? = nil,
+        expectedSize: CGSize? = nil,
         @ViewBuilder content: @escaping (Image, CGSize) -> Content
     ) {
         self.url = url
@@ -63,6 +71,7 @@ struct RemoteImage<Content: View>: View {
         self.content = content
         self.aspectRatio = nil
         self.maxWidth = nil
+        self.expectedSize = expectedSize
     }
 
     init(
@@ -71,13 +80,14 @@ struct RemoteImage<Content: View>: View {
         darkUrl: URL? = nil,
         darkLowResUrl: URL? = nil,
         aspectRatio: CGFloat? = nil,
-        maxWidth: CGFloat? = nil
+        maxWidth: CGFloat? = nil,
     ) where Content == AnyView {
         self.url = url
         self.lowResUrl = lowResUrl
         self.darkUrl = darkUrl
         self.darkLowResUrl = darkLowResUrl
         self.maxWidth = maxWidth
+        self.expectedSize = nil
         self.aspectRatio = aspectRatio
         self.content = { (image, _) in
             if let aspectRatio {
@@ -117,9 +127,39 @@ struct RemoteImage<Content: View>: View {
         #endif
     }
 
+    var hardLocalImageThing: (Image, CGSize)? {
+        let fullResUrl: URL
+        let lowResUrl: URL?
+
+        switch self.colorScheme {
+        case .dark:
+            fullResUrl = self.darkUrl ?? self.url
+            lowResUrl = self.darkLowResUrl ?? self.lowResUrl
+        case .light:
+            fallthrough
+        @unknown default:
+            fullResUrl = self.darkUrl ?? self.url
+            lowResUrl = self.darkLowResUrl ?? self.lowResUrl
+        }
+
+        let fileRepository = FileRepository()
+        let fullResCachedUrl = fileRepository.iWantItNow(for: fullResUrl)
+        let lowResCachedUrl = lowResUrl.flatMap { fileRepository.iWantItNow(for: $0) }
+
+        let oneOfThem = fullResCachedUrl ?? lowResCachedUrl
+
+        return oneOfThem.flatMap { self.toImageAndSize($0) }
+    }
+
     var body: some View {
         Group {
             if let imageAndSize = self.localImage {
+                content(imageAndSize.0, imageAndSize.1)
+            } else if let imageAndSize = self.hardLocalImageThing {
+                content(imageAndSize.0, imageAndSize.1)
+            } else if let imageAndSize = self.highResCachedImage {
+                content(imageAndSize.0, imageAndSize.1)
+            } else if let imageAndSize = self.lowResCachedImage {
                 content(imageAndSize.0, imageAndSize.1)
             } else if case let .success(result) = highResLoader.result {
                 content(result.image, result.size)
@@ -134,7 +174,11 @@ struct RemoteImage<Content: View>: View {
                     emptyView(error: nil)
                 }
             } else {
-                emptyView(error: nil)
+                if let expectedSize = self.expectedSize {
+                    content(Image.clearImage(size: expectedSize), expectedSize)
+                } else {
+                    emptyView(error: nil)
+                }
             }
         }
         .transition(self.transition)
@@ -146,6 +190,11 @@ struct RemoteImage<Content: View>: View {
                 return
             }
             #endif
+
+            // don't try to fetch other things if we have one already
+            guard self.hardLocalImageThing == nil else {
+                return
+            }
 
             switch self.colorScheme {
             case .dark:
@@ -164,7 +213,30 @@ struct RemoteImage<Content: View>: View {
         }
     }
 
+    private func toImageAndSize(_ url: URL) -> (Image, CGSize)? {
+        #if os(macOS)
+        if let image = NSImage(contentsOfFile: url.path) {
+            return (Image(nsImage: image), image.size)
+        } else {
+            return nil
+        }
+        #else
+        if let image = UIImage(contentsOfFile: url.path) {
+            return (Image(uiImage: image), image.size)
+        } else {
+            return nil
+        }
+        #endif
+    }
+
     private func loadImages(url: URL, lowResUrl: URL?) async {
+//        let fileRepository = FileRepository()
+//        if let lowResUrl {
+//            let lowResCachedURL = try? await fileRepository.generateOrGetCachedFileURL(for: lowResUrl)
+//            self.lowResCachedImage = lowResCachedURL.flatMap { self.toImageAndSize($0) }
+//        }
+//        let cachedURL = try? await fileRepository.generateOrGetCachedFileURL(for: url)
+
         if fetchLowRes, let lowResLoc = lowResUrl {
             async let lowResLoad: Void = lowResLoader.load(url: lowResLoc)
             async let highResLoad: Void = highResLoader.load(url: url)
@@ -199,4 +271,35 @@ struct RemoteImage<Content: View>: View {
         }
     }
 
+}
+
+#if os(iOS) || os(tvOS) || os(watchOS)
+import UIKit
+import SwiftUI
+public typealias PlatformImage = UIImage
+#elseif os(macOS)
+import AppKit
+import SwiftUI
+public typealias PlatformImage = NSImage
+#endif
+
+extension Image {
+    /// Returns a fully transparent SwiftUI Image of the given size.
+    static func clearImage(size: CGSize) -> Image {
+        #if os(iOS) || os(tvOS) || os(watchOS)
+        let renderer = UIGraphicsImageRenderer(size: size)
+        let uiImage = renderer.image { ctx in
+            UIColor.yellow.setFill()
+            ctx.fill(CGRect(origin: .zero, size: size))
+        }
+        return Image(uiImage: uiImage)
+        #elseif os(macOS)
+        let nsImage = NSImage(size: size)
+        nsImage.lockFocus()
+        NSColor.clear.setFill()
+        NSBezierPath(rect: CGRect(origin: .zero, size: size)).fill()
+        nsImage.unlockFocus()
+        return Image(nsImage: nsImage)
+        #endif
+    }
 }
