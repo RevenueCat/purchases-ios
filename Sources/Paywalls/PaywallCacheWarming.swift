@@ -23,6 +23,9 @@ protocol PaywallCacheWarmingType: Sendable {
     func warmUpPaywallImagesCache(offerings: Offerings) async
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+    func warmUpPaywallVideosCache(offerings: Offerings) async
+
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func warmUpPaywallFontsCache(offerings: Offerings) async
 
 #if !os(macOS) && !os(tvOS) // For Paywalls
@@ -58,7 +61,9 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
     private var hasLoadedEligibility = false
     private var hasLoadedImages = false
+    private var hasLoadedVideos = false
     private var ongoingFontDownloads: [URL: Task<Void, Never>] = [:]
+    private let fileRepository: FileRepositoryType = FileRepository()
 
     init(
         introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType,
@@ -95,6 +100,23 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
                 try await self.imageFetcher.downloadImage(url)
             } catch {
                 Logger.error(Strings.paywalls.error_prefetching_image(url, error))
+            }
+        }
+    }
+
+    func warmUpPaywallVideosCache(offerings: Offerings) async {
+        guard !self.hasLoadedVideos else { return }
+        self.hasLoadedVideos = true
+
+        let videoURLs = offerings.allVideosInPaywalls
+        guard !videoURLs.isEmpty else { return }
+
+        Logger.verbose(Strings.paywalls.warming_up_videos(videoURLs: videoURLs))
+        await withTaskGroup { [weak self] group in
+            for url in videoURLs {
+                group.addTask {
+                    try? await self?.fileRepository.generateOrGetCachedFileURL(for: url)
+                }
             }
         }
     }
@@ -246,6 +268,21 @@ private extension Offerings {
 
     var allImagesInPaywalls: Set<URL> {
         return self.allImagesInPaywallsV1 + self.allImagesInPaywallsV2
+    }
+
+    var allVideosInPaywalls: Set<URL> {
+        // Attempting to warm up all low res images for all offerings for Paywalls V2.
+        // Paywalls V2 paywall are explicitly published so anything that
+        // is here is intended to be displayed.
+        // Also only prewarming low res urls
+        return .init(
+            self
+                .all
+                .values
+                .lazy
+                .compactMap(\.paywallComponents)
+                .flatMap(\.data.allVideoURLs)
+        )
     }
 
     #else

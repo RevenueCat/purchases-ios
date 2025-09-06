@@ -32,6 +32,10 @@ extension PaywallComponentsData {
         return imageUrls
     }
 
+    var allVideoURLs: [URL] {
+        return self.componentsConfig.base.allVideoURLs
+    }
+
 }
 
 extension PaywallComponentsData.PaywallComponentsConfig {
@@ -41,6 +45,13 @@ extension PaywallComponentsData.PaywallComponentsConfig {
         let stickFooterImageURLs = self.stickyFooter.flatMap { self.collectAllImageURLs(in: $0.stack) } ?? []
 
         return rootStackImageURLs + stickFooterImageURLs
+    }
+
+    var allVideoURLs: [URL] {
+        let rootStackVideoURLs = self.collectAllVideoURLs(in: self.stack)
+        let stickFooterVideoURLs = self.stickyFooter.flatMap { self.collectAllVideoURLs(in: $0.stack) } ?? []
+
+        return rootStackVideoURLs + stickFooterVideoURLs
     }
 
     // swiftlint:disable:next cyclomatic_complexity
@@ -88,11 +99,53 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                     self.collectAllImageURLs(in: stack)
                 })
             case .video(let video):
-                Task {
-                    // WIP: Need to inject the file repository so we can potentially share the work in the view layer
-                    let fileRepository = FileRepository()
-                    _ = try await fileRepository.generateOrGetCachedFileURL(for: video.source.light.url)
+                urls += video.imageUrls
+            }
+        }
+
+        return urls
+    }
+
+    // swiftlint:disable:next cyclomatic_complexity
+    private func collectAllVideoURLs(in stack: PaywallComponent.StackComponent) -> [URL] {
+
+        var urls: [URL] = []
+        for component in stack.components {
+            switch component {
+            case .text:
+                break
+            case .icon:
+                break
+            case .image:
+                break
+            case .stack(let stack):
+                urls += self.collectAllVideoURLs(in: stack)
+            case .button(let button):
+                urls += self.collectAllVideoURLs(in: button.stack)
+            case .package(let package):
+                urls += self.collectAllVideoURLs(in: package.stack)
+            case .purchaseButton(let purchaseButton):
+                urls += self.collectAllVideoURLs(in: purchaseButton.stack)
+            case .stickyFooter(let stickyFooter):
+                urls += self.collectAllVideoURLs(in: stickyFooter.stack)
+            case .timeline:
+                break
+            case .tabs(let tabs):
+                for tab in tabs.tabs {
+                    urls += self.collectAllVideoURLs(in: tab.stack)
                 }
+            case .tabControl:
+                break
+            case .tabControlButton(let controlButton):
+                urls += self.collectAllVideoURLs(in: controlButton.stack)
+            case .tabControlToggle:
+                break
+            case .carousel(let carousel):
+                urls += carousel.pages.flatMap({ stack in
+                    self.collectAllVideoURLs(in: stack)
+                })
+            case .video(let video):
+                urls += video.videoUrls
             }
         }
 
@@ -149,6 +202,23 @@ private extension PaywallComponent.ThemeImageUrls {
         return [
             self.light.heicLowRes,
             self.dark?.heicLowRes
+        ].compactMap { $0 }
+    }
+
+}
+
+private extension PaywallComponent.VideoComponent {
+
+    var imageUrls: [URL] {
+        fallbackSource?.imageUrls ?? []
+    }
+
+    var videoUrls: [URL] {
+        [
+            source.light.url,
+            source.light.urlLowRes,
+            source.dark?.url,
+            source.dark?.urlLowRes
         ].compactMap { $0 }
     }
 
