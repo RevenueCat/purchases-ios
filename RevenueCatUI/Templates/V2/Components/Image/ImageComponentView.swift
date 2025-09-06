@@ -59,14 +59,7 @@ struct ImageComponentView: View {
                     height: self.imageSize(style: style).height
                 )
 
-                ZStack {
-                    GeometryReader { proxy in
-                        Color.clear
-                            .onAppear {
-                                self.maxWidth = proxy.size.width
-                            }
-                    }
-
+                if let maxWidth = self.maxWidth {
                     RemoteImage(
                         url: style.url,
                         lowResUrl: style.lowResUrl,
@@ -103,6 +96,13 @@ struct ImageComponentView: View {
                                 }
                         }
                     )
+                }
+            } else {
+                GeometryReader { proxy in
+                    Color.clear
+                        .onAppear {
+                            self.maxWidth = proxy.size.width
+                        }
                 }
             }
         }
