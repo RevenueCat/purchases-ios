@@ -54,21 +54,36 @@ struct ImageComponentView: View {
             )
         ) { style in
             if style.visible {
-                if let maxWidth = self.maxWidth {
+                ZStack {
+                    GeometryReader { proxy in
+                        Color.clear
+                            .onAppear {
+                                self.maxWidth = proxy.size.width
+                            }
+                    }
+
+                    let expectedSize = CGSize(
+                        width: self.imageSize(style: style).width,
+                        height: self.imageSize(style: style).height
+                    )
+
+                    //                if let maxWidth = self.maxWidth {
                     RemoteImage(
                         url: style.url,
                         lowResUrl: style.lowResUrl,
                         darkUrl: style.darkUrl,
-                        darkLowResUrl: style.darkLowResUrl
+                        darkLowResUrl: style.darkLowResUrl,
+                        expectedSize: expectedSize,
                     ) { (image, size) in
                         self.renderImage(
                             image,
                             size,
-                            maxWidth: self.calculateMaxWidth(parentWidth: maxWidth,
+                            maxWidth: self.calculateMaxWidth(parentWidth: maxWidth ?? expectedSize.width,
                                                              style: style),
                             with: style
                         )
                     }
+                    .id("somthing_1_remote")
                     .applyImageWidth(size: style.size)
                     .applyImageHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
                     .clipped()
@@ -89,13 +104,6 @@ struct ImageComponentView: View {
                                 }
                         }
                     )
-                } else {
-                    GeometryReader { proxy in
-                        Color.clear
-                            .onAppear {
-                                self.maxWidth = proxy.size.width
-                            }
-                    }
                 }
             }
         }
@@ -144,6 +152,7 @@ struct ImageComponentView: View {
                     Color.clear.backgroundStyle(.color(colorOverlay))
                 )
             })
+            .id("somthing_1")
     }
 
 }

@@ -73,6 +73,16 @@ import Foundation
         ).value
     }
 
+    @_spi(Internal) public func iWantItNow(for url: InputURL) -> OutputURL? {
+        let cachedUrl = self.fileManager.generateLocalFilesystemURL(forRemoteURL: url)
+
+        if let cachedUrl, self.fileManager.cachedContentExists(at: cachedUrl) {
+            return cachedUrl
+        }
+
+        return nil
+    }
+
     private func downloadFile(from url: URL) async throws -> Data {
         do {
             return try await networkService.data(from: url)
