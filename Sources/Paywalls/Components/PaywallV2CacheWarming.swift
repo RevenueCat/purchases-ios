@@ -91,7 +91,7 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                 Task {
                     // WIP: Need to inject the file repository so we can potentially share the work in the view layer
                     let fileRepository = FileRepository()
-                    try await fileRepository.generateOrGetCachedFileURL(for: video.source.light.url)
+                    _ = try await fileRepository.generateOrGetCachedFileURL(for: video.source.light.url)
                 }
             }
         }
