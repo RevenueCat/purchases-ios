@@ -28,6 +28,16 @@ struct RemoteImage<Content: View>: View {
     let maxWidth: CGFloat?
     let content: (Image, CGSize) -> Content
 
+    // Preferred method of loading images
+
+    @State
+    private var highResCachedImage: (Image, CGSize)?
+
+    @State
+    private var lowResCachedImage: (Image, CGSize)?
+
+    // Legacy method of loading images
+
     @StateObject
     private var highResLoader: ImageLoader = .init()
 
@@ -46,7 +56,13 @@ struct RemoteImage<Content: View>: View {
             return .identity
         }
         #endif
-        return .opacity.animation(Constants.defaultAnimation)
+
+        if self.cachedImageInfo != nil {
+            // No transition if image is fully loaded from cache
+            return .identity
+        } else {
+            return .opacity.animation(Constants.defaultAnimation)
+        }
     }
 
     init(
@@ -102,25 +118,42 @@ struct RemoteImage<Content: View>: View {
             return nil
         }
 
-        #if os(macOS)
-        if let image = NSImage(contentsOfFile: url.path) {
-            return (Image(nsImage: image), image.size)
-        } else {
-            return nil
+        return url.asImageAndSize
+    }
+
+    var cachedImageInfo: (Image, CGSize)? {
+        let fullResUrl: URL
+        let lowResUrl: URL?
+
+        switch self.colorScheme {
+        case .dark:
+            fullResUrl = self.darkUrl ?? self.url
+            lowResUrl = self.darkLowResUrl ?? self.lowResUrl
+        case .light:
+            fallthrough
+        @unknown default:
+            fullResUrl = self.darkUrl ?? self.url
+            lowResUrl = self.darkLowResUrl ?? self.lowResUrl
         }
-        #else
-        if let image = UIImage(contentsOfFile: url.path) {
-            return (Image(uiImage: image), image.size)
-        } else {
-            return nil
-        }
-        #endif
+
+        let fileRepository = FileRepository()
+        let fullResCachedUrl = fileRepository.getCachedFileURL(for: fullResUrl)
+        let lowResCachedUrl = lowResUrl.flatMap { fileRepository.getCachedFileURL(for: $0) }
+
+        let cachedUrl = fullResCachedUrl ?? lowResCachedUrl
+
+        return cachedUrl?.asImageAndSize
+//        return nil
     }
 
     var body: some View {
         Group {
             if let imageAndSize = self.localImage {
                 content(imageAndSize.0, imageAndSize.1)
+            // Preferred method
+            } else if let imageAndSize = self.cachedImageInfo {
+                content(imageAndSize.0, imageAndSize.1)
+            // Legacy method
             } else if case let .success(result) = highResLoader.result {
                 content(result.image, result.size)
             } else if case let .success(result) = lowResLoader.result {
@@ -133,6 +166,7 @@ struct RemoteImage<Content: View>: View {
                 } else {
                     emptyView(error: nil)
                 }
+            // Empty state
             } else {
                 emptyView(error: nil)
             }
@@ -197,6 +231,26 @@ struct RemoteImage<Content: View>: View {
                 }
             }
         }
+    }
+
+}
+
+private extension URL {
+
+    var asImageAndSize: (Image, CGSize)? {
+        #if os(macOS)
+        if let image = NSImage(contentsOfFile: self.path) {
+            return (Image(nsImage: image), image.size)
+        } else {
+            return nil
+        }
+        #else
+        if let image = UIImage(contentsOfFile: self.path) {
+            return (Image(uiImage: image), image.size)
+        } else {
+            return nil
+        }
+        #endif
     }
 
 }
