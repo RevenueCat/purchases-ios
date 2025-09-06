@@ -248,6 +248,17 @@ private extension Offerings {
         )
     }
 
+    var allVideosInPaywalls: Set<URL> {
+        return .init(
+            self
+                .all
+                .values
+                .lazy
+                .compactMap(\.paywallComponents)
+                .flatMap(\.data.allVideoURLs)
+        )
+    }
+
 #if !os(macOS) && !os(tvOS) // For Paywalls V2
 
     var allFontsInPaywallsNamed: [DownloadableFont] {
@@ -268,21 +279,6 @@ private extension Offerings {
 
     var allImagesInPaywalls: Set<URL> {
         return self.allImagesInPaywallsV1 + self.allImagesInPaywallsV2
-    }
-
-    var allVideosInPaywalls: Set<URL> {
-        // Attempting to warm up all low res images for all offerings for Paywalls V2.
-        // Paywalls V2 paywall are explicitly published so anything that
-        // is here is intended to be displayed.
-        // Also only prewarming low res urls
-        return .init(
-            self
-                .all
-                .values
-                .lazy
-                .compactMap(\.paywallComponents)
-                .flatMap(\.data.allVideoURLs)
-        )
     }
 
     #else
