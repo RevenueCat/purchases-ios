@@ -26,6 +26,7 @@ struct RemoteImage<Content: View>: View {
     let darkLowResUrl: URL?
     let aspectRatio: CGFloat?
     let maxWidth: CGFloat?
+    let expectedSize: CGSize?
     let content: (Image, CGSize) -> Content
 
     // Preferred method of loading images
@@ -70,6 +71,7 @@ struct RemoteImage<Content: View>: View {
         lowResUrl: URL? = nil,
         darkUrl: URL? = nil,
         darkLowResUrl: URL? = nil,
+        expectedSize: CGSize? = nil,
         @ViewBuilder content: @escaping (Image, CGSize) -> Content
     ) {
         self.url = url
@@ -79,6 +81,7 @@ struct RemoteImage<Content: View>: View {
         self.content = content
         self.aspectRatio = nil
         self.maxWidth = nil
+        self.expectedSize = expectedSize
     }
 
     init(
@@ -95,6 +98,7 @@ struct RemoteImage<Content: View>: View {
         self.darkLowResUrl = darkLowResUrl
         self.maxWidth = maxWidth
         self.aspectRatio = aspectRatio
+        self.expectedSize = nil
         self.content = { (image, _) in
             if let aspectRatio {
                 return AnyView(
@@ -167,7 +171,11 @@ struct RemoteImage<Content: View>: View {
                 }
             // Empty state
             } else {
-                emptyView(error: nil)
+                if let expectedSize = self.expectedSize {
+                    Image.clearImage(size: expectedSize)
+                } else {
+                    emptyView(error: nil)
+                }
             }
         }
         .transition(self.transition)
@@ -252,4 +260,35 @@ private extension URL {
         #endif
     }
 
+}
+
+#if os(iOS) || os(tvOS) || os(watchOS)
+import SwiftUI
+import UIKit
+private typealias PlatformImage = UIImage
+#elseif os(macOS)
+import AppKit
+import SwiftUI
+private typealias PlatformImage = NSImage
+#endif
+
+private extension Image {
+    /// Returns a fully transparent SwiftUI Image of the given size.
+    static func clearImage(size: CGSize) -> Image {
+        #if os(iOS) || os(tvOS) || os(watchOS)
+        let renderer = UIGraphicsImageRenderer(size: size)
+        let uiImage = renderer.image { ctx in
+            UIColor.clear.setFill()
+            ctx.fill(CGRect(origin: .zero, size: size))
+        }
+        return Image(uiImage: uiImage)
+        #elseif os(macOS)
+        let nsImage = NSImage(size: size)
+        nsImage.lockFocus()
+        NSColor.clear.setFill()
+        NSBezierPath(rect: CGRect(origin: .zero, size: size)).fill()
+        nsImage.unlockFocus()
+        return Image(nsImage: nsImage)
+        #endif
+    }
 }

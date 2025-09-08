@@ -59,18 +59,26 @@ struct ImageComponentView: View {
                     height: self.imageSize(style: style).height
                 )
 
-                if let maxWidth = self.maxWidth {
+                ZStack {
+                    GeometryReader { proxy in
+                        Color.clear
+                            .onAppear {
+                                self.maxWidth = proxy.size.width
+                            }
+                    }
+
                     RemoteImage(
                         url: style.url,
                         lowResUrl: style.lowResUrl,
                         darkUrl: style.darkUrl,
-                        darkLowResUrl: style.darkLowResUrl
+                        darkLowResUrl: style.darkLowResUrl,
+                        expectedSize: expectedSize
                     ) { (image, size) in
                         self.renderImage(
                             image,
                             size,
                             maxWidth: self.calculateMaxWidth(
-                                parentWidth: self.maxWidth ?? expectedSize.width,
+                                parentWidth: self.maxWidth,
                                 style: style
                             ),
                             with: style
@@ -97,18 +105,15 @@ struct ImageComponentView: View {
                         }
                     )
                 }
-            } else {
-                GeometryReader { proxy in
-                    Color.clear
-                        .onAppear {
-                            self.maxWidth = proxy.size.width
-                        }
-                }
             }
         }
     }
 
-    private func calculateMaxWidth(parentWidth: CGFloat, style: ImageComponentStyle) -> CGFloat {
+    private func calculateMaxWidth(parentWidth: CGFloat?, style: ImageComponentStyle) -> CGFloat? {
+        guard let parentWidth else {
+            return nil
+        }
+
         let totalBorderWidth = (style.border?.width ?? 0) * 2
         return parentWidth - totalBorderWidth
             - style.margin.leading - style.margin.trailing
@@ -134,7 +139,7 @@ struct ImageComponentView: View {
     private func renderImage(
         _ image: Image,
         _ size: CGSize,
-        maxWidth: CGFloat,
+        maxWidth: CGFloat?,
         with style: ImageComponentStyle
     ) -> some View {
         image
