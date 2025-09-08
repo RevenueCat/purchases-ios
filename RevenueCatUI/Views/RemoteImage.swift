@@ -172,7 +172,7 @@ struct RemoteImage<Content: View>: View {
             // Empty state
             } else {
                 if let expectedSize = self.expectedSize {
-                    Image.clearImage(size: expectedSize)
+                    content(Image.clearImage(size: .zero), .zero)
                 } else {
                     emptyView(error: nil)
                 }

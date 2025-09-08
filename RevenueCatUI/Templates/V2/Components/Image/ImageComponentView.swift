@@ -40,6 +40,8 @@ struct ImageComponentView: View {
 
     let viewModel: ImageComponentViewModel
 
+    @State var maxWidth: CGFloat?
+
     var body: some View {
         viewModel.styles(
             state: self.componentViewState,
@@ -57,7 +59,16 @@ struct ImageComponentView: View {
                     height: self.imageSize(style: style).height
                 )
 
-                AspectRatioBoxIfNeeded(self.aspectRatio(style: style), style) {
+                ZStack {
+                    if self.maxWidth == nil {
+                        GeometryReader { proxy in
+                            Color.clear
+                                .onAppear {
+                                    self.maxWidth = proxy.size.width
+                                }
+                        }
+                    }
+
                     RemoteImage(
                         url: style.url,
                         lowResUrl: style.lowResUrl,
@@ -68,6 +79,10 @@ struct ImageComponentView: View {
                         self.renderImage(
                             image,
                             size,
+                            maxWidth: self.calculateMaxWidth(
+                                parentWidth: maxWidth ?? 0,
+                                style: style
+                            ),
                             with: style
                         )
                     }
@@ -80,10 +95,28 @@ struct ImageComponentView: View {
                     .shadow(shadow: style.shadow,
                             shape: style.shape?.toInsettableShape())
                     .padding(style.margin)
+                    .background(
+                        GeometryReader { proxy in
+                            Color.clear
+                                .onAppear {
+                                    self.maxWidth = proxy.size.width
+                                }
+                                .onChangeOf(proxy.size.width) { newWidth in
+                                    self.maxWidth = newWidth
+                                }
+                        }
+                    )
                 }
             }
         }
     }
+
+    private func calculateMaxWidth(parentWidth: CGFloat, style: ImageComponentStyle) -> CGFloat {
+            let totalBorderWidth = (style.border?.width ?? 0) * 2
+            return parentWidth - totalBorderWidth
+                - style.margin.leading - style.margin.trailing
+                - style.padding.leading - style.padding.trailing
+        }
 
     private func aspectRatio(style: ImageComponentStyle) -> Double {
         let (width, height) = self.imageSize(style: style)
@@ -104,6 +137,7 @@ struct ImageComponentView: View {
     private func renderImage(
         _ image: Image,
         _ size: CGSize,
+        maxWidth: CGFloat,
         with style: ImageComponentStyle
     ) -> some View {
         image
@@ -112,6 +146,7 @@ struct ImageComponentView: View {
                 contentMode: style.contentMode,
                 containerContentMode: style.contentMode
             )
+            .frame(maxWidth: maxWidth)
             // WIP: Fix this later when accessibility info is available
             .accessibilityHidden(true)
             .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
@@ -121,29 +156,6 @@ struct ImageComponentView: View {
             })
     }
 
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-fileprivate struct AspectRatioBoxIfNeeded<Content: View>: View {
-    let style: ImageComponentStyle
-    let ratio: CGFloat
-    let content: () -> Content
-
-    init(_ ratio: CGFloat, _ style: ImageComponentStyle, @ViewBuilder content: @escaping () -> Content) {
-        self.ratio = ratio
-        self.style = style
-        self.content = content
-    }
-
-      var body: some View {
-          if self.style.size.width == .fill {
-              Color.clear
-                .aspectRatio(ratio, contentMode: .fit)
-                .overlay(content())
-          } else {
-              content()
-          }
-      }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
