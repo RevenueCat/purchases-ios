@@ -290,7 +290,12 @@ private extension Image {
         UIRectFill(CGRect(origin: .zero, size: size))
         let uiImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
-        return Image(uiImage: uiImage!)
+
+        if let image {
+            return Image(uiImage: uiImage)
+        } else {
+            return Image()
+        }
 
         #elseif os(macOS)
         let nsImage = NSImage(size: size)
