@@ -275,13 +275,23 @@ private typealias PlatformImage = NSImage
 private extension Image {
     /// Returns a fully transparent SwiftUI Image of the given size.
     static func clearImage(size: CGSize) -> Image {
-        #if os(iOS) || os(tvOS) || os(watchOS)
+        #if os(iOS)
         let renderer = UIGraphicsImageRenderer(size: size)
         let uiImage = renderer.image { ctx in
             UIColor.clear.setFill()
             ctx.fill(CGRect(origin: .zero, size: size))
         }
         return Image(uiImage: uiImage)
+
+        #elseif os(tvOS) || os(watchOS)
+        // Fallback for tvOS/watchOS: create a blank UIImage
+        UIGraphicsBeginImageContextWithOptions(size, false, 0)
+        UIColor.clear.setFill()
+        UIRectFill(CGRect(origin: .zero, size: size))
+        let uiImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return Image(uiImage: uiImage!)
+
         #elseif os(macOS)
         let nsImage = NSImage(size: size)
         nsImage.lockFocus()
