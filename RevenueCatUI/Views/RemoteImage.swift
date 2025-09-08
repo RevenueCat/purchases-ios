@@ -262,7 +262,7 @@ private extension URL {
 
 }
 
-#if os(iOS) || os(tvOS) || os(watchOS)
+#if os(iOS) || os(visionOS) || os(tvOS) || os(watchOS)
 import SwiftUI
 import UIKit
 private typealias PlatformImage = UIImage
@@ -275,7 +275,7 @@ private typealias PlatformImage = NSImage
 private extension Image {
     /// Returns a fully transparent SwiftUI Image of the given size.
     static func clearImage(size: CGSize) -> Image {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         let renderer = UIGraphicsImageRenderer(size: size)
         let uiImage = renderer.image { ctx in
             UIColor.clear.setFill()
@@ -300,6 +300,7 @@ private extension Image {
         NSBezierPath(rect: CGRect(origin: .zero, size: size)).fill()
         nsImage.unlockFocus()
         return Image(nsImage: nsImage)
+
         #endif
     }
 }
