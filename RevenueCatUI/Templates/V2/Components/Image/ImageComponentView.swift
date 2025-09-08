@@ -148,7 +148,9 @@ struct ImageComponentView: View {
                 contentMode: style.contentMode,
                 containerContentMode: style.contentMode
             )
-            .frame(maxWidth: maxWidth ?? .infinity)
+            .applyIfLet(maxWidth, apply: { view, value in
+                view.frame(maxWidth: value)
+            })
             // WIP: Fix this later when accessibility info is available
             .accessibilityHidden(true)
             .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
