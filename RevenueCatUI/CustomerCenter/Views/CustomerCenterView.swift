@@ -41,6 +41,10 @@ public struct CustomerCenterView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    // Propagate dismiss from the container to child views (iOS 15 fix)
+    @Environment(\.dismiss)
+    private var dismiss
+
     private let mode: CustomerCenterPresentationMode
 
     private let navigationOptions: CustomerCenterNavigationOptions
@@ -153,7 +157,7 @@ private extension CustomerCenterView {
                         .environment(\.appearance, configuration.appearance)
                         .environment(\.localization, configuration.localization)
                         .environment(\.customerCenterPresentationMode, self.mode)
-                        .environment(\.navigationOptions, self.navigationOptions)
+                        .environment(\.navigationOptions, self.navigationOptionsWithDismiss)
                         .environment(\.supportInformation, configuration.support)
                 } else {
                     TintedProgressView()
@@ -254,6 +258,22 @@ private extension CustomerCenterView {
                                   displayMode: self.mode)
     }
 
+}
+
+private extension CustomerCenterView {
+    // Provide a navigation options instance that always includes a close handler.
+    var navigationOptionsWithDismiss: CustomerCenterNavigationOptions {
+        if self.navigationOptions.onCloseHandler != nil {
+            return self.navigationOptions
+        } else {
+            return CustomerCenterNavigationOptions(
+                usesNavigationStack: self.navigationOptions.usesNavigationStack,
+                usesExistingNavigation: self.navigationOptions.usesExistingNavigation,
+                shouldShowCloseButton: self.navigationOptions.shouldShowCloseButton,
+                onCloseHandler: { self.dismiss() }
+            )
+        }
+    }
 }
 
 #if DEBUG
