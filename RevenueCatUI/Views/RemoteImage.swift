@@ -291,11 +291,7 @@ private extension Image {
         let uiImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
 
-        if let image {
-            return Image(uiImage: uiImage)
-        } else {
-            return Image()
-        }
+        return Image(uiImage: uiImage ?? UIImage())
 
         #elseif os(macOS)
         let nsImage = NSImage(size: size)
