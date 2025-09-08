@@ -57,60 +57,32 @@ struct ImageComponentView: View {
                     height: self.imageSize(style: style).height
                 )
 
-                ZStack {
-                    if style.size.width == .fill {
-                        AspectRatioBox(self.aspectRatio(style: style)) {
-                            RemoteImage(
-                                url: style.url,
-                                lowResUrl: style.lowResUrl,
-                                darkUrl: style.darkUrl,
-                                darkLowResUrl: style.darkLowResUrl,
-                                expectedSize: expectedSize
-                            ) { (image, size) in
-                                self.renderImage(
-                                    image,
-                                    size,
-                                    with: style
-                                )
-                            }
-                            .applyImageWidth(size: style.size)
-                            .applyImageHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
-                            .clipped()
-                        }
-                    } else {
-                        RemoteImage(
-                            url: style.url,
-                            lowResUrl: style.lowResUrl,
-                            darkUrl: style.darkUrl,
-                            darkLowResUrl: style.darkLowResUrl,
-                            expectedSize: expectedSize
-                        ) { (image, size) in
-                            self.renderImage(
-                                image,
-                                size,
-                                with: style
-                            )
-                        }
-                        .applyImageWidth(size: style.size)
-                        .applyImageHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
-                        .clipped()
+                AspectRatioBoxIfNeeded(self.aspectRatio(style: style), style) {
+                    RemoteImage(
+                        url: style.url,
+                        lowResUrl: style.lowResUrl,
+                        darkUrl: style.darkUrl,
+                        darkLowResUrl: style.darkLowResUrl,
+                        expectedSize: expectedSize
+                    ) { (image, size) in
+                        self.renderImage(
+                            image,
+                            size,
+                            with: style
+                        )
                     }
+                    .applyImageWidth(size: style.size)
+                    .applyImageHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
+                    .clipped()
+                    .padding(style.padding.extend(by: style.border?.width ?? 0))
+                    .shape(border: style.border,
+                           shape: style.shape)
+                    .shadow(shadow: style.shadow,
+                            shape: style.shape?.toInsettableShape())
+                    .padding(style.margin)
                 }
-                .padding(style.padding.extend(by: style.border?.width ?? 0))
-                .shape(border: style.border,
-                       shape: style.shape)
-                .shadow(shadow: style.shadow,
-                        shape: style.shape?.toInsettableShape())
-                .padding(style.margin)
             }
         }
-    }
-
-    private func calculateMaxWidth(parentWidth: CGFloat, style: ImageComponentStyle) -> CGFloat {
-        let totalBorderWidth = (style.border?.width ?? 0) * 2
-        return parentWidth - totalBorderWidth
-            - style.margin.leading - style.margin.trailing
-            - style.padding.leading - style.padding.trailing
     }
 
     private func aspectRatio(style: ImageComponentStyle) -> Double {
@@ -151,27 +123,27 @@ struct ImageComponentView: View {
 
 }
 
-struct AspectRatioBox<Content: View>: View {
-  let ratio: CGFloat
-  let content: () -> Content
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+fileprivate struct AspectRatioBoxIfNeeded<Content: View>: View {
+    let style: ImageComponentStyle
+    let ratio: CGFloat
+    let content: () -> Content
 
-  init(_ ratio: CGFloat, @ViewBuilder content: @escaping () -> Content) {
-    self.ratio = ratio
-    self.content = content
-  }
-
-  var body: some View {
-    Color.clear
-      .aspectRatio(ratio, contentMode: .fit)
-      .overlay(content())
-  }
-}
-
-struct ParentWidthKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = nextValue()
+    init(_ ratio: CGFloat, _ style: ImageComponentStyle, @ViewBuilder content: @escaping () -> Content) {
+        self.ratio = ratio
+        self.style = style
+        self.content = content
     }
+
+      var body: some View {
+          if self.style.size.width == .fill {
+              Color.clear
+                .aspectRatio(ratio, contentMode: .fit)
+                .overlay(content())
+          } else {
+              content()
+          }
+      }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
