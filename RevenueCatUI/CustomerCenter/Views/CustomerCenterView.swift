@@ -260,8 +260,13 @@ private extension CustomerCenterView {
 
 }
 
+@available(iOS 15.0, *)
 private extension CustomerCenterView {
-    // Provide a navigation options instance that always includes a close handler.
+    /// Provide a navigation options instance that always includes a close handler.
+    ///
+    /// - Note: Using `@Environment(.dismiss)` directly inside child views (e.g., toolbar buttons) can fail to dismiss
+    /// the view when presented. To ensure reliable behavior on iOS 15, we capture `dismiss` at the
+    /// container level (CustomerCenterView) and propagate it via `navigationOptions.onCloseHandler`.
     var navigationOptionsWithDismiss: CustomerCenterNavigationOptions {
         if self.navigationOptions.onCloseHandler != nil {
             return self.navigationOptions
