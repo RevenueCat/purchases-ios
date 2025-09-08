@@ -40,8 +40,6 @@ struct ImageComponentView: View {
 
     let viewModel: ImageComponentViewModel
 
-    @State var maxWidth: CGFloat?
-
     var body: some View {
         viewModel.styles(
             state: self.componentViewState,
@@ -59,44 +57,51 @@ struct ImageComponentView: View {
                     height: self.imageSize(style: style).height
                 )
 
-                RemoteImage(
-                    url: style.url,
-                    lowResUrl: style.lowResUrl,
-                    darkUrl: style.darkUrl,
-                    darkLowResUrl: style.darkLowResUrl,
-                    expectedSize: expectedSize
-                ) { (image, size) in
-                    if let maxWidth = self.maxWidth {
-                        self.renderImage(
-                            image,
-                            size,
-                            maxWidth: self.calculateMaxWidth(
-                                parentWidth: maxWidth,
-                                style: style
-                            ),
-                            with: style
-                        )
+                ZStack {
+                    if style.size.width == .fill {
+                        AspectRatioBox(self.aspectRatio(style: style)) {
+                            RemoteImage(
+                                url: style.url,
+                                lowResUrl: style.lowResUrl,
+                                darkUrl: style.darkUrl,
+                                darkLowResUrl: style.darkLowResUrl,
+                                expectedSize: expectedSize
+                            ) { (image, size) in
+                                self.renderImage(
+                                    image,
+                                    size,
+                                    with: style
+                                )
+                            }
+                            .applyImageWidth(size: style.size)
+                            .applyImageHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
+                            .clipped()
+                        }
+                    } else {
+                        RemoteImage(
+                            url: style.url,
+                            lowResUrl: style.lowResUrl,
+                            darkUrl: style.darkUrl,
+                            darkLowResUrl: style.darkLowResUrl,
+                            expectedSize: expectedSize
+                        ) { (image, size) in
+                            self.renderImage(
+                                image,
+                                size,
+                                with: style
+                            )
+                        }
+                        .applyImageWidth(size: style.size)
+                        .applyImageHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
+                        .clipped()
                     }
                 }
-                .applyImageWidth(size: style.size)
-                .applyImageHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
-                .clipped()
                 .padding(style.padding.extend(by: style.border?.width ?? 0))
                 .shape(border: style.border,
                        shape: style.shape)
                 .shadow(shadow: style.shadow,
                         shape: style.shape?.toInsettableShape())
                 .padding(style.margin)
-                .background(
-                    GeometryReader { geo in
-                        Color.clear
-                            .preference(key: ParentWidthKey.self,
-                                        value: geo.size.width)
-                    }
-                )
-                .onPreferenceChange(ParentWidthKey.self) { width in
-                    maxWidth = width
-                }
             }
         }
     }
@@ -127,7 +132,6 @@ struct ImageComponentView: View {
     private func renderImage(
         _ image: Image,
         _ size: CGSize,
-        maxWidth: CGFloat,
         with style: ImageComponentStyle
     ) -> some View {
         image
@@ -136,7 +140,6 @@ struct ImageComponentView: View {
                 contentMode: style.contentMode,
                 containerContentMode: style.contentMode
             )
-            .frame(maxWidth: maxWidth)
             // WIP: Fix this later when accessibility info is available
             .accessibilityHidden(true)
             .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
@@ -146,6 +149,22 @@ struct ImageComponentView: View {
             })
     }
 
+}
+
+struct AspectRatioBox<Content: View>: View {
+  let ratio: CGFloat
+  let content: () -> Content
+
+  init(_ ratio: CGFloat, @ViewBuilder content: @escaping () -> Content) {
+    self.ratio = ratio
+    self.content = content
+  }
+
+  var body: some View {
+    Color.clear
+      .aspectRatio(ratio, contentMode: .fit)
+      .overlay(content())
+  }
 }
 
 struct ParentWidthKey: PreferenceKey {
