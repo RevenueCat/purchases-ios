@@ -1992,9 +1992,7 @@ private extension PurchasesOrchestrator {
                                                                                     fetchPolicy: .cachedOrFetched)
                 await completion(nil, customerInfo, ErrorUtils.purchaseCancelledError().asPublicError, true)
             case .failure(let purchasesError):
-                let customerInfo = try? await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
-                                                                                    fetchPolicy: .cachedOrFetched)
-                await completion(nil, customerInfo, purchasesError.asPublicError, false)
+                await completion(nil, nil, purchasesError.asPublicError, false)
             case .success(let transaction):
                 do {
                     let customerInfo = try await self.handlePurchasedTransaction(transaction, .purchase, metadata)
