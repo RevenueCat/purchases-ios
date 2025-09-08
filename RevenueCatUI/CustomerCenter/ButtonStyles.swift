@@ -156,13 +156,16 @@ struct DismissCircleButton: View {
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct DismissCircleButtonToolbarModifier: ViewModifier {
+    @Environment(\.dismiss)
+    private var dismiss
 
     @Environment(\.navigationOptions)
     var navigationOptions
 
     func body(content: Content) -> some View {
         #if compiler(>=5.9)
-        if navigationOptions.shouldShowCloseButton, let onClose = navigationOptions.onCloseHandler {
+        if navigationOptions.shouldShowCloseButton {
+            let onClose = navigationOptions.onCloseHandler ?? { dismiss() }
             content
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {

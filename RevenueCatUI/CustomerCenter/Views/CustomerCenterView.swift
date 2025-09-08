@@ -145,7 +145,7 @@ private extension CustomerCenterView {
             case .error:
                 ErrorView()
                     .environment(\.customerCenterPresentationMode, self.mode)
-                    .environment(\.navigationOptions, self.navigationOptions)
+                    .environment(\.navigationOptions, self.navigationOptionsWithDismiss)
                     .dismissCircleButtonToolbarIfNeeded()
 
             case .notLoaded:
