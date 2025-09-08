@@ -1,20 +1,15 @@
-## RevenueCat SDK
-### ✨ New Features
-* MON-1193 Optional transitions (delayed back button) (#5490) via Jacob Rakidzich (@JZDesign)
-
 ## RevenueCatUI SDK
-### 🐞 Bugfixes
-* Fix Paywall from Customer Center when `purchasesAreCompletedBy == .myApp` (#5512) via Antonio Pallares (@ajpallares)
-### Paywallv2
+### Customer Center
+#### ✨ New Features
+* Updating Customer Center UI to be ready for iOS 26 (#5519) via Hidde van der Ploeg (@hiddevdploeg)
 #### 🐞 Bugfixes
-* Fix markdown bold text in paywalls (#5517) via Antonio Pallares (@ajpallares)
+* Fix dismisss button for iOS15 in CustomerCenter (#5529) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Refetch offerings when preferred locale is set (#5511) via Josh Holtz (@joshdholtz)
-* Post receipt in for purchases in Test Store (#5515) via Antonio Pallares (@ajpallares)
-* Rename Test Store to Simulated Store internally (#5459) via Antonio Pallares (@ajpallares)
-* Untrack testEntitlementsComputation xcodeproj (#5514) via Facundo Menzella (@facumenzella)
-* Extend appTarget settings to pass custom settings (#5470) via Facundo Menzella (@facumenzella)
-* Fix compilation error in Xcode 14 (#5513) via Antonio Pallares (@ajpallares)
-* Make TrialOrIntroEligibilityChecker @_spi public (#5461) via Antonio Pallares (@ajpallares)
-* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5510) via RevenueCat Git Bot (@RCGitBot)
+* Update automated tests for customer center (#5518) via Facundo Menzella (@facumenzella)
+* fix emerge tools snapshots (#5530) via Facundo Menzella (@facumenzella)
+* Paywall video component model creation -- Not views, just models (#5481) via Jacob Rakidzich (@JZDesign)
+* New Paywalls Tester App Icon (#5525) via Engin Kurutepe (@ekurutepe)
+* Move preferred locale APIs from RevenueCatUI to RevenueCat (#5523) via Antonio Pallares (@ajpallares)
+* Fix compilation of RevenueCatUI in Xcode 14 (#5524) via Antonio Pallares (@ajpallares)
+* Update changelog with missing changes in v5.27.1 (#5522) via Antonio Pallares (@ajpallares)
