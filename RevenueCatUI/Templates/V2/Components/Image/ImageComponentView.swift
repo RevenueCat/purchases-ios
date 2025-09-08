@@ -59,61 +59,49 @@ struct ImageComponentView: View {
                     height: self.imageSize(style: style).height
                 )
 
-                ZStack {
-                    GeometryReader { proxy in
-                        Color.clear
-                            .onAppear {
-                                self.maxWidth = proxy.size.width
-                            }
-                    }
-
-                    RemoteImage(
-                        url: style.url,
-                        lowResUrl: style.lowResUrl,
-                        darkUrl: style.darkUrl,
-                        darkLowResUrl: style.darkLowResUrl,
-                        expectedSize: expectedSize
-                    ) { (image, size) in
+                RemoteImage(
+                    url: style.url,
+                    lowResUrl: style.lowResUrl,
+                    darkUrl: style.darkUrl,
+                    darkLowResUrl: style.darkLowResUrl,
+                    expectedSize: expectedSize
+                ) { (image, size) in
+                    if let maxWidth = self.maxWidth {
                         self.renderImage(
                             image,
                             size,
                             maxWidth: self.calculateMaxWidth(
-                                parentWidth: self.maxWidth,
+                                parentWidth: maxWidth,
                                 style: style
                             ),
                             with: style
                         )
                     }
-                    .applyImageWidth(size: style.size)
-                    .applyImageHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
-                    .clipped()
-                    .padding(style.padding.extend(by: style.border?.width ?? 0))
-                    .shape(border: style.border,
-                           shape: style.shape)
-                    .shadow(shadow: style.shadow,
-                            shape: style.shape?.toInsettableShape())
-                    .padding(style.margin)
-                    .background(
-                        GeometryReader { proxy in
-                            Color.clear
-                                .onAppear {
-                                    self.maxWidth = proxy.size.width
-                                }
-                                .onChangeOf(proxy.size.width) { newWidth in
-                                    self.maxWidth = newWidth
-                                }
-                        }
-                    )
+                }
+                .applyImageWidth(size: style.size)
+                .applyImageHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
+                .clipped()
+                .padding(style.padding.extend(by: style.border?.width ?? 0))
+                .shape(border: style.border,
+                       shape: style.shape)
+                .shadow(shadow: style.shadow,
+                        shape: style.shape?.toInsettableShape())
+                .padding(style.margin)
+                .background(
+                    GeometryReader { geo in
+                        Color.clear
+                            .preference(key: ParentWidthKey.self,
+                                        value: geo.size.width)
+                    }
+                )
+                .onPreferenceChange(ParentWidthKey.self) { width in
+                    maxWidth = width
                 }
             }
         }
     }
 
-    private func calculateMaxWidth(parentWidth: CGFloat?, style: ImageComponentStyle) -> CGFloat? {
-        guard let parentWidth else {
-            return nil
-        }
-
+    private func calculateMaxWidth(parentWidth: CGFloat, style: ImageComponentStyle) -> CGFloat {
         let totalBorderWidth = (style.border?.width ?? 0) * 2
         return parentWidth - totalBorderWidth
             - style.margin.leading - style.margin.trailing
@@ -139,7 +127,7 @@ struct ImageComponentView: View {
     private func renderImage(
         _ image: Image,
         _ size: CGSize,
-        maxWidth: CGFloat?,
+        maxWidth: CGFloat,
         with style: ImageComponentStyle
     ) -> some View {
         image
@@ -148,9 +136,7 @@ struct ImageComponentView: View {
                 contentMode: style.contentMode,
                 containerContentMode: style.contentMode
             )
-            .applyIfLet(maxWidth, apply: { view, value in
-                view.frame(maxWidth: value)
-            })
+            .frame(maxWidth: maxWidth)
             // WIP: Fix this later when accessibility info is available
             .accessibilityHidden(true)
             .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
@@ -160,6 +146,13 @@ struct ImageComponentView: View {
             })
     }
 
+}
+
+struct ParentWidthKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
