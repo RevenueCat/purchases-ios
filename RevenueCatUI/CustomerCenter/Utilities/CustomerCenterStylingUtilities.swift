@@ -21,7 +21,7 @@ enum CustomerCenterStylingUtilities {
     /// Default corner radius for Customer Center UI components.
     /// - Returns: `26.0` on iOS 26 and later; otherwise `10`.
     static var cornerRadius: CGFloat {
-#if swift(>=6.2)
+#if compiler(>=6.2)
         if #available(iOS 26.0, *) {
             26.0
         } else {
