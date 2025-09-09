@@ -62,7 +62,6 @@ struct PurchasesInformationSection: View {
                         localization: localization,
                         accessibilityIdentifier: "purchase_card_\(offset)"
                     )
-                    .cornerRadius(10)
                     .padding(.horizontal)
                 }
                 .padding(.bottom, 16)
@@ -84,10 +83,12 @@ private struct CardStyleModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .padding()
+            #if compiler(>=5.9)
             .background(Color(colorScheme == .light
                               ? UIColor.systemBackground
-                              : UIColor.secondarySystemBackground))
-            .cornerRadius(10)
+                              : UIColor.secondarySystemBackground),
+                        in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
+            #endif
             .padding(.horizontal)
     }
 }
@@ -105,6 +106,8 @@ struct AccountDetailsSection: View {
     let originalAppUserId: String
     let localization: CustomerCenterConfigData.Localization
 
+    @State
+    private var didCopyID = false
     init(
         originalPurchaseDate: Date?,
         originalAppUserId: String,
@@ -151,21 +154,51 @@ struct AccountDetailsSection: View {
         }
     }
 
+    @ViewBuilder
     var userIdView: some View {
-        CompatibilityLabeledContent(
-            localization[.userId],
-            content: originalAppUserId
-        )
-        .contextMenu {
-            Button {
-                UIPasteboard.general.string = originalAppUserId
-            } label: {
-                Text(localization[.copy])
-                Image(systemName: "doc.on.clipboard")
+        #if compiler(>=5.9)
+        if #available(iOS 17.0, *) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text(localization[.userId])
+                    Spacer()
+                    Button(localization[.copy], systemImage: didCopyID ? "checkmark" : "document.on.document") {
+                        UIPasteboard.general.string = originalAppUserId
+                        withAnimation {
+                            didCopyID = true
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                            withAnimation {
+                                self.didCopyID = false
+                            }
+                        }
+                    }
+                    .labelStyle(.iconOnly)
+                    .frame(minHeight: 24)
+                    .contentTransition(.symbolEffect(.replace))
+                    .imageScale(.small)
+                }
+
+                Text(originalAppUserId)
+                    .textSelection(.enabled)
+                    .foregroundStyle(.secondary)
+            }
+        } else {
+            HStack {
+                Text(localization[.userId])
+                Spacer()
+                Text(originalAppUserId)
+                    .textSelection(.enabled)
+            }
+            .contentShape(.rect(cornerRadius: 26))
+            .contextMenu {
+                Button(localization[.copy], systemImage: "document.on.document") {
+                    UIPasteboard.general.string = originalAppUserId
+                }
             }
         }
+        #endif
     }
-
     private static var dateFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium

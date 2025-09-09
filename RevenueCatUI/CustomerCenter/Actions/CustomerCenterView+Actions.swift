@@ -64,9 +64,10 @@ extension CustomerCenterView {
 
     fileprivate struct OnRestoreStartedModifier: ViewModifier {
         let handler: RestoreStartedHandler
+
         func body(content: Content) -> some View {
             content.transformEnvironment(\.customerCenterActions) { actions in
-                actions.addRestoreStarted(handler)
+                actions.addRestoreStarted(handler as @MainActor @Sendable () -> Void)
             }
         }
     }
@@ -75,7 +76,7 @@ extension CustomerCenterView {
         let handler: RestoreFailedHandler
         func body(content: Content) -> some View {
             content.transformEnvironment(\.customerCenterActions) { actions in
-                actions.addRestoreFailed(handler)
+                actions.addRestoreFailed(handler as @MainActor @Sendable (Error) -> Void)
             }
         }
     }
@@ -84,7 +85,7 @@ extension CustomerCenterView {
         let handler: RestoreCompletedHandler
         func body(content: Content) -> some View {
             content.transformEnvironment(\.customerCenterActions) { actions in
-                actions.addRestoreCompleted(handler)
+                actions.setRestoreCompleted(handler as @MainActor @Sendable (CustomerInfo) -> Void)
             }
         }
     }
@@ -93,7 +94,7 @@ extension CustomerCenterView {
         let handler: ShowingManageSubscriptionsHandler
         func body(content: Content) -> some View {
             content.transformEnvironment(\.customerCenterActions) { actions in
-                actions.addShowingManageSubscriptions(handler)
+                actions.addShowingManageSubscriptions(handler as @MainActor @Sendable () -> Void)
             }
         }
     }
@@ -102,7 +103,7 @@ extension CustomerCenterView {
         let handler: RefundRequestStartedHandler
         func body(content: Content) -> some View {
             content.transformEnvironment(\.customerCenterActions) { actions in
-                actions.addRefundRequestStarted(handler)
+                actions.addRefundRequestStarted(handler as @MainActor @Sendable (String) -> Void)
             }
         }
     }
@@ -111,7 +112,9 @@ extension CustomerCenterView {
         let handler: RefundRequestCompletedHandler
         func body(content: Content) -> some View {
             content.transformEnvironment(\.customerCenterActions) { actions in
-                actions.addRefundRequestCompleted(handler)
+                actions.addRefundRequestCompleted(
+                    handler as @MainActor @Sendable (String, RefundRequestStatus) -> Void
+                )
             }
         }
     }
@@ -120,7 +123,7 @@ extension CustomerCenterView {
         let handler: FeedbackSurveyCompletedHandler
         func body(content: Content) -> some View {
             content.transformEnvironment(\.customerCenterActions) { actions in
-                actions.addFeedbackSurveyCompleted(handler)
+                actions.addFeedbackSurveyCompleted(handler as @MainActor @Sendable (String) -> Void)
             }
         }
     }
@@ -129,7 +132,9 @@ extension CustomerCenterView {
         let handler: ManagementOptionSelectedHandler
         func body(content: Content) -> some View {
             content.transformEnvironment(\.customerCenterActions) { actions in
-                actions.addManagementOptionSelected(handler)
+                actions.addManagementOptionSelected(
+                    handler as @MainActor @Sendable (CustomerCenterActionable) -> Void
+                )
             }
         }
     }
@@ -138,7 +143,7 @@ extension CustomerCenterView {
         let handler: PromotionalOfferSuccessHandler
         func body(content: Content) -> some View {
             content.transformEnvironment(\.customerCenterActions) { actions in
-                actions.addPromotionalOfferSuccess(handler)
+                actions.addPromotionalOfferSuccess(handler as @MainActor @Sendable () -> Void)
             }
         }
     }
@@ -147,7 +152,7 @@ extension CustomerCenterView {
         let handler: ChangePlansHandler
         func body(content: Content) -> some View {
             content.transformEnvironment(\.customerCenterActions) { actions in
-                actions.addChangePlansSelected(handler)
+                actions.addChangePlansSelected(handler as @MainActor @Sendable (String) -> Void)
             }
         }
     }
@@ -156,7 +161,9 @@ extension CustomerCenterView {
         let handler: CustomActionHandler
         func body(content: Content) -> some View {
             content.transformEnvironment(\.customerCenterActions) { actions in
-                actions.addCustomActionSelected(handler)
+                actions.addCustomActionSelected(
+                    handler as @MainActor @Sendable (String, String?) -> Void
+                )
             }
         }
     }

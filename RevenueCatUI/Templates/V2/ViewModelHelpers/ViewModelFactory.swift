@@ -404,6 +404,8 @@ struct ViewModelFactory {
                     pageStackViewModels: pageStackViewModels
                 )
             )
+        case .video:
+            return .video(.init())
         }
     }
 
@@ -518,6 +520,8 @@ struct ViewModelFactory {
                 return nil
             }
             return self.findFullWidthImageViewIfItsTheFirst(first)
+        case .video:
+            return nil
         }
     }
 

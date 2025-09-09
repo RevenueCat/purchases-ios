@@ -1,19 +1,15 @@
-## RevenueCat SDK
-### ✨ New Features
-* Add option to disable automatic ID collection when setting attribution network IDs at configuration time (#5504) via Toni Rico (@tonidero)
-### 🐞 Bugfixes
-* fix compilation errors for Xcode 14.2 (swift 5.7) (#5494) via Facundo Menzella (@facumenzella)
-
 ## RevenueCatUI SDK
 ### Customer Center
 #### ✨ New Features
-* Add button_text to ScreenOffering (#5501) via Facundo Menzella (@facumenzella)
+* Updating Customer Center UI to be ready for iOS 26 (#5519) via Hidde van der Ploeg (@hiddevdploeg)
 #### 🐞 Bugfixes
-* Fix dark mode button for featured offering + localized header (#5502) via Facundo Menzella (@facumenzella)
-* Address virtual currencies with zero units in customer center (#5500) via Facundo Menzella (@facumenzella)
-* Fix title and price of non-Google purchases in Customer Center (#5465) via Facundo Menzella (@facumenzella)
+* Fix dismisss button for iOS15 in CustomerCenter (#5529) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Fix backend integration tests (#5505) via Toni Rico (@tonidero)
-* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5498) via RevenueCat Git Bot (@RCGitBot)
-* Fix spelling errors in the style guide (#5497) via Jacob Rakidzich (@JZDesign)
+* Update automated tests for customer center (#5518) via Facundo Menzella (@facumenzella)
+* fix emerge tools snapshots (#5530) via Facundo Menzella (@facumenzella)
+* Paywall video component model creation -- Not views, just models (#5481) via Jacob Rakidzich (@JZDesign)
+* New Paywalls Tester App Icon (#5525) via Engin Kurutepe (@ekurutepe)
+* Move preferred locale APIs from RevenueCatUI to RevenueCat (#5523) via Antonio Pallares (@ajpallares)
+* Fix compilation of RevenueCatUI in Xcode 14 (#5524) via Antonio Pallares (@ajpallares)
+* Update changelog with missing changes in v5.27.1 (#5522) via Antonio Pallares (@ajpallares)

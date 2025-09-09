@@ -124,7 +124,7 @@ final class CustomerCenterEnvironmentActions: @unchecked Sendable {
         self.restoreFailed = handler
     }
 
-    func addRestoreCompleted(_ handler: @escaping @MainActor @Sendable (CustomerInfo) -> Void) {
+    func setRestoreCompleted(_ handler: @escaping @MainActor @Sendable (CustomerInfo) -> Void) {
         self.restoreCompleted = handler
     }
 
