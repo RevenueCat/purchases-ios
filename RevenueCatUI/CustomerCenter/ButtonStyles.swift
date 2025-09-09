@@ -28,7 +28,7 @@ struct ProminentButtonStyle: PrimitiveButtonStyle {
     @Environment(\.appearance) private var appearance: CustomerCenterConfigData.Appearance
     @Environment(\.colorScheme) private var colorScheme
     private var needsLegacyBorderShape: Bool {
-        #if swift(>=6.2)
+        #if compiler(>=6.2)
         if #available(iOS 26.0, *) { false } else { true }
         #else
         true
@@ -104,7 +104,7 @@ struct DismissCircleButton: View {
     let onDismiss: () -> Void
 
     var body: some View {
-#if swift(>=6.2)
+#if compiler(>=6.2)
         if #available(iOS 26.0, *) {
             Button(role: .close) {
                 onDismiss()
