@@ -329,9 +329,9 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
         }
 
         XCTAssertNil(transaction)
+        XCTAssertNil(customerInfo)
         XCTAssertFalse(userCancelled)
         XCTAssertEqual(error?.asErrorCode, ErrorCode.ineligibleError)
-        XCTAssertEqual(customerInfo, Self.mockCustomerInfo)
     }
 
     func testSuccessfulPurchaseOfTestStoreProductPostsReceipt() async throws {
