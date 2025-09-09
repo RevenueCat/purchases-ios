@@ -37,6 +37,7 @@ struct OfferingDetailView: View {
         
         @State private var error: Error?
         @State private var purchaseSucceeded: Bool = false
+        @State private var purchaseUserCancelled: Bool = false
 
         private func checkIntroEligibility() async {
             guard self.eligibility == nil else { return }
@@ -78,26 +79,26 @@ struct OfferingDetailView: View {
                 
                 Divider()
 
-                self.button("Buy as Package") {
-                    try await self.purchaseAsPackage()
+                self.purchaseButton("Buy as Package") {
+                    return await self.purchaseAsPackage()
                 }
 
                 Divider()
 
-                self.button("Buy as Product") {
-                    try await self.purchaseAsProduct()
+                self.purchaseButton("Buy as Product") {
+                    return await self.purchaseAsProduct()
                 }
 
                 Divider()
 
                 if self.observerModeManager.observerModeEnabled {
-                    self.button("Buy directly from SK1 (w/o RevenueCat)") {
-                        try await self.purchaseAsSK1Product()
+                    self.purchaseButton("Buy directly from SK1 (w/o RevenueCat)") {
+                        return await self.purchaseAsSK1Product()
                     }
 
                     #if !os(visionOS)
-                    self.button("Buy directly from SK2 (w/o RevenueCat)") {
-                        try await self.purchaseAsSK2Product()
+                    self.purchaseButton("Buy directly from SK2 (w/o RevenueCat)") {
+                        return await self.purchaseAsSK2Product()
                     }
                     #endif
 
@@ -113,6 +114,9 @@ struct OfferingDetailView: View {
             .disabled(self.isPurchasing)
             .alert(isPresented: self.$purchaseSucceeded) {
                 Alert(title: Text("Purchased!"))
+            }
+            .alert(isPresented: self.$purchaseUserCancelled) {
+                Alert(title: Text("User cancelled"))
             }
             .alert(
                 isPresented: .init(get: { self.error != nil },
@@ -130,61 +134,85 @@ struct OfferingDetailView: View {
             }
         }
         
-        private func purchaseAsPackage() async throws {
+        private func purchaseAsPackage() async -> PurchaseResult {
             self.isPurchasing = true
             defer { self.isPurchasing = false }
 
-            let result: PurchaseResultData
-            if let metadata = customerData.metadata {
-                #if ENABLE_TRANSACTION_METADATA
-                let params = PurchaseParams.Builder(package: package).with(metadata: metadata).build()
-                #else
-                let params = PurchaseParams.Builder(package: package).build()
-                print("⚠️ Warning - ENABLE_TRANSACTION_METADATA feature flag is not enabled")
-                print("⚠️ Warning - Metadata will not be sent with the purchase")
-                #endif
-                result = try await Purchases.shared.purchase(params)
-            } else {
-                result = try await Purchases.shared.purchase(package: self.package)
-            }
-            self.completedPurchase(result)
+            let result: PurchaseResult
+            do {
+                let resultData: PurchaseResultData
+                if let metadata = customerData.metadata {
+                    #if ENABLE_TRANSACTION_METADATA
+                    let params = PurchaseParams.Builder(package: package).with(metadata: metadata).build()
+                    #else
+                    let params = PurchaseParams.Builder(package: package).build()
+                    print("⚠️ Warning - ENABLE_TRANSACTION_METADATA feature flag is not enabled")
+                    print("⚠️ Warning - Metadata will not be sent with the purchase")
+                    #endif
+                    resultData = try await Purchases.shared.purchase(params)
+                } else {
+                    resultData = try await Purchases.shared.purchase(package: self.package)
+                }
 
+                self.completedPurchase(resultData)
+                if resultData.userCancelled {
+                    result = .userCancelled
+                } else {
+                    result = .success
+                }
+            } catch {
+                result = .failure(error)
+            }
+
+            return result
         }
         
-        private func purchaseAsProduct() async throws {
+        private func purchaseAsProduct() async -> PurchaseResult {
             self.isPurchasing = true
             defer { self.isPurchasing = false }
 
-            let result: PurchaseResultData
-            if let metadata = customerData.metadata {
-                #if ENABLE_TRANSACTION_METADATA
-                let params = PurchaseParams.Builder(package: package).with(metadata: metadata).build()
-                #else
-                let params = PurchaseParams.Builder(package: package).build()
-                print("⚠️ Warning - ENABLE_TRANSACTION_METADATA feature flag is not enabled")
-                print("⚠️ Warning - Metadata will not be sent with the purchase")
-                #endif
-                result = try await Purchases.shared.purchase(params)
-            } else {
-                result = try await Purchases.shared.purchase(product: self.package.storeProduct)
+            let result: PurchaseResult
+            do {
+                let resultData: PurchaseResultData
+                if let metadata = customerData.metadata {
+                    #if ENABLE_TRANSACTION_METADATA
+                    let params = PurchaseParams.Builder(package: package).with(metadata: metadata).build()
+                    #else
+                    let params = PurchaseParams.Builder(package: package).build()
+                    print("⚠️ Warning - ENABLE_TRANSACTION_METADATA feature flag is not enabled")
+                    print("⚠️ Warning - Metadata will not be sent with the purchase")
+                    #endif
+                    resultData = try await Purchases.shared.purchase(params)
+                } else {
+                    resultData = try await Purchases.shared.purchase(product: self.package.storeProduct)
+                }
+
+                self.completedPurchase(resultData)
+                if resultData.userCancelled {
+                    result = .userCancelled
+                } else {
+                    result = .success
+                }
+            } catch {
+                result = .failure(error)
             }
 
-            self.completedPurchase(result)
+            return result
         }
 
-        private func purchaseAsSK1Product() async throws {
+        private func purchaseAsSK1Product() async -> PurchaseResult {
             self.isPurchasing = true
             defer { self.isPurchasing = false }
 
-            try await self.observerModeManager.purchaseAsSK1Product(self.package.storeProduct)
+            return await self.observerModeManager.purchaseAsSK1Product(self.package.storeProduct)
         }
 
         #if !os(visionOS)
-        private func purchaseAsSK2Product() async throws {
+        private func purchaseAsSK2Product() async -> PurchaseResult {
             self.isPurchasing = true
             defer { self.isPurchasing = false }
 
-            try await self.observerModeManager.purchaseAsSK2Product(self.package.storeProduct)
+            return await self.observerModeManager.purchaseAsSK2Product(self.package.storeProduct)
         }
         #endif
 
@@ -194,14 +222,16 @@ struct OfferingDetailView: View {
             print("🚀 Info 💁‍♂️ - User Cancelled: \(data.userCancelled)")
         }
 
-        private func button(_ title: String, action: @escaping () async throws -> Void) -> some View {
+        private func purchaseButton(_ title: String, purchaseAction: @escaping () async -> PurchaseResult) -> some View {
             Button(title) {
                 Task<Void, Never> {
-                    do {
-                        try await action()
-
+                    let purchaseResult = await purchaseAction()
+                    switch purchaseResult {
+                    case .success:
                         self.purchaseSucceeded = true
-                    } catch {
+                    case .userCancelled:
+                        self.purchaseUserCancelled = true
+                    case .failure(let error):
                         self.error = error
                         print("🚀 Error: \(error)")
                     }
@@ -211,4 +241,10 @@ struct OfferingDetailView: View {
             .padding(.vertical, 10)
         }
     }
+}
+
+enum PurchaseResult {
+    case success
+    case userCancelled
+    case failure(Error)
 }
