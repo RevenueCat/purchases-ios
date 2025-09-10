@@ -1,4 +1,4 @@
-// swift-tools-version:6.2
+// swift-tools-version:5.9
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -22,16 +22,14 @@ if shouldIncludeDocCPlugin {
 // #if os(visionOS) can't really be used in Xcode 13, so we use this instead.
 let visionOSSetting: SwiftSetting = .define("VISION_OS", .when(platforms: [.visionOS]))
 
-let swiftLanguageMode: SwiftSetting = .swiftLanguageMode(.v5)
-
 let package = Package(
     name: "RevenueCat",
     defaultLocalization: "en",
     platforms: [
         .macOS(.v10_13),
         .watchOS("6.2"),
-        .tvOS(.v13),
-        .iOS(.v13),
+        .tvOS(.v11),
+        .iOS(.v11),
         .visionOS(.v1)
     ],
     products: [
@@ -52,7 +50,7 @@ let package = Package(
                 resources: [
                     .copy("../Sources/PrivacyInfo.xcprivacy")
                 ],
-                swiftSettings: [visionOSSetting, swiftLanguageMode]),
+                swiftSettings: [visionOSSetting]),
         .target(name: "RevenueCat_CustomEntitlementComputation",
                 path: "CustomEntitlementComputation",
                 exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"],
@@ -61,17 +59,14 @@ let package = Package(
                 ],
                 swiftSettings: [
                     .define("ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION"),
-                    visionOSSetting,
-                    swiftLanguageMode
+                    visionOSSetting
                 ]),
         // Receipt Parser
         .target(name: "ReceiptParser",
-                path: "LocalReceiptParsing",
-                swiftSettings: [.swiftLanguageMode(.v5)]),
+                path: "LocalReceiptParsing"),
         .testTarget(name: "ReceiptParserTests",
                     dependencies: ["ReceiptParser", "Nimble"],
-                    exclude: ["ReceiptParserTests-Info.plist"],
-                    swiftSettings: [swiftLanguageMode]),
+                    exclude: ["ReceiptParserTests-Info.plist"]),
         // RevenueCatUI
         .target(name: "RevenueCatUI",
                 dependencies: ["RevenueCat"],
@@ -80,8 +75,7 @@ let package = Package(
                     // Note: these have to match the values in RevenueCatUI.podspec
                     .copy("Resources/background.jpg"),
                     .process("Resources/icons.xcassets")
-                ],
-                swiftSettings: [swiftLanguageMode]),
+                ]),
         .testTarget(name: "RevenueCatUITests",
                     dependencies: [
                         "RevenueCatUI",
@@ -89,7 +83,6 @@ let package = Package(
                         .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
                     ],
                     exclude: ["Templates/__Snapshots__", "Data/__Snapshots__", "TestPlans"],
-                    resources: [.copy("Resources/header.jpg"), .copy("Resources/background.jpg")],
-                    swiftSettings: [swiftLanguageMode])
+                    resources: [.copy("Resources/header.jpg"), .copy("Resources/background.jpg")])
     ]
 )
