@@ -37,7 +37,6 @@ struct OfferingDetailView: View {
         
         @State private var error: Error?
         @State private var purchaseSucceeded: Bool = false
-        @State private var purchaseUserCancelled: Bool = false
 
         private func checkIntroEligibility() async {
             guard self.eligibility == nil else { return }
@@ -114,9 +113,6 @@ struct OfferingDetailView: View {
             .disabled(self.isPurchasing)
             .alert(isPresented: self.$purchaseSucceeded) {
                 Alert(title: Text("Purchased!"))
-            }
-            .alert(isPresented: self.$purchaseUserCancelled) {
-                Alert(title: Text("User cancelled"))
             }
             .alert(
                 isPresented: .init(get: { self.error != nil },
@@ -230,7 +226,7 @@ struct OfferingDetailView: View {
                     case .success:
                         self.purchaseSucceeded = true
                     case .userCancelled:
-                        self.purchaseUserCancelled = true
+                        break
                     case .failure(let error):
                         self.error = error
                         print("🚀 Error: \(error)")
