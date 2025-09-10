@@ -199,6 +199,7 @@ private extension CustomerCenterView {
                         }
                     }
                 )
+                .dismissCircleButtonToolbarIfNeeded()
             } else if viewModel.shouldShowList {
                 listView(screen)
             } else {
