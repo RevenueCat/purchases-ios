@@ -61,7 +61,7 @@ public extension Purchases {
     @available(watchOS, introduced: 6.2, unavailable, renamed: "restorePurchases()")
     @available(macOS, introduced: 10.15, unavailable, renamed: "restorePurchases()")
     @available(macCatalyst, introduced: 13.0, unavailable, renamed: "restorePurchases()")
-    func restoreTransactions() async throws -> CustomerInfo {
+    func restoreTransactions() throws -> CustomerInfo {
         fatalError()
     }
 
@@ -102,7 +102,7 @@ public extension Purchases {
     @available(watchOS, introduced: 6.2, unavailable, renamed: "customerInfo()")
     @available(macOS, introduced: 10.15, unavailable, renamed: "customerInfo()")
     @available(macCatalyst, introduced: 13.0, unavailable, renamed: "customerInfo()")
-    func purchaserInfo() async throws -> CustomerInfo {
+    func purchaserInfo() throws -> CustomerInfo {
         fatalError()
     }
 
@@ -191,7 +191,7 @@ public extension Purchases {
     @available(watchOS, introduced: 6.2, unavailable, renamed: "purchase(package:)")
     @available(macOS, introduced: 10.15, unavailable, renamed: "purchase(package:)")
     @available(macCatalyst, introduced: 13.0, unavailable, renamed: "purchase(package:)")
-    func purchasePackage(_ package: Package) async throws -> PurchaseResultData {
+    func purchasePackage(_ package: Package) throws -> PurchaseResultData {
         fatalError()
     }
 
@@ -234,7 +234,7 @@ public extension Purchases {
     @available(macOS, introduced: 10.15, unavailable, renamed: "purchase(package:promotionalOffer:)")
     @available(macCatalyst, introduced: 13.0, unavailable, renamed: "purchase(package:promotionalOffer:)")
     func purchasePackage(_ package: Package,
-                         discount: SKPaymentDiscount) async throws -> PurchaseResultData {
+                         discount: SKPaymentDiscount) throws -> PurchaseResultData {
         fatalError()
     }
 
@@ -276,7 +276,7 @@ public extension Purchases {
     @available(watchOS, introduced: 6.2, unavailable, renamed: "purchase(product:)")
     @available(macOS, introduced: 10.15, unavailable, renamed: "purchase(product:)")
     @available(macCatalyst, introduced: 13.0, unavailable, renamed: "purchase(product:)")
-    func purchaseProduct(_ product: SKProduct) async throws {
+    func purchaseProduct(_ product: SKProduct) throws {
         fatalError()
     }
 
@@ -321,7 +321,7 @@ public extension Purchases {
     @available(watchOS, introduced: 6.2, unavailable, renamed: "purchase(product:promotionalOffer:)")
     @available(macOS, introduced: 10.15, unavailable, renamed: "purchase(product:promotionalOffer:)")
     @available(macCatalyst, introduced: 13.0, unavailable, renamed: "purchase(product:promotionalOffer:)")
-    func purchaseProduct(_ product: SKProduct, discount: SKPaymentDiscount) async throws {
+    func purchaseProduct(_ product: SKProduct, discount: SKPaymentDiscount) throws {
         fatalError()
     }
 
@@ -330,7 +330,7 @@ public extension Purchases {
     @available(watchOS, introduced: 6.2, unavailable, renamed: "purchase(package:promotionalOffer:)")
     @available(macOS, introduced: 10.15, unavailable, renamed: "purchase(package:promotionalOffer:)")
     @available(macCatalyst, introduced: 13.0, unavailable, renamed: "purchase(package:promotionalOffer:)")
-    func purchase(package: Package, discount: StoreProductDiscount) async throws -> PurchaseResultData {
+    func purchase(package: Package, discount: StoreProductDiscount) throws -> PurchaseResultData {
         fatalError()
     }
 
@@ -348,7 +348,7 @@ public extension Purchases {
     @available(watchOS, introduced: 6.2, unavailable, renamed: "purchase(package:promotionalOffer:)")
     @available(macOS, introduced: 10.15, unavailable, renamed: "purchase(package:promotionalOffer:)")
     @available(macCatalyst, introduced: 13.0, unavailable, renamed: "purchase(package:promotionalOffer:)")
-    func purchase(product: StoreProduct, discount: StoreProductDiscount) async throws -> PurchaseResultData {
+    func purchase(product: StoreProduct, discount: StoreProductDiscount) throws -> PurchaseResultData {
         fatalError()
     }
 
@@ -466,7 +466,7 @@ public extension Purchases {
     @available(macCatalyst, introduced: 13.0, unavailable,
                message: "Check eligibility for a discount using getPromotionalOffer:")
     func paymentDiscount(for discount: SKProductDiscount,
-                         product: SKProduct) async throws -> SKPaymentDiscount {
+                         product: SKProduct) throws -> SKPaymentDiscount {
         fatalError()
     }
 
