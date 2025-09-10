@@ -80,7 +80,6 @@ struct AppUpdateWarningView: View {
                 })
                 .scrollableIfNecessary(.vertical)
             }
-            .dismissCircleButtonToolbarIfNeeded()
     }
 }
 

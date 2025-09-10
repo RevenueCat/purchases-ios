@@ -88,7 +88,6 @@ struct FallbackNoSubscriptionsView: View {
                 restorePurchasesButton
             }
         }
-        .dismissCircleButtonToolbarIfNeeded()
         .compatibleNavigation(
             isPresented: $showAllInAppCurrenciesScreen,
             usesNavigationStack: navigationOptions.usesNavigationStack

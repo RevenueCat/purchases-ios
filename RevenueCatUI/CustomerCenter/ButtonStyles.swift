@@ -162,10 +162,16 @@ struct DismissCircleButtonToolbarModifier: ViewModifier {
     @Environment(\.navigationOptions)
     var navigationOptions
 
+    private var customDismiss: (() -> Void)?
+
+    init(customDismiss: (() -> Void)?) {
+        self.customDismiss = customDismiss
+    }
+
     func body(content: Content) -> some View {
         #if compiler(>=5.9)
         if navigationOptions.shouldShowCloseButton {
-            let onClose = navigationOptions.onCloseHandler ?? { dismiss() }
+            let onClose = customDismiss ?? navigationOptions.onCloseHandler ?? { dismiss() }
             content
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
@@ -188,7 +194,12 @@ struct DismissCircleButtonToolbarModifier: ViewModifier {
 extension View {
     /// Adds a toolbar with a dismiss button if `navigationOptions.shouldShowCloseButton` is true.
     func dismissCircleButtonToolbarIfNeeded() -> some View {
-        modifier(DismissCircleButtonToolbarModifier())
+        modifier(DismissCircleButtonToolbarModifier(customDismiss: nil))
+    }
+
+    /// Adds a toolbar with a dismiss button if `navigationOptions.shouldShowCloseButton` is true.
+    func dismissCircleButtonToolbarIfNeeded(customDismiss: @escaping (() -> Void)) -> some View {
+        modifier(DismissCircleButtonToolbarModifier(customDismiss: customDismiss))
     }
 }
 
