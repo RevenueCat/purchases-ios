@@ -1,7 +1,8 @@
 ## RevenueCatUI SDK
 ### Customer Center
 #### 🐞 Bugfixes
-* Fix customer center for iOS 16: alternative approach (#5537) via Andy Boedo (@aboedo)
+* Add a custom close for deeper navs in customer center (#5543) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Fix simulated failed purchase in Test Store (#5531) via Antonio Pallares (@ajpallares)
+* Add purchase cancelled alert in Purchase Tester app (#5535) via Antonio Pallares (@ajpallares)
+* Add CODEOWNERS (#5541) via Facundo Menzella (@facumenzella)
