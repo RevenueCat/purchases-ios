@@ -1,5 +1,9 @@
 ## 4.43.8
 ### 🔄 Other Changes
+* [v4] Fix compilation in xcode 26 (#5542) via Antonio Pallares (@ajpallares)
+
+## 4.43.7
+### 🔄 Other Changes
 * Attempts to satisfy the precommit hook via JayShortway (@JayShortway)
 * [v4] Add Intro Eligibility Functions to CEC Mode (#5328) via JayShortway (@JayShortway)
 
