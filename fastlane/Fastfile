@@ -1286,6 +1286,7 @@ platform :ios do
       scheme: "PurchaseTester",
       destination: "generic/platform=ios",
       xcodebuild_formatter: '',
+      sdk: "iOS 18.0",
       export_method: 'app-store',
       export_options: {
         manageAppVersionAndBuildNumber: true,
