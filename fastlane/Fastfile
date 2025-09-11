@@ -1146,7 +1146,6 @@ platform :ios do
           insertion_index = content.index("\n", pragma_insertion_point) + 1
           pragma_directives = <<~PRAGMA
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#pragma clang diagnostic ignored "-Wdeprecated"
           PRAGMA
           
           # Insert the pragma directives
