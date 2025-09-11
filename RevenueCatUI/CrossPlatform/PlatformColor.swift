@@ -7,20 +7,14 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  LocalizationProvider.swift
+//  PlatformColor.swift
 //
-//  Created by Josh Holtz on 11/17/24.
+//  Created by Chris Vasselli on 2025/07/31.
 
-import Foundation
-import RevenueCat
-
-#if !os(tvOS) // For Paywalls V2
-
-struct LocalizationProvider {
-
-    let locale: Locale
-    let localizedStrings: PaywallComponent.LocalizationDictionary
-
-}
-
+#if canImport(UIKit)
+import UIKit
+typealias PlatformColor = UIColor
+#elseif canImport(AppKit)
+import AppKit
+typealias PlatformColor = NSColor
 #endif
