@@ -22,20 +22,24 @@ public extension PaywallComponent {
         let type: ComponentType
         public let action: Action
         public let stack: PaywallComponent.StackComponent
+        public let transition: PaywallComponent.Transition?
 
         public init(
             action: Action,
-            stack: PaywallComponent.StackComponent
+            stack: PaywallComponent.StackComponent,
+            transition: PaywallComponent.Transition? = nil
         ) {
             self.type = .button
             self.action = action
             self.stack = stack
+            self.transition = transition
         }
 
         private enum CodingKeys: String, CodingKey {
             case type
             case action
             case stack
+            case transition
         }
 
         required public init(from decoder: Decoder) throws {
@@ -43,6 +47,7 @@ public extension PaywallComponent {
             self.type = try container.decode(ComponentType.self, forKey: .type)
             self.action = try container.decode(Action.self, forKey: .action)
             self.stack = try container.decode(PaywallComponent.StackComponent.self, forKey: .stack)
+            self.transition = try container.decodeIfPresent(PaywallComponent.Transition.self, forKey: .transition)
         }
 
         public func encode(to encoder: Encoder) throws {
@@ -50,18 +55,22 @@ public extension PaywallComponent {
             try container.encode(type, forKey: .type)
             try container.encode(action, forKey: .action)
             try container.encode(stack, forKey: .stack)
+            try container.encode(transition, forKey: .transition)
         }
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
             hasher.combine(action)
             hasher.combine(stack)
+            hasher.combine(transition)
         }
 
         public static func == (lhs: ButtonComponent, rhs: ButtonComponent) -> Bool {
             return lhs.type == rhs.type &&
                    lhs.action == rhs.action &&
-                   lhs.stack == rhs.stack
+                   lhs.stack == rhs.stack &&
+                   lhs.transition == rhs.transition
+
         }
 
         public enum Action: Codable, Sendable, Hashable, Equatable {

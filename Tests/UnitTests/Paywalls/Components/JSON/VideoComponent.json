@@ -1,0 +1,66 @@
+{
+  "auto_play": true,
+  "color_overlay": {
+    "light": {
+      "type": "alias",
+      "value": "primary"
+    }
+  },
+  "fallback_source": {
+    "light": {
+      "heic": "https://assets.revenuecat.com/1151049_1732039548.heic",
+      "heic_low_res": "https://assets.revenuecat.com/1151049_low_res_1732039548.heic",
+      "height": 200,
+      "original": "https://assets.revenuecat.com/1151049_1732039548.png",
+      "webp": "https://assets.revenuecat.com/1151049_1732039548.webp",
+      "webp_low_res": "https://assets.revenuecat.com/1151049_low_res_1732039548.webp",
+      "width": 400
+    }
+  },
+  "fit_mode": "fill",
+  "id": "P0Tzh3p6d3",
+  "loop": true,
+  "mask_shape": {
+    "corners": {
+      "bottom_leading": 1,
+      "bottom_trailing": 2,
+      "top_leading": 3,
+      "top_trailing": 4
+    },
+    "type": "rectangle"
+  },
+  "mute_audio": true,
+  "name": "",
+  "override_source_lid": "abc123",
+  "shadow": {
+    "color": {
+      "light": {
+        "type": "alias",
+        "value": "tertiary"
+      }
+    },
+    "radius": 20.1,
+    "x": 23.6,
+    "y": 45.2
+  },
+  "show_controls": false,
+  "size": {
+    "height": {
+      "type": "fit",
+      "value": null
+    },
+    "width": {
+      "type": "fill",
+      "value": null
+    }
+  },
+  "source": {
+    "light": {
+      "height": 400,
+      "url_low_res": "https://RevenueCat.com/video-files/herding_tiny_cats.mp4",
+      "url": "https://RevenueCat.com/video-files/herding_cats.mp4",
+      "width": 200
+    }
+  },
+  "type": "video"
+}

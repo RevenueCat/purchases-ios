@@ -142,7 +142,7 @@ import Foundation
             case storeAppStore = "app_store"
             case storeMacAppStore = "mac_app_store"
             case storePlayStore = "google_play_store"
-            case testStore = "test_store"
+            case simulatedStore = "simulated_store"
             case storeStripe = "stripe"
             case storePromotional = "promotional"
             case storeAmazon = "amazon_store"
@@ -151,6 +151,8 @@ import Foundation
             case storeUnknownStore = "unknown_store"
             case storePaddle = "store_paddle"
             case storeWeb = "store_web"
+            case typeSubscription = "type_subscription"
+            case typeOneTimePurchase = "type_one_time_purchase"
             case debugHeaderTitle = "Debug"
             case seeAllVirtualCurrencies = "see_all_virtual_currencies"
             case virtualCurrencyBalancesScreenHeader = "virtual_currency_balances_screen_header"
@@ -363,6 +365,10 @@ import Foundation
                     return "Paddle"
                 case .storeWeb:
                     return "Web"
+                case .typeSubscription:
+                    return "Subscription"
+                case .typeOneTimePurchase:
+                    return "One-time Purchase"
                 case .debugHeaderTitle:
                     return "Debug"
                 case .virtualCurrencyBalancesScreenHeader:
@@ -406,7 +412,7 @@ import Foundation
                     return "Subscriptions"
                 case .purchasesSectionTitle:
                     return "Purchases"
-                case .testStore:
+                case .simulatedStore:
                     return "Test Store"
                 }
             }
@@ -728,13 +734,16 @@ import Foundation
     @_spi(Internal) public struct ScreenOffering: Equatable {
         @_spi(Internal) public let type: OfferingType
         @_spi(Internal) public let offeringId: String?
+        @_spi(Internal) public let buttonText: String?
 
         @_spi(Internal) public init(
             type: OfferingType,
-            offeringId: String?
+            offeringId: String?,
+            buttonText: String?
         ) {
             self.type = type
             self.offeringId = offeringId
+            self.buttonText = buttonText
         }
 
         @_spi(Internal) public enum OfferingType: String, Equatable {
@@ -780,13 +789,15 @@ extension CustomerCenterConfigData.Screen {
             case CustomerCenterConfigData.ScreenOffering.OfferingType.specific.rawValue:
                 return CustomerCenterConfigData.ScreenOffering(
                     type: .specific,
-                    offeringId: offering.offeringId
+                    offeringId: offering.offeringId,
+                    buttonText: offering.buttonText
                 )
 
             default:
                 return CustomerCenterConfigData.ScreenOffering(
                     type: .current,
-                    offeringId: nil
+                    offeringId: nil,
+                    buttonText: offering.buttonText
                 )
             }
         }

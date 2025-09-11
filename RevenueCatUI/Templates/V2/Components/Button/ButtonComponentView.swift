@@ -68,6 +68,7 @@ struct ButtonComponentView: View {
                     showActivityIndicatorOverContent: self.showActivityIndicatorOverContent
                 )
             }
+            .withTransition(viewModel.component.transition)
             .applyIf(self.shouldBeDisabled, apply: { view in
                 view
                     .disabled(true)

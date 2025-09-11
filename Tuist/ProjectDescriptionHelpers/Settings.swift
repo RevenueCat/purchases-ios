@@ -22,13 +22,18 @@ extension Settings {
     /// This provides a standardized target settings configuration that includes:
     /// - User script sandboxing enabled for security
     /// - Essential default settings for optimal build performance
-    public static var appTarget: Settings {
+    public static func appTarget(including extra: SettingsDictionary) -> Settings {
         return .settings(
             base: [
                 "ENABLE_USER_SCRIPT_SANDBOXING": "YES"
-            ],
+            ]
+            .merging(extra),
             defaultSettings: .essential
         )
+    }
+
+    public static var appTarget: Settings {
+        return .appTarget(including: [:])
     }
 
     /// Default framework settings configuration for RevenueCat projects.

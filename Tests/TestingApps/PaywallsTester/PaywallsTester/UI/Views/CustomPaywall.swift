@@ -12,7 +12,7 @@ import RevenueCat
 
 
 // this @testable access should used for the SwiftUI previews only
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 import SwiftUI
 
 @available(macOS, unavailable, message: "Legacy paywalls are unavailable in macOS")

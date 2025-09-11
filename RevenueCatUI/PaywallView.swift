@@ -122,6 +122,7 @@ public struct PaywallView: View {
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
         useDraftPaywall: Bool,
+        introEligibility: TrialOrIntroEligibilityChecker? = nil,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil
     ) {
@@ -133,6 +134,7 @@ public struct PaywallView: View {
                 fonts: fonts,
                 displayCloseButton: displayCloseButton,
                 useDraftPaywall: useDraftPaywall,
+                introEligibility: introEligibility,
                 purchaseHandler: purchaseHandler
             )
         )
@@ -414,10 +416,16 @@ private extension PaywallView {
         case .defaultOffering:
             return try await Purchases.shared.offerings().current.orThrow(PaywallError.noCurrentOffering)
 
-        case let .offeringIdentifier(identifier):
-            return try await Purchases.shared.offerings()
+        case let .offeringIdentifier(identifier, presentedOfferingContext):
+            let offering = try await Purchases.shared.offerings()
                 .offering(identifier: identifier)
                 .orThrow(PaywallError.offeringNotFound(identifier: identifier))
+
+            if let presentedOfferingContext {
+                return offering.withPresentedOfferingContext(presentedOfferingContext)
+            }
+
+            return offering
         }
     }
 
@@ -430,9 +438,20 @@ private extension PaywallViewConfiguration.Content {
 
     func extractInitialOffering() -> Offering? {
         switch self {
-        case let .offering(offering): return offering
-        case .defaultOffering: return Self.loadCachedCurrentOfferingIfPossible()
-        case let .offeringIdentifier(identifier): return Self.loadCachedOfferingIfPossible(identifier: identifier)
+        case let .offering(offering):
+            return offering
+        case .defaultOffering:
+            return Self.loadCachedCurrentOfferingIfPossible()
+        case let .offeringIdentifier(identifier, presentedOfferingContext):
+            let offering = Self.loadCachedOfferingIfPossible(
+                identifier: identifier
+            )
+
+            if let presentedOfferingContext {
+                return offering?.withPresentedOfferingContext(presentedOfferingContext)
+            }
+
+            return offering
         }
     }
 

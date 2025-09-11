@@ -34,6 +34,33 @@ class ButtonComponentCodableTests: TestCase {
     }
     """
 
+    lazy var buttonWithTransition = """
+        {
+            "type": "button",
+            "action": {
+                "type": "restore_purchases"
+            },
+            "stack": \(jsonStringDefaultStack),
+            "transition": {
+                "animation": {
+                    "ms_delay": 1500,
+                    "ms_duration": 1500,
+                    "type": "ease_in_out"
+                },
+                "displacement_strategy": "greedy",
+                "type": "fade_and_scale"
+            }
+        }
+    """
+
+    func test_buttonWithTransition() throws {
+        let jsonData = buttonWithTransition.data(using: .utf8).unsafelyUnwrapped
+        let decodedButton = try JSONDecoder.default.decode(PaywallComponent.ButtonComponent.self, from: jsonData)
+
+        XCTAssertNotNil(decodedButton.transition)
+
+    }
+
     func testRestorePurchasesDecoding() throws {
         let jsonString = """
         {

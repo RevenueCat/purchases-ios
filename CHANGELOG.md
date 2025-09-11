@@ -1,3 +1,97 @@
+## 5.38.2
+## RevenueCatUI SDK
+### Customer Center
+#### 🐞 Bugfixes
+* Add a custom close for deeper navs in customer center (#5543) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Add purchase cancelled alert in Purchase Tester app (#5535) via Antonio Pallares (@ajpallares)
+* Add CODEOWNERS (#5541) via Facundo Menzella (@facumenzella)
+
+## 5.38.1
+## RevenueCatUI SDK
+### Customer Center
+#### 🐞 Bugfixes
+* Fix customer center for iOS 16: alternative approach (#5537) via Andy Boedo (@aboedo)
+
+### 🔄 Other Changes
+* Fix simulated failed purchase in Test Store (#5531) via Antonio Pallares (@ajpallares)
+
+## 5.38.0
+## RevenueCatUI SDK
+### Customer Center
+#### ✨ New Features
+* Updating Customer Center UI to be ready for iOS 26 (#5519) via Hidde van der Ploeg (@hiddevdploeg)
+#### 🐞 Bugfixes
+* Fix dismisss button for iOS15 in CustomerCenter (#5529) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Update automated tests for customer center (#5518) via Facundo Menzella (@facumenzella)
+* fix emerge tools snapshots (#5530) via Facundo Menzella (@facumenzella)
+* Paywall video component model creation -- Not views, just models (#5481) via Jacob Rakidzich (@JZDesign)
+* New Paywalls Tester App Icon (#5525) via Engin Kurutepe (@ekurutepe)
+* Move preferred locale APIs from RevenueCatUI to RevenueCat (#5523) via Antonio Pallares (@ajpallares)
+* Fix compilation of RevenueCatUI in Xcode 14 (#5524) via Antonio Pallares (@ajpallares)
+* Update changelog with missing changes in v5.27.1 (#5522) via Antonio Pallares (@ajpallares)
+
+## 5.37.0
+## RevenueCat SDK
+### ✨ New Features
+* MON-1193 Optional transitions (delayed back button) (#5490) via Jacob Rakidzich (@JZDesign)
+
+## RevenueCatUI SDK
+### 🐞 Bugfixes
+* Fix Paywall from Customer Center when `purchasesAreCompletedBy == .myApp` (#5512) via Antonio Pallares (@ajpallares)
+### Paywallv2
+#### 🐞 Bugfixes
+* Fix markdown bold text in paywalls (#5517) via Antonio Pallares (@ajpallares)
+
+### 🔄 Other Changes
+* Refetch offerings when preferred locale is set (#5511) via Josh Holtz (@joshdholtz)
+* Post receipt in for purchases in Test Store (#5515) via Antonio Pallares (@ajpallares)
+* Rename Test Store to Simulated Store internally (#5459) via Antonio Pallares (@ajpallares)
+* Untrack testEntitlementsComputation xcodeproj (#5514) via Facundo Menzella (@facumenzella)
+* Extend appTarget settings to pass custom settings (#5470) via Facundo Menzella (@facumenzella)
+* Fix compilation error in Xcode 14 (#5513) via Antonio Pallares (@ajpallares)
+* Make TrialOrIntroEligibilityChecker @_spi public (#5461) via Antonio Pallares (@ajpallares)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5510) via RevenueCat Git Bot (@RCGitBot)
+
+## 5.36.0
+## RevenueCat SDK
+### ✨ New Features
+* Add option to disable automatic ID collection when setting attribution network IDs at configuration time (#5504) via Toni Rico (@tonidero)
+### 🐞 Bugfixes
+* fix compilation errors for Xcode 14.2 (swift 5.7) (#5494) via Facundo Menzella (@facumenzella)
+
+## RevenueCatUI SDK
+### Customer Center
+#### ✨ New Features
+* Add button_text to ScreenOffering (#5501) via Facundo Menzella (@facumenzella)
+#### 🐞 Bugfixes
+* Fix dark mode button for featured offering + localized header (#5502) via Facundo Menzella (@facumenzella)
+* Address virtual currencies with zero units in customer center (#5500) via Facundo Menzella (@facumenzella)
+* Fix title and price of non-Google purchases in Customer Center (#5465) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Fix backend integration tests (#5505) via Toni Rico (@tonidero)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5498) via RevenueCat Git Bot (@RCGitBot)
+* Fix spelling errors in the style guide (#5497) via Jacob Rakidzich (@JZDesign)
+
+## 5.35.1
+## RevenueCatUI SDK
+### Customer Center
+#### 🐞 Bugfixes
+* Don't show subscriptions title if there are no subscriptions (#5485) via Facundo Menzella (@facumenzella)
+* Rename subscribe to buy_subscription in customer center (#5483) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Fix the tests and implicit returns that broke our CI on main (#5493) via Jacob Rakidzich (@JZDesign)
+* Added APIs for hybrid SDKs to set presentedOfferingContext (#5491) via Rick (@rickvdl)
+* Create File Repository for use in upcoming feature work (#5477) via Jacob Rakidzich (@JZDesign)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5488) via RevenueCat Git Bot (@RCGitBot)
+* Add tag RevenueCatTests to enable tuist generate tag:RevenueCatTests (#5471) via Facundo Menzella (@facumenzella)
+* Add danger rule to show a warning if new files are not added to Revenuecat.xcodeproj (#5473) via Facundo Menzella (@facumenzella)
+
 ## 5.35.0
 ## RevenueCatUI SDK
 ### Customer Center
@@ -225,8 +319,27 @@
 ### 🐞 Bugfixes
 * Remove submodules temporarily to fix SPM (#5246) via Toni Rico (@tonidero)
 
+## RevenueCatUI SDK
+### Paywallv2
+#### 🐞 Bugfixes
+* Fixed overflowing images (#5162) via Josh Holtz (@joshdholtz)
+### Customer Center
+#### ✨ New Features
+* Introduce NoSubscriptions card view for empty states (#5178) via Facundo Menzella (@facumenzella)
+* Use groupID to present manageSubscriptions sheet (#5182) via Facundo Menzella (@facumenzella)
+
 ### 🔄 Other Changes
 * Add accessibility identifier to PurchaseCardView (#5176) via Facundo Menzella (@facumenzella)
+* Remove dependency of Purchases.shared from UIConfigProvider (#5242) via Josh Holtz (@joshdholtz)
+* Update offerings cache in UI preview mode (#5241) via Antonio Pallares (@ajpallares)
+* Introduce PaywallFontManagerType to handle custom fonts in the paywall editor (#5208) via Facundo Menzella (@facumenzella)
+* Warm up caches in parallel (#5240) via Antonio Pallares (@ajpallares)
+* SampleCat: A new iOS Sample app that guides users through any configuration issues (#5200) via Pol Piella Abadia (@polpielladev)
+* [Paywalls] Render top level tabs component stack properties (#5210) via Mark Villacampa (@MarkVillacampa)
+* [Paywalls] Use tab id instead of tab index to select tab (#5209) via Mark Villacampa (@MarkVillacampa)
+* Paywall screenshots for cross platform validation (#5205) via Josh Holtz (@joshdholtz)
+* Fix broken URLs in 4 -> 5 Migration Guides (#5229) via Will Taylor (@fire-at-will)
+* Adds `showStoreMessagesAutomatically` parameter to CEC mode (#5230) via JayShortway (@JayShortway)
 
 ## 5.26.0
 ## RevenueCat SDK

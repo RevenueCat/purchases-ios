@@ -69,12 +69,12 @@ struct FallbackNoSubscriptionsView: View {
             LazyVStack(spacing: 0) {
                 NoSubscriptionsCardView(
                     screenOffering: nil,
+                    screen: nil,
                     localization: localization,
                     purchasesProvider: purchasesProvider
                 )
-                    .cornerRadius(10)
-                    .padding(.horizontal)
-                    .padding(.bottom, 32)
+                .padding(.horizontal)
+                .padding(.bottom, 32)
 
                 if let virtualCurrencies, !virtualCurrencies.all.isEmpty {
                     VirtualCurrenciesScrollViewWithOSBackgroundSection(
@@ -88,7 +88,6 @@ struct FallbackNoSubscriptionsView: View {
                 restorePurchasesButton
             }
         }
-        .dismissCircleButtonToolbarIfNeeded()
         .compatibleNavigation(
             isPresented: $showAllInAppCurrenciesScreen,
             usesNavigationStack: navigationOptions.usesNavigationStack

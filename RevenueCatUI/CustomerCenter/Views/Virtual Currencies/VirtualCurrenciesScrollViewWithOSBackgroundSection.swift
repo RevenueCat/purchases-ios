@@ -140,10 +140,12 @@ struct VirtualCurrenciesScrollViewWithOSBackgroundSection: View {
                             .padding(.vertical, 12)
                         }
                     }
+                    #if compiler(>=5.9)
                     .background(Color(colorScheme == .light
                                       ? UIColor.systemBackground
-                                      : UIColor.secondarySystemBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                                      : UIColor.secondarySystemBackground),
+                                in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
+                    #endif
                     .padding(.horizontal)
                 }
             }

@@ -54,6 +54,7 @@ import Foundation
     let responseVerificationMode: Signing.ResponseVerificationMode
     let showStoreMessagesAutomatically: Bool
     let preferredLocale: String?
+    let automaticDeviceIdentifierCollectionEnabled: Bool
     internal let diagnosticsEnabled: Bool
 
     private init(with builder: Builder) {
@@ -70,6 +71,7 @@ import Foundation
         self.showStoreMessagesAutomatically = builder.showStoreMessagesAutomatically
         self.diagnosticsEnabled = builder.diagnosticsEnabled
         self.preferredLocale = builder.preferredLocale
+        self.automaticDeviceIdentifierCollectionEnabled = builder.automaticDeviceIdentifierCollectionEnabled
     }
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
@@ -113,7 +115,12 @@ import Foundation
         private(set) var showStoreMessagesAutomatically: Bool = true
         private(set) var diagnosticsEnabled: Bool = false
         private(set) var storeKitVersion: StoreKitVersion = .default
+
+        /// The preferred locale for the requests.
+        ///
+        /// This locale is included in all requests made by `HTTPClient`.
         private(set) var preferredLocale: String?
+        private(set) var automaticDeviceIdentifierCollectionEnabled: Bool = true
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
@@ -299,6 +306,24 @@ import Foundation
             return self
         }
 
+        /// Set `automaticDeviceIdentifierCollectionEnabled`. This is enabled by default.
+        ///
+        /// Enable this setting to allow the collection of identifiers when setting the identifier for an
+        /// attribution network. For example, when calling``Purchases/setAdjustID(_:)``
+        /// or ``Purchases/setAppsflyerID(_:)``, the SDK would collect the device identifiers like
+        /// IDFA, IDFV or IP, if available, and send them to RevenueCat.
+        /// This is required by some attribution networks to attribute installs and re-installs.
+        ///
+        /// Enabling this setting does NOT mean we will always collect the identifiers. We will only do so when
+        /// setting an attribution network ID and the user has not limited tracking on their device.
+        ///
+        /// With this option disabled you can still collect device identifiers
+        /// by calling ``Purchases/collectDeviceIdentifiers()``
+        @objc public func with(automaticDeviceIdentifierCollectionEnabled: Bool) -> Builder {
+            self.automaticDeviceIdentifierCollectionEnabled = automaticDeviceIdentifierCollectionEnabled
+            return self
+        }
+
         /// Generate a ``Configuration`` object given the values configured by this builder.
         @objc public func build() -> Configuration {
             return Configuration(with: self)
@@ -318,11 +343,13 @@ import Foundation
             return timeout
         }
 
-        /// Sets the preferred locale for the requests.
+        /// Overrides the preferred locale for RevenueCatUI components.
         ///
-        /// This locale is included in all requests made by `HTTPClient`.
-        @_spi(Internal) public func with(preferredLocale: String?) -> Builder {
-            self.preferredLocale = preferredLocale
+        /// - Parameter preferredUILocaleOverride: A locale string in the format "language_region" (e.g., "en_US").
+        ///
+        /// Defaults to `nil`, which means using the default user locale for RevenueCatUI components.
+        public func with(preferredUILocaleOverride: String?) -> Builder {
+            self.preferredLocale = preferredUILocaleOverride
             return self
         }
     }
@@ -374,7 +401,11 @@ extension Configuration {
 
     enum APIKeyValidationResult {
         case validApplePlatform
-        case testStore
+
+        /// An API key used for the Simulated Store.
+        ///
+        /// Note that "Simulated Store" is the internal name of the "Test Store".
+        case simulatedStore
         case otherPlatforms
         case legacy
     }
@@ -386,25 +417,25 @@ extension Configuration {
     }
 
     private static let applePlatformKeyPrefixes: Set<String> = ["appl_", "mac_"]
-    private static let testStoreKeyPrefix = "test_"
+    private static let simulatedStoreKeyPrefix = "test_"
 
     private static func validate(apiKey: String) -> APIKeyValidationResult {
-        #if TEST_STORE
-        if apiKey.hasPrefix(testStoreKeyPrefix) {
-            // Test Store key format: "test_CtDdmbdWBySmqJeeQUTyrNxETUVkajsJ"
+        #if SIMULATED_STORE
+        if apiKey.hasPrefix(simulatedStoreKeyPrefix) {
+            // Simulated Store key format: "test_CtDdmbdWBySmqJeeQUTyrNxETUVkajsJ"
 
             #if DEBUG
-            return .testStore
+            return .simulatedStore
             #else
             // In release builds, we intentionally crash to prevent submitting an app with a Test Store API key.
             //
-            // Also note that developing with a Test Store API key isn’t supported when adding the SDK dependency
-            // as an XCFramework, since the XCFramework is built using the Release configuration..
+            // Also note that developing with a Test Store API key isn't supported when adding the SDK dependency
+            // as an XCFramework, since the XCFramework is built using the Release configuration.
             fatalError("[RevenueCat]: Test Store API key used in Release build. Please configure the App Store " +
                        " app on the RevenueCat dashboard and use its corresponding Apple API key before releasing.")
             #endif
         }
-        #endif // TEST_STORE
+        #endif // SIMULATED_STORE
 
         if applePlatformKeyPrefixes.contains(where: { prefix in apiKey.hasPrefix(prefix) }) {
             // Apple key format: "apple_CtDdmbdWBySmqJeeQUTyrNxETUVkajsJ"
@@ -424,7 +455,7 @@ extension Configuration.APIKeyValidationResult {
     fileprivate func logIfNeeded() {
         switch self {
         case .validApplePlatform: break
-        case .testStore: Logger.warn(Strings.configure.testStoreAPIKey)
+        case .simulatedStore: Logger.warn(Strings.configure.simulatedStoreAPIKey)
         case .legacy: Logger.debug(Strings.configure.legacyAPIKey)
         case .otherPlatforms: Logger.error(Strings.configure.invalidAPIKey)
         }

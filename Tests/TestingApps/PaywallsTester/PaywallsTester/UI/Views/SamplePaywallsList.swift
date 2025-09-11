@@ -9,9 +9,9 @@
 
 import RevenueCat
 #if DEBUG
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 #else
-import RevenueCatUI
+@_spi(Internal) import RevenueCatUI
 #endif
 
 import SwiftUI
@@ -141,7 +141,7 @@ struct SamplePaywallsList: View {
                     Button {
                         self.display = .customFont(template)
                     } label: {
-                        TemplateLabel(name: "Custsom font", icon: "textformat")
+                        TemplateLabel(name: "Custom font", icon: "textformat")
                             .font(.body.italic())
                     }
                 }
