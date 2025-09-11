@@ -66,8 +66,8 @@ class MockSimpleCache: LargeItemCacheType, @unchecked Sendable {
         return Data()
     }
 
-    func generateLocalFilesystemURL(forRemoteURL url: URL) -> URL? {
-        cacheDirectory?.appendingPathComponent(url.lastPathComponent)
+    func createCacheDirectoryIfNeeded(basePath: String) -> URL? {
+        cacheDirectory?.appendingPathComponent(basePath)
     }
 
     struct SaveData: Equatable {
