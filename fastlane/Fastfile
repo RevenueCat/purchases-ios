@@ -992,7 +992,9 @@ platform :ios do
       'iOS',
       'macOS',
       'maccatalyst',
-      'tvOS'
+      'tvOS',
+      'watchOS',
+      'visionOS'
     ])
     create_and_sign_xcframework(
       scheme: 'RevenueCatUIDev',
