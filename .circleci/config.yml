@@ -796,10 +796,10 @@ jobs:
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_snapshots >>
-          job: "create_snapshot_pr"
-          version: "ios-26"
+      # - create-snapshot-pr-if-needed:
+      #     condition: << pipeline.parameters.generate_snapshots >>
+      #     job: "create_snapshot_pr"
+      #     version: "ios-26"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
