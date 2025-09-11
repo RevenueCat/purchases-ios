@@ -112,7 +112,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         guard !videoURLs.isEmpty else { return }
 
         Logger.verbose(Strings.paywalls.warming_up_videos(videoURLs: videoURLs))
-        await withTaskGroup { [weak self] group in
+        await withTaskGroup(of: URL?.self) { [weak self] group in
             for url in videoURLs {
                 group.addTask {
                     try? await self?.fileRepository.generateOrGetCachedFileURL(for: url)
