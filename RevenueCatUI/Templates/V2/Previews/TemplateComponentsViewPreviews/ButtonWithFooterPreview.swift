@@ -292,8 +292,6 @@ private enum ButtonWithSheetPreview {
                                 shape: .rectangle(nil),
                                 overflow: .default
                              ),
-                             // Sheet background
-                             background: .color(.init(light: .hex("#2b43bf"))),
                              backgroundBlur: true,
                              size: .init(width: .fill, height: .fit)
                             )

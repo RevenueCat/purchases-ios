@@ -66,15 +66,16 @@ struct BottomSheetOverlayModifier: ViewModifier {
     }
 
     var backgroundStyle: BackgroundStyle? {
-        if let sheetViewModel {
-            let stackBackground = sheetViewModel.sheet.background
-
-            return stackBackground?.asDisplayable(
-                uiConfigProvider: sheetViewModel.sheetStackViewModel.uiConfigProvider
-            )
-        } else {
-            return nil
-        }
+        return nil
+//        if let sheetViewModel {
+//            let stackBackground = sheetViewModel.sheet.background
+//
+//            return stackBackground?.asDisplayable(
+//                uiConfigProvider: sheetViewModel.sheetStackViewModel.uiConfigProvider
+//            )
+//        } else {
+//            return nil
+//        }
     }
 
     func body(content: Content) -> some View {
@@ -112,7 +113,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         view.frame(height: height)
                     })
                     .transition(.move(edge: .bottom).combined(with: .opacity))
-                    .backgroundStyle(self.backgroundStyle)
+//                    .backgroundStyle(self.backgroundStyle)
                 }
             }
             .background(
@@ -145,7 +146,7 @@ extension View {
         sheet: Binding<SheetViewModel?>,
         safeAreaInsets: EdgeInsets
     ) -> some View {
-        modifier(
+        self.modifier(
             BottomSheetOverlayModifier(sheetViewModel: sheet, safeAreaInsets: safeAreaInsets)
         )
     }
@@ -169,7 +170,6 @@ struct BottomSheetViewTestView: View {
                 ],
                 backgroundColor: nil
             ),
-            background: .color(.init(light: .hex("#FFFFFF"))),
             backgroundBlur: false,
             size: .init(width: .fill, height: .fit)
         ),
