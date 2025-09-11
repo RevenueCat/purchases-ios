@@ -18,8 +18,7 @@ parameters:
         run-manual-docs-deploy,
         update_paywall_templates,
         record_paywall_screenshots,
-        tuist,
-        export-xcframeworks
+        tuist
       ]
     default: default
   generate_snapshots:
@@ -1123,41 +1122,6 @@ jobs:
           path: RevenueCatUI.xcframework.zip
           destination: RevenueCatUI.xcframework.zip
       - slack-notify-on-fail
-  
-  generate-xcframeworks:
-    executor:
-      name: macos-executor
-    steps:
-      - checkout
-      - trust-github-key
-      # Bundler
-      - restore_cache:
-          keys:
-            - v2-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}
-      - run: bundle install --clean --path vendor/bundle
-      - save_cache:
-          key: v2-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}
-          paths:
-            - vendor/bundle
-      - install-dependencies
-      - run:
-          name: Deployment checks
-          command: bundle exec fastlane release_checks
-          environment:
-            SCAN_SCHEME: All Tests
-          no_output_timeout: 30m
-      - store_test_results:
-          path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/report.html
-          destination: test_report.html
-      - store_artifacts:
-          path: RevenueCat.xcframework.zip
-          destination: RevenueCat.xcframework.zip
-      - store_artifacts:
-          path: RevenueCatUI.xcframework.zip
-          destination: RevenueCatUI.xcframework.zip
-      - slack-notify-on-fail
 
   docs-build:
     executor:
@@ -1595,12 +1559,6 @@ workflows:
       - tag-release-branch:
           requires:
             - hold
-  # Temporary workflow to export XCFrameworks
-  export-xcframeworks:
-    when:
-      equal: ["export-xcframeworks", << pipeline.parameters.action >>]
-    jobs:
-      - generate-xcframeworks
 
   deploy-tag:
     when:
