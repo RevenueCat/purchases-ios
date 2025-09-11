@@ -43,7 +43,8 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
 
     private var allowsMissingPurchaseAction: Bool = true
 
-    private var cancellable: AnyCancellable?
+    private var refreshingCancellable: AnyCancellable?
+    private var cancellables: Set<AnyCancellable> = []
     private let customerInfoViewModel: CustomerCenterViewModel
 
     init(
@@ -72,8 +73,37 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
         )
     }
 
+    func didAppear() {
+        cancellables.removeAll()
+
+        actionWrapper
+            .onCustomerCenterPromotionalOfferSuccess { [weak self] in
+                self?.refreshPurchase()
+            }
+            .store(in: &cancellables)
+
+        actionWrapper
+            .onCustomerCenterShowingManageSubscriptions { [weak self] in
+                self?.customerInfoViewModel.manageSubscriptionsSheet = true
+            }
+            .store(in: &cancellables)
+
+        actionWrapper.onCustomerCenterChangePlansSelected { [weak self] _ in
+            self?.customerInfoViewModel.changePlansSheet = true
+        }
+        .store(in: &cancellables)
+
+        customerInfoViewModel.$changePlansSheet
+            .merge(with: customerInfoViewModel.$manageSubscriptionsSheet)
+            .throttle(for: .milliseconds(200), scheduler: DispatchQueue.main, latest: true)
+            .sink { [weak self] in
+                if !$0 { self?.refreshPurchase() }
+            }
+            .store(in: &cancellables)
+    }
+
     func refreshPurchase() {
-        cancellable = customerInfoViewModel.publisher(for: purchaseInformation)?
+        refreshingCancellable = customerInfoViewModel.publisher(for: purchaseInformation)?
             .dropFirst() // skip current value
             .sink(receiveValue: { @MainActor [weak self] in
                 self?.purchaseInformation = $0

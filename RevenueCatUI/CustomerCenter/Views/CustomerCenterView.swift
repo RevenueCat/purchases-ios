@@ -35,8 +35,8 @@ import SwiftUI
 @available(watchOS, unavailable)
 public struct CustomerCenterView: View {
 
-    @StateObject private var viewModel: CustomerCenterViewModel
-    @State private var ignoreAppUpdateWarning: Bool = false
+    @Environment(\.customerCenterActions)
+    private var actions: CustomerCenterEnvironmentActions
 
     @Environment(\.colorScheme)
     private var colorScheme
@@ -44,6 +44,10 @@ public struct CustomerCenterView: View {
     // Propagate dismiss from the container to child views (iOS 15 fix)
     @Environment(\.dismiss)
     private var dismiss
+
+    @State private var ignoreAppUpdateWarning: Bool = false
+
+    @StateObject private var viewModel: CustomerCenterViewModel
 
     private let mode: CustomerCenterPresentationMode
 
@@ -124,9 +128,10 @@ public struct CustomerCenterView: View {
             }
             .onAppear {
 #if DEBUG
-                guard !ProcessInfo.isRunningForPreviews else { return }
+                    guard !ProcessInfo.isRunningForPreviews else { return }
 #endif
-                self.trackImpression()
+                    self.trackImpression()
+                    viewModel.setUpActions(sink: actions)
             }
     }
 
@@ -164,7 +169,6 @@ private extension CustomerCenterView {
                 }
             }
         }
-        .modifier(CustomerCenterActionViewModifier(actionWrapper: viewModel.actionWrapper))
     }
 
     @ViewBuilder

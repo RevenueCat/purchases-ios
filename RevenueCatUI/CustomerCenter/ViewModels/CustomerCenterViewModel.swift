@@ -133,6 +133,7 @@ import Foundation
 
     private var error: Error?
     private var impressionData: CustomerCenterEvent.Data?
+    private var actionCancellables: Set<AnyCancellable> = []
 
     init(
         actionWrapper: CustomerCenterActionWrapper,
@@ -239,6 +240,96 @@ import Foundation
 
         let event = CustomerCenterEvent.impression(CustomerCenterEventCreationData(), eventData)
         purchasesProvider.track(customerCenterEvent: event)
+    }
+}
+
+// MARK: - Actions wiring
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@MainActor
+internal protocol CustomerCenterActionSink: AnyObject {
+    func actionRestoreStarted()
+    func actionRestoreFailed(_ error: Error)
+    func actionRestoreCompleted(_ info: CustomerInfo)
+    func actionShowingManageSubscriptions()
+    func actionRefundRequestStarted(_ productId: String)
+    func actionRefundRequestCompleted(_ productId: String, _ status: RefundRequestStatus)
+    func actionFeedbackSurveyCompleted(_ reason: String)
+    func actionManagementOptionSelected(_ action: CustomerCenterActionable)
+    func actionPromotionalOfferSuccess()
+    func actionChangePlansSelected(_ subscriptionGroupID: String)
+    func actionCustomActionSelected(_ actionIdentifier: String, _ activePurchaseId: String?)
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension CustomerCenterViewModel {
+
+    /// Sets up Combine subscriptions to forward `CustomerCenterActionWrapper` events into an injected sink.
+    /// Call this once (e.g., when constructing the ViewModel) to wire actions without involving SwiftUI.
+    func setUpActions(sink: CustomerCenterActionSink) {
+        actionCancellables.removeAll()
+
+        actionWrapper.onCustomerCenterRestoreStarted {
+            sink.actionRestoreStarted()
+        }
+        .store(in: &actionCancellables)
+
+        actionWrapper.onCustomerCenterRestoreFailed { error in
+            sink.actionRestoreFailed(error)
+        }
+        .store(in: &actionCancellables)
+
+        actionWrapper.onCustomerCenterRestoreCompleted { info in
+            sink.actionRestoreCompleted(info)
+        }
+        .store(in: &actionCancellables)
+
+        actionWrapper.onCustomerCenterShowingManageSubscriptions {
+            sink.actionShowingManageSubscriptions()
+        }
+        .store(in: &actionCancellables)
+
+        actionWrapper.onCustomerCenterRefundRequestStarted { productId in
+            sink.actionRefundRequestStarted(productId)
+        }
+        .store(in: &actionCancellables)
+
+        actionWrapper.onCustomerCenterRefundRequestCompleted { productId, status in
+            sink.actionRefundRequestCompleted(productId, status)
+        }
+        .store(in: &actionCancellables)
+
+        actionWrapper.onCustomerCenterFeedbackSurveyCompleted { reason in
+            sink.actionFeedbackSurveyCompleted(reason)
+        }
+        .store(in: &actionCancellables)
+
+        actionWrapper.onCustomerCenterManagementOptionSelected { action in
+            sink.actionManagementOptionSelected(action)
+        }
+        .store(in: &actionCancellables)
+
+        actionWrapper.onCustomerCenterPromotionalOfferSuccess {
+            sink.actionPromotionalOfferSuccess()
+        }
+        .store(in: &actionCancellables)
+
+        actionWrapper.onCustomerCenterChangePlansSelected { subscriptionGroupID in
+            if let id = subscriptionGroupID {
+                sink.actionChangePlansSelected(id)
+            }
+        }
+        .store(in: &actionCancellables)
+
+        actionWrapper.onCustomerCenterCustomActionSelected { actionIdentifier, activePurchaseId in
+            sink.actionCustomActionSelected(actionIdentifier, activePurchaseId)
+        }
+        .store(in: &actionCancellables)
     }
 }
 

@@ -73,45 +73,45 @@ public class CustomerCenterViewController: UIHostingController<CustomerCenterVie
 
         // Set up Combine subscriptions to emit handler calls
         if let restoreStarted {
-            actionWrapper.restoreStarted
-                .sink { _ in restoreStarted() }
-                .store(in: &cancellables)
+            actionWrapper.onCustomerCenterRestoreStarted {
+                restoreStarted()
+            }.store(in: &cancellables)
         }
 
         if let restoreCompleted {
-            actionWrapper.restoreCompleted
-                .sink { restoreCompleted($0) }
-                .store(in: &cancellables)
+            actionWrapper.onCustomerCenterRestoreCompleted {
+                restoreCompleted($0)
+            }.store(in: &cancellables)
         }
 
         if let restoreFailed {
-            actionWrapper.restoreFailed
-                .sink { restoreFailed($0) }
-                .store(in: &cancellables)
+            actionWrapper.onCustomerCenterRestoreFailed {
+                restoreFailed($0)
+            }.store(in: &cancellables)
         }
 
         if let showingManageSubscriptions {
-            actionWrapper.showingManageSubscriptions
-                .sink { _ in showingManageSubscriptions() }
-                .store(in: &cancellables)
+            actionWrapper.onCustomerCenterShowingManageSubscriptions {
+                showingManageSubscriptions()
+            }.store(in: &cancellables)
         }
 
         if let refundRequestStarted {
-            actionWrapper.refundRequestStarted
-                .sink { refundRequestStarted($0) }
-                .store(in: &cancellables)
+            actionWrapper.onCustomerCenterRefundRequestStarted {
+                refundRequestStarted($0)
+            }.store(in: &cancellables)
         }
 
         if let refundRequestCompleted {
-            actionWrapper.refundRequestCompleted
-                .sink { refundRequestCompleted($0.0, $0.1) }
-                .store(in: &cancellables)
+            actionWrapper.onCustomerCenterRefundRequestCompleted({ productId, status in
+                refundRequestCompleted(productId, status)
+            }).store(in: &cancellables)
         }
 
         if let feedbackSurveyCompleted {
-            actionWrapper.feedbackSurveyCompleted
-                .sink { feedbackSurveyCompleted($0) }
-                .store(in: &cancellables)
+            actionWrapper.onCustomerCenterFeedbackSurveyCompleted {
+                feedbackSurveyCompleted($0)
+            }.store(in: &cancellables)
         }
 
         let view = CustomerCenterView(
