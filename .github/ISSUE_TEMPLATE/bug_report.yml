@@ -55,6 +55,20 @@ body:
       required: true
 
   - type: dropdown
+    id: sdk-integration-method
+    attributes:
+      label: SDK integration method
+      description: How is the RevenueCat SDK integrated into your project?
+      options:
+        - Swift Package Manager
+        - CocoaPods
+        - Carthage
+        - XCFramework
+        - Other (please specify)
+    validations:
+      required: true
+
+  - type: dropdown
     id: storekit-version
     attributes:
       label: StoreKit version
