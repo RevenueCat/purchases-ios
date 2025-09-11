@@ -350,15 +350,58 @@ class TransactionPosterTests: TestCase {
         ) == true
     }
 
+    #if SIMULATED_STORE
+
+    func testPostReceiptForPurchaseInSimulatedStore() throws {
+        self.setUp(observerMode: false, storeKitVersion: .storeKit2, apiKeyValidationResult: .simulatedStore)
+        let purchaseDate = Date()
+        let purchaseToken = "test_\(purchaseDate.millisecondsSince1970)_\(UUID().uuidString)"
+
+        self.mockTransaction = MockStoreTransaction(jwsRepresentation: purchaseToken)
+
+        let product = TestStoreProduct(localizedTitle: "Fake product",
+                                       price: 9.99,
+                                       localizedPriceString: "$9.99",
+                                       productIdentifier: "fake_product",
+                                       productType: .autoRenewableSubscription,
+                                       localizedDescription: "Fake product description")
+
+        let transactionData = PurchasedTransactionData(
+            appUserID: "user",
+            source: .init(isRestore: false, initiationSource: .queue)
+        )
+
+        self.productsManager.stubbedProductsCompletionResult = .success([product.toStoreProduct()])
+        self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
+
+        let result = try self.handleTransaction(transactionData)
+        expect(result).to(beSuccess())
+        expect(result.value) === Self.mockCustomerInfo
+
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData).to(match(transactionData))
+        expect(self.backend.invokedPostReceiptDataParameters?.data) == .jws(purchaseToken)
+        expect(self.backend.invokedPostReceiptDataParameters?.productData?.productIdentifier) == "fake_product"
+        expect(self.backend.invokedPostReceiptDataParameters?.observerMode) == self.systemInfo.observerMode
+
+        expect(self.receiptFetcher.receiptDataCalled) == false
+    }
+
+    #endif // SIMULATED_STORE
+
 }
 
 // MARK: -
 
 private extension TransactionPosterTests {
 
-    func setUp(observerMode: Bool, storeKitVersion: StoreKitVersion = .default) {
+    func setUp(observerMode: Bool,
+               storeKitVersion: StoreKitVersion = .default,
+               apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform) {
         self.operationDispatcher = .init()
-        self.systemInfo = .init(finishTransactions: !observerMode, storeKitVersion: storeKitVersion)
+        self.systemInfo = .init(finishTransactions: !observerMode,
+                                storeKitVersion: storeKitVersion,
+                                apiKeyValidationResult: apiKeyValidationResult)
         self.productsManager = .init(diagnosticsTracker: nil, systemInfo: self.systemInfo, requestTimeout: 0)
         self.receiptFetcher = .init(requestFetcher: .init(operationDispatcher: self.operationDispatcher),
                                     systemInfo: self.systemInfo)
@@ -434,7 +477,7 @@ private extension TransactionPosterTests {
 
 }
 
-private func match(_ data: PurchasedTransactionData) -> Nimble.Predicate<PurchasedTransactionData> {
+private func match(_ data: PurchasedTransactionData) -> Nimble.Matcher<PurchasedTransactionData> {
     return .init {
         let other = try $0.evaluate()
         let matches = (other?.appUserID == data.appUserID &&

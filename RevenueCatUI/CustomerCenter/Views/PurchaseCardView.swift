@@ -161,9 +161,12 @@ struct PurchaseInformationCardView: View {
                 .padding()
             }
         }
+        #if compiler(>=5.9)
         .background(Color(colorScheme == .light
                           ? UIColor.secondarySystemFill
-                          : UIColor.tertiarySystemBackground))
+                          : UIColor.tertiarySystemBackground),
+                    in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
+        #endif
     }
 }
 
@@ -221,24 +224,43 @@ extension PurchaseInformationCardView {
         var accessibilityIdentifier: String = "PurchaseInformationCardView.Badge"
 
         var body: some View {
-            Text(title)
-                .font(.caption2)
-                .bold()
-                .padding(.vertical, 2)
-                .padding(.horizontal, 4)
-                .background(
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(backgroundColor ?? Color(
-                            colorScheme == .light
-                            ? UIColor.systemBackground
-                            : UIColor.secondarySystemBackground
-                        ))
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 4)
-                        .stroke(borderColor, lineWidth: 1)
-                )
-                .accessibilityIdentifier([accessibilityIdentifier, id].joined(separator: "_"))
+            if #available(iOS 26.0, *) {
+                Text(title)
+                    .font(.caption2)
+                    .bold()
+                    .padding(.vertical, 3)
+                    .padding(.horizontal, 6)
+                    #if compiler(>=5.9)
+                    .background(backgroundColor ?? Color(
+                        colorScheme == .light
+                        ? UIColor.systemBackground
+                        : UIColor.secondarySystemBackground
+                    ), in: .capsule)
+                    #endif
+                    .overlay(
+                        Capsule()
+                            .stroke(borderColor, lineWidth: 1)
+                    )
+                    .accessibilityIdentifier([accessibilityIdentifier, id].joined(separator: "_"))
+            } else {
+                Text(title)
+                    .font(.caption2)
+                    .bold()
+                    .padding(.vertical, 2)
+                    .padding(.horizontal, 4)
+                    #if compiler(>=5.9)
+                    .background(backgroundColor ?? Color(
+                        colorScheme == .light
+                        ? UIColor.systemBackground
+                        : UIColor.secondarySystemBackground
+                    ), in: .rect(cornerRadius: 4))
+                    #endif
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 4)
+                            .stroke(borderColor, lineWidth: 1)
+                    )
+                    .accessibilityIdentifier([accessibilityIdentifier, id].joined(separator: "_"))
+            }
         }
 
         static func cancelled(_ localizations: CustomerCenterConfigData.Localization) -> Badge {
@@ -342,7 +364,6 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                     localization: CustomerCenterConfigData.default.localization,
                     accessibilityIdentifier: "accessibilityIdentifier"
                 )
-                .cornerRadius(10)
                 .padding([.leading, .trailing])
 
                 PurchaseInformationCardView(
@@ -353,7 +374,6 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                     localization: CustomerCenterConfigData.default.localization,
                     accessibilityIdentifier: "accessibilityIdentifier"
                 )
-                .cornerRadius(10)
                 .padding([.leading, .trailing])
 
                 PurchaseInformationCardView(
@@ -365,7 +385,6 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                     localization: CustomerCenterConfigData.default.localization,
                     accessibilityIdentifier: "accessibilityIdentifier"
                 )
-                .cornerRadius(10)
                 .padding([.leading, .trailing])
 
                 PurchaseInformationCardView(
@@ -373,7 +392,6 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                     localization: CustomerCenterConfigData.default.localization,
                     accessibilityIdentifier: "accessibilityIdentifier"
                 )
-                .cornerRadius(10)
                 .padding([.leading, .trailing])
 
                 PurchaseInformationCardView(
@@ -381,7 +399,6 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                     localization: CustomerCenterConfigData.default.localization,
                     accessibilityIdentifier: "accessibilityIdentifier"
                 )
-                .cornerRadius(10)
                 .padding([.leading, .trailing])
 
                 PurchaseInformationCardView(
@@ -393,7 +410,6 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                     localization: CustomerCenterConfigData.default.localization,
                     accessibilityIdentifier: "accessibilityIdentifier"
                 )
-                .cornerRadius(10)
                 .padding([.leading, .trailing])
 
                 PurchaseInformationCardView(
@@ -405,7 +421,6 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
                     additionalInfo: "An error occurred while processing the refund request. Please try again.",
                     subtitle: "Renews 24 May for $19.99"
                 )
-                .cornerRadius(10)
                 .padding([.leading, .trailing])
             }
             .preferredColorScheme(colorScheme)
