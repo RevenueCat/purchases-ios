@@ -779,6 +779,33 @@ jobs:
           destination: scan-test-output
       - slack-notify-on-fail
 
+  run-test-ios-26:
+    executor:
+      name: macos-executor
+      xcode_version: "26.0"
+    steps:
+      - checkout
+      - install-dependencies:
+          install_swiftlint: false
+      - run:
+          name: Run tests
+          command: bundle exec fastlane test_ios
+          no_output_timeout: 15m
+          environment:
+            SCAN_DEVICE: iPhone 16e (26.0)
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: RevenueCat
+      - create-snapshot-pr-if-needed:
+          condition: << pipeline.parameters.generate_snapshots >>
+          job: "create_snapshot_pr"
+          version: "ios-26"
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
+
   run-test-ios-18:
     executor:
       name: macos-executor
@@ -1501,6 +1528,7 @@ workflows:
   generate-snapshot:
     when: << pipeline.parameters.generate_snapshots >>
     jobs:
+      - run-test-ios-26
       - run-test-ios-18
       - run-test-ios-17
       - run-test-ios-16
@@ -1537,6 +1565,7 @@ workflows:
           mac_os_executor_name: macos-executor
       - run-test-ios-17
       - run-test-ios-18
+      - run-test-ios-26
       - pod-lib-lint
       - run-revenuecat-ui-ios-17
       - run-revenuecat-ui-ios-18
