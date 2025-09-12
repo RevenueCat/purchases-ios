@@ -1,0 +1,52 @@
+{
+  "headers" : {
+    "Authorization" : "Bearer asharedsecret",
+    "X-Apple-Device-Identifier" : "5D7C0074-07E4-4564-AAA4-4008D0640881",
+    "X-Client-Build-Version" : "12345",
+    "X-Client-Bundle-ID" : "com.apple.dt.xctest.tool",
+    "X-Client-Version" : "17.0.0",
+    "X-Is-Backgrounded" : "false",
+    "X-Is-Debug-Build" : "true",
+    "X-Is-Sandbox" : "true",
+    "X-Observer-Mode-Enabled" : "false",
+    "X-Platform" : "iOS",
+    "X-Platform-Device" : "arm64",
+    "X-Platform-Flavor" : "native",
+    "X-Platform-Version" : "Version 17.0.0 (Build 21A342)",
+    "X-Preferred-Locales" : "en_EN",
+    "X-Retry-Count" : "0",
+    "X-StoreKit-Version" : "2",
+    "X-StoreKit2-Enabled" : "true",
+    "X-Storefront" : "USA",
+    "X-Version" : "4.0.0",
+    "content-type" : "application/json"
+  },
+  "request" : {
+    "body" : {
+      "entries" : [
+        {
+          "app_session_id" : "FD06888D-DEA6-43C5-A36A-A1E06F2D6A42",
+          "id" : "8FDEAD13-A05B-4236-84CF-36BCDD36A7BC",
+          "name" : "customer_info_verification_result",
+          "properties" : {
+            "verification_result" : "FAILED"
+          },
+          "timestamp" : "2023-09-06T19:42:08Z",
+          "version" : 1
+        },
+        {
+          "app_session_id" : "FD06888D-DEA6-43C5-A36A-A1E06F2D6A42",
+          "id" : "4FAF3FE9-F239-4CC1-BB07-C3320BA40BCF",
+          "name" : "customer_info_verification_result",
+          "properties" : {
+            "verification_result" : "FAILED"
+          },
+          "timestamp" : "2023-09-06T17:45:21Z",
+          "version" : 1
+        }
+      ]
+    },
+    "method" : "POST",
+    "url" : "https://api-diagnostics.revenuecat.com/v1/diagnostics"
+  }
+}
