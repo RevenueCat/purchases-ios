@@ -11,7 +11,7 @@
 //
 //  Created by Josh Holtz on 2/13/25.
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 import SwiftUI
 

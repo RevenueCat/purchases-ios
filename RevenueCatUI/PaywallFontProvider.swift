@@ -74,8 +74,6 @@ open class DefaultPaywallFontProvider: PaywallFontProvider {
 
 }
 
-#if canImport(UIKit)
-
 /// A ``PaywallFontProvider`` implementation that allows you to provide a custom
 /// font name, and it will automatically scale up based on the size category.
 open class CustomPaywallFontProvider: PaywallFontProvider {
@@ -91,22 +89,18 @@ open class CustomPaywallFontProvider: PaywallFontProvider {
     // swiftlint:disable:next missing_docs
     open func font(for textStyle: Font.TextStyle) -> Font {
         return Font.custom(self.fontName,
-                           size: UIFont.preferredFont(forTextStyle: textStyle.style).pointSize,
+                           size: PlatformFont.preferredFont(forTextStyle: textStyle.style).pointSize,
                            relativeTo: textStyle)
     }
 
 }
 
-#endif
-
 // MARK: - Private
-
-#if canImport(UIKit)
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private extension Font.TextStyle {
 
-    var style: UIFont.TextStyle {
+    var style: PlatformFont.TextStyle {
         switch self {
         #if os(tvOS)
         case .largeTitle: return .title1
@@ -145,5 +139,3 @@ private extension Font.TextStyle {
     }
 
 }
-
-#endif

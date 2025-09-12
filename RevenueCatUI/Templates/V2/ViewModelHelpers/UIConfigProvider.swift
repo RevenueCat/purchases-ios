@@ -15,7 +15,7 @@ import Foundation
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class UIConfigProvider {
@@ -72,15 +72,21 @@ class UIConfigProvider {
             return genericFont.makeFont(fontSize: fontSize)
         }
 
-        guard let customFont = UIFont(name: fontName, size: fontSize) else {
+        guard let customFont = PlatformFont(name: fontName, size: fontSize) else {
             self.logMessageIfNeeded(.customFontFailedToLoad(fontName: fontName))
             self.failedToLoadFont?(fontsConfig)
             return nil
         }
 
         // Apply dynamic type scaling
+        #if canImport(UIKit)
         let uiFont = UIFontMetrics.default.scaledFont(for: customFont)
         return Font(uiFont)
+        #else
+        // macOS does not support dynamic type
+        // (see https://developer.apple.com/design/human-interface-guidelines/typography)
+        return Font(customFont)
+        #endif
     }
 }
 

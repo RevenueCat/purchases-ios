@@ -46,12 +46,21 @@
       }
     },
     {
+      "identity" : "simpledebugger",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/EmergeTools/SimpleDebugger.git",
+      "state" : {
+        "revision" : "f065263eb5db95874b690408d136b573c939db9e",
+        "version" : "1.0.0"
+      }
+    },
+    {
       "identity" : "snapshotpreviews",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/EmergeTools/SnapshotPreviews",
       "state" : {
-        "revision" : "e29969072e600518867af25d4d2acd0d1d2ffd5f",
-        "version" : "0.10.20"
+        "revision" : "0d1c6c282a83e5350899046efd3493558dc2d3c8",
+        "version" : "0.10.24"
       }
     },
     {
