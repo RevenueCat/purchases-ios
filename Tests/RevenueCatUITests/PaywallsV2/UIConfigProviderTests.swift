@@ -176,7 +176,7 @@ final class UIConfigProviderTests: TestCase {
 
         XCTAssertNil(uiConfigProvider.resolveFont(size: 10, name: "alt"))
         self.logger.verifyMessageWasNotLogged(
-            "Mapping for 'another_unknown_font' could not be found. Falling back to system font.",
+            "Mapping for 'another_unknown_font' could not be found. Falling back to system font."
         )
         self.logger.verifyMessageWasLogged(
             "Custom font 'not_installed_font' could not be loaded. Falling back to system font.",
