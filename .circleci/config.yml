@@ -1563,7 +1563,6 @@ workflows:
           name: validate-package-swift-5.8
           xcode_version: "14.3.1"
           mac_os_executor_name: macos-executor
-      - run-test-ios-17
       - run-test-ios-18
       - run-test-ios-26
       - pod-lib-lint
@@ -1730,6 +1729,9 @@ workflows:
           context:
             - slack-secrets-ios
       - run-test-ios-16:
+          context:
+            - slack-secrets-ios
+      - run-test-ios-17:
           context:
             - slack-secrets-ios
       - run-test-macos:
