@@ -75,6 +75,13 @@ enum AvailabilityChecks {
         }
     }
 
+    /// Opposite of `iOS26APIAvailableOrSkipTest`.
+    static func iOS26APIAvailableOrSkipTest() throws {
+        if #available(iOS 26.0, tvOS 26.0, macOS 26.0, watchOS 26.0, visionOS 26.0, *) else {
+            throw XCTSkip("Test only for older devices")
+        }
+    }
+
     static func skipIfTVOrWatchOSOrMacOS() throws {
         #if os(watchOS) || os(tvOS) || os(macOS)
         throw XCTSkip("Test not for watchOS or tvOS or macOS")
