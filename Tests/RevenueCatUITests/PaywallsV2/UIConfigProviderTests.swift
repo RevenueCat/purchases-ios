@@ -58,10 +58,10 @@ final class UIConfigProviderTests: TestCase {
     func testRepeatedGetLocalizationsForNotFoundLanguageLogsMessageOnlyOncePerNotFoundLocale() throws {
         let uiConfigProvider = try createUIConfigProvider()
 
-        let de_DE_localizations = uiConfigProvider.getLocalizations(for: Locale(identifier: "de_DE"))
-        let fr_FR_localizations = uiConfigProvider.getLocalizations(for: Locale(identifier: "fr_FR"))
-        XCTAssertTrue(de_DE_localizations.isEmpty)
-        XCTAssertTrue(fr_FR_localizations.isEmpty)
+        let localizationsDE = uiConfigProvider.getLocalizations(for: Locale(identifier: "de_DE"))
+        let localizationsFR = uiConfigProvider.getLocalizations(for: Locale(identifier: "fr_FR"))
+        XCTAssertTrue(localizationsDE.isEmpty)
+        XCTAssertTrue(localizationsFR.isEmpty)
 
         _ = uiConfigProvider.getLocalizations(for: Locale(identifier: "de_DE"))
         _ = uiConfigProvider.getLocalizations(for: Locale(identifier: "de_DE"))
@@ -116,7 +116,7 @@ final class UIConfigProviderTests: TestCase {
 
     func testResolveNotFoundFontMultipleTimesLogsOnlyOnce() throws {
         let uiConfigProvider = try createUIConfigProvider()
-        
+
         XCTAssertNil(uiConfigProvider.resolveFont(size: 10, name: "unknown_font"))
         XCTAssertNil(uiConfigProvider.resolveFont(size: 10, name: "unknown_font"))
         XCTAssertNil(uiConfigProvider.resolveFont(size: 10, name: "unknown_font"))
@@ -131,7 +131,7 @@ final class UIConfigProviderTests: TestCase {
 
     func testResolveFontLogsOnlyOncePerNotFoundFont() throws {
         let uiConfigProvider = try createUIConfigProvider()
-        
+
         XCTAssertNil(uiConfigProvider.resolveFont(size: 10, name: "unknown_font"))
         XCTAssertNil(uiConfigProvider.resolveFont(size: 10, name: "unknown_font"))
         XCTAssertNil(uiConfigProvider.resolveFont(size: 10, name: "another_unknown_font"))
@@ -173,7 +173,7 @@ final class UIConfigProviderTests: TestCase {
 
     func testResolveFontReturnsNilIfCustomFontFailsToLoad() throws {
         let uiConfigProvider = try createUIConfigProvider()
-        
+
         XCTAssertNil(uiConfigProvider.resolveFont(size: 10, name: "alt"))
         self.logger.verifyMessageWasNotLogged(
             "Mapping for 'another_unknown_font' could not be found. Falling back to system font.",
