@@ -20,6 +20,16 @@ import XCTest
 /// Provides automatic tracking of test cases using `CurrentTestCaseTracker` as well as snapshot testing helpers.
 class TestCase: XCTestCase {
 
+    private(set) var logger: TestLogHandler!
+
+    /// Called at the beginning of every test, but it can be manually used
+    /// before calling `super.setUp()` in case a test needs to verify logs generated early in the lifetime.
+    final func initializeLogger() {
+        guard self.logger == nil else { return }
+
+        self.logger = TestLogHandler(capacity: 1000)
+    }
+
     @MainActor
     override class func setUp() {
         XCTestObservationCenter.shared.addTestObserver(CurrentTestCaseTracker.shared)
@@ -35,6 +45,8 @@ class TestCase: XCTestCase {
     @MainActor
     override func setUpWithError() throws {
         try super.setUpWithError()
+
+        self.initializeLogger()
     }
 
     @MainActor
