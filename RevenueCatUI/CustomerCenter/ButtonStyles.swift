@@ -64,7 +64,7 @@ struct CustomerCenterButtonStyle: ButtonStyle {
             .padding(.horizontal)
             .padding(.vertical, 12)
             .background(configuration.isPressed ? pressedColor : normalColor)
-            .cornerRadius(10)
+            .cornerRadius(CustomerCenterStylingUtilities.cornerRadius)
     }
 }
 

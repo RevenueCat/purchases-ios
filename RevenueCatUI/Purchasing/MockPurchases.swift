@@ -83,7 +83,7 @@ final class MockPurchases: PaywallPurchasesType {
     }
 #endif
 
-#if !os(macOS) && !os(tvOS)
+#if !os(tvOS)
 
     func failedToLoadFontWithConfig(_ fontConfig: UIConfig.FontsConfig) {
         // No-op, this is a mock implementation.

@@ -262,16 +262,6 @@ private extension URL {
 
 }
 
-#if os(iOS) || os(visionOS) || os(tvOS) || os(watchOS)
-import SwiftUI
-import UIKit
-private typealias PlatformImage = UIImage
-#elseif os(macOS)
-import AppKit
-import SwiftUI
-private typealias PlatformImage = NSImage
-#endif
-
 private extension Image {
     /// Returns a fully transparent SwiftUI Image of the given size.
     static func clearImage(size: CGSize) -> Image {
