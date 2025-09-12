@@ -117,13 +117,13 @@ private extension UIConfigProvider.LogMessage {
     func log() {
         switch self {
         case .localizationNotFound(let identifier):
-            Logger.error("Could not find localizations for '\(identifier)'")
+            Logger.error(Strings.localizationNotFound(identifier: identifier))
         case .fontMappingNotFound(let name):
-            Logger.warning("Mapping for '\(name)' could not be found. Falling back to system font.")
+            Logger.warning(Strings.fontMappingNotFound(name: name))
         case .customFontFailedToLoad(let fontName):
-            Logger.warning("Custom font '\(fontName)' could not be loaded. Falling back to system font.")
+            Logger.warning(Strings.customFontFailedToLoad(fontName: fontName))
         case .googleFontsNotSupported:
-            Logger.warning("Google Fonts are not supported on this platform")
+            Logger.warning(Strings.googleFontsNotSupported)
         }
     }
 
