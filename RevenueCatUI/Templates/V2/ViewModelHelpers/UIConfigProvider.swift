@@ -60,7 +60,6 @@ class UIConfigProvider {
         case .name:
             fontName = fontsConfig.ios.value
         case .googleFonts:
-            // Not supported on this platform (yet)
             self.logMessageIfNeeded(.googleFontsNotSupported)
             return nil
         @unknown default:
