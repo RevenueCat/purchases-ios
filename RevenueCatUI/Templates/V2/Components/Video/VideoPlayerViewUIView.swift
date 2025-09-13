@@ -14,7 +14,7 @@
 import AVKit
 import SwiftUI
 
-#if canImport(UIKit)
+#if canImport(UIKit) && !os(watchOS)
 import UIKit
 
 struct VideoPlayerUIView: UIViewControllerRepresentable {

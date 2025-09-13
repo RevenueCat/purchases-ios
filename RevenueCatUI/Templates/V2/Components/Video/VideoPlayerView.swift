@@ -19,6 +19,9 @@ import AppKit
 #elseif canImport(UIKit)
 import UIKit
 #endif
+#if os(watchOS)
+import AVFoundation
+#endif
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct VideoPlayerView: View {
@@ -51,6 +54,18 @@ struct VideoPlayerView: View {
                 muteAudio: muteAudio
             )
         }
+#elseif os(watchOS)
+        // Hiding controls on watchOS is not officially supported by Apple,
+        // disabling hit testing will prevent the user from being able to get them to show.
+        // Additionally, setting the action at end to .none will prevent them from displaying before looping.
+        ViewWithControls(
+            url: videoURL,
+            shouldAutoPlay: shouldAutoPlay && !reduceMotion,
+            loopVideo: loopVideo,
+            muteAudio: muteAudio,
+            actionAtEnd: (showControls && !loopVideo) ? .pause : .none
+        )
+        .allowsHitTesting(showControls)
 #elseif canImport(UIKit)
         VideoPlayerUIView(
             videoURL: videoURL,
@@ -64,22 +79,39 @@ struct VideoPlayerView: View {
     }
 
     private struct ViewWithControls: View {
+        let notificationCenter: NotificationCenter = .default
         let player: AVPlayer
+        #if !os(watchOS)
         let looper: AVPlayerLooper?
+        #else
+        let loopVideo: Bool
+        #endif
 
-        init(url: URL, shouldAutoPlay: Bool, loopVideo: Bool, muteAudio: Bool) {
+        init(
+            url: URL,
+            shouldAutoPlay: Bool,
+            loopVideo: Bool,
+            muteAudio: Bool,
+            actionAtEnd: AVPlayer.ActionAtItemEnd = .pause
+        ) {
             let item = AVPlayerItem(url: url)
 
             let avPlayer: AVPlayer
+            #if !os(watchOS)
             if loopVideo {
                 let aVQueuePlayer = AVQueuePlayer()
                 self.looper = AVPlayerLooper(player: aVQueuePlayer, templateItem: item)
                 avPlayer = aVQueuePlayer
             } else {
                 avPlayer = AVPlayer(playerItem: item)
-                avPlayer.actionAtItemEnd = .pause
+                avPlayer.actionAtItemEnd = actionAtEnd
                 self.looper = nil
             }
+            #else
+            avPlayer = AVPlayer(playerItem: item)
+            avPlayer.actionAtItemEnd = actionAtEnd
+            self.loopVideo = loopVideo
+            #endif
 
             avPlayer.isMuted = muteAudio
 
@@ -92,8 +124,19 @@ struct VideoPlayerView: View {
 
         var body: some View {
             VideoPlayer(player: player)
+            #if os(watchOS)
+                // This is less reliable than using the AVPlayerLooper.
+                // Unfortunately, that is not available on watchOS
+                .onReceive(notificationCenter.publisher(for: AVPlayerItem.didPlayToEndTimeNotification)) { _ in
+                    if loopVideo {
+                        player.seek(to: .zero)
+                        player.play()
+                    }
+                }
+            #endif
         }
     }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

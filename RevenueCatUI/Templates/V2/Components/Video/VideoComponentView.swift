@@ -61,7 +61,7 @@ struct VideoComponentView: View {
                         let fileRepository = FileRepository()
 
                         if let cachedURL = fileRepository.getCachedFileURL(for: style.url) {
-                            self.cachedURL = cachedURL ?? style.url
+                            self.cachedURL = cachedURL
                             self.imageSource = nil
                         } else if let lowResUrl = style.lowResUrl {
                             let lowResCachedURL = fileRepository.getCachedFileURL(for: lowResUrl)
