@@ -88,7 +88,6 @@ struct FallbackNoSubscriptionsView: View {
                 restorePurchasesButton
             }
         }
-        .dismissCircleButtonToolbarIfNeeded()
         .compatibleNavigation(
             isPresented: $showAllInAppCurrenciesScreen,
             usesNavigationStack: navigationOptions.usesNavigationStack
@@ -121,7 +120,7 @@ struct FallbackNoSubscriptionsView: View {
                 .background(Color(colorScheme == .light
                                   ? UIColor.systemBackground
                                   : UIColor.secondarySystemBackground))
-                .cornerRadius(10)
+                .cornerRadius(CustomerCenterStylingUtilities.cornerRadius)
                 .padding(.horizontal)
         }
         .tint(colorScheme == .dark ? .white : .black)

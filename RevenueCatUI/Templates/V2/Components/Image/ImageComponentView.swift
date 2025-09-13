@@ -15,7 +15,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ImageComponentView: View {
@@ -54,18 +54,41 @@ struct ImageComponentView: View {
             )
         ) { style in
             if style.visible {
-                if let maxWidth = self.maxWidth {
+                let expectedSize = CGSize(
+                    width: self.imageSize(style: style).width,
+                    height: self.imageSize(style: style).height
+                )
+
+                ZStack {
+                    // We need the max width of the parent view an image of a fill or
+                    // fixed width doesn't push passed the bounds.
+                    //
+                    // Once we have the width once, we can remove the GeometryReader
+                    if self.maxWidth == nil {
+                        GeometryReader { proxy in
+                            Color.clear
+                                .onAppear {
+                                    self.maxWidth = proxy.size.width
+                                }
+                        }
+                    }
+
                     RemoteImage(
                         url: style.url,
                         lowResUrl: style.lowResUrl,
                         darkUrl: style.darkUrl,
-                        darkLowResUrl: style.darkLowResUrl
+                        darkLowResUrl: style.darkLowResUrl,
+                        // The expectedSize is important
+                        // It renders a clear image if actual image is being fetched
+                        expectedSize: expectedSize
                     ) { (image, size) in
                         self.renderImage(
                             image,
                             size,
-                            maxWidth: self.calculateMaxWidth(parentWidth: maxWidth,
-                                                             style: style),
+                            maxWidth: self.calculateMaxWidth(
+                                parentWidth: self.maxWidth ?? 0,
+                                style: style
+                            ),
                             with: style
                         )
                     }
@@ -89,13 +112,6 @@ struct ImageComponentView: View {
                                 }
                         }
                     )
-                } else {
-                    GeometryReader { proxy in
-                        Color.clear
-                            .onAppear {
-                                self.maxWidth = proxy.size.width
-                            }
-                    }
                 }
             }
         }

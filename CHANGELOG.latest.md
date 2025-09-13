@@ -1,20 +1,18 @@
 ## RevenueCat SDK
 ### ✨ New Features
-* MON-1193 Optional transitions (delayed back button) (#5490) via Jacob Rakidzich (@JZDesign)
+* Add support for native (non-Catalyst) Mac paywalls (#5451) via Chris Lindsay (@clindsay3)
+### 🐞 Bugfixes
+* Store file repostory contents in base directory in cache (#5557) via Josh Holtz (@joshdholtz)
+* Fix integration via XCFramework (#5551) via Antonio Pallares (@ajpallares)
 
 ## RevenueCatUI SDK
-### 🐞 Bugfixes
-* Fix Paywall from Customer Center when `purchasesAreCompletedBy == .myApp` (#5512) via Antonio Pallares (@ajpallares)
-### Paywallv2
+### Customer Center
 #### 🐞 Bugfixes
-* Fix markdown bold text in paywalls (#5517) via Antonio Pallares (@ajpallares)
+* clean up a couple more places that were using the old corner radius (#5556) via Andy Boedo (@aboedo)
+* Use New iOS 26 Corner Radius in VC List Section (#5553) via Will Taylor (@fire-at-will)
 
 ### 🔄 Other Changes
-* Refetch offerings when preferred locale is set (#5511) via Josh Holtz (@joshdholtz)
-* Post receipt in for purchases in Test Store (#5515) via Antonio Pallares (@ajpallares)
-* Rename Test Store to Simulated Store internally (#5459) via Antonio Pallares (@ajpallares)
-* Untrack testEntitlementsComputation xcodeproj (#5514) via Facundo Menzella (@facumenzella)
-* Extend appTarget settings to pass custom settings (#5470) via Facundo Menzella (@facumenzella)
-* Fix compilation error in Xcode 14 (#5513) via Antonio Pallares (@ajpallares)
-* Make TrialOrIntroEligibilityChecker @_spi public (#5461) via Antonio Pallares (@ajpallares)
-* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5510) via RevenueCat Git Bot (@RCGitBot)
+* Update paywalls tester Package.resolved for Xcode Cloud (#5558) via Josh Holtz (@joshdholtz)
+* Paywalls image loading from cache is now synchronous (#5528) via Josh Holtz (@joshdholtz)
+* Add SDK installation dropdown to bug report template (#5550) via Antonio Pallares (@ajpallares)
+* Fix typo in PaywallsTester (#5469) via Cesar de la Vega (@vegaro)

@@ -25,8 +25,8 @@ protocol LargeItemCacheType {
     /// Load data from url
     func loadFile(at url: URL) throws -> Data
 
-    /// Generate a url for a location on disk based in the input URL
-    func generateLocalFilesystemURL(forRemoteURL url: URL) -> URL?
+    /// Creates a directory in the cache from a base path
+    func createCacheDirectoryIfNeeded(basePath: String) -> URL?
 }
 
 extension FileManager: LargeItemCacheType {
@@ -45,12 +45,25 @@ extension FileManager: LargeItemCacheType {
         return (try? loadFile(at: url)) != nil
     }
 
-    /// Generate a url for a location on disk based in the input URL
-    func generateLocalFilesystemURL(forRemoteURL url: URL) -> URL? {
-        return cacheDirectory?
-            .appendingPathComponent(url.absoluteString.asData.md5String)
-            .appendingPathExtension(url.pathExtension)
+    /// Creates a directory in the cache from a base path
+    func createCacheDirectoryIfNeeded(basePath: String) -> URL? {
+        guard let cacheDirectory else {
+            return nil
+        }
 
+        let path = cacheDirectory.appendingPathComponent(basePath)
+        do {
+            try FileManager.default.createDirectory(
+                at: path,
+                withIntermediateDirectories: true,
+                attributes: nil
+            )
+        } catch {
+            let message = Strings.fileRepository.failedToCreateCacheDirectory(path).description
+            Logger.error(message)
+        }
+
+        return path
     }
 
     /// Load data from url

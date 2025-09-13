@@ -90,7 +90,7 @@ final class MockPaywallCacheWarming: PaywallCacheWarmingType {
         self.invokedWarmUpPaywallFontsCacheOfferings = offerings
     }
 
-#if !os(macOS) && !os(tvOS)
+#if !os(tvOS)
 
     private let _invokedTriggerFontDownloadIfNeeded: Atomic<Bool> = false
     private let _invokedTriggerFontDownloadIfNeededFontsConfig: Atomic<UIConfig.FontsConfig?> = nil

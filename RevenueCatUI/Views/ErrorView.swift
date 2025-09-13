@@ -13,12 +13,7 @@
 
 import SwiftUI
 
-#if os(iOS)
-
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ErrorView: View {
 
     @Environment(\.locale)
@@ -38,23 +33,20 @@ struct ErrorView: View {
         }
         .padding(.vertical, 24)
         .padding(.horizontal, 16)
+        #if os(iOS)
         .background(Color(uiColor: .secondarySystemGroupedBackground))
+        #endif
         .cornerRadius(16)
     }
 
 }
 
 #if DEBUG
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ErrorView_Previews: PreviewProvider {
 
     static var previews: some View {
         ErrorView()
     }
 }
-#endif
-
 #endif

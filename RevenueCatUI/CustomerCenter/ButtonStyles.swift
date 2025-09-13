@@ -28,7 +28,7 @@ struct ProminentButtonStyle: PrimitiveButtonStyle {
     @Environment(\.appearance) private var appearance: CustomerCenterConfigData.Appearance
     @Environment(\.colorScheme) private var colorScheme
     private var needsLegacyBorderShape: Bool {
-        #if swift(>=6.2)
+        #if compiler(>=6.2)
         if #available(iOS 26.0, *) { false } else { true }
         #else
         true
@@ -64,7 +64,7 @@ struct CustomerCenterButtonStyle: ButtonStyle {
             .padding(.horizontal)
             .padding(.vertical, 12)
             .background(configuration.isPressed ? pressedColor : normalColor)
-            .cornerRadius(10)
+            .cornerRadius(CustomerCenterStylingUtilities.cornerRadius)
     }
 }
 
@@ -89,35 +89,31 @@ extension ButtonStyle where Self == CustomerCenterButtonStyle {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
+/// A circular close button used in the Customer Center toolbar.
+///
+/// Important: This view intentionally does not read `@Environment(\.dismiss)`
+/// to avoid dismissal issues on iOS 15. The dismiss action must be provided
+/// via the `onDismiss` parameter, typically sourced from
+/// `CustomerCenterNavigationOptions.onCloseHandler`, which is injected by
+/// `CustomerCenterView`.
 struct DismissCircleButton: View {
-
-    @Environment(\.dismiss)
-    private var dismiss
 
     @Environment(\.localization)
     private var localization
 
-    var customDismiss: (() -> Void)?
+    let onDismiss: () -> Void
 
     var body: some View {
-#if swift(>=6.2)
+#if compiler(>=6.2)
         if #available(iOS 26.0, *) {
             Button(role: .close) {
-                if let customDismiss {
-                    customDismiss()
-                } else {
-                    self.dismiss()
-                }
+                onDismiss()
             }
             .accessibilityIdentifier("circled_close_button")
             .accessibilityLabel(Text(localization[.dismiss]))
         } else {
             Button {
-                if let customDismiss {
-                    customDismiss()
-                } else {
-                    self.dismiss()
-                }
+                onDismiss()
             } label: {
                 Circle()
                     .fill(Color(uiColor: .secondarySystemFill))
@@ -135,11 +131,7 @@ struct DismissCircleButton: View {
         }
         #else
         Button {
-            if let customDismiss {
-                customDismiss()
-            } else {
-                self.dismiss()
-            }
+            onDismiss()
         } label: {
             Circle()
                 .fill(Color(uiColor: .secondarySystemFill))
@@ -164,17 +156,26 @@ struct DismissCircleButton: View {
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct DismissCircleButtonToolbarModifier: ViewModifier {
+    @Environment(\.dismiss)
+    private var dismiss
 
     @Environment(\.navigationOptions)
     var navigationOptions
 
+    private var customDismiss: (() -> Void)?
+
+    init(customDismiss: (() -> Void)?) {
+        self.customDismiss = customDismiss
+    }
+
     func body(content: Content) -> some View {
         #if compiler(>=5.9)
         if navigationOptions.shouldShowCloseButton {
+            let onClose = customDismiss ?? navigationOptions.onCloseHandler ?? { dismiss() }
             content
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
-                        DismissCircleButton(customDismiss: navigationOptions.onCloseHandler)
+                        DismissCircleButton(onDismiss: onClose)
                     }
                 }
         } else {
@@ -193,7 +194,12 @@ struct DismissCircleButtonToolbarModifier: ViewModifier {
 extension View {
     /// Adds a toolbar with a dismiss button if `navigationOptions.shouldShowCloseButton` is true.
     func dismissCircleButtonToolbarIfNeeded() -> some View {
-        modifier(DismissCircleButtonToolbarModifier())
+        modifier(DismissCircleButtonToolbarModifier(customDismiss: nil))
+    }
+
+    /// Adds a toolbar with a dismiss button if `navigationOptions.shouldShowCloseButton` is true.
+    func dismissCircleButtonToolbarIfNeeded(customDismiss: @escaping (() -> Void)) -> some View {
+        modifier(DismissCircleButtonToolbarModifier(customDismiss: customDismiss))
     }
 }
 
@@ -208,7 +214,7 @@ struct ButtonStyles_Previews: PreviewProvider {
             Button("Didn't receive purchase") {}
                 .buttonStyle(ProminentButtonStyle())
 
-            DismissCircleButton()
+            DismissCircleButton(onDismiss: {})
         }.padding()
             .environment(\.appearance, CustomerCenterConfigData.standardAppearance)
             .environment(\.localization, CustomerCenterConfigData.default.localization)

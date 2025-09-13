@@ -80,7 +80,9 @@ struct FeedbackSurveyView: View {
             List {
                 content
             }
-            .dismissCircleButtonToolbarIfNeeded()
+            .dismissCircleButtonToolbarIfNeeded(customDismiss: {
+                isPresented = false
+            })
             .compatibleNavigation(
                 item: $viewModel.promotionalOfferData,
                 usesNavigationStack: navigationOptions.usesNavigationStack

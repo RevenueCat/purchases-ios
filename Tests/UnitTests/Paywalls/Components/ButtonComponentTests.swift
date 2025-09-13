@@ -2,7 +2,7 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 class ButtonComponentCodableTests: TestCase {
 
