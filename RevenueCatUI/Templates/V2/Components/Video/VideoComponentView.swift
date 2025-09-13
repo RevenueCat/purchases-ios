@@ -56,16 +56,20 @@ struct VideoComponentView: View {
                 )
             ) { style in
                 Color.clear
-                    .task {
+                    .onAppear {
                         self.imageSource = viewModel.imageSource
                         let fileRepository = FileRepository()
-                        if let lowResUrl = style.lowResUrl {
-                            let lowResCachedURL = try? await fileRepository.generateOrGetCachedFileURL(for: lowResUrl)
+
+                        if let cachedURL = fileRepository.getCachedFileURL(for: style.url) {
+                            self.cachedURL = cachedURL ?? style.url
+                            self.imageSource = nil
+                        } else if let lowResUrl = style.lowResUrl {
+                            let lowResCachedURL = fileRepository.getCachedFileURL(for: lowResUrl)
                             self.cachedURL = lowResCachedURL
+                            self.imageSource = nil
+                        } else {
+                            self.cachedURL = style.url
                         }
-                        let cachedURL = try? await fileRepository.generateOrGetCachedFileURL(for: style.url)
-                        self.cachedURL = cachedURL ?? style.url
-                        self.imageSource = nil
                     }
                 if style.visible {
                     ZStack {
@@ -91,8 +95,8 @@ struct VideoComponentView: View {
                         }
 
                     }
-                    .applyVideoWidth(size: style.size)
-                    .applyVideoHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
+                    .applyMediaWidth(size: style.size)
+                    .applyMediaHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
                     .clipped()
                     .shape(border: style.border,
                            shape: style.shape)
@@ -148,53 +152,6 @@ struct VideoComponentView: View {
             - style.margin.leading - style.margin.trailing
             - style.padding.leading - style.padding.trailing
     }
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-fileprivate extension View {
-
-    @ViewBuilder
-    func applyVideoWidth(size: PaywallComponent.Size) -> some View {
-        switch size.width {
-        case .fit:
-            self
-        case .fill:
-            self.frame(maxWidth: .infinity)
-        case .fixed(let value):
-            self.frame(width: Double(value))
-        default:
-            self
-        }
-    }
-
-    @ViewBuilder
-    func applyVideoHeight(size: PaywallComponent.Size, aspectRatio: Double) -> some View {
-        switch size.height {
-        case .fit:
-            switch size.width {
-            case .fit:
-                self
-            case .fill:
-                self
-            case .fixed(let value):
-                // This is the only change versus the regular .size() modifier.
-                // When the image has height=fit and fixed width, we manually set a
-                // fixed height according to the aspect ratio.
-                // Otherwise the view would grow vertically to occupy available space.
-                // See "Image streching vertically" preview
-                self.frame(height: Double(value) / aspectRatio)
-            default:
-                self
-            }
-        case .fill:
-            self.frame(maxHeight: .infinity)
-        case .fixed(let value):
-            self.frame(height: Double(value))
-        default:
-            self
-        }
-    }
-
 }
 
 #endif
