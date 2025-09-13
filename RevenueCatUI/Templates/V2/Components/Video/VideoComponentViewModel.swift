@@ -205,30 +205,4 @@ struct VideoComponentStyle {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension PaywallComponent.MaskShape {
-
-    var shape: ShapeModifier.Shape? {
-        switch self {
-        case .rectangle(let cornerRadiuses):
-            let corners = cornerRadiuses.flatMap { cornerRadiuses in
-                ShapeModifier.RadiusInfo(
-                    topLeft: cornerRadiuses.topLeading ?? 0,
-                    topRight: cornerRadiuses.topTrailing ?? 0,
-                    bottomLeft: cornerRadiuses.bottomLeading ?? 0,
-                    bottomRight: cornerRadiuses.bottomTrailing ?? 0
-                )
-            }
-            return .rectangle(corners)
-        case .circle:
-            return .circle
-        case .concave:
-            return .concave
-        case .convex:
-            return .convex
-        }
-    }
-
-}
-
 #endif
