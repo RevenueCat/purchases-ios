@@ -1795,7 +1795,7 @@ workflows:
       - spm-revenuecat-ui-ios-16:
           context:
             - slack-secrets-ios
-      - spm-revenuecat-ui-ios-17:
+      - run-revenuecat-ui-ios-17:
           context:
             - slack-secrets-ios
       - spm-revenuecat-ui-watchos:
