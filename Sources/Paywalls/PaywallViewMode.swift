@@ -22,11 +22,13 @@ public enum PaywallViewMode {
     /// Paywall can be displayed as an overlay on top of your own content.
     /// Multi-package templates will display the package selection.
     @available(watchOS, unavailable)
+    @available(macOS, unavailable)
     case footer
 
     /// Paywall can be displayed as an overlay on top of your own content.
     /// Multi-package templates will include a button to make the package selection visible.
     @available(watchOS, unavailable)
+    @available(macOS, unavailable)
     case condensedFooter
 
     /// The default ``PaywallViewMode``: ``PaywallViewMode/fullScreen``.
@@ -64,7 +66,7 @@ extension PaywallViewMode: CaseIterable {
 
     // swiftlint:disable:next missing_docs
     public static var allCases: [PaywallViewMode] {
-        #if os(watchOS)
+        #if os(watchOS) || os(macOS)
         return [.fullScreen]
         #else
         return [

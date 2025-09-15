@@ -15,10 +15,13 @@ import Foundation
 
 /// A file cache
 @_spi(Internal) public class FileRepository: FileRepositoryType, @unchecked Sendable {
+    private static let defaultBasePath = "RevenueCat"
+
     let networkService: SimpleNetworkServiceType
 
     private let store = KeyedDeferredValueStore<InputURL, OutputURL>()
     private let fileManager: LargeItemCacheType
+    private let cacheURL: URL?
 
     /// Create a file repository
     /// - Parameters:
@@ -26,10 +29,13 @@ import Foundation
     ///   - fileManager: A service capable of storing data and returning the URL where that stored data exists
     init(
         networkService: SimpleNetworkServiceType = URLSession.shared,
-        fileManager: LargeItemCacheType = FileManager.default
+        fileManager: LargeItemCacheType = FileManager.default,
+        basePath: String = FileRepository.defaultBasePath
     ) {
         self.networkService = networkService
         self.fileManager = fileManager
+
+        self.cacheURL = fileManager.createCacheDirectoryIfNeeded(basePath: basePath)
     }
 
     /// Create a file repository
@@ -56,7 +62,7 @@ import Foundation
     @_spi(Internal) public func generateOrGetCachedFileURL(for url: InputURL) async throws -> OutputURL {
         return try await store.getOrPut(
             Task { [weak self] in
-                guard let self, let cachedUrl = self.fileManager.generateLocalFilesystemURL(forRemoteURL: url) else {
+                guard let self, let cachedUrl = self.generateLocalFilesystemURL(forRemoteURL: url) else {
                     Logger.error(Strings.fileRepository.failedToCreateCacheDirectory(url).description)
                     throw Error.failedToCreateCacheDirectory(url.absoluteString)
                 }
@@ -71,6 +77,19 @@ import Foundation
             },
             forKey: url
         ).value
+    }
+
+    /// Get the cached file url (if it exists)
+    /// - Parameters:
+    ///   - url: The url for the remote data to cache into a file
+    @_spi(Internal) public func getCachedFileURL(for url: InputURL) -> OutputURL? {
+        let cachedUrl = self.generateLocalFilesystemURL(forRemoteURL: url)
+
+        if let cachedUrl, self.fileManager.cachedContentExists(at: cachedUrl) {
+            return cachedUrl
+        }
+
+        return nil
     }
 
     private func downloadFile(from url: URL) async throws -> Data {
@@ -91,6 +110,12 @@ import Foundation
             Logger.error(message)
             throw Error.failedToSaveCachedFile(message)
         }
+    }
+
+    func generateLocalFilesystemURL(forRemoteURL url: URL) -> URL? {
+        return cacheURL?
+            .appendingPathComponent(url.absoluteString.asData.md5String)
+            .appendingPathExtension(url.pathExtension)
     }
 }
 

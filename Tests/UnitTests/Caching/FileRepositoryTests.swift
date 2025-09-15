@@ -85,7 +85,7 @@ class FileRepositoryTests: TestCase {
         sut.networkService.stubResponse(at: 0, result: .success(data))
         let result = try await sut.fileRepository.generateOrGetCachedFileURL(for: someURL)
 
-        let expectedCachedURL = URL(string: "data:sample/someurl").unsafelyUnwrapped
+        let expectedCachedURL = URL(string: "data:sample/RevenueCat/e8a0d6b245a127f56629765a9815ba2c").unsafelyUnwrapped
 
         XCTAssertEqual(sut.networkService.invocations, [someURL])
         XCTAssertEqual(sut.cache.saveDataInvocations, [.init(data: data, url: expectedCachedURL)])

@@ -48,7 +48,7 @@ protocol PaywallPurchasesType: Sendable {
     func invalidateCustomerInfoCache()
 #endif
 
-#if !os(macOS) && !os(tvOS)
+#if !os(tvOS)
 
     @Sendable
     func failedToLoadFontWithConfig(_ fontConfig: UIConfig.FontsConfig)

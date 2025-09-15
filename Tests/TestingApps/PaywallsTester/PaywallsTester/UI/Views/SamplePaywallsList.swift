@@ -36,7 +36,7 @@ struct SamplePaywallsList: View {
             self.view(for: display)
         }
         .navigationTitle("Paywalls")
-        .navigationViewStyle(StackNavigationViewStyle())
+        .navigationViewStyle(.automatic)
     }
 
     @ViewBuilder
@@ -55,7 +55,7 @@ struct SamplePaywallsList: View {
             case .presentIfNeeded:
                 fatalError()
 
-            #if !os(watchOS)
+            #if !os(watchOS) && !os(macOS)
             case .footer, .condensedFooter:
                 CustomPaywall(offering: Self.loader.offering(for: template),
                               customerInfo: Self.loader.customerInfo,
@@ -148,7 +148,7 @@ struct SamplePaywallsList: View {
             }
 
             Section("Other") {
-                #if !os(watchOS)
+                #if !os(watchOS) && !os(macOS)
                 Button {
                     self.display = .customPaywall(.footer)
                 } label: {
@@ -408,9 +408,7 @@ extension PaywallTemplate {
 
 struct SamplePaywallsList_Previews: PreviewProvider {
     static var previews: some View {
-        NavigationView {
-            SamplePaywallsList()
-        }
+        SamplePaywallsList()
     }
 }
 

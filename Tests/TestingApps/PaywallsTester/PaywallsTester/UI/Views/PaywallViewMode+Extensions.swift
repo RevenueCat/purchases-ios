@@ -12,8 +12,10 @@ enum PaywallTesterViewMode {
     case fullScreen
     case sheet
     @available(watchOS, unavailable)
+    @available(macOS, unavailable, message: "Legacy paywalls are unavailable on macOS")
     case footer
     @available(watchOS, unavailable)
+    @available(macOS, unavailable, message: "Legacy paywalls are unavailable on macOS")
     case condensedFooter
     case presentIfNeeded
 }
@@ -25,6 +27,10 @@ internal extension PaywallTesterViewMode {
     static var allCases: [PaywallTesterViewMode] {
         #if os(watchOS)
         return [.fullScreen]
+        #elseif os(macOS)
+        return [.fullScreen,
+                .sheet,
+                .presentIfNeeded]
         #else
         return [
             .fullScreen,
@@ -44,11 +50,11 @@ internal extension PaywallTesterViewMode {
         switch self {
         case .fullScreen: return .fullScreen
         case .sheet: return .fullScreen
-        #if !os(watchOS)
+        #if !os(watchOS) && !os(macOS)
         case .footer: return .footer
         case .condensedFooter: return .condensedFooter
-        case .presentIfNeeded: return .fullScreen
         #endif
+        case .presentIfNeeded: return .fullScreen
         }
     }
 
