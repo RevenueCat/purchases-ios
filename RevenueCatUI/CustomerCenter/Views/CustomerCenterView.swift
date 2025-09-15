@@ -146,7 +146,8 @@ private extension CustomerCenterView {
                 ErrorView()
                     .environment(\.customerCenterPresentationMode, self.mode)
                     .environment(\.navigationOptions, self.navigationOptionsWithDismiss)
-                    .dismissCircleButtonToolbarIfNeeded()
+                    // Use explicit options to avoid any environment propagation issues
+                    .dismissCircleButtonToolbarIfNeeded(navigationOptions: self.navigationOptionsWithDismiss)
 
             case .notLoaded:
                 TintedProgressView()
@@ -199,7 +200,7 @@ private extension CustomerCenterView {
                         }
                     }
                 )
-                .dismissCircleButtonToolbarIfNeeded()
+                .dismissCircleButtonToolbarIfNeeded(navigationOptions: self.navigationOptionsWithDismiss)
             } else if viewModel.shouldShowList {
                 listView(screen)
             } else {
@@ -236,7 +237,7 @@ private extension CustomerCenterView {
             purchasesProvider: self.viewModel.purchasesProvider,
             actionWrapper: self.viewModel.actionWrapper
         )
-        .dismissCircleButtonToolbarIfNeeded()
+        .dismissCircleButtonToolbarIfNeeded(navigationOptions: self.navigationOptionsWithDismiss)
     }
 
     func singlePurchaseView(_ screen: CustomerCenterConfigData.Screen) -> some View {
@@ -251,7 +252,7 @@ private extension CustomerCenterView {
             purchasesProvider: self.viewModel.purchasesProvider,
             actionWrapper: self.viewModel.actionWrapper
         )
-        .dismissCircleButtonToolbarIfNeeded()
+        .dismissCircleButtonToolbarIfNeeded(navigationOptions: self.navigationOptionsWithDismiss)
     }
 
     func trackImpression() {
@@ -269,8 +270,15 @@ private extension CustomerCenterView {
     /// the view when presented. To ensure reliable behavior on iOS 15, we capture `dismiss` at the
     /// container level (CustomerCenterView) and propagate it via `navigationOptions.onCloseHandler`.
     var navigationOptionsWithDismiss: CustomerCenterNavigationOptions {
-        if self.navigationOptions.onCloseHandler != nil {
-            return self.navigationOptions
+        // Preserve shouldShowCloseButton exactly as provided by the caller.
+        // Only inject a dismissal handler if missing, to ensure reliability on iOS 15.
+        if let onClose = self.navigationOptions.onCloseHandler {
+            return CustomerCenterNavigationOptions(
+                usesNavigationStack: self.navigationOptions.usesNavigationStack,
+                usesExistingNavigation: self.navigationOptions.usesExistingNavigation,
+                shouldShowCloseButton: self.navigationOptions.shouldShowCloseButton,
+                onCloseHandler: onClose
+            )
         } else {
             return CustomerCenterNavigationOptions(
                 usesNavigationStack: self.navigationOptions.usesNavigationStack,
