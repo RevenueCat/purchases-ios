@@ -2549,18 +2549,6 @@
 		887A60622C1D037000E1A461 /* View+PresentPaywall.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "View+PresentPaywall.swift"; sourceTree = "<group>"; };
 		887A60632C1D037000E1A461 /* View+PresentPaywallFooter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "View+PresentPaywallFooter.swift"; sourceTree = "<group>"; };
 		887A60642C1D037000E1A461 /* View+PurchaseRestoreCompleted.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "View+PurchaseRestoreCompleted.swift"; sourceTree = "<group>"; };
-		887A611A2C1D168B00E1A461 /* testUnrecognizedIconsGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "testUnrecognizedIconsGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
-		887A611B2C1D168B00E1A461 /* testUnrecognizedIconsGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = testUnrecognizedIconsGeneratesDefaultPaywall.1.json; sourceTree = "<group>"; };
-		887A611C2C1D168B00E1A461 /* testUnrecognizedTemplateNameGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "testUnrecognizedTemplateNameGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
-		887A611D2C1D168B00E1A461 /* testUnrecognizedTemplateNameGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = testUnrecognizedTemplateNameGeneratesDefaultPaywall.1.json; sourceTree = "<group>"; };
-		887A611E2C1D168B00E1A461 /* testUnrecognizedVariableGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "testUnrecognizedVariableGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
-		887A611F2C1D168B00E1A461 /* testUnrecognizedVariableGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = testUnrecognizedVariableGeneratesDefaultPaywall.1.json; sourceTree = "<group>"; };
-		887A61202C1D168B00E1A461 /* testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
-		887A61212C1D168B00E1A461 /* testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall.1.json; sourceTree = "<group>"; };
-		887A61222C1D168B00E1A461 /* testValidateMissingPaywall-watchOS.1.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "testValidateMissingPaywall-watchOS.1.json"; sourceTree = "<group>"; };
-		887A61232C1D168B00E1A461 /* testValidateMissingPaywall.1.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = testValidateMissingPaywall.1.json; sourceTree = "<group>"; };
-		887A61242C1D168B00E1A461 /* testValidateMissingPaywallWithSpanishLocalization-watchOS.1.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "testValidateMissingPaywallWithSpanishLocalization-watchOS.1.json"; sourceTree = "<group>"; };
-		887A61252C1D168B00E1A461 /* testValidateMissingPaywallWithSpanishLocalization.1.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = testValidateMissingPaywallWithSpanishLocalization.1.json; sourceTree = "<group>"; };
 		887A61282C1D168B00E1A461 /* LocalizedAlertErrorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalizedAlertErrorTests.swift; sourceTree = "<group>"; };
 		887A61292C1D168B00E1A461 /* PackageVariablesTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PackageVariablesTests.swift; sourceTree = "<group>"; };
 		887A612A2C1D168B00E1A461 /* PaywallDataValidationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallDataValidationTests.swift; sourceTree = "<group>"; };
@@ -2767,6 +2755,10 @@
 		FDE57B0D2DF8BC1100101CE2 /* VirtualCurrenciesDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrenciesDecodingTests.swift; sourceTree = "<group>"; };
 		FECF627761D375C8431EB866 /* StoreProduct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreProduct.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		75F06A872E7877BE009E82DE /* PaywallDataValidationTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = PaywallDataValidationTests; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		2DAC5F6F26F13C9800C5258F /* Frameworks */ = {
@@ -5429,29 +5421,10 @@
 			path = RevenueCatUI;
 			sourceTree = "<group>";
 		};
-		887A61262C1D168B00E1A461 /* PaywallDataValidationTests */ = {
-			isa = PBXGroup;
-			children = (
-				887A611A2C1D168B00E1A461 /* testUnrecognizedIconsGeneratesDefaultPaywall-watchOS.1.json */,
-				887A611B2C1D168B00E1A461 /* testUnrecognizedIconsGeneratesDefaultPaywall.1.json */,
-				887A611C2C1D168B00E1A461 /* testUnrecognizedTemplateNameGeneratesDefaultPaywall-watchOS.1.json */,
-				887A611D2C1D168B00E1A461 /* testUnrecognizedTemplateNameGeneratesDefaultPaywall.1.json */,
-				887A611E2C1D168B00E1A461 /* testUnrecognizedVariableGeneratesDefaultPaywall-watchOS.1.json */,
-				887A611F2C1D168B00E1A461 /* testUnrecognizedVariableGeneratesDefaultPaywall.1.json */,
-				887A61202C1D168B00E1A461 /* testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall-watchOS.1.json */,
-				887A61212C1D168B00E1A461 /* testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall.1.json */,
-				887A61222C1D168B00E1A461 /* testValidateMissingPaywall-watchOS.1.json */,
-				887A61232C1D168B00E1A461 /* testValidateMissingPaywall.1.json */,
-				887A61242C1D168B00E1A461 /* testValidateMissingPaywallWithSpanishLocalization-watchOS.1.json */,
-				887A61252C1D168B00E1A461 /* testValidateMissingPaywallWithSpanishLocalization.1.json */,
-			);
-			path = PaywallDataValidationTests;
-			sourceTree = "<group>";
-		};
 		887A61272C1D168B00E1A461 /* __Snapshots__ */ = {
 			isa = PBXGroup;
 			children = (
-				887A61262C1D168B00E1A461 /* PaywallDataValidationTests */,
+				75F06A872E7877BE009E82DE /* PaywallDataValidationTests */,
 			);
 			path = __Snapshots__;
 			sourceTree = "<group>";
@@ -6125,6 +6098,9 @@
 				8337D6B92E0A7890000798BF /* PBXTargetDependency */,
 				8337D6BD2E0A7890000798BF /* PBXTargetDependency */,
 				8337D6C02E0A79A0000798BF /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				75F06A872E7877BE009E82DE /* PaywallDataValidationTests */,
 			);
 			name = RevenueCatUITestsDev;
 			packageProductDependencies = (
