@@ -21,58 +21,62 @@ let allDeploymentTargets: DeploymentTargets = .multiplatform(
 )
 
 let project = Project(
-    name: "PaywallTester",
+    name: "PaywallsTester",
     organizationName: .revenueCatOrgName,
     settings: .appProject,
     targets: [
         .target(
-            name: "PaywallTester",
+            name: "PaywallsTester",
             destinations: allDestinations,
             product: .app,
-            bundleId: "com.revenuecat.PaywallTester",
+            bundleId: "com.revenuecat.PaywallsTester",
             deploymentTargets: allDeploymentTargets,
             infoPlist: "../../Tests/TestingApps/PaywallsTester/PaywallsTester/Info.plist",
             sources: [
                 "../../Tests/TestingApps/PaywallsTester/PaywallsTester/**/*.swift"
             ],
+            resources: [
+                "../../Tests/TestingApps/PaywallsTester/PaywallsTester/**/*.xcassets"
+            ],
             dependencies: [
                 .revenueCat,
                 .revenueCatUI,
                 .storeKit
-            ]
+            ],
+            settings: .appTarget
         )
     ],
     schemes: [
         .scheme(
-            name: "PaywallTester - SK Config",
+            name: "PaywallsTester - SK Config",
             shared: true,
-            buildAction: .buildAction(targets: ["PaywallTester"]),
+            buildAction: .buildAction(targets: ["PaywallsTester"]),
             runAction: .runAction(
                 configuration: "Debug",
-                executable: "PaywallTester",
+                executable: "PaywallsTester",
                 options: .options(
                     storeKitConfigurationPath: "../../Tests/TestingApps/PaywallsTester/PaywallsTester/Products.storekit"
                 )
             )
         ),
         .scheme(
-            name: "PaywallTester - Live Config",
+            name: "PaywallsTester - Live Config",
             shared: true,
-            buildAction: .buildAction(targets: ["PaywallTester"]),
+            buildAction: .buildAction(targets: ["PaywallsTester"]),
             runAction: .runAction(
                 configuration: "Debug",
-                executable: "PaywallTester"
+                executable: "PaywallsTester"
             )
         ),
-        // hack to avoid having `PaywallTester` visible in the scheme list (hidden: true)
+        // hack to avoid having `PaywallsTester` visible in the scheme list (hidden: true)
         .scheme(
-            name: "PaywallTester",
+            name: "PaywallsTester",
             shared: false,
             hidden: true,
-            buildAction: .buildAction(targets: ["PaywallTester"]),
+            buildAction: .buildAction(targets: ["PaywallsTester"]),
             runAction: .runAction(
                 configuration: "Debug",
-                executable: "PaywallTester",
+                executable: "PaywallsTester",
                 options: .options(
                     storeKitConfigurationPath: "../../Tests/TestingApps/PaywallsTester/PaywallsTester/Products.storekit"
                 )
