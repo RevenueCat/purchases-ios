@@ -142,67 +142,58 @@ struct VideoPlayerView: View {
 @available(iOS 18.0, macOS 15.0, *)
 struct VideoViewPreviews: PreviewProvider {
     static var previews: some View {
-        Tabs()
-    }
 
-    struct Tabs: View {
-        @State var selectedTabIndex = 0
+        List {
+            Section("No controls or loop") {
+                VideoPlayerView(
+                    videoURL: .init(
+                        string: "https://videos.pexels.com/video-files/5532767/5532767-uhd_1440_2732_25fps.mp4"
+                    )!,
+                    shouldAutoPlay: true,
+                    contentMode: .fit,
+                    showControls: false,
+                    loopVideo: false,
+                    muteAudio: true
+                ).frame(height: 400)
+            }
 
-        var body: some View {
-            TabView(selection: $selectedTabIndex) {
-                Tab("No controls or loop", systemImage: "square", value: 0) {
-                    VideoPlayerView(
-                        videoURL: .init(
-                            string: "https://videos.pexels.com/video-files/5532767/5532767-uhd_1440_2732_25fps.mp4"
-                        )!,
-                        shouldAutoPlay: true,
-                        contentMode: .fit,
-                        showControls: false,
-                        loopVideo: false,
-                        muteAudio: true
-                    )
-                }
+            Section("No controls, w/ loop") {
+                VideoPlayerView(
+                    videoURL: .init(
+                        string: "https://videos.pexels.com/video-files/5532767/5532767-uhd_1440_2732_25fps.mp4"
+                    )!,
+                    shouldAutoPlay: true,
+                    contentMode: .fit,
+                    showControls: false,
+                    loopVideo: true,
+                    muteAudio: true
+                ).frame(height: 400)
+            }
 
-                Tab("No controls, w/ loop", systemImage: "square", value: 1) {
-                    VideoPlayerView(
-                        videoURL: .init(
-                            string: "https://videos.pexels.com/video-files/5532767/5532767-uhd_1440_2732_25fps.mp4"
-                        )!,
-                        shouldAutoPlay: true,
-                        contentMode: .fit,
-                        showControls: false,
-                        loopVideo: true,
-                        muteAudio: true
-                    )
-                }
+            Section("Controls, no loop") {
+                VideoPlayerView(
+                    videoURL: .init(
+                        string: "https://videos.pexels.com/video-files/5532767/5532767-uhd_1440_2732_25fps.mp4"
+                    )!,
+                    shouldAutoPlay: true,
+                    contentMode: .fit,
+                    showControls: true,
+                    loopVideo: false,
+                    muteAudio: true
+                ).frame(height: 400)
+            }
 
-                Tab("Controls, no loop", systemImage: "square", value: 2) {
-                    VideoPlayerView(
-                        videoURL: .init(
-                            string: "https://videos.pexels.com/video-files/5532767/5532767-uhd_1440_2732_25fps.mp4"
-                        )!,
-                        shouldAutoPlay: true,
-                        contentMode: .fit,
-                        showControls: true,
-                        loopVideo: false,
-                        muteAudio: true
-                    )
-                    .padding()
-                }
-
-                Tab("Loop + controls", systemImage: "square", value: 3) {
-                    VideoPlayerView(
-                        videoURL: .init(
-                            string: "https://videos.pexels.com/video-files/5532767/5532767-uhd_1440_2732_25fps.mp4"
-                        )!,
-                        shouldAutoPlay: true,
-                        contentMode: .fit,
-                        showControls: true,
-                        loopVideo: true,
-                        muteAudio: true
-                    )
-                    .padding()
-                }
+            Section("Loop + controls") {
+                VideoPlayerView(
+                    videoURL: .init(
+                        string: "https://videos.pexels.com/video-files/5532767/5532767-uhd_1440_2732_25fps.mp4"
+                    )!,
+                    shouldAutoPlay: true,
+                    contentMode: .fit,
+                    showControls: true,
+                    loopVideo: true,
+                    muteAudio: true
+                ).frame(height: 400)
             }
         }
     }
