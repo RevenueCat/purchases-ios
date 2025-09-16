@@ -53,11 +53,11 @@ class VideoPlayerViewNSView: NSView {
 
         avPlayer.isMuted = muteAudio
 
-        playerLayer?.videoGravity = switch contentMode {
+        switch contentMode {
         case .fit:
-            .resizeAspect
+            playerLayer?.videoGravity = .resizeAspect
         case .fill:
-            .resizeAspectFill
+            playerLayer?.videoGravity = .resizeAspectFill
         }
 
         if shouldAutoPlay {
