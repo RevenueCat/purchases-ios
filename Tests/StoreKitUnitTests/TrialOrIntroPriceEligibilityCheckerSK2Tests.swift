@@ -210,6 +210,8 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
 
         _ = try await sk2Product.purchase()
 
+        try await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
+
         let postPurchaseStatus: IntroEligibilityStatus = await withCheckedContinuation { continuation in
             self.trialOrIntroPriceEligibilityChecker.checkEligibility(product: storeProduct) { status in
                 continuation.resume(returning: status)
