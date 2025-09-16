@@ -32,7 +32,7 @@ if FileManager.default.fileExists(atPath: "Local.xcconfig") {
 }
 
 let workspace = Workspace(
-    name: "RevenueCat-Workspace",
+    name: "RevenueCat-Tuist",
     projects: projects,
     additionalFiles: additionalFiles
 )

@@ -78,7 +78,7 @@ Local.xcconfig
 **/Derived/
 
 # Tuist workspaces
-RevenueCat-Workspace.xcworkspace/
+RevenueCat-Tuist.xcworkspace/
 Projects/**/*.xcodeproj
 Examples/**/*.xcodeproj
 
