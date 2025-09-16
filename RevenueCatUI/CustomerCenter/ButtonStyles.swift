@@ -155,10 +155,6 @@ struct DismissCircleButton: View {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
 struct DismissCircleToolbar: ViewModifier {
     @Environment(\.dismiss)
     private var dismiss
