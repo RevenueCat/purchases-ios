@@ -166,6 +166,9 @@ extension View {
 
         window.makeKeyAndVisible()
 
+        // Wait for views to render
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+
         return {
             controller.beginAppearanceTransition(false, animated: false)
             controller.view.removeFromSuperview()
