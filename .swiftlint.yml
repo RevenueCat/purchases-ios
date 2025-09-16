@@ -45,6 +45,12 @@ custom_rules:
     message: "Inline 'return switch' is not allowed."
     severity: error
 
+  no_preview_macro:
+    name: "No Preview Macro"
+    regex: "#Preview"
+    message: "The '#Preview' macro will not compile in the CI pipeline during deployment, use a PreviewProvider instead."
+    severity: error
+
 identifier_name:
   max_length: 
     warning: 60 
