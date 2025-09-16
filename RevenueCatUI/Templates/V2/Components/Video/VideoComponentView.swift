@@ -138,7 +138,6 @@ struct VideoComponentView: View {
                 contentMode: .fill, // This must be set to fill for the modifier to work correctly
                 containerContentMode: style.contentMode // the container is what truly controls this
             )
-
             .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
                 view.overlay(
                     Color.clear.backgroundStyle(.color(colorOverlay))
