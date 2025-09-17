@@ -8,7 +8,7 @@ var projects: [Path] = [
     "./Examples/MagicWeatherSwiftUI/",
     "./Examples/testCustomEntitlementsComputation/",
     "./Examples/PurchaseTester/",
-    "./Projects/PaywallTester",
+    "./Projects/PaywallsTester",
     "./Projects/APITesters",
     "./Projects/PaywallValidationTester"
 ]
@@ -32,7 +32,7 @@ if FileManager.default.fileExists(atPath: "Local.xcconfig") {
 }
 
 let workspace = Workspace(
-    name: "RevenueCat-Workspace",
+    name: "RevenueCat-Tuist",
     projects: projects,
     additionalFiles: additionalFiles
 )

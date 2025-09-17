@@ -25,7 +25,7 @@ protocol PaywallCacheWarmingType: Sendable {
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func warmUpPaywallFontsCache(offerings: Offerings) async
 
-#if !os(macOS) && !os(tvOS) // For Paywalls
+#if !os(tvOS) // For Paywalls
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func triggerFontDownloadIfNeeded(fontsConfig: UIConfig.FontsConfig) async
@@ -90,7 +90,12 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
         Logger.verbose(Strings.paywalls.warming_up_images(imageURLs: imageURLs))
 
+        let fileRepository = FileRepository()
         for url in imageURLs {
+            // Preferred method - load with FileRepository
+            _ = try? await fileRepository.generateOrGetCachedFileURL(for: url)
+
+            // Legacy method - load with URLSession
             do {
                 try await self.imageFetcher.downloadImage(url)
             } catch {
@@ -113,7 +118,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         }
     }
 
-#if !os(macOS) && !os(tvOS)
+#if !os(tvOS)
 
     /// Downloads and installs the font if it is not already installed.
     func triggerFontDownloadIfNeeded(fontsConfig: UIConfig.FontsConfig) async {
@@ -226,7 +231,7 @@ private extension Offerings {
         )
     }
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
     var allFontsInPaywallsNamed: [DownloadableFont] {
         response.uiConfig?
@@ -242,7 +247,7 @@ private extension Offerings {
 
 #endif
 
-    #if !os(macOS) && !os(tvOS) // For Paywalls V2
+    #if !os(tvOS) // For Paywalls V2
 
     var allImagesInPaywalls: Set<URL> {
         return self.allImagesInPaywallsV1 + self.allImagesInPaywallsV2
@@ -266,7 +271,7 @@ private extension Offerings {
         )
     }
 
-    #if !os(macOS) && !os(tvOS) // For Paywalls V2
+    #if !os(tvOS) // For Paywalls V2
 
     private var allImagesInPaywallsV2: Set<URL> {
         // Attempting to warm up all low res images for all offerings for Paywalls V2.
@@ -326,7 +331,7 @@ struct DownloadableFont: Sendable {
     let hash: String
 }
 
-#if !os(macOS) && !os(tvOS) // For Paywalls V2
+#if !os(tvOS) // For Paywalls V2
 
 private extension UIConfig.AppConfig {
     var allDownloadableFonts: [DownloadableFont] {

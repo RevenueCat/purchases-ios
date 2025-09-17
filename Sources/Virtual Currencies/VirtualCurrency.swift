@@ -20,7 +20,7 @@ import Foundation
 /// - Warning: This feature is currently in beta and is subject to change.
 ///
 @objc(RCVirtualCurrency)
-public final class VirtualCurrency: NSObject {
+public final class VirtualCurrency: NSObject, Codable {
 
     /// The customer's current balance of the virtual currency.
     @objc public let balance: Int
@@ -48,7 +48,6 @@ public final class VirtualCurrency: NSObject {
     }
 }
 
-extension VirtualCurrency: Codable {}
 extension VirtualCurrency: Sendable {}
 
 extension VirtualCurrency {

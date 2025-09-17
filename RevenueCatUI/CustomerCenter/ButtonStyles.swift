@@ -28,7 +28,7 @@ struct ProminentButtonStyle: PrimitiveButtonStyle {
     @Environment(\.appearance) private var appearance: CustomerCenterConfigData.Appearance
     @Environment(\.colorScheme) private var colorScheme
     private var needsLegacyBorderShape: Bool {
-        #if swift(>=6.2)
+        #if compiler(>=6.2)
         if #available(iOS 26.0, *) { false } else { true }
         #else
         true
@@ -64,7 +64,7 @@ struct CustomerCenterButtonStyle: ButtonStyle {
             .padding(.horizontal)
             .padding(.vertical, 12)
             .background(configuration.isPressed ? pressedColor : normalColor)
-            .cornerRadius(10)
+            .cornerRadius(CustomerCenterStylingUtilities.cornerRadius)
     }
 }
 
@@ -104,7 +104,7 @@ struct DismissCircleButton: View {
     let onDismiss: () -> Void
 
     var body: some View {
-#if swift(>=6.2)
+#if compiler(>=6.2)
         if #available(iOS 26.0, *) {
             Button(role: .close) {
                 onDismiss()
@@ -155,17 +155,23 @@ struct DismissCircleButton: View {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-struct DismissCircleButtonToolbarModifier: ViewModifier {
+struct DismissCircleToolbar: ViewModifier {
     @Environment(\.dismiss)
     private var dismiss
 
-    @Environment(\.navigationOptions)
-    var navigationOptions
+    let options: CustomerCenterNavigationOptions
+
+    private var customDismiss: (() -> Void)?
+
+    init(options: CustomerCenterNavigationOptions, customDismiss: (() -> Void)?) {
+        self.options = options
+        self.customDismiss = customDismiss
+    }
 
     func body(content: Content) -> some View {
         #if compiler(>=5.9)
-        if navigationOptions.shouldShowCloseButton {
-            let onClose = navigationOptions.onCloseHandler ?? { dismiss() }
+        if options.shouldShowCloseButton {
+            let onClose = customDismiss ?? options.onCloseHandler ?? { dismiss() }
             content
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
@@ -186,9 +192,22 @@ struct DismissCircleButtonToolbarModifier: ViewModifier {
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 extension View {
-    /// Adds a toolbar with a dismiss button if `navigationOptions.shouldShowCloseButton` is true.
-    func dismissCircleButtonToolbarIfNeeded() -> some View {
-        modifier(DismissCircleButtonToolbarModifier())
+    /// Adds a toolbar with a dismiss button if `options.shouldShowCloseButton` is true,
+    /// using explicit options.
+    func dismissCircleButtonToolbarIfNeeded(navigationOptions: CustomerCenterNavigationOptions) -> some View {
+        modifier(DismissCircleToolbar(options: navigationOptions, customDismiss: nil))
+    }
+
+    /// Adds a toolbar with a dismiss button if `navigationOptions.shouldShowCloseButton` is true,
+    /// using explicit options.
+    func dismissCircleButtonToolbarIfNeeded(
+        navigationOptions: CustomerCenterNavigationOptions,
+        customDismiss: @escaping (() -> Void)
+    ) -> some View {
+        modifier(DismissCircleToolbar(
+            options: navigationOptions,
+            customDismiss: customDismiss
+        ))
     }
 }
 

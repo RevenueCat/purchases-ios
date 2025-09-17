@@ -85,7 +85,7 @@ extension View {
     /// to use `.coreAnimation` which will use the CALayer from Quartz or `.uiView` which will use
     /// UIKit's `drawViewHierarchyInRect` under the hood.
     ///
-    /// - Note: This method is only available on iOS. It is unavailable on macOS, watchOS, visionOS, and tvOS.
+    /// - Note: This method is only available on iOS and macOS. It is unavailable on watchOS, visionOS, and tvOS.
     ///
     /// - Parameter renderingMode: An `EmergeRenderingMode` value that specifies the
     ///  desired rendering mode for snapshots. If `nil`, the default rendering
@@ -104,7 +104,6 @@ extension View {
     /// ```
     ///
     /// - SeeAlso: `EmergeRenderingMode`
-    @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(visionOS, unavailable)
     @available(tvOS, unavailable)
