@@ -1136,6 +1136,7 @@
 		A56F9AB126990E9200AFC48F /* CustomerInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56F9AB026990E9200AFC48F /* CustomerInfo.swift */; };
 		A5B6CDD8280F3843007629D5 /* AdServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5B6CDD5280F3843007629D5 /* AdServices.framework */; platformFilters = (ios, maccatalyst, macos, ); settings = {ATTRIBUTES = (Weak, ); }; };
 		A5F0104E2717B3150090732D /* BeginRefundRequestHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F0104D2717B3150090732D /* BeginRefundRequestHelper.swift */; };
+		A95EB8A12E7AB13A00F1022B /* PaywallDataValidationTests in Resources */ = {isa = PBXBuildFile; fileRef = A95EB89F2E7AB09C00F1022B /* PaywallDataValidationTests */; };
 		B300E4C026D4371200B22262 /* SKPaymentTransactionExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F591492526B994B400D32E58 /* SKPaymentTransactionExtensionsTests.swift */; };
 		B300E4C226D439B700B22262 /* IntroEligibilityCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E354B18710B488B8B0D443 /* IntroEligibilityCalculatorTests.swift */; };
 		B302206A27271BCB008F1A0D /* Decoder+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B302206927271BCB008F1A0D /* Decoder+Extensions.swift */; };
@@ -2623,6 +2624,7 @@
 		A56F9AB026990E9200AFC48F /* CustomerInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfo.swift; sourceTree = "<group>"; };
 		A5B6CDD5280F3843007629D5 /* AdServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdServices.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/System/Library/Frameworks/AdServices.framework; sourceTree = DEVELOPER_DIR; };
 		A5F0104D2717B3150090732D /* BeginRefundRequestHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeginRefundRequestHelper.swift; sourceTree = "<group>"; };
+		A95EB89F2E7AB09C00F1022B /* PaywallDataValidationTests */ = {isa = PBXFileReference; lastKnownFileType = folder; path = PaywallDataValidationTests; sourceTree = "<group>"; };
 		B302206927271BCB008F1A0D /* Decoder+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Decoder+Extensions.swift"; sourceTree = "<group>"; };
 		B302206D2728B798008F1A0D /* BackendErrorStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendErrorStrings.swift; sourceTree = "<group>"; };
 		B3022071272B3DDC008F1A0D /* DescribableError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DescribableError.swift; sourceTree = "<group>"; };
@@ -2755,10 +2757,6 @@
 		FDE57B0D2DF8BC1100101CE2 /* VirtualCurrenciesDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrenciesDecodingTests.swift; sourceTree = "<group>"; };
 		FECF627761D375C8431EB866 /* StoreProduct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreProduct.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		75F06A872E7877BE009E82DE /* PaywallDataValidationTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = PaywallDataValidationTests; sourceTree = "<group>"; };
-/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		2DAC5F6F26F13C9800C5258F /* Frameworks */ = {
@@ -5424,7 +5422,7 @@
 		887A61272C1D168B00E1A461 /* __Snapshots__ */ = {
 			isa = PBXGroup;
 			children = (
-				75F06A872E7877BE009E82DE /* PaywallDataValidationTests */,
+				A95EB89F2E7AB09C00F1022B /* PaywallDataValidationTests */,
 			);
 			path = __Snapshots__;
 			sourceTree = "<group>";
@@ -6099,9 +6097,6 @@
 				8337D6BD2E0A7890000798BF /* PBXTargetDependency */,
 				8337D6C02E0A79A0000798BF /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				75F06A872E7877BE009E82DE /* PaywallDataValidationTests */,
-			);
 			name = RevenueCatUITestsDev;
 			packageProductDependencies = (
 				887A63492C1D17EF00E1A461 /* Nimble */,
@@ -6473,6 +6468,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A95EB8A12E7AB13A00F1022B /* PaywallDataValidationTests in Resources */,
 				8337DD702E0A7E42000798BF /* paywall-preview-resources in Resources */,
 				8337DD6F2E0A7D79000798BF /* background.heic in Resources */,
 				8337DD6E2E0A7D69000798BF /* header.heic in Resources */,
