@@ -526,7 +526,7 @@ jobs:
   spm-release-build-xcode-15:
     executor:
       name: macos-executor
-      xcode_version: "15.2.0"
+      xcode_version: "15.4.0"
 
     steps:
       - checkout
@@ -667,7 +667,7 @@ jobs:
   run-revenuecat-ui-ios-17:
     executor:
       name: macos-executor
-      xcode_version: "15.2.0"
+      xcode_version: "15.4.0"
 
     steps:
       - checkout
@@ -683,7 +683,7 @@ jobs:
           command: bundle exec fastlane test_revenuecatui
           no_output_timeout: 15m
           environment:
-            DEVICE: iPhone 15 Pro,OS=17.2
+            DEVICE: iPhone 15 Pro,OS=17.5
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshots_repo_pr"
@@ -810,7 +810,7 @@ jobs:
   run-test-ios-17:
     executor:
       name: macos-executor
-      xcode_version: "15.2.0"
+      xcode_version: "15.4.0"
 
     steps:
       - checkout
@@ -821,7 +821,7 @@ jobs:
           command: bundle exec fastlane test_ios
           no_output_timeout: 15m
           environment:
-            SCAN_DEVICE: iPhone 15 (17.2.0)
+            SCAN_DEVICE: iPhone 15 (17.5.0)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
@@ -871,8 +871,7 @@ jobs:
   run-test-ios-15:
     executor:
       name: macos-executor
-      # Needs to be 15.2.0 because if not running on Swift 5.9, the tests fail
-      xcode_version: "15.2.0"
+      xcode_version: "15.4.0"
 
     steps:
       - checkout
