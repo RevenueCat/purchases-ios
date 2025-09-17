@@ -1179,7 +1179,6 @@ platform :ios do
       # Check if pragma directives are already present
       unless content.include?('#pragma clang diagnostic ignored "-Wdeprecated-declarations"')
         # Add pragma directives to suppress StoreKit 1 deprecation warnings
-        # Insert after the existing pragma clang diagnostic push
         pragma_insertion_point = content.index('#pragma clang diagnostic ignored "-Wgcc-compat"')
         
         if pragma_insertion_point
@@ -1195,7 +1194,7 @@ platform :ios do
           File.write(header_path, content)
           UI.success("Added deprecation warning suppression to #{File.basename(header_path)}")
         else
-          UI.warning("Could not find insertion point in #{File.basename(header_path)}")
+          UI.error("Could not find insertion point in #{File.basename(header_path)}")
         end
       else
         UI.message("Deprecation warnings already suppressed in #{File.basename(header_path)}")
