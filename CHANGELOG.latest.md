@@ -1,18 +1,13 @@
-## RevenueCat SDK
-### ✨ New Features
-* Add support for native (non-Catalyst) Mac paywalls (#5451) via Chris Lindsay (@clindsay3)
-### 🐞 Bugfixes
-* Store file repostory contents in base directory in cache (#5557) via Josh Holtz (@joshdholtz)
-* Fix integration via XCFramework (#5551) via Antonio Pallares (@ajpallares)
-
 ## RevenueCatUI SDK
 ### Customer Center
 #### 🐞 Bugfixes
-* clean up a couple more places that were using the old corner radius (#5556) via Andy Boedo (@aboedo)
-* Use New iOS 26 Corner Radius in VC List Section (#5553) via Will Taylor (@fire-at-will)
+* Pass navigation options explicitly to dismiss button (#5565) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Update paywalls tester Package.resolved for Xcode Cloud (#5558) via Josh Holtz (@joshdholtz)
-* Paywalls image loading from cache is now synchronous (#5528) via Josh Holtz (@joshdholtz)
-* Add SDK installation dropdown to bug report template (#5550) via Antonio Pallares (@ajpallares)
-* Fix typo in PaywallsTester (#5469) via Cesar de la Vega (@vegaro)
+* Silence deprecation warnings in XCFramework (#5554) via Antonio Pallares (@ajpallares)
+* CircleCI: Update deprecated Xcode versions (#5567) via Antonio Pallares (@ajpallares)
+* Tuist: rename generated Xcode workspace to RevenueCat-Tuist.xcworkspace (#5566) via Antonio Pallares (@ajpallares)
+* Bump fastlane-plugin-revenuecat_internal from `7d97553` to `a6dc551` (#5562) via dependabot[bot] (@dependabot[bot])
+* Tuist: fix PaywallsTester project generation (#5564) via Antonio Pallares (@ajpallares)
+* Bump nokogiri from 1.18.9 to 1.18.10 (#5563) via dependabot[bot] (@dependabot[bot])
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5555) via RevenueCat Git Bot (@RCGitBot)
