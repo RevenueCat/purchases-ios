@@ -268,25 +268,15 @@ private extension CustomerCenterView {
     ///
     /// - Note: Using `@Environment(.dismiss)` directly inside child views (e.g., toolbar buttons) can fail to dismiss
     /// the view when presented. To ensure reliable behavior on iOS 15, we capture `dismiss` at the
-    /// container level (CustomerCenterView) and propagate it via `navigationOptions.onCloseHandler`.
+    /// container level and propagate it via `navigationOptions.onCloseHandler`.
     var navigationOptionsWithDismiss: CustomerCenterNavigationOptions {
-        // Preserve shouldShowCloseButton exactly as provided by the caller.
         // Only inject a dismissal handler if missing, to ensure reliability on iOS 15.
-        if let onClose = self.navigationOptions.onCloseHandler {
-            return CustomerCenterNavigationOptions(
-                usesNavigationStack: self.navigationOptions.usesNavigationStack,
-                usesExistingNavigation: self.navigationOptions.usesExistingNavigation,
-                shouldShowCloseButton: self.navigationOptions.shouldShowCloseButton,
-                onCloseHandler: onClose
-            )
-        } else {
-            return CustomerCenterNavigationOptions(
-                usesNavigationStack: self.navigationOptions.usesNavigationStack,
-                usesExistingNavigation: self.navigationOptions.usesExistingNavigation,
-                shouldShowCloseButton: self.navigationOptions.shouldShowCloseButton,
-                onCloseHandler: { self.dismiss() }
-            )
-        }
+        return CustomerCenterNavigationOptions(
+            usesNavigationStack: self.navigationOptions.usesNavigationStack,
+            usesExistingNavigation: self.navigationOptions.usesExistingNavigation,
+            shouldShowCloseButton: self.navigationOptions.shouldShowCloseButton,
+            onCloseHandler: self.navigationOptions.onCloseHandler ?? { self.dismiss() }
+        )
     }
 }
 
