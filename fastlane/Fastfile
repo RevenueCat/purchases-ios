@@ -1173,7 +1173,6 @@ platform :ios do
     swift_headers.each do |header_path|
       UI.message("Processing header: #{header_path}")
       
-      # Read the current header content
       content = File.read(header_path)
       
       # Check if pragma directives are already present
@@ -1187,10 +1186,7 @@ platform :ios do
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
           PRAGMA
           
-          # Insert the pragma directives
           content.insert(insertion_index, pragma_directives)
-          
-          # Write back to file
           File.write(header_path, content)
           UI.success("Added deprecation warning suppression to #{File.basename(header_path)}")
         else
