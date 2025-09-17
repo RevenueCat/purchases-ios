@@ -155,23 +155,23 @@ struct DismissCircleButton: View {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-struct DismissCircleButtonToolbarModifier: ViewModifier {
+struct DismissCircleToolbar: ViewModifier {
     @Environment(\.dismiss)
     private var dismiss
 
-    @Environment(\.navigationOptions)
-    var navigationOptions
+    let options: CustomerCenterNavigationOptions
 
     private var customDismiss: (() -> Void)?
 
-    init(customDismiss: (() -> Void)?) {
+    init(options: CustomerCenterNavigationOptions, customDismiss: (() -> Void)?) {
+        self.options = options
         self.customDismiss = customDismiss
     }
 
     func body(content: Content) -> some View {
         #if compiler(>=5.9)
-        if navigationOptions.shouldShowCloseButton {
-            let onClose = customDismiss ?? navigationOptions.onCloseHandler ?? { dismiss() }
+        if options.shouldShowCloseButton {
+            let onClose = customDismiss ?? options.onCloseHandler ?? { dismiss() }
             content
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
@@ -192,14 +192,22 @@ struct DismissCircleButtonToolbarModifier: ViewModifier {
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 extension View {
-    /// Adds a toolbar with a dismiss button if `navigationOptions.shouldShowCloseButton` is true.
-    func dismissCircleButtonToolbarIfNeeded() -> some View {
-        modifier(DismissCircleButtonToolbarModifier(customDismiss: nil))
+    /// Adds a toolbar with a dismiss button if `options.shouldShowCloseButton` is true,
+    /// using explicit options.
+    func dismissCircleButtonToolbarIfNeeded(navigationOptions: CustomerCenterNavigationOptions) -> some View {
+        modifier(DismissCircleToolbar(options: navigationOptions, customDismiss: nil))
     }
 
-    /// Adds a toolbar with a dismiss button if `navigationOptions.shouldShowCloseButton` is true.
-    func dismissCircleButtonToolbarIfNeeded(customDismiss: @escaping (() -> Void)) -> some View {
-        modifier(DismissCircleButtonToolbarModifier(customDismiss: customDismiss))
+    /// Adds a toolbar with a dismiss button if `navigationOptions.shouldShowCloseButton` is true,
+    /// using explicit options.
+    func dismissCircleButtonToolbarIfNeeded(
+        navigationOptions: CustomerCenterNavigationOptions,
+        customDismiss: @escaping (() -> Void)
+    ) -> some View {
+        modifier(DismissCircleToolbar(
+            options: navigationOptions,
+            customDismiss: customDismiss
+        ))
     }
 }
 
