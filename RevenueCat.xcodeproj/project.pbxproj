@@ -1136,7 +1136,6 @@
 		A56F9AB126990E9200AFC48F /* CustomerInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56F9AB026990E9200AFC48F /* CustomerInfo.swift */; };
 		A5B6CDD8280F3843007629D5 /* AdServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5B6CDD5280F3843007629D5 /* AdServices.framework */; platformFilters = (ios, maccatalyst, macos, ); settings = {ATTRIBUTES = (Weak, ); }; };
 		A5F0104E2717B3150090732D /* BeginRefundRequestHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F0104D2717B3150090732D /* BeginRefundRequestHelper.swift */; };
-		A95EB8A12E7AB13A00F1022B /* PaywallDataValidationTests in Resources */ = {isa = PBXBuildFile; fileRef = A95EB89F2E7AB09C00F1022B /* PaywallDataValidationTests */; };
 		B300E4C026D4371200B22262 /* SKPaymentTransactionExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F591492526B994B400D32E58 /* SKPaymentTransactionExtensionsTests.swift */; };
 		B300E4C226D439B700B22262 /* IntroEligibilityCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E354B18710B488B8B0D443 /* IntroEligibilityCalculatorTests.swift */; };
 		B302206A27271BCB008F1A0D /* Decoder+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B302206927271BCB008F1A0D /* Decoder+Extensions.swift */; };
@@ -2415,6 +2414,166 @@
 		75BB98FA2E336C070001DD1A /* ProductsManagerType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductsManagerType.swift; sourceTree = "<group>"; };
 		75BB98FD2E336C220001DD1A /* ProductsManagerFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductsManagerFactory.swift; sourceTree = "<group>"; };
 		75BE27E92DFC8C6A00C9440E /* PreferredLocalesProvider+Mock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PreferredLocalesProvider+Mock.swift"; sourceTree = "<group>"; };
+		75CAD8352E7AD57300776315 /* iOS15-testUnrecognizedIconsGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testUnrecognizedIconsGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8362E7AD57300776315 /* iOS15-testUnrecognizedIconsGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testUnrecognizedIconsGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8372E7AD57300776315 /* iOS15-testUnrecognizedIconsInTiersGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testUnrecognizedIconsInTiersGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8382E7AD57300776315 /* iOS15-testUnrecognizedIconsInTiersGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testUnrecognizedIconsInTiersGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8392E7AD57300776315 /* iOS15-testUnrecognizedTemplateNameGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testUnrecognizedTemplateNameGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD83A2E7AD57300776315 /* iOS15-testUnrecognizedTemplateNameGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testUnrecognizedTemplateNameGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD83B2E7AD57300776315 /* iOS15-testUnrecognizedVariableGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testUnrecognizedVariableGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD83C2E7AD57300776315 /* iOS15-testUnrecognizedVariableGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testUnrecognizedVariableGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD83D2E7AD57300776315 /* iOS15-testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD83E2E7AD57300776315 /* iOS15-testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD83F2E7AD57300776315 /* iOS15-testUnrecognizedVariableInTierFeaturesGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testUnrecognizedVariableInTierFeaturesGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8402E7AD57300776315 /* iOS15-testUnrecognizedVariableInTierFeaturesGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testUnrecognizedVariableInTierFeaturesGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8412E7AD57300776315 /* iOS15-testUnrecognizedVariableInTierLocalizationGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testUnrecognizedVariableInTierLocalizationGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8422E7AD57300776315 /* iOS15-testUnrecognizedVariableInTierLocalizationGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testUnrecognizedVariableInTierLocalizationGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8432E7AD57300776315 /* iOS15-testValidateMissingPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testValidateMissingPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8442E7AD57300776315 /* iOS15-testValidateMissingPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testValidateMissingPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8452E7AD57300776315 /* iOS15-testValidateMissingPaywallWithSpanishLocalization-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testValidateMissingPaywallWithSpanishLocalization-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8462E7AD57300776315 /* iOS15-testValidateMissingPaywallWithSpanishLocalization.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testValidateMissingPaywallWithSpanishLocalization.1.json"; sourceTree = "<group>"; };
+		75CAD8472E7AD57300776315 /* iOS15-testValidateMultiTierPaywallWithMissingTierLocalization-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testValidateMultiTierPaywallWithMissingTierLocalization-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8482E7AD57300776315 /* iOS15-testValidateMultiTierPaywallWithMissingTierLocalization.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testValidateMultiTierPaywallWithMissingTierLocalization.1.json"; sourceTree = "<group>"; };
+		75CAD8492E7AD57300776315 /* iOS15-testValidateMultiTierPaywallWithMissingTierNames-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testValidateMultiTierPaywallWithMissingTierNames-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD84A2E7AD57300776315 /* iOS15-testValidateMultiTierPaywallWithMissingTierNames.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testValidateMultiTierPaywallWithMissingTierNames.1.json"; sourceTree = "<group>"; };
+		75CAD84B2E7AD57300776315 /* iOS15-testValidateMultiTierPaywallWithMissingTiers-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testValidateMultiTierPaywallWithMissingTiers-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD84C2E7AD57300776315 /* iOS15-testValidateMultiTierPaywallWithMissingTiers.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testValidateMultiTierPaywallWithMissingTiers.1.json"; sourceTree = "<group>"; };
+		75CAD84D2E7AD57300776315 /* iOS15-testValidateMultiTierPaywallWithNoTierLocalization-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testValidateMultiTierPaywallWithNoTierLocalization-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD84E2E7AD57300776315 /* iOS15-testValidateMultiTierPaywallWithNoTierLocalization.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testValidateMultiTierPaywallWithNoTierLocalization.1.json"; sourceTree = "<group>"; };
+		75CAD84F2E7AD57300776315 /* iOS15-testValidateSingleTierPaywallWithMissingLocalization-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testValidateSingleTierPaywallWithMissingLocalization-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8502E7AD57300776315 /* iOS15-testValidateSingleTierPaywallWithMissingLocalization.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testValidateSingleTierPaywallWithMissingLocalization.1.json"; sourceTree = "<group>"; };
+		75CAD8512E7AD57300776315 /* iOS15-testValidateValidMultiTierPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testValidateValidMultiTierPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8522E7AD57300776315 /* iOS15-testValidateValidMultiTierPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testValidateValidMultiTierPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8532E7AD57300776315 /* iOS15-testValidateValidPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testValidateValidPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8542E7AD57300776315 /* iOS15-testValidateValidPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS15-testValidateValidPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8552E7AD57300776315 /* iOS16-testUnrecognizedIconsGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testUnrecognizedIconsGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8562E7AD57300776315 /* iOS16-testUnrecognizedIconsGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testUnrecognizedIconsGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8572E7AD57300776315 /* iOS16-testUnrecognizedIconsInTiersGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testUnrecognizedIconsInTiersGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8582E7AD57300776315 /* iOS16-testUnrecognizedIconsInTiersGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testUnrecognizedIconsInTiersGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8592E7AD57300776315 /* iOS16-testUnrecognizedTemplateNameGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testUnrecognizedTemplateNameGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD85A2E7AD57300776315 /* iOS16-testUnrecognizedTemplateNameGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testUnrecognizedTemplateNameGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD85B2E7AD57300776315 /* iOS16-testUnrecognizedVariableGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testUnrecognizedVariableGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD85C2E7AD57300776315 /* iOS16-testUnrecognizedVariableGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testUnrecognizedVariableGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD85D2E7AD57300776315 /* iOS16-testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD85E2E7AD57300776315 /* iOS16-testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD85F2E7AD57300776315 /* iOS16-testUnrecognizedVariableInTierFeaturesGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testUnrecognizedVariableInTierFeaturesGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8602E7AD57300776315 /* iOS16-testUnrecognizedVariableInTierFeaturesGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testUnrecognizedVariableInTierFeaturesGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8612E7AD57300776315 /* iOS16-testUnrecognizedVariableInTierLocalizationGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testUnrecognizedVariableInTierLocalizationGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8622E7AD57300776315 /* iOS16-testUnrecognizedVariableInTierLocalizationGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testUnrecognizedVariableInTierLocalizationGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8632E7AD57300776315 /* iOS16-testValidateMissingPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testValidateMissingPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8642E7AD57300776315 /* iOS16-testValidateMissingPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testValidateMissingPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8652E7AD57300776315 /* iOS16-testValidateMissingPaywallWithSpanishLocalization-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testValidateMissingPaywallWithSpanishLocalization-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8662E7AD57300776315 /* iOS16-testValidateMissingPaywallWithSpanishLocalization.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testValidateMissingPaywallWithSpanishLocalization.1.json"; sourceTree = "<group>"; };
+		75CAD8672E7AD57300776315 /* iOS16-testValidateMultiTierPaywallWithMissingTierLocalization-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testValidateMultiTierPaywallWithMissingTierLocalization-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8682E7AD57300776315 /* iOS16-testValidateMultiTierPaywallWithMissingTierLocalization.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testValidateMultiTierPaywallWithMissingTierLocalization.1.json"; sourceTree = "<group>"; };
+		75CAD8692E7AD57300776315 /* iOS16-testValidateMultiTierPaywallWithMissingTierNames-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testValidateMultiTierPaywallWithMissingTierNames-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD86A2E7AD57300776315 /* iOS16-testValidateMultiTierPaywallWithMissingTierNames.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testValidateMultiTierPaywallWithMissingTierNames.1.json"; sourceTree = "<group>"; };
+		75CAD86B2E7AD57300776315 /* iOS16-testValidateMultiTierPaywallWithMissingTiers-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testValidateMultiTierPaywallWithMissingTiers-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD86C2E7AD57300776315 /* iOS16-testValidateMultiTierPaywallWithMissingTiers.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testValidateMultiTierPaywallWithMissingTiers.1.json"; sourceTree = "<group>"; };
+		75CAD86D2E7AD57300776315 /* iOS16-testValidateMultiTierPaywallWithNoTierLocalization-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testValidateMultiTierPaywallWithNoTierLocalization-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD86E2E7AD57300776315 /* iOS16-testValidateMultiTierPaywallWithNoTierLocalization.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testValidateMultiTierPaywallWithNoTierLocalization.1.json"; sourceTree = "<group>"; };
+		75CAD86F2E7AD57300776315 /* iOS16-testValidateSingleTierPaywallWithMissingLocalization-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testValidateSingleTierPaywallWithMissingLocalization-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8702E7AD57300776315 /* iOS16-testValidateSingleTierPaywallWithMissingLocalization.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testValidateSingleTierPaywallWithMissingLocalization.1.json"; sourceTree = "<group>"; };
+		75CAD8712E7AD57300776315 /* iOS16-testValidateValidMultiTierPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testValidateValidMultiTierPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8722E7AD57300776315 /* iOS16-testValidateValidMultiTierPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testValidateValidMultiTierPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8732E7AD57300776315 /* iOS16-testValidateValidPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testValidateValidPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8742E7AD57300776315 /* iOS16-testValidateValidPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS16-testValidateValidPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8752E7AD57300776315 /* iOS17-testUnrecognizedIconsGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testUnrecognizedIconsGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8762E7AD57300776315 /* iOS17-testUnrecognizedIconsGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testUnrecognizedIconsGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8772E7AD57300776315 /* iOS17-testUnrecognizedIconsInTiersGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testUnrecognizedIconsInTiersGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8782E7AD57300776315 /* iOS17-testUnrecognizedIconsInTiersGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testUnrecognizedIconsInTiersGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8792E7AD57300776315 /* iOS17-testUnrecognizedTemplateNameGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testUnrecognizedTemplateNameGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD87A2E7AD57300776315 /* iOS17-testUnrecognizedTemplateNameGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testUnrecognizedTemplateNameGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD87B2E7AD57300776315 /* iOS17-testUnrecognizedVariableGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testUnrecognizedVariableGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD87C2E7AD57300776315 /* iOS17-testUnrecognizedVariableGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testUnrecognizedVariableGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD87D2E7AD57300776315 /* iOS17-testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD87E2E7AD57300776315 /* iOS17-testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD87F2E7AD57300776315 /* iOS17-testUnrecognizedVariableInTierFeaturesGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testUnrecognizedVariableInTierFeaturesGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8802E7AD57300776315 /* iOS17-testUnrecognizedVariableInTierFeaturesGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testUnrecognizedVariableInTierFeaturesGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8812E7AD57300776315 /* iOS17-testUnrecognizedVariableInTierLocalizationGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testUnrecognizedVariableInTierLocalizationGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8822E7AD57300776315 /* iOS17-testUnrecognizedVariableInTierLocalizationGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testUnrecognizedVariableInTierLocalizationGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8832E7AD57300776315 /* iOS17-testValidateMissingPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testValidateMissingPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8842E7AD57300776315 /* iOS17-testValidateMissingPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testValidateMissingPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8852E7AD57300776315 /* iOS17-testValidateMissingPaywallWithSpanishLocalization-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testValidateMissingPaywallWithSpanishLocalization-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8862E7AD57300776315 /* iOS17-testValidateMissingPaywallWithSpanishLocalization.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testValidateMissingPaywallWithSpanishLocalization.1.json"; sourceTree = "<group>"; };
+		75CAD8872E7AD57300776315 /* iOS17-testValidateMultiTierPaywallWithMissingTierLocalization-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testValidateMultiTierPaywallWithMissingTierLocalization-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8882E7AD57300776315 /* iOS17-testValidateMultiTierPaywallWithMissingTierLocalization.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testValidateMultiTierPaywallWithMissingTierLocalization.1.json"; sourceTree = "<group>"; };
+		75CAD8892E7AD57300776315 /* iOS17-testValidateMultiTierPaywallWithMissingTierNames-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testValidateMultiTierPaywallWithMissingTierNames-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD88A2E7AD57300776315 /* iOS17-testValidateMultiTierPaywallWithMissingTierNames.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testValidateMultiTierPaywallWithMissingTierNames.1.json"; sourceTree = "<group>"; };
+		75CAD88B2E7AD57300776315 /* iOS17-testValidateMultiTierPaywallWithMissingTiers-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testValidateMultiTierPaywallWithMissingTiers-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD88C2E7AD57300776315 /* iOS17-testValidateMultiTierPaywallWithMissingTiers.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testValidateMultiTierPaywallWithMissingTiers.1.json"; sourceTree = "<group>"; };
+		75CAD88D2E7AD57300776315 /* iOS17-testValidateMultiTierPaywallWithNoTierLocalization-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testValidateMultiTierPaywallWithNoTierLocalization-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD88E2E7AD57300776315 /* iOS17-testValidateMultiTierPaywallWithNoTierLocalization.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testValidateMultiTierPaywallWithNoTierLocalization.1.json"; sourceTree = "<group>"; };
+		75CAD88F2E7AD57300776315 /* iOS17-testValidateSingleTierPaywallWithMissingLocalization-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testValidateSingleTierPaywallWithMissingLocalization-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8902E7AD57300776315 /* iOS17-testValidateSingleTierPaywallWithMissingLocalization.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testValidateSingleTierPaywallWithMissingLocalization.1.json"; sourceTree = "<group>"; };
+		75CAD8912E7AD57300776315 /* iOS17-testValidateValidMultiTierPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testValidateValidMultiTierPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8922E7AD57300776315 /* iOS17-testValidateValidMultiTierPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testValidateValidMultiTierPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8932E7AD57300776315 /* iOS17-testValidateValidPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testValidateValidPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8942E7AD57300776315 /* iOS17-testValidateValidPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS17-testValidateValidPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8952E7AD57300776315 /* iOS18-testUnrecognizedIconsGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testUnrecognizedIconsGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8962E7AD57300776315 /* iOS18-testUnrecognizedIconsGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testUnrecognizedIconsGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8972E7AD57300776315 /* iOS18-testUnrecognizedIconsInTiersGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testUnrecognizedIconsInTiersGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8982E7AD57300776315 /* iOS18-testUnrecognizedIconsInTiersGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testUnrecognizedIconsInTiersGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8992E7AD57300776315 /* iOS18-testUnrecognizedTemplateNameGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testUnrecognizedTemplateNameGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD89A2E7AD57300776315 /* iOS18-testUnrecognizedTemplateNameGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testUnrecognizedTemplateNameGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD89B2E7AD57300776315 /* iOS18-testUnrecognizedVariableGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testUnrecognizedVariableGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD89C2E7AD57300776315 /* iOS18-testUnrecognizedVariableGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testUnrecognizedVariableGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD89D2E7AD57300776315 /* iOS18-testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD89E2E7AD57300776315 /* iOS18-testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD89F2E7AD57300776315 /* iOS18-testUnrecognizedVariableInTierFeaturesGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testUnrecognizedVariableInTierFeaturesGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8A02E7AD57300776315 /* iOS18-testUnrecognizedVariableInTierFeaturesGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testUnrecognizedVariableInTierFeaturesGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8A12E7AD57300776315 /* iOS18-testUnrecognizedVariableInTierLocalizationGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testUnrecognizedVariableInTierLocalizationGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8A22E7AD57300776315 /* iOS18-testUnrecognizedVariableInTierLocalizationGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testUnrecognizedVariableInTierLocalizationGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8A32E7AD57300776315 /* iOS18-testValidateMissingPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testValidateMissingPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8A42E7AD57300776315 /* iOS18-testValidateMissingPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testValidateMissingPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8A52E7AD57300776315 /* iOS18-testValidateMissingPaywallWithSpanishLocalization-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testValidateMissingPaywallWithSpanishLocalization-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8A62E7AD57300776315 /* iOS18-testValidateMissingPaywallWithSpanishLocalization.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testValidateMissingPaywallWithSpanishLocalization.1.json"; sourceTree = "<group>"; };
+		75CAD8A72E7AD57300776315 /* iOS18-testValidateMultiTierPaywallWithMissingTierLocalization-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testValidateMultiTierPaywallWithMissingTierLocalization-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8A82E7AD57300776315 /* iOS18-testValidateMultiTierPaywallWithMissingTierLocalization.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testValidateMultiTierPaywallWithMissingTierLocalization.1.json"; sourceTree = "<group>"; };
+		75CAD8A92E7AD57300776315 /* iOS18-testValidateMultiTierPaywallWithMissingTierNames-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testValidateMultiTierPaywallWithMissingTierNames-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8AA2E7AD57300776315 /* iOS18-testValidateMultiTierPaywallWithMissingTierNames.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testValidateMultiTierPaywallWithMissingTierNames.1.json"; sourceTree = "<group>"; };
+		75CAD8AB2E7AD57300776315 /* iOS18-testValidateMultiTierPaywallWithMissingTiers-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testValidateMultiTierPaywallWithMissingTiers-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8AC2E7AD57300776315 /* iOS18-testValidateMultiTierPaywallWithMissingTiers.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testValidateMultiTierPaywallWithMissingTiers.1.json"; sourceTree = "<group>"; };
+		75CAD8AD2E7AD57300776315 /* iOS18-testValidateMultiTierPaywallWithNoTierLocalization-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testValidateMultiTierPaywallWithNoTierLocalization-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8AE2E7AD57300776315 /* iOS18-testValidateMultiTierPaywallWithNoTierLocalization.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testValidateMultiTierPaywallWithNoTierLocalization.1.json"; sourceTree = "<group>"; };
+		75CAD8AF2E7AD57300776315 /* iOS18-testValidateSingleTierPaywallWithMissingLocalization-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testValidateSingleTierPaywallWithMissingLocalization-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8B02E7AD57300776315 /* iOS18-testValidateSingleTierPaywallWithMissingLocalization.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testValidateSingleTierPaywallWithMissingLocalization.1.json"; sourceTree = "<group>"; };
+		75CAD8B12E7AD57300776315 /* iOS18-testValidateValidMultiTierPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testValidateValidMultiTierPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8B22E7AD57300776315 /* iOS18-testValidateValidMultiTierPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testValidateValidMultiTierPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8B32E7AD57300776315 /* iOS18-testValidateValidPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testValidateValidPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8B42E7AD57300776315 /* iOS18-testValidateValidPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testValidateValidPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8B52E7AD57300776315 /* iOS26-testUnrecognizedIconsGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testUnrecognizedIconsGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8B62E7AD57300776315 /* iOS26-testUnrecognizedIconsGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testUnrecognizedIconsGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8B72E7AD57300776315 /* iOS26-testUnrecognizedIconsInTiersGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testUnrecognizedIconsInTiersGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8B82E7AD57300776315 /* iOS26-testUnrecognizedIconsInTiersGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testUnrecognizedIconsInTiersGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8B92E7AD57300776315 /* iOS26-testUnrecognizedTemplateNameGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testUnrecognizedTemplateNameGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8BA2E7AD57300776315 /* iOS26-testUnrecognizedTemplateNameGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testUnrecognizedTemplateNameGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8BB2E7AD57300776315 /* iOS26-testUnrecognizedVariableGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testUnrecognizedVariableGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8BC2E7AD57300776315 /* iOS26-testUnrecognizedVariableGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testUnrecognizedVariableGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8BD2E7AD57300776315 /* iOS26-testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8BE2E7AD57300776315 /* iOS26-testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8BF2E7AD57300776315 /* iOS26-testUnrecognizedVariableInTierFeaturesGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testUnrecognizedVariableInTierFeaturesGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8C02E7AD57300776315 /* iOS26-testUnrecognizedVariableInTierFeaturesGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testUnrecognizedVariableInTierFeaturesGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8C12E7AD57300776315 /* iOS26-testUnrecognizedVariableInTierLocalizationGeneratesDefaultPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testUnrecognizedVariableInTierLocalizationGeneratesDefaultPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8C22E7AD57300776315 /* iOS26-testUnrecognizedVariableInTierLocalizationGeneratesDefaultPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testUnrecognizedVariableInTierLocalizationGeneratesDefaultPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8C32E7AD57300776315 /* iOS26-testValidateMissingPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testValidateMissingPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8C42E7AD57300776315 /* iOS26-testValidateMissingPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testValidateMissingPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8C52E7AD57300776315 /* iOS26-testValidateMissingPaywallWithSpanishLocalization-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testValidateMissingPaywallWithSpanishLocalization-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8C62E7AD57300776315 /* iOS26-testValidateMissingPaywallWithSpanishLocalization.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testValidateMissingPaywallWithSpanishLocalization.1.json"; sourceTree = "<group>"; };
+		75CAD8C72E7AD57300776315 /* iOS26-testValidateMultiTierPaywallWithMissingTierLocalization-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testValidateMultiTierPaywallWithMissingTierLocalization-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8C82E7AD57300776315 /* iOS26-testValidateMultiTierPaywallWithMissingTierLocalization.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testValidateMultiTierPaywallWithMissingTierLocalization.1.json"; sourceTree = "<group>"; };
+		75CAD8C92E7AD57300776315 /* iOS26-testValidateMultiTierPaywallWithMissingTierNames-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testValidateMultiTierPaywallWithMissingTierNames-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8CA2E7AD57300776315 /* iOS26-testValidateMultiTierPaywallWithMissingTierNames.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testValidateMultiTierPaywallWithMissingTierNames.1.json"; sourceTree = "<group>"; };
+		75CAD8CB2E7AD57300776315 /* iOS26-testValidateMultiTierPaywallWithMissingTiers-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testValidateMultiTierPaywallWithMissingTiers-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8CC2E7AD57300776315 /* iOS26-testValidateMultiTierPaywallWithMissingTiers.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testValidateMultiTierPaywallWithMissingTiers.1.json"; sourceTree = "<group>"; };
+		75CAD8CD2E7AD57300776315 /* iOS26-testValidateMultiTierPaywallWithNoTierLocalization-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testValidateMultiTierPaywallWithNoTierLocalization-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8CE2E7AD57300776315 /* iOS26-testValidateMultiTierPaywallWithNoTierLocalization.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testValidateMultiTierPaywallWithNoTierLocalization.1.json"; sourceTree = "<group>"; };
+		75CAD8CF2E7AD57300776315 /* iOS26-testValidateSingleTierPaywallWithMissingLocalization-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testValidateSingleTierPaywallWithMissingLocalization-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8D02E7AD57300776315 /* iOS26-testValidateSingleTierPaywallWithMissingLocalization.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testValidateSingleTierPaywallWithMissingLocalization.1.json"; sourceTree = "<group>"; };
+		75CAD8D12E7AD57300776315 /* iOS26-testValidateValidMultiTierPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testValidateValidMultiTierPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8D22E7AD57300776315 /* iOS26-testValidateValidMultiTierPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testValidateValidMultiTierPaywall.1.json"; sourceTree = "<group>"; };
+		75CAD8D32E7AD57300776315 /* iOS26-testValidateValidPaywall-watchOS.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testValidateValidPaywall-watchOS.1.json"; sourceTree = "<group>"; };
+		75CAD8D42E7AD57300776315 /* iOS26-testValidateValidPaywall.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS26-testValidateValidPaywall.1.json"; sourceTree = "<group>"; };
 		75D9DE022D79FC0E0068554F /* testEncoding.1.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = testEncoding.1.json; sourceTree = "<group>"; };
 		75D9DE052D79FC0E0068554F /* DiagnosticsEventEncodingTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiagnosticsEventEncodingTests.swift; sourceTree = "<group>"; };
 		75FCD4CC2E37FBE100036C02 /* SimulatedStoreMockData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatedStoreMockData.swift; sourceTree = "<group>"; };
@@ -2624,7 +2783,6 @@
 		A56F9AB026990E9200AFC48F /* CustomerInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfo.swift; sourceTree = "<group>"; };
 		A5B6CDD5280F3843007629D5 /* AdServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdServices.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/System/Library/Frameworks/AdServices.framework; sourceTree = DEVELOPER_DIR; };
 		A5F0104D2717B3150090732D /* BeginRefundRequestHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeginRefundRequestHelper.swift; sourceTree = "<group>"; };
-		A95EB89F2E7AB09C00F1022B /* PaywallDataValidationTests */ = {isa = PBXFileReference; lastKnownFileType = folder; path = PaywallDataValidationTests; sourceTree = "<group>"; };
 		B302206927271BCB008F1A0D /* Decoder+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Decoder+Extensions.swift"; sourceTree = "<group>"; };
 		B302206D2728B798008F1A0D /* BackendErrorStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendErrorStrings.swift; sourceTree = "<group>"; };
 		B3022071272B3DDC008F1A0D /* DescribableError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DescribableError.swift; sourceTree = "<group>"; };
@@ -5116,6 +5274,173 @@
 			path = SimulatedStore;
 			sourceTree = "<group>";
 		};
+		75CAD8D52E7AD57300776315 /* PaywallDataValidationTests */ = {
+			isa = PBXGroup;
+			children = (
+				75CAD8352E7AD57300776315 /* iOS15-testUnrecognizedIconsGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD8362E7AD57300776315 /* iOS15-testUnrecognizedIconsGeneratesDefaultPaywall.1.json */,
+				75CAD8372E7AD57300776315 /* iOS15-testUnrecognizedIconsInTiersGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD8382E7AD57300776315 /* iOS15-testUnrecognizedIconsInTiersGeneratesDefaultPaywall.1.json */,
+				75CAD8392E7AD57300776315 /* iOS15-testUnrecognizedTemplateNameGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD83A2E7AD57300776315 /* iOS15-testUnrecognizedTemplateNameGeneratesDefaultPaywall.1.json */,
+				75CAD83B2E7AD57300776315 /* iOS15-testUnrecognizedVariableGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD83C2E7AD57300776315 /* iOS15-testUnrecognizedVariableGeneratesDefaultPaywall.1.json */,
+				75CAD83D2E7AD57300776315 /* iOS15-testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD83E2E7AD57300776315 /* iOS15-testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall.1.json */,
+				75CAD83F2E7AD57300776315 /* iOS15-testUnrecognizedVariableInTierFeaturesGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD8402E7AD57300776315 /* iOS15-testUnrecognizedVariableInTierFeaturesGeneratesDefaultPaywall.1.json */,
+				75CAD8412E7AD57300776315 /* iOS15-testUnrecognizedVariableInTierLocalizationGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD8422E7AD57300776315 /* iOS15-testUnrecognizedVariableInTierLocalizationGeneratesDefaultPaywall.1.json */,
+				75CAD8432E7AD57300776315 /* iOS15-testValidateMissingPaywall-watchOS.1.json */,
+				75CAD8442E7AD57300776315 /* iOS15-testValidateMissingPaywall.1.json */,
+				75CAD8452E7AD57300776315 /* iOS15-testValidateMissingPaywallWithSpanishLocalization-watchOS.1.json */,
+				75CAD8462E7AD57300776315 /* iOS15-testValidateMissingPaywallWithSpanishLocalization.1.json */,
+				75CAD8472E7AD57300776315 /* iOS15-testValidateMultiTierPaywallWithMissingTierLocalization-watchOS.1.json */,
+				75CAD8482E7AD57300776315 /* iOS15-testValidateMultiTierPaywallWithMissingTierLocalization.1.json */,
+				75CAD8492E7AD57300776315 /* iOS15-testValidateMultiTierPaywallWithMissingTierNames-watchOS.1.json */,
+				75CAD84A2E7AD57300776315 /* iOS15-testValidateMultiTierPaywallWithMissingTierNames.1.json */,
+				75CAD84B2E7AD57300776315 /* iOS15-testValidateMultiTierPaywallWithMissingTiers-watchOS.1.json */,
+				75CAD84C2E7AD57300776315 /* iOS15-testValidateMultiTierPaywallWithMissingTiers.1.json */,
+				75CAD84D2E7AD57300776315 /* iOS15-testValidateMultiTierPaywallWithNoTierLocalization-watchOS.1.json */,
+				75CAD84E2E7AD57300776315 /* iOS15-testValidateMultiTierPaywallWithNoTierLocalization.1.json */,
+				75CAD84F2E7AD57300776315 /* iOS15-testValidateSingleTierPaywallWithMissingLocalization-watchOS.1.json */,
+				75CAD8502E7AD57300776315 /* iOS15-testValidateSingleTierPaywallWithMissingLocalization.1.json */,
+				75CAD8512E7AD57300776315 /* iOS15-testValidateValidMultiTierPaywall-watchOS.1.json */,
+				75CAD8522E7AD57300776315 /* iOS15-testValidateValidMultiTierPaywall.1.json */,
+				75CAD8532E7AD57300776315 /* iOS15-testValidateValidPaywall-watchOS.1.json */,
+				75CAD8542E7AD57300776315 /* iOS15-testValidateValidPaywall.1.json */,
+				75CAD8552E7AD57300776315 /* iOS16-testUnrecognizedIconsGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD8562E7AD57300776315 /* iOS16-testUnrecognizedIconsGeneratesDefaultPaywall.1.json */,
+				75CAD8572E7AD57300776315 /* iOS16-testUnrecognizedIconsInTiersGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD8582E7AD57300776315 /* iOS16-testUnrecognizedIconsInTiersGeneratesDefaultPaywall.1.json */,
+				75CAD8592E7AD57300776315 /* iOS16-testUnrecognizedTemplateNameGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD85A2E7AD57300776315 /* iOS16-testUnrecognizedTemplateNameGeneratesDefaultPaywall.1.json */,
+				75CAD85B2E7AD57300776315 /* iOS16-testUnrecognizedVariableGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD85C2E7AD57300776315 /* iOS16-testUnrecognizedVariableGeneratesDefaultPaywall.1.json */,
+				75CAD85D2E7AD57300776315 /* iOS16-testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD85E2E7AD57300776315 /* iOS16-testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall.1.json */,
+				75CAD85F2E7AD57300776315 /* iOS16-testUnrecognizedVariableInTierFeaturesGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD8602E7AD57300776315 /* iOS16-testUnrecognizedVariableInTierFeaturesGeneratesDefaultPaywall.1.json */,
+				75CAD8612E7AD57300776315 /* iOS16-testUnrecognizedVariableInTierLocalizationGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD8622E7AD57300776315 /* iOS16-testUnrecognizedVariableInTierLocalizationGeneratesDefaultPaywall.1.json */,
+				75CAD8632E7AD57300776315 /* iOS16-testValidateMissingPaywall-watchOS.1.json */,
+				75CAD8642E7AD57300776315 /* iOS16-testValidateMissingPaywall.1.json */,
+				75CAD8652E7AD57300776315 /* iOS16-testValidateMissingPaywallWithSpanishLocalization-watchOS.1.json */,
+				75CAD8662E7AD57300776315 /* iOS16-testValidateMissingPaywallWithSpanishLocalization.1.json */,
+				75CAD8672E7AD57300776315 /* iOS16-testValidateMultiTierPaywallWithMissingTierLocalization-watchOS.1.json */,
+				75CAD8682E7AD57300776315 /* iOS16-testValidateMultiTierPaywallWithMissingTierLocalization.1.json */,
+				75CAD8692E7AD57300776315 /* iOS16-testValidateMultiTierPaywallWithMissingTierNames-watchOS.1.json */,
+				75CAD86A2E7AD57300776315 /* iOS16-testValidateMultiTierPaywallWithMissingTierNames.1.json */,
+				75CAD86B2E7AD57300776315 /* iOS16-testValidateMultiTierPaywallWithMissingTiers-watchOS.1.json */,
+				75CAD86C2E7AD57300776315 /* iOS16-testValidateMultiTierPaywallWithMissingTiers.1.json */,
+				75CAD86D2E7AD57300776315 /* iOS16-testValidateMultiTierPaywallWithNoTierLocalization-watchOS.1.json */,
+				75CAD86E2E7AD57300776315 /* iOS16-testValidateMultiTierPaywallWithNoTierLocalization.1.json */,
+				75CAD86F2E7AD57300776315 /* iOS16-testValidateSingleTierPaywallWithMissingLocalization-watchOS.1.json */,
+				75CAD8702E7AD57300776315 /* iOS16-testValidateSingleTierPaywallWithMissingLocalization.1.json */,
+				75CAD8712E7AD57300776315 /* iOS16-testValidateValidMultiTierPaywall-watchOS.1.json */,
+				75CAD8722E7AD57300776315 /* iOS16-testValidateValidMultiTierPaywall.1.json */,
+				75CAD8732E7AD57300776315 /* iOS16-testValidateValidPaywall-watchOS.1.json */,
+				75CAD8742E7AD57300776315 /* iOS16-testValidateValidPaywall.1.json */,
+				75CAD8752E7AD57300776315 /* iOS17-testUnrecognizedIconsGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD8762E7AD57300776315 /* iOS17-testUnrecognizedIconsGeneratesDefaultPaywall.1.json */,
+				75CAD8772E7AD57300776315 /* iOS17-testUnrecognizedIconsInTiersGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD8782E7AD57300776315 /* iOS17-testUnrecognizedIconsInTiersGeneratesDefaultPaywall.1.json */,
+				75CAD8792E7AD57300776315 /* iOS17-testUnrecognizedTemplateNameGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD87A2E7AD57300776315 /* iOS17-testUnrecognizedTemplateNameGeneratesDefaultPaywall.1.json */,
+				75CAD87B2E7AD57300776315 /* iOS17-testUnrecognizedVariableGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD87C2E7AD57300776315 /* iOS17-testUnrecognizedVariableGeneratesDefaultPaywall.1.json */,
+				75CAD87D2E7AD57300776315 /* iOS17-testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD87E2E7AD57300776315 /* iOS17-testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall.1.json */,
+				75CAD87F2E7AD57300776315 /* iOS17-testUnrecognizedVariableInTierFeaturesGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD8802E7AD57300776315 /* iOS17-testUnrecognizedVariableInTierFeaturesGeneratesDefaultPaywall.1.json */,
+				75CAD8812E7AD57300776315 /* iOS17-testUnrecognizedVariableInTierLocalizationGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD8822E7AD57300776315 /* iOS17-testUnrecognizedVariableInTierLocalizationGeneratesDefaultPaywall.1.json */,
+				75CAD8832E7AD57300776315 /* iOS17-testValidateMissingPaywall-watchOS.1.json */,
+				75CAD8842E7AD57300776315 /* iOS17-testValidateMissingPaywall.1.json */,
+				75CAD8852E7AD57300776315 /* iOS17-testValidateMissingPaywallWithSpanishLocalization-watchOS.1.json */,
+				75CAD8862E7AD57300776315 /* iOS17-testValidateMissingPaywallWithSpanishLocalization.1.json */,
+				75CAD8872E7AD57300776315 /* iOS17-testValidateMultiTierPaywallWithMissingTierLocalization-watchOS.1.json */,
+				75CAD8882E7AD57300776315 /* iOS17-testValidateMultiTierPaywallWithMissingTierLocalization.1.json */,
+				75CAD8892E7AD57300776315 /* iOS17-testValidateMultiTierPaywallWithMissingTierNames-watchOS.1.json */,
+				75CAD88A2E7AD57300776315 /* iOS17-testValidateMultiTierPaywallWithMissingTierNames.1.json */,
+				75CAD88B2E7AD57300776315 /* iOS17-testValidateMultiTierPaywallWithMissingTiers-watchOS.1.json */,
+				75CAD88C2E7AD57300776315 /* iOS17-testValidateMultiTierPaywallWithMissingTiers.1.json */,
+				75CAD88D2E7AD57300776315 /* iOS17-testValidateMultiTierPaywallWithNoTierLocalization-watchOS.1.json */,
+				75CAD88E2E7AD57300776315 /* iOS17-testValidateMultiTierPaywallWithNoTierLocalization.1.json */,
+				75CAD88F2E7AD57300776315 /* iOS17-testValidateSingleTierPaywallWithMissingLocalization-watchOS.1.json */,
+				75CAD8902E7AD57300776315 /* iOS17-testValidateSingleTierPaywallWithMissingLocalization.1.json */,
+				75CAD8912E7AD57300776315 /* iOS17-testValidateValidMultiTierPaywall-watchOS.1.json */,
+				75CAD8922E7AD57300776315 /* iOS17-testValidateValidMultiTierPaywall.1.json */,
+				75CAD8932E7AD57300776315 /* iOS17-testValidateValidPaywall-watchOS.1.json */,
+				75CAD8942E7AD57300776315 /* iOS17-testValidateValidPaywall.1.json */,
+				75CAD8952E7AD57300776315 /* iOS18-testUnrecognizedIconsGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD8962E7AD57300776315 /* iOS18-testUnrecognizedIconsGeneratesDefaultPaywall.1.json */,
+				75CAD8972E7AD57300776315 /* iOS18-testUnrecognizedIconsInTiersGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD8982E7AD57300776315 /* iOS18-testUnrecognizedIconsInTiersGeneratesDefaultPaywall.1.json */,
+				75CAD8992E7AD57300776315 /* iOS18-testUnrecognizedTemplateNameGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD89A2E7AD57300776315 /* iOS18-testUnrecognizedTemplateNameGeneratesDefaultPaywall.1.json */,
+				75CAD89B2E7AD57300776315 /* iOS18-testUnrecognizedVariableGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD89C2E7AD57300776315 /* iOS18-testUnrecognizedVariableGeneratesDefaultPaywall.1.json */,
+				75CAD89D2E7AD57300776315 /* iOS18-testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD89E2E7AD57300776315 /* iOS18-testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall.1.json */,
+				75CAD89F2E7AD57300776315 /* iOS18-testUnrecognizedVariableInTierFeaturesGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD8A02E7AD57300776315 /* iOS18-testUnrecognizedVariableInTierFeaturesGeneratesDefaultPaywall.1.json */,
+				75CAD8A12E7AD57300776315 /* iOS18-testUnrecognizedVariableInTierLocalizationGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD8A22E7AD57300776315 /* iOS18-testUnrecognizedVariableInTierLocalizationGeneratesDefaultPaywall.1.json */,
+				75CAD8A32E7AD57300776315 /* iOS18-testValidateMissingPaywall-watchOS.1.json */,
+				75CAD8A42E7AD57300776315 /* iOS18-testValidateMissingPaywall.1.json */,
+				75CAD8A52E7AD57300776315 /* iOS18-testValidateMissingPaywallWithSpanishLocalization-watchOS.1.json */,
+				75CAD8A62E7AD57300776315 /* iOS18-testValidateMissingPaywallWithSpanishLocalization.1.json */,
+				75CAD8A72E7AD57300776315 /* iOS18-testValidateMultiTierPaywallWithMissingTierLocalization-watchOS.1.json */,
+				75CAD8A82E7AD57300776315 /* iOS18-testValidateMultiTierPaywallWithMissingTierLocalization.1.json */,
+				75CAD8A92E7AD57300776315 /* iOS18-testValidateMultiTierPaywallWithMissingTierNames-watchOS.1.json */,
+				75CAD8AA2E7AD57300776315 /* iOS18-testValidateMultiTierPaywallWithMissingTierNames.1.json */,
+				75CAD8AB2E7AD57300776315 /* iOS18-testValidateMultiTierPaywallWithMissingTiers-watchOS.1.json */,
+				75CAD8AC2E7AD57300776315 /* iOS18-testValidateMultiTierPaywallWithMissingTiers.1.json */,
+				75CAD8AD2E7AD57300776315 /* iOS18-testValidateMultiTierPaywallWithNoTierLocalization-watchOS.1.json */,
+				75CAD8AE2E7AD57300776315 /* iOS18-testValidateMultiTierPaywallWithNoTierLocalization.1.json */,
+				75CAD8AF2E7AD57300776315 /* iOS18-testValidateSingleTierPaywallWithMissingLocalization-watchOS.1.json */,
+				75CAD8B02E7AD57300776315 /* iOS18-testValidateSingleTierPaywallWithMissingLocalization.1.json */,
+				75CAD8B12E7AD57300776315 /* iOS18-testValidateValidMultiTierPaywall-watchOS.1.json */,
+				75CAD8B22E7AD57300776315 /* iOS18-testValidateValidMultiTierPaywall.1.json */,
+				75CAD8B32E7AD57300776315 /* iOS18-testValidateValidPaywall-watchOS.1.json */,
+				75CAD8B42E7AD57300776315 /* iOS18-testValidateValidPaywall.1.json */,
+				75CAD8B52E7AD57300776315 /* iOS26-testUnrecognizedIconsGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD8B62E7AD57300776315 /* iOS26-testUnrecognizedIconsGeneratesDefaultPaywall.1.json */,
+				75CAD8B72E7AD57300776315 /* iOS26-testUnrecognizedIconsInTiersGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD8B82E7AD57300776315 /* iOS26-testUnrecognizedIconsInTiersGeneratesDefaultPaywall.1.json */,
+				75CAD8B92E7AD57300776315 /* iOS26-testUnrecognizedTemplateNameGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD8BA2E7AD57300776315 /* iOS26-testUnrecognizedTemplateNameGeneratesDefaultPaywall.1.json */,
+				75CAD8BB2E7AD57300776315 /* iOS26-testUnrecognizedVariableGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD8BC2E7AD57300776315 /* iOS26-testUnrecognizedVariableGeneratesDefaultPaywall.1.json */,
+				75CAD8BD2E7AD57300776315 /* iOS26-testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD8BE2E7AD57300776315 /* iOS26-testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall.1.json */,
+				75CAD8BF2E7AD57300776315 /* iOS26-testUnrecognizedVariableInTierFeaturesGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD8C02E7AD57300776315 /* iOS26-testUnrecognizedVariableInTierFeaturesGeneratesDefaultPaywall.1.json */,
+				75CAD8C12E7AD57300776315 /* iOS26-testUnrecognizedVariableInTierLocalizationGeneratesDefaultPaywall-watchOS.1.json */,
+				75CAD8C22E7AD57300776315 /* iOS26-testUnrecognizedVariableInTierLocalizationGeneratesDefaultPaywall.1.json */,
+				75CAD8C32E7AD57300776315 /* iOS26-testValidateMissingPaywall-watchOS.1.json */,
+				75CAD8C42E7AD57300776315 /* iOS26-testValidateMissingPaywall.1.json */,
+				75CAD8C52E7AD57300776315 /* iOS26-testValidateMissingPaywallWithSpanishLocalization-watchOS.1.json */,
+				75CAD8C62E7AD57300776315 /* iOS26-testValidateMissingPaywallWithSpanishLocalization.1.json */,
+				75CAD8C72E7AD57300776315 /* iOS26-testValidateMultiTierPaywallWithMissingTierLocalization-watchOS.1.json */,
+				75CAD8C82E7AD57300776315 /* iOS26-testValidateMultiTierPaywallWithMissingTierLocalization.1.json */,
+				75CAD8C92E7AD57300776315 /* iOS26-testValidateMultiTierPaywallWithMissingTierNames-watchOS.1.json */,
+				75CAD8CA2E7AD57300776315 /* iOS26-testValidateMultiTierPaywallWithMissingTierNames.1.json */,
+				75CAD8CB2E7AD57300776315 /* iOS26-testValidateMultiTierPaywallWithMissingTiers-watchOS.1.json */,
+				75CAD8CC2E7AD57300776315 /* iOS26-testValidateMultiTierPaywallWithMissingTiers.1.json */,
+				75CAD8CD2E7AD57300776315 /* iOS26-testValidateMultiTierPaywallWithNoTierLocalization-watchOS.1.json */,
+				75CAD8CE2E7AD57300776315 /* iOS26-testValidateMultiTierPaywallWithNoTierLocalization.1.json */,
+				75CAD8CF2E7AD57300776315 /* iOS26-testValidateSingleTierPaywallWithMissingLocalization-watchOS.1.json */,
+				75CAD8D02E7AD57300776315 /* iOS26-testValidateSingleTierPaywallWithMissingLocalization.1.json */,
+				75CAD8D12E7AD57300776315 /* iOS26-testValidateValidMultiTierPaywall-watchOS.1.json */,
+				75CAD8D22E7AD57300776315 /* iOS26-testValidateValidMultiTierPaywall.1.json */,
+				75CAD8D32E7AD57300776315 /* iOS26-testValidateValidPaywall-watchOS.1.json */,
+				75CAD8D42E7AD57300776315 /* iOS26-testValidateValidPaywall.1.json */,
+			);
+			path = PaywallDataValidationTests;
+			sourceTree = "<group>";
+		};
 		75D9DE032D79FC0E0068554F /* DiagnosticsEventEncodingTests */ = {
 			isa = PBXGroup;
 			children = (
@@ -5422,7 +5747,7 @@
 		887A61272C1D168B00E1A461 /* __Snapshots__ */ = {
 			isa = PBXGroup;
 			children = (
-				A95EB89F2E7AB09C00F1022B /* PaywallDataValidationTests */,
+				75CAD8D52E7AD57300776315 /* PaywallDataValidationTests */,
 			);
 			path = __Snapshots__;
 			sourceTree = "<group>";
@@ -6468,7 +6793,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A95EB8A12E7AB13A00F1022B /* PaywallDataValidationTests in Resources */,
 				8337DD702E0A7E42000798BF /* paywall-preview-resources in Resources */,
 				8337DD6F2E0A7D79000798BF /* background.heic in Resources */,
 				8337DD6E2E0A7D69000798BF /* header.heic in Resources */,
