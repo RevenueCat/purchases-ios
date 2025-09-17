@@ -526,7 +526,7 @@ jobs:
   spm-release-build-xcode-15:
     executor:
       name: macos-executor
-      xcode_version: "15.2.0"
+      xcode_version: "15.4.0"
 
     steps:
       - checkout
@@ -667,7 +667,7 @@ jobs:
   run-revenuecat-ui-ios-17:
     executor:
       name: macos-executor
-      xcode_version: "15.2.0"
+      xcode_version: "15.4.0"
 
     steps:
       - checkout
@@ -810,7 +810,7 @@ jobs:
   run-test-ios-17:
     executor:
       name: macos-executor
-      xcode_version: "15.2.0"
+      xcode_version: "15.4.0"
 
     steps:
       - checkout
@@ -871,8 +871,7 @@ jobs:
   run-test-ios-15:
     executor:
       name: macos-executor
-      # Needs to be 15.2.0 because if not running on Swift 5.9, the tests fail
-      xcode_version: "15.2.0"
+      xcode_version: "15.4.0"
 
     steps:
       - checkout
