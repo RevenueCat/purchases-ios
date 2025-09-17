@@ -176,6 +176,7 @@ extension View {
             controller.endAppearanceTransition()
             window.rootViewController = nil
             window.resignKey()
+            RunLoop.main.run(until: Date().addingTimeInterval(0.1))
         }
     }
 
