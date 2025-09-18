@@ -283,7 +283,7 @@ private extension PaywallDataValidationTests {
     static func snapshot(
         _ paywall: PaywallData,
         file: StaticString = #file,
-        testName: String = #function,
+        testName: String = CurrentTestCaseTracker.osVersionAndTestName,
         line: UInt = #line
     ) {
         #if os(watchOS)
