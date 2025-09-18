@@ -20,7 +20,7 @@ import SwiftUI
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-// swiftlint:disable file_length type_body_length
+// swiftlint:disable file_length
 struct SubscriptionDetailView: View {
 
     @Environment(\.appearance)
@@ -85,7 +85,6 @@ struct SubscriptionDetailView: View {
 
     var body: some View {
         content
-            .modifier(CustomerCenterActionViewModifier(actionWrapper: viewModel.actionWrapper))
         // This is needed because `CustomerCenterViewModel` is isolated to @MainActor
         // A bigger refactor is needed, but its already throwing a warning.
             .modifier(self.customerInfoViewModel.purchasesProvider
@@ -109,17 +108,7 @@ struct SubscriptionDetailView: View {
                     productIDs: viewModel.changePlanProductIDs
                 )
             )
-            .onCustomerCenterPromotionalOfferSuccess {
-                viewModel.refreshPurchase()
-            }
-            .onCustomerCenterShowingManageSubscriptions {
-                Task { @MainActor in
-                    customerInfoViewModel.manageSubscriptionsSheet = true
-                }
-            }
-            .onCustomerCenterChangePlansSelected({ _ in
-                customerInfoViewModel.changePlansSheet = true
-            })
+            .onAppear { viewModel.didAppear() }
             .onChangeOf(customerInfoViewModel.manageSubscriptionsSheet) { manageSubscriptionsSheet in
                 if !manageSubscriptionsSheet {
                     viewModel.refreshPurchase()

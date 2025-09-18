@@ -51,6 +51,7 @@ public class CustomerCenterViewController: UIHostingController<CustomerCenterVie
         super.init(rootView: view)
     }
 
+    // swiftlint:disable cyclomatic_complexity function_body_length
     /// Create a view controller to handle common customer support tasks with individual action handlers
     /// - Parameters:
     ///   - restoreStarted: Handler called when a restore operation starts.
@@ -67,50 +68,78 @@ public class CustomerCenterViewController: UIHostingController<CustomerCenterVie
         showingManageSubscriptions: CustomerCenterView.ShowingManageSubscriptionsHandler? = nil,
         refundRequestStarted: CustomerCenterView.RefundRequestStartedHandler? = nil,
         refundRequestCompleted: CustomerCenterView.RefundRequestCompletedHandler? = nil,
-        feedbackSurveyCompleted: CustomerCenterView.FeedbackSurveyCompletedHandler? = nil
+        feedbackSurveyCompleted: CustomerCenterView.FeedbackSurveyCompletedHandler? = nil,
+        managementOptionSelected: CustomerCenterView.ManagementOptionSelectedHandler? = nil,
+        changePlansSelected: CustomerCenterView.ChangePlansHandler? = nil,
+        onCustomAction: CustomerCenterView.CustomActionHandler? = nil,
+        promotionalOfferSuccess: CustomerCenterView.PromotionalOfferSuccessHandler? = nil
     ) {
         let actionWrapper = CustomerCenterActionWrapper()
 
         // Set up Combine subscriptions to emit handler calls
         if let restoreStarted {
-            actionWrapper.restoreStarted
-                .sink { _ in restoreStarted() }
+            actionWrapper.restoreStartedPublisher
+                .sink { restoreStarted() }
                 .store(in: &cancellables)
         }
 
         if let restoreCompleted {
-            actionWrapper.restoreCompleted
+            actionWrapper.restoreCompletedPublisher
                 .sink { restoreCompleted($0) }
                 .store(in: &cancellables)
         }
 
         if let restoreFailed {
-            actionWrapper.restoreFailed
+            actionWrapper.restoreFailedPublisher
                 .sink { restoreFailed($0) }
                 .store(in: &cancellables)
         }
 
         if let showingManageSubscriptions {
-            actionWrapper.showingManageSubscriptions
-                .sink { _ in showingManageSubscriptions() }
+            actionWrapper.showingManageSubscriptionsPublisher
+                .sink { showingManageSubscriptions() }
                 .store(in: &cancellables)
         }
 
         if let refundRequestStarted {
-            actionWrapper.refundRequestStarted
+            actionWrapper.refundRequestStartedPublisher
                 .sink { refundRequestStarted($0) }
                 .store(in: &cancellables)
         }
 
         if let refundRequestCompleted {
-            actionWrapper.refundRequestCompleted
+            actionWrapper.refundRequestCompletedPublisher
                 .sink { refundRequestCompleted($0.0, $0.1) }
                 .store(in: &cancellables)
         }
 
         if let feedbackSurveyCompleted {
-            actionWrapper.feedbackSurveyCompleted
+            actionWrapper.feedbackSurveyCompletedPublisher
                 .sink { feedbackSurveyCompleted($0) }
+                .store(in: &cancellables)
+        }
+
+        if let managementOptionSelected {
+            actionWrapper.managementOptionSelectedPublisher
+                .sink { managementOptionSelected($0) }
+                .store(in: &cancellables)
+        }
+
+        if let changePlansSelected {
+            actionWrapper.showingChangePlansPublisher
+                .sink { if let id = $0 { changePlansSelected(id) } }
+                .store(in: &cancellables)
+        }
+
+        if let onCustomAction {
+            actionWrapper.customActionSelectedPublisher
+                .sink { onCustomAction($0.0, $0.1) }
+                .store(in: &cancellables)
+        }
+
+        if let promotionalOfferSuccess {
+            actionWrapper.promotionalOfferSuccessPublisher
+                .sink { promotionalOfferSuccess() }
                 .store(in: &cancellables)
         }
 
@@ -122,6 +151,7 @@ public class CustomerCenterViewController: UIHostingController<CustomerCenterVie
 
         super.init(rootView: view)
     }
+    // swiftlint:enable cyclomatic_complexity function_body_length
 
     @available(*, unavailable, message: "Use init with handlers instead.")
     required dynamic init?(coder aDecoder: NSCoder) {

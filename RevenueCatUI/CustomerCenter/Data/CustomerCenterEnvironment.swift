@@ -92,3 +92,97 @@ extension EnvironmentValues {
     }
 
 }
+
+#if os(iOS)
+
+// MARK: - Customer Center Actions Environment
+
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+/// Handlers for external host-app callbacks from the Customer Center UI.
+///
+/// This type is intended for external use only (host app callbacks). Internal UI logic
+/// should subscribe to `CustomerCenterActionWrapper` publishers in ViewModels instead of
+/// registering environment handlers to avoid overriding host handlers.
+final class CustomerCenterExternalActions: @unchecked Sendable {
+    // Composite closures invoked by the SDK
+    var restoreStarted: @MainActor @Sendable () -> Void = {}
+    var restoreFailed: @MainActor @Sendable (Error) -> Void = { _ in }
+    var restoreCompleted: @MainActor @Sendable (CustomerInfo) -> Void = { _ in }
+    var showingManageSubscriptions: @MainActor @Sendable () -> Void = {}
+    var refundRequestStarted: @MainActor @Sendable (String) -> Void = { _ in }
+    var refundRequestCompleted: @MainActor @Sendable (String, RefundRequestStatus) -> Void = { _, _ in }
+    var feedbackSurveyCompleted: @MainActor @Sendable (String) -> Void = { _ in }
+    var managementOptionSelected: @MainActor @Sendable (CustomerCenterActionable) -> Void = { _ in }
+    var promotionalOfferSuccess: @MainActor @Sendable () -> Void = {}
+    var changePlansSelected: @MainActor @Sendable (String) -> Void = { _ in }
+    var customActionSelected: @MainActor @Sendable (String, String?) -> Void = { _, _ in }
+
+    // Simple setters (last-wins semantics)
+    func addRestoreStarted(_ handler: @escaping @MainActor @Sendable () -> Void) {
+        self.restoreStarted = handler
+    }
+
+    func addRestoreFailed(_ handler: @escaping @MainActor @Sendable (Error) -> Void) {
+        self.restoreFailed = handler
+    }
+
+    func setRestoreCompleted(_ handler: @escaping @MainActor @Sendable (CustomerInfo) -> Void) {
+        self.restoreCompleted = handler
+    }
+
+    func addShowingManageSubscriptions(_ handler: @escaping @MainActor @Sendable () -> Void) {
+        self.showingManageSubscriptions = handler
+    }
+
+    func addRefundRequestStarted(_ handler: @escaping @MainActor @Sendable (String) -> Void) {
+        self.refundRequestStarted = handler
+    }
+
+    func addRefundRequestCompleted(_ handler: @escaping @MainActor @Sendable (String, RefundRequestStatus) -> Void) {
+        self.refundRequestCompleted = handler
+    }
+
+    func addFeedbackSurveyCompleted(_ handler: @escaping @MainActor @Sendable (String) -> Void) {
+        self.feedbackSurveyCompleted = handler
+    }
+
+    func addManagementOptionSelected(_ handler: @escaping @MainActor @Sendable (CustomerCenterActionable) -> Void) {
+        self.managementOptionSelected = handler
+    }
+
+    func addPromotionalOfferSuccess(_ handler: @escaping @MainActor @Sendable () -> Void) {
+        self.promotionalOfferSuccess = handler
+    }
+
+    func addChangePlansSelected(_ handler: @escaping @MainActor @Sendable (String) -> Void) {
+        self.changePlansSelected = handler
+    }
+
+    func addCustomActionSelected(_ handler: @escaping @MainActor @Sendable (String, String?) -> Void) {
+        self.customActionSelected = handler
+    }
+}
+
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+private enum CustomerCenterExternalActionsKey: EnvironmentKey {
+    static let defaultValue = CustomerCenterExternalActions()
+}
+
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension EnvironmentValues {
+    var customerCenterExternalActions: CustomerCenterExternalActions {
+        get { self[CustomerCenterExternalActionsKey.self] }
+        set { self[CustomerCenterExternalActionsKey.self] = newValue }
+    }
+}
+
+#endif

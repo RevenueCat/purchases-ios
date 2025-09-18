@@ -130,6 +130,40 @@ final class CustomerCenterActionWrapper {
     }
 }
 
+#if os(iOS)
+
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension CustomerCenterActionWrapper {
+
+    // Expose publishers for consumers who prefer to manage subscriptions externally
+    var restoreStartedPublisher: AnyPublisher<Void, Never> { restoreStarted.eraseToAnyPublisher() }
+    var restoreFailedPublisher: AnyPublisher<NSError, Never> { restoreFailed.eraseToAnyPublisher() }
+    var restoreCompletedPublisher: AnyPublisher<CustomerInfo, Never> { restoreCompleted.eraseToAnyPublisher() }
+    var showingManageSubscriptionsPublisher: AnyPublisher<Void, Never> {
+        showingManageSubscriptions.eraseToAnyPublisher()
+    }
+    var showingChangePlansPublisher: AnyPublisher<String?, Never> { showingChangePlans.eraseToAnyPublisher() }
+    var refundRequestStartedPublisher: AnyPublisher<String, Never> { refundRequestStarted.eraseToAnyPublisher() }
+    var refundRequestCompletedPublisher: AnyPublisher<(String, RefundRequestStatus), Never> {
+        refundRequestCompleted.eraseToAnyPublisher()
+    }
+    var feedbackSurveyCompletedPublisher: AnyPublisher<String, Never> { feedbackSurveyCompleted.eraseToAnyPublisher() }
+    var managementOptionSelectedPublisher: AnyPublisher<CustomerCenterActionable, Never> {
+        managementOptionSelected.eraseToAnyPublisher()
+    }
+    var customActionSelectedPublisher: AnyPublisher<(String, String?), Never> {
+        customActionSelected.eraseToAnyPublisher()
+    }
+    var promotionalOfferSuccessPublisher: AnyPublisher<Void, Never> {
+        promotionalOfferSuccess.eraseToAnyPublisher()
+    }
+}
+
+#endif
+
 // MARK: - Help Path to Management Option Conversion
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)

@@ -17,15 +17,48 @@ struct TestViewPlusPresentCustomerCenter: View {
 
     var body: some View {
         EmptyView()
+            // Basic presenters
             .presentCustomerCenter(isPresented: $isPresented)
             .presentCustomerCenter(isPresented: $isPresented, onDismiss: {})
             .presentCustomerCenter(
                 isPresented: $isPresented,
-                customerCenterActionHandler: { _ in
-
-                },
+                customerCenterActionHandler: { _ in },
                 onDismiss: {}
             )
+            // Full presenters with individual handlers
+            .presentCustomerCenter(
+                isPresented: $isPresented,
+                presentationMode: .sheet,
+                restoreStarted: {},
+                restoreCompleted: { _ in },
+                restoreFailed: { _ in },
+                showingManageSubscriptions: {},
+                refundRequestStarted: { _ in },
+                refundRequestCompleted: { _, _ in },
+                feedbackSurveyCompleted: { _ in },
+                managementOptionSelected: { _ in },
+                onCustomAction: { _, _ in },
+                changePlansSelected: { _ in },
+                onDismiss: {}
+            )
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+struct TestCustomerCenterViewActionsAPI: View {
+    var body: some View {
+        CustomerCenterView()
+            .onCustomerCenterRestoreStarted({})
+            .onCustomerCenterRestoreFailed({ _ in })
+            .onCustomerCenterRestoreCompleted({ _ in })
+            .onCustomerCenterShowingManageSubscriptions({})
+            .onCustomerCenterRefundRequestStarted({ _ in })
+            .onCustomerCenterRefundRequestCompleted({ _, _ in })
+            .onCustomerCenterFeedbackSurveyCompleted({ _ in })
+            .onCustomerCenterManagementOptionSelected({ _ in })
+            .onCustomerCenterPromotionalOfferSuccess({})
+            .onCustomerCenterChangePlansSelected({ _ in })
+            .onCustomerCenterCustomActionSelected({ _, _ in })
     }
 }
 #endif
