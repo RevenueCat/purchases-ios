@@ -20,9 +20,15 @@ import XCTest
 
 class OtherIntegrationTests: BaseBackendIntegrationTests {
 
+    private var testSession: SKTestSession!
+
     override func setUp() async throws {
         // Some tests need to introspect logs during initialization.
         super.initializeLogger()
+
+        if self.testSession == nil {
+            try await self.configureTestSession()
+        }
 
         try await super.setUp()
     }
@@ -31,6 +37,27 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         HTTPStubs.removeAllStubs()
 
         try await super.tearDown()
+    }
+
+    func configureTestSession() async throws {
+        assert(self.testSession == nil, "Attempted to configure session multiple times")
+
+        self.testSession = try SKTestSession(configurationFileNamed: Constants.storeKitConfigFileName)
+        self.testSession.resetToDefaultState()
+        self.testSession.disableDialogs = true
+        self.testSession.clearTransactions()
+        if #available(iOS 15.2, *) {
+            self.testSession.timeRate = .monthlyRenewalEveryThirtySeconds
+        } else {
+            self.testSession.timeRate = .oneSecondIsOneDay
+        }
+
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            // Despite calling `SKTestSession.clearTransactions` tests sometimes
+            // begin with leftover transactions. This ensures that we remove them
+            // to always start with a clean state.
+            await self.deleteAllTransactions(session: self.testSession)
+        }
     }
 
     func testGetCustomerInfo() async throws {
