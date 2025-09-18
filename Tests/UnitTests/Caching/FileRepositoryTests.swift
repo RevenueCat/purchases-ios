@@ -11,6 +11,7 @@
 //
 //  Created by Jacob Zivan Rakidzich on 8/13/25.
 
+import Nimble
 @_spi(Internal) @testable import RevenueCat
 import XCTest
 
@@ -41,7 +42,7 @@ class FileRepositoryTests: TestCase {
 
         await yield()
 
-        XCTAssertEqual(sut.networkService.invocations.count, 1)
+        await expect(sut.networkService.invocations.count).toEventually(equal(1))
     }
 
     func test_whenCacheURLCannotBeAssembled_returnsNil() async throws {
