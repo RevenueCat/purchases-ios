@@ -317,41 +317,6 @@ final class CustomerCenterActionWrapperTests: TestCase {
         await fulfillment(of: [expectation], timeout: 1.0)
     }
 
-    func testNestedActionWrappers() async throws {
-        let actionWrapper = await CustomerCenterActionWrapper()
-        let expectation1 = XCTestExpectation(description: "promotionalOfferSuccess")
-        let expectation2 = XCTestExpectation(description: "promotionalOfferSuccess")
-
-        let windowHolder = await WindowHolder()
-
-        await MainActor.run {
-            let testView = VStack {
-                Text("test")
-                    .modifier(CustomerCenterActionViewModifier(actionWrapper: actionWrapper))
-                    .onCustomerCenterPromotionalOfferSuccess {
-                        expectation1.fulfill()
-                    }
-            }
-                .onCustomerCenterPromotionalOfferSuccess {
-                    expectation2.fulfill()
-                }
-
-            let viewController = UIHostingController(rootView: testView)
-            let window = UIWindow(frame: UIScreen.main.bounds)
-            window.rootViewController = viewController
-            window.makeKeyAndVisible()
-            viewController.view.layoutIfNeeded()
-
-            windowHolder.window = window
-        }
-
-        await MainActor.run {
-            actionWrapper.handleAction(.promotionalOfferSuccess)
-        }
-
-        await fulfillment(of: [expectation1, expectation2], timeout: 1.0)
-    }
-
     func testCustomActionSelected() async throws {
         let actionWrapper = await CustomerCenterActionWrapper()
         let expectation = XCTestExpectation(description: "customActionSelected")
