@@ -80,6 +80,12 @@ enum Strings {
     case promo_offer_not_eligible_for_product(String, String)
     case could_not_find_target_product(String, String)
     case could_not_find_discount_for_target_product(String, String)
+
+    // UIConfigProvider
+    case localizationNotFound(identifier: String)
+    case fontMappingNotFound(name: String)
+    case customFontFailedToLoad(fontName: String)
+    case googleFontsNotSupported
 }
 
 extension Strings: CustomStringConvertible {
@@ -262,6 +268,15 @@ extension Strings: CustomStringConvertible {
 
         case .no_web_checkout_url_found:
             return "No web checkout url found."
+
+        case .localizationNotFound(let identifier):
+            return "Could not find localizations for '\(identifier)'"
+        case .fontMappingNotFound(let name):
+            return "Mapping for '\(name)' could not be found. Falling back to system font."
+        case .customFontFailedToLoad(let fontName):
+            return "Custom font '\(fontName)' could not be loaded. Falling back to system font."
+        case .googleFontsNotSupported:
+            return "Google Fonts are not supported on this platform"
         }
     }
 
