@@ -16,5 +16,20 @@ func checkCustomerCenterViewControllerAPI(
 ) {
     let _ = CustomerCenterViewController()
     let _ = CustomerCenterViewController(customerCenterActionHandler: customerCenterActionHandler)
+
+    // Full initializer with individual handlers
+    let _ = CustomerCenterViewController(
+        restoreStarted: {},
+        restoreCompleted: { _ in },
+        restoreFailed: { _ in },
+        showingManageSubscriptions: {},
+        refundRequestStarted: { _ in },
+        refundRequestCompleted: { _, _ in },
+        feedbackSurveyCompleted: { _ in },
+        managementOptionSelected: { _ in },
+        changePlansSelected: { _ in },
+        onCustomAction: { _, _ in },
+        promotionalOfferSuccess: {}
+    )
 }
 #endif

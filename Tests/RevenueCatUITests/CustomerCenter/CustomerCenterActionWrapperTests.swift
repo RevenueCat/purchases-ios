@@ -258,23 +258,17 @@ final class CustomerCenterActionWrapperTests: TestCase {
         await fulfillment(of: [expectation], timeout: 1.0)
     }
 
-    func testNestedActionWrappers() async throws {
+    func testChangePlansSelected() async throws {
         let actionWrapper = await CustomerCenterActionWrapper()
-        let expectation1 = XCTestExpectation(description: "promotionalOfferSuccess")
-        let expectation2 = XCTestExpectation(description: "promotionalOfferSuccess")
+        let expectation = XCTestExpectation(description: "changePlansSelected")
 
         let windowHolder = await WindowHolder()
 
         await MainActor.run {
-            let testView = VStack {
-                Text("test")
-                    .modifier(CustomerCenterActionViewModifier(actionWrapper: actionWrapper))
-                    .onCustomerCenterPromotionalOfferSuccess {
-                        expectation1.fulfill()
-                    }
-            }
-                .onCustomerCenterPromotionalOfferSuccess {
-                    expectation2.fulfill()
+            let testView = Text("test")
+                .modifier(CustomerCenterActionViewModifier(actionWrapper: actionWrapper))
+                .onCustomerCenterChangePlansSelected { _ in
+                    expectation.fulfill()
                 }
 
             let viewController = UIHostingController(rootView: testView)
@@ -287,10 +281,40 @@ final class CustomerCenterActionWrapperTests: TestCase {
         }
 
         await MainActor.run {
-            actionWrapper.handleAction(.promotionalOfferSuccess)
+            actionWrapper.handleAction(.showingChangePlans("group_1"))
         }
 
-        await fulfillment(of: [expectation1, expectation2], timeout: 1.0)
+        await fulfillment(of: [expectation], timeout: 1.0)
+    }
+
+    func testManagementOptionSelected() async throws {
+        let actionWrapper = await CustomerCenterActionWrapper()
+        let expectation = XCTestExpectation(description: "managementOptionSelected")
+
+        let windowHolder = await WindowHolder()
+
+        await MainActor.run {
+            let testView = Text("test")
+                .modifier(CustomerCenterActionViewModifier(actionWrapper: actionWrapper))
+                .onCustomerCenterManagementOptionSelected { _ in
+                    expectation.fulfill()
+                }
+
+            let viewController = UIHostingController(rootView: testView)
+            let window = UIWindow(frame: UIScreen.main.bounds)
+            window.rootViewController = viewController
+            window.makeKeyAndVisible()
+            viewController.view.layoutIfNeeded()
+
+            windowHolder.window = window
+        }
+
+        // Send a generic management option (e.g., Cancel)
+        await MainActor.run {
+            actionWrapper.handleAction(.buttonTapped(action: CustomerCenterManagementOption.Cancel()))
+        }
+
+        await fulfillment(of: [expectation], timeout: 1.0)
     }
 
     func testCustomActionSelected() async throws {
