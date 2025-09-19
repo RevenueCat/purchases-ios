@@ -40,7 +40,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
     }
 
     func configureTestSession() async throws {
-        assert(self.testSession == nil, "Attempted to configure session multiple times")
+        assert(self.testSession == nil, "SKTestSession already configured")
 
         self.testSession = try SKTestSession(configurationFileNamed: Constants.storeKitConfigFileName)
         self.testSession.resetToDefaultState()
