@@ -1,3 +1,8 @@
+## 5.39.2
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Fix issue where low res images load too often (#5577) via Josh Holtz (@joshdholtz)
+
 ## 5.39.1
 ## RevenueCatUI SDK
 ### Customer Center
