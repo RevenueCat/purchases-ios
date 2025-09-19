@@ -64,8 +64,6 @@ class VideoPlayerViewNSView: NSView {
             avPlayer.play()
         }
 
-        if !loopVideo {
-        }
         self.wantsLayer = true
     }
 
