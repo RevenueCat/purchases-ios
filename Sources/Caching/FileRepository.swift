@@ -13,8 +13,11 @@
 
 import Foundation
 
-/// A file cache
+/// A file repository
 @_spi(Internal) public final class FileRepository: FileRepositoryType, @unchecked Sendable {
+    /// A shared file repository
+    @_spi(Internal) public static let shared = FileRepository()
+
     private static let defaultBasePath = "RevenueCat"
 
     let networkService: SimpleNetworkServiceType

@@ -58,21 +58,23 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     private let introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType
     private let imageFetcher: PaywallImageFetcherType
     private let fontsManager: PaywallFontManagerType
+    private let fileRepository: FileRepositoryType
 
     private var hasLoadedEligibility = false
     private var hasLoadedImages = false
     private var hasLoadedVideos = false
     private var ongoingFontDownloads: [URL: Task<Void, Never>] = [:]
-    private let fileRepository: FileRepositoryType = FileRepository()
 
     init(
         introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType,
         imageFetcher: PaywallImageFetcherType = DefaultPaywallImageFetcher(),
-        fontsManager: PaywallFontManagerType = DefaultPaywallFontsManager(session: PaywallCacheWarming.downloadSession)
+        fontsManager: PaywallFontManagerType = DefaultPaywallFontsManager(session: PaywallCacheWarming.downloadSession),
+        fileRepository: FileRepositoryType = FileRepository.shared
     ) {
         self.introEligibiltyChecker = introEligibiltyChecker
         self.imageFetcher = imageFetcher
         self.fontsManager = fontsManager
+        self.fileRepository = fileRepository
     }
 
     func warmUpEligibilityCache(offerings: Offerings) {
@@ -95,7 +97,6 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
         Logger.verbose(Strings.paywalls.warming_up_images(imageURLs: imageURLs))
 
-        let fileRepository = FileRepository()
         for url in imageURLs {
             // Preferred method - load with FileRepository
             _ = try? await fileRepository.generateOrGetCachedFileURL(for: url)

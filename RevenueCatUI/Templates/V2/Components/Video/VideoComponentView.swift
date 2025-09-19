@@ -58,21 +58,51 @@ struct VideoComponentView: View {
                 Color.clear
                     .onAppear {
                         self.imageSource = viewModel.imageSource
-                        let fileRepository = FileRepository()
+                        let fileRepository = FileRepository.shared
+
+                        let resumeDownloadOfFullResolutionVideo: () -> Void = {
+                            Task(priority: .userInitiated) {
+                                do {
+                                    // If the low res and normal resolution files were not yet found on disk
+                                    // then we attempt to finish the download by calling the following method.
+                                    // this method will share the async task that the cacheprewarming started
+                                    // if it didn't error out, expediting the download time and reducing the memory
+                                    // footprint of paywalls
+                                    let url = try await fileRepository.generateOrGetCachedFileURL(for: style.url)
+                                    await MainActor.run {
+                                        self.cachedURL = url
+                                        self.imageSource = nil
+                                    }
+                                } catch {
+                                    await MainActor.run {
+                                        self.cachedURL = style.url
+                                        self.imageSource = nil
+                                    }
+                                }
+                            }
+                        }
 
                         if let cachedURL = fileRepository.getCachedFileURL(for: style.url) {
                             self.cachedURL = cachedURL
                             self.imageSource = nil
                         } else if let lowResUrl = style.lowResUrl {
                             let lowResCachedURL = fileRepository.getCachedFileURL(for: lowResUrl)
-                            self.cachedURL = lowResCachedURL
-                            self.imageSource = nil
+                            self.cachedURL = lowResCachedURL ?? lowResUrl
+                            resumeDownloadOfFullResolutionVideo()
                         } else {
-                            self.cachedURL = style.url
+                            resumeDownloadOfFullResolutionVideo()
                         }
                     }
                 if style.visible {
                     ZStack {
+                        if let imageSource, let imageViewModel = try? ImageComponentViewModel(
+                            localizationProvider: viewModel.localizationProvider,
+                            uiConfigProvider: viewModel.uiConfigProvider,
+                            component: .init(source: imageSource)
+                        ) {
+                            ImageComponentView(viewModel: imageViewModel)
+                        }
+
                         if let cachedURL {
                             renderVideo(
                                 VideoPlayerView(
@@ -86,14 +116,7 @@ struct VideoComponentView: View {
                                 size: size,
                                 with: style
                             )
-                        } else if let imageSource, let imageViewModel = try? ImageComponentViewModel(
-                            localizationProvider: viewModel.localizationProvider,
-                            uiConfigProvider: viewModel.uiConfigProvider,
-                            component: .init(source: imageSource)
-                        ) {
-                            ImageComponentView(viewModel: imageViewModel)
                         }
-
                     }
                     .applyMediaWidth(size: style.size)
                     .applyMediaHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))

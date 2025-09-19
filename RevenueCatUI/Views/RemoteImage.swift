@@ -140,7 +140,7 @@ struct RemoteImage<Content: View>: View {
             lowResUrl = self.darkLowResUrl ?? self.lowResUrl
         }
 
-        let fileRepository = FileRepository()
+        let fileRepository = FileRepository.shared
         let fullResCachedUrl = fileRepository.getCachedFileURL(for: fullResUrl)
         let lowResCachedUrl = lowResUrl.flatMap { fileRepository.getCachedFileURL(for: $0) }
 
