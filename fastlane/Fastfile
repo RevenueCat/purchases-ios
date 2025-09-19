@@ -1069,6 +1069,11 @@ platform :ios do
     # sh runs from the Fastfile's location, but other commands run from the project root.
     output_directory_for_sh = "../#{output_directory}"
 
+    # Post-process headers to suppress StoreKit 1 deprecation warnings
+    suppress_deprecation_warnings_in_headers(
+      xcframework_path: "#{output_directory_for_sh}/#{product_name}.xcframework"
+    )
+
     # Sign XCFramework for Xcode 15
     sign_xcframework(
       file: "#{output_directory_for_sh}/#{product_name}.xcframework"
@@ -1157,6 +1162,40 @@ platform :ios do
       new_text: new_revision_line,
       paths_of_files_to_update: project_file_locations
     )
+  end
+
+  private_lane :suppress_deprecation_warnings_in_headers do |options|
+    xcframework_path = options[:xcframework_path]
+    
+    # Find all RevenueCat-Swift.h files in the XCFramework
+    swift_headers = Dir.glob("#{xcframework_path}/**/RevenueCat-Swift.h")
+    
+    swift_headers.each do |header_path|
+      UI.message("Processing header: #{header_path}")
+      
+      content = File.read(header_path)
+      
+      # Check if pragma directives are already present
+      unless content.include?('#pragma clang diagnostic ignored "-Wdeprecated-declarations"')
+        # Add pragma directives to suppress StoreKit 1 deprecation warnings
+        pragma_insertion_point = content.index('#pragma clang diagnostic ignored "-Wgcc-compat"')
+        
+        if pragma_insertion_point
+          insertion_index = content.index("\n", pragma_insertion_point) + 1
+          pragma_directives = <<~PRAGMA
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+          PRAGMA
+          
+          content.insert(insertion_index, pragma_directives)
+          File.write(header_path, content)
+          UI.success("Added deprecation warning suppression to #{File.basename(header_path)}")
+        else
+          UI.error("Could not find insertion point in #{File.basename(header_path)}")
+        end
+      else
+        UI.message("Deprecation warnings already suppressed in #{File.basename(header_path)}")
+      end
+    end
   end
 
   private_lane :sign_xcframework do |options|

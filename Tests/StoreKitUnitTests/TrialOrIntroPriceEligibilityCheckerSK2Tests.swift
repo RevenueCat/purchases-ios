@@ -210,6 +210,10 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
 
         _ = try await sk2Product.purchase()
 
+        // Delay added to reduce flakiness on iOS 26, where eligibility may be checked too soon after purchase.
+        // Allows StoreKit time to register the purchase before checking eligibility.
+        try await Task.sleep(nanoseconds: 100_000_000)
+
         let postPurchaseStatus: IntroEligibilityStatus = await withCheckedContinuation { continuation in
             self.trialOrIntroPriceEligibilityChecker.checkEligibility(product: storeProduct) { status in
                 continuation.resume(returning: status)
