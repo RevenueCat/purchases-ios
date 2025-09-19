@@ -1,0 +1,93 @@
+{
+  "asset_base_url" : "https://assets.pawwalls.com",
+  "config" : {
+    "blurred_background_image" : false,
+    "colors" : {
+      "dark" : {
+        "accent1" : "#F4E971",
+        "accent2" : "#4A4A4A",
+        "background" : "#272727",
+        "call_to_action_background" : "#FFFFFF",
+        "call_to_action_foreground" : "#000000",
+        "text1" : "#FFFFFF",
+        "text2" : "#B7B7B7"
+      },
+      "light" : {
+        "accent1" : "#F4E971",
+        "accent2" : "#121212",
+        "background" : "#FAFAFA",
+        "call_to_action_background" : "#222222",
+        "call_to_action_foreground" : "#FFFFFF",
+        "text1" : "#000000",
+        "text2" : "#2A2A2A"
+      }
+    },
+    "colors_by_tier" : {
+
+    },
+    "display_restore_purchases" : true,
+    "images_by_tier" : {
+
+    },
+    "images_heic" : {
+      "background" : "9a17e0a7_1689854342..jpg",
+      "header" : "9a17e0a7_1689854430..jpeg",
+      "icon" : "9a17e0a7_1689854430..jpeg"
+    },
+    "images_heic_low_res" : {
+      "background" : null,
+      "header" : null,
+      "icon" : null
+    },
+    "packages" : [
+      "$rc_annual"
+    ],
+    "privacy_url" : null,
+    "tiers" : [
+
+    ],
+    "tos_url" : "https://revenuecat.com/tos"
+  },
+  "localized_strings" : {
+    "en_US" : {
+      "call_to_action" : "Start",
+      "call_to_action_with_intro_offer" : "Start your {{ sub_offer_duration }} free",
+      "features" : [
+        {
+          "content" : "Full access to 1000+ workouts plus _free_ meal plan worth {{ price }}.",
+          "icon_id" : "tick",
+          "title" : "Today"
+        },
+        {
+          "content" : "Get a reminder about when your trial is about to end.",
+          "icon_id" : "notification",
+          "title" : "Day 7"
+        },
+        {
+          "content" : "You'll automatically get subscribed. Cancel anytime before if you didn't love our app.",
+          "icon_id" : "attachment",
+          "title" : "Day 14"
+        }
+      ],
+      "offer_details" : "Only {{ price }} per {{ sub_period }}",
+      "offer_details_with_intro_offer" : "First {{ sub_offer_duration }} free, then {{ total_price_and_per_month }}",
+      "offer_name" : null,
+      "offer_overrides" : {
+
+      },
+      "subtitle" : null,
+      "tier_name" : null,
+      "title" : "How your **free** trial works"
+    }
+  },
+  "localized_strings_by_tier" : {
+
+  },
+  "revision" : 0,
+  "template_name" : "3",
+  "zero_decimal_place_countries" : {
+    "apple" : [
+
+    ]
+  }
+}
