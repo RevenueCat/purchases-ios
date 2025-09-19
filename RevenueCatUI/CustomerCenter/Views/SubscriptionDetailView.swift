@@ -175,6 +175,23 @@ struct SubscriptionDetailView: View {
             }, content: { inAppBrowserURL in
                 SafariView(url: inAppBrowserURL.url)
             })
+            .sheet(
+                item: $viewModel.promotionalOfferData
+            ) { promotionalOfferData in
+                PromotionalOfferView(
+                    promotionalOffer: promotionalOfferData.promotionalOffer,
+                    product: promotionalOfferData.product,
+                    promoOfferDetails: promotionalOfferData.promoOfferDetails,
+                    purchasesProvider: self.viewModel.purchasesProvider,
+                    actionWrapper: self.viewModel.actionWrapper,
+                    onDismissPromotionalOfferView: { _ in
+                        viewModel.onDismissPromotionalOffer()
+                    }
+                )
+                .interactiveDismissDisabled()
+                .environment(\.appearance, appearance)
+                .environment(\.localization, localization)
+            }
             .alert(isPresented: $showSimulatorAlert, content: {
                 return Alert(
                     title: Text("Can't open URL"),
