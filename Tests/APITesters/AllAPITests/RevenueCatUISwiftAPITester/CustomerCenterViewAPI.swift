@@ -22,7 +22,9 @@ struct TestViewPlusPresentCustomerCenter: View {
             .presentCustomerCenter(isPresented: $isPresented, onDismiss: {})
             .presentCustomerCenter(
                 isPresented: $isPresented,
-                customerCenterActionHandler: { _ in },
+                customerCenterActionHandler: { (action: CustomerCenterAction) in
+                    _ = action
+                },
                 onDismiss: {}
             )
             // Full presenters with individual handlers
@@ -30,15 +32,33 @@ struct TestViewPlusPresentCustomerCenter: View {
                 isPresented: $isPresented,
                 presentationMode: .sheet,
                 restoreStarted: {},
-                restoreCompleted: { _ in },
-                restoreFailed: { _ in },
+                restoreCompleted: { (customerInfo: CustomerInfo) in
+                    _ = customerInfo
+                },
+                restoreFailed: { (error: Error) in
+                    _ = error
+                },
                 showingManageSubscriptions: {},
-                refundRequestStarted: { _ in },
-                refundRequestCompleted: { _, _ in },
-                feedbackSurveyCompleted: { _ in },
-                managementOptionSelected: { _ in },
-                onCustomAction: { _, _ in },
-                changePlansSelected: { _ in },
+                refundRequestStarted: { (productId: String) in
+                    _ = productId
+                },
+                refundRequestCompleted: { (productId: String, status: RefundRequestStatus) in
+                    _ = productId
+                    _ = status
+                },
+                feedbackSurveyCompleted: { (optionId: String) in
+                    _ = optionId
+                },
+                managementOptionSelected: { (managementOption: CustomerCenterActionable) in
+                    _ = managementOption
+                },
+                onCustomAction: { (actionIdentifier: String, purchaseIdentifier: String?) in
+                    _ = actionIdentifier
+                    _ = purchaseIdentifier
+                },
+                changePlansSelected: { (optionId: String) in
+                    _ = optionId
+                },
                 onDismiss: {}
             )
     }
@@ -49,16 +69,34 @@ struct TestCustomerCenterViewActionsAPI: View {
     var body: some View {
         CustomerCenterView()
             .onCustomerCenterRestoreStarted({})
-            .onCustomerCenterRestoreFailed({ _ in })
-            .onCustomerCenterRestoreCompleted({ _ in })
+            .onCustomerCenterRestoreFailed({ (error: Error) in
+                _ = error
+            })
+            .onCustomerCenterRestoreCompleted({ (customerInfo: CustomerInfo) in
+                _ = customerInfo
+            })
             .onCustomerCenterShowingManageSubscriptions({})
-            .onCustomerCenterRefundRequestStarted({ _ in })
-            .onCustomerCenterRefundRequestCompleted({ _, _ in })
-            .onCustomerCenterFeedbackSurveyCompleted({ _ in })
-            .onCustomerCenterManagementOptionSelected({ _ in })
+            .onCustomerCenterRefundRequestStarted({ (productId: String) in
+                _ = productId
+            })
+            .onCustomerCenterRefundRequestCompleted({ (productId: String, status: RefundRequestStatus) in
+                _ = productId
+                _ = status
+            })
+            .onCustomerCenterFeedbackSurveyCompleted({ (optionId: String) in
+                _ = optionId
+            })
+            .onCustomerCenterManagementOptionSelected({ (managementOption: CustomerCenterActionable) in
+                _ = managementOption
+            })
             .onCustomerCenterPromotionalOfferSuccess({})
-            .onCustomerCenterChangePlansSelected({ _ in })
-            .onCustomerCenterCustomActionSelected({ _, _ in })
+            .onCustomerCenterChangePlansSelected({ (optionId: String) in
+                _ = optionId
+            })
+            .onCustomerCenterCustomActionSelected({ (actionIdentifier: String, purchaseIdentifier: String?) in
+                _ = actionIdentifier
+                _ = purchaseIdentifier
+            })
     }
 }
 #endif

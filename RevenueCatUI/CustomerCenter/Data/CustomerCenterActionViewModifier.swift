@@ -17,8 +17,8 @@ import SwiftUI
 
 #if os(iOS)
 
-/// A view modifier that subscribes to internal Customer Center actions and
-/// forwards them to environment-provided callbacks, avoiding SwiftUI preference keys.
+/// A view modifier that subscribes to internal Customer Center actions and forwards them to environment-provided
+/// callbacks.
 @available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)

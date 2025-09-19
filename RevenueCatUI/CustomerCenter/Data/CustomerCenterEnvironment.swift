@@ -119,51 +119,6 @@ final class CustomerCenterExternalActions: @unchecked Sendable {
     var promotionalOfferSuccess: @MainActor @Sendable () -> Void = {}
     var changePlansSelected: @MainActor @Sendable (String) -> Void = { _ in }
     var customActionSelected: @MainActor @Sendable (String, String?) -> Void = { _, _ in }
-
-    // Simple setters (last-wins semantics)
-    func addRestoreStarted(_ handler: @escaping @MainActor @Sendable () -> Void) {
-        self.restoreStarted = handler
-    }
-
-    func addRestoreFailed(_ handler: @escaping @MainActor @Sendable (Error) -> Void) {
-        self.restoreFailed = handler
-    }
-
-    func setRestoreCompleted(_ handler: @escaping @MainActor @Sendable (CustomerInfo) -> Void) {
-        self.restoreCompleted = handler
-    }
-
-    func addShowingManageSubscriptions(_ handler: @escaping @MainActor @Sendable () -> Void) {
-        self.showingManageSubscriptions = handler
-    }
-
-    func addRefundRequestStarted(_ handler: @escaping @MainActor @Sendable (String) -> Void) {
-        self.refundRequestStarted = handler
-    }
-
-    func addRefundRequestCompleted(_ handler: @escaping @MainActor @Sendable (String, RefundRequestStatus) -> Void) {
-        self.refundRequestCompleted = handler
-    }
-
-    func addFeedbackSurveyCompleted(_ handler: @escaping @MainActor @Sendable (String) -> Void) {
-        self.feedbackSurveyCompleted = handler
-    }
-
-    func addManagementOptionSelected(_ handler: @escaping @MainActor @Sendable (CustomerCenterActionable) -> Void) {
-        self.managementOptionSelected = handler
-    }
-
-    func addPromotionalOfferSuccess(_ handler: @escaping @MainActor @Sendable () -> Void) {
-        self.promotionalOfferSuccess = handler
-    }
-
-    func addChangePlansSelected(_ handler: @escaping @MainActor @Sendable (String) -> Void) {
-        self.changePlansSelected = handler
-    }
-
-    func addCustomActionSelected(_ handler: @escaping @MainActor @Sendable (String, String?) -> Void) {
-        self.customActionSelected = handler
-    }
 }
 
 @available(iOS 15.0, *)

@@ -138,7 +138,6 @@ final class CustomerCenterActionWrapper {
 @available(watchOS, unavailable)
 extension CustomerCenterActionWrapper {
 
-    // Expose publishers for consumers who prefer to manage subscriptions externally
     var restoreStartedPublisher: AnyPublisher<Void, Never> { restoreStarted.eraseToAnyPublisher() }
     var restoreFailedPublisher: AnyPublisher<NSError, Never> { restoreFailed.eraseToAnyPublisher() }
     var restoreCompletedPublisher: AnyPublisher<CustomerInfo, Never> { restoreCompleted.eraseToAnyPublisher() }

@@ -79,67 +79,67 @@ public class CustomerCenterViewController: UIHostingController<CustomerCenterVie
         // Set up Combine subscriptions to emit handler calls
         if let restoreStarted {
             actionWrapper.restoreStartedPublisher
-                .sink { restoreStarted() }
+                .sink(receiveValue: restoreStarted)
                 .store(in: &cancellables)
         }
 
         if let restoreCompleted {
             actionWrapper.restoreCompletedPublisher
-                .sink { restoreCompleted($0) }
+                .sink(receiveValue: restoreCompleted)
                 .store(in: &cancellables)
         }
 
         if let restoreFailed {
             actionWrapper.restoreFailedPublisher
-                .sink { restoreFailed($0) }
+                .sink(receiveValue: restoreFailed)
                 .store(in: &cancellables)
         }
 
         if let showingManageSubscriptions {
             actionWrapper.showingManageSubscriptionsPublisher
-                .sink { showingManageSubscriptions() }
+                .sink(receiveValue: showingManageSubscriptions)
                 .store(in: &cancellables)
         }
 
         if let refundRequestStarted {
             actionWrapper.refundRequestStartedPublisher
-                .sink { refundRequestStarted($0) }
+                .sink(receiveValue: refundRequestStarted)
                 .store(in: &cancellables)
         }
 
         if let refundRequestCompleted {
             actionWrapper.refundRequestCompletedPublisher
-                .sink { refundRequestCompleted($0.0, $0.1) }
+                .sink(receiveValue: { refundRequestCompleted($0.0, $0.1) })
                 .store(in: &cancellables)
         }
 
         if let feedbackSurveyCompleted {
             actionWrapper.feedbackSurveyCompletedPublisher
-                .sink { feedbackSurveyCompleted($0) }
+                .sink(receiveValue: feedbackSurveyCompleted)
                 .store(in: &cancellables)
         }
 
         if let managementOptionSelected {
             actionWrapper.managementOptionSelectedPublisher
-                .sink { managementOptionSelected($0) }
+                .sink(receiveValue: managementOptionSelected)
                 .store(in: &cancellables)
         }
 
         if let changePlansSelected {
             actionWrapper.showingChangePlansPublisher
-                .sink { if let id = $0 { changePlansSelected(id) } }
+                .sink(receiveValue: { if let id = $0 { changePlansSelected(id) } })
                 .store(in: &cancellables)
         }
 
         if let onCustomAction {
             actionWrapper.customActionSelectedPublisher
-                .sink { onCustomAction($0.0, $0.1) }
+                .sink(receiveValue: { onCustomAction($0.0, $0.1) })
                 .store(in: &cancellables)
         }
 
         if let promotionalOfferSuccess {
             actionWrapper.promotionalOfferSuccessPublisher
-                .sink { promotionalOfferSuccess() }
+                .sink(receiveValue: promotionalOfferSuccess)
                 .store(in: &cancellables)
         }
 

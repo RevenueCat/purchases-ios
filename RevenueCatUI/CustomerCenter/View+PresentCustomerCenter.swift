@@ -283,7 +283,7 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
             .onCustomerCenterCustomActionSelected { actionIdentifier, purchaseIdentifier in
                 onCustomAction?(actionIdentifier, purchaseIdentifier)
             }
-            .onCustomerCenterChangePlansSelected { [changePlansSelected] optionId in
+            .onCustomerCenterChangePlansSelected { optionId in
                 changePlansSelected?(optionId)
             }
             .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
