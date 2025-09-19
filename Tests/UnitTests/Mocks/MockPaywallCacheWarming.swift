@@ -54,6 +54,25 @@ final class MockPaywallCacheWarming: PaywallCacheWarmingType {
 
     // MARK: -
 
+    private let _invokedWarmUpPaywallVideosCache: Atomic<Bool> = false
+    private let _invokedWarmUpPaywallVideosCacheOfferings: Atomic<Offerings?> = nil
+
+    var invokedWarmUpPaywallVideosCache: Bool {
+        get { return self._invokedWarmUpPaywallVideosCache.value }
+        set { self._invokedWarmUpPaywallVideosCache.value = newValue }
+    }
+    var invokedWarmUpPaywallVideosCacheOfferings: Offerings? {
+        get { return self._invokedWarmUpPaywallVideosCacheOfferings.value }
+        set { self._invokedWarmUpPaywallVideosCacheOfferings.value = newValue }
+    }
+
+    func warmUpPaywallVideosCache(offerings: Offerings) async {
+        self.invokedWarmUpPaywallVideosCache = true
+        self.invokedWarmUpPaywallVideosCacheOfferings = offerings
+    }
+
+    // MARK: -
+
     private let _invokedWarmUpPaywallFontsCache: Atomic<Bool> = false
     private let _invokedWarmUpPaywallFontsCacheOfferings: Atomic<Offerings?> = nil
 
