@@ -24,8 +24,8 @@ extension PaywallComponent.Background {
         switch self {
         case .color(let color):
             return .color(color.asDisplayable(uiConfigProvider: uiConfigProvider))
-        case .image(let image, let fitMode):
-            return .image(image, fitMode)
+        case .image(let image, let fitMode, let colorScheme):
+            return .image(image, fitMode, colorScheme?.asDisplayable(uiConfigProvider: uiConfigProvider))
         }
     }
 
