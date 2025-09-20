@@ -33,6 +33,7 @@ let package = Package(
             url: "https://github.com/RevenueCat/purchases-ios",
             branch: "main"
         ),
+        // v3LoadShedderIntegration uses it
         .package(
             url: "https://github.com/RevenueCat/purchases-ios-spm",
             revision: "3.14.4"
