@@ -29,16 +29,20 @@ struct BackgroundStyleModifier: ViewModifier {
     @Environment(\.colorScheme)
     var colorScheme
 
+    @State var size: CGSize = .zero
+
     var backgroundStyle: BackgroundStyle?
     var alignment: Alignment
 
     func body(content: Content) -> some View {
         if let backgroundStyle {
             content
+                .sizeReader($size)
                 .apply(
                     backgroundStyle: backgroundStyle,
                     colorScheme: colorScheme,
-                    alignment: alignment
+                    alignment: alignment,
+                    size: size == .zero ? nil : size
                 )
         } else {
             content
@@ -54,7 +58,8 @@ fileprivate extension View {
     func apply(
         backgroundStyle: BackgroundStyle,
         colorScheme: ColorScheme,
-        alignment: Alignment
+        alignment: Alignment,
+        size: CGSize? = nil
     ) -> some View {
         switch backgroundStyle {
         case .color(let color):
@@ -76,10 +81,13 @@ fileprivate extension View {
                         .aspectRatio(contentMode: fitMode.contentMode)
                         .ignoresSafeArea()
                 }.overlay {
-                    if let colorOverlay {
-                        colorOverlay
-                            .toView(colorScheme: colorScheme)
+                    ZStack {
+                        if let colorOverlay {
+                            colorOverlay
+                                .toView(colorScheme: colorScheme)
+                        }
                     }
+                    .frame(maxWidth: size?.width, maxHeight: size?.height)
                 }
                 .edgesIgnoringSafeArea(.all)
             }
