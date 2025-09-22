@@ -139,6 +139,12 @@ private extension PurchasesError {
                     .notAvailableInStorefront,
                     .notEntitled:
                 return resultMap
+
+            #if compiler(>=6.1)
+            // StoreKitError.unsupported was introduced in iOS 18.4, which shipped with Xcode 16.3 beta 1 / Swift 6.1
+            case .unsupported:
+                return resultMap
+            #endif
             case let .networkError(urlError):
                 return resultMap.merging([
                     "urlErrorCode": urlError.errorCode,
@@ -159,5 +165,4 @@ private extension PurchasesError {
             return nil
         }
     }
-
 }

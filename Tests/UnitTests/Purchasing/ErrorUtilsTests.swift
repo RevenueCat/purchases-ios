@@ -200,6 +200,36 @@ class ErrorUtilsTests: TestCase {
         }
     }
 
+    @available(iOS 18.4, macOS 15.4, tvOS 18.4, watchOS 11.4, visionOS 2.4, *)
+    func testPublicErrorsRootErrorContainsStoreKitErrorUnsupportedInfo() throws {
+        try AvailabilityChecks.iOS184APIAvailableOrSkipTest()
+
+        let underlyingError = StoreKitError.unsupported
+
+        func throwing() throws {
+            throw ErrorUtils.purchaseInvalidError(error: underlyingError).asPublicError
+        }
+
+        do {
+            try throwing()
+            fail("Expected error")
+        } catch let error as NSError {
+            let rootErrorInfo = error.userInfo[ErrorDetails.rootErrorKey] as? [String: Any]
+            expect(rootErrorInfo).notTo(beNil())
+            expect(rootErrorInfo!["code"] as? Int) == 6
+            expect(rootErrorInfo!["domain"] as? String) == "StoreKit.StoreKitError"
+            // swiftlint:disable:next force_cast
+            let description = rootErrorInfo!["localizedDescription"] as! String
+            let validDescriptions = Set(["Unable to Complete Request"])
+            expect(validDescriptions.contains(description)) == true
+            let storeKitError = rootErrorInfo!["storeKitError"] as? [String: Any]
+            expect(rootErrorInfo?.keys.count) == 4
+            expect(storeKitError).notTo(beNil())
+            expect(storeKitError!["description"] as? String) == "unsupported"
+            expect(storeKitError?.keys.count) == 1
+        }
+    }
+
     func testPurchasesErrorWithUntypedErrorCode() throws {
         let error: ErrorCode = .apiEndpointBlockedError
 
