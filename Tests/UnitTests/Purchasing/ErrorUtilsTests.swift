@@ -200,6 +200,7 @@ class ErrorUtilsTests: TestCase {
         }
     }
 
+    #if compiler(>=6.1)
     @available(iOS 18.4, macOS 15.4, tvOS 18.4, watchOS 11.4, visionOS 2.4, *)
     func testPublicErrorsRootErrorContainsStoreKitErrorUnsupportedInfo() throws {
         try AvailabilityChecks.iOS184APIAvailableOrSkipTest()
@@ -229,6 +230,7 @@ class ErrorUtilsTests: TestCase {
             expect(storeKitError?.keys.count) == 1
         }
     }
+    #endif
 
     func testPurchasesErrorWithUntypedErrorCode() throws {
         let error: ErrorCode = .apiEndpointBlockedError
