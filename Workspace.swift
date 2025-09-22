@@ -2,12 +2,25 @@ import Foundation
 import ProjectDescription
 import ProjectDescriptionHelpers
 
+let magicWeatherProject: Path = Environment.local
+    ? "./Examples/MagicWeather/"
+    : "./Examples/MagicWeatherRemote/"
+let magicWeatherSwiftUIProject: Path = Environment.local
+    ? "./Examples/MagicWeatherSwiftUI/"
+    : "./Examples/MagicWeatherSwiftUIRemote/"
+let purchaseTesterProject: Path = Environment.local
+    ? "./Examples/PurchaseTester/"
+    : "./Examples/PurchaseTesterRemote/"
+let maestroProject: Path = Environment.local
+    ? "./Examples/Maestro/"
+    : "./Examples/MaestroRemote/"
+
 var projects: [Path] = [
-    "./Examples/rc-maestro/",
-    "./Examples/MagicWeather/",
-    "./Examples/MagicWeatherSwiftUI/",
+    maestroProject,
+    magicWeatherProject,
+    magicWeatherSwiftUIProject,
     "./Examples/testCustomEntitlementsComputation/",
-    "./Examples/PurchaseTester/",
+    purchaseTesterProject,
     "./Projects/PaywallsTester",
     "./Projects/APITesters",
     "./Projects/PaywallValidationTester"
