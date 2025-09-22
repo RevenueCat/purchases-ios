@@ -331,7 +331,7 @@ struct EdgeToEdgeTopBottomModifier: ViewModifier {
                 .backgroundStyle(badge.backgroundStyle)
                 .shape(border: nil,
                        shape: effectiveShape(badge: badge,
-                                             pillStackRadius: 33))
+                                             pillStackRadius: min(stackSize.width, stackSize.height)/2))
         }
         .overlay {
             Text(self.debugTxts.joined(separator: " - "))
