@@ -312,9 +312,11 @@ struct EdgeToEdgeTopBottomModifier: ViewModifier {
             content
                 .background(
                     GeometryReader { geometry in
+                        let _ = print("geometry.size: \(geometry.size)")
                         Color.clear
                             .onAppear {
                                 stackSize = geometry.size
+                                debugTxts.append("stackSize: \(stackSize.width)x\(stackSize.height)")
                             }
                     }
                 )
@@ -328,7 +330,10 @@ struct EdgeToEdgeTopBottomModifier: ViewModifier {
                 .backgroundStyle(badge.backgroundStyle)
                 .shape(border: nil,
                        shape: effectiveShape(badge: badge,
-                                             pillStackRadius: min(stackSize.width, stackSize.height)/2))
+                                             pillStackRadius: 33))
+        }
+        .overlay {
+            Text(self.debugTxts.joined(separator: " - "))
         }
     }
 
