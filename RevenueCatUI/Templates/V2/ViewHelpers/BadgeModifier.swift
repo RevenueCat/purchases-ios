@@ -295,7 +295,6 @@ private func radiusInfo(shape: ShapeModifier.Shape?, pillRadius: Double? = 0) ->
 struct EdgeToEdgeTopBottomModifier: ViewModifier {
 
     @State private var stackSize: CGSize = .zero
-    @State private var debugTxts: [String] = []
     var badge: BadgeModifier.BadgeInfo
 
     var badgeView: some View {
@@ -311,10 +310,8 @@ struct EdgeToEdgeTopBottomModifier: ViewModifier {
                 badgeView
             }
             content
-                .onSizeChange{ size in
-                    let _ = print("stackSize: \(size.width)x\(size.height)")
+                .onSizeChange { size in
                     stackSize = size
-                    debugTxts.append("stackSize: \(stackSize.width)x\(stackSize.height)")
                 }
             if badge.alignment == .bottom {
                 badgeView
@@ -327,9 +324,6 @@ struct EdgeToEdgeTopBottomModifier: ViewModifier {
                 .shape(border: nil,
                        shape: effectiveShape(badge: badge,
                                              pillStackRadius: min(stackSize.width, stackSize.height)/2))
-        }
-        .overlay {
-            Text(self.debugTxts.joined(separator: " - "))
         }
     }
 
