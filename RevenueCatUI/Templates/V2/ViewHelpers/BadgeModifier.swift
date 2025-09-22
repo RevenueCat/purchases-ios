@@ -399,7 +399,7 @@ struct BadgePreviews: View {
                 localizationProvider: .init(
                     locale: Locale.current,
                     localizedStrings: [
-                        "text_1": .string("Feature 1\nFeature 2\nFeature 3\nFeature 4"),
+                        "text_1": .string(""),
                         "text_2": .string("Special Discount\nSave 50%")
                     ]
                 )
