@@ -232,6 +232,29 @@ struct BackgrounDStyle_Previews: PreviewProvider {
             .previewLayout(.sizeThatFits)
             .previewDisplayName("Image - Dark (should be japan cats)")
 
+        // Image (Fill) - Light - with overlay gradient
+        testContent
+            .backgroundStyle(
+                .image(
+                    .init(
+                        light: .init(
+                            width: 750,
+                            height: 530,
+                            original: lightUrl,
+                            heic: lightUrl,
+                            heicLowRes: lightUrl
+                        )
+                    ),
+                    .fill,
+                    .init(light: .linear(0, [
+                        .init(color: "#ff000088", percent: 30),
+                        .init(color: "#00000000", percent: 100)
+                    ]))
+                )
+            )
+            .previewLayout(.sizeThatFits)
+            .previewDisplayName("Image (Fill) - Light - with overlay gradient")
+
         // Image (Fit) - Light (should be pink cat)
         testContent
             .backgroundStyle(.image(.init(
