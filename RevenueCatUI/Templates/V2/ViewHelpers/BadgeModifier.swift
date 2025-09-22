@@ -295,6 +295,7 @@ private func radiusInfo(shape: ShapeModifier.Shape?, pillRadius: Double? = 0) ->
 struct EdgeToEdgeTopBottomModifier: ViewModifier {
 
     @State private var stackSize: CGSize = .zero
+    @State private var debugTxts: [String] = []
     var badge: BadgeModifier.BadgeInfo
 
     var badgeView: some View {
