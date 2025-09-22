@@ -127,7 +127,8 @@ public class CustomerCenterViewController: UIHostingController<CustomerCenterVie
 
         if let changePlansSelected {
             actionWrapper.showingChangePlansPublisher
-                .sink(receiveValue: { if let id = $0 { changePlansSelected(id) } })
+                .compactMap { $0 }
+                .sink(receiveValue: changePlansSelected)
                 .store(in: &cancellables)
         }
 
