@@ -189,6 +189,11 @@ struct SubscriptionDetailView: View {
             })
     }
 
+}
+
+@available(iOS 15.0, *)
+private extension SubscriptionDetailView {
+
     @ViewBuilder
     var content: some View {
         ScrollViewWithOSBackground {
@@ -270,7 +275,7 @@ struct SubscriptionDetailView: View {
     }
 
     @ViewBuilder
-    private var accountDetailsView: some View {
+    var accountDetailsView: some View {
         Spacer().frame(height: 16)
 
         AccountDetailsSection(
@@ -295,7 +300,7 @@ struct SubscriptionDetailView: View {
         .buttonStyle(.customerCenterButtonStyle(for: colorScheme))
     }
 
-    private var seeAllSubscriptionsButton: some View {
+    var seeAllSubscriptionsButton: some View {
         Button {
             viewModel.showAllPurchases = true
         } label: {
@@ -309,14 +314,14 @@ struct SubscriptionDetailView: View {
     }
 }
 
- #if DEBUG
- @available(iOS 15.0, *)
- @available(macOS, unavailable)
- @available(tvOS, unavailable)
- @available(watchOS, unavailable)
- struct SubscriptionDetailView_Previews: PreviewProvider {
+#if DEBUG
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+struct SubscriptionDetailView_Previews: PreviewProvider {
 
-     // swiftlint:disable force_unwrapping
+    // swiftlint:disable force_unwrapping
     static var previews: some View {
         ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
             CompatibilityNavigationStack {
@@ -480,8 +485,8 @@ struct SubscriptionDetailView: View {
         .environment(\.appearance, CustomerCenterConfigData.default.appearance)
     }
 
- }
+}
 
- #endif
+#endif
 
 #endif
