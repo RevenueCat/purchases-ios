@@ -18,7 +18,8 @@ parameters:
         run-manual-docs-deploy,
         update_paywall_templates,
         record_paywall_screenshots,
-        tuist
+        tuist,
+        emerge_snapshot_tests
       ]
     default: default
   generate_snapshots:
@@ -1602,6 +1603,13 @@ workflows:
       - run-revenuecat-ui-ios-18
       - run-revenuecat-ui-ios-26
       - emerge_purchases_ui_snapshot_tests
+  emerge_snapshot_tests:
+    when:
+      or:
+        - equal: [emerge_snapshot_tests, << pipeline.parameters.action >>]
+    jobs:
+      - emerge_purchases_ui_snapshot_tests
+
 
   create-tag:
     when:
