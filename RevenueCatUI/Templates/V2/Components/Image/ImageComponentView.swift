@@ -94,6 +94,12 @@ struct ImageComponentView: View {
                     }
                     .applyImageWidth(size: style.size)
                     .applyImageHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
+                    .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
+                        view.overlay(
+                            Color.clear
+                                .backgroundStyle(.color(colorOverlay))
+                        )
+                    })
                     .clipped()
                     .padding(style.padding.extend(by: style.border?.width ?? 0))
                     .shape(border: style.border,
@@ -155,14 +161,6 @@ struct ImageComponentView: View {
             .frame(maxWidth: maxWidth)
             // WIP: Fix this later when accessibility info is available
             .accessibilityHidden(true)
-            .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
-                view.overlay(
-                    Color.clear
-                        .applyImageWidth(size: style.size)
-                        .applyImageHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
-                        .backgroundStyle(.color(colorOverlay))
-                )
-            })
     }
 
 }
