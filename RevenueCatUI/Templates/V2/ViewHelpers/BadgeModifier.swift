@@ -311,16 +311,11 @@ struct EdgeToEdgeTopBottomModifier: ViewModifier {
                 badgeView
             }
             content
-                .background(
-                    GeometryReader { geometry in
-                        let _ = print("geometry.size: \(geometry.size)")
-                        Color.clear
-                            .onAppear {
-                                stackSize = geometry.size
-                                debugTxts.append("stackSize: \(stackSize.width)x\(stackSize.height)")
-                            }
-                    }
-                )
+                .onSizeChange{ size in
+                    let _ = print("stackSize: \(size.width)x\(size.height)")
+                    stackSize = size
+                    debugTxts.append("stackSize: \(stackSize.width)x\(stackSize.height)")
+                }
             if badge.alignment == .bottom {
                 badgeView
             }
