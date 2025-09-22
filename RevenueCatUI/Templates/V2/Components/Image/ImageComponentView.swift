@@ -157,7 +157,10 @@ struct ImageComponentView: View {
             .accessibilityHidden(true)
             .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
                 view.overlay(
-                    Color.clear.backgroundStyle(.color(colorOverlay))
+                    Color.clear
+                        .applyImageWidth(size: style.size)
+                        .applyImageHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
+                        .backgroundStyle(.color(colorOverlay))
                 )
             })
     }
