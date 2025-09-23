@@ -740,7 +740,6 @@
 		5798C9482DF1985700F44400 /* PurchaseDetailItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5798C9062DF1985700F44400 /* PurchaseDetailItem.swift */; };
 		5798C9492DF1985700F44400 /* ColorFromAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5798C8E02DF1985700F44400 /* ColorFromAppearance.swift */; };
 		5798C94A2DF1985700F44400 /* MockCustomerCenterPurchases.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5798C8F92DF1985700F44400 /* MockCustomerCenterPurchases.swift */; };
-		5798C94B2DF1985700F44400 /* CustomerCenter+PreferenceKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5798C8DB2DF1985700F44400 /* CustomerCenter+PreferenceKeys.swift */; };
 		5798C94C2DF1985700F44400 /* URLUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5798C8FE2DF1985700F44400 /* URLUtilities.swift */; };
 		5798C94D2DF1985700F44400 /* PurchaseHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5798C9152DF1985700F44400 /* PurchaseHistoryView.swift */; };
 		5798C94E2DF1985700F44400 /* CustomerCenterPurchasesType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5798C8D92DF1985700F44400 /* CustomerCenterPurchasesType.swift */; };
@@ -2243,7 +2242,6 @@
 		5796A3A827D7C43500653165 /* Deprecations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Deprecations.swift; sourceTree = "<group>"; };
 		5796A3BF27D7D64500653165 /* ResultExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultExtensionsTests.swift; sourceTree = "<group>"; };
 		5798C8D92DF1985700F44400 /* CustomerCenterPurchasesType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterPurchasesType.swift; sourceTree = "<group>"; };
-		5798C8DB2DF1985700F44400 /* CustomerCenter+PreferenceKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CustomerCenter+PreferenceKeys.swift"; sourceTree = "<group>"; };
 		5798C8DC2DF1985700F44400 /* CustomerCenterConfigData.HelpPath+PurchaseInformation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CustomerCenterConfigData.HelpPath+PurchaseInformation.swift"; sourceTree = "<group>"; };
 		5798C8DD2DF1985700F44400 /* CustomerCenterView+Actions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CustomerCenterView+Actions.swift"; sourceTree = "<group>"; };
 		5798C8DF2DF1985700F44400 /* ButtonStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonStyles.swift; sourceTree = "<group>"; };
@@ -4870,7 +4868,6 @@
 		5798C8DE2DF1985700F44400 /* Actions */ = {
 			isa = PBXGroup;
 			children = (
-				5798C8DB2DF1985700F44400 /* CustomerCenter+PreferenceKeys.swift */,
 				5798C8DC2DF1985700F44400 /* CustomerCenterConfigData.HelpPath+PurchaseInformation.swift */,
 				5798C8DD2DF1985700F44400 /* CustomerCenterView+Actions.swift */,
 			);
@@ -7651,7 +7648,6 @@
 				5798C9482DF1985700F44400 /* PurchaseDetailItem.swift in Sources */,
 				5798C9492DF1985700F44400 /* ColorFromAppearance.swift in Sources */,
 				5798C94A2DF1985700F44400 /* MockCustomerCenterPurchases.swift in Sources */,
-				5798C94B2DF1985700F44400 /* CustomerCenter+PreferenceKeys.swift in Sources */,
 				5798C94C2DF1985700F44400 /* URLUtilities.swift in Sources */,
 				5798C94D2DF1985700F44400 /* PurchaseHistoryView.swift in Sources */,
 				03AB07812E385AEF00BC5275 /* PaywallPromoOfferCache.swift in Sources */,
