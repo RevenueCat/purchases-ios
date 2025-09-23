@@ -65,19 +65,6 @@ struct BottomSheetOverlayModifier: ViewModifier {
         }
     }
 
-    var backgroundStyle: BackgroundStyle? {
-        return nil
-//        if let sheetViewModel {
-//            let stackBackground = sheetViewModel.sheet.background
-//
-//            return stackBackground?.asDisplayable(
-//                uiConfigProvider: sheetViewModel.sheetStackViewModel.uiConfigProvider
-//            )
-//        } else {
-//            return nil
-//        }
-    }
-
     func body(content: Content) -> some View {
         ZStack {
             content
@@ -113,7 +100,6 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         view.frame(height: height)
                     })
                     .transition(.move(edge: .bottom).combined(with: .opacity))
-//                    .backgroundStyle(self.backgroundStyle)
                 }
             }
             .background(
@@ -124,7 +110,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         }
                 }
             )
-            .animation(.spring(response: 0.35, dampingFraction: 0.7), value: sheetViewModel)
+            .animation(.spring(response: 0.35, dampingFraction: 1), value: sheetViewModel)
         }
     }
 }
