@@ -167,8 +167,7 @@ struct ImageComponentView: View {
 
 #if DEBUG
 
-// Removed macOS because Emerge was having issues ignoring UIKit for some reason
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 // swiftlint:disable:next type_body_length
 struct ImageComponentView_Previews: PreviewProvider {
     static let catUrl = URL(string: "https://assets.pawwalls.com/954459_1701163461.jpg")!
