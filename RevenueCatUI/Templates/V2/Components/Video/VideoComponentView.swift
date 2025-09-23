@@ -88,6 +88,7 @@ struct VideoComponentView: View {
                         } else if let lowResUrl = style.lowResUrl {
                             let lowResCachedURL = fileRepository.getCachedFileURL(for: lowResUrl)
                             self.cachedURL = lowResCachedURL ?? lowResUrl
+                            self.imageSource = nil
                             resumeDownloadOfFullResolutionVideo()
                         } else {
                             resumeDownloadOfFullResolutionVideo()
@@ -129,7 +130,7 @@ struct VideoComponentView: View {
                     .padding(style.margin)
                 }
             }
-            .sizeReader($size)
+            .onSizeChange { size = $0 }
 
     }
 
