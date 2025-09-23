@@ -29,7 +29,7 @@ struct BackgroundStyleModifier: ViewModifier {
     @Environment(\.colorScheme)
     var colorScheme
 
-    @State var size: CGSize = .zero
+    @State var size: CGSize?
 
     var backgroundStyle: BackgroundStyle?
     var alignment: Alignment
@@ -37,12 +37,12 @@ struct BackgroundStyleModifier: ViewModifier {
     func body(content: Content) -> some View {
         if let backgroundStyle {
             content
-                .sizeReader($size)
+                .onSizeChange { size = $0 }
                 .apply(
                     backgroundStyle: backgroundStyle,
                     colorScheme: colorScheme,
                     alignment: alignment,
-                    size: size == .zero ? nil : size
+                    size: size
                 )
         } else {
             content
