@@ -80,23 +80,23 @@ struct GradientView: View {
     }
 
     var body: some View {
-        switch gradientStyle {
-        case .linear(let degrees):
-            GeometryReader { geometry in
+        GeometryReader { geometry in
+            switch gradientStyle {
+            case .linear(let degrees):
                 let points = calculatePoints(angle: .degrees(Double(degrees)), rect: geometry.frame(in: .local))
                 LinearGradient(
                     gradient: gradient,
                     startPoint: points.start,
                     endPoint: points.end
                 )
+            case .radial:
+                RadialGradient(
+                    gradient: gradient,
+                    center: .center,
+                    startRadius: 0,
+                    endRadius: min(geometry.size.width, geometry.size.height)
+                )
             }
-        case .radial:
-            RadialGradient(
-                gradient: gradient,
-                center: .center,
-                startRadius: 0,
-                endRadius: 100
-            )
         }
     }
 }

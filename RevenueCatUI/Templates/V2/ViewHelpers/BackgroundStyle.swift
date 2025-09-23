@@ -19,7 +19,7 @@ import SwiftUI
 enum BackgroundStyle: Hashable {
 
     case color(DisplayableColorScheme)
-    case image(PaywallComponent.ThemeImageUrls, PaywallComponent.FitMode)
+    case image(PaywallComponent.ThemeImageUrls, PaywallComponent.FitMode, DisplayableColorScheme?)
 
 }
 
@@ -29,16 +29,20 @@ struct BackgroundStyleModifier: ViewModifier {
     @Environment(\.colorScheme)
     var colorScheme
 
+    @State var size: CGSize?
+
     var backgroundStyle: BackgroundStyle?
     var alignment: Alignment
 
     func body(content: Content) -> some View {
         if let backgroundStyle {
             content
+                .onSizeChange { size = $0 }
                 .apply(
                     backgroundStyle: backgroundStyle,
                     colorScheme: colorScheme,
-                    alignment: alignment
+                    alignment: alignment,
+                    size: size
                 )
         } else {
             content
@@ -54,36 +58,17 @@ fileprivate extension View {
     func apply(
         backgroundStyle: BackgroundStyle,
         colorScheme: ColorScheme,
-        alignment: Alignment
+        alignment: Alignment,
+        size: CGSize? = nil
     ) -> some View {
         switch backgroundStyle {
         case .color(let color):
-            switch color.effectiveColor(for: colorScheme) {
-            case .hex:
-                self.background(
-                    color.toDynamicColor()
-                        .edgesIgnoringSafeArea(.all)
-                )
-            case .linear(let degrees, _):
-                self.background {
-                    GradientView(
-                        lightGradient: color.light.toGradient(),
-                        darkGradient: color.dark?.toGradient(),
-                        gradientStyle: .linear(degrees)
-                    )
+            self.background(
+                color
+                    .toView(colorScheme: colorScheme)
                     .edgesIgnoringSafeArea(.all)
-                }
-            case .radial:
-                self.background {
-                    GradientView(
-                        lightGradient: color.light.toGradient(),
-                        darkGradient: color.dark?.toGradient(),
-                        gradientStyle: .radial
-                    )
-                    .edgesIgnoringSafeArea(.all)
-                }
-            }
-        case .image(let imageInfo, let fitMode):
+            )
+        case let .image(imageInfo, fitMode, colorOverlay):
             self.background(alignment: alignment) {
                 RemoteImage(
                     url: imageInfo.light.heic,
@@ -95,12 +80,43 @@ fileprivate extension View {
                         .resizable()
                         .aspectRatio(contentMode: fitMode.contentMode)
                         .ignoresSafeArea()
+                }.overlay {
+                    ZStack {
+                        if let colorOverlay {
+                            colorOverlay
+                                .toView(colorScheme: colorScheme)
+                        }
+                    }
+                    .frame(maxWidth: size?.width, maxHeight: size?.height)
                 }
                 .edgesIgnoringSafeArea(.all)
             }
         }
     }
 
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension DisplayableColorScheme {
+    @ViewBuilder
+    func toView(colorScheme: ColorScheme) -> some View {
+        switch self.effectiveColor(for: colorScheme) {
+        case .hex:
+            toDynamicColor()
+        case .linear(let degrees, _):
+            GradientView(
+                lightGradient: light.toGradient(),
+                darkGradient: dark?.toGradient(),
+                gradientStyle: .linear(degrees)
+            )
+        case .radial:
+            GradientView(
+                lightGradient: light.toGradient(),
+                darkGradient: dark?.toGradient(),
+                gradientStyle: .radial
+            )
+        }
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -118,8 +134,8 @@ extension BackgroundStyle {
         switch self {
         case .color(let value):
             return .color(value)
-        case .image(let value, let fitMode):
-            return .image(value, fitMode)
+        case let .image(value, fitMode, color):
+            return .image(value, fitMode, color)
         }
     }
 
@@ -198,7 +214,7 @@ struct BackgrounDStyle_Previews: PreviewProvider {
                     heic: darkUrl,
                     heicLowRes: darkUrl
                 )
-            ), .fill))
+            ), .fill, nil))
             .previewLayout(.sizeThatFits)
             .previewDisplayName("Image (Fill) - Light (should be pink cat)")
 
@@ -219,10 +235,33 @@ struct BackgrounDStyle_Previews: PreviewProvider {
                     heic: darkUrl,
                     heicLowRes: darkUrl
                 )
-            ), .fill))
+            ), .fill, nil))
             .preferredColorScheme(.dark)
             .previewLayout(.sizeThatFits)
             .previewDisplayName("Image - Dark (should be japan cats)")
+
+        // Image (Fill) - Light - with overlay gradient
+        testContent
+            .backgroundStyle(
+                .image(
+                    .init(
+                        light: .init(
+                            width: 750,
+                            height: 530,
+                            original: lightUrl,
+                            heic: lightUrl,
+                            heicLowRes: lightUrl
+                        )
+                    ),
+                    .fill,
+                    .init(light: .linear(0, [
+                        .init(color: "#ff000088", percent: 30),
+                        .init(color: "#00000000", percent: 100)
+                    ]))
+                )
+            )
+            .previewLayout(.sizeThatFits)
+            .previewDisplayName("Image (Fill) - Light - with overlay gradient")
 
         // Image (Fit) - Light (should be pink cat)
         testContent
@@ -241,7 +280,7 @@ struct BackgrounDStyle_Previews: PreviewProvider {
                     heic: darkUrl,
                     heicLowRes: darkUrl
                 )
-            ), .fit))
+            ), .fit, nil))
             .previewLayout(.sizeThatFits)
             .previewDisplayName("Image (Fit) - Light (should be pink cat)")
 
