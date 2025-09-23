@@ -146,6 +146,7 @@ extension View {
         feedbackSurveyCompleted: CustomerCenterView.FeedbackSurveyCompletedHandler? = nil,
         managementOptionSelected: CustomerCenterView.ManagementOptionSelectedHandler? = nil,
         onCustomAction: CustomerCenterView.CustomActionHandler? = nil,
+        changePlansSelected: CustomerCenterView.ChangePlansHandler? = nil,
         onDismiss: (() -> Void)? = nil
     ) -> some View {
         self.modifier(
@@ -162,7 +163,8 @@ extension View {
                 refundRequestCompleted: refundRequestCompleted,
                 feedbackSurveyCompleted: feedbackSurveyCompleted,
                 managementOptionSelected: managementOptionSelected,
-                onCustomAction: onCustomAction
+                onCustomAction: onCustomAction,
+                changePlansSelected: changePlansSelected
             )
         )
     }
@@ -184,6 +186,7 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
     let feedbackSurveyCompleted: CustomerCenterView.FeedbackSurveyCompletedHandler?
     let managementOptionSelected: CustomerCenterView.ManagementOptionSelectedHandler?
     let onCustomAction: CustomerCenterView.CustomActionHandler?
+    let changePlansSelected: CustomerCenterView.ChangePlansHandler?
 
     /// The closure to execute when dismissing the sheet / fullScreen present
     let onDismiss: (() -> Void)?
@@ -202,6 +205,7 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
         feedbackSurveyCompleted: CustomerCenterView.FeedbackSurveyCompletedHandler? = nil,
         managementOptionSelected: CustomerCenterView.ManagementOptionSelectedHandler? = nil,
         onCustomAction: CustomerCenterView.CustomActionHandler? = nil,
+        changePlansSelected: CustomerCenterView.ChangePlansHandler? = nil,
         purchaseHandler: PurchaseHandler? = nil
     ) {
         self._isPresented = isPresented
@@ -216,6 +220,7 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
         self.feedbackSurveyCompleted = feedbackSurveyCompleted
         self.managementOptionSelected = managementOptionSelected
         self.onCustomAction = onCustomAction
+        self.changePlansSelected = changePlansSelected
         self._purchaseHandler = .init(wrappedValue: purchaseHandler ??
                                       PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
                                                               performRestore: myAppPurchaseLogic?.performRestore))
@@ -249,7 +254,7 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
     }
 
     private func customerCenterView() -> some View {
-        // Otherwise use the individual action handlers
+        // Build the view and attach environment-based handlers
         return CustomerCenterView()
             .onCustomerCenterRestoreStarted { [restoreStarted] in
                 restoreStarted?()
@@ -277,6 +282,9 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
             }
             .onCustomerCenterCustomActionSelected { actionIdentifier, purchaseIdentifier in
                 onCustomAction?(actionIdentifier, purchaseIdentifier)
+            }
+            .onCustomerCenterChangePlansSelected { optionId in
+                changePlansSelected?(optionId)
             }
             .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
     }
