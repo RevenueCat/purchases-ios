@@ -197,92 +197,95 @@ struct BackgrounDStyle_Previews: PreviewProvider {
             .previewLayout(.sizeThatFits)
             .previewDisplayName("Color - Dark (should be red because fallback)")
 
-        // Image (Fill) - Light (should be pink cat)
-        testContent
-            .backgroundStyle(.image(.init(
-                light: .init(
-                    width: 750,
-                    height: 530,
-                    original: lightUrl,
-                    heic: lightUrl,
-                    heicLowRes: lightUrl
-                ),
-                dark: .init(
-                    width: 1024,
-                    height: 853,
-                    original: darkUrl,
-                    heic: darkUrl,
-                    heicLowRes: darkUrl
-                )
-            ), .fill, nil))
-            .previewLayout(.sizeThatFits)
-            .previewDisplayName("Image (Fill) - Light (should be pink cat)")
-
-        // Image (Fill) - Dark (should be japan cats)
-        testContent
-            .backgroundStyle(.image(.init(
-                light: .init(
-                    width: 750,
-                    height: 530,
-                    original: lightUrl,
-                    heic: lightUrl,
-                    heicLowRes: lightUrl
-                ),
-                dark: .init(
-                    width: 1024,
-                    height: 853,
-                    original: darkUrl,
-                    heic: darkUrl,
-                    heicLowRes: darkUrl
-                )
-            ), .fill, nil))
-            .preferredColorScheme(.dark)
-            .previewLayout(.sizeThatFits)
-            .previewDisplayName("Image - Dark (should be japan cats)")
-
-        // Image (Fill) - Light - with overlay gradient
-        testContent
-            .backgroundStyle(
-                .image(
-                    .init(
-                        light: .init(
-                            width: 750,
-                            height: 530,
-                            original: lightUrl,
-                            heic: lightUrl,
-                            heicLowRes: lightUrl
-                        )
+        // Images
+        Group {
+            // Image (Fill) - Light (should be pink cat)
+            testContent
+                .backgroundStyle(.image(.init(
+                    light: .init(
+                        width: 750,
+                        height: 530,
+                        original: lightUrl,
+                        heic: lightUrl,
+                        heicLowRes: lightUrl
                     ),
-                    .fill,
-                    .init(light: .linear(0, [
-                        .init(color: "#ff000088", percent: 30),
-                        .init(color: "#00000000", percent: 100)
-                    ]))
-                )
-            )
-            .previewLayout(.sizeThatFits)
-            .previewDisplayName("Image (Fill) - Light - with overlay gradient")
+                    dark: .init(
+                        width: 1024,
+                        height: 853,
+                        original: darkUrl,
+                        heic: darkUrl,
+                        heicLowRes: darkUrl
+                    )
+                ), .fill, nil))
+                .previewLayout(.sizeThatFits)
+                .previewDisplayName("Image (Fill) - Light (should be pink cat)")
 
-        // Image (Fit) - Light (should be pink cat)
-        testContent
-            .backgroundStyle(.image(.init(
-                light: .init(
-                    width: 750,
-                    height: 530,
-                    original: lightUrl,
-                    heic: lightUrl,
-                    heicLowRes: lightUrl
-                ),
-                dark: .init(
-                    width: 1024,
-                    height: 853,
-                    original: darkUrl,
-                    heic: darkUrl,
-                    heicLowRes: darkUrl
+            // Image (Fill) - Dark (should be japan cats)
+            testContent
+                .backgroundStyle(.image(.init(
+                    light: .init(
+                        width: 750,
+                        height: 530,
+                        original: lightUrl,
+                        heic: lightUrl,
+                        heicLowRes: lightUrl
+                    ),
+                    dark: .init(
+                        width: 1024,
+                        height: 853,
+                        original: darkUrl,
+                        heic: darkUrl,
+                        heicLowRes: darkUrl
+                    )
+                ), .fill, nil))
+                .preferredColorScheme(.dark)
+                .previewLayout(.sizeThatFits)
+                .previewDisplayName("Image - Dark (should be japan cats)")
+
+            // Image (Fill) - Light - with overlay gradient
+            testContent
+                .backgroundStyle(
+                    .image(
+                        .init(
+                            light: .init(
+                                width: 750,
+                                height: 530,
+                                original: lightUrl,
+                                heic: lightUrl,
+                                heicLowRes: lightUrl
+                            )
+                        ),
+                        .fill,
+                        .init(light: .linear(0, [
+                            .init(color: "#ff000088", percent: 30),
+                            .init(color: "#00000000", percent: 100)
+                        ]))
+                    )
                 )
-            ), .fit, nil))
-            .previewLayout(.sizeThatFits)
-            .previewDisplayName("Image (Fit) - Light (should be pink cat)")
+                .previewLayout(.sizeThatFits)
+                .previewDisplayName("Image (Fill) - Light - with overlay gradient")
+
+            // Image (Fit) - Light (should be pink cat)
+            testContent
+                .backgroundStyle(.image(.init(
+                    light: .init(
+                        width: 750,
+                        height: 530,
+                        original: lightUrl,
+                        heic: lightUrl,
+                        heicLowRes: lightUrl
+                    ),
+                    dark: .init(
+                        width: 1024,
+                        height: 853,
+                        original: darkUrl,
+                        heic: darkUrl,
+                        heicLowRes: darkUrl
+                    )
+                ), .fit, nil))
+                .previewLayout(.sizeThatFits)
+                .previewDisplayName("Image (Fit) - Light (should be pink cat)")
+        }
 
         testContent
             .backgroundStyle(
