@@ -139,8 +139,9 @@ struct VideoPlayerView: View {
 
 }
 
-#if os(macOS) || os(iOS) || os(watchOS)
-@available(iOS 18.0, macOS 15.0, watchOS 8.0, *)
+// Removed macOS because Emerge was having issues ignoring UIKit for some reason
+#if os(iOS) || os(watchOS)
+@available(iOS 18.0, watchOS 8.0, *)
 struct VideoViewPreviews: PreviewProvider {
 
     static var previews: some View {
