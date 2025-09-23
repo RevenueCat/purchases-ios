@@ -92,8 +92,8 @@ struct ImageComponentView: View {
                             with: style
                         )
                     }
-                    .applyImageWidth(size: style.size)
-                    .applyImageHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
+                    .applyMediaWidth(size: style.size)
+                    .applyMediaHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
                     .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
                         view.overlay(
                             Color.clear
