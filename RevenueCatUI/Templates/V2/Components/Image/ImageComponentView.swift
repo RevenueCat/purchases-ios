@@ -92,8 +92,14 @@ struct ImageComponentView: View {
                             with: style
                         )
                     }
-                    .applyMediaWidth(size: style.size)
-                    .applyMediaHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
+                    .applyImageWidth(size: style.size)
+                    .applyImageHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
+                    .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
+                        view.overlay(
+                            Color.clear
+                                .backgroundStyle(.color(colorOverlay))
+                        )
+                    })
                     .clipped()
                     .padding(style.padding.extend(by: style.border?.width ?? 0))
                     .shape(border: style.border,
@@ -155,18 +161,14 @@ struct ImageComponentView: View {
             .frame(maxWidth: maxWidth)
             // WIP: Fix this later when accessibility info is available
             .accessibilityHidden(true)
-            .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
-                view.overlay(
-                    Color.clear.backgroundStyle(.color(colorOverlay))
-                )
-            })
     }
 
 }
 
 #if DEBUG
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+// Removed macOS because Emerge was having issues ignoring UIKit for some reason
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, *)
 // swiftlint:disable:next type_body_length
 struct ImageComponentView_Previews: PreviewProvider {
     static let catUrl = URL(string: "https://assets.pawwalls.com/954459_1701163461.jpg")!
