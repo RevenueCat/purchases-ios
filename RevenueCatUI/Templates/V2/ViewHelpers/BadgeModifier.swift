@@ -359,7 +359,7 @@ struct BadgePreviews: View {
                         ))
                     ],
                     dimension: .horizontal(.center, .center),
-                    size: .init(width: .fill, height: .fixed(100)),
+                    size: .init(width: .fill, height: .fixed(140)),
                     spacing: 10,
                     backgroundColor: .init(light: .hex("#ffffff")),
                     padding: .init(top: 10, bottom: 10, leading: 10, trailing: 10),
@@ -380,7 +380,7 @@ struct BadgePreviews: View {
                                 ))
                             ],
                             dimension: .horizontal(),
-                            size: .init(width: .fill, height: .fixed(150)),
+                            size: .init(width: .fill, height: .fixed(158)),
                             spacing: 10,
                             backgroundColor: .init(light: .hex("#F67E70")),
                             padding: .init(top: 4, bottom: 4, leading: 16, trailing: 16),
