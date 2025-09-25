@@ -22,18 +22,16 @@ enum ProductsManagerFactory {
                               backend: Backend,
                               deviceCache: DeviceCache,
                               requestTimeout: TimeInterval) -> ProductsManagerType {
-            #if SIMULATED_STORE
             if apiKeyValidationResult == .simulatedStore {
                 return SimulatedStoreProductsManager(backend: backend,
                                                      deviceCache: deviceCache,
                                                      requestTimeout: requestTimeout)
+            } else {
+                return ProductsManager(productsRequestFactory: ProductsRequestFactory(),
+                                       diagnosticsTracker: diagnosticsTracker,
+                                       systemInfo: systemInfo,
+                                       requestTimeout: requestTimeout)
             }
-            #endif // SIMULATED_STORE
-
-            return ProductsManager(productsRequestFactory: ProductsRequestFactory(),
-                                   diagnosticsTracker: diagnosticsTracker,
-                                   systemInfo: systemInfo,
-                                   requestTimeout: requestTimeout)
     }
 
 }
