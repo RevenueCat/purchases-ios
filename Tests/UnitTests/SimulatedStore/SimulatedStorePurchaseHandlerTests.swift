@@ -43,7 +43,7 @@ class SimulatedStorePurchaseHandlerTests: TestCase {
             #if compiler(>=5.9)
             await self.fulfillment(of: [expectation])
             #else
-            self.wait(for: [expectation])
+            self.wait(for: [expectation], timeout: 2)
             #endif
             return .cancel
         }
