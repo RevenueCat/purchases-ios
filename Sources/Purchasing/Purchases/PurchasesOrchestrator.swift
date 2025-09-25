@@ -484,8 +484,8 @@ final class PurchasesOrchestrator {
                           winBackOffer: winBackOffer,
                           metadata: metadata,
                           completion: completionWithTracking)
-        } else if let testStoreProduct = product.testStoreProduct {
-            self.handlePurchase(testStoreProduct: testStoreProduct,
+        } else if let simulatedStoreProduct = product.testStoreProduct {
+            self.handlePurchase(simulatedStoreProduct: simulatedStoreProduct,
                                 metadata: metadata,
                                 completion: completionWithTracking)
         } else {
@@ -1960,11 +1960,11 @@ private extension PurchasesOrchestrator {
 
 private extension PurchasesOrchestrator {
 
-    func handlePurchase(testStoreProduct: TestStoreProduct,
+    func handlePurchase(simulatedStoreProduct: SimulatedStoreProduct,
                         metadata: [String: String]?,
                         completion: @escaping PurchaseCompletedBlock) {
         if self.systemInfo.isSimulatedStoreAPIKey {
-            self.purchase(simulatedStoreProduct: testStoreProduct, metadata: metadata, completion: completion)
+            self.purchase(simulatedStoreProduct: simulatedStoreProduct, metadata: metadata, completion: completion)
         } else {
             self.handleTestProductNotAvailableForPurchase(completion)
         }
