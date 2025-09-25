@@ -304,8 +304,6 @@ final class PurchasesOrchestrator {
     }
 
     func restorePurchases(completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
-        #if SIMULATED_STORE
-
         if self.systemInfo.isSimulatedStoreAPIKey {
             Logger.debug(Strings.purchase.restore_purchases_simulated_store)
             self.customerInfoManager.customerInfo(appUserID: self.appUserID, fetchPolicy: .default) { result in
@@ -314,7 +312,6 @@ final class PurchasesOrchestrator {
             return
         }
 
-        #endif // SIMULATED_STORE
         self.syncPurchases(receiptRefreshPolicy: .always,
                            isRestore: true,
                            initiationSource: .restore,
@@ -322,8 +319,6 @@ final class PurchasesOrchestrator {
     }
 
     func syncPurchases(completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)? = nil) {
-        #if SIMULATED_STORE
-
         if self.systemInfo.isSimulatedStoreAPIKey {
             Logger.debug(Strings.purchase.sync_purchases_simulated_store)
             self.customerInfoManager.customerInfo(appUserID: self.appUserID, fetchPolicy: .default) { result in
@@ -332,7 +327,6 @@ final class PurchasesOrchestrator {
             return
         }
 
-        #endif // SIMULATED_STORE
         self.syncPurchases(receiptRefreshPolicy: .never,
                            isRestore: allowSharingAppStoreAccount,
                            initiationSource: .restore,
@@ -1969,18 +1963,13 @@ private extension PurchasesOrchestrator {
     func handlePurchase(testStoreProduct: TestStoreProduct,
                         metadata: [String: String]?,
                         completion: @escaping PurchaseCompletedBlock) {
-        #if SIMULATED_STORE
         if self.systemInfo.isSimulatedStoreAPIKey {
             self.purchase(simulatedStoreProduct: testStoreProduct, metadata: metadata, completion: completion)
         } else {
             self.handleTestProductNotAvailableForPurchase(completion)
         }
-        #else
-        self.handleTestProductNotAvailableForPurchase(completion)
-        #endif // SIMULATED_STORE
     }
 
-    #if SIMULATED_STORE
     private func purchase(simulatedStoreProduct: SimulatedStoreProduct,
                           metadata: [String: String]?,
                           completion: @escaping PurchaseCompletedBlock) {
@@ -2004,7 +1993,6 @@ private extension PurchasesOrchestrator {
             }
         }
     }
-    #endif // SIMULATED_STORE
 
     private func handleTestProductNotAvailableForPurchase(_ completion: @escaping PurchaseCompletedBlock) {
         self.operationDispatcher.dispatchOnMainActor {

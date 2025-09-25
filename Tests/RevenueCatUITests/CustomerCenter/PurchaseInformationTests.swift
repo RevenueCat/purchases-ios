@@ -1094,11 +1094,7 @@ final class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.isLifetime).to(beFalse())
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
-        #if SIMULATED_STORE
         expect(subscriptionInfo.store) == .testStore
-        #else
-        expect(subscriptionInfo.store) == .unknownStore
-        #endif
     }
 
     // MARK: - Tests for improved title and price determination logic

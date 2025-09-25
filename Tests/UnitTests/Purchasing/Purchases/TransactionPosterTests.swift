@@ -350,8 +350,6 @@ class TransactionPosterTests: TestCase {
         ) == true
     }
 
-    #if SIMULATED_STORE
-
     func testPostReceiptForPurchaseInSimulatedStore() throws {
         self.setUp(observerMode: false, storeKitVersion: .storeKit2, apiKeyValidationResult: .simulatedStore)
         let purchaseDate = Date()
@@ -386,8 +384,6 @@ class TransactionPosterTests: TestCase {
 
         expect(self.receiptFetcher.receiptDataCalled) == false
     }
-
-    #endif // SIMULATED_STORE
 
 }
 

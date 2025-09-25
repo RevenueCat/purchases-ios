@@ -13,8 +13,6 @@
 
 import Foundation
 
-#if SIMULATED_STORE
-
 /// Implementation of `ProductsManagerType` for the Simulated Store.
 final class SimulatedStoreProductsManager: ProductsManagerType {
 
@@ -67,5 +65,3 @@ final class SimulatedStoreProductsManager: ProductsManagerType {
     // See `CachingProductsManager`.
     func clearCache() { }
 }
-
-#endif // SIMULATED_STORE

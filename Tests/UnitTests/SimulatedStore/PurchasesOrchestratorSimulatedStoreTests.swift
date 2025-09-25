@@ -164,8 +164,6 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
         return testProduct.toStoreProduct()
     }
 
-#if SIMULATED_STORE
-
     // MARK: - PurchasesOrchestrator + API Key type
 
     func testPurchaseWithSimulatedStoreProductAndTestAPIKeyCallsSimulatedStorePurchaseHandler() async {
@@ -463,9 +461,6 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
         XCTAssertTrue(self.customerInfoManager.invokedCustomerInfo)
     }
 
-#endif
-
-#if !SIMULATED_STORE
     func testPurchaseWithTestStoreProductAndTestAPIKeyWhenTestStoreFlagDisabledReturnsError() async {
         let orchestrator = self.createOrchestrator()
         let testProduct = self.createTestStoreProduct()
@@ -482,7 +477,6 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
         }
 
     }
-#endif
 
     private func createOrchestrator() -> PurchasesOrchestrator {
         let orchestrator = PurchasesOrchestrator(
