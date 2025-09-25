@@ -1663,6 +1663,10 @@ workflows:
       - danger
 
   weekly-run-workflow:
+    when:
+      and:
+        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+        - equal: ["release-train", << pipeline.schedule.name >>]
     jobs:
       - release-train
 
