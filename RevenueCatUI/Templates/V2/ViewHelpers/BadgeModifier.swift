@@ -310,14 +310,9 @@ struct EdgeToEdgeTopBottomModifier: ViewModifier {
                 badgeView
             }
             content
-                .background(
-                    GeometryReader { geometry in
-                        Color.clear
-                            .onAppear {
-                                stackSize = geometry.size
-                            }
-                    }
-                )
+                .onSizeChange { size in
+                    stackSize = size
+                }
             if badge.alignment == .bottom {
                 badgeView
             }
