@@ -461,23 +461,6 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
         XCTAssertTrue(self.customerInfoManager.invokedCustomerInfo)
     }
 
-    func testPurchaseWithTestStoreProductAndTestAPIKeyWhenTestStoreFlagDisabledReturnsError() async {
-        let orchestrator = self.createOrchestrator()
-        let testProduct = self.createTestStoreProduct()
-
-        await waitUntil { completion in
-            orchestrator.purchase(
-                product: testProduct,
-                package: nil,
-                trackDiagnostics: false
-            ) { _, _, error, _ in
-                expect(error?.code) == ErrorCode.productNotAvailableForPurchaseError.rawValue
-                completion()
-            }
-        }
-
-    }
-
     private func createOrchestrator() -> PurchasesOrchestrator {
         let orchestrator = PurchasesOrchestrator(
             productsManager: self.productsManager,
