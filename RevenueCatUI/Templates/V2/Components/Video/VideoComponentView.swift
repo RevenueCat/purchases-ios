@@ -121,12 +121,10 @@ struct VideoComponentView: View {
                     }
                     .applyMediaWidth(size: style.size)
                     .applyMediaHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
-                    .clipped()
-                    .shape(border: style.border,
-                           shape: style.shape)
-                    .shadow(shadow: style.shadow,
-                            shape: style.shape?.toInsettableShape())
                     .padding(style.padding.extend(by: style.border?.width ?? 0))
+                    .shape(border: style.border, shape: style.shape)
+                    .clipped()
+                    .shadow(style.shadow)
                     .padding(style.margin)
                 }
             }

@@ -80,6 +80,18 @@ struct ShadowModifier: ViewModifier {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
+    // There is a good reason to use the swiftUI shadow modifier, our custom layer modifier
+    // doesn't easily support our custom shapes like convex and concave. The constraints laid
+    // out in the comments for the other modifier are outweighed by this for video and image components
+    @ViewBuilder
+    func shadow(_ shadow: ShadowModifier.ShadowInfo?) -> some View {
+        if let shadow {
+            self.shadow(color: shadow.color, radius: shadow.radius, x: shadow.x, y: shadow.y)
+        } else {
+            self
+        }
+    }
+
     func shadow(
         shadow: ShadowModifier.ShadowInfo?,
         shape: (some Shape)?
