@@ -51,6 +51,8 @@ class TestCase: XCTestCase {
 
     @MainActor
     override func tearDown() {
+        self.logger = nil
+        
         super.tearDown()
     }
 
