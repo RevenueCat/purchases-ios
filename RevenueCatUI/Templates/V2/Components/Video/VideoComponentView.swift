@@ -55,7 +55,31 @@ struct VideoComponentView: View {
                     for: self.packageContext.package
                 )
             ) { style in
-                Color.clear
+                if style.visible {
+                    ZStack {
+                        if let imageSource, let imageViewModel = try? ImageComponentViewModel(
+                            localizationProvider: viewModel.localizationProvider,
+                            uiConfigProvider: viewModel.uiConfigProvider,
+                            component: .init(source: imageSource)
+                        ) {
+                            ImageComponentView(viewModel: imageViewModel)
+                        }
+
+                        if let cachedURL {
+                            renderVideo(
+                                VideoPlayerView(
+                                    videoURL: cachedURL,
+                                    shouldAutoPlay: style.autoPlay,
+                                    contentMode: style.contentMode,
+                                    showControls: style.showControls,
+                                    loopVideo: style.loop,
+                                    muteAudio: style.muteAudio
+                                ),
+                                size: size,
+                                with: style
+                            )
+                        }
+                    }
                     .onAppear {
                         self.imageSource = viewModel.imageSource
                         let fileRepository = FileRepository.shared
@@ -92,31 +116,6 @@ struct VideoComponentView: View {
                             resumeDownloadOfFullResolutionVideo()
                         } else {
                             resumeDownloadOfFullResolutionVideo()
-                        }
-                    }
-                if style.visible {
-                    ZStack {
-                        if let imageSource, let imageViewModel = try? ImageComponentViewModel(
-                            localizationProvider: viewModel.localizationProvider,
-                            uiConfigProvider: viewModel.uiConfigProvider,
-                            component: .init(source: imageSource)
-                        ) {
-                            ImageComponentView(viewModel: imageViewModel)
-                        }
-
-                        if let cachedURL {
-                            renderVideo(
-                                VideoPlayerView(
-                                    videoURL: cachedURL,
-                                    shouldAutoPlay: style.autoPlay,
-                                    contentMode: style.contentMode,
-                                    showControls: style.showControls,
-                                    loopVideo: style.loop,
-                                    muteAudio: style.muteAudio
-                                ),
-                                size: size,
-                                with: style
-                            )
                         }
                     }
                     .applyMediaWidth(size: style.size)
