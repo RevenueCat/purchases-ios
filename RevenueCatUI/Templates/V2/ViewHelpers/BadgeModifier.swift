@@ -62,7 +62,7 @@ fileprivate extension View {
                         ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
                             .padding(badge.stack.padding.edgeInsets)
                             .backgroundStyle(badge.backgroundStyle)
-                            .shape(border: nil, shape: effectiveShape(badge: badge))
+                            .shape(border: badge.stackBorder, shape: effectiveShape(badge: badge))
                     }
                     .fixedSize()
                     .padding(effectiveMargin(badge: badge).edgeInsets)
@@ -81,7 +81,7 @@ fileprivate extension View {
                         ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
                             .padding(badge.stack.padding.edgeInsets)
                             .backgroundStyle(badge.backgroundStyle)
-                            .shape(border: nil, shape: effectiveShape(badge: badge))
+                            .shape(border: badge.stackBorder, shape: effectiveShape(badge: badge))
                     }
                     .fixedSize()
                     .padding(effectiveMargin(badge: badge).edgeInsets)
@@ -109,7 +109,7 @@ fileprivate extension View {
                         ComponentsView(componentViewModels: badge.badgeViewModels, onDismiss: {})
                             .padding(badge.stack.padding.edgeInsets)
                             .backgroundStyle(badge.backgroundStyle)
-                            .shape(border: nil, shape: effectiveShape(badge: badge))
+                            .shape(border: badge.stackBorder, shape: effectiveShape(badge: badge))
                     }
                     .fixedSize()
                 }
@@ -321,7 +321,7 @@ struct EdgeToEdgeTopBottomModifier: ViewModifier {
             VStack {}
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .backgroundStyle(badge.backgroundStyle)
-                .shape(border: nil,
+                .shape(border: badge.stackBorder,
                        shape: effectiveShape(badge: badge,
                                              pillStackRadius: min(stackSize.width, stackSize.height)/2))
         }
