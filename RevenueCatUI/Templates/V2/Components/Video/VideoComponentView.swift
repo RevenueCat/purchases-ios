@@ -93,6 +93,7 @@ struct VideoComponentView: View {
                                     // if it didn't error out, expediting the download time and reducing the memory
                                     // footprint of paywalls
                                     let url = try await fileRepository.generateOrGetCachedFileURL(for: style.url)
+                                    guard url != cachedURL else { return }
                                     await MainActor.run {
                                         self.cachedURL = url
                                         self.imageSource = nil
@@ -109,7 +110,7 @@ struct VideoComponentView: View {
                         if let cachedURL = fileRepository.getCachedFileURL(for: style.url) {
                             self.cachedURL = cachedURL
                             self.imageSource = nil
-                        } else if let lowResUrl = style.lowResUrl {
+                        } else if let lowResUrl = style.lowResUrl, lowResUrl != style.url {
                             let lowResCachedURL = fileRepository.getCachedFileURL(for: lowResUrl)
                             self.cachedURL = lowResCachedURL ?? lowResUrl
                             self.imageSource = nil
