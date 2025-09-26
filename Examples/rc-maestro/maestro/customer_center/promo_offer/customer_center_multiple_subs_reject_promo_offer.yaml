@@ -1,5 +1,5 @@
 appId: com.revenuecat.maestro.ios
-name: Accept Promo Offer with multiple subscriptions
+name: Reject Promo Offer with multiple subscriptions
 
 onFlowComplete:
   - runFlow: 
