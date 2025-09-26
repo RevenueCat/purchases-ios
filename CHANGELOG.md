@@ -1,3 +1,55 @@
+## 5.40.0
+## RevenueCat SDK
+### ✨ New Features
+* Support StoreKitError.unsupported (#5589) via Will Taylor (@fire-at-will)
+### 🐞 Bugfixes
+* Fix: 10 Result builder limit (#5592) via Jacob Rakidzich (@JZDesign)
+* MON-1206 Fix background image—gradient overlay (#5584) via Jacob Rakidzich (@JZDesign)
+* Fix compilation error with XCFramework in Xcode 26 (#5587) via Antonio Pallares (@ajpallares)
+
+## RevenueCatUI SDK
+### 🐞 Bugfixes
+* MON-1296 Fix gradient rendering issue in iOS 26 (#5586) via Jacob Rakidzich (@JZDesign)
+
+### 🔄 Other Changes
+* Remove `github_rate_limit` in release trains (#5597) via Cesar de la Vega (@vegaro)
+* Bump fastlane-plugin-revenuecat_internal from `401d148` to `24d8eda` (#5598) via dependabot[bot] (@dependabot[bot])
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5594) via RevenueCat Git Bot (@RCGitBot)
+* Bump fastlane-plugin-revenuecat_internal from `a6dc551` to `401d148` (#5593) via dependabot[bot] (@dependabot[bot])
+* feat: Introduce CustomerCenterExternalActions to CustomerCenter (#5576) via Facundo Menzella (@facumenzella)
+* Fix flaky snapshot test (#5588) via Antonio Pallares (@ajpallares)
+
+## 5.39.3
+## RevenueCatUI SDK
+### Customer Center
+#### 🐞 Bugfixes
+* Open promotional offers from CustomerCenter Detail screen (#5581) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Fix some more flaky tests (#5573) via Antonio Pallares (@ajpallares)
+
+## 5.39.2
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Fix issue where low res images load too often (#5577) via Josh Holtz (@joshdholtz)
+
+## 5.39.1
+## RevenueCatUI SDK
+### Customer Center
+#### 🐞 Bugfixes
+* Pass navigation options explicitly to dismiss button (#5565) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Fix a flaky test (#5572) via Antonio Pallares (@ajpallares)
+* Add iOS 26 tests to CI (#5552) via Antonio Pallares (@ajpallares)
+* Silence deprecation warnings in XCFramework (#5554) via Antonio Pallares (@ajpallares)
+* CircleCI: Update deprecated Xcode versions (#5567) via Antonio Pallares (@ajpallares)
+* Tuist: rename generated Xcode workspace to RevenueCat-Tuist.xcworkspace (#5566) via Antonio Pallares (@ajpallares)
+* Bump fastlane-plugin-revenuecat_internal from `7d97553` to `a6dc551` (#5562) via dependabot[bot] (@dependabot[bot])
+* Tuist: fix PaywallsTester project generation (#5564) via Antonio Pallares (@ajpallares)
+* Bump nokogiri from 1.18.9 to 1.18.10 (#5563) via dependabot[bot] (@dependabot[bot])
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5555) via RevenueCat Git Bot (@RCGitBot)
+
 ## 5.39.0
 ## RevenueCat SDK
 ### ✨ New Features

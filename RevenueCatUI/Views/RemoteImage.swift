@@ -29,6 +29,9 @@ struct RemoteImage<Content: View>: View {
     let expectedSize: CGSize?
     let content: (Image, CGSize) -> Content
 
+    @State
+    private var imageLoadedFrom: ImageLoadedFrom?
+
     // Preferred method of loading images
 
     @State
@@ -58,7 +61,7 @@ struct RemoteImage<Content: View>: View {
         }
         #endif
 
-        if self.cachedImageInfo != nil {
+        if self.lowResCachedImage != nil {
             // No transition if image is fully loaded from cache
             return .identity
         } else {
@@ -125,42 +128,63 @@ struct RemoteImage<Content: View>: View {
         return url.asImageAndSize
     }
 
-    var cachedImageInfo: (Image, CGSize)? {
-        let fullResUrl: URL
-        let lowResUrl: URL?
+    let fileRepository = FileRepository()
 
+    var lowResURLForScheme: URL? {
         switch self.colorScheme {
         case .dark:
-            fullResUrl = self.darkUrl ?? self.url
-            lowResUrl = self.darkLowResUrl ?? self.lowResUrl
+            return self.darkLowResUrl ?? self.lowResUrl
         case .light:
             fallthrough
         @unknown default:
-            fullResUrl = self.darkUrl ?? self.url
-            lowResUrl = self.darkLowResUrl ?? self.lowResUrl
+            return self.lowResUrl
+        }
+    }
+
+    var highResFileUrlForScheme: URL {
+        switch self.colorScheme {
+        case .dark:
+            return self.darkUrl ?? self.url
+        case .light:
+            fallthrough
+        @unknown default:
+            return self.url
+        }
+    }
+
+    var imageInfoToUse: (Image, CGSize)? {
+        // Priority 1 - local bundle image
+        if let imageAndSize = self.localImage {
+            return imageAndSize
         }
 
-        let fileRepository = FileRepository()
-        let fullResCachedUrl = fileRepository.getCachedFileURL(for: fullResUrl)
-        let lowResCachedUrl = lowResUrl.flatMap { fileRepository.getCachedFileURL(for: $0) }
+        // Priority 2 - high res FileRepository
+        if let imageAndSize = self.highResCachedImage {
+            return imageAndSize
+        }
 
-        let cachedUrl = fullResCachedUrl ?? lowResCachedUrl
+        // Priority 3 - high res URLSession Cache
+        if case let .success(result) = highResLoader.result {
+            return (result.image, result.size)
+        }
 
-        return cachedUrl?.asImageAndSize
+        // Priority 4 - low res FileRepository
+        if let imageAndSize = self.lowResCachedImage {
+            return imageAndSize
+        }
+
+        // Priority 5 - low res FileRepository
+        if case let .success(result) = lowResLoader.result {
+            return (result.image, result.size)
+        }
+
+        return nil
     }
 
     var body: some View {
         Group {
-            if let imageAndSize = self.localImage {
-                content(imageAndSize.0, imageAndSize.1)
-            // Preferred method
-            } else if let imageAndSize = self.cachedImageInfo {
-                content(imageAndSize.0, imageAndSize.1)
-            // Legacy method
-            } else if case let .success(result) = highResLoader.result {
-                content(result.image, result.size)
-            } else if case let .success(result) = lowResLoader.result {
-                content(result.image, result.size)
+            if let imageInfoToUse = self.imageInfoToUse {
+                content(imageInfoToUse.0, imageInfoToUse.1)
             } else if case let .failure(highResError) = highResLoader.result {
                 if !fetchLowRes {
                     emptyView(error: highResError)
@@ -169,7 +193,6 @@ struct RemoteImage<Content: View>: View {
                 } else {
                     emptyView(error: nil)
                 }
-            // Empty state
             } else {
                 if let expectedSize = self.expectedSize {
                     content(Image.clearImage(size: expectedSize), expectedSize)
@@ -179,6 +202,14 @@ struct RemoteImage<Content: View>: View {
             }
         }
         .transition(self.transition)
+        .onAppear {
+            // First attempt to load cached file as sync as possible from cache
+            if let lowResCachedImage = self.lowResURLForScheme.flatMap({ self.fileRepository.getCachedFileURL(for: $0)
+            })?.asImageAndSize {
+                self.lowResCachedImage = lowResCachedImage
+                self.imageLoadedFrom = .lowResFileRepositoryDirectCache
+            }
+        }
         .task(id: self.url) { // This cancels the previous task when the URL changes.
             #if DEBUG
             // Don't attempt to load if local image
@@ -188,20 +219,39 @@ struct RemoteImage<Content: View>: View {
             }
             #endif
 
-            switch self.colorScheme {
-            case .dark:
-                await loadImages(
-                    url: self.darkUrl ?? self.url,
-                    lowResUrl: self.darkLowResUrl ?? self.lowResUrl
-                )
-            case .light:
-                fallthrough
-            @unknown default:
-                await loadImages(
-                    url: self.url,
-                    lowResUrl: self.lowResUrl
-                )
+            // 1. Only attempt to fetch the low res again if we don't have it
+            if self.lowResCachedImage == nil, let url = self.lowResURLForScheme {
+                self.lowResCachedImage = self.fileRepository.getCachedFileURL(for: url)?.asImageAndSize
+                self.imageLoadedFrom = .lowResFileRepository
             }
+
+            // 2. Fetch the high res to replace the initial low res
+            if let highResCachedImage = self.fileRepository.getCachedFileURL(
+                for: self.highResFileUrlForScheme
+            )?.asImageAndSize {
+                self.highResCachedImage = highResCachedImage
+                self.imageLoadedFrom = .highResFileRepository
+            }
+
+            // 3. Load using legacy URLSession cache if needed
+            if self.highResCachedImage == nil {
+                switch self.colorScheme {
+                case .dark:
+                    await loadImages(
+                        url: self.darkUrl ?? self.url,
+                        lowResUrl: self.darkLowResUrl ?? self.lowResUrl
+                    )
+                case .light:
+                    fallthrough
+                @unknown default:
+                    await loadImages(
+                        url: self.url,
+                        lowResUrl: self.lowResUrl
+                    )
+                }
+            }
+
+            Logger.debug(Strings.image_displayed_using(self.imageLoadedFrom?.rawValue ?? "unknown"))
         }
     }
 
@@ -210,6 +260,7 @@ struct RemoteImage<Content: View>: View {
             async let lowResLoad: Void = lowResLoader.load(url: lowResLoc)
             async let highResLoad: Void = highResLoader.load(url: url)
             _ = await (lowResLoad, highResLoad)
+            self.imageLoadedFrom = .urlSessionCache
         } else {
             await highResLoader.load(url: url)
         }
@@ -240,6 +291,15 @@ struct RemoteImage<Content: View>: View {
         }
     }
 
+}
+
+private enum ImageLoadedFrom: String {
+    case localBundle
+    case lowResFileRepositoryDirectCache
+    case lowResFileRepository
+    case highResFileRepository
+    case urlSessionCache
+    case failed
 }
 
 private extension URL {

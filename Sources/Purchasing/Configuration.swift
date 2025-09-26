@@ -420,7 +420,6 @@ extension Configuration {
     private static let simulatedStoreKeyPrefix = "test_"
 
     private static func validate(apiKey: String) -> APIKeyValidationResult {
-        #if SIMULATED_STORE
         if apiKey.hasPrefix(simulatedStoreKeyPrefix) {
             // Simulated Store key format: "test_CtDdmbdWBySmqJeeQUTyrNxETUVkajsJ"
 
@@ -435,7 +434,6 @@ extension Configuration {
                        " app on the RevenueCat dashboard and use its corresponding Apple API key before releasing.")
             #endif
         }
-        #endif // SIMULATED_STORE
 
         if applePlatformKeyPrefixes.contains(where: { prefix in apiKey.hasPrefix(prefix) }) {
             // Apple key format: "apple_CtDdmbdWBySmqJeeQUTyrNxETUVkajsJ"
