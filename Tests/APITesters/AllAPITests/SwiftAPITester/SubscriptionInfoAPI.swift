@@ -32,4 +32,5 @@ func checkSubscriptionInfoAPI() {
     let txId: String? = subscription.storeTransactionId
     let isActive: Bool = subscription.isActive
     let willRenew: Bool = subscription.willRenew
+    let displayName = subscription.displayName
 }
