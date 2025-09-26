@@ -40,7 +40,11 @@ class SimulatedStorePurchaseHandlerTests: TestCase {
         let expectation = self.expectation(description: "All purchase product calls happened")
 
         mockSimulatedStorePurchaseUI.stubbedPurchaseResult.value = {
+            #if compiler(>=5.9)
             await self.fulfillment(of: [expectation])
+            #else
+            self.wait(for: [expectation], timeout: 2)
+            #endif
             return .cancel
         }
         let hander = SimulatedStorePurchaseHandler(purchaseUI: mockSimulatedStorePurchaseUI,
