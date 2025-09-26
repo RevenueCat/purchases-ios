@@ -13,8 +13,11 @@
 
 import Foundation
 
-/// A file cache
-@_spi(Internal) public class FileRepository: FileRepositoryType, @unchecked Sendable {
+/// A file repository
+@_spi(Internal) public final class FileRepository: FileRepositoryType, @unchecked Sendable {
+    /// A shared file repository
+    @_spi(Internal) public static let shared = FileRepository()
+
     private static let defaultBasePath = "RevenueCat"
 
     let networkService: SimpleNetworkServiceType
@@ -120,7 +123,7 @@ import Foundation
 }
 
 /// A file cache
-@_spi(Internal) public protocol FileRepositoryType {
+@_spi(Internal) public protocol FileRepositoryType: Sendable {
 
     /// Prefetch files at the given urls
     /// - Parameter urls: An array of URL to fetch data from

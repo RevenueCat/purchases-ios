@@ -40,7 +40,7 @@ struct ImageComponentView: View {
 
     let viewModel: ImageComponentViewModel
 
-    @State var maxWidth: CGFloat?
+    @State var size: CGSize?
 
     var body: some View {
         viewModel.styles(
@@ -60,19 +60,6 @@ struct ImageComponentView: View {
                 )
 
                 ZStack {
-                    // We need the max width of the parent view an image of a fill or
-                    // fixed width doesn't push passed the bounds.
-                    //
-                    // Once we have the width once, we can remove the GeometryReader
-                    if self.maxWidth == nil {
-                        GeometryReader { proxy in
-                            Color.clear
-                                .onAppear {
-                                    self.maxWidth = proxy.size.width
-                                }
-                        }
-                    }
-
                     RemoteImage(
                         url: style.url,
                         lowResUrl: style.lowResUrl,
@@ -86,14 +73,14 @@ struct ImageComponentView: View {
                             image,
                             size,
                             maxWidth: self.calculateMaxWidth(
-                                parentWidth: self.maxWidth ?? 0,
+                                parentWidth: self.size?.width ?? 0,
                                 style: style
                             ),
                             with: style
                         )
                     }
-                    .applyImageWidth(size: style.size)
-                    .applyImageHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
+                    .applyMediaWidth(size: style.size)
+                    .applyMediaHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
                     .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
                         view.overlay(
                             Color.clear
@@ -105,20 +92,11 @@ struct ImageComponentView: View {
                     .shape(border: style.border,
                            shape: style.shape)
                     .shadow(shadow: style.shadow,
-                            shape: style.shape?.toInsettableShape())
+                            shape: style.shape?.toInsettableShape(size: size))
                     .padding(style.margin)
-                    .background(
-                        GeometryReader { proxy in
-                            Color.clear
-                                .onAppear {
-                                    self.maxWidth = proxy.size.width
-                                }
-                                .onChangeOf(proxy.size.width) { newWidth in
-                                    self.maxWidth = newWidth
-                                }
-                        }
-                    )
                 }
+                .onSizeChange({ size = $0 })
+
             }
         }
     }
@@ -161,53 +139,6 @@ struct ImageComponentView: View {
             .frame(maxWidth: maxWidth)
             // WIP: Fix this later when accessibility info is available
             .accessibilityHidden(true)
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-fileprivate extension View {
-
-    @ViewBuilder
-    func applyImageWidth(size: PaywallComponent.Size) -> some View {
-        switch size.width {
-        case .fit:
-            self
-        case .fill:
-            self.frame(maxWidth: .infinity)
-        case .fixed(let value):
-            self.frame(width: Double(value))
-        case .relative:
-            self
-        }
-    }
-
-    @ViewBuilder
-    func applyImageHeight(size: PaywallComponent.Size, aspectRatio: Double) -> some View {
-        switch size.height {
-        case .fit:
-            switch size.width {
-            case .fit:
-                self
-            case .fill:
-                self
-            case .fixed(let value):
-                // This is the only change versus the regular .size() modifier.
-                // When the image has height=fit and fixed width, we manually set a
-                // fixed height according to the aspect ratio.
-                // Otherwise the image would grow vertically to occupy available space.
-                // See "Image streching vertically" preview
-                self.frame(height: Double(value) / aspectRatio)
-            case .relative:
-                self
-            }
-        case .fill:
-            self.frame(maxHeight: .infinity)
-        case .fixed(let value):
-            self.frame(height: Double(value))
-        case .relative:
-            self
-        }
     }
 
 }
