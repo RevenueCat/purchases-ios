@@ -733,7 +733,7 @@ jobs:
   run-revenuecat-ui-ios-26:
     executor:
       name: macos-executor
-      xcode_version: "26.0"
+      xcode_version: "26.0.1"
 
     steps:
       - checkout
@@ -815,7 +815,7 @@ jobs:
   run-test-ios-26:
     executor:
       name: macos-executor
-      xcode_version: "26.0"
+      xcode_version: "26.0.1"
     steps:
       - checkout
       - install-dependencies:
