@@ -12,4 +12,4 @@ snapshots:
           - type: regex
             value: ^(?!(PaywallsTester|RevenueCatUI)).*
           - type: exact
-            value: AppList_Previews
+            value: PaywallsTester/AppList
