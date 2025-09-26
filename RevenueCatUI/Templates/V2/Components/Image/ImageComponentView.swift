@@ -40,7 +40,7 @@ struct ImageComponentView: View {
 
     let viewModel: ImageComponentViewModel
 
-    @State var maxWidth: CGFloat?
+    @State var size: CGSize?
 
     var body: some View {
         viewModel.styles(
@@ -60,19 +60,6 @@ struct ImageComponentView: View {
                 )
 
                 ZStack {
-                    // We need the max width of the parent view an image of a fill or
-                    // fixed width doesn't push passed the bounds.
-                    //
-                    // Once we have the width once, we can remove the GeometryReader
-                    if self.maxWidth == nil {
-                        GeometryReader { proxy in
-                            Color.clear
-                                .onAppear {
-                                    self.maxWidth = proxy.size.width
-                                }
-                        }
-                    }
-
                     RemoteImage(
                         url: style.url,
                         lowResUrl: style.lowResUrl,
@@ -86,7 +73,7 @@ struct ImageComponentView: View {
                             image,
                             size,
                             maxWidth: self.calculateMaxWidth(
-                                parentWidth: self.maxWidth ?? 0,
+                                parentWidth: self.size?.width ?? 0,
                                 style: style
                             ),
                             with: style
@@ -105,20 +92,11 @@ struct ImageComponentView: View {
                     .shape(border: style.border,
                            shape: style.shape)
                     .shadow(shadow: style.shadow,
-                            shape: style.shape?.toInsettableShape())
+                            shape: style.shape?.toInsettableShape(size: size))
                     .padding(style.margin)
-                    .background(
-                        GeometryReader { proxy in
-                            Color.clear
-                                .onAppear {
-                                    self.maxWidth = proxy.size.width
-                                }
-                                .onChangeOf(proxy.size.width) { newWidth in
-                                    self.maxWidth = newWidth
-                                }
-                        }
-                    )
                 }
+                .onSizeChange({ size = $0 })
+
             }
         }
     }

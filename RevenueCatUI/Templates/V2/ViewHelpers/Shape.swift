@@ -148,7 +148,6 @@ struct ShapeModifier: ViewModifier {
                     }
             }
         case .concave:
-            // WIP: Need to implement
             content
                 .modifier(ConcaveMaskModifier(curveHeightPercentage: 0.2))
         case .convex:
@@ -177,13 +176,15 @@ private struct ConcaveMaskModifier: ViewModifier {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-private struct ConcaveShape: Shape {
+private struct ConcaveShape: InsettableShape {
+    var insetAmount: Double = 0.0
 
     let curveHeightPercentage: CGFloat
     let size: CGSize
 
     func path(in rect: CGRect) -> Path {
         var path = Path()
+        let rect = rect.insetBy(dx: insetAmount, dy: insetAmount)
 
         // Start at the top-left corner
         path.move(to: CGPoint(x: rect.minX, y: rect.minY))
@@ -213,6 +214,12 @@ private struct ConcaveShape: Shape {
         max(0, size.height * curveHeightPercentage)
     }
 
+    func inset(by amount: CGFloat) -> some InsettableShape {
+        var newShape = self
+        newShape.insetAmount += amount
+        return newShape
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
@@ -234,13 +241,15 @@ private struct ConvexMaskModifier: ViewModifier {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-private struct ConvexShape: Shape {
+private struct ConvexShape: InsettableShape {
+    var insetAmount: Double = 0.0
 
     let curveHeightPercentage: CGFloat
     let size: CGSize
 
     func path(in rect: CGRect) -> Path {
         var path = Path()
+        let rect = rect.insetBy(dx: insetAmount, dy: insetAmount)
 
         // Start at the top-left corner
         path.move(to: CGPoint(x: rect.minX, y: rect.minY))
@@ -268,6 +277,12 @@ private struct ConvexShape: Shape {
     private var curveHeight: CGFloat {
         // Calculate the curve height as a percentage of the view's height
         max(0, size.height * curveHeightPercentage) / 2
+    }
+
+    func inset(by amount: CGFloat) -> some InsettableShape {
+        var newShape = self
+        newShape.insetAmount += amount
+        return newShape
     }
 
 }
@@ -387,7 +402,7 @@ extension View {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension ShapeModifier.Shape {
-    func toInsettableShape() -> (AnyInsettableShape)? {
+    func toInsettableShape(size: CGSize? = nil) -> (AnyInsettableShape)? {
         switch self {
         case .rectangle(let radiusInfo):
             return self.effectiveRectangleShape(radiusInfo: radiusInfo)
@@ -399,9 +414,16 @@ extension ShapeModifier.Shape {
             #else
             return Capsule().eraseToAnyInsettableShape()
             #endif
-        case .concave, .convex:
-            return nil
+        case .concave:
+            if let size = size {
+                return ConcaveShape(curveHeightPercentage: 0.2, size: size).eraseToAnyInsettableShape()
+            }
+        case .convex:
+            if let size = size {
+                return ConvexShape(curveHeightPercentage: 0.2, size: size).eraseToAnyInsettableShape()
+            }
         }
+        return nil
     }
 
     private func effectiveRectangleShape(radiusInfo: ShapeModifier.RadiusInfo?) -> AnyInsettableShape {
