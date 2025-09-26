@@ -110,7 +110,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
                 }
 
         case let .promotionalOffer(promotionalOffer) where purchaseInformation?.store == .appStore:
-            if promotionalOffer.eligible, let productIdentifier = feedbackSurveyData?.productIdentifier {
+            if promotionalOffer.eligible, let productIdentifier = purchaseInformation?.productIdentifier {
                 self.loadingPath = path
                 let result = await loadPromotionalOfferUseCase.execute(
                     promoOfferDetails: promotionalOffer,
@@ -133,6 +133,10 @@ class BaseManageSubscriptionViewModel: ObservableObject {
         default:
             await self.onPathSelected(path: path)
         }
+    }
+
+    func onDismissPromotionalOffer() {
+        self.promotionalOfferData = nil
     }
 
     func onDismissInAppBrowser() {

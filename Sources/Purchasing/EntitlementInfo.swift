@@ -48,14 +48,6 @@ import Foundation
 
     /// For entitlements granted via Paddle.
     @objc(RCPaddle) case paddle = 9
-
-    #if SIMULATED_STORE
-
-    /// For entitlements granted via the Test Store.
-    @objc(RCTestStore) case testStore = 10
-
-    #endif
-
 }
 
 extension Store: CaseIterable {}

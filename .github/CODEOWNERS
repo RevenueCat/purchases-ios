@@ -7,3 +7,5 @@
 /RevenueCatUI/CustomerCenter/ @RevenueCat/customer-center
 /Tests/RevenueCatUITests/ @RevenueCat/customer-center
 
+# Paywalls
+/RevenueCatUI/Templates/ @RevenueCat/monetization

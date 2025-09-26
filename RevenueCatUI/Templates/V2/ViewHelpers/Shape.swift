@@ -502,7 +502,7 @@ struct CornerBorder_Previews: PreviewProvider {
                     heic: lightUrl,
                     heicLowRes: lightUrl
                 )
-            ), .fill),
+            ), .fill, nil),
             nil
         ]
 

@@ -1418,7 +1418,7 @@ jobs:
       - install-dependencies
       - run:
           name: Create automatic PR
-          command: bundle exec fastlane automatic_bump github_rate_limit:10
+          command: bundle exec fastlane automatic_bump
 
   integration-tests-all:
     executor:
