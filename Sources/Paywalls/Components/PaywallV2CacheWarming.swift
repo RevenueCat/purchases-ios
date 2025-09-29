@@ -37,9 +37,9 @@ extension PaywallComponentsData {
 extension PaywallComponentsData.PaywallComponentsConfig {
 
     var allImageURLs: [URL] {
-        let rootStackImageURLs = self.collectAllImageURLs(in: self.stack, includeHighRes: false)
+        let rootStackImageURLs = self.collectAllImageURLs(in: self.stack)
         let stickFooterImageURLs = self.stickyFooter.flatMap {
-            self.collectAllImageURLs(in: $0.stack, includeHighRes: false)
+            self.collectAllImageURLs(in: $0.stack)
         } ?? []
 
         return rootStackImageURLs + stickFooterImageURLs
@@ -47,12 +47,24 @@ extension PaywallComponentsData.PaywallComponentsConfig {
 
     // swiftlint:disable:next cyclomatic_complexity function_body_length
     private func collectAllImageURLs(
-        in stack: PaywallComponent.StackComponent,
-        includeHighRes: Bool
+    in stack: PaywallComponent.StackComponent,
+    includeHighResInComponentHeirarchy: (PaywallComponent) -> Bool = { component in
+        // collecting high res images from the sheet is important because async functions
+        // prevent the proper animation from playing during sheet presentation and by collecting
+        // the images ahead of time we can synchronously render the image instead.
+        return component.isSheetButton
+    }
     ) -> [URL] {
 
         var urls: [URL] = []
         for component in stack.components {
+            var includeHighResInComponentHeirarchy = includeHighResInComponentHeirarchy
+            if includeHighResInComponentHeirarchy(component) {
+                // override to true regardless of children to ensure high res
+                // image collection after the desired component type was found
+                includeHighResInComponentHeirarchy = { _ in return true }
+            }
+
             switch component {
             case .text:
                 ()
@@ -64,18 +76,31 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                 if let overrides = image.overrides {
                     urls += overrides.imageUrls
                 }
+
+                if includeHighResInComponentHeirarchy(component) {
+                    urls += image.source.highResImageUrls
+                }
+
             case .stack(let stack):
-                urls += self.collectAllImageURLs(in: stack, includeHighRes: includeHighRes)
+                urls += self.collectAllImageURLs(
+                    in: stack,
+                    includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
+                )
             case .button(let button):
-                urls += self.collectAllImageURLs(in: button.stack, includeHighRes: includeHighRes)
+                urls += self.collectAllImageURLs(
+                    in: button.stack,
+                    includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
+                )
 
                 // Collect images from sheet stack
                 switch button.action {
                 case .navigateTo(let destination):
                     switch destination {
                     case .sheet(sheet: let sheet):
-                        // Include high res for sheet so we have everything we need during animation
-                        urls += self.collectAllImageURLs(in: sheet.stack, includeHighRes: true)
+                        urls += self.collectAllImageURLs(
+                            in: sheet.stack,
+                            includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
+                        )
                     case .customerCenter, .offerCode, .privacyPolicy, .terms, .webPaywallLink, .url, .unknown:
                         break
                     }
@@ -83,28 +108,47 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                     break
                 }
             case .package(let package):
-                urls += self.collectAllImageURLs(in: package.stack, includeHighRes: includeHighRes)
+                urls += self.collectAllImageURLs(
+                    in: package.stack,
+                    includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
+                )
             case .purchaseButton(let purchaseButton):
-                urls += self.collectAllImageURLs(in: purchaseButton.stack, includeHighRes: includeHighRes)
+                urls += self.collectAllImageURLs(
+                    in: purchaseButton.stack,
+                    includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
+                )
             case .stickyFooter(let stickyFooter):
-                urls += self.collectAllImageURLs(in: stickyFooter.stack, includeHighRes: includeHighRes)
+                urls += self.collectAllImageURLs(
+                    in: stickyFooter.stack,
+                    includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
+                )
             case .timeline(let component):
                 for item in component.items {
                     urls += item.icon.imageUrls
                 }
             case .tabs(let tabs):
                 for tab in tabs.tabs {
-                    urls += self.collectAllImageURLs(in: tab.stack, includeHighRes: includeHighRes)
+                    urls += self.collectAllImageURLs(
+                        in: tab.stack,
+                        includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
+                    )
                 }
             case .tabControl:
                 break
             case .tabControlButton(let controlButton):
-                urls += self.collectAllImageURLs(in: controlButton.stack, includeHighRes: includeHighRes)
+                urls += self.collectAllImageURLs(
+                    in: controlButton.stack,
+                    includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
+                )
             case .tabControlToggle:
                 break
             case .carousel(let carousel):
-                urls += carousel.pages.flatMap({ stack in
-                    self.collectAllImageURLs(in: stack, includeHighRes: includeHighRes)
+                urls += carousel.pages.flatMap(
+                    { stack in
+                        self.collectAllImageURLs(
+                            in: stack,
+                            includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
+                        )
                 })
             case .video:
                 // WIP: - prewarm cache
@@ -115,6 +159,26 @@ extension PaywallComponentsData.PaywallComponentsConfig {
         return urls
     }
 
+}
+
+private extension PaywallComponent {
+    var isSheetButton: Bool {
+        switch self {
+        case .button(let component):
+            switch component.action {
+            case .navigateTo(let destination):
+                switch destination {
+                case .sheet:
+                    return true
+                default:
+                    return false
+                }
+            default: return false
+            }
+        default:
+            return false
+        }
+    }
 }
 
 extension PaywallComponent.IconComponent.Formats {
