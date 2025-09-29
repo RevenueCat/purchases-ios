@@ -15,8 +15,6 @@ import Nimble
 @_spi(Internal) @testable import RevenueCat
 import XCTest
 
-#if SIMULATED_STORE
-
 class SimulatedStorePurchaseHandlerTests: TestCase {
 
     private var mockSimulatedStorePurchaseUI: MockSimulatedStorePurchaseUI!
@@ -42,7 +40,11 @@ class SimulatedStorePurchaseHandlerTests: TestCase {
         let expectation = self.expectation(description: "All purchase product calls happened")
 
         mockSimulatedStorePurchaseUI.stubbedPurchaseResult.value = {
+            #if compiler(>=5.9)
             await self.fulfillment(of: [expectation])
+            #else
+            self.wait(for: [expectation], timeout: 2)
+            #endif
             return .cancel
         }
         let hander = SimulatedStorePurchaseHandler(purchaseUI: mockSimulatedStorePurchaseUI,
@@ -187,5 +189,3 @@ class SimulatedStorePurchaseHandlerTests: TestCase {
 
     private static let mockDate = Date(millisecondsSince1970: 1756796794912) // Sep 02 2025 07:06:34.912 UTC
 }
-
-#endif // SIMULATED_STORE

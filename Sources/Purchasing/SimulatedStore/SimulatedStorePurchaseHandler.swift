@@ -16,12 +16,9 @@ enum TestPurchaseResult {
 
 protocol SimulatedStorePurchaseHandlerType: AnyObject, Sendable {
 
-    #if SIMULATED_STORE
-
     @MainActor
     func purchase(product: TestStoreProduct) async -> TestPurchaseResult
 
-    #endif // SIMULATED_STORE
 }
 
 /// The object that handles purchases in the Simulated Store.
@@ -47,8 +44,6 @@ actor SimulatedStorePurchaseHandler: SimulatedStorePurchaseHandlerType {
         self.purchaseUI = purchaseUI
         self.dateProvider = dateProvider
     }
-
-    #if SIMULATED_STORE
 
     func purchase(product: TestStoreProduct) async -> TestPurchaseResult {
         guard !self.purchaseInProgress else {
@@ -101,7 +96,6 @@ actor SimulatedStorePurchaseHandler: SimulatedStorePurchaseHandlerType {
             withMessage: Strings.purchase.error_message_for_simulating_purchase_failure.description)
     }
 
-    #endif // SIMULATED_STORE
 }
 
 // MARK: - Purchase Alert Presentation

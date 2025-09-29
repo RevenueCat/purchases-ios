@@ -16,8 +16,6 @@ import Foundation
 
 actor MockSimulatedStorePurchaseHandler: SimulatedStorePurchaseHandlerType {
 
-    #if SIMULATED_STORE
-
     let stubbedPurchaseResult: Atomic<TestPurchaseResult> = .init(.cancel)
     let invokedPurchase: Atomic<Bool> = .init(false)
     let invokedPurchaseProduct: Atomic<TestStoreProduct?> = .init(nil)
@@ -29,5 +27,4 @@ actor MockSimulatedStorePurchaseHandler: SimulatedStorePurchaseHandlerType {
         return self.stubbedPurchaseResult.value
     }
 
-    #endif // SIMULATED_STORE
 }
