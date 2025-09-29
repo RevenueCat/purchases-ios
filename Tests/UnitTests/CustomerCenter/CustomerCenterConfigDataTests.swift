@@ -136,6 +136,7 @@ final class CustomerCenterConfigDataTests: TestCase {
                     email: "support@example.com",
                     shouldWarnCustomerToUpdate: false,
                     displayPurchaseHistoryLink: true,
+                    displayUserDetailsSection: true,
                     displayVirtualCurrencies: true,
                     shouldWarnCustomersAboutMultipleSubscriptions: false
                 ),
@@ -215,6 +216,7 @@ final class CustomerCenterConfigDataTests: TestCase {
         expect(configData.support.shouldWarnCustomerToUpdate) == false
         expect(configData.support.email) == "support@example.com"
         expect(configData.support.displayPurchaseHistoryLink) == true
+        expect(configData.support.displayUserDetailsSection) == true
     }
 
     /// The real json uses `snake_case`. This test should initialise the struct with default values
@@ -287,5 +289,6 @@ final class CustomerCenterConfigDataTests: TestCase {
         expect(configData.support.email) == "support@example.com"
         expect(configData.support.shouldWarnCustomerToUpdate) == true
         expect(configData.support.displayPurchaseHistoryLink) == false
+        expect(configData.support.displayUserDetailsSection) == true
     }
 }

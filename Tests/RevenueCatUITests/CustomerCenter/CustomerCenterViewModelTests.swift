@@ -274,6 +274,52 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(viewModel.shouldShowVirtualCurrencies).to(beFalse())
     }
 
+    func testShouldShowUserDetailsSectionIsFalseBeforeConfigIsLoaded() {
+        let mockPurchases = MockCustomerCenterPurchases(
+            customerInfo: CustomerInfoFixtures.customerInfoWithAppleSubscriptions,
+            customerCenterConfigData: CustomerCenterConfigData.mock(displayUserDetailsSection: true)
+        )
+
+        let viewModel = CustomerCenterViewModel(
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchasesProvider: mockPurchases
+        )
+
+        expect(viewModel.shouldShowUserDetailsSection).to(beFalse())
+    }
+
+    func testShouldShowUserDetailsSectionTrue() async {
+        let mockPurchases = MockCustomerCenterPurchases(
+            customerInfo: CustomerInfoFixtures.customerInfoWithAppleSubscriptions,
+            customerCenterConfigData: CustomerCenterConfigData.mock(displayUserDetailsSection: true)
+        )
+
+        let viewModel = CustomerCenterViewModel(
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchasesProvider: mockPurchases
+        )
+
+        await viewModel.loadScreen()
+
+        expect(viewModel.shouldShowUserDetailsSection).to(beTrue())
+    }
+
+    func testShouldShowUserDetailsSectionFalse() async {
+        let mockPurchases = MockCustomerCenterPurchases(
+            customerInfo: CustomerInfoFixtures.customerInfoWithAppleSubscriptions,
+            customerCenterConfigData: CustomerCenterConfigData.mock(displayUserDetailsSection: false)
+        )
+
+        let viewModel = CustomerCenterViewModel(
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchasesProvider: mockPurchases
+        )
+
+        await viewModel.loadScreen()
+
+        expect(viewModel.shouldShowUserDetailsSection).to(beFalse())
+    }
+
     func testHasAnyPurchasesIsTrueWithOnlyVirtualCurrencies() async throws {
         let mockPurchases = MockCustomerCenterPurchases(
             customerInfo: CustomerCenterViewModelTests.customerInfoWithoutSubscriptions,
