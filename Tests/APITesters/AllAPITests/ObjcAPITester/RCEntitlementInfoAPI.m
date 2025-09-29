@@ -49,9 +49,6 @@
         case RCUnknownStore:
         case RCPaddle:
         case RCExternal:
-#ifdef SIMULATED_STORE
-        case RCTestStore:
-#endif
             NSLog(@"%ld", (long)rs);
             break;
     }

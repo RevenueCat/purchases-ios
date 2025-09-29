@@ -38,6 +38,9 @@ public struct ContentView: View {
                         shouldShowCloseButton: false
                     )
                 )
+                .onCustomerCenterChangePlansSelected { optionId in
+                    print("Change plans \(optionId)")
+                }
             })
             .ignoresSafeArea(.all)
             .presentCustomerCenter(isPresented: $presentCustomerCenter, onCustomAction: { actionIdentifier, purchase in

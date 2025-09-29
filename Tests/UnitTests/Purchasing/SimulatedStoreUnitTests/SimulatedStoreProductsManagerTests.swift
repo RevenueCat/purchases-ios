@@ -15,8 +15,6 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-#if SIMULATED_STORE
-
 class SimulatedStoreProductsManagerTests: TestCase {
 
     static var requestTimeout: TimeInterval = 60
@@ -125,5 +123,3 @@ class SimulatedStoreProductsManagerTests: TestCase {
                                              requestTimeout: Self.requestTimeout)
     }
 }
-
-#endif // SIMULATED_STORE

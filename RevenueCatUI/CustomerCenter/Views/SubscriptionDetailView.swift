@@ -20,7 +20,7 @@ import SwiftUI
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-// swiftlint:disable file_length type_body_length
+// swiftlint:disable file_length
 struct SubscriptionDetailView: View {
 
     @Environment(\.appearance)
@@ -85,7 +85,6 @@ struct SubscriptionDetailView: View {
 
     var body: some View {
         content
-            .modifier(CustomerCenterActionViewModifier(actionWrapper: viewModel.actionWrapper))
         // This is needed because `CustomerCenterViewModel` is isolated to @MainActor
         // A bigger refactor is needed, but its already throwing a warning.
             .modifier(self.customerInfoViewModel.purchasesProvider
@@ -109,17 +108,7 @@ struct SubscriptionDetailView: View {
                     productIDs: viewModel.changePlanProductIDs
                 )
             )
-            .onCustomerCenterPromotionalOfferSuccess {
-                viewModel.refreshPurchase()
-            }
-            .onCustomerCenterShowingManageSubscriptions {
-                Task { @MainActor in
-                    customerInfoViewModel.manageSubscriptionsSheet = true
-                }
-            }
-            .onCustomerCenterChangePlansSelected({ _ in
-                customerInfoViewModel.changePlansSheet = true
-            })
+            .onAppear { viewModel.didAppear() }
             .onChangeOf(customerInfoViewModel.manageSubscriptionsSheet) { manageSubscriptionsSheet in
                 if !manageSubscriptionsSheet {
                     viewModel.refreshPurchase()
@@ -199,6 +188,11 @@ struct SubscriptionDetailView: View {
                     dismissButton: .default(Text("Ok")))
             })
     }
+
+}
+
+@available(iOS 15.0, *)
+private extension SubscriptionDetailView {
 
     @ViewBuilder
     var content: some View {
@@ -281,7 +275,7 @@ struct SubscriptionDetailView: View {
     }
 
     @ViewBuilder
-    private var accountDetailsView: some View {
+    var accountDetailsView: some View {
         Spacer().frame(height: 16)
 
         AccountDetailsSection(
@@ -306,7 +300,7 @@ struct SubscriptionDetailView: View {
         .buttonStyle(.customerCenterButtonStyle(for: colorScheme))
     }
 
-    private var seeAllSubscriptionsButton: some View {
+    var seeAllSubscriptionsButton: some View {
         Button {
             viewModel.showAllPurchases = true
         } label: {
@@ -320,14 +314,14 @@ struct SubscriptionDetailView: View {
     }
 }
 
- #if DEBUG
- @available(iOS 15.0, *)
- @available(macOS, unavailable)
- @available(tvOS, unavailable)
- @available(watchOS, unavailable)
- struct SubscriptionDetailView_Previews: PreviewProvider {
+#if DEBUG
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+struct SubscriptionDetailView_Previews: PreviewProvider {
 
-     // swiftlint:disable force_unwrapping
+    // swiftlint:disable force_unwrapping
     static var previews: some View {
         ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
             CompatibilityNavigationStack {
@@ -491,8 +485,8 @@ struct SubscriptionDetailView: View {
         .environment(\.appearance, CustomerCenterConfigData.default.appearance)
     }
 
- }
+}
 
- #endif
+#endif
 
 #endif
