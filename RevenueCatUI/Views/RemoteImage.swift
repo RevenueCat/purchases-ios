@@ -128,7 +128,7 @@ struct RemoteImage<Content: View>: View {
         return url.asImageAndSize
     }
 
-    let fileRepository = FileRepository()
+    let fileRepository = FileRepository.shared
 
     var lowResURLForScheme: URL? {
         switch self.colorScheme {
