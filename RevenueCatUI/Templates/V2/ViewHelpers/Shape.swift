@@ -124,14 +124,15 @@ struct ShapeModifier: ViewModifier {
         self.uiConfigProvider = uiConfigProvider
     }
 
+    @ViewBuilder
     func body(content: Content) -> some View {
         switch self.shape {
         case .circle, .pill, .rectangle:
             if let shape = self.shape.toInsettableShape() {
                 content
                     .backgroundStyle(background)
-                    // We want to clip only in case there is a non-Rectangle shape
-                    // or if there's a border
+                // We want to clip only in case there is a non-Rectangle shape
+                // or if there's a border
                     .applyIf(!shape.isRectangle() || border != nil) { view in
                         view
                             .clipShape(
@@ -140,7 +141,7 @@ struct ShapeModifier: ViewModifier {
                                 shape.inset(by: border?.width ?? 0 / 2)
                             )
                     }
-                    // Place border on top of content
+                // Place border on top of content
                     .applyIfLet(border) { view, border in
                         view.clipShape(shape).overlay {
                             shape.strokeBorder(border.color, lineWidth: border.width)
@@ -149,10 +150,10 @@ struct ShapeModifier: ViewModifier {
             }
         case .concave:
             content
-                .modifier(ConcaveMaskModifier(curveHeightPercentage: 0.2))
+                .modifier(ConcaveMaskModifier(curveHeightPercentage: 0.2, border: border))
         case .convex:
             content
-                .modifier(ConvexMaskModifier(curveHeightPercentage: 0.2))
+                .modifier(ConvexMaskModifier(curveHeightPercentage: 0.2, border: border))
         }
     }
 
@@ -162,16 +163,24 @@ struct ShapeModifier: ViewModifier {
 private struct ConcaveMaskModifier: ViewModifier {
 
     let curveHeightPercentage: CGFloat
+    let border: ShapeModifier.BorderInfo?
 
     @State
     private var size: CGSize = .zero
 
+    var shape: ConcaveShape {
+        ConcaveShape(curveHeightPercentage: curveHeightPercentage, size: size)
+    }
+
     func body(content: Content) -> some View {
         content
             .onSizeChange { self.size = $0 }
-            .clipShape(
-                ConcaveShape(curveHeightPercentage: curveHeightPercentage, size: size)
-            )
+            .clipShape(shape)
+            .applyIfLet(border) { view, border in
+                view.overlay {
+                    shape.strokeBorder(border.color, lineWidth: border.width)
+                }
+            }
     }
 }
 
@@ -226,16 +235,25 @@ private struct ConcaveShape: InsettableShape {
 private struct ConvexMaskModifier: ViewModifier {
 
     let curveHeightPercentage: CGFloat
+    let border: ShapeModifier.BorderInfo?
 
     @State
     private var size: CGSize = .zero
 
+    var shape: ConvexShape {
+        ConvexShape(curveHeightPercentage: curveHeightPercentage, size: size)
+    }
+
     func body(content: Content) -> some View {
+
         content
             .onSizeChange { self.size = $0 }
-            .clipShape(
-                ConvexShape(curveHeightPercentage: curveHeightPercentage, size: size)
-            )
+            .clipShape(shape)
+            .applyIfLet(border) { view, border in
+                view.overlay {
+                    shape.eraseToAnyInsettableShape().strokeBorder(border.color, lineWidth: border.width)
+                }
+            }
     }
 }
 
