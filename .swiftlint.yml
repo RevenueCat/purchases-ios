@@ -45,6 +45,18 @@ custom_rules:
     message: "Inline 'return switch' is not allowed."
     severity: error
 
+  no_preview_macro:
+    name: "No Preview Macro"
+    regex: "#Preview"
+    message: "The '#Preview' macro will not compile in the CI pipeline during deployment, use a PreviewProvider instead."
+    severity: error
+
+  no_assignments_from_switch:
+    name: "No Assignments from Switch Statements"
+    regex: " = switch "
+    message: "In older versions of xcode build tools, this is not supported and will fail in CI"
+    severity: error
+
 identifier_name:
   max_length: 
     warning: 60 
