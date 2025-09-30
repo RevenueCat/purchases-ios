@@ -166,14 +166,10 @@ private extension PaywallComponent {
         switch self {
         case .button(let component):
             switch component.action {
-            case .navigateTo(let destination):
-                switch destination {
-                case .sheet:
-                    return true
-                default:
-                    return false
-                }
-            default: return false
+            case .navigateTo(.sheet):
+                return true
+            default:
+                return false
             }
         default:
             return false
