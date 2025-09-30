@@ -54,7 +54,6 @@ extension Array<CustomerCenterConfigData.HelpPath> {
 
             // if it's refundRequest, it cannot be free nor within trial period
             // if it has a refundDuration, check it's still valid
-            let isRefund = $0.type == .refundRequest
             if $0.type == .refundRequest {
                 return purchaseInformation.pricePaid != .free
                 && !purchaseInformation.isTrial
