@@ -112,7 +112,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         expect(viewModel.relevantPathsForPurchase.first(where: { $0.type == .refundRequest })).toNot(beNil())
     }
 
-    func testCancelledDoesNotShowCancelAndRefund() {
+    func testCancelledDoesNotShowCancel() {
         let purchase = PurchaseInformation.mock(
             isSubscription: true,
             productType: .autoRenewableSubscription,
@@ -125,8 +125,9 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             purchaseInformation: purchase,
             purchasesProvider: MockCustomerCenterPurchases())
 
-        expect(viewModel.relevantPathsForPurchase.count) == 1
+        expect(viewModel.relevantPathsForPurchase.count) == 2
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .changePlans })).toNot(beNil())
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).toNot(beNil())
     }
 
     func testShowsRefundIfRefundWindowIsForever() {
