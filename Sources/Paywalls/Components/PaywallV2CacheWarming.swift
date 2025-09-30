@@ -56,7 +56,7 @@ extension PaywallComponentsData.PaywallComponentsConfig {
         return rootStackVideoURLs + stickFooterVideoURLs
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
+    // swiftlint:disable:next cyclomatic_complexity function_body_length
     private func collectAllImageURLs(
     in stack: PaywallComponent.StackComponent,
     includeHighResInComponentHeirarchy: (PaywallComponent) -> Bool = { component in
