@@ -53,13 +53,13 @@ extension Array<CustomerCenterConfigData.HelpPath> {
             }
 
             // if it's refundRequest, it cannot be free nor within trial period
-            let isRefund = $0.type == .refundRequest
-            let isRefundEligible = purchaseInformation.pricePaid != .free
-                                    && !purchaseInformation.isTrial
-                                    && !purchaseInformation.isCancelled
-
             // if it has a refundDuration, check it's still valid
-            let refundWindowIsValid = $0.refundWindowDuration?.isWithin(purchaseInformation) ?? true
+            let isRefund = $0.type == .refundRequest
+            if $0.type == .refundRequest {
+                return purchaseInformation.pricePaid != .free
+                && !purchaseInformation.isTrial
+                && $0.refundWindowDuration?.isWithin(purchaseInformation) ?? true
+            }
 
             // can't change plans if it's not a subscription
             if $0.type == .changePlans {
@@ -68,7 +68,7 @@ extension Array<CustomerCenterConfigData.HelpPath> {
                 }
             }
 
-            return (!isRefund || isRefundEligible) && refundWindowIsValid
+            return true
         }
     }
 }
