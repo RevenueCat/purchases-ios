@@ -465,6 +465,16 @@ class PurchasesSubscriberAttributesTests: TestCase {
             .to(equal((nil, purchases.appUserID)))
     }
 
+    func testSetAndClearAirbridgeDeviceID() {
+        setupPurchases()
+        purchases.attribution.setAirbridgeDeviceID("airbridge")
+        purchases.attribution.setAirbridgeDeviceID(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetAirbridgeDeviceIDParametersList[0])
+            .to(equal(("airbridge", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetAirbridgeDeviceIDParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
     func testSetAndClearKochavaDeviceID() {
         setupPurchases()
         purchases.attribution.setKochavaDeviceID("kochava")

@@ -178,6 +178,18 @@ class MockSubscriberAttributesManager: SubscriberAttributesManager {
         invokedSetCleverTapIDParametersList.append((cleverTapID, appUserID))
     }
 
+    var invokedSetAirbridgeDeviceID = false
+    var invokedSetAirbridgeDeviceIDCount = 0
+    var invokedSetAirbridgeDeviceIDParameters: (AirbridgeDeviceID: String?, appUserID: String?)?
+    var invokedSetAirbridgeDeviceIDParametersList = [(AirbridgeDeviceID: String?, appUserID: String?)]()
+
+    override func setAirbridgeDeviceID(_ airbridgeDeviceID: String?, appUserID: String) {
+        invokedSetAirbridgeDeviceID = true
+        invokedSetAirbridgeDeviceIDCount += 1
+        invokedSetAirbridgeDeviceIDParameters = (airbridgeDeviceID, appUserID)
+        invokedSetAirbridgeDeviceIDParametersList.append((airbridgeDeviceID, appUserID))
+    }
+
     var invokedSetKochavaDeviceID = false
     var invokedSetKochavaDeviceIDCount = 0
     var invokedSetKochavaDeviceIDParameters: (KochavaDeviceID: String?, appUserID: String?)?
