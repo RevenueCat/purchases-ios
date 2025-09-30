@@ -1207,6 +1207,97 @@ class SubscriberAttributesManagerTests: TestCase {
         checkDeviceIdentifiersAreNotSet()
     }
     // endregion
+    // region airbridgeDeviceID
+    func testSetAirbridgeDeviceID() {
+        let airbridgeDeviceId = "airbridgeDeviceID"
+        self.subscriberAttributesManager.setAirbridgeDeviceID(airbridgeDeviceId, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 5
+        guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
+            fatalError("no attributes received")
+        }
+        let receivedAttribute = invokedParams.attribute
+        expect(receivedAttribute.key) == "$airbridgeDeviceId"
+        expect(receivedAttribute.value) == airbridgeDeviceId
+        expect(receivedAttribute.isSynced) == false
+    }
+
+    func testSetAirbridgeDeviceIDSetsEmptyIfNil() {
+        let airbridgeDeviceId = "airbridgeDeviceID"
+        self.subscriberAttributesManager.setAirbridgeDeviceID(airbridgeDeviceId, appUserID: "kratos")
+
+        self.subscriberAttributesManager.setAirbridgeDeviceID(nil, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 10
+        guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
+            fatalError("no attributes received")
+        }
+        let receivedAttribute = invokedParams.attribute
+        expect(receivedAttribute.key) == "$airbridgeDeviceId"
+        expect(receivedAttribute.value) == ""
+        expect(receivedAttribute.isSynced) == false
+    }
+
+    func testSetAirbridgeDeviceIDSkipsIfSameValue() {
+        let airbridgeDeviceId = "airbridgeDeviceID"
+
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$airbridgeDeviceId",
+                                                                                    value: airbridgeDeviceId)
+
+        self.subscriberAttributesManager.setAirbridgeDeviceID(airbridgeDeviceId, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 4
+    }
+
+    func testSetAirbridgeDeviceIDOverwritesIfNewValue() {
+        let oldSyncTime = Date()
+        let airbridgeDeviceId = "airbridgeDeviceID"
+
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$airbridgeDeviceId",
+                                                                                    value: "old_id",
+                                                                                    isSynced: true,
+                                                                                    setTime: oldSyncTime)
+
+        self.subscriberAttributesManager.setAirbridgeDeviceID(airbridgeDeviceId, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 5
+        guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
+            fatalError("no attributes received")
+        }
+        let receivedAttribute = invokedParams.attribute
+        expect(receivedAttribute.key) == "$airbridgeDeviceId"
+        expect(receivedAttribute.value) == airbridgeDeviceId
+        expect(receivedAttribute.isSynced) == false
+        expect(receivedAttribute.setTime) > oldSyncTime
+    }
+
+    func testSetAirbridgeDeviceIDSetsDeviceIdentifiers() {
+        let airbridgeDeviceId = "airbridgeDeviceID"
+        self.subscriberAttributesManager.setAirbridgeDeviceID(airbridgeDeviceId, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 5
+
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 5
+
+        checkDeviceIdentifiersAreSet()
+    }
+
+    func testSetAirbridgeDeviceIDDoesNotSetDeviceIdentifiersIfOptionDisabled() {
+        self.subscriberAttributesManager = SubscriberAttributesManager(
+            backend: mockBackend,
+            deviceCache: mockDeviceCache,
+            operationDispatcher: MockOperationDispatcher(),
+            attributionFetcher: mockAttributionFetcher,
+            attributionDataMigrator: mockAttributionDataMigrator,
+            automaticDeviceIdentifierCollectionEnabled: false
+        )
+        let airbridgeDeviceId = "airbridgeDeviceID"
+        self.subscriberAttributesManager.setAirbridgeDeviceID(airbridgeDeviceId, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 1
+
+        checkDeviceIdentifiersAreNotSet()
+    }
+    // endregion
     // region kochavaDeviceID
     func testSetKochavaDeviceID() {
         let kochavaDeviceId = "kochavaDeviceID"
