@@ -275,9 +275,22 @@ public extension Attribution {
      * - [CleverTap RevenueCat Integration](https://docs.revenuecat.com/docs/clevertap)
      *
      *- Parameter cleverTapID: Empty String or `nil` will delete the subscriber attribute.
-     */
+    */
     @objc func setCleverTapID(_ cleverTapID: String?) {
         self.subscriberAttributesManager.setCleverTapID(cleverTapID, appUserID: appUserID)
+    }
+
+    /**
+     * Subscriber attribute associated with the Airbridge Device ID for the user.
+     * Recommended for the RevenueCat Airbridge integration.
+     *
+     * #### Related Articles
+     * - [Airbridge RevenueCat Integration](https://docs.revenuecat.com/docs/airbridge)
+     *
+     * - Parameter airbridgeDeviceID: Empty String or `nil` will delete the subscriber attribute.
+     */
+    @objc func setAirbridgeDeviceID(_ airbridgeDeviceID: String?) {
+        self.subscriberAttributesManager.setAirbridgeDeviceID(airbridgeDeviceID, appUserID: appUserID)
     }
 
     /**

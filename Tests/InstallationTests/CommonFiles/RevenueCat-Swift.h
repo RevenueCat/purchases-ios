@@ -491,6 +491,17 @@ SWIFT_AVAILABILITY(watchos,unavailable) SWIFT_AVAILABILITY(tvos,unavailable) SWI
 ///   </li>
 /// </ul>
 - (void)setCleverTapID:(NSString * _Nullable)cleverTapID;
+/// Subscriber attribute associated with the Airbridge Device ID for the user.
+/// Recommended for the RevenueCat Airbridge integration.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/airbridge">Airbridge RevenueCat Integration</a>
+///   </li>
+/// </ul>
+/// \param airbridgeDeviceID Empty String or <code>nil</code> will delete the subscriber attribute.
+///
+- (void)setAirbridgeDeviceID:(NSString * _Nullable)airbridgeDeviceID;
 /// Subscriber attribute associated with the Kochava Device ID for the user.
 /// Recommended for the RevenueCat Kochava integration.
 /// <h4>Related Articles</h4>

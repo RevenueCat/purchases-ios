@@ -38,6 +38,8 @@
     [a setOnesignalUserID: @""];
     [a setCleverTapID: nil];
     [a setCleverTapID: @""];
+    [a setAirbridgeDeviceID:nil];
+    [a setAirbridgeDeviceID:@""];
     [a setKochavaDeviceID:nil];
     [a setKochavaDeviceID:@""];
     [a setMixpanelDistinctID: nil];
