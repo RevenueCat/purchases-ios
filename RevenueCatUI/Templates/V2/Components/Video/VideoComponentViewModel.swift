@@ -7,9 +7,9 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  ImageComponentView.swift
+//  VideoComponentViewModel.swift
 //
-//  Created by Josh Holtz on 6/11/24.
+//  Created by Jacob Zivan Rakidzich on 8/11/25.
 
 import Foundation
 import RevenueCat
@@ -18,32 +18,27 @@ import SwiftUI
 #if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-class ImageComponentViewModel {
+class VideoComponentViewModel {
 
-    private let localizationProvider: LocalizationProvider
+    let localizationProvider: LocalizationProvider
     let uiConfigProvider: UIConfigProvider
-    private let component: PaywallComponent.ImageComponent
+    private let component: PaywallComponent.VideoComponent
 
-    private let imageInfo: PaywallComponent.ThemeImageUrls
-    private let presentedOverrides: PresentedOverrides<LocalizedImagePartial>?
+    var imageSource: PaywallComponent.ThemeImageUrls? { component.fallbackSource }
+
+    private let presentedOverrides: PresentedOverrides<LocalizedVideoPartial>?
 
     init(
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,
-        component: PaywallComponent.ImageComponent
+        component: PaywallComponent.VideoComponent
     ) throws {
         self.localizationProvider = localizationProvider
         self.uiConfigProvider = uiConfigProvider
         self.component = component
 
-        if let overrideSourceLid = component.overrideSourceLid {
-            self.imageInfo = try localizationProvider.localizedStrings.image(key: overrideSourceLid)
-        } else {
-            self.imageInfo = component.source
-        }
-
         self.presentedOverrides = try self.component.overrides?.toPresentedOverrides {
-            try LocalizedImagePartial.create(from: $0, using: localizationProvider.localizedStrings)
+            try LocalizedVideoPartial.create(from: $0, using: localizationProvider.localizedStrings)
         }
     }
 
@@ -53,9 +48,9 @@ class ImageComponentViewModel {
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
-        @ViewBuilder apply: @escaping (ImageComponentStyle) -> some View
+        @ViewBuilder apply: @escaping (VideoComponentStyle) -> some View
     ) -> some View {
-        let localizedPartial = LocalizedImagePartial.buildPartial(
+        let localizedPartial = LocalizedVideoPartial.buildPartial(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
@@ -64,10 +59,21 @@ class ImageComponentViewModel {
         )
         let partial = localizedPartial?.partial
 
-        let style = ImageComponentStyle(
+        let style = VideoComponentStyle(
             visible: partial?.visible ?? self.component.visible ?? true,
-            source: localizedPartial?.imageInfo ?? self.imageInfo,
+            showControls: partial?.showControls ?? self.component.showControls,
+            autoPlay: partial?.autoPlay ?? self.component.autoPlay,
+            loop: partial?.loop ?? self.component.loop,
+            url: partial?.source?.light.url ?? self.component.source.light.url,
+            lowResUrl: partial?.source?.light.urlLowRes ?? self.component.source.light.urlLowRes,
+            darkUrl: partial?.source?.dark?.url ?? self.component.source.dark?.url,
+            darkLowResUrl: partial?.source?.dark?.urlLowRes ?? self.component.source.dark?.urlLowRes,
             size: partial?.size ?? self.component.size,
+            widthLight: partial?.source?.light.width ?? self.component.source.light.width,
+            heightLight: partial?.source?.light.height ?? self.component.source.light.height,
+            widthDark: partial?.source?.dark?.width ?? self.component.source.dark?.width,
+            heightDark: partial?.source?.dark?.height ?? self.component.source.dark?.height,
+            muteAudio: partial?.muteAudio ?? self.component.muteAudio,
             fitMode: partial?.fitMode ?? self.component.fitMode,
             maskShape: partial?.maskShape ?? self.component.maskShape,
             colorOverlay: partial?.colorOverlay ?? self.component.colorOverlay,
@@ -83,22 +89,22 @@ class ImageComponentViewModel {
 
 }
 
-struct LocalizedImagePartial: PresentedPartial {
+struct LocalizedVideoPartial: PresentedPartial {
 
-    let imageInfo: PaywallComponent.ThemeImageUrls?
-    let partial: PaywallComponent.PartialImageComponent
+    let partial: PaywallComponent.PartialVideoComponent
 
     static func combine(_ base: Self?, with other: Self?) -> Self {
         let otherPartial = other?.partial
         let basePartial = base?.partial
 
-        return Self(
-            imageInfo: other?.imageInfo ?? base?.imageInfo,
-            partial: PaywallComponent.PartialImageComponent(
-                visible: otherPartial?.visible ?? basePartial?.visible,
+        return LocalizedVideoPartial(
+            partial: PaywallComponent.PartialVideoComponent(
                 source: otherPartial?.source ?? basePartial?.source,
+                visible: otherPartial?.visible ?? basePartial?.visible,
+                showControls: otherPartial?.showControls ?? basePartial?.showControls,
+                autoPlay: otherPartial?.autoPlay ?? basePartial?.autoPlay,
+                loop: otherPartial?.loop ?? basePartial?.loop,
                 size: otherPartial?.size ?? basePartial?.size,
-                overrideSourceLid: otherPartial?.overrideSourceLid ?? basePartial?.overrideSourceLid,
                 fitMode: otherPartial?.fitMode ?? basePartial?.fitMode,
                 maskShape: otherPartial?.maskShape ?? basePartial?.maskShape,
                 colorOverlay: otherPartial?.colorOverlay ?? basePartial?.colorOverlay,
@@ -112,16 +118,13 @@ struct LocalizedImagePartial: PresentedPartial {
 
 }
 
-extension LocalizedImagePartial {
+extension LocalizedVideoPartial {
 
     static func create(
-        from partial: PaywallComponent.PartialImageComponent,
+        from partial: PaywallComponent.PartialVideoComponent,
         using localizedStrings: PaywallComponent.LocalizationDictionary
-    ) throws -> LocalizedImagePartial {
-        return LocalizedImagePartial(
-            imageInfo: try partial.overrideSourceLid.flatMap { key in
-                try localizedStrings.image(key: key)
-            } ?? partial.source,
+    ) throws -> LocalizedVideoPartial {
+        return LocalizedVideoPartial(
             partial: partial
         )
     }
@@ -129,18 +132,22 @@ extension LocalizedImagePartial {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct ImageComponentStyle {
+struct VideoComponentStyle {
 
     let visible: Bool
-    let widthLight: Int
-    let heightLight: Int
-    let widthDark: Int?
-    let heightDark: Int?
+    let showControls: Bool
+    let autoPlay: Bool
+    let loop: Bool
     let url: URL
     let lowResUrl: URL?
     let darkUrl: URL?
     let darkLowResUrl: URL?
     let size: PaywallComponent.Size
+    let widthLight: Int
+    let heightLight: Int
+    let widthDark: Int?
+    let heightDark: Int?
+    let muteAudio: Bool
     let shape: ShapeModifier.Shape?
     let colorOverlay: DisplayableColorScheme?
     let padding: EdgeInsets
@@ -151,8 +158,19 @@ struct ImageComponentStyle {
 
     init(
         visible: Bool = true,
-        source: PaywallComponent.ThemeImageUrls,
+        showControls: Bool,
+        autoPlay: Bool,
+        loop: Bool,
+        url: URL,
+        lowResUrl: URL?,
+        darkUrl: URL? = nil,
+        darkLowResUrl: URL? = nil,
         size: PaywallComponent.Size,
+        widthLight: Int,
+        heightLight: Int,
+        widthDark: Int?,
+        heightDark: Int?,
+        muteAudio: Bool,
         fitMode: PaywallComponent.FitMode,
         maskShape: PaywallComponent.MaskShape? = nil,
         colorOverlay: PaywallComponent.ColorScheme? = nil,
@@ -163,15 +181,19 @@ struct ImageComponentStyle {
         uiConfigProvider: UIConfigProvider
     ) {
         self.visible = visible
-        self.widthLight = source.light.width
-        self.heightLight = source.light.height
-        self.widthDark = source.dark?.width
-        self.heightDark = source.dark?.height
-        self.url = source.light.heic
-        self.lowResUrl = source.light.heicLowRes
-        self.darkUrl = source.dark?.heic
-        self.darkLowResUrl = source.dark?.heicLowRes
+        self.showControls = showControls
+        self.autoPlay = autoPlay
+        self.loop = loop
+        self.url = url
+        self.lowResUrl = lowResUrl
+        self.darkLowResUrl = darkLowResUrl
+        self.darkUrl = darkUrl
         self.size = size
+        self.widthLight = widthLight
+        self.heightLight = heightLight
+        self.widthDark = widthDark
+        self.heightDark = heightDark
+        self.muteAudio = muteAudio
         self.shape = maskShape?.shape
         self.colorOverlay = colorOverlay?.asDisplayable(uiConfigProvider: uiConfigProvider)
         self.padding = (padding ?? .zero).edgeInsets
