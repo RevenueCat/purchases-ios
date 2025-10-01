@@ -865,7 +865,7 @@ final class CustomerCenterViewModelTests: TestCase {
     }
 
     func testLoadScreenNoActiveSubscription() async throws {
-        let customerInfo = CustomerInfoFixtures.customerInfo(subscriptions: [], entitlements: [], nonSubscriptions: [])
+        let customerInfo = CustomerCenterViewModelTests.customerInfoWithoutSubscriptions
         let mockPurchases = MockCustomerCenterPurchases(customerInfo: customerInfo)
         let viewModel = CustomerCenterViewModel(actionWrapper: CustomerCenterActionWrapper(),
                                                 purchasesProvider: mockPurchases)
@@ -1231,7 +1231,7 @@ final class CustomerCenterViewModelTests: TestCase {
     func testShouldShowListWithVirtualCurrencies() async throws {
         // Test with only 1 virtual currency -> should be false
         var mockPurchases = MockCustomerCenterPurchases(
-            customerInfo: CustomerInfoFixtures.customerInfo(subscriptions: [], entitlements: [], nonSubscriptions: []),
+            customerInfo: CustomerCenterViewModelTests.customerInfoWithoutSubscriptions,
             customerCenterConfigData: CustomerCenterConfigData.mock(displayVirtualCurrencies: true)
         )
         mockPurchases.virtualCurrenciesResult = .success(VirtualCurrenciesFixtures.oneVirtualCurrency)
