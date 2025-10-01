@@ -99,6 +99,10 @@ class SubscriberAttributesManager {
         setReservedAttribute(.cleverTapID, value: cleverTapID, appUserID: appUserID)
     }
 
+    func setAirbridgeDeviceID(_ airbridgeDeviceID: String?, appUserID: String) {
+        setAttributionID(airbridgeDeviceID, forNetworkID: .airbridgeDeviceID, appUserID: appUserID)
+    }
+
     func setKochavaDeviceID(_ kochavaDeviceID: String?, appUserID: String) {
         setAttributionID(kochavaDeviceID, forNetworkID: .kochavaDeviceID, appUserID: appUserID)
     }

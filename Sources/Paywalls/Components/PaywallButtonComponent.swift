@@ -220,7 +220,6 @@ public extension PaywallComponent {
             public let id: String
             public let name: String?
             public let stack: StackComponent
-            public let background: Background?
             public let backgroundBlur: Bool
             public let size: Size?
 
@@ -228,14 +227,12 @@ public extension PaywallComponent {
                 id: String,
                 name: String?,
                 stack: StackComponent,
-                background: Background?,
                 backgroundBlur: Bool,
                 size: Size?
             ) {
                 self.id = id
                 self.name = name
                 self.stack = stack
-                self.background = background
                 self.backgroundBlur = backgroundBlur
                 self.size = size
             }

@@ -87,8 +87,8 @@ struct ComponentsView: View {
             TabControlToggleComponentView(viewModel: viewModel, onDismiss: onDismiss)
         case .carousel(let viewModel):
             CarouselComponentView(viewModel: viewModel, onDismiss: onDismiss)
-        case .video:
-            EmptyView()
+        case .video(let viewModel):
+            VideoComponentView(viewModel: viewModel)
         }
     }
 }

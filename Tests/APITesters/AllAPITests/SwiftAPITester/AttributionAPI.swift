@@ -49,6 +49,9 @@ func checkAttributionAPI() {
     attribution.setCleverTapID("")
     attribution.setCleverTapID(nil)
 
+    attribution.setAirbridgeDeviceID("")
+    attribution.setAirbridgeDeviceID(nil)
+
     attribution.setKochavaDeviceID("")
     attribution.setKochavaDeviceID(nil)
 

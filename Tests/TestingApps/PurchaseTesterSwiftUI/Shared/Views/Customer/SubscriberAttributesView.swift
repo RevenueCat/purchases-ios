@@ -38,6 +38,7 @@ struct SubscriberAttributesView: View {
         case setAppsflyerID
         case setAirshipChannelID
         case setCleverTapID
+        case setAirbridgeDeviceID
         case setKochavaDeviceID
         case setMparticleID
         case setOnesignalID
@@ -147,6 +148,8 @@ struct SubscriberAttributesView: View {
                     Purchases.shared.attribution.setAirshipChannelID(self.otherValue)
                 case .setCleverTapID:
                     Purchases.shared.attribution.setCleverTapID(self.otherValue)
+                case .setAirbridgeDeviceID:
+                    Purchases.shared.attribution.setAirbridgeDeviceID(self.otherValue)
                 case .setKochavaDeviceID:
                     Purchases.shared.attribution.setKochavaDeviceID(self.otherValue)
                 case .setMparticleID:
