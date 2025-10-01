@@ -272,11 +272,17 @@ enum GenericFont: String {
     func makeFont(fontSize: CGFloat) -> Font {
         switch self {
         case .serif:
-            return Font.system(size: fontSize, weight: .regular, design: .serif)
+            return Font.system(size: UIFontMetrics.default.scaledValue(for: fontSize),
+                               weight: .regular,
+                               design: .serif)
         case .monospace:
-            return Font.system(size: fontSize, weight: .regular, design: .monospaced)
+            return Font.system(size: UIFontMetrics.default.scaledValue(for: fontSize),
+                               weight: .regular,
+                               design: .monospaced)
         case .sansSerif:
-            return Font.system(size: fontSize, weight: .regular, design: .default)
+            return Font.system(size: UIFontMetrics.default.scaledValue(for: fontSize),
+                               weight: .regular,
+                               design: .default)
         }
     }
 
