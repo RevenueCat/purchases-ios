@@ -122,7 +122,7 @@ import Foundation
     }
 
     var shouldShowUserDetailsSection: Bool {
-        configuration?.support.displayUserDetailsSection == true
+        configuration?.support.displayUserDetailsSection ?? true
     }
 
     private let currentVersionFetcher: CurrentVersionFetcher
