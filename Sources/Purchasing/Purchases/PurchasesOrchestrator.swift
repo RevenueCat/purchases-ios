@@ -2037,7 +2037,6 @@ extension PurchasesOrchestrator {
         _ initiationSource: ProductRequestData.InitiationSource,
         _ metadata: [String: String]?
     ) async throws -> CustomerInfo {
-        let storefront = await Storefront.currentStorefront
         let offeringContext = self.getAndRemovePresentedOfferingContext(for: transaction)
         let paywall = self.getAndRemovePresentedPaywall()
         let unsyncedAttributes = self.unsyncedAttributes
@@ -2049,7 +2048,7 @@ extension PurchasesOrchestrator {
             unsyncedAttributes: unsyncedAttributes,
             metadata: metadata,
             aadAttributionToken: adServicesToken,
-            storefront: storefront,
+            storefront: transaction.storefront,
             source: .init(isRestore: self.allowSharingAppStoreAccount,
                           initiationSource: initiationSource)
         )
