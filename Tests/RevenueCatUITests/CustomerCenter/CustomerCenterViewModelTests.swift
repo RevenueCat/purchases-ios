@@ -257,7 +257,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
     func testHasAnyPurchasesIsTrueWithOnlyVirtualCurrencies() async throws {
         let mockPurchases = MockCustomerCenterPurchases(
-            customerInfo: CustomerCenterViewModelTests.customerInfoWithExpiredSubscriptions,
+            customerInfo: CustomerCenterViewModelTests.customerInfoWithoutSubscriptions,
             customerCenterConfigData: CustomerCenterConfigData.mock(displayVirtualCurrencies: true)
         )
         mockPurchases.virtualCurrenciesResult = .success(VirtualCurrenciesFixtures.fourVirtualCurrencies)
@@ -269,8 +269,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         await viewModel.loadScreen()
 
-        expect(viewModel.subscriptionsSection.count) == 1
-        expect(viewModel.subscriptionsSection.first?.isExpired).to(beTrue())
+        expect(viewModel.subscriptionsSection).to(beEmpty())
         expect(viewModel.nonSubscriptionsSection).to(beEmpty())
         expect(viewModel.virtualCurrencies).toNot(beNil())
         expect(viewModel.hasAnyPurchases).to(beTrue())
@@ -278,7 +277,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
     func testHasAnyPurchasesIsFalseWithVirtualCurrenciesHavingZeroBalance() async throws {
         let mockPurchases = MockCustomerCenterPurchases(
-            customerInfo: CustomerCenterViewModelTests.customerInfoWithExpiredSubscriptions,
+            customerInfo: CustomerCenterViewModelTests.customerInfoWithoutSubscriptions,
             customerCenterConfigData: CustomerCenterConfigData.mock(displayVirtualCurrencies: true)
         )
         mockPurchases.virtualCurrenciesResult = .success(VirtualCurrenciesFixtures.virtualCurrenciesWithZeroBalance)
@@ -290,11 +289,10 @@ final class CustomerCenterViewModelTests: TestCase {
 
         await viewModel.loadScreen()
 
-        expect(viewModel.subscriptionsSection.count) == 1
-        expect(viewModel.subscriptionsSection.first?.isExpired).to(beTrue())
+        expect(viewModel.subscriptionsSection).to(beEmpty())
         expect(viewModel.nonSubscriptionsSection).to(beEmpty())
         expect(viewModel.virtualCurrencies).toNot(beNil())
-        expect(viewModel.hasAnyPurchases).to(beTrue())
+        expect(viewModel.hasAnyPurchases).to(beFalse())
     }
 
     func testShouldShowActiveSubscription_whenUserHasOneActiveSubscriptionOneEntitlement() async throws {
@@ -1426,6 +1424,12 @@ private extension CustomerCenterViewModelTests {
             }
         }
         """
+        )
+    }()
+
+    static let customerInfoWithoutSubscriptions: CustomerInfo = {
+        return CustomerInfoFixtures.customerInfo(
+            subscriptions: [], entitlements: [], nonSubscriptions: []
         )
     }()
 
