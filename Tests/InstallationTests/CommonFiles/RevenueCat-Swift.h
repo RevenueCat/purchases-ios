@@ -4138,6 +4138,8 @@ SWIFT_CLASS_NAMED("SubscriptionInfo")
 @property (nonatomic, readonly) BOOL isActive;
 /// Whether the subscription will renew at the next billing period.
 @property (nonatomic, readonly) BOOL willRenew;
+/// The display name of the subscription as configured in the RevenueCat dashboard.
+@property (nonatomic, readonly, copy) NSString * _Nullable displayName;
 /// Paid price for the subscription
 @property (nonatomic, readonly, strong) RCProductPaidPrice * _Nullable price;
 @property (nonatomic, readonly, copy) NSString * _Nonnull description;
