@@ -107,7 +107,7 @@ final class ProductPaidPriceTests: TestCase {
         // Test that our formatting matches SK1 StoreProduct formatting
         let usLocale = Locale(identifier: "en_US")
 
-        // Create a mock SK1Product with known price and localexx
+        // Create a mock SK1Product with known price and locale
         let mockSK1Product = MockSK1Product(mockProductIdentifier: "mockProductIdentifier")
         mockSK1Product.mockPrice = 4.99
         mockSK1Product.mockPriceLocale = usLocale
