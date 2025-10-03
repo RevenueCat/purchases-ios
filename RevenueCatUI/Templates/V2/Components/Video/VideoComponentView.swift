@@ -56,6 +56,8 @@ struct VideoComponentView: View {
                 )
             ) { style in
                 if style.visible {
+                    let viewData = style.viewData(forDarkMode: colorScheme == .dark)
+
                     ZStack {
                         if let imageSource, let imageViewModel = try? ImageComponentViewModel(
                             localizationProvider: viewModel.localizationProvider,
@@ -92,7 +94,11 @@ struct VideoComponentView: View {
                                     // this method will share the async task that the cacheprewarming started
                                     // if it didn't error out, expediting the download time and reducing the memory
                                     // footprint of paywalls
-                                    let url = try await fileRepository.generateOrGetCachedFileURL(for: style.url)
+                                    let url = try await fileRepository
+                                        .generateOrGetCachedFileURL(
+                                            for: viewData.url,
+                                            withChecksum: viewData.checksum
+                                        )
                                     guard url != cachedURL else { return }
                                     await MainActor.run {
                                         self.cachedURL = url
@@ -100,17 +106,17 @@ struct VideoComponentView: View {
                                     }
                                 } catch {
                                     await MainActor.run {
-                                        self.cachedURL = style.url
+                                        self.cachedURL = viewData.url
                                         self.imageSource = nil
                                     }
                                 }
                             }
                         }
 
-                        if let cachedURL = fileRepository.getCachedFileURL(for: style.url) {
+                        if let cachedURL = fileRepository.getCachedFileURL(for: viewData.url) {
                             self.cachedURL = cachedURL
                             self.imageSource = nil
-                        } else if let lowResUrl = style.lowResUrl, lowResUrl != style.url {
+                        } else if let lowResUrl = viewData.lowResUrl, lowResUrl != viewData.url {
                             let lowResCachedURL = fileRepository.getCachedFileURL(for: lowResUrl)
                             self.cachedURL = lowResCachedURL ?? lowResUrl
                             self.imageSource = nil

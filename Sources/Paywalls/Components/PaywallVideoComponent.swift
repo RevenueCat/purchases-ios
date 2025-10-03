@@ -184,6 +184,7 @@ extension PaywallComponent {
             hasher.combine(margin)
             hasher.combine(border)
             hasher.combine(shadow)
+            hasher.combine(fallbackSource)
         }
 
         public static func == (lhs: PartialVideoComponent, rhs: PartialVideoComponent) -> Bool {

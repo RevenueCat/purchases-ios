@@ -296,7 +296,8 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
             // 2. Fetch the high res to replace the initial low res
             do {
                 let highResCachedImage = try await self.fileRepository.generateOrGetCachedFileURL(
-                    for: self.highResFileUrlForScheme
+                    for: self.highResFileUrlForScheme,
+                    withChecksum: nil
                 ).asImageAndSize
                 self.highResCachedImage = highResCachedImage
                 self.imageLoadedFrom = .highResFileRepository
