@@ -35,8 +35,6 @@ extension PaywallComponent {
         public let margin: Padding?
         public let border: Border?
         public let shadow: Shadow?
-        public let checksum: Checksum?
-        public let checksumLowRes: Checksum?
 
         public let overrides: ComponentOverrides<PartialVideoComponent>?
 
@@ -56,8 +54,6 @@ extension PaywallComponent {
             margin: Padding? = nil,
             border: Border? = nil,
             shadow: Shadow? = nil,
-            checksum: Checksum? = nil,
-            checksumLowRes: Checksum? = nil,
             overrides: ComponentOverrides<PartialVideoComponent>? = nil
         ) {
             self.type = .video
@@ -76,8 +72,6 @@ extension PaywallComponent {
             self.margin = margin
             self.border = border
             self.shadow = shadow
-            self.checksum = checksum
-            self.checksumLowRes = checksumLowRes
             self.overrides = overrides
         }
 
@@ -99,8 +93,6 @@ extension PaywallComponent {
             hasher.combine(overrides)
             hasher.combine(source)
             hasher.combine(fallbackSource)
-            hasher.combine(checksum)
-            hasher.combine(checksumLowRes)
         }
 
         public static func == (lhs: VideoComponent, rhs: VideoComponent) -> Bool {
@@ -120,8 +112,6 @@ extension PaywallComponent {
             lhs.shadow == rhs.shadow &&
             lhs.overrides == rhs.overrides &&
             lhs.fallbackSource == rhs.fallbackSource &&
-            lhs.checksum == rhs.checksum &&
-            lhs.checksumLowRes == rhs.checksumLowRes &&
             lhs.source == rhs.source
         }
     }
@@ -143,8 +133,6 @@ extension PaywallComponent {
         public let margin: Padding?
         public let border: Border?
         public let shadow: Shadow?
-        public let checksum: Checksum?
-        public let checksumLowRes: Checksum?
 
         public init(
             source: ThemeVideoUrls? = nil,
@@ -162,8 +150,6 @@ extension PaywallComponent {
             margin: Padding? = nil,
             border: Border? = nil,
             shadow: Shadow? = nil,
-            checksum: Checksum? = nil,
-            checksumLowRes: Checksum? = nil
         ) {
             self.source = source
             self.fallbackSource = fallbackSource
@@ -180,8 +166,6 @@ extension PaywallComponent {
             self.margin = margin
             self.border = border
             self.shadow = shadow
-            self.checksum = checksum
-            self.checksumLowRes = checksumLowRes
         }
 
         public func hash(into hasher: inout Hasher) {
@@ -201,7 +185,6 @@ extension PaywallComponent {
             hasher.combine(border)
             hasher.combine(shadow)
             hasher.combine(fallbackSource)
-            hasher.combine(checksum)
         }
 
         public static func == (lhs: PartialVideoComponent, rhs: PartialVideoComponent) -> Bool {
@@ -219,8 +202,6 @@ extension PaywallComponent {
             lhs.border == rhs.border &&
             lhs.shadow == rhs.shadow &&
             lhs.fallbackSource == rhs.fallbackSource &&
-            lhs.checksum == rhs.checksum &&
-            lhs.checksumLowRes == rhs.checksumLowRes &&
             lhs.source == rhs.source
         }
     }

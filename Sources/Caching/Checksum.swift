@@ -39,7 +39,7 @@ public struct Checksum: Codable, Sendable, Hashable {
     }
 
     /// The algoritms supported for generating a checksum
-    public enum Algorithm: String, Codable {
+    public enum Algorithm: String, Codable, Sendable {
         // swiftlint:disable:next missing_docs
         case sha256, sha384, sha512, md5
     }
@@ -64,4 +64,15 @@ public extension Checksum {
             return Checksum(algorithm: algorithm, value: data.md5String)
         }
     }
+
+    /// Compare to another checksum
+    /// - Parameter checksome: Another Checksum
+    func compare(to checksome: Checksum) throws {
+        if self != checksome {
+            throw ChecksumValidationFailure()
+        }
+    }
+
+    /// An error describing a checksum validation failure
+    struct ChecksumValidationFailure: Error { }
 }

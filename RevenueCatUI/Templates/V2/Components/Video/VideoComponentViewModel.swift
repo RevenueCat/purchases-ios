@@ -81,6 +81,10 @@ class VideoComponentViewModel {
             margin: partial?.margin ?? self.component.margin,
             border: partial?.border ?? self.component.border,
             shadow: partial?.shadow ?? self.component.shadow,
+            checksum: partial?.source?.light.checksum ?? self.component.source.light.checksum,
+            checksumLowRes: partial?.source?.light.checksumLowRes ?? self.component.source.light.checksumLowRes,
+            darkChecksum: partial?.source?.dark?.checksum ?? self.component.source.dark?.checksum,
+            darkChecksumLowRes: partial?.source?.dark?.checksumLowRes ?? self.component.source.dark?.checksumLowRes,
             uiConfigProvider: self.uiConfigProvider
         )
 
@@ -112,8 +116,6 @@ struct LocalizedVideoPartial: PresentedPartial {
                 margin: otherPartial?.margin ?? basePartial?.margin,
                 border: otherPartial?.border ?? basePartial?.border,
                 shadow: otherPartial?.shadow ?? basePartial?.shadow,
-                checksum: otherPartial?.checksum ?? basePartial?.checksum,
-                checksumLowRes: otherPartial?.checksumLowRes ?? basePartial?.checksumLowRes
             )
         )
     }
@@ -156,6 +158,10 @@ struct VideoComponentStyle {
     let margin: EdgeInsets
     let border: ShapeModifier.BorderInfo?
     let shadow: ShadowModifier.ShadowInfo?
+    let checksum: Checksum?
+    let checksumLowRes: Checksum?
+    let darkChecksum: Checksum?
+    let darkChecksumLowRes: Checksum?
     let contentMode: ContentMode
 
     init(
@@ -180,6 +186,10 @@ struct VideoComponentStyle {
         margin: PaywallComponent.Padding? = nil,
         border: PaywallComponent.Border? = nil,
         shadow: PaywallComponent.Shadow? = nil,
+        checksum: Checksum? = nil,
+        checksumLowRes: Checksum? = nil,
+        darkChecksum: Checksum? = nil,
+        darkChecksumLowRes: Checksum? = nil,
         uiConfigProvider: UIConfigProvider
     ) {
         self.visible = visible
@@ -202,9 +212,43 @@ struct VideoComponentStyle {
         self.margin = (margin ?? .zero).edgeInsets
         self.border = border?.border(uiConfigProvider: uiConfigProvider)
         self.shadow = shadow?.shadow(uiConfigProvider: uiConfigProvider)
+        self.checksum = checksum
+        self.checksumLowRes = checksumLowRes
+        self.darkChecksum = darkChecksum
+        self.darkChecksumLowRes = darkChecksumLowRes
         self.contentMode = fitMode.contentMode
     }
 
+    func viewData(forDarkMode: Bool) -> ViewData {
+        if forDarkMode {
+            let url = darkUrl ?? url
+            var checksum: Checksum? = darkChecksum
+
+            if darkUrl == url {
+                checksum = self.checksum
+            }
+            return .init(
+                url: url,
+                checksum: checksum,
+                lowResUrl: darkLowResUrl,
+                lowResChecksum: darkChecksumLowRes,
+            )
+        } else {
+            return .init(
+                url: url,
+                checksum: checksum,
+                lowResUrl: lowResUrl,
+                lowResChecksum: checksumLowRes,
+            )
+        }
+    }
+
+    struct ViewData {
+        let url: URL
+        let checksum: Checksum?
+        let lowResUrl: URL?
+        let lowResChecksum: Checksum?
+    }
 }
 
 #endif
