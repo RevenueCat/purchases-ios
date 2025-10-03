@@ -17,8 +17,6 @@ import Combine
 import Foundation
 @_spi(Internal) import RevenueCat
 
-// swiftlint:disable file_length
-
 #if os(iOS)
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -257,15 +255,6 @@ private extension CustomerCenterViewModel {
 
     func loadPurchases(customerInfo: CustomerInfo, configuration: CustomerCenterConfigData) async throws {
         self.customerInfo = customerInfo
-
-        let hasActiveProducts =  !customerInfo.activeSubscriptions.isEmpty || !customerInfo.nonSubscriptions.isEmpty
-
-        if !hasActiveProducts {
-            self.subscriptionsSection = []
-            self.nonSubscriptionsSection = []
-            self.state = .success
-            return
-        }
 
         await loadSubscriptionsSection(customerInfo: customerInfo, configuration: configuration)
         await loadNonSubscriptionsSection(customerInfo: customerInfo, configuration: configuration)

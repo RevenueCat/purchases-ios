@@ -114,7 +114,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         guard !self.hasLoadedVideos else { return }
         self.hasLoadedVideos = true
 
-        let videoURLs = offerings.allVideosInPaywalls
+        let videoURLs = offerings.allLowResVideosInPaywalls
         guard !videoURLs.isEmpty else { return }
 
         Logger.verbose(Strings.paywalls.warming_up_videos(videoURLs: videoURLs))
@@ -254,14 +254,14 @@ private extension Offerings {
         )
     }
 
-    var allVideosInPaywalls: Set<URL> {
+    var allLowResVideosInPaywalls: Set<URL> {
         return .init(
             self
                 .all
                 .values
                 .lazy
                 .compactMap(\.paywallComponents)
-                .flatMap(\.data.allVideoURLs)
+                .flatMap(\.data.allLowResVideoUrls)
         )
     }
 

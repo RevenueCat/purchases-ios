@@ -146,25 +146,6 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(viewModel.state) == .success
     }
 
-    func testLoadHasSubscriptionsNonActive() async throws {
-        let mockPurchases = MockCustomerCenterPurchases(
-            customerInfo: CustomerCenterViewModelTests.customerInfoWithoutSubscriptions
-        )
-
-        let viewModel = CustomerCenterViewModel(
-            actionWrapper: CustomerCenterActionWrapper(),
-            purchasesProvider: mockPurchases
-        )
-
-        await viewModel.loadScreen()
-
-        expect(viewModel.hasAnyPurchases).to(beFalse())
-        expect(viewModel.subscriptionsSection).to(beEmpty())
-        expect(viewModel.nonSubscriptionsSection).to(beEmpty())
-
-        expect(viewModel.state) == .success
-    }
-
     func testLoadHasSubscriptionsFailure() async throws {
         let mockPurchases = MockCustomerCenterPurchases(customerInfoError: error)
 
@@ -884,16 +865,82 @@ final class CustomerCenterViewModelTests: TestCase {
     }
 
     func testLoadScreenNoActiveSubscription() async throws {
-        let customerInfo = CustomerInfoFixtures.customerInfoWithExpiredAppleSubscriptions
+        let customerInfo = CustomerCenterViewModelTests.customerInfoWithoutSubscriptions
         let mockPurchases = MockCustomerCenterPurchases(customerInfo: customerInfo)
         let viewModel = CustomerCenterViewModel(actionWrapper: CustomerCenterActionWrapper(),
                                                 purchasesProvider: mockPurchases)
 
         await viewModel.loadScreen()
 
-        expect(viewModel.subscriptionsSection.first).to(beNil())
+        expect(viewModel.nonSubscriptionsSection).to(beEmpty())
+        expect(viewModel.subscriptionsSection).to(beEmpty())
         expect(viewModel.state) == .success
         expect(viewModel.shouldShowList).to(beFalse())
+        expect(viewModel.hasAnyPurchases).to(beFalse())
+    }
+
+    func testShowsLatestExpiredSubscriptionWhenNoActiveSubscriptions() async throws {
+        let oldExpiredProduct = "com.revenuecat.old_product"
+        let recentExpiredProduct = "com.revenuecat.recent_product"
+        let oldPurchaseDate = "2020-04-12T00:03:28Z"
+        let recentPurchaseDate = "2023-04-12T00:03:28Z"
+        let oldExpirationDate = "2020-05-12T00:03:35Z"
+        let recentExpirationDate = "2023-05-12T00:03:35Z"
+
+        let products = [
+            PurchaseInformationFixtures.product(
+                id: oldExpiredProduct,
+                title: "Old Expired Subscription",
+                duration: .month,
+                price: 4.99
+            ),
+            PurchaseInformationFixtures.product(
+                id: recentExpiredProduct,
+                title: "Recent Expired Subscription",
+                duration: .month,
+                price: 5.99
+            )
+        ]
+
+        let customerInfo = CustomerInfoFixtures.customerInfo(
+            subscriptions: [
+                CustomerInfoFixtures.Subscription(
+                    id: oldExpiredProduct,
+                    store: "app_store",
+                    purchaseDate: oldPurchaseDate,
+                    expirationDate: oldExpirationDate,
+                    priceAmount: 4.99
+                ),
+                CustomerInfoFixtures.Subscription(
+                    id: recentExpiredProduct,
+                    store: "app_store",
+                    purchaseDate: recentPurchaseDate,
+                    expirationDate: recentExpirationDate,
+                    priceAmount: 5.99
+                )
+            ],
+            entitlements: []
+        )
+
+        let mockPurchases = MockCustomerCenterPurchases(
+            customerInfo: customerInfo,
+            products: products
+        )
+
+        let viewModel = CustomerCenterViewModel(
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchasesProvider: mockPurchases
+        )
+
+        await viewModel.loadScreen()
+
+        expect(viewModel.state) == .success
+        expect(viewModel.subscriptionsSection.count) == 1
+
+        let purchaseInformation = try XCTUnwrap(viewModel.subscriptionsSection.first)
+        expect(purchaseInformation.productIdentifier) == recentExpiredProduct
+        expect(purchaseInformation.title) == "Recent Expired Subscription"
+        expect(purchaseInformation.pricePaid) == .nonFree(formatted(price: 5.99))
     }
 
     func testLoadScreenFailure() async throws {
@@ -1199,7 +1246,7 @@ final class CustomerCenterViewModelTests: TestCase {
 
         // Test with multiple virtual currencies -> should be true
         mockPurchases = MockCustomerCenterPurchases(
-            customerInfo: CustomerCenterViewModelTests.customerInfoWithoutSubscriptions,
+            customerInfo: CustomerCenterViewModelTests.customerInfoWithExpiredSubscriptions,
             customerCenterConfigData: CustomerCenterConfigData.mock(displayVirtualCurrencies: true)
         )
         mockPurchases.virtualCurrenciesResult = .success(VirtualCurrenciesFixtures.fourVirtualCurrencies)
@@ -1336,7 +1383,7 @@ private extension CustomerCenterViewModelTests {
         """)
     }
 
-    static let customerInfoWithoutSubscriptions: CustomerInfo = {
+    static let customerInfoWithExpiredSubscriptions: CustomerInfo = {
         return .decode(
         """
         {
@@ -1377,6 +1424,12 @@ private extension CustomerCenterViewModelTests {
             }
         }
         """
+        )
+    }()
+
+    static let customerInfoWithoutSubscriptions: CustomerInfo = {
+        return CustomerInfoFixtures.customerInfo(
+            subscriptions: [], entitlements: [], nonSubscriptions: []
         )
     }()
 
