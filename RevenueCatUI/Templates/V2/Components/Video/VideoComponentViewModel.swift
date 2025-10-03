@@ -111,7 +111,9 @@ struct LocalizedVideoPartial: PresentedPartial {
                 padding: otherPartial?.padding ?? basePartial?.padding,
                 margin: otherPartial?.margin ?? basePartial?.margin,
                 border: otherPartial?.border ?? basePartial?.border,
-                shadow: otherPartial?.shadow ?? basePartial?.shadow
+                shadow: otherPartial?.shadow ?? basePartial?.shadow,
+                checksum: otherPartial?.checksum ?? basePartial?.checksum,
+                checksumLowRes: otherPartial?.checksumLowRes ?? basePartial?.checksumLowRes
             )
         )
     }
