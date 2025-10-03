@@ -22,7 +22,7 @@ class FileRepositoryTests: TestCase {
     func test_ifContentExists_networkServiceIsNotCalled() async throws {
         let sut = await makeSystemUnderTest()
         sut.cache.stubCachedContentExists(with: true)
-        let data = try await sut.fileRepository.generateOrGetCachedFileURL(for: someURL)
+        let data = try await sut.fileRepository.generateOrGetCachedFileURL(for: someURL, withChecksum: nil)
 
         XCTAssertNotNil(data)
         XCTAssertEqual(sut.networkService.invocations, [])
@@ -48,7 +48,7 @@ class FileRepositoryTests: TestCase {
     func test_whenCacheURLCannotBeAssembled_returnsNil() async throws {
         let sut = await makeSystemUnderTest(cacheDirectoryURL: nil)
         do {
-            _ = try await sut.fileRepository.generateOrGetCachedFileURL(for: someURL)
+            _ = try await sut.fileRepository.generateOrGetCachedFileURL(for: someURL, withChecksum: nil)
         } catch {
             switch error as? FileRepository.Error {
             case .failedToCreateCacheDirectory: break
@@ -66,7 +66,7 @@ class FileRepositoryTests: TestCase {
         sut.cache.stubCachedContentExists(with: false)
         sut.networkService.stubResponse(at: 0, result: .failure(SampleError()))
         do {
-            _ = try await sut.fileRepository.generateOrGetCachedFileURL(for: someURL)
+            _ = try await sut.fileRepository.generateOrGetCachedFileURL(for: someURL, withChecksum: nil)
             XCTFail(#function)
         } catch {
             switch error as? FileRepository.Error {
@@ -84,7 +84,7 @@ class FileRepositoryTests: TestCase {
         sut.cache.stubCachedContentExists(with: false)
         sut.cache.stubSaveData(with: .success(.init(data: data, url: someURL)))
         sut.networkService.stubResponse(at: 0, result: .success(data))
-        let result = try await sut.fileRepository.generateOrGetCachedFileURL(for: someURL)
+        let result = try await sut.fileRepository.generateOrGetCachedFileURL(for: someURL, withChecksum: nil)
 
         let expectedCachedURL = URL(string: "data:sample/RevenueCat/e8a0d6b245a127f56629765a9815ba2c").unsafelyUnwrapped
 
@@ -92,6 +92,48 @@ class FileRepositoryTests: TestCase {
         XCTAssertEqual(sut.cache.saveDataInvocations, [.init(data: data, url: expectedCachedURL)])
         XCTAssertEqual(result, expectedCachedURL)
         XCTAssertNotEqual(someURL, expectedCachedURL)
+    }
+
+    func test_dataValidChecksum_savesAndReturns() async throws {
+        let sut = await makeSystemUnderTest()
+        let data = "SomeData".asData
+
+        sut.cache.stubSaveData(with: .success(.init(data: data, url: someURL)))
+        sut.cache.stubCachedContentExists(with: false)
+        sut.networkService.stubResponse(at: 0, result: .success(data))
+        let url = try await sut.fileRepository
+            .generateOrGetCachedFileURL(for: someURL, withChecksum: Checksum.generate(from: data, with: .md5))
+
+        await expect(sut.networkService.invocations.count).toEventually(equal(1))
+        XCTAssertEqual(sut.cache.saveDataInvocations.count, 1)
+
+    }
+
+    func test_dataWithInvalidChecksum_doesNotSaveAndThrows() async throws {
+        let sut = await makeSystemUnderTest()
+        let data = "SomeData".asData
+
+        sut.cache.stubSaveData(with: .success(.init(data: data, url: someURL)))
+        sut.cache.stubCachedContentExists(with: false)
+        sut.networkService.stubResponse(at: 0, result: .success(data))
+        do {
+            _ = try await sut.fileRepository
+                .generateOrGetCachedFileURL(
+                    for: someURL,
+                    withChecksum: Checksum.generate(from: "not matching data".asData, with: .md5)
+                )
+            XCTFail(#function)
+        } catch {
+            switch error as? FileRepository.Error {
+            case .failedToFetchFileFromRemoteSource(let value):
+                if !value.contains("ChecksumValidationFailure") {
+                    fallthrough
+                }
+            default:
+                XCTFail(#function)
+            }
+        }
+
     }
 
     func makeSystemUnderTest(

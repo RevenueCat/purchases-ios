@@ -54,7 +54,7 @@ import Foundation
     @_spi(Internal) public func prefetch(urls: [InputURL]) {
         for url in urls {
             Task { [weak self] in
-                try await self?.generateOrGetCachedFileURL(for: url)
+                try await self?.generateOrGetCachedFileURL(for: url, withChecksum: nil)
             }
         }
     }
@@ -62,7 +62,10 @@ import Foundation
     /// Create and/or get the cached file url
     /// - Parameters:
     ///   - url: The url for the remote data to cache into a file
-    @_spi(Internal) public func generateOrGetCachedFileURL(for url: InputURL) async throws -> OutputURL {
+    @_spi(Internal) public func generateOrGetCachedFileURL(
+        for url: InputURL,
+        withChecksum checksum: Checksum?
+    ) async throws -> OutputURL {
         return try await store.getOrPut(
             Task { [weak self] in
                 guard let self, let cachedUrl = self.generateLocalFilesystemURL(forRemoteURL: url) else {
@@ -74,7 +77,7 @@ import Foundation
                     return cachedUrl
                 }
 
-                let data = try await self.downloadFile(from: url)
+                let data = try await self.downloadFile(from: url, checksum: checksum)
                 try self.saveCachedFile(url: cachedUrl, data: data)
                 return cachedUrl
             },
@@ -95,9 +98,14 @@ import Foundation
         return nil
     }
 
-    private func downloadFile(from url: URL) async throws -> Data {
+    private func downloadFile(from url: URL, checksum: Checksum?) async throws -> Data {
         do {
-            return try await networkService.data(from: url)
+            let data = try await networkService.data(from: url)
+            if let checksum = checksum {
+                try Checksum.generate(from: data, with: checksum.algorithm).compare(to: checksum)
+                // retry?
+            }
+            return data
         } catch {
             let message = Strings.fileRepository.failedToFetchFileFromRemoteSource(url, error).description
             Logger.error(message)
@@ -132,7 +140,11 @@ import Foundation
     /// Create and/or get the cached file url
     /// - Parameters:
     ///   - url: The url for the remote data to cache into a file
-    func generateOrGetCachedFileURL(for url: InputURL) async throws -> OutputURL
+    ///   - checksum: A checksum of the remote file if there is any
+    func generateOrGetCachedFileURL(
+        for url: InputURL,
+        withChecksum checksum: Checksum?
+    ) async throws -> OutputURL
 }
 
 /// The input URL is the URL that the repository will read remote data from
