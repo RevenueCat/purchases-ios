@@ -149,7 +149,7 @@ extension PaywallComponent {
             padding: Padding? = nil,
             margin: Padding? = nil,
             border: Border? = nil,
-            shadow: Shadow? = nil,
+            shadow: Shadow? = nil
         ) {
             self.source = source
             self.fallbackSource = fallbackSource
