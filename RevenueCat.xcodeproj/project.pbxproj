@@ -55,6 +55,8 @@
 		03F446262D2FE1510046129A /* MaskShapePropertyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F446252D2FE1510046129A /* MaskShapePropertyTests.swift */; };
 		03F446552D303E350046129A /* PaddingPropertyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F446542D303E350046129A /* PaddingPropertyTests.swift */; };
 		03F446572D303FA10046129A /* CornerRadiusesPropertyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F446562D303FA10046129A /* CornerRadiusesPropertyTests.swift */; };
+		1622D3FB2E900DE000C20E3C /* ChecksumTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1622D3FA2E900DE000C20E3C /* ChecksumTests.swift */; };
+		1622D3FD2E900F8200C20E3C /* Checksum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1622D3FC2E900F8200C20E3C /* Checksum.swift */; };
 		164681CE2E6B577600854AA5 /* VideoPlayerViewNSView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164681CB2E6B577600854AA5 /* VideoPlayerViewNSView.swift */; };
 		164681CF2E6B577600854AA5 /* VideoPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164681CA2E6B577600854AA5 /* VideoPlayerView.swift */; };
 		164681D02E6B577600854AA5 /* VideoComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164681C82E6B577600854AA5 /* VideoComponentView.swift */; };
@@ -1541,6 +1543,8 @@
 		03F446252D2FE1510046129A /* MaskShapePropertyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaskShapePropertyTests.swift; sourceTree = "<group>"; };
 		03F446542D303E350046129A /* PaddingPropertyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaddingPropertyTests.swift; sourceTree = "<group>"; };
 		03F446562D303FA10046129A /* CornerRadiusesPropertyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerRadiusesPropertyTests.swift; sourceTree = "<group>"; };
+		1622D3FA2E900DE000C20E3C /* ChecksumTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChecksumTests.swift; sourceTree = "<group>"; };
+		1622D3FC2E900F8200C20E3C /* Checksum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Checksum.swift; sourceTree = "<group>"; };
 		164681C82E6B577600854AA5 /* VideoComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoComponentView.swift; sourceTree = "<group>"; };
 		164681C92E6B577600854AA5 /* VideoComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoComponentViewModel.swift; sourceTree = "<group>"; };
 		164681CA2E6B577600854AA5 /* VideoPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerView.swift; sourceTree = "<group>"; };
@@ -4482,6 +4486,7 @@
 				16BCA36D2E4D9B9300B39E7F /* DeferredValueStoresTests.swift */,
 				37E35D87B7E6F91E27E98F42 /* DeviceCacheTests.swift */,
 				37E35E3250FBBB03D92E06EC /* InMemoryCachedObjectTests.swift */,
+				1622D3FA2E900DE000C20E3C /* ChecksumTests.swift */,
 			);
 			path = Caching;
 			sourceTree = "<group>";
@@ -5764,6 +5769,7 @@
 		B3B5FBBD269E080A00104A0C /* Caching */ = {
 			isa = PBXGroup;
 			children = (
+				1622D3FC2E900F8200C20E3C /* Checksum.swift */,
 				1E42CC6B2D7F1A0500E0EE8D /* CacheStatus.swift */,
 				16BCA3652E4D9AE400B39E7F /* LargeItemCacheType.swift */,
 				B3B5FBC0269E17CE00104A0C /* DeviceCache.swift */,
@@ -6799,6 +6805,7 @@
 				4FF8464D2A32554300617F00 /* DiagnosticsStrings.swift in Sources */,
 				57BB070E28D27A2B007F5DF0 /* CachingProductsManager.swift in Sources */,
 				2DDF419D24F6F331005BC22D /* IntroEligibilityCalculator.swift in Sources */,
+				1622D3FD2E900F8200C20E3C /* Checksum.swift in Sources */,
 				57536A2627851FFE00E2AE7F /* SK1StoreTransaction.swift in Sources */,
 				57DE807128074C23008D6C6F /* SK1Storefront.swift in Sources */,
 				3592E88C2C2ED58900D7F91D /* GetCustomerCenterConfigOperation.swift in Sources */,
@@ -7261,6 +7268,7 @@
 				2C08B2E92CD40DBF0024857B /* ButtonComponentTests.swift in Sources */,
 				5796A38127D6B78500653165 /* BaseBackendTest.swift in Sources */,
 				351B516226D44BEE00BD2BD7 /* CustomerInfoManagerTests.swift in Sources */,
+				1622D3FB2E900DE000C20E3C /* ChecksumTests.swift in Sources */,
 				5748008C29BFC6660032F001 /* SignatureVerificationHTTPClientTests.swift in Sources */,
 				2C8EC6DF2CCD27A500D6CCF8 /* PartialComponentTests.swift in Sources */,
 				351B51A326D450BC00BD2BD7 /* DictionaryExtensionsTests.swift in Sources */,
