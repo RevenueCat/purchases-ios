@@ -31,6 +31,15 @@ final class ProductPaidPriceTests: TestCase {
         expect(price.formatted) == "$4.99"
     }
 
+    func testBackwardCompatibleInitialization() {
+        let price = ProductPaidPrice(currency: "USD", amount: 4.99)
+
+        expect(price.currency) == "USD"
+        expect(price.amount) == 4.99
+        expect(price.formatted).to(contain("$"))
+        expect(price.formatted).to(contain("4.99"))
+    }
+
     // MARK: - Convenience Initializer Tests
 
     func testConvenienceInitializerFormatsUSDCorrectly() {
@@ -56,14 +65,14 @@ final class ProductPaidPriceTests: TestCase {
 
     func testFormatPriceWithUSD() {
         let usLocale = Locale(identifier: "en_US")
-        let formatted = ProductPaidPrice.formatPrice(amount: 9.99, currency: "USD", locale: usLocale)
+        let formatted = ProductPaidPrice.formatPrice(currency: "USD", amount: 9.99, locale: usLocale)
 
         expect(formatted) == "$9.99"
     }
 
     func testFormatPriceWithEUR() {
         let germanLocale = Locale(identifier: "de_DE")
-        let formatted = ProductPaidPrice.formatPrice(amount: 12.99, currency: "EUR", locale: germanLocale)
+        let formatted = ProductPaidPrice.formatPrice(currency: "EUR", amount: 12.99, locale: germanLocale)
 
         expect(formatted).to(contain("12,99"))
         expect(formatted).to(contain("€"))
@@ -71,7 +80,7 @@ final class ProductPaidPriceTests: TestCase {
 
     func testFormatPriceWithJPY() {
         let japanLocale = Locale(identifier: "ja_JP")
-        let formatted = ProductPaidPrice.formatPrice(amount: 1500, currency: "JPY", locale: japanLocale)
+        let formatted = ProductPaidPrice.formatPrice(currency: "JPY", amount: 1500, locale: japanLocale)
 
         expect(formatted).to(contain("1,500"))
         expect(formatted).to(contain("¥"))
@@ -168,9 +177,21 @@ final class ProductPaidPriceTests: TestCase {
 
     func testInvalidCurrencyCodeFallback() {
         let usLocale = Locale(identifier: "en_US")
-        let formatted = ProductPaidPrice.formatPrice(amount: 4.99, currency: "INVALID", locale: usLocale)
+        let formatted = ProductPaidPrice.formatPrice(currency: "INVALID", amount: 4.99, locale: usLocale)
 
         // Should fallback to showing the raw amount when currency is invalid
         expect(formatted).to(contain("4.99"))
+    }
+
+    func testLocaleCurrencyMismatch() {
+        // Test Spanish locale formatting USD currency (common real-world scenario)
+        let spanishLocale = Locale(identifier: "es_ES")
+        let price = ProductPaidPrice(currency: "USD", amount: 4.99, locale: spanishLocale)
+
+        expect(price.currency) == "USD"
+        expect(price.amount) == 4.99
+        // Spanish locale should still show USD correctly, possibly with different formatting
+        expect(price.formatted).to(contain("4,99"))  // Spanish uses comma for decimals
+        expect(price.formatted).to(contain("US$"))   // Spanish locale shows US$ for USD
     }
 }

@@ -25,18 +25,22 @@ import Foundation
     /// Formatted price of the item, including its currency sign. For example $3.00.
     @objc public let formatted: String
 
-    private static let numberFormatter: NumberFormatter = {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        return formatter
-    }()
+    private static let formatterCache = NSCache<NSString, NumberFormatter>()
+
+    /// ProductPaidPrice initializer (maintains backward compatibility)
+    /// - Parameters:
+    ///   - currency: Currency paid
+    ///   - amount: Amount paid
+    public convenience init(currency: String, amount: Double) {
+        self.init(currency: currency, amount: amount, locale: .current)
+    }
 
     /// ProductPaidPrice initialiser
     /// - Parameters:
     ///   - currency: Currency paid
     ///   - amount: Amount paid
     ///   - formatted: Formatted price string with currency symbol
-    public init(currency: String, amount: Double, formatted: String) {
+    init(currency: String, amount: Double, formatted: String) {
         self.currency = currency
         self.amount = amount
         self.formatted = formatted
@@ -48,20 +52,30 @@ import Foundation
     ///   - amount: Amount as a decimal value
     ///   - locale: Locale for formatting (defaults to current locale)
     public convenience init(currency: String, amount: Double, locale: Locale = .current) {
-        let formatted = Self.formatPrice(amount: amount, currency: currency, locale: locale)
+        let formatted = Self.formatPrice(currency: currency, amount: amount, locale: locale)
         self.init(currency: currency, amount: amount, formatted: formatted)
     }
 
     /// Formats a price with currency using NumberFormatter
     /// - Parameters:
-    ///   - amount: The price amount
     ///   - currency: The currency code
+    ///   - amount: The price amount
     ///   - locale: The locale for formatting
     /// - Returns: Formatted price string (e.g., "$3.00", "€7.99")
-    static func formatPrice(amount: Double, currency: String, locale: Locale = .current) -> String {
-        numberFormatter.locale = locale
-        numberFormatter.currencyCode = currency
+    static func formatPrice(currency: String, amount: Double, locale: Locale = .current) -> String {
+        let cacheKey = "\(locale.identifier)-\(currency)" as NSString
 
-        return numberFormatter.string(from: NSNumber(value: amount)) ?? "\(amount)"
+        let formatter: NumberFormatter
+        if let cachedFormatter = formatterCache.object(forKey: cacheKey) {
+            formatter = cachedFormatter
+        } else {
+            formatter = NumberFormatter()
+            formatter.numberStyle = .currency
+            formatter.locale = locale
+            formatter.currencyCode = currency
+            formatterCache.setObject(formatter, forKey: cacheKey)
+        }
+
+        return formatter.string(from: NSNumber(value: amount)) ?? "\(amount)"
     }
 }
