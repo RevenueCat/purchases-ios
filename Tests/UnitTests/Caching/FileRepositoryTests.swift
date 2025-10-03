@@ -134,6 +134,7 @@ class FileRepositoryTests: TestCase {
             }
         }
 
+        XCTAssertEqual(sut.cache.saveDataInvocations.count, 0)
     }
 
     func makeSystemUnderTest(
