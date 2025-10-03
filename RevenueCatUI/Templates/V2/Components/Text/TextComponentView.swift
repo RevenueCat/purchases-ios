@@ -51,9 +51,7 @@ struct TextComponentView: View {
             isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                 package: self.packageContext.package
             ),
-            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
-                for: self.packageContext.package
-            )
+            promoOffer: self.paywallPromoOfferCache.get(for: self.packageContext.package)
         ) { style in
             if style.visible {
                 NonLocalizedMarkdownText(text: style.text, font: style.font, fontWeight: style.fontWeight)
