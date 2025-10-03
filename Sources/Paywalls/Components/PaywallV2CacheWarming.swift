@@ -32,8 +32,8 @@ extension PaywallComponentsData {
         return imageUrls
     }
 
-    var allVideoURLs: [URL] {
-        return self.componentsConfig.base.allVideoURLs
+    var allLowResVideoUrls: [URL] {
+        return self.componentsConfig.base.allLowResVideoUrls
     }
 
 }
@@ -49,7 +49,7 @@ extension PaywallComponentsData.PaywallComponentsConfig {
         return rootStackImageURLs + stickFooterImageURLs
     }
 
-    var allVideoURLs: [URL] {
+    var allLowResVideoUrls: [URL] {
         let rootStackVideoURLs = self.collectAllVideoURLs(in: self.stack)
         let stickFooterVideoURLs = self.stickyFooter.flatMap { self.collectAllVideoURLs(in: $0.stack) } ?? []
 
@@ -208,7 +208,7 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                     self.collectAllVideoURLs(in: stack)
                 })
             case .video(let video):
-                urls += video.videoUrls
+                urls += video.lowResVideoUrls
             }
         }
 
@@ -299,11 +299,9 @@ private extension PaywallComponent.VideoComponent {
         fallbackSource?.imageUrls ?? []
     }
 
-    var videoUrls: [URL] {
+    var lowResVideoUrls: [URL] {
         [
-            source.light.url,
             source.light.urlLowRes,
-            source.dark?.url,
             source.dark?.urlLowRes
         ].compactMap { $0 }
     }
