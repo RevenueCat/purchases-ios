@@ -44,7 +44,7 @@ struct VariableHandlerV2 {
         with package: Package,
         locale: Locale,
         localizations: [String: String],
-        promoOffer: PromotionalOffer?
+        promoOffer: PromotionalOffer? = nil
     ) -> String {
         let whisker = Whisker(template: text) { variableRaw, functionRaw in
             let variable = self.findVariable(variableRaw)
