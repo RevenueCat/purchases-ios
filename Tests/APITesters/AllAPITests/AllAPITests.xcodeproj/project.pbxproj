@@ -125,6 +125,7 @@
 		3502630E2CF61E9F00894270 /* SubscriptionInfoAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3502630D2CF61E9A00894270 /* SubscriptionInfoAPI.swift */; };
 		35370AC52CFF8304004F0A64 /* RCSubscriptionInfoAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = 35370AC42CFF82F8004F0A64 /* RCSubscriptionInfoAPI.h */; };
 		35370AC82CFF8317004F0A64 /* RCSubscriptionInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 35370AC72CFF8312004F0A64 /* RCSubscriptionInfoAPI.m */; };
+		5780280B2E8FD3ED00E75FED /* ProductPaidPriceAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5780280A2E8FD3ED00E75FED /* ProductPaidPriceAPI.swift */; };
 		75C1B6AD2D48D4550011512D /* DangerousSettingsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C1B6AC2D48D4550011512D /* DangerousSettingsAPI.swift */; };
 		FD181EF12D72451000A8EBE2 /* VirtualCurrencyAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD181EF02D72451000A8EBE2 /* VirtualCurrencyAPI.swift */; };
 		FD2A4F982D721D2100ED3367 /* RCVirtualCurrencyAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = FD2A4F972D721D2100ED3367 /* RCVirtualCurrencyAPI.m */; };
@@ -359,6 +360,7 @@
 		3502630D2CF61E9A00894270 /* SubscriptionInfoAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionInfoAPI.swift; sourceTree = "<group>"; };
 		35370AC42CFF82F8004F0A64 /* RCSubscriptionInfoAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCSubscriptionInfoAPI.h; sourceTree = "<group>"; };
 		35370AC72CFF8312004F0A64 /* RCSubscriptionInfoAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCSubscriptionInfoAPI.m; sourceTree = "<group>"; };
+		5780280A2E8FD3ED00E75FED /* ProductPaidPriceAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductPaidPriceAPI.swift; sourceTree = "<group>"; };
 		75C1B6AC2D48D4550011512D /* DangerousSettingsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DangerousSettingsAPI.swift; sourceTree = "<group>"; };
 		75C1B6AE2D48D4DB0011512D /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FD181EF02D72451000A8EBE2 /* VirtualCurrencyAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyAPI.swift; sourceTree = "<group>"; };
@@ -563,6 +565,7 @@
 		2D4C61B42C5AD61800A29FD2 /* SwiftAPITester */ = {
 			isa = PBXGroup;
 			children = (
+				5780280A2E8FD3ED00E75FED /* ProductPaidPriceAPI.swift */,
 				3502630D2CF61E9A00894270 /* SubscriptionInfoAPI.swift */,
 				2D4C61D32C5AD62900A29FD2 /* AttributionNetworkAPI.swift */,
 				2D4C61CC2C5AD62900A29FD2 /* AttributionAPI.swift */,
@@ -1050,6 +1053,7 @@
 				2D4C61EB2C5AD62A00A29FD2 /* AttributionNetworkAPI.swift in Sources */,
 				2D4C61ED2C5AD62A00A29FD2 /* PackageAPI.swift in Sources */,
 				2D4C61DF2C5AD62A00A29FD2 /* OfferingAPI.swift in Sources */,
+				5780280B2E8FD3ED00E75FED /* ProductPaidPriceAPI.swift in Sources */,
 				2D4C61F22C5AD62A00A29FD2 /* PurchasesAPI.swift in Sources */,
 				2D4C61F12C5AD62A00A29FD2 /* PresentedOfferingContextAPI.swift in Sources */,
 				FD181EF12D72451000A8EBE2 /* VirtualCurrencyAPI.swift in Sources */,

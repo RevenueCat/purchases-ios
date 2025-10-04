@@ -15,4 +15,7 @@ func checkNonSubscriptionTransactionAPI() {
     let _: Date = transaction.purchaseDate
     let _: String = transaction.transactionIdentifier
     let _: String = transaction.storeTransactionIdentifier
+    let _: Store = transaction.store
+    let _: ProductPaidPrice? = transaction.price
+    let _: Bool = transaction.isSandbox
 }
