@@ -79,7 +79,7 @@ import Foundation
     @objc public let price: ProductPaidPrice?
 
     /// Management purchase URL
-    @_spi(Internal) public let managementURL: URL?
+    @objc public let managementURL: URL?
 
     init(productIdentifier: String,
          purchaseDate: Date,
