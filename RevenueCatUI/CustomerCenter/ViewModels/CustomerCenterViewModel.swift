@@ -119,6 +119,10 @@ import Foundation
         configuration?.support.displayVirtualCurrencies == true
     }
 
+    var shouldShowUserDetailsSection: Bool {
+        configuration?.support.displayUserDetailsSection ?? true
+    }
+
     private let currentVersionFetcher: CurrentVersionFetcher
 
     internal var customerInfo: CustomerInfo?

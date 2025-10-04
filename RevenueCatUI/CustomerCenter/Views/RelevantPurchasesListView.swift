@@ -14,6 +14,7 @@
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
+// swiftlint:disable file_length
 #if os(iOS)
 
 @available(iOS 15.0, *)
@@ -187,11 +188,13 @@ struct RelevantPurchasesListView: View {
                     Spacer().frame(height: 16)
                 }
 
-                AccountDetailsSection(
-                    originalPurchaseDate: customerInfoViewModel.originalPurchaseDate,
-                    originalAppUserId: customerInfoViewModel.originalAppUserId,
-                    localization: localization
-                )
+                if customerInfoViewModel.shouldShowUserDetailsSection {
+                    AccountDetailsSection(
+                        originalPurchaseDate: customerInfoViewModel.originalPurchaseDate,
+                        originalAppUserId: customerInfoViewModel.originalAppUserId,
+                        localization: localization
+                    )
+                }
             }
             .padding(.top, 16)
         }

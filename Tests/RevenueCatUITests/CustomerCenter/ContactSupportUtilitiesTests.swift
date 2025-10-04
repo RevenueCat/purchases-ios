@@ -26,6 +26,7 @@ class ContactSupportUtilitiesTest: TestCase {
         email: "support@example.com",
         shouldWarnCustomerToUpdate: false,
         displayPurchaseHistoryLink: false,
+        displayUserDetailsSection: false,
         displayVirtualCurrencies: false,
         shouldWarnCustomersAboutMultipleSubscriptions: false
     )
