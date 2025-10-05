@@ -20,7 +20,7 @@ protocol LargeItemCacheType {
     func saveData(_ data: Data, to url: URL) throws
 
     /// Check if there is content cached at the url
-    func cachedContentExists(at url: URL) -> Bool
+    func cachedContentExists(at url: URL, checksum: Checksum?) -> Bool
 
     /// Load data from url
     func loadFile(at url: URL) throws -> Data
@@ -41,8 +41,19 @@ extension FileManager: LargeItemCacheType {
     }
 
     /// Check if there is content cached at the given path
-    func cachedContentExists(at url: URL) -> Bool {
-        return (try? loadFile(at: url)) != nil
+    func cachedContentExists(at url: URL, checksum: Checksum?) -> Bool {
+        // WIP Make this read the file in chunks instead of all at once
+        if let file = try? loadFile(at: url) {
+            if let checksum {
+                do {
+                    try Checksum.generate(from: file, with: checksum.algorithm).compare(to: checksum)
+                } catch {
+                    return false
+                }
+            }
+            return true
+        }
+        return false
     }
 
     /// Creates a directory in the cache from a base path
