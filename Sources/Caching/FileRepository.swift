@@ -68,12 +68,17 @@ import Foundation
     ) async throws -> OutputURL {
         return try await store.getOrPut(
             Task { [weak self] in
-                guard let self, let cachedUrl = self.generateLocalFilesystemURL(forRemoteURL: url) else {
+                guard let self,
+                      let cachedUrl = self.generateLocalFilesystemURL(
+                        forRemoteURL: url,
+                        withChecksum: checksum
+                      )
+                else {
                     Logger.error(Strings.fileRepository.failedToCreateCacheDirectory(url).description)
                     throw Error.failedToCreateCacheDirectory(url.absoluteString)
                 }
 
-                if self.fileManager.cachedContentExists(at: cachedUrl) {
+                if self.fileManager.cachedContentExists(at: cachedUrl, checksum: checksum) {
                     return cachedUrl
                 }
 
@@ -88,16 +93,17 @@ import Foundation
     /// Get the cached file url (if it exists)
     /// - Parameters:
     ///   - url: The url for the remote data to cache into a file
-    @_spi(Internal) public func getCachedFileURL(for url: InputURL) -> OutputURL? {
-        let cachedUrl = self.generateLocalFilesystemURL(forRemoteURL: url)
+    @_spi(Internal) public func getCachedFileURL(for url: InputURL, withChecksum checksum: Checksum?) -> OutputURL? {
+        let cachedUrl = self.generateLocalFilesystemURL(forRemoteURL: url, withChecksum: checksum)
 
-        if let cachedUrl, self.fileManager.cachedContentExists(at: cachedUrl) {
+        if let cachedUrl, self.fileManager.cachedContentExists(at: cachedUrl, checksum: checksum) {
             return cachedUrl
         }
 
         return nil
     }
 
+    // WIP: Move to async bytes storing to a temporary file
     private func downloadFile(from url: URL, checksum: Checksum?) async throws -> Data {
         do {
             let data = try await networkService.data(from: url)
@@ -123,10 +129,10 @@ import Foundation
         }
     }
 
-    func generateLocalFilesystemURL(forRemoteURL url: URL) -> URL? {
+    func generateLocalFilesystemURL(forRemoteURL url: URL, withChecksum checksum: Checksum?) -> URL? {
         return cacheURL?
             .appendingPathComponent(url.absoluteString.asData.md5String)
-            .appendingPathExtension(url.pathExtension)
+            .appendingPathExtension(checksum?.value ?? url.pathExtension)
     }
 }
 

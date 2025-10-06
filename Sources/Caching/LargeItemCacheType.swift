@@ -42,18 +42,14 @@ extension FileManager: LargeItemCacheType {
 
     /// Check if there is content cached at the given path
     func cachedContentExists(at url: URL, checksum: Checksum?) -> Bool {
-        // WIP Make this read the file in chunks instead of all at once
-        if let file = try? loadFile(at: url) {
-            if let checksum {
-                do {
-                    try Checksum.generate(from: file, with: checksum.algorithm).compare(to: checksum)
-                } catch {
-                    return false
-                }
+        do {
+            if let size = try self.attributesOfItem(atPath: url.path)[.size] as? UInt64 {
+                return size > 0
             }
-            return true
+            return false
+        } catch {
+            return false
         }
-        return false
     }
 
     /// Creates a directory in the cache from a base path

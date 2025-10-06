@@ -59,7 +59,7 @@ struct VideoComponentView: View {
                     let viewData = style.viewData(forDarkMode: colorScheme == .dark)
 
                     ZStack {
-                        if let imageSource, let imageViewModel = try? ImageComponentViewModel(
+                        if let imageSource, cachedURL == nil, let imageViewModel = try? ImageComponentViewModel(
                             localizationProvider: viewModel.localizationProvider,
                             uiConfigProvider: viewModel.uiConfigProvider,
                             component: .init(source: imageSource)
@@ -102,24 +102,26 @@ struct VideoComponentView: View {
                                     guard url != cachedURL else { return }
                                     await MainActor.run {
                                         self.cachedURL = url
-                                        self.imageSource = nil
                                     }
                                 } catch {
                                     await MainActor.run {
                                         self.cachedURL = viewData.url
-                                        self.imageSource = nil
                                     }
                                 }
                             }
                         }
 
-                        if let cachedURL = fileRepository.getCachedFileURL(for: viewData.url) {
+                        if let cachedURL = fileRepository.getCachedFileURL(
+                            for: viewData.url,
+                            withChecksum: viewData.checksum
+                        ) {
                             self.cachedURL = cachedURL
-                            self.imageSource = nil
                         } else if let lowResUrl = viewData.lowResUrl, lowResUrl != viewData.url {
-                            let lowResCachedURL = fileRepository.getCachedFileURL(for: lowResUrl)
+                            let lowResCachedURL = fileRepository.getCachedFileURL(
+                                for: lowResUrl,
+                                withChecksum: viewData.lowResChecksum
+                            )
                             self.cachedURL = lowResCachedURL ?? lowResUrl
-                            self.imageSource = nil
                             resumeDownloadOfFullResolutionVideo()
                         } else {
                             resumeDownloadOfFullResolutionVideo()
