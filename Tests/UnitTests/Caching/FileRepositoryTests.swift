@@ -16,6 +16,7 @@ import Nimble
 import XCTest
 
 @MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
 class FileRepositoryTests: TestCase {
     let someURL = URL(string: "https://somesite.com/someurl").unsafelyUnwrapped
 
@@ -34,7 +35,7 @@ class FileRepositoryTests: TestCase {
 
         sut.cache.stubSaveData(with: .success(.init(data: data, url: someURL)))
         sut.cache.stubCachedContentExists(with: false)
-        sut.networkService.stubResponse(at: 0, result: .success(data))
+        sut.networkService.stubResponse(at: 0, result: .success("SomeData"))
 
         await Task(priority: .userInitiated) {
             sut.fileRepository.prefetch(urls: [someURL])
@@ -83,7 +84,7 @@ class FileRepositoryTests: TestCase {
         let data = "SomeData".data(using: .utf8).unsafelyUnwrapped
         sut.cache.stubCachedContentExists(with: false)
         sut.cache.stubSaveData(with: .success(.init(data: data, url: someURL)))
-        sut.networkService.stubResponse(at: 0, result: .success(data))
+        sut.networkService.stubResponse(at: 0, result: .success("SomeData"))
         let result = try await sut.fileRepository.generateOrGetCachedFileURL(for: someURL, withChecksum: nil)
 
         let expectedCachedURL = URL(string: "data:sample/RevenueCat/e8a0d6b245a127f56629765a9815ba2c").unsafelyUnwrapped
@@ -100,7 +101,7 @@ class FileRepositoryTests: TestCase {
 
         sut.cache.stubSaveData(with: .success(.init(data: data, url: someURL)))
         sut.cache.stubCachedContentExists(with: false)
-        sut.networkService.stubResponse(at: 0, result: .success(data))
+        sut.networkService.stubResponse(at: 0, result: .success("SomeData"))
         let url = try await sut.fileRepository
             .generateOrGetCachedFileURL(for: someURL, withChecksum: Checksum.generate(from: data, with: .md5))
 
@@ -109,33 +110,34 @@ class FileRepositoryTests: TestCase {
 
     }
 
-    func test_dataWithInvalidChecksum_doesNotSaveAndThrows() async throws {
-        let sut = await makeSystemUnderTest()
-        let data = "SomeData".asData
-
-        sut.cache.stubSaveData(with: .success(.init(data: data, url: someURL)))
-        sut.cache.stubCachedContentExists(with: false)
-        sut.networkService.stubResponse(at: 0, result: .success(data))
-        do {
-            _ = try await sut.fileRepository
-                .generateOrGetCachedFileURL(
-                    for: someURL,
-                    withChecksum: Checksum.generate(from: "not matching data".asData, with: .md5)
-                )
-            XCTFail(#function)
-        } catch {
-            switch error as? FileRepository.Error {
-            case .failedToFetchFileFromRemoteSource(let value):
-                if !value.contains("ChecksumValidationFailure") {
-                    fallthrough
-                }
-            default:
-                XCTFail(#function)
-            }
-        }
-
-        XCTAssertEqual(sut.cache.saveDataInvocations.count, 0)
-    }
+    // This test responsibility is covered by the large item cache type now…
+//    func test_dataWithInvalidChecksum_doesNotSaveAndThrows() async throws {
+//        let sut = await makeSystemUnderTest()
+//        let data = "SomeData".asData
+//
+//        sut.cache.stubSaveData(with: .success(.init(data: data, url: someURL)))
+//        sut.cache.stubCachedContentExists(with: false)
+//        sut.networkService.stubResponse(at: 0, result: .success("SomeData"))
+//        do {
+//            _ = try await sut.fileRepository
+//                .generateOrGetCachedFileURL(
+//                    for: someURL,
+//                    withChecksum: Checksum.generate(from: "not matching data".asData, with: .md5)
+//                )
+//            XCTFail(#function)
+//        } catch {
+//            switch error as? FileRepository.Error {
+//            case .failedToFetchFileFromRemoteSource(let value):
+//                if !value.contains("ChecksumValidationFailure") {
+//                    fallthrough
+//                }
+//            default:
+//                XCTFail(#function)
+//            }
+//        }
+//
+//        XCTAssertEqual(sut.cache.saveDataInvocations.count, 0)
+//    }
 
     func makeSystemUnderTest(
         cacheDirectoryURL: URL? = URL(string: "data:sample"),
