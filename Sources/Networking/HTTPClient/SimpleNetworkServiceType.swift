@@ -26,8 +26,6 @@ protocol SimpleNetworkServiceType {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
 extension URLSession: SimpleNetworkServiceType {
 
-    typealias ByteSequence = AsyncBytes
-
     func bytes(from url: URL) async throws -> AsyncThrowingStream<UInt8, Error> {
         let (bytes, res) = try await bytes(for: .init(url: url), delegate: nil)
         if let httpURLResponse = res as? HTTPURLResponse, !(200..<300).contains(httpURLResponse.statusCode) {

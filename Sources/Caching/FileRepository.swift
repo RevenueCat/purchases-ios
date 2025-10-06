@@ -21,7 +21,7 @@ import Foundation
 
     private static let defaultBasePath = "RevenueCat"
 
-    let networkService: any SimpleNetworkServiceType
+    let networkService: SimpleNetworkServiceType
 
     private let store = KeyedDeferredValueStore<JobKey, OutputURL>()
     private let fileManager: LargeItemCacheType
@@ -32,7 +32,7 @@ import Foundation
     ///   - networkService: A service capable of fetching data from a URL
     ///   - fileManager: A service capable of storing data and returning the URL where that stored data exists
     init(
-        networkService: any SimpleNetworkServiceType = URLSession.shared,
+        networkService: SimpleNetworkServiceType = URLSession.shared,
         fileManager: LargeItemCacheType = FileManager.default,
         basePath: String = FileRepository.defaultBasePath
     ) {
