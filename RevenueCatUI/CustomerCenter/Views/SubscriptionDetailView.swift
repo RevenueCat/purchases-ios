@@ -256,7 +256,9 @@ private extension SubscriptionDetailView {
                         .padding(.vertical, 16)
                 }
 
-                accountDetailsView
+                if customerInfoViewModel.shouldShowUserDetailsSection {
+                    accountDetailsView
+                }
             }
             .opacity(viewModel.isRefreshing ? 0.5 : 1)
             .animation(.easeInOut(duration: 0.3), value: viewModel.isRefreshing)
