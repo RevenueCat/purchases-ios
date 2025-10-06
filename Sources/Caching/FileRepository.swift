@@ -23,7 +23,7 @@ import Foundation
 
     let networkService: any SimpleNetworkServiceType
 
-    private let store = KeyedDeferredValueStore<InputURL, OutputURL>()
+    private let store = KeyedDeferredValueStore<JobKey, OutputURL>()
     private let fileManager: LargeItemCacheType
     private let cacheURL: URL?
 
@@ -88,7 +88,7 @@ import Foundation
                 try await self.saveCachedFile(url: cachedUrl, fromBytes: bytes, withChecksum: checksum)
                 return cachedUrl
             },
-            forKey: url
+            forKey: JobKey(url, checksum)
         ).value
     }
 
@@ -174,5 +174,15 @@ extension FileRepository {
 
         /// Used when fetching the data fails
         case failedToFetchFileFromRemoteSource(String)
+    }
+}
+
+private struct JobKey: Hashable {
+    let url: InputURL
+    let checksum: Checksum?
+
+    init(_ url: InputURL, _ checksum: Checksum?) {
+        self.url = url
+        self.checksum = checksum
     }
 }
