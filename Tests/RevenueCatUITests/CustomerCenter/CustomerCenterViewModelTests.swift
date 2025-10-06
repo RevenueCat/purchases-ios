@@ -255,7 +255,7 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(viewModel.shouldShowVirtualCurrencies).to(beFalse())
     }
 
-    func testShouldShowUserDetailsSectionIsFalseBeforeConfigIsLoaded() {
+    func testShouldShowUserDetailsSectionIsTrueBeforeConfigIsLoaded() {
         let mockPurchases = MockCustomerCenterPurchases(
             customerInfo: CustomerInfoFixtures.customerInfoWithAppleSubscriptions,
             customerCenterConfigData: CustomerCenterConfigData.mock(displayUserDetailsSection: true)
@@ -266,7 +266,7 @@ final class CustomerCenterViewModelTests: TestCase {
             purchasesProvider: mockPurchases
         )
 
-        expect(viewModel.shouldShowUserDetailsSection).to(beFalse())
+        expect(viewModel.shouldShowUserDetailsSection).to(beTrue())
     }
 
     func testShouldShowUserDetailsSectionTrue() async {
