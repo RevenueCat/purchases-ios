@@ -14,13 +14,14 @@
 import Foundation
 
 /// A file repository
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
 @_spi(Internal) public final class FileRepository: FileRepositoryType, @unchecked Sendable {
     /// A shared file repository
     @_spi(Internal) public static let shared = FileRepository()
 
     private static let defaultBasePath = "RevenueCat"
 
-    let networkService: SimpleNetworkServiceType
+    let networkService: any SimpleNetworkServiceType
 
     private let store = KeyedDeferredValueStore<InputURL, OutputURL>()
     private let fileManager: LargeItemCacheType
@@ -31,7 +32,7 @@ import Foundation
     ///   - networkService: A service capable of fetching data from a URL
     ///   - fileManager: A service capable of storing data and returning the URL where that stored data exists
     init(
-        networkService: SimpleNetworkServiceType = URLSession.shared,
+        networkService: any SimpleNetworkServiceType = URLSession.shared,
         fileManager: LargeItemCacheType = FileManager.default,
         basePath: String = FileRepository.defaultBasePath
     ) {
@@ -82,8 +83,9 @@ import Foundation
                     return cachedUrl
                 }
 
-                let data = try await self.downloadFile(from: url, checksum: checksum)
-                try self.saveCachedFile(url: cachedUrl, data: data)
+                let bytes = try await self.getBytes(from: url)
+
+                try await self.saveCachedFile(url: cachedUrl, fromBytes: bytes, withChecksum: checksum)
                 return cachedUrl
             },
             forKey: url
@@ -103,15 +105,9 @@ import Foundation
         return nil
     }
 
-    // WIP: Move to async bytes storing to a temporary file
-    private func downloadFile(from url: URL, checksum: Checksum?) async throws -> Data {
+    private func getBytes(from url: URL) async throws -> AsyncThrowingStream<UInt8, Swift.Error> {
         do {
-            let data = try await networkService.data(from: url)
-            if let checksum = checksum {
-                try Checksum.generate(from: data, with: checksum.algorithm).compare(to: checksum)
-                // retry?
-            }
-            return data
+            return try await networkService.bytes(from: url)
         } catch {
             let message = Strings.fileRepository.failedToFetchFileFromRemoteSource(url, error).description
             Logger.error(message)
@@ -119,9 +115,15 @@ import Foundation
         }
     }
 
-    private func saveCachedFile(url: URL, data: Data) throws {
+    private func saveCachedFile(
+        url: URL,
+        fromBytes bytes: AsyncThrowingStream<UInt8, Swift.Error>,
+        withChecksum checksum: Checksum?
+    ) async throws {
         do {
-            try fileManager.saveData(data, to: url)
+
+            // WIP: Save to temp file, check the checksum, then save to cache file
+            try await fileManager.saveData(bytes, to: url, checksum: checksum)
         } catch {
             let message = Strings.fileRepository.failedToSaveCachedFile(url, error).description
             Logger.error(message)
@@ -159,6 +161,7 @@ import Foundation
 /// The output URL is the local file's URL where the data can be found after caching is complete
 @_spi(Internal) public typealias OutputURL = URL
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
 extension FileRepository {
 
     /// File repository error cases

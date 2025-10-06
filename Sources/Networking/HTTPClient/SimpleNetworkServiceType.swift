@@ -14,22 +14,37 @@
 import Foundation
 
 /// A protocol representing a simple network service
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
 protocol SimpleNetworkServiceType {
+
     /// Fetch data from the network
     /// - Parameter url: The URL to fetch data from
-    /// - Returns: Data upon success
-    func data(from url: URL) async throws -> Data
+    /// - Returns: Bytes upon success
+    func bytes(from url: URL) async throws -> AsyncThrowingStream<UInt8, Error>
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
 extension URLSession: SimpleNetworkServiceType {
-    /// Fetch data from the network
-    /// - Parameter url: The URL to fetch data from
-    /// - Returns: Data upon success
-    func data(from url: URL) async throws -> Data {
-        let (data, response) = try await data(from: url)
-        if let httpURLResponse = response as? HTTPURLResponse, !(200..<300).contains(httpURLResponse.statusCode) {
+
+    typealias ByteSequence = AsyncBytes
+
+    func bytes(from url: URL) async throws -> AsyncThrowingStream<UInt8, Error> {
+        let (bytes, res) = try await bytes(for: .init(url: url), delegate: nil)
+        if let httpURLResponse = res as? HTTPURLResponse, !(200..<300).contains(httpURLResponse.statusCode) {
             throw URLError(.badServerResponse)
         }
-        return data
+
+        return AsyncThrowingStream { continuation in
+            Task {
+                do {
+                    for try await byte in bytes {
+                        continuation.yield(byte)
+                    }
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: error)
+                }
+            }
+        }
     }
 }
