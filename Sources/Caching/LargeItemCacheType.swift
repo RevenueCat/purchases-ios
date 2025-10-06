@@ -46,9 +46,7 @@ extension FileManager: LargeItemCacheType {
 
         // Set up file handling
 
-        let tempFileURL = temporaryDirectory
-            .appendingPathComponent(url.absoluteString.asData.md5String)
-            .appendingPathExtension(checksum?.value ?? url.pathExtension)
+        let tempFileURL = temporaryDirectory.appendingPathExtension(checksum?.value ?? url.pathExtension)
 
         guard createFile(atPath: tempFileURL.path, contents: nil, attributes: nil) else {
             let message = Strings.fileRepository.failedToCreateTemporaryFile(tempFileURL).description
