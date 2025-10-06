@@ -64,8 +64,10 @@ actor SimulatedStorePurchaseHandler: SimulatedStorePurchaseHandlerType {
             case .error(let error):
                 purchaseResult = .failure(error)
             case .simulateFailure:
+                Logger.debug(Strings.purchase.simulating_purchase_failure)
                 purchaseResult = .failure(self.simulatedError)
             case .simulateSuccess:
+                Logger.debug(Strings.purchase.simulating_purchase_success)
                 let transaction = await self.createStoreTransaction(product: product)
                 purchaseResult = .success(transaction)
             }
