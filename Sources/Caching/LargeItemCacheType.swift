@@ -21,7 +21,7 @@ protocol LargeItemCacheType {
     func saveData(_ bytes: AsyncThrowingStream<UInt8, Error>, to url: URL, checksum: Checksum?) async throws
 
     /// Check if there is content cached at the url
-    func cachedContentExists(at url: URL, checksum: Checksum?) -> Bool
+    func cachedContentExists(at url: URL) -> Bool
 
     /// Load data from url
     func loadFile(at url: URL) throws -> Data
@@ -93,7 +93,7 @@ extension FileManager: LargeItemCacheType {
     }
 
     /// Check if there is content cached at the given path
-    func cachedContentExists(at url: URL, checksum: Checksum?) -> Bool {
+    func cachedContentExists(at url: URL) -> Bool {
         do {
             if let size = try self.attributesOfItem(atPath: url.path)[.size] as? UInt64 {
                 return size > 0

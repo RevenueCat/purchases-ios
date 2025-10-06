@@ -79,7 +79,7 @@ import Foundation
                     throw Error.failedToCreateCacheDirectory(url.absoluteString)
                 }
 
-                if self.fileManager.cachedContentExists(at: cachedUrl, checksum: checksum) {
+                if self.fileManager.cachedContentExists(at: cachedUrl) {
                     return cachedUrl
                 }
 
@@ -98,7 +98,7 @@ import Foundation
     @_spi(Internal) public func getCachedFileURL(for url: InputURL, withChecksum checksum: Checksum?) -> OutputURL? {
         let cachedUrl = self.generateLocalFilesystemURL(forRemoteURL: url, withChecksum: checksum)
 
-        if let cachedUrl, self.fileManager.cachedContentExists(at: cachedUrl, checksum: checksum) {
+        if let cachedUrl, self.fileManager.cachedContentExists(at: cachedUrl) {
             return cachedUrl
         }
 
