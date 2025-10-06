@@ -59,6 +59,11 @@ struct VideoComponentView: View {
                     let viewData = style.viewData(forDarkMode: colorScheme == .dark)
 
                     ZStack {
+                        if imageSource == nil && cachedURL == nil {
+                            // greedily fill space while loading occurs
+                            render(Color.clear, size: size, with: style)
+                        }
+
                         if let imageSource, cachedURL == nil, let imageViewModel = try? ImageComponentViewModel(
                             localizationProvider: viewModel.localizationProvider,
                             uiConfigProvider: viewModel.uiConfigProvider,
@@ -68,7 +73,7 @@ struct VideoComponentView: View {
                         }
 
                         if let cachedURL {
-                            renderVideo(
+                            render(
                                 VideoPlayerView(
                                     videoURL: cachedURL,
                                     shouldAutoPlay: style.autoPlay,
@@ -156,7 +161,7 @@ struct VideoComponentView: View {
         }
     }
 
-    private func renderVideo<Video: View>(
+    private func render<Video: View>(
         _ video: Video,
         size: CGSize,
         with style: VideoComponentStyle
