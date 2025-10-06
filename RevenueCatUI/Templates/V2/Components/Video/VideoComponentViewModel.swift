@@ -115,7 +115,7 @@ struct LocalizedVideoPartial: PresentedPartial {
                 padding: otherPartial?.padding ?? basePartial?.padding,
                 margin: otherPartial?.margin ?? basePartial?.margin,
                 border: otherPartial?.border ?? basePartial?.border,
-                shadow: otherPartial?.shadow ?? basePartial?.shadow,
+                shadow: otherPartial?.shadow ?? basePartial?.shadow
             )
         )
     }
@@ -231,14 +231,14 @@ struct VideoComponentStyle {
                 url: url,
                 checksum: checksum,
                 lowResUrl: darkLowResUrl,
-                lowResChecksum: darkChecksumLowRes,
+                lowResChecksum: darkChecksumLowRes
             )
         } else {
             return .init(
                 url: url,
                 checksum: checksum,
                 lowResUrl: lowResUrl,
-                lowResChecksum: checksumLowRes,
+                lowResChecksum: checksumLowRes
             )
         }
     }
