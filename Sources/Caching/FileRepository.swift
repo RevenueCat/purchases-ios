@@ -121,8 +121,6 @@ import Foundation
         withChecksum checksum: Checksum?
     ) async throws {
         do {
-
-            // WIP: Save to temp file, check the checksum, then save to cache file
             try await fileManager.saveData(bytes, to: url, checksum: checksum)
         } catch {
             let message = Strings.fileRepository.failedToSaveCachedFile(url, error).description
