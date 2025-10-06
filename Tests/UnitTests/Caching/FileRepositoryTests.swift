@@ -110,35 +110,6 @@ class FileRepositoryTests: TestCase {
 
     }
 
-    // This test responsibility is covered by the large item cache type now…
-//    func test_dataWithInvalidChecksum_doesNotSaveAndThrows() async throws {
-//        let sut = await makeSystemUnderTest()
-//        let data = "SomeData".asData
-//
-//        sut.cache.stubSaveData(with: .success(.init(data: data, url: someURL)))
-//        sut.cache.stubCachedContentExists(with: false)
-//        sut.networkService.stubResponse(at: 0, result: .success("SomeData"))
-//        do {
-//            _ = try await sut.fileRepository
-//                .generateOrGetCachedFileURL(
-//                    for: someURL,
-//                    withChecksum: Checksum.generate(from: "not matching data".asData, with: .md5)
-//                )
-//            XCTFail(#function)
-//        } catch {
-//            switch error as? FileRepository.Error {
-//            case .failedToFetchFileFromRemoteSource(let value):
-//                if !value.contains("ChecksumValidationFailure") {
-//                    fallthrough
-//                }
-//            default:
-//                XCTFail(#function)
-//            }
-//        }
-//
-//        XCTAssertEqual(sut.cache.saveDataInvocations.count, 0)
-//    }
-
     func makeSystemUnderTest(
         cacheDirectoryURL: URL? = URL(string: "data:sample"),
         file: StaticString = #filePath,
