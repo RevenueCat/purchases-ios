@@ -29,6 +29,8 @@
     NSString *storeTransactionId __unused = subscription.storeTransactionId;
     BOOL isActive __unused = subscription.isActive;
     BOOL willRenew __unused = subscription.willRenew;
+    NSString *displayName __unused = subscription.displayName;
+    NSURL *managementURL __unused = subscription.managementURL;
 }
 
 @end

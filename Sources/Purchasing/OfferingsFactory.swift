@@ -48,7 +48,11 @@ class OfferingsFactory {
         }
 
         guard !availablePackages.isEmpty else {
+            #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION && !DEBUG
+            Logger.debug(Strings.offering.offering_empty(offeringIdentifier: offering.identifier))
+            #else
             Logger.warn(Strings.offering.offering_empty(offeringIdentifier: offering.identifier))
+            #endif
             return nil
         }
 
