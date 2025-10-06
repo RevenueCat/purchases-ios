@@ -64,6 +64,7 @@ import Foundation
     @objc(RCInvalidWebPurchaseToken) case invalidWebPurchaseToken = 39
     @objc(RCPurchaseBelongsToOtherUser) case purchaseBelongsToOtherUser = 40
     @objc(RCExpiredWebPurchaseToken) case expiredWebPurchaseToken = 41
+    @objc(RCTestStoreSimulatedPurchaseError) case testStoreSimulatedPurchaseError = 42
 
     // swiftlint:enable missing_docs
 
@@ -194,6 +195,8 @@ extension ErrorCode: DescribableError {
             return "The web purchase already belongs to other user."
         case .expiredWebPurchaseToken:
             return "The link you provided has expired. A new one will be sent to the email used to make the purchase."
+        case .testStoreSimulatedPurchaseError:
+            return "Purchase failure simulated successfully in Test Store. No real transaction occurred."
         @unknown default:
             return "Something went wrong."
         }

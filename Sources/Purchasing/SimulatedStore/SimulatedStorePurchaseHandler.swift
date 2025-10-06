@@ -94,8 +94,7 @@ actor SimulatedStorePurchaseHandler: SimulatedStorePurchaseHandlerType {
     }
 
     nonisolated private var simulatedError: PurchasesError {
-        return ErrorUtils.productNotAvailableForPurchaseError(
-            withMessage: Strings.purchase.error_message_for_simulating_purchase_failure.description)
+        return ErrorUtils.testStoreSimulatedPurchaseError()
     }
 
 }
