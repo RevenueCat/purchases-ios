@@ -196,7 +196,7 @@ extension ErrorCode: DescribableError {
         case .expiredWebPurchaseToken:
             return "The link you provided has expired. A new one will be sent to the email used to make the purchase."
         case .testStoreSimulatedPurchaseError:
-            return "Purchase failure simulated successfully in Test Store. No real transaction occurred."
+            return "Purchase failure simulated successfully in Test Store."
         @unknown default:
             return "Something went wrong."
         }
