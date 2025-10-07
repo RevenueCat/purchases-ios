@@ -40,7 +40,7 @@ import Foundation
     ///   - currency: Currency paid
     ///   - amount: Amount paid
     ///   - formatted: Formatted price string with currency symbol
-    public init(currency: String, amount: Double, formatted: String) {
+    init(currency: String, amount: Double, formatted: String) {
         self.currency = currency
         self.amount = amount
         self.formatted = formatted
