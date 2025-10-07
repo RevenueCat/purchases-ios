@@ -50,14 +50,14 @@ class TextComponentViewModel {
         condition: ScreenCondition,
         packageContext: PackageContext,
         isEligibleForIntroOffer: Bool,
-        isEligibleForPromoOffer: Bool,
+        promoOffer: PromotionalOffer?,
         @ViewBuilder apply: @escaping (TextComponentStyle) -> some View
     ) -> some View {
         let localizedPartial = LocalizedTextPartial.buildPartial(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
-            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            isEligibleForPromoOffer: promoOffer != nil,
             with: self.presentedOverrides
         )
         let partial = localizedPartial?.partial
@@ -71,7 +71,8 @@ class TextComponentViewModel {
                 packageContext: packageContext,
                 variableConfig: uiConfigProvider.variableConfig,
                 locale: self.localizationProvider.locale,
-                localizations: self.uiConfigProvider.getLocalizations(for: self.localizationProvider.locale)
+                localizations: self.uiConfigProvider.getLocalizations(for: self.localizationProvider.locale),
+                promoOffer: promoOffer
             ),
             fontName: partial?.fontName ?? self.component.fontName,
             fontWeight: partial?.fontWeightResolved ?? self.component.fontWeightResolved,
@@ -87,17 +88,21 @@ class TextComponentViewModel {
         apply(style)
     }
 
-    private static func processText(_ text: String,
-                                    packageContext: PackageContext,
-                                    variableConfig: UIConfig.VariableConfig,
-                                    locale: Locale,
-                                    localizations: [String: String]) -> String {
+    private static func processText(
+        _ text: String,
+        packageContext: PackageContext,
+        variableConfig: UIConfig.VariableConfig,
+        locale: Locale,
+        localizations: [String: String],
+        promoOffer: PromotionalOffer? = nil
+    ) -> String {
         let processedWithV2 = Self.processTextV2(
             text,
             packageContext: packageContext,
             variableConfig: variableConfig,
             locale: locale,
-            localizations: localizations
+            localizations: localizations,
+            promoOffer: promoOffer
         )
         // Note: This is temporary while in closed beta and shortly after
         let processedWithV2AndV1 = Self.processTextV1(
@@ -109,11 +114,14 @@ class TextComponentViewModel {
         return processedWithV2AndV1
     }
 
-    private static func processTextV2(_ text: String,
-                                      packageContext: PackageContext,
-                                      variableConfig: UIConfig.VariableConfig,
-                                      locale: Locale,
-                                      localizations: [String: String]) -> String {
+    private static func processTextV2(
+        _ text: String,
+        packageContext: PackageContext,
+        variableConfig: UIConfig.VariableConfig,
+        locale: Locale,
+        localizations: [String: String],
+        promoOffer: PromotionalOffer? = nil
+    ) -> String {
         guard let package = packageContext.package else {
             return text
         }
@@ -134,7 +142,8 @@ class TextComponentViewModel {
             in: text,
             with: package,
             locale: locale,
-            localizations: localizations
+            localizations: localizations,
+            promoOffer: promoOffer
         )
     }
 

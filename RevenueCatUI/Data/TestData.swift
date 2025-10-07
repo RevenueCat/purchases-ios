@@ -213,6 +213,29 @@ enum TestData {
     )
 
     #if DEBUG
+
+    static let productWithPromoOfferPayUpFront = TestStoreProduct(
+        localizedTitle: "PRO monthly",
+        price: 3.99,
+        localizedPriceString: "$3.99",
+        productIdentifier: "com.revenuecat.promo.product_2",
+        productType: .autoRenewableSubscription,
+        localizedDescription: "PRO monthly",
+        subscriptionGroupIdentifier: "group",
+        subscriptionPeriod: .init(value: 1, unit: .month),
+        introductoryDiscount: nil,
+        discounts: [ .init(
+            identifier: "intro",
+            price: 1.99,
+            localizedPriceString: "$1.99",
+            paymentMode: .payUpFront,
+            subscriptionPeriod: .init(value: 1, unit: .week),
+            numberOfPeriods: 1,
+            type: .promotional
+        )],
+        locale: Self.locale
+    )
+
     static let productWithIntroOffer = TestStoreProduct(
         localizedTitle: "PRO monthly",
         price: 3.99,
@@ -280,6 +303,14 @@ enum TestData {
         identifier: "Unknown",
         packageType: .unknown,
         storeProduct: Self.annualProduct.toStoreProduct(),
+        offeringIdentifier: Self.offeringIdentifier,
+        webCheckoutUrl: nil
+    )
+
+    static let packageWithPromoOfferPayUpFront = Package(
+        identifier: PackageType.monthly.identifier,
+        packageType: .monthly,
+        storeProduct: productWithPromoOfferPayUpFront.toStoreProduct(),
         offeringIdentifier: Self.offeringIdentifier,
         webCheckoutUrl: nil
     )
