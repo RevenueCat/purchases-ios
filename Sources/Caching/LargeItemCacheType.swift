@@ -56,6 +56,7 @@ extension FileManager: LargeItemCacheType {
 
         let fileHandle = try FileHandle(forWritingTo: tempFileURL)
         defer { try? fileHandle.close() }
+        defer { try? removeItem(at: tempFileURL) }
 
         // Write data in chunks to the temporary file
 
