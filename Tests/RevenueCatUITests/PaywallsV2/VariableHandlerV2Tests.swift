@@ -13,7 +13,7 @@
 // swiftlint:disable file_length type_body_length 
 
 import Nimble
-import RevenueCat
+@testable import RevenueCat
 @testable import RevenueCatUI
 import XCTest
 
@@ -386,6 +386,37 @@ class VariableHandlerV2Test: TestCase {
             with: TestData.packageWithIntroOfferPayUpFront,
             locale: locale,
             localizations: localizations["en_US"]!
+        )
+        expect(result).to(equal("$0.28"))
+    }
+
+    func testProductPayUpFrontPromoOfferPrice() {
+        let discount = TestData.packageWithPromoOfferPayUpFront.storeProduct.discounts.first!
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price }}",
+            with: TestData.packageWithPromoOfferPayUpFront,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            promoOffer: .init(
+                discount: discount,
+                signedData: .init(identifier: "", keyIdentifier: "", nonce: .init(), signature: "", timestamp: 0)
+            )
+        )
+        expect(result).to(equal("$1.99"))
+    }
+
+    func testProductPayUpFrontPromoOfferPricePerDay() {
+        let discount = TestData.packageWithPromoOfferPayUpFront.storeProduct.discounts.first!
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price_per_day }}",
+            with: TestData.packageWithPromoOfferPayUpFront,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            promoOffer: .init(
+                discount: discount,
+                signedData: .init(identifier: "", keyIdentifier: "", nonce: .init(), signature: "", timestamp: 0)
+            )
         )
         expect(result).to(equal("$0.28"))
     }
