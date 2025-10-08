@@ -40,7 +40,7 @@ enum LogIntent {
         case .rcSuccess: return "😻"
         case .user: return "👤"
         case .warning: return "⚠️"
-        case .simulatedStore: return "[TEST STORE]"
+        case .simulatedStore: return "[Test Store]"
         }
     }
 

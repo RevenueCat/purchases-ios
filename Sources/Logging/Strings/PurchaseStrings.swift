@@ -358,10 +358,10 @@ extension PurchaseStrings: LogMessage {
             return "Restoring purchases not available in Test Store. Returning current CustomerInfo."
 
         case .simulating_purchase_success:
-            return "Test store: Performing test purchase. This purchase won't appear in production."
+            return "[Test Store] Performing test purchase. This purchase won't appear in production."
 
         case .simulating_purchase_failure:
-            return "Test store: Simulating purchase error."
+            return "[Test Store] Purchase failure simulated successfully in Test Store."
         }
     }
 
