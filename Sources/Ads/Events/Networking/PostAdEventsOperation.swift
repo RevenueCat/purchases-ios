@@ -7,14 +7,14 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PostPaywallEventsOperation.swift
+//  PostAdEventsOperation.swift
 //
-//  Created by Nacho Soto on 9/6/23.
+//  Created by RevenueCat on 1/8/25.
 
 import Foundation
 
-/// A `NetworkOperation` for posting ``PaywallEvent``s.
-final class PostPaywallEventsOperation: NetworkOperation {
+/// A `NetworkOperation` for posting ``AdEvent``s.
+final class PostAdEventsOperation: NetworkOperation {
 
     private let configuration: Configuration
     private let request: EventsRequest
@@ -33,7 +33,7 @@ final class PostPaywallEventsOperation: NetworkOperation {
     }
 
     override func begin(completion: @escaping () -> Void) {
-        let request = HTTPRequest(method: .post(self.request), path: HTTPRequest.PaywallPath.postEvents)
+        let request = HTTPRequest(method: .post(self.request), path: HTTPRequest.AdPath.postEvents)
 
         self.httpClient.perform(request) { (response: VerifiedHTTPResponse<HTTPEmptyResponseBody>.Result) in
             defer {
@@ -47,4 +47,4 @@ final class PostPaywallEventsOperation: NetworkOperation {
 }
 
 // Restating inherited @unchecked Sendable from Foundation's Operation
-extension PostPaywallEventsOperation: @unchecked Sendable {}
+extension PostAdEventsOperation: @unchecked Sendable {}

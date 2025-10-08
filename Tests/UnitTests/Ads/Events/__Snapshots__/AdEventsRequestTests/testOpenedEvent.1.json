@@ -1,0 +1,13 @@
+{
+  "ad_instance_id" : "instance-123",
+  "ad_unit_id" : "ca-app-pub-123456789",
+  "app_session_id" : "98CC0F1D-7665-4093-9624-1D7308FFF4DB",
+  "app_user_id" : "test-user-id",
+  "id" : "72164C05-2BDC-4807-8918-A4105F727DEB",
+  "mediator_name" : "MAX",
+  "network_name" : "AdMob",
+  "placement" : "home_screen",
+  "timestamp_ms" : 1694029328000,
+  "type" : "rc_ads_ad_opened",
+  "version" : 1
+}

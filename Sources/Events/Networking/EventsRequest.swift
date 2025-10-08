@@ -44,6 +44,11 @@ struct EventsRequest {
                     }
                     return AnyEncodable(event)
                 }
+            case .ads:
+                guard let event = AdEvent(storedEvent: storedEvent) else {
+                    return nil
+                }
+                return AnyEncodable(event)
             }
         })
     }

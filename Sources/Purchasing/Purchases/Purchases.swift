@@ -1,4 +1,5 @@
 //
+//
 //  Copyright RevenueCat Inc. All Rights Reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -276,6 +277,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let productsManager: ProductsManagerType
     private let customerInfoManager: CustomerInfoManager
     private let paywallEventsManager: PaywallEventsManagerType?
+    private let adEventsManager: AdEventsManagerType?
     private let trialOrIntroPriceEligibilityChecker: CachingTrialOrIntroPriceEligibilityChecker
     private let purchasedProductsFetcher: PurchasedProductsFetcherType?
     private let purchasesOrchestrator: PurchasesOrchestrator
@@ -472,6 +474,21 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             paywallEventsManager = nil
         }
 
+        let adEventsManager: AdEventsManagerType?
+        do {
+            if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+                adEventsManager = AdEventsManager(
+                    internalAPI: backend.internalAPI,
+                    userProvider: identityManager,
+                    store: try AdEventStore.createDefault(applicationSupportDirectory: applicationSupportDirectory)
+                )
+            } else {
+                adEventsManager = nil
+            }
+        } catch {
+            adEventsManager = nil
+        }
+
         let attributionPoster = AttributionPoster(deviceCache: deviceCache,
                                                   currentUserProvider: identityManager,
                                                   backend: backend,
@@ -653,6 +670,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   operationDispatcher: operationDispatcher,
                   customerInfoManager: customerInfoManager,
                   paywallEventsManager: paywallEventsManager,
+                  adEventsManager: adEventsManager,
                   productsManager: productsManager,
                   offeringsManager: offeringsManager,
                   offlineEntitlementsManager: offlineEntitlementsManager,
@@ -685,6 +703,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          operationDispatcher: OperationDispatcher,
          customerInfoManager: CustomerInfoManager,
          paywallEventsManager: PaywallEventsManagerType?,
+         adEventsManager: AdEventsManagerType?,
          productsManager: ProductsManagerType,
          offeringsManager: OfferingsManager,
          offlineEntitlementsManager: OfflineEntitlementsManager,
@@ -735,6 +754,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.operationDispatcher = operationDispatcher
         self.customerInfoManager = customerInfoManager
         self.paywallEventsManager = paywallEventsManager
+        self.adEventsManager = adEventsManager
         self.productsManager = productsManager
         self.offeringsManager = offeringsManager
         self.offlineEntitlementsManager = offlineEntitlementsManager
@@ -1402,6 +1422,11 @@ public extension Purchases {
     func track(paywallEvent: PaywallEvent) async {
         self.purchasesOrchestrator.track(paywallEvent: paywallEvent)
         await self.paywallEventsManager?.track(featureEvent: paywallEvent)
+    }
+
+    /// Used by ad SDKs to keep track of ``AdEvent``s.
+    @_spi(Internal) func track(adEvent: AdEvent) async {
+        await self.adEventsManager?.track(featureEvent: adEvent)
     }
 
     /// Used by `RevenueCatUI` to keep track of ``CustomerCenterEvent``s.
