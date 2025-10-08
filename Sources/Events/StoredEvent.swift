@@ -40,6 +40,7 @@ enum Feature: String, Codable {
 
     case paywalls
     case customerCenter
+    case ads
 
 }
 

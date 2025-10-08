@@ -1,0 +1,58 @@
+{
+  "headers" : {
+    "Authorization" : "Bearer asharedsecret",
+    "X-Apple-Device-Identifier" : "5D7C0074-07E4-4564-AAA4-4008D0640881",
+    "X-Client-Build-Version" : "12345",
+    "X-Client-Bundle-ID" : "com.apple.dt.xctest.tool",
+    "X-Client-Version" : "17.0.0",
+    "X-Is-Backgrounded" : "false",
+    "X-Is-Debug-Build" : "true",
+    "X-Is-Sandbox" : "true",
+    "X-Observer-Mode-Enabled" : "false",
+    "X-Platform" : "iOS",
+    "X-Platform-Device" : "arm64",
+    "X-Platform-Flavor" : "native",
+    "X-Platform-Version" : "Version 17.0.0 (Build 21A342)",
+    "X-Preferred-Locales" : "en_EN",
+    "X-Retry-Count" : "0",
+    "X-StoreKit-Version" : "2",
+    "X-StoreKit2-Enabled" : "true",
+    "X-Storefront" : "USA",
+    "X-Version" : "4.0.0",
+    "content-type" : "application/json"
+  },
+  "request" : {
+    "body" : {
+      "events" : [
+        {
+          "ad_instance_id" : "instance-123",
+          "ad_unit_id" : "ca-app-pub-123456789",
+          "app_session_id" : "98CC0F1D-7665-4093-9624-1D7308FFF4DB",
+          "app_user_id" : "user",
+          "id" : "72164C05-2BDC-4807-8918-A4105F727DEB",
+          "mediator_name" : "MAX",
+          "network_name" : "AdMob",
+          "placement" : "home_screen",
+          "timestamp_ms" : 1694029328000,
+          "type" : "rc_ads_ad_displayed",
+          "version" : 1
+        },
+        {
+          "ad_instance_id" : "instance-456",
+          "ad_unit_id" : "ca-app-pub-987654321",
+          "app_session_id" : "10CC0F1D-7665-4093-9624-1D7308FFF4DB",
+          "app_user_id" : "user",
+          "id" : "25B68D80-68D8-461C-8C68-1A8591190A88",
+          "mediator_name" : "MAX",
+          "network_name" : "AppLovin",
+          "placement" : "game_over",
+          "timestamp_ms" : 1694022321000,
+          "type" : "rc_ads_ad_opened",
+          "version" : 1
+        }
+      ]
+    },
+    "method" : "POST",
+    "url" : "https://e.revenue.cat/v1/events"
+  }
+}
