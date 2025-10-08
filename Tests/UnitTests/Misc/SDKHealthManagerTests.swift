@@ -56,7 +56,7 @@ class SDKHealthManagerTests: TestCase {
         expect(report.status).to(beUnhealthyWithUnknownError())
     }
 
-    func testHealthReportIsNotLoggedForUnhealthyErrors() async {
+    func testHealthReportIsNotLoggedForUnknownErrors() async {
         let manager = makeSUT(backendResponse: .failure(BackendError.networkError(
             .errorResponse(
                 .init(code: .unknownError, originalCode: 0),
