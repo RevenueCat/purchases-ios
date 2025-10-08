@@ -69,6 +69,13 @@ extension PaywallEvent {
 
 extension PaywallEvent {
 
+    /// Identifies the origin that initiated the paywall interaction.
+    public enum Source: String, Codable, Sendable {
+
+        /// Used for paywalls opened from Customer Center
+        case customerCenter = "customer_center"
+    }
+
     /// The content of a ``PaywallEvent``.
     public struct Data {
 
@@ -79,6 +86,7 @@ extension PaywallEvent {
         public var displayMode: PaywallViewMode
         public var localeIdentifier: String
         public var darkMode: Bool
+        public var source: Source?
 
         #if !os(tvOS) // For Paywalls V2
         @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -88,7 +96,8 @@ extension PaywallEvent {
             sessionID: SessionID,
             displayMode: PaywallViewMode,
             locale: Locale,
-            darkMode: Bool
+            darkMode: Bool,
+            source: Source? = nil
         ) {
             self.init(
                 offeringIdentifier: offering.identifier,
@@ -96,7 +105,8 @@ extension PaywallEvent {
                 sessionID: sessionID,
                 displayMode: displayMode,
                 localeIdentifier: locale.identifier,
-                darkMode: darkMode
+                darkMode: darkMode,
+                source: source
             )
         }
         #endif
@@ -108,7 +118,8 @@ extension PaywallEvent {
             sessionID: SessionID,
             displayMode: PaywallViewMode,
             locale: Locale,
-            darkMode: Bool
+            darkMode: Bool,
+            source: Source? = nil
         ) {
             self.init(
                 offeringIdentifier: offering.identifier,
@@ -116,7 +127,8 @@ extension PaywallEvent {
                 sessionID: sessionID,
                 displayMode: displayMode,
                 localeIdentifier: locale.identifier,
-                darkMode: darkMode
+                darkMode: darkMode,
+                source: source
             )
         }
         // swiftlint:enable missing_docs
@@ -127,7 +139,8 @@ extension PaywallEvent {
             sessionID: SessionID,
             displayMode: PaywallViewMode,
             localeIdentifier: String,
-            darkMode: Bool
+            darkMode: Bool,
+            source: Source? = nil
         ) {
             self.offeringIdentifier = offeringIdentifier
             self.paywallRevision = paywallRevision
@@ -135,6 +148,7 @@ extension PaywallEvent {
             self.displayMode = displayMode
             self.localeIdentifier = localeIdentifier
             self.darkMode = darkMode
+            self.source = source
         }
 
     }
