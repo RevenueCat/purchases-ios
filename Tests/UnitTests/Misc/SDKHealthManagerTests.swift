@@ -56,6 +56,19 @@ class SDKHealthManagerTests: TestCase {
         expect(report.status).to(beUnhealthyWithUnknownError())
     }
 
+    func testHealthReportIsNotLoggedForUnknownErrors() async {
+        let manager = makeSUT(backendResponse: .failure(BackendError.networkError(
+            .errorResponse(
+                .init(code: .unknownError, originalCode: 0),
+                .internalServerError
+            )
+        )))
+
+        await manager.logSDKHealthReportOutcome()
+
+        self.logger.verifyMessageWasNotLogged("SDK Configuration is not valid", level: .error)
+    }
+
     func testHealthReportReturnsUnhealthyForNonBackendError() async {
         let manager = makeSUT(backendResponse: .failure(BackendError.networkError(.errorResponse(
             .init(code: .unknownError, originalCode: 0),
