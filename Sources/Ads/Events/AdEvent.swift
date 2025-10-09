@@ -143,7 +143,7 @@ extension AdEvent {
 extension AdEvent.RevenueData {
 
     /// Enum representing the level of accuracy for reported revenue values.
-    public enum Precision: String, Codable, Sendable {
+    public enum Precision: String {
 
         /// Revenue value is exact and confirmed
         case exact
@@ -208,4 +208,5 @@ extension AdEvent {
 extension AdEvent.CreationData: Equatable, Codable, Sendable {}
 extension AdEvent.Data: Equatable, Codable, Sendable {}
 extension AdEvent.RevenueData: Equatable, Codable, Sendable {}
+extension AdEvent.RevenueData.Precision: Codable, Sendable {}
 extension AdEvent: Equatable, Codable, Sendable {}
