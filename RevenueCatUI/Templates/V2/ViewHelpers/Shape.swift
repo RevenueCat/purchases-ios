@@ -700,6 +700,32 @@ struct CornerBorder_Previews: PreviewProvider {
         }
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Top Left and Bottom Right - Blue Border")
+
+        VStack {
+            Text("Hello")
+                .padding(.vertical, 10)
+                .padding(.horizontal, 20)
+                .background(.white)
+                .foregroundColor(.black)
+                .shape(
+                    border: .init(
+                        color: .init(
+                            light: .linear(125, [
+                                .init(color: "#FF0000", percent: 0),
+                                .init(color: "#0000FF", percent: 40),
+                                .init(color: "#FFFFFF", percent: 90)
+                            ])
+                        ),
+                        width: 6
+                    ),
+                    shape: .rectangle(.init(topLeft: 8,
+                                            topRight: 0,
+                                            bottomLeft: 0,
+                                            bottomRight: 8)))
+                .padding()
+        }
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Gradient Border")
     }
 }
 
