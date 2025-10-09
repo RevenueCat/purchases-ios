@@ -46,10 +46,8 @@ class BasePurchasesTests: TestCase {
         self.paywallCache = .init()
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
             self.paywallEventsManager = MockPaywallEventsManager()
-            self.adEventsManager = MockAdEventsManager()
         } else {
             self.paywallEventsManager = nil
-            self.adEventsManager = nil
         }
         self.requestFetcher = MockRequestFetcher()
         self.purchasedProductsFetcher = .init()
@@ -174,7 +172,6 @@ class BasePurchasesTests: TestCase {
     var deviceCache: MockDeviceCache!
     var paywallCache: MockPaywallCacheWarming!
     private var paywallEventsManager: PaywallEventsManagerType?
-    private var adEventsManager: AdEventsManagerType?
     var subscriberAttributesManager: MockSubscriberAttributesManager!
     var attribution: Attribution!
     var identityManager: MockIdentityManager!
@@ -330,7 +327,6 @@ class BasePurchasesTests: TestCase {
                                    operationDispatcher: self.mockOperationDispatcher,
                                    customerInfoManager: self.customerInfoManager,
                                    paywallEventsManager: self.paywallEventsManager,
-                                   adEventsManager: self.adEventsManager,
                                    productsManager: self.mockProductsManager,
                                    offeringsManager: self.mockOfferingsManager,
                                    offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
@@ -608,7 +604,6 @@ private extension BasePurchasesTests {
         self.deviceCache = nil
         self.paywallCache = nil
         self.paywallEventsManager = nil
-        self.adEventsManager = nil
         self.webPurchaseRedemptionHelper = nil
         self.purchases = nil
     }
