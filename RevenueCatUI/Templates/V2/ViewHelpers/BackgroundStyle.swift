@@ -97,7 +97,7 @@ fileprivate extension View {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension DisplayableColorScheme {
+internal extension DisplayableColorScheme {
     @ViewBuilder
     func toView(colorScheme: ColorScheme) -> some View {
         switch self.effectiveColor(for: colorScheme) {
