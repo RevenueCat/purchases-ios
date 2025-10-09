@@ -1857,6 +1857,8 @@ SWIFT_CLASS_NAMED("ProductPaidPrice")
 @property (nonatomic, readonly, copy) NSString * _Nonnull currency;
 /// Amount paid
 @property (nonatomic, readonly) double amount;
+/// Formatted price of the item, including its currency sign. For example $3.00.
+@property (nonatomic, readonly, copy) NSString * _Nonnull formatted;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
@@ -4142,6 +4144,8 @@ SWIFT_CLASS_NAMED("SubscriptionInfo")
 @property (nonatomic, readonly, copy) NSString * _Nullable displayName;
 /// Paid price for the subscription
 @property (nonatomic, readonly, strong) RCProductPaidPrice * _Nullable price;
+/// Management purchase URL
+@property (nonatomic, readonly, copy) NSURL * _Nullable managementURL;
 @property (nonatomic, readonly, copy) NSString * _Nonnull description;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
