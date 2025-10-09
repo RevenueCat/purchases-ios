@@ -93,6 +93,8 @@ enum PurchaseStrings {
     // Test Store
     case sync_purchases_simulated_store
     case restore_purchases_simulated_store
+    case simulating_purchase_success
+    case simulating_purchase_failure
 }
 
 extension PurchaseStrings: LogMessage {
@@ -358,6 +360,12 @@ extension PurchaseStrings: LogMessage {
 
         case .restore_purchases_simulated_store:
             return "Restoring purchases not available in Test Store. Returning current CustomerInfo."
+
+        case .simulating_purchase_success:
+            return "Test store: Performing test purchase. This purchase won't appear in production."
+
+        case .simulating_purchase_failure:
+            return "Test store: Simulating purchase error."
         }
     }
 
