@@ -39,8 +39,19 @@ class PurchasesAdEventsTests: BasePurchasesTests {
 
         await self.purchases.trackAdDisplayed(.init(impression: impression))
 
-        // Verify the event was tracked (implementation depends on mock availability)
-        // This test verifies the public API is callable
+        let trackedEvents = await try self.mockPaywallEventsManager.trackedEvents
+        expect(trackedEvents).to(haveCount(1))
+
+        guard case let .displayed(_, displayedData) = trackedEvents[0] as? AdEvent else {
+            fail("Expected AdEvent.displayed")
+            return
+        }
+
+        expect(displayedData.impression.networkName) == impression.networkName
+        expect(displayedData.impression.mediatorName) == impression.mediatorName
+        expect(displayedData.impression.placement) == impression.placement
+        expect(displayedData.impression.adUnitId) == impression.adUnitId
+        expect(displayedData.impression.adInstanceId) == impression.adInstanceId
     }
 
     func testTrackMultipleAdEvents() async throws {
@@ -55,7 +66,18 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         await self.purchases.trackAdDisplayed(.init(impression: impression))
         await self.purchases.trackAdOpened(.init(impression: impression))
 
-        // Verify multiple events can be tracked
+        let trackedEvents = await try self.mockPaywallEventsManager.trackedEvents
+        expect(trackedEvents).to(haveCount(2))
+
+        guard case .displayed = trackedEvents[0] as? AdEvent else {
+            fail("Expected first event to be AdEvent.displayed")
+            return
+        }
+
+        guard case .opened = trackedEvents[1] as? AdEvent else {
+            fail("Expected second event to be AdEvent.opened")
+            return
+        }
     }
 
     func testTrackRevenueEvent() async throws {
@@ -74,7 +96,22 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             precision: .exact
         ))
 
-        // Verify revenue event tracking
+        let trackedEvents = await try self.mockPaywallEventsManager.trackedEvents
+        expect(trackedEvents).to(haveCount(1))
+
+        guard case let .revenue(_, revenueData) = trackedEvents[0] as? AdEvent else {
+            fail("Expected AdEvent.revenue")
+            return
+        }
+
+        expect(revenueData.impression.networkName) == impression.networkName
+        expect(revenueData.impression.mediatorName) == impression.mediatorName
+        expect(revenueData.impression.placement) == impression.placement
+        expect(revenueData.impression.adUnitId) == impression.adUnitId
+        expect(revenueData.impression.adInstanceId) == impression.adInstanceId
+        expect(revenueData.revenueMicros) == 1500000
+        expect(revenueData.currency) == "USD"
+        expect(revenueData.precision) == .exact
     }
 
 }
