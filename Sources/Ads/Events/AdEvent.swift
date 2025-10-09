@@ -140,20 +140,24 @@ extension AdEvent {
 
 }
 
-/// Enum representing the level of accuracy for reported revenue values.
-public enum Precision: String, Codable, Sendable {
+extension AdEvent.RevenueData {
 
-    /// Revenue value is exact and confirmed
-    case exact
+    /// Enum representing the level of accuracy for reported revenue values.
+    public enum Precision: String, Codable, Sendable {
 
-    /// Revenue value is defined by the publisher
-    case publisherDefined = "publisher_defined"
+        /// Revenue value is exact and confirmed
+        case exact
 
-    /// Revenue value is an estimate
-    case estimated
+        /// Revenue value is defined by the publisher
+        case publisherDefined = "publisher_defined"
 
-    /// Revenue value accuracy cannot be determined
-    case unknown
+        /// Revenue value is an estimate
+        case estimated
+
+        /// Revenue value accuracy cannot be determined
+        case unknown
+
+    }
 
 }
 
