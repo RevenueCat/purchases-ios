@@ -40,7 +40,10 @@ final class SDKHealthManager: Sendable {
         let report = await healthReport()
         switch report.status {
         case let .unhealthy(error):
-            Logger.error(HealthReportLogMessage.unhealthy(error: error, report: report))
+            switch error {
+            case .unknown: break
+            default: Logger.error(HealthReportLogMessage.unhealthy(error: error, report: report))
+            }
         case let .healthy(warnings):
             if warnings.isEmpty {
                 Logger.info(HealthReportLogMessage.healthy(report: report))
