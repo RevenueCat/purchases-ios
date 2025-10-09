@@ -584,6 +584,7 @@ jobs:
     steps:
       - checkout
       - install-dependencies
+      - tuist-generate-workspace
       - run:
           name: API Tests
           command: bundle exec fastlane run_api_tests
