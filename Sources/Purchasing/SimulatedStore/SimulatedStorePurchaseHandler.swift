@@ -64,7 +64,6 @@ actor SimulatedStorePurchaseHandler: SimulatedStorePurchaseHandlerType {
             case .error(let error):
                 purchaseResult = .failure(error)
             case .simulateFailure:
-                Logger.debug(Strings.purchase.simulating_purchase_failure)
                 purchaseResult = .failure(self.simulatedError)
             case .simulateSuccess:
                 Logger.debug(Strings.purchase.simulating_purchase_success)
@@ -94,8 +93,7 @@ actor SimulatedStorePurchaseHandler: SimulatedStorePurchaseHandlerType {
     }
 
     nonisolated private var simulatedError: PurchasesError {
-        return ErrorUtils.productNotAvailableForPurchaseError(
-            withMessage: Strings.purchase.error_message_for_simulating_purchase_failure.description)
+        return ErrorUtils.testStoreSimulatedPurchaseError()
     }
 
 }
