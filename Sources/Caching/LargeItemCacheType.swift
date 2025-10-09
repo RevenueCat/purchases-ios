@@ -63,11 +63,13 @@ extension FileManager: LargeItemCacheType {
         let bufferSize: Int = 262_144 // 256KB
         var buffer = Data()
         buffer.reserveCapacity(bufferSize)
+        var hasher = checksum?.algorithm.getHasher()
 
         for try await byte in bytes {
             buffer.append(byte)
 
             if buffer.count >= bufferSize {
+                hasher?.update(data: buffer)
                 try fileHandle.write(contentsOf: buffer)
                 buffer.removeAll(keepingCapacity: true)
             }
@@ -75,14 +77,17 @@ extension FileManager: LargeItemCacheType {
 
         // Write any remaining bytes missed during the while loop
         if !buffer.isEmpty {
+            hasher?.update(data: buffer)
             try fileHandle.write(contentsOf: buffer)
         }
 
         // Validate the stored data matches what the server has
-        if let checksum {
+        if let checksum = checksum, let hasher = hasher {
             // If this fails… should we retry?
-            try Checksum
-                .generate(from: tempFileURL, with: checksum.algorithm)
+
+            let digest = hasher.finalize()
+            let value = digest.compactMap { String(format: "%02x", $0) }.joined()
+            try Checksum(algorithm: checksum.algorithm, value: value)
                 .compare(to: checksum)
         }
 

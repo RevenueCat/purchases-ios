@@ -43,6 +43,19 @@ public struct Checksum: Codable, Sendable, Hashable {
     public enum Algorithm: String, Codable, Sendable {
         // swiftlint:disable:next missing_docs
         case sha256, sha384, sha512, md5
+
+        func getHasher() -> any HashFunction {
+            switch self {
+            case .sha256:
+                return SHA256()
+            case .sha384:
+                return SHA384()
+            case .sha512:
+                return SHA512()
+            case .md5:
+                return Insecure.MD5()
+            }
+        }
     }
 }
 
@@ -64,36 +77,6 @@ public extension Checksum {
         case .md5:
             return Checksum(algorithm: algorithm, value: data.md5String)
         }
-    }
-
-    ///
-    /// - Parameters:
-    ///   - url: The url of the file that should be hashed
-    ///   - algorithm: the hashing algorithm
-    /// - Returns: a ``Checksum``
-    static func generate(from url: URL, with algorithm: Checksum.Algorithm) throws -> Checksum {
-        let handle = try FileHandle(forReadingFrom: url)
-        var hasher: any HashFunction
-        switch algorithm {
-        case .sha256:
-            hasher = SHA256()
-        case .sha384:
-            hasher = SHA384()
-        case .sha512:
-            hasher = SHA512()
-        case .md5:
-            hasher = Insecure.MD5()
-        }
-        while autoreleasepool(invoking: {
-            let nextChunk = handle.readData(ofLength: 2 ^ 20)
-            guard !nextChunk.isEmpty else { return false }
-            hasher.update(data: nextChunk)
-            return true
-        }) {}
-
-        let digest = hasher.finalize()
-        let value = digest.compactMap { String(format: "%02x", $0) }.joined()
-        return .init(algorithm: algorithm, value: value)
     }
 
     /// Compare to another checksum
