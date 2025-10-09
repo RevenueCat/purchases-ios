@@ -82,9 +82,7 @@ extension WinBackOfferEligibilityCalculator {
                 return StoreProductDiscount(sk2Discount: winbackOffer, currencyCode: product.currencyCode)
             }
             // Convert the StoreProductDiscounts to WinBackOffer objects
-            .map({
-                WinBackOffer(discount: $0)
-            })
+            .map { WinBackOffer(discount: $0) }
 
         return eligibleWinBackOffers
         #else
