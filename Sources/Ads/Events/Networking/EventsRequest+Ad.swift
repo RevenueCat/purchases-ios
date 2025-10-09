@@ -50,7 +50,7 @@ extension EventsRequest.AdEvent {
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     init?(storedEvent: StoredEvent) {
         guard let jsonData = storedEvent.encodedEvent.data(using: .utf8) else {
-            Logger.error(Strings.ads.event_cannot_get_encoded_event)
+            Logger.error(Strings.paywalls.event_cannot_get_encoded_event)
             return nil
         }
 
@@ -76,7 +76,7 @@ extension EventsRequest.AdEvent {
                 precision: adEvent.revenueData?.precision.rawValue
             )
         } catch {
-            Logger.error(Strings.ads.event_cannot_deserialize(error))
+            Logger.error(Strings.paywalls.event_cannot_deserialize(error))
             return nil
         }
     }

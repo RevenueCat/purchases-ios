@@ -14,7 +14,6 @@ import Foundation
 
 enum Strings {
 
-    static let ads = AdsStrings.self
     static let attribution = AttributionStrings.self
     static let analytics = AnalyticsStrings.self
     static let codable = CodableStrings.self
