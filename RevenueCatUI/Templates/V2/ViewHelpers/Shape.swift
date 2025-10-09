@@ -25,10 +25,10 @@ struct ShapeModifier: ViewModifier {
 
     struct BorderInfo: Hashable {
 
-        let color: DisplayableColorScheme
+        let color: Color
         let width: CGFloat
 
-        init(color: DisplayableColorScheme, width: Double) {
+        init(color: Color, width: Double) {
             self.color = color
             self.width = width
         }
@@ -113,8 +113,6 @@ struct ShapeModifier: ViewModifier {
     var background: BackgroundStyle?
     var uiConfigProvider: UIConfigProvider?
 
-    @Environment(\.colorScheme) var colorScheme
-
     init(border: BorderInfo?,
          shape: Shape?,
          background: BackgroundStyle?,
@@ -146,8 +144,7 @@ struct ShapeModifier: ViewModifier {
                 // Place border on top of content
                     .applyIfLet(border) { view, border in
                         view.clipShape(shape).overlay {
-                            border.color.toView(colorScheme: colorScheme)
-                                .mask(shape.strokeBorder(Color.black, lineWidth: border.width))
+                            shape.strokeBorder(border.color, lineWidth: border.width)
                         }
                     }
             }
@@ -168,8 +165,6 @@ private struct ConcaveMaskModifier: ViewModifier {
     let curveHeightPercentage: CGFloat
     let border: ShapeModifier.BorderInfo?
 
-    @Environment(\.colorScheme) var colorScheme
-
     @State
     private var size: CGSize = .zero
 
@@ -183,8 +178,7 @@ private struct ConcaveMaskModifier: ViewModifier {
             .clipShape(shape)
             .applyIfLet(border) { view, border in
                 view.overlay {
-                    border.color.toView(colorScheme: colorScheme)
-                        .mask(shape.strokeBorder(Color.black, lineWidth: border.width))
+                    shape.strokeBorder(border.color, lineWidth: border.width)
                 }
             }
     }
@@ -243,8 +237,6 @@ private struct ConvexMaskModifier: ViewModifier {
     let curveHeightPercentage: CGFloat
     let border: ShapeModifier.BorderInfo?
 
-    @Environment(\.colorScheme) var colorScheme
-
     @State
     private var size: CGSize = .zero
 
@@ -259,12 +251,7 @@ private struct ConvexMaskModifier: ViewModifier {
             .clipShape(shape)
             .applyIfLet(border) { view, border in
                 view.overlay {
-                    shape
-                        .eraseToAnyInsettableShape()
-                        .overlay {
-                            border.color.toView(colorScheme: colorScheme)
-                                .mask(shape.strokeBorder(Color.black, lineWidth: border.width))
-                        }
+                    shape.eraseToAnyInsettableShape().strokeBorder(border.color, lineWidth: border.width)
                 }
             }
     }
