@@ -65,7 +65,7 @@ extension WinBackOfferEligibilityCalculator {
             return []
         }
 
-        let winbackOffersMap = allWinBackOffersForThisProduct
+        let winbackOffersByID = allWinBackOffersForThisProduct
             .reduce(into: [String: Product.SubscriptionOffer]()
         ) { dict, offer in
             if let id = offer.id {
@@ -76,7 +76,7 @@ extension WinBackOfferEligibilityCalculator {
         let eligibleWinBackOffers: [WinBackOffer] = eligibleWinBackOfferIDs
             // Convert the eligible offer IDs to StoreProductDiscounts for us to use
             .compactMap { winbackOfferID in
-                guard let winbackOffer = winbackOffersMap[winbackOfferID] else {
+                guard let winbackOffer = winbackOffersByID[winbackOfferID] else {
                     return nil
                 }
                 return StoreProductDiscount(sk2Discount: winbackOffer, currencyCode: product.currencyCode)
