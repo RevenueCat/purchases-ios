@@ -65,16 +65,23 @@ extension WinBackOfferEligibilityCalculator {
             return []
         }
 
-        let eligibleWinBackOffers = allWinBackOffersForThisProduct
-            // 1. Filter out the offers that the subscriber is not eligible for
-            .filter({
-                Set(eligibleWinBackOfferIDs).contains($0.id)
-            })
-            // 2. Convert the eligible offers to StoreProductDiscounts for us to use
-            .compactMap({
-                StoreProductDiscount(sk2Discount: $0, currencyCode: product.currencyCode)
-            })
-            // 3. Convert the StoreProductDiscounts to WinBackOffer objects
+        let winbackOffersMap = allWinBackOffersForThisProduct
+            .reduce(into: [String: Product.SubscriptionOffer]()
+        ) { dict, offer in
+            if let id = offer.id {
+                dict[id] = offer
+            }
+        }
+
+        let eligibleWinBackOffers: [WinBackOffer] = eligibleWinBackOfferIDs
+            // Convert the eligible offer IDs to StoreProductDiscounts for us to use
+            .compactMap { winbackOfferID in
+                guard let winbackOffer = winbackOffersMap[winbackOfferID] else {
+                    return nil
+                }
+                return StoreProductDiscount(sk2Discount: winbackOffer, currencyCode: product.currencyCode)
+            }
+            // Convert the StoreProductDiscounts to WinBackOffer objects
             .map({
                 WinBackOffer(discount: $0)
             })
