@@ -20,8 +20,8 @@ extension EventsRequest {
         let id: String?
         let version: Int
         var type: EventType
-        var appUserID: String
-        var sessionID: String
+        var appUserId: String
+        var sessionId: String
         var timestampMs: UInt64
         var networkName: String
         var mediatorName: String
@@ -63,8 +63,8 @@ extension EventsRequest.AdEvent {
                 id: creationData.id.uuidString,
                 version: Self.version,
                 type: adEvent.eventType,
-                appUserID: storedEvent.userID,
-                sessionID: data.sessionIdentifier.uuidString,
+                appUserId: storedEvent.userID,
+                sessionId: data.sessionIdentifier.uuidString,
                 timestampMs: creationData.date.millisecondsSince1970,
                 networkName: data.networkName,
                 mediatorName: data.mediatorName,
@@ -110,8 +110,8 @@ extension EventsRequest.AdEvent: Encodable {
         case id
         case version
         case type
-        case appUserID = "appUserId"
-        case sessionID = "appSessionId"
+        case appUserId
+        case sessionId
         case timestampMs
         case networkName
         case mediatorName
