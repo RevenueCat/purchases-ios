@@ -125,9 +125,6 @@ internal enum AdEvent: FeatureEvent {
 
     // swiftlint:enable type_name
 
-    /// An identifier that represents an ad session.
-    internal typealias SessionID = UUID
-
     var feature: Feature {
         return .ads
     }
