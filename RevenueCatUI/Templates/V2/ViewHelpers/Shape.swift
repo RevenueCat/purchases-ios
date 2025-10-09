@@ -703,6 +703,11 @@ struct CornerBorder_Previews: PreviewProvider {
     }
 }
 
+extension DisplayableColorScheme {
+    static let black: DisplayableColorScheme = DisplayableColorScheme(light: .hex("#000000"))
+    static let blue: DisplayableColorScheme = DisplayableColorScheme(light: .hex("#0000FF"))
+}
+
 #endif
 
 #endif
