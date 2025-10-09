@@ -35,7 +35,7 @@ class AdEventsRequestTests: TestCase {
     }
 
     func testOpenedEvent() throws {
-        let event = AdEvent.opened(Self.eventCreationData, Self.eventData)
+        let event = AdEvent.opened(Self.eventCreationData, Self.openedData)
         let storedEvent = try Self.createStoredEvent(from: event)
         let requestEvent: EventsRequest.AdEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
 
@@ -56,14 +56,14 @@ class AdEventsRequestTests: TestCase {
             id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
             date: .init(timeIntervalSince1970: 1694029328)
         )
-        let adEventData: AdEvent.Data = .init(
+        let adImpressionData: AdImpressionData = .init(
             networkName: "AdMob",
             mediatorName: "MAX",
             placement: "home_screen",
             adUnitId: "ca-app-pub-123456789",
-            adInstanceId: "instance-123",
-            sessionIdentifier: .init(uuidString: "73616D70-6C65-2073-7472-696E67000000")!
+            adInstanceId: "instance-123"
         )
+        let adEventData = AdDisplayed(impression: adImpressionData)
         let adEvent = AdEvent.displayed(adEventCreationData, adEventData)
 
         let storedEvent = try XCTUnwrap(StoredEvent(event: adEvent,
@@ -101,22 +101,20 @@ private extension AdEventsRequestTests {
         date: .init(timeIntervalSince1970: 1694029328)
     )
 
-    static let eventData: AdEvent.Data = .init(
+    static let impressionData: AdImpressionData = .init(
         networkName: "AdMob",
         mediatorName: "MAX",
         placement: "home_screen",
         adUnitId: "ca-app-pub-123456789",
-        adInstanceId: "instance-123",
-        sessionIdentifier: .init(uuidString: "98CC0F1D-7665-4093-9624-1D7308FFF4DB")!
+        adInstanceId: "instance-123"
     )
 
-    static let revenueData: AdEvent.RevenueData = .init(
-        networkName: "AdMob",
-        mediatorName: "MAX",
-        placement: "home_screen",
-        adUnitId: "ca-app-pub-123456789",
-        adInstanceId: "instance-123",
-        sessionIdentifier: .init(uuidString: "98CC0F1D-7665-4093-9624-1D7308FFF4DB")!,
+    static let eventData: AdDisplayed = .init(impression: impressionData)
+
+    static let openedData: AdOpened = .init(impression: impressionData)
+
+    static let revenueData: AdRevenue = .init(
+        impression: impressionData,
         revenueMicros: 1500000,
         currency: "USD",
         precision: .exact

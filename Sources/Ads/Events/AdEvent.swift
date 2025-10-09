@@ -13,134 +13,86 @@
 
 import Foundation
 
-/// An event to be sent for RC Ads tracking.
-public enum AdEvent: FeatureEvent {
+// MARK: - Public Types
 
-    // swiftlint:disable type_name
+/// Shared impression data for all ad events.
+public struct AdImpressionData {
 
-    /// An identifier that represents an ad event.
-    public typealias ID = UUID
+    // swiftlint:disable missing_docs
+    public var networkName: String
+    public var mediatorName: String
+    public var placement: String?
+    public var adUnitId: String
+    public var adInstanceId: String
 
-    // swiftlint:enable type_name
-
-    /// An identifier that represents an ad session.
-    public typealias SessionID = UUID
-
-    var feature: Feature {
-        return .ads
+    public init(
+        networkName: String,
+        mediatorName: String,
+        placement: String? = nil,
+        adUnitId: String,
+        adInstanceId: String
+    ) {
+        self.networkName = networkName
+        self.mediatorName = mediatorName
+        self.placement = placement
+        self.adUnitId = adUnitId
+        self.adInstanceId = adInstanceId
     }
-
-    var eventDiscriminator: String? {
-        return nil
-    }
-
-    /// An ad impression was displayed.
-    case displayed(CreationData, Data)
-
-    /// An ad was opened/clicked.
-    case opened(CreationData, Data)
-
-    /// An ad impression generated revenue.
-    case revenue(CreationData, RevenueData)
+    // swiftlint:enable missing_docs
 
 }
 
-extension AdEvent {
+/// Data for ad displayed events.
+public struct AdDisplayed {
 
-    /// The creation data of an ``AdEvent``.
-    public struct CreationData {
+    // swiftlint:disable missing_docs
+    public var impression: AdImpressionData
 
-        // swiftlint:disable missing_docs
-        public var id: ID
-        public var date: Date
-
-        public init(
-            id: ID = .init(),
-            date: Date = .init()
-        ) {
-            self.id = id
-            self.date = date
-        }
-        // swiftlint:enable missing_docs
-
+    public init(impression: AdImpressionData) {
+        self.impression = impression
     }
+    // swiftlint:enable missing_docs
 
 }
 
-extension AdEvent {
+/// Data for ad opened/clicked events.
+public struct AdOpened {
 
-    /// The content of an ``AdEvent``.
-    public struct Data {
+    // swiftlint:disable missing_docs
+    public var impression: AdImpressionData
 
-        // swiftlint:disable missing_docs
-        public var networkName: String
-        public var mediatorName: String
-        public var placement: String?
-        public var adUnitId: String
-        public var adInstanceId: String
-        public var sessionIdentifier: SessionID
-
-        public init(
-            networkName: String,
-            mediatorName: String,
-            placement: String?,
-            adUnitId: String,
-            adInstanceId: String,
-            sessionIdentifier: SessionID
-        ) {
-            self.networkName = networkName
-            self.mediatorName = mediatorName
-            self.placement = placement
-            self.adUnitId = adUnitId
-            self.adInstanceId = adInstanceId
-            self.sessionIdentifier = sessionIdentifier
-        }
-        // swiftlint:enable missing_docs
-
+    public init(impression: AdImpressionData) {
+        self.impression = impression
     }
-
-    /// The content of a revenue ``AdEvent``.
-    public struct RevenueData {
-
-        // swiftlint:disable missing_docs
-        public var networkName: String
-        public var mediatorName: String
-        public var placement: String?
-        public var adUnitId: String
-        public var adInstanceId: String
-        public var sessionIdentifier: SessionID
-        public var revenueMicros: Int
-        public var currency: String
-        public var precision: Precision
-
-        public init(
-            networkName: String,
-            mediatorName: String,
-            placement: String?,
-            adUnitId: String,
-            adInstanceId: String,
-            sessionIdentifier: SessionID,
-            revenueMicros: Int,
-            currency: String,
-            precision: Precision
-        ) {
-            self.networkName = networkName
-            self.mediatorName = mediatorName
-            self.placement = placement
-            self.adUnitId = adUnitId
-            self.adInstanceId = adInstanceId
-            self.sessionIdentifier = sessionIdentifier
-            self.revenueMicros = revenueMicros
-            self.currency = currency
-            self.precision = precision
-        }
-        // swiftlint:enable missing_docs
-
-    }
+    // swiftlint:enable missing_docs
 
 }
 
-extension AdEvent.RevenueData {
+/// Data for ad revenue events.
+public struct AdRevenue {
+
+    // swiftlint:disable missing_docs
+    public var impression: AdImpressionData
+    public var revenueMicros: Int
+    public var currency: String
+    public var precision: Precision
+
+    public init(
+        impression: AdImpressionData,
+        revenueMicros: Int,
+        currency: String,
+        precision: Precision
+    ) {
+        self.impression = impression
+        self.revenueMicros = revenueMicros
+        self.currency = currency
+        self.precision = precision
+    }
+    // swiftlint:enable missing_docs
+
+}
+
+extension AdRevenue {
 
     /// Enum representing the level of accuracy for reported revenue values.
     public enum Precision: String {
@@ -161,10 +113,64 @@ extension AdEvent.RevenueData {
 
 }
 
+// MARK: - Internal Event Enum
+
+/// Internal event enum for type-safe routing through the events system.
+internal enum AdEvent: FeatureEvent {
+
+    // swiftlint:disable type_name
+
+    /// An identifier that represents an ad event.
+    internal typealias ID = UUID
+
+    // swiftlint:enable type_name
+
+    /// An identifier that represents an ad session.
+    internal typealias SessionID = UUID
+
+    var feature: Feature {
+        return .ads
+    }
+
+    var eventDiscriminator: String? {
+        return nil
+    }
+
+    /// An ad impression was displayed.
+    case displayed(CreationData, AdDisplayed)
+
+    /// An ad was opened/clicked.
+    case opened(CreationData, AdOpened)
+
+    /// An ad impression generated revenue.
+    case revenue(CreationData, AdRevenue)
+
+}
+
+extension AdEvent {
+
+    /// Internal creation metadata that is automatically generated by the SDK.
+    internal struct CreationData {
+
+        internal var id: ID
+        internal var date: Date
+
+        internal init(
+            id: ID = .init(),
+            date: Date = .init()
+        ) {
+            self.id = id
+            self.date = date
+        }
+
+    }
+
+}
+
 extension AdEvent {
 
     /// - Returns: the underlying ``AdEvent/CreationData-swift.struct`` for this event.
-    public var creationData: CreationData {
+    internal var creationData: CreationData {
         switch self {
         case let .displayed(creationData, _): return creationData
         case let .opened(creationData, _): return creationData
@@ -172,27 +178,20 @@ extension AdEvent {
         }
     }
 
-    /// - Returns: the underlying ``AdEvent/Data-swift.struct`` for this event.
-    public var data: Data {
+    /// - Returns: the underlying impression data for this event.
+    internal var impression: AdImpressionData {
         switch self {
-        case let .displayed(_, data):
-            return data
-        case let .opened(_, data):
-            return data
-        case let .revenue(_, revenueData):
-            return Data(
-                networkName: revenueData.networkName,
-                mediatorName: revenueData.mediatorName,
-                placement: revenueData.placement,
-                adUnitId: revenueData.adUnitId,
-                adInstanceId: revenueData.adInstanceId,
-                sessionIdentifier: revenueData.sessionIdentifier
-            )
+        case let .displayed(_, displayed):
+            return displayed.impression
+        case let .opened(_, opened):
+            return opened.impression
+        case let .revenue(_, revenue):
+            return revenue.impression
         }
     }
 
-    /// - Returns: the underlying ``AdEvent/RevenueData-swift.struct`` for revenue events.
-    public var revenueData: RevenueData? {
+    /// - Returns: the underlying ``AdRevenue`` for revenue events.
+    internal var revenueData: AdRevenue? {
         switch self {
         case .displayed, .opened:
             return nil
@@ -203,10 +202,12 @@ extension AdEvent {
 
 }
 
-// MARK: -
+// MARK: - Protocol Conformances
 
+extension AdImpressionData: Equatable, Codable, Sendable {}
+extension AdDisplayed: Equatable, Codable, Sendable {}
+extension AdOpened: Equatable, Codable, Sendable {}
+extension AdRevenue: Equatable, Codable, Sendable {}
+extension AdRevenue.Precision: Codable, Sendable {}
 extension AdEvent.CreationData: Equatable, Codable, Sendable {}
-extension AdEvent.Data: Equatable, Codable, Sendable {}
-extension AdEvent.RevenueData: Equatable, Codable, Sendable {}
-extension AdEvent.RevenueData.Precision: Codable, Sendable {}
 extension AdEvent: Equatable, Codable, Sendable {}

@@ -1405,9 +1405,89 @@ public extension Purchases {
         await self.paywallEventsManager?.track(featureEvent: paywallEvent)
     }
 
-    /// Used by ad SDKs to keep track of ``AdEvent``s.
-    @_spi(Internal) func track(adEvent: AdEvent) async {
-        await self.paywallEventsManager?.track(featureEvent: adEvent)
+    /**
+     Tracks when an ad impression is displayed.
+
+     Call this method from your ad SDK's impression callback to report ad displays to RevenueCat.
+     This enables RevenueCat to track ad impressions alongside your subscription revenue.
+
+     - Parameter data: The displayed ad impression data
+
+     ## Example:
+     ```swift
+     let impression = AdImpressionData(
+         networkName: "AdMob",
+         mediatorName: "MAX",
+         placement: "home_screen",
+         adUnitId: "ca-app-pub-123",
+         adInstanceId: "instance-456"
+     )
+     await Purchases.shared.trackAdDisplayed(.init(impression: impression))
+     ```
+     */
+    func trackAdDisplayed(_ data: AdDisplayed) async {
+        await self.paywallEventsManager?.track(featureEvent: AdEvent.displayed(
+            .init(id: UUID(), date: Date()),
+            data
+        ))
+    }
+
+    /**
+     Tracks when an ad is opened or clicked.
+
+     Call this method from your ad SDK's click callback to report ad interactions to RevenueCat.
+
+     - Parameter data: The opened/clicked ad data
+
+     ## Example:
+     ```swift
+     let impression = AdImpressionData(
+         networkName: "AdMob",
+         mediatorName: "MAX",
+         placement: "home_screen",
+         adUnitId: "ca-app-pub-123",
+         adInstanceId: "instance-456"
+     )
+     await Purchases.shared.trackAdOpened(.init(impression: impression))
+     ```
+     */
+    func trackAdOpened(_ data: AdOpened) async {
+        await self.paywallEventsManager?.track(featureEvent: AdEvent.opened(
+            .init(id: UUID(), date: Date()),
+            data
+        ))
+    }
+
+    /**
+     Tracks ad revenue from an impression.
+
+     Call this method from your ad SDK's revenue callback to report ad revenue to RevenueCat.
+     This enables comprehensive LTV tracking across subscriptions and ad monetization.
+
+     - Parameter data: The ad revenue data including impression info, amount, currency, and precision
+
+     ## Example:
+     ```swift
+     let impression = AdImpressionData(
+         networkName: "AdMob",
+         mediatorName: "MAX",
+         placement: "home_screen",
+         adUnitId: "ca-app-pub-123",
+         adInstanceId: "instance-456"
+     )
+     await Purchases.shared.trackAdRevenue(.init(
+         impression: impression,
+         revenueMicros: 1500000,  // $1.50
+         currency: "USD",
+         precision: .exact
+     ))
+     ```
+     */
+    func trackAdRevenue(_ data: AdRevenue) async {
+        await self.paywallEventsManager?.track(featureEvent: AdEvent.revenue(
+            .init(id: UUID(), date: Date()),
+            data
+        ))
     }
 
     /// Used by `RevenueCatUI` to keep track of ``CustomerCenterEvent``s.
