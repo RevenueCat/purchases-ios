@@ -305,6 +305,8 @@ extension ErrorCode {
             return "ALREADY_REDEEMED_WEB_PURCHASE_TOKEN"
         case .expiredWebPurchaseToken:
             return "EXPIRED_WEB_PURCHASE_TOKEN"
+        case .testStoreSimulatedPurchaseError:
+            return "TEST_STORE_SIMULATED_PURCHASE_ERROR"
         @unknown default:
             return "UNRECOGNIZED_ERROR"
         }
