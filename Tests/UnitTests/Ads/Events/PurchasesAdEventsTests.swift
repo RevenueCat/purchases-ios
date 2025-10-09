@@ -15,7 +15,7 @@ import Nimble
 import StoreKit
 import XCTest
 
-@_spi(Internal) @testable import RevenueCat
+@testable import RevenueCat
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 class PurchasesAdEventsTests: BasePurchasesTests {
@@ -29,72 +29,50 @@ class PurchasesAdEventsTests: BasePurchasesTests {
     }
 
     func testTrackAdEventStoresEvent() async throws {
-        let event = AdEvent.displayed(
-            .init(id: UUID(), date: Date()),
-            .init(
-                networkName: "AdMob",
-                mediatorName: "MAX",
-                placement: "home_screen",
-                adUnitId: "ca-app-pub-123",
-                adInstanceId: "instance-123",
-                sessionIdentifier: UUID()
-            )
+        let impression = AdImpressionData(
+            networkName: "AdMob",
+            mediatorName: "MAX",
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            adInstanceId: "instance-123"
         )
 
-        await self.purchases.track(adEvent: event)
+        await self.purchases.trackAdDisplayed(.init(impression: impression))
 
         // Verify the event was tracked (implementation depends on mock availability)
         // This test verifies the public API is callable
     }
 
     func testTrackMultipleAdEvents() async throws {
-        let event1 = AdEvent.displayed(
-            .init(id: UUID(), date: Date()),
-            .init(
-                networkName: "AdMob",
-                mediatorName: "MAX",
-                placement: "home_screen",
-                adUnitId: "ca-app-pub-123",
-                adInstanceId: "instance-123",
-                sessionIdentifier: UUID()
-            )
+        let impression = AdImpressionData(
+            networkName: "AdMob",
+            mediatorName: "MAX",
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            adInstanceId: "instance-123"
         )
 
-        let event2 = AdEvent.opened(
-            .init(id: UUID(), date: Date()),
-            .init(
-                networkName: "AdMob",
-                mediatorName: "MAX",
-                placement: "home_screen",
-                adUnitId: "ca-app-pub-123",
-                adInstanceId: "instance-123",
-                sessionIdentifier: UUID()
-            )
-        )
-
-        await self.purchases.track(adEvent: event1)
-        await self.purchases.track(adEvent: event2)
+        await self.purchases.trackAdDisplayed(.init(impression: impression))
+        await self.purchases.trackAdOpened(.init(impression: impression))
 
         // Verify multiple events can be tracked
     }
 
     func testTrackRevenueEvent() async throws {
-        let event = AdEvent.revenue(
-            .init(id: UUID(), date: Date()),
-            .init(
-                networkName: "AdMob",
-                mediatorName: "MAX",
-                placement: "home_screen",
-                adUnitId: "ca-app-pub-123",
-                adInstanceId: "instance-123",
-                sessionIdentifier: UUID(),
-                revenueMicros: 1500000,
-                currency: "USD",
-                precision: .exact
-            )
+        let impression = AdImpressionData(
+            networkName: "AdMob",
+            mediatorName: "MAX",
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            adInstanceId: "instance-123"
         )
 
-        await self.purchases.track(adEvent: event)
+        await self.purchases.trackAdRevenue(.init(
+            impression: impression,
+            revenueMicros: 1500000,
+            currency: "USD",
+            precision: .exact
+        ))
 
         // Verify revenue event tracking
     }

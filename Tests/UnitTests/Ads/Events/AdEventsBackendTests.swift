@@ -52,9 +52,9 @@ class BackendAdEventTests: BaseBackendTests {
 
     func testPostAdEventsWithMultipleEvents() throws {
         let event1 = AdEvent.displayed(Self.eventCreation1, Self.eventData1)
-        let storedEvent1: StoredEvent = try Self.createStoredEvent(from: event1)
-        let event2 = AdEvent.opened(Self.eventCreation2, Self.eventData2)
-        let storedEvent2: StoredEvent = try Self.createStoredEvent(from: event2)
+        let storedEvent1: StoredEvent = try Self.createStoredEvent(from: event1, appSessionID: Self.appSessionID1)
+        let event2 = AdEvent.opened(Self.eventCreation2, Self.openedData2)
+        let storedEvent2: StoredEvent = try Self.createStoredEvent(from: event2, appSessionID: Self.appSessionID2)
 
         let error = waitUntilValue { completion in
             self.internalAPI.postAdEvents(events: [storedEvent1, storedEvent2],
@@ -92,41 +92,43 @@ private extension BackendAdEventTests {
         date: .init(timeIntervalSince1970: 1694022321)
     )
 
-    static let eventData1: AdEvent.Data = .init(
+    static let impressionData1: AdImpressionData = .init(
         networkName: "AdMob",
         mediatorName: "MAX",
         placement: "home_screen",
         adUnitId: "ca-app-pub-123456789",
-        adInstanceId: "instance-123",
-        sessionIdentifier: .init(uuidString: "98CC0F1D-7665-4093-9624-1D7308FFF4DB")!
+        adInstanceId: "instance-123"
     )
 
-    static let eventData2: AdEvent.Data = .init(
+    static let impressionData2: AdImpressionData = .init(
         networkName: "AppLovin",
         mediatorName: "MAX",
         placement: "game_over",
         adUnitId: "ca-app-pub-987654321",
-        adInstanceId: "instance-456",
-        sessionIdentifier: .init(uuidString: "10CC0F1D-7665-4093-9624-1D7308FFF4DB")!
+        adInstanceId: "instance-456"
     )
 
-    static let revenueData1: AdEvent.RevenueData = .init(
-        networkName: "AdMob",
-        mediatorName: "MAX",
-        placement: "home_screen",
-        adUnitId: "ca-app-pub-123456789",
-        adInstanceId: "instance-123",
-        sessionIdentifier: .init(uuidString: "98CC0F1D-7665-4093-9624-1D7308FFF4DB")!,
+    static let eventData1: AdDisplayed = .init(impression: impressionData1)
+
+    static let eventData2: AdDisplayed = .init(impression: impressionData2)
+
+    static let openedData2: AdOpened = .init(impression: impressionData2)
+
+    static let revenueData1: AdRevenue = .init(
+        impression: impressionData1,
         revenueMicros: 1500000,
         currency: "USD",
         precision: .exact
     )
 
-    static func createStoredEvent(from event: AdEvent) throws -> StoredEvent {
+    static let appSessionID1 = UUID(uuidString: "98CC0F1D-7665-4093-9624-1D7308FFF4DB")!
+    static let appSessionID2 = UUID(uuidString: "10CC0F1D-7665-4093-9624-1D7308FFF4DB")!
+
+    static func createStoredEvent(from event: AdEvent, appSessionID: UUID = appSessionID1) throws -> StoredEvent {
         return try XCTUnwrap(.init(event: event,
                                    userID: Self.userID,
                                    feature: .ads,
-                                   appSessionID: UUID(),
+                                   appSessionID: appSessionID,
                                    eventDiscriminator: nil))
     }
 

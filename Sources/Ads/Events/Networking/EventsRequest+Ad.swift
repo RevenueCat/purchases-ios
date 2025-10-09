@@ -21,7 +21,7 @@ extension EventsRequest {
         let version: Int
         var type: EventType
         var appUserId: String
-        var sessionId: String
+        var appSessionId: String
         var timestampMs: UInt64
         var networkName: String
         var mediatorName: String
@@ -57,20 +57,25 @@ extension EventsRequest.AdEvent {
         do {
             let adEvent = try JSONDecoder.default.decode(AdEvent.self, from: jsonData)
             let creationData = adEvent.creationData
-            let data = adEvent.data
+            let impression = adEvent.impression
+
+            guard let appSessionID = storedEvent.appSessionID else {
+                Logger.error(Strings.paywalls.event_missing_app_session_id)
+                return nil
+            }
 
             self.init(
                 id: creationData.id.uuidString,
                 version: Self.version,
                 type: adEvent.eventType,
                 appUserId: storedEvent.userID,
-                sessionId: data.sessionIdentifier.uuidString,
+                appSessionId: appSessionID.uuidString,
                 timestampMs: creationData.date.millisecondsSince1970,
-                networkName: data.networkName,
-                mediatorName: data.mediatorName,
-                placement: data.placement,
-                adUnitId: data.adUnitId,
-                adInstanceId: data.adInstanceId,
+                networkName: impression.networkName,
+                mediatorName: impression.mediatorName,
+                placement: impression.placement,
+                adUnitId: impression.adUnitId,
+                adInstanceId: impression.adInstanceId,
                 revenueMicros: adEvent.revenueData?.revenueMicros,
                 currency: adEvent.revenueData?.currency,
                 precision: adEvent.revenueData?.precision.rawValue
@@ -111,7 +116,7 @@ extension EventsRequest.AdEvent: Encodable {
         case version
         case type
         case appUserId
-        case sessionId
+        case appSessionId
         case timestampMs
         case networkName
         case mediatorName
