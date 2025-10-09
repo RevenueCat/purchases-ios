@@ -247,6 +247,11 @@ private extension PostReceiptDataOperation {
             } catch {
                 Logger.appleError(Strings.receipt.parse_receipt_locally_error(error: error))
             }
+        case .simulatedStoreReceipt(let receipt):
+            self.log(Strings.receipt.posting_simulated_store_receipt(
+                (try? receipt.prettyPrintedJSON) ?? "",
+                initiationSource: self.postData.initiationSource.rawValue
+            ))
         case .empty:
             return
         }
@@ -390,6 +395,13 @@ private extension EncodedAppleReceipt {
                 return try receipt.prettyPrintedData.hashString
             } catch {
                 Logger.warn(Strings.storeKit.sk2_error_encoding_receipt(error))
+                return ""
+            }
+        case let .simulatedStoreReceipt(receipt):
+            do {
+                return try receipt.prettyPrintedData.hashString
+            } catch {
+                // Logger.warn("Error encoding Test Store receipt: '\(error)'")
                 return ""
             }
         case .empty:

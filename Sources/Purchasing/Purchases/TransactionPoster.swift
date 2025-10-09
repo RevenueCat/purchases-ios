@@ -259,8 +259,8 @@ private extension TransactionPoster {
     func fetchEncodedReceipt(transaction: StoreTransactionType,
                              completion: @escaping (Result<EncodedAppleReceipt, BackendError>) -> Void) {
         if systemInfo.isSimulatedStoreAPIKey {
-            let purchaseToken = transaction.jwsRepresentation ?? ""
-            completion(.success(.jws(purchaseToken)))
+            let receipt = EncodedAppleReceipt.SimulatedStoreReceipt(transactionId: transaction.transactionIdentifier)
+            completion(.success(.simulatedStoreReceipt(receipt)))
             return
         }
 

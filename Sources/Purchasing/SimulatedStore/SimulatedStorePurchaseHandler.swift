@@ -87,7 +87,7 @@ actor SimulatedStorePurchaseHandler: SimulatedStorePurchaseHandlerType {
                                                                   purchaseDate: purchaseDate,
                                                                   transactionIdentifier: purchaseToken,
                                                                   storefront: storefront,
-                                                                  jwsRepresentation: purchaseToken)
+                                                                  jwsRepresentation: nil)
         return StoreTransaction(simulatedStoreTransaction)
     }
 

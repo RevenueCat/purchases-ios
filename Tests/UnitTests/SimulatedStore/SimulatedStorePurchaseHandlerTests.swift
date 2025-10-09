@@ -165,16 +165,14 @@ class SimulatedStorePurchaseHandlerTests: TestCase {
         if case .success(let transaction) = result {
             expect(transaction.productIdentifier).to(equal(Self.testStoreProduct.productIdentifier))
             expect(transaction.purchaseDate) == Self.mockDate
+            XCTAssertNil(transaction.jwsRepresentation)
 
-            // Expect a specific token format for the jwsRepresentation property
-            let token = try XCTUnwrap(transaction.jwsRepresentation)
+            // Expect a specific token format for the transactionIdentifier property
+            let token = try XCTUnwrap(transaction.transactionIdentifier)
             expect(token.hasPrefix("test_1756796794912_")).to(beTrue())
             var uuidSuffix = token
             uuidSuffix.removeFirst("test_1756796794912_".count)
             XCTAssertNotNil(UUID(uuidString: uuidSuffix))
-
-            // Expect the same token for the transaction identifier
-            expect(transaction.transactionIdentifier) == token
         } else {
             XCTFail("Expected .success result, got \(result)")
         }
