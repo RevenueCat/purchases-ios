@@ -581,6 +581,7 @@ jobs:
   api-tests:
     executor:
       name: macos-executor
+      xcode_version: "16.4"
     steps:
       - checkout
       - install-dependencies
