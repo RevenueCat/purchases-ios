@@ -118,7 +118,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         let videoURLs = offerings.allLowResVideosInPaywalls
         guard !videoURLs.isEmpty else { return }
 
-        Logger.verbose(Strings.paywalls.warming_up_videos(videoURLs: Set(videoURLs.map(\.url))))
+        Logger.verbose(Strings.paywalls.warming_up_videos(videoURLs: videoURLs))
         await withTaskGroup(of: URL?.self) { [weak self] group in
             for source in videoURLs {
                 group.addTask { [weak self] in
