@@ -1295,6 +1295,7 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCPurchasesErrorCode, "ErrorCode", open) {
   RCInvalidWebPurchaseToken SWIFT_COMPILE_NAME("invalidWebPurchaseToken") = 39,
   RCPurchaseBelongsToOtherUser SWIFT_COMPILE_NAME("purchaseBelongsToOtherUser") = 40,
   RCExpiredWebPurchaseToken SWIFT_COMPILE_NAME("expiredWebPurchaseToken") = 41,
+  RCTestStoreSimulatedPurchaseError SWIFT_COMPILE_NAME("testStoreSimulatedPurchaseError") = 42,
 };
 static NSString * _Nonnull const RCPurchasesErrorCodeDomain = @"RevenueCat.ErrorCode";
 
@@ -3666,6 +3667,8 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStore, "Store", open) {
   RCExternal SWIFT_COMPILE_NAME("external") = 8,
 /// For entitlements granted via Paddle.
   RCPaddle SWIFT_COMPILE_NAME("paddle") = 9,
+/// For entitlements granted via the Test Store.
+  RCTestStore SWIFT_COMPILE_NAME("testStore") = 10,
 };
 
 
