@@ -15,24 +15,31 @@ import Foundation
 @testable import RevenueCat
 
 class MockSimpleNetworkService: SimpleNetworkServiceType, @unchecked Sendable {
+
     let lock = NSLock()
     var invocations: [URL] = []
-    var stubResponses: [Result<Data, Error>] = []
+    var stubResponses: [Result<String, Error>] = []
 
-    func data(from url: URL) async throws -> Data {
+    func bytes(from url: URL) async throws -> AsyncThrowingStream<UInt8, Error> {
         return try lock.withLock {
             let count = invocations.count
             self.invocations.append(url)
             switch stubResponses[count] {
             case .success(let data):
-                return data
+                return AsyncThrowingStream { continuation in
+                    data.utf8
+                        .forEach { byte in
+                            continuation.yield(byte)
+                        }
+                    continuation.finish()
+                }
             case .failure(let error):
                 throw error
             }
         }
     }
 
-    func stubResponse(at index: Int, result: Result<Data, Error>) {
+    func stubResponse(at index: Int, result: Result<String, Error>) {
         lock.withLock {
             stubResponses.insert(result, at: index)
         }

@@ -58,6 +58,36 @@ extension Data {
         return self.hash(with: &sha1)
     }
 
+    var sha256: Data {
+        var sha256 = SHA256()
+        return self.hash(with: &sha256)
+    }
+
+    var sha384: Data {
+        var sha384 = SHA384()
+        return self.hash(with: &sha384)
+    }
+
+    var sha512: Data {
+        var sha512 = SHA512()
+        return self.hash(with: &sha512)
+    }
+
+    var sha256String: String {
+        var sha256 = SHA256()
+        return self.hashString(with: &sha256)
+    }
+
+    var sha384String: String {
+        var sha384 = SHA384()
+        return self.hashString(with: &sha384)
+    }
+
+    var sha512String: String {
+        var sha512 = SHA512()
+        return self.hashString(with: &sha512)
+    }
+
     var md5String: String {
         var md5 = Insecure.MD5()
         return self.hashString(with: &md5)

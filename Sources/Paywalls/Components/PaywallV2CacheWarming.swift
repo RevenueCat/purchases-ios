@@ -32,7 +32,7 @@ extension PaywallComponentsData {
         return imageUrls
     }
 
-    var allLowResVideoUrls: [URL] {
+    var allLowResVideoUrls: [URLWithValidation] {
         return self.componentsConfig.base.allLowResVideoUrls
     }
 
@@ -49,7 +49,7 @@ extension PaywallComponentsData.PaywallComponentsConfig {
         return rootStackImageURLs + stickFooterImageURLs
     }
 
-    var allLowResVideoUrls: [URL] {
+    var allLowResVideoUrls: [URLWithValidation] {
         let rootStackVideoURLs = self.collectAllVideoURLs(in: self.stack)
         let stickFooterVideoURLs = self.stickyFooter.flatMap { self.collectAllVideoURLs(in: $0.stack) } ?? []
 
@@ -170,9 +170,9 @@ extension PaywallComponentsData.PaywallComponentsConfig {
     }
 
     // swiftlint:disable:next cyclomatic_complexity
-    private func collectAllVideoURLs(in stack: PaywallComponent.StackComponent) -> [URL] {
+    private func collectAllVideoURLs(in stack: PaywallComponent.StackComponent) -> [URLWithValidation] {
 
-        var urls: [URL] = []
+        var urls: [URLWithValidation] = []
         for component in stack.components {
             switch component {
             case .text:
@@ -299,11 +299,15 @@ private extension PaywallComponent.VideoComponent {
         fallbackSource?.imageUrls ?? []
     }
 
-    var lowResVideoUrls: [URL] {
-        [
-            source.light.urlLowRes,
-            source.dark?.urlLowRes
-        ].compactMap { $0 }
+    var lowResVideoUrls: [URLWithValidation] {
+        let sources: [PaywallComponent.VideoUrls?] = [source.light, source.dark]
+        return sources.map { source in
+            if let url = source?.urlLowRes {
+                return URLWithValidation(url: url, checksum: source?.checksumLowRes)
+            } else {
+                return nil
+            }
+        }
+        .compactMap { $0 }
     }
-
 }

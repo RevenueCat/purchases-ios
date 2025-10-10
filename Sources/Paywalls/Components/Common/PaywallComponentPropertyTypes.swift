@@ -59,17 +59,28 @@ public extension PaywallComponent {
 
     struct VideoUrls: Codable, Sendable, Hashable, Equatable {
 
-        public init(width: Int, height: Int, url: URL, urlLowRes: URL? = nil) {
-            self.width = width
-            self.height = height
-            self.url = url
-            self.urlLowRes = urlLowRes
-        }
-
         public let width: Int
         public let height: Int
         public let url: URL
+        public let checksum: Checksum?
         public let urlLowRes: URL?
+        public let checksumLowRes: Checksum?
+
+        public init(
+            width: Int,
+            height: Int,
+            url: URL,
+            checksum: Checksum?,
+            urlLowRes: URL?,
+            checksumLowRes: Checksum?
+        ) {
+            self.width = width
+            self.height = height
+            self.url = url
+            self.checksum = checksum
+            self.urlLowRes = urlLowRes
+            self.checksumLowRes = checksumLowRes
+        }
 
     }
 
