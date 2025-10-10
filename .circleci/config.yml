@@ -1029,12 +1029,12 @@ jobs:
           name: Configure Local.xcconfig for Maestro
           command: |
             set -e
-            if [ -z "${REVENUECAT_API_KEY:-}" ]; then
-              echo "REVENUECAT_API_KEY environment variable must be set for Maestro tests" >&2
+            if [ -z "${IOS_API_KEY:-}" ]; then
+              echo "IOS_API_KEY environment variable must be set for Maestro tests" >&2
               exit 1
             fi
             {
-              echo "REVENUECAT_API_KEY = ${REVENUECAT_API_KEY}"
+              echo "REVENUECAT_API_KEY = ${IOS_API_KEY}"
               if [ -n "${REVENUECAT_PROXY_URL_SCHEME:-}" ]; then
                 echo "REVENUECAT_PROXY_URL_SCHEME = ${REVENUECAT_PROXY_URL_SCHEME}"
               fi
@@ -1801,6 +1801,7 @@ workflows:
       - run-maestro-tests:
           context:
             - slack-secrets-ios
+            - maestro
 
   # To trigger tests manually, log into circleCI, select the project, a branch, and then click "Trigger Pipeline"
   # in the top right hand corner of the screen. In the modal that appears, set the following parameter fields
@@ -1866,6 +1867,7 @@ workflows:
       - run-maestro-tests:
           context:
             - slack-secrets-ios
+            - maestro
       - spm-receipt-parser:
           context:
             - slack-secrets-ios
