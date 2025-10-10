@@ -1071,7 +1071,7 @@ jobs:
             set -eo pipefail
             DEVICE_ID=$(cat maestro_device_id)
             mkdir -p maestro-results
-            maestro test Examples/rc-maestro/maestro --device "$DEVICE_ID" --format junit --output maestro-results/junit.xml 2>&1 | tee maestro-results/output.log
+            MAESTRO_CLI_NO_ANALYTICS=1 maestro --udid "$DEVICE_ID" test Examples/rc-maestro/maestro --format junit --output maestro-results/junit.xml 2>&1 | tee maestro-results/output.log
       - store_test_results:
           path: maestro-results
       - store_artifacts:
