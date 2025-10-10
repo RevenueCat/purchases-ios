@@ -386,6 +386,22 @@ Clones or updates snapshots repo
 
 Clones or updates paywall-preview-resources repo
 
+### ios generate_swiftinterface
+
+```sh
+[bundle exec] fastlane ios generate_swiftinterface
+```
+
+Generate Swift interface files for API change detection
+
+### ios check_api_changes
+
+```sh
+[bundle exec] fastlane ios check_api_changes
+```
+
+Check API changes and report results
+
 ### ios update_snapshots_repo
 
 ```sh
