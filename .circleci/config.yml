@@ -581,9 +581,11 @@ jobs:
   api-tests:
     executor:
       name: macos-executor
+      xcode_version: "16.4"
     steps:
       - checkout
       - install-dependencies
+      - tuist-generate-workspace
       - run:
           name: API Tests
           command: bundle exec fastlane run_api_tests

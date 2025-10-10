@@ -68,7 +68,13 @@ class OfflineEntitlementsManager {
     }
 
     func shouldComputeOfflineCustomerInfo(appUserID: String) -> Bool {
-        return self.deviceCache.cachedCustomerInfoData(appUserID: appUserID) == nil
+        return self.isOfflineEntitlementsEnabled() &&
+        self.deviceCache.cachedCustomerInfoData(appUserID: appUserID) == nil
+    }
+
+    // We diable offline entitlements for the Test Store since there's no store where to store the client's purchases
+    private func isOfflineEntitlementsEnabled() -> Bool {
+        return !self.systemInfo.isSimulatedStoreAPIKey
     }
 
 }
