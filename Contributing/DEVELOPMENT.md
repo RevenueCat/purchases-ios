@@ -1,6 +1,12 @@
 # Working with Tuist
 
+We're migrating development to Tuist-generated workspaces. The legacy `RevenueCat.xcworkspace` still works today, but prefer Tuist for new work so you stay aligned with the current structure.
+
 Tuist is used to generate the Xcode workspaces and projects in this repository. By default, Tuist resolves the `RevenueCat` and `RevenueCatUI` packages from the local checkout.
+
+## Installing Tuist
+
+Follow the official installation guide at [tuist.io](https://docs.tuist.io/tutorial/get-started) to install Tuist, then verify the install with `tuist version`.
 
 ## Generating Workspaces
 
