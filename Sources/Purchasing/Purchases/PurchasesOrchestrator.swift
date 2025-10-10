@@ -1767,6 +1767,13 @@ private extension PurchasesOrchestrator {
                 purchasedTransaction,
                 data: transactionData
             ) { result in
+                switch result {
+                case let .success(info):
+                    let purchaseData = PurchaseResultData(purchasedTransaction, info, false)
+                    NotificationCenter.default.post(name: .purchaseCompleted, object: purchaseData)
+                default: break
+                }
+
                 self.handlePostReceiptResult(result,
                                              transactionData: transactionData,
                                              subscriberAttributes: unsyncedAttributes,

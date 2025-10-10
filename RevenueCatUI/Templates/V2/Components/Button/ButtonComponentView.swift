@@ -12,7 +12,7 @@
 //  Created by Jay Shortway on 02/10/2024.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -73,6 +73,16 @@ struct ButtonComponentView: View {
                 view
                     .disabled(true)
                     .opacity(0.35)
+            })
+            .onReceive(NotificationCenter.default.publisher(for: .purchaseCompleted), perform: { object in
+                switch viewModel.action {
+                case .navigateTo(destination: .offerCodeRedemptionSheet):
+                    if let data = object.object as? PurchaseResultData {
+                        purchaseHandler.setResult(data)
+                    }
+                default:
+                    break
+                }
             })
             #if canImport(SafariServices) && canImport(UIKit)
             .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
