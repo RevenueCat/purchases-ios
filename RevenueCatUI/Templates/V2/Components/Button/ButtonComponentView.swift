@@ -74,16 +74,6 @@ struct ButtonComponentView: View {
                     .disabled(true)
                     .opacity(0.35)
             })
-            .onReceive(NotificationCenter.default.publisher(for: .purchaseCompleted), perform: { object in
-                switch viewModel.action {
-                case .navigateTo(destination: .offerCodeRedemptionSheet):
-                    if let data = object.object as? PurchaseResultData {
-                        purchaseHandler.setResult(data)
-                    }
-                default:
-                    break
-                }
-            })
             #if canImport(SafariServices) && canImport(UIKit)
             .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
                 SafariView(url: self.inAppBrowserURL!)

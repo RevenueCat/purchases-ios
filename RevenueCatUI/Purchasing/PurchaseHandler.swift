@@ -11,6 +11,7 @@
 //  
 //  Created by Nacho Soto on 7/13/23.
 
+import Combine
 @_spi(Internal) import RevenueCat
 import StoreKit
 import SwiftUI
@@ -26,6 +27,8 @@ final class PurchaseHandler: ObservableObject {
         case restore
 
     }
+
+    private var cancellables: Set<AnyCancellable> = Set()
 
     private let purchases: PaywallPurchasesType
 
@@ -118,6 +121,19 @@ final class PurchaseHandler: ObservableObject {
         self.purchases = purchases
         self.performPurchase = performPurchase
         self.performRestore = performRestore
+
+        NotificationCenter.default.publisher(for: .purchaseCompleted)
+            .compactMap({ notification in
+                notification.object as? PurchaseResultData
+            })
+            .removeDuplicates { data1, data2 in
+                return self.compare(data1, data2)
+        }
+        .receive(on: RunLoop.main)
+        .sink { data in
+            self.setResult(data)
+        }
+        .store(in: &cancellables)
     }
 
     /// Returns a new instance of `PurchaseHandler` using `Purchases.shared` if `Purchases`
@@ -153,8 +169,20 @@ final class PurchaseHandler: ObservableObject {
                                                        performRestore: performRestore)
     }
 
-    func setResult(_ result: PurchaseResultData) {
+    private func setResult(_ result: PurchaseResultData) {
+        guard !compare(purchaseResult, result) else {
+            return
+        }
         self.purchaseResult = result
+    }
+
+    private func compare(
+    _ result: PurchaseResultData?,
+    _ anotherResult: PurchaseResultData
+    ) -> Bool {
+        return result?.transaction == anotherResult.transaction &&
+            result?.userCancelled == anotherResult.userCancelled &&
+            result?.customerInfo == anotherResult.customerInfo
     }
 
 }
@@ -213,7 +241,7 @@ extension PurchaseHandler {
                 result = try await self.purchases.purchase(package: package)
             }
 
-            self.purchaseResult = result
+            self.setResult(result)
 
             if result.userCancelled {
                 self.trackCancelledPurchase()
@@ -264,7 +292,7 @@ extension PurchaseHandler {
                                              customerInfo: try await self.purchases.customerInfo(),
                                             userCancelled: result.userCancelled)
 
-        self.purchaseResult = resultInfo
+        self.setResult(resultInfo)
 
         if !result.userCancelled && result.error == nil {
 

@@ -1318,11 +1318,13 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
             )
         )
 
+        let transaction = StoreTransaction.from(transaction: transaction)
         let result: Result<CustomerInfo, BackendError> = await Async.call { completed in
-            self.transactionPoster.handlePurchasedTransaction(
-                StoreTransaction.from(transaction: transaction),
-                data: transactionData
-            ) { result in
+            self.transactionPoster.handlePurchasedTransaction(transaction, data: transactionData ) { result in
+                if case let .success(customerInfo) = result {
+                    let purchaseData = PurchaseResultData(transaction, customerInfo, false)
+                    self.notificationCenter.post(name: .purchaseCompleted, object: purchaseData)
+                }
                 completed(result)
             }
         }
@@ -1773,12 +1775,6 @@ private extension PurchasesOrchestrator {
                 purchasedTransaction,
                 data: transactionData
             ) { result in
-                switch result {
-                case let .success(info):
-                    let purchaseData = PurchaseResultData(purchasedTransaction, info, false)
-                    self.notificationCenter.post(name: .purchaseCompleted, object: purchaseData)
-                default: break
-                }
 
                 self.handlePostReceiptResult(result,
                                              transactionData: transactionData,
