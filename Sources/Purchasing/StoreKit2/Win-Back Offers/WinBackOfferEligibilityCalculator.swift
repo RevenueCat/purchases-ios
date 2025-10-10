@@ -70,11 +70,23 @@ extension WinBackOfferEligibilityCalculator {
             .filter({
                 Set(eligibleWinBackOfferIDs).contains($0.id)
             })
-            // 2. Convert the eligible offers to StoreProductDiscounts for us to use
+            // 2. Apply StoreKit "best" win-back offer first sorting
+            .sorted(by: {
+                // swiftlint:disable force_unwrapping
+                guard
+                    let lhsIndex = eligibleWinBackOfferIDs.firstIndex(of: $0.id!),
+                    let rhsIndex = eligibleWinBackOfferIDs.firstIndex(of: $1.id!)
+                else {
+                    return false
+                }
+                // swiftlint:enable force_unwrapping
+                return lhsIndex < rhsIndex
+            })
+            // 3. Convert the eligible offers to StoreProductDiscounts for us to use
             .compactMap({
                 StoreProductDiscount(sk2Discount: $0, currencyCode: product.currencyCode)
             })
-            // 3. Convert the StoreProductDiscounts to WinBackOffer objects
+            // 4. Convert the StoreProductDiscounts to WinBackOffer objects
             .map({
                 WinBackOffer(discount: $0)
             })
