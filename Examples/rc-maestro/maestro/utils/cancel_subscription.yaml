@@ -2,5 +2,29 @@ appId: com.revenuecat.maestro.ios
 
 ---
 - tapOn: "Manage subscriptions"
-- tapOn: "Cancel Subscription"
-- tapOn: "Confirm"
+
+ # iOS 26 does not detect Confirm
+- runFlow:
+    when:
+      visible: "Cancel Subscription"
+    commands:
+        - tapOn: "Cancel Subscription"
+- runFlow:
+    when:
+      notVisible: "Cancel Subscription"
+    commands:
+        - tapOn:
+            point: 37%,62%
+
+ # iOS 26 does not detect Confirm
+- runFlow:
+    when:
+      visible: 'Confirm'
+    commands:
+        - tapOn: 'Confirm'
+- runFlow:
+    when:
+      notVisible: 'Confirm'
+    commands:
+        - tapOn: 
+            point: 70%,58%
