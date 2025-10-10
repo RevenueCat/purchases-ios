@@ -15,6 +15,7 @@ parameters:
         default,
         bump,
         run-manual-tests,
+        maestro,
         run-manual-docs-deploy,
         update_paywall_templates,
         record_paywall_screenshots,
@@ -1792,6 +1793,14 @@ workflows:
       equal: [run-manual-docs-deploy, << pipeline.parameters.action >>]
     jobs:
       - docs-deploy
+
+  manual-trigger-maestro:
+    when:
+      equal: [maestro, << pipeline.parameters.action >>]
+    jobs:
+      - run-maestro-tests:
+          context:
+            - slack-secrets-ios
 
   # To trigger tests manually, log into circleCI, select the project, a branch, and then click "Trigger Pipeline"
   # in the top right hand corner of the screen. In the modal that appears, set the following parameter fields
