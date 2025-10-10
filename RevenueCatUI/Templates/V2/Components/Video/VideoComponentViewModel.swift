@@ -221,15 +221,17 @@ struct VideoComponentStyle {
 
     func viewData(forDarkMode: Bool) -> ViewData {
         if forDarkMode {
-            let url = darkUrl ?? url
-            var checksum: Checksum? = darkChecksum
+            let (resolvedUrl, resolvedChecksum): (URL, Checksum?) = {
+                if let darkUrl {
+                    return (darkUrl, darkChecksum)
+                } else {
+                    return (url, self.checksum)
+                }
+            }()
 
-            if darkUrl == url {
-                checksum = self.checksum
-            }
             return .init(
-                url: url,
-                checksum: checksum,
+                url: resolvedUrl,
+                checksum: resolvedChecksum,
                 lowResUrl: darkLowResUrl,
                 lowResChecksum: darkChecksumLowRes
             )
