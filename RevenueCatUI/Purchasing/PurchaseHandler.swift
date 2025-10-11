@@ -172,19 +172,10 @@ final class PurchaseHandler: ObservableObject {
     }
 
     private func setResult(_ result: PurchaseResultData) {
-        guard !compare(purchaseResult, result) else {
+        guard !PurchaseResultComparator.compare(purchaseResult, result) else {
             return
         }
         self.purchaseResult = result
-    }
-
-    private func compare(
-    _ result: PurchaseResultData?,
-    _ anotherResult: PurchaseResultData
-    ) -> Bool {
-        return result?.transaction == anotherResult.transaction &&
-            result?.userCancelled == anotherResult.userCancelled &&
-            result?.customerInfo == anotherResult.customerInfo
     }
 
 }
