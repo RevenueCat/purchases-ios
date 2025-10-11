@@ -11,9 +11,10 @@
 //
 //  Created by Mark Villacampa on 16/2/24.
 
+import Combine
 import Foundation
 import Nimble
-@testable import RevenueCat
+@testable @_spi(Internal) import RevenueCat
 import StoreKit
 import XCTest
 
@@ -627,6 +628,14 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         let transaction = MockStoreTransaction()
 
+        var notificationCount = 0
+        var job: AnyCancellable? = NotificationCenter.default.purchaseCompletedPublisher().sink { _ in
+            notificationCount += 1
+        }
+
+        // retain job long enough for it to not get cleaned up by ARC allowing it to process the sink closure
+        defer { job = nil }
+
         try await self.orchestrator.storeKit2TransactionListener(
             self.mockStoreKit2TransactionListener!,
             updatedTransaction: transaction
@@ -639,6 +648,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.customerInfoManager.invokedCacheCustomerInfo) == true
         expect(self.customerInfoManager.invokedCacheCustomerInfoParameters?.appUserID) == Self.mockUserID
         expect(self.customerInfoManager.invokedCacheCustomerInfoParameters?.info) === self.mockCustomerInfo
+        expect(notificationCount) == 1
     }
 
     func testSK2TransactionListenerDoesNotFinishTransactionIfPostingReceiptFails() async throws {

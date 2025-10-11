@@ -75,6 +75,8 @@ final class PurchasesOrchestrator {
     private let webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType
     private let dateProvider: DateProvider
 
+    let notificationCenter: NotificationCenter
+
     // Can't have these properties with `@available`.
     // swiftlint:disable identifier_name
     var _storeKit2TransactionListener: Any?
@@ -149,7 +151,8 @@ final class PurchasesOrchestrator {
                      winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
                      paywallEventsManager: PaywallEventsManagerType?,
                      webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType,
-                     dateProvider: DateProvider = DateProvider()
+                     dateProvider: DateProvider = DateProvider(),
+                     notificationCenter: NotificationCenter = .default
     ) {
         self.init(
             productsManager: productsManager,
@@ -175,7 +178,8 @@ final class PurchasesOrchestrator {
             winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
             paywallEventsManager: paywallEventsManager,
             webPurchaseRedemptionHelper: webPurchaseRedemptionHelper,
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            notificationCenter: notificationCenter
         )
 
         self._diagnosticsSynchronizer = diagnosticsSynchronizer
@@ -233,7 +237,8 @@ final class PurchasesOrchestrator {
          winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
          paywallEventsManager: PaywallEventsManagerType?,
          webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType,
-         dateProvider: DateProvider = DateProvider()
+         dateProvider: DateProvider = DateProvider(),
+         notificationCenter: NotificationCenter = .default
     ) {
         self.productsManager = productsManager
         self.paymentQueueWrapper = paymentQueueWrapper
@@ -259,6 +264,7 @@ final class PurchasesOrchestrator {
         self.paywallEventsManager = paywallEventsManager
         self.webPurchaseRedemptionHelper = webPurchaseRedemptionHelper
         self.dateProvider = dateProvider
+        self.notificationCenter = notificationCenter
 
         Logger.verbose(Strings.purchase.purchases_orchestrator_init(self))
     }
@@ -1312,11 +1318,13 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
             )
         )
 
+        let transaction = StoreTransaction.from(transaction: transaction)
         let result: Result<CustomerInfo, BackendError> = await Async.call { completed in
-            self.transactionPoster.handlePurchasedTransaction(
-                StoreTransaction.from(transaction: transaction),
-                data: transactionData
-            ) { result in
+            self.transactionPoster.handlePurchasedTransaction(transaction, data: transactionData ) { result in
+                if case let .success(customerInfo) = result {
+                    let purchaseData = PurchaseResultData(transaction, customerInfo, false)
+                    self.notificationCenter.post(name: .purchaseCompleted, object: purchaseData)
+                }
                 completed(result)
             }
         }
@@ -1767,6 +1775,7 @@ private extension PurchasesOrchestrator {
                 purchasedTransaction,
                 data: transactionData
             ) { result in
+
                 self.handlePostReceiptResult(result,
                                              transactionData: transactionData,
                                              subscriberAttributes: unsyncedAttributes,
