@@ -104,36 +104,38 @@ final class PurchaseHandler: ObservableObject {
 
     convenience init(purchases: Purchases = .shared,
                      performPurchase: PerformPurchase? = nil,
-                     performRestore: PerformRestore? = nil) {
+                     performRestore: PerformRestore? = nil,
+                     purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = NotificationCenter
+                         .default
+                         .purchaseCompletedPublisher()
+    ) {
         self.init(isConfigured: true,
                   purchases: purchases,
                   performPurchase: performPurchase,
-                  performRestore: performRestore)
+                  performRestore: performRestore,
+                  purchaseResultPublisher: purchaseResultPublisher
+        )
     }
 
     init(
         isConfigured: Bool = true,
         purchases: PaywallPurchasesType,
         performPurchase: PerformPurchase? = nil,
-        performRestore: PerformRestore? = nil
+        performRestore: PerformRestore? = nil,
+        purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = NotificationCenter
+            .default
+            .purchaseCompletedPublisher()
     ) {
         self.isConfigured = isConfigured
         self.purchases = purchases
         self.performPurchase = performPurchase
         self.performRestore = performRestore
 
-        NotificationCenter.default.publisher(for: .purchaseCompleted)
-            .compactMap({ notification in
-                notification.object as? PurchaseResultData
-            })
-            .removeDuplicates { data1, data2 in
-                return self.compare(data1, data2)
-        }
-        .receive(on: RunLoop.main)
-        .sink { data in
-            self.setResult(data)
-        }
-        .store(in: &cancellables)
+        purchaseResultPublisher
+            .removeDuplicates(by: PurchaseResultComparator.compare)
+            .receive(on: RunLoop.main)
+            .sink(receiveValue: setResult)
+            .store(in: &cancellables)
     }
 
     /// Returns a new instance of `PurchaseHandler` using `Purchases.shared` if `Purchases`
