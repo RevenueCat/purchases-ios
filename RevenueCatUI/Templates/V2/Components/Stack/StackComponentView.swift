@@ -207,9 +207,13 @@ fileprivate extension View {
                 .shape(border: border, shape: shape)
                 .shadow(shadow: shadow, shape: shape?.toInsettableShape())
         default:
-            self.shape(border: border, shape: shape)
-                .stackBadge(badge)
-                .shadow(shadow: shadow, shape: shape?.toInsettableShape())
+            // Overlayed
+            ZStack {
+                self.shape(border: border, shape: shape)
+                Color.clear
+                    .stackBadge(badge)
+                    .shadow(shadow: shadow, shape: shape?.toInsettableShape())
+            }
         }
     }
 
