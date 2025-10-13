@@ -92,7 +92,7 @@ private extension BackendAdEventTests {
         date: .init(timeIntervalSince1970: 1694022321)
     )
 
-    static let impressionData1: AdImpressionData = .init(
+    static let eventData1: AdDisplayed = .init(
         networkName: "AdMob",
         mediatorName: "MAX",
         placement: "home_screen",
@@ -100,7 +100,7 @@ private extension BackendAdEventTests {
         adInstanceId: "instance-123"
     )
 
-    static let impressionData2: AdImpressionData = .init(
+    static let eventData2: AdDisplayed = .init(
         networkName: "AppLovin",
         mediatorName: "MAX",
         placement: "game_over",
@@ -108,14 +108,20 @@ private extension BackendAdEventTests {
         adInstanceId: "instance-456"
     )
 
-    static let eventData1: AdDisplayed = .init(impression: impressionData1)
-
-    static let eventData2: AdDisplayed = .init(impression: impressionData2)
-
-    static let openedData2: AdOpened = .init(impression: impressionData2)
+    static let openedData2: AdOpened = .init(
+        networkName: "AppLovin",
+        mediatorName: "MAX",
+        placement: "game_over",
+        adUnitId: "ca-app-pub-987654321",
+        adInstanceId: "instance-456"
+    )
 
     static let revenueData1: AdRevenue = .init(
-        impression: impressionData1,
+        networkName: "AdMob",
+        mediatorName: "MAX",
+        placement: "home_screen",
+        adUnitId: "ca-app-pub-123456789",
+        adInstanceId: "instance-123",
         revenueMicros: 1500000,
         currency: "USD",
         precision: .exact

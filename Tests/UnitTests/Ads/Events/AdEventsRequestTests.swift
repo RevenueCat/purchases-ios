@@ -56,14 +56,13 @@ class AdEventsRequestTests: TestCase {
             id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
             date: .init(timeIntervalSince1970: 1694029328)
         )
-        let adImpressionData: AdImpressionData = .init(
+        let adEventData = AdDisplayed(
             networkName: "AdMob",
             mediatorName: "MAX",
             placement: "home_screen",
             adUnitId: "ca-app-pub-123456789",
             adInstanceId: "instance-123"
         )
-        let adEventData = AdDisplayed(impression: adImpressionData)
         let adEvent = AdEvent.displayed(adEventCreationData, adEventData)
 
         let storedEvent = try XCTUnwrap(StoredEvent(event: adEvent,
@@ -101,7 +100,7 @@ private extension AdEventsRequestTests {
         date: .init(timeIntervalSince1970: 1694029328)
     )
 
-    static let impressionData: AdImpressionData = .init(
+    static let eventData: AdDisplayed = .init(
         networkName: "AdMob",
         mediatorName: "MAX",
         placement: "home_screen",
@@ -109,12 +108,20 @@ private extension AdEventsRequestTests {
         adInstanceId: "instance-123"
     )
 
-    static let eventData: AdDisplayed = .init(impression: impressionData)
-
-    static let openedData: AdOpened = .init(impression: impressionData)
+    static let openedData: AdOpened = .init(
+        networkName: "AdMob",
+        mediatorName: "MAX",
+        placement: "home_screen",
+        adUnitId: "ca-app-pub-123456789",
+        adInstanceId: "instance-123"
+    )
 
     static let revenueData: AdRevenue = .init(
-        impression: impressionData,
+        networkName: "AdMob",
+        mediatorName: "MAX",
+        placement: "home_screen",
+        adUnitId: "ca-app-pub-123456789",
+        adInstanceId: "instance-123",
         revenueMicros: 1500000,
         currency: "USD",
         precision: .exact

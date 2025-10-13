@@ -57,7 +57,7 @@ extension EventsRequest.AdEvent {
         do {
             let adEvent = try JSONDecoder.default.decode(AdEvent.self, from: jsonData)
             let creationData = adEvent.creationData
-            let impression = adEvent.impression
+            let eventData = adEvent.eventData
 
             guard let appSessionID = storedEvent.appSessionID else {
                 Logger.error(Strings.paywalls.event_missing_app_session_id)
@@ -71,11 +71,11 @@ extension EventsRequest.AdEvent {
                 appUserId: storedEvent.userID,
                 appSessionId: appSessionID.uuidString,
                 timestampMs: creationData.date.millisecondsSince1970,
-                networkName: impression.networkName,
-                mediatorName: impression.mediatorName,
-                placement: impression.placement,
-                adUnitId: impression.adUnitId,
-                adInstanceId: impression.adInstanceId,
+                networkName: eventData.networkName,
+                mediatorName: eventData.mediatorName,
+                placement: eventData.placement,
+                adUnitId: eventData.adUnitId,
+                adInstanceId: eventData.adInstanceId,
                 revenueMicros: adEvent.revenueData?.revenueMicros,
                 currency: adEvent.revenueData?.currency,
                 precision: adEvent.revenueData?.precision.rawValue
