@@ -1402,18 +1402,17 @@ public extension Purchases {
      Call this method from your ad SDK's impression callback to report ad displays to RevenueCat.
      This enables RevenueCat to track ad impressions alongside your subscription revenue.
 
-     - Parameter data: The displayed ad impression data
+     - Parameter data: The displayed ad event data
 
      ## Example:
      ```swift
-     let impression = AdImpressionData(
+     await Purchases.shared.trackAdDisplayed(.init(
          networkName: "AdMob",
          mediatorName: "MAX",
          placement: "home_screen",
          adUnitId: "ca-app-pub-123",
          adInstanceId: "instance-456"
-     )
-     await Purchases.shared.trackAdDisplayed(.init(impression: impression))
+     ))
      ```
      */
     func trackAdDisplayed(_ data: AdDisplayed) async {
@@ -1428,18 +1427,17 @@ public extension Purchases {
 
      Call this method from your ad SDK's click callback to report ad interactions to RevenueCat.
 
-     - Parameter data: The opened/clicked ad data
+     - Parameter data: The opened/clicked ad event data
 
      ## Example:
      ```swift
-     let impression = AdImpressionData(
+     await Purchases.shared.trackAdOpened(.init(
          networkName: "AdMob",
          mediatorName: "MAX",
          placement: "home_screen",
          adUnitId: "ca-app-pub-123",
          adInstanceId: "instance-456"
-     )
-     await Purchases.shared.trackAdOpened(.init(impression: impression))
+     ))
      ```
      */
     func trackAdOpened(_ data: AdOpened) async {
@@ -1455,19 +1453,16 @@ public extension Purchases {
      Call this method from your ad SDK's revenue callback to report ad revenue to RevenueCat.
      This enables comprehensive LTV tracking across subscriptions and ad monetization.
 
-     - Parameter data: The ad revenue data including impression info, amount, currency, and precision
+     - Parameter data: The ad revenue data including amount, currency, and precision
 
      ## Example:
      ```swift
-     let impression = AdImpressionData(
+     await Purchases.shared.trackAdRevenue(.init(
          networkName: "AdMob",
          mediatorName: "MAX",
          placement: "home_screen",
          adUnitId: "ca-app-pub-123",
-         adInstanceId: "instance-456"
-     )
-     await Purchases.shared.trackAdRevenue(.init(
-         impression: impression,
+         adInstanceId: "instance-456",
          revenueMicros: 1500000,  // $1.50
          currency: "USD",
          precision: .exact

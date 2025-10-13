@@ -13,12 +13,23 @@
 
 import Foundation
 
+// MARK: - Internal Protocol
+
+/// Internal protocol to ensure all ad event types have consistent ad event fields.
+internal protocol AdEventData {
+    var networkName: String { get }
+    var mediatorName: String { get }
+    var placement: String? { get }
+    var adUnitId: String { get }
+    var adInstanceId: String { get }
+}
+
 // MARK: - Public Types
 
 #if ENABLE_AD_EVENTS_TRACKING
 
-/// Shared impression data for all ad events.
-public struct AdImpressionData {
+/// Data for ad displayed events.
+public struct AdDisplayed: AdEventData {
 
     // swiftlint:disable missing_docs
     public var networkName: String
@@ -44,48 +55,61 @@ public struct AdImpressionData {
 
 }
 
-/// Data for ad displayed events.
-public struct AdDisplayed {
-
-    // swiftlint:disable missing_docs
-    public var impression: AdImpressionData
-
-    public init(impression: AdImpressionData) {
-        self.impression = impression
-    }
-    // swiftlint:enable missing_docs
-
-}
-
 /// Data for ad opened/clicked events.
-public struct AdOpened {
+public struct AdOpened: AdEventData {
 
     // swiftlint:disable missing_docs
-    public var impression: AdImpressionData
+    public var networkName: String
+    public var mediatorName: String
+    public var placement: String?
+    public var adUnitId: String
+    public var adInstanceId: String
 
-    public init(impression: AdImpressionData) {
-        self.impression = impression
+    public init(
+        networkName: String,
+        mediatorName: String,
+        placement: String? = nil,
+        adUnitId: String,
+        adInstanceId: String
+    ) {
+        self.networkName = networkName
+        self.mediatorName = mediatorName
+        self.placement = placement
+        self.adUnitId = adUnitId
+        self.adInstanceId = adInstanceId
     }
     // swiftlint:enable missing_docs
 
 }
 
 /// Data for ad revenue events.
-public struct AdRevenue {
+public struct AdRevenue: AdEventData {
 
     // swiftlint:disable missing_docs
-    public var impression: AdImpressionData
+    public var networkName: String
+    public var mediatorName: String
+    public var placement: String?
+    public var adUnitId: String
+    public var adInstanceId: String
     public var revenueMicros: Int
     public var currency: String
     public var precision: Precision
 
     public init(
-        impression: AdImpressionData,
+        networkName: String,
+        mediatorName: String,
+        placement: String? = nil,
+        adUnitId: String,
+        adInstanceId: String,
         revenueMicros: Int,
         currency: String,
         precision: Precision
     ) {
-        self.impression = impression
+        self.networkName = networkName
+        self.mediatorName = mediatorName
+        self.placement = placement
+        self.adUnitId = adUnitId
+        self.adInstanceId = adInstanceId
         self.revenueMicros = revenueMicros
         self.currency = currency
         self.precision = precision
@@ -179,15 +203,15 @@ extension AdEvent {
         }
     }
 
-    /// - Returns: the underlying impression data for this event.
-    internal var impression: AdImpressionData {
+    /// - Returns: the underlying ad event data for this event.
+    internal var eventData: AdEventData {
         switch self {
         case let .displayed(_, displayed):
-            return displayed.impression
+            return displayed
         case let .opened(_, opened):
-            return opened.impression
+            return opened
         case let .revenue(_, revenue):
-            return revenue.impression
+            return revenue
         }
     }
 
@@ -206,7 +230,6 @@ extension AdEvent {
 // MARK: - Protocol Conformances
 
 #if ENABLE_AD_EVENTS_TRACKING
-extension AdImpressionData: Equatable, Codable, Sendable {}
 extension AdDisplayed: Equatable, Codable, Sendable {}
 extension AdOpened: Equatable, Codable, Sendable {}
 extension AdRevenue: Equatable, Codable, Sendable {}

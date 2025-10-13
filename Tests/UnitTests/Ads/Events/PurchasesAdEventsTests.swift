@@ -29,15 +29,13 @@ class PurchasesAdEventsTests: BasePurchasesTests {
     }
 
     func testTrackAdEventStoresEvent() async throws {
-        let impression = AdImpressionData(
+        await self.purchases.trackAdDisplayed(.init(
             networkName: "AdMob",
             mediatorName: "MAX",
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             adInstanceId: "instance-123"
-        )
-
-        await self.purchases.trackAdDisplayed(.init(impression: impression))
+        ))
 
         let trackedEvents = await try self.mockPaywallEventsManager.trackedEvents
         expect(trackedEvents).to(haveCount(1))
@@ -47,24 +45,28 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             return
         }
 
-        expect(displayedData.impression.networkName) == impression.networkName
-        expect(displayedData.impression.mediatorName) == impression.mediatorName
-        expect(displayedData.impression.placement) == impression.placement
-        expect(displayedData.impression.adUnitId) == impression.adUnitId
-        expect(displayedData.impression.adInstanceId) == impression.adInstanceId
+        expect(displayedData.networkName) == "AdMob"
+        expect(displayedData.mediatorName) == "MAX"
+        expect(displayedData.placement) == "home_screen"
+        expect(displayedData.adUnitId) == "ca-app-pub-123"
+        expect(displayedData.adInstanceId) == "instance-123"
     }
 
     func testTrackMultipleAdEvents() async throws {
-        let impression = AdImpressionData(
+        await self.purchases.trackAdDisplayed(.init(
             networkName: "AdMob",
             mediatorName: "MAX",
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             adInstanceId: "instance-123"
-        )
-
-        await self.purchases.trackAdDisplayed(.init(impression: impression))
-        await self.purchases.trackAdOpened(.init(impression: impression))
+        ))
+        await self.purchases.trackAdOpened(.init(
+            networkName: "AdMob",
+            mediatorName: "MAX",
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            adInstanceId: "instance-123"
+        ))
 
         let trackedEvents = await try self.mockPaywallEventsManager.trackedEvents
         expect(trackedEvents).to(haveCount(2))
@@ -81,16 +83,12 @@ class PurchasesAdEventsTests: BasePurchasesTests {
     }
 
     func testTrackRevenueEvent() async throws {
-        let impression = AdImpressionData(
+        await self.purchases.trackAdRevenue(.init(
             networkName: "AdMob",
             mediatorName: "MAX",
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
-            adInstanceId: "instance-123"
-        )
-
-        await self.purchases.trackAdRevenue(.init(
-            impression: impression,
+            adInstanceId: "instance-123",
             revenueMicros: 1500000,
             currency: "USD",
             precision: .exact
@@ -104,11 +102,11 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             return
         }
 
-        expect(revenueData.impression.networkName) == impression.networkName
-        expect(revenueData.impression.mediatorName) == impression.mediatorName
-        expect(revenueData.impression.placement) == impression.placement
-        expect(revenueData.impression.adUnitId) == impression.adUnitId
-        expect(revenueData.impression.adInstanceId) == impression.adInstanceId
+        expect(revenueData.networkName) == "AdMob"
+        expect(revenueData.mediatorName) == "MAX"
+        expect(revenueData.placement) == "home_screen"
+        expect(revenueData.adUnitId) == "ca-app-pub-123"
+        expect(revenueData.adInstanceId) == "instance-123"
         expect(revenueData.revenueMicros) == 1500000
         expect(revenueData.currency) == "USD"
         expect(revenueData.precision) == .exact
