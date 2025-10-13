@@ -18,7 +18,7 @@ import Foundation
 /// Internal protocol to ensure all ad event types have consistent ad event fields.
 internal protocol AdEventData {
     var networkName: String { get }
-    var mediatorName: String { get }
+    var mediatorName: MediatorName { get }
     var placement: String? { get }
     var adUnitId: String { get }
     var adInstanceId: String { get }
@@ -28,19 +28,45 @@ internal protocol AdEventData {
 
 #if ENABLE_AD_EVENTS_TRACKING
 
+/// Type representing an ad mediation network name.
+///
+/// Use the predefined static properties for common mediators, or create custom values
+/// for other mediation networks.
+public struct MediatorName: RawRepresentable, Equatable, Hashable, Codable, Sendable {
+
+    /// The raw string value of the mediator name
+    public let rawValue: String
+
+    /// Creates a mediator name with the specified raw value
+    public init(rawValue: String) {
+        self.rawValue = rawValue
+    }
+
+    /// Google AdMob mediation network
+    public static let adMob = MediatorName(rawValue: "AdMob")
+
+    /// AppLovin MAX mediation network
+    public static let appLovin = MediatorName(rawValue: "AppLovin")
+
+}
+
+#endif
+
+#if ENABLE_AD_EVENTS_TRACKING
+
 /// Data for ad displayed events.
 public struct AdDisplayed: AdEventData {
 
     // swiftlint:disable missing_docs
     public var networkName: String
-    public var mediatorName: String
+    public var mediatorName: MediatorName
     public var placement: String?
     public var adUnitId: String
     public var adInstanceId: String
 
     public init(
         networkName: String,
-        mediatorName: String,
+        mediatorName: MediatorName,
         placement: String? = nil,
         adUnitId: String,
         adInstanceId: String
@@ -60,14 +86,14 @@ public struct AdOpened: AdEventData {
 
     // swiftlint:disable missing_docs
     public var networkName: String
-    public var mediatorName: String
+    public var mediatorName: MediatorName
     public var placement: String?
     public var adUnitId: String
     public var adInstanceId: String
 
     public init(
         networkName: String,
-        mediatorName: String,
+        mediatorName: MediatorName,
         placement: String? = nil,
         adUnitId: String,
         adInstanceId: String
@@ -87,7 +113,7 @@ public struct AdRevenue: AdEventData {
 
     // swiftlint:disable missing_docs
     public var networkName: String
-    public var mediatorName: String
+    public var mediatorName: MediatorName
     public var placement: String?
     public var adUnitId: String
     public var adInstanceId: String
@@ -97,7 +123,7 @@ public struct AdRevenue: AdEventData {
 
     public init(
         networkName: String,
-        mediatorName: String,
+        mediatorName: MediatorName,
         placement: String? = nil,
         adUnitId: String,
         adInstanceId: String,

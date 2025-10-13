@@ -96,7 +96,7 @@ private extension BackendAdEventTests {
 
     static let eventData1: AdDisplayed = .init(
         networkName: "AdMob",
-        mediatorName: "MAX",
+        mediatorName: .appLovin,
         placement: "home_screen",
         adUnitId: "ca-app-pub-123456789",
         adInstanceId: "instance-123"
@@ -104,7 +104,7 @@ private extension BackendAdEventTests {
 
     static let eventData2: AdDisplayed = .init(
         networkName: "AppLovin",
-        mediatorName: "MAX",
+        mediatorName: .appLovin,
         placement: "game_over",
         adUnitId: "ca-app-pub-987654321",
         adInstanceId: "instance-456"
@@ -112,7 +112,7 @@ private extension BackendAdEventTests {
 
     static let openedData2: AdOpened = .init(
         networkName: "AppLovin",
-        mediatorName: "MAX",
+        mediatorName: .appLovin,
         placement: "game_over",
         adUnitId: "ca-app-pub-987654321",
         adInstanceId: "instance-456"
@@ -120,7 +120,7 @@ private extension BackendAdEventTests {
 
     static let revenueData1: AdRevenue = .init(
         networkName: "AdMob",
-        mediatorName: "MAX",
+        mediatorName: .appLovin,
         placement: "home_screen",
         adUnitId: "ca-app-pub-123456789",
         adInstanceId: "instance-123",

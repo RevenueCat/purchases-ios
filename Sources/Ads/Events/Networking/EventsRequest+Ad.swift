@@ -72,7 +72,7 @@ extension EventsRequest.AdEvent {
                 appSessionId: appSessionID.uuidString,
                 timestampMs: creationData.date.millisecondsSince1970,
                 networkName: eventData.networkName,
-                mediatorName: eventData.mediatorName,
+                mediatorName: eventData.mediatorName.rawValue,
                 placement: eventData.placement,
                 adUnitId: eventData.adUnitId,
                 adInstanceId: eventData.adInstanceId,

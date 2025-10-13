@@ -60,7 +60,7 @@ class AdEventsRequestTests: TestCase {
         )
         let adEventData = AdDisplayed(
             networkName: "AdMob",
-            mediatorName: "MAX",
+            mediatorName: .appLovin,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123456789",
             adInstanceId: "instance-123"
@@ -104,7 +104,7 @@ private extension AdEventsRequestTests {
 
     static let eventData: AdDisplayed = .init(
         networkName: "AdMob",
-        mediatorName: "MAX",
+        mediatorName: .appLovin,
         placement: "home_screen",
         adUnitId: "ca-app-pub-123456789",
         adInstanceId: "instance-123"
@@ -112,7 +112,7 @@ private extension AdEventsRequestTests {
 
     static let openedData: AdOpened = .init(
         networkName: "AdMob",
-        mediatorName: "MAX",
+        mediatorName: .appLovin,
         placement: "home_screen",
         adUnitId: "ca-app-pub-123456789",
         adInstanceId: "instance-123"
@@ -120,7 +120,7 @@ private extension AdEventsRequestTests {
 
     static let revenueData: AdRevenue = .init(
         networkName: "AdMob",
-        mediatorName: "MAX",
+        mediatorName: .appLovin,
         placement: "home_screen",
         adUnitId: "ca-app-pub-123456789",
         adInstanceId: "instance-123",

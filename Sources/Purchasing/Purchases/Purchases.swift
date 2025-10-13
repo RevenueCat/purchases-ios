@@ -1419,7 +1419,7 @@ public extension Purchases {
      ```swift
      await Purchases.shared.trackAdDisplayed(.init(
          networkName: "AdMob",
-         mediatorName: "MAX",
+         mediatorName: .appLovin,
          placement: "home_screen",
          adUnitId: "ca-app-pub-123",
          adInstanceId: "instance-456"
@@ -1444,7 +1444,7 @@ public extension Purchases {
      ```swift
      await Purchases.shared.trackAdOpened(.init(
          networkName: "AdMob",
-         mediatorName: "MAX",
+         mediatorName: .appLovin,
          placement: "home_screen",
          adUnitId: "ca-app-pub-123",
          adInstanceId: "instance-456"
@@ -1470,7 +1470,7 @@ public extension Purchases {
      ```swift
      await Purchases.shared.trackAdRevenue(.init(
          networkName: "AdMob",
-         mediatorName: "MAX",
+         mediatorName: .appLovin,
          placement: "home_screen",
          adUnitId: "ca-app-pub-123",
          adInstanceId: "instance-456",
