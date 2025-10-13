@@ -15,6 +15,8 @@ import Foundation
 
 // MARK: - Public Types
 
+#if ENABLE_AD_EVENTS_TRACKING
+
 /// Shared impression data for all ad events.
 public struct AdImpressionData {
 
@@ -113,6 +115,8 @@ extension AdRevenue {
 
 }
 
+#endif
+
 // MARK: - Internal Event Enum
 
 /// Internal event enum for type-safe routing through the events system.
@@ -201,10 +205,12 @@ extension AdEvent {
 
 // MARK: - Protocol Conformances
 
+#if ENABLE_AD_EVENTS_TRACKING
 extension AdImpressionData: Equatable, Codable, Sendable {}
 extension AdDisplayed: Equatable, Codable, Sendable {}
 extension AdOpened: Equatable, Codable, Sendable {}
 extension AdRevenue: Equatable, Codable, Sendable {}
 extension AdRevenue.Precision: Codable, Sendable {}
+#endif
 extension AdEvent.CreationData: Equatable, Codable, Sendable {}
 extension AdEvent: Equatable, Codable, Sendable {}

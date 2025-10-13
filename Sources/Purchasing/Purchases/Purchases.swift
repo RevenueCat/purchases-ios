@@ -1394,6 +1394,8 @@ public extension Purchases {
         await self.paywallEventsManager?.track(featureEvent: paywallEvent)
     }
 
+#if ENABLE_AD_EVENTS_TRACKING
+
     /**
      Tracks when an ad impression is displayed.
 
@@ -1478,6 +1480,8 @@ public extension Purchases {
             data
         ))
     }
+
+#endif
 
     /// Used by `RevenueCatUI` to keep track of ``CustomerCenterEvent``s.
     @_spi(Internal) func track(customerCenterEvent: any CustomerCenterEventType) {
