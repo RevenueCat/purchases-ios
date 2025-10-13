@@ -11,6 +11,8 @@
 //
 //  Created by RevenueCat on 1/8/25.
 
+#if ENABLE_AD_EVENTS_TRACKING
+
 import Nimble
 import StoreKit
 import XCTest
@@ -113,3 +115,5 @@ class PurchasesAdEventsTests: BasePurchasesTests {
     }
 
 }
+
+#endif

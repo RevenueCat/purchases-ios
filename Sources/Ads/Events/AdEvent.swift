@@ -120,26 +120,31 @@ public struct AdRevenue: AdEventData {
 
 extension AdRevenue {
 
-    /// Enum representing the level of accuracy for reported revenue values.
-    public enum Precision: String {
+    /// Type representing the level of accuracy for reported revenue values.
+    public struct Precision: RawRepresentable, Equatable, Hashable, Codable, Sendable {
+
+        /// The raw string value of the precision type
+        public let rawValue: String
+
+        internal init(rawValue: String) {
+            self.rawValue = rawValue
+        }
 
         /// Revenue value is exact and confirmed
-        case exact
+        public static let exact = Precision(rawValue: "exact")
 
         /// Revenue value is defined by the publisher
-        case publisherDefined = "publisher_defined"
+        public static let publisherDefined = Precision(rawValue: "publisher_defined")
 
         /// Revenue value is an estimate
-        case estimated
+        public static let estimated = Precision(rawValue: "estimated")
 
         /// Revenue value accuracy cannot be determined
-        case unknown
+        public static let unknown = Precision(rawValue: "unknown")
 
     }
 
 }
-
-#endif
 
 // MARK: - Internal Event Enum
 
@@ -229,11 +234,10 @@ extension AdEvent {
 
 // MARK: - Protocol Conformances
 
-#if ENABLE_AD_EVENTS_TRACKING
 extension AdDisplayed: Equatable, Codable, Sendable {}
 extension AdOpened: Equatable, Codable, Sendable {}
 extension AdRevenue: Equatable, Codable, Sendable {}
-extension AdRevenue.Precision: Codable, Sendable {}
-#endif
 extension AdEvent.CreationData: Equatable, Codable, Sendable {}
 extension AdEvent: Equatable, Codable, Sendable {}
+
+#endif

@@ -11,6 +11,8 @@
 //
 //  Created by RevenueCat on 1/8/25.
 
+#if ENABLE_AD_EVENTS_TRACKING
+
 import Foundation
 import Nimble
 @testable import RevenueCat
@@ -132,3 +134,5 @@ private extension AdEventsRequestTests {
     static let appSessionID = UUID(uuidString: "83164C05-2BDC-4807-8918-A4105F727DEB")
 
 }
+
+#endif
