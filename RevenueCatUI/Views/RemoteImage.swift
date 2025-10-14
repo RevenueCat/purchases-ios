@@ -323,8 +323,6 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
                     )
                 }
             }
-
-            Logger.debug(Strings.image_displayed_using(self.imageLoadedFrom?.rawValue ?? "unknown"))
         }
     }
 
