@@ -147,7 +147,7 @@ public struct AdRevenue: AdEventData {
 extension AdRevenue {
 
     /// Type representing the level of accuracy for reported revenue values.
-    public struct Precision: RawRepresentable, Equatable, Hashable, Codable, Sendable {
+    public struct Precision: Equatable, Hashable, Codable, Sendable {
 
         /// The raw string value of the precision type
         public let rawValue: String

@@ -48,7 +48,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         }
 
         expect(displayedData.networkName) == "AdMob"
-        expect(displayedData.mediatorName) == "MAX"
+        expect(displayedData.mediatorName) == .appLovin
         expect(displayedData.placement) == "home_screen"
         expect(displayedData.adUnitId) == "ca-app-pub-123"
         expect(displayedData.adInstanceId) == "instance-123"
@@ -105,7 +105,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         }
 
         expect(revenueData.networkName) == "AdMob"
-        expect(revenueData.mediatorName) == "MAX"
+        expect(revenueData.mediatorName) == .appLovin
         expect(revenueData.placement) == "home_screen"
         expect(revenueData.adUnitId) == "ca-app-pub-123"
         expect(revenueData.adInstanceId) == "instance-123"
