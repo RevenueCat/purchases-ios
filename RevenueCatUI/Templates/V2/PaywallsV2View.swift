@@ -107,6 +107,13 @@ struct PaywallsV2View: View {
     private let purchaseHandler: PurchaseHandler
     private let onDismiss: () -> Void
     private let fallbackContent: FallbackContent
+    @State private var didFinishIntroOfferEligibilityCheck: Bool = false
+    @State private var didFinishPromoOfferEligibilityCheck: Bool = false
+
+    private var id: String {
+        // swiftlint:disable:next line_length
+        "PaywallsV2View-\(didFinishIntroOfferEligibilityCheck ? "introChecked" : "")\(didFinishPromoOfferEligibilityCheck ? "promoChecked" : "")"
+    }
 
     @StateObject
     private var paywallPromoOfferCache: PaywallPromoOfferCache
@@ -176,6 +183,7 @@ struct PaywallsV2View: View {
                         uiConfigProvider: self.uiConfigProvider,
                         onDismiss: self.onDismiss
                     )
+                    .id(id)
                     .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
                     .environmentObject(self.purchaseHandler)
                     .environmentObject(self.introOfferEligibilityContext)
@@ -193,12 +201,20 @@ struct PaywallsV2View: View {
                         }
                     }
                     .task {
-                        await self.introOfferEligibilityContext.computeEligibility(for: paywallState.packages)
+                        guard didFinishIntroOfferEligibilityCheck else {
+                            await self.introOfferEligibilityContext.computeEligibility(for: paywallState.packages)
+                            didFinishIntroOfferEligibilityCheck = true
+                            return
+                        }
                     }
                     .task {
-                        await self.paywallPromoOfferCache.computeEligibility(
-                            for: paywallState.packageInfos.map { ($0.package, $0.promotionalOfferProductCode) }
-                        )
+                        guard didFinishPromoOfferEligibilityCheck else {
+                            await self.paywallPromoOfferCache.computeEligibility(
+                                for: paywallState.packageInfos.map { ($0.package, $0.promotionalOfferProductCode) }
+                            )
+                            didFinishPromoOfferEligibilityCheck = true
+                            return
+                        }
                     }
                     // Note: preferences need to be applied after `.toolbar` call
                     .preference(key: PurchaseInProgressPreferenceKey.self,
