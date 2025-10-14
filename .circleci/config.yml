@@ -1179,7 +1179,7 @@ jobs:
             SCAN_DEVICE: iPhone 15 (17.5.0)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
-          bundle_name: BackendIntegrationTests
+          bundle_name: BackendCustomEntitlementsIntegrationTests
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
