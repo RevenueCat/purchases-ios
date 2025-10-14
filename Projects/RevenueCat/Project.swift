@@ -288,7 +288,7 @@ let project = Project(
                 "../../Tests/BackendIntegrationTests/RevenueCat_IntegrationPurchaseTesterConfiguration.storekit"
             ],
             dependencies: [
-                .target(name: "RevenueCat"),
+                .revenueCat,
                 .target(name: "BackendIntegrationTestsHostApp"),
                 .nimble,
                 .ohHTTPStubsSwift,
