@@ -322,7 +322,14 @@ let project = Project(
             shared: true,
             buildAction: .buildAction(targets: ["BackendIntegrationTests"]),
             testAction: .testPlans([
-                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-All-CI.xctestplan")
+                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-All-CI.xctestplan"),
+                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-All.xctestplan"),
+                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-CustomEntitlements.xctestplan"),
+                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-Offline.xctestplan"),
+                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-Other.xctestplan"),
+                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-SK1.xctestplan"),
+                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-SK2.xctestplan"),
+                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-Shedder.xctestplan")
                 ]
             ),
             runAction: .runAction(
