@@ -236,7 +236,8 @@ let project = Project(
                 .glob(
                     "../../Tests/BackendIntegrationTests/Helpers/**/*.swift",
                     excluding: [
-                        "../../Tests/BackendIntegrationTests/Helpers/ExternalPurchasesManager.swift"
+                        "../../Tests/BackendIntegrationTests/Helpers/ExternalPurchasesManager.swift",
+                        "../../Tests/BackendIntegrationTests/Helpers/ObserverModeManager.swift"
                     ]
                 ),
                 "../../Tests/UnitTests/Misc/**/TestCase.swift",
