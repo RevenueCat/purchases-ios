@@ -245,7 +245,10 @@ let project = Project(
                 "../../Tests/StoreKitUnitTests/TestHelpers/AvailabilityChecks.swift"
             ],
             dependencies: [
-                .target(name: "RevenueCat_CustomEntitlementComputation"),
+                .project(
+                    target: "RevenueCat_CustomEntitlementComputation",
+                    path: .relativeToRoot("Projects/RevenueCat")
+                ),
                 .target(name: "BackendIntegrationTestsHostApp"),
                 .nimble,
                 .snapshotTesting,
