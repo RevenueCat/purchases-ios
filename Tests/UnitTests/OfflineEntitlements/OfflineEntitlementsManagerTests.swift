@@ -146,6 +146,15 @@ class OfflineEntitlementsManagerAvailableTests: BaseOfflineEntitlementsManagerTe
         expect(self.manager.shouldComputeOfflineCustomerInfo(appUserID: "test")) == false
     }
 
+    // MARK: - Test Store
+
+    func testShouldComputeOfflineCustomerInfoReturnsFalseForTestStore() {
+        self.mockSystemInfo = MockSystemInfo(finishTransactions: true, apiKeyValidationResult: .simulatedStore)
+        let testStoreManager = createManager()
+
+        expect(testStoreManager.shouldComputeOfflineCustomerInfo(appUserID: "test")) == false
+    }
+
 }
 
 // swiftlint:disable:next type_name

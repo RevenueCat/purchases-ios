@@ -1295,6 +1295,7 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCPurchasesErrorCode, "ErrorCode", open) {
   RCInvalidWebPurchaseToken SWIFT_COMPILE_NAME("invalidWebPurchaseToken") = 39,
   RCPurchaseBelongsToOtherUser SWIFT_COMPILE_NAME("purchaseBelongsToOtherUser") = 40,
   RCExpiredWebPurchaseToken SWIFT_COMPILE_NAME("expiredWebPurchaseToken") = 41,
+  RCTestStoreSimulatedPurchaseError SWIFT_COMPILE_NAME("testStoreSimulatedPurchaseError") = 42,
 };
 static NSString * _Nonnull const RCPurchasesErrorCodeDomain = @"RevenueCat.ErrorCode";
 
@@ -1857,6 +1858,8 @@ SWIFT_CLASS_NAMED("ProductPaidPrice")
 @property (nonatomic, readonly, copy) NSString * _Nonnull currency;
 /// Amount paid
 @property (nonatomic, readonly) double amount;
+/// Formatted price of the item, including its currency sign. For example $3.00.
+@property (nonatomic, readonly, copy) NSString * _Nonnull formatted;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
@@ -3664,6 +3667,8 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStore, "Store", open) {
   RCExternal SWIFT_COMPILE_NAME("external") = 8,
 /// For entitlements granted via Paddle.
   RCPaddle SWIFT_COMPILE_NAME("paddle") = 9,
+/// For entitlements granted via the Test Store.
+  RCTestStore SWIFT_COMPILE_NAME("testStore") = 10,
 };
 
 
@@ -4142,6 +4147,8 @@ SWIFT_CLASS_NAMED("SubscriptionInfo")
 @property (nonatomic, readonly, copy) NSString * _Nullable displayName;
 /// Paid price for the subscription
 @property (nonatomic, readonly, strong) RCProductPaidPrice * _Nullable price;
+/// Management purchase URL
+@property (nonatomic, readonly, copy) NSURL * _Nullable managementURL;
 @property (nonatomic, readonly, copy) NSString * _Nonnull description;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
