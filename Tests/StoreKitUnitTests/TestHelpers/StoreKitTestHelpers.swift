@@ -12,7 +12,11 @@
 //  Created by Nacho Soto on 1/24/22.
 
 import Nimble
+#if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+@testable import RevenueCat_CustomEntitlementComputation
+#else
 @testable import RevenueCat
+#endif
 import StoreKit
 import StoreKitTest
 import XCTest
