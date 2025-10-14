@@ -452,7 +452,7 @@ commands:
           command: bundle exec fastlane backend_integration_tests test_plan:"<< parameters.test_plan >>"
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 16 (18.0.0)
+            SCAN_DEVICE: iPhone 15 (17.5.0)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
 
@@ -470,7 +470,7 @@ commands:
           command: bundle exec fastlane backend_integration_tests test_plan:"<< parameters.test_plan >>"
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 16 (18.0.0)
+            SCAN_DEVICE: iPhone 15 (17.5.0)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: BackendIntegrationTests
