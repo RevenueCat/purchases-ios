@@ -31,7 +31,7 @@
           "app_user_id" : "user",
           "currency" : "USD",
           "id" : "72164C05-2BDC-4807-8918-A4105F727DEB",
-          "mediator_name" : "MAX",
+          "mediator_name" : "AppLovin",
           "network_name" : "AdMob",
           "placement" : "home_screen",
           "precision" : "exact",
