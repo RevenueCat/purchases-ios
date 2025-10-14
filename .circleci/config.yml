@@ -1167,8 +1167,24 @@ jobs:
       name: macos-executor
       xcode_version: "16.4"
     steps:
-      - run-backend-tests-tuist:
-          test_plan: "BackendIntegrationTests-CustomEntitlements"
+      - checkout
+      - install-dependencies
+      - tuist-generate-workspace
+      - update-spm-installation-commit
+      - run:
+          name: Run backend custom entitlements integration tests with Tuist
+          command: bundle exec fastlane backend_integration_tests scheme:"BackendCustomEntitlementsIntegrationTests"
+          no_output_timeout: 5m
+          environment:
+            SCAN_DEVICE: iPhone 15 (17.5.0)
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: BackendIntegrationTests
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
       - slack-notify-on-fail
 
   release-checks:

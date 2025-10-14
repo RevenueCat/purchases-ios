@@ -1094,6 +1094,7 @@ platform :ios do
   lane :backend_integration_tests do |options|
     fail_build = options[:fail_build]
     test_plan = options[:test_plan]
+    scheme = options[:scheme] || "BackendIntegrationTests"
 
     workspace_path = 'RevenueCat-Tuist.xcworkspace'
     unless File.directory?(workspace_path)
@@ -1105,7 +1106,7 @@ platform :ios do
 
     scan_with_flaky_test_retries(
       workspace: workspace_path,
-      scheme: "BackendIntegrationTests",
+      scheme: scheme,
       ensure_devices_found: true,
       derived_data_path: "scan_derived_data",
       output_types: 'junit',
