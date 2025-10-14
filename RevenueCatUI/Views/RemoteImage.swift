@@ -175,10 +175,10 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
         self.colorScheme = colorScheme
 
         let highRes = self.fileRepository
-            .getCachedFileURL(for: self.highResFileUrlForScheme)?
+            .getCachedFileURL(for: self.highResFileUrlForScheme, withChecksum: nil)?
             .asImageAndSize
         let lowRes = self.lowResURLForScheme
-            .flatMap { fileRepository.getCachedFileURL(for: $0) }?
+            .flatMap { fileRepository.getCachedFileURL(for: $0, withChecksum: nil) }?
             .asImageAndSize
 
         self._highResCachedImage = .init(initialValue: highRes)
@@ -289,14 +289,16 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
 
             // 1. Only attempt to fetch the low res again if we don't have it
             if self.lowResCachedImage == nil, let url = self.lowResURLForScheme {
-                self.lowResCachedImage = self.fileRepository.getCachedFileURL(for: url)?.asImageAndSize
+                self.lowResCachedImage = self.fileRepository
+                    .getCachedFileURL(for: url, withChecksum: nil)?.asImageAndSize
                 self.imageLoadedFrom = .lowResFileRepository
             }
 
             // 2. Fetch the high res to replace the initial low res
             do {
                 let highResCachedImage = try await self.fileRepository.generateOrGetCachedFileURL(
-                    for: self.highResFileUrlForScheme
+                    for: self.highResFileUrlForScheme,
+                    withChecksum: nil
                 ).asImageAndSize
                 self.highResCachedImage = highResCachedImage
                 self.imageLoadedFrom = .highResFileRepository
