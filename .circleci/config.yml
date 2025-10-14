@@ -459,7 +459,7 @@ commands:
           command: bundle exec fastlane backend_integration_tests test_plan:"<< parameters.test_plan >>" scheme:"<< parameters.scheme >>"
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 16 (18.0.0)
+            SCAN_DEVICE: iPhone 16 (18.5)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: << parameters.bundle_name >>
