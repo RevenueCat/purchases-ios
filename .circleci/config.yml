@@ -1129,6 +1129,7 @@ jobs:
   backend-integration-tests-SK1:
     executor:
       name: macos-executor
+      xcode_version: "16.4"
     steps:
       - run-backend-tests-tuist:
           test_plan: "BackendIntegrationTests-SK1"
@@ -1137,6 +1138,7 @@ jobs:
   backend-integration-tests-SK2:
     executor:
       name: macos-executor
+      xcode_version: "16.4"
     steps:
       - run-backend-tests-tuist:
           test_plan: "BackendIntegrationTests-SK2"
@@ -1145,6 +1147,7 @@ jobs:
   backend-integration-tests-other:
     executor:
       name: macos-executor
+      xcode_version: "16.4"
     steps:
       - run-backend-tests-tuist:
           test_plan: "BackendIntegrationTests-Other"
@@ -1153,6 +1156,7 @@ jobs:
   backend-integration-tests-offline:
     executor:
       name: macos-executor
+      xcode_version: "16.4"
     steps:
       - run-backend-tests-tuist:
           test_plan: "BackendIntegrationTests-Offline"
@@ -1161,6 +1165,7 @@ jobs:
   backend-integration-tests-custom-entitlements:
     executor:
       name: macos-executor
+      xcode_version: "16.4"
     steps:
       - run-backend-tests-tuist:
           test_plan: "BackendIntegrationTests-CustomEntitlements"
