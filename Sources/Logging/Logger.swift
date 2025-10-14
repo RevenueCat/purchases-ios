@@ -250,6 +250,14 @@ extension Logger {
                  fileName: fileName, functionName: functionName, line: line)
     }
 
+    static func simulatedStoreError(_ message: @autoclosure () -> String,
+                                    fileName: String = #fileID,
+                                    functionName: String = #function,
+                                    line: UInt = #line) {
+        Self.log(level: .error, intent: .simulatedStore, message: ErrorMessage(description: message()),
+                 fileName: fileName, functionName: functionName, line: line)
+    }
+
     static func log(level: LogLevel,
                     intent: LogIntent,
                     message: @autoclosure () -> LogMessage,

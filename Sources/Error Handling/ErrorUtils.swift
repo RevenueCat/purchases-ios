@@ -562,7 +562,7 @@ enum ErrorUtils {
     /**
      * Constructs an Error with the ``ErrorCode/unsupportedError`` code.
      *
-     * - Note: This error is used  when trying to use a feature that isn't supported
+     * - Note: This error is used when trying to use a feature that isn't supported
      * by StoreKit 1 when the SDK is running in StoreKit 1 mode.
      */
     static func unsupportedInUIPreviewModeError(
@@ -574,6 +574,21 @@ enum ErrorUtils {
                                 functionName: functionName,
                                 line: line)
     }
+
+    /**
+     * Constructs an Error with the ``ErrorCode/testStoreSimulatedPurchaseError`` code.
+     *
+     * - Note: This error is only used when simulating the failure of a purchase in the Test Store.
+     */
+    static func testStoreSimulatedPurchaseError(
+        fileName: String = #fileID, functionName: String = #function, line: UInt = #line
+    ) -> PurchasesError {
+        return ErrorUtils.error(with: .testStoreSimulatedPurchaseError,
+                                fileName: fileName,
+                                functionName: functionName,
+                                line: line)
+    }
+
 }
 
 extension ErrorUtils {
@@ -725,6 +740,12 @@ private extension ErrorUtils {
                     functionName: functionName,
                     line: line
                 )
+
+        case .testStoreSimulatedPurchaseError:
+            Logger.simulatedStoreError(localizedDescription,
+                                       fileName: fileName,
+                                       functionName: functionName,
+                                       line: line)
 
         @unknown default:
             Logger.error(

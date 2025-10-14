@@ -788,8 +788,12 @@ platform :ios do
   desc "run API Tests"
   lane :run_api_tests do
     # note: it's called "run" tests but these tests only need to build to run
+    workspace_path = 'RevenueCat-Tuist.xcworkspace'
+    unless File.directory?(workspace_path)
+      UI.important("#{workspace_path} not found. Run `tuist generate --no-open` before invoking this lane.")
+    end
     xcodebuild(
-      workspace: 'RevenueCat.xcworkspace',
+      workspace: workspace_path,
       scheme: 'All API Tests',
       destination: 'generic/platform=iOS Simulator',
       configuration: 'release',
