@@ -252,6 +252,9 @@ let project = Project(
                 "../../Tests/StoreKitUnitTests/TestHelpers/StoreKitTestHelpers.swift",
                 "../../Tests/StoreKitUnitTests/TestHelpers/AvailabilityChecks.swift"
             ],
+            resources: [
+                "../../Tests/BackendIntegrationTests/RevenueCat_IntegrationPurchaseTesterConfiguration.storekit"
+            ],
             dependencies: [
                 .project(
                     target: "RevenueCat_CustomEntitlementComputation",
