@@ -14,7 +14,11 @@ extension NSNotification.Name {
 }
 
 extension NotificationCenter {
-    // swiftlint:disable:next missing_docs
+    /// A publisher that wraps the `purchaseCompleted` notification that will allow us to propagate 
+    /// those events for transactions that were not initiated directly by the Purchases SDK 
+    /// (like promotional offers)
+    ///
+    /// - Important: This is not intended for public consumption and should be used with care
     @_spi(Internal) public func purchaseCompletedPublisher() -> AnyPublisher<PurchaseResultData, Never> {
         self
             .publisher(for: .purchaseCompleted)
