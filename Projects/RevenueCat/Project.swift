@@ -233,7 +233,12 @@ let project = Project(
                 "../../Tests/BackendIntegrationTests/BaseStoreKitIntegrationTests.swift",
                 "../../Tests/BackendIntegrationTests/MainThreadMonitor.swift",
                 "../../Tests/BackendIntegrationTests/Constants.swift",
-                "../../Tests/BackendIntegrationTests/Helpers/**/*.swift",
+                .glob(
+                    "../../Tests/BackendIntegrationTests/Helpers/**/*.swift",
+                    excluding: [
+                        "../../Tests/BackendIntegrationTests/Helpers/ExternalPurchasesManager.swift"
+                    ]
+                ),
                 "../../Tests/UnitTests/Misc/**/TestCase.swift",
                 "../../Tests/UnitTests/Mocks/MockSandboxEnvironmentDetector.swift",
                 "../../Tests/UnitTests/TestHelpers/**/TestLogHandler.swift",
