@@ -107,12 +107,10 @@ struct PaywallsV2View: View {
     private let purchaseHandler: PurchaseHandler
     private let onDismiss: () -> Void
     private let fallbackContent: FallbackContent
-    @State private var didFinishIntroOfferEligibilityCheck: Bool = false
-    @State private var didFinishPromoOfferEligibilityCheck: Bool = false
+    @State private var didFinishEligibilityCheck: Bool = false
 
     private var id: String {
-        // swiftlint:disable:next line_length
-        "PaywallsV2View-\(didFinishIntroOfferEligibilityCheck ? "introChecked" : "")\(didFinishPromoOfferEligibilityCheck ? "promoChecked" : "")"
+        "PaywallsV2View-\(didFinishEligibilityCheck ? "Checked" : "pending")"
     }
 
     @StateObject
@@ -201,18 +199,15 @@ struct PaywallsV2View: View {
                         }
                     }
                     .task {
-                        guard didFinishIntroOfferEligibilityCheck else {
-                            await self.introOfferEligibilityContext.computeEligibility(for: paywallState.packages)
-                            didFinishIntroOfferEligibilityCheck = true
-                            return
-                        }
-                    }
-                    .task {
-                        guard didFinishPromoOfferEligibilityCheck else {
-                            await self.paywallPromoOfferCache.computeEligibility(
+                        guard didFinishEligibilityCheck else {
+                            async let introCheck: Void = introOfferEligibilityContext.computeEligibility(
+                                for: paywallState.packages
+                            )
+                            async let promoCheck: Void = paywallPromoOfferCache.computeEligibility(
                                 for: paywallState.packageInfos.map { ($0.package, $0.promotionalOfferProductCode) }
                             )
-                            didFinishPromoOfferEligibilityCheck = true
+                            _ = await (introCheck, promoCheck)
+                            didFinishEligibilityCheck = true
                             return
                         }
                     }
