@@ -251,6 +251,18 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         systemInfo.storefront?.countryCode
     }
 
+    @available(iOS 16.0, macOS 12.0, tvOS 16.0, watchOS 9.0, *)
+    @_spi(Experimental) @objc public var storeFrontLocale: Locale? {
+        if let countryCode = systemInfo.storefront?.countryCode {
+            return Locale(components: .init(
+                languageCode: nil,
+                script: nil,
+                languageRegion: .init(countryCode)
+            ))
+        }
+        return nil
+    }
+
     private let attributionFetcher: AttributionFetcher
     private let attributionPoster: AttributionPoster
     private let backend: Backend
