@@ -208,12 +208,9 @@ fileprivate extension View {
                 .shadow(shadow: shadow, shape: shape?.toInsettableShape())
         default:
             // Overlayed
-            ZStack {
-                self.shape(border: border, shape: shape)
-                Color.clear
-                    .stackBadge(badge)
-                    .shadow(shadow: shadow, shape: shape?.toInsettableShape())
-            }
+            self.shape(border: border, shape: shape)
+                .stackBadge(badge)
+                .shadow(shadow: shadow, shape: shape?.toInsettableShape())
         }
     }
 
