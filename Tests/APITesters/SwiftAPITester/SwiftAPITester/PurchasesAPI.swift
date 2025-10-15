@@ -12,7 +12,7 @@
 //  Created by Madeline Beyl on 8/25/21.
 
 import Foundation
-import RevenueCat
+@_spi(Experimental) import RevenueCat
 import StoreKit
 
 func checkPurchasesAPI() {
@@ -23,6 +23,9 @@ func checkPurchasesAPI() {
     let delegate: PurchasesDelegate? = purch.delegate
     let appUserID: String = purch.appUserID
     let isAnonymous: Bool = purch.isAnonymous
+    if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+        let storeFrontLocale: Locale? = purch.storeFrontLocale
+    }
 
     print(purchasesAreCompletedBy, delegate!, appUserID, isAnonymous)
 
