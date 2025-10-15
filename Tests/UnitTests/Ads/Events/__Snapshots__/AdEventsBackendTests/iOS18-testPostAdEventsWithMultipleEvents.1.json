@@ -53,6 +53,6 @@
       ]
     },
     "method" : "POST",
-    "url" : "https://e.revenue.cat/v1/events"
+    "url" : "https://a.revenue.cat/v1/events"
   }
 }

@@ -16,7 +16,7 @@ import Foundation
 extension HTTPRequest.AdPath: HTTPRequestPath {
 
     // swiftlint:disable:next force_unwrapping
-    static let serverHostURL = URL(string: "https://e.revenue.cat")!
+    static let serverHostURL = URL(string: "https://a.revenue.cat")!
 
     var authenticated: Bool {
         switch self {
