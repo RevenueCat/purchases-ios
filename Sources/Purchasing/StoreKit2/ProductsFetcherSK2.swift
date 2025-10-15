@@ -16,6 +16,12 @@ import StoreKit
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 actor ProductsFetcherSK2 {
+    
+    private let priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider
+    
+    init(priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider = .init(priceFormattingRuleSet: { nil })) {
+        self.priceFormattingRuleSetProvider = priceFormattingRuleSetProvider
+    }
 
     enum Error: Swift.Error {
 
@@ -34,7 +40,10 @@ actor ProductsFetcherSK2 {
             }
 
             Logger.rcSuccess(Strings.storeKit.store_product_request_received_response)
-            return Set(storeKitProducts.map { SK2StoreProduct(sk2Product: $0) })
+            return Set(storeKitProducts.map { SK2StoreProduct(
+                sk2Product: $0,
+                priceFormatterProvider: .init(priceFormattingRuleSet: priceFormattingRuleSetProvider.priceFormattingRuleSet())
+            )})
         } catch {
             throw Error.productsRequestError(innerError: error)
         }
