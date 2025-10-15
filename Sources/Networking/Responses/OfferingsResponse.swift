@@ -54,7 +54,62 @@ struct OfferingsResponse {
     let placements: Placements?
     let targeting: Targeting?
     let uiConfig: UIConfig?
+    let config: Config?
 
+    public struct Config {
+        
+        // todo rick: handle decoding issues?
+        let priceFormattingRuleSet: PriceFormattingRuleSet
+        
+    }
+}
+
+public struct PriceFormattingRuleSet: Sendable {
+    
+    var currencySymbolOverrides: [
+        // storefront country code
+        String: [
+            // currency code
+            String: CurrencySymbolOverride
+        ]
+    ]
+    
+    public func currencySymbolOverride(
+        for storefrontCountryCode: String,
+        currencyCode: String
+    ) -> CurrencySymbolOverride? {
+        return self.currencySymbolOverrides[storefrontCountryCode]?[currencyCode]
+    }
+    
+    public struct CurrencySymbolOverride: Sendable {
+        let zero: String
+        let one: String
+        let two: String
+        let few: String
+        let many: String
+        let other: String
+        
+        func value(for rule: PluralRule) -> String {
+            switch rule {
+            case .zero:
+                return self.zero
+            case .one:
+                return self.one
+            case .two:
+                return self.two
+            case .few:
+                return self.few
+            case .many:
+                return self.many
+            case .other:
+                return self.other
+            }
+        }
+        
+        public enum PluralRule {
+            case zero, one, two, few, many, other
+        }
+    }
 }
 
 extension OfferingsResponse {
@@ -84,5 +139,8 @@ extension OfferingsResponse.Offering: Codable, Equatable {}
 extension OfferingsResponse.Placements: Codable, Equatable {}
 extension OfferingsResponse.Targeting: Codable, Equatable {}
 extension OfferingsResponse: Codable, Equatable {}
+extension OfferingsResponse.Config: Codable, Equatable {}
+extension PriceFormattingRuleSet: Codable, Equatable {}
+extension PriceFormattingRuleSet.CurrencySymbolOverride: Codable, Equatable {}
 
 extension OfferingsResponse: HTTPResponseBody {}

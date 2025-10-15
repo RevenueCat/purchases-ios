@@ -17,6 +17,10 @@ import StoreKit
 
 // MARK: -
 
+struct PriceFormattingRuleSetProvider {
+    let priceFormattingRuleSet: () -> PriceFormattingRuleSet?
+}
+
 /// Basic implemenation of a `ProductsManagerType`
 class ProductsManager: NSObject, ProductsManagerType {
 
@@ -24,6 +28,7 @@ class ProductsManager: NSObject, ProductsManagerType {
     private let diagnosticsTracker: DiagnosticsTrackerType?
     private let systemInfo: SystemInfo
     private let dateProvider: DateProvider
+    private let priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider
 
     private let _productsFetcherSK2: (any Sendable)?
 
@@ -38,16 +43,18 @@ class ProductsManager: NSObject, ProductsManagerType {
         diagnosticsTracker: DiagnosticsTrackerType?,
         systemInfo: SystemInfo,
         requestTimeout: TimeInterval,
-        dateProvider: DateProvider = DateProvider()
+        dateProvider: DateProvider = DateProvider(),
+        priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider = .init(priceFormattingRuleSet: { nil })
     ) {
         self.productsFetcherSK1 = ProductsFetcherSK1(productsRequestFactory: productsRequestFactory,
                                                      requestTimeout: requestTimeout)
         self.diagnosticsTracker = diagnosticsTracker
         self.systemInfo = systemInfo
         self.dateProvider = dateProvider
+        self.priceFormattingRuleSetProvider = priceFormattingRuleSetProvider
 
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
-            self._productsFetcherSK2 = ProductsFetcherSK2()
+            self._productsFetcherSK2 = ProductsFetcherSK2(priceFormattingRuleSetProvider: priceFormattingRuleSetProvider)
         } else {
             self._productsFetcherSK2 = nil
         }

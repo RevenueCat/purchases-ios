@@ -20,7 +20,7 @@ internal struct SK1StoreProduct: StoreProductType {
     }
 
     let underlyingSK1Product: SK1Product
-    private let priceFormatterProvider: PriceFormatterProvider = .init()
+    private let priceFormatterProvider: PriceFormatterProvider = .init(priceFormattingRuleSet: nil) // todo rick: also implement for SK1?
 
     var productCategory: StoreProduct.ProductCategory {
         guard #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *) else {
