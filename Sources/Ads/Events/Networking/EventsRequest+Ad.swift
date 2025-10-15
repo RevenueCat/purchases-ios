@@ -22,7 +22,7 @@ extension EventsRequest {
         var type: EventType
         var appUserId: String
         var appSessionId: String
-        var timestampMs: UInt64
+        var timestamp: UInt64
         var networkName: String
         var mediatorName: String
         var placement: String?
@@ -70,7 +70,7 @@ extension EventsRequest.AdEvent {
                 type: adEvent.eventType,
                 appUserId: storedEvent.userID,
                 appSessionId: appSessionID.uuidString,
-                timestampMs: creationData.date.millisecondsSince1970,
+                timestamp: creationData.date.millisecondsSince1970,
                 networkName: eventData.networkName,
                 mediatorName: eventData.mediatorName.rawValue,
                 placement: eventData.placement,
@@ -117,7 +117,7 @@ extension EventsRequest.AdEvent: Encodable {
         case type
         case appUserId
         case appSessionId
-        case timestampMs
+        case timestamp = "timestampMs"
         case networkName
         case mediatorName
         case placement
