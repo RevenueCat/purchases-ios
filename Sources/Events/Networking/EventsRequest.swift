@@ -44,11 +44,17 @@ struct EventsRequest {
                     }
                     return AnyEncodable(event)
                 }
+            #if ENABLE_AD_EVENTS_TRACKING
             case .ads:
                 guard let event = AdEvent(storedEvent: storedEvent) else {
                     return nil
                 }
                 return AnyEncodable(event)
+            #else
+            case .ads:
+                // Ad events tracking is disabled, skip this event
+                return nil
+            #endif
             }
         })
     }

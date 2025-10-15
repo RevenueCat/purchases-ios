@@ -13,6 +13,8 @@
 
 import Foundation
 
+#if ENABLE_AD_EVENTS_TRACKING
+
 extension EventsRequest {
 
     struct AdEvent {
@@ -130,3 +132,5 @@ extension EventsRequest.AdEvent: Encodable {
     }
 
 }
+
+#endif
