@@ -2286,9 +2286,6 @@ private extension Purchases {
                         group.addTask {
                             await cache.warmUpPaywallImagesCache(offerings: offerings)
                         }
-                        group.addTask {
-                            await cache.warmUpPaywallVideosCache(offerings: offerings)
-                        }
 						group.addTask {
                             await cache.warmUpPaywallFontsCache(offerings: offerings)
                         }
