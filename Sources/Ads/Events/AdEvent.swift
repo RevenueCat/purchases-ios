@@ -13,6 +13,10 @@
 
 import Foundation
 
+// MARK: - Public Types
+
+#if ENABLE_AD_EVENTS_TRACKING
+
 // MARK: - Internal Protocol
 
 /// Internal protocol to ensure all ad event types have consistent ad event fields.
@@ -23,10 +27,6 @@ internal protocol AdEventData {
     var adUnitId: String { get }
     var adInstanceId: String { get }
 }
-
-// MARK: - Public Types
-
-#if ENABLE_AD_EVENTS_TRACKING
 
 /// Type representing an ad mediation network name.
 ///
@@ -49,10 +49,6 @@ public struct MediatorName: RawRepresentable, Equatable, Hashable, Codable, Send
     public static let appLovin = MediatorName(rawValue: "AppLovin")
 
 }
-
-#endif
-
-#if ENABLE_AD_EVENTS_TRACKING
 
 /// Data for ad displayed events.
 public struct AdDisplayed: AdEventData {
