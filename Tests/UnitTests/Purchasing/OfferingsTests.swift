@@ -617,7 +617,8 @@ class OfferingsTests: TestCase {
             ],
             placements: nil,
             targeting: nil,
-            uiConfig: nil
+            uiConfig: nil,
+            config: nil
         )
         let offerings = try XCTUnwrap(
             self.offeringsFactory.createOfferings(from: storeProductsByID,
