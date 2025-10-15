@@ -95,7 +95,7 @@ public struct TestStoreProduct {
 
     // swiftlint:enable missing_docs
 
-    private let priceFormatterProvider: PriceFormatterProvider = .init()
+    private let priceFormatterProvider: PriceFormatterProvider = .init(priceFormattingRuleSet: nil) // todo rick?
 
 }
 
@@ -110,7 +110,8 @@ extension TestStoreProduct: StoreProductType {
 
     internal var priceFormatter: NumberFormatter? {
         return self.currencyCode.map {
-            self.priceFormatterProvider.priceFormatterForSK2(withCurrencyCode: $0, locale: self.locale)
+            // todo rick: fix storefrontCountryCode here
+            self.priceFormatterProvider.priceFormatterForSK2(withCurrencyCode: $0, storefrontCountryCode: "USA", locale: self.locale)
         }
     }
 

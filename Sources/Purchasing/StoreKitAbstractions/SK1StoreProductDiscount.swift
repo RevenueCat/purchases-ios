@@ -47,7 +47,7 @@ internal struct SK1StoreProductDiscount: StoreProductDiscountType {
         return self.priceFormatter.string(from: self.underlyingSK1Discount.price) ?? ""
     }
 
-    private let priceFormatterProvider: PriceFormatterProvider = .init()
+    private let priceFormatterProvider: PriceFormatterProvider = .init(priceFormattingRuleSet: nil) // todo rick
 
     private var priceFormatter: NumberFormatter {
         return self.priceFormatterProvider.priceFormatterForSK1(
