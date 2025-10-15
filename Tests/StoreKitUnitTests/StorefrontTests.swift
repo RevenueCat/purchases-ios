@@ -12,7 +12,7 @@
 //  Created by Nacho Soto on 4/13/22.
 
 import Nimble
-@testable import RevenueCat
+@_spi(Experimental) @testable import RevenueCat
 import StoreKit
 import XCTest
 
@@ -43,6 +43,23 @@ class StorefrontTests: StoreKitConfigTestCase {
         } else {
             throw XCTSkip("This test is for pre-iOS 15 APIs")
         }
+    }
+
+    @available(iOS 16.0, tvOS 16.0, macOS 13.0, watchOS 9.0, *)
+    func testCurrentStorefrontLocale() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
+        try await self.changeStorefront("ESP")
+        var currentStorefront = try await XCTAsyncUnwrap(await Storefront.currentStorefront)
+        expect(currentStorefront.locale.regionCode) == "ES"
+
+        try await self.changeStorefront("USA")
+        currentStorefront = try await XCTAsyncUnwrap(await Storefront.currentStorefront)
+        expect(currentStorefront.locale.regionCode) == "US"
+
+        try await self.changeStorefront("JPN")
+        currentStorefront = try await XCTAsyncUnwrap(await Storefront.currentStorefront)
+        expect(currentStorefront.locale.regionCode) == "JP"
     }
 
     func testSystemInfoStorefront() async throws {
