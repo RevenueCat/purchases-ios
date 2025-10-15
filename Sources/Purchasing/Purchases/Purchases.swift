@@ -251,6 +251,17 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         systemInfo.storefront?.countryCode
     }
 
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+    @_spi(Experimental) @objc public var storeFrontLocale: Locale? {
+        systemInfo.storefront.map { storefront in
+            Locale(components: .init(
+                languageCode: nil,
+                script: nil,
+                languageRegion: .init(storefront.countryCode)
+            ))
+        }
+    }
+
     private let attributionFetcher: AttributionFetcher
     private let attributionPoster: AttributionPoster
     private let backend: Backend
@@ -2274,9 +2285,6 @@ private extension Purchases {
                         }
                         group.addTask {
                             await cache.warmUpPaywallImagesCache(offerings: offerings)
-                        }
-                        group.addTask {
-                            await cache.warmUpPaywallVideosCache(offerings: offerings)
                         }
 						group.addTask {
                             await cache.warmUpPaywallFontsCache(offerings: offerings)
