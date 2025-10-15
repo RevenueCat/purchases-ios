@@ -1041,7 +1041,7 @@ platform :ios do
       'visionOS'
     ])
     create_and_sign_xcframework(
-      scheme: 'RevenueCatUIDev',
+      scheme: 'RevenueCatUI',
       product_name: 'RevenueCatUI',
       platforms: [
       'iOS',
