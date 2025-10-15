@@ -23,18 +23,21 @@ struct VariableHandlerV2 {
 
     private let showZeroDecimalPlacePrices: Bool
     private let discountRelativeToMostExpensivePerMonth: Double?
+    private let absoluteDiscountPerMonth: NSDecimalNumber?
     private let dateProvider: () -> Date
 
     init(
         variableCompatibilityMap: [String: String],
         functionCompatibilityMap: [String: String],
         discountRelativeToMostExpensivePerMonth: Double?,
+        absoluteDiscountPerMonth: NSDecimalNumber?,
         showZeroDecimalPlacePrices: Bool,
         dateProvider: @escaping () -> Date = { Date() }
     ) {
         self.variableCompatibilityMap = variableCompatibilityMap
         self.functionCompatibilityMap = functionCompatibilityMap
         self.discountRelativeToMostExpensivePerMonth = discountRelativeToMostExpensivePerMonth
+        self.absoluteDiscountPerMonth = absoluteDiscountPerMonth
         self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
         self.dateProvider = dateProvider
     }
@@ -55,6 +58,8 @@ struct VariableHandlerV2 {
                 locale: locale,
                 localizations: localizations,
                 discountRelativeToMostExpensivePerMonth: self.discountRelativeToMostExpensivePerMonth,
+                absoluteDiscountPerMonth: self.absoluteDiscountPerMonth,
+                showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices,
                 date: self.dateProvider(),
                 promoOffer: promoOffer
             ) ?? ""
@@ -212,6 +217,7 @@ enum VariablesV2: String {
     case productSecondaryOfferPeriod = "product.secondary_offer_period"
     case productSecondaryOfferPeriodAbbreviated = "product.secondary_offer_period_abbreviated"
     case productRelativeDiscount = "product.relative_discount"
+    case productAbsoluteDiscount = "product.absolute_discount"
     case productStoreProductName = "product.store_product_name"
 
 }
@@ -234,6 +240,8 @@ extension VariablesV2 {
         locale: Locale,
         localizations: [String: String],
         discountRelativeToMostExpensivePerMonth: Double?,
+        absoluteDiscountPerMonth: NSDecimalNumber?,
+        showZeroDecimalPlacePrices: Bool,
         date: Date,
         promoOffer: PromotionalOffer?
     ) -> String {
@@ -340,6 +348,12 @@ extension VariablesV2 {
             return self.productRelativeDiscount(
                 discountRelativeToMostExpensivePerMonth: discountRelativeToMostExpensivePerMonth,
                 localizations: localizations
+            )
+        case .productAbsoluteDiscount:
+            return self.productAbsoluteDiscount(
+                package: package,
+                absoluteDiscountPerMonth: absoluteDiscountPerMonth,
+                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
             )
         case .productStoreProductName:
             return self.productStoreProductName(package: package)
@@ -752,8 +766,57 @@ extension VariablesV2 {
         return String(format: localizedFormat, percent)
     }
 
+    func productAbsoluteDiscount(
+        package: Package,
+        absoluteDiscountPerMonth: NSDecimalNumber?,
+        showZeroDecimalPlacePrices: Bool
+    ) -> String {
+        guard let absoluteDiscountPerMonth, absoluteDiscountPerMonth.compare(.zero) == .orderedDescending else {
+            return ""
+        }
+
+        guard let formatter = package.storeProduct.priceFormatter else { return "" }
+
+        let formatted = formatter.string(from: absoluteDiscountPerMonth) ?? ""
+
+        if showZeroDecimalPlacePrices,
+           self.isPriceEndingIn00Cents(formatted, formatter: formatter) {
+            return self.formatAsZeroDecimalPlaces(formatted, formatter: formatter)
+        }
+
+        return formatted
+    }
+
     func productStoreProductName(package: Package) -> String {
         return package.storeProduct.localizedTitle
+    }
+
+}
+
+// MARK: - Zero-decimal helpers
+
+private extension VariablesV2 {
+
+    func isPriceEndingIn00Cents(_ priceString: String, formatter: NumberFormatter) -> Bool {
+        guard let price = formatter.number(from: priceString)?.doubleValue else {
+            Logger.warning("Paywalls: could not parse price string for zero-decimal handling")
+            return false
+        }
+
+        let roundedPrice = (price * 100).rounded() / 100.0
+        return roundedPrice.truncatingRemainder(dividingBy: 1) == 0
+    }
+
+    func formatAsZeroDecimalPlaces(_ priceString: String, formatter: NumberFormatter) -> String {
+        guard let priceToRound = formatter.number(from: priceString)?.doubleValue else {
+            Logger.warning("Paywalls: could not parse price string for zero-decimal formatting")
+            return priceString
+        }
+
+        let copy = formatter.copy() as? NumberFormatter ?? formatter
+        copy.maximumFractionDigits = 0
+
+        return copy.string(from: NSNumber(value: priceToRound)) ?? priceString
     }
 
 }

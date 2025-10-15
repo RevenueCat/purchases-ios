@@ -135,6 +135,10 @@ class TextComponentViewModel {
             variableCompatibilityMap: variableConfig.variableCompatibilityMap,
             functionCompatibilityMap: variableConfig.functionCompatibilityMap,
             discountRelativeToMostExpensivePerMonth: discount,
+            absoluteDiscountPerMonth: Self.absoluteDiscount(
+                from: package.storeProduct.pricePerMonth,
+                relativeTo: packageContext.variableContext.mostExpensivePricePerMonth
+            ),
             showZeroDecimalPlacePrices: packageContext.variableContext.showZeroDecimalPlacePrices
         )
 
@@ -177,6 +181,18 @@ class TextComponentViewModel {
         guard pricePerMonth < mostExpensive else { return nil }
 
         return (mostExpensive - pricePerMonth) / mostExpensive
+    }
+
+    private static func absoluteDiscount(
+        from pricePerMonth: NSDecimalNumber?,
+        relativeTo mostExpensive: Double?
+    ) -> NSDecimalNumber? {
+        guard let pricePerMonth, let mostExpensive else { return nil }
+        let pricePerMonthDouble = pricePerMonth.doubleValue
+        guard pricePerMonthDouble < mostExpensive else { return nil }
+
+        let difference = mostExpensive - pricePerMonthDouble
+        return NSDecimalNumber(value: difference)
     }
 
 }

@@ -81,6 +81,7 @@ class VariableHandlerV2Test: TestCase {
         variableCompatibilityMap: variableMapping,
         functionCompatibilityMap: functionMapping,
         discountRelativeToMostExpensivePerMonth: nil,
+        absoluteDiscountPerMonth: nil,
         showZeroDecimalPlacePrices: false,
         dateProvider: {
             let formatter = DateFormatter()
@@ -566,6 +567,7 @@ class VariableHandlerV2Test: TestCase {
             variableCompatibilityMap: Self.variableMapping,
             functionCompatibilityMap: Self.functionMapping,
             discountRelativeToMostExpensivePerMonth: 0.3,
+            absoluteDiscountPerMonth: nil,
             showZeroDecimalPlacePrices: false
         )
 
@@ -576,6 +578,64 @@ class VariableHandlerV2Test: TestCase {
             localizations: localizations["en_US"]!
         )
         expect(result).to(equal("30%"))
+    }
+
+    func testProductAbsoluteDiscount() {
+        // Most expensive per month is $1.00 (monthly); yearly is $2.00/year => $0.17/month; diff = $0.83
+        let handler = VariableHandlerV2(
+            variableCompatibilityMap: Self.variableMapping,
+            functionCompatibilityMap: Self.functionMapping,
+            discountRelativeToMostExpensivePerMonth: nil,
+            absoluteDiscountPerMonth: NSDecimalNumber(string: "0.83"),
+            showZeroDecimalPlacePrices: false
+        )
+
+        let result = handler.processVariables(
+            in: "{{ product.absolute_discount }}",
+            with: TestData.annualPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+
+        expect(result).to(equal("$0.83"))
+    }
+
+    func testProductAbsoluteDiscountEmptyWhenNil() {
+        let handler = VariableHandlerV2(
+            variableCompatibilityMap: Self.variableMapping,
+            functionCompatibilityMap: Self.functionMapping,
+            discountRelativeToMostExpensivePerMonth: nil,
+            absoluteDiscountPerMonth: nil,
+            showZeroDecimalPlacePrices: false
+        )
+
+        let result = handler.processVariables(
+            in: "{{ product.absolute_discount }}",
+            with: TestData.lifetimePackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+
+        expect(result).to(equal(""))
+    }
+
+    func testProductAbsoluteDiscountZeroDecimalTruncation() {
+        let handler = VariableHandlerV2(
+            variableCompatibilityMap: Self.variableMapping,
+            functionCompatibilityMap: Self.functionMapping,
+            discountRelativeToMostExpensivePerMonth: nil,
+            absoluteDiscountPerMonth: NSDecimalNumber(string: "1.00"),
+            showZeroDecimalPlacePrices: true
+        )
+
+        let result = handler.processVariables(
+            in: "{{ product.absolute_discount }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!
+        )
+
+        expect(result).to(equal("$1"))
     }
 
     func testFunctionUppercase() {
@@ -615,6 +675,7 @@ class VariableHandlerV2Test: TestCase {
             ],
             functionCompatibilityMap: [:],
             discountRelativeToMostExpensivePerMonth: 0.3,
+            absoluteDiscountPerMonth: nil,
             showZeroDecimalPlacePrices: false
         )
 
@@ -632,6 +693,7 @@ class VariableHandlerV2Test: TestCase {
             variableCompatibilityMap: [:],
             functionCompatibilityMap: [:],
             discountRelativeToMostExpensivePerMonth: 0.3,
+            absoluteDiscountPerMonth: nil,
             showZeroDecimalPlacePrices: false
         )
 
@@ -651,6 +713,7 @@ class VariableHandlerV2Test: TestCase {
                 "loud": "uppercase"
             ],
             discountRelativeToMostExpensivePerMonth: 0.3,
+            absoluteDiscountPerMonth: nil,
             showZeroDecimalPlacePrices: false
         )
 
@@ -668,6 +731,7 @@ class VariableHandlerV2Test: TestCase {
             variableCompatibilityMap: [:],
             functionCompatibilityMap: [:],
             discountRelativeToMostExpensivePerMonth: 0.3,
+            absoluteDiscountPerMonth: nil,
             showZeroDecimalPlacePrices: false
         )
 
