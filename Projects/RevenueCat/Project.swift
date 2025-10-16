@@ -3,8 +3,6 @@ import ProjectDescriptionHelpers
 
 // MARK: - Shared Constants
 
-// swiftlint:disable file_length
-
 func allDestinations(macWithiPadDesign: Bool) -> Destinations {
     let destinations: [Destination?] = [
         .iPhone,
@@ -235,13 +233,7 @@ let project = Project(
                 "../../Tests/BackendIntegrationTests/BaseStoreKitIntegrationTests.swift",
                 "../../Tests/BackendIntegrationTests/MainThreadMonitor.swift",
                 "../../Tests/BackendIntegrationTests/Constants.swift",
-                .glob(
-                    "../../Tests/BackendIntegrationTests/Helpers/**/*.swift",
-                    excluding: [
-                        "../../Tests/BackendIntegrationTests/Helpers/ExternalPurchasesManager.swift",
-                        "../../Tests/BackendIntegrationTests/Helpers/ObserverModeManager.swift"
-                    ]
-                ),
+                "../../Tests/BackendIntegrationTests/Helpers/**/*.swift",
                 "../../Tests/UnitTests/Misc/**/TestCase.swift",
                 "../../Tests/UnitTests/Mocks/MockSandboxEnvironmentDetector.swift",
                 "../../Tests/UnitTests/TestHelpers/**/TestLogHandler.swift",
@@ -252,14 +244,8 @@ let project = Project(
                 "../../Tests/StoreKitUnitTests/TestHelpers/StoreKitTestHelpers.swift",
                 "../../Tests/StoreKitUnitTests/TestHelpers/AvailabilityChecks.swift"
             ],
-            resources: [
-                "../../Tests/BackendIntegrationTests/RevenueCat_IntegrationPurchaseTesterConfiguration.storekit"
-            ],
             dependencies: [
-                .project(
-                    target: "RevenueCat_CustomEntitlementComputation",
-                    path: .relativeToRoot("Projects/RevenueCat")
-                ),
+                .target(name: "RevenueCat_CustomEntitlementComputation"),
                 .target(name: "BackendIntegrationTestsHostApp"),
                 .nimble,
                 .snapshotTesting,
@@ -302,7 +288,7 @@ let project = Project(
                 "../../Tests/BackendIntegrationTests/RevenueCat_IntegrationPurchaseTesterConfiguration.storekit"
             ],
             dependencies: [
-                .revenueCat,
+                .target(name: "RevenueCat"),
                 .target(name: "BackendIntegrationTestsHostApp"),
                 .nimble,
                 .ohHTTPStubsSwift,
@@ -336,54 +322,7 @@ let project = Project(
             shared: true,
             buildAction: .buildAction(targets: ["BackendIntegrationTests"]),
             testAction: .testPlans([
-                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-Offline.xctestplan"),
-                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-Other.xctestplan"),
-                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-SK1.xctestplan"),
-                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-SK2.xctestplan"),
-                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-Shedder.xctestplan")
-                ]
-            ),
-            runAction: .runAction(
-                executable: "BackendIntegrationTestsHostApp",
-                options: .options(
-                    storeKitConfigurationPath: .relativeToRoot(
-                        "Tests/BackendIntegrationTests/RevenueCat_IntegrationPurchaseTesterConfiguration.storekit"
-                    )
-                )
-            ),
-            archiveAction: .archiveAction(configuration: "Release"),
-            profileAction: .profileAction(configuration: "Release"),
-            analyzeAction: .analyzeAction(configuration: "Debug")
-        ),
-
-        .scheme(
-            name: "BackendIntegrationTests-All",
-            shared: true,
-            buildAction: .buildAction(targets: []),
-            testAction: .testPlans([
-                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-All-CI.xctestplan"),
-                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-All.xctestplan")
-                ]
-            ),
-            runAction: .runAction(
-                executable: "BackendIntegrationTestsHostApp",
-                options: .options(
-                    storeKitConfigurationPath: .relativeToRoot(
-                        "Tests/BackendIntegrationTests/RevenueCat_IntegrationPurchaseTesterConfiguration.storekit"
-                    )
-                )
-            ),
-            archiveAction: .archiveAction(configuration: "Release"),
-            profileAction: .profileAction(configuration: "Release"),
-            analyzeAction: .analyzeAction(configuration: "Debug")
-        ),
-
-        .scheme(
-            name: "BackendCustomEntitlementsIntegrationTests",
-            shared: true,
-            buildAction: .buildAction(targets: ["BackendCustomEntitlementsIntegrationTests"]),
-            testAction: .testPlans([
-                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-CustomEntitlements.xctestplan")
+                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-All-CI.xctestplan")
                 ]
             ),
             runAction: .runAction(
