@@ -1,7 +1,6 @@
 {
   "headers" : {
     "Authorization" : "Bearer asharedsecret",
-    "content-type" : "application/json",
     "X-Client-Build-Version" : "12345",
     "X-Client-Bundle-ID" : "com.apple.dt.xctest.tool",
     "X-Client-Version" : "17.0.0",
@@ -18,10 +17,11 @@
     "X-Post-Params-Hash" : "app_user_id,new_app_user_id:sha256:ce001f7b6730af645a00622c062081d2105742d40101bb415176b88a18cfee97",
     "X-Preferred-Locales" : "en_EN",
     "X-Retry-Count" : "0",
-    "X-Storefront" : "USA",
     "X-StoreKit-Version" : "2",
     "X-StoreKit2-Enabled" : "true",
-    "X-Version" : "4.0.0"
+    "X-Storefront" : "USA",
+    "X-Version" : "4.0.0",
+    "content-type" : "application/json"
   },
   "request" : {
     "body" : {
