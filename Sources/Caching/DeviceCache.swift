@@ -42,10 +42,10 @@ class DeviceCache {
         self.offeringsCachedObject = offeringsCachedObject
         self.systemInfo = systemInfo
         self.userDefaults = .init(userDefaults: userDefaults)
-        self.fileManager = fileManager
         self._cachedAppUserID = .init(userDefaults.string(forKey: CacheKeys.appUserDefaults))
         self._cachedLegacyAppUserID = .init(userDefaults.string(forKey: CacheKeys.legacyGeneratedAppUserDefaults))
         self.cacheURL = fileManager.createCacheDirectoryIfNeeded(basePath: Self.defaultBasePath)
+        self.largeItemCache = .init(cache: fileManager, basePath: "RevenueCat")
 
         Logger.verbose(Strings.purchase.device_cache_init(self))
     }

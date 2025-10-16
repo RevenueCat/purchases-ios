@@ -21,6 +21,11 @@ class MockSimpleCache: LargeItemCacheType, @unchecked Sendable {
     var saveDataInvocations: [SaveData] = []
     var saveDataResponses: [Result<SaveData, Error>] = []
 
+    var loadFileInvocations = [URL]()
+    var loadFileResponses = [Result<Data, Error>]()
+
+    var removeInvocations = [URL]()
+
     var cachedContentExistsInvocations: [URL] = []
     var cachedContentExistsResponses: [Bool] = []
 
@@ -62,8 +67,25 @@ class MockSimpleCache: LargeItemCacheType, @unchecked Sendable {
     }
 
     func loadFile(at url: URL) throws -> Data {
-        assert(false, "to do: implement later when used")
-        return Data()
+        try lock.withLock {
+            loadFileInvocations.append(url)
+            switch loadFileResponses[loadFileInvocations.count - 1] {
+            case .success(let data):
+                return data
+            case .failure(let error):
+                throw error
+            }
+        }
+    }
+
+    func stubLoadFile(at index: Int = 0, with result: Result<Data, Error>) {
+        lock.withLock {
+            loadFileResponses.insert(result, at: index)
+        }
+    }
+
+    func remove(_ url: URL) throws {
+        removeInvocations.append(url)
     }
 
     func createCacheDirectoryIfNeeded(basePath: String) -> URL? {

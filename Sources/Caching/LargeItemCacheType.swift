@@ -25,6 +25,9 @@ protocol LargeItemCacheType {
     /// Load data from url
     func loadFile(at url: URL) throws -> Data
 
+    /// delete data at url
+    func remove(_ url: URL) throws
+
     /// Creates a directory in the cache from a base path
     func createCacheDirectoryIfNeeded(basePath: String) -> URL?
 }
@@ -69,5 +72,9 @@ extension FileManager: LargeItemCacheType {
     /// Load data from url
     func loadFile(at url: URL) throws -> Data {
         return try Data(contentsOf: url)
+    }
+
+    func remove(_ url: URL) throws {
+        try self.removeItem(at: url)
     }
 }

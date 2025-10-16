@@ -91,7 +91,7 @@ internal final class SynchronizedLargeItemCache {
         let fileURL = cacheURL.appendingPathComponent(key.rawValue)
 
         self.write { _, _ in
-            try? FileManager.default.removeItem(at: fileURL)
+            try? self.cache.remove(fileURL)
         }
     }
 
