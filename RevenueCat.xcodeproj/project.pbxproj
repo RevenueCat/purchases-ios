@@ -1121,6 +1121,7 @@
 		88B1BB132C81479F001B7EE5 /* PaywallComponentTypeTransformers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B1BAE72C813A3C001B7EE5 /* PaywallComponentTypeTransformers.swift */; };
 		88DE93E12C211CBC0086B6D8 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DC5621624EC63420031F69B /* RevenueCat.framework */; };
 		88E679472C7503C1007E69D5 /* PaywallStackComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88E679462C7503C1007E69D5 /* PaywallStackComponent.swift */; };
+		901DE80E2EA0E097007EAA86 /* AdTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 901DE80D2EA0E096007EAA86 /* AdTracker.swift */; };
 		9094B41B2E96A9A70094AD5F /* PostAdEventsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9094B4132E96A9A70094AD5F /* PostAdEventsOperation.swift */; };
 		9094B41C2E96A9A70094AD5F /* AdEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9094B4152E96A9A70094AD5F /* AdEvent.swift */; };
 		9094B41E2E96A9A70094AD5F /* EventsRequest+Ad.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9094B4122E96A9A70094AD5F /* EventsRequest+Ad.swift */; };
@@ -2629,6 +2630,7 @@
 		88B1BAE82C813A3C001B7EE5 /* StackComponentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StackComponentView.swift; sourceTree = "<group>"; };
 		88B1BAE92C813A3C001B7EE5 /* StackComponentViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StackComponentViewModel.swift; sourceTree = "<group>"; };
 		88E679462C7503C1007E69D5 /* PaywallStackComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallStackComponent.swift; sourceTree = "<group>"; };
+		901DE80D2EA0E096007EAA86 /* AdTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdTracker.swift; sourceTree = "<group>"; };
 		9094B4112E96A9A70094AD5F /* AdHTTPRequestPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdHTTPRequestPath.swift; sourceTree = "<group>"; };
 		9094B4122E96A9A70094AD5F /* EventsRequest+Ad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EventsRequest+Ad.swift"; sourceTree = "<group>"; };
 		9094B4132E96A9A70094AD5F /* PostAdEventsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostAdEventsOperation.swift; sourceTree = "<group>"; };
@@ -5679,6 +5681,7 @@
 		9094B4192E96A9A70094AD5F /* Ads */ = {
 			isa = PBXGroup;
 			children = (
+				901DE80D2EA0E096007EAA86 /* AdTracker.swift */,
 				9094B4182E96A9A70094AD5F /* Events */,
 			);
 			path = Ads;
@@ -7138,6 +7141,7 @@
 				FDA6F96F2E035544008BF232 /* VirtualCurrencyStrings.swift in Sources */,
 				53AAD34F2E09857300605F51 /* PaymentAuthorizationProvider.swift in Sources */,
 				53A8DCC12E0EA49400FEABEA /* HealthReportAvailabilityOperation.swift in Sources */,
+				901DE80E2EA0E097007EAA86 /* AdTracker.swift in Sources */,
 				75BB98FB2E336C070001DD1A /* ProductsManagerType.swift in Sources */,
 				5766C622282DAA700067D886 /* GetIntroEligibilityResponse.swift in Sources */,
 				35E840CC270FB70D00899AE2 /* ManageSubscriptionsHelper.swift in Sources */,

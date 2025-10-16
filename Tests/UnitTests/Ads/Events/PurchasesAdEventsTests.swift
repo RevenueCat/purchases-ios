@@ -31,7 +31,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
     }
 
     func testTrackAdEventStoresEvent() async throws {
-        await self.purchases.trackAdDisplayed(.init(
+        await self.purchases.adTracker.trackAdDisplayed(.init(
             networkName: "AdMob",
             mediatorName: .appLovin,
             placement: "home_screen",
@@ -55,14 +55,14 @@ class PurchasesAdEventsTests: BasePurchasesTests {
     }
 
     func testTrackMultipleAdEvents() async throws {
-        await self.purchases.trackAdDisplayed(.init(
+        await self.purchases.adTracker.trackAdDisplayed(.init(
             networkName: "AdMob",
             mediatorName: .appLovin,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             adInstanceId: "instance-123"
         ))
-        await self.purchases.trackAdOpened(.init(
+        await self.purchases.adTracker.trackAdOpened(.init(
             networkName: "AdMob",
             mediatorName: .appLovin,
             placement: "home_screen",
@@ -85,7 +85,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
     }
 
     func testTrackRevenueEvent() async throws {
-        await self.purchases.trackAdRevenue(.init(
+        await self.purchases.adTracker.trackAdRevenue(.init(
             networkName: "AdMob",
             mediatorName: .appLovin,
             placement: "home_screen",
