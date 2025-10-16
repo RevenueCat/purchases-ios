@@ -443,19 +443,26 @@ commands:
     parameters:
       test_plan:
         type: string
+      scheme:
+        type: string
+        default: "BackendIntegrationTests"
+      bundle_name:
+        type: string
+        default: "BackendIntegrationTests"
     steps:
       - checkout
       - install-dependencies
+      - tuist-generate-workspace
       - update-spm-installation-commit
       - run:
-          name: Run backend_integration Tests
-          command: bundle exec fastlane backend_integration_tests test_plan:"<< parameters.test_plan >>"
+          name: Run backend_integration Tests with Tuist
+          command: bundle exec fastlane backend_integration_tests test_plan:"<< parameters.test_plan >>" scheme:"<< parameters.scheme >>"
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 16 (18.0.0)
+            SCAN_DEVICE: iPhone 16 (18.5)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
-          bundle_name: BackendIntegrationTests
+          bundle_name: << parameters.bundle_name >>
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -1111,6 +1118,7 @@ jobs:
   backend-integration-tests-SK1:
     executor:
       name: macos-executor
+      xcode_version: "16.4"
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-SK1"
@@ -1119,6 +1127,7 @@ jobs:
   backend-integration-tests-SK2:
     executor:
       name: macos-executor
+      xcode_version: "16.4"
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-SK2"
@@ -1127,6 +1136,7 @@ jobs:
   backend-integration-tests-other:
     executor:
       name: macos-executor
+      xcode_version: "16.4"
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-Other"
@@ -1135,6 +1145,7 @@ jobs:
   backend-integration-tests-offline:
     executor:
       name: macos-executor
+      xcode_version: "16.4"
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-Offline"
@@ -1143,9 +1154,12 @@ jobs:
   backend-integration-tests-custom-entitlements:
     executor:
       name: macos-executor
+      xcode_version: "16.4"
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-CustomEntitlements"
+          scheme: "BackendCustomEntitlementsIntegrationTests"
+          bundle_name: "BackendCustomEntitlementsIntegrationTests"
       - slack-notify-on-fail
 
   release-checks:

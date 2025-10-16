@@ -11,7 +11,11 @@
 //
 //  Created by Nacho Soto on 7/27/23.
 
+#if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+import RevenueCat_CustomEntitlementComputation
+#else
 import RevenueCat
+#endif
 import StoreKit
 
 /// Simplified version of the fetcher in RevenueCat.
