@@ -12,11 +12,7 @@
 //  Created by Nacho Soto on 5/1/23.
 
 import Foundation
-#if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-@testable import RevenueCat_CustomEntitlementComputation
-#else
 @testable import RevenueCat
-#endif
 import XCTest
 
 final class MainThreadMonitor {

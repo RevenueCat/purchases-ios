@@ -66,25 +66,6 @@ TUIST_RC_LOCAL=false tuist generate
   tuist generate
   ```
 
-## Running Backend Integration Tests
-
-These tests talk to the live RevenueCat backend, so they need valid API keys and a generated workspace.
-
-1. Generate the project with Tuist (only needs to be done once per clean checkout):  
-   `tuist generate`  
-   For a lighter workspace you can scope it to the test target:  
-   `tuist generate BackendIntegrationTests --no-open`
-2. Export the required secrets in your shell session (values are in 1Password):  
-   `export REVENUECAT_API_KEY=...`  
-   `export REVENUECAT_LOAD_SHEDDER_API_KEY=...`  
-   `export REVENUECAT_CUSTOM_ENTITLEMENT_COMPUTATION_API_KEY=...`  
-   `export REVENUECAT_PROXY_URL=...` *(optional; leave empty to hit production)*
-3. Run the tests through Fastlane so the credentials get injected:  
-   `bundle exec fastlane ios backend_integration_tests`
-
-Pass a different test plan if you only need a subset, e.g.  
-`bundle exec fastlane ios backend_integration_tests test_plan:BackendIntegrationTests-Offline`
-
 ## Known Gaps
 
 The following Tuist projects or test plans are not yet represented:
