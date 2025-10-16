@@ -47,7 +47,7 @@ executors:
     parameters:
       xcode_version:
         type: string
-        default: "16.0"
+        default: "16.4"
     macos:
       # circleci-lint: disable=unknown-xcode-version
       xcode: << parameters.xcode_version >>
@@ -61,7 +61,7 @@ executors:
     parameters:
       xcode_version:
         type: string
-        default: "16.0"
+        default: "16.4"
     macos:
       # circleci-lint: disable=unknown-xcode-version
       xcode: << parameters.xcode_version >>
@@ -75,7 +75,7 @@ executors:
     parameters:
       xcode_version:
         type: string
-        default: "16.0"
+        default: "16.4"
     macos:
       # circleci-lint: disable=unknown-xcode-version
       xcode: << parameters.xcode_version >>
@@ -513,7 +513,7 @@ jobs:
   spm-release-build-xcode-16:
     executor:
       name: macos-executor
-      xcode_version: "16.0.0"
+      xcode_version: "16.4"
 
     steps:
       - checkout
@@ -702,7 +702,7 @@ jobs:
   run-revenuecat-ui-ios-18:
     executor:
       name: macos-executor
-      xcode_version: "16.0"
+      xcode_version: "16.4"
 
     steps:
       - checkout
@@ -844,7 +844,7 @@ jobs:
   run-test-ios-18:
     executor:
       name: macos-executor
-      xcode_version: "16.0"
+      xcode_version: "16.4"
 
     steps:
       - checkout
@@ -1505,7 +1505,7 @@ jobs:
     description: "Record new paywall template screenshots with Paparazzi and push them to the paywall-rendering-validation repository"
     executor:
       name: macos-executor
-      xcode_version: "16.0"
+      xcode_version: "16.4"
 
     steps:
       - checkout
