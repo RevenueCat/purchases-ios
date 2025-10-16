@@ -1093,18 +1093,26 @@ platform :ios do
   desc "Run BackendIntegrationTests"
   lane :backend_integration_tests do |options|
     fail_build = options[:fail_build]
+    test_plan = options[:test_plan]
+    scheme = options[:scheme] || "BackendIntegrationTests"
+
+    workspace_path = 'RevenueCat-Tuist.xcworkspace'
+    unless File.directory?(workspace_path)
+      UI.important("#{workspace_path} not found. Run `tuist generate --no-open` before invoking this lane.")
+    end
 
     fetch_snapshots
     replace_api_key_integration_tests
 
     scan_with_flaky_test_retries(
-      scheme: "BackendIntegrationTests",
+      workspace: workspace_path,
+      scheme: scheme,
       ensure_devices_found: true,
       derived_data_path: "scan_derived_data",
       output_types: 'junit',
       output_style: 'raw',
       result_bundle: true,
-      testplan: options[:test_plan],
+      testplan: test_plan,
       configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/ios",
 
