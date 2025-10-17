@@ -1,7 +1,7 @@
 ## RevenueCat SDK
 ### 🐞 Bugfixes
 * Fix for paywall image sometimes not showing (in carousel) (#5679) via Josh Holtz (@joshdholtz)
-* HOTFIX Media not loading (#5678) via Jacob Rakidzich (@JZDesign)
+* Fix media not loading (#5678) via Jacob Rakidzich (@JZDesign)
 
 ### 🔄 Other Changes
 * Bump fastlane-plugin-revenuecat_internal from `25c7fb8` to `525d48c` (#5680) via Antonio Pallares (@ajpallares)
