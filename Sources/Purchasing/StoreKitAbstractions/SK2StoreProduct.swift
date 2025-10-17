@@ -62,7 +62,6 @@ internal struct SK2StoreProduct: StoreProductType {
         
         return self.priceFormatterProvider.priceFormatterForSK2(
             withCurrencyCode: currencyCode,
-            storefrontCountryCode: Purchases.shared.storeFrontCountryCode, // todo rick: not ideal to call Purchases.shared here
             locale: locale ?? .autoupdatingCurrent
         )
     }

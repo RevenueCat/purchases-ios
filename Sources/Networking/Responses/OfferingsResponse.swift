@@ -59,26 +59,29 @@ struct OfferingsResponse {
     public struct Config {
         
         // todo rick: handle decoding issues?
-        let priceFormattingRuleSet: PriceFormattingRuleSet
+        let priceFormattingRuleSets: [
+            // storefront country code -> ruleset
+            String: PriceFormattingRuleSet
+        ]
         
     }
 }
 
 public struct PriceFormattingRuleSet: Sendable {
     
-    var currencySymbolOverrides: [
-        // storefront country code
-        String: [
-            // currency code
-            String: CurrencySymbolOverride
-        ]
+    private var currencySymbolOverrides: [
+        // currency code
+        String: CurrencySymbolOverride
     ]
     
+    public init(currencySymbolOverrides: [String : CurrencySymbolOverride]) {
+        self.currencySymbolOverrides = currencySymbolOverrides
+    }
+    
     public func currencySymbolOverride(
-        for storefrontCountryCode: String,
         currencyCode: String
     ) -> CurrencySymbolOverride? {
-        return self.currencySymbolOverrides[storefrontCountryCode]?[currencyCode]
+        return self.currencySymbolOverrides[currencyCode]
     }
     
     public struct CurrencySymbolOverride: Sendable {

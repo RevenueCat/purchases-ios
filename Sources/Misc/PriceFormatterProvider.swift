@@ -49,7 +49,6 @@ public final class PriceFormatterProvider: Sendable {
 
     func priceFormatterForSK2(
         withCurrencyCode currencyCode: String,
-        storefrontCountryCode: String?,
         locale: Locale = .autoupdatingCurrent
     ) -> NumberFormatter {
         func makePriceFormatterForSK2(
@@ -71,12 +70,9 @@ public final class PriceFormatterProvider: Sendable {
         }
 
         return self.cachedPriceFormatterForSK2.modify { formatter in
-            let currencySymbolOverride = storefrontCountryCode.flatMap { storefrontCountryCode in
-                priceFormattingRuleSet?.currencySymbolOverride(
-                   for: storefrontCountryCode,
-                   currencyCode: currencyCode
-               )
-            }
+            let currencySymbolOverride = priceFormattingRuleSet?.currencySymbolOverride(
+                currencyCode: currencyCode
+            )
             
             if let formatter = formatter as? CurrencySymbolOverridingPriceFormatter, formatter.currencyCode == currencyCode, formatter.locale == locale, formatter.currencySymbolOverride == currencySymbolOverride {
                 return formatter
@@ -151,9 +147,12 @@ class CurrencySymbolOverridingPriceFormatter: NumberFormatter, @unchecked Sendab
 
         // Guard weird numerics
         if n.isNaN || n.isInfinite { return .other }
-
+        
+        guard let intValue = Int64(exactly: n) else {
+            return .other
+        }
+        
         // Check if value has any fractional part
-        let intValue = Int64(n)
         let isInteger = n == Double(intValue)
 
         // Per CLDR/ICU, decimals are "other" unless a locale defines explicit fraction rules.

@@ -19,7 +19,7 @@ actor ProductsFetcherSK2 {
     
     private let priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider
     
-    init(priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider = .init(priceFormattingRuleSet: { nil })) {
+    init(priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider = .empty) {
         self.priceFormattingRuleSetProvider = priceFormattingRuleSetProvider
     }
 
