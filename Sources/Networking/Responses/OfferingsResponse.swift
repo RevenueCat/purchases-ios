@@ -58,8 +58,8 @@ struct OfferingsResponse {
 
     public struct Config {
         
-        // todo rick: handle decoding issues?
-        let priceFormattingRuleSets: [
+        @DefaultDecodable.EmptyDictionary
+        var priceFormattingRuleSets: [
             // storefront country code -> ruleset
             String: PriceFormattingRuleSet
         ]
@@ -67,12 +67,14 @@ struct OfferingsResponse {
     }
 }
 
-public struct PriceFormattingRuleSet: Sendable {
+/*
+ Contains a set of rules that will be used when formatting a price
+ Currrently only supports overriding the currencySymbol per currency
+ */
+struct PriceFormattingRuleSet: Sendable {
     
-    private var currencySymbolOverrides: [
-        // currency code
-        String: CurrencySymbolOverride
-    ]
+    // currencyCode: CurrencySymbolOverride
+    private var currencySymbolOverrides: [String: CurrencySymbolOverride]
     
     public init(currencySymbolOverrides: [String : CurrencySymbolOverride]) {
         self.currencySymbolOverrides = currencySymbolOverrides
@@ -84,6 +86,9 @@ public struct PriceFormattingRuleSet: Sendable {
         return self.currencySymbolOverrides[currencyCode]
     }
     
+    /*
+     Contains a set of currencySymbol overrides for different pluralization rules
+     */
     public struct CurrencySymbolOverride: Sendable {
         let zero: String
         let one: String
