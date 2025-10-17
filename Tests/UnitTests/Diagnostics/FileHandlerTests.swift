@@ -34,7 +34,7 @@ class BaseFileHandlerTests: TestCase {
 
 }
 
-@available(macOS 10.15.4, iOS 13.4, watchOS 6.2, tvOS 13.4, *)
+@available(iOS 13.4, tvOS 13.4, watchOS 6.2, macOS 10.15.4, *)
 class FileHandlerTests: BaseFileHandlerTests {
 
     // MARK: - readFile

@@ -21,7 +21,7 @@ protocol FileHandlerType: Sendable {
     func readLines() async throws -> AsyncLineSequence<FileHandle.AsyncBytes>
 
     /// Adds a line at the end of the file
-    @available(macOS 10.15.4, iOS 13.4, watchOS 6.2, tvOS 13.4, *)
+    @available(iOS 13.4, tvOS 13.4, watchOS 6.2, macOS 10.15.4, *)
     func append(line: String) async throws
 
     /// Removes the contents of the file
@@ -75,7 +75,7 @@ actor FileHandler: FileHandlerType {
     }
 
     /// Adds a line at the end of the file
-    @available(macOS 10.15.4, iOS 13.4, watchOS 6.2, tvOS 13.4, *)
+    @available(iOS 13.4, tvOS 13.4, watchOS 6.2, macOS 10.15.4, *)
     func append(line: String) throws {
         RCTestAssertNotMainThread()
 
