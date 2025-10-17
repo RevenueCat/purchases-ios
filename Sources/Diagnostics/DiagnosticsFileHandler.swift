@@ -68,7 +68,11 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
             return
         }
 
-        await self.fileHandler.append(line: jsonString)
+        do {
+            try await self.fileHandler.append(line: jsonString)
+        } catch {
+            Logger.error(Strings.diagnostics.failed_to_store_diagnostics_event(error: error))
+        }
 
         if await self.isDiagnosticsFileBigEnoughToSync() {
             await self.delegate?.onFileSizeIncreasedBeyondAutomaticSyncLimit()
