@@ -26,33 +26,8 @@ public final class PriceFormatterProvider: Sendable {
     private let cachedPriceFormatterForSK1: Atomic<NumberFormatter?> = nil
 
     func priceFormatterForSK1(with locale: Locale) -> NumberFormatter {
-        func makePriceFormatterForSK1(with locale: Locale) -> NumberFormatter {
-            let formatter = NumberFormatter()
-            formatter.numberStyle = .currency
-            formatter.locale = locale
-            return formatter
-        }
-
-        return self.cachedPriceFormatterForSK1.modify { formatter in
-            guard let formatter = formatter, formatter.locale == locale else {
-                let newFormatter =  makePriceFormatterForSK1(with: locale)
-                formatter = newFormatter
-
-                return newFormatter
-            }
-
-            return formatter
-        }
-    }
-
-    private let cachedPriceFormatterForSK2: Atomic<NumberFormatter?> = nil
-
-    func priceFormatterForSK2(
-        withCurrencyCode currencyCode: String,
-        locale: Locale = .autoupdatingCurrent
-    ) -> NumberFormatter {
-        func makePriceFormatterForSK2(
-            with currencyCode: String,
+        func makePriceFormatterForSK1(
+            with locale: Locale,
             currencySymbolOverride: PriceFormattingRuleSet.CurrencySymbolOverride?
         ) -> NumberFormatter {
             let formatter: NumberFormatter
@@ -65,30 +40,54 @@ public final class PriceFormatterProvider: Sendable {
             }
             formatter.numberStyle = .currency
             formatter.locale = locale
-            formatter.currencyCode = currencyCode
             return formatter
         }
 
-        return self.cachedPriceFormatterForSK2.modify { formatter in
-            let currencySymbolOverride = priceFormattingRuleSet?.currencySymbolOverride(
-                currencyCode: currencyCode
-            )
-            
+        return self.cachedPriceFormatterForSK1.modify { formatter in
             if let formatter = formatter as? CurrencySymbolOverridingPriceFormatter {
-                if formatter.currencyCode == currencyCode, formatter.locale == locale, formatter.currencySymbolOverride == currencySymbolOverride {
+                if formatter.locale == locale,
+                    formatter.currencySymbolOverride == priceFormattingRuleSet?.currencySymbolOverride(currencyCode: formatter.currencyCode) {
                     return formatter
                 }
             }
-            else if let formatter = formatter, formatter.currencyCode == currencyCode, formatter.locale == locale {
+            else if let formatter = formatter, formatter.locale == locale {
                 return formatter
             }
             
-            let newFormatter = makePriceFormatterForSK2(
-                with: currencyCode,
-                currencySymbolOverride: currencySymbolOverride
+            var newFormatter =  makePriceFormatterForSK1(
+                with: locale,
+                currencySymbolOverride: nil
             )
+            
+            // If there is a currency symbol override for the currencyCode of the new formatter, use that
+            if let currencySymbolOverride = priceFormattingRuleSet?.currencySymbolOverride(currencyCode: newFormatter.currencyCode) {
+                newFormatter =  makePriceFormatterForSK1(
+                    with: locale,
+                    currencySymbolOverride: currencySymbolOverride
+                )
+            }
+            
             formatter = newFormatter
 
+            return newFormatter
+        }
+    }
+
+    private let cachedPriceFormatterForSK2: Atomic<NumberFormatter?> = nil
+
+    func priceFormatterForSK2(
+        withCurrencyCode currencyCode: String,
+        locale: Locale = .autoupdatingCurrent
+    ) -> NumberFormatter {
+        return self.cachedPriceFormatterForSK2.modify { formatter in
+            let newFormatter = createPriceFormatterIfNeeded(
+                cachedPriceFormatter: formatter,
+                currencyCode: currencyCode,
+                locale: locale
+            )
+            if newFormatter != formatter {
+                formatter = newFormatter
+            }
             return newFormatter
         }
     }
@@ -99,24 +98,61 @@ public final class PriceFormatterProvider: Sendable {
         withCurrencyCode currencyCode: String,
         locale: Locale = .autoupdatingCurrent
     ) -> NumberFormatter {
-        func makePriceFormatterForWebProducts(with currencyCode: String) -> NumberFormatter {
-            let formatter = NumberFormatter()
-            formatter.numberStyle = .currency
-            formatter.locale = locale
-            formatter.currencyCode = currencyCode
-            return formatter
-        }
-
         return self.cachedPriceFormatterForWebProducts.modify { formatter in
-            guard let formatter = formatter, formatter.currencyCode == currencyCode, formatter.locale == locale else {
-                let newFormatter = makePriceFormatterForWebProducts(with: currencyCode)
+            let newFormatter = createPriceFormatterIfNeeded(
+                cachedPriceFormatter: formatter,
+                currencyCode: currencyCode,
+                locale: locale
+            )
+            if newFormatter != formatter {
                 formatter = newFormatter
-
-                return newFormatter
             }
-
+            return newFormatter
+        }
+    }
+    
+    private func createPriceFormatterIfNeeded(
+        cachedPriceFormatter: NumberFormatter?,
+        currencyCode: String,
+        locale: Locale
+    ) -> NumberFormatter {
+        let currencySymbolOverride = priceFormattingRuleSet?.currencySymbolOverride(
+            currencyCode: currencyCode
+        )
+        
+        if let formatter = cachedPriceFormatter as? CurrencySymbolOverridingPriceFormatter {
+            if formatter.currencyCode == currencyCode, formatter.locale == locale, formatter.currencySymbolOverride == currencySymbolOverride {
+                return formatter
+            }
+        }
+        else if let formatter = cachedPriceFormatter, formatter.currencyCode == currencyCode, formatter.locale == locale {
             return formatter
         }
+        
+        return makePriceFormatter(
+            with: currencyCode,
+            locale: locale,
+            currencySymbolOverride: currencySymbolOverride
+        )
+    }
+    
+    private func makePriceFormatter(
+        with currencyCode: String,
+        locale: Locale,
+        currencySymbolOverride: PriceFormattingRuleSet.CurrencySymbolOverride?
+    ) -> NumberFormatter {
+        let formatter: NumberFormatter
+        if let currencySymbolOverride {
+            formatter = CurrencySymbolOverridingPriceFormatter(
+                currencySymbolOverride: currencySymbolOverride
+            )
+        } else {
+            formatter = NumberFormatter()
+        }
+        formatter.numberStyle = .currency
+        formatter.locale = locale
+        formatter.currencyCode = currencyCode
+        return formatter
     }
 }
 
