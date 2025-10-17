@@ -60,19 +60,14 @@ struct ImageComponentView: View {
                 )
 
                 ZStack {
-                    // IMPORTANT: Please keep this
+                    // IMPORTANT: Please keep this... needed to force size
                     //
                     // We need the max width of the parent view an image of a fill or
                     // fixed width doesn't push passed the bounds.
                     //
                     // Once we have the width once, we can remove the GeometryReader
                     if self.size == nil {
-                        GeometryReader { proxy in
-                            Color.clear
-                                .onAppear {
-                                    self.size = proxy.size
-                                }
-                        }
+                        Color.clear
                     }
 
                     RemoteImage(
