@@ -14,7 +14,6 @@
 import Foundation
 @testable import RevenueCat
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
 class MockSimpleCache: LargeItemCacheType, @unchecked Sendable {
 
     var cacheDirectory: URL?
@@ -35,6 +34,17 @@ class MockSimpleCache: LargeItemCacheType, @unchecked Sendable {
         self.cacheDirectory = cacheDirectory
     }
 
+    func saveData(_ data: Data, to url: URL) throws {
+        saveDataInvocations.append(.init(data: data, url: url))
+        switch saveDataResponses[saveDataInvocations.count - 1] {
+        case .failure(let error):
+            throw error
+        default:
+            break
+        }
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
     func saveData(
         _ bytes: AsyncThrowingStream<UInt8, any Error>,
         to url: URL,
