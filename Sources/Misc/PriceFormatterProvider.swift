@@ -19,7 +19,7 @@ public final class PriceFormatterProvider: Sendable {
     
     private let priceFormattingRuleSet: PriceFormattingRuleSet?
     
-    init(priceFormattingRuleSet: PriceFormattingRuleSet?) {
+    init(priceFormattingRuleSet: PriceFormattingRuleSet? = nil) {
         self.priceFormattingRuleSet = priceFormattingRuleSet
     }
 
