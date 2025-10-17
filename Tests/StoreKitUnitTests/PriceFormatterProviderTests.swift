@@ -25,7 +25,7 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
     override func setUp() {
         super.setUp()
 
-        self.priceFormatterProvider = PriceFormatterProvider(priceFormattingRuleSet: nil)
+        self.priceFormatterProvider = PriceFormatterProvider()
     }
 
     func testReturnsCachedPriceFormatterForSK1() {
@@ -42,6 +42,15 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
         let firstPriceFormatter = self.priceFormatterProvider.priceFormatterForSK2(withCurrencyCode: currencyCode)
 
         let secondPriceFormatter = self.priceFormatterProvider.priceFormatterForSK2(withCurrencyCode: currencyCode)
+
+        expect(firstPriceFormatter) === secondPriceFormatter
+    }
+    
+    func testReturnsCachedPriceFormatterForWebProducts() throws {
+        let currencyCode = "USD"
+        let firstPriceFormatter = self.priceFormatterProvider.priceFormatterForWebProducts(withCurrencyCode: currencyCode)
+
+        let secondPriceFormatter = self.priceFormatterProvider.priceFormatterForWebProducts(withCurrencyCode: currencyCode)
 
         expect(firstPriceFormatter) === secondPriceFormatter
     }
@@ -71,6 +80,59 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
         priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
         expect(priceFormatter.currencyCode) == "USD"
     }
+    
+    func testSk1PriceFormatterCurrencySymbolOverriding() async throws {
+        priceFormatterProvider = .init(
+            priceFormattingRuleSet: .init(currencySymbolOverrides: [
+                "EUR": .init(
+                    zero: "zero",
+                    one: "one",
+                    two: "two",
+                    few: "few",
+                    many: "many",
+                    other: "other"
+                )
+            ])
+        )
+        
+        let priceFormatter = priceFormatterProvider.priceFormatterForSK1(
+            with: .init(identifier: "nl_NL")
+        )
+        
+        expect(priceFormatter.currencyCode) == "EUR"
+        expect(priceFormatter.currencySymbol) == "€"
+        XCTAssert(type(of: priceFormatter) == CurrencySymbolOverridingPriceFormatter.self)
+        
+        XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 0)), "zero 0,00")
+        XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 1)), "one 1,00")
+        XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 2)), "two 2,00")
+        XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 3)), "other 3,00")
+    }
+    
+    func testSk1PriceFormatterCurrencySymbolOverridingUsesCachedPriceFormatter() async throws {
+        priceFormatterProvider = .init(
+            priceFormattingRuleSet: .init(currencySymbolOverrides: [
+                "EUR": .init(
+                    zero: "zero",
+                    one: "one",
+                    two: "two",
+                    few: "few",
+                    many: "many",
+                    other: "other"
+                )
+            ])
+        )
+        
+        let firstPriceFormatter = priceFormatterProvider.priceFormatterForSK1(
+            with: .init(identifier: "nl_NL")
+        )
+        
+        let secondPriceFormatter = priceFormatterProvider.priceFormatterForSK1(
+            with: .init(identifier: "nl_NL")
+        )
+        
+        expect(firstPriceFormatter) == secondPriceFormatter
+    }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSk2PriceFormatterUsesCurrentStorefront() async throws {
@@ -97,31 +159,24 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
     
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSk2PriceFormatterCurrencySymbolOverriding() async throws {
-        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
-
-        self.testSession.locale = Locale(identifier: "nl_NL")
-        try await self.changeStorefront("NLD")
-
-        let sk2Fetcher = ProductsFetcherSK2(
-            priceFormattingRuleSetProvider: .init(
-                priceFormattingRuleSet: {
-                    .init(currencySymbolOverrides: [
-                        "EUR": .init(
-                            zero: "zero",
-                            one: "one",
-                            two: "two",
-                            few: "few",
-                            many: "many",
-                            other: "other"
-                        )
-                    ])
-                }
-            )
+        priceFormatterProvider = .init(
+            priceFormattingRuleSet: .init(currencySymbolOverrides: [
+                "EUR": .init(
+                    zero: "zero",
+                    one: "one",
+                    two: "two",
+                    few: "few",
+                    many: "many",
+                    other: "other"
+                )
+            ])
         )
-
-        let storeProduct = try await sk2Fetcher.product(withIdentifier: Self.productID)
-
-        let priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
+        
+        let priceFormatter = priceFormatterProvider.priceFormatterForSK2(
+            withCurrencyCode: "EUR",
+            locale: .init(identifier: "nl_NL")
+        )
+        
         expect(priceFormatter.currencyCode) == "EUR"
         expect(priceFormatter.currencySymbol) == "€"
         XCTAssert(type(of: priceFormatter) == CurrencySymbolOverridingPriceFormatter.self)
@@ -134,31 +189,24 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSk2PriceFormatterCurrencySymbolOverridingRomania() async throws {
-        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
-
-        self.testSession.locale = Locale(identifier: "ro_RO")
-        try await self.changeStorefront("ROU")
-        
-        let sk2Fetcher = ProductsFetcherSK2(
-            priceFormattingRuleSetProvider: .init(
-                priceFormattingRuleSet: {
-                    .init(currencySymbolOverrides: [
-                        "RON": .init(
-                            zero: "lei",
-                            one: "leu",
-                            two: "lei",
-                            few: "lei",
-                            many: "lei",
-                            other: "lei"
-                        )
-                    ])
-                }
-            )
+        priceFormatterProvider = .init(
+            priceFormattingRuleSet: .init(currencySymbolOverrides: [
+                "RON": .init(
+                    zero: "lei",
+                    one: "leu",
+                    two: "lei",
+                    few: "lei",
+                    many: "lei",
+                    other: "lei"
+                )
+            ])
         )
-
-        let storeProduct = try await sk2Fetcher.product(withIdentifier: Self.productID)
-
-        let priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
+        
+        let priceFormatter = priceFormatterProvider.priceFormatterForSK2(
+            withCurrencyCode: "RON",
+            locale: .init(identifier: "ro_RO")
+        )
+        
         expect(priceFormatter.currencyCode) == "RON"
         expect(priceFormatter.currencySymbol) == "RON"
         XCTAssert(type(of: priceFormatter) == CurrencySymbolOverridingPriceFormatter.self)
@@ -166,6 +214,90 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
         XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 0)), "0,00 lei")
         XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 1)), "1,00 leu")
         XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 2)), "2,00 lei")
+    }
+    
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testSk2PriceFormatterCurrencySymbolOverridingUsesCachedPriceFormatter() async throws {
+        priceFormatterProvider = .init(
+            priceFormattingRuleSet: .init(currencySymbolOverrides: [
+                "EUR": .init(
+                    zero: "zero",
+                    one: "one",
+                    two: "two",
+                    few: "few",
+                    many: "many",
+                    other: "other"
+                )
+            ])
+        )
+        
+        let firstPriceFormatter = priceFormatterProvider.priceFormatterForSK2(
+            withCurrencyCode: "EUR",
+            locale: .init(identifier: "nl_NL")
+        )
+        
+        let secondPriceFormatter = priceFormatterProvider.priceFormatterForSK2(
+            withCurrencyCode: "EUR",
+            locale: .init(identifier: "nl_NL")
+        )
+        
+        expect(firstPriceFormatter) == secondPriceFormatter
+    }
+    
+    func testWebProductsPriceFormatterCurrencySymbolOverriding() async throws {
+        priceFormatterProvider = .init(
+            priceFormattingRuleSet: .init(currencySymbolOverrides: [
+                "EUR": .init(
+                    zero: "zero",
+                    one: "one",
+                    two: "two",
+                    few: "few",
+                    many: "many",
+                    other: "other"
+                )
+            ])
+        )
+        
+        let priceFormatter = priceFormatterProvider.priceFormatterForWebProducts(
+            withCurrencyCode: "EUR",
+            locale: Locale(identifier: "nl_NL")
+        )
+        
+        expect(priceFormatter.currencyCode) == "EUR"
+        expect(priceFormatter.currencySymbol) == "€"
+        XCTAssert(type(of: priceFormatter) == CurrencySymbolOverridingPriceFormatter.self)
+        
+        XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 0)), "zero 0,00")
+        XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 1)), "one 1,00")
+        XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 2)), "two 2,00")
+        XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 3)), "other 3,00")
+    }
+    
+    func testWebProductsFormatterCurrencySymbolOverridingUsesCachedPriceFormatter() async throws {
+        priceFormatterProvider = .init(
+            priceFormattingRuleSet: .init(currencySymbolOverrides: [
+                "EUR": .init(
+                    zero: "zero",
+                    one: "one",
+                    two: "two",
+                    few: "few",
+                    many: "many",
+                    other: "other"
+                )
+            ])
+        )
+        
+        let firstPriceFormatter = priceFormatterProvider.priceFormatterForWebProducts(
+            withCurrencyCode: "EUR",
+            locale: Locale(identifier: "nl_NL")
+        )
+        
+        let secondPriceFormatter = priceFormatterProvider.priceFormatterForWebProducts(
+            withCurrencyCode: "EUR",
+            locale: Locale(identifier: "nl_NL")
+        )
+        
+        expect(firstPriceFormatter) == secondPriceFormatter
     }
 }
 
