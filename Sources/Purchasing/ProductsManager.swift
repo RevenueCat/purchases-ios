@@ -17,14 +17,6 @@ import StoreKit
 
 // MARK: -
 
-struct PriceFormattingRuleSetProvider {
-    let priceFormattingRuleSet: () -> PriceFormattingRuleSet?
-    
-    static let empty = PriceFormattingRuleSetProvider(
-        priceFormattingRuleSet: { nil }
-    )
-}
-
 /// Basic implemenation of a `ProductsManagerType`
 class ProductsManager: NSObject, ProductsManagerType {
 
@@ -51,6 +43,7 @@ class ProductsManager: NSObject, ProductsManagerType {
         priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider = .empty
     ) {
         self.productsFetcherSK1 = ProductsFetcherSK1(productsRequestFactory: productsRequestFactory,
+                                                     priceFormattingRuleSetProvider: priceFormattingRuleSetProvider,
                                                      requestTimeout: requestTimeout)
         self.diagnosticsTracker = diagnosticsTracker
         self.systemInfo = systemInfo
@@ -174,6 +167,15 @@ extension ProductsManagerType {
         }
     }
 
+}
+
+// MARK: -
+struct PriceFormattingRuleSetProvider {
+    let priceFormattingRuleSet: () -> PriceFormattingRuleSet?
+    
+    static let empty = PriceFormattingRuleSetProvider(
+        priceFormattingRuleSet: { nil }
+    )
 }
 
 // MARK: -
