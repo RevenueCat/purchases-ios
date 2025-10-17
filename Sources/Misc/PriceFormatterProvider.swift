@@ -74,11 +74,12 @@ public final class PriceFormatterProvider: Sendable {
                 currencyCode: currencyCode
             )
             
-            if let formatter = formatter as? CurrencySymbolOverridingPriceFormatter, formatter.currencyCode == currencyCode, formatter.locale == locale, formatter.currencySymbolOverride == currencySymbolOverride {
-                return formatter
+            if let formatter = formatter as? CurrencySymbolOverridingPriceFormatter {
+                if formatter.currencyCode == currencyCode, formatter.locale == locale, formatter.currencySymbolOverride == currencySymbolOverride {
+                    return formatter
+                }
             }
-            
-            if let formatter = formatter, formatter.currencyCode == currencyCode, formatter.locale == locale {
+            else if let formatter = formatter, formatter.currencyCode == currencyCode, formatter.locale == locale {
                 return formatter
             }
             
