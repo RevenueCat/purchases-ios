@@ -65,7 +65,7 @@ struct ImageComponentView: View {
                     // We need the max width of the parent view an image of a fill or
                     // fixed width doesn't push passed the bounds.
                     //
-                    // Once we have the width once, we can remove the GeometryReader
+                    // Once we have the size once, we can remove the Color.clear
                     if self.size == nil {
                         Color.clear
                     }
