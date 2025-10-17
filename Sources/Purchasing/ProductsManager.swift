@@ -19,6 +19,10 @@ import StoreKit
 
 struct PriceFormattingRuleSetProvider {
     let priceFormattingRuleSet: () -> PriceFormattingRuleSet?
+    
+    static let empty = PriceFormattingRuleSetProvider(
+        priceFormattingRuleSet: { nil }
+    )
 }
 
 /// Basic implemenation of a `ProductsManagerType`
@@ -44,7 +48,7 @@ class ProductsManager: NSObject, ProductsManagerType {
         systemInfo: SystemInfo,
         requestTimeout: TimeInterval,
         dateProvider: DateProvider = DateProvider(),
-        priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider = .init(priceFormattingRuleSet: { nil })
+        priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider = .empty
     ) {
         self.productsFetcherSK1 = ProductsFetcherSK1(productsRequestFactory: productsRequestFactory,
                                                      requestTimeout: requestTimeout)
