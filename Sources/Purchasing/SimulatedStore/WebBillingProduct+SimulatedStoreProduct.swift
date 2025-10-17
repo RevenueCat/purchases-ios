@@ -21,7 +21,7 @@ extension WebBillingProductsResponse.Product {
         if let priceFormatterProvider = self._priceFormatterProvider {
             return priceFormatterProvider
         } else {
-            let provider = PriceFormatterProvider(priceFormattingRuleSet: nil)
+            let provider = PriceFormatterProvider()
             self._priceFormatterProvider = provider
             return provider
         }
