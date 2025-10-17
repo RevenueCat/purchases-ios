@@ -112,10 +112,82 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         unwrappedFirstProduct = try XCTUnwrap(receivedProducts?.first)
         expect(unwrappedFirstProduct.currencyCode) == "EUR"
     }
+    
+    func testUsePriceFormattingRuleSetWithStorefrontSwitchSK1() async throws {
+        let priceFormattingRuleSetProvider = PriceFormattingRuleSetProvider {
+            .init(currencySymbolOverrides: [
+                "EUR": .init(zero: "e", one: "e", two: "e", few: "e", many: "e", other: "e"),
+                "USD": .init(zero: "bucks", one: "bucks", two: "bucks", few: "bucks", many: "bucks", other: "bucks")
+            ])
+        }
+        let manager = self.createManager(storeKitVersion: .storeKit1, priceFormattingRuleSetProvider: priceFormattingRuleSetProvider)
+
+        let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
+        var receivedProducts: Set<StoreProduct>?
+
+        receivedProducts = try await manager.products(withIdentifiers: Set([identifier]))
+
+        expect(receivedProducts).notTo(beNil())
+        var unwrappedFirstProduct = try XCTUnwrap(receivedProducts?.first)
+        expect(unwrappedFirstProduct.currencyCode) == "USD"
+        expect(unwrappedFirstProduct.localizedPricePerMonth) == "bucks 4.99"
+
+        testSession.locale = Locale(identifier: "nl_NL")
+        try await changeStorefront("NLD")
+
+        // Note: this test passes only because the method `clearCache`
+        // is manually executed. `ProductsManager` does not detect Storefront changes to invalidate the
+        // cache. The changes are now managed by `StoreKit2StorefrontListenerDelegate`.
+        manager.clearCache()
+
+        receivedProducts = try await manager.products(withIdentifiers: Set([identifier]))
+
+        expect(receivedProducts).notTo(beNil())
+        unwrappedFirstProduct = try XCTUnwrap(receivedProducts?.first)
+        expect(unwrappedFirstProduct.currencyCode) == "EUR"
+        expect(unwrappedFirstProduct.localizedPricePerMonth) == "e 4,99"
+    }
+    
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testUsePriceFormattingRuleSetWithStorefrontSwitchSK2() async throws {
+        let priceFormattingRuleSetProvider = PriceFormattingRuleSetProvider {
+            .init(currencySymbolOverrides: [
+                "EUR": .init(zero: "e", one: "e", two: "e", few: "e", many: "e", other: "e"),
+                "USD": .init(zero: "bucks", one: "bucks", two: "bucks", few: "bucks", many: "bucks", other: "bucks")
+            ])
+        }
+        let manager = self.createManager(storeKitVersion: .storeKit2, priceFormattingRuleSetProvider: priceFormattingRuleSetProvider)
+
+        let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
+        var receivedProducts: Set<StoreProduct>?
+
+        receivedProducts = try await manager.products(withIdentifiers: Set([identifier]))
+
+        expect(receivedProducts).notTo(beNil())
+        var unwrappedFirstProduct = try XCTUnwrap(receivedProducts?.first)
+        expect(unwrappedFirstProduct.currencyCode) == "USD"
+        expect(unwrappedFirstProduct.localizedPricePerMonth) == "bucks 4.99"
+
+        testSession.locale = Locale(identifier: "nl_NL")
+        try await changeStorefront("NLD")
+
+        // Note: this test passes only because the method `clearCache`
+        // is manually executed. `ProductsManager` does not detect Storefront changes to invalidate the
+        // cache. The changes are now managed by `StoreKit2StorefrontListenerDelegate`.
+        manager.clearCache()
+
+        receivedProducts = try await manager.products(withIdentifiers: Set([identifier]))
+
+        expect(receivedProducts).notTo(beNil())
+        unwrappedFirstProduct = try XCTUnwrap(receivedProducts?.first)
+        expect(unwrappedFirstProduct.currencyCode) == "EUR"
+        expect(unwrappedFirstProduct.localizedPricePerMonth) == "e 4,99"
+    }
 
     fileprivate func createManager(storeKitVersion: StoreKitVersion,
                                    storefront: StorefrontType? = nil,
-                                   diagnosticsTracker: DiagnosticsTrackerType? = nil) -> ProductsManager {
+                                   diagnosticsTracker: DiagnosticsTrackerType? = nil,
+                                   priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider = .empty) -> ProductsManager {
         let platformInfo = Purchases.PlatformInfo(flavor: "xyz", version: "123")
         let systemInfo = MockSystemInfo(
             platformInfo: platformInfo,
@@ -126,7 +198,8 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         return ProductsManager(
             diagnosticsTracker: diagnosticsTracker,
             systemInfo: systemInfo,
-            requestTimeout: Self.requestTimeout
+            requestTimeout: Self.requestTimeout,
+            priceFormattingRuleSetProvider: priceFormattingRuleSetProvider
         )
     }
 

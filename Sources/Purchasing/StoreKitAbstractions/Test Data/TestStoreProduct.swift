@@ -95,7 +95,7 @@ public struct TestStoreProduct {
 
     // swiftlint:enable missing_docs
 
-    private let priceFormatterProvider: PriceFormatterProvider = .init(priceFormattingRuleSet: nil) // todo rick?
+    private let priceFormatterProvider: PriceFormatterProvider = .init()
 
 }
 
