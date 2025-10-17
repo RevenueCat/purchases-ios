@@ -110,8 +110,7 @@ extension TestStoreProduct: StoreProductType {
 
     internal var priceFormatter: NumberFormatter? {
         return self.currencyCode.map {
-            // todo rick: fix storefrontCountryCode here
-            self.priceFormatterProvider.priceFormatterForSK2(withCurrencyCode: $0, storefrontCountryCode: "USA", locale: self.locale)
+            self.priceFormatterProvider.priceFormatterForSK2(withCurrencyCode: $0, locale: self.locale)
         }
     }
 
