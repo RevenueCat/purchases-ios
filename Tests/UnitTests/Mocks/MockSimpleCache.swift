@@ -14,7 +14,9 @@
 import Foundation
 @testable import RevenueCat
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
 class MockSimpleCache: LargeItemCacheType, @unchecked Sendable {
+
     var cacheDirectory: URL?
     let lock = NSLock()
 
@@ -33,16 +35,25 @@ class MockSimpleCache: LargeItemCacheType, @unchecked Sendable {
         self.cacheDirectory = cacheDirectory
     }
 
-    func saveData(_ data: Data, to url: URL) throws {
-        try lock.withLock {
-            let count = saveDataInvocations.count
-            self.saveDataInvocations.append(.init(data: data, url: url))
-            switch saveDataResponses[count] {
-            case .failure(let error):
-                throw error
-            default:
-                break
-            }
+    func saveData(
+        _ bytes: AsyncThrowingStream<UInt8, any Error>,
+        to url: URL,
+        checksum: RevenueCat.Checksum?
+    ) async throws {
+        let count = saveDataInvocations.count
+        var data = Data()
+
+        for try await byte in bytes {
+            data.append(contentsOf: [byte])
+        }
+
+        self.saveDataInvocations.append(.init(data: data, url: url))
+
+        switch saveDataResponses[count] {
+        case .failure(let error):
+            throw error
+        default:
+            break
         }
     }
 

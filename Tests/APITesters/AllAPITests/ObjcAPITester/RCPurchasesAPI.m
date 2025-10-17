@@ -29,6 +29,7 @@ id<RCPurchasesDelegate> delegate;
 NSString *appUserID;
 BOOL isAnonymous;
 NSString *storeFrontCountryCode;
+NSLocale *storeFrontLocale;
 RCWebPurchaseRedemption *webPurchaseRedemptionLink;
 NSURL *url;
 
@@ -73,6 +74,9 @@ NSURL *url;
     appUserID = [p appUserID];
     isAnonymous = [p isAnonymous];
     storeFrontCountryCode = [p storeFrontCountryCode];
+    if (@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)) {
+        storeFrontLocale = [p storeFrontLocale];
+    }
 
     RCCustomerInfo *pi = nil;
     RCStoreProduct *storeProduct = nil;

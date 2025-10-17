@@ -135,7 +135,19 @@ let project = Project(
             metadata: .metadata(tags: ["APITester"])
         )
     ],
-    schemes: [],
+    schemes: [
+        .scheme(
+            name: "All API Tests",
+            shared: true,
+            buildAction: .buildAction(targets: [
+                "ObjcAPITester",
+                "SwiftAPITester",
+                "ReceiptParserAPITester",
+                "RevenueCatUISwiftAPITester",
+                "CustomEntitlementComputationSwiftAPITester"
+            ])
+        )
+    ],
     additionalFiles: [
         "../../Tests/APITesters/AllAPITests/ObjcAPITester/**/*.h",
         "../../Tests/APITesters/AllAPITests/SwiftAPITester/SwiftAPITester.h",
