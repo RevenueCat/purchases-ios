@@ -5,7 +5,7 @@
 //  Created by Nacho Soto on 4/13/22.
 //
 
-import RevenueCat
+@_spi(Experimental) import RevenueCat
 import StoreKit
 
 var storefront: RevenueCat.Storefront!
@@ -13,6 +13,9 @@ var storefront: RevenueCat.Storefront!
 func checkStorefrontAPI() {
     let _: String = storefront.identifier
     let _: String = storefront.countryCode
+    if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+        let _: Locale = storefront.locale
+    }
 
     if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, macCatalyst 13.1, *) {
         let _: SKStorefront? = storefront.sk1Storefront

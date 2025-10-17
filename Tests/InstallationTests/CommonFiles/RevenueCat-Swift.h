@@ -2853,6 +2853,7 @@ SWIFT_PROTOCOL_NAMED("PurchasesType")
 @property (nonatomic) BOOL finishTransactions SWIFT_DEPRECATED_MSG("Use purchasesAreCompletedBy instead.");
 @end
 
+@class NSLocale;
 
 /// <code>Purchases</code> is the entry point for RevenueCat.framework. It should be instantiated as soon as your app has a unique
 /// user id for your user. This can be when a user logs in if you have accounts or on launch if you can generate a random
@@ -2978,6 +2979,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, copy) NSString * _No
 @property (nonatomic, readonly, strong) RCAttribution * _Nonnull attribution;
 @property (nonatomic) enum RCPurchasesAreCompletedBy purchasesAreCompletedBy;
 @property (nonatomic, readonly, copy) NSString * _Nullable storeFrontCountryCode;
+@property (nonatomic, readonly, copy) NSLocale * _Nullable storeFrontLocale SWIFT_AVAILABILITY(watchos,introduced=9.0) SWIFT_AVAILABILITY(tvos,introduced=16.0) SWIFT_AVAILABILITY(macos,introduced=13.0) SWIFT_AVAILABILITY(ios,introduced=16.0);
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
@@ -3809,7 +3811,6 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStoreProductType, "ProductType", open) {
   RCStoreProductTypeAutoRenewableSubscription = 3,
 };
 
-@class NSLocale;
 
 @interface RCStoreProduct (SWIFT_EXTENSION(RevenueCat))
 /// The object containing introductory price information for the product.
@@ -4062,6 +4063,9 @@ SWIFT_CLASS_NAMED("Storefront")
 @interface RCStorefront : NSObject
 @property (nonatomic, readonly, copy) NSString * _Nonnull countryCode;
 @property (nonatomic, readonly, copy) NSString * _Nonnull identifier;
+/// A locale containing the region information but no language code representing
+/// the region for the App Store storefront.
+@property (nonatomic, readonly, copy) NSLocale * _Nonnull locale SWIFT_AVAILABILITY(watchos,introduced=9.0) SWIFT_AVAILABILITY(tvos,introduced=16.0) SWIFT_AVAILABILITY(macos,introduced=13.0) SWIFT_AVAILABILITY(ios,introduced=16.0);
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
 @property (nonatomic, readonly, copy) NSString * _Nonnull description;
