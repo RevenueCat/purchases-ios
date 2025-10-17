@@ -18,7 +18,7 @@ import XCTest
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
 class FileRepositoryTests: TestCase {
-    let someURL = URL(string: "https://somesite.com/someurl").unsafelyUnwrapped
+    let someURL = URL(string: "https://somesite.com/someurl.mp4").unsafelyUnwrapped
 
     func test_ifContentExists_networkServiceIsNotCalled() async throws {
         let sut = await makeSystemUnderTest()
@@ -87,7 +87,30 @@ class FileRepositoryTests: TestCase {
         sut.networkService.stubResponse(at: 0, result: .success("SomeData"))
         let result = try await sut.fileRepository.generateOrGetCachedFileURL(for: someURL, withChecksum: nil)
 
-        let expectedCachedURL = URL(string: "data:sample/RevenueCat/e8a0d6b245a127f56629765a9815ba2c").unsafelyUnwrapped
+        let expectedCachedURL = URL(
+            string: "data:sample/RevenueCat/1b548ae1c45e1ffe5de61ce60e03b277someurl.mp4"
+        ).unsafelyUnwrapped
+
+        XCTAssertEqual(sut.networkService.invocations, [someURL])
+        XCTAssertEqual(sut.cache.saveDataInvocations, [.init(data: data, url: expectedCachedURL)])
+        XCTAssertEqual(result, expectedCachedURL)
+        XCTAssertNotEqual(someURL, expectedCachedURL)
+    }
+
+    func test_savingData_mapsURLToNewURLType_withChecksum_andReturnsIt() async throws {
+        let sut = await makeSystemUnderTest()
+        let data = "SomeData".data(using: .utf8).unsafelyUnwrapped
+        sut.cache.stubCachedContentExists(with: false)
+        sut.cache.stubSaveData(with: .success(.init(data: data, url: someURL)))
+        sut.networkService.stubResponse(at: 0, result: .success("SomeData"))
+        let result = try await sut.fileRepository.generateOrGetCachedFileURL(
+            for: someURL,
+            withChecksum: .init(algorithm: .md5, value: "mock-checksum-value-")
+        )
+
+        let expectedCachedURL = URL(
+            string: "data:sample/RevenueCat/mock-checksum-value-someurl.mp4"
+        ).unsafelyUnwrapped
 
         XCTAssertEqual(sut.networkService.invocations, [someURL])
         XCTAssertEqual(sut.cache.saveDataInvocations, [.init(data: data, url: expectedCachedURL)])
