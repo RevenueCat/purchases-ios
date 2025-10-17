@@ -39,9 +39,9 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
 
     func testReturnsCachedPriceFormatterForSK2() throws {
         let currencyCode = "USD"
-        let firstPriceFormatter = self.priceFormatterProvider.priceFormatterForSK2(withCurrencyCode: currencyCode, storefrontCountryCode: "USA")
+        let firstPriceFormatter = self.priceFormatterProvider.priceFormatterForSK2(withCurrencyCode: currencyCode)
 
-        let secondPriceFormatter = self.priceFormatterProvider.priceFormatterForSK2(withCurrencyCode: currencyCode, storefrontCountryCode: "USA")
+        let secondPriceFormatter = self.priceFormatterProvider.priceFormatterForSK2(withCurrencyCode: currencyCode)
 
         expect(firstPriceFormatter) === secondPriceFormatter
     }
@@ -105,18 +105,16 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
         let sk2Fetcher = ProductsFetcherSK2(
             priceFormattingRuleSetProvider: .init(
                 priceFormattingRuleSet: {
-                    .init(
-                        currencySymbolOverrides: ["NLD": [
-                            "EUR": .init(
-                                zero: "zero",
-                                one: "one",
-                                two: "two",
-                                few: "few",
-                                many: "many",
-                                other: "other"
-                            )
-                        ]]
-                    )
+                    .init(currencySymbolOverrides: [
+                        "EUR": .init(
+                            zero: "zero",
+                            one: "one",
+                            two: "two",
+                            few: "few",
+                            many: "many",
+                            other: "other"
+                        )
+                    ])
                 }
             )
         )
@@ -128,9 +126,10 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
         expect(priceFormatter.currencySymbol) == "€"
         XCTAssert(type(of: priceFormatter) == CurrencySymbolOverridingPriceFormatter.self)
         
-        XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 0)), "0,00 zero")
-        XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 1)), "1,00 one")
-        XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 2)), "2,00 two")
+        XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 0)), "zero 0,00")
+        XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 1)), "one 1,00")
+        XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 2)), "two 2,00")
+        XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 3)), "other 3,00")
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -139,22 +138,20 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
 
         self.testSession.locale = Locale(identifier: "ro_RO")
         try await self.changeStorefront("ROU")
-
+        
         let sk2Fetcher = ProductsFetcherSK2(
             priceFormattingRuleSetProvider: .init(
                 priceFormattingRuleSet: {
-                    .init(
-                        currencySymbolOverrides: ["ROU": [
-                            "RON": .init(
-                                zero: "lei",
-                                one: "leu",
-                                two: "lei",
-                                few: "lei",
-                                many: "lei",
-                                other: "lei"
-                            )
-                        ]]
-                    )
+                    .init(currencySymbolOverrides: [
+                        "RON": .init(
+                            zero: "lei",
+                            one: "leu",
+                            two: "lei",
+                            few: "lei",
+                            many: "lei",
+                            other: "lei"
+                        )
+                    ])
                 }
             )
         )

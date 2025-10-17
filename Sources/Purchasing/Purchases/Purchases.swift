@@ -415,11 +415,13 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         
         let priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider = .init {
             var priceFormattingRuleSet: PriceFormattingRuleSet?
-            if Self.isConfigured, let offeringsResponse = Self.shared.cachedOfferings?.response {
-                priceFormattingRuleSet = offeringsResponse.config?.priceFormattingRuleSet
+            if Self.isConfigured, let offeringsResponse = Self.shared.cachedOfferings?.response,
+                let storeFrontCountryCode = systemInfo.storefront?.countryCode
+            {
+                priceFormattingRuleSet = offeringsResponse.config?.priceFormattingRuleSets[storeFrontCountryCode]
             }
             
-            return priceFormattingRuleSet ?? .init(currencySymbolOverrides: [:])
+            return priceFormattingRuleSet
         }
 
         let productsManager = CachingProductsManager(
