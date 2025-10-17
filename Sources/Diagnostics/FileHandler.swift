@@ -79,7 +79,7 @@ actor FileHandler: FileHandlerType {
     func append(line: String) throws {
         RCTestAssertNotMainThread()
 
-        self.fileHandle.seekToEndOfFile()
+        try self.fileHandle.seekToEnd()
         try self.fileHandle.write(contentsOf: line.asData)
         try self.fileHandle.write(contentsOf: Self.lineBreakData)
     }
