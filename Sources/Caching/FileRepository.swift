@@ -130,10 +130,9 @@ import Foundation
     }
 
     func generateLocalFilesystemURL(forRemoteURL url: URL, withChecksum checksum: Checksum?) -> URL? {
+        let path = checksum?.value ?? url.absoluteString.asData.md5String
         return cacheURL?
-            .appendingPathComponent(url.absoluteString.asData.md5String)
-            .appendingPathExtension(checksum?.value ?? "checksumnotfound")
-            .appendingPathExtension(url.pathExtension)
+            .appendingPathComponent(path + url.lastPathComponent)
     }
 }
 

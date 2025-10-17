@@ -40,7 +40,8 @@ struct VideoComponentView: View {
 
     @State var size: CGSize = .zero
 
-    @State var cachedURL: URL?
+    @State private var stagedURL: URL?
+    @State private var cachedURL: URL?
     @State var imageSource: PaywallComponent.ThemeImageUrls?
 
     var body: some View {
@@ -106,11 +107,11 @@ struct VideoComponentView: View {
                                         )
                                     guard url != cachedURL else { return }
                                     await MainActor.run {
-                                        self.cachedURL = url
+                                        self.stagedURL = url
                                     }
                                 } catch {
                                     await MainActor.run {
-                                        self.cachedURL = viewData.url
+                                        self.stagedURL = viewData.url
                                     }
                                 }
                             }
@@ -139,6 +140,14 @@ struct VideoComponentView: View {
                     .clipped()
                     .shadow(shadow: style.shadow, shape: style.shape?.toInsettableShape(size: size))
                     .padding(style.margin)
+                    .onReceive(
+                        stagedURL.publisher
+                            .eraseToAnyPublisher()
+                            .removeDuplicates()
+                            .debounce(for: 0.300, scheduler: RunLoop.main)
+                    ) { output in
+                        cachedURL = output
+                    }
                 }
             }
             .onSizeChange { size = $0 }
