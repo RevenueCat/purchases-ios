@@ -34,6 +34,7 @@ class BaseFileHandlerTests: TestCase {
 
 }
 
+@available(macOS 10.15.4, iOS 13.4, watchOS 6.2, tvOS 13.4, *)
 class FileHandlerTests: BaseFileHandlerTests {
 
     // MARK: - readFile
@@ -48,7 +49,7 @@ class FileHandlerTests: BaseFileHandlerTests {
     func testAppendOneLine() async throws {
         let content = Self.sampleLine()
 
-        await self.handler.append(line: content)
+        try await self.handler.append(line: content)
 
         let data = try await self.handler.readFile()
         expect(data).to(matchLines(content))
@@ -58,8 +59,8 @@ class FileHandlerTests: BaseFileHandlerTests {
         let line1 = Self.sampleLine()
         let line2 = Self.sampleLine()
 
-        await self.handler.append(line: line1)
-        await self.handler.append(line: line2)
+        try await self.handler.append(line: line1)
+        try await self.handler.append(line: line2)
 
         let data = try await self.handler.readFile()
         expect(data).to(matchLines(line1, line2))
@@ -69,12 +70,12 @@ class FileHandlerTests: BaseFileHandlerTests {
         let line1 = Self.sampleLine()
         let line2 = Self.sampleLine()
 
-        await self.handler.append(line: line1)
+        try await self.handler.append(line: line1)
 
         // Re-create handler to ensure lines are appended
         try await self.reCreateHandler()
 
-        await self.handler.append(line: line2)
+        try await self.handler.append(line: line2)
 
         let data = try await self.handler.readFile()
         expect(data).to(matchLines(line1, line2))
@@ -90,7 +91,7 @@ class FileHandlerTests: BaseFileHandlerTests {
     }
 
     func testEmptyFile() async throws {
-        await self.handler.append(line: Self.sampleLine())
+        try await self.handler.append(line: Self.sampleLine())
 
         try await self.handler.emptyFile()
 
@@ -99,7 +100,7 @@ class FileHandlerTests: BaseFileHandlerTests {
     }
 
     func testEmptyFileSavesContent() async throws {
-        await self.handler.append(line: Self.sampleLine())
+        try await self.handler.append(line: Self.sampleLine())
         try await self.handler.emptyFile()
 
         try await self.reCreateHandler()
@@ -118,7 +119,7 @@ class FileHandlerTests: BaseFileHandlerTests {
     }
 
     func testRemoveSingleLine() async throws {
-        await self.handler.append(line: Self.sampleLine())
+        try await self.handler.append(line: Self.sampleLine())
         try await self.handler.removeFirstLines(1)
 
         let data = try await self.handler.readFile()
@@ -129,8 +130,8 @@ class FileHandlerTests: BaseFileHandlerTests {
         let line1 = "line 1"
         let line2 = "line 2"
 
-        await self.handler.append(line: line1)
-        await self.handler.append(line: line2)
+        try await self.handler.append(line: line1)
+        try await self.handler.append(line: line2)
         try await self.handler.removeFirstLines(1)
 
         let data = try await self.handler.readFile()
@@ -142,7 +143,7 @@ class FileHandlerTests: BaseFileHandlerTests {
         let linesToRemove = 4
 
         for line in lines {
-            await self.handler.append(line: line)
+            try await self.handler.append(line: line)
         }
 
         try await self.handler.removeFirstLines(linesToRemove)
@@ -156,7 +157,7 @@ class FileHandlerTests: BaseFileHandlerTests {
         let linesToRemove = lines.count / 3
 
         // This is faster than calling `append(line:)` 10,000 times
-        await self.handler.append(line: lines.joined(separator: "\n"))
+        try await self.handler.append(line: lines.joined(separator: "\n"))
 
         try await self.handler.removeFirstLines(linesToRemove)
 
@@ -168,7 +169,7 @@ class FileHandlerTests: BaseFileHandlerTests {
         let count = 6
 
         for _ in 0..<6 {
-            await self.handler.append(line: Self.sampleLine())
+            try await self.handler.append(line: Self.sampleLine())
         }
 
         try await self.handler.removeFirstLines(count)
@@ -187,7 +188,7 @@ class FileHandlerTests: BaseFileHandlerTests {
     func testFileSizeInKBForFileWithSomeData() async throws {
         let content = Self.sampleLine()
 
-        await self.handler.append(line: content)
+        try await self.handler.append(line: content)
 
         let result = try await self.handler.fileSizeInKB()
         expect(result) > 0
@@ -212,7 +213,7 @@ class IOS15FileHandlerTests: BaseFileHandlerTests {
     func testReadLinesWithOneLine() async throws {
         let line = Self.sampleLine()
 
-        await self.handler.append(line: line)
+        try await self.handler.append(line: line)
         let lines = try await self.handler.readLines().extractValues()
 
         expect(lines) == [line]
@@ -222,8 +223,8 @@ class IOS15FileHandlerTests: BaseFileHandlerTests {
         let line1 = Self.sampleLine()
         let line2 = Self.sampleLine()
 
-        await self.handler.append(line: line1)
-        await self.handler.append(line: line2)
+        try await self.handler.append(line: line1)
+        try await self.handler.append(line: line2)
 
         let lines = try await self.handler.readLines().extractValues()
         expect(lines) == [line1, line2]
@@ -231,7 +232,7 @@ class IOS15FileHandlerTests: BaseFileHandlerTests {
 
     func testReadLinesWithExistingFile() async throws {
         let line = Self.sampleLine()
-        await self.handler.append(line: line)
+        try await self.handler.append(line: line)
 
         try await self.reCreateHandler()
 
@@ -269,11 +270,11 @@ private extension BaseFileHandlerTests {
 
 // MARK: - Matchers
 
-private func matchLines(_ lines: String...) -> Nimble.Predicate<Data> {
+private func matchLines(_ lines: String...) -> Nimble.Matcher<Data> {
     return matchLines(Array(lines))
 }
 
-private func matchLines(_ lines: [String]) -> Nimble.Predicate<Data> {
+private func matchLines(_ lines: [String]) -> Nimble.Matcher<Data> {
     return matchData(
         (lines + [""]) // For trailing line break
             .joined(separator: "\n")
@@ -281,16 +282,16 @@ private func matchLines(_ lines: [String]) -> Nimble.Predicate<Data> {
     )
 }
 
-private func matchData(_ expectedValue: Data) -> Nimble.Predicate<Data> {
-    return Predicate.define { actualExpression, msg in
+private func matchData(_ expectedValue: Data) -> Nimble.Matcher<Data> {
+    return Matcher.define { actualExpression, msg in
         guard let actualValue = try actualExpression.evaluate() else {
-            return PredicateResult(
+            return MatcherResult(
                 status: .fail,
                 message: msg.appendedBeNilHint()
             )
         }
 
-        return PredicateResult(
+        return MatcherResult(
             bool: expectedValue == actualValue,
             message: .expectedCustomValueTo(
                 "equal '\(expectedValue.asUTF8String)'",
