@@ -399,7 +399,7 @@ extension PaywallComponent.Border {
 
     func border(uiConfigProvider: UIConfigProvider) -> ShapeModifier.BorderInfo? {
         return ShapeModifier.BorderInfo(
-            color: self.color.asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor(),
+            color: self.color.asDisplayable(uiConfigProvider: uiConfigProvider),
             width: self.width
         )
     }
