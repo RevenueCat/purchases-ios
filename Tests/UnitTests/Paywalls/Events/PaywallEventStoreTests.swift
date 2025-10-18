@@ -83,8 +83,8 @@ class PaywallEventStoreTests: TestCase {
         expect(events).to(beEmpty())
     }
 
-    func testFetchingLineWithError() async {
-        await self.handler.append(line: "this is not an event")
+    func testFetchingLineWithError() async throws {
+        try await self.handler.append(line: "this is not an event")
 
         let events = await self.store.fetch(1)
         expect(events).to(beEmpty())
@@ -134,7 +134,7 @@ class PaywallEventStoreTests: TestCase {
         let event: StoredEvent = .randomImpressionEvent()
 
         await self.store.store(event)
-        await self.handler.append(line: "not an event")
+        try await self.handler.append(line: "not an event")
         await self.store.store(.randomImpressionEvent())
 
         let events = await self.store.fetch(2)
@@ -206,6 +206,18 @@ class PaywallEventStoreTests: TestCase {
 
         expect(self.logger.messages).to(containElementSatisfying {
             $0.level == .error
+        })
+    }
+
+    func testAppendingLineFailureLogsError() async {
+        struct FakeError: Error {}
+
+        await self.handler.setAppendLineError(FakeError())
+
+        await self.store.store(.randomImpressionEvent())
+
+        expect(self.logger.messages).to(containElementSatisfying {
+            $0.message.contains("Error storing event: ")
         })
     }
 

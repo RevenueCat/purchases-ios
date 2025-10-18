@@ -47,7 +47,7 @@ internal actor PaywallEventStore: PaywallEventStoreType {
             }
 
             let event = try StoredEventSerializer.encode(storedEvent)
-            await self.handler.append(line: event)
+            try await self.handler.append(line: event)
         } catch {
             Logger.error(PaywallEventStoreStrings.error_storing_event(error))
         }
