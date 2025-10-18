@@ -15,6 +15,7 @@ class DeviceCacheTests: TestCase {
     private var systemInfo: MockSystemInfo! = nil
     private var preferredLocalesProvider: PreferredLocalesProvider! = nil
     private var mockUserDefaults: MockUserDefaults! = nil
+    private var mockFileCache: MockSimpleCache! = nil
     private var deviceCache: DeviceCache! = nil
     private var mockVirtualCurrenciesData: Data!
 
@@ -24,6 +25,7 @@ class DeviceCacheTests: TestCase {
                                          preferredLocalesProvider: self.preferredLocalesProvider)
         self.systemInfo.stubbedIsSandbox = false
         self.mockUserDefaults = MockUserDefaults()
+        self.mockFileCache = MockSimpleCache()
 
         let mockVirtualCurrencies = VirtualCurrencies(virtualCurrencies: [
             "USD": VirtualCurrency(balance: 100, name: "US Dollar", code: "USD", serverDescription: "dollar"),
@@ -78,6 +80,7 @@ class DeviceCacheTests: TestCase {
 
     func testClearCachesForAppUserIDAndSaveNewUserIDRemovesCachedOfferings() {
         let offerings: Offerings = .empty
+        self.mockFileCache.stubSaveData(with: .success(.init(data: .init(), url: .mockFileLocation)))
         self.deviceCache.cache(offerings: offerings, preferredLocales: ["en-US"], appUserID: "cesar")
         expect(self.deviceCache.cachedOfferings) == offerings
 
@@ -225,15 +228,17 @@ class DeviceCacheTests: TestCase {
     func testOfferingsAreProperlyCached() throws {
         let expectedOfferings = try Self.createSampleOfferings()
 
+        mockFileCache
+            .stubSaveData(
+                with: .success(.init(data: try expectedOfferings.response.jsonEncodedData, url: .mockFileLocation))
+            )
+
+        expect(self.mockFileCache.saveDataInvocations.count == 0)
+
         self.deviceCache.cache(offerings: expectedOfferings, preferredLocales: ["en-US"], appUserID: "user")
 
         expect(self.deviceCache.cachedOfferings) === expectedOfferings
-
-        let storedData = try XCTUnwrap(
-            self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.offerings.user"] as? Data
-        )
-        let offerings = try JSONDecoder.default.decode(OfferingsResponse.self, from: storedData)
-        expect(offerings) == expectedOfferings.response
+        expect(self.mockFileCache.saveDataInvocations.count == 1)
     }
 
     func testCacheOfferingsInMemory() throws {
@@ -367,6 +372,8 @@ class DeviceCacheTests: TestCase {
 
     func testIsOfferingsCacheStaleIfPreferredLocalesChange() throws {
         let sampleOfferings = try Self.createSampleOfferings()
+        self.mockFileCache.stubSaveData(with: .success(.init(data: .init(), url: .mockFileLocation)))
+
         self.deviceCache.cache(offerings: sampleOfferings, preferredLocales: ["en-US"], appUserID: "user")
 
         expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: false)) == false
@@ -378,6 +385,7 @@ class DeviceCacheTests: TestCase {
         expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: false)) == true
         expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: true)) == true
 
+        self.mockFileCache.stubSaveData(at: 1, with: .success(.init(data: .init(), url: .mockFileLocation)))
         self.deviceCache.cache(offerings: .empty, preferredLocales: ["es-ES", "en-US"], appUserID: "user")
 
         expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: false)) == false
@@ -399,9 +407,7 @@ class DeviceCacheTests: TestCase {
         self.deviceCache.clearOfferingsCache(appUserID: "user")
 
         expect(mockCachedObject.invokedClearCache) == true
-        expect(self.mockUserDefaults.removeObjectForKeyCalledValues).to(contain([
-            "com.revenuecat.userdefaults.offerings.user"
-        ]))
+        expect(self.mockFileCache.removeInvocations.count == 1)
     }
 
     func testSetLatestAdvertisingIdsByNetworkSentMapsAttributionNetworksToStringKeys() {
@@ -468,20 +474,22 @@ class DeviceCacheTests: TestCase {
         expect(storedAttributes as? [String: [String: [String: NSObject]]]) == expectedAttributesSet
     }
 
-    func testCacheEmptyProductEntitlementMapping() {
+    func testCacheEmptyProductEntitlementMapping() throws {
         let data = ProductEntitlementMapping(entitlementsByProduct: [:])
-
+        self.mockFileCache.stubSaveData(with: .success(.init(data: .init(), url: .mockFileLocation)))
+        self.mockFileCache.stubLoadFile(with: .success(try data.jsonEncodedData))
         self.deviceCache.store(productEntitlementMapping: data)
         expect(self.deviceCache.cachedProductEntitlementMapping) == data
     }
 
-    func testCacheProductEntitlementMapping() {
+    func testCacheProductEntitlementMapping() throws {
         let data = ProductEntitlementMapping(entitlementsByProduct: [
             "1": ["pro_1"],
             "2": ["pro_2"],
             "3": ["pro_1", "pro_2"]
         ])
-
+        self.mockFileCache.stubSaveData(with: .success(.init(data: .init(), url: .mockFileLocation)))
+        self.mockFileCache.stubLoadFile(with: .success(try data.jsonEncodedData))
         self.deviceCache.store(productEntitlementMapping: data)
         expect(self.deviceCache.cachedProductEntitlementMapping) == data
     }
@@ -491,6 +499,7 @@ class DeviceCacheTests: TestCase {
     }
 
     func testCacheProductEntitlementMappingUpdatesLastUpdatedDate() throws {
+        self.mockFileCache.stubSaveData(with: .success(.init(data: Data(), url: .mockFileLocation)))
         self.deviceCache.store(productEntitlementMapping: .init(entitlementsByProduct: [:]))
 
         let key = DeviceCache.CacheKeys.productEntitlementMappingLastUpdated.rawValue
@@ -805,8 +814,11 @@ class DeviceCacheTests: TestCase {
 private extension DeviceCacheTests {
 
     func create() -> DeviceCache {
-        return DeviceCache(systemInfo: self.systemInfo,
-                           userDefaults: self.mockUserDefaults)
+        return DeviceCache(
+            systemInfo: self.systemInfo,
+            userDefaults: self.mockUserDefaults,
+            fileManager: self.mockFileCache
+        )
     }
 
     static func createSampleOfferings() throws -> Offerings {
@@ -875,4 +887,8 @@ private extension Offerings {
         )
     )
 
+}
+
+private extension URL {
+    static let mockFileLocation: URL = URL(string: "data:mock-file-location").unsafelyUnwrapped
 }
