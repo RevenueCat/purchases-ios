@@ -23,7 +23,7 @@
       "parallelizable" : true,
       "target" : {
         "containerPath" : "container:RevenueCat.xcodeproj",
-        "identifier" : "2DC5621D24EC63430031F69B",
+        "identifier" : "04F4DECB1716482D40FDC0BC",
         "name" : "UnitTests"
       }
     }
