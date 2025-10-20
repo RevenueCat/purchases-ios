@@ -32,7 +32,7 @@ internal protocol AdEventData {
 ///
 /// Use the predefined static properties for common mediators, or create custom values
 /// for other mediation networks.
-public struct MediatorName: RawRepresentable, Equatable, Hashable, Codable, Sendable {
+@_spi(Experimental) public struct MediatorName: RawRepresentable, Equatable, Hashable, Codable, Sendable {
 
     /// The raw string value of the mediator name
     public let rawValue: String
@@ -51,7 +51,7 @@ public struct MediatorName: RawRepresentable, Equatable, Hashable, Codable, Send
 }
 
 /// Data for ad displayed events.
-public struct AdDisplayed: AdEventData {
+@_spi(Experimental) public struct AdDisplayed: AdEventData {
 
     // swiftlint:disable missing_docs
     public var networkName: String
@@ -78,7 +78,7 @@ public struct AdDisplayed: AdEventData {
 }
 
 /// Data for ad opened/clicked events.
-public struct AdOpened: AdEventData {
+@_spi(Experimental) public struct AdOpened: AdEventData {
 
     // swiftlint:disable missing_docs
     public var networkName: String
@@ -105,7 +105,7 @@ public struct AdOpened: AdEventData {
 }
 
 /// Data for ad revenue events.
-public struct AdRevenue: AdEventData {
+@_spi(Experimental) public struct AdRevenue: AdEventData {
 
     // swiftlint:disable missing_docs
     public var networkName: String
@@ -143,7 +143,7 @@ public struct AdRevenue: AdEventData {
 extension AdRevenue {
 
     /// Type representing the level of accuracy for reported revenue values.
-    public struct Precision: Equatable, Hashable, Codable, Sendable {
+    @_spi(Experimental) public struct Precision: Equatable, Hashable, Codable, Sendable {
 
         /// The raw string value of the precision type
         public let rawValue: String
