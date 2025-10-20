@@ -23,7 +23,7 @@ class MockOfferingsFactory: OfferingsFactory {
                                              offerings: [],
                                              placements: nil,
                                              targeting: nil,
-                                             uiConfig: nil, config: nil))
+                                             uiConfig: nil))
         }
         if nilOfferings {
             return nil
@@ -55,7 +55,7 @@ class MockOfferingsFactory: OfferingsFactory {
                       packages: [
                         .init(identifier: "", platformProductIdentifier: "$rc_monthly", webCheckoutUrl: nil)
                       ], webCheckoutUrl: nil)
-            ], placements: nil, targeting: nil, uiConfig: nil, config: nil)
+            ], placements: nil, targeting: nil, uiConfig: nil)
 
         )
     }
@@ -78,8 +78,7 @@ extension OfferingsResponse {
         ],
         placements: nil,
         targeting: nil,
-        uiConfig: nil,
-        config: nil
+        uiConfig: nil
     )
 
 }

@@ -43,7 +43,7 @@ class PurchasesDiagnosticsTests: TestCase {
                                   offerings: [],
                                   placements: nil,
                                   targeting: nil,
-                                  uiConfig: nil, config: nil))
+                                  uiConfig: nil))
         )
     }
 
