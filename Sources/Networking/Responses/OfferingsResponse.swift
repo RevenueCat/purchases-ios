@@ -54,70 +54,6 @@ struct OfferingsResponse {
     let placements: Placements?
     let targeting: Targeting?
     let uiConfig: UIConfig?
-    let config: Config?
-
-    public struct Config {
-        
-        @DefaultDecodable.EmptyDictionary
-        var priceFormattingRuleSets: [
-            // storefront country code -> ruleset
-            String: PriceFormattingRuleSet
-        ]
-        
-    }
-}
-
-/*
- Contains a set of rules that will be used when formatting a price
- Currrently only supports overriding the currencySymbol per currency
- */
-struct PriceFormattingRuleSet: Sendable {
-    
-    // currencyCode: CurrencySymbolOverride
-    private var currencySymbolOverrides: [String: CurrencySymbolOverride]
-    
-    public init(currencySymbolOverrides: [String : CurrencySymbolOverride]) {
-        self.currencySymbolOverrides = currencySymbolOverrides
-    }
-    
-    public func currencySymbolOverride(
-        currencyCode: String
-    ) -> CurrencySymbolOverride? {
-        return self.currencySymbolOverrides[currencyCode]
-    }
-    
-    /*
-     Contains a set of currencySymbol overrides for different pluralization rules
-     */
-    public struct CurrencySymbolOverride: Sendable {
-        let zero: String
-        let one: String
-        let two: String
-        let few: String
-        let many: String
-        let other: String
-        
-        func value(for rule: PluralRule) -> String {
-            switch rule {
-            case .zero:
-                return self.zero
-            case .one:
-                return self.one
-            case .two:
-                return self.two
-            case .few:
-                return self.few
-            case .many:
-                return self.many
-            case .other:
-                return self.other
-            }
-        }
-        
-        public enum PluralRule {
-            case zero, one, two, few, many, other
-        }
-    }
 }
 
 extension OfferingsResponse {
@@ -147,8 +83,5 @@ extension OfferingsResponse.Offering: Codable, Equatable {}
 extension OfferingsResponse.Placements: Codable, Equatable {}
 extension OfferingsResponse.Targeting: Codable, Equatable {}
 extension OfferingsResponse: Codable, Equatable {}
-extension OfferingsResponse.Config: Codable, Equatable {}
-extension PriceFormattingRuleSet: Codable, Equatable {}
-extension PriceFormattingRuleSet.CurrencySymbolOverride: Codable, Equatable {}
 
 extension OfferingsResponse: HTTPResponseBody {}

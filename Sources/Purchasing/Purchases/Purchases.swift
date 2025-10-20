@@ -418,7 +418,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             if Self.isConfigured, let offeringsResponse = Self.shared.cachedOfferings?.response,
                 let storeFrontCountryCode = systemInfo.storefront?.countryCode
             {
-                priceFormattingRuleSet = offeringsResponse.config?.priceFormattingRuleSets[storeFrontCountryCode]
+                priceFormattingRuleSet = offeringsResponse.uiConfig?.priceFormattingRuleSets[storeFrontCountryCode]
             }
             
             return priceFormattingRuleSet

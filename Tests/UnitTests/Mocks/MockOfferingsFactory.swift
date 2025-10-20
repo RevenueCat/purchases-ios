@@ -76,8 +76,7 @@ extension OfferingsResponse {
         ],
         placements: nil,
         targeting: nil,
-        uiConfig: nil,
-        config: nil
+        uiConfig: nil
     )
 
 }

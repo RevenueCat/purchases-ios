@@ -423,7 +423,8 @@ private enum ButtonWithSheetPreview {
             variableConfig: .init(
                 variableCompatibilityMap: [:],
                 functionCompatibilityMap: [:]
-            )
+            ),
+            priceFormattingRuleSets: [:]
         ),
         data: data
     )
