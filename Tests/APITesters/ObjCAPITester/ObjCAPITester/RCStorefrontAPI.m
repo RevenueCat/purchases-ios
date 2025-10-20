@@ -19,6 +19,7 @@
 
     if (@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)) {
         NSLocale *locale = storefront.locale;
+        NSLog(@"%@", locale.localeIdentifier);
     }
 
     if (@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, macCatalyst 13.1, *)) {
