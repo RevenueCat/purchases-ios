@@ -315,7 +315,7 @@ extension StoreProduct {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    public convenience init(
+    convenience init(
         sk2Product: SK2Product,
         priceFormatterProvider: PriceFormatterProvider
     ) {
