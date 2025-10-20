@@ -115,13 +115,21 @@ public struct UIConfig: Codable, Equatable, Sendable {
     public var app: AppConfig
     public var localizations: [String: [String: String]]
     public var variableConfig: VariableConfig
+    
+    @DefaultDecodable.EmptyDictionary
+    var priceFormattingRuleSets: [
+        // storefront country code -> ruleset
+        String: PriceFormattingRuleSet
+    ]
 
     public init(app: AppConfig,
                 localizations: [String: [String: String]],
-                variableConfig: VariableConfig) {
+                variableConfig: VariableConfig,
+                priceFormattingRuleSets: [String: PriceFormattingRuleSet]) {
         self.app = app
         self.localizations = localizations
         self.variableConfig = variableConfig
+        self.priceFormattingRuleSets = priceFormattingRuleSets
     }
 
 }
@@ -129,7 +137,71 @@ public struct UIConfig: Codable, Equatable, Sendable {
 #else
 
 public struct UIConfig: Codable, Equatable, Sendable {
-
+    @DefaultDecodable.EmptyDictionary
+    var priceFormattingRuleSets: [
+        // storefront country code -> ruleset
+        String: PriceFormattingRuleSet
+    ]
+    
+    public init(priceFormattingRuleSets: [String: PriceFormattingRuleSet]) {
+        self.priceFormattingRuleSets = priceFormattingRuleSets
+    }
 }
 
 #endif
+
+/*
+ Contains a set of rules that will be used when formatting a price
+ Currrently only supports overriding the currencySymbol per currency
+ */
+public struct PriceFormattingRuleSet: Sendable {
+    
+    // currencyCode: CurrencySymbolOverride
+    private var currencySymbolOverrides: [String: CurrencySymbolOverride]
+    
+    init(currencySymbolOverrides: [String : CurrencySymbolOverride]) {
+        self.currencySymbolOverrides = currencySymbolOverrides
+    }
+    
+    func currencySymbolOverride(
+        currencyCode: String
+    ) -> CurrencySymbolOverride? {
+        return self.currencySymbolOverrides[currencyCode]
+    }
+    
+    /*
+     Contains a set of currencySymbol overrides for different pluralization rules
+     */
+    struct CurrencySymbolOverride: Sendable {
+        let zero: String
+        let one: String
+        let two: String
+        let few: String
+        let many: String
+        let other: String
+        
+        func value(for rule: PluralRule) -> String {
+            switch rule {
+            case .zero:
+                return self.zero
+            case .one:
+                return self.one
+            case .two:
+                return self.two
+            case .few:
+                return self.few
+            case .many:
+                return self.many
+            case .other:
+                return self.other
+            }
+        }
+        
+        public enum PluralRule {
+            case zero, one, two, few, many, other
+        }
+    }
+}
+
+extension PriceFormattingRuleSet: Codable, Equatable {}
+extension PriceFormattingRuleSet.CurrencySymbolOverride: Codable, Equatable {}
