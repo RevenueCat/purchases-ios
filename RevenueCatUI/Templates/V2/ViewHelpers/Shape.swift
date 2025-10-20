@@ -259,12 +259,8 @@ private struct ConvexMaskModifier: ViewModifier {
             .clipShape(shape)
             .applyIfLet(border) { view, border in
                 view.overlay {
-                    shape
-                        .eraseToAnyInsettableShape()
-                        .overlay {
-                            border.color.toView(colorScheme: colorScheme)
-                                .mask(shape.strokeBorder(Color.black, lineWidth: border.width))
-                        }
+                    border.color.toView(colorScheme: colorScheme)
+                        .mask(shape.strokeBorder(Color.black, lineWidth: border.width))
                 }
             }
     }
