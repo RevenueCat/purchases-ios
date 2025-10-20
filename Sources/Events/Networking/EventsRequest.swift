@@ -46,7 +46,7 @@ struct EventsRequest {
                 }
             #if ENABLE_AD_EVENTS_TRACKING
             case .ads:
-                guard let event = AdEvent(storedEvent: storedEvent) else {
+                guard let event = AdEventRequest(storedEvent: storedEvent) else {
                     return nil
                 }
                 return AnyEncodable(event)

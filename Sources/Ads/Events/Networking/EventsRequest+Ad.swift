@@ -17,11 +17,11 @@ import Foundation
 
 extension EventsRequest {
 
-    struct AdEvent {
+    struct AdEventRequest {
 
         let id: String?
         let version: Int
-        var type: EventType
+        var type: AdEventRequest.EventType
         var appUserId: String
         var appSessionId: String
         var timestamp: UInt64
@@ -39,7 +39,7 @@ extension EventsRequest {
 
 }
 
-extension EventsRequest.AdEvent {
+extension EventsRequest.AdEventRequest {
 
     enum EventType: String {
 
@@ -95,7 +95,7 @@ extension EventsRequest.AdEvent {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension AdEvent {
 
-    var eventType: EventsRequest.AdEvent.EventType {
+    var eventType: EventsRequest.AdEventRequest.EventType {
         switch self {
         case .displayed: return .displayed
         case .opened: return .opened
@@ -108,8 +108,8 @@ private extension AdEvent {
 
 // MARK: - Codable
 
-extension EventsRequest.AdEvent.EventType: Encodable {}
-extension EventsRequest.AdEvent: Encodable {
+extension EventsRequest.AdEventRequest.EventType: Encodable {}
+extension EventsRequest.AdEventRequest: Encodable {
 
     /// When sending this to the backend `JSONEncoder.KeyEncodingStrategy.convertToSnakeCase` is used
     private enum CodingKeys: String, CodingKey {

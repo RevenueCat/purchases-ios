@@ -31,7 +31,7 @@ class AdEventsRequestTests: TestCase {
     func testDisplayedEvent() throws {
         let event = AdEvent.displayed(Self.eventCreationData, Self.eventData)
         let storedEvent = try Self.createStoredEvent(from: event)
-        let requestEvent: EventsRequest.AdEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
+        let requestEvent: EventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
@@ -39,7 +39,7 @@ class AdEventsRequestTests: TestCase {
     func testOpenedEvent() throws {
         let event = AdEvent.opened(Self.eventCreationData, Self.openedData)
         let storedEvent = try Self.createStoredEvent(from: event)
-        let requestEvent: EventsRequest.AdEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
+        let requestEvent: EventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
@@ -47,7 +47,7 @@ class AdEventsRequestTests: TestCase {
     func testRevenueEvent() throws {
         let event = AdEvent.revenue(Self.eventCreationData, Self.revenueData)
         let storedEvent = try Self.createStoredEvent(from: event)
-        let requestEvent: EventsRequest.AdEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
+        let requestEvent: EventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
@@ -77,7 +77,7 @@ class AdEventsRequestTests: TestCase {
         expect(deserializedEvent.userID) == expectedUserID
         expect(deserializedEvent.feature) == .ads
 
-        let requestEvent = try XCTUnwrap(EventsRequest.AdEvent(storedEvent: deserializedEvent))
+        let requestEvent = try XCTUnwrap(EventsRequest.AdEventRequest(storedEvent: deserializedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
