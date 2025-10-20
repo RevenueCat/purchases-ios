@@ -473,7 +473,7 @@ struct ViewModelFactory {
         case .image(let image):
             switch image.size.width {
             case .fill:
-                return .init(imageComponent: image, parentZStack: nil)
+                return .init(imageComponent: image, videoComponent: nil, parentZStack: nil)
             case .fit, .fixed, .relative:
                 return nil
             }
@@ -493,8 +493,11 @@ struct ViewModelFactory {
                 // Return the ZStack info paired with the image
                 // This is needed to we know what element to apply safe area too
                 return imageInfo.flatMap { info in
-                    return .init(imageComponent: info.imageComponent,
-                                 parentZStack: stack)
+                    return .init(
+                        imageComponent: info.imageComponent,
+                        videoComponent: info.videoComponent,
+                        parentZStack: stack
+                    )
                 }
             }
         case .button:
@@ -526,8 +529,13 @@ struct ViewModelFactory {
                 return nil
             }
             return self.findFullWidthImageViewIfItsTheFirst(first)
-        case .video:
-            return nil
+        case .video(let video):
+            switch video.size.width {
+            case .fill:
+                return .init(imageComponent: nil, videoComponent: video, parentZStack: nil)
+            case .fit, .fixed, .relative:
+                return nil
+            }
         }
     }
 

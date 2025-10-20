@@ -20,7 +20,8 @@ import SwiftUI
 class RootViewModel {
 
     struct FirstImageInfo {
-        let imageComponent: PaywallComponent.ImageComponent
+        let imageComponent: PaywallComponent.ImageComponent?
+        let videoComponent: PaywallComponent.VideoComponent?
         let parentZStack: PaywallComponent.StackComponent?
     }
 
