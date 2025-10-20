@@ -89,7 +89,7 @@ internal protocol AdEventData {
         super.init()
     }
 
-    public convenience init(
+    @objc public convenience init(
         networkName: String,
         mediatorName: MediatorName,
         adUnitId: String,
@@ -153,7 +153,7 @@ internal protocol AdEventData {
         super.init()
     }
 
-    public convenience init(
+    @objc public convenience init(
         networkName: String,
         mediatorName: MediatorName,
         adUnitId: String,
@@ -226,7 +226,7 @@ internal protocol AdEventData {
         super.init()
     }
 
-    public convenience init(
+    @objc public convenience init(
         networkName: String,
         mediatorName: MediatorName,
         adUnitId: String,

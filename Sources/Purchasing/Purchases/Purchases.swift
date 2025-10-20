@@ -272,7 +272,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
     /// The ad tracker for reporting ad impressions, clicks, and revenue to RevenueCat.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    @_spi(Experimental) public var adTracker: AdTracker {
+    @_spi(Experimental) @objc public var adTracker: AdTracker {
         if let tracker = _adTracker as? AdTracker {
             return tracker
         }
