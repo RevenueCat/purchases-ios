@@ -92,9 +92,10 @@ class InternalAPI {
         }
 
         let request = EventsRequest(events: events)
-        let operation = PostPaywallEventsOperation(configuration: .init(httpClient: self.backendConfig.httpClient),
-                                                   request: request,
-                                                   responseHandler: completion)
+        let operation = PostEventsOperation(configuration: .init(httpClient: self.backendConfig.httpClient),
+                                            request: request,
+                                            path: HTTPRequest.PaywallPath.postEvents,
+                                            responseHandler: completion)
 
         self.backendConfig.operationQueue.addOperation(operation)
     }
@@ -121,9 +122,10 @@ class InternalAPI {
         }
 
         let request = EventsRequest(events: events)
-        let operation = PostAdEventsOperation(configuration: .init(httpClient: self.backendConfig.httpClient),
-                                              request: request,
-                                              responseHandler: completion)
+        let operation = PostEventsOperation(configuration: .init(httpClient: self.backendConfig.httpClient),
+                                            request: request,
+                                            path: HTTPRequest.AdPath.postEvents,
+                                            responseHandler: completion)
 
         self.backendConfig.operationQueue.addOperation(operation)
     }
