@@ -11,6 +11,8 @@
 //
 //  Created by RevenueCat on 1/8/25.
 
+// swiftlint:disable file_length
+
 import Foundation
 
 // MARK: - Public Types
@@ -191,22 +193,22 @@ internal protocol AdEventData {
 }
 
 /// Data for ad revenue events.
-@_spi(Experimental) public struct AdRevenue: AdEventData {
+@_spi(Experimental) @objc(RCAdRevenue) public final class AdRevenue: NSObject, AdEventData {
 
     // swiftlint:disable missing_docs
-    public var networkName: String
-    public var mediatorName: MediatorName
-    public var placement: String?
-    public var adUnitId: String
-    public var adInstanceId: String
-    public var revenueMicros: Int
-    public var currency: String
-    public var precision: Precision
+    @objc public var networkName: String
+    @objc public var mediatorName: MediatorName
+    @objc public var placement: String?
+    @objc public var adUnitId: String
+    @objc public var adInstanceId: String
+    @objc public var revenueMicros: Int
+    @objc public var currency: String
+    @objc public var precision: Precision
 
-    public init(
+    @objc public init(
         networkName: String,
         mediatorName: MediatorName,
-        placement: String? = nil,
+        placement: String?,
         adUnitId: String,
         adInstanceId: String,
         revenueMicros: Int,
@@ -221,8 +223,57 @@ internal protocol AdEventData {
         self.revenueMicros = revenueMicros
         self.currency = currency
         self.precision = precision
+        super.init()
+    }
+
+    public convenience init(
+        networkName: String,
+        mediatorName: MediatorName,
+        adUnitId: String,
+        adInstanceId: String,
+        revenueMicros: Int,
+        currency: String,
+        precision: Precision
+    ) {
+        self.init(
+            networkName: networkName,
+            mediatorName: mediatorName,
+            placement: nil,
+            adUnitId: adUnitId,
+            adInstanceId: adInstanceId,
+            revenueMicros: revenueMicros,
+            currency: currency,
+            precision: precision
+        )
     }
     // swiftlint:enable missing_docs
+
+    // MARK: - NSObject overrides for equality
+
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? AdRevenue else { return false }
+        return self.networkName == other.networkName &&
+               self.mediatorName == other.mediatorName &&
+               self.placement == other.placement &&
+               self.adUnitId == other.adUnitId &&
+               self.adInstanceId == other.adInstanceId &&
+               self.revenueMicros == other.revenueMicros &&
+               self.currency == other.currency &&
+               self.precision == other.precision
+    }
+
+    public override var hash: Int {
+        var hasher = Hasher()
+        hasher.combine(networkName)
+        hasher.combine(mediatorName)
+        hasher.combine(placement)
+        hasher.combine(adUnitId)
+        hasher.combine(adInstanceId)
+        hasher.combine(revenueMicros)
+        hasher.combine(currency)
+        hasher.combine(precision)
+        return hasher.finalize()
+    }
 
 }
 
@@ -357,7 +408,7 @@ extension AdEvent {
 
 extension AdDisplayed: Codable {}
 extension AdOpened: Codable {}
-extension AdRevenue: Equatable, Codable, Sendable {}
+extension AdRevenue: Codable {}
 extension AdEvent.CreationData: Equatable, Codable, Sendable {}
 extension AdEvent: Equatable, Codable, Sendable {}
 
