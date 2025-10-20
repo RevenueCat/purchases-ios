@@ -63,19 +63,19 @@ internal protocol AdEventData {
 }
 
 /// Data for ad displayed events.
-@_spi(Experimental) public struct AdDisplayed: AdEventData {
+@_spi(Experimental) @objc(RCAdDisplayed) public final class AdDisplayed: NSObject, AdEventData {
 
     // swiftlint:disable missing_docs
-    public var networkName: String
-    public var mediatorName: MediatorName
-    public var placement: String?
-    public var adUnitId: String
-    public var adInstanceId: String
+    @objc public var networkName: String
+    @objc public var mediatorName: MediatorName
+    @objc public var placement: String?
+    @objc public var adUnitId: String
+    @objc public var adInstanceId: String
 
-    public init(
+    @objc public init(
         networkName: String,
         mediatorName: MediatorName,
-        placement: String? = nil,
+        placement: String?,
         adUnitId: String,
         adInstanceId: String
     ) {
@@ -84,8 +84,45 @@ internal protocol AdEventData {
         self.placement = placement
         self.adUnitId = adUnitId
         self.adInstanceId = adInstanceId
+        super.init()
+    }
+
+    public convenience init(
+        networkName: String,
+        mediatorName: MediatorName,
+        adUnitId: String,
+        adInstanceId: String
+    ) {
+        self.init(
+            networkName: networkName,
+            mediatorName: mediatorName,
+            placement: nil,
+            adUnitId: adUnitId,
+            adInstanceId: adInstanceId
+        )
     }
     // swiftlint:enable missing_docs
+
+    // MARK: - NSObject overrides for equality
+
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? AdDisplayed else { return false }
+        return self.networkName == other.networkName &&
+               self.mediatorName == other.mediatorName &&
+               self.placement == other.placement &&
+               self.adUnitId == other.adUnitId &&
+               self.adInstanceId == other.adInstanceId
+    }
+
+    public override var hash: Int {
+        var hasher = Hasher()
+        hasher.combine(networkName)
+        hasher.combine(mediatorName)
+        hasher.combine(placement)
+        hasher.combine(adUnitId)
+        hasher.combine(adInstanceId)
+        return hasher.finalize()
+    }
 
 }
 
@@ -268,7 +305,7 @@ extension AdEvent {
 
 // MARK: - Protocol Conformances
 
-extension AdDisplayed: Equatable, Codable, Sendable {}
+extension AdDisplayed: Codable {}
 extension AdOpened: Equatable, Codable, Sendable {}
 extension AdRevenue: Equatable, Codable, Sendable {}
 extension AdEvent.CreationData: Equatable, Codable, Sendable {}
