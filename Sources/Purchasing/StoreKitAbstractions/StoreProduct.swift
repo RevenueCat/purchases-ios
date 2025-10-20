@@ -306,7 +306,7 @@ extension StoreProduct {
     public convenience init(sk1Product: SK1Product) {
         self.init(SK1StoreProduct(sk1Product: sk1Product))
     }
-    
+
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     public convenience init(
         sk2Product: SK2Product

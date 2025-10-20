@@ -113,7 +113,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         unwrappedFirstProduct = try XCTUnwrap(receivedProducts?.first)
         expect(unwrappedFirstProduct.currencyCode) == "EUR"
     }
-    
+
     func testUsePriceFormattingRuleSetWithStorefrontSwitchSK1() async throws {
         let priceFormattingRuleSetProvider = PriceFormattingRuleSetProvider {
             .init(currencySymbolOverrides: [
@@ -148,7 +148,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         expect(unwrappedFirstProduct.currencyCode) == "EUR"
         expect(unwrappedFirstProduct.localizedPricePerMonth) == "e 4,99"
     }
-    
+
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testUsePriceFormattingRuleSetWithStorefrontSwitchSK2() async throws {
         let priceFormattingRuleSetProvider = PriceFormattingRuleSetProvider {

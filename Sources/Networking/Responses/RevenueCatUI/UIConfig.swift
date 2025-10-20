@@ -115,7 +115,7 @@ public struct UIConfig: Codable, Equatable, Sendable {
     public var app: AppConfig
     public var localizations: [String: [String: String]]
     public var variableConfig: VariableConfig
-    
+
     @DefaultDecodable.EmptyDictionary
     var priceFormattingRuleSets: [
         // storefront country code -> ruleset
@@ -132,7 +132,6 @@ public struct UIConfig: Codable, Equatable, Sendable {
         self.variableConfig = variableConfig
         self.priceFormattingRuleSets = priceFormattingRuleSets
     }
-
 }
 
 #else
@@ -143,7 +142,7 @@ public struct UIConfig: Codable, Equatable, Sendable {
         // storefront country code -> ruleset
         String: PriceFormattingRuleSet
     ]
-    
+
     @_spi(Internal)
     public init(priceFormattingRuleSets: [String: PriceFormattingRuleSet]) {
         self.priceFormattingRuleSets = priceFormattingRuleSets
@@ -158,20 +157,20 @@ public struct UIConfig: Codable, Equatable, Sendable {
  */
 @_spi(Internal)
 public struct PriceFormattingRuleSet: Sendable {
-    
+
     // currencyCode: CurrencySymbolOverride
     private var currencySymbolOverrides: [String: CurrencySymbolOverride]
-    
-    init(currencySymbolOverrides: [String : CurrencySymbolOverride]) {
+
+    init(currencySymbolOverrides: [String: CurrencySymbolOverride]) {
         self.currencySymbolOverrides = currencySymbolOverrides
     }
-    
+
     func currencySymbolOverride(
         currencyCode: String
     ) -> CurrencySymbolOverride? {
         return self.currencySymbolOverrides[currencyCode]
     }
-    
+
     /*
      Contains a set of currencySymbol overrides for different pluralization rules
      */
@@ -182,7 +181,7 @@ public struct PriceFormattingRuleSet: Sendable {
         let few: String
         let many: String
         let other: String
-        
+
         func value(for rule: PluralRule) -> String {
             switch rule {
             case .zero:
@@ -199,7 +198,7 @@ public struct PriceFormattingRuleSet: Sendable {
                 return self.other
             }
         }
-        
+
         public enum PluralRule {
             case zero, one, two, few, many, other
         }

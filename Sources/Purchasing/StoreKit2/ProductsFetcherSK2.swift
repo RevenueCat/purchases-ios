@@ -16,9 +16,9 @@ import StoreKit
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 actor ProductsFetcherSK2 {
-    
+
     private let priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider
-    
+
     init(priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider = .empty) {
         self.priceFormattingRuleSetProvider = priceFormattingRuleSetProvider
     }
