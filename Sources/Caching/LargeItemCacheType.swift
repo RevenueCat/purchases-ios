@@ -14,10 +14,12 @@
 import Foundation
 
 /// An inteface representing a simple cache
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
 protocol LargeItemCacheType {
+    /// Store data to a url
+    func saveData(_ data: Data, to url: URL) throws
 
     /// Store data to a url
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
     func saveData(_ bytes: AsyncThrowingStream<UInt8, Error>, to url: URL, checksum: Checksum?) async throws
 
     /// Check if there is content cached at the url
@@ -26,18 +28,26 @@ protocol LargeItemCacheType {
     /// Load data from url
     func loadFile(at url: URL) throws -> Data
 
+    /// delete data at url
+    func remove(_ url: URL) throws
+
     /// Creates a directory in the cache from a base path
     func createCacheDirectoryIfNeeded(basePath: String) -> URL?
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
 extension FileManager: LargeItemCacheType {
     /// A URL for a cache directory if one is present
     private var cacheDirectory: URL? {
         return urls(for: .cachesDirectory, in: .userDomainMask).first
     }
 
+    /// Store data to a url
+    func saveData(_ data: Data, to url: URL) throws {
+        try data.write(to: url)
+    }
+
     /// Store data to a url and validate that the file is correct before saving
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
     func saveData(
         _ bytes: AsyncThrowingStream<UInt8, Error>,
         to url: URL,
@@ -132,5 +142,9 @@ extension FileManager: LargeItemCacheType {
     /// Load data from url
     func loadFile(at url: URL) throws -> Data {
         return try Data(contentsOf: url)
+    }
+
+    func remove(_ url: URL) throws {
+        try self.removeItem(at: url)
     }
 }
