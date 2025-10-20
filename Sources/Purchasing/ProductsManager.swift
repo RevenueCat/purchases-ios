@@ -172,7 +172,7 @@ extension ProductsManagerType {
 // MARK: -
 struct PriceFormattingRuleSetProvider {
     let priceFormattingRuleSet: () -> PriceFormattingRuleSet?
-    
+
     static let empty = PriceFormattingRuleSetProvider(
         priceFormattingRuleSet: { nil }
     )
