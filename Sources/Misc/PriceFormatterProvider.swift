@@ -16,9 +16,9 @@ import Foundation
 /// A `NumberFormatter` provider class for prices.
 /// This provider caches the formatter to improve the performance.
 final class PriceFormatterProvider: Sendable {
-    
+
     private let priceFormattingRuleSet: PriceFormattingRuleSet?
-    
+
     init(priceFormattingRuleSet: PriceFormattingRuleSet? = nil) {
         self.priceFormattingRuleSet = priceFormattingRuleSet
     }
@@ -49,16 +49,15 @@ final class PriceFormatterProvider: Sendable {
                     formatter.currencySymbolOverride == priceFormattingRuleSet?.currencySymbolOverride(currencyCode: formatter.currencyCode) {
                     return formatter
                 }
-            }
-            else if let formatter = formatter, formatter.locale == locale {
+            } else if let formatter = formatter, formatter.locale == locale {
                 return formatter
             }
-            
+
             var newFormatter =  makePriceFormatterForSK1(
                 with: locale,
                 currencySymbolOverride: nil
             )
-            
+
             // If there is a currency symbol override for the currencyCode of the new formatter, use that
             if let currencySymbolOverride = priceFormattingRuleSet?.currencySymbolOverride(currencyCode: newFormatter.currencyCode) {
                 newFormatter =  makePriceFormatterForSK1(
@@ -66,7 +65,7 @@ final class PriceFormatterProvider: Sendable {
                     currencySymbolOverride: currencySymbolOverride
                 )
             }
-            
+
             formatter = newFormatter
 
             return newFormatter
@@ -110,7 +109,7 @@ final class PriceFormatterProvider: Sendable {
             return newFormatter
         }
     }
-    
+
     private func createPriceFormatterIfNeeded(
         cachedPriceFormatter: NumberFormatter?,
         currencyCode: String,
@@ -119,23 +118,22 @@ final class PriceFormatterProvider: Sendable {
         let currencySymbolOverride = priceFormattingRuleSet?.currencySymbolOverride(
             currencyCode: currencyCode
         )
-        
+
         if let formatter = cachedPriceFormatter as? CurrencySymbolOverridingPriceFormatter {
             if formatter.currencyCode == currencyCode, formatter.locale == locale, formatter.currencySymbolOverride == currencySymbolOverride {
                 return formatter
             }
-        }
-        else if let formatter = cachedPriceFormatter, formatter.currencyCode == currencyCode, formatter.locale == locale {
+        } else if let formatter = cachedPriceFormatter, formatter.currencyCode == currencyCode, formatter.locale == locale {
             return formatter
         }
-        
+
         return makePriceFormatter(
             with: currencyCode,
             locale: locale,
             currencySymbolOverride: currencySymbolOverride
         )
     }
-    
+
     private func makePriceFormatter(
         with currencyCode: String,
         locale: Locale,
@@ -157,23 +155,23 @@ final class PriceFormatterProvider: Sendable {
 }
 
 class CurrencySymbolOverridingPriceFormatter: NumberFormatter, @unchecked Sendable {
-    
+
     let currencySymbolOverride: PriceFormattingRuleSet.CurrencySymbolOverride
     private var numberFormatterCache = [PriceFormattingRuleSet.CurrencySymbolOverride.PluralRule: NumberFormatter]()
-    
+
     init(currencySymbolOverride: PriceFormattingRuleSet.CurrencySymbolOverride) {
         self.currencySymbolOverride = currencySymbolOverride
         super.init()
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func string(from number: NSNumber) -> String? {
         formatter(for: rule(for: number)).string(from: number)
     }
-    
+
     /// Cardinal plural selection per CLDR/ICU baseline:
     /// - Non-integers → .other
     /// - Integers: 0 → .zero, 1 → .one, 2 → .two, else → .other
@@ -184,11 +182,11 @@ class CurrencySymbolOverridingPriceFormatter: NumberFormatter, @unchecked Sendab
 
         // Guard weird numerics
         if n.isNaN || n.isInfinite { return .other }
-        
+
         guard let intValue = Int64(exactly: n) else {
             return .other
         }
-        
+
         // Check if value has any fractional part
         let isInteger = n == Double(intValue)
 
@@ -203,12 +201,12 @@ class CurrencySymbolOverridingPriceFormatter: NumberFormatter, @unchecked Sendab
         default: return .other
         }
     }
-    
+
     private func formatter(for rule: PriceFormattingRuleSet.CurrencySymbolOverride.PluralRule) -> NumberFormatter {
         if let formatter = numberFormatterCache[rule] {
             return formatter
         }
-        
+
         let formatter = NumberFormatter()
         formatter.numberStyle = numberStyle
         formatter.locale = locale
