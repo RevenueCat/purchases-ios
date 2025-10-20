@@ -122,6 +122,7 @@ public struct UIConfig: Codable, Equatable, Sendable {
         String: PriceFormattingRuleSet
     ]
 
+    @_spi(Internal)
     public init(app: AppConfig,
                 localizations: [String: [String: String]],
                 variableConfig: VariableConfig,
@@ -143,6 +144,7 @@ public struct UIConfig: Codable, Equatable, Sendable {
         String: PriceFormattingRuleSet
     ]
     
+    @_spi(Internal)
     public init(priceFormattingRuleSets: [String: PriceFormattingRuleSet]) {
         self.priceFormattingRuleSets = priceFormattingRuleSets
     }
@@ -154,6 +156,7 @@ public struct UIConfig: Codable, Equatable, Sendable {
  Contains a set of rules that will be used when formatting a price
  Currrently only supports overriding the currencySymbol per currency
  */
+@_spi(Internal)
 public struct PriceFormattingRuleSet: Sendable {
     
     // currencyCode: CurrencySymbolOverride
