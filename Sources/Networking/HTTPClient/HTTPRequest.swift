@@ -70,7 +70,7 @@ struct HTTPRequest {
         self.init(method: method, requestPath: path, nonce: nonce, isRetryable: isRetryable)
     }
 
-    private init(
+    internal init(
         method: Method,
         requestPath: HTTPRequestPath,
         nonce: Data? = nil,
