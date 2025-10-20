@@ -35,12 +35,12 @@ struct ViewModelFactory {
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider
     ) throws -> RootViewModel {
-        let firstImageInfo = self.findFullWidthImageViewIfItsTheFirst(.stack(componentsConfig.stack))
+        let firstItemIgnoresSafeAreaInfo = self.findFullWidthImageViewIfItsTheFirst(.stack(componentsConfig.stack))
 
         let rootStackViewModel = try toStackViewModel(
             component: componentsConfig.stack,
             packageValidator: self.packageValidator,
-            firstImageInfo: firstImageInfo,
+            firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
             purchaseButtonCollector: nil,
             localizationProvider: localizationProvider,
             uiConfigProvider: uiConfigProvider,
@@ -51,7 +51,7 @@ struct ViewModelFactory {
             let stackViewModel = try toStackViewModel(
                 component: $0.stack,
                 packageValidator: self.packageValidator,
-                firstImageInfo: nil,
+                firstItemIgnoresSafeAreaInfo: nil,
                 purchaseButtonCollector: nil,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
@@ -67,7 +67,7 @@ struct ViewModelFactory {
         return RootViewModel(
             stackViewModel: rootStackViewModel,
             stickyFooterViewModel: stickyFooterViewModel,
-            firstImageInfo: firstImageInfo
+            firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo
         )
     }
 
@@ -75,7 +75,7 @@ struct ViewModelFactory {
     func toViewModel(
         component: PaywallComponent,
         packageValidator: PackageValidator,
-        firstImageInfo: RootViewModel.FirstImageInfo?,
+        firstItemIgnoresSafeAreaInfo: RootViewModel.FirstItemShouldIgnoreSafeAreaInfo?,
         purchaseButtonCollector: PurchaseButtonCollector? = nil,
         offering: Offering,
         localizationProvider: LocalizationProvider,
@@ -111,7 +111,7 @@ struct ViewModelFactory {
                 try toStackViewModel(
                     component: component,
                     packageValidator: packageValidator,
-                    firstImageInfo: firstImageInfo,
+                    firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
                     purchaseButtonCollector: purchaseButtonCollector,
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
@@ -122,7 +122,7 @@ struct ViewModelFactory {
             let stackViewModel = try toStackViewModel(
                 component: component.stack,
                 packageValidator: packageValidator,
-                firstImageInfo: firstImageInfo,
+                firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
                 purchaseButtonCollector: purchaseButtonCollector,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
@@ -135,7 +135,7 @@ struct ViewModelFactory {
                 sheetStackViewModel = try toStackViewModel(
                     component: sheet.stack,
                     packageValidator: packageValidator,
-                    firstImageInfo: nil,
+                    firstItemIgnoresSafeAreaInfo: nil,
                     purchaseButtonCollector: purchaseButtonCollector,
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
@@ -160,7 +160,7 @@ struct ViewModelFactory {
             let stackViewModel = try toStackViewModel(
                 component: component.stack,
                 packageValidator: packageValidator,
-                firstImageInfo: firstImageInfo,
+                firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
                 purchaseButtonCollector: packagePurchaseButtonCollector,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
@@ -193,7 +193,7 @@ struct ViewModelFactory {
             let stackViewModel = try toStackViewModel(
                 component: component.stack,
                 packageValidator: packageValidator,
-                firstImageInfo: firstImageInfo,
+                firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
                 purchaseButtonCollector: purchaseButtonCollector,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
@@ -212,7 +212,7 @@ struct ViewModelFactory {
             let stackViewModel = try toStackViewModel(
                 component: component.stack,
                 packageValidator: packageValidator,
-                firstImageInfo: firstImageInfo,
+                firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
                 purchaseButtonCollector: purchaseButtonCollector,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
@@ -262,7 +262,7 @@ struct ViewModelFactory {
             let controlStackViewModel = try toStackViewModel(
                 component: component.control.stack,
                 packageValidator: packageValidator,
-                firstImageInfo: firstImageInfo,
+                firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
                 purchaseButtonCollector: purchaseButtonCollector,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
@@ -309,7 +309,7 @@ struct ViewModelFactory {
             let tabsStackViewModel = try toStackViewModel(
                 component: tabsStackComponent,
                 packageValidator: PackageValidator(),
-                firstImageInfo: firstImageInfo,
+                firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
                 purchaseButtonCollector: purchaseButtonCollector,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
@@ -322,7 +322,7 @@ struct ViewModelFactory {
                 let stackViewModel = try toStackViewModel(
                     component: tab.stack,
                     packageValidator: tabPackageValidator,
-                    firstImageInfo: firstImageInfo,
+                    firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
                     purchaseButtonCollector: purchaseButtonCollector,
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
@@ -362,7 +362,7 @@ struct ViewModelFactory {
             let stackViewModel = try toStackViewModel(
                 component: component.stack,
                 packageValidator: packageValidator,
-                firstImageInfo: firstImageInfo,
+                firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
                 purchaseButtonCollector: purchaseButtonCollector,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
@@ -388,7 +388,7 @@ struct ViewModelFactory {
                 try toStackViewModel(
                     component: stackComponent,
                     packageValidator: packageValidator,
-                    firstImageInfo: firstImageInfo,
+                    firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
                     purchaseButtonCollector: purchaseButtonCollector,
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
@@ -419,7 +419,7 @@ struct ViewModelFactory {
     func toStackViewModel(
         component: PaywallComponent.StackComponent,
         packageValidator: PackageValidator,
-        firstImageInfo: RootViewModel.FirstImageInfo?,
+        firstItemIgnoresSafeAreaInfo: RootViewModel.FirstItemShouldIgnoreSafeAreaInfo?,
         purchaseButtonCollector: PurchaseButtonCollector?,
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,
@@ -429,7 +429,7 @@ struct ViewModelFactory {
             try self.toViewModel(
                 component: component,
                 packageValidator: packageValidator,
-                firstImageInfo: firstImageInfo,
+                firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
                 purchaseButtonCollector: purchaseButtonCollector,
                 offering: offering,
                 localizationProvider: localizationProvider,
@@ -441,7 +441,7 @@ struct ViewModelFactory {
             try self.toViewModel(
                 component: component,
                 packageValidator: packageValidator,
-                firstImageInfo: firstImageInfo,
+                firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
                 // Explicitly not looking for purchase button in badge
                 purchaseButtonCollector: nil,
                 offering: offering,
@@ -452,7 +452,7 @@ struct ViewModelFactory {
 
         // Stores in view model that we need to apply the safe area inset
         // This is only used with ZStack children that aren't the background
-        let shouldApplySafeAreaInset = component == firstImageInfo?.parentZStack
+        let shouldApplySafeAreaInset = component == firstItemIgnoresSafeAreaInfo?.parentZStack
 
         return try StackComponentViewModel(
             component: component,
@@ -466,7 +466,7 @@ struct ViewModelFactory {
     // swiftlint:disable cyclomatic_complexity function_body_length
     private func findFullWidthImageViewIfItsTheFirst(
         _ component: PaywallComponent
-    ) -> RootViewModel.FirstImageInfo? {
+    ) -> RootViewModel.FirstItemShouldIgnoreSafeAreaInfo? {
         switch component {
         case .text:
             return nil

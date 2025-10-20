@@ -303,7 +303,7 @@ private struct LoadedPaywallsV2View: View {
             // we will ignore safe area pass the safe area insets in to environment
             // If the image is in a ZStack, the ZStack will push non-images
             // down with the inset
-            .applyIf(paywallState.rootViewModel.firstImageInfo != nil, apply: { view in
+            .applyIf(paywallState.rootViewModel.firstItemIgnoresSafeAreaInfo != nil, apply: { view in
                 view
                     .edgesIgnoringSafeArea(.top)
             })
