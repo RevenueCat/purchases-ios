@@ -50,10 +50,6 @@ struct EventsRequest {
                     return nil
                 }
                 return AnyEncodable(event)
-            #else
-            case .ads:
-                // Ad events tracking is disabled, skip this event
-                return nil
             #endif
             }
         })
