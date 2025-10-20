@@ -39,20 +39,7 @@ final class PostEventsOperation: NetworkOperation {
     }
 
     override func begin(completion: @escaping () -> Void) {
-        let httpRequest: HTTPRequest
-
-        if let paywallPath = self.path as? HTTPRequest.PaywallPath {
-            httpRequest = HTTPRequest(method: .post(self.request), path: paywallPath)
-        } else if let adPath = self.path as? HTTPRequest.AdPath {
-            httpRequest = HTTPRequest(method: .post(self.request), path: adPath)
-        } else {
-            assertionFailure("Unsupported path type: \(type(of: self.path))")
-            defer {
-                completion()
-            }
-            self.responseHandler?(nil)
-            return
-        }
+        let httpRequest = HTTPRequest(method: .post(self.request), requestPath: self.path)
 
         self.httpClient.perform(httpRequest) { (response: VerifiedHTTPResponse<HTTPEmptyResponseBody>.Result) in
             defer {
