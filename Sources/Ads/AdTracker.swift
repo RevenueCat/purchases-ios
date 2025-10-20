@@ -85,10 +85,7 @@ public final class AdTracker: NSObject {
      ```
      */
     public func trackAdDisplayed(_ data: AdDisplayed) async {
-        await self.eventsManager?.track(featureEvent: AdEvent.displayed(
-            .init(id: UUID(), date: Date()),
-            data
-        ))
+        let event = AdEvent.displayed(.init(id: UUID(), date: Date()), data)
     }
 
     /**
@@ -110,10 +107,7 @@ public final class AdTracker: NSObject {
      ```
      */
     public func trackAdOpened(_ data: AdOpened) async {
-        await self.eventsManager?.track(featureEvent: AdEvent.opened(
-            .init(id: UUID(), date: Date()),
-            data
-        ))
+        let event = AdEvent.opened(.init(id: UUID(), date: Date()), data)
     }
 
     /**
@@ -139,10 +133,7 @@ public final class AdTracker: NSObject {
      ```
      */
     public func trackAdRevenue(_ data: AdRevenue) async {
-        await self.eventsManager?.track(featureEvent: AdEvent.revenue(
-            .init(id: UUID(), date: Date()),
-            data
-        ))
+        let event = AdEvent.revenue(.init(id: UUID(), date: Date()), data)
     }
 
 }
