@@ -29,10 +29,6 @@ RCPurchasesAreCompletedBy purchasesAreCompletedBy;
 id<RCPurchasesDelegate> delegate;
 NSString *appUserID;
 BOOL isAnonymous;
-NSString *storeFrontCountryCode;
-NSLocale *storeFrontLocale;
-RCWebPurchaseRedemption *webPurchaseRedemptionLink;
-NSURL *url;
 
 + (void)checkAPI {
     RCPurchases *p = [RCPurchases configureWithAPIKey:@""];
@@ -109,7 +105,6 @@ NSURL *url;
     delegate = [p delegate];
     appUserID = [p appUserID];
     isAnonymous = [p isAnonymous];
-
     RCCustomerInfo *pi = nil;
     RCStoreProduct *storeProduct = nil;
     RCStoreProductDiscount *stpd = nil;
