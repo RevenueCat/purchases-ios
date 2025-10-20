@@ -12,7 +12,7 @@
 //  Created by Madeline Beyl on 8/25/21.
 
 import Foundation
-@_spi(Experimental) import RevenueCat
+import RevenueCat
 import StoreKit
 
 func checkPurchasesAPI() {
