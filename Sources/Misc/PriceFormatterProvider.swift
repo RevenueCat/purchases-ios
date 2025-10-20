@@ -15,7 +15,7 @@ import Foundation
 
 /// A `NumberFormatter` provider class for prices.
 /// This provider caches the formatter to improve the performance.
-public final class PriceFormatterProvider: Sendable {
+final class PriceFormatterProvider: Sendable {
     
     private let priceFormattingRuleSet: PriceFormattingRuleSet?
     
