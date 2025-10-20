@@ -229,26 +229,39 @@ internal protocol AdEventData {
 extension AdRevenue {
 
     /// Type representing the level of accuracy for reported revenue values.
-    @_spi(Experimental) public struct Precision: Equatable, Hashable, Codable, Sendable {
+    @_spi(Experimental) @objc(RCAdRevenuePrecision) public final class Precision: NSObject, Codable {
 
         /// The raw string value of the precision type
-        internal let rawValue: String
+        @objc public let rawValue: String
 
-        internal init(rawValue: String) {
+        /// Creates a precision value with the specified raw value
+        @objc public init(rawValue: String) {
             self.rawValue = rawValue
+            super.init()
         }
 
         /// Revenue value is exact and confirmed
-        public static let exact = Precision(rawValue: "exact")
+        @objc public static let exact = Precision(rawValue: "exact")
 
         /// Revenue value is defined by the publisher
-        public static let publisherDefined = Precision(rawValue: "publisher_defined")
+        @objc public static let publisherDefined = Precision(rawValue: "publisher_defined")
 
         /// Revenue value is an estimate
-        public static let estimated = Precision(rawValue: "estimated")
+        @objc public static let estimated = Precision(rawValue: "estimated")
 
         /// Revenue value accuracy cannot be determined
-        public static let unknown = Precision(rawValue: "unknown")
+        @objc public static let unknown = Precision(rawValue: "unknown")
+
+        // MARK: - NSObject overrides for equality
+
+        public override func isEqual(_ object: Any?) -> Bool {
+            guard let other = object as? Precision else { return false }
+            return self.rawValue == other.rawValue
+        }
+
+        public override var hash: Int {
+            return self.rawValue.hash
+        }
 
     }
 
