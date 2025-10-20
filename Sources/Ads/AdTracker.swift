@@ -54,7 +54,7 @@ import Foundation
  ))
  ```
  */
-@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+@_spi(Experimental) @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 @objc(RCAdTracker)
 public final class AdTracker: NSObject {
 
@@ -84,7 +84,7 @@ public final class AdTracker: NSObject {
      ))
      ```
      */
-    public func trackAdDisplayed(_ data: AdDisplayed) async {
+    @_spi(Experimental) public func trackAdDisplayed(_ data: AdDisplayed) async {
         let event = AdEvent.displayed(.init(id: UUID(), date: Date()), data)
     }
 
@@ -106,7 +106,7 @@ public final class AdTracker: NSObject {
      ))
      ```
      */
-    public func trackAdOpened(_ data: AdOpened) async {
+    @_spi(Experimental) public func trackAdOpened(_ data: AdOpened) async {
         let event = AdEvent.opened(.init(id: UUID(), date: Date()), data)
     }
 
@@ -132,7 +132,7 @@ public final class AdTracker: NSObject {
      ))
      ```
      */
-    public func trackAdRevenue(_ data: AdRevenue) async {
+    @_spi(Experimental) public func trackAdRevenue(_ data: AdRevenue) async {
         let event = AdEvent.revenue(.init(id: UUID(), date: Date()), data)
     }
 
