@@ -729,6 +729,7 @@ platform :ios do
       )
     rescue => e
       # Equivalent to `fail_build: !generate_snapshots`
+      UI.verbose("Failed to run tests for RevenueCatUI") # FIXME REMOVE THIS
       raise e if !generate_snapshots
     end
   end
