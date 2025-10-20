@@ -105,7 +105,7 @@ BOOL isAnonymous;
     delegate = [p delegate];
     appUserID = [p appUserID];
     isAnonymous = [p isAnonymous];
-
+    
     RCCustomerInfo *pi = nil;
     RCStoreProduct *storeProduct = nil;
     RCStoreProductDiscount *stpd = nil;
