@@ -201,17 +201,18 @@ struct PaywallsV2View: View {
                         }
                     }
                     .task {
-                        guard didFinishEligibilityCheck else {
-                            async let introCheck: Void = introOfferEligibilityContext.computeEligibility(
-                                for: paywallState.packages
-                            )
-                            async let promoCheck: Void = paywallPromoOfferCache.computeEligibility(
-                                for: paywallState.packageInfos.map { ($0.package, $0.promotionalOfferProductCode) }
-                            )
-                            _ = await (introCheck, promoCheck)
-                            didFinishEligibilityCheck = true
+                        guard !didFinishEligibilityCheck else {
                             return
                         }
+
+                        async let introCheck: Void = introOfferEligibilityContext.computeEligibility(
+                            for: paywallState.packages
+                        )
+                        async let promoCheck: Void = paywallPromoOfferCache.computeEligibility(
+                            for: paywallState.packageInfos.map { ($0.package, $0.promotionalOfferProductCode) }
+                        )
+                        _ = await (introCheck, promoCheck)
+                        didFinishEligibilityCheck = true
                     }
                     // Note: preferences need to be applied after `.toolbar` call
                     .preference(key: PurchaseInProgressPreferenceKey.self,
