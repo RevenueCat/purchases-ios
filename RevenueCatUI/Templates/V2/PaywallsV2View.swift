@@ -112,7 +112,7 @@ struct PaywallsV2View: View {
     // There is a timing issue where the screen will completely render before the offers cache is primed
     // This is necessary to ensure that the view displays the offer text when it is available
     private var redrawTrigger: String {
-        "PaywallsV2View-\(didFinishEligibilityCheck ? "Checked" : "pending")"
+        return "PaywallsV2View-\(didFinishEligibilityCheck ? "Checked" : "pending")"
     }
 
     @StateObject
