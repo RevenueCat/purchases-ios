@@ -114,22 +114,6 @@ class InternalAPI {
         self.backendConfig.addDiagnosticsOperation(operation, delay: .long)
     }
 
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func postAdEvents(events: [StoredEvent], completion: @escaping ResponseHandler) {
-        guard !events.isEmpty else {
-            completion(nil)
-            return
-        }
-
-        let request = EventsRequest(events: events)
-        let operation = PostEventsOperation(configuration: .init(httpClient: self.backendConfig.httpClient),
-                                            request: request,
-                                            path: HTTPRequest.AdPath.postEvents,
-                                            responseHandler: completion)
-
-        self.backendConfig.operationQueue.addOperation(operation)
-    }
-
 }
 
 extension InternalAPI {
@@ -139,16 +123,6 @@ extension InternalAPI {
     func postPaywallEvents(events: [StoredEvent]) async throws {
         let error = await Async.call { completion in
             self.postPaywallEvents(events: events, completion: completion)
-        }
-
-        if let error { throw error }
-    }
-
-    /// - Throws: `BackendError`
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func postAdEvents(events: [StoredEvent]) async throws {
-        let error = await Async.call { completion in
-            self.postAdEvents(events: events, completion: completion)
         }
 
         if let error { throw error }

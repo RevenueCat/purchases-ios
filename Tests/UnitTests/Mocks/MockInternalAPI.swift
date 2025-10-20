@@ -40,26 +40,6 @@ class MockInternalAPI: InternalAPI {
         }
     }
 
-    var invokedPostAdEvents: Bool = false
-    var invokedPostAdEventsParameters: [[StoredEvent]] = []
-    var stubbedPostAdEventsCompletionResult: BackendError?
-    var stubbedPostAdEventsCallback: ((@escaping InternalAPI.ResponseHandler) -> Void)?
-
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    override func postAdEvents(
-        events: [StoredEvent],
-        completion: @escaping InternalAPI.ResponseHandler
-    ) {
-        self.invokedPostAdEvents = true
-        self.invokedPostAdEventsParameters.append(events)
-
-        if let callback = stubbedPostAdEventsCallback {
-            callback(completion)
-        } else {
-            completion(self.stubbedPostAdEventsCompletionResult)
-        }
-    }
-
     var invokedPostDiagnosticsEvents: Bool = false
     var invokedPostDiagnosticsEventsParameters: [[DiagnosticsEvent]] = []
     var stubbedPostDiagnosticsEventsCompletionResult: BackendError?
