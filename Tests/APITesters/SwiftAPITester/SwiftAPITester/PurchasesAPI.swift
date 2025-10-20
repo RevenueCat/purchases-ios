@@ -23,9 +23,6 @@ func checkPurchasesAPI() {
     let delegate: PurchasesDelegate? = purch.delegate
     let appUserID: String = purch.appUserID
     let isAnonymous: Bool = purch.isAnonymous
-    if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-        let storeFrontLocale: Locale? = purch.storeFrontLocale
-    }
 
     print(purchasesAreCompletedBy, delegate!, appUserID, isAnonymous)
 
