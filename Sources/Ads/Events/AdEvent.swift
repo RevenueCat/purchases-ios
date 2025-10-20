@@ -146,7 +146,7 @@ extension AdRevenue {
     @_spi(Experimental) public struct Precision: Equatable, Hashable, Codable, Sendable {
 
         /// The raw string value of the precision type
-        public let rawValue: String
+        internal let rawValue: String
 
         internal init(rawValue: String) {
             self.rawValue = rawValue
