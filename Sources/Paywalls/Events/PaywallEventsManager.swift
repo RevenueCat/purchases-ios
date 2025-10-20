@@ -76,37 +76,10 @@ actor PaywallEventsManager: PaywallEventsManagerType {
 
         Logger.verbose(Strings.paywalls.event_flush_starting(count: events.count))
 
-        // Partition events in single pass
-        var adEvents: [StoredEvent] = []
-        var paywallEvents: [StoredEvent] = []
-
-        for event in events {
-            if event.feature == .ads {
-                adEvents.append(event)
-            } else {
-                paywallEvents.append(event)
-            }
-        }
-
-        // Post events in parallel
         do {
-            try await withThrowingTaskGroup(of: Void.self) { group in
-                if !adEvents.isEmpty {
-                    group.addTask {
-                        try await self.internalAPI.postAdEvents(events: adEvents)
-                    }
-                }
-
-                if !paywallEvents.isEmpty {
-                    group.addTask {
-                        try await self.internalAPI.postPaywallEvents(events: paywallEvents)
-                    }
-                }
-
-                try await group.waitForAll()
-            }
-
+            try await self.internalAPI.postPaywallEvents(events: events)
             Logger.debug(Strings.analytics.flush_events_success)
+
             await self.store.clear(count)
 
             return events.count

@@ -1128,14 +1128,10 @@
 		9094B41F2E96A9A70094AD5F /* AdHTTPRequestPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9094B4112E96A9A70094AD5F /* AdHTTPRequestPath.swift */; };
 		9094B4422E96AA140094AD5F /* AdEventsRequestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9094B43B2E96AA140094AD5F /* AdEventsRequestTests.swift */; };
 		9094B4432E96AA140094AD5F /* PurchasesAdEventsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9094B43D2E96AA140094AD5F /* PurchasesAdEventsTests.swift */; };
-		9094B4442E96AA140094AD5F /* AdEventsBackendTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9094B4392E96AA140094AD5F /* AdEventsBackendTests.swift */; };
-		9094B4452E96AA140094AD5F /* iOS18-testPostAdEventsWithOneEvent.1.json in Resources */ = {isa = PBXBuildFile; fileRef = 9094B42D2E96AA140094AD5F /* iOS18-testPostAdEventsWithOneEvent.1.json */; };
 		9094B4472E96AA140094AD5F /* testRevenueEvent.1.json in Resources */ = {isa = PBXBuildFile; fileRef = 9094B4362E96AA140094AD5F /* testRevenueEvent.1.json */; };
 		9094B4492E96AA140094AD5F /* testDisplayedEvent.1.json in Resources */ = {isa = PBXBuildFile; fileRef = 9094B4342E96AA140094AD5F /* testDisplayedEvent.1.json */; };
 		9094B44A2E96AA140094AD5F /* testOpenedEvent.1.json in Resources */ = {isa = PBXBuildFile; fileRef = 9094B4352E96AA140094AD5F /* testOpenedEvent.1.json */; };
-		9094B44B2E96AA140094AD5F /* iOS18-testPostAdEventsWithMultipleEvents.1.json in Resources */ = {isa = PBXBuildFile; fileRef = 9094B42C2E96AA140094AD5F /* iOS18-testPostAdEventsWithMultipleEvents.1.json */; };
 		9094B44D2E96AA140094AD5F /* testCanInitFromDeserializedEvent.1.json in Resources */ = {isa = PBXBuildFile; fileRef = 9094B4332E96AA140094AD5F /* testCanInitFromDeserializedEvent.1.json */; };
-		9094B44E2E96AA140094AD5F /* iOS18-testPostAdEventsWithRevenueEvent.1.json in Resources */ = {isa = PBXBuildFile; fileRef = 9094B42E2E96AA140094AD5F /* iOS18-testPostAdEventsWithRevenueEvent.1.json */; };
 		9A65DFDE258AD60A00DE00B0 /* LogIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65DFDD258AD60A00DE00B0 /* LogIntent.swift */; };
 		9A65E03625918B0500DE00B0 /* ConfigureStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E03525918B0500DE00B0 /* ConfigureStrings.swift */; };
 		9A65E03B25918B0900DE00B0 /* CustomerInfoStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E03A25918B0900DE00B0 /* CustomerInfoStrings.swift */; };
@@ -2635,14 +2631,10 @@
 		9094B4122E96A9A70094AD5F /* EventsRequest+Ad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EventsRequest+Ad.swift"; sourceTree = "<group>"; };
 		9094B4132E96A9A70094AD5F /* PostAdEventsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostAdEventsOperation.swift; sourceTree = "<group>"; };
 		9094B4152E96A9A70094AD5F /* AdEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdEvent.swift; sourceTree = "<group>"; };
-		9094B42C2E96AA140094AD5F /* iOS18-testPostAdEventsWithMultipleEvents.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testPostAdEventsWithMultipleEvents.1.json"; sourceTree = "<group>"; };
-		9094B42D2E96AA140094AD5F /* iOS18-testPostAdEventsWithOneEvent.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testPostAdEventsWithOneEvent.1.json"; sourceTree = "<group>"; };
-		9094B42E2E96AA140094AD5F /* iOS18-testPostAdEventsWithRevenueEvent.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "iOS18-testPostAdEventsWithRevenueEvent.1.json"; sourceTree = "<group>"; };
 		9094B4332E96AA140094AD5F /* testCanInitFromDeserializedEvent.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = testCanInitFromDeserializedEvent.1.json; sourceTree = "<group>"; };
 		9094B4342E96AA140094AD5F /* testDisplayedEvent.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = testDisplayedEvent.1.json; sourceTree = "<group>"; };
 		9094B4352E96AA140094AD5F /* testOpenedEvent.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = testOpenedEvent.1.json; sourceTree = "<group>"; };
 		9094B4362E96AA140094AD5F /* testRevenueEvent.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = testRevenueEvent.1.json; sourceTree = "<group>"; };
-		9094B4392E96AA140094AD5F /* AdEventsBackendTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdEventsBackendTests.swift; sourceTree = "<group>"; };
 		9094B43B2E96AA140094AD5F /* AdEventsRequestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdEventsRequestTests.swift; sourceTree = "<group>"; };
 		9094B43D2E96AA140094AD5F /* PurchasesAdEventsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesAdEventsTests.swift; sourceTree = "<group>"; };
 		9A65DFDD258AD60A00DE00B0 /* LogIntent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogIntent.swift; sourceTree = "<group>"; };
@@ -5687,16 +5679,6 @@
 			path = Ads;
 			sourceTree = "<group>";
 		};
-		9094B4322E96AA140094AD5F /* AdEventsBackendTests */ = {
-			isa = PBXGroup;
-			children = (
-				9094B42C2E96AA140094AD5F /* iOS18-testPostAdEventsWithMultipleEvents.1.json */,
-				9094B42D2E96AA140094AD5F /* iOS18-testPostAdEventsWithOneEvent.1.json */,
-				9094B42E2E96AA140094AD5F /* iOS18-testPostAdEventsWithRevenueEvent.1.json */,
-			);
-			path = AdEventsBackendTests;
-			sourceTree = "<group>";
-		};
 		9094B4372E96AA140094AD5F /* AdEventsRequestTests */ = {
 			isa = PBXGroup;
 			children = (
@@ -5711,7 +5693,6 @@
 		9094B4382E96AA140094AD5F /* __Snapshots__ */ = {
 			isa = PBXGroup;
 			children = (
-				9094B4322E96AA140094AD5F /* AdEventsBackendTests */,
 				9094B4372E96AA140094AD5F /* AdEventsRequestTests */,
 			);
 			path = __Snapshots__;
@@ -5721,7 +5702,6 @@
 			isa = PBXGroup;
 			children = (
 				9094B4382E96AA140094AD5F /* __Snapshots__ */,
-				9094B4392E96AA140094AD5F /* AdEventsBackendTests.swift */,
 				9094B43B2E96AA140094AD5F /* AdEventsRequestTests.swift */,
 				9094B43D2E96AA140094AD5F /* PurchasesAdEventsTests.swift */,
 			);
@@ -6502,13 +6482,10 @@
 				75D9DE072D79FC0E0068554F /* testEncoding.1.json in Resources */,
 				2D4D6AF724F7193700B656BE /* base64encodedreceiptsample1.txt in Resources */,
 				5774F9BE2805E71100997128 /* Fixtures in Resources */,
-				9094B4452E96AA140094AD5F /* iOS18-testPostAdEventsWithOneEvent.1.json in Resources */,
 				9094B4472E96AA140094AD5F /* testRevenueEvent.1.json in Resources */,
 				9094B4492E96AA140094AD5F /* testDisplayedEvent.1.json in Resources */,
 				9094B44A2E96AA140094AD5F /* testOpenedEvent.1.json in Resources */,
-				9094B44B2E96AA140094AD5F /* iOS18-testPostAdEventsWithMultipleEvents.1.json in Resources */,
 				9094B44D2E96AA140094AD5F /* testCanInitFromDeserializedEvent.1.json in Resources */,
-				9094B44E2E96AA140094AD5F /* iOS18-testPostAdEventsWithRevenueEvent.1.json in Resources */,
 				5791CE80273F26A000E50C4B /* base64encoded_sandboxReceipt.txt in Resources */,
 				B319514B26C1991E002CA9AC /* base64EncodedReceiptSampleForDataExtension.txt in Resources */,
 			);
@@ -7309,7 +7286,6 @@
 				FD18ED4E2837F89200C5AA4F /* StoreKitWorkaroundsTests.swift in Sources */,
 				9094B4422E96AA140094AD5F /* AdEventsRequestTests.swift in Sources */,
 				9094B4432E96AA140094AD5F /* PurchasesAdEventsTests.swift in Sources */,
-				9094B4442E96AA140094AD5F /* AdEventsBackendTests.swift in Sources */,
 				B3CD0D8827F25E3E000793F5 /* BackendSubscriberAttributesTests.swift in Sources */,
 				2DDF41E624F6F5DC005BC22D /* MockSK1Product.swift in Sources */,
 				351B51BA26D450E800BD2BD7 /* ProductRequestDataExtensions.swift in Sources */,
