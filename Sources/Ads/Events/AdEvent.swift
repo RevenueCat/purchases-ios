@@ -32,21 +32,33 @@ internal protocol AdEventData {
 ///
 /// Use the predefined static properties for common mediators, or create custom values
 /// for other mediation networks.
-@_spi(Experimental) public struct MediatorName: RawRepresentable, Equatable, Hashable, Codable, Sendable {
+@_spi(Experimental) @objc(RCMediatorName) public final class MediatorName: NSObject, Codable {
 
     /// The raw string value of the mediator name
-    public let rawValue: String
+    @objc public let rawValue: String
 
     /// Creates a mediator name with the specified raw value
-    public init(rawValue: String) {
+    @objc public init(rawValue: String) {
         self.rawValue = rawValue
+        super.init()
     }
 
     /// Google AdMob mediation network
-    public static let adMob = MediatorName(rawValue: "AdMob")
+    @objc public static let adMob = MediatorName(rawValue: "AdMob")
 
     /// AppLovin MAX mediation network
-    public static let appLovin = MediatorName(rawValue: "AppLovin")
+    @objc public static let appLovin = MediatorName(rawValue: "AppLovin")
+
+    // MARK: - NSObject overrides for equality
+
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? MediatorName else { return false }
+        return self.rawValue == other.rawValue
+    }
+
+    public override var hash: Int {
+        return self.rawValue.hash
+    }
 
 }
 
