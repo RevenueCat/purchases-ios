@@ -13,38 +13,10 @@
 
 import Foundation
 
-extension HTTPRequest.AdPath: HTTPRequestPath {
+extension HTTPRequest.AdPath: EventHTTPRequestPath {
 
     // swiftlint:disable:next force_unwrapping
     static let serverHostURL = URL(string: "https://a.revenue.cat")!
-
-    var authenticated: Bool {
-        switch self {
-        case .postEvents:
-            return true
-        }
-    }
-
-    var shouldSendEtag: Bool {
-        switch self {
-        case .postEvents:
-            return false
-        }
-    }
-
-    var supportsSignatureVerification: Bool {
-        switch self {
-        case .postEvents:
-            return false
-        }
-    }
-
-    var needsNonceForSigning: Bool {
-        switch self {
-        case .postEvents:
-            return false
-        }
-    }
 
     var relativePath: String {
         switch self {

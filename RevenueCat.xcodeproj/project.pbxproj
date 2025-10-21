@@ -1130,6 +1130,7 @@
 		90FDE2AA2EA7C6ED00E3CD22 /* FeatureEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90FDE2A22EA7C6ED00E3CD22 /* FeatureEvent.swift */; };
 		90FDE2AB2EA7C6ED00E3CD22 /* StoredFeatureEventSerializer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90FDE2A52EA7C6ED00E3CD22 /* StoredFeatureEventSerializer.swift */; };
 		90FDE2AC2EA7C6ED00E3CD22 /* FeatureEventHTTPRequestPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90FDE29F2EA7C6ED00E3CD22 /* FeatureEventHTTPRequestPath.swift */; };
+		90FDE2AE2EA7CE5300E3CD22 /* EventHTTPRequestPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90FDE2AD2EA7CE5300E3CD22 /* EventHTTPRequestPath.swift */; };
 		9A65DFDE258AD60A00DE00B0 /* LogIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65DFDD258AD60A00DE00B0 /* LogIntent.swift */; };
 		9A65E03625918B0500DE00B0 /* ConfigureStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E03525918B0500DE00B0 /* ConfigureStrings.swift */; };
 		9A65E03B25918B0900DE00B0 /* CustomerInfoStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E03A25918B0900DE00B0 /* CustomerInfoStrings.swift */; };
@@ -2633,6 +2634,7 @@
 		90FDE2A32EA7C6ED00E3CD22 /* FeatureEventStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureEventStore.swift; sourceTree = "<group>"; };
 		90FDE2A42EA7C6ED00E3CD22 /* StoredFeatureEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoredFeatureEvent.swift; sourceTree = "<group>"; };
 		90FDE2A52EA7C6ED00E3CD22 /* StoredFeatureEventSerializer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoredFeatureEventSerializer.swift; sourceTree = "<group>"; };
+		90FDE2AD2EA7CE5300E3CD22 /* EventHTTPRequestPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventHTTPRequestPath.swift; sourceTree = "<group>"; };
 		9A65DFDD258AD60A00DE00B0 /* LogIntent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogIntent.swift; sourceTree = "<group>"; };
 		9A65E03525918B0500DE00B0 /* ConfigureStrings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConfigureStrings.swift; sourceTree = "<group>"; };
 		9A65E03A25918B0900DE00B0 /* CustomerInfoStrings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomerInfoStrings.swift; sourceTree = "<group>"; };
@@ -4200,6 +4202,7 @@
 		353DE0052CCA4EAE00A8F632 /* Networking */ = {
 			isa = PBXGroup;
 			children = (
+				90FDE2AD2EA7CE5300E3CD22 /* EventHTTPRequestPath.swift */,
 				9025C53C2EA66E2500845BCE /* PostEventsOperation.swift */,
 			);
 			path = Networking;
@@ -6785,6 +6788,7 @@
 				FDAADFD12BE2B87000BD1659 /* StoreKit2ObserverModePurchaseDetector.swift in Sources */,
 				FD3A85FC2DDE7532005F3C79 /* VirtualCurrencies.swift in Sources */,
 				4F6BEDE22A26B69500CD9322 /* DebugContentViews.swift in Sources */,
+				90FDE2AE2EA7CE5300E3CD22 /* EventHTTPRequestPath.swift in Sources */,
 				B3B5FBBC269D121B00104A0C /* Offerings.swift in Sources */,
 				9A65E03B25918B0900DE00B0 /* CustomerInfoStrings.swift in Sources */,
 				5721360F28B4602C006C46BE /* Purchases+nonasync.swift in Sources */,
