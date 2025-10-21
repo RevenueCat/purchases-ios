@@ -121,7 +121,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
         switch self {
         case .getOfferings, .getProductEntitlementMapping:
             // swiftlint:disable:next force_unwrapping
-            return [URL(string: "https://api-production.8-lives-cat.io")!]
+            return [URL(string: "https://fortress2.revenuecat.com")!]
         default:
             return []
         }

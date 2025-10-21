@@ -1864,7 +1864,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         )))
         expect(trackedParams1).to(matchTrackParams((
             "get_product_entitlement_mapping",
-            "api-production.8-lives-cat.io",
+            "fortress2.revenuecat.com",
             -1, // Any
             true,
             200,
