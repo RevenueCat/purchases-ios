@@ -7,14 +7,14 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  EventsRequest.swift
+//  FeatureEventsRequest.swift
 //
 //  Created by Nacho Soto on 9/6/23.
 
 import Foundation
 
 /// The content of a request to the events endpoints.
-struct EventsRequest {
+struct FeatureEventsRequest {
 
     var events: [AnyEncodable]
 
@@ -23,7 +23,7 @@ struct EventsRequest {
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    init(events: [StoredEvent]) {
+    init(events: [StoredFeatureEvent]) {
         self.init(events: events.compactMap { storedEvent in
             switch storedEvent.feature {
             case .paywalls:
@@ -57,4 +57,4 @@ struct EventsRequest {
 
 }
 
-extension EventsRequest: HTTPRequestBody {}
+extension FeatureEventsRequest: HTTPRequestBody {}

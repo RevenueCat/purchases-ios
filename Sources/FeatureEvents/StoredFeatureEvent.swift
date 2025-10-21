@@ -7,14 +7,14 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  StoredEvent.swift
+//  StoredFeatureEvent.swift
 //
 //  Created by Nacho Soto on 9/6/23.
 
 import Foundation
 
 /// Contains the necessary information for storing and sending events.
-struct StoredEvent {
+struct StoredFeatureEvent {
 
     private(set) var encodedEvent: String
     private(set) var userID: String
@@ -47,9 +47,9 @@ enum Feature: String, Codable {
 
 // MARK: - Extensions
 
-extension StoredEvent: Sendable {}
+extension StoredFeatureEvent: Sendable {}
 
-extension StoredEvent: Codable {
+extension StoredFeatureEvent: Codable {
 
     private enum CodingKeys: String, CodingKey {
 
@@ -101,9 +101,9 @@ extension StoredEvent: Codable {
 
 }
 
-extension StoredEvent: Equatable {
+extension StoredFeatureEvent: Equatable {
 
-    static func == (lhs: StoredEvent, rhs: StoredEvent) -> Bool {
+    static func == (lhs: StoredFeatureEvent, rhs: StoredFeatureEvent) -> Bool {
         guard lhs.userID == rhs.userID,
               lhs.feature == rhs.feature,
               lhs.appSessionID == rhs.appSessionID,

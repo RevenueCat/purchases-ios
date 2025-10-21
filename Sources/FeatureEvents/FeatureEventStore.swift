@@ -7,21 +7,21 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  EventStore.swift
+//  FeatureEventStore.swift
 //
 //  Created by Nacho Soto on 9/5/23.
 
 import Foundation
 
-protocol EventStoreType: Sendable {
+protocol FeatureEventStoreType: Sendable {
 
     /// Stores `event` into the store.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func store(_ storedEvent: StoredEvent) async
+    func store(_ storedEvent: StoredFeatureEvent) async
 
     /// - Returns: the first `count` events from the store.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func fetch(_ count: Int) async -> [StoredEvent]
+    func fetch(_ count: Int) async -> [StoredFeatureEvent]
 
     /// Removes the first `count` events from the store.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -30,7 +30,7 @@ protocol EventStoreType: Sendable {
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-internal actor EventStore: EventStoreType {
+internal actor FeatureEventStore: FeatureEventStoreType {
 
     private let handler: FileHandlerType
 
@@ -38,31 +38,31 @@ internal actor EventStore: EventStoreType {
         self.handler = handler
     }
 
-    func store(_ storedEvent: StoredEvent) async {
+    func store(_ storedEvent: StoredFeatureEvent) async {
         do {
             if let eventDescription = try? storedEvent.encodedEvent.prettyPrintedJSON {
-                Logger.verbose(EventStoreStrings.storing_event(eventDescription))
+                Logger.verbose(FeatureEventStoreStrings.storing_event(eventDescription))
             } else {
-                Logger.verbose(EventStoreStrings.storing_event_without_json)
+                Logger.verbose(FeatureEventStoreStrings.storing_event_without_json)
             }
 
-            let event = try StoredEventSerializer.encode(storedEvent)
+            let event = try StoredFeatureEventSerializer.encode(storedEvent)
             await self.handler.append(line: event)
         } catch {
-            Logger.error(EventStoreStrings.error_storing_event(error))
+            Logger.error(FeatureEventStoreStrings.error_storing_event(error))
         }
     }
 
-    func fetch(_ count: Int) async -> [StoredEvent] {
+    func fetch(_ count: Int) async -> [StoredFeatureEvent] {
         assert(count > 0, "Invalid count: \(count)")
 
         do {
             return try await self.handler.readLines()
                 .prefix(count)
-                .compactMap { try? StoredEventSerializer.decode($0) }
+                .compactMap { try? StoredFeatureEventSerializer.decode($0) }
                 .extractValues()
         } catch {
-            Logger.error(EventStoreStrings.error_fetching_events(error))
+            Logger.error(FeatureEventStoreStrings.error_fetching_events(error))
             return []
         }
     }
@@ -75,12 +75,12 @@ internal actor EventStore: EventStoreType {
         do {
             try await self.handler.removeFirstLines(count)
         } catch {
-            Logger.error(EventStoreStrings.error_removing_first_lines(count: count, error))
+            Logger.error(FeatureEventStoreStrings.error_removing_first_lines(count: count, error))
 
             do {
                 try await self.handler.emptyFile()
             } catch {
-                Logger.error(EventStoreStrings.error_emptying_file(error))
+                Logger.error(FeatureEventStoreStrings.error_emptying_file(error))
             }
         }
     }
@@ -88,14 +88,14 @@ internal actor EventStore: EventStoreType {
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-extension EventStore {
+extension FeatureEventStore {
 
     static func createDefault(
         applicationSupportDirectory: URL?,
         documentsDirectory: URL? = nil
-    ) throws -> EventStore {
+    ) throws -> FeatureEventStore {
         let url = Self.url(in: try applicationSupportDirectory ?? Self.applicationSupportDirectory)
-        Logger.verbose(EventStoreStrings.initializing(url))
+        Logger.verbose(FeatureEventStoreStrings.initializing(url))
 
         let documentsDirectory = try documentsDirectory ?? Self.documentsDirectory
         Self.removeLegacyDirectoryIfExists(documentsDirectory)
@@ -115,12 +115,12 @@ extension EventStore {
         let url = Self.revenueCatFolder(in: documentsDirectory)
         guard Self.fileManager.fileExists(atPath: url.relativePath) else { return }
 
-        Logger.debug(EventStoreStrings.removing_old_documents_store(url))
+        Logger.debug(FeatureEventStoreStrings.removing_old_documents_store(url))
 
         do {
             try Self.fileManager.removeItem(at: url)
         } catch {
-            Logger.error(EventStoreStrings.error_removing_old_documents_store(error))
+            Logger.error(FeatureEventStoreStrings.error_removing_old_documents_store(error))
         }
     }
 
@@ -165,7 +165,7 @@ extension EventStore {
 
 // swiftlint:disable identifier_name
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private enum EventStoreStrings {
+private enum FeatureEventStoreStrings {
 
     case initializing(URL)
 
@@ -184,12 +184,12 @@ private enum EventStoreStrings {
 // swiftlint:enable identifier_name
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension EventStoreStrings: LogMessage {
+extension FeatureEventStoreStrings: LogMessage {
 
     var description: String {
         switch self {
         case let .initializing(directory):
-            return "Initializing EventStore: \(directory.absoluteString)"
+            return "Initializing FeatureEventStore: \(directory.absoluteString)"
 
         case let .removing_old_documents_store(url):
             return "Removing old store: \(url)"

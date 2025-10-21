@@ -15,7 +15,7 @@ import Foundation
 
 #if ENABLE_AD_EVENTS_TRACKING
 
-extension EventsRequest {
+extension FeatureEventsRequest {
 
     struct AdEventRequest {
 
@@ -39,7 +39,7 @@ extension EventsRequest {
 
 }
 
-extension EventsRequest.AdEventRequest {
+extension FeatureEventsRequest.AdEventRequest {
 
     enum EventType: String {
 
@@ -50,7 +50,7 @@ extension EventsRequest.AdEventRequest {
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    init?(storedEvent: StoredEvent) {
+    init?(storedEvent: StoredFeatureEvent) {
         guard let jsonData = storedEvent.encodedEvent.data(using: .utf8) else {
             Logger.error(Strings.paywalls.event_cannot_get_encoded_event)
             return nil
@@ -95,7 +95,7 @@ extension EventsRequest.AdEventRequest {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension AdEvent {
 
-    var eventType: EventsRequest.AdEventRequest.EventType {
+    var eventType: FeatureEventsRequest.AdEventRequest.EventType {
         switch self {
         case .displayed: return .displayed
         case .opened: return .opened
@@ -108,8 +108,8 @@ private extension AdEvent {
 
 // MARK: - Codable
 
-extension EventsRequest.AdEventRequest.EventType: Encodable {}
-extension EventsRequest.AdEventRequest: Encodable {
+extension FeatureEventsRequest.AdEventRequest.EventType: Encodable {}
+extension FeatureEventsRequest.AdEventRequest: Encodable {
 
     /// When sending this to the backend `JSONEncoder.KeyEncodingStrategy.convertToSnakeCase` is used
     private enum CodingKeys: String, CodingKey {

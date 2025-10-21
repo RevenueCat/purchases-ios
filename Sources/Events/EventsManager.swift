@@ -30,7 +30,7 @@ actor EventsManager: EventsManagerType {
 
     private let internalAPI: InternalAPI
     private let userProvider: CurrentUserProvider
-    private let store: EventStoreType
+    private let store: FeatureEventStoreType
     private var appSessionID: UUID
 
     private var flushInProgress = false
@@ -38,7 +38,7 @@ actor EventsManager: EventsManagerType {
     init(
         internalAPI: InternalAPI,
         userProvider: CurrentUserProvider,
-        store: EventStoreType,
+        store: FeatureEventStoreType,
         appSessionID: UUID = SystemInfo.appSessionID
     ) {
         self.internalAPI = internalAPI
@@ -48,11 +48,11 @@ actor EventsManager: EventsManagerType {
     }
 
     func track(featureEvent: FeatureEvent) async {
-        guard let event: StoredEvent = .init(event: featureEvent,
-                                             userID: self.userProvider.currentAppUserID,
-                                             feature: featureEvent.feature,
-                                             appSessionID: self.appSessionID,
-                                             eventDiscriminator: featureEvent.eventDiscriminator) else {
+        guard let event: StoredFeatureEvent = .init(event: featureEvent,
+                                                     userID: self.userProvider.currentAppUserID,
+                                                     feature: featureEvent.feature,
+                                                     appSessionID: self.appSessionID,
+                                                     eventDiscriminator: featureEvent.eventDiscriminator) else {
             Logger.error(Strings.paywalls.event_cannot_serialize)
             return
         }

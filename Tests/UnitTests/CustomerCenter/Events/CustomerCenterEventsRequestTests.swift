@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  CustomerCenterEventsRequestTests.swift
+//  CustomerCenterFeatureEventsRequestTests.swift
 //
 //  Created by Cesar de la Vega on 28/11/24.
 
@@ -18,7 +18,7 @@ import SnapshotTesting
 import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-class CustomerCenterEventsRequestTests: TestCase {
+class CustomerCenterFeatureEventsRequestTests: TestCase {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -29,12 +29,12 @@ class CustomerCenterEventsRequestTests: TestCase {
     func testImpressionEvent() throws {
         let event = CustomerCenterEvent.impression(Self.eventCreationData, Self.eventData)
         let eventDiscriminator: String = CustomerCenterEventDiscriminator.lifecycle.rawValue
-        let storedEvent: StoredEvent = try XCTUnwrap(.init(event: event,
+        let storedEvent: StoredFeatureEvent = try XCTUnwrap(.init(event: event,
                                                            userID: Self.userID,
                                                            feature: .customerCenter,
                                                            appSessionID: Self.appSessionID,
                                                            eventDiscriminator: eventDiscriminator))
-        let requestEvent = try XCTUnwrap(EventsRequest.CustomerCenterEventBaseRequest.createBase(from: storedEvent))
+        let requestEvent = try XCTUnwrap(FeatureEventsRequest.CustomerCenterEventBaseRequest.createBase(from: storedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
@@ -54,18 +54,18 @@ class CustomerCenterEventsRequestTests: TestCase {
         let customerCenterEvent = CustomerCenterEvent.impression(customerCenterEventCreationData,
                                                                  customerCenterEventData)
 
-        let storedEvent = try XCTUnwrap(StoredEvent(event: customerCenterEvent,
+        let storedEvent = try XCTUnwrap(StoredFeatureEvent(event: customerCenterEvent,
                                                     userID: expectedUserID,
                                                     feature: .customerCenter,
                                                     appSessionID: Self.appSessionID,
                                                     eventDiscriminator: "impression"))
-        let serializedEvent = try StoredEventSerializer.encode(storedEvent)
-        let deserializedEvent = try StoredEventSerializer.decode(serializedEvent)
+        let serializedEvent = try StoredFeatureEventSerializer.encode(storedEvent)
+        let deserializedEvent = try StoredFeatureEventSerializer.decode(serializedEvent)
         expect(deserializedEvent.userID) == expectedUserID
         expect(deserializedEvent.feature) == .customerCenter
 
         let requestEvent =
-        try XCTUnwrap(EventsRequest.CustomerCenterEventBaseRequest.createBase(from: deserializedEvent))
+        try XCTUnwrap(FeatureEventsRequest.CustomerCenterEventBaseRequest.createBase(from: deserializedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }

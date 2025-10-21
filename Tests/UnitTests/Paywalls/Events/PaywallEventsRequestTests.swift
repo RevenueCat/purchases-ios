@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PaywallEventsRequestTests.swift
+//  PaywallFeatureEventsRequestTests.swift
 //
 //  Created by Nacho Soto on 9/6/23.
 
@@ -18,7 +18,7 @@ import SnapshotTesting
 import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-class PaywallEventsRequestTests: TestCase {
+class PaywallFeatureEventsRequestTests: TestCase {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -28,24 +28,24 @@ class PaywallEventsRequestTests: TestCase {
 
     func testImpressionEvent() throws {
         let event = PaywallEvent.impression(Self.eventCreationData, Self.eventData)
-        let storedEvent = try Self.createStoredEvent(from: event)
-        let requestEvent: EventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
+        let storedEvent = try Self.createStoredFeatureEvent(from: event)
+        let requestEvent: FeatureEventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
 
     func testCancelEvent() throws {
         let event = PaywallEvent.cancel(Self.eventCreationData, Self.eventData)
-        let storedEvent = try Self.createStoredEvent(from: event)
-        let requestEvent: EventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
+        let storedEvent = try Self.createStoredFeatureEvent(from: event)
+        let requestEvent: FeatureEventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
 
     func testCloseEvent() throws {
         let event = PaywallEvent.close(Self.eventCreationData, Self.eventData)
-        let storedEvent = try Self.createStoredEvent(from: event)
-        let requestEvent: EventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
+        let storedEvent = try Self.createStoredFeatureEvent(from: event)
+        let requestEvent: FeatureEventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
@@ -66,17 +66,17 @@ class PaywallEventsRequestTests: TestCase {
         )
         let paywallEvent = PaywallEvent.impression(paywallEventCreationData, paywallEventData)
 
-        let storedEvent = try XCTUnwrap(StoredEvent(event: paywallEvent,
+        let storedEvent = try XCTUnwrap(StoredFeatureEvent(event: paywallEvent,
                                                     userID: expectedUserID,
                                                     feature: .paywalls,
                                                     appSessionID: Self.appSessionID,
                                                     eventDiscriminator: "impression"))
-        let serializedEvent = try StoredEventSerializer.encode(storedEvent)
-        let deserializedEvent = try StoredEventSerializer.decode(serializedEvent)
+        let serializedEvent = try StoredFeatureEventSerializer.encode(storedEvent)
+        let deserializedEvent = try StoredFeatureEventSerializer.decode(serializedEvent)
         expect(deserializedEvent.userID) == expectedUserID
         expect(deserializedEvent.feature) == .paywalls
 
-        let requestEvent = try XCTUnwrap(EventsRequest.PaywallEvent(storedEvent: deserializedEvent))
+        let requestEvent = try XCTUnwrap(FeatureEventsRequest.PaywallEvent(storedEvent: deserializedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
@@ -86,9 +86,9 @@ class PaywallEventsRequestTests: TestCase {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension PaywallEventsRequestTests {
+private extension PaywallFeatureEventsRequestTests {
 
-    static func createStoredEvent(from event: PaywallEvent) throws -> StoredEvent {
+    static func createStoredFeatureEvent(from event: PaywallEvent) throws -> StoredFeatureEvent {
         return try XCTUnwrap(.init(event: event,
                                    userID: Self.userID,
                                    feature: .paywalls,
