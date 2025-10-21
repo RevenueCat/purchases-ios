@@ -98,6 +98,7 @@ final class PurchaseHandler: ObservableObject {
     fileprivate(set) var restoreError: Error?
 
     private var eventData: PaywallEvent.Data?
+    private var paywallSource: PaywallSource?
 
     convenience init(purchases: Purchases = .shared,
                      performPurchase: PerformPurchase? = nil,
@@ -351,8 +352,13 @@ extension PurchaseHandler {
     }
 
     func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
-        self.eventData = eventData
-        self.track(.impression(.init(), eventData))
+        var updatedEventData = eventData
+        if let paywallSource {
+            updatedEventData.source = paywallSource.rawValue
+        }
+
+        self.eventData = updatedEventData
+        self.track(.impression(.init(), updatedEventData))
     }
 
     /// - Returns: whether the event was tracked
@@ -378,6 +384,15 @@ extension PurchaseHandler {
 
         self.track(.cancel(.init(), data))
         return true
+    }
+
+    @MainActor
+    func updatePaywallSource(_ source: PaywallSource?) {
+        self.paywallSource = source
+
+        if let source {
+            self.eventData?.source = source.rawValue
+        }
     }
 
     private func startAction(_ type: PurchaseHandler.ActionType) {
@@ -423,8 +438,10 @@ extension PurchaseHandler {
 private extension PurchaseHandler {
 
     func track(_ event: PaywallEvent) {
-        Task.detached(priority: .background) { [purchases = self.purchases] in
-            await purchases.track(paywallEvent: event)
+        let source = self.paywallSource
+
+        Task.detached(priority: .background) { [purchases = self.purchases, event, source] in
+            await purchases.track(paywallEvent: event, source: source)
         }
     }
 
@@ -467,7 +484,7 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
         throw ErrorCode.configurationError
     }
 
-    func track(paywallEvent: PaywallEvent) async {}
+    func track(paywallEvent: PaywallEvent, source: PaywallSource?) async {}
 
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func invalidateCustomerInfoCache() {}

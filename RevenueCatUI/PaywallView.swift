@@ -64,6 +64,9 @@ public struct PaywallView: View {
     @Environment(\.dismiss)
     private var dismiss
 
+    @Environment(\.paywallSource)
+    private var paywallSource
+
     /// Create a view to display the paywall in `Offerings.current`.
     ///
     /// - Parameter fonts: An optional ``PaywallFontProvider``.
@@ -505,6 +508,9 @@ struct LoadedOfferingPaywallView: View {
     @Environment(\.dismiss)
     private var dismiss
 
+    @Environment(\.paywallSource)
+    private var paywallSource
+
     init(
         offering: Offering,
         activelySubscribedProductIdentifiers: Set<String>,
@@ -570,8 +576,14 @@ struct LoadedOfferingPaywallView: View {
             .environmentObject(self.introEligibility)
             .environmentObject(self.purchaseHandler)
             .disabled(self.purchaseHandler.actionInProgress)
-            .onAppear { self.purchaseHandler.trackPaywallImpression(self.createEventData()) }
-            .onDisappear { self.purchaseHandler.trackPaywallClose() }
+            .onAppear {
+                self.purchaseHandler.updatePaywallSource(self.paywallSource)
+                self.purchaseHandler.trackPaywallImpression(self.createEventData())
+            }
+            .onDisappear {
+                self.purchaseHandler.trackPaywallClose()
+                self.purchaseHandler.updatePaywallSource(nil)
+            }
             .onChangeOf(self.purchaseHandler.purchased) { purchased in
                 if purchased {
                     guard let onRequestedDismissal = self.onRequestedDismissal else {

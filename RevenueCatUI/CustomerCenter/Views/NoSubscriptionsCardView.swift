@@ -112,6 +112,7 @@ struct NoSubscriptionsCardView: View {
                                               performRestore: viewModel.performRestore)
                 )
             )
+            .paywallSource(.customerCenter)
         })
         .onAppear {
             viewModel.refreshOffering()

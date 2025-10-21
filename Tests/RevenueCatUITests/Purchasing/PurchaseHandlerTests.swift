@@ -216,6 +216,71 @@ class PurchaseHandlerTests: TestCase {
         expect(result3) == false
 
     }
+
+    func testPaywallSourceIsPropagatedToTrackedEvents() async throws {
+        let impressionExpectation = expectation(description: "Impression tracked")
+        let closeExpectation = expectation(description: "Close tracked")
+
+        let source: PaywallSource = "test_source"
+        var trackedEvents: [PaywallEvent] = []
+
+        let handler = PurchaseHandler(
+            purchases: MockPurchases(
+                purchase: { _ in
+                return (
+                    transaction: nil,
+                    customerInfo: TestData.customerInfo,
+                    userCancelled: false
+                )
+            },
+                restorePurchases: {
+                return TestData.customerInfo
+            },
+                trackEvent: { event in
+                await MainActor.run {
+                    trackedEvents.append(event)
+
+                    switch event {
+                    case .impression:
+                        impressionExpectation.fulfill()
+                    case .close:
+                        closeExpectation.fulfill()
+                    case .cancel:
+                        break
+                    }
+                }
+            },
+                customerInfo: {
+                return TestData.customerInfo
+            })
+        )
+
+        let eventData: PaywallEvent.Data = .init(
+            offering: TestData.offeringWithIntroOffer,
+            paywall: TestData.paywallWithIntroOffer,
+            sessionID: .init(),
+            displayMode: .fullScreen,
+            locale: .init(identifier: "en_US"),
+            darkMode: false
+        )
+
+        handler.updatePaywallSource(source)
+        handler.trackPaywallImpression(eventData)
+
+        await fulfillment(of: [impressionExpectation], timeout: 1.0)
+
+        let result = handler.trackPaywallClose()
+        expect(result) == true
+
+        handler.updatePaywallSource(nil)
+
+        await fulfillment(of: [closeExpectation], timeout: 1.0)
+
+        expect(trackedEvents).to(haveCount(2))
+        trackedEvents.forEach { event in
+            expect(event.data.source) == source.rawValue
+        }
+    }
 }
 
 // MARK: - Private
@@ -232,7 +297,8 @@ private final class AsyncPurchaseHandler {
 
     init() {
         self.purchaseHandler = .init(
-            purchases: MockPurchases { [weak instance = self] _ in
+            purchases: MockPurchases(
+                purchase: { [weak instance = self] _ in
                 let instance = try XCTUnwrap(instance)
 
                 await instance.createAndWaitForContinuation()
@@ -242,19 +308,22 @@ private final class AsyncPurchaseHandler {
                     customerInfo: TestData.customerInfo,
                     userCancelled: false
                 )
-            } restorePurchases: { [weak instance = self] in
+            },
+                restorePurchases: { [weak instance = self] in
                 let instance = try XCTUnwrap(instance)
                 await instance.createAndWaitForContinuation()
 
                 return TestData.customerInfo
-            } trackEvent: { event in
+            },
+                trackEvent: { event in
                 Logger.debug("Tracking event: \(event)")
-            } customerInfo: { [weak instance = self] in
+            },
+                customerInfo: { [weak instance = self] in
                 let instance = try XCTUnwrap(instance)
                 await instance.createAndWaitForContinuation()
 
                 return TestData.customerInfo
-            }
+            })
         )
     }
 

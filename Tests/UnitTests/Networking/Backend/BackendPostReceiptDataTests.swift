@@ -479,6 +479,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                               transactionData: .init(
                                  appUserID: Self.userID,
                                  presentedOfferingContext: context,
+                                 presentedOfferingSource: "marketing_automation",
                                  presentedPaywall: nil,
                                  unsyncedAttributes: nil,
                                  storefront: nil,
@@ -510,13 +511,15 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
             date: .init(timeIntervalSince1970: 1694029328)
         )
+        let paywallSource = "presented_from_customer_center"
         let paywallEventData: PaywallEvent.Data = .init(
             offeringIdentifier: offeringIdentifier,
             paywallRevision: 5,
             sessionID: .init(uuidString: "73616D70-6C65-2073-7472-696E67000000")!,
             displayMode: .fullScreen,
             localeIdentifier: "en_US",
-            darkMode: true
+            darkMode: true,
+            source: paywallSource
         )
 
         let productData: ProductRequestData = .createMockProductData(productIdentifier: productIdentifier,
@@ -532,6 +535,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                                  appUserID: Self.userID,
                                  presentedOfferingContext: .init(offeringIdentifier: offeringIdentifier),
                                  presentedPaywall: .impression(paywallEventCreationData, paywallEventData),
+                                 presentedOfferingSource: paywallSource,
                                  unsyncedAttributes: nil,
                                  storefront: nil,
                                  source: .init(isRestore: false, initiationSource: .purchase)

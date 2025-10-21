@@ -95,6 +95,9 @@ struct PaywallsV2View: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    @Environment(\.paywallSource)
+    private var paywallSource
+
     @StateObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
@@ -182,11 +185,15 @@ struct PaywallsV2View: View {
                     .environmentObject(self.paywallPromoOfferCache)
                     .disabled(self.purchaseHandler.actionInProgress)
                     .onAppear {
+                        self.purchaseHandler.updatePaywallSource(self.paywallSource)
                         self.purchaseHandler.trackPaywallImpression(
                             self.createEventData()
                         )
                     }
-                    .onDisappear { self.purchaseHandler.trackPaywallClose() }
+                    .onDisappear {
+                        self.purchaseHandler.trackPaywallClose()
+                        self.purchaseHandler.updatePaywallSource(nil)
+                    }
                     .onChangeOf(self.purchaseHandler.purchased) { purchased in
                         if purchased {
                             self.onDismiss()
@@ -239,6 +246,12 @@ struct PaywallsV2View: View {
             fullMessage,
             replacement: self.fallbackContent.view()
         )
+        .onAppear {
+            self.purchaseHandler.updatePaywallSource(self.paywallSource)
+        }
+        .onDisappear {
+            self.purchaseHandler.updatePaywallSource(nil)
+        }
     }
 
     private func createEventData() -> PaywallEvent.Data {
