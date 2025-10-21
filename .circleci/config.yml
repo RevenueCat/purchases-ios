@@ -1681,10 +1681,12 @@ workflows:
       equal: [loadshedder-integration-tests-old-major, << pipeline.parameters.action >>]
     jobs:
       - loadshedder-integration-tests-old-major:
+          name: loadshedder-integration-tests-v3
           major: "3"
           context:
             - slack-secrets
       - loadshedder-integration-tests-old-major:
+          name: loadshedder-integration-tests-v4
           major: "4"
           context:
             - slack-secrets
