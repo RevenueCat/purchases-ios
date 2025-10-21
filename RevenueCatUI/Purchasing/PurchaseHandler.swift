@@ -134,7 +134,9 @@ final class PurchaseHandler: ObservableObject {
         purchaseResultPublisher
             .removeDuplicates(by: PurchaseResultComparator.compare)
             .receive(on: RunLoop.main)
-            .sink(receiveValue: setResult)
+            .sink { [weak self] result in
+                self?.setResult(result)
+            }
             .store(in: &cancellables)
     }
 
@@ -176,6 +178,10 @@ final class PurchaseHandler: ObservableObject {
             return
         }
         self.purchaseResult = result
+    }
+
+    deinit {
+        cancellables.removeAll()
     }
 
 }
