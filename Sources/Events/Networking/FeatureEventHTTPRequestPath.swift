@@ -7,13 +7,13 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PaywallHTTPRequestPath.swift
+//  FeatureEventHTTPRequestPath.swift
 //
 //  Created by Nacho Soto on 9/5/23.
 
 import Foundation
 
-extension HTTPRequest.PaywallPath: HTTPRequestPath {
+extension HTTPRequest.FeatureEventPath: HTTPRequestPath {
 
     // swiftlint:disable:next force_unwrapping
     static let serverHostURL = URL(string: "https://api-paywalls.revenuecat.com")!
@@ -56,7 +56,7 @@ extension HTTPRequest.PaywallPath: HTTPRequestPath {
     var name: String {
         switch self {
         case .postEvents:
-            return "post_paywall_events"
+            return "post_feature_events"
         }
     }
 

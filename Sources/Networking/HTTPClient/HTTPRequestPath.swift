@@ -91,7 +91,7 @@ extension HTTPRequest {
 
     }
 
-    enum PaywallPath: Hashable {
+    enum FeatureEventPath: Hashable {
 
         case postEvents
 

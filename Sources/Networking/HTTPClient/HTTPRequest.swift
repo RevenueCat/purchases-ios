@@ -36,7 +36,7 @@ struct HTTPRequest {
 
     init(
         method: Method,
-        path: HTTPRequest.PaywallPath,
+        path: HTTPRequest.FeatureEventPath,
         nonce: Data? = nil,
         isRetryable: Bool = false
     ) {
