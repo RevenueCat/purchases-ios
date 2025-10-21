@@ -237,10 +237,10 @@ platform :ios do
 
     # Upload snapshots to Emerge
     UI.message("Uploading snapshots to Emerge for platform: #{platform}")
-    sh("bundle", "exec", "emerge", "upload", "snapshots", 
-       "--name", "RevenueCat", 
-       "--id", "com.revenuecat.paywall-rendering-validation.#{platform}", 
-       "--repo-name", "RevenueCat/purchases-ios", 
+    sh("bundle", "exec", "emerge", "upload", "snapshots",
+       "--name", "RevenueCat",
+       "--id", "com.revenuecat.paywall-rendering-validation.#{platform}",
+       "--repo-name", "RevenueCat/purchases-ios",
        "#{output_dir}/images")
   end
 
@@ -1115,14 +1115,17 @@ platform :ios do
     )
   end
 
-  desc "Run LoadShedder tests"
-  lane :v3_loadshedder_integration_tests do |options|
+  desc "Run LoadShedder tests in old major"
+  lane :loadshedder_integration_tests_in_old_major do |options|
     replace_api_key_integration_tests
+    major = options[:major] || UI.user_error!("Please provide :major (Integer, e.g., 3 or 4)")
+    major = major.to_i
+    UI.user_error!("Unsupported major version: #{major}. Supported: 3 or 4") unless [3, 4].include?(major)
     success = false
     begin
       scan(
-        project: "./Tests/v3LoadShedderIntegration/v3LoadShedderIntegration.xcodeproj",
-        scheme: "v3LoadShedderIntegration",
+        project: "./Tests/v#{major}LoadShedderIntegration/v#{major}LoadShedderIntegration.xcodeproj",
+        scheme: "v#{major}LoadShedderIntegration",
         ensure_devices_found: true,
         derived_data_path: "scan_derived_data",
         output_types: 'junit',
@@ -1135,7 +1138,7 @@ platform :ios do
     rescue => exception
       raise exception
     ensure
-      send_slack_load_shedder_integration_test_v3(success: success)
+      send_slack_loadshedder_integration_test_in_major(success: success, major: major)
     end
   end
 
@@ -1687,13 +1690,15 @@ end
 
 # Slack
 
-lane :send_slack_load_shedder_integration_test_v3 do |options|
+lane :send_slack_loadshedder_integration_test_in_major do |options|
   success = options[:success] || false
+  major = options[:major] || UI.user_error!("Please provide :major (Integer, e.g., 3 or 4)")
+  major = major.to_i
   message =
       if success
-          "iOS load shedder integration tests V3 finished successfully"
+          "iOS load shedder integration tests v#{major} finished successfully"
       else
-          "iOS load shedder integration tests V3 failed"
+          "iOS load shedder integration tests v#{major} failed"
       end
   slack(
     message: message,
