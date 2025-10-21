@@ -7,13 +7,13 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PaywallEventStore.swift
+//  EventStore.swift
 //
 //  Created by Nacho Soto on 9/5/23.
 
 import Foundation
 
-protocol PaywallEventStoreType: Sendable {
+protocol EventStoreType: Sendable {
 
     /// Stores `event` into the store.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -30,7 +30,7 @@ protocol PaywallEventStoreType: Sendable {
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-internal actor PaywallEventStore: PaywallEventStoreType {
+internal actor EventStore: EventStoreType {
 
     private let handler: FileHandlerType
 
@@ -41,15 +41,15 @@ internal actor PaywallEventStore: PaywallEventStoreType {
     func store(_ storedEvent: StoredEvent) async {
         do {
             if let eventDescription = try? storedEvent.encodedEvent.prettyPrintedJSON {
-                Logger.verbose(PaywallEventStoreStrings.storing_event(eventDescription))
+                Logger.verbose(EventStoreStrings.storing_event(eventDescription))
             } else {
-                Logger.verbose(PaywallEventStoreStrings.storing_event_without_json)
+                Logger.verbose(EventStoreStrings.storing_event_without_json)
             }
 
             let event = try StoredEventSerializer.encode(storedEvent)
             await self.handler.append(line: event)
         } catch {
-            Logger.error(PaywallEventStoreStrings.error_storing_event(error))
+            Logger.error(EventStoreStrings.error_storing_event(error))
         }
     }
 
@@ -62,7 +62,7 @@ internal actor PaywallEventStore: PaywallEventStoreType {
                 .compactMap { try? StoredEventSerializer.decode($0) }
                 .extractValues()
         } catch {
-            Logger.error(PaywallEventStoreStrings.error_fetching_events(error))
+            Logger.error(EventStoreStrings.error_fetching_events(error))
             return []
         }
     }
@@ -75,12 +75,12 @@ internal actor PaywallEventStore: PaywallEventStoreType {
         do {
             try await self.handler.removeFirstLines(count)
         } catch {
-            Logger.error(PaywallEventStoreStrings.error_removing_first_lines(count: count, error))
+            Logger.error(EventStoreStrings.error_removing_first_lines(count: count, error))
 
             do {
                 try await self.handler.emptyFile()
             } catch {
-                Logger.error(PaywallEventStoreStrings.error_emptying_file(error))
+                Logger.error(EventStoreStrings.error_emptying_file(error))
             }
         }
     }
@@ -88,14 +88,14 @@ internal actor PaywallEventStore: PaywallEventStoreType {
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-extension PaywallEventStore {
+extension EventStore {
 
     static func createDefault(
         applicationSupportDirectory: URL?,
         documentsDirectory: URL? = nil
-    ) throws -> PaywallEventStore {
+    ) throws -> EventStore {
         let url = Self.url(in: try applicationSupportDirectory ?? Self.applicationSupportDirectory)
-        Logger.verbose(PaywallEventStoreStrings.initializing(url))
+        Logger.verbose(EventStoreStrings.initializing(url))
 
         let documentsDirectory = try documentsDirectory ?? Self.documentsDirectory
         Self.removeLegacyDirectoryIfExists(documentsDirectory)
@@ -115,12 +115,12 @@ extension PaywallEventStore {
         let url = Self.revenueCatFolder(in: documentsDirectory)
         guard Self.fileManager.fileExists(atPath: url.relativePath) else { return }
 
-        Logger.debug(PaywallEventStoreStrings.removing_old_documents_store(url))
+        Logger.debug(EventStoreStrings.removing_old_documents_store(url))
 
         do {
             try Self.fileManager.removeItem(at: url)
         } catch {
-            Logger.error(PaywallEventStoreStrings.error_removing_old_documents_store(error))
+            Logger.error(EventStoreStrings.error_removing_old_documents_store(error))
         }
     }
 
@@ -165,7 +165,7 @@ extension PaywallEventStore {
 
 // swiftlint:disable identifier_name
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private enum PaywallEventStoreStrings {
+private enum EventStoreStrings {
 
     case initializing(URL)
 
@@ -184,12 +184,12 @@ private enum PaywallEventStoreStrings {
 // swiftlint:enable identifier_name
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension PaywallEventStoreStrings: LogMessage {
+extension EventStoreStrings: LogMessage {
 
     var description: String {
         switch self {
         case let .initializing(directory):
-            return "Initializing PaywallEventStore: \(directory.absoluteString)"
+            return "Initializing EventStore: \(directory.absoluteString)"
 
         case let .removing_old_documents_store(url):
             return "Removing old store: \(url)"
@@ -217,7 +217,7 @@ extension PaywallEventStoreStrings: LogMessage {
         }
     }
 
-    var category: String { return "paywall_event_store" }
+    var category: String { return "event_store" }
 
 }
 

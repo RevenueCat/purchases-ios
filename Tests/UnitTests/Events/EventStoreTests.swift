@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PaywallEventStoreTests.swift
+//  EventStoreTests.swift
 //
 //  Created by Nacho Soto on 9/5/23.
 
@@ -17,10 +17,10 @@ import Nimble
 import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-class PaywallEventStoreTests: TestCase {
+class EventStoreTests: TestCase {
 
     private var handler: MockFileHandler!
-    private var store: PaywallEventStore!
+    private var store: EventStore!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -34,20 +34,20 @@ class PaywallEventStoreTests: TestCase {
     // - MARK: -
 
     func testCreateDefaultDoesNotThrow() throws {
-        _ = try PaywallEventStore.createDefault(applicationSupportDirectory: nil)
+        _ = try EventStore.createDefault(applicationSupportDirectory: nil)
     }
 
     func testPersistsEventsAcrossInitialization() async throws {
         let container = Self.temporaryFolder()
 
-        var store = try PaywallEventStore.createDefault(
+        var store = try EventStore.createDefault(
             applicationSupportDirectory: container
         )
 
         await store.store(.randomImpressionEvent())
         await self.verifyEventsInStore(store, expectedCount: 1)
 
-        store = try PaywallEventStore.createDefault(
+        store = try EventStore.createDefault(
             applicationSupportDirectory: container
         )
         await self.verifyEventsInStore(store, expectedCount: 1)
