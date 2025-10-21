@@ -66,35 +66,47 @@ public typealias PurchaseFailureHandler = @MainActor @Sendable (NSError) -> Void
 /// A closure used for notifying of restore initiation.
 public typealias RestoreStartedHandler = @MainActor @Sendable () -> Void
 
-/// Represents the type of purchase flow being initiated.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public enum PurchaseFlowType: Sendable, Equatable {
-    /// A standard purchase flow for a specific product.
-    /// - Parameter productIdentifier: The product identifier being purchased.
-    case standard(String)
-    /// An offer code redemption flow.
-    case offerCode
-}
-
-/// A wrapper for the purchase flow initiated callback action.
+/// A wrapper for the purchase initiated callback action.
 /// This allows intercepting and gating purchase flows before they proceed.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public struct PurchaseFlowInitiatedAction: Sendable {
+public struct PurchaseInitiatedAction: Sendable {
     /// A closure that resumes the purchase flow.
     public typealias Resume = @MainActor @Sendable () -> Void
 
-    private let action: @Sendable (PurchaseFlowType, @escaping Resume) -> Void
+    private let action: @Sendable (String, @escaping Resume) -> Void
 
-    /// Creates a new purchase flow initiated action.
-    /// - Parameter action: The closure to invoke when a purchase flow is initiated.
-    ///   The closure receives the flow type and a resume callback that must be called to proceed.
-    public init(_ action: @escaping @Sendable (PurchaseFlowType, @escaping Resume) -> Void) {
+    /// Creates a new purchase initiated action.
+    /// - Parameter action: The closure to invoke when a purchase is initiated.
+    ///   The closure receives the product identifier and a resume callback that must be called to proceed.
+    public init(_ action: @escaping @Sendable (String, @escaping Resume) -> Void) {
         self.action = action
     }
 
-    /// Invokes the action with the given flow type and resume callback.
-    func callAsFunction(_ flowType: PurchaseFlowType, resume: @escaping Resume) {
-        action(flowType, resume)
+    /// Invokes the action with the given product identifier and resume callback.
+    func callAsFunction(_ productIdentifier: String, resume: @escaping Resume) {
+        action(productIdentifier, resume)
+    }
+}
+
+/// A wrapper for the offer code redemption initiated callback action.
+/// This allows intercepting and gating offer code redemption before it proceeds.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public struct OfferCodeRedemptionInitiatedAction: Sendable {
+    /// A closure that resumes the offer code redemption flow.
+    public typealias Resume = @MainActor @Sendable () -> Void
+
+    private let action: @Sendable (@escaping Resume) -> Void
+
+    /// Creates a new offer code redemption initiated action.
+    /// - Parameter action: The closure to invoke when offer code redemption is initiated.
+    ///   The closure receives a resume callback that must be called to proceed.
+    public init(_ action: @escaping @Sendable (@escaping Resume) -> Void) {
+        self.action = action
+    }
+
+    /// Invokes the action with the resume callback.
+    func callAsFunction(resume: @escaping Resume) {
+        action(resume)
     }
 }
 
@@ -307,28 +319,21 @@ extension View {
         return self.modifier(RestoreFailureModifier(handler: handler))
     }
 
-    /// Invokes the given closure when a purchase flow is about to be initiated,
-    /// allowing you to intercept and gate the flow (e.g., for authentication).
-    /// The purchase or offer code redemption will not proceed until the `resume` callback is invoked.
+    /// Invokes the given closure when a purchase is about to be initiated,
+    /// allowing you to intercept and gate the purchase (e.g., for authentication).
+    /// The purchase will not proceed until the `resume` callback is invoked.
     ///
     /// Example:
     /// ```swift
     ///  var body: some View {
     ///     PaywallView()
-    ///         .onPurchaseFlowInitiated { flowType, resume in
-    ///             switch flowType {
-    ///             case .standard(let productIdentifier):
-    ///                 print("Intercepting purchase for product: \(productIdentifier)")
-    ///                 // Perform authentication or other pre-purchase logic
-    ///                 authenticateUser { success in
-    ///                     if success {
-    ///                         resume() // Proceed with purchase
-    ///                     }
+    ///         .onPurchaseInitiated { productIdentifier, resume in
+    ///             print("Intercepting purchase for product: \(productIdentifier)")
+    ///             // Perform authentication or other pre-purchase logic
+    ///             authenticateUser { success in
+    ///                 if success {
+    ///                     resume() // Proceed with purchase
     ///                 }
-    ///             case .offerCode:
-    ///                 print("Intercepting offer code redemption")
-    ///                 // Perform pre-redemption logic
-    ///                 resume()
     ///             }
     ///         }
     ///  }
@@ -336,10 +341,38 @@ extension View {
     ///
     /// ### Related Articles
     /// [Documentation](https://rev.cat/paywalls)
-    public func onPurchaseFlowInitiated(
-        _ action: @escaping @Sendable (PurchaseFlowType, @escaping PurchaseFlowInitiatedAction.Resume) -> Void
+    public func onPurchaseInitiated(
+        _ action: @escaping @Sendable (String, @escaping PurchaseInitiatedAction.Resume) -> Void
     ) -> some View {
-        self.environment(\.purchaseFlowInitiatedAction, PurchaseFlowInitiatedAction(action))
+        self.environment(\.purchaseInitiatedAction, PurchaseInitiatedAction(action))
+    }
+
+    /// Invokes the given closure when offer code redemption is about to be initiated,
+    /// allowing you to intercept and gate the redemption (e.g., for authentication).
+    /// The offer code redemption will not proceed until the `resume` callback is invoked.
+    ///
+    /// Example:
+    /// ```swift
+    ///  var body: some View {
+    ///     PaywallView()
+    ///         .onOfferCodeRedemptionInitiated { resume in
+    ///             print("Intercepting offer code redemption")
+    ///             // Perform pre-redemption logic
+    ///             authenticateUser { success in
+    ///                 if success {
+    ///                     resume() // Proceed with redemption
+    ///                 }
+    ///             }
+    ///         }
+    ///  }
+    /// ```
+    ///
+    /// ### Related Articles
+    /// [Documentation](https://rev.cat/paywalls)
+    public func onOfferCodeRedemptionInitiated(
+        _ action: @escaping @Sendable (@escaping OfferCodeRedemptionInitiatedAction.Resume) -> Void
+    ) -> some View {
+        self.environment(\.offerCodeRedemptionInitiatedAction, OfferCodeRedemptionInitiatedAction(action))
     }
 
     /// Invokes the given closure when the paywall is meant to be dismissed. This closure will be called:

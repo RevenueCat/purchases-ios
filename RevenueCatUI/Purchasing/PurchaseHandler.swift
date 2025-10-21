@@ -581,17 +581,31 @@ extension EnvironmentValues {
     }
 }
 
-/// `EnvironmentKey` for storing the purchase flow initiated interceptor action.
+/// `EnvironmentKey` for storing the purchase initiated interceptor action.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct PurchaseFlowInitiatedActionKey: EnvironmentKey {
-    static let defaultValue: PurchaseFlowInitiatedAction? = nil
+struct PurchaseInitiatedActionKey: EnvironmentKey {
+    static let defaultValue: PurchaseInitiatedAction? = nil
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension EnvironmentValues {
-    var purchaseFlowInitiatedAction: PurchaseFlowInitiatedAction? {
-        get { self[PurchaseFlowInitiatedActionKey.self] }
-        set { self[PurchaseFlowInitiatedActionKey.self] = newValue }
+    var purchaseInitiatedAction: PurchaseInitiatedAction? {
+        get { self[PurchaseInitiatedActionKey.self] }
+        set { self[PurchaseInitiatedActionKey.self] = newValue }
+    }
+}
+
+/// `EnvironmentKey` for storing the offer code redemption initiated interceptor action.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct OfferCodeRedemptionInitiatedActionKey: EnvironmentKey {
+    static let defaultValue: OfferCodeRedemptionInitiatedAction? = nil
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension EnvironmentValues {
+    var offerCodeRedemptionInitiatedAction: OfferCodeRedemptionInitiatedAction? {
+        get { self[OfferCodeRedemptionInitiatedActionKey.self] }
+        set { self[OfferCodeRedemptionInitiatedActionKey.self] = newValue }
     }
 }
 

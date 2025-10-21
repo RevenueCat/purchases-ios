@@ -21,7 +21,8 @@ import SwiftUI
 struct ButtonComponentView: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.openSheet) private var openSheet
-    @Environment(\.purchaseFlowInitiatedAction) private var purchaseFlowInitiatedAction: PurchaseFlowInitiatedAction?
+    @Environment(\.offerCodeRedemptionInitiatedAction)
+    private var offerCodeRedemptionInitiatedAction: OfferCodeRedemptionInitiatedAction?
     @State private var inAppBrowserURL: URL?
     @State private var showCustomerCenter = false
     @State private var offerCodeRedemptionSheet = false
@@ -146,13 +147,13 @@ struct ButtonComponentView: View {
     }
 
     private func openCodeRedemptionSheet() async {
-        // Check if there's a purchase flow interceptor
-        if let interceptor = self.purchaseFlowInitiatedAction {
+        // Check if there's an offer code redemption interceptor
+        if let interceptor = self.offerCodeRedemptionInitiatedAction {
             // Wait for the interceptor to call resume before proceeding
             await withCheckedContinuation { continuation in
-                interceptor(.offerCode) {
+                interceptor(resume: {
                     continuation.resume()
-                }
+                })
             }
         }
 

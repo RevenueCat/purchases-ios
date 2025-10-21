@@ -23,8 +23,8 @@ struct PurchaseButtonComponentView: View {
     @Environment(\.openURL)
     private var openURL
 
-    @Environment(\.purchaseFlowInitiatedAction)
-    private var purchaseFlowInitiatedAction: PurchaseFlowInitiatedAction?
+    @Environment(\.purchaseInitiatedAction)
+    private var purchaseInitiatedAction: PurchaseInitiatedAction?
 
     @EnvironmentObject
     private var packageContext: PackageContext
@@ -110,12 +110,12 @@ struct PurchaseButtonComponentView: View {
             return
         }
 
-        // Check if there's a purchase flow interceptor
-        if let interceptor = self.purchaseFlowInitiatedAction {
+        // Check if there's a purchase interceptor
+        if let interceptor = self.purchaseInitiatedAction {
             // Wait for the interceptor to call resume before proceeding
             await withCheckedContinuation { continuation in
-                let flowType = PurchaseFlowType.standard(selectedPackage.storeProduct.productIdentifier)
-                interceptor(flowType) {
+                let productIdentifier = selectedPackage.storeProduct.productIdentifier
+                interceptor(productIdentifier) {
                     continuation.resume()
                 }
             }
