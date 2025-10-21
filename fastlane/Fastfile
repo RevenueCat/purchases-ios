@@ -1125,6 +1125,7 @@ platform :ios do
     begin
       scan(
         project: "./Tests/v#{major}LoadShedderIntegration/v#{major}LoadShedderIntegration.xcodeproj",
+        device: ENV['SCAN_DEVICE'] || "iPhone 16 (18.5)",
         scheme: "v#{major}LoadShedderIntegration",
         ensure_devices_found: true,
         derived_data_path: "scan_derived_data",
