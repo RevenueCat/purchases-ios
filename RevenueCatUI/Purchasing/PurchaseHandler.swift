@@ -581,6 +581,20 @@ extension EnvironmentValues {
     }
 }
 
+/// `EnvironmentKey` for storing the purchase flow initiated interceptor action.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct PurchaseFlowInitiatedActionKey: EnvironmentKey {
+    static let defaultValue: PurchaseFlowInitiatedAction? = nil
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension EnvironmentValues {
+    var purchaseFlowInitiatedAction: PurchaseFlowInitiatedAction? {
+        get { self[PurchaseFlowInitiatedActionKey.self] }
+        set { self[PurchaseFlowInitiatedActionKey.self] = newValue }
+    }
+}
+
 // MARK: -
 
 private extension CustomerInfo {

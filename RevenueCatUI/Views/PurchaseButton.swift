@@ -29,6 +29,8 @@ struct PurchaseButton: View {
     private var purchaseHandler: PurchaseHandler
     @Environment(\.isEnabled)
     private var isEnabled
+    @Environment(\.purchaseFlowInitiatedAction)
+    private var purchaseFlowInitiatedAction: PurchaseFlowInitiatedAction?
 
     init(
         packages: TemplateViewConfiguration.PackageConfiguration,
@@ -83,6 +85,18 @@ struct PurchaseButton: View {
             guard !self.selectedPackage.currentlySubscribed else {
                 Logger.warning(Strings.product_already_subscribed)
                 return
+            }
+
+            // Check if there's a purchase flow interceptor
+            if let interceptor = self.purchaseFlowInitiatedAction {
+                // Wait for the interceptor to call resume before proceeding
+                await withCheckedContinuation { continuation in
+                    let flowType = PurchaseFlowType
+                        .standard(self.selectedPackage.content.storeProduct.productIdentifier)
+                    interceptor(flowType) {
+                        continuation.resume()
+                    }
+                }
             }
 
             _ = try await self.purchaseHandler.purchase(package: self.selectedPackage.content)
