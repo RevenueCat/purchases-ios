@@ -136,6 +136,59 @@ public final class AdTracker: NSObject {
         let event = AdEvent.revenue(.init(id: UUID(), date: Date()), data)
     }
 
+    // MARK: - Objective-C Compatible Methods
+
+    /**
+     Tracks when an ad impression is displayed (Objective-C compatible).
+
+     Call this method from your ad SDK's impression callback to report ad displays to RevenueCat.
+     This is the completion handler version for Objective-C compatibility.
+
+     - Parameters:
+       - data: The displayed ad event data
+       - completion: Called when the tracking is complete
+     */
+    @_spi(Experimental) @objc public func trackAdDisplayed(_ data: AdDisplayed, completion: @escaping () -> Void) {
+        Task {
+            await self.trackAdDisplayed(data)
+            completion()
+        }
+    }
+
+    /**
+     Tracks when an ad is opened or clicked (Objective-C compatible).
+
+     Call this method from your ad SDK's click callback to report ad interactions to RevenueCat.
+     This is the completion handler version for Objective-C compatibility.
+
+     - Parameters:
+       - data: The opened/clicked ad event data
+       - completion: Called when the tracking is complete
+     */
+    @_spi(Experimental) @objc public func trackAdOpened(_ data: AdOpened, completion: @escaping () -> Void) {
+        Task {
+            await self.trackAdOpened(data)
+            completion()
+        }
+    }
+
+    /**
+     Tracks ad revenue from an impression (Objective-C compatible).
+
+     Call this method from your ad SDK's revenue callback to report ad revenue to RevenueCat.
+     This is the completion handler version for Objective-C compatibility.
+
+     - Parameters:
+       - data: The ad revenue data including amount, currency, and precision
+       - completion: Called when the tracking is complete
+     */
+    @_spi(Experimental) @objc public func trackAdRevenue(_ data: AdRevenue, completion: @escaping () -> Void) {
+        Task {
+            await self.trackAdRevenue(data)
+            completion()
+        }
+    }
+
 }
 
 #endif
