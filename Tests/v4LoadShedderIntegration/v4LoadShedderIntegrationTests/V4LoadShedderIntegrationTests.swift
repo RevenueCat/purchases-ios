@@ -47,7 +47,6 @@ final class V4LoadShedderIntegrationTests: XCTestCase {
                             dangerousSettings: nil,
                             showStoreMessagesAutomatically: true,
                             diagnosticsEnabled: false)
-        /*clearReceiptIfExists*/()
     }
 
     override func tearDownWithError() throws {
@@ -63,19 +62,6 @@ final class V4LoadShedderIntegrationTests: XCTestCase {
         self.testSession.disableDialogs = true
         self.testSession.clearTransactions()
     }
-
-//    func clearReceiptIfExists() {
-//        let manager = FileManager.default
-//
-//        guard let url = Bundle.main.appStoreReceiptURL, manager.fileExists(atPath: url.path) else { return }
-//
-//        do {
-//            print("Removing receipt from url: \(url)")
-//            try manager.removeItem(at: url)
-//        } catch {
-//            print("Error attempting to remove receipt URL '\(url)': \(error)")
-//        }
-//    }
 
     func testGetOfferings() async throws {
         let offerings = try await Purchases.shared.offerings()
