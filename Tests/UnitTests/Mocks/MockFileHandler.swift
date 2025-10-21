@@ -48,8 +48,11 @@ actor MockFileHandler: FileHandlerType {
         self.file.removeAll(keepingCapacity: false)
     }
 
+    private var mockedFileSizeInKB: Double?
+    func setMockedFileSizeInKB(_ size: Double?) { self.mockedFileSizeInKB = size }
+
     func fileSizeInKB() async throws -> Double {
-        return Double(self.file.count)
+        return self.mockedFileSizeInKB ?? Double(self.file.count) / 1024.0
     }
 
     private var removeFirstLineError: Error?

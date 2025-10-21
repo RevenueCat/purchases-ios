@@ -221,6 +221,59 @@ class PaywallEventStoreTests: TestCase {
         })
     }
 
+    // - MARK: size limit tests
+
+    func testSizeLimitCausesOldEventsToBeDropped() async {
+        // Store 60 events first
+        for _ in 0..<60 {
+            await self.store.store(.randomImpressionEvent())
+        }
+
+        // Mock file size to be over the limit (2048 KB)
+        await self.handler.setMockedFileSizeInKB(2100)
+
+        // Store one more event, which should trigger cleanup
+        await self.store.store(.randomImpressionEvent())
+
+        // Reset mocked size to reflect actual file size after cleanup
+        await self.handler.setMockedFileSizeInKB(nil)
+
+        // Should have cleared 50 events, leaving 11 (60 - 50 + 1)
+        let events = await self.store.fetch(100)
+        expect(events).to(haveCount(11))
+    }
+
+    func testSizeLimitLogsWarning() async {
+        // Mock file size to be over the limit
+        await self.handler.setMockedFileSizeInKB(2100)
+
+        // Store an event, which should trigger size check and log warning
+        await self.store.store(.randomImpressionEvent())
+
+        expect(self.logger.messages).to(containElementSatisfying {
+            $0.level == .warn && $0.message.contains("size limit reached")
+        })
+    }
+
+    func testNoCleanupWhenBelowSizeLimit() async {
+        // Store some events - file will naturally be below 2048 KB limit
+        for _ in 0..<10 {
+            await self.store.store(.randomImpressionEvent())
+        }
+
+        // Store one more event
+        await self.store.store(.randomImpressionEvent())
+
+        // Should still have all 11 events (no cleanup occurred)
+        let events = await self.store.fetch(100)
+        expect(events).to(haveCount(11))
+
+        // Should not log warning
+        expect(self.logger.messages).toNot(containElementSatisfying {
+            $0.level == .warn && $0.message.contains("size limit reached")
+        })
+    }
+
 }
 
 // MARK: - Extensions

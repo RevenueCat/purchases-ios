@@ -40,6 +40,12 @@ internal actor PaywallEventStore: PaywallEventStoreType {
 
     func store(_ storedEvent: StoredEvent) async {
         do {
+            // Check if store is too big and clear old events if needed
+            if await self.isEventStoreTooBig() {
+                Logger.warn(PaywallEventStoreStrings.event_store_size_limit_reached)
+                await self.clear(Self.eventBatchSizeToClear)
+            }
+
             if let eventDescription = try? storedEvent.encodedEvent.prettyPrintedJSON {
                 Logger.verbose(PaywallEventStoreStrings.storing_event(eventDescription))
             } else {
@@ -84,6 +90,18 @@ internal actor PaywallEventStore: PaywallEventStoreType {
             }
         }
     }
+
+    private func isEventStoreTooBig() async -> Bool {
+        do {
+            return try await self.handler.fileSizeInKB() > Self.maxEventFileSizeInKB
+        } catch {
+            Logger.error(PaywallEventStoreStrings.error_checking_file_size(error))
+            return false
+        }
+    }
+
+    private static let maxEventFileSizeInKB: Double = 2048
+    private static let eventBatchSizeToClear = 50
 
 }
 
@@ -179,6 +197,9 @@ private enum PaywallEventStoreStrings {
     case error_fetching_events(Error)
     case error_removing_first_lines(count: Int, Error)
     case error_emptying_file(Error)
+    case error_checking_file_size(Error)
+
+    case event_store_size_limit_reached
 
 }
 // swiftlint:enable identifier_name
@@ -214,6 +235,12 @@ extension PaywallEventStoreStrings: LogMessage {
 
         case let .error_emptying_file(error):
             return "Error emptying file: \((error as NSError).description)"
+
+        case let .error_checking_file_size(error):
+            return "Error checking file size: \((error as NSError).description)"
+
+        case .event_store_size_limit_reached:
+            return "Event store size limit reached. Clearing oldest events to free up space."
         }
     }
 
