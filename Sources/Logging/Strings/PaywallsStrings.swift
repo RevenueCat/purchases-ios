@@ -116,13 +116,13 @@ extension PaywallsStrings: LogMessage {
         // MARK: - Events
 
         case .event_manager_initialized:
-            return "PaywallEventsManager initialized"
+            return "EventsManager initialized"
 
         case .event_manager_not_initialized_not_available:
-            return "Won't initialize PaywallEventsManager: not available on current device."
+            return "Won't initialize EventsManager: not available on current device."
 
         case let .event_manager_failed_to_initialize(error):
-            return "PaywallEventsManager won't be initialized, event store failed to create " +
+            return "EventsManager won't be initialized, event store failed to create " +
             "with error: \((error as NSError).localizedDescription)"
 
         case .event_flush_already_in_progress:

@@ -71,7 +71,7 @@ final class PurchasesOrchestrator {
     private let beginRefundRequestHelper: BeginRefundRequestHelper
     private let storeMessagesHelper: StoreMessagesHelperType?
     private let winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?
-    private let paywallEventsManager: PaywallEventsManagerType?
+    private let eventsManager: EventsManagerType?
     private let webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType
     private let dateProvider: DateProvider
 
@@ -147,7 +147,7 @@ final class PurchasesOrchestrator {
                      diagnosticsSynchronizer: DiagnosticsSynchronizerType?,
                      diagnosticsTracker: DiagnosticsTrackerType?,
                      winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
-                     paywallEventsManager: PaywallEventsManagerType?,
+                     eventsManager: EventsManagerType?,
                      webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType,
                      dateProvider: DateProvider = DateProvider()
     ) {
@@ -173,7 +173,7 @@ final class PurchasesOrchestrator {
             storeMessagesHelper: storeMessagesHelper,
             diagnosticsTracker: diagnosticsTracker,
             winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
-            paywallEventsManager: paywallEventsManager,
+            eventsManager: eventsManager,
             webPurchaseRedemptionHelper: webPurchaseRedemptionHelper,
             dateProvider: dateProvider
         )
@@ -231,7 +231,7 @@ final class PurchasesOrchestrator {
          storeMessagesHelper: StoreMessagesHelperType?,
          diagnosticsTracker: DiagnosticsTrackerType?,
          winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
-         paywallEventsManager: PaywallEventsManagerType?,
+         eventsManager: EventsManagerType?,
          webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType,
          dateProvider: DateProvider = DateProvider()
     ) {
@@ -256,7 +256,7 @@ final class PurchasesOrchestrator {
         self.storeMessagesHelper = storeMessagesHelper
         self._diagnosticsTracker = diagnosticsTracker
         self.winBackOfferEligibilityCalculator = winBackOfferEligibilityCalculator
-        self.paywallEventsManager = paywallEventsManager
+        self.eventsManager = eventsManager
         self.webPurchaseRedemptionHelper = webPurchaseRedemptionHelper
         self.dateProvider = dateProvider
 
@@ -808,7 +808,7 @@ final class PurchasesOrchestrator {
 
     func postPaywallEventsIfNeeded(delayed: Bool = false) {
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
-              let manager = self.paywallEventsManager else { return }
+              let manager = self.eventsManager else { return }
 
         let delay: JitterableDelay
         if delayed {
@@ -818,7 +818,7 @@ final class PurchasesOrchestrator {
             delay = .none
         }
         self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) {
-            _ = try? await manager.flushEvents(count: PaywallEventsManager.defaultEventFlushCount)
+            _ = try? await manager.flushEvents(count: EventsManager.defaultEventFlushCount)
         }
     }
 

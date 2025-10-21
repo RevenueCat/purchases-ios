@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PaywallEventsManagerTests.swift
+//  EventsManagerTests.swift
 //
 //  Created by Nacho Soto on 9/6/23.
 
@@ -19,12 +19,12 @@ import Nimble
 import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-class PaywallEventsManagerTests: TestCase {
+class EventsManagerTests: TestCase {
 
     private var api: MockInternalAPI!
     private var userProvider: MockCurrentUserProvider!
     private var store: MockPaywallEventStore!
-    private var manager: PaywallEventsManager!
+    private var manager: EventsManager!
     private var appSessionID = UUID()
 
     override func setUpWithError() throws {
@@ -251,7 +251,7 @@ class PaywallEventsManagerTests: TestCase {
 // MARK: - Private
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-private extension PaywallEventsManagerTests {
+private extension EventsManagerTests {
 
     func storeRandomEvent() async -> PaywallEvent {
         let event: PaywallEvent = .impression(.random(), .random())

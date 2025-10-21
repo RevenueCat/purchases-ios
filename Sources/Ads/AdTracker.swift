@@ -58,9 +58,9 @@ import Foundation
 @objc(RCAdTracker)
 public final class AdTracker: NSObject {
 
-    private let eventsManager: PaywallEventsManagerType?
+    private let eventsManager: EventsManagerType?
 
-    internal init(eventsManager: PaywallEventsManagerType?) {
+    internal init(eventsManager: EventsManagerType?) {
         self.eventsManager = eventsManager
         super.init()
     }
