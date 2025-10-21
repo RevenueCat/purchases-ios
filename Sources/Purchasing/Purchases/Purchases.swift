@@ -412,25 +412,14 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let offeringsFactory = OfferingsFactory()
         let receiptParser = PurchasesReceiptParser.default
         let transactionsManager = TransactionsManager(receiptParser: receiptParser)
-
-        let priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider = .init {
-            var priceFormattingRuleSet: PriceFormattingRuleSet?
-            if Self.isConfigured, let offeringsResponse = Self.shared.cachedOfferings?.response,
-                let storeFrontCountryCode = systemInfo.storefront?.countryCode {
-                priceFormattingRuleSet = offeringsResponse.uiConfig?.priceFormattingRuleSets[storeFrontCountryCode]
-            }
-
-            return priceFormattingRuleSet
-        }
-
+        
         let productsManager = CachingProductsManager(
             manager: ProductsManagerFactory.createManager(apiKeyValidationResult: apiKeyValidationResult,
                                                           diagnosticsTracker: diagnosticsTracker,
                                                           systemInfo: systemInfo,
                                                           backend: backend,
                                                           deviceCache: deviceCache,
-                                                          requestTimeout: storeKitTimeout,
-                                                          priceFormattingRuleSetProvider: priceFormattingRuleSetProvider)
+                                                          requestTimeout: storeKitTimeout)
         )
 
         let transactionPoster = TransactionPoster(
