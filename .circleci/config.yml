@@ -18,8 +18,7 @@ parameters:
         run-manual-docs-deploy,
         update_paywall_templates,
         record_paywall_screenshots,
-        tuist,
-        loadshedder-integration-tests-old-major
+        tuist
       ]
     default: default
   generate_snapshots:
@@ -1678,7 +1677,10 @@ workflows:
 
   daily-loadshedder-integration-tests:
     when:
-      equal: [loadshedder-integration-tests-old-major, << pipeline.parameters.action >>]
+      and:
+        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+        - equal:
+            ["load_shedder_integration_tests", << pipeline.schedule.name >>]
     jobs:
       - loadshedder-integration-tests-old-major:
           name: loadshedder-integration-tests-v3
