@@ -1,6 +1,6 @@
 orbs:
   macos: circleci/macos@2.5.1
-  slack: circleci/slack@4.10.1  
+  slack: circleci/slack@4.10.1
   revenuecat: revenuecat/sdks-common-config@3.9.0
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
@@ -1200,7 +1200,7 @@ jobs:
       - run:
           name: Clone purchases-ios and push to purchases-ios-spm
           command: bundle exec fastlane deploy_to_spm
-            
+
 workflows:
   version: 2
   generate-snapshot:
@@ -1369,6 +1369,7 @@ workflows:
           xcode_version: '14.3.0'
           <<: *release-tags
       - deploy-purchase-tester:
+          xcode_version: '16.4'
           <<: *release-tags
       - revenuecat/insert-changelog-latest-in-main-if-needed:
           cache-version: v1
