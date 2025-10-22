@@ -98,7 +98,6 @@ final class PurchaseHandler: ObservableObject {
     fileprivate(set) var restoreError: Error?
 
     private var eventData: PaywallEvent.Data?
-    private var paywallSource: PaywallSource?
 
     convenience init(purchases: Purchases = .shared,
                      performPurchase: PerformPurchase? = nil,
@@ -351,10 +350,11 @@ extension PurchaseHandler {
         self.restoredCustomerInfo = customerInfo
     }
 
-    func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
+    /// Stores the last paywall impression (including its optional source) so follow-up events can reuse it.
+    func trackPaywallImpression(_ eventData: PaywallEvent.Data, source: PaywallSource?) {
         var updatedEventData = eventData
-        if let paywallSource {
-            updatedEventData.source = paywallSource.rawValue
+        if let source {
+            updatedEventData.source = source.rawValue
         }
 
         self.eventData = updatedEventData
@@ -384,15 +384,6 @@ extension PurchaseHandler {
 
         self.track(.cancel(.init(), data))
         return true
-    }
-
-    @MainActor
-    func updatePaywallSource(_ source: PaywallSource?) {
-        self.paywallSource = source
-
-        if let source {
-            self.eventData?.source = source.rawValue
-        }
     }
 
     private func startAction(_ type: PurchaseHandler.ActionType) {
@@ -438,7 +429,7 @@ extension PurchaseHandler {
 private extension PurchaseHandler {
 
     func track(_ event: PaywallEvent) {
-        let source = self.paywallSource
+        let source = event.data.source.map { PaywallSource(rawValue: $0) }
 
         Task.detached(priority: .background) { [purchases = self.purchases, event, source] in
             await purchases.track(paywallEvent: event, source: source)

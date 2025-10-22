@@ -577,12 +577,11 @@ struct LoadedOfferingPaywallView: View {
             .environmentObject(self.purchaseHandler)
             .disabled(self.purchaseHandler.actionInProgress)
             .onAppear {
-                self.purchaseHandler.updatePaywallSource(self.paywallSource)
-                self.purchaseHandler.trackPaywallImpression(self.createEventData())
+                self.purchaseHandler.trackPaywallImpression(self.createEventData(),
+                                                            source: self.paywallSource)
             }
             .onDisappear {
                 self.purchaseHandler.trackPaywallClose()
-                self.purchaseHandler.updatePaywallSource(nil)
             }
             .onChangeOf(self.purchaseHandler.purchased) { purchased in
                 if purchased {

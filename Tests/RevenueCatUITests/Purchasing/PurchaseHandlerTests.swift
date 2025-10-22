@@ -208,7 +208,7 @@ class PurchaseHandlerTests: TestCase {
         let result1 = handler.trackPaywallClose()
         expect(result1) == false
 
-        handler.trackPaywallImpression(eventData)
+        handler.trackPaywallImpression(eventData, source: nil)
 
         let result2 = handler.trackPaywallClose()
         expect(result2) == true
@@ -264,15 +264,12 @@ class PurchaseHandlerTests: TestCase {
             darkMode: false
         )
 
-        handler.updatePaywallSource(source)
-        handler.trackPaywallImpression(eventData)
+        handler.trackPaywallImpression(eventData, source: source)
 
         await fulfillment(of: [impressionExpectation], timeout: 1.0)
 
         let result = handler.trackPaywallClose()
         expect(result) == true
-
-        handler.updatePaywallSource(nil)
 
         await fulfillment(of: [closeExpectation], timeout: 1.0)
 

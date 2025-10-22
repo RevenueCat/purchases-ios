@@ -11,8 +11,8 @@ import SwiftUI
 
 #if !os(tvOS)
 
+// swiftlint:disable missing_docs
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-/// Identifies where a paywall was presented from so that backend analytics can classify the event.
 @_spi(Internal) public struct PaywallSource: RawRepresentable, Hashable, Sendable, ExpressibleByStringLiteral {
 
     public let rawValue: String
@@ -28,8 +28,8 @@ import SwiftUI
     public init(stringLiteral value: StringLiteralType) {
         self.init(rawValue: value)
     }
-
 }
+// swiftlint:enable missing_docs
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @_spi(Internal) public extension PaywallSource {
