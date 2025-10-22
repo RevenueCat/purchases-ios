@@ -60,6 +60,16 @@ struct ImageComponentView: View {
                 )
 
                 ZStack {
+                    // IMPORTANT: Please keep this... needed to force size
+                    //
+                    // We need the max width of the parent view an image of a fill or
+                    // fixed width doesn't push passed the bounds.
+                    //
+                    // Once we have the size once, we can remove the Color.clear
+                    if self.size == nil {
+                        Color.clear
+                    }
+
                     RemoteImage(
                         url: style.url,
                         lowResUrl: style.lowResUrl,

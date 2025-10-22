@@ -11,8 +11,9 @@
 //
 //  Created by Nacho Soto on 7/31/23.
 
+import Combine
 import Nimble
-import RevenueCat
+@testable import RevenueCat
 @testable import RevenueCatUI
 import XCTest
 
@@ -21,6 +22,10 @@ import XCTest
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 class PurchaseHandlerTests: TestCase {
+
+    private var purchaseResult = CurrentValueSubject<PurchaseResultData, Never>((nil, TestData.customerInfo, false))
+
+    lazy var purchaseResultPublisher = purchaseResult.dropFirst().eraseToAnyPublisher()
 
     func testInitialState() async throws {
         let handler: PurchaseHandler = .mock()
@@ -277,6 +282,34 @@ class PurchaseHandlerTests: TestCase {
         trackedEvents.forEach { event in
             expect(event.data.source) == source.rawValue
         }
+    }
+
+    func test_dedupedSubmissions_ofPurchaseCompletedEvents() async throws {
+        let handler: PurchaseHandler = .mock(purchaseResultPublisher: purchaseResultPublisher)
+
+        var count = 0
+
+        let job = handler.$purchaseResult
+            .drop(while: { $0 == nil })
+            .sink { _ in
+                count += 1
+            }
+
+        let transaction = StoreTransaction(MockStoreTransaction())
+        for _ in 0...10 {
+            purchaseResult.send((transaction, TestData.customerInfo, true))
+            await Task.yield()
+        }
+
+        XCTAssertEqual(count, 1, "setting this should have only ouccured once from \(job)")
+
+        let transaction2 = StoreTransaction(MockStoreTransaction())
+        for _ in 0...10 {
+            purchaseResult.send((transaction2, TestData.customerInfo, true))
+            await Task.yield()
+        }
+
+        XCTAssertEqual(count, 2, "setting this should have only ouccured twice from \(job)")
     }
 }
 

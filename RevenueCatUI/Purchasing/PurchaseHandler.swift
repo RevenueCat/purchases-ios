@@ -11,6 +11,7 @@
 //  
 //  Created by Nacho Soto on 7/13/23.
 
+import Combine
 @_spi(Internal) import RevenueCat
 import StoreKit
 import SwiftUI
@@ -26,6 +27,8 @@ final class PurchaseHandler: ObservableObject {
         case restore
 
     }
+
+    private var cancellables: Set<AnyCancellable> = Set()
 
     private let purchases: PaywallPurchasesType
 
@@ -101,23 +104,40 @@ final class PurchaseHandler: ObservableObject {
 
     convenience init(purchases: Purchases = .shared,
                      performPurchase: PerformPurchase? = nil,
-                     performRestore: PerformRestore? = nil) {
+                     performRestore: PerformRestore? = nil,
+                     purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = NotificationCenter
+                         .default
+                         .purchaseCompletedPublisher()
+    ) {
         self.init(isConfigured: true,
                   purchases: purchases,
                   performPurchase: performPurchase,
-                  performRestore: performRestore)
+                  performRestore: performRestore,
+                  purchaseResultPublisher: purchaseResultPublisher
+        )
     }
 
     init(
         isConfigured: Bool = true,
         purchases: PaywallPurchasesType,
         performPurchase: PerformPurchase? = nil,
-        performRestore: PerformRestore? = nil
+        performRestore: PerformRestore? = nil,
+        purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = NotificationCenter
+            .default
+            .purchaseCompletedPublisher()
     ) {
         self.isConfigured = isConfigured
         self.purchases = purchases
         self.performPurchase = performPurchase
         self.performRestore = performRestore
+
+        purchaseResultPublisher
+            .removeDuplicates(by: PurchaseResultComparator.compare)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] result in
+                self?.setResult(result)
+            }
+            .store(in: &cancellables)
     }
 
     /// Returns a new instance of `PurchaseHandler` using `Purchases.shared` if `Purchases`
@@ -151,6 +171,17 @@ final class PurchaseHandler: ObservableObject {
                                                        purchasesAreCompletedBy: purchasesAreCompletedBy),
                                                        performPurchase: performPurchase,
                                                        performRestore: performRestore)
+    }
+
+    private func setResult(_ result: PurchaseResultData) {
+        guard !PurchaseResultComparator.compare(purchaseResult, result) else {
+            return
+        }
+        self.purchaseResult = result
+    }
+
+    deinit {
+        cancellables.removeAll()
     }
 
 }
@@ -209,7 +240,7 @@ extension PurchaseHandler {
                 result = try await self.purchases.purchase(package: package)
             }
 
-            self.purchaseResult = result
+            self.setResult(result)
 
             if result.userCancelled {
                 self.trackCancelledPurchase()
@@ -260,7 +291,7 @@ extension PurchaseHandler {
                                              customerInfo: try await self.purchases.customerInfo(),
                                             userCancelled: result.userCancelled)
 
-        self.purchaseResult = resultInfo
+        self.setResult(resultInfo)
 
         if !result.userCancelled && result.error == nil {
 

@@ -11,20 +11,31 @@
 //
 //  Created by Nacho Soto on 9/12/23.
 
+import Combine
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 #if DEBUG
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PurchaseHandler {
 
-    static func mock(_ customerInfo: CustomerInfo = TestData.customerInfo,
-                     purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat,
-                     performPurchase: PerformPurchase? = nil,
-                     performRestore: PerformRestore? = nil,
-                     preferredLocaleOverride: String? = nil)
-    -> Self {
+    static func mock(
+        _ customerInfo: CustomerInfo = TestData.customerInfo,
+        purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat,
+        performPurchase: PerformPurchase? = nil,
+        performRestore: PerformRestore? = nil,
+        preferredLocaleOverride: String? = nil,
+        purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = Just(
+            (
+                transaction: nil,
+                customerInfo: TestData.customerInfo,
+                userCancelled: false
+            )
+        )
+        .dropFirst()
+        .eraseToAnyPublisher()
+    ) -> Self {
         return self.init(
             purchases: MockPurchases(
                 purchasesAreCompletedBy: purchasesAreCompletedBy,
@@ -49,7 +60,8 @@ extension PurchaseHandler {
                 }
             ),
             performPurchase: performPurchase,
-            performRestore: performRestore
+            performRestore: performRestore,
+            purchaseResultPublisher: purchaseResultPublisher
         )
     }
 

@@ -14,10 +14,11 @@
 import Foundation
 
 /// An inteface representing a simple cache
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
 protocol LargeItemCacheType {
 
     /// Store data to a url
-    func saveData(_ data: Data, to url: URL) throws
+    func saveData(_ bytes: AsyncThrowingStream<UInt8, Error>, to url: URL, checksum: Checksum?) async throws
 
     /// Check if there is content cached at the url
     func cachedContentExists(at url: URL) -> Bool
@@ -29,20 +30,82 @@ protocol LargeItemCacheType {
     func createCacheDirectoryIfNeeded(basePath: String) -> URL?
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
 extension FileManager: LargeItemCacheType {
     /// A URL for a cache directory if one is present
     private var cacheDirectory: URL? {
         return urls(for: .cachesDirectory, in: .userDomainMask).first
     }
 
-    /// Store data to a url
-    func saveData(_ data: Data, to url: URL) throws {
-        return try data.write(to: url)
+    /// Store data to a url and validate that the file is correct before saving
+    func saveData(
+        _ bytes: AsyncThrowingStream<UInt8, Error>,
+        to url: URL,
+        checksum: Checksum?
+    ) async throws {
+
+        // Set up file handling
+
+        let tempFileURL = temporaryDirectory.appendingPathComponent((checksum?.value ?? "") + url.lastPathComponent)
+
+        guard createFile(atPath: tempFileURL.path, contents: nil, attributes: nil) else {
+            let message = Strings.fileRepository.failedToCreateTemporaryFile(tempFileURL).description
+            Logger.error(message)
+            throw CocoaError(.fileWriteUnknown)
+        }
+
+        let fileHandle = try FileHandle(forWritingTo: tempFileURL)
+        defer { try? fileHandle.close() }
+        defer { try? removeItem(at: tempFileURL) }
+
+        // Write data in chunks to the temporary file
+
+        let bufferSize: Int = 262_144 // 256KB
+        var buffer = Data()
+        buffer.reserveCapacity(bufferSize)
+        var hasher = checksum?.algorithm.getHasher()
+
+        for try await byte in bytes {
+            buffer.append(byte)
+
+            if buffer.count >= bufferSize {
+                hasher?.update(data: buffer)
+                try fileHandle.write(contentsOf: buffer)
+                buffer.removeAll(keepingCapacity: true)
+            }
+        }
+
+        // Write any remaining bytes missed during the while loop
+        if !buffer.isEmpty {
+            hasher?.update(data: buffer)
+            try fileHandle.write(contentsOf: buffer)
+        }
+
+        // Validate the stored data matches what the server has
+        if let checksum = checksum, let hasher = hasher {
+            // If this fails… should we retry?
+
+            let digest = hasher.finalize()
+            let value = digest.compactMap { String(format: "%02x", $0) }.joined()
+            try Checksum(algorithm: checksum.algorithm, value: value)
+                .compare(to: checksum)
+        }
+
+        // If all succeeds, move the temporary file to the more permanant storage location
+        // effectively a "save" operation
+        try moveItem(at: tempFileURL, to: url)
     }
 
     /// Check if there is content cached at the given path
     func cachedContentExists(at url: URL) -> Bool {
-        return (try? loadFile(at: url)) != nil
+        do {
+            if let size = try self.attributesOfItem(atPath: url.path)[.size] as? UInt64 {
+                return size > 0
+            }
+            return false
+        } catch {
+            return false
+        }
     }
 
     /// Creates a directory in the cache from a base path
@@ -53,7 +116,7 @@ extension FileManager: LargeItemCacheType {
 
         let path = cacheDirectory.appendingPathComponent(basePath)
         do {
-            try FileManager.default.createDirectory(
+            try createDirectory(
                 at: path,
                 withIntermediateDirectories: true,
                 attributes: nil

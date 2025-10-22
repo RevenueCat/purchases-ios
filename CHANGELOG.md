@@ -1,3 +1,39 @@
+## 5.44.1
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Fix for paywall image sometimes not showing (in carousel) (#5679) via Josh Holtz (@joshdholtz)
+* Fix media not loading (#5678) via Jacob Rakidzich (@JZDesign)
+
+### 🔄 Other Changes
+* Bump fastlane-plugin-revenuecat_internal from `25c7fb8` to `525d48c` (#5680) via Antonio Pallares (@ajpallares)
+* Update SampleCat SDK dependency version on SDK releases (#5677) via Antonio Pallares (@ajpallares)
+* Bump fastlane-plugin-revenuecat_internal from `3f7fffc` to `25c7fb8` (#5645) via dependabot[bot] (@dependabot[bot])
+* Update Xcode 16.0 to 16.4 in tests because of CircleCI's deprecation later this year (#5668) via Rick (@rickvdl)
+* Revert "Migrate BackendIntegrationTests to Tuist  (#5657)" (#5674) via Facundo Menzella (@facumenzella)
+* Migrate BackendIntegrationTests to Tuist  (#5657) via Facundo Menzella (@facumenzella)
+
+## 5.44.0
+## RevenueCat SDK
+### ✨ New Features
+* Finalize video component to include a checksum, dark mode support, and optimize memory usage for large file downloads  (#5631) via Jacob Rakidzich (@JZDesign)
+### 🐞 Bugfixes
+* Winback Offer Eligibility Calculation Improvements (#5646) via Will Taylor (@fire-at-will)
+
+### 🔄 Other Changes
+* Add DEVELOPMENT file (#5653) via Facundo Menzella (@facumenzella)
+* [Experimental] Add Locale to Storefront (#5658) via Toni Rico (@tonidero)
+* Remove Paywall Image Display Log (#5659) via Will Taylor (@fire-at-will)
+* Migrate APITests to Tuist workspace (#5648) via Facundo Menzella (@facumenzella)
+
+## 5.43.0
+## RevenueCat SDK
+### ✨ New Features
+* Add support for the Test Store (#5632) via Antonio Pallares (@ajpallares)
+
+### 🔄 Other Changes
+* [SDK-4115] Improve log for simulated purchase failure in Test Store (#5634) via Antonio Pallares (@ajpallares)
+* Disable offline entitlements in Test Store (#5642) via Antonio Pallares (@ajpallares)
+
 ## 5.42.0
 ## RevenueCat SDK
 ### 🐞 Bugfixes

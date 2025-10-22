@@ -26,6 +26,7 @@ enum LogIntent {
     case rcSuccess
     case user
     case warning
+    case simulatedStore
 
     var prefix: String {
         switch self {
@@ -39,6 +40,7 @@ enum LogIntent {
         case .rcSuccess: return "😻"
         case .user: return "👤"
         case .warning: return "⚠️"
+        case .simulatedStore: return "[Test Store]"
         }
     }
 

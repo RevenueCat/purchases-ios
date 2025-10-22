@@ -32,9 +32,16 @@ actor MockFileHandler: FileHandlerType {
             .lines
     }
 
-    func append(line: String) {
-        self.file.append(line)
-        self.file.append(Self.separator)
+    private var appendLineError: Error?
+    func setAppendLineError(_ error: Error) { self.appendLineError = error }
+
+    func append(line: String) throws {
+        if let appendLineError {
+            throw appendLineError
+        } else {
+            self.file.append(line)
+            self.file.append(Self.separator)
+        }
     }
 
     func emptyFile() throws {

@@ -32,8 +32,11 @@ files_with_version_number_without_prerelease_modifiers = {
   './Tests/UnitTests/Info.plist' => PLIST_VERSION_PATTERNS,
   './Tests/UnitTestsHostApp/Info.plist' => PLIST_VERSION_PATTERNS
 }
+
+PACKAGE_VERSION_PATTERNS = ["repositoryURL = \"https://github.com/RevenueCat/purchases-ios\";\n\t\t\trequirement = {\n\t\t\t\tkind = upToNextMajorVersion;\n\t\t\t\tminimumVersion = {x};\n"]
 files_to_update_on_latest_stable_releases = {
   './scripts/docs/index.html' => ['purchases-ios-docs/{x}/documentation/revenuecat'],
+  './Examples/SampleCat/SampleCat.xcodeproj/project.pbxproj' => PACKAGE_VERSION_PATTERNS
 }
 
 REPO_NAME = 'purchases-ios'
@@ -788,8 +791,12 @@ platform :ios do
   desc "run API Tests"
   lane :run_api_tests do
     # note: it's called "run" tests but these tests only need to build to run
+    workspace_path = 'RevenueCat-Tuist.xcworkspace'
+    unless File.directory?(workspace_path)
+      UI.important("#{workspace_path} not found. Run `tuist generate --no-open` before invoking this lane.")
+    end
     xcodebuild(
-      workspace: 'RevenueCat.xcworkspace',
+      workspace: workspace_path,
       scheme: 'All API Tests',
       destination: 'generic/platform=iOS Simulator',
       configuration: 'release',
@@ -1140,8 +1147,7 @@ platform :ios do
       './Tests/InstallationTests/SPMCustomEntitlementComputationInstallation/SPMInstallation.xcodeproj/project.pbxproj',
       './Tests/InstallationTests/ReceiptParserInstallation/ReceiptParserInstallation.xcodeproj/project.pbxproj',
       './Examples/MagicWeather/MagicWeather.xcodeproj/project.pbxproj',
-      './Examples/MagicWeatherSwiftUI/Magic Weather SwiftUI.xcodeproj/project.pbxproj',
-      './Examples/SampleCat/SampleCat.xcodeproj/project.pbxproj'
+      './Examples/MagicWeatherSwiftUI/Magic Weather SwiftUI.xcodeproj/project.pbxproj'
     ]
 
     old_kind_line = "kind = branch;"

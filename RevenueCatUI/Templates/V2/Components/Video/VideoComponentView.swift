@@ -40,7 +40,8 @@ struct VideoComponentView: View {
 
     @State var size: CGSize = .zero
 
-    @State var cachedURL: URL?
+    @State private var stagedURL: URL?
+    @State private var cachedURL: URL?
     @State var imageSource: PaywallComponent.ThemeImageUrls?
 
     var body: some View {
@@ -56,8 +57,15 @@ struct VideoComponentView: View {
                 )
             ) { style in
                 if style.visible {
+                    let viewData = style.viewData(forDarkMode: colorScheme == .dark)
+
                     ZStack {
-                        if let imageSource, let imageViewModel = try? ImageComponentViewModel(
+                        if imageSource == nil && cachedURL == nil {
+                            // greedily fill space while loading occurs
+                            render(Color.clear, size: size, with: style)
+                        }
+
+                        if let imageSource, cachedURL == nil, let imageViewModel = try? ImageComponentViewModel(
                             localizationProvider: viewModel.localizationProvider,
                             uiConfigProvider: viewModel.uiConfigProvider,
                             component: .init(source: imageSource)
@@ -66,7 +74,7 @@ struct VideoComponentView: View {
                         }
 
                         if let cachedURL {
-                            renderVideo(
+                            render(
                                 VideoPlayerView(
                                     videoURL: cachedURL,
                                     shouldAutoPlay: style.autoPlay,
@@ -92,28 +100,34 @@ struct VideoComponentView: View {
                                     // this method will share the async task that the cacheprewarming started
                                     // if it didn't error out, expediting the download time and reducing the memory
                                     // footprint of paywalls
-                                    let url = try await fileRepository.generateOrGetCachedFileURL(for: style.url)
+                                    let url = try await fileRepository
+                                        .generateOrGetCachedFileURL(
+                                            for: viewData.url,
+                                            withChecksum: viewData.checksum
+                                        )
                                     guard url != cachedURL else { return }
                                     await MainActor.run {
-                                        self.cachedURL = url
-                                        self.imageSource = nil
+                                        self.stagedURL = url
                                     }
                                 } catch {
                                     await MainActor.run {
-                                        self.cachedURL = style.url
-                                        self.imageSource = nil
+                                        self.stagedURL = viewData.url
                                     }
                                 }
                             }
                         }
 
-                        if let cachedURL = fileRepository.getCachedFileURL(for: style.url) {
+                        if let cachedURL = fileRepository.getCachedFileURL(
+                            for: viewData.url,
+                            withChecksum: viewData.checksum
+                        ) {
                             self.cachedURL = cachedURL
-                            self.imageSource = nil
-                        } else if let lowResUrl = style.lowResUrl, lowResUrl != style.url {
-                            let lowResCachedURL = fileRepository.getCachedFileURL(for: lowResUrl)
+                        } else if let lowResUrl = viewData.lowResUrl, lowResUrl != viewData.url {
+                            let lowResCachedURL = fileRepository.getCachedFileURL(
+                                for: lowResUrl,
+                                withChecksum: viewData.lowResChecksum
+                            )
                             self.cachedURL = lowResCachedURL ?? lowResUrl
-                            self.imageSource = nil
                             resumeDownloadOfFullResolutionVideo()
                         } else {
                             resumeDownloadOfFullResolutionVideo()
@@ -126,6 +140,17 @@ struct VideoComponentView: View {
                     .clipped()
                     .shadow(shadow: style.shadow, shape: style.shape?.toInsettableShape(size: size))
                     .padding(style.margin)
+                    .onReceive(
+                        stagedURL.publisher
+                            .eraseToAnyPublisher()
+                            .removeDuplicates()
+                            .debounce(for: 0.300, scheduler: RunLoop.main)
+                    ) { output in
+                        // in the event that the download of the high res video is so fast that it tries to set the
+                        // url moments after the low_res was set, we need to delay a tiny bit to ensure the rerender
+                        // actually occurs. This happens consistently with small file sizes and great connection
+                        cachedURL = output
+                    }
                 }
             }
             .onSizeChange { size = $0 }
@@ -148,7 +173,7 @@ struct VideoComponentView: View {
         }
     }
 
-    private func renderVideo<Video: View>(
+    private func render<Video: View>(
         _ video: Video,
         size: CGSize,
         with style: VideoComponentStyle

@@ -759,7 +759,7 @@ extension StackComponentViewModel {
             try factory.toViewModel(
                 component: component,
                 packageValidator: validator,
-                firstImageInfo: nil,
+                firstItemIgnoresSafeAreaInfo: nil,
                 offering: offering,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider
@@ -770,7 +770,7 @@ extension StackComponentViewModel {
             try factory.toViewModel(
                 component: component,
                 packageValidator: validator,
-                firstImageInfo: nil,
+                firstItemIgnoresSafeAreaInfo: nil,
                 offering: offering,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider

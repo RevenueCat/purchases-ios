@@ -39,6 +39,17 @@ public final class Storefront: NSObject, StorefrontType {
 
     // swiftlint:enable missing_docs
 
+    /// A locale containing the region information but no language code representing
+    /// the region for the App Store storefront.
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+    @_spi(Experimental) @objc public var locale: Locale {
+        Locale(components: .init(
+            languageCode: nil,
+            script: nil,
+            languageRegion: .init(self.storefront.countryCode)
+        ))
+    }
+
     // MARK: -
 
     /// Creates an instance from any `StorefrontType`.

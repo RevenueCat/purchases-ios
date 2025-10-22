@@ -16,13 +16,14 @@ import Nimble
 import XCTest
 
 @MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
 class FileRepositoryTests: TestCase {
-    let someURL = URL(string: "https://somesite.com/someurl").unsafelyUnwrapped
+    let someURL = URL(string: "https://somesite.com/someurl.mp4").unsafelyUnwrapped
 
     func test_ifContentExists_networkServiceIsNotCalled() async throws {
         let sut = await makeSystemUnderTest()
         sut.cache.stubCachedContentExists(with: true)
-        let data = try await sut.fileRepository.generateOrGetCachedFileURL(for: someURL)
+        let data = try await sut.fileRepository.generateOrGetCachedFileURL(for: someURL, withChecksum: nil)
 
         XCTAssertNotNil(data)
         XCTAssertEqual(sut.networkService.invocations, [])
@@ -34,7 +35,7 @@ class FileRepositoryTests: TestCase {
 
         sut.cache.stubSaveData(with: .success(.init(data: data, url: someURL)))
         sut.cache.stubCachedContentExists(with: false)
-        sut.networkService.stubResponse(at: 0, result: .success(data))
+        sut.networkService.stubResponse(at: 0, result: .success("SomeData"))
 
         await Task(priority: .userInitiated) {
             sut.fileRepository.prefetch(urls: [someURL])
@@ -48,7 +49,7 @@ class FileRepositoryTests: TestCase {
     func test_whenCacheURLCannotBeAssembled_returnsNil() async throws {
         let sut = await makeSystemUnderTest(cacheDirectoryURL: nil)
         do {
-            _ = try await sut.fileRepository.generateOrGetCachedFileURL(for: someURL)
+            _ = try await sut.fileRepository.generateOrGetCachedFileURL(for: someURL, withChecksum: nil)
         } catch {
             switch error as? FileRepository.Error {
             case .failedToCreateCacheDirectory: break
@@ -66,7 +67,7 @@ class FileRepositoryTests: TestCase {
         sut.cache.stubCachedContentExists(with: false)
         sut.networkService.stubResponse(at: 0, result: .failure(SampleError()))
         do {
-            _ = try await sut.fileRepository.generateOrGetCachedFileURL(for: someURL)
+            _ = try await sut.fileRepository.generateOrGetCachedFileURL(for: someURL, withChecksum: nil)
             XCTFail(#function)
         } catch {
             switch error as? FileRepository.Error {
@@ -83,15 +84,53 @@ class FileRepositoryTests: TestCase {
         let data = "SomeData".data(using: .utf8).unsafelyUnwrapped
         sut.cache.stubCachedContentExists(with: false)
         sut.cache.stubSaveData(with: .success(.init(data: data, url: someURL)))
-        sut.networkService.stubResponse(at: 0, result: .success(data))
-        let result = try await sut.fileRepository.generateOrGetCachedFileURL(for: someURL)
+        sut.networkService.stubResponse(at: 0, result: .success("SomeData"))
+        let result = try await sut.fileRepository.generateOrGetCachedFileURL(for: someURL, withChecksum: nil)
 
-        let expectedCachedURL = URL(string: "data:sample/RevenueCat/e8a0d6b245a127f56629765a9815ba2c").unsafelyUnwrapped
+        let expectedCachedURL = URL(
+            string: "data:sample/RevenueCat/1b548ae1c45e1ffe5de61ce60e03b277someurl.mp4"
+        ).unsafelyUnwrapped
 
         XCTAssertEqual(sut.networkService.invocations, [someURL])
         XCTAssertEqual(sut.cache.saveDataInvocations, [.init(data: data, url: expectedCachedURL)])
         XCTAssertEqual(result, expectedCachedURL)
         XCTAssertNotEqual(someURL, expectedCachedURL)
+    }
+
+    func test_savingData_mapsURLToNewURLType_withChecksum_andReturnsIt() async throws {
+        let sut = await makeSystemUnderTest()
+        let data = "SomeData".data(using: .utf8).unsafelyUnwrapped
+        sut.cache.stubCachedContentExists(with: false)
+        sut.cache.stubSaveData(with: .success(.init(data: data, url: someURL)))
+        sut.networkService.stubResponse(at: 0, result: .success("SomeData"))
+        let result = try await sut.fileRepository.generateOrGetCachedFileURL(
+            for: someURL,
+            withChecksum: .init(algorithm: .md5, value: "mock-checksum-value-")
+        )
+
+        let expectedCachedURL = URL(
+            string: "data:sample/RevenueCat/mock-checksum-value-someurl.mp4"
+        ).unsafelyUnwrapped
+
+        XCTAssertEqual(sut.networkService.invocations, [someURL])
+        XCTAssertEqual(sut.cache.saveDataInvocations, [.init(data: data, url: expectedCachedURL)])
+        XCTAssertEqual(result, expectedCachedURL)
+        XCTAssertNotEqual(someURL, expectedCachedURL)
+    }
+
+    func test_dataValidChecksum_savesAndReturns() async throws {
+        let sut = await makeSystemUnderTest()
+        let data = "SomeData".asData
+
+        sut.cache.stubSaveData(with: .success(.init(data: data, url: someURL)))
+        sut.cache.stubCachedContentExists(with: false)
+        sut.networkService.stubResponse(at: 0, result: .success("SomeData"))
+        let url = try await sut.fileRepository
+            .generateOrGetCachedFileURL(for: someURL, withChecksum: Checksum.generate(from: data, with: .md5))
+
+        await expect(sut.networkService.invocations.count).toEventually(equal(1))
+        XCTAssertEqual(sut.cache.saveDataInvocations.count, 1)
+
     }
 
     func makeSystemUnderTest(
