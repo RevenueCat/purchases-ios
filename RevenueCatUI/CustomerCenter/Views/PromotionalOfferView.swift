@@ -98,7 +98,7 @@ struct PromotionalOfferView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
-        .applyIfLet(Color.from(colorInformation: appearance.accentColor, for: self.colorScheme), apply: { $0.tint($1)})
+        applyIfLet(appearance.tintColor(colorScheme: colorScheme), apply: { $0.tint($1)})
         .onAppear {
             self.viewModel.onPromotionalOfferPurchaseFlowComplete = self.dismissPromotionalOfferView
         }
