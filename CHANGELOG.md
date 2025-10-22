@@ -1,3 +1,8 @@
+## 4.44.0
+## RevenueCat SDK
+### ✨ New Features
+* [Experimental] Add Locale to Storefront (#5658) (#5683) via JayShortway (@JayShortway)
+
 ## 4.43.8
 ### 🔄 Other Changes
 * [v4] Fix compilation in xcode 26 (#5542) via Antonio Pallares (@ajpallares)

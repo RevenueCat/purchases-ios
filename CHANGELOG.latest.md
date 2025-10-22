@@ -1,2 +1,3 @@
-### 🔄 Other Changes
-* [v4] Fix compilation in xcode 26 (#5542) via Antonio Pallares (@ajpallares)
+## RevenueCat SDK
+### ✨ New Features
+* [Experimental] Add Locale to Storefront (#5658) (#5683) via JayShortway (@JayShortway)
