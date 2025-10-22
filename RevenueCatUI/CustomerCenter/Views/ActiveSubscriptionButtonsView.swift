@@ -60,17 +60,13 @@ struct ActiveSubscriptionButtonsView: View {
                 }
             }
         }
-        .applyIf(tintColor != nil, apply: { $0.tint(tintColor) })
+        .applyIfLet(Color.from(colorInformation: appearance.accentColor, for: self.colorScheme), apply: { $0.tint($1)})
         #if compiler(>=5.9)
         .background(Color(colorScheme == .light
                           ? UIColor.systemBackground
                           : UIColor.secondarySystemBackground),
                     in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
         #endif
-    }
-
-    private var tintColor: Color? {
-        Color.from(colorInformation: appearance.accentColor, for: self.colorScheme)
     }
 }
 
