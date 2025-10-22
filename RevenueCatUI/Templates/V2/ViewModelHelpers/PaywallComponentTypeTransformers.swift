@@ -342,7 +342,7 @@ extension DisplayableColorScheme {
 
         let lightModeColor = light
 
-        return Color(UIColor { traitCollection in
+        let color = UIColor(dynamicProvider: { traitCollection in
             switch traitCollection.userInterfaceStyle {
             case .light, .unspecified:
                 return UIColor(lightModeColor.toColor(fallback: Color.clear))
@@ -352,6 +352,7 @@ extension DisplayableColorScheme {
                 return UIColor(lightModeColor.toColor(fallback: Color.clear))
             }
         })
+        return Color(uiColor: color)
         #elseif os(macOS)
         guard let darkModeColor = self.dark else {
             return light.toColor(fallback: Color.clear)
