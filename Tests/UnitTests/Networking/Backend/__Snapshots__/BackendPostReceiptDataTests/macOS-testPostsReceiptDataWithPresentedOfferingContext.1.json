@@ -40,7 +40,6 @@
       "observer_mode" : false,
       "presented_offering_identifier" : "a_offering",
       "presented_placement_identifier" : "a_placement",
-      "presented_offering_source" : "marketing_automation",
       "price" : "10.98",
       "product_id" : "a_great_product",
       "store_country" : "ESP",
