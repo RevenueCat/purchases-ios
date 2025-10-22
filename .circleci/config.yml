@@ -10,7 +10,7 @@ version: 2.1
 parameters:
   action:
     type: enum
-    enum: [default, bump, temporary-workflow]
+    enum: [default, bump]
     default: default
   generate_snapshots:
     default: false
@@ -1386,18 +1386,6 @@ workflows:
             - make-release
           <<: *non-patch-release-branches
           context: slack-secrets
-
-  temporary-workflow:
-    when:
-      equal: [ temporary-workflow, << pipeline.parameters.action >> ]
-    jobs:
-      - deploy-purchase-tester:
-          xcode_version: '16.4'
-      - revenuecat/insert-changelog-latest-in-main-if-needed:
-          cache-version: v1
-          requires:
-            - deploy-purchase-tester
-
   snapshot-bump:
     when:
       not:
