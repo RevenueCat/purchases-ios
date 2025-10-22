@@ -221,7 +221,7 @@ class PurchaseHandlerTests: TestCase {
         let impressionExpectation = expectation(description: "Impression tracked")
         let closeExpectation = expectation(description: "Close tracked")
 
-        let source: PaywallSource = "test_source"
+        let source = PaywallSource(rawValue: "test_source")
         var trackedEvents: [PaywallEvent] = []
 
         let handler = PurchaseHandler(
