@@ -15,6 +15,10 @@ import SwiftUI
 @available(watchOS, unavailable)
 extension CustomerCenterConfigData.Appearance {
 
+    @available(iOS 15.0, *)
+    @available(macOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
     func tintColor(colorScheme: ColorScheme) -> Color? {
         Color.from(colorInformation: accentColor, for: colorScheme)
     }
