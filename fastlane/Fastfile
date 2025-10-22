@@ -645,9 +645,9 @@ platform :ios do
   lane :retry_failed_tests do |options|
     fail_build = options[:fail_build]
     retry_attempt = options[:retry_attempt]
-    
+
     failed_tests = File.read(failed_tests_path).split("\n")
-    
+
     if failed_tests.empty?
       UI.message('No failed tests to retry')
     else
@@ -931,7 +931,7 @@ platform :ios do
   lane :deploy_to_spm do
     source_repo = ENV["CIRCLE_REPOSITORY_URL"] || "https://github.com/revenuecat/#{repo_name}"
     destination_repo = source_repo.sub(/\.git\z/, "-spm.git")
-  
+
     git_clone_and_push(
       source_repo: source_repo,
       destination_repo: destination_repo
@@ -980,6 +980,23 @@ platform :ios do
         tester.delete!
       end
     end
+  end
+
+  desc "If the release corresponds to a previous version, creates a PR to insert the release changelog into main's CHANGELOG.md"
+  lane :insert_changelog_latest_in_main_if_needed do |options|
+    if options[:dry_run]
+      dry_run = true
+    else
+      dry_run = false
+    end
+
+    insert_changelog_of_older_version(
+      sdk_version: current_version_number,
+      changelog_path: changelog_path,
+      changelog_latest_path: changelog_latest_path,
+      repo_name: repo_name,
+      dry_run: dry_run
+    )
   end
 
   private_lane :sandbox_testers_create do |options|
