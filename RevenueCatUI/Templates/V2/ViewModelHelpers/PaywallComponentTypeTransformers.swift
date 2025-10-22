@@ -335,7 +335,7 @@ extension DisplayableColorScheme {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func toDynamicColor() -> Color {
-        #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+        #if canImport(UIKit)
         guard let darkModeColor = self.dark else {
             return light.toColor(fallback: Color.clear)
         }
@@ -352,10 +352,22 @@ extension DisplayableColorScheme {
                 return UIColor(lightModeColor.toColor(fallback: Color.clear))
             }
         })
-        #elseif os(watchOS) || os(macOS)
-        // For platforms where `UIColor` is unavailable, fallback to using the light or dark color directly
-        let currentColorScheme = (Environment(\.colorScheme).wrappedValue)
-        return effectiveColor(for: currentColorScheme).toColor(fallback: Color.clear)
+        #elseif os(macOS)
+        guard let darkModeColor = self.dark else {
+            return light.toColor(fallback: Color.clear)
+        }
+
+        let lightModeColor = light
+
+        return Color(NSColor(name: nil) { appearance in
+            let appearanceName = appearance.bestMatch(from: [.aqua, .darkAqua]) ?? .aqua
+            switch appearanceName {
+            case .darkAqua:
+                return NSColor(darkModeColor.toColor(fallback: Color.clear))
+            default:
+                return NSColor(lightModeColor.toColor(fallback: Color.clear))
+            }
+        })
         #endif
     }
 
