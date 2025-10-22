@@ -1391,8 +1391,12 @@ workflows:
     when:
       equal: [ temporary-workflow, << pipeline.parameters.action >> ]
     jobs:
+      - deploy-purchase-tester:
+          xcode_version: '16.4'
       - revenuecat/insert-changelog-latest-in-main-if-needed:
           cache-version: v1
+          requires:
+            - deploy-purchase-tester
 
   snapshot-bump:
     when:
