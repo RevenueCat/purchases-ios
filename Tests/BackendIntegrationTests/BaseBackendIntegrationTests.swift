@@ -47,7 +47,7 @@ class BaseBackendIntegrationTests: TestCase {
 
     private var mainThreadMonitor: MainThreadMonitor!
 
-    fileprivate var forceServerErrorsStrategy: ForceServerErrorsStrategy?
+    internal var forceServerErrorsStrategy: ForceServerErrorsStrategy?
 
     static var isSandbox: Bool = true {
         didSet {
@@ -239,12 +239,11 @@ private extension BaseBackendIntegrationTests {
 
 extension BaseBackendIntegrationTests: InternalDangerousSettingsType {
 
-    var forceServerErrorsStrategy: ForceServerErrorsStrategy { return self.forceServerErrorsStrategy }
     var forceSignatureFailures: Bool { return false }
     var disableHeaderSignatureVerification: Bool { return false }
     var testReceiptIdentifier: String? { return self.testUUID.uuidString }
 
-    final func serverDown() { self.forceServerErrorsStrategy = allServersDown }
+    final func serverDown() { self.forceServerErrorsStrategy = .allServersDown }
     final func serverUp() { self.forceServerErrorsStrategy = nil }
 
 }
