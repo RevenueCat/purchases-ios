@@ -11,9 +11,9 @@
 //
 //  Created by Nacho Soto on 5/10/22.
 
+@testable import RevenueCat
 import SnapshotTesting
 import XCTest
-@testable import RevenueCat
 
 // swiftlint:disable xctestcase_superclass
 
