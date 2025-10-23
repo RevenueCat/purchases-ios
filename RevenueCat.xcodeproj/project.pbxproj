@@ -912,6 +912,7 @@
 		751192DD2E39147600E583CC /* MockWebBillingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751192DC2E39147600E583CC /* MockWebBillingAPI.swift */; };
 		751192DE2E39147600E583CC /* MockWebBillingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751192DC2E39147600E583CC /* MockWebBillingAPI.swift */; };
 		751192E02E39149200E583CC /* WebBillingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751192DF2E39149200E583CC /* WebBillingAPI.swift */; };
+		752EA9532EAA856F002E10DA /* FallbackAPIIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 752EA9522EAA856F002E10DA /* FallbackAPIIntegrationTests.swift */; };
 		75425E0F2D5DFA9F00E25F60 /* PaywallComponentsDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75425E0E2D5DFA9F00E25F60 /* PaywallComponentsDataTests.swift */; };
 		7542E4E92DEDCC2A002CE340 /* PaywallFontManagerType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7542E4E82DEDCC2A002CE340 /* PaywallFontManagerType.swift */; };
 		7559DF072E38B05F0050C5B4 /* WebProductToStoreProductConversionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7559DF062E38B05F0050C5B4 /* WebProductToStoreProductConversionTests.swift */; };
@@ -2366,6 +2367,7 @@
 		750B39FD2E40940F005E141D /* PurchasesOrchestratorSimulatedStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesOrchestratorSimulatedStoreTests.swift; sourceTree = "<group>"; };
 		751192DC2E39147600E583CC /* MockWebBillingAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockWebBillingAPI.swift; sourceTree = "<group>"; };
 		751192DF2E39149200E583CC /* WebBillingAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebBillingAPI.swift; sourceTree = "<group>"; };
+		752EA9522EAA856F002E10DA /* FallbackAPIIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackAPIIntegrationTests.swift; sourceTree = "<group>"; };
 		75425E0E2D5DFA9F00E25F60 /* PaywallComponentsDataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallComponentsDataTests.swift; sourceTree = "<group>"; };
 		7542E4E82DEDCC2A002CE340 /* PaywallFontManagerType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallFontManagerType.swift; sourceTree = "<group>"; };
 		7559DF062E38B05F0050C5B4 /* WebProductToStoreProductConversionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebProductToStoreProductConversionTests.swift; sourceTree = "<group>"; };
@@ -3967,6 +3969,7 @@
 				4FB3FE122A38CB1F004789C6 /* SignatureVerificationIntegrationTests.swift */,
 				4F2017D42A15587F0061F6EF /* OfflineStoreKitIntegrationTests.swift */,
 				579189FC28F4966500BF4963 /* OtherIntegrationTests.swift */,
+				752EA9522EAA856F002E10DA /* FallbackAPIIntegrationTests.swift */,
 				57488AFE29CA58050000EE7E /* LoadShedderIntegrationTests.swift */,
 				579234E427F779FE00B39C68 /* SubscriberAttributesManagerIntegrationTests.swift */,
 				4FA696BC2A0020A000D228B1 /* MainThreadMonitor.swift */,
@@ -7261,6 +7264,7 @@
 				57488AFF29CA58050000EE7E /* LoadShedderIntegrationTests.swift in Sources */,
 				4FDF10F02A7262D8004F3680 /* SK2ProductFetcher.swift in Sources */,
 				575A8EE22922C56300936709 /* AsyncTestHelpers.swift in Sources */,
+				752EA9532EAA856F002E10DA /* FallbackAPIIntegrationTests.swift in Sources */,
 				2DA85A8B26DEA7DD00F1136D /* MockProductsRequestFactory.swift in Sources */,
 				4F7E3A812B02DF5A0051234A /* MockSandboxEnvironmentDetector.swift in Sources */,
 				4F1E84022A6062C9000AF177 /* ImageSnapshot.swift in Sources */,

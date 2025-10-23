@@ -1,0 +1,119 @@
+{
+  "current_offering_id" : "default",
+  "offerings" : [
+    {
+      "description" : "standard set of packages",
+      "identifier" : "default",
+      "metadata" : {
+        "meta" : "data"
+      },
+      "packages" : [
+        {
+          "identifier" : "$rc_monthly",
+          "platform_product_identifier" : "com.revenuecat.monthly_4.99.1_week_intro"
+        },
+        {
+          "identifier" : "$rc_annual",
+          "platform_product_identifier" : "com.revenuecat.annual_39.99.2_week_intro"
+        },
+        {
+          "identifier" : "$rc_weekly",
+          "platform_product_identifier" : "com.revenuecat.weekly_1.99.3_day_intro"
+        },
+        {
+          "identifier" : "$rc_lifetime",
+          "platform_product_identifier" : "lifetime"
+        },
+        {
+          "identifier" : "non_renewing",
+          "platform_product_identifier" : "non_renewing_subscription"
+        }
+      ],
+      "paywall" : {
+        "asset_base_url" : "https://assets.pawwalls.com",
+        "config" : {
+          "blurred_background_image" : false,
+          "colors" : {
+            "light" : {
+              "accent1" : "#ec64e5",
+              "accent2" : "#000000",
+              "background" : "#ffffff",
+              "call_to_action_background" : "#45c186",
+              "call_to_action_foreground" : "#ffffff",
+              "text1" : "#000000"
+            }
+          },
+          "colors_by_tier" : {
+
+          },
+          "default_package" : "$rc_monthly",
+          "display_restore_purchases" : true,
+          "images" : {
+            "background" : "300883_1691437592.jpg",
+            "header" : null,
+            "icon" : "300883_1691437591.jpg"
+          },
+          "images_by_tier" : {
+
+          },
+          "packages" : [
+            "$rc_monthly",
+            "$rc_annual"
+          ],
+          "privacy_url" : "https://revenuecat.com/privacy",
+          "tiers" : [
+
+          ],
+          "tos_url" : "https://revenuecat.com/tos"
+        },
+        "localized_strings" : {
+          "en_US" : {
+            "call_to_action" : "Purchase for {{ sub_price_per_month }} per month",
+            "call_to_action_with_intro_offer" : "Start your {{ sub_offer_duration }} trial, then {{ sub_price_per_month }} per month",
+            "features" : [
+
+            ],
+            "offer_details" : "{{ total_price_and_per_month }}",
+            "offer_details_with_intro_offer" : "Start your {{ sub_offer_duration }} trial, then {{ sub_price_per_month }} per month",
+            "offer_name" : "{{ sub_period }}",
+            "offer_overrides" : {
+
+            },
+            "subtitle" : "Get access to all our educational content trusted by thousands of parents",
+            "tier_name" : null,
+            "title" : "Ignite your child's curiosity"
+          }
+        },
+        "localized_strings_by_tier" : {
+
+        },
+        "revision" : 3,
+        "template_name" : "2",
+        "zero_decimal_place_countries" : {
+          "apple" : [
+            "TWN",
+            "KAZ",
+            "MEX",
+            "PHL",
+            "THA",
+            "IND"
+          ]
+        }
+      }
+    },
+    {
+      "description" : "Coins",
+      "identifier" : "coins",
+      "metadata" : {
+
+      },
+      "packages" : [
+        {
+          "identifier" : "10.coins",
+          "platform_product_identifier" : "consumable.10_coins"
+        }
+      ],
+      "paywall" : null
+    }
+  ]
+}
