@@ -283,7 +283,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
             _ = try await self.purchaseConsumablePackage()
             fail("Expected error")
         } catch let error as ErrorCode {
-            expect(error).to(matchError(ErrorCode.unknownBackendError))
+            expect(error).to(matchError(ErrorCode.unknownError))
 
             self.logger.verifyMessageWasLogged(
                 Strings.offlineEntitlements.computing_offline_customer_info_failed(
@@ -375,7 +375,7 @@ class OfflineWithNoMappingStoreKitIntegrationTests: BaseOfflineStoreKitIntegrati
             _ = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
             fail("Fetch should have failed")
         } catch let error as ErrorCode {
-            expect(error).to(matchError(ErrorCode.unknownBackendError))
+            expect(error).to(matchError(ErrorCode.unknownError))
         } catch let error {
             fail("Unexpected error: \(error)")
         }
