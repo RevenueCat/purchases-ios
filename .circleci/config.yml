@@ -1837,6 +1837,17 @@ workflows:
           dry_run: true
           context:
             - slack-secrets-ios
+      - loadshedder-integration-tests-old-major:
+          name: loadshedder-integration-tests-v3
+          major: "3"
+          context:
+            - slack-secrets
+      - loadshedder-integration-tests-old-major:
+          name: loadshedder-integration-tests-v4
+          major: "4"
+          context:
+            - slack-secrets
+      - integration-tests-all
 
   test-tuist-workflow:
     when:
