@@ -139,7 +139,8 @@ internal protocol InternalDangerousSettingsType: Sendable {
     var enableReceiptFetchRetry: Bool { get }
 
     #if DEBUG
-    /// The strategy for the `HTTPClient` to fake server errors. Meant for tests only. `nil` means no server errors are forced.
+    /// The strategy for the `HTTPClient` to fake server errors. Meant for tests only.
+    /// `nil` means no server errors are forced.
     ///
     /// This is done by routing the requests to https://api.revenuecat.com/force-server-failure,
     /// which returns a 502 status code with a HTML response body.
