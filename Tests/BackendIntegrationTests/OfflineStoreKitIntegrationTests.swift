@@ -363,7 +363,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
 class OfflineWithNoMappingStoreKitIntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
-    override var forceServerErrorsStrategy: ForceServerErrorsStrategy {
+    override var forceServerErrorsStrategy: ForceServerErrorsStrategy? {
         return ForceServerErrorsStrategy.allServersDown
     }
 
