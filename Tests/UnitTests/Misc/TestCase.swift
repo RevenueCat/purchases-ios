@@ -79,10 +79,10 @@ private enum SnapshotTests {
 
 }
 
-extension ForceServerErrorsStrategy {
+extension ForceServerErrorStrategy {
 
     /// Fakes server errors in all requests, including requests made to the fallback API hosts.
-    static let allServersDown: ForceServerErrorsStrategy = .init { _ in
+    static let allServersDown: ForceServerErrorStrategy = .init { _ in
         return true // All requests fail
     }
 

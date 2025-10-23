@@ -18,20 +18,20 @@ import Foundation
         let enableReceiptFetchRetry: Bool
 
         #if DEBUG
-        let forceServerErrorsStrategy: ForceServerErrorsStrategy?
+        let forceServerErrorStrategy: ForceServerErrorStrategy?
         let forceSignatureFailures: Bool
         let disableHeaderSignatureVerification: Bool
         let testReceiptIdentifier: String?
 
         init(
             enableReceiptFetchRetry: Bool = false,
-            forceServerErrorsStrategy: ForceServerErrorsStrategy? = nil,
+            forceServerErrorStrategy: ForceServerErrorStrategy? = nil,
             forceSignatureFailures: Bool = false,
             disableHeaderSignatureVerification: Bool = false,
             testReceiptIdentifier: String? = nil
         ) {
             self.enableReceiptFetchRetry = enableReceiptFetchRetry
-            self.forceServerErrorsStrategy = forceServerErrorsStrategy
+            self.forceServerErrorStrategy = forceServerErrorStrategy
             self.forceSignatureFailures = forceSignatureFailures
             self.disableHeaderSignatureVerification = disableHeaderSignatureVerification
             self.testReceiptIdentifier = testReceiptIdentifier
@@ -144,7 +144,7 @@ internal protocol InternalDangerousSettingsType: Sendable {
     ///
     /// This is done by routing the requests to https://api.revenuecat.com/force-server-failure,
     /// which returns a 502 status code with a HTML response body.
-    var forceServerErrorsStrategy: ForceServerErrorsStrategy? { get }
+    var forceServerErrorStrategy: ForceServerErrorStrategy? { get }
 
     /// Whether `HTTPClient` will fake invalid signatures.
     var forceSignatureFailures: Bool { get }
@@ -162,7 +162,7 @@ internal protocol InternalDangerousSettingsType: Sendable {
 
 #if DEBUG
 
-struct ForceServerErrorsStrategy {
+struct ForceServerErrorStrategy {
 
     // swiftlint:disable:next force_unwrapping
     static let forceServerErrorURL = URL(string: "https://api.revenuecat.com/force-server-failure")!

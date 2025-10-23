@@ -1622,7 +1622,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         expect(self.eTagManager.invokedETagHeaderParametersList).to(haveCount(1))
     }
 
-    func testForceServerErrorsStrategyAllServersDownCallsForceServerFailurePath() {
+    func testforceServerErrorStrategyAllServersDownCallsForceServerFailurePath() {
         let path: HTTPRequest.Path = .mockPath
 
         stub(condition: isPath(path)) { _ in
@@ -1640,7 +1640,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
                 finishTransactions: false,
                 dangerousSettings: .init(
                     autoSyncPurchases: true,
-                    internalSettings: DangerousSettings.Internal(forceServerErrorsStrategy: .allServersDown)
+                    internalSettings: DangerousSettings.Internal(forceServerErrorStrategy: .allServersDown)
                 ),
                 preferredLocalesProvider: .mock()
             )
@@ -1657,7 +1657,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         ))
     }
 
-    func testNilForceServerErrorsStrategyCallsTheOriginalPath() throws {
+    func testNilforceServerErrorStrategyCallsTheOriginalPath() throws {
         let path: HTTPRequest.Path = .logIn
 
         let mockedResponse = BodyWithDate(data: "test", requestDate: Date())
@@ -1681,7 +1681,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
                 finishTransactions: false,
                 dangerousSettings: .init(
                     autoSyncPurchases: true,
-                    internalSettings: DangerousSettings.Internal(forceServerErrorsStrategy: nil)
+                    internalSettings: DangerousSettings.Internal(forceServerErrorStrategy: nil)
                 ),
                 preferredLocalesProvider: .mock()
             )
@@ -1694,7 +1694,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         expect(response).to(beSuccess())
     }
 
-    func testForceServerErrorsStrategyAlwaysFalseCallsTheOriginalPath() throws {
+    func testforceServerErrorStrategyAlwaysFalseCallsTheOriginalPath() throws {
         let path: HTTPRequest.Path = .logIn
 
         let mockedResponse = BodyWithDate(data: "test", requestDate: Date())
@@ -1718,7 +1718,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
                 finishTransactions: false,
                 dangerousSettings: .init(
                     autoSyncPurchases: true,
-                    internalSettings: DangerousSettings.Internal(forceServerErrorsStrategy: .init { _ in
+                    internalSettings: DangerousSettings.Internal(forceServerErrorStrategy: .init { _ in
                         return false
                     })
                 ),

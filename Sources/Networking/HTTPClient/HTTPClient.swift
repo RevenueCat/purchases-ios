@@ -531,10 +531,10 @@ private extension HTTPClient {
 
         #if DEBUG
         // Meant only for testing error handling behavior of the SDK.
-        if let forceErrorsStrategy = self.systemInfo.dangerousSettings.internalSettings.forceServerErrorsStrategy,
-           forceErrorsStrategy.shouldForceServerError(request) {
+        if let forceErrorStrategy = self.systemInfo.dangerousSettings.internalSettings.forceServerErrorStrategy,
+           forceErrorStrategy.shouldForceServerError(request) {
             Logger.warn(Strings.network.api_request_forcing_server_error(request.httpRequest))
-            finalURLRequest = URLRequest(url: ForceServerErrorsStrategy.forceServerErrorURL)
+            finalURLRequest = URLRequest(url: ForceServerErrorStrategy.forceServerErrorURL)
         }
         #endif
 
