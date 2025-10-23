@@ -13,6 +13,7 @@
 
 import SnapshotTesting
 import XCTest
+@testable import RevenueCat
 
 // swiftlint:disable xctestcase_superclass
 
@@ -70,6 +71,15 @@ private enum SnapshotTests {
         if ProcessInfo.processInfo.environment["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "1" {
             isRecording = true
         }
+    }
+
+}
+
+extension ForceServerErrorsStrategy {
+
+    /// Fakes server errors in all requests, including requests made to the fallback API hosts.
+    static let allServersDown: ForceServerErrorsStrategy = .init { _ in
+        return true // All requests fail
     }
 
 }

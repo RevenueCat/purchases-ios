@@ -363,7 +363,9 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
 class OfflineWithNoMappingStoreKitIntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
-    override var forceServerErrors: Bool { return true }
+    override var forceServerErrorsStrategy: ForceServerErrorsStrategy {
+        return ForceServerErrorsStrategy.allServersDown
+    }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testOfflineCustomerInfoFailsIfNoEntitlementMapping() async throws {

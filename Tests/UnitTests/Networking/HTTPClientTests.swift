@@ -1622,12 +1622,16 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         expect(self.eTagManager.invokedETagHeaderParametersList).to(haveCount(1))
     }
 
-    func testFakeServerErrors() {
+    func testForceServerErrorsStrategyAllServersDownCallsForceServerFailurePath() {
         let path: HTTPRequest.Path = .mockPath
 
         stub(condition: isPath(path)) { _ in
-            fail("Should not perform request")
+            fail("Should not perform request to path \(path)")
             return .emptySuccessResponse()
+        }
+
+        stub(condition: isPath("/force-server-failure")) { _ in
+            return .serverDownResponse()
         }
 
         self.client = self.createClient(
@@ -1636,7 +1640,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
                 finishTransactions: false,
                 dangerousSettings: .init(
                     autoSyncPurchases: true,
-                    internalSettings: DangerousSettings.Internal(forceServerErrors: true)
+                    internalSettings: DangerousSettings.Internal(forceServerErrorsStrategy: .allServersDown)
                 ),
                 preferredLocalesProvider: .mock()
             )
@@ -1648,10 +1652,85 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
 
         expect(response).to(beFailure())
         expect(response?.error).to(matchError(NetworkError.errorResponse(
-            ErrorResponse(code: .internalServerError,
-                          originalCode: BackendErrorCode.unknownBackendError.rawValue),
+            ErrorResponse.defaultResponse,
             .internalServerError)
         ))
+    }
+
+    func testNilForceServerErrorsStrategyCallsTheOriginalPath() throws {
+        let path: HTTPRequest.Path = .logIn
+
+        let mockedResponse = BodyWithDate(data: "test", requestDate: Date())
+        let encodedResponse = try mockedResponse.jsonEncodedData
+        stub(condition: isPath(path)) { _ in
+            return HTTPStubsResponse(
+                data: encodedResponse,
+                statusCode: .success,
+                headers: nil
+            )
+        }
+
+        stub(condition: isPath("/force-server-failure")) { _ in
+            fail("Should not perform request to \"/force-server-failure path\"")
+            return .serverDownResponse()
+        }
+
+        self.client = self.createClient(
+            .init(
+                platformInfo: nil,
+                finishTransactions: false,
+                dangerousSettings: .init(
+                    autoSyncPurchases: true,
+                    internalSettings: DangerousSettings.Internal(forceServerErrorsStrategy: nil)
+                ),
+                preferredLocalesProvider: .mock()
+            )
+        )
+
+        let response: BodyWithDateResponse? = waitUntilValue { completion in
+            self.client.perform(.init(method: .get, path: path), completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+    }
+
+    func testForceServerErrorsStrategyAlwaysFalseCallsTheOriginalPath() throws {
+        let path: HTTPRequest.Path = .logIn
+
+        let mockedResponse = BodyWithDate(data: "test", requestDate: Date())
+        let encodedResponse = try mockedResponse.jsonEncodedData
+        stub(condition: isPath(path)) { _ in
+            return HTTPStubsResponse(
+                data: encodedResponse,
+                statusCode: .success,
+                headers: nil
+            )
+        }
+
+        stub(condition: isPath("/force-server-failure")) { _ in
+            fail("Should not perform request to \"/force-server-failure path\"")
+            return .serverDownResponse()
+        }
+
+        self.client = self.createClient(
+            .init(
+                platformInfo: nil,
+                finishTransactions: false,
+                dangerousSettings: .init(
+                    autoSyncPurchases: true,
+                    internalSettings: DangerousSettings.Internal(forceServerErrorsStrategy: .init { _ in
+                        return false
+                    })
+                ),
+                preferredLocalesProvider: .mock()
+            )
+        )
+
+        let response: BodyWithDateResponse? = waitUntilValue { completion in
+            self.client.perform(.init(method: .get, path: path), completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
     }
 
     func testRedirectIsLogged() throws {
@@ -2745,6 +2824,12 @@ extension HTTPStubsResponse {
         // This creates a new response each time so modifications in one test don't affect others.
         return .init(data: Data(),
                      statusCode: .tooManyRequests,
+                     headers: nil)
+    }
+
+    static func serverDownResponse() -> HTTPStubsResponse {
+        return .init(data: Data(),
+                     statusCode: .internalServerError,
                      headers: nil)
     }
 
