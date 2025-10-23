@@ -81,9 +81,15 @@ private enum SnapshotTests {
 
 extension ForceServerErrorStrategy {
 
-    /// Fakes server errors in all requests, including requests made to the fallback API hosts.
+    /// Forces server error in all requests, including requests made to the fallback API hosts.
     static let allServersDown: ForceServerErrorStrategy = .init { _ in
         return true // All requests fail
+    }
+
+    /// Forces server error in all requests except those made to the fallback API hosts.
+    static let failExceptFallbackUrls: ForceServerErrorStrategy = .init { (request: HTTPClient.Request) in
+        let isRequestToFallbackUrl = request.fallbackHostIndex != nil
+        return !isRequestToFallbackUrl
     }
 
 }
