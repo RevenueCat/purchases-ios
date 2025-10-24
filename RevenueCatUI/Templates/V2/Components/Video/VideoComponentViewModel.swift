@@ -89,7 +89,18 @@ class VideoComponentViewModel {
 
         apply(style)
     }
+}
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension VideoComponentViewModel: Hashable {
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(component)
+        hasher.combine(imageSource)
+    }
+
+    static func == (lhs: VideoComponentViewModel, rhs: VideoComponentViewModel) -> Bool {
+        lhs.component == rhs.component && lhs.imageSource == rhs.imageSource
+    }
 }
 
 struct LocalizedVideoPartial: PresentedPartial {
