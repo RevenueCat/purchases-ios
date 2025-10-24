@@ -472,7 +472,7 @@ private extension HTTPClient {
                 }
 
                 retryScheduled = self.retryRequestWithNextFallbackHostIfNeeded(request: request,
-                                                                               httpURLResponse: httpURLResponse)
+                                                                               error: error)
                 if !retryScheduled {
                     retryScheduled = self.retryRequestIfNeeded(request: request,
                                                                httpURLResponse: httpURLResponse)
@@ -647,15 +647,15 @@ extension HTTPClient {
     ///
     /// - Parameters:
     ///   - request: The original `HTTPClient.Request` that may need to be retried.
-    ///   - httpURLResponse: An optional `HTTPURLResponse` that contains the status code of the response.
+    ///   - error: The `HTTPClient.NetworkError` that was received.
     /// - Returns: A Boolean value indicating whether the request was retried.
     internal func retryRequestWithNextFallbackHostIfNeeded(
         request: HTTPClient.Request,
-        httpURLResponse: HTTPURLResponse?
+        error: NetworkError
     ) -> Bool {
-
-        guard let statusCode = httpURLResponse?.statusCode, HTTPStatusCode(rawValue: statusCode).isServerError,
-              let nextRequest = request.requestWithNextFallbackHost(proxyURL: SystemInfo.proxyURL) else {
+        
+        // The request must be able to be retried with a fallback host
+        guard error.isAllowedToRetryWithFallbackHost, let nextRequest = request.requestWithNextFallbackHost(proxyURL: SystemInfo.proxyURL) else {
             return false
         }
 
@@ -764,6 +764,19 @@ extension HTTPClient {
 }
 
 // MARK: - Extensions
+
+fileprivate extension NetworkError {
+    var isAllowedToRetryWithFallbackHost: Bool {
+        switch self {
+        case .decoding, .unableToCreateRequest, .signatureVerificationFailed:
+            return false
+        case .dnsError, .networkError, .unexpectedResponse:
+            return true
+        case let .errorResponse(_, statusCode, _):
+            return HTTPStatusCode(rawValue: statusCode.rawValue).isServerError
+        }
+    }
+}
 
 extension HTTPClient {
 
