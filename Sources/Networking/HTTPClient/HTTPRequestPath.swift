@@ -110,6 +110,12 @@ extension HTTPRequest {
 
     }
 
+    enum AdPath: Hashable {
+
+        case postEvents
+
+    }
+
 }
 
 extension HTTPRequest.Path: HTTPRequestPath {
