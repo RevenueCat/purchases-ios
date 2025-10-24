@@ -318,6 +318,47 @@ class NetworkErrorTests: TestCase {
         }
     }
 
+    func testShouldFallBackToCachedOfferingsTrue() {
+        let errors = [
+            error(Self.decodingError),
+            error(Self.offlineError),
+            error(Self.networkError),
+            error(Self.dnsError),
+            error(Self.unableToCreateRequestError),
+            error(Self.unexpectedResponseError),
+            error(Self.responseError(.internalServerError)),
+            error(Self.responseError(.networkConnectTimeoutError)),
+            error(Self.responseError(.other(555))),
+            error(Self.signatureVerificationFailed)
+        ]
+
+        for error in errors {
+            check(error.0.shouldFallBackToCachedOfferings,
+                  condition: beTrue(),
+                  descrition: "Expected error's shouldFallBackToCachedOfferings to be true",
+                  file: error.1,
+                  line: error.2)
+        }
+    }
+
+    func testShouldFallBackToCachedOfferingsFalse() {
+        let errors = [
+            error(Self.responseError(.invalidRequest)),
+            error(Self.responseError(.unauthorized)),
+            error(Self.responseError(.forbidden)),
+            error(Self.responseError(.notFoundError)),
+            error(Self.responseError(.tooManyRequests))
+        ]
+
+        for error in errors {
+            check(error.0.shouldFallBackToCachedOfferings,
+                  condition: beFalse(),
+                  descrition: "Expected error's shouldFallBackToCachedOfferings to be false",
+                  file: error.1,
+                  line: error.2)
+        }
+    }
+
     // MARK: - Helpers
 
     /// Stores the file/line information so expectation failures can point to the line creating the error.
