@@ -46,15 +46,14 @@ class VideoComponentViewModel {
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
-        isEligibleForIntroOffer: Bool,
-        isEligibleForPromoOffer: Bool,
         @ViewBuilder apply: @escaping (VideoComponentStyle) -> some View
     ) -> some View {
         let localizedPartial = LocalizedVideoPartial.buildPartial(
             state: state,
             condition: condition,
-            isEligibleForIntroOffer: isEligibleForIntroOffer,
-            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            // Intro and Promo offers do not impact this component
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
             with: self.presentedOverrides
         )
         let partial = localizedPartial?.partial
