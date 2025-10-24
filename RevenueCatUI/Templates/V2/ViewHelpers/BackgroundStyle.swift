@@ -102,7 +102,7 @@ extension DisplayableColorScheme {
     func toView(colorScheme: ColorScheme) -> some View {
         switch self.effectiveColor(for: colorScheme) {
         case .hex:
-            toDynamicColor()
+            toDynamicColor(with: colorScheme)
         case .linear(let degrees, _):
             GradientView(
                 lightGradient: light.toGradient(),

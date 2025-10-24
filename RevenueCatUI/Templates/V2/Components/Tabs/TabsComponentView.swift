@@ -625,7 +625,8 @@ struct TabsComponentView_Previews: PreviewProvider {
                         "tab_3_text_1": .string("3 Content above control"),
                         "tab_3_text_2": .string("3 Content below control")
                     ]
-                )
+                ),
+                colorScheme: .light
             ),
             onDismiss: {}
         )
@@ -661,7 +662,8 @@ struct TabsComponentView_Previews: PreviewProvider {
                         "tab_3_text_1": .string("3 Content above control"),
                         "tab_3_text_2": .string("3 Content below control")
                     ]
-                )
+                ),
+                colorScheme: .light
             ),
             onDismiss: {}
         )
@@ -698,7 +700,8 @@ struct TabsComponentView_Previews: PreviewProvider {
                         "tab_3_text_2": .string("3 Content below control"),
                         "tab_toggle": .string("Free trial?")
                     ]
-                )
+                ),
+                colorScheme: .light
             ),
             onDismiss: {}
         )

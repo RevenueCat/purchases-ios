@@ -54,7 +54,8 @@ struct VideoComponentView: View {
                 ),
                 isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                     for: self.packageContext.package
-                )
+                ),
+                colorScheme: colorScheme
             ) { style in
                 if style.visible {
                     let viewData = style.viewData(forDarkMode: colorScheme == .dark)

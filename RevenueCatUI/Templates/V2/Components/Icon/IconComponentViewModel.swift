@@ -41,11 +41,13 @@ class IconComponentViewModel {
     }
 
     @ViewBuilder
+    // swiftlint:disable:next function_parameter_count
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
+        colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (IconComponentStyle) -> some View
     ) -> some View {
         let partial = PresentedIconPartial.buildPartial(
@@ -65,7 +67,8 @@ class IconComponentViewModel {
             margin: partial?.margin ?? self.component.margin,
             color: partial?.color ?? self.component.color,
             iconBackground: partial?.iconBackground ?? self.component.iconBackground,
-            uiConfigProvider: uiConfigProvider
+            uiConfigProvider: uiConfigProvider,
+            colorScheme: colorScheme
         )
 
         apply(style)
@@ -132,19 +135,21 @@ struct IconComponentStyle {
         margin: PaywallComponent.Padding?,
         color: PaywallComponent.ColorScheme,
         iconBackground: PaywallComponent.IconComponent.IconBackground?,
-        uiConfigProvider: UIConfigProvider
+        uiConfigProvider: UIConfigProvider,
+        colorScheme: ColorScheme
     ) {
         self.visible = visible
         self.url = URL(string: "\(baseUrl)/\(formats.heic)")!
         self.size = size
         self.padding = (padding ?? .zero).edgeInsets
         self.margin = (margin ?? .zero).edgeInsets
-        self.color = color.asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor()
+        self.color = color.asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor(with: colorScheme)
         self.iconBackgroundStyle = iconBackground?.color
             .asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
         self.iconBackgroundShape = iconBackground?.shape.shape
         self.iconBackgroundBorder = iconBackground?.border?.border(uiConfigProvider: uiConfigProvider)
-        self.iconBackgroundShadow = iconBackground?.shadow?.shadow(uiConfigProvider: uiConfigProvider)
+        self.iconBackgroundShadow = iconBackground?.shadow?
+            .shadow(uiConfigProvider: uiConfigProvider, colorScheme: colorScheme)
     }
 
 }

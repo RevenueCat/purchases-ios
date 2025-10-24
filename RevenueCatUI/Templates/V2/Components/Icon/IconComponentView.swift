@@ -49,7 +49,8 @@ struct IconComponentView: View {
             ),
             isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                 for: self.packageContext.package
-            )
+            ),
+            colorScheme: colorScheme
         ) { style in
             if style.visible {
                 RemoteImage(

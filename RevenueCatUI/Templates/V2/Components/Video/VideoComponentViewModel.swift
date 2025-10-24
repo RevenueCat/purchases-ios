@@ -43,11 +43,13 @@ class VideoComponentViewModel {
     }
 
     @ViewBuilder
+    // swiftlint:disable:next function_parameter_count
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
+        colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (VideoComponentStyle) -> some View
     ) -> some View {
         let localizedPartial = LocalizedVideoPartial.buildPartial(
@@ -85,7 +87,8 @@ class VideoComponentViewModel {
             checksumLowRes: partial?.source?.light.checksumLowRes ?? self.component.source.light.checksumLowRes,
             darkChecksum: partial?.source?.dark?.checksum ?? self.component.source.dark?.checksum,
             darkChecksumLowRes: partial?.source?.dark?.checksumLowRes ?? self.component.source.dark?.checksumLowRes,
-            uiConfigProvider: self.uiConfigProvider
+            uiConfigProvider: self.uiConfigProvider,
+            colorScheme: colorScheme
         )
 
         apply(style)
@@ -190,7 +193,8 @@ struct VideoComponentStyle {
         checksumLowRes: Checksum? = nil,
         darkChecksum: Checksum? = nil,
         darkChecksumLowRes: Checksum? = nil,
-        uiConfigProvider: UIConfigProvider
+        uiConfigProvider: UIConfigProvider,
+        colorScheme: ColorScheme
     ) {
         self.visible = visible
         self.showControls = showControls
@@ -211,7 +215,7 @@ struct VideoComponentStyle {
         self.padding = (padding ?? .zero).edgeInsets
         self.margin = (margin ?? .zero).edgeInsets
         self.border = border?.border(uiConfigProvider: uiConfigProvider)
-        self.shadow = shadow?.shadow(uiConfigProvider: uiConfigProvider)
+        self.shadow = shadow?.shadow(uiConfigProvider: uiConfigProvider, colorScheme: colorScheme)
         self.checksum = checksum
         self.checksumLowRes = checksumLowRes
         self.darkChecksum = darkChecksum
