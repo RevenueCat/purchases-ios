@@ -338,7 +338,12 @@ extension DisplayableColorScheme {
         guard let darkModeColor = self.dark else {
             return light.toColor(fallback: Color.clear)
         }
-        return darkModeColor.toColor(fallback: .clear)
+
+        if colorScheme == .dark {
+            return darkModeColor.toColor(fallback: .clear)
+        } else {
+            return light.toColor(fallback: .clear)
+        }
     }
 
     func effectiveColor(for colorScheme: ColorScheme) -> DisplayableColorInfo {
