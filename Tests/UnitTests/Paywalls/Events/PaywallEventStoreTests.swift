@@ -274,6 +274,34 @@ class PaywallEventStoreTests: TestCase {
         })
     }
 
+    func testSizeLimitKeepsLatest11Events() async {
+        // Store 60 events and keep track of them
+        var allEvents: [StoredEvent] = []
+        for _ in 0..<60 {
+            let event = StoredEvent.randomImpressionEvent()
+            allEvents.append(event)
+            await self.store.store(event)
+        }
+
+        // Mock file size to be over the limit (2048 KB)
+        await self.handler.setMockedFileSizeInKB(2100)
+
+        // Store one more event, which should trigger cleanup
+        let finalEvent = StoredEvent.randomImpressionEvent()
+        allEvents.append(finalEvent)
+        await self.store.store(finalEvent)
+
+        // Reset mocked size to reflect actual file size after cleanup
+        await self.handler.setMockedFileSizeInKB(nil)
+
+        // Fetch remaining events
+        let remainingEvents = await self.store.fetch(100)
+
+        // Should have the latest 11 events (last 10 from original 60 + the final event)
+        let expectedEvents = Array(allEvents.suffix(11))
+        expect(remainingEvents) == expectedEvents
+    }
+
 }
 
 // MARK: - Extensions
