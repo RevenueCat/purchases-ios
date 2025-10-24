@@ -52,5 +52,15 @@ class FallbackURLSignedBackendIntegrationTests: BaseStoreKitIntegrationTests {
         assertSnapshot(matching: productEntitlementMapping.response, as: .formattedJson)
     }
 
-}
+    func testCannotGetCustomerInfoFromFallbackURL() async throws {
+        do {
+            _ = try await Purchases.shared.customerInfo()
+            XCTFail("Expected failure when fetching customer info from fallback URL")
+        } catch let error as ErrorCode {
+            expect(error).to(matchError(ErrorCode.unknownError))
+        } catch let error {
+            fail("Unexpected error: \(error)")
+        }
+    }
 
+}
