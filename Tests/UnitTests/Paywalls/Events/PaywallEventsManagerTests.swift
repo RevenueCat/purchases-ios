@@ -231,6 +231,42 @@ class PaywallEventsManagerTests: TestCase {
         ])
     }
 
+    func testFlushLimitsToMaxBatchesPerFlush() async throws {
+        // Store 15 batches worth of events (batch size = 2, so 30 events)
+        let eventsPerBatch = 2
+        let totalBatches = 15
+        let totalEvents = eventsPerBatch * totalBatches
+
+        var storedEvents: [PaywallEvent] = []
+        for _ in 0..<totalEvents {
+            let event = await self.storeRandomEvent()
+            storedEvents.append(event)
+        }
+
+        // Flush with batch size 2, should only send 10 batches (20 events)
+        let result = try await self.manager.flushEvents(batchSize: eventsPerBatch)
+        let expectedEventsFlushed = eventsPerBatch * PaywallEventsManager.maxBatchesPerFlush
+        expect(result) == expectedEventsFlushed
+
+        // Verify exactly 10 batches were sent
+        expect(self.api.invokedPostPaywallEventsParameters).to(haveCount(PaywallEventsManager.maxBatchesPerFlush))
+
+        // Verify the first 10 batches match expected events
+        for batchIndex in 0..<PaywallEventsManager.maxBatchesPerFlush {
+            let batchStartIndex = batchIndex * eventsPerBatch
+            let batchEndIndex = batchStartIndex + eventsPerBatch
+            let expectedBatch = try storedEvents[batchStartIndex..<batchEndIndex].map {
+                try createStoredEvent(from: $0)
+            }
+            expect(self.api.invokedPostPaywallEventsParameters[batchIndex]) == expectedBatch
+        }
+
+        // Verify remaining events are still in store
+        let remainingEvents = await self.store.storedEvents
+        let expectedRemainingCount = totalEvents - expectedEventsFlushed
+        expect(remainingEvents).to(haveCount(expectedRemainingCount))
+    }
+
     #if swift(>=5.9)
     @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
     func testCannotFlushMultipleTimesInParallel() async throws {

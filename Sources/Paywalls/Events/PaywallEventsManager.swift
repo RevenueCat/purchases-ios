@@ -68,8 +68,9 @@ actor PaywallEventsManager: PaywallEventsManagerType {
         defer { self.flushInProgress = false }
 
         var totalFlushed = 0
+        var batchesSent = 0
 
-        while true {
+        while batchesSent < Self.maxBatchesPerFlush {
             let events = await self.store.fetch(batchSize)
 
             guard !events.isEmpty else {
@@ -87,6 +88,7 @@ actor PaywallEventsManager: PaywallEventsManagerType {
 
                 await self.store.clear(events.count)
                 totalFlushed += events.count
+                batchesSent += 1
             } catch {
                 Logger.error(Strings.paywalls.event_sync_failed(error))
 
@@ -94,13 +96,17 @@ actor PaywallEventsManager: PaywallEventsManagerType {
                    backendError.successfullySynced {
                     await self.store.clear(events.count)
                     totalFlushed += events.count
+                    batchesSent += 1
                 } else {
                     throw error
                 }
             }
         }
+
+        return totalFlushed
     }
 
     static let defaultEventBatchSize = 50
+    static let maxBatchesPerFlush = 10
 
 }
