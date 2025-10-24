@@ -79,23 +79,6 @@ class HTTPClient {
         with verificationMode: Signing.ResponseVerificationMode? = nil,
         completionHandler: Completion<Value>?
     ) {
-        #if DEBUG
-        guard !self.systemInfo.dangerousSettings.internalSettings.forceServerErrors else {
-            Logger.warn(Strings.network.api_request_forcing_server_error(request))
-
-            // `FB13133387`: when computing offline CustomerInfo, `StoreKit.Transaction.unfinished`
-            // might be empty if called immediately after `Product.purchase()`.
-            // This introduces a delay to simulate a real API request, and avoid that race condition.
-            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(300)) {
-                completionHandler?(
-                    .failure(.errorResponse(Self.serverErrorResponse, .internalServerError))
-                )
-            }
-
-            return
-        }
-        #endif
-
         self.perform(request: .init(httpRequest: request,
                                     authHeaders: self.authHeaders,
                                     defaultHeaders: self.defaultHeaders,
@@ -544,10 +527,21 @@ private extension HTTPClient {
 
         Logger.debug(Strings.network.api_request_started(request.httpRequest))
 
+        var finalURLRequest = urlRequest
+
+        #if DEBUG
+        // Meant only for testing error handling behavior of the SDK.
+        if let forceErrorStrategy = self.systemInfo.dangerousSettings.internalSettings.forceServerErrorStrategy,
+           forceErrorStrategy.shouldForceServerError(request) {
+            Logger.warn(Strings.network.api_request_forcing_server_error(request.httpRequest))
+            finalURLRequest = URLRequest(url: ForceServerErrorStrategy.forceServerErrorURL)
+        }
+        #endif
+
         let requestStartTime = self.dateProvider.now()
 
         // swiftlint:disable:next redundant_void_return
-        let task = self.session.dataTask(with: urlRequest) { (data, urlResponse, error) -> Void in
+        let task = self.session.dataTask(with: finalURLRequest) { (data, urlResponse, error) -> Void in
             self.handle(urlResponse: urlResponse,
                         request: request,
                         urlRequest: urlRequest,
