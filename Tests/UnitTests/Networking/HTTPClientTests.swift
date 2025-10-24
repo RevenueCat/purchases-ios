@@ -2764,7 +2764,7 @@ extension HTTPClientTests {
         let client = self.createClient(self.systemInfo, operationDispatcher: mockOperationDispatcher)
 
         let request = buildEmptyRequest(isRetryable: true, hasFallbackHosts: true)
-        
+
         let didRetry = client.retryRequestWithNextFallbackHostIfNeeded(
             request: request,
             error: .serverDown()
@@ -2773,13 +2773,13 @@ extension HTTPClientTests {
         expect(didRetry).to(beTrue())
         expect(mockOperationDispatcher.invokedDispatchOnWorkerThreadWithTimeInterval).to(beFalse())
     }
-    
+
     func testRetriesWithNextFallbackHostImmediatelyForUnexpectedResponse() throws {
         let mockOperationDispatcher = MockOperationDispatcher()
         let client = self.createClient(self.systemInfo, operationDispatcher: mockOperationDispatcher)
 
         let request = buildEmptyRequest(isRetryable: true, hasFallbackHosts: true)
-        
+
         let didRetry = client.retryRequestWithNextFallbackHostIfNeeded(
             request: request,
             error: .unexpectedResponse(nil)
@@ -2791,7 +2791,7 @@ extension HTTPClientTests {
 
     func testIncrementsHostIndexOnRetry() throws {
         let request = buildEmptyRequest(isRetryable: true, hasFallbackHosts: true)
-        
+
         let didRetry = self.client.retryRequestWithNextFallbackHostIfNeeded(
             request: request,
             error: .serverDown()
@@ -2803,7 +2803,7 @@ extension HTTPClientTests {
 
     func testDoesNotIncrementRetryCountOnHostRetry() throws {
         let request = buildEmptyRequest(isRetryable: true, hasFallbackHosts: true)
-        
+
         let didRetry = self.client.retryRequestWithNextFallbackHostIfNeeded(
             request: request,
             error: NetworkError.serverDown()
@@ -2819,14 +2819,14 @@ extension HTTPClientTests {
         let didRetry = self.client.retryRequestWithNextFallbackHostIfNeeded(
             request: request,
             error: NetworkError.errorResponse(
-                ErrorResponse.init(
+                ErrorResponse(
                     code: .unknownBackendError,
                     originalCode: BackendErrorCode.unknownBackendError.rawValue
                 ),
                 HTTPStatusCode.tooManyRequests
             )
         )
-        
+
         expect(didRetry).to(beFalse())
     }
 
