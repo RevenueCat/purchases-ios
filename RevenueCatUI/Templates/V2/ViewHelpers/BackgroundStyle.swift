@@ -128,19 +128,6 @@ extension View {
 
 }
 
-extension BackgroundStyle {
-
-    var backgroundStyle: BackgroundStyle? {
-        switch self {
-        case .color(let value):
-            return .color(value)
-        case let .image(value, fitMode, color):
-            return .image(value, fitMode, color)
-        }
-    }
-
-}
-
 extension DisplayableColorScheme {
 
     var backgroundStyle: BackgroundStyle {
