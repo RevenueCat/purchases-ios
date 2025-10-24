@@ -143,8 +143,8 @@ private struct BuySubscriptionButtonStyle: ButtonStyle {
             .padding(.vertical, 14)
             .background(
                 configuration.isPressed
-                ? Color.from(colorInformation: appearance.accentColor, for: self.colorScheme)?.opacity(0.8)
-                : Color.from(colorInformation: appearance.accentColor, for: self.colorScheme)
+                ? appearance.tintColor(colorScheme: self.colorScheme)?.opacity(0.8)
+                : appearance.tintColor(colorScheme: self.colorScheme)
             )
             .foregroundColor(.white)
             .clipShape(Capsule())
