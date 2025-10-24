@@ -506,7 +506,7 @@ extension VariablesV2 {
         localizations: [String: String],
         promoOffer: PromotionalOffer?
     ) -> String {
-        guard let discount = package.storeProduct.introductoryDiscount ?? promoOffer?.discount else {
+        guard let discount = promoOffer?.discount ?? package.storeProduct.introductoryDiscount else {
             return ""
         }
 
@@ -522,7 +522,7 @@ extension VariablesV2 {
         localizations: [String: String],
         promoOffer: PromotionalOffer?
     ) -> String {
-        guard let discount = package.storeProduct.introductoryDiscount ?? promoOffer?.discount else {
+        guard let discount = promoOffer?.discount ?? package.storeProduct.introductoryDiscount else {
             return ""
         }
 
@@ -546,7 +546,7 @@ extension VariablesV2 {
         localizations: [String: String],
         promoOffer: PromotionalOffer?
     ) -> String {
-        guard let discount = package.storeProduct.introductoryDiscount ?? promoOffer?.discount else {
+        guard let discount = promoOffer?.discount ?? package.storeProduct.introductoryDiscount else {
             return ""
         }
 
@@ -570,7 +570,7 @@ extension VariablesV2 {
         localizations: [String: String],
         promoOffer: PromotionalOffer?
     ) -> String {
-        guard let discount = package.storeProduct.introductoryDiscount ?? promoOffer?.discount else {
+        guard let discount = promoOffer?.discount ?? package.storeProduct.introductoryDiscount else {
             return ""
         }
 
@@ -594,7 +594,7 @@ extension VariablesV2 {
         localizations: [String: String],
         promoOffer: PromotionalOffer?
     ) -> String {
-        guard let discount = package.storeProduct.introductoryDiscount ?? promoOffer?.discount else {
+        guard let discount = promoOffer?.discount ?? package.storeProduct.introductoryDiscount else {
             return ""
         }
 
@@ -619,7 +619,7 @@ extension VariablesV2 {
         promoOffer: PromotionalOffer?
     ) -> String {
         let initialOffer = package.storeProduct.introductoryDiscount?.subscriptionPeriod
-        guard let period = initialOffer ?? promoOffer?.discount.subscriptionPeriod else {
+        guard let period = promoOffer?.discount.subscriptionPeriod ?? initialOffer else {
             return ""
         }
 
@@ -632,7 +632,7 @@ extension VariablesV2 {
         promoOffer: PromotionalOffer?
     ) -> String {
         let initialOffer = package.storeProduct.introductoryDiscount?.subscriptionPeriod
-        guard let period = initialOffer ?? promoOffer?.discount.subscriptionPeriod else {
+        guard let period = promoOffer?.discount.subscriptionPeriod ?? initialOffer else {
             return ""
         }
 
@@ -640,7 +640,7 @@ extension VariablesV2 {
     }
 
     func productOfferPeriodInDays(package: Package, promoOffer: PromotionalOffer?) -> String {
-        guard let discount = package.storeProduct.introductoryDiscount ?? promoOffer?.discount else {
+        guard let discount = promoOffer?.discount ?? package.storeProduct.introductoryDiscount else {
             return ""
         }
 
@@ -652,7 +652,7 @@ extension VariablesV2 {
     }
 
     func productOfferPeriodInWeeks(package: Package, promoOffer: PromotionalOffer?) -> String {
-        guard let discount = package.storeProduct.introductoryDiscount ?? promoOffer?.discount else {
+        guard let discount = promoOffer?.discount ?? package.storeProduct.introductoryDiscount else {
             return ""
         }
 
@@ -664,7 +664,7 @@ extension VariablesV2 {
     }
 
     func productOfferPeriodInMonths(package: Package, promoOffer: PromotionalOffer?) -> String {
-        guard let discount = package.storeProduct.introductoryDiscount ?? promoOffer?.discount else {
+        guard let discount = promoOffer?.discount ?? package.storeProduct.introductoryDiscount else {
             return ""
         }
 
@@ -676,7 +676,7 @@ extension VariablesV2 {
     }
 
     func productOfferPeriodInYears(package: Package, promoOffer: PromotionalOffer?) -> String {
-        guard let discount = package.storeProduct.introductoryDiscount ?? promoOffer?.discount else {
+        guard let discount = promoOffer?.discount ?? package.storeProduct.introductoryDiscount else {
             return ""
         }
 
@@ -693,7 +693,7 @@ extension VariablesV2 {
         promoOffer: PromotionalOffer?
     ) -> String {
         let introOffer = package.storeProduct.introductoryDiscount?.subscriptionPeriod
-        guard let period = introOffer ?? promoOffer?.discount.subscriptionPeriod else {
+        guard let period = promoOffer?.discount.subscriptionPeriod ?? introOffer else {
             return ""
         }
 
@@ -705,7 +705,7 @@ extension VariablesV2 {
     }
 
     func productOfferEndDate(package: Package, locale: Locale, date: Date, promoOffer: PromotionalOffer?) -> String {
-        guard let discount = package.storeProduct.introductoryDiscount ?? promoOffer?.discount else {
+        guard let discount = promoOffer?.discount ?? package.storeProduct.introductoryDiscount else {
             return ""
         }
 
