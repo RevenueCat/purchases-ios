@@ -127,16 +127,16 @@ class OfferingsManager {
                                                   preferredLocales: preferredLocales,
                                                   completion: completion)
 
-            case let .failure(.networkError(networkError)) where networkError.isServerDown:
-                Logger.warn(Strings.offering.fetching_offerings_failed_server_down)
+            case let .failure(backendError) where backendError.shouldFallBackToCachedOfferings:
 
-                // If unable to fetch offerings when server is down, attempt to load them from disk cache.
+                // If error fetching offerings, attempt to load them from disk cache.
                 self.fetchCachedOfferingsFromDisk(appUserID: appUserID,
                                                   fetchPolicy: fetchPolicy) { offerings in
                     if let offerings = offerings {
+                        Logger.warn(Strings.offering.error_fetching_offerings_using_disk_cache)
                         self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(offerings))
                     } else {
-                        self.handleOfferingsUpdateError(.backendError(.networkError(networkError)),
+                        self.handleOfferingsUpdateError(.backendError(backendError),
                                                         completion: completion)
                     }
                 }
