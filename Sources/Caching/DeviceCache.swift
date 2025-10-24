@@ -80,7 +80,12 @@ class DeviceCache {
     }
 
     func value<Key: DeviceCacheKeyType, Value: Codable>(for key: Key) -> Value? {
-        self.largeItemCache.value(forKey: key)
+        // Large data used to be stored in the user defaults and resulted in crashes, we need to ensure that
+        // we are cleaning out that data
+        userDefaults.write { defaults in
+            defaults.removeObject(forKey: key)
+        }
+        return self.largeItemCache.value(forKey: key)
     }
 
     // MARK: - appUserID
@@ -179,6 +184,12 @@ class DeviceCache {
     // MARK: - Offerings
 
     func cachedOfferingsResponseData(appUserID: String) -> Data? {
+        // Large data used to be stored in the user defaults and resulted in crashes, we need to ensure that
+        // we are cleaning out that data
+        userDefaults.write { defaults in
+            defaults.removeObject(forKey: CacheKey.offerings(appUserID))
+        }
+
         guard let cacheURL = self.cacheURL else {
             return nil
         }
@@ -384,6 +395,11 @@ class DeviceCache {
     }
 
     var cachedProductEntitlementMapping: ProductEntitlementMapping? {
+        // Large data used to be stored in the user defaults and resulted in crashes, we need to ensure that
+        // we are cleaning out that data
+        userDefaults.write { defaults in
+            defaults.removeObject(forKey: CacheKeys.productEntitlementMapping)
+        }
         return self.largeItemCache.value(forKey: CacheKeys.productEntitlementMapping)
     }
 
