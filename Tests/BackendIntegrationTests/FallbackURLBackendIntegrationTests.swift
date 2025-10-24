@@ -19,16 +19,23 @@ import SnapshotTesting
 import StoreKit
 import XCTest
 
-class FallbackURLBackendIntegrationTests: BaseStoreKitIntegrationTests {
-
-    override class var storeKitVersion: StoreKitVersion { .storeKit2 }
-
-//    override var forceServerErrorStrategy: ForceServerErrorStrategy? {
-//        return .failExceptFallbackUrls
-//    }
+class FallbackURLUnsignedBackendIntegrationTests: FallbackURLSignedBackendIntegrationTests {
 
     override class var responseVerificationMode: Signing.ResponseVerificationMode {
         return .disabled
+    }
+}
+
+class FallbackURLSignedBackendIntegrationTests: BaseStoreKitIntegrationTests {
+
+    override class var storeKitVersion: StoreKitVersion { .storeKit2 }
+
+    override var forceServerErrorStrategy: ForceServerErrorStrategy? {
+        return .failExceptFallbackUrls
+    }
+
+    override class var responseVerificationMode: Signing.ResponseVerificationMode {
+        return Signing.enforcedVerificationMode()
     }
 
     func testCanGetOfferings() async throws {
