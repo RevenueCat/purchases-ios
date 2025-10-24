@@ -28,15 +28,18 @@ class RootViewModel {
     let stackViewModel: StackComponentViewModel
     let stickyFooterViewModel: StickyFooterComponentViewModel?
     let firstItemIgnoresSafeAreaInfo: FirstItemShouldIgnoreSafeAreaInfo?
+    let localizationProvider: LocalizationProvider
 
     init(
         stackViewModel: StackComponentViewModel,
         stickyFooterViewModel: StickyFooterComponentViewModel?,
-        firstItemIgnoresSafeAreaInfo: FirstItemShouldIgnoreSafeAreaInfo?
+        firstItemIgnoresSafeAreaInfo: FirstItemShouldIgnoreSafeAreaInfo?,
+        localizationProvider: LocalizationProvider
     ) {
         self.stackViewModel = stackViewModel
         self.stickyFooterViewModel = stickyFooterViewModel
         self.firstItemIgnoresSafeAreaInfo = firstItemIgnoresSafeAreaInfo
+        self.localizationProvider = localizationProvider
     }
 
 }
