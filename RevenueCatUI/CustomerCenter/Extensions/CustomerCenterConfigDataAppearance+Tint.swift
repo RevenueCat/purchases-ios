@@ -9,6 +9,8 @@
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
+#if os(iOS)
+
 @available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
@@ -23,3 +25,5 @@ extension CustomerCenterConfigData.Appearance {
         Color.from(colorInformation: accentColor, for: colorScheme)
     }
 }
+
+#endif
