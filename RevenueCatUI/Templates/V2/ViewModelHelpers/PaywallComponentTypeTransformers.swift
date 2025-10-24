@@ -334,42 +334,11 @@ extension PaywallComponent.ColorHex {
 extension DisplayableColorScheme {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func toDynamicColor() -> Color {
-        #if canImport(UIKit)
+    func toDynamicColor(with colorScheme: SwiftUI.ColorScheme) -> Color {
         guard let darkModeColor = self.dark else {
             return light.toColor(fallback: Color.clear)
         }
-
-        let lightModeColor = light
-
-        let color = UIColor(dynamicProvider: { traitCollection in
-            switch traitCollection.userInterfaceStyle {
-            case .light, .unspecified:
-                return UIColor(lightModeColor.toColor(fallback: Color.clear))
-            case .dark:
-                return UIColor(darkModeColor.toColor(fallback: Color.clear))
-            @unknown default:
-                return UIColor(lightModeColor.toColor(fallback: Color.clear))
-            }
-        })
-        return Color(uiColor: color)
-        #elseif os(macOS)
-        guard let darkModeColor = self.dark else {
-            return light.toColor(fallback: Color.clear)
-        }
-
-        let lightModeColor = light
-
-        return Color(NSColor(name: nil) { appearance in
-            let appearanceName = appearance.bestMatch(from: [.aqua, .darkAqua]) ?? .aqua
-            switch appearanceName {
-            case .darkAqua:
-                return NSColor(darkModeColor.toColor(fallback: Color.clear))
-            default:
-                return NSColor(lightModeColor.toColor(fallback: Color.clear))
-            }
-        })
-        #endif
+        return darkModeColor.toColor(fallback: .clear)
     }
 
     func effectiveColor(for colorScheme: ColorScheme) -> DisplayableColorInfo {
@@ -422,9 +391,9 @@ extension PaywallComponent.Border {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallComponent.Shadow {
 
-    func shadow(uiConfigProvider: UIConfigProvider) -> ShadowModifier.ShadowInfo? {
+    func shadow(uiConfigProvider: UIConfigProvider, colorScheme: ColorScheme) -> ShadowModifier.ShadowInfo? {
         return ShadowModifier.ShadowInfo(
-            color: self.color.asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor(),
+            color: self.color.asDisplayable(uiConfigProvider: uiConfigProvider).toDynamicColor(with: colorScheme),
             radius: self.radius,
             x: self.x,
             y: self.y

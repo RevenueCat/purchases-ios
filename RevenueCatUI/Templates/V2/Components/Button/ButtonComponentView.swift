@@ -205,7 +205,8 @@ struct ButtonComponentView_Previews: PreviewProvider {
                         serverDescription: "",
                         availablePackages: [],
                         webCheckoutUrl: nil
-                    )
+                    ),
+                    colorScheme: .light
                 ),
                 onDismiss: { }
             )
@@ -222,7 +223,8 @@ fileprivate extension ButtonComponentViewModel {
     convenience init(
         component: PaywallComponent.ButtonComponent,
         localizationProvider: LocalizationProvider,
-        offering: Offering
+        offering: Offering,
+        colorScheme: ColorScheme
     ) throws {
         let factory = ViewModelFactory()
         let stackViewModel = try factory.toStackViewModel(
@@ -232,7 +234,8 @@ fileprivate extension ButtonComponentViewModel {
             purchaseButtonCollector: nil,
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-            offering: offering
+            offering: offering,
+            colorScheme: colorScheme
         )
 
         try self.init(

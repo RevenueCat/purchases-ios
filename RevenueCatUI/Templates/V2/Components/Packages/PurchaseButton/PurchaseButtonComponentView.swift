@@ -210,12 +210,16 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                         "id_2": .string("Hello, world intro offer")
                     ]
                 ),
-                offering: Offering(identifier: "",
-                                   serverDescription: "",
-                                   availablePackages: [],
-                                   webCheckoutUrl: nil)
+                offering: Offering(
+                    identifier: "",
+                    serverDescription: "",
+                    availablePackages: [],
+                    webCheckoutUrl: nil
+                ),
+                colorScheme: .light
             ),
-            onDismiss: {}
+            onDismiss: {
+            }
         )
         .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
@@ -255,12 +259,16 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                         "id_2": .string("Hello, world intro offer")
                     ]
                 ),
-                offering: Offering(identifier: "",
-                                   serverDescription: "",
-                                   availablePackages: [],
-                                   webCheckoutUrl: nil)
+                offering: Offering(
+                    identifier: "",
+                    serverDescription: "",
+                    availablePackages: [],
+                    webCheckoutUrl: nil
+                ),
+                colorScheme: .light
             ),
-            onDismiss: {}
+            onDismiss: {
+            }
         )
         .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
@@ -274,7 +282,8 @@ fileprivate extension PurchaseButtonComponentViewModel {
     convenience init(
         component: PaywallComponent.PurchaseButtonComponent,
         localizationProvider: LocalizationProvider,
-        offering: Offering
+        offering: Offering,
+        colorScheme: ColorScheme
     ) throws {
         let factory = ViewModelFactory()
         let stackViewModel = try factory.toStackViewModel(
@@ -284,7 +293,8 @@ fileprivate extension PurchaseButtonComponentViewModel {
             purchaseButtonCollector: nil,
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-            offering: offering
+            offering: offering,
+            colorScheme: colorScheme
         )
 
         try self.init(
