@@ -99,5 +99,7 @@ public extension PaywallComponent {
 
 }
 
-public typealias Loop = Bool
-public typealias MuteAudio = Bool
+public extension PaywallComponent.Background {
+    typealias Loop = Bool
+    typealias MuteAudio = Bool
+}
