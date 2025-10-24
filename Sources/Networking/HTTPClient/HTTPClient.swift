@@ -653,9 +653,10 @@ extension HTTPClient {
         request: HTTPClient.Request,
         error: NetworkError
     ) -> Bool {
-        
+
         // The request must be able to be retried with a fallback host
-        guard error.isAllowedToRetryWithFallbackHost, let nextRequest = request.requestWithNextFallbackHost(proxyURL: SystemInfo.proxyURL) else {
+        guard error.isAllowedToRetryWithFallbackHost,
+              let nextRequest = request.requestWithNextFallbackHost(proxyURL: SystemInfo.proxyURL) else {
             return false
         }
 
