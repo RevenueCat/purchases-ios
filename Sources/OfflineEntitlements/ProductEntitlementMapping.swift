@@ -17,6 +17,7 @@ import Foundation
 struct ProductEntitlementMapping {
 
     var entitlementsByProduct: [String: Set<String>]
+    var response: ProductEntitlementMappingResponse
 
 }
 
@@ -31,14 +32,15 @@ extension ProductEntitlementMapping {
 
 extension ProductEntitlementMapping {
 
-    static let empty: Self = .init(entitlementsByProduct: [:])
+    static let empty: Self = .init(entitlementsByProduct: [:], response: .init(products: [:]) )
 
 }
 
 extension ProductEntitlementMappingResponse {
 
     func toMapping() -> ProductEntitlementMapping {
-        return .init(entitlementsByProduct: self.products.mapValues { Set($0.entitlements) })
+        return .init(entitlementsByProduct: self.products.mapValues { Set($0.entitlements) },
+                     response: self)
     }
 
 }
