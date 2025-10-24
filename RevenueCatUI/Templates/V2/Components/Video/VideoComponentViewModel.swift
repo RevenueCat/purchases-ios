@@ -46,15 +46,14 @@ class VideoComponentViewModel {
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
-        isEligibleForIntroOffer: Bool,
-        isEligibleForPromoOffer: Bool,
         @ViewBuilder apply: @escaping (VideoComponentStyle) -> some View
     ) -> some View {
         let localizedPartial = LocalizedVideoPartial.buildPartial(
             state: state,
             condition: condition,
-            isEligibleForIntroOffer: isEligibleForIntroOffer,
-            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            // Intro and Promo offers do not impact this component
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
             with: self.presentedOverrides
         )
         let partial = localizedPartial?.partial
@@ -90,7 +89,18 @@ class VideoComponentViewModel {
 
         apply(style)
     }
+}
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension VideoComponentViewModel: Hashable {
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(component)
+        hasher.combine(imageSource)
+    }
+
+    static func == (lhs: VideoComponentViewModel, rhs: VideoComponentViewModel) -> Bool {
+        lhs.component == rhs.component && lhs.imageSource == rhs.imageSource
+    }
 }
 
 struct LocalizedVideoPartial: PresentedPartial {

@@ -539,6 +539,7 @@ struct CornerBorder_Previews: PreviewProvider {
         switch background {
         case .color: name.append("Color")
         case .image: name.append("Image")
+        case .video: name.append("Video")
         case .none: break
         }
 

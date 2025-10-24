@@ -172,7 +172,7 @@ struct StackComponentStyle {
         self.dimension = dimension
         self.size = size
         self.spacing = spacing
-        self.backgroundStyle = background?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle ??
+        self.backgroundStyle = background?.asDisplayable(uiConfigProvider: uiConfigProvider) ??
             backgroundColor?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
         self.padding = padding.edgeInsets
         self.margin = margin.edgeInsets
