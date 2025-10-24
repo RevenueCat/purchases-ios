@@ -110,8 +110,6 @@ let package = Package(
                 dependencies: ["RevenueCat"],
                 path: "RevenueCatUI",
                 resources: [
-                    // Note: these have to match the values in RevenueCatUI.podspec
-                    .copy("Resources/background.jpg"),
                     .process("Resources/icons.xcassets")
                 ],
                 swiftSettings: ciCompilerFlags + additionalCompilerFlags),

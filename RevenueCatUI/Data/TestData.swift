@@ -491,9 +491,7 @@ enum TestData {
                            PackageType.sixMonth.identifier,
                            PackageType.annual.identifier],
                 defaultPackage: PackageType.sixMonth.identifier,
-                images: .init(
-                    background: "background.jpg"
-                ),
+                images: .init(),
                 colors: .init(
                     light: .init(
                         background: "#FFFFFF",
