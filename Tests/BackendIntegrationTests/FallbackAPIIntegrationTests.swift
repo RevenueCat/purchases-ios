@@ -38,5 +38,12 @@ class FallbackAPIIntegrationTests: BaseStoreKitIntegrationTests {
         assertSnapshot(matching: receivedOfferings.response, as: .formattedJson)
     }
 
+    func testCanGetProductEntitlementMapping() async throws {
+        let productEntitlementMapping = try await self.purchases.productEntitlementMapping()
+
+        expect(productEntitlementMapping.entitlementsByProduct).toNot(beEmpty())
+        assertSnapshot(matching: productEntitlementMapping.response, as: .formattedJson)
+    }
+
 }
 
