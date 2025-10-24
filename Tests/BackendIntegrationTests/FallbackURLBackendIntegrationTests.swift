@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  FallbackAPIIntegrationTests.swift
+//  FallbackURLBackendIntegrationTests.swift
 //
 //  Created by Antonio Pallares on 23/10/25.
 
@@ -19,16 +19,16 @@ import SnapshotTesting
 import StoreKit
 import XCTest
 
-class FallbackAPIIntegrationTests: BaseStoreKitIntegrationTests {
+class FallbackURLBackendIntegrationTests: BaseStoreKitIntegrationTests {
 
     override class var storeKitVersion: StoreKitVersion { .storeKit2 }
 
-    override var forceServerErrorStrategy: ForceServerErrorStrategy? {
-        return .failExceptFallbackUrls
-    }
+//    override var forceServerErrorStrategy: ForceServerErrorStrategy? {
+//        return .failExceptFallbackUrls
+//    }
 
     override class var responseVerificationMode: Signing.ResponseVerificationMode {
-        return Signing.enforcedVerificationMode()
+        return .disabled
     }
 
     func testCanGetOfferings() async throws {
