@@ -38,11 +38,9 @@ extension PaywallData {
             config: .init(
                 packages: packageIdentifiers,
                 images: .init(
-                    background: Self.backgroundImage,
                     icon: Self.appIconPlaceholder
                 ),
                 colors: Self.colors,
-                blurredBackgroundImage: true,
                 displayRestorePurchases: true
             ),
             localization: Self.localization(Localization.localizedBundle(locale)),
@@ -113,7 +111,6 @@ private extension PaywallData {
         )
     }
 
-    static let backgroundImage = "background.jpg"
     static let defaultTemplateBaseURL = Bundle.module.resourceURL ?? Bundle.module.bundleURL
     static let revisionID: Int = -1
 
