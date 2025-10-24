@@ -148,7 +148,7 @@ extension NetworkStrings: LogMessage {
 
         #if DEBUG
         case let .api_request_forcing_server_error(request):
-            return "Returning fake HTTP 500 error for \(request.description)"
+            return "Forcing server error for request \(request.description)"
 
         case let .api_request_forcing_signature_failure(request):
             return "Returning fake signature verification failure for '\(request.description)'"
