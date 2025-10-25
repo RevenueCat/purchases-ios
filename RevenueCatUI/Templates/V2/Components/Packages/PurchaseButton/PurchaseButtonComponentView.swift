@@ -23,6 +23,9 @@ struct PurchaseButtonComponentView: View {
     @Environment(\.openURL)
     private var openURL
 
+    @Environment(\.purchaseInitiatedAction)
+    private var purchaseInitiatedAction: PurchaseInitiatedAction?
+
     @EnvironmentObject
     private var packageContext: PackageContext
 
@@ -105,6 +108,17 @@ struct PurchaseButtonComponentView: View {
         guard let selectedPackage = self.packageContext.package else {
             Logger.error(Strings.no_selected_package_found)
             return
+        }
+
+        // Check if there's a purchase interceptor
+        if let interceptor = self.purchaseInitiatedAction {
+            // Wait for the interceptor to call resume before proceeding
+            await withCheckedContinuation { continuation in
+                let productIdentifier = selectedPackage.storeProduct.productIdentifier
+                interceptor(productIdentifier) {
+                    continuation.resume()
+                }
+            }
         }
 
         let promoOffer = self.paywallPromoOfferCache.get(for: selectedPackage)
