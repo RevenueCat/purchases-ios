@@ -95,6 +95,9 @@ struct PaywallsV2View: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    @Environment(\.paywallSource)
+    private var paywallSource
+
     @StateObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
@@ -191,10 +194,13 @@ struct PaywallsV2View: View {
                     .disabled(self.purchaseHandler.actionInProgress)
                     .onAppear {
                         self.purchaseHandler.trackPaywallImpression(
-                            self.createEventData()
+                            self.createEventData(),
+                            source: self.paywallSource
                         )
                     }
-                    .onDisappear { self.purchaseHandler.trackPaywallClose() }
+                    .onDisappear {
+                        self.purchaseHandler.trackPaywallClose()
+                    }
                     .onChangeOf(self.purchaseHandler.purchased) { purchased in
                         if purchased {
                             self.onDismiss()

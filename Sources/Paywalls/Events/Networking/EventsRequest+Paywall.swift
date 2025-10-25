@@ -28,6 +28,7 @@ extension EventsRequest {
         var displayMode: PaywallViewMode
         var darkMode: Bool
         var localeIdentifier: String
+        var source: String?
 
     }
 
@@ -66,7 +67,8 @@ extension EventsRequest.PaywallEvent {
                 timestamp: creationData.date.millisecondsSince1970,
                 displayMode: data.displayMode,
                 darkMode: data.darkMode,
-                localeIdentifier: data.localeIdentifier
+                localeIdentifier: data.localeIdentifier,
+                source: data.source
             )
         } catch {
             Logger.error(Strings.paywalls.event_cannot_deserialize(error))
@@ -111,6 +113,7 @@ extension EventsRequest.PaywallEvent: Encodable {
         case displayMode
         case darkMode
         case localeIdentifier = "locale"
+        case source
 
     }
 

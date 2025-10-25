@@ -381,9 +381,15 @@ extension PurchaseHandler {
         self.restoredCustomerInfo = customerInfo
     }
 
-    func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
-        self.eventData = eventData
-        self.track(.impression(.init(), eventData))
+    /// Stores the last paywall impression (including its optional source) so follow-up events can reuse it.
+    func trackPaywallImpression(_ eventData: PaywallEvent.Data, source: PaywallSource?) {
+        var updatedEventData = eventData
+        if let source {
+            updatedEventData.source = source.rawValue
+        }
+
+        self.eventData = updatedEventData
+        self.track(.impression(.init(), updatedEventData))
     }
 
     /// - Returns: whether the event was tracked
@@ -454,8 +460,10 @@ extension PurchaseHandler {
 private extension PurchaseHandler {
 
     func track(_ event: PaywallEvent) {
-        Task.detached(priority: .background) { [purchases = self.purchases] in
-            await purchases.track(paywallEvent: event)
+        let source = event.data.source.map { PaywallSource(rawValue: $0) }
+
+        Task.detached(priority: .background) { [purchases = self.purchases, event, source] in
+            await purchases.track(paywallEvent: event, source: source)
         }
     }
 
@@ -498,7 +506,7 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
         throw ErrorCode.configurationError
     }
 
-    func track(paywallEvent: PaywallEvent) async {}
+    func track(paywallEvent: PaywallEvent, source: PaywallSource?) async {}
 
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func invalidateCustomerInfoCache() {}

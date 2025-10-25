@@ -40,9 +40,11 @@
         "display_mode" : "full_screen",
         "locale" : "en_US",
         "revision" : 5,
-        "session_id" : "73616D70-6C65-2073-7472-696E67000000"
+        "session_id" : "73616D70-6C65-2073-7472-696E67000000",
+        "source" : "presented_from_customer_center"
       },
       "presented_offering_identifier" : "a_offering",
+      "presented_offering_source" : "presented_from_customer_center",
       "price" : "10.98",
       "product_id" : "a_great_product",
       "store_country" : "ESP",

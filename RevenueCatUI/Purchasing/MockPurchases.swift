@@ -73,8 +73,9 @@ final class MockPurchases: PaywallPurchasesType {
         return try await self.restoreBlock()
     }
 
-    func track(paywallEvent: PaywallEvent) async {
-        await self.trackEventBlock(paywallEvent)
+    func track(paywallEvent: PaywallEvent, source: PaywallSource?) async {
+        let finalSource = source?.rawValue ?? paywallEvent.data.source
+        await self.trackEventBlock(paywallEvent.overridingSource(finalSource))
     }
 
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
@@ -101,29 +102,72 @@ extension PaywallPurchasesType {
         purchase: @escaping (@escaping MockPurchases.PurchaseBlock) -> MockPurchases.PurchaseBlock,
         restore: @escaping (@escaping MockPurchases.RestoreBlock) -> MockPurchases.RestoreBlock
     ) -> PaywallPurchasesType {
-        return MockPurchases { package in
-            try await purchase(self.purchase(package:))(package)
-        } restorePurchases: {
-            try await restore(self.restorePurchases)()
-        } trackEvent: { event in
-            await self.track(paywallEvent: event)
-        } customerInfo: {
-            try await self.customerInfo()
-        }
+        return MockPurchases(
+            purchase: { package in
+                try await purchase(self.purchase(package:))(package)
+            },
+            restorePurchases: {
+                try await restore(self.restorePurchases)()
+            },
+            trackEvent: { event in
+                await self.track(
+                    paywallEvent: event,
+                    source: event.data.source.map { PaywallSource(rawValue: $0) }
+                )
+            },
+            customerInfo: {
+                try await self.customerInfo()
+            }
+        )
     }
 
     /// Creates a copy of this `PaywallPurchasesType` wrapping `trackEvent`.
     func map(
         trackEvent: @escaping (@escaping MockPurchases.TrackEventBlock) -> MockPurchases.TrackEventBlock
     ) -> PaywallPurchasesType {
-        return MockPurchases { package in
-            try await self.purchase(package: package)
-        } restorePurchases: {
-            try await self.restorePurchases()
-        } trackEvent: { event in
-            await trackEvent(self.track(paywallEvent:))(event)
-        } customerInfo: {
-            try await self.customerInfo()
+        let trackBlock: MockPurchases.TrackEventBlock = { event in
+            await self.track(paywallEvent: event,
+                             source: event.data.source.map { PaywallSource(rawValue: $0) })
+        }
+
+        return MockPurchases(
+            purchase: { package in
+                try await self.purchase(package: package)
+            },
+            restorePurchases: {
+                try await self.restorePurchases()
+            },
+            trackEvent: { event in
+                await trackEvent(trackBlock)(event)
+            },
+            customerInfo: {
+                try await self.customerInfo()
+            }
+        )
+    }
+
+}
+
+private extension PaywallEvent {
+
+    func overridingSource(_ source: String?) -> PaywallEvent {
+        guard let source else { return self }
+
+        switch self {
+        case let .impression(creationData, data):
+            var updated = data
+            updated.source = source
+            return .impression(creationData, updated)
+
+        case let .close(creationData, data):
+            var updated = data
+            updated.source = source
+            return .close(creationData, updated)
+
+        case let .cancel(creationData, data):
+            var updated = data
+            updated.source = source
+            return .cancel(creationData, updated)
         }
     }
 
