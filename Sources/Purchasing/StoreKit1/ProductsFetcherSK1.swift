@@ -20,6 +20,7 @@ final class ProductsFetcherSK1: NSObject {
 
     let requestTimeout: TimeInterval
     private let productsRequestFactory: ProductsRequestFactory
+    private let priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider
 
     // Note: these 3 must be used only inside `queue` to be thread-safe.
     private var cachedProductsByIdentifier: [String: SK1Product] = [:]
@@ -35,8 +36,10 @@ final class ProductsFetcherSK1: NSObject {
     ///     - Retries up to ``Self.numberOfRetries``
     ///     - Timeout specified by this parameter
     init(productsRequestFactory: ProductsRequestFactory = ProductsRequestFactory(),
+         priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider = .empty,
          requestTimeout: TimeInterval) {
         self.productsRequestFactory = productsRequestFactory
+        self.priceFormattingRuleSetProvider = priceFormattingRuleSetProvider
         self.requestTimeout = requestTimeout
     }
 
@@ -57,8 +60,13 @@ final class ProductsFetcherSK1: NSObject {
             threshold: .productRequest,
             message: Strings.storeKit.sk1_product_request_too_slow,
             work: { completion in
-                self.sk1Products(withIdentifiers: identifiers) { skProducts in
-                    completion(skProducts.map { Set($0.map(SK1StoreProduct.init)) })
+                self.sk1Products(withIdentifiers: identifiers) { [weak self] skProducts in
+                    completion(skProducts.map { Set($0.map {
+                        SK1StoreProduct(
+                            sk1Product: $0,
+                            priceFormatterProvider: .init(priceFormattingRuleSet: self?.priceFormattingRuleSetProvider.priceFormattingRuleSet())
+                        )})
+                    })
                 }
             },
             result: completion

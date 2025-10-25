@@ -64,7 +64,8 @@ enum PreviewUIConfig {
             variableConfig: .init(
                 variableCompatibilityMap: [:],
                 functionCompatibilityMap: [:]
-            )
+            ),
+            priceFormattingRuleSets: [:]
         )
     }
 
@@ -239,7 +240,8 @@ enum PreviewMock {
         variableConfig: .init(
             variableCompatibilityMap: [:],
             functionCompatibilityMap: [:]
-        )
+        ),
+        priceFormattingRuleSets: [:]
     )
 
 }

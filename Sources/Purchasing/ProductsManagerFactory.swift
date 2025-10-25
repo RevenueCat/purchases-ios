@@ -21,16 +21,27 @@ enum ProductsManagerFactory {
                               systemInfo: SystemInfo,
                               backend: Backend,
                               deviceCache: DeviceCache,
-                              requestTimeout: TimeInterval) -> ProductsManagerType {
+                              requestTimeout: TimeInterval
+    ) -> ProductsManagerType {
             if apiKeyValidationResult == .simulatedStore {
                 return SimulatedStoreProductsManager(backend: backend,
                                                      deviceCache: deviceCache,
                                                      requestTimeout: requestTimeout)
             } else {
-                return ProductsManager(productsRequestFactory: ProductsRequestFactory(),
-                                       diagnosticsTracker: diagnosticsTracker,
-                                       systemInfo: systemInfo,
-                                       requestTimeout: requestTimeout)
+                return ProductsManager(
+                    productsRequestFactory: ProductsRequestFactory(),
+                    diagnosticsTracker: diagnosticsTracker,
+                    systemInfo: systemInfo,
+                    requestTimeout: requestTimeout,
+                    priceFormattingRuleSetProvider: .init(
+                        priceFormattingRuleSet: {
+                            guard let storefrontCountryCode = systemInfo.storefront?.countryCode else {
+                                return nil
+                            }
+                            return deviceCache.cachedOfferings?.response.uiConfig?.priceFormattingRuleSets[storefrontCountryCode]
+                        }
+                    )
+                )
             }
     }
 
