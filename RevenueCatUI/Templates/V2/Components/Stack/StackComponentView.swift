@@ -207,6 +207,7 @@ fileprivate extension View {
                 .shape(border: border, shape: shape)
                 .shadow(shadow: shadow, shape: shape?.toInsettableShape())
         default:
+            // Overlayed
             self.shape(border: border, shape: shape)
                 .stackBadge(badge)
                 .shadow(shadow: shadow, shape: shape?.toInsettableShape())
