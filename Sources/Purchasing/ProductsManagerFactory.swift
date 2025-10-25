@@ -21,7 +21,9 @@ enum ProductsManagerFactory {
                               systemInfo: SystemInfo,
                               backend: Backend,
                               deviceCache: DeviceCache,
-                              requestTimeout: TimeInterval) -> ProductsManagerType {
+                              requestTimeout: TimeInterval,
+                              priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider
+    ) -> ProductsManagerType {
             if apiKeyValidationResult == .simulatedStore {
                 return SimulatedStoreProductsManager(backend: backend,
                                                      deviceCache: deviceCache,
@@ -30,7 +32,9 @@ enum ProductsManagerFactory {
                 return ProductsManager(productsRequestFactory: ProductsRequestFactory(),
                                        diagnosticsTracker: diagnosticsTracker,
                                        systemInfo: systemInfo,
-                                       requestTimeout: requestTimeout)
+                                       requestTimeout: requestTimeout,
+                                       priceFormattingRuleSetProvider: priceFormattingRuleSetProvider
+                )
             }
     }
 
