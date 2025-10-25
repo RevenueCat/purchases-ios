@@ -21,7 +21,7 @@ protocol PaywallEventsManagerType {
     /// - Throws: if posting events fails
     /// - Returns: the number of events posted
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func flushEvents(count: Int) async throws -> Int
+    func flushEvents(batchSize: Int) async throws -> Int
 
 }
 
@@ -59,7 +59,7 @@ actor PaywallEventsManager: PaywallEventsManagerType {
         await self.store.store(event)
     }
 
-    func flushEvents(count: Int) async throws -> Int {
+    func flushEvents(batchSize: Int) async throws -> Int {
         guard !self.flushInProgress else {
             Logger.debug(Strings.paywalls.event_flush_already_in_progress)
             return 0
@@ -67,34 +67,46 @@ actor PaywallEventsManager: PaywallEventsManagerType {
         self.flushInProgress = true
         defer { self.flushInProgress = false }
 
-        let events = await self.store.fetch(count)
+        var totalFlushed = 0
+        var batchesSent = 0
 
-        guard !events.isEmpty else {
-            Logger.verbose(Strings.paywalls.event_flush_with_empty_store)
-            return 0
-        }
+        while batchesSent < Self.maxBatchesPerFlush {
+            let events = await self.store.fetch(batchSize)
 
-        Logger.verbose(Strings.paywalls.event_flush_starting(count: events.count))
-
-        do {
-            try await self.internalAPI.postPaywallEvents(events: events)
-            Logger.debug(Strings.analytics.flush_events_success)
-
-            await self.store.clear(count)
-
-            return events.count
-        } catch {
-            Logger.error(Strings.paywalls.event_sync_failed(error))
-
-            if let backendError = error as? BackendError,
-               backendError.successfullySynced {
-                await self.store.clear(count)
+            guard !events.isEmpty else {
+                if totalFlushed == 0 {
+                    Logger.verbose(Strings.paywalls.event_flush_with_empty_store)
+                }
+                return totalFlushed
             }
 
-            throw error
+            Logger.verbose(Strings.paywalls.event_flush_starting(count: events.count))
+
+            do {
+                try await self.internalAPI.postPaywallEvents(events: events)
+                Logger.debug(Strings.analytics.flush_events_success)
+
+                await self.store.clear(events.count)
+                totalFlushed += events.count
+                batchesSent += 1
+            } catch {
+                Logger.error(Strings.paywalls.event_sync_failed(error))
+
+                if let backendError = error as? BackendError,
+                   backendError.successfullySynced {
+                    await self.store.clear(events.count)
+                    totalFlushed += events.count
+                    batchesSent += 1
+                } else {
+                    throw error
+                }
+            }
         }
+
+        return totalFlushed
     }
 
-    static let defaultEventFlushCount = 50
+    static let defaultEventBatchSize = 50
+    static let maxBatchesPerFlush = 10
 
 }

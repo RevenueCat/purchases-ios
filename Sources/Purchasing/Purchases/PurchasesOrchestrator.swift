@@ -824,7 +824,7 @@ final class PurchasesOrchestrator {
             delay = .none
         }
         self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) {
-            _ = try? await manager.flushEvents(count: PaywallEventsManager.defaultEventFlushCount)
+            _ = try? await manager.flushEvents(batchSize: PaywallEventsManager.defaultEventBatchSize)
         }
     }
 

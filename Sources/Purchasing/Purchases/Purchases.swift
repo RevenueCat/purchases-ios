@@ -2089,7 +2089,7 @@ internal extension Purchases {
     /// - Returns: the number of events posted
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func flushPaywallEvents(count: Int) async throws -> Int {
-        return try await self.paywallEventsManager?.flushEvents(count: count) ?? 0
+        return try await self.paywallEventsManager?.flushEvents(batchSize: count) ?? 0
     }
 
 }

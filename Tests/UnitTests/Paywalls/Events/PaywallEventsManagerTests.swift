@@ -73,7 +73,7 @@ class PaywallEventsManagerTests: TestCase {
     // MARK: - flushEvents
 
     func testFlushEmptyStore() async throws {
-        let result = try await self.manager.flushEvents(count: 1)
+        let result = try await self.manager.flushEvents(batchSize: 1)
         expect(result) == 0
         expect(self.api.invokedPostPaywallEvents) == false
     }
@@ -81,7 +81,7 @@ class PaywallEventsManagerTests: TestCase {
     func testFlushOneEvent() async throws {
         let event = await self.storeRandomEvent()
 
-        let result = try await self.manager.flushEvents(count: 1)
+        let result = try await self.manager.flushEvents(batchSize: 1)
         expect(result) == 1
 
         expect(self.api.invokedPostPaywallEvents) == true
@@ -94,11 +94,11 @@ class PaywallEventsManagerTests: TestCase {
         let event1 = await self.storeRandomEvent()
         let event2 = await self.storeRandomEvent()
 
-        let result1 = try await self.manager.flushEvents(count: 1)
-        let result2 = try await self.manager.flushEvents(count: 1)
+        let result1 = try await self.manager.flushEvents(batchSize: 1)
+        let result2 = try await self.manager.flushEvents(batchSize: 1)
 
-        expect(result1) == 1
-        expect(result2) == 1
+        expect(result1) == 2
+        expect(result2) == 0
 
         expect(self.api.invokedPostPaywallEvents) == true
         expect(self.api.invokedPostPaywallEventsParameters) == [
@@ -109,22 +109,42 @@ class PaywallEventsManagerTests: TestCase {
         await self.verifyEmptyStore()
     }
 
-    func testFlushOnlyOneEventPostsFirstOne() async throws {
-        let event = await self.storeRandomEvent()
-        let storedEvent = try createStoredEvent(from: event)
+    func testFlushAllEventsInBatches() async throws {
+        let event1 = await self.storeRandomEvent()
+        let event2 = await self.storeRandomEvent()
+        let event3 = await self.storeRandomEvent()
 
-        _ = await self.storeRandomEvent()
-        _ = await self.storeRandomEvent()
-
-        let result = try await self.manager.flushEvents(count: 1)
-        expect(result) == 1
+        let result = try await self.manager.flushEvents(batchSize: 1)
+        expect(result) == 3
 
         expect(self.api.invokedPostPaywallEvents) == true
-        expect(self.api.invokedPostPaywallEventsParameters) == [[storedEvent]]
+        expect(self.api.invokedPostPaywallEventsParameters) == [
+            [try createStoredEvent(from: event1)],
+            [try createStoredEvent(from: event2)],
+            [try createStoredEvent(from: event3)]
+        ]
 
-        let events = await self.store.storedEvents
-        expect(events).to(haveCount(2))
-        expect(events).toNot(contain(storedEvent))
+        await self.verifyEmptyStore()
+    }
+
+    func testFlushMultipleEventsInLargerBatches() async throws {
+        let event1 = await self.storeRandomEvent()
+        let event2 = await self.storeRandomEvent()
+        let event3 = await self.storeRandomEvent()
+        let event4 = await self.storeRandomEvent()
+        let event5 = await self.storeRandomEvent()
+
+        let result = try await self.manager.flushEvents(batchSize: 2)
+        expect(result) == 5
+
+        expect(self.api.invokedPostPaywallEvents) == true
+        expect(self.api.invokedPostPaywallEventsParameters) == [
+            [try createStoredEvent(from: event1), try createStoredEvent(from: event2)],
+            [try createStoredEvent(from: event3), try createStoredEvent(from: event4)],
+            [try createStoredEvent(from: event5)]
+        ]
+
+        await self.verifyEmptyStore()
     }
 
     func testFlushWithUnsuccessfulPostError() async throws {
@@ -134,7 +154,7 @@ class PaywallEventsManagerTests: TestCase {
 
         self.api.stubbedPostPaywallEventsCompletionResult = .networkError(expectedError)
         do {
-            _ = try await self.manager.flushEvents(count: 1)
+            _ = try await self.manager.flushEvents(batchSize: 1)
             fail("Expected error")
         } catch BackendError.networkError(expectedError) {
             // Expected
@@ -155,21 +175,15 @@ class PaywallEventsManagerTests: TestCase {
             .errorResponse(.defaultResponse, .invalidRequest)
         )
 
-        do {
-            _ = try await self.manager.flushEvents(count: 1)
-            fail("Expected error")
-        } catch BackendError.networkError(.errorResponse) {
-            // Expected
-        } catch {
-            throw error
-        }
+        let result = try await self.manager.flushEvents(batchSize: 1)
 
+        expect(result) == 1
         expect(self.api.invokedPostPaywallEvents) == true
 
         await self.verifyEmptyStore()
     }
 
-    func testFlushWithSuccessfullySyncedErrorOnlyDeletesPostedEvents() async throws {
+    func testFlushWithSuccessfullySyncedErrorContinuesToNextBatch() async throws {
         let event1 = await self.storeRandomEvent()
         let event2 = await self.storeRandomEvent()
 
@@ -177,20 +191,80 @@ class PaywallEventsManagerTests: TestCase {
             .errorResponse(.defaultResponse, .invalidRequest)
         )
 
+        let result = try await self.manager.flushEvents(batchSize: 1)
+
+        expect(result) == 2
+        expect(self.api.invokedPostPaywallEvents) == true
+        expect(self.api.invokedPostPaywallEventsParameters) == [
+            [try createStoredEvent(from: event1)],
+            [try createStoredEvent(from: event2)]
+        ]
+
+        await self.verifyEmptyStore()
+    }
+
+    func testFlushWithUnsuccessfulPostErrorStopsAfterFirstBatch() async throws {
+        let event1 = await self.storeRandomEvent()
+        let event2 = await self.storeRandomEvent()
+        let expectedError: NetworkError = .offlineConnection()
+
+        self.api.stubbedPostPaywallEventsCompletionResult = .networkError(expectedError)
+
         do {
-            _ = try await self.manager.flushEvents(count: 1)
+            _ = try await self.manager.flushEvents(batchSize: 1)
             fail("Expected error")
-        } catch BackendError.networkError(.errorResponse) {
+        } catch BackendError.networkError(expectedError) {
             // Expected
         } catch {
             throw error
         }
 
         expect(self.api.invokedPostPaywallEvents) == true
-        let expectedEvent = try createStoredEvent(from: event1)
-        expect(self.api.invokedPostPaywallEventsParameters) == [[expectedEvent]]
+        expect(self.api.invokedPostPaywallEventsParameters) == [
+            [try createStoredEvent(from: event1)]
+        ]
 
-        await self.verifyEvents([try createStoredEvent(from: event2)])
+        // Both events should still be in the store since the first batch failed
+        await self.verifyEvents([
+            try createStoredEvent(from: event1),
+            try createStoredEvent(from: event2)
+        ])
+    }
+
+    func testFlushLimitsToMaxBatchesPerFlush() async throws {
+        // Store 15 batches worth of events (batch size = 2, so 30 events)
+        let eventsPerBatch = 2
+        let totalBatches = 15
+        let totalEvents = eventsPerBatch * totalBatches
+
+        var storedEvents: [PaywallEvent] = []
+        for _ in 0..<totalEvents {
+            let event = await self.storeRandomEvent()
+            storedEvents.append(event)
+        }
+
+        // Flush with batch size 2, should only send 10 batches (20 events)
+        let result = try await self.manager.flushEvents(batchSize: eventsPerBatch)
+        let expectedEventsFlushed = eventsPerBatch * PaywallEventsManager.maxBatchesPerFlush
+        expect(result) == expectedEventsFlushed
+
+        // Verify exactly 10 batches were sent
+        expect(self.api.invokedPostPaywallEventsParameters).to(haveCount(PaywallEventsManager.maxBatchesPerFlush))
+
+        // Verify the first 10 batches match expected events
+        for batchIndex in 0..<PaywallEventsManager.maxBatchesPerFlush {
+            let batchStartIndex = batchIndex * eventsPerBatch
+            let batchEndIndex = batchStartIndex + eventsPerBatch
+            let expectedBatch = try storedEvents[batchStartIndex..<batchEndIndex].map {
+                try createStoredEvent(from: $0)
+            }
+            expect(self.api.invokedPostPaywallEventsParameters[batchIndex]) == expectedBatch
+        }
+
+        // Verify remaining events are still in store
+        let remainingEvents = await self.store.storedEvents
+        let expectedRemainingCount = totalEvents - expectedEventsFlushed
+        expect(remainingEvents).to(haveCount(expectedRemainingCount))
     }
 
     #if swift(>=5.9)
@@ -217,8 +291,8 @@ class PaywallEventsManagerTests: TestCase {
         }
 
         let manager = self.manager!
-        async let result1 = manager.flushEvents(count: 1)
-        async let result2 = manager.flushEvents(count: 1)
+        async let result1 = manager.flushEvents(batchSize: 1)
+        async let result2 = manager.flushEvents(batchSize: 1)
 
         // Signal the API call to complete
         continuation.continuation.yield()
@@ -226,11 +300,11 @@ class PaywallEventsManagerTests: TestCase {
 
         // Wait for both results
         let results = try await [result1, result2]
-        expect(Set(results)) == [1, 0]
+        expect(Set(results)) == [2, 0]
 
         expect(self.api.invokedPostPaywallEvents) == true
-        expect(self.api.invokedPostPaywallEventsParameters).to(haveCount(1))
-        expect(self.api.invokedPostPaywallEventsParameters.onlyElement) == [
+        expect(self.api.invokedPostPaywallEventsParameters).to(haveCount(2))
+        expect(self.api.invokedPostPaywallEventsParameters.first) == [
             try createStoredEvent(from: event1)
         ]
 
