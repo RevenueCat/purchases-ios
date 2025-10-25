@@ -135,8 +135,25 @@ class BaseManageSubscriptionViewModel: ObservableObject {
         }
     }
 
-    func onDismissPromotionalOffer() {
+    func onDismissPromotionalOffer(action: PromotionalOfferViewAction) {
         self.promotionalOfferData = nil
+        defer {
+            self.loadingPath = nil
+        }
+
+        if let path = self.loadingPath {
+            // if its decline, execute action
+            switch action {
+            case .successfullyRedeemedPromotionalOffer:
+                return
+            case .declinePromotionalOffer, .promotionalCodeRedemptionFailed:
+                break
+            }
+
+            Task.detached(priority: .userInitiated) { @MainActor in
+                await self.onPathSelected(path: path)
+            }
+        }
     }
 
     func onDismissInAppBrowser() {
