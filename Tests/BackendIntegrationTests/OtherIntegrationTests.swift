@@ -251,7 +251,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
                 )
             expect(urlResponse.value(forHTTPHeaderField: "Content-Type"))
                 .to(
-                    equal("image/jpeg"),
+                    equal("image/heic"),
                     description: "Unexpected content type for image: \(imageURL)"
                 )
         }
