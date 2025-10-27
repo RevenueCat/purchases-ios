@@ -141,15 +141,8 @@ class BaseManageSubscriptionViewModel: ObservableObject {
             self.loadingPath = nil
         }
 
-        if let path = self.loadingPath {
-            // if its decline, execute action
-            switch action {
-            case .successfullyRedeemedPromotionalOffer:
-                return
-            case .declinePromotionalOffer, .promotionalCodeRedemptionFailed:
-                break
-            }
-
+        if let path = self.loadingPath,
+           !action.shouldTerminateCurrentPathFlow {
             Task.detached(priority: .userInitiated) { @MainActor in
                 await self.onPathSelected(path: path)
             }

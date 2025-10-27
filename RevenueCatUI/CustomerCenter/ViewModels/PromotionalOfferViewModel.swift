@@ -60,18 +60,28 @@ final class PromotionalOfferViewModel: ObservableObject {
             return
         }
 
+        let productId = product.productIdentifier
+        let offerId = promotionalOffer.signedData.identifier
+
         do {
+            Logger.debug(Strings.purchasing_promotional_offer(productId, offerId))
+
             let result = try await self.purchasesProvider.purchase(
                 product: product,
                 promotionalOffer: promotionalOffer
             )
 
-            Logger.debug("Purchased promotional offer: \(result)")
-            self.actionWrapper.handleAction(.promotionalOfferSuccess)
-            self.onPromotionalOfferPurchaseFlowComplete?(.successfullyRedeemedPromotionalOffer(result))
+            if result.userCancelled || result.transaction == nil {
+                Logger.debug(Strings.promo_offer_purchase_cancelled(productId, offerId))
+                self.onPromotionalOfferPurchaseFlowComplete?(.declinePromotionalOffer)
+            } else {
+                let transactionId = result.transaction?.transactionIdentifier ?? "nil"
+                Logger.debug(Strings.promo_offer_purchase_succeeded(productId, offerId, transactionId))
+                self.actionWrapper.handleAction(.promotionalOfferSuccess)
+                self.onPromotionalOfferPurchaseFlowComplete?(.successfullyRedeemedPromotionalOffer(result))
+            }
         } catch {
-            // swiftlint:disable:next todo
-            // TODO: Log error message
+            Logger.error(Strings.promo_offer_purchase_failed(productId, offerId, error))
             self.error = error
             self.onPromotionalOfferPurchaseFlowComplete?(.promotionalCodeRedemptionFailed(error))
         }
