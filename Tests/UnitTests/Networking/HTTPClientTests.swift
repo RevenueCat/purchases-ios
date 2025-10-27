@@ -2643,6 +2643,84 @@ extension HTTPClientTests {
         expect(result?.error).to(beNil())
     }
 
+    func testRetriesWithNextFallbackHostOnDNSError() throws {
+        let request = HTTPRequest(method: .get, path: .mockPathWithFallbacks)
+        let mainPath = request.path
+        let fallbackHost = try XCTUnwrap(mainPath.fallbackHosts.first, "This test requires at least 1 fallback host")
+
+        let dnsError = NSError(
+            domain: NSURLErrorDomain,
+            code: NSURLErrorCannotFindHost,
+            userInfo: [NSLocalizedDescriptionKey: "A server with the specified hostname could not be found."]
+        )
+        let dnsErrorResponse = HTTPStubsResponse(error: dnsError)
+
+        let host1 = try XCTUnwrap(type(of: mainPath).serverHostURL.host)
+        stub(condition: isHost(host1)) { _ in
+            return dnsErrorResponse
+        }
+
+        let successfulResponse = HTTPStubsResponse(
+            data: Data(),
+            statusCode: HTTPStatusCode.success,
+            headers: nil
+        )
+
+        let host2 = try XCTUnwrap(fallbackHost.host)
+        stub(condition: isHost(host2)) { _ in
+            return successfulResponse
+        }
+
+        let result = waitUntilValue { completion in
+            self.client.perform(request) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+
+        expect(result).toNot(beNil())
+        expect(result).to(beSuccess())
+        expect(result?.error).to(beNil())
+    }
+
+    func testRetriesWithNextFallbackHostOnTimeout() throws {
+        let request = HTTPRequest(method: .get, path: .mockPathWithFallbacks)
+        let mainPath = request.path
+        let fallbackHost = try XCTUnwrap(mainPath.fallbackHosts.first, "This test requires at least 1 fallback host")
+
+        let timeoutError = NSError(
+            domain: NSURLErrorDomain,
+            code: NSURLErrorTimedOut,
+            userInfo: [NSLocalizedDescriptionKey: "The request timed out."]
+        )
+        let timeoutResponse = HTTPStubsResponse(error: timeoutError)
+
+        let host1 = try XCTUnwrap(type(of: mainPath).serverHostURL.host)
+        stub(condition: isHost(host1)) { _ in
+            return timeoutResponse
+        }
+
+        let successfulResponse = HTTPStubsResponse(
+            data: Data(),
+            statusCode: HTTPStatusCode.success,
+            headers: nil
+        )
+
+        let host2 = try XCTUnwrap(fallbackHost.host)
+        stub(condition: isHost(host2)) { _ in
+            return successfulResponse
+        }
+
+        let result = waitUntilValue { completion in
+            self.client.perform(request) { (response: EmptyResponse) in
+                completion(response)
+            }
+        }
+
+        expect(result).toNot(beNil())
+        expect(result).to(beSuccess())
+        expect(result?.error).to(beNil())
+    }
+
     func testReturnsLastErrorWhenRetriedWithNextFallbackHost() throws {
         let request = HTTPRequest(method: .get, path: .mockPathWithFallbacks)
         let mainPath = request.path
@@ -2681,21 +2759,30 @@ extension HTTPClientTests {
         expect(result?.error?.isServerDown) == false
     }
 
-    func testRetriesWithNextFallbackHostImmediately() throws {
+    func testRetriesWithNextFallbackHostImmediatelyForInternalServerError() throws {
         let mockOperationDispatcher = MockOperationDispatcher()
         let client = self.createClient(self.systemInfo, operationDispatcher: mockOperationDispatcher)
 
         let request = buildEmptyRequest(isRetryable: true, hasFallbackHosts: true)
-        let httpURLResponse = HTTPURLResponse(
-            url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
-            statusCode: HTTPStatusCode.internalServerError.rawValue,
-            httpVersion: nil,
-            headerFields: nil
-        )
 
         let didRetry = client.retryRequestWithNextFallbackHostIfNeeded(
             request: request,
-            httpURLResponse: httpURLResponse
+            error: .serverDown()
+        )
+
+        expect(didRetry).to(beTrue())
+        expect(mockOperationDispatcher.invokedDispatchOnWorkerThreadWithTimeInterval).to(beFalse())
+    }
+
+    func testRetriesWithNextFallbackHostImmediatelyForUnexpectedResponse() throws {
+        let mockOperationDispatcher = MockOperationDispatcher()
+        let client = self.createClient(self.systemInfo, operationDispatcher: mockOperationDispatcher)
+
+        let request = buildEmptyRequest(isRetryable: true, hasFallbackHosts: true)
+
+        let didRetry = client.retryRequestWithNextFallbackHostIfNeeded(
+            request: request,
+            error: .unexpectedResponse(nil)
         )
 
         expect(didRetry).to(beTrue())
@@ -2704,16 +2791,10 @@ extension HTTPClientTests {
 
     func testIncrementsHostIndexOnRetry() throws {
         let request = buildEmptyRequest(isRetryable: true, hasFallbackHosts: true)
-        let httpURLResponse = HTTPURLResponse(
-            url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
-            statusCode: HTTPStatusCode.internalServerError.rawValue,
-            httpVersion: nil,
-            headerFields: nil
-        )
 
         let didRetry = self.client.retryRequestWithNextFallbackHostIfNeeded(
             request: request,
-            httpURLResponse: httpURLResponse
+            error: .serverDown()
         )
 
         expect(didRetry).to(beTrue())
@@ -2722,16 +2803,10 @@ extension HTTPClientTests {
 
     func testDoesNotIncrementRetryCountOnHostRetry() throws {
         let request = buildEmptyRequest(isRetryable: true, hasFallbackHosts: true)
-        let httpURLResponse = HTTPURLResponse(
-            url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
-            statusCode: HTTPStatusCode.internalServerError.rawValue,
-            httpVersion: nil,
-            headerFields: nil
-        )
 
         let didRetry = self.client.retryRequestWithNextFallbackHostIfNeeded(
             request: request,
-            httpURLResponse: httpURLResponse
+            error: NetworkError.serverDown()
         )
 
         expect(didRetry).to(beTrue())
@@ -2741,16 +2816,15 @@ extension HTTPClientTests {
     func testDoesNotRetryWithNextFallbackHostForNonServerError() throws {
         let request = buildEmptyRequest(isRetryable: true, hasFallbackHosts: true)
 
-        let httpURLResponse = HTTPURLResponse(
-            url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
-            statusCode: HTTPStatusCode.tooManyRequests.rawValue,
-            httpVersion: nil,
-            headerFields: nil
-        )
-
         let didRetry = self.client.retryRequestWithNextFallbackHostIfNeeded(
             request: request,
-            httpURLResponse: httpURLResponse
+            error: NetworkError.errorResponse(
+                ErrorResponse(
+                    code: .unknownBackendError,
+                    originalCode: BackendErrorCode.unknownBackendError.rawValue
+                ),
+                HTTPStatusCode.tooManyRequests
+            )
         )
 
         expect(didRetry).to(beFalse())
@@ -2764,16 +2838,9 @@ extension HTTPClientTests {
             nextRequest = try XCTUnwrap(nextRequest.requestWithNextFallbackHost(proxyURL: nil))
         }
 
-        let httpURLResponse = HTTPURLResponse(
-            url: URL(string: "https://api.revenuecat.com/v1/receipts")!,
-            statusCode: HTTPStatusCode.internalServerError.rawValue,
-            httpVersion: nil,
-            headerFields: nil
-        )
-
         let didRetry = self.client.retryRequestWithNextFallbackHostIfNeeded(
             request: nextRequest,
-            httpURLResponse: httpURLResponse
+            error: .serverDown()
         )
 
         expect(didRetry).to(beFalse())
