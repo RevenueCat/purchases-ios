@@ -13,8 +13,6 @@
 
 import Foundation
 
-// MARK: - Public Types
-
 #if ENABLE_AD_EVENTS_TRACKING
 
 // MARK: - Internal Protocol
@@ -27,6 +25,8 @@ internal protocol AdEventData {
     var adUnitId: String { get }
     var adInstanceId: String { get }
 }
+
+// MARK: - Public Types
 
 /// Type representing an ad mediation network name.
 ///
