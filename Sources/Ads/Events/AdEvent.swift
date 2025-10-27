@@ -53,13 +53,28 @@ internal protocol AdEventData {
 /// Data for ad displayed events.
 @_spi(Experimental) public struct AdDisplayed: AdEventData {
 
-    // swiftlint:disable missing_docs
+    /// The name of the ad network that served the ad.
     public var networkName: String
+
+    /// The mediation network used to serve the ad.
     public var mediatorName: MediatorName
+
+    /// Optional placement identifier for the ad.
     public var placement: String?
+
+    /// The ad unit identifier.
     public var adUnitId: String
+
+    /// The ad instance identifier.
     public var adInstanceId: String
 
+    /// Creates ad displayed event data.
+    /// - Parameters:
+    ///   - networkName: The name of the ad network that served the ad.
+    ///   - mediatorName: The mediation network used to serve the ad.
+    ///   - placement: Optional placement identifier for the ad.
+    ///   - adUnitId: The ad unit identifier.
+    ///   - adInstanceId: The ad instance identifier.
     public init(
         networkName: String,
         mediatorName: MediatorName,
@@ -73,20 +88,34 @@ internal protocol AdEventData {
         self.adUnitId = adUnitId
         self.adInstanceId = adInstanceId
     }
-    // swiftlint:enable missing_docs
 
 }
 
 /// Data for ad opened/clicked events.
 @_spi(Experimental) public struct AdOpened: AdEventData {
 
-    // swiftlint:disable missing_docs
+    /// The name of the ad network that served the ad.
     public var networkName: String
+
+    /// The mediation network used to serve the ad.
     public var mediatorName: MediatorName
+
+    /// Optional placement identifier for the ad.
     public var placement: String?
+
+    /// The ad unit identifier.
     public var adUnitId: String
+
+    /// The ad instance identifier.
     public var adInstanceId: String
 
+    /// Creates ad opened/clicked event data.
+    /// - Parameters:
+    ///   - networkName: The name of the ad network that served the ad.
+    ///   - mediatorName: The mediation network used to serve the ad.
+    ///   - placement: Optional placement identifier for the ad.
+    ///   - adUnitId: The ad unit identifier.
+    ///   - adInstanceId: The ad instance identifier.
     public init(
         networkName: String,
         mediatorName: MediatorName,
@@ -100,23 +129,46 @@ internal protocol AdEventData {
         self.adUnitId = adUnitId
         self.adInstanceId = adInstanceId
     }
-    // swiftlint:enable missing_docs
 
 }
 
 /// Data for ad revenue events.
 @_spi(Experimental) public struct AdRevenue: AdEventData {
 
-    // swiftlint:disable missing_docs
+    /// The name of the ad network that served the ad.
     public var networkName: String
+
+    /// The mediation network used to serve the ad.
     public var mediatorName: MediatorName
+
+    /// Optional placement identifier for the ad.
     public var placement: String?
+
+    /// The ad unit identifier.
     public var adUnitId: String
+
+    /// The ad instance identifier.
     public var adInstanceId: String
+
+    /// The revenue amount in micros (1/1,000,000 of the currency unit).
     public var revenueMicros: Int
+
+    /// The ISO 4217 currency code (e.g., "USD", "EUR").
     public var currency: String
+
+    /// The precision level of the revenue value.
     public var precision: Precision
 
+    /// Creates ad revenue event data.
+    /// - Parameters:
+    ///   - networkName: The name of the ad network that served the ad.
+    ///   - mediatorName: The mediation network used to serve the ad.
+    ///   - placement: Optional placement identifier for the ad.
+    ///   - adUnitId: The ad unit identifier.
+    ///   - adInstanceId: The ad instance identifier.
+    ///   - revenueMicros: The revenue amount in micros.
+    ///   - currency: The ISO 4217 currency code.
+    ///   - precision: The precision level of the revenue value.
     public init(
         networkName: String,
         mediatorName: MediatorName,
@@ -136,7 +188,6 @@ internal protocol AdEventData {
         self.currency = currency
         self.precision = precision
     }
-    // swiftlint:enable missing_docs
 
 }
 
