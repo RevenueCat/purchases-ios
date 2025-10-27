@@ -1,9 +1,9 @@
 // swift-tools-version:5.9
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
-import PackageDescription
 import class Foundation.ProcessInfo
 import struct Foundation.URL
+import PackageDescription
 
 /// This looks for a file named `Local.xcconfig` in the root of the purchases-ios[-spm] repo, and reads any compiler
 /// flags defined in it. It does nothing if this file does not exist in this exact folder. This file does not exist on
