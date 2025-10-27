@@ -125,13 +125,13 @@ extension HTTPRequest.Path: HTTPRequestPath {
     var fallbackUrls: [URL] {
         switch self {
         case .getOfferings:
-            // swiftlint:disable:next force_unwrapping
             return [
+                // swiftlint:disable:next force_unwrapping
                 URL(string: "/v1/offerings", relativeTo: Self.fallbackServerHostURL)!
             ]
         case .getProductEntitlementMapping:
-            // swiftlint:disable:next force_unwrapping
             return [
+                // swiftlint:disable:next force_unwrapping
                 URL(string: "/v1/product_entitlement_mapping", relativeTo: Self.fallbackServerHostURL)!
             ]
         default:
