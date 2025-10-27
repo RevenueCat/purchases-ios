@@ -158,7 +158,7 @@ struct FeedbackSurveyButtonsView: View {
             }
             .disabled(self.loadingOption != nil)
         }
-        applyIfLet(appearance.tintColor(colorScheme: colorScheme), apply: { $0.tint($1)})
+        .applyIfLet(appearance.tintColor(colorScheme: colorScheme), apply: { $0.tint($1)})
     }
 }
 
