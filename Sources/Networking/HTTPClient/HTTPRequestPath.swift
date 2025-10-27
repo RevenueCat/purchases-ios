@@ -54,7 +54,7 @@ extension HTTPRequestPath {
         let baseURL: URL
         if let proxyURL {
             // When a Proxy URL is set, we don't support fallback URLs
-            guard fallbackUrlIndex != nil else {
+            guard fallbackUrlIndex == nil else {
                 // This is to safe guard against a potential infinite loop if the caller mistakenly
                 // passes both a proxyURL and a fallbackUrlIndex.
                 return nil
