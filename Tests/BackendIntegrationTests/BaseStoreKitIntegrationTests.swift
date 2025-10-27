@@ -98,6 +98,12 @@ extension BaseStoreKitIntegrationTests {
         }
     }
 
+    var offeringWithV1Paywall: Offering {
+        get async throws {
+            return try await XCTAsyncUnwrap(try await self.purchases.offerings().all["alternate_offering"])
+        }
+    }
+
     var monthlyPackage: Package {
         get async throws {
             return try await XCTAsyncUnwrap(try await self.currentOffering.monthly)
