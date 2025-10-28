@@ -113,6 +113,10 @@ class MockSimpleCache: LargeItemCacheType, @unchecked Sendable {
         cacheDirectory?.appendingPathComponent(basePath)
     }
 
+    func createDocumentDirectoryIfNeeded(basePath: String) -> URL? {
+        cacheDirectory?.appendingPathComponent("docs–" + basePath)
+    }
+
     struct SaveData: Equatable {
         var data: Data
         var url: URL

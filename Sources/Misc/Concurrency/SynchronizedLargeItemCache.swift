@@ -18,32 +18,32 @@ internal final class SynchronizedLargeItemCache {
 
     private let cache: LargeItemCacheType
     private let lock: Lock
-    private let cacheURL: URL?
+    private let documentURL: URL?
 
     init(cache: LargeItemCacheType, basePath: String) {
         self.cache = cache
         self.lock = Lock(.nonRecursive)
-        self.cacheURL = cache.createCacheDirectoryIfNeeded(basePath: basePath)
+        self.documentURL = cache.createDocumentDirectoryIfNeeded(basePath: basePath)
     }
 
     /// Performs a synchronized read operation
     func read<T>(_ action: (LargeItemCacheType, URL?) throws -> T) rethrows -> T {
         return try self.lock.perform {
-            return try action(self.cache, self.cacheURL)
+            return try action(self.cache, self.documentURL)
         }
     }
 
     /// Performs a synchronized write operation
     func write(_ action: (LargeItemCacheType, URL?) throws -> Void) rethrows {
         return try self.lock.perform {
-            try action(self.cache, self.cacheURL)
+            try action(self.cache, self.documentURL)
         }
     }
 
     /// Save a codable value to the cache
     @discardableResult
     func set<T: Encodable>(codable value: T, forKey key: DeviceCacheKeyType) -> Bool {
-        guard let cacheURL = self.cacheURL else {
+        guard let documentURL = self.documentURL else {
             Logger.error("Cache URL is not available")
             return false
         }
@@ -52,7 +52,7 @@ internal final class SynchronizedLargeItemCache {
             return false
         }
 
-        let fileURL = cacheURL.appendingPathComponent(key.rawValue)
+        let fileURL = documentURL.appendingPathComponent(key.rawValue)
 
         do {
             try self.write { cache, _ in
@@ -67,11 +67,11 @@ internal final class SynchronizedLargeItemCache {
 
     /// Load a codable value from the cache
     func value<T: Decodable>(forKey key: DeviceCacheKeyType) -> T? {
-        guard let cacheURL = self.cacheURL else {
+        guard let documentURL = self.documentURL else {
             return nil
         }
 
-        let fileURL = cacheURL.appendingPathComponent(key.rawValue)
+        let fileURL = documentURL.appendingPathComponent(key.rawValue)
 
         return self.read { cache, _ in
             guard let data = try? cache.loadFile(at: fileURL) else {
@@ -84,11 +84,11 @@ internal final class SynchronizedLargeItemCache {
 
     /// Remove a cached item
     func removeObject(forKey key: DeviceCacheKeyType) {
-        guard let cacheURL = self.cacheURL else {
+        guard let documentURL = self.documentURL else {
             return
         }
 
-        let fileURL = cacheURL.appendingPathComponent(key.rawValue)
+        let fileURL = documentURL.appendingPathComponent(key.rawValue)
 
         self.write { _, _ in
             try? self.cache.remove(fileURL)
