@@ -1135,6 +1135,42 @@ jobs:
           test_plan: "BackendIntegrationTests-CustomEntitlements"
       - slack-notify-on-fail
 
+  run-maestro-e2e-tests:
+    executor:
+      name: macos-executor
+      xcode_version: "26.0.1"
+    steps:
+      - checkout
+      - install-dependencies:
+          install_swiftlint: false
+      # todo rick
+      - revenuecat/install-maestro
+      - run:
+          name: Run e2e tests
+          command: bundle exec fastlane run_maestro_e2e_tests
+          no_output_timeout: 15m
+      - store_test_results:
+          path: fastlane/maestro-report.xml
+      
+      # - run:
+      #     name: Run tests
+      #     command: bundle exec fastlane test_ios
+      #     no_output_timeout: 15m
+      #     environment:
+      #       SCAN_DEVICE: iPhone 17 (26.0)
+      # - compress_result_bundle:
+      #     directory: fastlane/test_output/xctest/ios
+      #     bundle_name: RevenueCat
+      # - create-snapshot-pr-if-needed:
+      #     condition: << pipeline.parameters.generate_snapshots >>
+      #     job: "create_snapshot_pr"
+      #     version: "ios-26"
+      # - store_test_results:
+      #     path: fastlane/test_output
+      # - store_artifacts:
+      #     path: fastlane/test_output/xctest
+      #     destination: scan-test-output
+
   release-checks:
     executor:
       name: macos-executor
@@ -1578,21 +1614,23 @@ workflows:
         - not: << pipeline.parameters.generate_snapshots >>
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
-      - lint
-      - validate-package-swift:
-          name: validate-package-swift-5.7
-          xcode_version: "14.0.1"
-          mac_os_executor_name: macos-executor-for-macos-12_6
-      - validate-package-swift:
-          name: validate-package-swift-5.8
-          xcode_version: "14.3.1"
-          mac_os_executor_name: macos-executor
-      - run-test-ios-18
-      - run-test-ios-26
-      - pod-lib-lint
-      - run-revenuecat-ui-ios-18
-      - run-revenuecat-ui-ios-26
-      - emerge_purchases_ui_snapshot_tests
+      - run_maestro_e2e_tests
+      # todo rick: remove after testing
+      # - lint
+      # - validate-package-swift:
+      #     name: validate-package-swift-5.7
+      #     xcode_version: "14.0.1"
+      #     mac_os_executor_name: macos-executor-for-macos-12_6
+      # - validate-package-swift:
+      #     name: validate-package-swift-5.8
+      #     xcode_version: "14.3.1"
+      #     mac_os_executor_name: macos-executor
+      # - run-test-ios-18
+      # - run-test-ios-26
+      # - pod-lib-lint
+      # - run-revenuecat-ui-ios-18
+      # - run-revenuecat-ui-ios-26
+      # - emerge_purchases_ui_snapshot_tests
 
   create-tag:
     when:
