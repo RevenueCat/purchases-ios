@@ -35,6 +35,15 @@ class PurchasesFallbackURLBackendIntegrationTests: BaseStoreKitIntegrationTests 
         }
     }
 
+    func testGetCustomerInfoFromFallbackURLIsComputedOffline() async throws {
+        do {
+            let customerInfo = try await Purchases.shared.customerInfo()
+            XCTAssertTrue(customerInfo.isComputedOffline)
+        } catch let error {
+            fail("Unexpected error: \(error)")
+        }
+    }
+
     func testCanMakePurchasesFromFallbackURLUsingOfflineEntitlements() async throws {
         try await purchaseMonthlyProduct(allowOfflineEntitlements: true)
         verifyCustomerInfoWasComputedOffline()
@@ -46,7 +55,11 @@ class PurchasesFallbackURLBackendIntegrationTests: BaseStoreKitIntegrationTests 
         verifyNoTransactionsWereFinished()
 
         let offlineCustomerInfo = try await self.purchases.customerInfo()
+
         XCTAssertTrue(offlineCustomerInfo.isComputedOffline)
+        let offlineEntitlementInfo = try XCTUnwrap(offlineCustomerInfo.entitlements[Self.entitlementIdentifier])
+        XCTAssertTrue(offlineEntitlementInfo.isActive)
+        verifyNoTransactionsWereFinished()
 
         self.mainServerDown = false // Simulate main server recovery
         logger.clearMessages()
@@ -57,6 +70,8 @@ class PurchasesFallbackURLBackendIntegrationTests: BaseStoreKitIntegrationTests 
         verifyTransactionWasFinished()
 
         XCTAssertFalse(onlineCustomerInfo.isComputedOffline)
+        let onlineEntitlementInfo = try XCTUnwrap(onlineCustomerInfo.entitlements[Self.entitlementIdentifier])
+        XCTAssertTrue(onlineEntitlementInfo.isActive)
     }
 
     func testPostsPurchasePerformedOnFallbackURLWhenRecoveringAfterRestartToMainServer() async throws {
@@ -65,18 +80,28 @@ class PurchasesFallbackURLBackendIntegrationTests: BaseStoreKitIntegrationTests 
         verifyNoTransactionsWereFinished()
 
         let offlineCustomerInfo = try await self.purchases.customerInfo()
+
         XCTAssertTrue(offlineCustomerInfo.isComputedOffline)
+        let offlineEntitlementInfo = try XCTUnwrap(offlineCustomerInfo.entitlements[Self.entitlementIdentifier])
+        XCTAssertTrue(offlineEntitlementInfo.isActive)
+        verifyNoTransactionsWereFinished()
 
         self.mainServerDown = false // Simulate main server recovery
         logger.clearMessages()
 
-        configurePurchases()
+        await resetSingleton()
 
         verifyCustomerInfoWasNotComputedOffline()
-        verifyTransactionWasFinished()
 
         let onlineCustomerInfo = try await self.purchases.customerInfo()
+
+        verifyTransactionWasFinished(count: nil)
+
+        verifyCustomerInfoWasNotComputedOffline()
+
         XCTAssertFalse(onlineCustomerInfo.isComputedOffline)
+        let onlineEntitlementInfo = try XCTUnwrap(onlineCustomerInfo.entitlements[Self.entitlementIdentifier])
+        XCTAssertTrue(onlineEntitlementInfo.isActive)
     }
 
 }

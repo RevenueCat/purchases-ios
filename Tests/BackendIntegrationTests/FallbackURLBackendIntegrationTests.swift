@@ -38,29 +38,18 @@ class FallbackURLSignedBackendIntegrationTests: BaseStoreKitIntegrationTests {
         return Signing.enforcedVerificationMode()
     }
 
-    func testCanGetOfferings() async throws {
+    func testCanGetOfferingsFromFallbackURL() async throws {
         let receivedOfferings = try await self.purchases.offerings()
 
         expect(receivedOfferings.all).toNot(beEmpty())
         assertSnapshot(matching: receivedOfferings.response, as: .formattedJson)
     }
 
-    func testCanGetProductEntitlementMapping() async throws {
+    func testCanGetProductEntitlementMappingFromFallbackURL() async throws {
         let productEntitlementMapping = try await self.purchases.productEntitlementMapping()
 
         expect(productEntitlementMapping.entitlementsByProduct).toNot(beEmpty())
         assertSnapshot(matching: productEntitlementMapping.response, as: .formattedJson)
-    }
-
-    func testCannotGetCustomerInfoFromFallbackURL() async throws {
-        do {
-            _ = try await Purchases.shared.customerInfo()
-            XCTFail("Expected failure when fetching customer info from fallback URL")
-        } catch let error as ErrorCode {
-            expect(error).to(matchError(ErrorCode.unknownError))
-        } catch let error {
-            fail("Unexpected error: \(error)")
-        }
     }
 
 }
