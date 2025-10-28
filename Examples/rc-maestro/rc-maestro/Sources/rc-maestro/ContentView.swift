@@ -6,6 +6,8 @@ import StoreKit
 public struct ContentView: View {
     @State private var presentCustomerCenter = false
     @State private var pushCustomerCenter = false
+    
+    @State private var presentPaywall = false
 
     @State private var manageSubscriptions = false
     @State private var actionSheetIsPresented = false
@@ -22,10 +24,14 @@ public struct ContentView: View {
                     presentCustomerCenter = true
                 }
                 .buttonStyle(.borderedProminent)
-                .accessibilityIdentifier("present_customer_center")
 
                 Button("Push Customer Center") {
                     pushCustomerCenter = true
+                }
+                .buttonStyle(.borderedProminent)
+                
+                Button("Present Paywall") {
+                    presentPaywall = true
                 }
                 .buttonStyle(.borderedProminent)
 
@@ -55,6 +61,9 @@ public struct ContentView: View {
                 isPresented: $actionSheetIsPresented
             ) {
                 buttonsView
+            }
+            .sheet(isPresented: $presentPaywall) {
+                PaywallView()
             }
             .safeAreaInset(edge: .bottom, content: {
                 HStack {
