@@ -24,17 +24,46 @@ module Fastlane
         base_container_path = $1
         UI.message("Base container path: #{base_container_path}")
 
-        # Find the Octane folder
-        octane_pattern = "#{base_container_path}/Shared/AppGroup/*/Documents/Persistence/Octane"
-        UI.message("Searching for Octane folder: #{octane_pattern}")
+        # Find the correct app group container by checking metadata plist
+        app_group_pattern = "#{base_container_path}/Shared/AppGroup/*"
+        UI.message("Searching for app group containers: #{app_group_pattern}")
 
-        octane_path = Dir.glob(octane_pattern).first
+        app_group_dirs = Dir.glob(app_group_pattern)
 
-        if octane_path.nil?
-          UI.user_error!("Could not find Octane folder. Pattern: #{octane_pattern}")
+        if app_group_dirs.empty?
+          UI.user_error!("No app group containers found at: #{app_group_pattern}")
         end
 
-        UI.success("Found Octane path: #{octane_path}")
+        # Find the app group with MCMMetadataIdentifier = group.com.apple.storekit
+        correct_app_group = app_group_dirs.find do |app_group_dir|
+          metadata_plist = File.join(app_group_dir, ".com.apple.mobile_container_manager.metadata.plist")
+          next false unless File.exist?(metadata_plist)
+
+          begin
+            # Use plutil to extract the MCMMetadataIdentifier value directly
+            identifier = Actions.sh("plutil", "-extract", "MCMMetadataIdentifier", "raw", "-o", "-", metadata_plist, log: false).strip
+            identifier == "group.com.apple.storekit"
+          rescue => e
+            UI.verbose("Failed to read plist at #{metadata_plist}: #{e.message}")
+            false
+          end
+        end
+
+        if correct_app_group.nil?
+          UI.user_error!("Could not find StoreKit app group container (MCMMetadataIdentifier == group.com.apple.storekit)")
+        end
+
+        UI.success("Found StoreKit app group container: #{correct_app_group}")
+
+        # Create the Octane folder if it doesn't exist
+        octane_path = File.join(correct_app_group, "Documents", "Persistence", "Octane")
+
+        unless File.directory?(octane_path)
+          UI.message("Octane folder doesn't exist, creating it...")
+          Actions.sh("mkdir", "-p", octane_path, log: false)
+        end
+
+        UI.success("Octane path: #{octane_path}")
 
         # Construct the destination paths
         storekit_dir = File.join(octane_path, bundle_id, "Configuration.storekit")
@@ -64,7 +93,10 @@ module Fastlane
       def self.details
         "This action copies a StoreKit configuration file to the Octane directory structure " \
         "within the iOS simulator, allowing the app to use local StoreKit testing without " \
-        "connecting to the App Store. The configuration file must be placed at: " \
+        "connecting to the App Store. The action finds the correct app group container by " \
+        "reading .com.apple.mobile_container_manager.metadata.plist and checking for " \
+        "MCMMetadataIdentifier == 'group.com.apple.storekit', creates the Documents/Persistence/Octane " \
+        "folder if needed, and places the configuration file at: " \
         "data/Containers/Shared/AppGroup/{UUID}/Documents/Persistence/Octane/{bundle_id}/Configuration.storekit/Configuration.storekit"
       end
 
