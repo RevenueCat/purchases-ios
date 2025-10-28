@@ -802,6 +802,35 @@ platform :ios do
       configuration: 'release',
     )
   end
+  
+  desc "run_maestro_e2e_tests"
+  lane :run_maestro_e2e_tests do
+
+    Dir.chdir('..') do
+      sh("tuist", "generate", "Maestro", "--no-open")
+    end
+
+    # note: it's called "run" tests but these tests only need to build to run
+    workspace_path = 'RevenueCat-Tuist.xcworkspace'
+    unless File.directory?(workspace_path)
+      UI.important("#{workspace_path} not found. Run `tuist generate --no-open` before invoking this lane.")
+    end
+
+    xcodebuild(
+      workspace: "RevenueCat-Tuist.xcworkspace",
+      scheme: "Maestro",
+      sdk: "iphonesimulator",
+      configuration: "Debug",
+      derivedDataPath: "./build"
+    )
+
+    base_path = "#{Dir.pwd}/.."
+
+    sh("xcrun", "simctl", "install", "booted", "#{base_path}/build/Build/Products/Debug-iphonesimulator/Maestro.app")
+
+    sh("maestro", "test", "--format", "junit", "--output", "maestro-report.xml", "#{base_path}/Examples/rc-maestro/maestro/paywalls_v2/flow.yaml")
+
+  end
 
   desc "replace API KEY for installation and integration tests"
   lane :replace_api_key_integration_tests do
