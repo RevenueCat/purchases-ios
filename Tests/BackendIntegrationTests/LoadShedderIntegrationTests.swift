@@ -53,6 +53,17 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         )
     }
 
+    func testGetCustomerInfoComeFromLoadShedder() async throws {
+        let _ = try await self.purchases.customerInfo()
+        self.logger.verifyMessageWasLogged(
+            Strings.network.request_handled_by_load_shedder(
+                HTTPRequest.Path.getCustomerInfo(appUserID: try self.purchases.appUserID)
+            ),
+            exactMatch: true, // to avoid false positives with GET /offerings
+            level: .debug
+        )
+    }
+
     func testCanPurchaseSubsPackage() async throws {
         try await self.purchaseMonthlyOffering()
 
