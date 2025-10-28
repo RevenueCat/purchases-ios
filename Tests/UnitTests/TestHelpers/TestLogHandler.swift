@@ -207,7 +207,9 @@ extension TestLogHandler {
         message: CustomStringConvertible, level: LogLevel?, exactMatch: Bool = false
     ) -> EntryCondition {
         return { entry in
-            let isMatch = exactMatch ? entry.message == message.description : entry.message.contains(message.description)
+            let isMatch = exactMatch ?
+            entry.message == message.description :
+            entry.message.contains(message.description)
 
             guard isMatch else {
                 return false
