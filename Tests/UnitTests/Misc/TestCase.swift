@@ -96,7 +96,7 @@ extension ForceServerErrorStrategy {
 extension HTTPClient.Request {
 
     var isRequestToFallbackUrl: Bool {
-        return self.fallbackHostIndex != nil
+        return self.fallbackUrlIndex != nil
     }
 
 }
