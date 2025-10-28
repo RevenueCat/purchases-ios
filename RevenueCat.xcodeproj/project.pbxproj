@@ -657,6 +657,7 @@
 		575A8EE62922C9F300936709 /* MockStoreKit2TransactionListenerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575A8EE42922C9F300936709 /* MockStoreKit2TransactionListenerDelegate.swift */; };
 		575F19B42D5A27EF0089A64F /* ISODurationFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575F19B32D5A27E70089A64F /* ISODurationFormatter.swift */; };
 		575F19B62D5A298F0089A64F /* ISODurationFormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575F19B52D5A29860089A64F /* ISODurationFormatterTests.swift */; };
+		576526CF2EA927EB002DB7FE /* CustomerCenterConfigDataAppearance+Tint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 576526CE2EA927EB002DB7FE /* CustomerCenterConfigDataAppearance+Tint.swift */; };
 		5766AA3E283C750300FA6091 /* Operators+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5766AA3D283C750300FA6091 /* Operators+Extensions.swift */; };
 		5766AA42283C768600FA6091 /* OperatorExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5766AA41283C768600FA6091 /* OperatorExtensionsTests.swift */; };
 		5766AA56283D4C5400FA6091 /* IgnoreHashable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5766AA55283D4C5400FA6091 /* IgnoreHashable.swift */; };
@@ -2143,6 +2144,7 @@
 		575A8EE42922C9F300936709 /* MockStoreKit2TransactionListenerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreKit2TransactionListenerDelegate.swift; sourceTree = "<group>"; };
 		575F19B32D5A27E70089A64F /* ISODurationFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ISODurationFormatter.swift; sourceTree = "<group>"; };
 		575F19B52D5A29860089A64F /* ISODurationFormatterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ISODurationFormatterTests.swift; sourceTree = "<group>"; };
+		576526CE2EA927EB002DB7FE /* CustomerCenterConfigDataAppearance+Tint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CustomerCenterConfigDataAppearance+Tint.swift"; sourceTree = "<group>"; };
 		5766AA3D283C750300FA6091 /* Operators+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Operators+Extensions.swift"; sourceTree = "<group>"; };
 		5766AA41283C768600FA6091 /* OperatorExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperatorExtensionsTests.swift; sourceTree = "<group>"; };
 		5766AA55283D4C5400FA6091 /* IgnoreHashable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IgnoreHashable.swift; sourceTree = "<group>"; };
@@ -4852,6 +4854,7 @@
 				57A774602DF3608000EE03EF /* PurchaseInformation+Creation.swift */,
 				5798C8F52DF1985700F44400 /* CustomerCenterConfigDataSupport+URL.swift */,
 				5798C8F62DF1985700F44400 /* CustomerInfo+SeeAllPurchases.swift */,
+				576526CE2EA927EB002DB7FE /* CustomerCenterConfigDataAppearance+Tint.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -7395,6 +7398,7 @@
 				FD1C1B062DF9B94F00794B88 /* VirtualCurrenciesFixtures.swift in Sources */,
 				88A543E72C37A4C40039C6A5 /* TierSelectorView.swift in Sources */,
 				2C74571F2CE7028E004ACE52 /* ScreenCondition.swift in Sources */,
+				576526CF2EA927EB002DB7FE /* CustomerCenterConfigDataAppearance+Tint.swift in Sources */,
 				88A543E12C37A4820039C6A5 /* TemplateView+MultiTier.swift in Sources */,
 				887A60B72C1D037000E1A461 /* WatchTemplateView.swift in Sources */,
 				572062232E38C801008593A1 /* CustomActionData.swift in Sources */,
