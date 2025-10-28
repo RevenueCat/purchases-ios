@@ -75,6 +75,27 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         self.verifyCustomerInfoWasNotComputedOffline(logger: self.logger)
     }
 
+    func testPurchaseReturnsEntitlementFromLoadShedder() async throws {
+        try await self.purchaseMonthlyOffering()
+
+        try self.purchases.invalidateCustomerInfoCache()
+
+        self.logger.clearMessages()
+
+        let customerInfo = try await self.purchases.customerInfo()
+
+        self.logger.verifyMessageWasLogged(
+            Strings.network.request_handled_by_load_shedder(
+                HTTPRequest.Path.getCustomerInfo(appUserID: try self.purchases.appUserID)
+            ),
+            exactMatch: true, // to avoid false positives with GET /offerings
+            level: .debug
+        )
+
+        let entitlement = try XCTUnwrap(customerInfo.entitlements[Self.entitlementIdentifier])
+        XCTAssertTrue(entitlement.isActive)
+    }
+
     func testCanPurchaseConsumablePackage() async throws {
         // WIP: remove this check so we also verify in this case once backend supports this case
         if disableHeaderSignatureVerification {
