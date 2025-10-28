@@ -1147,7 +1147,7 @@ jobs:
       - revenuecat/install-maestro
       - tuist-generate-workspace
       - macos/preboot-simulator:
-          version: "18.5"
+          version: "18.6"
           platform: "iOS"
           device: "iPhone 16 Pro"
       - run:
