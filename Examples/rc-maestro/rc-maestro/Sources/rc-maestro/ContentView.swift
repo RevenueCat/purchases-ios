@@ -22,6 +22,7 @@ public struct ContentView: View {
                     presentCustomerCenter = true
                 }
                 .buttonStyle(.borderedProminent)
+                .accessibilityIdentifier("present_customer_center")
 
                 Button("Push Customer Center") {
                     pushCustomerCenter = true
