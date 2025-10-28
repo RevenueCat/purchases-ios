@@ -3,9 +3,14 @@ name: Paywalls V2
 
 ---
 - launchApp
-# - runFlow: "../../utils/open_customer_center.yaml"
-# - assertVisible: "No subscriptions found"
-# - assertVisible: "Restore past purchases"
-# - assertVisible: "Buy cool things!!"
 - tapOn:
-    id: "present_customer_center"
+    text: "Present Paywall"
+- assertVisible: "Test StoreKit\n\nbackend integration tests"
+- tapOn:
+    text: "Monthly"
+- tapOn:
+    text: "Continue"
+- tapOn:
+    text: "Subscribe"
+- tapOn:
+    text: "OK"

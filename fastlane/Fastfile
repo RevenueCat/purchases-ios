@@ -805,10 +805,9 @@ platform :ios do
   
   desc "run_maestro_e2e_tests"
   lane :run_maestro_e2e_tests do
-
-    # Dir.chdir('..') do
-    #   sh("tuist", "generate", "Maestro", "--no-open")
-    # end
+    bundle_id = "com.revenuecat.maestro.ios"
+    base_path = "#{Dir.pwd}/.."
+    storekit_config_path = "#{base_path}/Examples/rc-maestro/rc-maestro/Resources/StoreKit/StoreKitBackendIntegrationTests.storekit"
 
     # note: it's called "run" tests but these tests only need to build to run
     workspace_path = 'RevenueCat-Tuist.xcworkspace'
@@ -824,9 +823,13 @@ platform :ios do
       derivedDataPath: "./build"
     )
 
-    base_path = "#{Dir.pwd}/.."
-
     sh("xcrun", "simctl", "install", "booted", "#{base_path}/build/Build/Products/Debug-iphonesimulator/Maestro.app")
+
+    # Setup StoreKit configuration in simulator
+    setup_simulator_storekit_config(
+      bundle_id: bundle_id,
+      storekit_config_path: storekit_config_path
+    )
 
     sh("maestro", "test", "--format", "junit", "--output", "maestro-report.xml", "#{base_path}/Examples/rc-maestro/maestro/paywalls_v2/flow.yaml")
 
