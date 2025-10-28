@@ -1146,6 +1146,10 @@ jobs:
       # todo rick
       - revenuecat/install-maestro
       - tuist-generate-workspace
+      - macos/preboot-simulator:
+          version: "18.5"
+          platform: "iOS"
+          device: "iPhone 16 Pro"
       - run:
           name: Run e2e tests
           command: bundle exec fastlane run_maestro_e2e_tests
