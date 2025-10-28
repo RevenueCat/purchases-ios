@@ -1614,7 +1614,7 @@ workflows:
         - not: << pipeline.parameters.generate_snapshots >>
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
-      - run_maestro_e2e_tests
+      - run-maestro-e2e-tests
       # todo rick: remove after testing
       # - lint
       # - validate-package-swift:
