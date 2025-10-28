@@ -27,7 +27,7 @@ class PaywallEventsIntegrationTests: BaseStoreKitIntegrationTests {
     override func setUp() async throws {
         try await super.setUp()
 
-        self.offering = try await XCTAsyncUnwrap(try await self.currentOffering)
+        self.offering = try await XCTAsyncUnwrap(try await self.offeringWithV1Paywall)
         self.package = try XCTUnwrap(self.offering.monthly)
         self.paywall = try XCTUnwrap(self.offering.paywall)
 

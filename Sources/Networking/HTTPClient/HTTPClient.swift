@@ -228,7 +228,7 @@ internal extension HTTPClient {
         var headers: HTTPClient.RequestHeaders
         var verificationMode: Signing.ResponseVerificationMode
         var completionHandler: HTTPClient.Completion<Data>?
-        private(set) var fallbackHostIndex: Int?
+        private(set) var fallbackUrlIndex: Int?
 
         /// Whether the request has been retried.
         var retried: Bool {
@@ -266,7 +266,7 @@ internal extension HTTPClient {
         var path: String { self.httpRequest.path.relativePath }
 
         func getCurrentRequestURL(proxyURL: URL?) -> URL? {
-            return self.httpRequest.path.url(proxyURL: proxyURL, fallbackHostIndex: self.fallbackHostIndex)
+            return self.httpRequest.path.url(proxyURL: proxyURL, fallbackUrlIndex: self.fallbackUrlIndex)
         }
 
         func retriedRequest() -> Self {
@@ -282,7 +282,7 @@ internal extension HTTPClient {
                 return nil
             }
             var copy = self
-            copy.fallbackHostIndex = self.fallbackHostIndex?.advanced(by: 1) ?? 0
+            copy.fallbackUrlIndex = self.fallbackUrlIndex?.advanced(by: 1) ?? 0
             guard copy.getCurrentRequestURL(proxyURL: nil) != nil else {
                 // No more fallback hosts available
                 return nil
