@@ -806,9 +806,9 @@ platform :ios do
   desc "run_maestro_e2e_tests"
   lane :run_maestro_e2e_tests do
 
-    Dir.chdir('..') do
-      sh("tuist", "generate", "Maestro", "--no-open")
-    end
+    # Dir.chdir('..') do
+    #   sh("tuist", "generate", "Maestro", "--no-open")
+    # end
 
     # note: it's called "run" tests but these tests only need to build to run
     workspace_path = 'RevenueCat-Tuist.xcworkspace'
