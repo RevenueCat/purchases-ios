@@ -1160,8 +1160,8 @@ jobs:
           platform: "iOS"
           device: "iPhone 16 Pro"
       - checkout
-      # - install-dependencies:
-      #     install_swiftlint: false
+      - install-dependencies:
+          install_swiftlint: false
       - setup_xcconfig
       - revenuecat/install-maestro
       - tuist-generate-workspace
