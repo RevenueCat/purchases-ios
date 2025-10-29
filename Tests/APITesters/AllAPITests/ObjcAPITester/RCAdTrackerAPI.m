@@ -7,6 +7,8 @@
 
 #import "RCAdTrackerAPI.h"
 
+#ifdef ENABLE_AD_EVENTS_TRACKING
+
 @import RevenueCat;
 
 @implementation RCAdTrackerAPI
@@ -115,3 +117,5 @@
 }
 
 @end
+
+#endif
