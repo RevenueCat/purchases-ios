@@ -36,7 +36,7 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
     private var transactionsManager: MockTransactionsManager!
     private var operationDispatcher: MockOperationDispatcher!
     private var diagnosticsTracker: DiagnosticsTrackerType?
-    private var eventsManager: PaywallEventsManagerType?
+    private var eventsManager: EventsManagerType?
     private var mockOfferingsManager: MockOfferingsManager!
     private var mockManageSubsHelper: MockManageSubscriptionsHelper!
     private var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!

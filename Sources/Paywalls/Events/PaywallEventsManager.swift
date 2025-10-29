@@ -13,7 +13,7 @@
 
 import Foundation
 
-protocol PaywallEventsManagerType {
+protocol EventsManagerType {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func track(featureEvent: FeatureEvent) async
@@ -26,7 +26,7 @@ protocol PaywallEventsManagerType {
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-actor PaywallEventsManager: PaywallEventsManagerType {
+actor PaywallEventsManager: EventsManagerType {
 
     private let internalAPI: InternalAPI
     private let userProvider: CurrentUserProvider

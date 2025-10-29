@@ -276,7 +276,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let offlineEntitlementsManager: OfflineEntitlementsManager
     private let productsManager: ProductsManagerType
     private let customerInfoManager: CustomerInfoManager
-    private let eventsManager: PaywallEventsManagerType?
+    private let eventsManager: EventsManagerType?
 
 #if ENABLE_AD_EVENTS_TRACKING
     private var _adTracker: Any?
@@ -471,7 +471,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               appUserID: appUserID
         )
 
-        let eventsManager: PaywallEventsManagerType?
+        let eventsManager: EventsManagerType?
         do {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 eventsManager = PaywallEventsManager(
@@ -701,7 +701,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          subscriberAttributes: Attribution,
          operationDispatcher: OperationDispatcher,
          customerInfoManager: CustomerInfoManager,
-         eventsManager: PaywallEventsManagerType?,
+         eventsManager: EventsManagerType?,
          productsManager: ProductsManagerType,
          offeringsManager: OfferingsManager,
          offlineEntitlementsManager: OfflineEntitlementsManager,

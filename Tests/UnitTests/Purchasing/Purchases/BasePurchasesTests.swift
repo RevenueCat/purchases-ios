@@ -171,7 +171,7 @@ class BasePurchasesTests: TestCase {
     let offeringsFactory = MockOfferingsFactory()
     var deviceCache: MockDeviceCache!
     var paywallCache: MockPaywallCacheWarming!
-    private var eventsManager: PaywallEventsManagerType?
+    private var eventsManager: EventsManagerType?
     var subscriberAttributesManager: MockSubscriberAttributesManager!
     var attribution: Attribution!
     var identityManager: MockIdentityManager!

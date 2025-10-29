@@ -71,7 +71,7 @@ final class PurchasesOrchestrator {
     private let beginRefundRequestHelper: BeginRefundRequestHelper
     private let storeMessagesHelper: StoreMessagesHelperType?
     private let winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?
-    private let eventsManager: PaywallEventsManagerType?
+    private let eventsManager: EventsManagerType?
     private let webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType
     private let dateProvider: DateProvider
 
@@ -149,7 +149,7 @@ final class PurchasesOrchestrator {
                      diagnosticsSynchronizer: DiagnosticsSynchronizerType?,
                      diagnosticsTracker: DiagnosticsTrackerType?,
                      winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
-                     eventsManager: PaywallEventsManagerType?,
+                     eventsManager: EventsManagerType?,
                      webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType,
                      dateProvider: DateProvider = DateProvider(),
                      notificationCenter: NotificationCenter = .default
@@ -235,7 +235,7 @@ final class PurchasesOrchestrator {
          storeMessagesHelper: StoreMessagesHelperType?,
          diagnosticsTracker: DiagnosticsTrackerType?,
          winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
-         eventsManager: PaywallEventsManagerType?,
+         eventsManager: EventsManagerType?,
          webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType,
          dateProvider: DateProvider = DateProvider(),
          notificationCenter: NotificationCenter = .default

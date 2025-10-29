@@ -45,7 +45,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
     var mockStoreMessagesHelper: MockStoreMessagesHelper!
     var mockWinBackOfferEligibilityCalculator: MockWinBackOfferEligibilityCalculator!
     var mockTransactionFetcher: MockStoreKit2TransactionFetcher!
-    private var eventsManager: PaywallEventsManagerType!
+    private var eventsManager: EventsManagerType!
     var webPurchaseRedemptionHelper: MockWebPurchaseRedemptionHelper!
     var mockDiagnosticsTracker: DiagnosticsTrackerType!
 
