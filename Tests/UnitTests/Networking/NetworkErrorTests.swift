@@ -223,7 +223,7 @@ class NetworkErrorTests: TestCase {
 
     func testSuccessfullySyncedFalse() {
         let errors = [
-            error(Self.decodingError),
+            error(NetworkError.decodingError()),
             error(Self.offlineError),
             error(Self.networkError),
             error(Self.dnsError),
@@ -262,7 +262,7 @@ class NetworkErrorTests: TestCase {
 
     func testFinishableFalse() {
         let errors = [
-            error(Self.decodingError),
+            error(NetworkError.decodingError()),
             error(Self.offlineError),
             error(Self.networkError),
             error(Self.dnsError),
@@ -298,7 +298,7 @@ class NetworkErrorTests: TestCase {
 
     func testServerDownFalse() {
         let errors = [
-            error(Self.decodingError),
+            error(NetworkError.decodingError()),
             error(Self.offlineError),
             error(Self.networkError),
             error(Self.dnsError),
@@ -320,7 +320,7 @@ class NetworkErrorTests: TestCase {
 
     func testShouldFallBackToCachedOfferingsTrue() {
         let errors = [
-            error(Self.decodingError),
+            error(NetworkError.decodingError()),
             error(Self.offlineError),
             error(Self.networkError),
             error(Self.dnsError),
@@ -383,7 +383,6 @@ class NetworkErrorTests: TestCase {
     }
 
     private static let offlineError: NetworkError = .offlineConnection()
-    private static let decodingError: NetworkError = .decoding(NSError(domain: "domain", code: 20), Data())
     private static let networkError: NetworkError = .networkError(NSError(domain: "domain", code: 30))
     private static let dnsError: NetworkError = .dnsError(failedURL: URL(string: "https://google.com")!,
                                                           resolvedHost: "https://google.com")
@@ -431,6 +430,12 @@ extension NetworkError {
             function: function,
             line: line
         )
+    }
+
+    static func decodingError(
+        file: String = #fileID, function: String = #function, line: UInt = #line
+    ) -> Self {
+        return .networkError(NSError(domain: "domain", code: 30), file: file, function: function, line: line)
     }
 
 }
