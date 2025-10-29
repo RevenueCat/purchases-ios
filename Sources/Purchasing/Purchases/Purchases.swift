@@ -477,7 +477,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 eventsManager = EventsManager(
                     internalAPI: backend.internalAPI,
                     userProvider: identityManager,
-                    store: try PaywallEventStore.createDefault(applicationSupportDirectory: applicationSupportDirectory)
+                    store: try FeatureEventStore.createDefault(applicationSupportDirectory: applicationSupportDirectory)
                 )
                 Logger.verbose(Strings.paywalls.event_manager_initialized)
             } else {

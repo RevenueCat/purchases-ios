@@ -18,7 +18,7 @@ enum StoredEventSerializer {
 
     private struct FailedEncodingEventError: Error {}
 
-    /// Encodes a ``StoredEvent`` in a format suitable to be stored by `PaywallEventStore`.
+    /// Encodes a ``StoredEvent`` in a format suitable to be stored by `FeatureEventStore`.
     static func encode(_ event: StoredEvent) throws -> String {
         let data = try JSONEncoder.default.encode(value: event)
 

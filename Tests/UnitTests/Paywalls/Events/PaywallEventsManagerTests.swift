@@ -23,7 +23,7 @@ class EventsManagerTests: TestCase {
 
     private var api: MockInternalAPI!
     private var userProvider: MockCurrentUserProvider!
-    private var store: MockPaywallEventStore!
+    private var store: MockFeatureEventStore!
     private var manager: EventsManager!
     private var appSessionID = UUID()
 
@@ -358,10 +358,10 @@ private extension EventsManagerTests {
 
 }
 
-// MARK: - MockPaywallEventStore
+// MARK: - MockFeatureEventStore
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-private actor MockPaywallEventStore: PaywallEventStoreType {
+private actor MockFeatureEventStore: FeatureEventStoreType {
 
     var storedEvents: [StoredEvent] = []
 

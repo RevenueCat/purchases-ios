@@ -30,7 +30,7 @@ actor EventsManager: EventsManagerType {
 
     private let internalAPI: InternalAPI
     private let userProvider: CurrentUserProvider
-    private let store: PaywallEventStoreType
+    private let store: FeatureEventStoreType
     private var appSessionID: UUID
 
     private var flushInProgress = false
@@ -38,7 +38,7 @@ actor EventsManager: EventsManagerType {
     init(
         internalAPI: InternalAPI,
         userProvider: CurrentUserProvider,
-        store: PaywallEventStoreType,
+        store: FeatureEventStoreType,
         appSessionID: UUID = SystemInfo.appSessionID
     ) {
         self.internalAPI = internalAPI

@@ -7,13 +7,13 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PaywallEventStore.swift
+//  FeatureEventStore.swift
 //
 //  Created by Nacho Soto on 9/5/23.
 
 import Foundation
 
-protocol PaywallEventStoreType: Sendable {
+protocol FeatureEventStoreType: Sendable {
 
     /// Stores `event` into the store.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -30,7 +30,7 @@ protocol PaywallEventStoreType: Sendable {
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-internal actor PaywallEventStore: PaywallEventStoreType {
+internal actor FeatureEventStore: FeatureEventStoreType {
 
     private let handler: FileHandlerType
 
@@ -42,20 +42,20 @@ internal actor PaywallEventStore: PaywallEventStoreType {
         do {
             // Check if store is too big and clear old events if needed
             if await self.isEventStoreTooBig() {
-                Logger.warn(PaywallEventStoreStrings.event_store_size_limit_reached)
+                Logger.warn(FeatureEventStoreStrings.event_store_size_limit_reached)
                 await self.clear(Self.eventBatchSizeToClear)
             }
 
             if let eventDescription = try? storedEvent.encodedEvent.prettyPrintedJSON {
-                Logger.verbose(PaywallEventStoreStrings.storing_event(eventDescription))
+                Logger.verbose(FeatureEventStoreStrings.storing_event(eventDescription))
             } else {
-                Logger.verbose(PaywallEventStoreStrings.storing_event_without_json)
+                Logger.verbose(FeatureEventStoreStrings.storing_event_without_json)
             }
 
             let event = try StoredEventSerializer.encode(storedEvent)
             try await self.handler.append(line: event)
         } catch {
-            Logger.error(PaywallEventStoreStrings.error_storing_event(error))
+            Logger.error(FeatureEventStoreStrings.error_storing_event(error))
         }
     }
 
@@ -68,7 +68,7 @@ internal actor PaywallEventStore: PaywallEventStoreType {
                 .compactMap { try? StoredEventSerializer.decode($0) }
                 .extractValues()
         } catch {
-            Logger.error(PaywallEventStoreStrings.error_fetching_events(error))
+            Logger.error(FeatureEventStoreStrings.error_fetching_events(error))
             return []
         }
     }
@@ -81,12 +81,12 @@ internal actor PaywallEventStore: PaywallEventStoreType {
         do {
             try await self.handler.removeFirstLines(count)
         } catch {
-            Logger.error(PaywallEventStoreStrings.error_removing_first_lines(count: count, error))
+            Logger.error(FeatureEventStoreStrings.error_removing_first_lines(count: count, error))
 
             do {
                 try await self.handler.emptyFile()
             } catch {
-                Logger.error(PaywallEventStoreStrings.error_emptying_file(error))
+                Logger.error(FeatureEventStoreStrings.error_emptying_file(error))
             }
         }
     }
@@ -95,7 +95,7 @@ internal actor PaywallEventStore: PaywallEventStoreType {
         do {
             return try await self.handler.fileSizeInKB() > Self.maxEventFileSizeInKB
         } catch {
-            Logger.error(PaywallEventStoreStrings.error_checking_file_size(error))
+            Logger.error(FeatureEventStoreStrings.error_checking_file_size(error))
             return false
         }
     }
@@ -106,14 +106,14 @@ internal actor PaywallEventStore: PaywallEventStoreType {
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-extension PaywallEventStore {
+extension FeatureEventStore {
 
     static func createDefault(
         applicationSupportDirectory: URL?,
         documentsDirectory: URL? = nil
-    ) throws -> PaywallEventStore {
+    ) throws -> FeatureEventStore {
         let url = Self.url(in: try applicationSupportDirectory ?? Self.applicationSupportDirectory)
-        Logger.verbose(PaywallEventStoreStrings.initializing(url))
+        Logger.verbose(FeatureEventStoreStrings.initializing(url))
 
         let documentsDirectory = try documentsDirectory ?? Self.documentsDirectory
         Self.removeLegacyDirectoryIfExists(documentsDirectory)
@@ -133,12 +133,12 @@ extension PaywallEventStore {
         let url = Self.revenueCatFolder(in: documentsDirectory)
         guard Self.fileManager.fileExists(atPath: url.relativePath) else { return }
 
-        Logger.debug(PaywallEventStoreStrings.removing_old_documents_store(url))
+        Logger.debug(FeatureEventStoreStrings.removing_old_documents_store(url))
 
         do {
             try Self.fileManager.removeItem(at: url)
         } catch {
-            Logger.error(PaywallEventStoreStrings.error_removing_old_documents_store(error))
+            Logger.error(FeatureEventStoreStrings.error_removing_old_documents_store(error))
         }
     }
 
@@ -183,7 +183,7 @@ extension PaywallEventStore {
 
 // swiftlint:disable identifier_name
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private enum PaywallEventStoreStrings {
+private enum FeatureEventStoreStrings {
 
     case initializing(URL)
 
@@ -205,12 +205,12 @@ private enum PaywallEventStoreStrings {
 // swiftlint:enable identifier_name
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension PaywallEventStoreStrings: LogMessage {
+extension FeatureEventStoreStrings: LogMessage {
 
     var description: String {
         switch self {
         case let .initializing(directory):
-            return "Initializing PaywallEventStore: \(directory.absoluteString)"
+            return "Initializing FeatureEventStore: \(directory.absoluteString)"
 
         case let .removing_old_documents_store(url):
             return "Removing old store: \(url)"
