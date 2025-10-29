@@ -1,6 +1,0 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<testsuites>
-  <testsuite name="Test Suite" device="iPhone 16 Pro - iOS 18.4 - 393FEFD5-E5CB-4C92-A6F6-629518BE0BA9" tests="1" failures="0" time="3.0">
-    <testcase id="Paywalls V2" name="Paywalls V2" classname="Paywalls V2" time="3.0" status="SUCCESS"/>
-  </testsuite>
-</testsuites>
