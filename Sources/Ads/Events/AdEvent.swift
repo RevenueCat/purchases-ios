@@ -68,11 +68,11 @@ internal protocol AdEventData {
 @_spi(Experimental) @objc(RCAdDisplayed) public final class AdDisplayed: NSObject, AdEventData {
 
     // swiftlint:disable missing_docs
-    @objc public var networkName: String
-    @objc public var mediatorName: MediatorName
-    @objc public var placement: String?
-    @objc public var adUnitId: String
-    @objc public var adInstanceId: String
+    @objc public private(set) var networkName: String
+    @objc public private(set) var mediatorName: MediatorName
+    @objc public private(set) var placement: String?
+    @objc public private(set) var adUnitId: String
+    @objc public private(set) var adInstanceId: String
 
     @objc public init(
         networkName: String,
@@ -132,11 +132,11 @@ internal protocol AdEventData {
 @_spi(Experimental) @objc(RCAdOpened) public final class AdOpened: NSObject, AdEventData {
 
     // swiftlint:disable missing_docs
-    @objc public var networkName: String
-    @objc public var mediatorName: MediatorName
-    @objc public var placement: String?
-    @objc public var adUnitId: String
-    @objc public var adInstanceId: String
+    @objc public private(set) var networkName: String
+    @objc public private(set) var mediatorName: MediatorName
+    @objc public private(set) var placement: String?
+    @objc public private(set) var adUnitId: String
+    @objc public private(set) var adInstanceId: String
 
     @objc public init(
         networkName: String,
@@ -196,14 +196,14 @@ internal protocol AdEventData {
 @_spi(Experimental) @objc(RCAdRevenue) public final class AdRevenue: NSObject, AdEventData {
 
     // swiftlint:disable missing_docs
-    @objc public var networkName: String
-    @objc public var mediatorName: MediatorName
-    @objc public var placement: String?
-    @objc public var adUnitId: String
-    @objc public var adInstanceId: String
-    @objc public var revenueMicros: Int
-    @objc public var currency: String
-    @objc public var precision: Precision
+    @objc public private(set) var networkName: String
+    @objc public private(set) var mediatorName: MediatorName
+    @objc public private(set) var placement: String?
+    @objc public private(set) var adUnitId: String
+    @objc public private(set) var adInstanceId: String
+    @objc public private(set) var revenueMicros: Int
+    @objc public private(set) var currency: String
+    @objc public private(set) var precision: Precision
 
     @objc public init(
         networkName: String,
