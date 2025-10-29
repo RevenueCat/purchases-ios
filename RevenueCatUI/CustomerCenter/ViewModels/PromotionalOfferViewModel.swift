@@ -71,11 +71,11 @@ final class PromotionalOfferViewModel: ObservableObject {
                 promotionalOffer: promotionalOffer
             )
 
-            if result.userCancelled || result.transaction == nil {
+            if result.userCancelled {
                 Logger.debug(Strings.promo_offer_purchase_cancelled(productId, offerId))
                 self.onPromotionalOfferPurchaseFlowComplete?(.declinePromotionalOffer)
             } else {
-                let transactionId = result.transaction?.transactionIdentifier ?? "nil"
+                let transactionId = result.transaction?.transactionIdentifier ?? "-"
                 Logger.debug(Strings.promo_offer_purchase_succeeded(productId, offerId, transactionId))
                 self.actionWrapper.handleAction(.promotionalOfferSuccess)
                 self.onPromotionalOfferPurchaseFlowComplete?(.successfullyRedeemedPromotionalOffer(result))
