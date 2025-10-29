@@ -804,10 +804,44 @@ platform :ios do
   end
   
   desc "run_maestro_e2e_tests"
-  lane :run_maestro_e2e_tests do
+  desc "Parameters:"
+  desc "  test_environment: Test environment - 'production', 'load_shedder', or 'fallback' (required)"
+  lane :run_maestro_e2e_tests do |options|
     bundle_id = "com.revenuecat.maestro.ios"
     base_path = "#{Dir.pwd}/.."
-    storekit_config_path = "#{base_path}/Examples/rc-maestro/rc-maestro/Resources/StoreKit/StoreKitBackendIntegrationTests.storekit"
+
+    # Validate and get test environment
+    test_environment = options[:test_environment]
+
+    if test_environment.nil?
+      UI.user_error!("test_environment parameter is required. Must be one of: production, load_shedder, fallback")
+    end
+
+    valid_environments = ["production", "load_shedder", "fallback"]
+    unless valid_environments.include?(test_environment)
+      UI.user_error!("Invalid test_environment: '#{test_environment}'. Must be one of: #{valid_environments.join(', ')}")
+    end
+
+    UI.message("Running Maestro E2E tests for environment: #{test_environment}")
+
+    # Construct StoreKit config path based on test environment
+    storekit_filename = case test_environment
+    when "production"
+      "Production.storekit"
+    when "load_shedder"
+      "Load_shedder.storekit"
+    when "fallback"
+      "Fallback.storekit"
+    end
+
+    storekit_config_path = "#{base_path}/Examples/rc-maestro/rc-maestro/Resources/StoreKit/e2e-tests/#{storekit_filename}"
+
+    # Verify StoreKit config exists
+    unless File.exist?(storekit_config_path)
+      UI.user_error!("StoreKit configuration not found: #{storekit_config_path}")
+    end
+
+    UI.message("Using StoreKit configuration: #{storekit_filename}")
 
     # note: it's called "run" tests but these tests only need to build to run
     workspace_path = 'RevenueCat-Tuist.xcworkspace'
@@ -831,7 +865,17 @@ platform :ios do
       storekit_config_path: storekit_config_path
     )
 
-    sh("maestro", "test", "--format", "junit", "--output", "maestro-report.xml", "#{base_path}/Examples/rc-maestro/maestro/e2e_tests/production")
+    # Construct the flow directory path based on test environment
+    flow_dir = "#{base_path}/Examples/rc-maestro/maestro/e2e_tests/#{test_environment}"
+
+    # Verify the flow directory exists
+    unless File.directory?(flow_dir)
+      UI.user_error!("Flow directory not found: #{flow_dir}")
+    end
+
+    UI.message("Using flow directory: #{flow_dir}")
+
+    sh("maestro", "test", "--format", "junit", "--output", "maestro-report.xml", flow_dir)
 
   end
 

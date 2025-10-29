@@ -1144,6 +1144,10 @@ jobs:
       - slack-notify-on-fail
 
   run-maestro-e2e-tests:
+    parameters:
+      test_environment:
+        type: enum
+        enum: ["production", "load_shedder", "fallback"]
     executor:
       name: macos-executor
       xcode_version: "26.0.1"
@@ -1153,37 +1157,17 @@ jobs:
           platform: "iOS"
           device: "iPhone 16 Pro"
       - checkout
-      - install-dependencies:
-          install_swiftlint: false
-      # todo rick
+      # - install-dependencies:
+      #     install_swiftlint: false
       - setup_xcconfig
       - revenuecat/install-maestro
       - tuist-generate-workspace
       - run:
-          name: Run e2e tests
-          command: bundle exec fastlane run_maestro_e2e_tests
+          name: Run e2e tests (<< parameters.test_environment >>)
+          command: bundle exec fastlane run_maestro_e2e_tests test_environment:<< parameters.test_environment >>
           no_output_timeout: 15m
       - store_test_results:
           path: fastlane/maestro-report.xml
-      
-      # - run:
-      #     name: Run tests
-      #     command: bundle exec fastlane test_ios
-      #     no_output_timeout: 15m
-      #     environment:
-      #       SCAN_DEVICE: iPhone 17 (26.0)
-      # - compress_result_bundle:
-      #     directory: fastlane/test_output/xctest/ios
-      #     bundle_name: RevenueCat
-      # - create-snapshot-pr-if-needed:
-      #     condition: << pipeline.parameters.generate_snapshots >>
-      #     job: "create_snapshot_pr"
-      #     version: "ios-26"
-      # - store_test_results:
-      #     path: fastlane/test_output
-      # - store_artifacts:
-      #     path: fastlane/test_output/xctest
-      #     destination: scan-test-output
 
   release-checks:
     executor:
@@ -1628,7 +1612,21 @@ workflows:
         - not: << pipeline.parameters.generate_snapshots >>
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
-      - run-maestro-e2e-tests
+      # Production - uses default REVENUECAT_API_KEY
+      - run-maestro-e2e-tests:
+          test_environment: "production"
+
+      # Load shedder - uses REVENUECAT_LOAD_SHEDDER_API_KEY
+      - run-maestro-e2e-tests:
+          test_environment: "load_shedder"
+          environment:
+            REVENUECAT_API_KEY: ${REVENUECAT_LOAD_SHEDDER_API_KEY}
+
+      # Fallback - uses default REVENUECAT_API_KEY  
+      - run-maestro-e2e-tests:
+          test_environment: "fallback"
+          # todo rick make sure it's using fallback through dangerous setting
+          
       # todo rick: remove after testing
       # - lint
       # - validate-package-swift:
