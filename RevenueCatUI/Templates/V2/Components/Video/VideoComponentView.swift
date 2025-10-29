@@ -138,6 +138,11 @@ struct VideoComponentView: View {
                     }
                     .applyMediaWidth(size: style.size)
                     .applyMediaHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
+                    .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
+                        view.overlay(
+                            Color.clear.backgroundStyle(.color(colorOverlay))
+                        )
+                    })
                     .padding(style.padding.extend(by: style.border?.width ?? 0))
                     .shape(border: style.border, shape: style.shape)
                     .clipped()
@@ -188,11 +193,6 @@ struct VideoComponentView: View {
                 contentMode: .fill, // This must be set to fill for the modifier to work correctly
                 containerContentMode: style.contentMode // the container is what truly controls this
             )
-            .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
-                view.overlay(
-                    Color.clear.backgroundStyle(.color(colorOverlay))
-                )
-            })
     }
 
     private func calculateMaxWidth(parentWidth: CGFloat, style: VideoComponentStyle) -> CGFloat {
