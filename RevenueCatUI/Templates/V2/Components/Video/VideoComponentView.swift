@@ -65,7 +65,7 @@ struct VideoComponentView: View {
                             render(Color.clear, size: size, with: style)
                         }
 
-                        if let imageSource, cachedURL == nil, let imageViewModel = try? ImageComponentViewModel(
+                        if let imageSource, let imageViewModel = try? ImageComponentViewModel(
                             localizationProvider: viewModel.localizationProvider,
                             uiConfigProvider: viewModel.uiConfigProvider,
                             component: .init(source: imageSource)
