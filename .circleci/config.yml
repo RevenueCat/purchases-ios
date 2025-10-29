@@ -484,7 +484,9 @@ commands:
     steps:
       - run:
           name: "Create XCConfig file for SDK to use"
-          command: <<include(ci_scripts/prepare-ci-xcconfig.sh)>>
+          command: |
+            chmod +x ci_scripts/prepare-ci-xcconfig.sh
+            bash -eo pipefail ci_scripts/prepare-ci-xcconfig.sh
 
 jobs:
   validate-package-swift:
