@@ -36,7 +36,7 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
     private var transactionsManager: MockTransactionsManager!
     private var operationDispatcher: MockOperationDispatcher!
     private var diagnosticsTracker: DiagnosticsTrackerType?
-    private var paywallEventsManager: PaywallEventsManagerType?
+    private var eventsManager: PaywallEventsManagerType?
     private var mockOfferingsManager: MockOfferingsManager!
     private var mockManageSubsHelper: MockManageSubscriptionsHelper!
     private var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
@@ -49,7 +49,7 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     var mockPaywallEventsManager: MockPaywallEventsManager {
         get throws {
-            return try XCTUnwrap(self.paywallEventsManager as? MockPaywallEventsManager)
+            return try XCTUnwrap(self.eventsManager as? MockPaywallEventsManager)
         }
     }
 
@@ -98,10 +98,10 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
         )
         self.transactionsManager = MockTransactionsManager(receiptParser: self.receiptParser)
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-            self.paywallEventsManager = MockPaywallEventsManager()
+            self.eventsManager = MockPaywallEventsManager()
             self.diagnosticsTracker = MockDiagnosticsTracker()
         } else {
-            self.paywallEventsManager = nil
+            self.eventsManager = nil
             self.diagnosticsTracker = nil
         }
         self.mockOfferingsManager = MockOfferingsManager(deviceCache: self.deviceCache,
@@ -512,7 +512,7 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
             storeMessagesHelper: self.mockStoreMessagesHelper,
             diagnosticsTracker: self.diagnosticsTracker,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
-            paywallEventsManager: self.paywallEventsManager,
+            eventsManager: self.eventsManager,
             webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper,
             dateProvider: self.mockDateProvider
         )

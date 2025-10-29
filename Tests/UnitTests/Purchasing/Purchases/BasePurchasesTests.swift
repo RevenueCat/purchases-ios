@@ -45,9 +45,9 @@ class BasePurchasesTests: TestCase {
                                            userDefaults: self.userDefaults)
         self.paywallCache = .init()
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-            self.paywallEventsManager = MockPaywallEventsManager()
+            self.eventsManager = MockPaywallEventsManager()
         } else {
-            self.paywallEventsManager = nil
+            self.eventsManager = nil
         }
         self.requestFetcher = MockRequestFetcher()
         self.purchasedProductsFetcher = .init()
@@ -171,7 +171,7 @@ class BasePurchasesTests: TestCase {
     let offeringsFactory = MockOfferingsFactory()
     var deviceCache: MockDeviceCache!
     var paywallCache: MockPaywallCacheWarming!
-    private var paywallEventsManager: PaywallEventsManagerType?
+    private var eventsManager: PaywallEventsManagerType?
     var subscriberAttributesManager: MockSubscriberAttributesManager!
     var attribution: Attribution!
     var identityManager: MockIdentityManager!
@@ -234,7 +234,7 @@ class BasePurchasesTests: TestCase {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     var mockPaywallEventsManager: MockPaywallEventsManager {
         get throws {
-            return try XCTUnwrap(self.paywallEventsManager as? MockPaywallEventsManager)
+            return try XCTUnwrap(self.eventsManager as? MockPaywallEventsManager)
         }
     }
 
@@ -290,7 +290,7 @@ class BasePurchasesTests: TestCase {
             storeMessagesHelper: self.mockStoreMessagesHelper,
             diagnosticsTracker: self.diagnosticsTracker,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
-            paywallEventsManager: self.paywallEventsManager,
+            eventsManager: self.eventsManager,
             webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper
         )
         self.trialOrIntroPriceEligibilityChecker = MockTrialOrIntroPriceEligibilityChecker(
@@ -326,7 +326,7 @@ class BasePurchasesTests: TestCase {
                                    subscriberAttributes: self.attribution,
                                    operationDispatcher: self.mockOperationDispatcher,
                                    customerInfoManager: self.customerInfoManager,
-                                   paywallEventsManager: self.paywallEventsManager,
+                                   eventsManager: self.eventsManager,
                                    productsManager: self.mockProductsManager,
                                    offeringsManager: self.mockOfferingsManager,
                                    offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
@@ -603,7 +603,7 @@ private extension BasePurchasesTests {
         self.purchasesOrchestrator = nil
         self.deviceCache = nil
         self.paywallCache = nil
-        self.paywallEventsManager = nil
+        self.eventsManager = nil
         self.webPurchaseRedemptionHelper = nil
         self.purchases = nil
     }
