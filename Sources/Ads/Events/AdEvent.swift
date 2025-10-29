@@ -11,9 +11,13 @@
 //
 //  Created by RevenueCat on 1/8/25.
 
+// swiftlint:disable file_length
+
 import Foundation
 
 #if ENABLE_AD_EVENTS_TRACKING
+
+// MARK: - Public Types
 
 // MARK: - Internal Protocol
 
@@ -26,59 +30,54 @@ internal protocol AdEventData {
     var adInstanceId: String { get }
 }
 
-// MARK: - Public Types
-
 /// Type representing an ad mediation network name.
 ///
 /// Use the predefined static properties for common mediators, or create custom values
 /// for other mediation networks.
-@_spi(Experimental) public struct MediatorName: RawRepresentable, Equatable, Hashable, Codable, Sendable {
+@_spi(Experimental) @objc(RCMediatorName) public final class MediatorName: NSObject, Codable {
 
     /// The raw string value of the mediator name
-    public let rawValue: String
+    @objc public let rawValue: String
 
     /// Creates a mediator name with the specified raw value
-    public init(rawValue: String) {
+    @objc public init(rawValue: String) {
         self.rawValue = rawValue
+        super.init()
     }
 
     /// Google AdMob mediation network
-    public static let adMob = MediatorName(rawValue: "AdMob")
+    @objc public static let adMob = MediatorName(rawValue: "AdMob")
 
     /// AppLovin MAX mediation network
-    public static let appLovin = MediatorName(rawValue: "AppLovin")
+    @objc public static let appLovin = MediatorName(rawValue: "AppLovin")
+
+    // MARK: - NSObject overrides for equality
+
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? MediatorName else { return false }
+        return self.rawValue == other.rawValue
+    }
+
+    public override var hash: Int {
+        return self.rawValue.hash
+    }
 
 }
 
 /// Data for ad displayed events.
-@_spi(Experimental) public struct AdDisplayed: AdEventData {
+@_spi(Experimental) @objc(RCAdDisplayed) public final class AdDisplayed: NSObject, AdEventData {
 
-    /// The name of the ad network that served the ad.
-    public var networkName: String
+    // swiftlint:disable missing_docs
+    @objc public private(set) var networkName: String
+    @objc public private(set) var mediatorName: MediatorName
+    @objc public private(set) var placement: String?
+    @objc public private(set) var adUnitId: String
+    @objc public private(set) var adInstanceId: String
 
-    /// The mediation network used to serve the ad.
-    public var mediatorName: MediatorName
-
-    /// Optional placement identifier for the ad.
-    public var placement: String?
-
-    /// The ad unit identifier.
-    public var adUnitId: String
-
-    /// The ad instance identifier.
-    public var adInstanceId: String
-
-    /// Creates ad displayed event data.
-    /// - Parameters:
-    ///   - networkName: The name of the ad network that served the ad.
-    ///   - mediatorName: The mediation network used to serve the ad.
-    ///   - placement: Optional placement identifier for the ad.
-    ///   - adUnitId: The ad unit identifier.
-    ///   - adInstanceId: The ad instance identifier.
-    public init(
+    @objc public init(
         networkName: String,
         mediatorName: MediatorName,
-        placement: String? = nil,
+        placement: String?,
         adUnitId: String,
         adInstanceId: String
     ) {
@@ -87,39 +86,62 @@ internal protocol AdEventData {
         self.placement = placement
         self.adUnitId = adUnitId
         self.adInstanceId = adInstanceId
+        super.init()
+    }
+
+    @objc public convenience init(
+        networkName: String,
+        mediatorName: MediatorName,
+        adUnitId: String,
+        adInstanceId: String
+    ) {
+        self.init(
+            networkName: networkName,
+            mediatorName: mediatorName,
+            placement: nil,
+            adUnitId: adUnitId,
+            adInstanceId: adInstanceId
+        )
+    }
+    // swiftlint:enable missing_docs
+
+    // MARK: - NSObject overrides for equality
+
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? AdDisplayed else { return false }
+        return self.networkName == other.networkName &&
+               self.mediatorName == other.mediatorName &&
+               self.placement == other.placement &&
+               self.adUnitId == other.adUnitId &&
+               self.adInstanceId == other.adInstanceId
+    }
+
+    public override var hash: Int {
+        var hasher = Hasher()
+        hasher.combine(networkName)
+        hasher.combine(mediatorName)
+        hasher.combine(placement)
+        hasher.combine(adUnitId)
+        hasher.combine(adInstanceId)
+        return hasher.finalize()
     }
 
 }
 
 /// Data for ad opened/clicked events.
-@_spi(Experimental) public struct AdOpened: AdEventData {
+@_spi(Experimental) @objc(RCAdOpened) public final class AdOpened: NSObject, AdEventData {
 
-    /// The name of the ad network that served the ad.
-    public var networkName: String
+    // swiftlint:disable missing_docs
+    @objc public private(set) var networkName: String
+    @objc public private(set) var mediatorName: MediatorName
+    @objc public private(set) var placement: String?
+    @objc public private(set) var adUnitId: String
+    @objc public private(set) var adInstanceId: String
 
-    /// The mediation network used to serve the ad.
-    public var mediatorName: MediatorName
-
-    /// Optional placement identifier for the ad.
-    public var placement: String?
-
-    /// The ad unit identifier.
-    public var adUnitId: String
-
-    /// The ad instance identifier.
-    public var adInstanceId: String
-
-    /// Creates ad opened/clicked event data.
-    /// - Parameters:
-    ///   - networkName: The name of the ad network that served the ad.
-    ///   - mediatorName: The mediation network used to serve the ad.
-    ///   - placement: Optional placement identifier for the ad.
-    ///   - adUnitId: The ad unit identifier.
-    ///   - adInstanceId: The ad instance identifier.
-    public init(
+    @objc public init(
         networkName: String,
         mediatorName: MediatorName,
-        placement: String? = nil,
+        placement: String?,
         adUnitId: String,
         adInstanceId: String
     ) {
@@ -128,51 +150,65 @@ internal protocol AdEventData {
         self.placement = placement
         self.adUnitId = adUnitId
         self.adInstanceId = adInstanceId
+        super.init()
+    }
+
+    @objc public convenience init(
+        networkName: String,
+        mediatorName: MediatorName,
+        adUnitId: String,
+        adInstanceId: String
+    ) {
+        self.init(
+            networkName: networkName,
+            mediatorName: mediatorName,
+            placement: nil,
+            adUnitId: adUnitId,
+            adInstanceId: adInstanceId
+        )
+    }
+    // swiftlint:enable missing_docs
+
+    // MARK: - NSObject overrides for equality
+
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? AdOpened else { return false }
+        return self.networkName == other.networkName &&
+               self.mediatorName == other.mediatorName &&
+               self.placement == other.placement &&
+               self.adUnitId == other.adUnitId &&
+               self.adInstanceId == other.adInstanceId
+    }
+
+    public override var hash: Int {
+        var hasher = Hasher()
+        hasher.combine(networkName)
+        hasher.combine(mediatorName)
+        hasher.combine(placement)
+        hasher.combine(adUnitId)
+        hasher.combine(adInstanceId)
+        return hasher.finalize()
     }
 
 }
 
 /// Data for ad revenue events.
-@_spi(Experimental) public struct AdRevenue: AdEventData {
+@_spi(Experimental) @objc(RCAdRevenue) public final class AdRevenue: NSObject, AdEventData {
 
-    /// The name of the ad network that served the ad.
-    public var networkName: String
+    // swiftlint:disable missing_docs
+    @objc public private(set) var networkName: String
+    @objc public private(set) var mediatorName: MediatorName
+    @objc public private(set) var placement: String?
+    @objc public private(set) var adUnitId: String
+    @objc public private(set) var adInstanceId: String
+    @objc public private(set) var revenueMicros: Int
+    @objc public private(set) var currency: String
+    @objc public private(set) var precision: Precision
 
-    /// The mediation network used to serve the ad.
-    public var mediatorName: MediatorName
-
-    /// Optional placement identifier for the ad.
-    public var placement: String?
-
-    /// The ad unit identifier.
-    public var adUnitId: String
-
-    /// The ad instance identifier.
-    public var adInstanceId: String
-
-    /// The revenue amount in micros (1/1,000,000 of the currency unit).
-    public var revenueMicros: Int
-
-    /// The ISO 4217 currency code (e.g., "USD", "EUR").
-    public var currency: String
-
-    /// The precision level of the revenue value.
-    public var precision: Precision
-
-    /// Creates ad revenue event data.
-    /// - Parameters:
-    ///   - networkName: The name of the ad network that served the ad.
-    ///   - mediatorName: The mediation network used to serve the ad.
-    ///   - placement: Optional placement identifier for the ad.
-    ///   - adUnitId: The ad unit identifier.
-    ///   - adInstanceId: The ad instance identifier.
-    ///   - revenueMicros: The revenue amount in micros.
-    ///   - currency: The ISO 4217 currency code.
-    ///   - precision: The precision level of the revenue value.
-    public init(
+    @objc public init(
         networkName: String,
         mediatorName: MediatorName,
-        placement: String? = nil,
+        placement: String?,
         adUnitId: String,
         adInstanceId: String,
         revenueMicros: Int,
@@ -187,6 +223,56 @@ internal protocol AdEventData {
         self.revenueMicros = revenueMicros
         self.currency = currency
         self.precision = precision
+        super.init()
+    }
+
+    @objc public convenience init(
+        networkName: String,
+        mediatorName: MediatorName,
+        adUnitId: String,
+        adInstanceId: String,
+        revenueMicros: Int,
+        currency: String,
+        precision: Precision
+    ) {
+        self.init(
+            networkName: networkName,
+            mediatorName: mediatorName,
+            placement: nil,
+            adUnitId: adUnitId,
+            adInstanceId: adInstanceId,
+            revenueMicros: revenueMicros,
+            currency: currency,
+            precision: precision
+        )
+    }
+    // swiftlint:enable missing_docs
+
+    // MARK: - NSObject overrides for equality
+
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? AdRevenue else { return false }
+        return self.networkName == other.networkName &&
+               self.mediatorName == other.mediatorName &&
+               self.placement == other.placement &&
+               self.adUnitId == other.adUnitId &&
+               self.adInstanceId == other.adInstanceId &&
+               self.revenueMicros == other.revenueMicros &&
+               self.currency == other.currency &&
+               self.precision == other.precision
+    }
+
+    public override var hash: Int {
+        var hasher = Hasher()
+        hasher.combine(networkName)
+        hasher.combine(mediatorName)
+        hasher.combine(placement)
+        hasher.combine(adUnitId)
+        hasher.combine(adInstanceId)
+        hasher.combine(revenueMicros)
+        hasher.combine(currency)
+        hasher.combine(precision)
+        return hasher.finalize()
     }
 
 }
@@ -194,26 +280,39 @@ internal protocol AdEventData {
 extension AdRevenue {
 
     /// Type representing the level of accuracy for reported revenue values.
-    @_spi(Experimental) public struct Precision: Equatable, Hashable, Codable, Sendable {
+    @_spi(Experimental) @objc(RCAdRevenuePrecision) public final class Precision: NSObject, Codable {
 
         /// The raw string value of the precision type
-        internal let rawValue: String
+        @objc public let rawValue: String
 
-        internal init(rawValue: String) {
+        /// Creates a precision value with the specified raw value
+        @objc public init(rawValue: String) {
             self.rawValue = rawValue
+            super.init()
         }
 
         /// Revenue value is exact and confirmed
-        public static let exact = Precision(rawValue: "exact")
+        @objc public static let exact = Precision(rawValue: "exact")
 
         /// Revenue value is defined by the publisher
-        public static let publisherDefined = Precision(rawValue: "publisher_defined")
+        @objc public static let publisherDefined = Precision(rawValue: "publisher_defined")
 
         /// Revenue value is an estimate
-        public static let estimated = Precision(rawValue: "estimated")
+        @objc public static let estimated = Precision(rawValue: "estimated")
 
         /// Revenue value accuracy cannot be determined
-        public static let unknown = Precision(rawValue: "unknown")
+        @objc public static let unknown = Precision(rawValue: "unknown")
+
+        // MARK: - NSObject overrides for equality
+
+        public override func isEqual(_ object: Any?) -> Bool {
+            guard let other = object as? Precision else { return false }
+            return self.rawValue == other.rawValue
+        }
+
+        public override var hash: Int {
+            return self.rawValue.hash
+        }
 
     }
 
@@ -307,9 +406,9 @@ extension AdEvent {
 
 // MARK: - Protocol Conformances
 
-extension AdDisplayed: Equatable, Codable, Sendable {}
-extension AdOpened: Equatable, Codable, Sendable {}
-extension AdRevenue: Equatable, Codable, Sendable {}
+extension AdDisplayed: Codable {}
+extension AdOpened: Codable {}
+extension AdRevenue: Codable {}
 extension AdEvent.CreationData: Equatable, Codable, Sendable {}
 extension AdEvent: Equatable, Codable, Sendable {}
 
