@@ -27,7 +27,9 @@ var additionalFiles: [FileElement] = [
     .glob(pattern: "Tests/TestPlans/**/*.xctestplan"),
     .glob(pattern: "Tests/RevenueCatUITests/TestPlans/**/*.xctestplan")
 ]
-if FileManager.default.fileExists(atPath: "Local.xcconfig") {
+if FileManager.default.fileExists(atPath: "CI.xcconfig") {
+    additionalFiles.append(.glob(pattern: "CI.xcconfig"))
+} else if FileManager.default.fileExists(atPath: "Local.xcconfig") {
     additionalFiles.append(.glob(pattern: "Local.xcconfig"))
 }
 
