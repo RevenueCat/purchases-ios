@@ -25,10 +25,10 @@ struct ShapeModifier: ViewModifier {
 
     struct BorderInfo: Hashable {
 
-        let color: Color
+        let color: DisplayableColorScheme
         let width: CGFloat
 
-        init(color: Color, width: Double) {
+        init(color: DisplayableColorScheme, width: Double) {
             self.color = color
             self.width = width
         }
@@ -113,6 +113,8 @@ struct ShapeModifier: ViewModifier {
     var background: BackgroundStyle?
     var uiConfigProvider: UIConfigProvider?
 
+    @Environment(\.colorScheme) var colorScheme
+
     init(border: BorderInfo?,
          shape: Shape?,
          background: BackgroundStyle?,
@@ -144,7 +146,8 @@ struct ShapeModifier: ViewModifier {
                 // Place border on top of content
                     .applyIfLet(border) { view, border in
                         view.clipShape(shape).overlay {
-                            shape.strokeBorder(border.color, lineWidth: border.width)
+                            border.color.toView(colorScheme: colorScheme)
+                                .mask(shape.strokeBorder(Color.black, lineWidth: border.width))
                         }
                     }
             }
@@ -165,6 +168,8 @@ private struct ConcaveMaskModifier: ViewModifier {
     let curveHeightPercentage: CGFloat
     let border: ShapeModifier.BorderInfo?
 
+    @Environment(\.colorScheme) var colorScheme
+
     @State
     private var size: CGSize = .zero
 
@@ -178,7 +183,8 @@ private struct ConcaveMaskModifier: ViewModifier {
             .clipShape(shape)
             .applyIfLet(border) { view, border in
                 view.overlay {
-                    shape.strokeBorder(border.color, lineWidth: border.width)
+                    border.color.toView(colorScheme: colorScheme)
+                        .mask(shape.strokeBorder(Color.black, lineWidth: border.width))
                 }
             }
     }
@@ -237,6 +243,8 @@ private struct ConvexMaskModifier: ViewModifier {
     let curveHeightPercentage: CGFloat
     let border: ShapeModifier.BorderInfo?
 
+    @Environment(\.colorScheme) var colorScheme
+
     @State
     private var size: CGSize = .zero
 
@@ -251,7 +259,8 @@ private struct ConvexMaskModifier: ViewModifier {
             .clipShape(shape)
             .applyIfLet(border) { view, border in
                 view.overlay {
-                    shape.eraseToAnyInsettableShape().strokeBorder(border.color, lineWidth: border.width)
+                    border.color.toView(colorScheme: colorScheme)
+                        .mask(shape.strokeBorder(Color.black, lineWidth: border.width))
                 }
             }
     }
@@ -687,7 +696,38 @@ struct CornerBorder_Previews: PreviewProvider {
         }
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Top Left and Bottom Right - Blue Border")
+
+        VStack {
+            Text("Hello")
+                .padding(.vertical, 10)
+                .padding(.horizontal, 20)
+                .background(.white)
+                .foregroundColor(.black)
+                .shape(
+                    border: .init(
+                        color: .init(
+                            light: .linear(125, [
+                                .init(color: "#FF0000", percent: 0),
+                                .init(color: "#0000FF", percent: 40),
+                                .init(color: "#FFFFFF", percent: 90)
+                            ])
+                        ),
+                        width: 6
+                    ),
+                    shape: .rectangle(.init(topLeft: 8,
+                                            topRight: 0,
+                                            bottomLeft: 0,
+                                            bottomRight: 8)))
+                .padding()
+        }
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Gradient Border")
     }
+}
+
+extension DisplayableColorScheme {
+    static let black: DisplayableColorScheme = DisplayableColorScheme(light: .hex("#000000"))
+    static let blue: DisplayableColorScheme = DisplayableColorScheme(light: .hex("#0000FF"))
 }
 
 #endif

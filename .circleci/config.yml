@@ -1446,7 +1446,10 @@ jobs:
           path: fastlane/test_output/xctest
           destination: scan-test-output
 
-  loadshedder-integration-tests-v3:
+  loadshedder-integration-tests-old-major:
+    parameters:
+      major:
+        type: string
     executor:
       name: macos-executor
     steps:
@@ -1456,11 +1459,11 @@ jobs:
       - install-dependencies
       - update-spm-installation-commit
       - run:
-          name: V3 LoadShedder integration tests
-          command: bundle exec fastlane v3_loadshedder_integration_tests
+          name: LoadShedder integration tests in v<< parameters.major >>
+          command: bundle exec fastlane loadshedder_integration_tests_in_old_major major:"<< parameters.major >>"
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
-          bundle_name: v3LoadShedderIntegration
+          bundle_name: v<< parameters.major >>LoadShedderIntegration
 
   deploy-purchase-tester:
     executor:
@@ -1679,7 +1682,14 @@ workflows:
         - equal:
             ["load_shedder_integration_tests", << pipeline.schedule.name >>]
     jobs:
-      - loadshedder-integration-tests-v3:
+      - loadshedder-integration-tests-old-major:
+          name: loadshedder-integration-tests-v3
+          major: "3"
+          context:
+            - slack-secrets
+      - loadshedder-integration-tests-old-major:
+          name: loadshedder-integration-tests-v4
+          major: "4"
           context:
             - slack-secrets
       - integration-tests-all
