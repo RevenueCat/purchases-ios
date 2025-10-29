@@ -6,11 +6,14 @@ name: Load Shedder - Subscribe to product through V2 Paywall for default offerin
 - tapOn:
     text: "Present Paywall"
 - assertVisible: "Test load shedder"
+- takeScreenshot: "Paywall"
 - tapOn:
     text: "Monthly"
 - tapOn:
     text: "Continue"
+- takeScreenshot: "IAP Sheet"
 - tapOn:
     text: "Subscribe"
+- takeScreenshot: "IAP Confirmation"
 - tapOn:
     text: "OK"

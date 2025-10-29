@@ -875,7 +875,7 @@ platform :ios do
 
     UI.message("Using flow directory: #{flow_dir}")
 
-    sh("maestro", "test", "--format", "junit", "--output", "maestro-report.xml", flow_dir)
+    sh("maestro", "test", "--format", "junit", "--output", "test_output/maestro/report.xml", "--test-output-dir", "test_output/maestro", flow_dir)
 
   end
 
