@@ -1,0 +1,16 @@
+appId: com.revenuecat.maestro.ios
+name: Load Shedder - Subscribe to product through V2 Paywall for default offering
+
+---
+- launchApp
+- tapOn:
+    text: "Present Paywall"
+- assertVisible: "Test load shedder"
+- tapOn:
+    text: "Monthly"
+- tapOn:
+    text: "Continue"
+- tapOn:
+    text: "Subscribe"
+- tapOn:
+    text: "OK"
