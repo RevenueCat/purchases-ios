@@ -1405,11 +1405,9 @@ public extension Purchases {
     }
 
     /// Used by `RevenueCatUI` to keep track of ``CustomerCenterEvent``s.
-    @_spi(Internal) func track(customerCenterEvent: any CustomerCenterEventType) {
+    @_spi(Internal) func track(customerCenterEvent: CustomerCenterEvent) {
         operationDispatcher.dispatchOnWorkerThread {
-            // If we make CustomerCenterEventType implement FeatureEvent, we have to make FeatureEvent public
-            guard let event = customerCenterEvent as? FeatureEvent else { return }
-            await self.paywallEventsManager?.track(featureEvent: event)
+            await self.paywallEventsManager?.track(featureEvent: customerCenterEvent)
         }
     }
 

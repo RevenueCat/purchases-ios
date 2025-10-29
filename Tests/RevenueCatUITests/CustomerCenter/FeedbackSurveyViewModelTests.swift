@@ -151,16 +151,18 @@ class FeedbackSurveyViewModelTests: TestCase {
         }
 
         expect(self.mockPurchases.trackCallCount) == 1
-        let event = try XCTUnwrap(self.mockPurchases.trackedEvents[0] as? CustomerCenterAnswerSubmittedEvent)
-        expect(event.data.localeIdentifier) == "en_US"
-        expect(event.data.darkMode) == false
-        expect(event.data.isSandbox) == mockPurchases.isSandbox
-        expect(event.data.displayMode) == RevenueCat.CustomerCenterPresentationMode.fullScreen
-        expect(event.data.revisionID) == 0
-        expect(event.data.additionalContext).to(beNil())
-        expect(event.data.path) == .cancel
-        expect(event.data.surveyOptionID) == option.id
-        expect(event.data.url).to(beNil())
+        let event = try XCTUnwrap(self.mockPurchases.trackedEvents.first)
+        expect(event.type) == .answerSubmitted
+        let data = try XCTUnwrap(event.answerSubmittedData)
+        expect(data.localeIdentifier) == "en_US"
+        expect(data.darkMode) == false
+        expect(data.isSandbox) == mockPurchases.isSandbox
+        expect(data.displayMode) == RevenueCat.CustomerCenterPresentationMode.fullScreen
+        expect(data.revisionID) == 0
+        expect(data.additionalContext).to(beNil())
+        expect(data.path) == .cancel
+        expect(data.surveyOptionID) == option.id
+        expect(data.url).to(beNil())
     }
 
     func testHandleActionWithoutPromotionalOfferTracksEvent() async throws {
@@ -187,16 +189,18 @@ class FeedbackSurveyViewModelTests: TestCase {
         }
 
         expect(self.mockPurchases.trackCallCount) == 1
-        let event = try XCTUnwrap(self.mockPurchases.trackedEvents[0] as? CustomerCenterAnswerSubmittedEvent)
-        expect(event.data.localeIdentifier) == "en_US"
-        expect(event.data.darkMode) == false
-        expect(event.data.isSandbox) == mockPurchases.isSandbox
-        expect(event.data.displayMode) == RevenueCat.CustomerCenterPresentationMode.fullScreen
-        expect(event.data.revisionID) == 0
-        expect(event.data.additionalContext).to(beNil())
-        expect(event.data.path) == .cancel
-        expect(event.data.surveyOptionID) == option.id
-        expect(event.data.url).to(beNil())
+        let event = try XCTUnwrap(self.mockPurchases.trackedEvents.first)
+        expect(event.type) == .answerSubmitted
+        let data = try XCTUnwrap(event.answerSubmittedData)
+        expect(data.localeIdentifier) == "en_US"
+        expect(data.darkMode) == false
+        expect(data.isSandbox) == mockPurchases.isSandbox
+        expect(data.displayMode) == RevenueCat.CustomerCenterPresentationMode.fullScreen
+        expect(data.revisionID) == 0
+        expect(data.additionalContext).to(beNil())
+        expect(data.path) == .cancel
+        expect(data.surveyOptionID) == option.id
+        expect(data.url).to(beNil())
     }
 
     func testHandleActionWithoutPromotionalOfferCallsHandler() async throws {
@@ -260,16 +264,18 @@ class FeedbackSurveyViewModelTests: TestCase {
         }
 
         expect(self.mockPurchases.trackCallCount) == 1
-        let event = try XCTUnwrap(self.mockPurchases.trackedEvents[0] as? CustomerCenterAnswerSubmittedEvent)
-        expect(event.data.localeIdentifier) == "en_US"
-        expect(event.data.darkMode) == false
-        expect(event.data.isSandbox) == mockPurchases.isSandbox
-        expect(event.data.displayMode) == RevenueCat.CustomerCenterPresentationMode.fullScreen
-        expect(event.data.revisionID) == 0
-        expect(event.data.additionalContext).to(beNil())
-        expect(event.data.path) == .cancel
-        expect(event.data.surveyOptionID) == option.id
-        expect(event.data.url).to(beNil())
+        let event = try XCTUnwrap(self.mockPurchases.trackedEvents.first)
+        expect(event.type) == .answerSubmitted
+        let data = try XCTUnwrap(event.answerSubmittedData)
+        expect(data.localeIdentifier) == "en_US"
+        expect(data.darkMode) == false
+        expect(data.isSandbox) == mockPurchases.isSandbox
+        expect(data.displayMode) == RevenueCat.CustomerCenterPresentationMode.fullScreen
+        expect(data.revisionID) == 0
+        expect(data.additionalContext).to(beNil())
+        expect(data.path) == .cancel
+        expect(data.surveyOptionID) == option.id
+        expect(data.url).to(beNil())
     }
 
     func testHandleActionWithPromotionalOfferAndNoCustomerCenterActionHandlerTracksEvent() async throws {
@@ -296,16 +302,18 @@ class FeedbackSurveyViewModelTests: TestCase {
         }
 
         expect(self.mockPurchases.trackCallCount) == 1
-        let event = try XCTUnwrap(self.mockPurchases.trackedEvents[0] as? CustomerCenterAnswerSubmittedEvent)
-        expect(event.data.localeIdentifier) == "en_US"
-        expect(event.data.darkMode) == false
-        expect(event.data.isSandbox) == mockPurchases.isSandbox
-        expect(event.data.displayMode) == RevenueCat.CustomerCenterPresentationMode.fullScreen
-        expect(event.data.revisionID) == 0
-        expect(event.data.additionalContext).to(beNil())
-        expect(event.data.path) == .cancel
-        expect(event.data.surveyOptionID) == option.id
-        expect(event.data.url).to(beNil())
+        let event = try XCTUnwrap(self.mockPurchases.trackedEvents.first)
+        expect(event.type) == .answerSubmitted
+        let data = try XCTUnwrap(event.answerSubmittedData)
+        expect(data.localeIdentifier) == "en_US"
+        expect(data.darkMode) == false
+        expect(data.isSandbox) == mockPurchases.isSandbox
+        expect(data.displayMode) == RevenueCat.CustomerCenterPresentationMode.fullScreen
+        expect(data.revisionID) == 0
+        expect(data.additionalContext).to(beNil())
+        expect(data.path) == .cancel
+        expect(data.surveyOptionID) == option.id
+        expect(data.url).to(beNil())
     }
 
     func testHandleActionWithPromotionalOfferCallsHandler() async throws {

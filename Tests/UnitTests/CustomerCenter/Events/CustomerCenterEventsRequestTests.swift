@@ -27,7 +27,14 @@ class CustomerCenterEventsRequestTests: TestCase {
     }
 
     func testImpressionEvent() throws {
-        let event = CustomerCenterEvent.impression(Self.eventCreationData, Self.eventData)
+        let event = CustomerCenterEvent.impression(
+            id: Self.eventId,
+            date: Self.eventDate,
+            locale: Self.locale,
+            darkMode: true,
+            isSandbox: true,
+            displayMode: .fullScreen
+        )
         let eventDiscriminator: String = CustomerCenterEventDiscriminator.lifecycle.rawValue
         let storedEvent: StoredEvent = try XCTUnwrap(.init(event: event,
                                                            userID: Self.userID,
@@ -41,18 +48,14 @@ class CustomerCenterEventsRequestTests: TestCase {
 
     func testCanInitFromDeserializedEvent() throws {
         let expectedUserID = "test-user"
-        let customerCenterEventCreationData: CustomerCenterEventCreationData = .init(
+        let customerCenterEvent = CustomerCenterEvent.impression(
             id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
-            date: .init(timeIntervalSince1970: 1694029328)
-        )
-        let customerCenterEventData: CustomerCenterEvent.Data = .init(
+            date: .init(timeIntervalSince1970: 1694029328),
             locale: .init(identifier: "en_US"),
             darkMode: true,
             isSandbox: true,
             displayMode: .fullScreen
         )
-        let customerCenterEvent = CustomerCenterEvent.impression(customerCenterEventCreationData,
-                                                                 customerCenterEventData)
 
         let storedEvent = try XCTUnwrap(StoredEvent(event: customerCenterEvent,
                                                     userID: expectedUserID,
@@ -72,17 +75,9 @@ class CustomerCenterEventsRequestTests: TestCase {
 
     // MARK: -
 
-    private static let eventCreationData: CustomerCenterEventCreationData = .init(
-        id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
-        date: .init(timeIntervalSince1970: 1694029328)
-    )
-
-    private static let eventData: CustomerCenterEvent.Data = .init(
-        locale: .init(identifier: "es_ES"),
-        darkMode: true,
-        isSandbox: true,
-        displayMode: .fullScreen
-    )
+    private static let eventId = UUID(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!
+    private static let eventDate = Date(timeIntervalSince1970: 1694029328)
+    private static let locale = Locale(identifier: "es_ES")
 
     private static let userID = "Jack Shepard"
 

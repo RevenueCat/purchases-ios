@@ -134,7 +134,7 @@ import Foundation
     internal var currentTask: Task<Void, Never>?
 
     private var error: Error?
-    private var impressionData: CustomerCenterEvent.Data?
+    private var hasTrackedImpression = false
 
     init(
         actionWrapper: CustomerCenterActionWrapper,
@@ -229,17 +229,19 @@ import Foundation
     }
 
     func trackImpression(darkMode: Bool, displayMode: CustomerCenterPresentationMode) {
-        guard impressionData == nil else {
+        guard !hasTrackedImpression else {
             return
         }
 
-        let eventData = CustomerCenterEvent.Data(locale: .current,
-                                                 darkMode: darkMode,
-                                                 isSandbox: purchasesProvider.isSandbox,
-                                                 displayMode: displayMode)
-        defer { self.impressionData = eventData }
+        hasTrackedImpression = true
 
-        let event = CustomerCenterEvent.impression(CustomerCenterEventCreationData(), eventData)
+        let event = CustomerCenterEvent.impression(
+            locale: .current,
+            darkMode: darkMode,
+            isSandbox: purchasesProvider.isSandbox,
+            displayMode: displayMode
+        )
+
         purchasesProvider.track(customerCenterEvent: event)
     }
 }
