@@ -53,7 +53,7 @@ struct VideoComponentView: View {
                             render(Color.clear, size: size, with: style)
                         }
 
-                        if let imageSource, cachedURL == nil, let imageViewModel = try? ImageComponentViewModel(
+                        if let imageSource, let imageViewModel = try? ImageComponentViewModel(
                             localizationProvider: viewModel.localizationProvider,
                             uiConfigProvider: viewModel.uiConfigProvider,
                             component: .init(source: imageSource)
@@ -77,7 +77,6 @@ struct VideoComponentView: View {
                         }
                     }
                     .onAppear {
-                        self.imageSource = viewModel.imageSource
                         let fileRepository = FileRepository.shared
 
                         let resumeDownloadOfFullResolutionVideo: () -> Void = {
@@ -96,6 +95,8 @@ struct VideoComponentView: View {
                                     guard url != cachedURL else { return }
                                     await MainActor.run {
                                         self.stagedURL = url
+                                        // If we have a cached video, no need to display a fallback image
+                                        self.imageSource = nil
                                     }
                                 } catch {
                                     await MainActor.run {
@@ -110,19 +111,34 @@ struct VideoComponentView: View {
                             withChecksum: viewData.checksum
                         ) {
                             self.cachedURL = cachedURL
+                            // If we have a cached video, no need to display a fallback image
+                            self.imageSource = nil
                         } else if let lowResUrl = viewData.lowResUrl, lowResUrl != viewData.url {
                             let lowResCachedURL = fileRepository.getCachedFileURL(
                                 for: lowResUrl,
                                 withChecksum: viewData.lowResChecksum
                             )
                             self.cachedURL = lowResCachedURL ?? lowResUrl
+
+                            if lowResCachedURL == nil {
+                                // Display the fallback image while loading takes place
+                                self.imageSource = viewModel.imageSource
+                            }
+
                             resumeDownloadOfFullResolutionVideo()
                         } else {
+                            // Display the fallback image while loading takes place
+                            self.imageSource = viewModel.imageSource
                             resumeDownloadOfFullResolutionVideo()
                         }
                     }
                     .applyMediaWidth(size: style.size)
                     .applyMediaHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
+                    .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
+                        view.overlay(
+                            Color.clear.backgroundStyle(.color(colorOverlay))
+                        )
+                    })
                     .padding(style.padding.extend(by: style.border?.width ?? 0))
                     .shape(border: style.border, shape: style.shape)
                     .clipped()
@@ -173,11 +189,6 @@ struct VideoComponentView: View {
                 contentMode: .fill, // This must be set to fill for the modifier to work correctly
                 containerContentMode: style.contentMode // the container is what truly controls this
             )
-            .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
-                view.overlay(
-                    Color.clear.backgroundStyle(.color(colorOverlay))
-                )
-            })
     }
 
     private func calculateMaxWidth(parentWidth: CGFloat, style: VideoComponentStyle) -> CGFloat {
