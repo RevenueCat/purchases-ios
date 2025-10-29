@@ -59,7 +59,7 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
             Strings.network.request_handled_by_load_shedder(
                 HTTPRequest.Path.getCustomerInfo(appUserID: try self.purchases.appUserID)
             ),
-            exactMatch: true, // to avoid false positives with GET /offerings
+            logMatchType: .exact(.info), // to avoid false positives with GET /offerings
             level: .debug
         )
     }
@@ -76,6 +76,7 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testPurchaseReturnsEntitlementFromLoadShedder() async throws {
+        self.logger.clearMessages()
         try await self.purchaseMonthlyOffering()
 
         try self.purchases.invalidateCustomerInfoCache()
@@ -85,10 +86,8 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let customerInfo = try await self.purchases.customerInfo()
 
         self.logger.verifyMessageWasLogged(
-            Strings.network.request_handled_by_load_shedder(
-                HTTPRequest.Path.getCustomerInfo(appUserID: try self.purchases.appUserID)
-            ),
-            exactMatch: true, // to avoid false positives with GET /offerings
+            Strings.network.request_handled_by_load_shedder(HTTPRequest.Path.getCustomerInfo(appUserID: try self.purchases.appUserID)),
+            logMatchType: .exact(.info), // check for `contain` could lead to false positives with GET /offerings
             level: .debug
         )
 
