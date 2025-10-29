@@ -1619,15 +1619,18 @@ workflows:
     jobs:
       # Production - uses default REVENUECAT_API_KEY
       - run-maestro-e2e-tests:
+          name: run-maestro-e2e-tests-production
           test_environment: "production"
 
       # Load shedder - uses REVENUECAT_LOAD_SHEDDER_API_KEY
       - run-maestro-e2e-tests:
+          name: run-maestro-e2e-tests-load-shedder
           test_environment: "load_shedder"
           api_key_environment_variable: REVENUECAT_LOAD_SHEDDER_API_KEY
 
       # Fallback - uses default REVENUECAT_API_KEY
       - run-maestro-e2e-tests:
+          name: run-maestro-e2e-tests-fallback
           test_environment: "fallback"
           # todo rick make sure it's using fallback through dangerous setting
           
