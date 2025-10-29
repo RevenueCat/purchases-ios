@@ -1148,6 +1148,9 @@ jobs:
       test_environment:
         type: enum
         enum: ["production", "load_shedder", "fallback"]
+      api_key_environment_variable:
+        type: env_var_name
+        default: REVENUECAT_API_KEY
     executor:
       name: macos-executor
       xcode_version: "26.0.1"
@@ -1164,10 +1167,12 @@ jobs:
       - tuist-generate-workspace
       - run:
           name: Run e2e tests (<< parameters.test_environment >>)
-          command: bundle exec fastlane run_maestro_e2e_tests test_environment:<< parameters.test_environment >>
+          command: |
+            export REVENUECAT_API_KEY="${<< parameters.api_key_environment_variable >>}"
+            bundle exec fastlane run_maestro_e2e_tests test_environment:<< parameters.test_environment >>
           no_output_timeout: 15m
       - store_test_results:
-          path: fastlane/maestro-report.xml
+          path: fastlane/test_output
 
   release-checks:
     executor:
@@ -1602,10 +1607,9 @@ workflows:
       # Load shedder - uses REVENUECAT_LOAD_SHEDDER_API_KEY
       - run-maestro-e2e-tests:
           test_environment: "load_shedder"
-          environment:
-            REVENUECAT_API_KEY: ${REVENUECAT_LOAD_SHEDDER_API_KEY}
+          api_key_environment_variable: REVENUECAT_LOAD_SHEDDER_API_KEY
 
-      # Fallback - uses default REVENUECAT_API_KEY  
+      # Fallback - uses default REVENUECAT_API_KEY
       - run-maestro-e2e-tests:
           test_environment: "fallback"
           # todo rick make sure it's using fallback through dangerous setting
