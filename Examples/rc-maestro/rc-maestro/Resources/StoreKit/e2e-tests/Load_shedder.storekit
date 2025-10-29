@@ -1,0 +1,65 @@
+{
+  "appPolicies": {
+    "eula": "",
+    "policies": [
+      {
+        "locale": "en_US",
+        "policyText": "",
+        "policyURL": ""
+      }
+    ]
+  },
+  "identifier": "C3A7CB7D",
+  "nonRenewingSubscriptions": [],
+  "products": [
+    {
+      "displayPrice": "99.99",
+      "familyShareable": false,
+      "internalID": "025F0781",
+      "localizations": [
+        {
+          "description": "",
+          "displayName": "",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "lifetime",
+      "referenceName": "Lifetime product",
+      "type": "NonConsumable"
+    }
+  ],
+  "subscriptionGroups": [
+    {
+      "id": "D00F4D15",
+      "localizations": [],
+      "name": "standard set of packages",
+      "subscriptions": [
+        {
+          "displayPrice": "9.99",
+          "familyShareable": false,
+          "internalID": "F3116714",
+          "localizations": [
+            {
+              "description": "",
+              "displayName": "",
+              "locale": "en_US"
+            }
+          ],
+          "productID": "com.revenuecat.loadShedder.monthly",
+          "referenceName": "com.revenuecat.loadShedder.monthly",
+          "type": "RecurringSubscription",
+          "adHocOffers": [],
+          "codeOffers": [],
+          "groupNumber": 1,
+          "recurringSubscriptionPeriod": "P1M",
+          "subscriptionGroupID": "D00F4D15",
+          "winbackOffers": []
+        }
+      ]
+    }
+  ],
+  "version": {
+    "major": 4,
+    "minor": 0
+  }
+}

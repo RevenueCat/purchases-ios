@@ -226,6 +226,10 @@ run API Tests
 
 run_maestro_e2e_tests
 
+Parameters:
+
+  test_environment: Test environment - 'production', 'load_shedder', or 'fallback' (required)
+
 ### ios replace_api_key_integration_tests
 
 ```sh
