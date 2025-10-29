@@ -86,14 +86,13 @@ class BackendErrorTests: BaseErrorTests {
             error(.emptySubscriberAttributes()),
             error(.missingReceiptFile(nil)),
             error(.missingTransactionProductIdentifier()),
-            error(.unexpectedBackendResponse(.customerInfoNil,
-                                             extraContext: "context"))
+            error(.unexpectedBackendResponse(.customerInfoNil, extraContext: "context"))
         ]
 
         for error in errors {
             check(error.0.shouldFallBackToCachedOfferings,
                   condition: beTrue(),
-                  descrition: "Expected error's shouldFallBackToCachedOfferings to be true",
+                  description: "Expected error's shouldFallBackToCachedOfferings to be true",
                   file: error.1,
                   line: error.2)
         }
@@ -110,7 +109,7 @@ class BackendErrorTests: BaseErrorTests {
         for error in errors {
             check(error.0.shouldFallBackToCachedOfferings,
                   condition: beFalse(),
-                  descrition: "Expected error's shouldFallBackToCachedOfferings to be false",
+                  description: "Expected error's shouldFallBackToCachedOfferings to be false",
                   file: error.1,
                   line: error.2)
         }
@@ -119,21 +118,25 @@ class BackendErrorTests: BaseErrorTests {
     /// Stores the file/line information so expectation failures can point to the line creating the error.
     private func error(
         _ error: BackendError,
-        file: FileString = #file, line: UInt = #line
+        file: FileString = #file,
+        line: UInt = #line
     ) -> (BackendError, FileString, UInt) {
         return (error, file, line)
     }
 
     private func check<T>(
-        _ value: T, condition: Nimble.Matcher<T>, descrition: String,
-        file: FileString = #file, line: UInt = #line
+        _ value: T,
+        condition: Nimble.Matcher<T>,
+        description: String,
+        file: FileString = #file,
+        line: UInt = #line
     ) {
         expect(
             file: file, line: line,
             value
         ).to(
             condition,
-            description: descrition
+            description: description
         )
     }
 
