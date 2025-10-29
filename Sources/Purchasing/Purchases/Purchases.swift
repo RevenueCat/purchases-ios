@@ -1,4 +1,5 @@
 //
+//
 //  Copyright RevenueCat Inc. All Rights Reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -276,6 +277,22 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let productsManager: ProductsManagerType
     private let customerInfoManager: CustomerInfoManager
     private let paywallEventsManager: PaywallEventsManagerType?
+
+#if ENABLE_AD_EVENTS_TRACKING
+    private var _adTracker: Any?
+
+    /// The ad tracker for reporting ad impressions, clicks, and revenue to RevenueCat.
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    @_spi(Experimental) public var adTracker: AdTracker {
+        if let tracker = _adTracker as? AdTracker {
+            return tracker
+        }
+        let tracker = AdTracker(eventsManager: self.paywallEventsManager)
+        _adTracker = tracker
+        return tracker
+    }
+#endif
+
     private let trialOrIntroPriceEligibilityChecker: CachingTrialOrIntroPriceEligibilityChecker
     private let purchasedProductsFetcher: PurchasedProductsFetcherType?
     private let purchasesOrchestrator: PurchasesOrchestrator
