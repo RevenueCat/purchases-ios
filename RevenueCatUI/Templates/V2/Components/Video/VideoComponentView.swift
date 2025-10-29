@@ -107,6 +107,7 @@ struct VideoComponentView: View {
                                     guard url != cachedURL else { return }
                                     await MainActor.run {
                                         self.stagedURL = url
+                                        // If we have a cached video, no need to display a fallback image
                                         self.imageSource = nil
                                     }
                                 } catch {
@@ -122,16 +123,23 @@ struct VideoComponentView: View {
                             withChecksum: viewData.checksum
                         ) {
                             self.cachedURL = cachedURL
+                            // If we have a cached video, no need to display a fallback image
                             self.imageSource = nil
                         } else if let lowResUrl = viewData.lowResUrl, lowResUrl != viewData.url {
-                            self.imageSource = viewModel.imageSource
                             let lowResCachedURL = fileRepository.getCachedFileURL(
                                 for: lowResUrl,
                                 withChecksum: viewData.lowResChecksum
                             )
                             self.cachedURL = lowResCachedURL ?? lowResUrl
+
+                            if lowResCachedURL == nil {
+                                // Display the fallback image while loading takes place
+                                self.imageSource = viewModel.imageSource
+                            }
+
                             resumeDownloadOfFullResolutionVideo()
                         } else {
+                            // Display the fallback image while loading takes place
                             self.imageSource = viewModel.imageSource
                             resumeDownloadOfFullResolutionVideo()
                         }
