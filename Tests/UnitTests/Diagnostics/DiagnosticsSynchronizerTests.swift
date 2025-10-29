@@ -282,7 +282,7 @@ class DiagnosticsSynchronizerTests: TestCase {
 
     func testSyncMultipleEventsWithInvalidEvent() async throws {
         let event1 = await self.storeEvent()
-        await fileHandler.append(line: "Invalid entry line")
+        try await fileHandler.append(line: "Invalid entry line")
         let event2 = await self.storeEvent(timestamp: Self.eventTimestamp2)
 
         try await self.synchronizer.syncDiagnosticsIfNeeded()

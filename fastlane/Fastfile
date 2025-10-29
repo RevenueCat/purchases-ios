@@ -32,8 +32,11 @@ files_with_version_number_without_prerelease_modifiers = {
   './Tests/UnitTests/Info.plist' => PLIST_VERSION_PATTERNS,
   './Tests/UnitTestsHostApp/Info.plist' => PLIST_VERSION_PATTERNS
 }
+
+PACKAGE_VERSION_PATTERNS = ["repositoryURL = \"https://github.com/RevenueCat/purchases-ios\";\n\t\t\trequirement = {\n\t\t\t\tkind = upToNextMajorVersion;\n\t\t\t\tminimumVersion = {x};\n"]
 files_to_update_on_latest_stable_releases = {
   './scripts/docs/index.html' => ['purchases-ios-docs/{x}/documentation/revenuecat'],
+  './Examples/SampleCat/SampleCat.xcodeproj/project.pbxproj' => PACKAGE_VERSION_PATTERNS
 }
 
 REPO_NAME = 'purchases-ios'
@@ -134,7 +137,7 @@ platform :ios do
   desc "Updates paywall-preview-resources-commit to point to latest commit on main and creates/updates PR"
   lane :update_paywall_preview_resources_commit do |options|
     branch_name = "pw2-update-paywall-preview-resources-commit"
-    
+
     # Ensure we're starting from an up-to-date main.
     sh("git", "fetch", "origin")
 
@@ -179,20 +182,20 @@ platform :ios do
     UI.user_error!("Failed to determine target repository name") if target_repository_name.nil? || target_repository_name.empty?
 
     # Loop over all platforms and generate screenshots for each
-    platforms = ["ios", 
+    platforms = ["ios",
                 # These platforms work locally but we have been unable to figure out how to get them to work on CI due to codesigning issues.
                 #  "iphone-app-on-mac",
-                #  "ipad-app-on-mac", 
-                 "mac-catalyst-optimized-for-mac", 
+                #  "ipad-app-on-mac",
+                 "mac-catalyst-optimized-for-mac",
                  "mac-catalyst-scaled-to-match-ipad",
                  "mac-native"]
-    
+
     platforms.each do |platform|
       UI.message("Generating screenshots for platform: #{platform}")
-      
+
       output_dir = record_paywall_screenshots(platform: platform)
       UI.message("Output directory for #{platform}: #{output_dir}")
-      
+
       # Process the screenshots from the output directory
       process_paywall_screenshots(
         output_dir: output_dir,
@@ -214,7 +217,7 @@ platform :ios do
     end
   end
 
-  
+
   private_lane :process_paywall_screenshots do |options|
     output_dir = options[:output_dir] || UI.user_error!("No output_dir provided")
     target_repository_path = options[:target_repository_path] || UI.user_error!("No target_repository_path provided")
@@ -234,10 +237,10 @@ platform :ios do
 
     # Upload snapshots to Emerge
     UI.message("Uploading snapshots to Emerge for platform: #{platform}")
-    sh("bundle", "exec", "emerge", "upload", "snapshots", 
-       "--name", "RevenueCat", 
-       "--id", "com.revenuecat.paywall-rendering-validation.#{platform}", 
-       "--repo-name", "RevenueCat/purchases-ios", 
+    sh("bundle", "exec", "emerge", "upload", "snapshots",
+       "--name", "RevenueCat",
+       "--id", "com.revenuecat.paywall-rendering-validation.#{platform}",
+       "--repo-name", "RevenueCat/purchases-ios",
        "#{output_dir}/images")
   end
 
@@ -268,7 +271,7 @@ platform :ios do
     repo = options[:repo] || REPO_NAME
     labels = options[:labels] || []
     team_reviewers = options[:team_reviewers] || []
-    
+
     has_changes = !sh("git", "status", "--porcelain").empty?
     if has_changes
       commit_and_push(
@@ -338,7 +341,7 @@ platform :ios do
         labels: labels,
         team_reviewers: team_reviewers
       )
-      
+
       if pr_url.nil?
         UI.user_error!("Failed to create pull request.")
       end
@@ -350,7 +353,7 @@ platform :ios do
   desc "Records screenshots for paywalls"
   lane :record_paywall_screenshots do |options|
     platform = options[:platform] || UI.user_error!("No platform provided. Use one of: ios, iphone-app-on-mac, ipad-app-on-mac, mac-catalyst-optimized-for-mac, mac-catalyst-scaled-to-match-ipad")
-    
+
     # Map platform to destination
     destinations = {
       "ios" => "platform=iOS Simulator,name=iPhone 16",
@@ -360,17 +363,17 @@ platform :ios do
       "mac-catalyst-scaled-to-match-ipad" => "platform=macOS,arch=arm64,variant=Mac Catalyst",
       "mac-native" => "platform=macOS,arch=arm64"
     }
-    
+
     # Map platform to TARGETED_DEVICE_FAMILY build setting. This overrides the setting in the Xcode Project,
     # if we ever change the list of supported platforms we'll need to make sure to update this as well.
     targeted_device_families = {
       "mac-catalyst-optimized-for-mac" => "1,2,3,4,6",
       "mac-catalyst-scaled-to-match-ipad" => "1,2,3,4"
     }
-    
+
     destination = destinations[platform]
     UI.user_error!("Invalid platform '#{platform}'. Use one of: #{destinations.keys.join(', ')}") unless destination
-    
+
     output_dir = File.absolute_path("../fastlane/test_output/xctest/paywall-screenshots")
     FileUtils.rm_rf(output_dir)
     FileUtils.mkdir_p(output_dir)
@@ -394,16 +397,16 @@ platform :ios do
       result_bundle: true,
       result_bundle_path: result_bundle_path,
     }
-    
+
     # Add xcargs only if we have build settings to apply
     scan_options[:xcargs] = xcargs.join(' ') unless xcargs.empty?
-    
+
     scan(scan_options)
 
     image_output_dir = "#{output_dir}/images"
     FileUtils.mkdir_p(image_output_dir)
     extract_xcresult_images(
-      xcresult_path: result_bundle_path, 
+      xcresult_path: result_bundle_path,
       output_dir: image_output_dir
     )
 
@@ -422,7 +425,7 @@ platform :ios do
     # build_paywalls_tester_for_emerge_mac(platform: "ipad-app-on-mac")
     # build_paywalls_tester_for_emerge_mac(platform: "iphone-app-on-mac")
   end
-  
+
   lane :build_paywalls_tester_for_emerge_ios do |options|
     scan(
       workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
@@ -437,7 +440,7 @@ platform :ios do
 
   private_lane :build_paywalls_tester_for_emerge_mac do |options|
     platform = options[:platform]
-    
+
     # As of July 2025, Emerge Tools has explicitly enabled Catalyst support for apps with the bundle identifiers com.revenuecat.PaywallsTester-<platform> for these 4 platform values.
     # If you change one of these values, you will need to verify that Catalyst support has been enabled for all bundle identifiers, or tell them the new bundle identiifer.
     case platform
@@ -461,14 +464,14 @@ platform :ios do
     device_families = options[:device_families]
     xcargs = "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
     xcargs << " TARGETED_DEVICE_FAMILY='#{device_families}'"
-    
+
     # Remove macosx from SUPPORTED_PLATFORMS in project.pbxproj. xcodebuild will fail if macosx is in the list, even
     # if we override it in xcargs.
     project_file_path = File.absolute_path("../Tests/TestingApps/PaywallsTester/PaywallsTester.xcodeproj/project.pbxproj")
     file_content = File.read(project_file_path)
     modified_content = file_content.gsub(/SUPPORTED_PLATFORMS = "[^"]*";/, 'SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";')
     File.write(project_file_path, modified_content)
-    
+
     archive_path = File.absolute_path("build/PaywallsTester-#{platform}.xcarchive")
 
     gym(
@@ -495,7 +498,7 @@ platform :ios do
   private_lane :build_mac_native_version do |options|
     platform = options[:platform]
     xcargs = "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
-    
+
     archive_path = File.absolute_path("build/PaywallsTester-#{platform}.xcarchive")
 
     gym(
@@ -519,12 +522,12 @@ platform :ios do
   private_lane :build_ios_app_on_mac_version do |options|
     platform = options[:platform]
     include_ipad = options[:include_ipad]
-    
+
     # Build iOS version first with appropriate device family targeting
     device_families = include_ipad ? "1,2" : "1"
     xcargs = "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
     xcargs << " TARGETED_DEVICE_FAMILY='#{device_families}'"
-    
+
     ios_archive_path = File.absolute_path("build/PaywallsTester-#{platform}-ios.xcarchive")
 
     # Build the iOS version
@@ -542,7 +545,7 @@ platform :ios do
 
     # Extract the .app file from the archive
     ios_app_path = "#{ios_archive_path}/Products/Applications/PaywallsTester.app"
-    
+
     unless File.exist?(ios_app_path)
       UI.user_error!("Could not find iOS .app at expected path: #{ios_app_path}")
     end
@@ -579,7 +582,7 @@ platform :ios do
         file_path: mac_app_path
     )
   end
-  
+
   private_lane :send_to_emerge do |options|
     pr_url = ENV["CIRCLE_PULL_REQUEST"]
     branch_name = sh("git rev-parse --abbrev-ref HEAD").strip
@@ -601,19 +604,19 @@ platform :ios do
     if options[:archive_path] && options[:archive_path].end_with?('.xcarchive')
       emerge_config_source = File.absolute_path("../emerge/emerge_config.yaml")
       emerge_config_dest = "#{options[:archive_path]}/emerge_config.yaml"
-      
+
       if File.exist?(emerge_config_source)
         FileUtils.cp(emerge_config_source, emerge_config_dest)
         UI.message("Added emerge_config.yaml to #{File.basename(options[:archive_path])}")
       else
         UI.important("emerge_config.yaml not found at #{emerge_config_source}")
       end
-      
+
       emerge_args[:file_path] = options[:archive_path]
     elsif options[:archive_path] || options[:file_path]
       emerge_args[:file_path] = options[:archive_path] || options[:file_path]
     end
-    
+
     emerge(emerge_args)
   end
 
@@ -788,8 +791,12 @@ platform :ios do
   desc "run API Tests"
   lane :run_api_tests do
     # note: it's called "run" tests but these tests only need to build to run
+    workspace_path = 'RevenueCat-Tuist.xcworkspace'
+    unless File.directory?(workspace_path)
+      UI.important("#{workspace_path} not found. Run `tuist generate --no-open` before invoking this lane.")
+    end
     xcodebuild(
-      workspace: 'RevenueCat.xcworkspace',
+      workspace: workspace_path,
       scheme: 'All API Tests',
       destination: 'generic/platform=iOS Simulator',
       configuration: 'release',
@@ -811,7 +818,8 @@ platform :ios do
       new_text: ENV["REVENUECAT_LOAD_SHEDDER_API_KEY"],
       paths_of_files_to_update: [
         './Tests/BackendIntegrationTests/Constants.swift',
-        './Tests/v3LoadShedderIntegration/v3LoadShedderIntegrationTests/V3LoadShedderIntegrationTests.swift'
+        './Tests/v3LoadShedderIntegration/v3LoadShedderIntegrationTests/V3LoadShedderIntegrationTests.swift',
+        './Tests/v4LoadShedderIntegration/v4LoadShedderIntegrationTests/V4LoadShedderIntegrationTests.swift'
       ]
     )
     replace_text_in_files(
@@ -1108,14 +1116,18 @@ platform :ios do
     )
   end
 
-  desc "Run LoadShedder tests"
-  lane :v3_loadshedder_integration_tests do |options|
+  desc "Run LoadShedder tests in old major"
+  lane :loadshedder_integration_tests_in_old_major do |options|
     replace_api_key_integration_tests
+    major = options[:major] || UI.user_error!("Please provide :major (Integer, e.g., 3 or 4)")
+    major = major.to_i
+    UI.user_error!("Unsupported major version: #{major}. Supported: 3 or 4") unless [3, 4].include?(major)
     success = false
     begin
       scan(
-        project: "./Tests/v3LoadShedderIntegration/v3LoadShedderIntegration.xcodeproj",
-        scheme: "v3LoadShedderIntegration",
+        project: "./Tests/v#{major}LoadShedderIntegration/v#{major}LoadShedderIntegration.xcodeproj",
+        device: ENV['SCAN_DEVICE'] || "iPhone 16 (18.5)",
+        scheme: "v#{major}LoadShedderIntegration",
         ensure_devices_found: true,
         derived_data_path: "scan_derived_data",
         output_types: 'junit',
@@ -1128,7 +1140,7 @@ platform :ios do
     rescue => exception
       raise exception
     ensure
-      send_slack_load_shedder_integration_test_v3(success: success)
+      send_slack_loadshedder_integration_test_in_major(success: success, major: major)
     end
   end
 
@@ -1140,8 +1152,7 @@ platform :ios do
       './Tests/InstallationTests/SPMCustomEntitlementComputationInstallation/SPMInstallation.xcodeproj/project.pbxproj',
       './Tests/InstallationTests/ReceiptParserInstallation/ReceiptParserInstallation.xcodeproj/project.pbxproj',
       './Examples/MagicWeather/MagicWeather.xcodeproj/project.pbxproj',
-      './Examples/MagicWeatherSwiftUI/Magic Weather SwiftUI.xcodeproj/project.pbxproj',
-      './Examples/SampleCat/SampleCat.xcodeproj/project.pbxproj'
+      './Examples/MagicWeatherSwiftUI/Magic Weather SwiftUI.xcodeproj/project.pbxproj'
     ]
 
     old_kind_line = "kind = branch;"
@@ -1166,26 +1177,26 @@ platform :ios do
 
   private_lane :suppress_deprecation_warnings_in_headers do |options|
     xcframework_path = options[:xcframework_path]
-    
+
     # Find all RevenueCat-Swift.h files in the XCFramework
     swift_headers = Dir.glob("#{xcframework_path}/**/RevenueCat-Swift.h")
-    
+
     swift_headers.each do |header_path|
       UI.message("Processing header: #{header_path}")
-      
+
       content = File.read(header_path)
-      
+
       # Check if pragma directives are already present
       unless content.include?('#pragma clang diagnostic ignored "-Wdeprecated-declarations"')
         # Add pragma directives to suppress StoreKit 1 deprecation warnings
         pragma_insertion_point = content.index('#pragma clang diagnostic ignored "-Wgcc-compat"')
-        
+
         if pragma_insertion_point
           insertion_index = content.index("\n", pragma_insertion_point) + 1
           pragma_directives = <<~PRAGMA
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
           PRAGMA
-          
+
           content.insert(insertion_index, pragma_directives)
           File.write(header_path, content)
           UI.success("Added deprecation warning suppression to #{File.basename(header_path)}")
@@ -1681,13 +1692,15 @@ end
 
 # Slack
 
-lane :send_slack_load_shedder_integration_test_v3 do |options|
+lane :send_slack_loadshedder_integration_test_in_major do |options|
   success = options[:success] || false
+  major = options[:major] || UI.user_error!("Please provide :major (Integer, e.g., 3 or 4)")
+  major = major.to_i
   message =
       if success
-          "iOS load shedder integration tests V3 finished successfully"
+          "iOS load shedder integration tests v#{major} finished successfully"
       else
-          "iOS load shedder integration tests V3 failed"
+          "iOS load shedder integration tests v#{major} failed"
       end
   slack(
     message: message,

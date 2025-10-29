@@ -14,6 +14,7 @@
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
+// swiftlint:disable file_length
 #if os(iOS)
 
 @available(iOS 15.0, *)
@@ -187,11 +188,13 @@ struct RelevantPurchasesListView: View {
                     Spacer().frame(height: 16)
                 }
 
-                AccountDetailsSection(
-                    originalPurchaseDate: customerInfoViewModel.originalPurchaseDate,
-                    originalAppUserId: customerInfoViewModel.originalAppUserId,
-                    localization: localization
-                )
+                if customerInfoViewModel.shouldShowUserDetailsSection {
+                    AccountDetailsSection(
+                        originalPurchaseDate: customerInfoViewModel.originalPurchaseDate,
+                        originalAppUserId: customerInfoViewModel.originalAppUserId,
+                        localization: localization
+                    )
+                }
             }
             .padding(.top, 16)
         }
@@ -219,6 +222,11 @@ struct RelevantPurchasesListView: View {
             } label: {
                 CompatibilityLabeledContent(localization[.seeAllPurchases]) {
                     Image(systemName: "chevron.forward")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 12, height: 12)
+                        .foregroundStyle(.secondary)
+                        .font(Font.system(size: 12, weight: .bold))
                 }
                 .padding()
                 #if compiler(>=5.9)
@@ -228,12 +236,18 @@ struct RelevantPurchasesListView: View {
                             in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
                 #endif
             }
+            .tint(appearance.tintColor(colorScheme: colorScheme))
         } else {
             Button {
                 viewModel.showAllPurchases = true
             } label: {
                 CompatibilityLabeledContent(localization[.seeAllPurchases]) {
                     Image(systemName: "chevron.forward")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 12, height: 12)
+                        .foregroundStyle(.secondary)
+                        .font(Font.system(size: 12, weight: .bold))
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 12)
@@ -244,6 +258,7 @@ struct RelevantPurchasesListView: View {
                             in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
                 #endif
             }
+            .tint(appearance.tintColor(colorScheme: colorScheme))
         }
     }
 

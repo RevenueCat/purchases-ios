@@ -60,6 +60,16 @@ struct ImageComponentView: View {
                 )
 
                 ZStack {
+                    // IMPORTANT: Please keep this... needed to force size
+                    //
+                    // We need the max width of the parent view an image of a fill or
+                    // fixed width doesn't push passed the bounds.
+                    //
+                    // Once we have the size once, we can remove the Color.clear
+                    if self.size == nil {
+                        Color.clear
+                    }
+
                     RemoteImage(
                         url: style.url,
                         lowResUrl: style.lowResUrl,
@@ -91,8 +101,10 @@ struct ImageComponentView: View {
                     .padding(style.padding.extend(by: style.border?.width ?? 0))
                     .shape(border: style.border,
                            shape: style.shape)
-                    .shadow(shadow: style.shadow,
-                            shape: style.shape?.toInsettableShape(size: size))
+                    .applyIfLet(style.shadow, apply: { view, shadow in
+                        // We need to use the normal shadow modifier and not our custom one for png images
+                        view.shadow(color: shadow.color, radius: shadow.radius, x: shadow.x, y: shadow.y)
+                    })
                     .padding(style.margin)
                 }
                 .onSizeChange({ size = $0 })

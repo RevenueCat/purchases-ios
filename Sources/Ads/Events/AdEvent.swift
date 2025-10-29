@@ -15,9 +15,9 @@
 
 import Foundation
 
-// MARK: - Public Types
-
 #if ENABLE_AD_EVENTS_TRACKING
+
+// MARK: - Public Types
 
 // MARK: - Internal Protocol
 

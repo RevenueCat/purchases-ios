@@ -33,4 +33,6 @@ func checkSubscriptionInfoAPI() {
     let isActive: Bool = subscription.isActive
     let willRenew: Bool = subscription.willRenew
     let displayName: String? = subscription.displayName
+    let managementURL: URL? = subscription.managementURL
+    let price: ProductPaidPrice? = subscription.price
 }

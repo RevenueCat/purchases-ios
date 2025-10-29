@@ -1,3 +1,74 @@
+## 5.45.0
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Naive approach to handle the onPurchaseCompleted event for an offer code (#5655) via Jacob Rakidzich (@JZDesign)
+* Fix: Promo/Intro Offer Text not always displaying (#5660) via Jacob Rakidzich (@JZDesign)
+* Support Video as the hero component (#5684) via Jacob Rakidzich (@JZDesign)
+* Fix `FileHandler`'s potential crash on writing (#5675) via Antonio Pallares (@ajpallares)
+### Paywallv2
+#### ✨ New Features
+* MON-736 Gradient Borders (#5651) via Jacob Rakidzich (@JZDesign)
+
+### 🔄 Other Changes
+* Add Loadshedder integration tests for v4 (#5689) via Antonio Pallares (@ajpallares)
+
+## 5.44.1
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Fix for paywall image sometimes not showing (in carousel) (#5679) via Josh Holtz (@joshdholtz)
+* Fix media not loading (#5678) via Jacob Rakidzich (@JZDesign)
+
+### 🔄 Other Changes
+* Bump fastlane-plugin-revenuecat_internal from `25c7fb8` to `525d48c` (#5680) via Antonio Pallares (@ajpallares)
+* Update SampleCat SDK dependency version on SDK releases (#5677) via Antonio Pallares (@ajpallares)
+* Bump fastlane-plugin-revenuecat_internal from `3f7fffc` to `25c7fb8` (#5645) via dependabot[bot] (@dependabot[bot])
+* Update Xcode 16.0 to 16.4 in tests because of CircleCI's deprecation later this year (#5668) via Rick (@rickvdl)
+* Revert "Migrate BackendIntegrationTests to Tuist  (#5657)" (#5674) via Facundo Menzella (@facumenzella)
+* Migrate BackendIntegrationTests to Tuist  (#5657) via Facundo Menzella (@facumenzella)
+
+## 5.44.0
+## RevenueCat SDK
+### ✨ New Features
+* Finalize video component to include a checksum, dark mode support, and optimize memory usage for large file downloads  (#5631) via Jacob Rakidzich (@JZDesign)
+### 🐞 Bugfixes
+* Winback Offer Eligibility Calculation Improvements (#5646) via Will Taylor (@fire-at-will)
+
+### 🔄 Other Changes
+* Add DEVELOPMENT file (#5653) via Facundo Menzella (@facumenzella)
+* [Experimental] Add Locale to Storefront (#5658) via Toni Rico (@tonidero)
+* Remove Paywall Image Display Log (#5659) via Will Taylor (@fire-at-will)
+* Migrate APITests to Tuist workspace (#5648) via Facundo Menzella (@facumenzella)
+
+## 5.43.0
+## RevenueCat SDK
+### ✨ New Features
+* Add support for the Test Store (#5632) via Antonio Pallares (@ajpallares)
+
+### 🔄 Other Changes
+* [SDK-4115] Improve log for simulated purchase failure in Test Store (#5634) via Antonio Pallares (@ajpallares)
+* Disable offline entitlements in Test Store (#5642) via Antonio Pallares (@ajpallares)
+
+## 5.42.0
+## RevenueCat SDK
+### 🐞 Bugfixes
+* [DX-520] Do not log unknown errors from health report endpoint (#5636) via Pol Piella Abadia (@polpielladev)
+* MON-1374: Handle Promotional offer text in paywalls (#5628) via Jacob Rakidzich (@JZDesign)
+
+## RevenueCatUI SDK
+### Customer Center
+#### ✨ New Features
+* Add flag to show / hide user section in CustomerCenter (#5609) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Remove unnecessary API test (#5638) via Antonio Pallares (@ajpallares)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5637) via RevenueCat Git Bot (@RCGitBot)
+* Bump fastlane-plugin-revenuecat_internal from `a8770fd` to `3f7fffc` (#5635) via dependabot[bot] (@dependabot[bot])
+* Add formatted price to ProductPaidPrice (#5623) via Facundo Menzella (@facumenzella)
+* Make managementURL public in SubscriptionInfo (#5629) via Facundo Menzella (@facumenzella)
+* Bump fastlane-plugin-revenuecat_internal from `db640e8` to `a8770fd` (#5633) via dependabot[bot] (@dependabot[bot])
+* Don't warn empty offering for Customer Entitlement Computation in DEBUG (#5613) via Josh Holtz (@joshdholtz)
+* Bump fastlane-plugin-revenuecat_internal from `e555afb` to `db640e8` (#5630) via dependabot[bot] (@dependabot[bot])
+
 ## 5.41.0
 ## RevenueCat SDK
 ### ✨ New Features
@@ -1728,6 +1799,11 @@ or if using the modifier:
 The RevenueCat iOS SDK v5 is here!! Version 5.0 of the RevenueCat SDK enables full StoreKit 2 flow on the SDK and the RevenueCat backend by default.
 
 See our [RevenueCat v5 Migration Guide](Sources/DocCDocumentation/DocCDocumentation.docc/V5_API_Migration_guide.md) for all the details.
+
+## 4.44.0
+## RevenueCat SDK
+### ✨ New Features
+* [Experimental] Add Locale to Storefront (#5658) (#5683) via JayShortway (@JayShortway)
 
 ## 4.43.6
 ### 🔄 Other Changes

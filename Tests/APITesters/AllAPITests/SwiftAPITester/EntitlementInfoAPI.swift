@@ -53,7 +53,8 @@ func checkEntitlementInfoEnums() {
          .rcBilling,
          .unknownStore,
          .external,
-         .paddle:
+         .paddle,
+         .testStore:
         print(store!)
     @unknown default:
         fatalError()

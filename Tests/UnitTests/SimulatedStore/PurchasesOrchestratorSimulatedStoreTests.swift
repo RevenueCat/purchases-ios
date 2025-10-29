@@ -356,6 +356,34 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
         XCTAssertEqual(transactionData.storefront?.countryCode, Self.mockStorefront.countryCode)
     }
 
+    func testSuccessfulPurchaseOfTestStoreWithFailedPostReceiptReturnsFailure() async throws {
+        let mockedBackendError = BackendError.networkError(NetworkError.serverDown())
+        self.backend.stubbedPostReceiptResult = .failure(mockedBackendError)
+        let mockTransaction = Self.createMockSimulatedStoreTransaction()
+        self.simulatedStorePurchaseHandler.stubbedPurchaseResult.value = .success(StoreTransaction(mockTransaction))
+
+        let orchestrator = self.createOrchestrator()
+        let testProduct = self.createTestStoreProduct()
+
+        let (transaction, customerInfo, error, userCancelled) = await withCheckedContinuation { continuation in
+            orchestrator.purchase(
+                product: testProduct,
+                package: nil,
+                trackDiagnostics: false) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        XCTAssertNil(transaction)
+        XCTAssertNil(customerInfo)
+        XCTAssertFalse(userCancelled)
+
+        let expectedError = mockedBackendError.asPublicError
+
+        XCTAssertEqual(error?.domain, expectedError.domain)
+        XCTAssertEqual(error?.code, expectedError.code)
+    }
+
     func testCancelledPurchaseOfTestStoreProductDoesNotPostReceipt() async throws {
         self.customerInfoManager.stubbedCustomerInfoResult = .success(Self.mockCustomerInfo)
         self.simulatedStorePurchaseHandler.stubbedPurchaseResult.value = .cancel

@@ -30,28 +30,62 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         self.setupPurchases()
     }
 
-    func testTrackAdDisplayedDoesNotCrash() async throws {
-        await self.purchases.adTracker.trackAdDisplayed(.init(
+    func testTrackAdDisplayedStoresEvent() async throws {
+        let displayedData = AdDisplayed(
             networkName: "AdMob",
             mediatorName: .appLovin,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             adInstanceId: "instance-123"
-        ))
+        )
+
+        await self.purchases.adTracker.trackAdDisplayed(displayedData)
+
+        let trackedEvents = try await self.mockPaywallEventsManager.trackedEvents
+
+        expect(trackedEvents).to(haveCount(1))
+
+        guard case let .displayed(_, eventData) = trackedEvents.first as? AdEvent else {
+            fail("Expected AdEvent.displayed but got \(String(describing: trackedEvents.first))")
+            return
+        }
+
+        expect(eventData.networkName) == "AdMob"
+        expect(eventData.mediatorName) == .appLovin
+        expect(eventData.placement) == "home_screen"
+        expect(eventData.adUnitId) == "ca-app-pub-123"
+        expect(eventData.adInstanceId) == "instance-123"
     }
 
-    func testTrackAdOpenedDoesNotCrash() async throws {
-        await self.purchases.adTracker.trackAdOpened(.init(
+    func testTrackAdOpenedStoresEvent() async throws {
+        let openedData = AdOpened(
             networkName: "AdMob",
             mediatorName: .appLovin,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             adInstanceId: "instance-123"
-        ))
+        )
+
+        await self.purchases.adTracker.trackAdOpened(openedData)
+
+        let trackedEvents = try await self.mockPaywallEventsManager.trackedEvents
+
+        expect(trackedEvents).to(haveCount(1))
+
+        guard case let .opened(_, eventData) = trackedEvents.first as? AdEvent else {
+            fail("Expected AdEvent.opened but got \(String(describing: trackedEvents.first))")
+            return
+        }
+
+        expect(eventData.networkName) == "AdMob"
+        expect(eventData.mediatorName) == .appLovin
+        expect(eventData.placement) == "home_screen"
+        expect(eventData.adUnitId) == "ca-app-pub-123"
+        expect(eventData.adInstanceId) == "instance-123"
     }
 
-    func testTrackAdRevenueDoesNotCrash() async throws {
-        await self.purchases.adTracker.trackAdRevenue(.init(
+    func testTrackAdRevenueStoresEvent() async throws {
+        let revenueData = AdRevenue(
             networkName: "AdMob",
             mediatorName: .appLovin,
             placement: "home_screen",
@@ -60,7 +94,27 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             revenueMicros: 1500000,
             currency: "USD",
             precision: .exact
-        ))
+        )
+
+        await self.purchases.adTracker.trackAdRevenue(revenueData)
+
+        let trackedEvents = try await self.mockPaywallEventsManager.trackedEvents
+
+        expect(trackedEvents).to(haveCount(1))
+
+        guard case let .revenue(_, eventData) = trackedEvents.first as? AdEvent else {
+            fail("Expected AdEvent.revenue but got \(String(describing: trackedEvents.first))")
+            return
+        }
+
+        expect(eventData.networkName) == "AdMob"
+        expect(eventData.mediatorName) == .appLovin
+        expect(eventData.placement) == "home_screen"
+        expect(eventData.adUnitId) == "ca-app-pub-123"
+        expect(eventData.adInstanceId) == "instance-123"
+        expect(eventData.revenueMicros) == 1500000
+        expect(eventData.currency) == "USD"
+        expect(eventData.precision) == .exact
     }
 
 }

@@ -142,7 +142,7 @@ import Foundation
             case storeAppStore = "app_store"
             case storeMacAppStore = "mac_app_store"
             case storePlayStore = "google_play_store"
-            case simulatedStore = "simulated_store"
+            case testStore = "test_store"
             case storeStripe = "stripe"
             case storePromotional = "promotional"
             case storeAmazon = "amazon_store"
@@ -412,7 +412,7 @@ import Foundation
                     return "Subscriptions"
                 case .purchasesSectionTitle:
                     return "Purchases"
-                case .simulatedStore:
+                case .testStore:
                     return "Test Store"
                 }
             }
@@ -683,6 +683,7 @@ import Foundation
         @_spi(Internal) public let email: String
         @_spi(Internal) public let shouldWarnCustomerToUpdate: Bool
         @_spi(Internal) public let displayPurchaseHistoryLink: Bool
+        @_spi(Internal) public let displayUserDetailsSection: Bool
         @_spi(Internal) public let displayVirtualCurrencies: Bool
         @_spi(Internal) public let shouldWarnCustomersAboutMultipleSubscriptions: Bool
 
@@ -690,12 +691,14 @@ import Foundation
             email: String,
             shouldWarnCustomerToUpdate: Bool,
             displayPurchaseHistoryLink: Bool,
+            displayUserDetailsSection: Bool,
             displayVirtualCurrencies: Bool,
             shouldWarnCustomersAboutMultipleSubscriptions: Bool
         ) {
             self.email = email
             self.shouldWarnCustomerToUpdate = shouldWarnCustomerToUpdate
             self.displayPurchaseHistoryLink = displayPurchaseHistoryLink
+            self.displayUserDetailsSection = displayUserDetailsSection
             self.displayVirtualCurrencies = displayVirtualCurrencies
             self.shouldWarnCustomersAboutMultipleSubscriptions = shouldWarnCustomersAboutMultipleSubscriptions
         }
@@ -926,6 +929,7 @@ extension CustomerCenterConfigData.Support {
         self.email = response.email
         self.shouldWarnCustomerToUpdate = response.shouldWarnCustomerToUpdate ?? true
         self.displayPurchaseHistoryLink = response.displayPurchaseHistoryLink ?? false
+        self.displayUserDetailsSection = response.displayUserDetailsSection ?? true
         self.displayVirtualCurrencies = response.displayVirtualCurrencies ?? false
         self.shouldWarnCustomersAboutMultipleSubscriptions = response.shouldWarnCustomersAboutMultipleSubscriptions
             ?? false

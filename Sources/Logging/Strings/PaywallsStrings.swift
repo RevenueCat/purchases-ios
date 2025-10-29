@@ -20,7 +20,7 @@ enum PaywallsStrings {
     case warming_up_eligibility_cache(products: Set<String>)
     case warming_up_images(imageURLs: Set<URL>)
     case warming_up_fonts(fontsURLS: Set<URL>)
-    case warming_up_videos(videoURLs: Set<URL>)
+    case warming_up_videos(videoURLs: Set<URLWithValidation>)
     case error_prefetching_image(URL, Error)
     case font_download_already_in_progress(name: String, fontURL: URL)
     case font_downloaded_sucessfully(name: String, fontURL: URL)
