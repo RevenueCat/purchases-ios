@@ -480,6 +480,12 @@ commands:
       - revenuecat/set-ssh-key-for-git:
           fingerprint: "SHA256:UYi3gsOInLRPZy6MPho7Yr/YK1VmjDvPGo7sJvIcnPM"
 
+  setup_xcconfig:
+    steps:
+      - run:
+          name: "Create XCConfig file for SDK to use"
+          command: <<include(ci_scripts/prepare-ci-xcconfig.sh)>>
+
 jobs:
   validate-package-swift:
     parameters:
@@ -1140,16 +1146,17 @@ jobs:
       name: macos-executor
       xcode_version: "26.0.1"
     steps:
-      - checkout
-      - install-dependencies:
-          install_swiftlint: false
-      # todo rick
-      - revenuecat/install-maestro
-      - tuist-generate-workspace
       - macos/preboot-simulator:
           version: "18.6"
           platform: "iOS"
           device: "iPhone 16 Pro"
+      - checkout
+      - install-dependencies:
+          install_swiftlint: false
+      # todo rick
+      - setup_xcconfig
+      - revenuecat/install-maestro
+      - tuist-generate-workspace
       - run:
           name: Run e2e tests
           command: bundle exec fastlane run_maestro_e2e_tests
