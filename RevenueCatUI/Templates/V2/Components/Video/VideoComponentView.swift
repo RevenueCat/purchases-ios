@@ -89,7 +89,6 @@ struct VideoComponentView: View {
                         }
                     }
                     .onAppear {
-                        self.imageSource = viewModel.imageSource
                         let fileRepository = FileRepository.shared
 
                         let resumeDownloadOfFullResolutionVideo: () -> Void = {
@@ -108,6 +107,7 @@ struct VideoComponentView: View {
                                     guard url != cachedURL else { return }
                                     await MainActor.run {
                                         self.stagedURL = url
+                                        self.imageSource = nil
                                     }
                                 } catch {
                                     await MainActor.run {
@@ -122,7 +122,9 @@ struct VideoComponentView: View {
                             withChecksum: viewData.checksum
                         ) {
                             self.cachedURL = cachedURL
+                            self.imageSource = nil
                         } else if let lowResUrl = viewData.lowResUrl, lowResUrl != viewData.url {
+                            self.imageSource = viewModel.imageSource
                             let lowResCachedURL = fileRepository.getCachedFileURL(
                                 for: lowResUrl,
                                 withChecksum: viewData.lowResChecksum
@@ -130,6 +132,7 @@ struct VideoComponentView: View {
                             self.cachedURL = lowResCachedURL ?? lowResUrl
                             resumeDownloadOfFullResolutionVideo()
                         } else {
+                            self.imageSource = viewModel.imageSource
                             resumeDownloadOfFullResolutionVideo()
                         }
                     }
