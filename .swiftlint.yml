@@ -34,10 +34,11 @@ custom_rules:
     excluded:
       - Tests/ReceiptParserTests
       - Tests/v3LoadShedderIntegration
+      - Tests/v4LoadShedderIntegration
     regex: "\\: XCTestCase \\{"
     name: "XCTestCase Superclass"
     message: "Test classes must inherit `TestCase` instead."
-    
+
   return_switch_forbidden:
     included: ".*\\.swift"
     name: "Forbidden 'return switch' usage"
@@ -58,8 +59,8 @@ custom_rules:
     severity: error
 
 identifier_name:
-  max_length: 
-    warning: 60 
+  max_length:
+    warning: 60
     error: 80
 
 large_tuple:

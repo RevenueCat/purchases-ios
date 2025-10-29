@@ -120,7 +120,7 @@ struct FallbackComponentPreview_Previews: PreviewProvider {
         return try! factory.toViewModel(
             component: component,
             packageValidator: packageValidator,
-            firstImageInfo: nil,
+            firstItemIgnoresSafeAreaInfo: nil,
             offering: offering,
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())

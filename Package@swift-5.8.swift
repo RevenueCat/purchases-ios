@@ -1,8 +1,8 @@
 // swift-tools-version:5.8
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
-import PackageDescription
 import class Foundation.ProcessInfo
+import PackageDescription
 
 // Only add DocC Plugin when building docs, so that clients of this library won't
 // unnecessarily also get the DocC Plugin

@@ -11,6 +11,11 @@
 //
 //  Created by Nacho Soto on 5/10/22.
 
+#if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+@testable import RevenueCat_CustomEntitlementComputation
+#else
+@testable import RevenueCat
+#endif
 import SnapshotTesting
 import XCTest
 
@@ -70,6 +75,21 @@ private enum SnapshotTests {
         if ProcessInfo.processInfo.environment["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "1" {
             isRecording = true
         }
+    }
+
+}
+
+extension ForceServerErrorStrategy {
+
+    /// Forces server error in all requests, including requests made to the fallback API hosts.
+    static let allServersDown: ForceServerErrorStrategy = .init { _ in
+        return true // All requests fail
+    }
+
+    /// Forces server error in all requests except those made to the fallback API hosts.
+    static let failExceptFallbackUrls: ForceServerErrorStrategy = .init { (request: HTTPClient.Request) in
+        let isRequestToFallbackUrl = request.fallbackUrlIndex != nil
+        return !isRequestToFallbackUrl
     }
 
 }
