@@ -831,7 +831,7 @@ platform :ios do
       storekit_config_path: storekit_config_path
     )
 
-    sh("maestro", "test", "--format", "junit", "--output", "maestro-report.xml", "#{base_path}/Examples/rc-maestro/maestro/paywalls_v2/flow.yaml")
+    sh("maestro", "test", "--format", "junit", "--output", "maestro-report.xml", "#{base_path}/Examples/rc-maestro/maestro/e2e_tests/production")
 
   end
 
