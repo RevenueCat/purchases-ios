@@ -1645,13 +1645,15 @@ SWIFT_CLASS("_TtC10RevenueCat28PostAttributionDataOperation")
 @interface PostAttributionDataOperation : NetworkOperation
 @end
 
-SWIFT_CLASS("_TtC10RevenueCat28PostOfferForSigningOperation")
-@interface PostOfferForSigningOperation : NetworkOperation
+/// A <code>NetworkOperation</code> for posting events to various endpoints.
+/// This generic operation can post events to different endpoints by accepting
+/// a path parameter, eliminating code duplication between specific event types.
+SWIFT_CLASS("_TtC10RevenueCat19PostEventsOperation")
+@interface PostEventsOperation : NetworkOperation
 @end
 
-/// A <code>NetworkOperation</code> for posting <code>PaywallEvent</code>s.
-SWIFT_CLASS("_TtC10RevenueCat26PostPaywallEventsOperation")
-@interface PostPaywallEventsOperation : NetworkOperation
+SWIFT_CLASS("_TtC10RevenueCat28PostOfferForSigningOperation")
+@interface PostOfferForSigningOperation : NetworkOperation
 @end
 
 SWIFT_CLASS("_TtC10RevenueCat24PostReceiptDataOperation")
