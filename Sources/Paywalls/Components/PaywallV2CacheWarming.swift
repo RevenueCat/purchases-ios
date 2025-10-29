@@ -317,10 +317,10 @@ private extension PaywallComponent.VideoComponent {
 private extension PaywallComponent.Background {
     var allImageURLS: [URL] {
         switch self {
-        case .image(let imgaeURLS, _, _):
-            return imgaeURLS.imageUrls
-        case .video(_, let imgaeURLS, _, _, _, _):
-            return imgaeURLS.imageUrls
+        case .image(let imageURLS, _, _):
+            return imageURLS.imageUrls
+        case .video(_, let imageURLS, _, _, _, _):
+            return imageURLS.imageUrls
         default:
             return []
         }
