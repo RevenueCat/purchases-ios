@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PaywallEventsManagerTests.swift
+//  EventsManagerTests.swift
 //
 //  Created by Nacho Soto on 9/6/23.
 
@@ -19,12 +19,12 @@ import Nimble
 import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-class PaywallEventsManagerTests: TestCase {
+class EventsManagerTests: TestCase {
 
     private var api: MockInternalAPI!
     private var userProvider: MockCurrentUserProvider!
     private var store: MockPaywallEventStore!
-    private var manager: PaywallEventsManager!
+    private var manager: EventsManager!
     private var appSessionID = UUID()
 
     override func setUpWithError() throws {
@@ -245,14 +245,14 @@ class PaywallEventsManagerTests: TestCase {
 
         // Flush with batch size 2, should only send 10 batches (20 events)
         let result = try await self.manager.flushEvents(batchSize: eventsPerBatch)
-        let expectedEventsFlushed = eventsPerBatch * PaywallEventsManager.maxBatchesPerFlush
+        let expectedEventsFlushed = eventsPerBatch * EventsManager.maxBatchesPerFlush
         expect(result) == expectedEventsFlushed
 
         // Verify exactly 10 batches were sent
-        expect(self.api.invokedPostPaywallEventsParameters).to(haveCount(PaywallEventsManager.maxBatchesPerFlush))
+        expect(self.api.invokedPostPaywallEventsParameters).to(haveCount(EventsManager.maxBatchesPerFlush))
 
         // Verify the first 10 batches match expected events
-        for batchIndex in 0..<PaywallEventsManager.maxBatchesPerFlush {
+        for batchIndex in 0..<EventsManager.maxBatchesPerFlush {
             let batchStartIndex = batchIndex * eventsPerBatch
             let batchEndIndex = batchStartIndex + eventsPerBatch
             let expectedBatch = try storedEvents[batchStartIndex..<batchEndIndex].map {
@@ -325,7 +325,7 @@ class PaywallEventsManagerTests: TestCase {
 // MARK: - Private
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-private extension PaywallEventsManagerTests {
+private extension EventsManagerTests {
 
     func storeRandomEvent() async -> PaywallEvent {
         let event: PaywallEvent = .impression(.random(), .random())

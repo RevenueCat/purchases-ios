@@ -47,9 +47,9 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
                                                     subsequentNows: eventTimestamp2)
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    var mockPaywallEventsManager: MockPaywallEventsManager {
+    var mockEventsManager: MockEventsManager {
         get throws {
-            return try XCTUnwrap(self.eventsManager as? MockPaywallEventsManager)
+            return try XCTUnwrap(self.eventsManager as? MockEventsManager)
         }
     }
 
@@ -98,7 +98,7 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
         )
         self.transactionsManager = MockTransactionsManager(receiptParser: self.receiptParser)
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-            self.eventsManager = MockPaywallEventsManager()
+            self.eventsManager = MockEventsManager()
             self.diagnosticsTracker = MockDiagnosticsTracker()
         } else {
             self.eventsManager = nil

@@ -474,7 +474,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let eventsManager: EventsManagerType?
         do {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-                eventsManager = PaywallEventsManager(
+                eventsManager = EventsManager(
                     internalAPI: backend.internalAPI,
                     userProvider: identityManager,
                     store: try PaywallEventStore.createDefault(applicationSupportDirectory: applicationSupportDirectory)

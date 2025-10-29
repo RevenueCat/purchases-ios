@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PaywallEventsManager.swift
+//  EventsManager.swift
 //
 //  Created by Nacho Soto on 9/6/23.
 
@@ -26,7 +26,7 @@ protocol EventsManagerType {
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-actor PaywallEventsManager: EventsManagerType {
+actor EventsManager: EventsManagerType {
 
     private let internalAPI: InternalAPI
     private let userProvider: CurrentUserProvider

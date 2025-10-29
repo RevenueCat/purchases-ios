@@ -55,9 +55,9 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
                                             subsequentNows: eventTimestamp2)
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    var mockPaywallEventsManager: MockPaywallEventsManager {
+    var mockEventsManager: MockEventsManager {
         get throws {
-            return try XCTUnwrap(self.eventsManager as? MockPaywallEventsManager)
+            return try XCTUnwrap(self.eventsManager as? MockEventsManager)
         }
     }
 
@@ -84,7 +84,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.backend = MockBackend()
         self.offerings = try XCTUnwrap(self.backend.offerings as? MockOfferingsAPI)
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-            self.eventsManager = MockPaywallEventsManager()
+            self.eventsManager = MockEventsManager()
             self.mockDiagnosticsTracker = MockDiagnosticsTracker()
         } else {
             self.eventsManager = nil

@@ -45,7 +45,7 @@ class BasePurchasesTests: TestCase {
                                            userDefaults: self.userDefaults)
         self.paywallCache = .init()
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-            self.eventsManager = MockPaywallEventsManager()
+            self.eventsManager = MockEventsManager()
         } else {
             self.eventsManager = nil
         }
@@ -232,9 +232,9 @@ class BasePurchasesTests: TestCase {
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    var mockPaywallEventsManager: MockPaywallEventsManager {
+    var mockEventsManager: MockEventsManager {
         get throws {
-            return try XCTUnwrap(self.eventsManager as? MockPaywallEventsManager)
+            return try XCTUnwrap(self.eventsManager as? MockEventsManager)
         }
     }
 
