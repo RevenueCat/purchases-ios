@@ -1211,6 +1211,8 @@ jobs:
           no_output_timeout: 15m
       - store_test_results:
           path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output
 
   release-checks:
     executor:
