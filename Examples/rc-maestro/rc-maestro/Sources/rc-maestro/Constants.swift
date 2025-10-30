@@ -34,4 +34,22 @@ enum Constants {
         }
         return "\(scheme)//\(host)"
     }()
+    
+    /*
+     The force server error strategy to configure Purchases with
+     To be used in (e2e) tests in order to simulate server failures
+     REVENUECAT_FORCE_SERVER_ERROR_STRATEGY = primary_domain_down
+     */
+    static var forceServerErrorStrategy: Constants.ForceServerErrorStrategy {
+        guard let value = Bundle.main.object(forInfoDictionaryKey: "REVENUECAT_FORCE_SERVER_ERROR_STRATEGY") as? String else {
+            return .never
+        }
+        
+        return ForceServerErrorStrategy(rawValue: value) ?? .never
+    }
+    
+    enum ForceServerErrorStrategy: String {
+        case primaryDomainDown = "primary_domain_down"
+        case never
+    }
 }
