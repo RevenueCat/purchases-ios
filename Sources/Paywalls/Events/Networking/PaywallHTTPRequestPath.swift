@@ -13,7 +13,7 @@
 
 import Foundation
 
-extension HTTPRequest.PaywallPath: HTTPRequestPath {
+extension HTTPRequest.FeatureEventsPath: HTTPRequestPath {
 
     // swiftlint:disable:next force_unwrapping
     static let serverHostURL = URL(string: "https://api-paywalls.revenuecat.com")!
