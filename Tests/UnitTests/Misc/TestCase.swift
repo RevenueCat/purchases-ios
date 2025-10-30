@@ -88,7 +88,7 @@ extension ForceServerErrorStrategy {
 
     /// Forces server error in all requests except those made to the fallback API hosts.
     static let failExceptFallbackUrls: ForceServerErrorStrategy = .init { (request: HTTPClient.Request) in
-        let isRequestToFallbackUrl = request.fallbackHostIndex != nil
+        let isRequestToFallbackUrl = request.fallbackUrlIndex != nil
         return !isRequestToFallbackUrl
     }
 

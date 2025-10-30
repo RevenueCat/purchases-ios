@@ -7,26 +7,23 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PostEventsOperation.swift
+//  PostFeatureEventsOperation.swift
 //
 //  Created by RevenueCat on 1/20/25.
 
 import Foundation
 
-/// A `NetworkOperation` for posting events to various endpoints.
-///
-/// This generic operation can post events to different endpoints by accepting
-/// a path parameter, eliminating code duplication between specific event types.
-final class PostEventsOperation: NetworkOperation {
+/// A `NetworkOperation` for posting feature events to the feature events endpoint.
+final class PostFeatureEventsOperation: NetworkOperation {
 
     private let configuration: Configuration
-    private let request: EventsRequest
+    private let request: FeatureEventsRequest
     private let path: HTTPRequestPath
     private let responseHandler: CustomerAPI.SimpleResponseHandler?
 
     init(
         configuration: Configuration,
-        request: EventsRequest,
+        request: FeatureEventsRequest,
         path: HTTPRequestPath,
         responseHandler: CustomerAPI.SimpleResponseHandler?
     ) {
@@ -53,4 +50,4 @@ final class PostEventsOperation: NetworkOperation {
 }
 
 // Restating inherited @unchecked Sendable from Foundation's Operation
-extension PostEventsOperation: @unchecked Sendable {}
+extension PostFeatureEventsOperation: @unchecked Sendable {}

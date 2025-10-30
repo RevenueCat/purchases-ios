@@ -7,16 +7,21 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PaywallEventsManager.swift
+//  EventsManager.swift
 //
 //  Created by Nacho Soto on 9/6/23.
 
 import Foundation
 
-protocol PaywallEventsManagerType {
+protocol EventsManagerType {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func track(featureEvent: FeatureEvent) async
+
+    #if ENABLE_AD_EVENTS_TRACKING
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func track(adEvent: AdEvent) async
+    #endif
 
     /// - Throws: if posting events fails
     /// - Returns: the number of events posted
@@ -26,11 +31,11 @@ protocol PaywallEventsManagerType {
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-actor PaywallEventsManager: PaywallEventsManagerType {
+actor EventsManager: EventsManagerType {
 
     private let internalAPI: InternalAPI
     private let userProvider: CurrentUserProvider
-    private let store: PaywallEventStoreType
+    private let store: FeatureEventStoreType
     private var appSessionID: UUID
 
     private var flushInProgress = false
@@ -38,7 +43,7 @@ actor PaywallEventsManager: PaywallEventsManagerType {
     init(
         internalAPI: InternalAPI,
         userProvider: CurrentUserProvider,
-        store: PaywallEventStoreType,
+        store: FeatureEventStoreType,
         appSessionID: UUID = SystemInfo.appSessionID
     ) {
         self.internalAPI = internalAPI
@@ -48,16 +53,25 @@ actor PaywallEventsManager: PaywallEventsManagerType {
     }
 
     func track(featureEvent: FeatureEvent) async {
-        guard let event: StoredEvent = .init(event: featureEvent,
-                                             userID: self.userProvider.currentAppUserID,
-                                             feature: featureEvent.feature,
-                                             appSessionID: self.appSessionID,
-                                             eventDiscriminator: featureEvent.eventDiscriminator) else {
+        guard let event: StoredFeatureEvent = .init(event: featureEvent,
+                                                    userID: self.userProvider.currentAppUserID,
+                                                    feature: featureEvent.feature,
+                                                    appSessionID: self.appSessionID,
+                                                    eventDiscriminator: featureEvent.eventDiscriminator) else {
             Logger.error(Strings.paywalls.event_cannot_serialize)
             return
         }
         await self.store.store(event)
     }
+
+    #if ENABLE_AD_EVENTS_TRACKING
+    func track(adEvent: AdEvent) async {
+        // Ad events are not yet implemented.
+        // They should not be sent through the feature events system.
+        // They require their own StoredAdEvent, AdEventStore, and
+        // InternalAPI.postAdEvents() using HTTPRequest.AdPath.postEvents
+    }
+    #endif
 
     func flushEvents(batchSize: Int) async throws -> Int {
         guard !self.flushInProgress else {
@@ -83,7 +97,7 @@ actor PaywallEventsManager: PaywallEventsManagerType {
             Logger.verbose(Strings.paywalls.event_flush_starting(count: events.count))
 
             do {
-                try await self.internalAPI.postPaywallEvents(events: events)
+                try await self.internalAPI.postFeatureEvents(events: events)
                 Logger.debug(Strings.analytics.flush_events_success)
 
                 await self.store.clear(events.count)
