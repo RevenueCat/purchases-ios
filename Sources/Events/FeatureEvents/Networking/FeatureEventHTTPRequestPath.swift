@@ -7,21 +7,21 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  AdHTTPRequestPath.swift
+//  PaywallHTTPRequestPath.swift
 //
-//  Created by RevenueCat on 1/8/25.
+//  Created by Nacho Soto on 9/5/23.
 
 import Foundation
 
-extension HTTPRequest.AdPath: EventsHTTPRequestPath {
+extension HTTPRequest.FeatureEventsPath: EventsHTTPRequestPath {
 
     // swiftlint:disable:next force_unwrapping
-    static let serverHostURL = URL(string: "https://a.revenue.cat")!
+    static let serverHostURL = URL(string: "https://api-paywalls.revenuecat.com")!
 
     var name: String {
         switch self {
         case .postEvents:
-            return "post_ad_events"
+            return "post_paywall_events"
         }
     }
 

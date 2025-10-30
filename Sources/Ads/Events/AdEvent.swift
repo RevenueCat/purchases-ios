@@ -321,7 +321,7 @@ extension AdRevenue {
 // MARK: - Internal Event Enum
 
 /// Internal event enum for type-safe routing through the events system.
-internal enum AdEvent: FeatureEvent {
+internal enum AdEvent {
 
     // swiftlint:disable type_name
 
@@ -329,14 +329,6 @@ internal enum AdEvent: FeatureEvent {
     internal typealias ID = UUID
 
     // swiftlint:enable type_name
-
-    var feature: Feature {
-        return .ads
-    }
-
-    var eventDiscriminator: String? {
-        return nil
-    }
 
     /// An ad impression was displayed.
     case displayed(CreationData, AdDisplayed)
