@@ -49,7 +49,7 @@ class FallbackURLSignedBackendIntegrationTests: BaseStoreKitIntegrationTests {
         let productEntitlementMapping = try await self.purchases.productEntitlementMapping()
 
         expect(productEntitlementMapping.entitlementsByProduct).toNot(beEmpty())
-        assertSnapshot(matching: productEntitlementMapping.response, as: .formattedJson)
+        assertSnapshot(matching: productEntitlementMapping, as: .formattedJson)
     }
 
 }

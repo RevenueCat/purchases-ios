@@ -16,15 +16,14 @@ import Foundation
 /// A mapping between products and entitlements.
 struct ProductEntitlementMapping {
 
-    var entitlementsByProduct: [String: Set<String>]
-    var response: ProductEntitlementMappingResponse
+    var entitlementsByProduct: [String: [String]]
 
 }
 
 extension ProductEntitlementMapping {
 
     /// - Returns: entitlement identifiers associated to the given product identifier
-    func entitlements(for productIdentifier: String) -> Set<String> {
+    func entitlements(for productIdentifier: String) -> [String] {
         return self.entitlementsByProduct[productIdentifier] ?? []
     }
 
@@ -32,15 +31,14 @@ extension ProductEntitlementMapping {
 
 extension ProductEntitlementMapping {
 
-    static let empty: Self = .init(entitlementsByProduct: [:], response: .init(products: [:]) )
+    static let empty: Self = .init(entitlementsByProduct: [:])
 
 }
 
 extension ProductEntitlementMappingResponse {
 
     func toMapping() -> ProductEntitlementMapping {
-        return .init(entitlementsByProduct: self.products.mapValues { Set($0.entitlements) },
-                     response: self)
+        return .init(entitlementsByProduct: self.products.mapValues { $0.entitlements })
     }
 
 }

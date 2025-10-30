@@ -1,130 +1,67 @@
 {
-  "product_entitlement_mapping" : {
-    "com.revenuecat.500coins.1.99" : {
-      "entitlements" : [
+  "entitlements_by_product" : {
+    "com.revenuecat.500coins.1.99" : [
 
-      ],
-      "product_identifier" : "com.revenuecat.500coins.1.99"
-    },
-    "com.revenuecat.annual.10.99.1_free_week" : {
-      "entitlements" : [
-        "premium"
-      ],
-      "product_identifier" : "com.revenuecat.annual.10.99.1_free_week"
-    },
-    "com.revenuecat.annual_39.99.2_week_intro" : {
-      "entitlements" : [
-        "premium"
-      ],
-      "product_identifier" : "com.revenuecat.annual_39.99.2_week_intro"
-    },
-    "com.revenuecat.annual_39.99.no_intro" : {
-      "entitlements" : [
-        "premium"
-      ],
-      "product_identifier" : "com.revenuecat.annual_39.99.no_intro"
-    },
-    "com.revenuecat.intro_test.monthly.1_week_intro" : {
-      "entitlements" : [
+    ],
+    "com.revenuecat.annual.10.99.1_free_week" : [
+      "premium"
+    ],
+    "com.revenuecat.annual_39.99.2_week_intro" : [
+      "premium"
+    ],
+    "com.revenuecat.annual_39.99.no_intro" : [
+      "premium"
+    ],
+    "com.revenuecat.intro_test.monthly.1_week_intro" : [
 
-      ],
-      "product_identifier" : "com.revenuecat.intro_test.monthly.1_week_intro"
-    },
-    "com.revenuecat.intro_test.monthly.no_intro" : {
-      "entitlements" : [
+    ],
+    "com.revenuecat.intro_test.monthly.no_intro" : [
 
-      ],
-      "product_identifier" : "com.revenuecat.intro_test.monthly.no_intro"
-    },
-    "com.revenuecat.lifetime.199.99" : {
-      "entitlements" : [
+    ],
+    "com.revenuecat.lifetime.199.99" : [
 
-      ],
-      "product_identifier" : "com.revenuecat.lifetime.199.99"
-    },
-    "com.revenuecat.loadShedder.monthly" : {
-      "entitlements" : [
+    ],
+    "com.revenuecat.loadShedder.monthly" : [
 
-      ],
-      "product_identifier" : "com.revenuecat.loadShedder.monthly"
-    },
-    "com.revenuecat.monthly.1.99.1_free_week" : {
-      "entitlements" : [
-        "premium"
-      ],
-      "product_identifier" : "com.revenuecat.monthly.1.99.1_free_week"
-    },
-    "com.revenuecat.monthly.1.99.no_intro" : {
-      "entitlements" : [
-        "premium"
-      ],
-      "product_identifier" : "com.revenuecat.monthly.1.99.no_intro"
-    },
-    "com.revenuecat.monthly_4.99.1_week_intro" : {
-      "entitlements" : [
-        "premium"
-      ],
-      "product_identifier" : "com.revenuecat.monthly_4.99.1_week_intro"
-    },
-    "com.revenuecat.monthly_4.99.no_intro" : {
-      "entitlements" : [
-        "premium"
-      ],
-      "product_identifier" : "com.revenuecat.monthly_4.99.no_intro"
-    },
-    "com.revenuecat.monthly_9.99.super_premium.1_week_intro" : {
-      "entitlements" : [
-        "super_premium"
-      ],
-      "product_identifier" : "com.revenuecat.monthly_9.99.super_premium.1_week_intro"
-    },
-    "com.revenuecat.weekly_1.99.3_day_intro" : {
-      "entitlements" : [
-        "premium"
-      ],
-      "product_identifier" : "com.revenuecat.weekly_1.99.3_day_intro"
-    },
-    "com.revenuecat.weekly_1.99.no_intro" : {
-      "entitlements" : [
-        "premium"
-      ],
-      "product_identifier" : "com.revenuecat.weekly_1.99.no_intro"
-    },
-    "consumable.10_coins" : {
-      "entitlements" : [
+    ],
+    "com.revenuecat.monthly.1.99.1_free_week" : [
+      "premium"
+    ],
+    "com.revenuecat.monthly.1.99.no_intro" : [
+      "premium"
+    ],
+    "com.revenuecat.monthly_4.99.1_week_intro" : [
+      "premium"
+    ],
+    "com.revenuecat.monthly_4.99.no_intro" : [
+      "premium"
+    ],
+    "com.revenuecat.monthly_9.99.super_premium.1_week_intro" : [
+      "super_premium"
+    ],
+    "com.revenuecat.weekly_1.99.3_day_intro" : [
+      "premium"
+    ],
+    "com.revenuecat.weekly_1.99.no_intro" : [
+      "premium"
+    ],
+    "consumable.10_coins" : [
 
-      ],
-      "product_identifier" : "consumable.10_coins"
-    },
-    "gl_999_1m" : {
-      "entitlements" : [
+    ],
+    "gl_999_1m" : [
 
-      ],
-      "product_identifier" : "gl_999_1m"
-    },
-    "lifetime" : {
-      "entitlements" : [
-        "premium"
-      ],
-      "product_identifier" : "lifetime"
-    },
-    "non_renewing_subscription" : {
-      "entitlements" : [
-        "premium"
-      ],
-      "product_identifier" : "non_renewing_subscription"
-    },
-    "rc_1099_1w" : {
-      "entitlements" : [
+    ],
+    "lifetime" : [
+      "premium"
+    ],
+    "non_renewing_subscription" : [
+      "premium"
+    ],
+    "rc_1099_1w" : [
 
-      ],
-      "product_identifier" : "rc_1099_1w"
-    },
-    "shortest_duration" : {
-      "entitlements" : [
-        "premium"
-      ],
-      "product_identifier" : "shortest_duration"
-    }
+    ],
+    "shortest_duration" : [
+      "premium"
+    ]
   }
 }
