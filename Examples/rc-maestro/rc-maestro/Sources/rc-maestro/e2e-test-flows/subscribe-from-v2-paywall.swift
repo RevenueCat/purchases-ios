@@ -16,13 +16,18 @@ extension E2ETestFlowView {
         @State private var presentPaywall = false
         
         var body: some View {
-            Button("Present Paywall") {
-                presentPaywall = true
+            VStack {
+                Text("V2 Paywall - default offering")
+                    .font(.largeTitle)
+                Button("Present Paywall") {
+                    presentPaywall = true
+                }
+                .buttonStyle(.borderedProminent)
             }
-            .buttonStyle(.borderedProminent)
             .sheet(isPresented: $presentPaywall) {
                 PaywallView()
             }
+            .multilineTextAlignment(.center)
         }
     }
 }

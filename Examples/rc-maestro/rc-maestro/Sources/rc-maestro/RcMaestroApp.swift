@@ -52,11 +52,14 @@ struct RcMaestroApp: App {
 }
 
 enum E2ETestFlow: String {
+    case subscribeFromV1Paywall = "subscribe_from_v1_paywall"
     case subscribeFromV2Paywall = "subscribe_from_v2_paywall"
     
     @ViewBuilder
     var view: some View {
         switch self {
+        case .subscribeFromV1Paywall:
+            E2ETestFlowView.SubscriberFromV1Paywall()
         case .subscribeFromV2Paywall:
             E2ETestFlowView.SubscriberFromV2Paywall()
         }
