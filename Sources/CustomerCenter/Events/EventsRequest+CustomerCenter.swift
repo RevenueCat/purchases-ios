@@ -15,12 +15,6 @@ import Foundation
 
 extension EventsRequest {
 
-    struct TypeContainer: Decodable {
-
-        let type: String
-
-    }
-
     enum CustomerCenterEventType: String {
 
         case impression = "customer_center_impression"
@@ -77,25 +71,23 @@ extension EventsRequest {
                 return nil
             }
             guard let customerCenterEvent = try? JSONDecoder.default.decode(CustomerCenterEvent.self,
-                                                                            from: jsonData) else {
+                                                                            from: jsonData),
+                  case .impression = customerCenterEvent else {
                 Logger.error(Strings.paywalls.event_cannot_get_encoded_event)
                 return nil
             }
 
-            let creationData = customerCenterEvent.creationData
-            let data = customerCenterEvent.data
-
             return CustomerCenterEventBaseRequest(
-                id: creationData.id.uuidString,
+                id: customerCenterEvent.id.uuidString,
                 version: version,
                 type: customerCenterEvent.eventType,
                 appUserID: storedEvent.userID,
                 appSessionID: appSessionID.uuidString,
-                timestamp: creationData.date.millisecondsSince1970,
-                darkMode: data.darkMode,
-                locale: data.localeIdentifier,
-                isSandbox: data.isSandbox,
-                displayMode: data.displayMode
+                timestamp: customerCenterEvent.date.millisecondsSince1970,
+                darkMode: customerCenterEvent.darkMode,
+                locale: customerCenterEvent.locale.identifier,
+                isSandbox: customerCenterEvent.isSandbox,
+                displayMode: customerCenterEvent.displayMode
             )
         }
 
@@ -163,30 +155,28 @@ extension EventsRequest {
                 Logger.error(Strings.paywalls.event_cannot_get_encoded_event)
                 return nil
             }
-            guard let customerCenterEvent = try? JSONDecoder.default.decode(CustomerCenterAnswerSubmittedEvent.self,
-                                                                            from: jsonData) else {
+            guard let customerCenterEvent = try? JSONDecoder.default.decode(CustomerCenterEvent.self,
+                                                                            from: jsonData),
+                  case .answerSubmitted(_, _, let payload) = customerCenterEvent else {
                 Logger.error(Strings.paywalls.event_cannot_get_encoded_event)
                 return nil
             }
 
-            let creationData = customerCenterEvent.creationData
-            let data = customerCenterEvent.data
-
             return CustomerCenterAnswerSubmittedEventRequest(
-                id: creationData.id.uuidString,
+                id: customerCenterEvent.id.uuidString,
                 version: version,
                 appUserID: storedEvent.userID,
                 appSessionID: appSessionID.uuidString,
-                timestamp: creationData.date.millisecondsSince1970,
-                darkMode: data.darkMode,
-                locale: data.localeIdentifier,
-                isSandbox: data.isSandbox,
-                displayMode: data.displayMode,
-                path: data.path,
-                url: data.url,
-                surveyOptionID: data.surveyOptionID,
-                additionalContext: data.additionalContext,
-                revisionId: data.revisionID
+                timestamp: customerCenterEvent.date.millisecondsSince1970,
+                darkMode: payload.darkMode,
+                locale: payload.locale.identifier,
+                isSandbox: payload.isSandbox,
+                displayMode: payload.displayMode,
+                path: payload.path,
+                url: payload.url,
+                surveyOptionID: payload.surveyOptionID,
+                additionalContext: payload.additionalContext,
+                revisionId: payload.revisionID
             )
         }
 
@@ -202,8 +192,8 @@ private extension CustomerCenterEvent {
     var eventType: EventsRequest.CustomerCenterEventType {
         switch self {
         case .impression: return .impression
+        case .answerSubmitted: return .answerSubmitted
         }
-
     }
 
 }

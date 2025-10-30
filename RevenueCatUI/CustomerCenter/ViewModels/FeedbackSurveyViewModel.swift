@@ -120,18 +120,17 @@ private extension FeedbackSurveyViewModel {
                                     darkMode: Bool,
                                     displayMode: CustomerCenterPresentationMode,
                                     locale: Locale) {
-        let isSandbox = purchasesProvider.isSandbox
-        let surveyOptionData = CustomerCenterAnswerSubmittedEvent.Data(locale: locale,
-                                                                       darkMode: darkMode,
-                                                                       isSandbox: isSandbox,
-                                                                       displayMode: displayMode,
-                                                                       path: feedbackSurveyData.path.type,
-                                                                       url: feedbackSurveyData.path.url,
-                                                                       surveyOptionID: option.id,
-                                                                       additionalContext: nil,
-                                                                       revisionID: 0)
-        let event = CustomerCenterAnswerSubmittedEvent.answerSubmitted(CustomerCenterEventCreationData(),
-                                                                       surveyOptionData)
+        let event = CustomerCenterEvent.answerSubmitted(
+            locale: locale,
+            darkMode: darkMode,
+            isSandbox: purchasesProvider.isSandbox,
+            displayMode: displayMode,
+            path: feedbackSurveyData.path.type,
+            url: feedbackSurveyData.path.url,
+            surveyOptionID: option.id,
+            additionalContext: nil,
+            revisionID: 0
+        )
         purchasesProvider.track(customerCenterEvent: event)
     }
 

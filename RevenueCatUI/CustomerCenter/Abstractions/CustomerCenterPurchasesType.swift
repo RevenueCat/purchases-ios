@@ -63,7 +63,7 @@ import SwiftUI
         promotionalOffer: PromotionalOffer?
     ) async throws -> PurchaseResultData
 
-    func track(customerCenterEvent: any CustomerCenterEventType)
+    func track(customerCenterEvent: CustomerCenterEvent)
 
     func loadCustomerCenter() async throws -> CustomerCenterConfigData
 

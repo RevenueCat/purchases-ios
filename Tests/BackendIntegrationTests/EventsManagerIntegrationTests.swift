@@ -50,29 +50,28 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
 
         Purchases.shared.track(
             customerCenterEvent: CustomerCenterEvent.impression(
-                Self.customerCenterCreationData,
-                CustomerCenterEvent.Data(
-                    locale: locale,
-                    darkMode: true,
-                    isSandbox: true,
-                    displayMode: .fullScreen
-                )
+                id: Self.customerCenterEventId,
+                date: Self.customerCenterEventDate,
+                locale: locale,
+                darkMode: true,
+                isSandbox: true,
+                displayMode: .fullScreen
             )
         )
 
         Purchases.shared.track(
-            customerCenterEvent: CustomerCenterAnswerSubmittedEvent.answerSubmitted(
-                Self.customerCenterCreationData,
-                CustomerCenterAnswerSubmittedEvent.Data(
-                    locale: locale,
-                    darkMode: true,
-                    isSandbox: true,
-                    displayMode: .fullScreen,
-                    path: .cancel,
-                    url: nil,
-                    surveyOptionID: "",
-                    revisionID: 1
-                )
+            customerCenterEvent: CustomerCenterEvent.answerSubmitted(
+                id: Self.customerCenterEventId,
+                date: Self.customerCenterEventDate,
+                locale: locale,
+                darkMode: true,
+                isSandbox: true,
+                displayMode: .fullScreen,
+                path: .cancel,
+                url: nil,
+                surveyOptionID: "",
+                additionalContext: nil,
+                revisionID: 1
             )
         )
         // give background task a chance to run
@@ -102,10 +101,8 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
         )
     }
 
-    static let customerCenterCreationData: CustomerCenterEventCreationData = .init(
-        id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
-        date: .init(timeIntervalSince1970: 1694029328)
-    )
+    static let customerCenterEventId: UUID = .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!
+    static let customerCenterEventDate: Date = .init(timeIntervalSince1970: 1694029328)
 
     static let eventCreationData: PaywallEvent.CreationData = .init(
         id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,

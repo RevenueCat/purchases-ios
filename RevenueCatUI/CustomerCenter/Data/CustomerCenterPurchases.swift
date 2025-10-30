@@ -70,7 +70,7 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
         }
     }
 
-    func track(customerCenterEvent: any CustomerCenterEventType) {
+    func track(customerCenterEvent: CustomerCenterEvent) {
         Purchases.shared.track(customerCenterEvent: customerCenterEvent)
     }
 

@@ -1071,15 +1071,14 @@ final class CustomerCenterViewModelTests: TestCase {
         viewModel.trackImpression(darkMode: darkMode, displayMode: displayMode)
 
         expect(mockPurchases.trackedEvents.count) == 1
-        let trackedEvent = try XCTUnwrap(mockPurchases.trackedEvents.first as? CustomerCenterEvent)
+        let trackedEvent = try XCTUnwrap(mockPurchases.trackedEvents.first)
+        expect(trackedEvent.type) == .impression
+        let data = try XCTUnwrap(trackedEvent.impressionData)
 
-        expect(trackedEvent.data.darkMode) == darkMode
-        expect(trackedEvent.data.displayMode) == displayMode
-        expect(trackedEvent.data.localeIdentifier) == Locale.current.identifier
-        expect(trackedEvent.data.isSandbox) == true
-        if case .impression = trackedEvent {} else {
-            fail("Expected an impression event")
-        }
+        expect(data.darkMode) == darkMode
+        expect(data.displayMode) == displayMode
+        expect(data.localeIdentifier) == Locale.current.identifier
+        expect(data.isSandbox) == true
 
         viewModel.trackImpression(darkMode: darkMode, displayMode: displayMode)
         viewModel.trackImpression(darkMode: darkMode, displayMode: displayMode)

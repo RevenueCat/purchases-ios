@@ -15,11 +15,14 @@ import Foundation
 @_spi(Internal) @testable import RevenueCat
 import SnapshotTesting
 
-extension CustomerCenterEventCreationData {
-    static var `default`: CustomerCenterEventCreationData {
-        CustomerCenterEventCreationData(
-            id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
-            date: .init(timeIntervalSince1970: 1694029328)
-        )
+extension UUID {
+    static var `default`: UUID {
+        UUID(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!
+    }
+}
+
+extension Date {
+    static var `default`: Date {
+        Date(timeIntervalSince1970: 1694029328)
     }
 }

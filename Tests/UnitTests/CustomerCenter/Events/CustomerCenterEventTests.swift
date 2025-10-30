@@ -28,36 +28,29 @@ final class CustomerCenterEventTests: TestCase {
 
     func testEncoding() throws {
         let event = CustomerCenterEvent.impression(
-            .default,
-            CustomerCenterEvent.Data(
-                locale: Locale(identifier: "en_US"),
-                darkMode: true,
-                isSandbox: true,
-                displayMode: .fullScreen
-            )
+            id: .default,
+            date: .default,
+            locale: Locale(identifier: "en_US"),
+            darkMode: true,
+            isSandbox: true,
+            displayMode: .fullScreen
         )
 
         let prettyPrintedData = try JSONEncoder.prettyPrinted.encode(event)
         let prettyPrintedString = String(data: prettyPrintedData, encoding: .utf8)!
-        XCTAssertEqual(prettyPrintedString,
-                       prettyPrintedString,
-                       """
-                       {
-                           "impression" : {
-                             "_0" : {
-                               "date" : "2023-09-06T19:42:08Z",
-                               "id" : "72164C05-2BDC-4807-8918-A4105F727DEB"
-                             },
-                             "_1" : {
-                               "base" : {
-                                "locale_identifier": "en_US",
-                                "dark_mode": true,
-                                "display_mode": "full_screen",
-                                "is_sandbox": true
-                             }
-                           }
-                         }
-                       """
+        XCTAssertEqual(
+            prettyPrintedString,
+            """
+            {
+              "dark_mode" : true,
+              "date" : "2023-09-06T19:42:08Z",
+              "display_mode" : "full_screen",
+              "id" : "72164C05-2BDC-4807-8918-A4105F727DEB",
+              "is_sandbox" : true,
+              "locale_identifier" : "en_US",
+              "type" : "impression"
+            }
+            """
         )
     }
 }
