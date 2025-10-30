@@ -41,7 +41,7 @@ class BackendPaywallEventTests: BaseBackendTests {
 
     func testPostPaywallEventsWithOneEvent() throws {
         let event = PaywallEvent.impression(Self.eventCreation1, Self.eventData1)
-        let storedEvent: StoredEvent = try Self.createStoredEvent(from: event)
+        let storedEvent: StoredEvent = try Self.createStoredFeatureEvent(from: event)
 
         let error = waitUntilValue { completion in
             self.internalAPI.postFeatureEvents(events: [storedEvent], completion: completion)
@@ -52,9 +52,9 @@ class BackendPaywallEventTests: BaseBackendTests {
 
     func testPostPaywallEventsWithMultipleEvents() throws {
         let event1 = PaywallEvent.impression(Self.eventCreation1, Self.eventData1)
-        let storedEvent1: StoredEvent = try Self.createStoredEvent(from: event1)
+        let storedEvent1: StoredEvent = try Self.createStoredFeatureEvent(from: event1)
         let event2 = PaywallEvent.close(Self.eventCreation2, Self.eventData2)
-        let storedEvent2: StoredEvent = try Self.createStoredEvent(from: event2)
+        let storedEvent2: StoredEvent = try Self.createStoredFeatureEvent(from: event2)
 
         let error = waitUntilValue { completion in
             self.internalAPI.postFeatureEvents(events: [storedEvent1, storedEvent2],
@@ -99,7 +99,7 @@ private extension BackendPaywallEventTests {
         darkMode: false
     )
 
-    static func createStoredEvent(from event: PaywallEvent) throws -> StoredEvent {
+    static func createStoredFeatureEvent(from event: PaywallEvent) throws -> StoredEvent {
         return try XCTUnwrap(.init(event: event,
                                    userID: Self.userID,
                                    feature: .paywalls,

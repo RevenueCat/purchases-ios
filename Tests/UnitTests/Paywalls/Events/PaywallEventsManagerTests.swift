@@ -52,7 +52,7 @@ class EventsManagerTests: TestCase {
 
         let events = await self.store.storedEvents
         expect(events) == [
-            try createStoredEvent(from: event)
+            try createStoredFeatureEvent(from: event)
         ]
     }
 
@@ -65,8 +65,8 @@ class EventsManagerTests: TestCase {
 
         let events = await self.store.storedEvents
         expect(events) == [
-            try createStoredEvent(from: event1),
-            try createStoredEvent(from: event2)
+            try createStoredFeatureEvent(from: event1),
+            try createStoredFeatureEvent(from: event2)
         ]
     }
 
@@ -85,7 +85,7 @@ class EventsManagerTests: TestCase {
         expect(result) == 1
 
         expect(self.api.invokedPostPaywallEvents) == true
-        expect(self.api.invokedPostPaywallEventsParameters) == [[try createStoredEvent(from: event)]]
+        expect(self.api.invokedPostPaywallEventsParameters) == [[try createStoredFeatureEvent(from: event)]]
 
         await self.verifyEmptyStore()
     }
@@ -102,8 +102,8 @@ class EventsManagerTests: TestCase {
 
         expect(self.api.invokedPostPaywallEvents) == true
         expect(self.api.invokedPostPaywallEventsParameters) == [
-            [try createStoredEvent(from: event1)],
-            [try createStoredEvent(from: event2)]
+            [try createStoredFeatureEvent(from: event1)],
+            [try createStoredFeatureEvent(from: event2)]
         ]
 
         await self.verifyEmptyStore()
@@ -119,9 +119,9 @@ class EventsManagerTests: TestCase {
 
         expect(self.api.invokedPostPaywallEvents) == true
         expect(self.api.invokedPostPaywallEventsParameters) == [
-            [try createStoredEvent(from: event1)],
-            [try createStoredEvent(from: event2)],
-            [try createStoredEvent(from: event3)]
+            [try createStoredFeatureEvent(from: event1)],
+            [try createStoredFeatureEvent(from: event2)],
+            [try createStoredFeatureEvent(from: event3)]
         ]
 
         await self.verifyEmptyStore()
@@ -139,9 +139,9 @@ class EventsManagerTests: TestCase {
 
         expect(self.api.invokedPostPaywallEvents) == true
         expect(self.api.invokedPostPaywallEventsParameters) == [
-            [try createStoredEvent(from: event1), try createStoredEvent(from: event2)],
-            [try createStoredEvent(from: event3), try createStoredEvent(from: event4)],
-            [try createStoredEvent(from: event5)]
+            [try createStoredFeatureEvent(from: event1), try createStoredFeatureEvent(from: event2)],
+            [try createStoredFeatureEvent(from: event3), try createStoredFeatureEvent(from: event4)],
+            [try createStoredFeatureEvent(from: event5)]
         ]
 
         await self.verifyEmptyStore()
@@ -149,7 +149,7 @@ class EventsManagerTests: TestCase {
 
     func testFlushWithUnsuccessfulPostError() async throws {
         let event = await self.storeRandomEvent()
-        let storedEvent = try createStoredEvent(from: event)
+        let storedEvent = try createStoredFeatureEvent(from: event)
         let expectedError: NetworkError = .offlineConnection()
 
         self.api.stubbedPostPaywallEventsCompletionResult = .networkError(expectedError)
@@ -196,8 +196,8 @@ class EventsManagerTests: TestCase {
         expect(result) == 2
         expect(self.api.invokedPostPaywallEvents) == true
         expect(self.api.invokedPostPaywallEventsParameters) == [
-            [try createStoredEvent(from: event1)],
-            [try createStoredEvent(from: event2)]
+            [try createStoredFeatureEvent(from: event1)],
+            [try createStoredFeatureEvent(from: event2)]
         ]
 
         await self.verifyEmptyStore()
@@ -221,13 +221,13 @@ class EventsManagerTests: TestCase {
 
         expect(self.api.invokedPostPaywallEvents) == true
         expect(self.api.invokedPostPaywallEventsParameters) == [
-            [try createStoredEvent(from: event1)]
+            [try createStoredFeatureEvent(from: event1)]
         ]
 
         // Both events should still be in the store since the first batch failed
         await self.verifyEvents([
-            try createStoredEvent(from: event1),
-            try createStoredEvent(from: event2)
+            try createStoredFeatureEvent(from: event1),
+            try createStoredFeatureEvent(from: event2)
         ])
     }
 
@@ -256,7 +256,7 @@ class EventsManagerTests: TestCase {
             let batchStartIndex = batchIndex * eventsPerBatch
             let batchEndIndex = batchStartIndex + eventsPerBatch
             let expectedBatch = try storedEvents[batchStartIndex..<batchEndIndex].map {
-                try createStoredEvent(from: $0)
+                try createStoredFeatureEvent(from: $0)
             }
             expect(self.api.invokedPostPaywallEventsParameters[batchIndex]) == expectedBatch
         }
@@ -305,7 +305,7 @@ class EventsManagerTests: TestCase {
         expect(self.api.invokedPostPaywallEvents) == true
         expect(self.api.invokedPostPaywallEventsParameters).to(haveCount(2))
         expect(self.api.invokedPostPaywallEventsParameters.first) == [
-            try createStoredEvent(from: event1)
+            try createStoredFeatureEvent(from: event1)
         ]
 
         self.logger.verifyMessageWasLogged(
@@ -348,7 +348,7 @@ private extension EventsManagerTests {
         expect(file: file, line: line, events) == expected
     }
 
-    func createStoredEvent(from event: PaywallEvent) throws -> StoredEvent {
+    func createStoredFeatureEvent(from event: PaywallEvent) throws -> StoredEvent {
         return try XCTUnwrap(.init(event: event,
                                    userID: Self.userID,
                                    feature: .paywalls,

@@ -27,20 +27,20 @@ class StoredFeatureEventSerializerTests: TestCase {
 
     func testEncodeImpressionEvent() throws {
         let originalEvent = PaywallEvent.impression(.random(), .random())
-        let event = try Self.createStoredEvent(from: originalEvent)
+        let event = try Self.createStoredFeatureEvent(from: originalEvent)
         expect(try event.encodeAndDecode()) == event
     }
 
     func testDecodeCancelEvent() throws {
         let originalEvent = PaywallEvent.cancel(.random(), .random())
-        let event = try Self.createStoredEvent(from: originalEvent)
+        let event = try Self.createStoredFeatureEvent(from: originalEvent)
 
         expect(try event.encodeAndDecode()) == event
     }
 
     func testDecodeCloseEvent() throws {
         let originalEvent = PaywallEvent.close(.random(), .random())
-        let event = try Self.createStoredEvent(from: originalEvent)
+        let event = try Self.createStoredFeatureEvent(from: originalEvent)
 
         expect(try event.encodeAndDecode()) == event
     }
@@ -61,7 +61,7 @@ class StoredFeatureEventSerializerTests: TestCase {
         )
         let paywallEvent = PaywallEvent.impression(paywallEventCreationData, paywallEventData)
 
-        let storedEvent = try Self.createStoredEvent(from: paywallEvent, expectedUserID: expectedUserID)
+        let storedEvent = try Self.createStoredFeatureEvent(from: paywallEvent, expectedUserID: expectedUserID)
         let serializedEvent = try StoredFeatureEventSerializer.encode(storedEvent)
         let deserializedEvent = try StoredFeatureEventSerializer.decode(serializedEvent)
         expect(deserializedEvent.userID) == expectedUserID
@@ -79,7 +79,10 @@ private extension StoredFeatureEventSerializerTests {
 
     static let userID = UUID().uuidString
 
-    static func createStoredEvent(from event: PaywallEvent, expectedUserID: String = userID) throws -> StoredEvent {
+    static func createStoredFeatureEvent(
+        from event: PaywallEvent,
+        expectedUserID: String = userID
+    ) throws -> StoredEvent {
         return try XCTUnwrap(.init(event: event,
                                    userID: expectedUserID,
                                    feature: .paywalls,
