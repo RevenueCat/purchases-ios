@@ -1176,7 +1176,7 @@ jobs:
             else
               export REVENUECAT_FORCE_SERVER_ERROR_STRATEGY="never"
             fi
-            bundle exec fastlane run_maestro_e2e_tests test_environment:<< parameters.test_environment >>
+            bundle exec fastlane run_maestro_e2e_tests
           no_output_timeout: 15m
       - store_test_results:
           path: fastlane/test_output

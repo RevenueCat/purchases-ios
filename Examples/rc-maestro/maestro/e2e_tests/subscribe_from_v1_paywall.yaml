@@ -1,13 +1,13 @@
 appId: com.revenuecat.maestro.ios
-name: Production - Subscribe to product through V2 Paywall for default offering
+name: Production - Subscribe to product through V1 Paywall for alternative offering
 
 ---
 - launchApp:
     arguments: 
-        e2e_test_flow: subscribe_from_v2_paywall
+        e2e_test_flow: subscribe_from_v1_paywall
 - tapOn:
     text: "Present Paywall"
-- assertVisible: "Test StoreKit\n\nbackend integration tests"
+- assertVisible: "Paywall V1"
 - takeScreenshot: "Paywall"
 - tapOn:
     text: "Monthly"
