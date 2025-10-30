@@ -1416,9 +1416,11 @@ public extension Purchases {
 public extension Purchases {
 
     /// Used by `RevenueCatUI` to keep track of ``PaywallEvent``s.
-    func track(paywallEvent: PaywallEvent) async {
-        self.purchasesOrchestrator.track(paywallEvent: paywallEvent)
-        await self.paywallEventsManager?.track(featureEvent: paywallEvent)
+    /// - Parameter source: Optional identifier describing where the paywall was presented from.
+    func track(paywallEvent: PaywallEvent, source: String? = nil) async {
+        let eventWithSource = paywallEvent.withSource(source)
+        self.purchasesOrchestrator.track(paywallEvent: eventWithSource)
+        await self.paywallEventsManager?.track(featureEvent: eventWithSource)
     }
 
     /// Used by `RevenueCatUI` to keep track of ``CustomerCenterEvent``s.

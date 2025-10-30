@@ -79,6 +79,7 @@ extension PaywallEvent {
         public var displayMode: PaywallViewMode
         public var localeIdentifier: String
         public var darkMode: Bool
+        public var source: String?
 
         #if !os(tvOS) // For Paywalls V2
         @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -88,7 +89,8 @@ extension PaywallEvent {
             sessionID: SessionID,
             displayMode: PaywallViewMode,
             locale: Locale,
-            darkMode: Bool
+            darkMode: Bool,
+            source: String? = nil
         ) {
             self.init(
                 offeringIdentifier: offering.identifier,
@@ -96,7 +98,8 @@ extension PaywallEvent {
                 sessionID: sessionID,
                 displayMode: displayMode,
                 localeIdentifier: locale.identifier,
-                darkMode: darkMode
+                darkMode: darkMode,
+                source: source
             )
         }
         #endif
@@ -108,7 +111,8 @@ extension PaywallEvent {
             sessionID: SessionID,
             displayMode: PaywallViewMode,
             locale: Locale,
-            darkMode: Bool
+            darkMode: Bool,
+            source: String? = nil
         ) {
             self.init(
                 offeringIdentifier: offering.identifier,
@@ -116,7 +120,8 @@ extension PaywallEvent {
                 sessionID: sessionID,
                 displayMode: displayMode,
                 localeIdentifier: locale.identifier,
-                darkMode: darkMode
+                darkMode: darkMode,
+                source: source
             )
         }
         // swiftlint:enable missing_docs
@@ -127,7 +132,8 @@ extension PaywallEvent {
             sessionID: SessionID,
             displayMode: PaywallViewMode,
             localeIdentifier: String,
-            darkMode: Bool
+            darkMode: Bool,
+            source: String? = nil
         ) {
             self.offeringIdentifier = offeringIdentifier
             self.paywallRevision = paywallRevision
@@ -135,6 +141,7 @@ extension PaywallEvent {
             self.displayMode = displayMode
             self.localeIdentifier = localeIdentifier
             self.darkMode = darkMode
+            self.source = source
         }
 
     }
@@ -158,6 +165,28 @@ extension PaywallEvent {
         case let .impression(_, data): return data
         case let .cancel(_, data): return data
         case let .close(_, data): return data
+        }
+    }
+
+}
+
+extension PaywallEvent {
+
+    /// Returns a copy of the paywall event with its data `source` replaced.
+    func withSource(_ source: String?) -> PaywallEvent {
+        switch self {
+        case let .impression(creationData, data):
+            var updated = data
+            updated.source = source
+            return .impression(creationData, updated)
+        case let .cancel(creationData, data):
+            var updated = data
+            updated.source = source
+            return .cancel(creationData, updated)
+        case let .close(creationData, data):
+            var updated = data
+            updated.source = source
+            return .close(creationData, updated)
         }
     }
 

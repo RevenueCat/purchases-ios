@@ -37,21 +37,28 @@ extension PurchaseHandler {
         .eraseToAnyPublisher()
     ) -> Self {
         return self.init(
-            purchases: MockPurchases(purchasesAreCompletedBy: purchasesAreCompletedBy,
-                                     preferredLocaleOverride: preferredLocaleOverride) { _ in
-                return (
-                    // No current way to create a mock transaction with RevenueCat's public methods.
-                    transaction: nil,
-                    customerInfo: customerInfo,
-                    userCancelled: false
+            purchases: MockPurchases(
+                purchasesAreCompletedBy: purchasesAreCompletedBy,
+                preferredLocales: ["en_US"],
+                preferredLocaleOverride: preferredLocaleOverride,
+                purchase: { _ in
+                    return (
+                        // No current way to create a mock transaction with RevenueCat's public methods.
+                        transaction: nil,
+                        customerInfo: customerInfo,
+                        userCancelled: false
                 )
-            } restorePurchases: {
-                return customerInfo
-            } trackEvent: { event in
-                Logger.debug("Tracking event: \(event)")
-            } customerInfo: {
+            },
+                restorePurchases: {
                 return customerInfo
             },
+                trackEvent: { event in
+                    Logger.debug("Tracking event: \(event)")
+                },
+                customerInfo: {
+                    return customerInfo
+                }
+            ),
             performPurchase: performPurchase,
             performRestore: performRestore,
             purchaseResultPublisher: purchaseResultPublisher
@@ -71,15 +78,20 @@ extension PurchaseHandler {
     /// - Returns: `PurchaseHandler` that throws `error` for purchases and restores.
     static func failing(_ error: Error) -> Self {
         return self.init(
-            purchases: MockPurchases { _ in
-                throw error
-            } restorePurchases: {
-                throw error
-            } trackEvent: { event in
-                Logger.debug("Tracking event: \(event)")
-            } customerInfo: {
-                throw error
-            }
+            purchases: MockPurchases(
+                purchase: { _ in
+                    throw error
+                },
+                restorePurchases: {
+                    throw error
+                },
+                trackEvent: { event in
+                    Logger.debug("Tracking event: \(event)")
+                },
+                customerInfo: {
+                    throw error
+                }
+            )
         )
     }
 

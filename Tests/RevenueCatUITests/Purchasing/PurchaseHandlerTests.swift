@@ -14,7 +14,7 @@
 import Combine
 import Nimble
 @testable import RevenueCat
-@testable import RevenueCatUI
+@testable @_spi(Internal) import RevenueCatUI
 import XCTest
 
 #if !os(macOS)
@@ -213,13 +213,75 @@ class PurchaseHandlerTests: TestCase {
         let result1 = handler.trackPaywallClose()
         expect(result1) == false
 
-        handler.trackPaywallImpression(eventData)
+        handler.trackPaywallImpression(eventData, source: nil)
 
         let result2 = handler.trackPaywallClose()
         expect(result2) == true
         let result3 = handler.trackPaywallClose()
         expect(result3) == false
 
+    }
+
+    func testPaywallSourceIsPropagatedToTrackedEvents() async throws {
+        let impressionExpectation = expectation(description: "Impression tracked")
+        let closeExpectation = expectation(description: "Close tracked")
+
+        let source = PaywallSource(rawValue: "test_source")
+        var trackedEvents: [PaywallEvent] = []
+
+        let handler = PurchaseHandler(
+            purchases: MockPurchases(
+                purchase: { _ in
+                return (
+                    transaction: nil,
+                    customerInfo: TestData.customerInfo,
+                    userCancelled: false
+                )
+            },
+                restorePurchases: {
+                return TestData.customerInfo
+            },
+                trackEvent: { event in
+                await MainActor.run {
+                    trackedEvents.append(event)
+
+                    switch event {
+                    case .impression:
+                        impressionExpectation.fulfill()
+                    case .close:
+                        closeExpectation.fulfill()
+                    case .cancel:
+                        break
+                    }
+                }
+            },
+                customerInfo: {
+                return TestData.customerInfo
+            })
+        )
+
+        let eventData: PaywallEvent.Data = .init(
+            offering: TestData.offeringWithIntroOffer,
+            paywall: TestData.paywallWithIntroOffer,
+            sessionID: .init(),
+            displayMode: .fullScreen,
+            locale: .init(identifier: "en_US"),
+            darkMode: false
+        )
+
+        handler.trackPaywallImpression(eventData, source: source)
+
+        await fulfillment(of: [impressionExpectation], timeout: 1.0)
+
+        let result = handler.trackPaywallClose()
+        expect(result) == true
+
+        await fulfillment(of: [closeExpectation], timeout: 1.0)
+
+        expect(trackedEvents).to(haveCount(2))
+        trackedEvents.forEach { event in
+            expect(event.data.source) == source.rawValue
+        }
     }
 
     func test_dedupedSubmissions_ofPurchaseCompletedEvents() async throws {
@@ -265,7 +327,8 @@ private final class AsyncPurchaseHandler {
 
     init() {
         self.purchaseHandler = .init(
-            purchases: MockPurchases { [weak instance = self] _ in
+            purchases: MockPurchases(
+                purchase: { [weak instance = self] _ in
                 let instance = try XCTUnwrap(instance)
 
                 await instance.createAndWaitForContinuation()
@@ -275,19 +338,22 @@ private final class AsyncPurchaseHandler {
                     customerInfo: TestData.customerInfo,
                     userCancelled: false
                 )
-            } restorePurchases: { [weak instance = self] in
+            },
+                restorePurchases: { [weak instance = self] in
                 let instance = try XCTUnwrap(instance)
                 await instance.createAndWaitForContinuation()
 
                 return TestData.customerInfo
-            } trackEvent: { event in
+            },
+                trackEvent: { event in
                 Logger.debug("Tracking event: \(event)")
-            } customerInfo: { [weak instance = self] in
+            },
+                customerInfo: { [weak instance = self] in
                 let instance = try XCTUnwrap(instance)
                 await instance.createAndWaitForContinuation()
 
                 return TestData.customerInfo
-            }
+            })
         )
     }
 
