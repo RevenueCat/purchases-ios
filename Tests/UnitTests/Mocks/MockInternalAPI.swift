@@ -26,7 +26,7 @@ class MockInternalAPI: InternalAPI {
     var stubbedPostPaywallEventsCallback: ((@escaping InternalAPI.ResponseHandler) -> Void)?
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    override func postPaywallEvents(
+    override func postFeatureEvents(
         events: [StoredEvent],
         completion: @escaping InternalAPI.ResponseHandler
     ) {

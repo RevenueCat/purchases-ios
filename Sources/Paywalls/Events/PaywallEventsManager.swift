@@ -83,7 +83,7 @@ actor EventsManager: EventsManagerType {
             Logger.verbose(Strings.paywalls.event_flush_starting(count: events.count))
 
             do {
-                try await self.internalAPI.postPaywallEvents(events: events)
+                try await self.internalAPI.postFeatureEvents(events: events)
                 Logger.debug(Strings.analytics.flush_events_success)
 
                 await self.store.clear(events.count)

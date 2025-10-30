@@ -2149,7 +2149,7 @@ private extension Purchases {
         }
         #endif
 
-        self.purchasesOrchestrator.postPaywallEventsIfNeeded(delayed: true)
+        self.purchasesOrchestrator.postFeatureEventsIfNeeded(delayed: true)
 
         #endif
     }
@@ -2158,7 +2158,7 @@ private extension Purchases {
         self.systemInfo.isAppBackgroundedState = true
         self.dispatchSyncSubscriberAttributes()
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-        self.purchasesOrchestrator.postPaywallEventsIfNeeded()
+        self.purchasesOrchestrator.postFeatureEventsIfNeeded()
         #endif
     }
 

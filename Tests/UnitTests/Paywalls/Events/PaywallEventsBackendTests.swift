@@ -32,7 +32,7 @@ class BackendPaywallEventTests: BaseBackendTests {
 
     func testPostPaywallEventsWithNoEventsMakesNoRequests() {
         let error = waitUntilValue { completion in
-            self.internalAPI.postPaywallEvents(events: [], completion: completion)
+            self.internalAPI.postFeatureEvents(events: [], completion: completion)
         }
 
         expect(error).to(beNil())
@@ -44,7 +44,7 @@ class BackendPaywallEventTests: BaseBackendTests {
         let storedEvent: StoredEvent = try Self.createStoredEvent(from: event)
 
         let error = waitUntilValue { completion in
-            self.internalAPI.postPaywallEvents(events: [storedEvent], completion: completion)
+            self.internalAPI.postFeatureEvents(events: [storedEvent], completion: completion)
         }
 
         expect(error).to(beNil())
@@ -57,7 +57,7 @@ class BackendPaywallEventTests: BaseBackendTests {
         let storedEvent2: StoredEvent = try Self.createStoredEvent(from: event2)
 
         let error = waitUntilValue { completion in
-            self.internalAPI.postPaywallEvents(events: [storedEvent1, storedEvent2],
+            self.internalAPI.postFeatureEvents(events: [storedEvent1, storedEvent2],
                                                completion: completion)
         }
 

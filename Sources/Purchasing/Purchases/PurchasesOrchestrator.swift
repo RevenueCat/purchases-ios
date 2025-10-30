@@ -575,7 +575,7 @@ final class PurchasesOrchestrator {
                             productIdentifier: productIdentifier
                         ))
 
-                        self.postPaywallEventsIfNeeded()
+                        self.postFeatureEventsIfNeeded()
                     }
                 }
 
@@ -687,7 +687,7 @@ final class PurchasesOrchestrator {
 
             if let transaction = transaction {
                 customerInfo = try await self.handlePurchasedTransaction(transaction, .purchase, metadata)
-                self.postPaywallEventsIfNeeded()
+                self.postFeatureEventsIfNeeded()
             } else {
                 // `transaction` would be `nil` for `Product.PurchaseResult.pending` and
                 // `Product.PurchaseResult.userCancelled`.
@@ -812,7 +812,7 @@ final class PurchasesOrchestrator {
         }
     }
 
-    func postPaywallEventsIfNeeded(delayed: Bool = false) {
+    func postFeatureEventsIfNeeded(delayed: Bool = false) {
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
               let manager = self.eventsManager else { return }
 
