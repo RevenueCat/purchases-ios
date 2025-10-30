@@ -1131,6 +1131,7 @@
 		88E679472C7503C1007E69D5 /* PaywallStackComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88E679462C7503C1007E69D5 /* PaywallStackComponent.swift */; };
 		901DE80E2EA0E097007EAA86 /* AdTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 901DE80D2EA0E096007EAA86 /* AdTracker.swift */; };
 		9025C53D2EA66E2500845BCE /* PostEventsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9025C53C2EA66E2500845BCE /* PostEventsOperation.swift */; };
+		903A04342EB35929009B9CE4 /* EventsHTTPRequestPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 903A04332EB35929009B9CE4 /* EventsHTTPRequestPath.swift */; };
 		9094B41C2E96A9A70094AD5F /* AdEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9094B4152E96A9A70094AD5F /* AdEvent.swift */; };
 		9094B41E2E96A9A70094AD5F /* EventsRequest+Ad.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9094B4122E96A9A70094AD5F /* EventsRequest+Ad.swift */; };
 		9094B41F2E96A9A70094AD5F /* AdHTTPRequestPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9094B4112E96A9A70094AD5F /* AdHTTPRequestPath.swift */; };
@@ -2594,6 +2595,7 @@
 		88E679462C7503C1007E69D5 /* PaywallStackComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallStackComponent.swift; sourceTree = "<group>"; };
 		901DE80D2EA0E096007EAA86 /* AdTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdTracker.swift; sourceTree = "<group>"; };
 		9025C53C2EA66E2500845BCE /* PostEventsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostEventsOperation.swift; sourceTree = "<group>"; };
+		903A04332EB35929009B9CE4 /* EventsHTTPRequestPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventsHTTPRequestPath.swift; sourceTree = "<group>"; };
 		9094B4112E96A9A70094AD5F /* AdHTTPRequestPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdHTTPRequestPath.swift; sourceTree = "<group>"; };
 		9094B4122E96A9A70094AD5F /* EventsRequest+Ad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EventsRequest+Ad.swift"; sourceTree = "<group>"; };
 		9094B4152E96A9A70094AD5F /* AdEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdEvent.swift; sourceTree = "<group>"; };
@@ -4151,6 +4153,7 @@
 		353DE0052CCA4EAE00A8F632 /* Networking */ = {
 			isa = PBXGroup;
 			children = (
+				903A04332EB35929009B9CE4 /* EventsHTTPRequestPath.swift */,
 				9025C53C2EA66E2500845BCE /* PostEventsOperation.swift */,
 				4FFCED852AA941D200118EF4 /* EventsRequest.swift */,
 			);
@@ -6807,6 +6810,7 @@
 				537B4B382DA9744B00CEFF4C /* SDKHealthStatus+Icon.swift in Sources */,
 				537B4B392DA9744B00CEFF4C /* SDKHealthCheckStatus+Icon.swift in Sources */,
 				537B4B3A2DA9744B00CEFF4C /* ProductStatus+Icon.swift in Sources */,
+				903A04342EB35929009B9CE4 /* EventsHTTPRequestPath.swift in Sources */,
 				5791FE4A2994453500F1FEDA /* Signing+ResponseVerification.swift in Sources */,
 				2DC19195255F36D10039389A /* Logger.swift in Sources */,
 				2DDF419F24F6F331005BC22D /* ReceiptParsingError.swift in Sources */,
