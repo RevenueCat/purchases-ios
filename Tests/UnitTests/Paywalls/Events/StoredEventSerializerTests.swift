@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  StoredEventSerializerTests.swift
+//  StoredFeatureEventSerializerTests.swift
 //
 //  Created by Nacho Soto on 9/5/23.
 
@@ -17,7 +17,7 @@ import Nimble
 import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-class StoredEventSerializerTests: TestCase {
+class StoredFeatureEventSerializerTests: TestCase {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -62,8 +62,8 @@ class StoredEventSerializerTests: TestCase {
         let paywallEvent = PaywallEvent.impression(paywallEventCreationData, paywallEventData)
 
         let storedEvent = try Self.createStoredEvent(from: paywallEvent, expectedUserID: expectedUserID)
-        let serializedEvent = try StoredEventSerializer.encode(storedEvent)
-        let deserializedEvent = try StoredEventSerializer.decode(serializedEvent)
+        let serializedEvent = try StoredFeatureEventSerializer.encode(storedEvent)
+        let deserializedEvent = try StoredFeatureEventSerializer.decode(serializedEvent)
         expect(deserializedEvent.userID) == expectedUserID
         expect(deserializedEvent.feature) == .paywalls
 
@@ -75,7 +75,7 @@ class StoredEventSerializerTests: TestCase {
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-private extension StoredEventSerializerTests {
+private extension StoredFeatureEventSerializerTests {
 
     static let userID = UUID().uuidString
 

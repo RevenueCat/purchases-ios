@@ -71,8 +71,8 @@ class PaywallEventsRequestTests: TestCase {
                                                     feature: .paywalls,
                                                     appSessionID: Self.appSessionID,
                                                     eventDiscriminator: "impression"))
-        let serializedEvent = try StoredEventSerializer.encode(storedEvent)
-        let deserializedEvent = try StoredEventSerializer.decode(serializedEvent)
+        let serializedEvent = try StoredFeatureEventSerializer.encode(storedEvent)
+        let deserializedEvent = try StoredFeatureEventSerializer.decode(serializedEvent)
         expect(deserializedEvent.userID) == expectedUserID
         expect(deserializedEvent.feature) == .paywalls
 

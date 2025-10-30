@@ -52,7 +52,7 @@ internal actor FeatureEventStore: FeatureEventStoreType {
                 Logger.verbose(FeatureEventStoreStrings.storing_event_without_json)
             }
 
-            let event = try StoredEventSerializer.encode(storedEvent)
+            let event = try StoredFeatureEventSerializer.encode(storedEvent)
             try await self.handler.append(line: event)
         } catch {
             Logger.error(FeatureEventStoreStrings.error_storing_event(error))
@@ -65,7 +65,7 @@ internal actor FeatureEventStore: FeatureEventStoreType {
         do {
             return try await self.handler.readLines()
                 .prefix(count)
-                .compactMap { try? StoredEventSerializer.decode($0) }
+                .compactMap { try? StoredFeatureEventSerializer.decode($0) }
                 .extractValues()
         } catch {
             Logger.error(FeatureEventStoreStrings.error_fetching_events(error))

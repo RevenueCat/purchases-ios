@@ -72,8 +72,8 @@ class AdEventsRequestTests: TestCase {
                                                     feature: .ads,
                                                     appSessionID: Self.appSessionID,
                                                     eventDiscriminator: nil))
-        let serializedEvent = try StoredEventSerializer.encode(storedEvent)
-        let deserializedEvent = try StoredEventSerializer.decode(serializedEvent)
+        let serializedEvent = try StoredFeatureEventSerializer.encode(storedEvent)
+        let deserializedEvent = try StoredFeatureEventSerializer.decode(serializedEvent)
         expect(deserializedEvent.userID) == expectedUserID
         expect(deserializedEvent.feature) == .ads
 

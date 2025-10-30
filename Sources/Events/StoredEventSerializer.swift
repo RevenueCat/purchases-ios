@@ -7,14 +7,14 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  StoredEventSerializer.swift
+//  StoredFeatureEventSerializer.swift
 //
 //  Created by Nacho Soto on 9/5/23.
 
 import Foundation
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-enum StoredEventSerializer {
+enum StoredFeatureEventSerializer {
 
     private struct FailedEncodingEventError: Error {}
 
