@@ -650,6 +650,7 @@ jobs:
       - checkout
       - install-dependencies:
           install_xcbeautify: false
+          install_mint: true
           install_swiftlint: false
       - install-xcbeautify-for-xcode15
       - update-spm-installation-commit
@@ -686,6 +687,7 @@ jobs:
       - checkout
       - install-dependencies:
           install_xcbeautify: false
+          install_mint: true
           install_swiftlint: false
       - install-xcbeautify-for-xcode15
       - update-spm-installation-commit
@@ -891,6 +893,7 @@ jobs:
       - checkout
       - install-dependencies:
           install_xcbeautify: false
+          install_mint: true
           install_swiftlint: false
       - install-xcbeautify-for-xcode15
       - run:
@@ -921,6 +924,7 @@ jobs:
       - checkout
       - install-dependencies:
           install_xcbeautify: false
+          install_mint: true
           install_swiftlint: false
       - install-xcbeautify-for-xcode15
       - update-spm-installation-commit
@@ -956,6 +960,7 @@ jobs:
       - checkout
       - install-dependencies:
           install_xcbeautify: false
+          install_mint: true
           install_swiftlint: false
       - install-xcbeautify-for-xcode15
       - update-spm-installation-commit
