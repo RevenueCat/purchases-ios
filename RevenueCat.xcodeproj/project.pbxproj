@@ -1131,6 +1131,13 @@
 		901DE80E2EA0E097007EAA86 /* AdTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 901DE80D2EA0E096007EAA86 /* AdTracker.swift */; };
 		9025C53D2EA66E2500845BCE /* PostFeatureEventsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9025C53C2EA66E2500845BCE /* PostFeatureEventsOperation.swift */; };
 		903A04342EB35929009B9CE4 /* EventsHTTPRequestPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 903A04332EB35929009B9CE4 /* EventsHTTPRequestPath.swift */; };
+		903A058D2EB3AE29009B9CE4 /* StoredAdEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 903A058B2EB3AE29009B9CE4 /* StoredAdEvent.swift */; };
+		903A058E2EB3AE29009B9CE4 /* StoredAdEventSerializer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 903A058C2EB3AE29009B9CE4 /* StoredAdEventSerializer.swift */; };
+		903A058F2EB3AE29009B9CE4 /* AdEventStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 903A058A2EB3AE29009B9CE4 /* AdEventStore.swift */; };
+		903A05962EB3AE3C009B9CE4 /* AdEventStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 903A05952EB3AE3C009B9CE4 /* AdEventStoreTests.swift */; };
+		903A05982EB3AE81009B9CE4 /* AdEventsRequestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 903A05972EB3AE81009B9CE4 /* AdEventsRequestTests.swift */; };
+		903A059A2EB3AE9C009B9CE4 /* AdEventsRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 903A05992EB3AE9C009B9CE4 /* AdEventsRequest.swift */; };
+		903A059C2EB3AECE009B9CE4 /* EventsManagerAdEventsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 903A059B2EB3AECE009B9CE4 /* EventsManagerAdEventsTests.swift */; };
 		903A05AF2EB3B9B1009B9CE4 /* StoredFeatureEventSerializerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 903A05AE2EB3B9B1009B9CE4 /* StoredFeatureEventSerializerTests.swift */; };
 		903A05B02EB3B9B1009B9CE4 /* FeatureEventStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 903A05AD2EB3B9B1009B9CE4 /* FeatureEventStoreTests.swift */; };
 		903A05B12EB3B9B1009B9CE4 /* EventsManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 903A05AC2EB3B9B1009B9CE4 /* EventsManagerTests.swift */; };
@@ -2601,6 +2608,13 @@
 		901DE80D2EA0E096007EAA86 /* AdTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdTracker.swift; sourceTree = "<group>"; };
 		9025C53C2EA66E2500845BCE /* PostFeatureEventsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostFeatureEventsOperation.swift; sourceTree = "<group>"; };
 		903A04332EB35929009B9CE4 /* EventsHTTPRequestPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventsHTTPRequestPath.swift; sourceTree = "<group>"; };
+		903A058A2EB3AE29009B9CE4 /* AdEventStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdEventStore.swift; sourceTree = "<group>"; };
+		903A058B2EB3AE29009B9CE4 /* StoredAdEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoredAdEvent.swift; sourceTree = "<group>"; };
+		903A058C2EB3AE29009B9CE4 /* StoredAdEventSerializer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoredAdEventSerializer.swift; sourceTree = "<group>"; };
+		903A05952EB3AE3C009B9CE4 /* AdEventStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdEventStoreTests.swift; sourceTree = "<group>"; };
+		903A05972EB3AE81009B9CE4 /* AdEventsRequestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdEventsRequestTests.swift; sourceTree = "<group>"; };
+		903A05992EB3AE9C009B9CE4 /* AdEventsRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdEventsRequest.swift; sourceTree = "<group>"; };
+		903A059B2EB3AECE009B9CE4 /* EventsManagerAdEventsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventsManagerAdEventsTests.swift; sourceTree = "<group>"; };
 		903A05AC2EB3B9B1009B9CE4 /* EventsManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventsManagerTests.swift; sourceTree = "<group>"; };
 		903A05AD2EB3B9B1009B9CE4 /* FeatureEventStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureEventStoreTests.swift; sourceTree = "<group>"; };
 		903A05AE2EB3B9B1009B9CE4 /* StoredFeatureEventSerializerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoredFeatureEventSerializerTests.swift; sourceTree = "<group>"; };
@@ -4288,6 +4302,7 @@
 		356E2DE62CD3CF890055AABB /* Events */ = {
 			isa = PBXGroup;
 			children = (
+				903A059B2EB3AECE009B9CE4 /* EventsManagerAdEventsTests.swift */,
 				903A05AC2EB3B9B1009B9CE4 /* EventsManagerTests.swift */,
 				903A05AD2EB3B9B1009B9CE4 /* FeatureEventStoreTests.swift */,
 				903A05AE2EB3B9B1009B9CE4 /* StoredFeatureEventSerializerTests.swift */,
@@ -5646,6 +5661,7 @@
 		9094B4142E96A9A70094AD5F /* Networking */ = {
 			isa = PBXGroup;
 			children = (
+				903A05992EB3AE9C009B9CE4 /* AdEventsRequest.swift */,
 				9094B4112E96A9A70094AD5F /* AdHTTPRequestPath.swift */,
 			);
 			path = Networking;
@@ -5654,6 +5670,9 @@
 		9094B4182E96A9A70094AD5F /* Events */ = {
 			isa = PBXGroup;
 			children = (
+				903A058A2EB3AE29009B9CE4 /* AdEventStore.swift */,
+				903A058B2EB3AE29009B9CE4 /* StoredAdEvent.swift */,
+				903A058C2EB3AE29009B9CE4 /* StoredAdEventSerializer.swift */,
 				9094B4142E96A9A70094AD5F /* Networking */,
 				9094B4152E96A9A70094AD5F /* AdEvent.swift */,
 			);
@@ -5691,6 +5710,8 @@
 		9094B43E2E96AA140094AD5F /* Events */ = {
 			isa = PBXGroup;
 			children = (
+				903A05972EB3AE81009B9CE4 /* AdEventsRequestTests.swift */,
+				903A05952EB3AE3C009B9CE4 /* AdEventStoreTests.swift */,
 				9094B4382E96AA140094AD5F /* __Snapshots__ */,
 				9094B43D2E96AA140094AD5F /* PurchasesAdEventsTests.swift */,
 			);
@@ -6916,6 +6937,9 @@
 				2DDF41AB24F6F37C005BC22D /* AppleReceipt.swift in Sources */,
 				2DDF41BB24F6F392005BC22D /* UInt8+Extensions.swift in Sources */,
 				1E98EC092CDE567100A751C0 /* URL+WebPurchaseRedemption.swift in Sources */,
+				903A058D2EB3AE29009B9CE4 /* StoredAdEvent.swift in Sources */,
+				903A058E2EB3AE29009B9CE4 /* StoredAdEventSerializer.swift in Sources */,
+				903A058F2EB3AE29009B9CE4 /* AdEventStore.swift in Sources */,
 				57CB2A7829CCC3AA00C91439 /* ProductEntitlementMappingFetcher.swift in Sources */,
 				5736267B2D3E76C1003C9665 /* ProductPaidPrice.swift in Sources */,
 				5712BE9029241EB500A83F15 /* TimingUtil.swift in Sources */,
@@ -7059,6 +7083,7 @@
 				FDA6F96F2E035544008BF232 /* VirtualCurrencyStrings.swift in Sources */,
 				53AAD34F2E09857300605F51 /* PaymentAuthorizationProvider.swift in Sources */,
 				53A8DCC12E0EA49400FEABEA /* HealthReportAvailabilityOperation.swift in Sources */,
+				903A059A2EB3AE9C009B9CE4 /* AdEventsRequest.swift in Sources */,
 				901DE80E2EA0E097007EAA86 /* AdTracker.swift in Sources */,
 				75BB98FB2E336C070001DD1A /* ProductsManagerType.swift in Sources */,
 				5766C622282DAA700067D886 /* GetIntroEligibilityResponse.swift in Sources */,
@@ -7109,8 +7134,11 @@
 				57554C88282AC293009A7E58 /* PurchaseOwnershipTypeTests.swift in Sources */,
 				35109DAB2BC6E436001030C8 /* BackendPostDiagnosticsTests.swift in Sources */,
 				57554C84282AC273009A7E58 /* PeriodTypeTests.swift in Sources */,
+				903A05962EB3AE3C009B9CE4 /* AdEventStoreTests.swift in Sources */,
+				4FE6FEEA2AA940E300780B45 /* PaywallEventStoreTests.swift in Sources */,
 				16F376262E93F1E300ADF649 /* LargeItemCacheTypeTests.swift in Sources */,
 				5757EDE72DEE08C100AC4BE1 /* StoreKitVersionTests.swift in Sources */,
+				903A059C2EB3AECE009B9CE4 /* EventsManagerAdEventsTests.swift in Sources */,
 				57057FF828B0048900995F21 /* TestLogHandler.swift in Sources */,
 				57E415F12846997B00EA5460 /* PurchasesAttributionDataTests.swift in Sources */,
 				2DDF41CF24F6F4C3005BC22D /* ReceiptParsing+TestsWithRealReceipts.swift in Sources */,
@@ -7347,6 +7375,7 @@
 				FDAADFCB2BE2A5BF00BD1659 /* MockAllTransactionsProvider.swift in Sources */,
 				356E2DE82CD3CF930055AABB /* StoredEventTests.swift in Sources */,
 				351B513F26D4496000BD2BD7 /* MockIdentityManager.swift in Sources */,
+				903A05982EB3AE81009B9CE4 /* AdEventsRequestTests.swift in Sources */,
 				B319514926C19856002CA9AC /* DataExtensionsTests.swift in Sources */,
 				5733B1A427FF9F8300EC2045 /* NetworkErrorTests.swift in Sources */,
 				1EFA95122CDBA58F00CA5951 /* MockRedeemWebPurchaseAPI.swift in Sources */,
