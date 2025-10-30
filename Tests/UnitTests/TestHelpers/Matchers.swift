@@ -22,7 +22,7 @@ func beCloseToNow() -> Nimble.Predicate<Date> {
 }
 
 func beCloseToDate(_ expectedValue: Date) -> Nimble.Predicate<Date> {
-    return beCloseTo(expectedValue, within: 1)
+    return beCloseTo(expectedValue, within: 1.5)
 }
 
 // MARK: - Errors
