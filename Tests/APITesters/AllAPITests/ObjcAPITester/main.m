@@ -6,6 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "RCAdTrackerAPI.h"
 #import "RCAttributionAPI.h"
 #import "RCAttributionNetworkAPI.h"
 #import "RCConfigurationAPI.h"
@@ -34,6 +35,11 @@
 
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
+
+        #ifdef ENABLE_AD_EVENTS_TRACKING
+        [RCAdTrackerAPI checkAPI];
+        #endif
+
         [RCAttributionAPI checkAPI];
         [RCAttributionNetworkAPI checkEnums];
 

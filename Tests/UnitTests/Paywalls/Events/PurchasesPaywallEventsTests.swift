@@ -31,7 +31,7 @@ class PurchasesPaywallEventsTests: BasePurchasesTests {
     func testApplicationWillEnterForegroundSendsEvents() async throws {
         self.notificationCenter.fireApplicationWillEnterForegroundNotification()
 
-        let manager = try self.mockPaywallEventsManager
+        let manager = try self.mockEventsManager
 
         try await asyncWait { await manager.invokedFlushEvents == true }
 
@@ -41,7 +41,7 @@ class PurchasesPaywallEventsTests: BasePurchasesTests {
     func testApplicationWillEnterBackgroundSendsEvents() async throws {
         self.notificationCenter.fireApplicationDidEnterBackgroundNotification()
 
-        let manager = try self.mockPaywallEventsManager
+        let manager = try self.mockEventsManager
 
         try await asyncWait { await manager.invokedFlushEvents == true }
 

@@ -108,9 +108,10 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         self.logger.clearMessages()
 
         self.serverDown()
-        try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
+        let purchaseData = try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
 
-        self.verifyCustomerInfoWasComputedOffline()
+        XCTAssertEqual(purchaseData.customerInfo.entitlements.verification, .verifiedOnDevice)
+        self.verifyCustomerInfoWasComputedOffline(customerInfo: purchaseData.customerInfo)
         self.verifyNoTransactionsWereFinished()
     }
 

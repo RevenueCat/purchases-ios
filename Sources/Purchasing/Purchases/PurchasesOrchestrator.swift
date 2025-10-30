@@ -71,7 +71,7 @@ final class PurchasesOrchestrator {
     private let beginRefundRequestHelper: BeginRefundRequestHelper
     private let storeMessagesHelper: StoreMessagesHelperType?
     private let winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?
-    private let paywallEventsManager: PaywallEventsManagerType?
+    private let eventsManager: EventsManagerType?
     private let webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType
     private let dateProvider: DateProvider
 
@@ -149,7 +149,7 @@ final class PurchasesOrchestrator {
                      diagnosticsSynchronizer: DiagnosticsSynchronizerType?,
                      diagnosticsTracker: DiagnosticsTrackerType?,
                      winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
-                     paywallEventsManager: PaywallEventsManagerType?,
+                     eventsManager: EventsManagerType?,
                      webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType,
                      dateProvider: DateProvider = DateProvider(),
                      notificationCenter: NotificationCenter = .default
@@ -176,7 +176,7 @@ final class PurchasesOrchestrator {
             storeMessagesHelper: storeMessagesHelper,
             diagnosticsTracker: diagnosticsTracker,
             winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
-            paywallEventsManager: paywallEventsManager,
+            eventsManager: eventsManager,
             webPurchaseRedemptionHelper: webPurchaseRedemptionHelper,
             dateProvider: dateProvider,
             notificationCenter: notificationCenter
@@ -235,7 +235,7 @@ final class PurchasesOrchestrator {
          storeMessagesHelper: StoreMessagesHelperType?,
          diagnosticsTracker: DiagnosticsTrackerType?,
          winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
-         paywallEventsManager: PaywallEventsManagerType?,
+         eventsManager: EventsManagerType?,
          webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType,
          dateProvider: DateProvider = DateProvider(),
          notificationCenter: NotificationCenter = .default
@@ -261,7 +261,7 @@ final class PurchasesOrchestrator {
         self.storeMessagesHelper = storeMessagesHelper
         self._diagnosticsTracker = diagnosticsTracker
         self.winBackOfferEligibilityCalculator = winBackOfferEligibilityCalculator
-        self.paywallEventsManager = paywallEventsManager
+        self.eventsManager = eventsManager
         self.webPurchaseRedemptionHelper = webPurchaseRedemptionHelper
         self.dateProvider = dateProvider
         self.notificationCenter = notificationCenter
@@ -575,7 +575,7 @@ final class PurchasesOrchestrator {
                             productIdentifier: productIdentifier
                         ))
 
-                        self.postPaywallEventsIfNeeded()
+                        self.postFeatureEventsIfNeeded()
                     }
                 }
 
@@ -687,7 +687,7 @@ final class PurchasesOrchestrator {
 
             if let transaction = transaction {
                 customerInfo = try await self.handlePurchasedTransaction(transaction, .purchase, metadata)
-                self.postPaywallEventsIfNeeded()
+                self.postFeatureEventsIfNeeded()
             } else {
                 // `transaction` would be `nil` for `Product.PurchaseResult.pending` and
                 // `Product.PurchaseResult.userCancelled`.
@@ -812,9 +812,9 @@ final class PurchasesOrchestrator {
         }
     }
 
-    func postPaywallEventsIfNeeded(delayed: Bool = false) {
+    func postFeatureEventsIfNeeded(delayed: Bool = false) {
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
-              let manager = self.paywallEventsManager else { return }
+              let manager = self.eventsManager else { return }
 
         let delay: JitterableDelay
         if delayed {
@@ -824,7 +824,7 @@ final class PurchasesOrchestrator {
             delay = .none
         }
         self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) {
-            _ = try? await manager.flushEvents(count: PaywallEventsManager.defaultEventFlushCount)
+            _ = try? await manager.flushEvents(batchSize: EventsManager.defaultEventBatchSize)
         }
     }
 

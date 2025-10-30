@@ -94,7 +94,7 @@ extension HTTPRequest {
 
     }
 
-    enum PaywallPath: Hashable {
+    enum FeatureEventsPath: Hashable {
 
         case postEvents
 
@@ -110,6 +110,12 @@ extension HTTPRequest {
 
         case getWebOfferingProducts(appUserID: String)
         case getWebBillingProducts(userId: String, productIds: Set<String>)
+
+    }
+
+    enum AdPath: Hashable {
+
+        case postEvents
 
     }
 

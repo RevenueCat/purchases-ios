@@ -85,16 +85,19 @@ class InternalAPI {
     #endif
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func postPaywallEvents(events: [StoredEvent], completion: @escaping ResponseHandler) {
+    func postFeatureEvents(events: [StoredFeatureEvent], completion: @escaping ResponseHandler) {
         guard !events.isEmpty else {
             completion(nil)
             return
         }
 
-        let request = EventsRequest(events: events)
-        let operation = PostPaywallEventsOperation(configuration: .init(httpClient: self.backendConfig.httpClient),
-                                                   request: request,
-                                                   responseHandler: completion)
+        let request = FeatureEventsRequest(events: events)
+        let operation = PostFeatureEventsOperation(
+            configuration: .init(httpClient: self.backendConfig.httpClient),
+            request: request,
+            path: HTTPRequest.FeatureEventsPath.postEvents,
+            responseHandler: completion
+        )
 
         self.backendConfig.operationQueue.addOperation(operation)
     }
@@ -119,9 +122,9 @@ extension InternalAPI {
 
     /// - Throws: `BackendError`
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func postPaywallEvents(events: [StoredEvent]) async throws {
+    func postFeatureEvents(events: [StoredFeatureEvent]) async throws {
         let error = await Async.call { completion in
-            self.postPaywallEvents(events: events, completion: completion)
+            self.postFeatureEvents(events: events, completion: completion)
         }
 
         if let error { throw error }

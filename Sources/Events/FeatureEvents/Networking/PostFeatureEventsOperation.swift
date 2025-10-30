@@ -7,35 +7,38 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PostPaywallEventsOperation.swift
+//  PostFeatureEventsOperation.swift
 //
-//  Created by Nacho Soto on 9/6/23.
+//  Created by RevenueCat on 1/20/25.
 
 import Foundation
 
-/// A `NetworkOperation` for posting ``PaywallEvent``s.
-final class PostPaywallEventsOperation: NetworkOperation {
+/// A `NetworkOperation` for posting feature events to the feature events endpoint.
+final class PostFeatureEventsOperation: NetworkOperation {
 
     private let configuration: Configuration
-    private let request: EventsRequest
+    private let request: FeatureEventsRequest
+    private let path: HTTPRequestPath
     private let responseHandler: CustomerAPI.SimpleResponseHandler?
 
     init(
         configuration: Configuration,
-        request: EventsRequest,
+        request: FeatureEventsRequest,
+        path: HTTPRequestPath,
         responseHandler: CustomerAPI.SimpleResponseHandler?
     ) {
         self.request = request
         self.configuration = configuration
+        self.path = path
         self.responseHandler = responseHandler
 
         super.init(configuration: configuration)
     }
 
     override func begin(completion: @escaping () -> Void) {
-        let request = HTTPRequest(method: .post(self.request), path: .postEvents)
+        let httpRequest = HTTPRequest(method: .post(self.request), requestPath: self.path)
 
-        self.httpClient.perform(request) { (response: VerifiedHTTPResponse<HTTPEmptyResponseBody>.Result) in
+        self.httpClient.perform(httpRequest) { (response: VerifiedHTTPResponse<HTTPEmptyResponseBody>.Result) in
             defer {
                 completion()
             }
@@ -47,4 +50,4 @@ final class PostPaywallEventsOperation: NetworkOperation {
 }
 
 // Restating inherited @unchecked Sendable from Foundation's Operation
-extension PostPaywallEventsOperation: @unchecked Sendable {}
+extension PostFeatureEventsOperation: @unchecked Sendable {}

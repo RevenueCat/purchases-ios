@@ -149,7 +149,7 @@ extension BaseStoreKitIntegrationTests {
 
         if !allowOfflineEntitlements {
             // Avoid false positives if the API returned a 500 and customer info was computed offline
-            self.verifyCustomerInfoWasNotComputedOffline(logger: logger, file: file, line: line)
+            self.verifyCustomerInfoWasNotComputedOffline(customerInfo: data.customerInfo, file: file, line: line)
         }
 
         return data
@@ -194,7 +194,7 @@ extension BaseStoreKitIntegrationTests {
 
         if !allowOfflineEntitlements {
             // Avoid false positives if the API returned a 500 and customer info was computed offline
-            self.verifyCustomerInfoWasNotComputedOffline(logger: logger, file: file, line: line)
+            self.verifyCustomerInfoWasNotComputedOffline(customerInfo: data.customerInfo, file: file, line: line)
         }
 
         return data
@@ -217,7 +217,7 @@ extension BaseStoreKitIntegrationTests {
 
         if !allowOfflineEntitlements {
             // Avoid false positives if the API returned a 500 and customer info was computed offline
-            self.verifyCustomerInfoWasNotComputedOffline(logger: logger, file: file, line: line)
+            self.verifyCustomerInfoWasNotComputedOffline(customerInfo: data.customerInfo, file: file, line: line)
         }
 
         return data

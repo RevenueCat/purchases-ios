@@ -136,31 +136,27 @@ extension BaseStoreKitIntegrationTests {
     }
 
     func verifyCustomerInfoWasComputedOffline(
-        logger: TestLogHandler? = nil,
+        customerInfo: CustomerInfo,
         file: FileString = #file,
         line: UInt = #line
     ) {
-        let logger: TestLogHandler = logger ?? self.logger
-        logger.verifyMessageWasLogged(
-            Strings.offlineEntitlements.computing_offline_customer_info,
-            level: .info,
+        expect(
             file: file,
-            line: line
-        )
+            line: line,
+            customerInfo.isComputedOffline
+        ).to(beTrue(), description: "Expected customer info to be computed offline")
     }
 
     func verifyCustomerInfoWasNotComputedOffline(
-        logger: TestLogHandler? = nil,
+        customerInfo: CustomerInfo,
         file: FileString = #file,
         line: UInt = #line
     ) {
-        let logger: TestLogHandler = logger ?? self.logger
-
-        logger.verifyMessageWasNotLogged(
-            Strings.offlineEntitlements.computing_offline_customer_info,
+        expect(
             file: file,
-            line: line
-        )
+            line: line,
+            customerInfo.isComputedOffline
+        ).to(beFalse(), description: "Expected customer info not to be computed offline")
     }
 
     func verifyReceiptIsEventuallyPosted(
