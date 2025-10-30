@@ -217,7 +217,7 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
             }
         }
 
-        let manager = try self.mockPaywallEventsManager
+        let manager = try self.mockEventsManager
 
         try await asyncWait { await manager.invokedFlushEvents == true }
 

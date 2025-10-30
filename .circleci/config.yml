@@ -270,11 +270,18 @@ commands:
             make
 
   install-xcbeautify-for-xcode14:
-    description: "Installs xcbeautify using Mint"
+    description: "Installs xcbeautify 1.6.0 using Mint"
     steps:
       - run:
           name: Install xcbeautify using Mint
           command: mint install cpisciotta/xcbeautify@1.6.0
+
+  install-xcbeautify-for-xcode15:
+    description: "Installs xcbeautify 2.30.1 using Mint"
+    steps:
+      - run:
+          name: Install xcbeautify 2.30.1 using Mint
+          command: mint install cpisciotta/xcbeautify@2.30.1
 
   install-rubydocker-dependencies:
     steps:
@@ -610,7 +617,10 @@ jobs:
     steps:
       - checkout
       - install-dependencies:
+          install_xcbeautify: false
+          install_mint: true
           install_swiftlint: false
+      - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Tests
@@ -640,7 +650,10 @@ jobs:
     steps:
       - checkout
       - install-dependencies:
+          install_xcbeautify: false
+          install_mint: true
           install_swiftlint: false
+      - install-xcbeautify-for-xcode15
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Release Build
@@ -674,7 +687,10 @@ jobs:
     steps:
       - checkout
       - install-dependencies:
+          install_xcbeautify: false
+          install_mint: true
           install_swiftlint: false
+      - install-xcbeautify-for-xcode15
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Release Build
@@ -877,7 +893,10 @@ jobs:
     steps:
       - checkout
       - install-dependencies:
+          install_xcbeautify: false
+          install_mint: true
           install_swiftlint: false
+      - install-xcbeautify-for-xcode15
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
@@ -905,7 +924,10 @@ jobs:
     steps:
       - checkout
       - install-dependencies:
+          install_xcbeautify: false
+          install_mint: true
           install_swiftlint: false
+      - install-xcbeautify-for-xcode15
       - update-spm-installation-commit
       - run:
           name: Run tests
@@ -938,7 +960,10 @@ jobs:
     steps:
       - checkout
       - install-dependencies:
+          install_xcbeautify: false
+          install_mint: true
           install_swiftlint: false
+      - install-xcbeautify-for-xcode15
       - update-spm-installation-commit
       - install-runtime:
           runtime-name: iOS 15.5

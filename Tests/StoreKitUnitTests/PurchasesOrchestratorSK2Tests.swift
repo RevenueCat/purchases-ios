@@ -440,7 +440,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                                             package: package,
                                             promotionalOffer: nil)
 
-        let manager = try self.mockPaywallEventsManager
+        let manager = try self.mockEventsManager
 
         try await asyncWait { await manager.invokedFlushEvents == true }
 

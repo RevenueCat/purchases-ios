@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  StoredEventSerializerTests.swift
+//  StoredFeatureEventSerializerTests.swift
 //
 //  Created by Nacho Soto on 9/5/23.
 
@@ -17,7 +17,7 @@ import Nimble
 import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-class StoredEventSerializerTests: TestCase {
+class StoredFeatureEventSerializerTests: TestCase {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -27,20 +27,20 @@ class StoredEventSerializerTests: TestCase {
 
     func testEncodeImpressionEvent() throws {
         let originalEvent = PaywallEvent.impression(.random(), .random())
-        let event = try Self.createStoredEvent(from: originalEvent)
+        let event = try Self.createStoredFeatureEvent(from: originalEvent)
         expect(try event.encodeAndDecode()) == event
     }
 
     func testDecodeCancelEvent() throws {
         let originalEvent = PaywallEvent.cancel(.random(), .random())
-        let event = try Self.createStoredEvent(from: originalEvent)
+        let event = try Self.createStoredFeatureEvent(from: originalEvent)
 
         expect(try event.encodeAndDecode()) == event
     }
 
     func testDecodeCloseEvent() throws {
         let originalEvent = PaywallEvent.close(.random(), .random())
-        let event = try Self.createStoredEvent(from: originalEvent)
+        let event = try Self.createStoredFeatureEvent(from: originalEvent)
 
         expect(try event.encodeAndDecode()) == event
     }
@@ -61,9 +61,9 @@ class StoredEventSerializerTests: TestCase {
         )
         let paywallEvent = PaywallEvent.impression(paywallEventCreationData, paywallEventData)
 
-        let storedEvent = try Self.createStoredEvent(from: paywallEvent, expectedUserID: expectedUserID)
-        let serializedEvent = try StoredEventSerializer.encode(storedEvent)
-        let deserializedEvent = try StoredEventSerializer.decode(serializedEvent)
+        let storedEvent = try Self.createStoredFeatureEvent(from: paywallEvent, expectedUserID: expectedUserID)
+        let serializedEvent = try StoredFeatureEventSerializer.encode(storedEvent)
+        let deserializedEvent = try StoredFeatureEventSerializer.decode(serializedEvent)
         expect(deserializedEvent.userID) == expectedUserID
         expect(deserializedEvent.feature) == .paywalls
 
@@ -75,11 +75,14 @@ class StoredEventSerializerTests: TestCase {
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-private extension StoredEventSerializerTests {
+private extension StoredFeatureEventSerializerTests {
 
     static let userID = UUID().uuidString
 
-    static func createStoredEvent(from event: PaywallEvent, expectedUserID: String = userID) throws -> StoredEvent {
+    static func createStoredFeatureEvent(
+        from event: PaywallEvent,
+        expectedUserID: String = userID
+    ) throws -> StoredFeatureEvent {
         return try XCTUnwrap(.init(event: event,
                                    userID: expectedUserID,
                                    feature: .paywalls,
