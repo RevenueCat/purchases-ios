@@ -64,6 +64,9 @@ public struct PaywallView: View {
     @Environment(\.dismiss)
     private var dismiss
 
+    @Environment(\.colorScheme)
+    private var colorScheme
+
     /// Create a view to display the paywall in `Offerings.current`.
     ///
     /// - Parameter fonts: An optional ``PaywallFontProvider``.
@@ -350,7 +353,8 @@ public struct PaywallView: View {
                         if Purchases.isConfigured {
                             Purchases.shared.failedToLoadFontWithConfig(fontConfig)
                         }
-                    }
+                    },
+                    colorScheme: colorScheme
                 )
             }
         } else {
