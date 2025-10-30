@@ -16,6 +16,7 @@ import Nimble
 import StoreKit
 import XCTest
 
+// swiftlint:disable:next type_name
 class PurchasesFallbackURLBackendIntegrationTests: BaseStoreKitIntegrationTests {
 
     override class var storeKitVersion: StoreKitVersion { .storeKit2 }
