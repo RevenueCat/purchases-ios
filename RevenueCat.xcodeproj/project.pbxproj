@@ -3360,6 +3360,7 @@
 		2DC5621724EC63420031F69B /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				903A042B2EB35609009B9CE4 /* FeatureEvents */,
 				9094B4192E96A9A70094AD5F /* Ads */,
 				353DE0042CCA4EA600A8F632 /* Events */,
 				1E8A60402CDBD73E0034ACF3 /* WebPurchaseRedemption */,
@@ -4141,9 +4142,7 @@
 		353DE0042CCA4EA600A8F632 /* Events */ = {
 			isa = PBXGroup;
 			children = (
-				352137312CDBA2A700FE961B /* FeatureEvent.swift */,
-				4FE6FEE42AA940B700780B45 /* StoredEvent.swift */,
-				4FD368B52AA7D09C00F63354 /* StoredEventSerializer.swift */,
+				4FFFE6C32AA9464100B2955C /* PaywallEventsManager.swift */,
 				353DE0052CCA4EAE00A8F632 /* Networking */,
 			);
 			path = Events;
@@ -4384,7 +4383,7 @@
 		35F7884C2CC68F5F00080F32 /* Events */ = {
 			isa = PBXGroup;
 			children = (
-				35F788F52CC6B62400080F32 /* EventsRequest+CustomerCenter.swift */,
+				903A04322EB35662009B9CE4 /* Networking */,
 				35F7884A2CC68F4C00080F32 /* CustomerCenterEvent.swift */,
 			);
 			path = Events;
@@ -4620,8 +4619,6 @@
 			children = (
 				4FFCED842AA941D200118EF4 /* Networking */,
 				4FD3688A2AA7C12600F63354 /* PaywallEvent.swift */,
-				4FFFE6C32AA9464100B2955C /* PaywallEventsManager.swift */,
-				4FD368B32AA7CFED00F63354 /* PaywallEventStore.swift */,
 			);
 			path = Events;
 			sourceTree = "<group>";
@@ -4659,7 +4656,6 @@
 			isa = PBXGroup;
 			children = (
 				353DE0062CCA504600A8F632 /* EventsRequest+Paywall.swift */,
-				4FFCED862AA941D200118EF4 /* PaywallHTTPRequestPath.swift */,
 			);
 			path = Networking;
 			sourceTree = "<group>";
@@ -5597,6 +5593,34 @@
 				88B1BAE92C813A3C001B7EE5 /* StackComponentViewModel.swift */,
 			);
 			path = Stack;
+			sourceTree = "<group>";
+		};
+		903A042B2EB35609009B9CE4 /* FeatureEvents */ = {
+			isa = PBXGroup;
+			children = (
+				352137312CDBA2A700FE961B /* FeatureEvent.swift */,
+				4FD368B32AA7CFED00F63354 /* PaywallEventStore.swift */,
+				4FD368B52AA7D09C00F63354 /* StoredEventSerializer.swift */,
+				4FE6FEE42AA940B700780B45 /* StoredEvent.swift */,
+				903A04312EB35618009B9CE4 /* Networking */,
+			);
+			path = FeatureEvents;
+			sourceTree = "<group>";
+		};
+		903A04312EB35618009B9CE4 /* Networking */ = {
+			isa = PBXGroup;
+			children = (
+				4FFCED862AA941D200118EF4 /* PaywallHTTPRequestPath.swift */,
+			);
+			path = Networking;
+			sourceTree = "<group>";
+		};
+		903A04322EB35662009B9CE4 /* Networking */ = {
+			isa = PBXGroup;
+			children = (
+				35F788F52CC6B62400080F32 /* EventsRequest+CustomerCenter.swift */,
+			);
+			path = Networking;
 			sourceTree = "<group>";
 		};
 		9094B4142E96A9A70094AD5F /* Networking */ = {
