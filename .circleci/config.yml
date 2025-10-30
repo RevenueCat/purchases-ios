@@ -618,6 +618,7 @@ jobs:
       - checkout
       - install-dependencies:
           install_xcbeautify: false
+          install_mint: true
           install_swiftlint: false
       - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
