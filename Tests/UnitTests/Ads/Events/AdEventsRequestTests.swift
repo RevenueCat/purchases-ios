@@ -67,11 +67,11 @@ class AdEventsRequestTests: TestCase {
         )
         let adEvent = AdEvent.displayed(adEventCreationData, adEventData)
 
-        let storedEvent = try XCTUnwrap(StoredEvent(event: adEvent,
-                                                    userID: expectedUserID,
-                                                    feature: .ads,
-                                                    appSessionID: Self.appSessionID,
-                                                    eventDiscriminator: nil))
+        let storedEvent = try XCTUnwrap(StoredFeatureEvent(event: adEvent,
+                                                           userID: expectedUserID,
+                                                           feature: .ads,
+                                                           appSessionID: Self.appSessionID,
+                                                           eventDiscriminator: nil))
         let serializedEvent = try StoredFeatureEventSerializer.encode(storedEvent)
         let deserializedEvent = try StoredFeatureEventSerializer.decode(serializedEvent)
         expect(deserializedEvent.userID) == expectedUserID
@@ -89,7 +89,7 @@ class AdEventsRequestTests: TestCase {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension AdEventsRequestTests {
 
-    static func createStoredFeatureEvent(from event: AdEvent) throws -> StoredEvent {
+    static func createStoredFeatureEvent(from event: AdEvent) throws -> StoredFeatureEvent {
         return try XCTUnwrap(.init(event: event,
                                    userID: Self.userID,
                                    feature: .ads,

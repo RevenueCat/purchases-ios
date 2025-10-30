@@ -66,7 +66,7 @@ extension EventsRequest {
         }
 
         @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-        static func createBase(from storedEvent: StoredEvent) -> CustomerCenterEventBaseRequest? {
+        static func createBase(from storedEvent: StoredFeatureEvent) -> CustomerCenterEventBaseRequest? {
             guard let appSessionID = storedEvent.appSessionID else {
                 Logger.error(Strings.paywalls.event_missing_app_session_id)
                 return nil
@@ -153,7 +153,7 @@ extension EventsRequest {
         }
 
         @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-        static func create(from storedEvent: StoredEvent) -> CustomerCenterAnswerSubmittedEventRequest? {
+        static func create(from storedEvent: StoredFeatureEvent) -> CustomerCenterAnswerSubmittedEventRequest? {
             guard let appSessionID = storedEvent.appSessionID else {
                 Logger.error(Strings.paywalls.event_missing_app_session_id)
                 return nil

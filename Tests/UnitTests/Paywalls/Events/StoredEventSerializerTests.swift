@@ -82,7 +82,7 @@ private extension StoredFeatureEventSerializerTests {
     static func createStoredFeatureEvent(
         from event: PaywallEvent,
         expectedUserID: String = userID
-    ) throws -> StoredEvent {
+    ) throws -> StoredFeatureEvent {
         return try XCTUnwrap(.init(event: event,
                                    userID: expectedUserID,
                                    feature: .paywalls,

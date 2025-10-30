@@ -85,7 +85,7 @@ class InternalAPI {
     #endif
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func postFeatureEvents(events: [StoredEvent], completion: @escaping ResponseHandler) {
+    func postFeatureEvents(events: [StoredFeatureEvent], completion: @escaping ResponseHandler) {
         guard !events.isEmpty else {
             completion(nil)
             return
@@ -120,7 +120,7 @@ extension InternalAPI {
 
     /// - Throws: `BackendError`
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func postFeatureEvents(events: [StoredEvent]) async throws {
+    func postFeatureEvents(events: [StoredFeatureEvent]) async throws {
         let error = await Async.call { completion in
             self.postFeatureEvents(events: events, completion: completion)
         }

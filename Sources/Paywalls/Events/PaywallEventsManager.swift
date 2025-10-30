@@ -48,11 +48,11 @@ actor EventsManager: EventsManagerType {
     }
 
     func track(featureEvent: FeatureEvent) async {
-        guard let event: StoredEvent = .init(event: featureEvent,
-                                             userID: self.userProvider.currentAppUserID,
-                                             feature: featureEvent.feature,
-                                             appSessionID: self.appSessionID,
-                                             eventDiscriminator: featureEvent.eventDiscriminator) else {
+        guard let event: StoredFeatureEvent = .init(event: featureEvent,
+                                                    userID: self.userProvider.currentAppUserID,
+                                                    feature: featureEvent.feature,
+                                                    appSessionID: self.appSessionID,
+                                                    eventDiscriminator: featureEvent.eventDiscriminator) else {
             Logger.error(Strings.paywalls.event_cannot_serialize)
             return
         }

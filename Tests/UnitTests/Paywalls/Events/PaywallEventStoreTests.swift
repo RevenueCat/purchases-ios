@@ -91,7 +91,7 @@ class FeatureEventStoreTests: TestCase {
     }
 
     func testStoreOneEvent() async throws {
-        let event: StoredEvent = .randomImpressionEvent()
+        let event: StoredFeatureEvent = .randomImpressionEvent()
         await self.store.store(event)
 
         let events = await self.store.fetch(1)
@@ -109,8 +109,8 @@ class FeatureEventStoreTests: TestCase {
     }
 
     func testStoreMultipleEvents() async throws {
-        let event1: StoredEvent = .randomImpressionEvent()
-        let event2: StoredEvent = .randomImpressionEvent()
+        let event1: StoredFeatureEvent = .randomImpressionEvent()
+        let event2: StoredFeatureEvent = .randomImpressionEvent()
 
         await self.store.store(event1)
         await self.store.store(event2)
@@ -120,7 +120,7 @@ class FeatureEventStoreTests: TestCase {
     }
 
     func testFetchOnlySomeEvents() async throws {
-        let event: StoredEvent = .randomImpressionEvent()
+        let event: StoredFeatureEvent = .randomImpressionEvent()
 
         await self.store.store(event)
         await self.store.store(.randomImpressionEvent())
@@ -131,7 +131,7 @@ class FeatureEventStoreTests: TestCase {
     }
 
     func testFetchEventsWithUnrecognizedLines() async throws {
-        let event: StoredEvent = .randomImpressionEvent()
+        let event: StoredFeatureEvent = .randomImpressionEvent()
 
         await self.store.store(event)
         try await self.handler.append(line: "not an event")
@@ -151,7 +151,7 @@ class FeatureEventStoreTests: TestCase {
     }
 
     func testClearSingleEvent() async {
-        let event: StoredEvent = .randomImpressionEvent()
+        let event: StoredFeatureEvent = .randomImpressionEvent()
 
         await self.store.store(event)
         await self.store.clear(1)
@@ -161,7 +161,7 @@ class FeatureEventStoreTests: TestCase {
     }
 
     func testClearOnlyOneEvent() async throws {
-        let storedEvents: [StoredEvent] = [
+        let storedEvents: [StoredFeatureEvent] = [
             .randomImpressionEvent(),
             .randomImpressionEvent(),
             .randomImpressionEvent()
@@ -276,9 +276,9 @@ class FeatureEventStoreTests: TestCase {
 
     func testSizeLimitKeepsLatest11Events() async {
         // Store 60 events and keep track of them
-        var allEvents: [StoredEvent] = []
+        var allEvents: [StoredFeatureEvent] = []
         for _ in 0..<60 {
-            let event = StoredEvent.randomImpressionEvent()
+            let event = StoredFeatureEvent.randomImpressionEvent()
             allEvents.append(event)
             await self.store.store(event)
         }
@@ -287,7 +287,7 @@ class FeatureEventStoreTests: TestCase {
         await self.handler.setMockedFileSizeInKB(2100)
 
         // Store one more event, which should trigger cleanup
-        let finalEvent = StoredEvent.randomImpressionEvent()
+        let finalEvent = StoredFeatureEvent.randomImpressionEvent()
         allEvents.append(finalEvent)
         await self.store.store(finalEvent)
 
@@ -371,7 +371,7 @@ extension PaywallEvent {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension StoredEvent {
+private extension StoredFeatureEvent {
 
     static func randomImpressionEvent() -> Self {
         let event = PaywallEvent.randomImpressionEvent()

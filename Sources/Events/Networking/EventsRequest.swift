@@ -23,7 +23,7 @@ struct EventsRequest {
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    init(events: [StoredEvent]) {
+    init(events: [StoredFeatureEvent]) {
         self.init(events: events.compactMap { storedEvent in
             switch storedEvent.feature {
             case .paywalls:

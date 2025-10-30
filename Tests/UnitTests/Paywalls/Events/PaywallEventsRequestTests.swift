@@ -66,11 +66,11 @@ class PaywallEventsRequestTests: TestCase {
         )
         let paywallEvent = PaywallEvent.impression(paywallEventCreationData, paywallEventData)
 
-        let storedEvent = try XCTUnwrap(StoredEvent(event: paywallEvent,
-                                                    userID: expectedUserID,
-                                                    feature: .paywalls,
-                                                    appSessionID: Self.appSessionID,
-                                                    eventDiscriminator: "impression"))
+        let storedEvent = try XCTUnwrap(StoredFeatureEvent(event: paywallEvent,
+                                                           userID: expectedUserID,
+                                                           feature: .paywalls,
+                                                           appSessionID: Self.appSessionID,
+                                                           eventDiscriminator: "impression"))
         let serializedEvent = try StoredFeatureEventSerializer.encode(storedEvent)
         let deserializedEvent = try StoredFeatureEventSerializer.decode(serializedEvent)
         expect(deserializedEvent.userID) == expectedUserID
@@ -88,7 +88,7 @@ class PaywallEventsRequestTests: TestCase {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PaywallEventsRequestTests {
 
-    static func createStoredFeatureEvent(from event: PaywallEvent) throws -> StoredEvent {
+    static func createStoredFeatureEvent(from event: PaywallEvent) throws -> StoredFeatureEvent {
         return try XCTUnwrap(.init(event: event,
                                    userID: Self.userID,
                                    feature: .paywalls,

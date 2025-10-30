@@ -18,16 +18,16 @@ enum StoredFeatureEventSerializer {
 
     private struct FailedEncodingEventError: Error {}
 
-    /// Encodes a ``StoredEvent`` in a format suitable to be stored by `FeatureEventStore`.
-    static func encode(_ event: StoredEvent) throws -> String {
+    /// Encodes a ``StoredFeatureEvent`` in a format suitable to be stored by `FeatureEventStore`.
+    static func encode(_ event: StoredFeatureEvent) throws -> String {
         let data = try JSONEncoder.default.encode(value: event)
 
         return try String(data: data, encoding: .utf8)
             .orThrow(FailedEncodingEventError())
     }
 
-    /// Decodes a ``StoredEvent``.
-    static func decode(_ event: String) throws -> StoredEvent {
+    /// Decodes a ``StoredFeatureEvent``.
+    static func decode(_ event: String) throws -> StoredFeatureEvent {
         return try JSONDecoder.default.decode(jsonData: event.asData)
     }
 

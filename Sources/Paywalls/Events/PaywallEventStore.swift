@@ -17,11 +17,11 @@ protocol FeatureEventStoreType: Sendable {
 
     /// Stores `event` into the store.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func store(_ storedEvent: StoredEvent) async
+    func store(_ storedEvent: StoredFeatureEvent) async
 
     /// - Returns: the first `count` events from the store.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func fetch(_ count: Int) async -> [StoredEvent]
+    func fetch(_ count: Int) async -> [StoredFeatureEvent]
 
     /// Removes the first `count` events from the store.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -38,7 +38,7 @@ internal actor FeatureEventStore: FeatureEventStoreType {
         self.handler = handler
     }
 
-    func store(_ storedEvent: StoredEvent) async {
+    func store(_ storedEvent: StoredFeatureEvent) async {
         do {
             // Check if store is too big and clear old events if needed
             if await self.isEventStoreTooBig() {
@@ -59,7 +59,7 @@ internal actor FeatureEventStore: FeatureEventStoreType {
         }
     }
 
-    func fetch(_ count: Int) async -> [StoredEvent] {
+    func fetch(_ count: Int) async -> [StoredFeatureEvent] {
         assert(count > 0, "Invalid count: \(count)")
 
         do {

@@ -44,7 +44,7 @@ extension EventsRequest.PaywallEvent {
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    init?(storedEvent: StoredEvent) {
+    init?(storedEvent: StoredFeatureEvent) {
         guard let jsonData = storedEvent.encodedEvent.data(using: .utf8) else {
             Logger.error(Strings.paywalls.event_cannot_get_encoded_event)
             return nil

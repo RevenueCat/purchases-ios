@@ -340,7 +340,7 @@ private extension EventsManagerTests {
     }
 
     func verifyEvents(
-        _ expected: [StoredEvent],
+        _ expected: [StoredFeatureEvent],
         file: FileString = #filePath,
         line: UInt = #line
     ) async {
@@ -348,7 +348,7 @@ private extension EventsManagerTests {
         expect(file: file, line: line, events) == expected
     }
 
-    func createStoredFeatureEvent(from event: PaywallEvent) throws -> StoredEvent {
+    func createStoredFeatureEvent(from event: PaywallEvent) throws -> StoredFeatureEvent {
         return try XCTUnwrap(.init(event: event,
                                    userID: Self.userID,
                                    feature: .paywalls,
@@ -363,13 +363,13 @@ private extension EventsManagerTests {
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 private actor MockFeatureEventStore: FeatureEventStoreType {
 
-    var storedEvents: [StoredEvent] = []
+    var storedEvents: [StoredFeatureEvent] = []
 
-    func store(_ storedEvent: StoredEvent) {
+    func store(_ storedEvent: StoredFeatureEvent) {
         self.storedEvents.append(storedEvent)
     }
 
-    func fetch(_ count: Int) -> [StoredEvent] {
+    func fetch(_ count: Int) -> [StoredFeatureEvent] {
         return Array(self.storedEvents.prefix(count))
     }
 
