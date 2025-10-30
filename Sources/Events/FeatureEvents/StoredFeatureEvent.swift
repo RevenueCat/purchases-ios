@@ -40,9 +40,7 @@ enum Feature: String, Codable {
 
     case paywalls
     case customerCenter
-    #if ENABLE_AD_EVENTS_TRACKING
-    case ads
-    #endif
+
 }
 
 // MARK: - Extensions

@@ -86,7 +86,7 @@ public final class AdTracker: NSObject {
      */
     @_spi(Experimental) public func trackAdDisplayed(_ data: AdDisplayed) async {
         let event = AdEvent.displayed(.init(id: UUID(), date: Date()), data)
-        await self.eventsManager?.track(featureEvent: event)
+        await self.eventsManager?.track(adEvent: event)
     }
 
     /**
@@ -109,7 +109,7 @@ public final class AdTracker: NSObject {
      */
     @_spi(Experimental) public func trackAdOpened(_ data: AdOpened) async {
         let event = AdEvent.opened(.init(id: UUID(), date: Date()), data)
-        await self.eventsManager?.track(featureEvent: event)
+        await self.eventsManager?.track(adEvent: event)
     }
 
     /**
@@ -136,7 +136,7 @@ public final class AdTracker: NSObject {
      */
     @_spi(Experimental) public func trackAdRevenue(_ data: AdRevenue) async {
         let event = AdEvent.revenue(.init(id: UUID(), date: Date()), data)
-        await self.eventsManager?.track(featureEvent: event)
+        await self.eventsManager?.track(adEvent: event)
     }
 
     // MARK: - Objective-C Compatible Methods

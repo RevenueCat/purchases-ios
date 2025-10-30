@@ -18,6 +18,11 @@ protocol EventsManagerType {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func track(featureEvent: FeatureEvent) async
 
+    #if ENABLE_AD_EVENTS_TRACKING
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func track(adEvent: AdEvent) async
+    #endif
+
     /// - Throws: if posting events fails
     /// - Returns: the number of events posted
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -58,6 +63,15 @@ actor EventsManager: EventsManagerType {
         }
         await self.store.store(event)
     }
+
+    #if ENABLE_AD_EVENTS_TRACKING
+    func track(adEvent: AdEvent) async {
+        // Ad events are not yet implemented.
+        // They should not be sent through the feature events system.
+        // They require their own StoredAdEvent, AdEventStore, and
+        // InternalAPI.postAdEvents() using HTTPRequest.AdPath.postEvents
+    }
+    #endif
 
     func flushEvents(batchSize: Int) async throws -> Int {
         guard !self.flushInProgress else {
