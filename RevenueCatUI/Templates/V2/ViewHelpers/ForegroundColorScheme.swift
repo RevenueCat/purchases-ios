@@ -56,7 +56,7 @@ fileprivate extension View {
             if color.hasError {
                 self
             } else {
-                self.foregroundColor(color.toDynamicColor())
+                self.foregroundColor(color.toDynamicColor(with: colorScheme))
             }
         case .linear(let degrees, _):
             self.overlay {
