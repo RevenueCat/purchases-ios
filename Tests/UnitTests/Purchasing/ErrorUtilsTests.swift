@@ -420,7 +420,10 @@ class ErrorUtilsTests: TestCase {
 
     // MARK: -
 
-    private func onlyLoggedMessageOrFail(file: StaticString = #file, line: UInt = #line) throws -> TestLogHandler.MessageData {
+    private func onlyLoggedMessageOrFail(
+        file: StaticString = #file,
+        line: UInt = #line
+    ) throws -> TestLogHandler.MessageData {
         let messages = self.logger.messages
 
         let allMessagesText = messages.map { "\($0.level): \($0.message)" }.joined(separator: "\n")
