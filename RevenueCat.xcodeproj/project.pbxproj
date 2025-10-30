@@ -3362,7 +3362,6 @@
 		2DC5621724EC63420031F69B /* Sources */ = {
 			isa = PBXGroup;
 			children = (
-				903A042B2EB35609009B9CE4 /* FeatureEvents */,
 				9094B4192E96A9A70094AD5F /* Ads */,
 				353DE0042CCA4EA600A8F632 /* Events */,
 				1E8A60402CDBD73E0034ACF3 /* WebPurchaseRedemption */,
@@ -4146,6 +4145,7 @@
 			children = (
 				4FFFE6C32AA9464100B2955C /* EventsManager.swift */,
 				353DE0052CCA4EAE00A8F632 /* Networking */,
+				903A042B2EB35609009B9CE4 /* FeatureEvents */,
 			);
 			path = Events;
 			sourceTree = "<group>";
