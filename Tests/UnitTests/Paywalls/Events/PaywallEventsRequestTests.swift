@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PaywallEventsRequestTests.swift
+//  PaywallFeatureEventsRequestTests.swift
 //
 //  Created by Nacho Soto on 9/6/23.
 
@@ -18,7 +18,7 @@ import SnapshotTesting
 import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-class PaywallEventsRequestTests: TestCase {
+class PaywallFeatureEventsRequestTests: TestCase {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -29,7 +29,7 @@ class PaywallEventsRequestTests: TestCase {
     func testImpressionEvent() throws {
         let event = PaywallEvent.impression(Self.eventCreationData, Self.eventData)
         let storedEvent = try Self.createStoredFeatureEvent(from: event)
-        let requestEvent: EventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
+        let requestEvent: FeatureEventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
@@ -37,7 +37,7 @@ class PaywallEventsRequestTests: TestCase {
     func testCancelEvent() throws {
         let event = PaywallEvent.cancel(Self.eventCreationData, Self.eventData)
         let storedEvent = try Self.createStoredFeatureEvent(from: event)
-        let requestEvent: EventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
+        let requestEvent: FeatureEventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
@@ -45,7 +45,7 @@ class PaywallEventsRequestTests: TestCase {
     func testCloseEvent() throws {
         let event = PaywallEvent.close(Self.eventCreationData, Self.eventData)
         let storedEvent = try Self.createStoredFeatureEvent(from: event)
-        let requestEvent: EventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
+        let requestEvent: FeatureEventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
@@ -76,7 +76,7 @@ class PaywallEventsRequestTests: TestCase {
         expect(deserializedEvent.userID) == expectedUserID
         expect(deserializedEvent.feature) == .paywalls
 
-        let requestEvent = try XCTUnwrap(EventsRequest.PaywallEvent(storedEvent: deserializedEvent))
+        let requestEvent = try XCTUnwrap(FeatureEventsRequest.PaywallEvent(storedEvent: deserializedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
@@ -86,7 +86,7 @@ class PaywallEventsRequestTests: TestCase {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension PaywallEventsRequestTests {
+private extension PaywallFeatureEventsRequestTests {
 
     static func createStoredFeatureEvent(from event: PaywallEvent) throws -> StoredFeatureEvent {
         return try XCTUnwrap(.init(event: event,

@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  AdEventsRequestTests.swift
+//  AdFeatureEventsRequestTests.swift
 //
 //  Created by RevenueCat on 1/8/25.
 
@@ -20,7 +20,7 @@ import SnapshotTesting
 import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-class AdEventsRequestTests: TestCase {
+class AdFeatureEventsRequestTests: TestCase {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -31,7 +31,7 @@ class AdEventsRequestTests: TestCase {
     func testDisplayedEvent() throws {
         let event = AdEvent.displayed(Self.eventCreationData, Self.eventData)
         let storedEvent = try Self.createStoredFeatureEvent(from: event)
-        let requestEvent: EventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
+        let requestEvent: FeatureEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
@@ -39,7 +39,7 @@ class AdEventsRequestTests: TestCase {
     func testOpenedEvent() throws {
         let event = AdEvent.opened(Self.eventCreationData, Self.openedData)
         let storedEvent = try Self.createStoredFeatureEvent(from: event)
-        let requestEvent: EventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
+        let requestEvent: FeatureEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
@@ -47,7 +47,7 @@ class AdEventsRequestTests: TestCase {
     func testRevenueEvent() throws {
         let event = AdEvent.revenue(Self.eventCreationData, Self.revenueData)
         let storedEvent = try Self.createStoredFeatureEvent(from: event)
-        let requestEvent: EventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
+        let requestEvent: FeatureEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
@@ -77,7 +77,7 @@ class AdEventsRequestTests: TestCase {
         expect(deserializedEvent.userID) == expectedUserID
         expect(deserializedEvent.feature) == .ads
 
-        let requestEvent = try XCTUnwrap(EventsRequest.AdEventRequest(storedEvent: deserializedEvent))
+        let requestEvent = try XCTUnwrap(FeatureEventsRequest.AdEventRequest(storedEvent: deserializedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
@@ -87,7 +87,7 @@ class AdEventsRequestTests: TestCase {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension AdEventsRequestTests {
+private extension AdFeatureEventsRequestTests {
 
     static func createStoredFeatureEvent(from event: AdEvent) throws -> StoredFeatureEvent {
         return try XCTUnwrap(.init(event: event,

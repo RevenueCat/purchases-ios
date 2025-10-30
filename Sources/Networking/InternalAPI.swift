@@ -91,7 +91,7 @@ class InternalAPI {
             return
         }
 
-        let request = EventsRequest(events: events)
+        let request = FeatureEventsRequest(events: events)
         let operation = PostEventsOperation(configuration: .init(httpClient: self.backendConfig.httpClient),
                                             request: request,
                                             path: HTTPRequest.FeatureEventsPath.postEvents,

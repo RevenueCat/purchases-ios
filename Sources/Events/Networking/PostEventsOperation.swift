@@ -20,13 +20,13 @@ import Foundation
 final class PostEventsOperation: NetworkOperation {
 
     private let configuration: Configuration
-    private let request: EventsRequest
+    private let request: FeatureEventsRequest
     private let path: HTTPRequestPath
     private let responseHandler: CustomerAPI.SimpleResponseHandler?
 
     init(
         configuration: Configuration,
-        request: EventsRequest,
+        request: FeatureEventsRequest,
         path: HTTPRequestPath,
         responseHandler: CustomerAPI.SimpleResponseHandler?
     ) {

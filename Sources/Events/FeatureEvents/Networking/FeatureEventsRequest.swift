@@ -7,14 +7,14 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  EventsRequest.swift
+//  FeatureEventsRequest.swift
 //
 //  Created by Nacho Soto on 9/6/23.
 
 import Foundation
 
-/// The content of a request to the events endpoints.
-struct EventsRequest {
+/// The content of a request to the feature events endpoint.
+struct FeatureEventsRequest {
 
     var events: [AnyEncodable]
 
@@ -57,4 +57,4 @@ struct EventsRequest {
 
 }
 
-extension EventsRequest: HTTPRequestBody {}
+extension FeatureEventsRequest: HTTPRequestBody {}

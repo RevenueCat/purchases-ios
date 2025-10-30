@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  CustomerCenterEventsRequestTests.swift
+//  CustomerCenterFeatureEventsRequestTests.swift
 //
 //  Created by Cesar de la Vega on 28/11/24.
 
@@ -18,7 +18,7 @@ import SnapshotTesting
 import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-class CustomerCenterEventsRequestTests: TestCase {
+class CustomerCenterFeatureEventsRequestTests: TestCase {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -34,7 +34,9 @@ class CustomerCenterEventsRequestTests: TestCase {
                                                                   feature: .customerCenter,
                                                                   appSessionID: Self.appSessionID,
                                                                   eventDiscriminator: eventDiscriminator))
-        let requestEvent = try XCTUnwrap(EventsRequest.CustomerCenterEventBaseRequest.createBase(from: storedEvent))
+        let requestEvent = try XCTUnwrap(
+            FeatureEventsRequest.CustomerCenterEventBaseRequest.createBase(from: storedEvent)
+        )
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
@@ -65,7 +67,7 @@ class CustomerCenterEventsRequestTests: TestCase {
         expect(deserializedEvent.feature) == .customerCenter
 
         let requestEvent =
-        try XCTUnwrap(EventsRequest.CustomerCenterEventBaseRequest.createBase(from: deserializedEvent))
+        try XCTUnwrap(FeatureEventsRequest.CustomerCenterEventBaseRequest.createBase(from: deserializedEvent))
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
