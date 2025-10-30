@@ -290,7 +290,7 @@ struct PurchaseInformation {
         } else if let renewalPrice {
             self.renewalPrice = renewalPrice
         } else {
-            self.renewalPrice = transaction.determineRenewalPrice(numberFormatter: numberFormatter)
+            self.renewalPrice = nil
         }
 
         self.pricePaid = transaction.paidPrice(numberFormatter: numberFormatter)
@@ -426,37 +426,6 @@ extension PurchaseInformation {
 }
 
 private extension Transaction {
-
-    func determineRenewalPrice(numberFormatter: NumberFormatter) -> PurchaseInformation.RenewalPrice? {
-        if store == .promotional {
-            return nil
-        }
-
-        guard self.store == .rcBilling else {
-            // RCBilling does not support product price changes yet
-            // So it's the only store we can infer the renewal price from
-            // latest price paid
-            return nil
-        }
-
-        if unableToInferRenewalPrice {
-            return nil
-        }
-
-        guard let price = self.price else {
-            return nil
-        }
-
-        if price.amount.isZero {
-            return .free
-        }
-
-        numberFormatter.currencyCode = price.currency
-
-        guard let formattedPrice = numberFormatter.string(from: price.amount as NSNumber) else { return nil }
-
-        return .nonFree(formattedPrice)
-    }
 
     func paidPrice(numberFormatter: NumberFormatter) -> PurchaseInformation.PricePaid {
         if self.store == .promotional || self.price?.amount.isZero == true {

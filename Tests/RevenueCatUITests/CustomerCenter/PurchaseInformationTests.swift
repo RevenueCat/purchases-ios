@@ -773,7 +773,7 @@ final class PurchaseInformationTests: TestCase {
 
         expect(subscriptionInfo.title) == "Subscription"
         expect(subscriptionInfo.pricePaid) == .nonFree("$1.99")
-        expect(subscriptionInfo.renewalPrice) == .nonFree("$1.99")
+        expect(subscriptionInfo.renewalPrice).to(beNil())
         expect(subscriptionInfo.isLifetime).to(beFalse())
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
