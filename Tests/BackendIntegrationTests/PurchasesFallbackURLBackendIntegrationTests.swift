@@ -35,23 +35,23 @@ class PurchasesFallbackURLBackendIntegrationTests: BaseStoreKitIntegrationTests 
         }
     }
 
-    func testGetCustomerInfoFromFallbackURLIsComputedOffline() async throws {
+    func testWhenOnlyFallbackURLThenCustomerInfoIsComputedOffline() async throws {
         do {
             let customerInfo = try await Purchases.shared.customerInfo()
-            XCTAssertTrue(customerInfo.isComputedOffline)
+            verifyCustomerInfoWasComputedOffline(customerInfo: customerInfo)
         } catch let error {
             fail("Unexpected error: \(error)")
         }
     }
 
     func testCanMakePurchasesFromFallbackURLUsingOfflineEntitlements() async throws {
-        try await purchaseMonthlyProduct(allowOfflineEntitlements: true)
-        verifyCustomerInfoWasComputedOffline()
+        let purchaseData = try await purchaseMonthlyProduct(allowOfflineEntitlements: true)
+        verifyCustomerInfoWasComputedOffline(customerInfo: purchaseData.customerInfo)
     }
 
     func testPostsPurchasePerformedOnFallbackURLWhenRecoveringToMainServer() async throws {
-        try await purchaseMonthlyProduct(allowOfflineEntitlements: true)
-        verifyCustomerInfoWasComputedOffline()
+        let purchaseData = try await purchaseMonthlyProduct(allowOfflineEntitlements: true)
+        verifyCustomerInfoWasComputedOffline(customerInfo: purchaseData.customerInfo)
         verifyNoTransactionsWereFinished()
 
         let offlineCustomerInfo = try await self.purchases.customerInfo()
@@ -66,7 +66,7 @@ class PurchasesFallbackURLBackendIntegrationTests: BaseStoreKitIntegrationTests 
 
         let onlineCustomerInfo = try await self.purchases.customerInfo()
 
-        verifyCustomerInfoWasNotComputedOffline()
+        verifyCustomerInfoWasNotComputedOffline(customerInfo: onlineCustomerInfo)
         verifyTransactionWasFinished()
 
         XCTAssertFalse(onlineCustomerInfo.isComputedOffline)
@@ -75,8 +75,8 @@ class PurchasesFallbackURLBackendIntegrationTests: BaseStoreKitIntegrationTests 
     }
 
     func testPostsPurchasePerformedOnFallbackURLWhenRecoveringAfterRestartToMainServer() async throws {
-        try await purchaseMonthlyProduct(allowOfflineEntitlements: true)
-        verifyCustomerInfoWasComputedOffline()
+        let purchaseData = try await purchaseMonthlyProduct(allowOfflineEntitlements: true)
+        verifyCustomerInfoWasComputedOffline(customerInfo: purchaseData.customerInfo)
         verifyNoTransactionsWereFinished()
 
         let offlineCustomerInfo = try await self.purchases.customerInfo()
@@ -91,15 +91,12 @@ class PurchasesFallbackURLBackendIntegrationTests: BaseStoreKitIntegrationTests 
 
         await resetSingleton()
 
-        verifyCustomerInfoWasNotComputedOffline()
-
         let onlineCustomerInfo = try await self.purchases.customerInfo()
 
         verifyTransactionWasFinished(count: nil)
 
-        verifyCustomerInfoWasNotComputedOffline()
+        verifyCustomerInfoWasNotComputedOffline(customerInfo: onlineCustomerInfo)
 
-        XCTAssertFalse(onlineCustomerInfo.isComputedOffline)
         let onlineEntitlementInfo = try XCTUnwrap(onlineCustomerInfo.entitlements[Self.entitlementIdentifier])
         XCTAssertTrue(onlineEntitlementInfo.isActive)
     }
