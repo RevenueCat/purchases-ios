@@ -1148,9 +1148,6 @@ jobs:
       test_environment:
         type: enum
         enum: ["production", "load_shedder", "fallback"]
-      api_key_environment_variable:
-        type: env_var_name
-        default: REVENUECAT_API_KEY
     executor:
       name: macos-executor
       xcode_version: "26.0.1"
@@ -1168,7 +1165,12 @@ jobs:
       - run:
           name: Run e2e tests (<< parameters.test_environment >>)
           command: |
-            export REVENUECAT_API_KEY="${<< parameters.api_key_environment_variable >>}"
+            if [ "<< parameters.test_environment >>" = "load_shedder" ]; then
+              export REVENUECAT_API_KEY="${REVENUECAT_LOAD_SHEDDER_API_KEY}"
+            else
+              export REVENUECAT_API_KEY="${REVENUECAT_API_KEY}"
+            fi
+
             if [ "<< parameters.test_environment >>" = "fallback" ]; then
               export REVENUECAT_FORCE_SERVER_ERROR_STRATEGY="primary_domain_down"
             else
@@ -1607,22 +1609,12 @@ workflows:
         - not: << pipeline.parameters.generate_snapshots >>
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
-      # Production - uses default REVENUECAT_API_KEY
       - run-maestro-e2e-tests:
-          name: run-maestro-e2e-tests-production
-          test_environment: "production"
+          name: run-maestro-e2e-tests-<< matrix.test_environment >>
+          matrix:
+            parameters:
+              test_environment: ["production", "load_shedder", "fallback"]
 
-      # Load shedder - uses REVENUECAT_LOAD_SHEDDER_API_KEY
-      - run-maestro-e2e-tests:
-          name: run-maestro-e2e-tests-load-shedder
-          test_environment: "load_shedder"
-          api_key_environment_variable: REVENUECAT_LOAD_SHEDDER_API_KEY
-
-      # Fallback - uses default REVENUECAT_API_KEY
-      - run-maestro-e2e-tests:
-          name: run-maestro-e2e-tests-fallback
-          test_environment: "fallback"
-          
       # todo rick: remove after testing
       # - lint
       # - validate-package-swift:
