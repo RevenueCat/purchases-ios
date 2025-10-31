@@ -217,7 +217,7 @@ public protocol PurchasesType: AnyObject {
      * - ``Purchases/entitlements(fetchPolicy:)``
      * - ``Purchases/customerInfo()``
      */
-    func entitlements() async throws -> EntitlementInfos
+    func entitlements() async throws -> RevenueCat.EntitlementInfos
 
     /**
      * Get latest available entitlements.
@@ -231,7 +231,7 @@ public protocol PurchasesType: AnyObject {
      * - ``Purchases/entitlements()``
      * - ``Purchases/customerInfo(fetchPolicy:)``
      */
-    func entitlements(fetchPolicy: CacheFetchPolicy) async throws -> EntitlementInfos
+    func entitlements(fetchPolicy: CacheFetchPolicy) async throws -> RevenueCat.EntitlementInfos
 
     #endif
 
