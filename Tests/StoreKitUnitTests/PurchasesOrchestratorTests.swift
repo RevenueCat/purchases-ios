@@ -35,7 +35,7 @@ protocol PurchasesOrchestratorTests {
 
     func testPurchaseWithPurchaseParamsReturnsCorrectValues() async throws
 
-    func testPurchaseWithQuantitySetsPaymentQuantity() async throws
+    func testPurchaseWithQuantitySucceeds() async throws
 
     func testPurchaseWithoutQuantityDefaultsToQuantityOne() async throws
 
