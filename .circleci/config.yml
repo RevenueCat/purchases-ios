@@ -116,6 +116,15 @@ aliases:
         ignore: /.*/
       branches:
         only: main
+  maestro-e2e-test-job: &maestro-e2e-test-job
+    run-maestro-e2e-tests:
+      name: run-maestro-e2e-tests-<< matrix.test_environment >>
+      context:
+        - e2e-tests
+        - slack-secrets-ios
+      matrix:
+        parameters:
+          test_environment: ["production", "load_shedder", "fallback"]
 
 commands:
   slack-notify-on-fail:
@@ -1641,14 +1650,7 @@ workflows:
         - not: << pipeline.parameters.generate_snapshots >>
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
-      - run-maestro-e2e-tests:
-          name: run-maestro-e2e-tests-<< matrix.test_environment >>
-          context:
-            - e2e-tests
-            - slack-secrets
-          matrix:
-            parameters:
-              test_environment: ["production", "load_shedder", "fallback"]
+      - <<: *maestro-e2e-test-job
 
       # todo rick: remove after testing
       # - lint
@@ -1802,6 +1804,7 @@ workflows:
         - equal:
             ["run-from-github-comments", << pipeline.parameters.GHA_Meta >>]
     jobs:
+      - <<: *maestro-e2e-test-job
       - backend-integration-tests-SK1:
           context:
             - slack-secrets-ios
