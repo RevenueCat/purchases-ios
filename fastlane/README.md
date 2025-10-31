@@ -37,10 +37,10 @@ Removes the Examples directory before building with Carthage to prevent unnecess
 
 
 
-### send_slack_load_shedder_integration_test_v3
+### send_slack_loadshedder_integration_test_in_major
 
 ```sh
-[bundle exec] fastlane send_slack_load_shedder_integration_test_v3
+[bundle exec] fastlane send_slack_loadshedder_integration_test_in_major
 ```
 
 
@@ -322,13 +322,13 @@ Creates RevenueCat-Swift.h for a new release
 
 Run BackendIntegrationTests
 
-### ios v3_loadshedder_integration_tests
+### ios loadshedder_integration_tests_in_old_major
 
 ```sh
-[bundle exec] fastlane ios v3_loadshedder_integration_tests
+[bundle exec] fastlane ios loadshedder_integration_tests_in_old_major
 ```
 
-Run LoadShedder tests
+Run LoadShedder tests in old major
 
 ### ios update_swift_package_commit
 

@@ -1413,25 +1413,16 @@ jobs:
     executor:
       name: macos-executor
     steps:
-      - checkout
-      - setup-git-credentials
-      - trust-github-key
-      - install-dependencies
-      - update-spm-installation-commit
-      - run:
-          name: Backend and LoadShedder integration tests
-          command: bundle exec fastlane backend_integration_tests test_plan:"BackendIntegrationTests-All-CI"
-          no_output_timeout: 5m
-          environment:
-            SCAN_DEVICE: iPhone 16 (18.5)
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/ios
-          bundle_name: BackendIntegrationTests
-      - store_test_results:
-          path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/xctest
-          destination: scan-test-output
+      - run-backend-tests:
+          test_plan: "BackendIntegrationTests-All-CI"
+
+  loadshedder-integration-tests:
+    executor:
+      name: macos-executor
+    steps:
+      - run-backend-tests:
+          test_plan: "BackendIntegrationTests-LoadShedder"
+      - slack-notify-on-fail
 
   loadshedder-integration-tests-old-major:
     parameters:
@@ -1678,6 +1669,9 @@ workflows:
           major: "4"
           context:
             - slack-secrets
+      - loadshedder-integration-tests:
+          context:
+            - slack-secrets
       - integration-tests-all
 
   manual-trigger-bump:
@@ -1742,6 +1736,9 @@ workflows:
           context:
             - slack-secrets-ios
       - backend-integration-tests-offline:
+          context:
+            - slack-secrets-ios
+      - loadshedder-integration-tests:
           context:
             - slack-secrets-ios
       - build-tv-watch-and-macos:
