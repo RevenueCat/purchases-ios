@@ -1166,9 +1166,9 @@ jobs:
           name: Run e2e tests (<< parameters.test_environment >>)
           command: |
             if [ "<< parameters.test_environment >>" = "load_shedder" ]; then
-              export REVENUECAT_API_KEY="${REVENUECAT_LOAD_SHEDDER_API_KEY}"
+              export REVENUECAT_API_KEY="${RC_E2E_TEST_API_KEY_LOAD_SHEDDER_APP_STORE}"
             else
-              export REVENUECAT_API_KEY="${REVENUECAT_API_KEY}"
+              export REVENUECAT_API_KEY="${RC_E2E_TEST_API_KEY_PRODUCTION_APP_STORE}"
             fi
 
             if [ "<< parameters.test_environment >>" = "fallback" ]; then
@@ -1611,6 +1611,9 @@ workflows:
     jobs:
       - run-maestro-e2e-tests:
           name: run-maestro-e2e-tests-<< matrix.test_environment >>
+          context:
+            - e2e-tests
+            - slack-secrets
           matrix:
             parameters:
               test_environment: ["production", "load_shedder", "fallback"]
