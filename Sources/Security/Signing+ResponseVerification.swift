@@ -15,11 +15,14 @@ import Foundation
 
 extension HTTPResponse where Body == Data? {
 
+    // swiftlint:disable:next function_parameter_count
     func verify(
         signing: SigningType,
         request: HTTPRequest,
         requestHeaders: HTTPRequest.Headers,
-        publicKey: Signing.PublicKey?
+        publicKey: Signing.PublicKey?,
+        isLoadShedderResponse: Bool,
+        isFallbackUrlResponse: Bool
     ) -> VerifiedHTTPResponse<Body> {
         let verificationResult = Self.verificationResult(
             body: self.body,
@@ -43,7 +46,9 @@ extension HTTPResponse where Body == Data? {
         }
         #endif
 
-        return self.verified(with: verificationResult)
+        return self.verified(with: verificationResult,
+                             isLoadShedderResponse: isLoadShedderResponse,
+                             isFallbackUrlResponse: isFallbackUrlResponse)
     }
 
     // swiftlint:disable:next function_parameter_count

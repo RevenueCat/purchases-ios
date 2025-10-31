@@ -42,7 +42,9 @@ class NormalCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTes
                       responseHeaders: [:],
                       body: .init(customerInfo: Self.sampleCustomerInfo,
                                   errorResponse: .default),
-                      verificationResult: .verified)
+                      verificationResult: .verified,
+                      isLoadShedderResponse: false,
+                      isFallbackUrlResponse: false)
             ),
             nil
         )
@@ -59,7 +61,9 @@ class NormalCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTes
                       responseHeaders: [:],
                       body: .init(customerInfo: Self.sampleCustomerInfo,
                                   errorResponse: .default),
-                      verificationResult: .failed)
+                      verificationResult: .failed,
+                      isLoadShedderResponse: false,
+                      isFallbackUrlResponse: false)
             ),
             nil
         )
@@ -97,7 +101,9 @@ class NormalCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTes
                       responseHeaders: [:],
                       body: .init(customerInfo: Self.sampleCustomerInfo,
                                   errorResponse: errorResponse),
-                      verificationResult: .notRequested)
+                      verificationResult: .notRequested,
+                      isLoadShedderResponse: false,
+                      isFallbackUrlResponse: false)
             ),
             nil
         )

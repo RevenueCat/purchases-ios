@@ -28,7 +28,9 @@ class MockHTTPClient: HTTPClient {
             response: [String: Any] = [:],
             responseHeaders: HTTPResponse.Headers = [:],
             verificationResult: VerificationResult = .defaultValue,
-            delay: DispatchTimeInterval = .never
+            delay: DispatchTimeInterval = .never,
+            isLoadShedderResponse: Bool = false,
+            isFallbackUrlResponse: Bool = false
         ) {
             // swiftlint:disable:next force_try
             let data = try! JSONSerialization.data(withJSONObject: response)
@@ -39,7 +41,9 @@ class MockHTTPClient: HTTPClient {
                     responseHeaders: responseHeaders,
                     body: data
                 ),
-                verificationResult: verificationResult
+                verificationResult: verificationResult,
+                isLoadShedderResponse: isLoadShedderResponse,
+                isFallbackUrlResponse: isFallbackUrlResponse
             )
 
             self.init(response: .success(response), delay: delay)

@@ -59,6 +59,7 @@ class MockETagManager: ETagManager {
         let response: VerifiedHTTPResponse<Data?>
         let request: URLRequest
         let retried: Bool
+        let isFallbackURLRequest: Bool
     }
 
     var invokedHTTPResultFromCacheOrBackend = false
@@ -70,14 +71,16 @@ class MockETagManager: ETagManager {
 
     override func httpResultFromCacheOrBackend(with response: VerifiedHTTPResponse<Data?>,
                                                request: URLRequest,
-                                               retried: Bool) -> VerifiedHTTPResponse<Data>? {
+                                               retried: Bool,
+                                               isFallbackURLRequest: Bool) -> VerifiedHTTPResponse<Data>? {
         return self.lock.perform {
             self.invokedHTTPResultFromCacheOrBackend = true
             self.invokedHTTPResultFromCacheOrBackendCount += 1
             let params = InvokedHTTPResultFromCacheOrBackendParams(
                 response: response,
                 request: request,
-                retried: retried
+                retried: retried,
+                isFallbackURLRequest: isFallbackURLRequest
             )
             self.invokedHTTPResultFromCacheOrBackendParameters = params
             self.invokedHTTPResultFromCacheOrBackendParametersList.append(params)

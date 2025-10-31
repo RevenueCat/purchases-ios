@@ -80,7 +80,8 @@ class ETagManager {
     /// or the cached `HTTPResponse`, always including the headers in `response`.
     func httpResultFromCacheOrBackend(with response: VerifiedHTTPResponse<Data?>,
                                       request: URLRequest,
-                                      retried: Bool) -> VerifiedHTTPResponse<Data>? {
+                                      retried: Bool,
+                                      isFallbackURLRequest: Bool) -> VerifiedHTTPResponse<Data>? {
         let statusCode: HTTPStatusCode = response.httpStatusCode
         let resultFromBackend = response.asOptionalResponse
 
@@ -111,7 +112,9 @@ class ETagManager {
         self.storeStatusCodeAndResponseIfNoError(
             for: request,
             response: response,
-            eTag: eTagInResponse
+            eTag: eTagInResponse,
+            isLoadShedderResponse: response.response.isLoadShedder,
+            isFallbackURLRequest: isFallbackURLRequest
         )
         return resultFromBackend
     }
@@ -166,7 +169,9 @@ private extension ETagManager {
 
     func storeStatusCodeAndResponseIfNoError(for request: URLRequest,
                                              response: VerifiedHTTPResponse<Data?>,
-                                             eTag: String) {
+                                             eTag: String,
+                                             isLoadShedderResponse: Bool,
+                                             isFallbackURLRequest: Bool) {
         if let data = response.body {
             if response.shouldStore {
                 self.storeIfPossible(
@@ -174,7 +179,9 @@ private extension ETagManager {
                         eTag: eTag,
                         statusCode: response.httpStatusCode,
                         data: data,
-                        verificationResult: response.verificationResult
+                        verificationResult: response.verificationResult,
+                        isLoadShedderResponse: isLoadShedderResponse,
+                        isFallbackUrlResponse: isFallbackURLRequest
                     ),
                     for: request
                 )
@@ -224,18 +231,27 @@ extension ETagManager {
         @DefaultValue<VerificationResult>
         var verificationResult: VerificationResult
 
+        @DefaultDecodable.False
+        var isLoadShedderResponse: Bool
+        @DefaultDecodable.False
+        var isFallbackUrlResponse: Bool
+
         init(
             eTag: String,
             statusCode: HTTPStatusCode,
             data: Data,
             validationTime: Date? = nil,
-            verificationResult: VerificationResult
+            verificationResult: VerificationResult,
+            isLoadShedderResponse: Bool,
+            isFallbackUrlResponse: Bool
         ) {
             self.eTag = eTag
             self.statusCode = statusCode
             self.data = data
             self.validationTime = validationTime
             self.verificationResult = verificationResult
+            self.isLoadShedderResponse = isLoadShedderResponse
+            self.isFallbackUrlResponse = isFallbackUrlResponse
         }
 
     }
@@ -263,7 +279,9 @@ extension ETagManager.Response {
             requestDate: requestDate,
             origin: .cache
         )
-        .verified(with: responseVerificationResult)
+        .verified(with: responseVerificationResult,
+                  isLoadShedderResponse: self.isLoadShedderResponse,
+                  isFallbackUrlResponse: self.isFallbackUrlResponse)
     }
 
     fileprivate func withUpdatedValidationTime() -> Self {
