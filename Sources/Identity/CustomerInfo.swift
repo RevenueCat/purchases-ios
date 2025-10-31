@@ -173,6 +173,7 @@ public typealias ProductIdentifier = String
             """
     }
 
+    /// Represents the original source of the ``CustomerInfo`` object.
     internal var originalSource: OriginalSource {
         return self.data.originalSource
     }
