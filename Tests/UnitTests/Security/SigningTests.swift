@@ -591,7 +591,9 @@ class SigningTests: TestCase {
             signing: self.signing,
             request: request,
             requestHeaders: [:],
-            publicKey: nil
+            publicKey: nil,
+            isLoadShedderResponse: false,
+            isFallbackURLResponse: false
         )
 
         expect(verifiedResponse.verificationResult) == .notRequested
@@ -605,7 +607,9 @@ class SigningTests: TestCase {
             signing: self.signing,
             request: request,
             requestHeaders: [:],
-            publicKey: self.publicKey
+            publicKey: self.publicKey,
+            isLoadShedderResponse: false,
+            isFallbackURLResponse: false
         )
 
         expect(verifiedResponse.verificationResult) == .failed
@@ -627,7 +631,9 @@ class SigningTests: TestCase {
             signing: self.signing,
             request: request,
             requestHeaders: [:],
-            publicKey: self.publicKey
+            publicKey: self.publicKey,
+            isLoadShedderResponse: false,
+            isFallbackURLResponse: false
         )
 
         expect(verifiedResponse.verificationResult) == .failed
@@ -669,7 +675,9 @@ class SigningTests: TestCase {
             signing: self.signing,
             request: request,
             requestHeaders: requestHeaders,
-            publicKey: self.publicKey
+            publicKey: self.publicKey,
+            isLoadShedderResponse: false,
+            isFallbackURLResponse: false
         )
 
         expect(verifiedResponse.verificationResult) == .verified
@@ -710,7 +718,9 @@ class SigningTests: TestCase {
             signing: self.signing,
             request: request,
             requestHeaders: requestHeaders,
-            publicKey: self.publicKey
+            publicKey: self.publicKey,
+            isLoadShedderResponse: false,
+            isFallbackURLResponse: false
         )
 
         expect(verifiedResponse.verificationResult) == .verified
@@ -751,7 +761,9 @@ class SigningTests: TestCase {
             signing: self.signing,
             request: request,
             requestHeaders: requestHeaders,
-            publicKey: self.publicKey
+            publicKey: self.publicKey,
+            isLoadShedderResponse: false,
+            isFallbackURLResponse: false
         )
 
         expect(verifiedResponse.verificationResult) == .verified
@@ -773,7 +785,9 @@ class SigningTests: TestCase {
             signing: self.signing,
             request: request,
             requestHeaders: [:],
-            publicKey: self.publicKey
+            publicKey: self.publicKey,
+            isLoadShedderResponse: false,
+            isFallbackURLResponse: false
         )
 
         expect(verifiedResponse.verificationResult) == .notRequested

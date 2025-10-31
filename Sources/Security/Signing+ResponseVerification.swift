@@ -19,7 +19,9 @@ extension HTTPResponse where Body == Data? {
         signing: SigningType,
         request: HTTPRequest,
         requestHeaders: HTTPRequest.Headers,
-        publicKey: Signing.PublicKey?
+        publicKey: Signing.PublicKey?,
+        isLoadShedderResponse: Bool,
+        isFallbackURLResponse: Bool
     ) -> VerifiedHTTPResponse<Body> {
         let verificationResult = Self.verificationResult(
             body: self.body,
@@ -43,7 +45,9 @@ extension HTTPResponse where Body == Data? {
         }
         #endif
 
-        return self.verified(with: verificationResult)
+        return self.verified(with: verificationResult,
+                             isLoadShedderResponse: isLoadShedderResponse,
+                             isFallbackURLResponse: isFallbackURLResponse)
     }
 
     // swiftlint:disable:next function_parameter_count

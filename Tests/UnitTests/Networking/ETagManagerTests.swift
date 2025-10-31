@@ -62,7 +62,8 @@ class ETagManagerTests: TestCase {
                                            eTag: Self.testETag,
                                            statusCode: .notModified),
                 request: request,
-                retried: false
+                retried: false,
+                isFallbackURLRequest: false
             )
         )
 
@@ -89,7 +90,8 @@ class ETagManagerTests: TestCase {
                                        eTag: Self.testETag,
                                        statusCode: .notModified),
             request: request,
-            retried: false
+            retried: false,
+            isFallbackURLRequest: false
         )
         expect(response).toNot(beNil())
         expect(response?.httpStatusCode) == .success
@@ -114,7 +116,8 @@ class ETagManagerTests: TestCase {
                                        statusCode: .success,
                                        requestDate: requestDate),
             request: request,
-            retried: false
+            retried: false,
+            isFallbackURLRequest: false
         )
 
         expect(response).toNot(beNil())
@@ -131,7 +134,8 @@ class ETagManagerTests: TestCase {
                                        statusCode: .notModified,
                                        requestDate: Date()),
             request: URLRequest(url: Self.testURL),
-            retried: false
+            retried: false,
+            isFallbackURLRequest: false
         )
 
         expect(response).to(beNil())
@@ -149,7 +153,8 @@ class ETagManagerTests: TestCase {
                 statusCode: .notModified
             ),
             request: request,
-            retried: true
+            retried: true,
+            isFallbackURLRequest: false
         )
 
         expect(response).toNot(beNil())
@@ -169,7 +174,8 @@ class ETagManagerTests: TestCase {
                 statusCode: .notModified
             ),
             request: request,
-            retried: false
+            retried: false,
+            isFallbackURLRequest: false
         )
 
         expect(response).to(beNil())
@@ -189,7 +195,8 @@ class ETagManagerTests: TestCase {
                 verificationResult: .notRequested
             ),
             request: request,
-            retried: false
+            retried: false,
+            isFallbackURLRequest: false
         )
 
         expect(response).toNot(beNil())
@@ -219,7 +226,8 @@ class ETagManagerTests: TestCase {
                 statusCode: .success
             ),
             request: request,
-            retried: false
+            retried: false,
+            isFallbackURLRequest: false
         )
 
         expect(response).toNot(beNil())
@@ -249,7 +257,8 @@ class ETagManagerTests: TestCase {
                 statusCode: .internalServerError
             ),
             request: request,
-            retried: false
+            retried: false,
+            isFallbackURLRequest: false
         )
 
         expect(response).toNot(beNil())
@@ -275,7 +284,8 @@ class ETagManagerTests: TestCase {
                 verificationResult: .failed
             ),
             request: request,
-            retried: false
+            retried: false,
+            isFallbackURLRequest: false
         )
 
         expect(response).toNot(beNil())
@@ -297,7 +307,8 @@ class ETagManagerTests: TestCase {
                 verificationResult: .verifiedOnDevice
             ),
             request: request,
-            retried: false
+            retried: false,
+            isFallbackURLRequest: false
         )
 
         expect(response).toNot(beNil())
@@ -349,7 +360,8 @@ class ETagManagerTests: TestCase {
                                        eTag: Self.testETag,
                                        statusCode: .notModified),
             request: request,
-            retried: true
+            retried: true,
+            isFallbackURLRequest: false
         )
         expect(response).toNot(beNil())
         expect(response?.httpStatusCode) == .notModified
@@ -401,7 +413,9 @@ class ETagManagerTests: TestCase {
             eTag: Self.testETag,
             statusCode: .success,
             data: actualResponse,
-            verificationResult: .failed
+            verificationResult: .failed,
+            isLoadShedderResponse: false,
+            isFallbackURLResponse: false
         ).asData()
 
         let response = self.eTagManager.eTagHeader(for: request, withSignatureVerification: true)
@@ -417,7 +431,9 @@ class ETagManagerTests: TestCase {
             eTag: Self.testETag,
             statusCode: .success,
             data: actualResponse,
-            verificationResult: .failed
+            verificationResult: .failed,
+            isLoadShedderResponse: false,
+            isFallbackURLResponse: false
         ).asData()
 
         let response = self.eTagManager.eTagHeader(for: request, withSignatureVerification: false)
@@ -433,7 +449,9 @@ class ETagManagerTests: TestCase {
             eTag: Self.testETag,
             statusCode: .success,
             data: actualResponse,
-            verificationResult: .verifiedOnDevice
+            verificationResult: .verifiedOnDevice,
+            isLoadShedderResponse: false,
+            isFallbackURLResponse: false
         ).asData()
 
         let response = self.eTagManager.eTagHeader(for: request, withSignatureVerification: true)
@@ -449,7 +467,9 @@ class ETagManagerTests: TestCase {
             eTag: Self.testETag,
             statusCode: .success,
             data: actualResponse,
-            verificationResult: .verifiedOnDevice
+            verificationResult: .verifiedOnDevice,
+            isLoadShedderResponse: false,
+            isFallbackURLResponse: false
         ).asData()
 
         let response = self.eTagManager.eTagHeader(for: request, withSignatureVerification: false)
@@ -465,7 +485,9 @@ class ETagManagerTests: TestCase {
             eTag: Self.testETag,
             statusCode: .success,
             data: actualResponse,
-            verificationResult: .notRequested
+            verificationResult: .notRequested,
+            isLoadShedderResponse: false,
+            isFallbackURLResponse: false
         ).asData()
 
         let response = self.eTagManager.eTagHeader(for: request, withSignatureVerification: true)
@@ -481,7 +503,9 @@ class ETagManagerTests: TestCase {
             eTag: Self.testETag,
             statusCode: .success,
             data: actualResponse,
-            verificationResult: .verified
+            verificationResult: .verified,
+            isLoadShedderResponse: false,
+            isFallbackURLResponse: false
         ).asData()
 
         let response = self.eTagManager.eTagHeader(for: request,
@@ -498,7 +522,9 @@ class ETagManagerTests: TestCase {
             eTag: Self.testETag,
             statusCode: .success,
             data: actualResponse,
-            verificationResult: .verified
+            verificationResult: .verified,
+            isLoadShedderResponse: false,
+            isFallbackURLResponse: false
         ).asData()
 
         let response = self.eTagManager.eTagHeader(for: request,
@@ -515,7 +541,9 @@ class ETagManagerTests: TestCase {
             eTag: Self.testETag,
             statusCode: .success,
             data: actualResponse,
-            verificationResult: .notRequested
+            verificationResult: .notRequested,
+            isLoadShedderResponse: false,
+            isFallbackURLResponse: false
         ).asData()
 
         let response = self.eTagManager.eTagHeader(for: request,
@@ -534,7 +562,9 @@ class ETagManagerTests: TestCase {
             statusCode: .success,
             data: actualResponse,
             validationTime: validationTime,
-            verificationResult: .notRequested
+            verificationResult: .notRequested,
+            isLoadShedderResponse: false,
+            isFallbackURLResponse: false
         ).asData()
 
         let response = self.eTagManager.eTagHeader(for: request, withSignatureVerification: false)
@@ -554,7 +584,9 @@ class ETagManagerTests: TestCase {
             statusCode: .success,
             data: actualResponse,
             validationTime: nil,
-            verificationResult: .notRequested
+            verificationResult: .notRequested,
+            isLoadShedderResponse: false,
+            isFallbackURLResponse: false
         ).asData()
 
         let response = self.eTagManager.eTagHeader(for: request, withSignatureVerification: false)
@@ -584,7 +616,8 @@ class ETagManagerTests: TestCase {
                                        statusCode: .notModified,
                                        requestDate: requestDate),
             request: request,
-            retried: false
+            retried: false,
+            isFallbackURLRequest: false
         )
         expect(response?.requestDate) == requestDate
     }
@@ -608,7 +641,8 @@ class ETagManagerTests: TestCase {
                                        eTag: Self.testETag,
                                        statusCode: .notModified),
             request: request,
-            retried: false
+            retried: false,
+            isFallbackURLRequest: false
         )
         expect(response?.verificationResult) == .notRequested
         expect(response?.body) == actualResponse
@@ -633,7 +667,8 @@ class ETagManagerTests: TestCase {
                                        eTag: Self.testETag,
                                        statusCode: .notModified),
             request: request,
-            retried: false
+            retried: false,
+            isFallbackURLRequest: false
         )
         expect(response?.requestDate).to(beNil())
         expect(response?.body) == actualResponse
@@ -659,7 +694,8 @@ class ETagManagerTests: TestCase {
                                        statusCode: .notModified,
                                        verificationResult: .notRequested),
             request: request,
-            retried: true
+            retried: true,
+            isFallbackURLRequest: false
         )
         expect(response).toNot(beNil())
         expect(response?.httpStatusCode) == .success
@@ -688,7 +724,8 @@ class ETagManagerTests: TestCase {
                                        statusCode: .notModified,
                                        verificationResult: .verified),
             request: request,
-            retried: true
+            retried: true,
+            isFallbackURLRequest: false
         )
         expect(response).toNot(beNil())
         expect(response?.httpStatusCode) == .success
@@ -707,7 +744,9 @@ class ETagManagerTests: TestCase {
             eTag: Self.testETag,
             statusCode: .success,
             data: actualResponse,
-            verificationResult: .failed
+            verificationResult: .failed,
+            isLoadShedderResponse: false,
+            isFallbackURLResponse: false
         ).asData()
 
         let response = self.eTagManager.httpResultFromCacheOrBackend(
@@ -717,7 +756,8 @@ class ETagManagerTests: TestCase {
                                        statusCode: .notModified,
                                        verificationResult: .failed),
             request: request,
-            retried: true
+            retried: true,
+            isFallbackURLRequest: false
         )
         expect(response).toNot(beNil())
         expect(response?.httpStatusCode) == .success
@@ -734,7 +774,9 @@ class ETagManagerTests: TestCase {
             eTag: Self.testETag,
             statusCode: .success,
             data: actualResponse,
-            verificationResult: .verified
+            verificationResult: .verified,
+            isLoadShedderResponse: false,
+            isFallbackURLResponse: false
         ).asData()
 
         let response = self.eTagManager.httpResultFromCacheOrBackend(
@@ -744,7 +786,8 @@ class ETagManagerTests: TestCase {
                                        statusCode: .notModified,
                                        verificationResult: .notRequested),
             request: request,
-            retried: true
+            retried: true,
+            isFallbackURLRequest: false
         )
         expect(response).toNot(beNil())
         expect(response?.httpStatusCode) == .success
@@ -784,7 +827,9 @@ private extension ETagManagerTests {
             statusCode: statusCode,
             data: data,
             validationTime: validationTime,
-            verificationResult: verificationResult
+            verificationResult: verificationResult,
+            isLoadShedderResponse: false,
+            isFallbackURLResponse: false
         )
         self.mockUserDefaults.mockValues[try request.cacheKey] = try XCTUnwrap(etagAndResponse.asData())
 
@@ -802,13 +847,17 @@ private extension ETagManagerTests {
         eTag: String?,
         statusCode: HTTPStatusCode,
         requestDate: Date? = nil,
-        verificationResult: RevenueCat.VerificationResult = .defaultValue
+        verificationResult: RevenueCat.VerificationResult = .defaultValue,
+        isLoadShedderResponse: Bool = false,
+        isFallbackURLResponse: Bool = false
     ) -> VerifiedHTTPResponse<Data?> {
         return .init(httpStatusCode: statusCode,
                      responseHeaders: self.getHeaders(eTag: eTag),
                      body: body,
                      requestDate: requestDate,
-                     verificationResult: verificationResult)
+                     verificationResult: verificationResult,
+                     isLoadShedderResponse: isLoadShedderResponse,
+                     isFallbackURLResponse: isFallbackURLResponse)
     }
 
     private static let testURL = HTTPRequest.Path.getCustomerInfo(appUserID: "appUserID").url!

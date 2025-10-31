@@ -238,6 +238,11 @@ internal extension HTTPClient {
         /// The number of times that we have retried the request
         var retryCount: UInt = 0
 
+        /// Whether the request is being made to a fallback URL.
+        var isFallbackURLRequest: Bool {
+            return self.fallbackUrlIndex != nil
+        }
+
         init<Value: HTTPResponseBody>(httpRequest: HTTPRequest,
                                       authHeaders: HTTPClient.RequestHeaders,
                                       defaultHeaders: HTTPClient.RequestHeaders,
@@ -393,7 +398,9 @@ private extension HTTPClient {
                     signing: self.signing(for: request.httpRequest),
                     request: request.httpRequest,
                     requestHeaders: requestHeaders,
-                    publicKey: request.verificationMode.publicKey
+                    publicKey: request.verificationMode.publicKey,
+                    isLoadShedderResponse: httpURLResponse.isLoadShedder,
+                    isFallbackURLResponse: request.isFallbackURLRequest
                 )
             }
             // Fetch from ETagManager if available
@@ -401,7 +408,8 @@ private extension HTTPClient {
                 return self.eTagManager.httpResultFromCacheOrBackend(
                     with: response,
                     request: urlRequest,
-                    retried: request.retried
+                    retried: request.retried,
+                    isFallbackURLRequest: request.isFallbackURLRequest
                 )
             }
             // Upgrade to error in enforced mode
@@ -929,11 +937,15 @@ private extension VerifiedHTTPResponse {
 
 }
 
-private extension HTTPResponseType {
+extension HTTPResponseType {
 
     var isLoadShedder: Bool {
         return self.value(forHeaderField: HTTPClient.ResponseHeader.isLoadShedder) == "true"
     }
+
+}
+
+private extension HTTPResponseType {
 
     var metadata: HTTPClient.ResponseMetadata {
         return .init(

@@ -1356,7 +1356,9 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             httpStatusCode: .success,
             responseHeaders: headers,
             body: mockedCachedResponse,
-            verificationResult: .verified
+            verificationResult: .verified,
+            isLoadShedderResponse: false,
+            isFallbackURLResponse: false
         )
 
         stub(condition: isPath(path)) { response in
@@ -1598,7 +1600,9 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             responseHeaders: [:],
             body: encodedResponse,
             requestDate: requestDate,
-            verificationResult: .notRequested
+            verificationResult: .notRequested,
+            isLoadShedderResponse: false,
+            isFallbackURLResponse: false
         )
 
         stub(condition: isPath(path)) { _ in

@@ -32,7 +32,9 @@ class HTTPResponseTests: TestCase {
             signing: Self.signing,
             request: request,
             requestHeaders: [:],
-            publicKey: nil
+            publicKey: nil,
+            isLoadShedderResponse: false,
+            isFallbackURLResponse: false
         )
 
         expect(verifiedResponse.verificationResult) == .notRequested
@@ -51,7 +53,9 @@ class HTTPResponseTests: TestCase {
             signing: Self.signing,
             request: request,
             requestHeaders: [:],
-            publicKey: key
+            publicKey: key,
+            isLoadShedderResponse: false,
+            isFallbackURLResponse: false
         )
 
         expect(verifiedResponse.verificationResult) == .notRequested
@@ -70,7 +74,9 @@ class HTTPResponseTests: TestCase {
             signing: Self.signing,
             request: request,
             requestHeaders: [:],
-            publicKey: key
+            publicKey: key,
+            isLoadShedderResponse: false,
+            isFallbackURLResponse: false
         )
 
         expect(verifiedResponse.verificationResult) == .failed
@@ -123,7 +129,10 @@ class HTTPResponseTests: TestCase {
     }
     private static var sampleVerifiedResponse: VerifiedHTTPResponse<Data> {
         get throws {
-            return .init(response: try Self.sampleResponse, verificationResult: .notRequested)
+            return .init(response: try Self.sampleResponse,
+                         verificationResult: .notRequested,
+                         isLoadShedderResponse: false,
+                         isFallbackURLResponse: false)
         }
     }
 
