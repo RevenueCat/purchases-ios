@@ -28,6 +28,11 @@ protocol EventsManagerType {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func flushEvents(batchSize: Int) async throws -> Int
 
+    /// - Throws: if posting feature events fails
+    /// - Returns: the number of feature events posted
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func flushFeatureEvents(batchSize: Int) async throws -> Int
+
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -74,6 +79,10 @@ actor EventsManager: EventsManagerType {
     #endif
 
     func flushEvents(batchSize: Int) async throws -> Int {
+        return try await self.flushFeatureEvents(batchSize: batchSize)
+    }
+
+    func flushFeatureEvents(batchSize: Int) async throws -> Int {
         guard !self.flushInProgress else {
             Logger.debug(Strings.paywalls.event_flush_already_in_progress)
             return 0

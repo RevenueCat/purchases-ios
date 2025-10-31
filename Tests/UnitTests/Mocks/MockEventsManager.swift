@@ -39,4 +39,14 @@ actor MockEventsManager: EventsManagerType {
         return 0
     }
 
+    var invokedFlushFeatureEvents = false
+    var invokedFlushFeatureEventsCount = 0
+
+    func flushFeatureEvents(batchSize: Int) async throws -> Int {
+        self.invokedFlushFeatureEvents = true
+        self.invokedFlushFeatureEventsCount += 1
+
+        return 0
+    }
+
 }
