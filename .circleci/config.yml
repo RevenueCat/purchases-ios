@@ -118,13 +118,13 @@ aliases:
         only: main
   maestro-e2e-test-job: &maestro-e2e-test-job
     run-maestro-e2e-tests:
-      name: run-maestro-e2e-tests-<< matrix.test_environment >>
+      name: run-maestro-e2e-tests-<< matrix.backend_environment >>
       context:
         - e2e-tests
         - slack-secrets-ios
       matrix:
         parameters:
-          test_environment: ["production", "load_shedder_primary", "load_shedder_secondary", "fallback"]
+          backend_environment: ["production", "load_shedder_primary", "load_shedder_secondary", "fallback"]
 
 commands:
   slack-notify-on-fail:
@@ -1191,7 +1191,7 @@ jobs:
 
   run-maestro-e2e-tests:
     parameters:
-      test_environment:
+      backend_environment:
         type: enum
         enum: ["production", "load_shedder_primary", "load_shedder_secondary", "fallback"]
     executor:
@@ -1207,13 +1207,13 @@ jobs:
           install_swiftlint: false
       - when:
           condition:
-            equal: [ "load_shedder_primary", << parameters.test_environment >> ]
+            equal: [ "load_shedder_primary", << parameters.backend_environment >> ]
           steps:
             - setup_xcconfig:
                 api_key: ${RC_E2E_TEST_API_KEY_LOAD_SHEDDER_APP_STORE}
       - when:
           condition:
-            equal: [ "load_shedder_secondary", << parameters.test_environment >> ]
+            equal: [ "load_shedder_secondary", << parameters.backend_environment >> ]
           steps:
             - setup_xcconfig:
                 api_key: ${RC_E2E_TEST_API_KEY_LOAD_SHEDDER_APP_STORE}
@@ -1221,14 +1221,14 @@ jobs:
                 proxy_url_host: fortress-us-east-2.revenuecat.com
       - when:
           condition:
-            equal: [ "fallback", << parameters.test_environment >> ]
+            equal: [ "fallback", << parameters.backend_environment >> ]
           steps:
             - setup_xcconfig:
                 api_key: ${RC_E2E_TEST_API_KEY_PRODUCTION_APP_STORE}
                 force_server_error_strategy: primary_domain_down
       - when:
           condition:
-            equal: [ "production", << parameters.test_environment >> ]
+            equal: [ "production", << parameters.backend_environment >> ]
           steps:
             - setup_xcconfig:
                 api_key: ${RC_E2E_TEST_API_KEY_PRODUCTION_APP_STORE}
@@ -1236,8 +1236,8 @@ jobs:
       - tuist-generate-workspace:
           target: "Maestro"
       - run:
-          name: Run e2e tests (<< parameters.test_environment >>)
-          command: bundle exec fastlane run_maestro_e2e_tests
+          name: Run e2e tests (<< parameters.backend_environment >>)
+          command: bundle exec fastlane run_maestro_e2e_tests backend_environment:<< parameters.backend_environment >>
           no_output_timeout: 15m
       - store_test_results:
           path: fastlane/test_output
