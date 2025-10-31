@@ -299,7 +299,7 @@
         "VirtualCurrencyStoreKit2IntegrationTests"
       ],
       "target" : {
-        "containerPath" : "container:..\/..\/Projects\/RevenueCat\/RevenueCat.xcodeproj",
+        "containerPath" : "container:RevenueCat.xcodeproj",
         "identifier" : "4B547C7901622A3858C2D9BC",
         "name" : "BackendIntegrationTests"
       }
