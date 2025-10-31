@@ -2107,7 +2107,7 @@ internal extension Purchases {
     /// - Returns: the number of events posted
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func flushPaywallEvents(count: Int) async throws -> Int {
-        return try await self.eventsManager?.flushEvents(batchSize: count) ?? 0
+        return try await self.eventsManager?.flushFeatureEvents(batchSize: count) ?? 0
     }
 
 }
@@ -2150,7 +2150,7 @@ private extension Purchases {
         }
         #endif
 
-        self.purchasesOrchestrator.postFeatureEventsIfNeeded(delayed: true)
+        self.purchasesOrchestrator.postEventsIfNeeded(delayed: true)
 
         #endif
     }
@@ -2159,7 +2159,7 @@ private extension Purchases {
         self.systemInfo.isAppBackgroundedState = true
         self.dispatchSyncSubscriberAttributes()
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-        self.purchasesOrchestrator.postFeatureEventsIfNeeded()
+        self.purchasesOrchestrator.postEventsIfNeeded()
         #endif
     }
 
