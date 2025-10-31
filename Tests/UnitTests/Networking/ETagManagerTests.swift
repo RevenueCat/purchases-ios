@@ -795,6 +795,195 @@ class ETagManagerTests: TestCase {
         expect(response?.verificationResult) == .notRequested
     }
 
+    func testIsLoadShedderResponseIsStoredWhenHeaderIsTrue() throws {
+        let request = URLRequest(url: Self.testURL)
+        let cacheKey = try request.cacheKey
+        let responseObject = try JSONSerialization.data(withJSONObject: ["a": "response"])
+
+        var headers = self.getHeaders(eTag: Self.testETag)
+        headers[HTTPClient.ResponseHeader.isLoadShedder.rawValue] = "true"
+
+        let response = self.eTagManager.httpResultFromCacheOrBackend(
+            with: VerifiedHTTPResponse(
+                httpStatusCode: .success,
+                responseHeaders: headers,
+                body: responseObject,
+                verificationResult: .notRequested,
+                isLoadShedderResponse: true,
+                isFallbackURLResponse: false
+            ),
+            request: request,
+            retried: false,
+            isFallbackURLRequest: false
+        )
+
+        expect(response).toNot(beNil())
+        expect(self.mockUserDefaults.setObjectForKeyCallCount) == 1
+
+        let setData = try XCTUnwrap(self.mockUserDefaults.mockValues[cacheKey] as? Data)
+        let eTagResponse = try ETagManager.Response.with(setData)
+        expect(eTagResponse.isLoadShedderResponse) == true
+        expect(eTagResponse.isFallbackURLResponse) == false
+    }
+
+    func testIsLoadShedderResponseIsFalseWhenHeaderIsNotTrue() throws {
+        let request = URLRequest(url: Self.testURL)
+        let cacheKey = try request.cacheKey
+        let responseObject = try JSONSerialization.data(withJSONObject: ["a": "response"])
+
+        // Test with header set to "false"
+        var headers = self.getHeaders(eTag: Self.testETag)
+        headers[HTTPClient.ResponseHeader.isLoadShedder.rawValue] = "false"
+
+        let response = self.eTagManager.httpResultFromCacheOrBackend(
+            with: VerifiedHTTPResponse(
+                httpStatusCode: .success,
+                responseHeaders: headers,
+                body: responseObject,
+                verificationResult: .notRequested,
+                isLoadShedderResponse: false,
+                isFallbackURLResponse: false
+            ),
+            request: request,
+            retried: false,
+            isFallbackURLRequest: false
+        )
+
+        expect(response).toNot(beNil())
+        let setData = try XCTUnwrap(self.mockUserDefaults.mockValues[cacheKey] as? Data)
+        let eTagResponse = try ETagManager.Response.with(setData)
+        expect(eTagResponse.isLoadShedderResponse) == false
+    }
+
+    func testIsLoadShedderResponseIsFalseWhenHeaderIsMissing() throws {
+        let request = URLRequest(url: Self.testURL)
+        let cacheKey = try request.cacheKey
+        let responseObject = try JSONSerialization.data(withJSONObject: ["a": "response"])
+
+        let headers = self.getHeaders(eTag: Self.testETag)
+        // No isLoadShedder header
+
+        let response = self.eTagManager.httpResultFromCacheOrBackend(
+            with: VerifiedHTTPResponse(
+                httpStatusCode: .success,
+                responseHeaders: headers,
+                body: responseObject,
+                verificationResult: .notRequested,
+                isLoadShedderResponse: false,
+                isFallbackURLResponse: true
+            ),
+            request: request,
+            retried: false,
+            isFallbackURLRequest: false
+        )
+
+        expect(response).toNot(beNil())
+        let setData = try XCTUnwrap(self.mockUserDefaults.mockValues[cacheKey] as? Data)
+        let eTagResponse = try ETagManager.Response.with(setData)
+        expect(eTagResponse.isLoadShedderResponse) == false
+    }
+
+    func testIsFallbackURLResponseIsStoredWhenRequestIsFallback() throws {
+        let request = URLRequest(url: Self.testURL)
+        let cacheKey = try request.cacheKey
+        let responseObject = try JSONSerialization.data(withJSONObject: ["a": "response"])
+
+        let response = self.eTagManager.httpResultFromCacheOrBackend(
+            with: self.responseForTest(
+                url: Self.testURL,
+                body: responseObject,
+                eTag: Self.testETag,
+                statusCode: .success
+            ),
+            request: request,
+            retried: false,
+            isFallbackURLRequest: true
+        )
+
+        expect(response).toNot(beNil())
+        expect(self.mockUserDefaults.setObjectForKeyCallCount) == 1
+
+        let setData = try XCTUnwrap(self.mockUserDefaults.mockValues[cacheKey] as? Data)
+        let jsonString = String(data: setData, encoding: .utf8)
+        let eTagResponse = try ETagManager.Response.with(setData)
+        expect(eTagResponse.isFallbackURLResponse) == true
+        expect(eTagResponse.isLoadShedderResponse) == false
+    }
+
+    func testDefaultDecodable() throws {
+
+        struct TestObject: Codable {
+            @DefaultDecodable.False
+            var defaultsToFalse: Bool
+            var defaultsToTrue: Bool
+
+            init(defaultsToFalse: Bool, defaultsToTrue: Bool) {
+                self.defaultsToFalse = defaultsToFalse
+                self.defaultsToTrue = defaultsToTrue
+            }
+        }
+
+        let testObj = TestObject(defaultsToFalse: true, defaultsToTrue: false)
+        let testObjData = try JSONEncoder.default.encode(testObj)
+        let testObjString = String(data: testObjData, encoding: .utf8)
+        let testFalseBack: TestObject = try JSONDecoder.default.decode(jsonData: testObjData)
+        XCTAssertTrue(testFalseBack.defaultsToFalse)
+        XCTAssertFalse(testFalseBack.defaultsToTrue)
+
+    }
+
+    func testIsFallbackURLResponseIsFalseWhenRequestIsNotFallback() throws {
+        let request = URLRequest(url: Self.testURL)
+        let cacheKey = try request.cacheKey
+        let responseObject = try JSONSerialization.data(withJSONObject: ["a": "response"])
+
+        let response = self.eTagManager.httpResultFromCacheOrBackend(
+            with: self.responseForTest(
+                url: Self.testURL,
+                body: responseObject,
+                eTag: Self.testETag,
+                statusCode: .success
+            ),
+            request: request,
+            retried: false,
+            isFallbackURLRequest: false
+        )
+
+        expect(response).toNot(beNil())
+        let setData = try XCTUnwrap(self.mockUserDefaults.mockValues[cacheKey] as? Data)
+        let eTagResponse = try ETagManager.Response.with(setData)
+        expect(eTagResponse.isFallbackURLResponse) == false
+    }
+
+    func testBothBooleansAreStoredCorrectlyTogether() throws {
+        let request = URLRequest(url: Self.testURL)
+        let cacheKey = try request.cacheKey
+        let responseObject = try JSONSerialization.data(withJSONObject: ["a": "response"])
+
+        var headers = self.getHeaders(eTag: Self.testETag)
+        headers[HTTPClient.ResponseHeader.isLoadShedder.rawValue] = "true"
+
+        let response = self.eTagManager.httpResultFromCacheOrBackend(
+            with: VerifiedHTTPResponse(
+                httpStatusCode: .success,
+                responseHeaders: headers,
+                body: responseObject,
+                verificationResult: .notRequested,
+                isLoadShedderResponse: true,
+                isFallbackURLResponse: false
+            ),
+            request: request,
+            retried: false,
+            isFallbackURLRequest: true
+        )
+
+        expect(response).toNot(beNil())
+        let setData = try XCTUnwrap(self.mockUserDefaults.mockValues[cacheKey] as? Data)
+        let eTagResponse = try ETagManager.Response.with(setData)
+        expect(eTagResponse.isLoadShedderResponse) == true
+        expect(eTagResponse.isFallbackURLResponse) == true
+    }
+
 }
 
 private extension ETagManagerTests {
