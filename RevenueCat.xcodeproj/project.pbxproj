@@ -1146,6 +1146,7 @@
 		903A05B92EB3D96E009B9CE4 /* PostAdEventsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 903A05B82EB3D96E009B9CE4 /* PostAdEventsOperation.swift */; };
 		903A06602EB4B728009B9CE4 /* MockEventsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 903A065F2EB4B728009B9CE4 /* MockEventsManager.swift */; };
 		903A06612EB4B728009B9CE4 /* MockEventsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 903A065F2EB4B728009B9CE4 /* MockEventsManager.swift */; };
+		906F3B1E2EB4D89E002E07D5 /* AdEventsIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 906F3B1D2EB4D89E002E07D5 /* AdEventsIntegrationTests.swift */; };
 		9094B41C2E96A9A70094AD5F /* AdEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9094B4152E96A9A70094AD5F /* AdEvent.swift */; };
 		9094B41F2E96A9A70094AD5F /* AdHTTPRequestPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9094B4112E96A9A70094AD5F /* AdHTTPRequestPath.swift */; };
 		9094B4432E96AA140094AD5F /* PurchasesAdEventsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9094B43D2E96AA140094AD5F /* PurchasesAdEventsTests.swift */; };
@@ -2623,6 +2624,7 @@
 		903A05B32EB3B9D4009B9CE4 /* PaywallFeatureEventsRequestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallFeatureEventsRequestTests.swift; sourceTree = "<group>"; };
 		903A05B82EB3D96E009B9CE4 /* PostAdEventsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostAdEventsOperation.swift; sourceTree = "<group>"; };
 		903A065F2EB4B728009B9CE4 /* MockEventsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockEventsManager.swift; sourceTree = "<group>"; };
+		906F3B1D2EB4D89E002E07D5 /* AdEventsIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdEventsIntegrationTests.swift; sourceTree = "<group>"; };
 		9094B4112E96A9A70094AD5F /* AdHTTPRequestPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdHTTPRequestPath.swift; sourceTree = "<group>"; };
 		9094B4152E96A9A70094AD5F /* AdEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdEvent.swift; sourceTree = "<group>"; };
 		9094B4332E96AA140094AD5F /* testCanInitFromDeserializedEvent.1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = testCanInitFromDeserializedEvent.1.json; sourceTree = "<group>"; };
@@ -4008,9 +4010,10 @@
 		2DE20B6D264087FB004C597D /* BackendIntegrationTests */ = {
 			isa = PBXGroup;
 			children = (
+				906F3B1D2EB4D89E002E07D5 /* AdEventsIntegrationTests.swift */,
+				5704CDC62D6F6F2800C7F01A /* EventsManagerIntegrationTests.swift */,
 				753C77222EAB828E00CA4F9C /* FallbackURLBackendIntegrationTests.swift */,
 				75A4EBF02EAB9A27007C71C1 /* PurchasesFallbackURLBackendIntegrationTests.swift */,
-				5704CDC62D6F6F2800C7F01A /* EventsManagerIntegrationTests.swift */,
 				4F90AFC92A39152A0047E63F /* Helpers */,
 				4FCBA8522A1539D0004134BD /* __Snapshots__ */,
 				579234E127F777EE00B39C68 /* BaseBackendIntegrationTests.swift */,
@@ -7139,7 +7142,6 @@
 				35109DAB2BC6E436001030C8 /* BackendPostDiagnosticsTests.swift in Sources */,
 				57554C84282AC273009A7E58 /* PeriodTypeTests.swift in Sources */,
 				903A05962EB3AE3C009B9CE4 /* AdEventStoreTests.swift in Sources */,
-				4FE6FEEA2AA940E300780B45 /* PaywallEventStoreTests.swift in Sources */,
 				16F376262E93F1E300ADF649 /* LargeItemCacheTypeTests.swift in Sources */,
 				5757EDE72DEE08C100AC4BE1 /* StoreKitVersionTests.swift in Sources */,
 				903A059C2EB3AECE009B9CE4 /* EventsManagerAdEventsTests.swift in Sources */,
@@ -7448,6 +7450,7 @@
 				579234E327F7788900B39C68 /* BaseBackendIntegrationTests.swift in Sources */,
 				4F2017D52A15587F0061F6EF /* OfflineStoreKitIntegrationTests.swift in Sources */,
 				2DE20B6F264087FB004C597D /* StoreKitIntegrationTests.swift in Sources */,
+				906F3B1E2EB4D89E002E07D5 /* AdEventsIntegrationTests.swift in Sources */,
 				4F83F6B62A5DB773003F90A5 /* TestCase.swift in Sources */,
 				4FCBA84F2A15391B004134BD /* SnapshotTesting+Extensions.swift in Sources */,
 				5704CDC72D6F6F2D00C7F01A /* EventsManagerIntegrationTests.swift in Sources */,
