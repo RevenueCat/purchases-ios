@@ -8,14 +8,14 @@ name: Production - Subscribe to product through V1 Paywall for alternative offer
 - tapOn:
     text: "Present Paywall"
 - assertVisible: "Paywall V1"
-- takeScreenshot: "Paywall"
+- takeScreenshot: "subscribe_from_v1_paywall - Paywall"
 - tapOn:
     text: "Monthly"
 - tapOn:
     text: "Continue"
-- takeScreenshot: "IAP Sheet"
+- takeScreenshot: "subscribe_from_v1_paywall - IAP Sheet"
 - tapOn:
     text: "Subscribe"
-- takeScreenshot: "IAP Confirmation"
+- takeScreenshot: "subscribe_from_v1_paywall- IAP Confirmation"
 - tapOn:
     text: "OK"
