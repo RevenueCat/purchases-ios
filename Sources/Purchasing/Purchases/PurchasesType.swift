@@ -207,6 +207,32 @@ public protocol PurchasesType: AnyObject {
      */
     var cachedCustomerInfo: CustomerInfo? { get }
 
+    /**
+     * Get latest available entitlements.
+     *
+     * This is a convenience method that fetches the latest ``CustomerInfo`` and returns
+     * the ``EntitlementInfos`` directly, reducing the verbosity of checking entitlement status.
+     *
+     * #### Related Symbols
+     * - ``Purchases/entitlements(fetchPolicy:)``
+     * - ``Purchases/customerInfo()``
+     */
+    func entitlements() async throws -> EntitlementInfos
+
+    /**
+     * Get latest available entitlements.
+     *
+     * - Parameter fetchPolicy: The behavior for what to do regarding caching.
+     *
+     * This is a convenience method that fetches the latest ``CustomerInfo`` and returns
+     * the ``EntitlementInfos`` directly, reducing the verbosity of checking entitlement status.
+     *
+     * #### Related Symbols
+     * - ``Purchases/entitlements()``
+     * - ``Purchases/customerInfo(fetchPolicy:)``
+     */
+    func entitlements(fetchPolicy: CacheFetchPolicy) async throws -> EntitlementInfos
+
     #endif
 
     /**
