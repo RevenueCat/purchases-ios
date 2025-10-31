@@ -199,7 +199,8 @@ struct PackageComponentView_Previews: PreviewProvider {
                                 serverDescription: "",
                                 availablePackages: [package],
                                 webCheckoutUrl: nil),
-                hasPurchaseButton: false
+                hasPurchaseButton: false,
+                colorScheme: .light
             ), onDismiss: {}
         )
         .previewRequiredPaywallsV2Properties(
@@ -229,7 +230,8 @@ struct PackageComponentView_Previews: PreviewProvider {
                                 serverDescription: "",
                                 availablePackages: [package],
                                 webCheckoutUrl: nil),
-                hasPurchaseButton: false
+                hasPurchaseButton: false,
+                colorScheme: .light
             ), onDismiss: {}
         )
         .previewRequiredPaywallsV2Properties(
@@ -247,7 +249,8 @@ fileprivate extension PackageComponentViewModel {
         component: PaywallComponent.PackageComponent,
         localizationProvider: LocalizationProvider,
         offering: Offering,
-        hasPurchaseButton: Bool
+        hasPurchaseButton: Bool,
+        colorScheme: ColorScheme
     ) throws {
         let factory = ViewModelFactory()
         let stackViewModel = try factory.toStackViewModel(
@@ -257,7 +260,8 @@ fileprivate extension PackageComponentViewModel {
             purchaseButtonCollector: nil,
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-            offering: offering
+            offering: offering,
+            colorScheme: colorScheme
         )
 
         self.init(

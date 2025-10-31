@@ -7,13 +7,13 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  EventsRequest+Paywall.swift
+//  FeatureFeatureEventsRequest+Paywall.swift
 //
 //  Created by Cesar de la Vega on 24/10/24.
 
 import Foundation
 
-extension EventsRequest {
+extension FeatureEventsRequest {
 
     struct PaywallEvent {
 
@@ -33,7 +33,7 @@ extension EventsRequest {
 
 }
 
-extension EventsRequest.PaywallEvent {
+extension FeatureEventsRequest.PaywallEvent {
 
     enum EventType: String {
 
@@ -44,7 +44,7 @@ extension EventsRequest.PaywallEvent {
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    init?(storedEvent: StoredEvent) {
+    init?(storedEvent: StoredFeatureEvent) {
         guard let jsonData = storedEvent.encodedEvent.data(using: .utf8) else {
             Logger.error(Strings.paywalls.event_cannot_get_encoded_event)
             return nil
@@ -81,7 +81,7 @@ extension EventsRequest.PaywallEvent {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PaywallEvent {
 
-    var eventType: EventsRequest.PaywallEvent.EventType {
+    var eventType: FeatureEventsRequest.PaywallEvent.EventType {
         switch self {
         case .impression: return .impression
         case .cancel: return .cancel
@@ -94,8 +94,8 @@ private extension PaywallEvent {
 
 // MARK: - Codable
 
-extension EventsRequest.PaywallEvent.EventType: Encodable {}
-extension EventsRequest.PaywallEvent: Encodable {
+extension FeatureEventsRequest.PaywallEvent.EventType: Encodable {}
+extension FeatureEventsRequest.PaywallEvent: Encodable {
 
     /// When sending this to the backend `JSONEncoder.KeyEncodingStrategy.convertToSnakeCase` is used
     private enum CodingKeys: String, CodingKey {

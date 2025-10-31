@@ -126,7 +126,8 @@ struct TabsComponentStyle {
         backgroundColor: PaywallComponent.ColorScheme?,
         shape: PaywallComponent.Shape?,
         border: PaywallComponent.Border?,
-        shadow: PaywallComponent.Shadow?
+        shadow: PaywallComponent.Shadow?,
+        colorScheme: ColorScheme
     ) {
         self.visible = visible
         self.size = size
@@ -135,7 +136,7 @@ struct TabsComponentStyle {
         self.margin = margin.edgeInsets
         self.shape = shape?.shape
         self.border = border?.border(uiConfigProvider: uiConfigProvider)
-        self.shadow = shadow?.shadow(uiConfigProvider: uiConfigProvider)
+        self.shadow = shadow?.shadow(uiConfigProvider: uiConfigProvider, colorScheme: colorScheme)
     }
 
 }

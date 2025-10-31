@@ -55,11 +55,13 @@ class StackComponentViewModel {
     }
 
     @ViewBuilder
+    // swiftlint:disable:next function_parameter_count
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
+        colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (StackComponentStyle) -> some View
     ) -> some View {
         let partial = PresentedStackPartial.buildPartial(
@@ -85,7 +87,8 @@ class StackComponentViewModel {
             border: partial?.border ?? self.component.border,
             shadow: partial?.shadow ?? self.component.shadow,
             badge: partial?.badge ?? self.component.badge,
-            overflow: partial?.overflow ?? self.component.overflow
+            overflow: partial?.overflow ?? self.component.overflow,
+            colorScheme: colorScheme
         )
 
         apply(style)
@@ -166,7 +169,8 @@ struct StackComponentStyle {
         border: PaywallComponent.Border?,
         shadow: PaywallComponent.Shadow?,
         badge: PaywallComponent.Badge?,
-        overflow: PaywallComponent.StackComponent.Overflow?
+        overflow: PaywallComponent.StackComponent.Overflow?,
+        colorScheme: ColorScheme
     ) {
         self.visible = visible
         self.dimension = dimension
@@ -178,7 +182,7 @@ struct StackComponentStyle {
         self.margin = margin.edgeInsets
         self.shape = shape?.shape
         self.border = border?.border(uiConfigProvider: uiConfigProvider)
-        self.shadow = shadow?.shadow(uiConfigProvider: uiConfigProvider)
+        self.shadow = shadow?.shadow(uiConfigProvider: uiConfigProvider, colorScheme: colorScheme)
         self.badge = badge?.badge(stackShape: self.shape,
                                   stackBorder: badge?.stack.border?.border(uiConfigProvider: uiConfigProvider),
                                   badgeViewModels: badgeViewModels,

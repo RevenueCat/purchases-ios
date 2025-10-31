@@ -43,7 +43,7 @@ struct VideoComponentView: View {
 
     var body: some View {
         viewModel
-            .styles(state: componentViewState, condition: screenCondition) { style in
+            .styles(state: componentViewState, condition: screenCondition, colorScheme: colorScheme) { style in
                 if style.visible {
                     let viewData = style.viewData(forDarkMode: colorScheme == .dark)
 
