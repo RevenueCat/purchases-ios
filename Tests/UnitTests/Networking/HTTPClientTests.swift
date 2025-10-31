@@ -805,7 +805,6 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
         let responseData = "{\"mapping\": {}}".asData
 
-
         let fallbackURL = try XCTUnwrap(request.path.fallbackUrls.first)
         stub(condition: isPath(request.path)) { urlRequest in
             // Fail the main request to trigger fallback
@@ -864,7 +863,6 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
     func testBothIsFallbackUrlResponseAndIsLoadShedderResponseAreSetCorrectlyTogether() throws {
         let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
         let responseData = "{\"mapping\": {}}".asData
-
 
         let fallbackURL = try XCTUnwrap(request.path.fallbackUrls.first)
         stub(condition: isPath(request.path)) { urlRequest in
