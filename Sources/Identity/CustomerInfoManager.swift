@@ -580,7 +580,8 @@ extension CustomerInfoManager {
                                                                rawData: [:])
         let previewCustomerInfo = CustomerInfo(response: previewCustomerInfoResponse,
                                                entitlementVerification: .verified,
-                                               sandboxEnvironmentDetector: BundleSandboxEnvironmentDetector.default)
+                                               sandboxEnvironmentDetector: BundleSandboxEnvironmentDetector.default,
+                                               fromLoadShedder: false)
         return previewCustomerInfo
     }
 

@@ -173,6 +173,10 @@ public typealias ProductIdentifier = String
             """
     }
 
+    internal var originalSource: OriginalSource {
+        return self.data.originalSource
+    }
+
     // MARK: -
 
     private let data: Contents
@@ -180,10 +184,14 @@ public typealias ProductIdentifier = String
     /// Initializes a `CustomerInfo` with the underlying data in the current schema version
     convenience init(response: CustomerInfoResponse,
                      entitlementVerification: VerificationResult,
-                     sandboxEnvironmentDetector: SandboxEnvironmentDetector) {
+                     sandboxEnvironmentDetector: SandboxEnvironmentDetector,
+                     fromLoadShedder: Bool) {
+        let originalSource = OriginalSource(entitlementVerification: entitlementVerification,
+                                            fromLoadShedder: fromLoadShedder)
         self.init(data: .init(response: response,
                               entitlementVerification: entitlementVerification,
-                              schemaVersion: Self.currentSchemaVersion),
+                              schemaVersion: Self.currentSchemaVersion,
+                              originalSource: originalSource),
                   sandboxEnvironmentDetector: sandboxEnvironmentDetector)
     }
 
@@ -281,12 +289,20 @@ extension CustomerInfo {
 
 extension CustomerInfo {
 
-    /// Creates a copy of this ``CustomerInfo`` modifying only the ``VerificationResult``.
-    func copy(with entitlementVerification: VerificationResult) -> Self {
-        guard entitlementVerification != self.data.entitlementVerification else { return self }
+    /// Creates a copy of this ``CustomerInfo`` modifying only the ``VerificationResult`` and the ``OriginalSource``.
+    func copy(
+        with entitlementVerification: VerificationResult,
+        fromLoadShedder: Bool
+    ) -> Self {
+        let originalSource = OriginalSource(entitlementVerification: entitlementVerification,
+                                            fromLoadShedder: fromLoadShedder)
+        guard entitlementVerification != self.data.entitlementVerification ||
+                originalSource != self.data.originalSource
+        else { return self }
 
         var copy = self.data
         copy.entitlementVerification = entitlementVerification
+        copy.originalSource = originalSource
         return .init(data: copy)
     }
 
@@ -358,20 +374,23 @@ private extension CustomerInfo {
         var response: CustomerInfoResponse
         var entitlementVerification: VerificationResult
         var schemaVersion: String?
+        var originalSource: CustomerInfo.OriginalSource
 
         init(response: CustomerInfoResponse,
              entitlementVerification: VerificationResult,
-             schemaVersion: String?) {
+             schemaVersion: String?,
+             originalSource: CustomerInfo.OriginalSource) {
             self.response = response
             self.entitlementVerification = entitlementVerification
             self.schemaVersion = schemaVersion
+            self.originalSource = originalSource
         }
 
     }
 
 }
 
-/// `Codable` implementation that puts the content of`response` and `schemaVersion`
+/// `Codable` implementation that puts the content of`response`, `schemaVersion` and `originalSource`
 /// at the same level instead of nested.
 extension CustomerInfo.Contents: Codable {
 
@@ -380,6 +399,7 @@ extension CustomerInfo.Contents: Codable {
         case response
         case entitlementVerification
         case schemaVersion
+        case originalSource
 
     }
 
@@ -390,6 +410,7 @@ extension CustomerInfo.Contents: Codable {
         try container.encode(self.entitlementVerification, forKey: .entitlementVerification)
         // Always use current schema version when encoding
         try container.encode(CustomerInfo.currentSchemaVersion, forKey: .schemaVersion)
+        try container.encode(self.originalSource, forKey: .originalSource)
     }
 
     init(from decoder: Decoder) throws {
@@ -401,6 +422,34 @@ extension CustomerInfo.Contents: Codable {
             forKey: .entitlementVerification
         ) ?? .notRequested
         self.schemaVersion = try container.decodeIfPresent(String.self, forKey: .schemaVersion)
+        self.originalSource = try container.decodeIfPresent(CustomerInfo.OriginalSource.self,
+                                                            forKey: .originalSource) ?? .main
+    }
+
+}
+
+extension CustomerInfo {
+
+    /// Internal enum representing the original source of the ``CustomerInfo`` object.
+    enum OriginalSource: Codable {
+        /// Main server
+        case main
+
+        /// Load shedder server
+        case loadShedder
+
+        /// Computed on device from offline entitlements
+        case offlineEntitlements
+
+        init(entitlementVerification: VerificationResult, fromLoadShedder: Bool) {
+            if entitlementVerification == .verifiedOnDevice {
+                self = .offlineEntitlements
+            } else if fromLoadShedder {
+                self = .loadShedder
+            } else {
+                self = .main
+            }
+        }
     }
 
 }

@@ -86,7 +86,8 @@ private extension LogInOperation {
         let result: Result<(info: CustomerInfo, created: Bool), BackendError> = result
             .map { response in
                 (
-                    response.body.copy(with: response.verificationResult),
+                    response.body.copy(with: response.verificationResult,
+                                       fromLoadShedder: response.isLoadShedderResponse),
                     created: response.httpStatusCode == .createdSuccess
                 )
             }
