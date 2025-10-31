@@ -1240,6 +1240,9 @@ jobs:
           name: Run e2e tests (<< parameters.backend_environment >>)
           command: bundle exec fastlane run_maestro_e2e_tests backend_environment:<< parameters.backend_environment >>
           no_output_timeout: 15m
+        
+        # todo: implement error / success notifications through Slack
+
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -1775,6 +1778,14 @@ workflows:
           context:
             - slack-secrets
       - integration-tests-all
+
+  daily-maestro-e2e-tests:
+    when:
+      and:
+        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+        - equal: ["maestro_e2e_tests", << pipeline.schedule.name >>]
+    jobs:
+      - <<: *maestro-e2e-test-job
 
   manual-trigger-bump:
     when:
