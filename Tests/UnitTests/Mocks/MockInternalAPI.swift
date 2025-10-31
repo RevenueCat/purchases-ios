@@ -55,6 +55,28 @@ class MockInternalAPI: InternalAPI {
         completion(self.stubbedPostDiagnosticsEventsCompletionResult)
     }
 
+    #if ENABLE_AD_EVENTS_TRACKING
+    var invokedPostAdEvents: Bool = false
+    var invokedPostAdEventsParameters: [[StoredAdEvent]] = []
+    var stubbedPostAdEventsCompletionResult: BackendError?
+    var stubbedPostAdEventsCallback: ((@escaping InternalAPI.ResponseHandler) -> Void)?
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    override func postAdEvents(
+        events: [StoredAdEvent],
+        completion: @escaping InternalAPI.ResponseHandler
+    ) {
+        self.invokedPostAdEvents = true
+        self.invokedPostAdEventsParameters.append(events)
+
+        if let callback = stubbedPostAdEventsCallback {
+            callback(completion)
+        } else {
+            completion(self.stubbedPostAdEventsCompletionResult)
+        }
+    }
+    #endif
+
 }
 
 extension MockInternalAPI: @unchecked Sendable {}
