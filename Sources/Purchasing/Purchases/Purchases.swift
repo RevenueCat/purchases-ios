@@ -1093,6 +1093,19 @@ public extension Purchases {
         return customerInfo.entitlements
     }
 
+    func entitlement(_ entitlementIdentifier: String) -> RevenueCat.EntitlementInfo? {
+        return self.cachedCustomerInfo?.entitlements[entitlementIdentifier]
+    }
+
+    func entitlement(_ entitlementIdentifier: String) async throws -> RevenueCat.EntitlementInfo? {
+        return try await self.entitlement(entitlementIdentifier, fetchPolicy: .default)
+    }
+
+    func entitlement(_ entitlementIdentifier: String, fetchPolicy: CacheFetchPolicy) async throws -> RevenueCat.EntitlementInfo? {
+        let entitlements = try await self.entitlements(fetchPolicy: fetchPolicy)
+        return entitlements[entitlementIdentifier]
+    }
+
     #endif
 
     var customerInfoStream: AsyncStream<CustomerInfo> {

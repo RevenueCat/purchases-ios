@@ -233,6 +233,64 @@ public protocol PurchasesType: AnyObject {
      */
     func entitlements(fetchPolicy: CacheFetchPolicy) async throws -> RevenueCat.EntitlementInfos
 
+    /**
+     * Get a specific entitlement by identifier from cached customer info.
+     *
+     * This is a synchronous convenience method that returns the cached entitlement
+     * without making a network request. Returns `nil` if no cached data is available
+     * or if the entitlement doesn't exist.
+     *
+     * - Parameter entitlementIdentifier: The identifier of the entitlement to retrieve.
+     *
+     * #### Related Symbols
+     * - ``Purchases/entitlement(_:)-async``
+     * - ``Purchases/cachedCustomerInfo``
+     *
+     * #### Example:
+     * ```swift
+     * if Purchases.shared.entitlement("pro")?.isActive == true {
+     *     // User has pro access
+     * }
+     * ```
+     */
+    func entitlement(_ entitlementIdentifier: String) -> RevenueCat.EntitlementInfo?
+
+    /**
+     * Get a specific entitlement by identifier.
+     *
+     * This is a convenience method that fetches the latest ``CustomerInfo`` and returns
+     * the specific ``EntitlementInfo`` if it exists.
+     *
+     * - Parameter entitlementIdentifier: The identifier of the entitlement to retrieve.
+     *
+     * #### Related Symbols
+     * - ``Purchases/entitlement(_:fetchPolicy:)``
+     * - ``Purchases/entitlements()``
+     *
+     * #### Example:
+     * ```swift
+     * if try await Purchases.shared.entitlement("pro")?.isActive == true {
+     *     // User has pro access
+     * }
+     * ```
+     */
+    func entitlement(_ entitlementIdentifier: String) async throws -> RevenueCat.EntitlementInfo?
+
+    /**
+     * Get a specific entitlement by identifier.
+     *
+     * - Parameter entitlementIdentifier: The identifier of the entitlement to retrieve.
+     * - Parameter fetchPolicy: The behavior for what to do regarding caching.
+     *
+     * This is a convenience method that fetches the latest ``CustomerInfo`` and returns
+     * the specific ``EntitlementInfo`` if it exists.
+     *
+     * #### Related Symbols
+     * - ``Purchases/entitlement(_:)-async``
+     * - ``Purchases/entitlements(fetchPolicy:)``
+     */
+    func entitlement(_ entitlementIdentifier: String, fetchPolicy: CacheFetchPolicy) async throws -> RevenueCat.EntitlementInfo?
+
     #endif
 
     /**
