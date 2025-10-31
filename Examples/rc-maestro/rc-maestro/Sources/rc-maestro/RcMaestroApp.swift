@@ -19,7 +19,7 @@ struct RcMaestroApp: App {
                             case .never:
                                 return false
                             case .primaryDomainDown:
-                                return request.fallbackHostIndex == nil
+                                return request.fallbackUrlIndex == nil
                             }
                         }
                     )
