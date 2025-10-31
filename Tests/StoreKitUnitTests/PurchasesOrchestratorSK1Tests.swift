@@ -415,6 +415,45 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(customerInfo) == expectedCustomerInfo
     }
 
+    func testPurchaseWithQuantitySetsPaymentQuantity() async throws {
+        backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
+
+        let product = try await self.fetchSk1Product(StoreKitConfigTestCase.consumableProductId)
+        let storeProduct = StoreProduct(sk1Product: product)
+
+        let quantity = 5
+        let params = PurchaseParams.Builder(product: storeProduct)
+            .with(quantity: quantity)
+            .build()
+
+        let (transaction, _, _, _) = await withCheckedContinuation { continuation in
+            orchestrator.purchase(params: params,
+                                  trackDiagnostics: false) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(transaction?.quantity) == 5
+    }
+
+    func testPurchaseWithoutQuantityDefaultsToQuantityOne() async throws {
+        backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
+
+        let product = try await self.fetchSk1Product(StoreKitConfigTestCase.consumableProductId)
+        let storeProduct = StoreProduct(sk1Product: product)
+
+        let params = PurchaseParams.Builder(product: storeProduct).build()
+
+        let (transaction, _, _, _) = await withCheckedContinuation { continuation in
+            orchestrator.purchase(params: params,
+                                  trackDiagnostics: false) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(transaction?.quantity) == 1
+    }
+
     // MARK: - Paywalls
 
     func testPurchaseWithPresentedPaywall() async throws {

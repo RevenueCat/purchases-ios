@@ -35,6 +35,10 @@ protocol PurchasesOrchestratorTests {
 
     func testPurchaseWithPurchaseParamsReturnsCorrectValues() async throws
 
+    func testPurchaseWithQuantitySetsPaymentQuantity() async throws
+
+    func testPurchaseWithoutQuantityDefaultsToQuantityOne() async throws
+
     // MARK: - Paywalls
 
     func testPurchaseWithPresentedPaywall() async throws

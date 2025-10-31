@@ -32,6 +32,7 @@ import Foundation
     let package: Package?
     let product: StoreProduct?
     let promotionalOffer: PromotionalOffer?
+    let quantity: Int?
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
@@ -44,6 +45,7 @@ import Foundation
         self.promotionalOffer = builder.promotionalOffer
         self.product = builder.product
         self.package = builder.package
+        self.quantity = builder.quantity
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
@@ -58,6 +60,7 @@ import Foundation
         private(set) var promotionalOffer: PromotionalOffer?
         private(set) var package: Package?
         private(set) var product: StoreProduct?
+        private(set) var quantity: Int?
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
@@ -68,7 +71,7 @@ import Foundation
 
         /**
          * Create a new builder with a ``Package``.
-         * 
+         *
          * - Parameter package: The ``Package`` the user intends to purchase.
          */
         @objc public init(package: Package) {
@@ -93,6 +96,15 @@ import Foundation
          */
         @objc public func with(promotionalOffer: PromotionalOffer) -> Self {
             self.promotionalOffer = promotionalOffer
+            return self
+        }
+
+        /**
+         * Set `quantity`.
+         * - Parameter quantity: The number of items to purchase. Defaults to 1 if not specified.
+         */
+        @objc public func with(quantity: Int) -> Self {
+            self.quantity = quantity
             return self
         }
 
