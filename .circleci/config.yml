@@ -1238,7 +1238,7 @@ jobs:
           target: "Maestro"
       - run:
           name: Run e2e tests (<< parameters.backend_environment >>)
-          command: bundle exec fastlane run_maestro_e2e_tests backend_environment:<< parameters.backend_environment >>
+          command: bundle exec fastlane run_maestro_e2e_tests
           no_output_timeout: 15m
         
         # todo: implement error / success notifications through Slack
