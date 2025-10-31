@@ -506,6 +506,7 @@ commands:
       force_server_error_strategy:
         type: enum
         enum: ["never", "primary_domain_down"]
+        default: "never"
         description: "Server error strategy for testing fallback behavior"
       proxy_url_scheme:
         type: string
