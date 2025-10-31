@@ -172,10 +172,14 @@ private func checkPurchaseParams() {
     let storeProduct: StoreProduct! = nil
     let offer: PromotionalOffer! = nil
 
-    let packageParamsBuilder = PurchaseParams.Builder(package: pack).with(promotionalOffer: offer)
+    let packageParamsBuilder = PurchaseParams.Builder(package: pack)
+        .with(promotionalOffer: offer)
+        .with(quantity: 3)
     let _: PurchaseParams = packageParamsBuilder.build()
 
-    let productParamsBuilder = PurchaseParams.Builder(product: storeProduct).with(promotionalOffer: offer)
+    let productParamsBuilder = PurchaseParams.Builder(product: storeProduct)
+        .with(promotionalOffer: offer)
+        .with(quantity: 5)
     let _: PurchaseParams = productParamsBuilder.build()
 }
 
@@ -194,7 +198,10 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(product: stp)
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(product: stp,
                                                                                       promotionalOffer: promoOffer)
-        let params: PurchaseParams! = nil
+        let params = PurchaseParams.Builder(package: pack)
+            .with(promotionalOffer: promoOffer)
+            .with(quantity: 4)
+            .build()
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(params)
 
         for try await _: CustomerInfo in purchases.customerInfoStream {}
@@ -248,7 +255,7 @@ private func checkConfigure() -> Purchases! {
         appUserID: "",
         showStoreMessagesAutomatically: false
     )
-    
+
     let configuration = Configuration.Builder(withAPIKey: "", appUserID: "").build()
     Purchases.configure(with: configuration)
 
