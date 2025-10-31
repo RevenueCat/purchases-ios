@@ -1084,6 +1084,28 @@ public extension Purchases {
         return try? self.customerInfoManager.cachedCustomerInfo(appUserID: self.appUserID)
     }
 
+    func entitlements() async throws -> RevenueCat.EntitlementInfos {
+        return try await self.entitlements(fetchPolicy: .default)
+    }
+
+    func entitlements(fetchPolicy: CacheFetchPolicy) async throws -> RevenueCat.EntitlementInfos {
+        let customerInfo = try await self.customerInfo(fetchPolicy: fetchPolicy)
+        return customerInfo.entitlements
+    }
+
+    func entitlement(_ entitlementIdentifier: String) -> RevenueCat.EntitlementInfo? {
+        return self.cachedCustomerInfo?.entitlements[entitlementIdentifier]
+    }
+
+    func entitlement(_ entitlementIdentifier: String) async throws -> RevenueCat.EntitlementInfo? {
+        return try await self.entitlement(entitlementIdentifier, fetchPolicy: .default)
+    }
+
+    func entitlement(_ entitlementIdentifier: String, fetchPolicy: CacheFetchPolicy) async throws -> RevenueCat.EntitlementInfo? {
+        let entitlements = try await self.entitlements(fetchPolicy: fetchPolicy)
+        return entitlements[entitlementIdentifier]
+    }
+
     #endif
 
     var customerInfoStream: AsyncStream<CustomerInfo> {
