@@ -726,6 +726,180 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         expect(self.eTagManager.invokedHTTPResultFromCacheOrBackendCount) == 1
     }
 
+    func testIsLoadShedderResponseIsTrueWhenHeaderIsTrue() throws {
+        let request = HTTPRequest(method: .get, path: .mockPath)
+        let responseData = "{\"message\": \"something is great up in the cloud\"}".asData
+        let eTag = "etag"
+
+        stub(condition: isPath(request.path)) { _ in
+            return HTTPStubsResponse(
+                data: responseData,
+                statusCode: .success,
+                headers: [
+                    HTTPClient.ResponseHeader.isLoadShedder.rawValue: "true",
+                    HTTPClient.ResponseHeader.eTag.rawValue: eTag
+                ]
+            )
+        }
+
+        let result = waitUntilValue { completion in
+            self.client.perform(request) { (response: DataResponse) in
+                completion(response)
+            }
+        }
+
+        expect(result).toNot(beNil())
+        expect(result).to(beSuccess())
+        expect(result?.value?.isLoadShedderResponse) == true
+    }
+
+    func testIsLoadShedderResponseIsFalseWhenHeaderIsNotTrue() throws {
+        let request = HTTPRequest(method: .get, path: .mockPath)
+        let responseData = "{\"message\": \"something is great up in the cloud\"}".asData
+
+        stub(condition: isPath(request.path)) { _ in
+            return HTTPStubsResponse(
+                data: responseData,
+                statusCode: .success,
+                headers: [
+                    HTTPClient.ResponseHeader.isLoadShedder.rawValue: "false"
+                ]
+            )
+        }
+
+        let result = waitUntilValue { completion in
+            self.client.perform(request) { (response: DataResponse) in
+                completion(response)
+            }
+        }
+
+        expect(result).toNot(beNil())
+        expect(result).to(beSuccess())
+        expect(result?.value?.isLoadShedderResponse) == false
+    }
+
+    func testIsLoadShedderResponseIsFalseWhenHeaderIsMissing() throws {
+        let request = HTTPRequest(method: .get, path: .mockPath)
+        let responseData = "{\"message\": \"something is great up in the cloud\"}".asData
+
+        stub(condition: isPath(request.path)) { _ in
+            return HTTPStubsResponse(
+                data: responseData,
+                statusCode: .success,
+                headers: nil
+            )
+        }
+
+        let result = waitUntilValue { completion in
+            self.client.perform(request) { (response: DataResponse) in
+                completion(response)
+            }
+        }
+
+        expect(result).toNot(beNil())
+        expect(result).to(beSuccess())
+        expect(result?.value?.isLoadShedderResponse) == false
+    }
+
+    func testIsFallbackUrlResponseIsSetWhenUsingFallbackHost() throws {
+        let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
+        let responseData = "{\"mapping\": {}}".asData
+
+
+        let fallbackURL = try XCTUnwrap(request.path.fallbackUrls.first)
+        stub(condition: isPath(request.path)) { urlRequest in
+            // Fail the main request to trigger fallback
+            if urlRequest.url?.absoluteString != fallbackURL.absoluteString {
+                // Primary URL response
+                return HTTPStubsResponse(
+                    data: Data(),
+                    statusCode: .internalServerError,
+                    headers: nil
+                )
+            } else {
+                // Fallback URL response
+                return HTTPStubsResponse(
+                    data: responseData,
+                    statusCode: .success,
+                    headers: nil
+                )
+            }
+        }
+
+        let result = waitUntilValue { completion in
+            self.client.perform(request) { (response: DataResponse) in
+                completion(response)
+            }
+        }
+
+        expect(result).toNot(beNil())
+        expect(result).to(beSuccess())
+        expect(result?.value?.isFallbackUrlResponse) == true
+        expect(result?.value?.isLoadShedderResponse) == false
+    }
+
+    func testIsFallbackUrlResponseIsFalseWhenNotUsingFallbackHost() throws {
+        let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
+        let responseData = "{\"mapping\": {}}".asData
+
+        stub(condition: isPath(request.path)) { _ in
+            return HTTPStubsResponse(
+                data: responseData,
+                statusCode: .success,
+                headers: nil
+            )
+        }
+
+        let result = waitUntilValue { completion in
+            self.client.perform(request) { (response: DataResponse) in
+                completion(response)
+            }
+        }
+
+        expect(result).toNot(beNil())
+        expect(result).to(beSuccess())
+        expect(result?.value?.isFallbackUrlResponse) == false
+    }
+
+    func testBothIsFallbackUrlResponseAndIsLoadShedderResponseAreSetCorrectlyTogether() throws {
+        let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
+        let responseData = "{\"mapping\": {}}".asData
+
+
+        let fallbackURL = try XCTUnwrap(request.path.fallbackUrls.first)
+        stub(condition: isPath(request.path)) { urlRequest in
+            // Fail the main request to trigger fallback
+            if urlRequest.url?.absoluteString != fallbackURL.absoluteString {
+                // Primary URL response
+                return HTTPStubsResponse(
+                    data: Data(),
+                    statusCode: .internalServerError,
+                    headers: nil
+                )
+            } else {
+                // Fallback URL response
+                return HTTPStubsResponse(
+                    data: responseData,
+                    statusCode: .success,
+                    headers: [
+                        HTTPClient.ResponseHeader.isLoadShedder.rawValue: "true"
+                    ]
+                )
+            }
+        }
+
+        let result = waitUntilValue { completion in
+            self.client.perform(request) { (response: DataResponse) in
+                completion(response)
+            }
+        }
+
+        expect(result).toNot(beNil())
+        expect(result).to(beSuccess())
+        expect(result?.value?.isFallbackUrlResponse) == true
+        expect(result?.value?.isLoadShedderResponse) == true
+    }
+
     func testResponseDeserialization() throws {
         struct CustomResponse: Codable, Equatable, HTTPResponseBody {
             let message: String
@@ -1357,8 +1531,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             responseHeaders: headers,
             body: mockedCachedResponse,
             verificationResult: .verified,
-            isLoadShedderResponse: false,
-            isFallbackUrlResponse: false
+            isLoadShedderResponse: true,
+            isFallbackUrlResponse: true
         )
 
         stub(condition: isPath(path)) { response in
@@ -1381,6 +1555,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         expect(response?.value?.requestDate).to(beCloseToDate(requestDate))
         expect(response?.value?.verificationResult) == .notRequested
         expect(response?.value?.responseHeaders.keys).to(contain(Array(headers.keys.map(AnyHashable.init))))
+        expect(response?.value?.isLoadShedderResponse) == true
+        expect(response?.value?.isFallbackUrlResponse) == true
 
         expect(self.eTagManager.invokedETagHeaderParametersList).to(haveCount(1))
     }
