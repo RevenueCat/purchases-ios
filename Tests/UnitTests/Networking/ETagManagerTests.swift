@@ -622,6 +622,78 @@ class ETagManagerTests: TestCase {
         expect(response?.requestDate) == requestDate
     }
 
+    func testResponseReturnsIsLoadShedderResponseValueFromDiskAndNotFromServer() throws {
+        let request = URLRequest(url: Self.testURL)
+
+        let actualResponse = "response".asData
+
+        self.mockUserDefaults.mockValues[try request.cacheKey] = """
+        {
+        "e_tag": "\(Self.testETag)",
+        "status_code": 200,
+        "data": "\(actualResponse.asFetchToken)",
+        "is_load_shedder_response": false
+        }
+        """.asData
+
+        var headers = self.getHeaders(eTag: Self.testETag)
+        headers[HTTPClient.ResponseHeader.isLoadShedder.rawValue] = "true"
+
+        let response = self.eTagManager.httpResultFromCacheOrBackend(
+            with: VerifiedHTTPResponse(
+                httpStatusCode: .notModified,
+                responseHeaders: headers,
+                body: nil,
+                verificationResult: .notRequested,
+                isLoadShedderResponse: true,
+                isFallbackUrlResponse: false
+            ),
+            request: request,
+            retried: false,
+            isFallbackURLRequest: false
+        )
+
+        // Regardless of the source of the .notModified response, this property should always respect the value from
+        // disk as it contains the truth of whether the cached (original) response was served by the Load Shedder or not
+        expect(response?.isLoadShedderResponse) == false
+    }
+
+    func testResponseReturnsIsFallbackUrlResponseValueFromDiskAndNotFromServer() throws {
+        let request = URLRequest(url: Self.testURL)
+
+        let actualResponse = "response".asData
+
+        self.mockUserDefaults.mockValues[try request.cacheKey] = """
+        {
+        "e_tag": "\(Self.testETag)",
+        "status_code": 200,
+        "data": "\(actualResponse.asFetchToken)",
+        "is_fallback_url_response": false
+        }
+        """.asData
+
+        var headers = self.getHeaders(eTag: Self.testETag)
+        headers[HTTPClient.ResponseHeader.isLoadShedder.rawValue] = "true"
+
+        let response = self.eTagManager.httpResultFromCacheOrBackend(
+            with: VerifiedHTTPResponse(
+                httpStatusCode: .notModified,
+                responseHeaders: headers,
+                body: nil,
+                verificationResult: .notRequested,
+                isLoadShedderResponse: true,
+                isFallbackUrlResponse: false
+            ),
+            request: request,
+            retried: false,
+            isFallbackURLRequest: true
+        )
+
+        // Regardless of the source of the .notModified response, this property should always respect the value from
+        // disk as it contains the truth of whether the cached (original) response was served by the fallback url or not
+        expect(response?.isFallbackUrlResponse) == false
+    }
+
     func testCachedResponseWithNoVerificationResultIsNotIgnored() throws {
         let request = URLRequest(url: Self.testURL)
 
@@ -883,7 +955,7 @@ class ETagManagerTests: TestCase {
         expect(eTagResponse.isLoadShedderResponse) == false
     }
 
-    func testIsFallbackURLResponseIsStoredWhenRequestIsFallback() throws {
+    func testIsFallbackUrlResponseIsStoredWhenRequestIsFallback() throws {
         let request = URLRequest(url: Self.testURL)
         let cacheKey = try request.cacheKey
         let responseObject = try JSONSerialization.data(withJSONObject: ["a": "response"])
@@ -904,13 +976,12 @@ class ETagManagerTests: TestCase {
         expect(self.mockUserDefaults.setObjectForKeyCallCount) == 1
 
         let setData = try XCTUnwrap(self.mockUserDefaults.mockValues[cacheKey] as? Data)
-        let jsonString = String(data: setData, encoding: .utf8)
         let eTagResponse = try ETagManager.Response.with(setData)
         expect(eTagResponse.isFallbackUrlResponse) == true
         expect(eTagResponse.isLoadShedderResponse) == false
     }
 
-    func testIsFallbackURLResponseIsFalseWhenRequestIsNotFallback() throws {
+    func testIsFallbackUrlResponseIsFalseWhenRequestIsNotFallback() throws {
         let request = URLRequest(url: Self.testURL)
         let cacheKey = try request.cacheKey
         let responseObject = try JSONSerialization.data(withJSONObject: ["a": "response"])
