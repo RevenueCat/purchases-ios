@@ -54,7 +54,7 @@ extension AdEventsRequest {
         var mediatorName: String
         var placement: String?
         var adUnitId: String
-        var adInstanceId: String
+        var impressionId: String
         // For revenue events only:
         var revenueMicros: Int?
         var currency: String?
@@ -97,7 +97,7 @@ extension AdEventsRequest.AdEventRequest {
                 mediatorName: eventData.mediatorName.rawValue,
                 placement: eventData.placement,
                 adUnitId: eventData.adUnitId,
-                adInstanceId: eventData.adInstanceId,
+                impressionId: eventData.impressionId,
                 revenueMicros: adEvent.revenueData?.revenueMicros,
                 currency: adEvent.revenueData?.currency,
                 precision: adEvent.revenueData?.precision.rawValue
@@ -146,7 +146,7 @@ extension AdEventsRequest.AdEventRequest: Encodable {
         case mediatorName
         case placement
         case adUnitId
-        case adInstanceId
+        case impressionId
         case revenueMicros
         case currency
         case precision

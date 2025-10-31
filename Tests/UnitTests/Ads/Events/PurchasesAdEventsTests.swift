@@ -36,7 +36,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             mediatorName: .appLovin,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
-            adInstanceId: "instance-123"
+            impressionId: "instance-123"
         )
 
         await self.purchases.adTracker.trackAdDisplayed(displayedData)
@@ -54,7 +54,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         expect(eventData.mediatorName) == .appLovin
         expect(eventData.placement) == "home_screen"
         expect(eventData.adUnitId) == "ca-app-pub-123"
-        expect(eventData.adInstanceId) == "instance-123"
+        expect(eventData.impressionId) == "instance-123"
     }
 
     func testTrackAdOpenedStoresEvent() async throws {
@@ -63,7 +63,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             mediatorName: .appLovin,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
-            adInstanceId: "instance-123"
+            impressionId: "instance-123"
         )
 
         await self.purchases.adTracker.trackAdOpened(openedData)
@@ -81,7 +81,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         expect(eventData.mediatorName) == .appLovin
         expect(eventData.placement) == "home_screen"
         expect(eventData.adUnitId) == "ca-app-pub-123"
-        expect(eventData.adInstanceId) == "instance-123"
+        expect(eventData.impressionId) == "instance-123"
     }
 
     func testTrackAdRevenueStoresEvent() async throws {
@@ -90,7 +90,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             mediatorName: .appLovin,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
-            adInstanceId: "instance-123",
+            impressionId: "instance-123",
             revenueMicros: 1500000,
             currency: "USD",
             precision: .exact
@@ -111,7 +111,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         expect(eventData.mediatorName) == .appLovin
         expect(eventData.placement) == "home_screen"
         expect(eventData.adUnitId) == "ca-app-pub-123"
-        expect(eventData.adInstanceId) == "instance-123"
+        expect(eventData.impressionId) == "instance-123"
         expect(eventData.revenueMicros) == 1500000
         expect(eventData.currency) == "USD"
         expect(eventData.precision) == .exact

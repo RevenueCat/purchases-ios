@@ -63,7 +63,7 @@ class AdFeatureEventsRequestTests: TestCase {
             mediatorName: .appLovin,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123456789",
-            adInstanceId: "instance-123"
+            impressionId: "instance-123"
         )
         let adEvent = AdEvent.displayed(adEventCreationData, adEventData)
 
@@ -103,7 +103,7 @@ private extension AdFeatureEventsRequestTests {
         mediatorName: .appLovin,
         placement: "home_screen",
         adUnitId: "ca-app-pub-123456789",
-        adInstanceId: "instance-123"
+        impressionId: "instance-123"
     )
 
     static let openedData: AdOpened = .init(
@@ -111,7 +111,7 @@ private extension AdFeatureEventsRequestTests {
         mediatorName: .appLovin,
         placement: "home_screen",
         adUnitId: "ca-app-pub-123456789",
-        adInstanceId: "instance-123"
+        impressionId: "instance-123"
     )
 
     static let revenueData: AdRevenue = .init(
@@ -119,7 +119,7 @@ private extension AdFeatureEventsRequestTests {
         mediatorName: .appLovin,
         placement: "home_screen",
         adUnitId: "ca-app-pub-123456789",
-        adInstanceId: "instance-123",
+        impressionId: "instance-123",
         revenueMicros: 1500000,
         currency: "USD",
         precision: .exact
