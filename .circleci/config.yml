@@ -413,13 +413,22 @@ commands:
 
   tuist-generate-workspace:
     description: "Install Tuist and generate workspace"
+    parameters:
+      target:
+        type: string
+        default: ""
+        description: "Optional target to generate (e.g., 'Maestro'). If empty, generates all targets."
     steps:
       - revenuecat/install-tuist
       - run:
           name: Generate Tuist workspace
           command: |
             export PATH="$HOME/.local/share/mise/shims:$PATH"
-            tuist install && tuist generate --no-open
+            if [ -n "<< parameters.target >>" ]; then
+              tuist install && tuist generate << parameters.target >> --no-open
+            else
+              tuist install && tuist generate --no-open
+            fi
 
   create-snapshot-pr-if-needed:
     parameters:
@@ -1161,7 +1170,8 @@ jobs:
           install_swiftlint: false
       - setup_xcconfig
       - revenuecat/install-maestro
-      - tuist-generate-workspace
+      - tuist-generate-workspace:
+          target: "Maestro"
       - run:
           name: Run e2e tests (<< parameters.test_environment >>)
           command: |
