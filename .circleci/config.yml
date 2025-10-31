@@ -1169,20 +1169,19 @@ jobs:
       - install-dependencies:
           install_swiftlint: false
       - run:
-        name: Prepare environment variables for e2e tests (<< parameters.test_environment >>)
-        command: |
-          if [ "<< parameters.test_environment >>" = "load_shedder" ]; then
-            export REVENUECAT_API_KEY="${RC_E2E_TEST_API_KEY_LOAD_SHEDDER_APP_STORE}"
-          else
-            export REVENUECAT_API_KEY="${RC_E2E_TEST_API_KEY_PRODUCTION_APP_STORE}"
-          fi
+          name: Prepare environment variables for e2e tests (<< parameters.test_environment >>)
+          command: |
+            if [ "<< parameters.test_environment >>" = "load_shedder" ]; then
+              export REVENUECAT_API_KEY="${RC_E2E_TEST_API_KEY_LOAD_SHEDDER_APP_STORE}"
+            else
+              export REVENUECAT_API_KEY="${RC_E2E_TEST_API_KEY_PRODUCTION_APP_STORE}"
+            fi
 
-          if [ "<< parameters.test_environment >>" = "fallback" ]; then
-            export REVENUECAT_FORCE_SERVER_ERROR_STRATEGY="primary_domain_down"
-          else
-            export REVENUECAT_FORCE_SERVER_ERROR_STRATEGY="never"
-          fi
-        no_output_timeout: 15m
+            if [ "<< parameters.test_environment >>" = "fallback" ]; then
+              export REVENUECAT_FORCE_SERVER_ERROR_STRATEGY="primary_domain_down"
+            else
+              export REVENUECAT_FORCE_SERVER_ERROR_STRATEGY="never"
+            fi
       - setup_xcconfig
       - revenuecat/install-maestro
       - tuist-generate-workspace:
