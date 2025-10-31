@@ -440,11 +440,24 @@ final class PurchasesOrchestrator {
 
         #endif
 
+        // Validate quantity if provided
+        if let quantity = params.quantity {
+            guard quantity >= 1 && quantity <= 10 else {
+                let errorMessage = Strings.purchase.invalid_quantity(quantity: quantity).description
+                let error = ErrorUtils.purchaseInvalidError(message: errorMessage)
+                self.operationDispatcher.dispatchOnMainActor {
+                    completion(nil, nil, error.asPublicError, false)
+                }
+                return
+            }
+        }
+
         purchase(product: product,
                  package: params.package,
                  promotionalOffer: params.promotionalOffer?.signedData,
                  winBackOffer: winBackOffer,
                  metadata: metadata,
+                 quantity: params.quantity,
                  trackDiagnostics: trackDiagnostics,
                  completion: completion)
     }
@@ -454,6 +467,7 @@ final class PurchasesOrchestrator {
                   promotionalOffer: PromotionalOffer.SignedData? = nil,
                   winBackOffer: WinBackOffer? = nil,
                   metadata: [String: String]? = nil,
+                  quantity: Int? = nil,
                   trackDiagnostics: Bool,
                   completion: @escaping PurchaseCompletedBlock) {
         Self.logPurchase(product: product, package: package, offer: promotionalOffer)
@@ -480,6 +494,7 @@ final class PurchasesOrchestrator {
             self.purchase(sk1Product: sk1Product,
                           payment: payment,
                           package: package,
+                          quantity: quantity,
                           wrapper: storeKit1Wrapper,
                           completion: completionWithTracking)
         } else if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
@@ -489,6 +504,7 @@ final class PurchasesOrchestrator {
                           promotionalOffer: promotionalOffer,
                           winBackOffer: winBackOffer,
                           metadata: metadata,
+                          quantity: quantity,
                           completion: completionWithTracking)
         } else if let simulatedStoreProduct = product.testStoreProduct {
             self.handlePurchase(simulatedStoreProduct: simulatedStoreProduct,
@@ -502,6 +518,7 @@ final class PurchasesOrchestrator {
     func purchase(sk1Product: SK1Product,
                   promotionalOffer: PromotionalOffer.SignedData,
                   package: Package?,
+                  quantity: Int? = nil,
                   wrapper: StoreKit1Wrapper,
                   completion: @escaping PurchaseCompletedBlock) {
         let discount = promotionalOffer.sk1PromotionalOffer
@@ -509,6 +526,7 @@ final class PurchasesOrchestrator {
         self.purchase(sk1Product: sk1Product,
                       payment: payment,
                       package: package,
+                      quantity: quantity,
                       wrapper: wrapper,
                       completion: completion)
     }
@@ -516,6 +534,7 @@ final class PurchasesOrchestrator {
     func purchase(sk1Product: SK1Product,
                   payment: SKMutablePayment,
                   package: Package?,
+                  quantity: Int? = nil,
                   wrapper: StoreKit1Wrapper,
                   completion: @escaping PurchaseCompletedBlock) {
         /**
@@ -543,6 +562,9 @@ final class PurchasesOrchestrator {
         }
 
         payment.applicationUsername = self.appUserID
+        if let quantity = quantity {
+            payment.quantity = quantity
+        }
 
         self.cachePresentedOfferingContext(package: package, productIdentifier: productIdentifier)
 
@@ -594,6 +616,7 @@ final class PurchasesOrchestrator {
                   promotionalOffer: PromotionalOffer.SignedData?,
                   winBackOffer: WinBackOffer?,
                   metadata: [String: String]? = nil,
+                  quantity: Int? = nil,
                   completion: @escaping PurchaseCompletedBlock) {
         _ = Task<Void, Never> {
             do {
@@ -602,7 +625,8 @@ final class PurchasesOrchestrator {
                     package: package,
                     promotionalOffer: promotionalOffer,
                     winBackOffer: winBackOffer?.discount.sk2Discount,
-                    metadata: metadata
+                    metadata: metadata,
+                    quantity: quantity
                 )
 
                 if !result.userCancelled {
@@ -639,13 +663,18 @@ final class PurchasesOrchestrator {
                   package: Package?,
                   promotionalOffer: PromotionalOffer.SignedData? = nil,
                   winBackOffer: Product.SubscriptionOffer? = nil,
-                  metadata: [String: String]? = nil) async throws -> PurchaseResultData {
+                  metadata: [String: String]? = nil,
+                  quantity: Int? = nil) async throws -> PurchaseResultData {
         let result: Product.PurchaseResult
         var options: Set<Product.PurchaseOption> = [.simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)]
 
         if let uuid = UUID(uuidString: self.appUserID) {
             Logger.debug(Strings.storeKit.sk2_purchasing_added_uuid_option(uuid))
             options.insert(.appAccountToken(uuid))
+        }
+
+        if let quantity = quantity {
+            options.insert(.quantity(quantity))
         }
 
         let startTime = self.dateProvider.now()

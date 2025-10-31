@@ -269,9 +269,9 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
 extension BasePurchasesOrchestratorTests {
 
-    func fetchSk1Product() async throws -> SK1Product {
+    func fetchSk1Product(_ productID: String = StoreKitConfigTestCase.productID) async throws -> SK1Product {
         return MockSK1Product(
-            mockProductIdentifier: Self.productID,
+            mockProductIdentifier: productID,
             mockSubscriptionGroupIdentifier: "group1"
         )
     }
