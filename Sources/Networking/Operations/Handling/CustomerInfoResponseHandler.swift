@@ -49,7 +49,8 @@ class CustomerInfoResponseHandler {
                     _ = response.body.errorResponse.asBackendError(with: response.httpStatusCode)
                 }
 
-                return response.body.customerInfo.copy(with: response.verificationResult)
+                return response.body.customerInfo.copy(with: response.verificationResult,
+                                                       fromLoadShedder: response.isLoadShedderResponse)
             }
             .mapError(BackendError.networkError)
 
