@@ -1691,24 +1691,21 @@ workflows:
         - not: << pipeline.parameters.generate_snapshots >>
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
-      - <<: *maestro-e2e-test-job
-
-      # todo rick: remove after testing
-      # - lint
-      # - validate-package-swift:
-      #     name: validate-package-swift-5.7
-      #     xcode_version: "14.0.1"
-      #     mac_os_executor_name: macos-executor-for-macos-12_6
-      # - validate-package-swift:
-      #     name: validate-package-swift-5.8
-      #     xcode_version: "14.3.1"
-      #     mac_os_executor_name: macos-executor
-      # - run-test-ios-18
-      # - run-test-ios-26
-      # - pod-lib-lint
-      # - run-revenuecat-ui-ios-18
-      # - run-revenuecat-ui-ios-26
-      # - emerge_purchases_ui_snapshot_tests
+      - lint
+      - validate-package-swift:
+          name: validate-package-swift-5.7
+          xcode_version: "14.0.1"
+          mac_os_executor_name: macos-executor-for-macos-12_6
+      - validate-package-swift:
+          name: validate-package-swift-5.8
+          xcode_version: "14.3.1"
+          mac_os_executor_name: macos-executor
+      - run-test-ios-18
+      - run-test-ios-26
+      - pod-lib-lint
+      - run-revenuecat-ui-ios-18
+      - run-revenuecat-ui-ios-26
+      - emerge_purchases_ui_snapshot_tests
 
   create-tag:
     when:
