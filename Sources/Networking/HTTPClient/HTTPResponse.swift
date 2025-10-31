@@ -71,17 +71,17 @@ struct VerifiedHTTPResponse<Body: HTTPResponseBody>: HTTPResponseType {
     var response: HTTPResponse<Body>
     var verificationResult: VerificationResult
     var isLoadShedderResponse: Bool
-    var isFallbackURLResponse: Bool
+    var isFallbackUrlResponse: Bool
 
     init(response: HTTPResponse<Body>,
          verificationResult: VerificationResult,
          isLoadShedderResponse: Bool,
-         isFallbackURLResponse: Bool
+         isFallbackUrlResponse: Bool
     ) {
         self.response = response
         self.verificationResult = verificationResult
         self.isLoadShedderResponse = isLoadShedderResponse
-        self.isFallbackURLResponse = isFallbackURLResponse
+        self.isFallbackUrlResponse = isFallbackUrlResponse
     }
 
     init(
@@ -91,7 +91,7 @@ struct VerifiedHTTPResponse<Body: HTTPResponseBody>: HTTPResponseType {
         requestDate: Date? = nil,
         verificationResult: VerificationResult,
         isLoadShedderResponse: Bool,
-        isFallbackURLResponse: Bool
+        isFallbackUrlResponse: Bool
     ) {
         self.init(
             response: .init(
@@ -102,7 +102,7 @@ struct VerifiedHTTPResponse<Body: HTTPResponseBody>: HTTPResponseType {
             ),
             verificationResult: verificationResult,
             isLoadShedderResponse: isLoadShedderResponse,
-            isFallbackURLResponse: isFallbackURLResponse
+            isFallbackUrlResponse: isFallbackUrlResponse
         )
     }
 
@@ -195,13 +195,13 @@ extension HTTPResponse {
     func verified(
         with verificationResult: VerificationResult,
         isLoadShedderResponse: Bool,
-        isFallbackURLResponse: Bool
+        isFallbackUrlResponse: Bool
     ) -> VerifiedHTTPResponse<Body> {
         return .init(
             response: self,
             verificationResult: verificationResult,
             isLoadShedderResponse: isLoadShedderResponse,
-            isFallbackURLResponse: isFallbackURLResponse
+            isFallbackUrlResponse: isFallbackUrlResponse
         )
     }
 
@@ -246,7 +246,7 @@ extension VerifiedHTTPResponse {
             response: try self.response.mapBody(mapping),
             verificationResult: self.verificationResult,
             isLoadShedderResponse: self.isLoadShedderResponse,
-            isFallbackURLResponse: self.isFallbackURLResponse
+            isFallbackUrlResponse: self.isFallbackUrlResponse
         )
     }
 

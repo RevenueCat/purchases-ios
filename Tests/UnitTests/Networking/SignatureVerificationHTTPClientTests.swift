@@ -191,7 +191,7 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
                 validationTime: Self.date1,
                 verificationResult: .verified,
                 isLoadShedderResponse: false,
-                isFallbackURLResponse: false
+                isFallbackUrlResponse: false
             )
         )
 
@@ -370,7 +370,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                 data: body,
                 verificationResult: .verified,
                 isLoadShedderResponse: false,
-                isFallbackURLResponse: false
+                isFallbackUrlResponse: false
             )
         )
 
@@ -509,7 +509,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                 data: .init(),
                 verificationResult: .notRequested,
                 isLoadShedderResponse: false,
-                isFallbackURLResponse: false
+                isFallbackUrlResponse: false
             )
         )
 
@@ -537,7 +537,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                 data: cachedResponse,
                 verificationResult: .verified,
                 isLoadShedderResponse: false,
-                isFallbackURLResponse: false
+                isFallbackUrlResponse: false
             )
         )
         self.signing.stubbedVerificationResult = false
@@ -566,7 +566,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                 validationTime: Self.date1,
                 verificationResult: .verified,
                 isLoadShedderResponse: false,
-                isFallbackURLResponse: false
+                isFallbackUrlResponse: false
             )
         )
 
@@ -596,7 +596,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                 validationTime: Self.date1,
                 verificationResult: .verified,
                 isLoadShedderResponse: false,
-                isFallbackURLResponse: false
+                isFallbackUrlResponse: false
             )
         )
 
@@ -628,7 +628,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                 validationTime: Self.date1,
                 verificationResult: .verified,
                 isLoadShedderResponse: false,
-                isFallbackURLResponse: false
+                isFallbackUrlResponse: false
             )
         )
 
@@ -655,7 +655,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                 validationTime: Self.date1,
                 verificationResult: .failed,
                 isLoadShedderResponse: false,
-                isFallbackURLResponse: false
+                isFallbackUrlResponse: false
             )
         )
 
@@ -719,7 +719,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                 validationTime: Self.date1,
                 verificationResult: .verified,
                 isLoadShedderResponse: false,
-                isFallbackURLResponse: false
+                isFallbackUrlResponse: false
             )
         )
 
@@ -954,7 +954,7 @@ private extension ETagManager.Response {
         validationTime: Date? = nil,
         verificationResult: VerificationResult,
         isLoadShedderResponse: Bool,
-        isFallbackURLResponse: Bool
+        isFallbackUrlResponse: Bool
 
     ) throws {
         self.init(eTag: eTag,
@@ -963,7 +963,7 @@ private extension ETagManager.Response {
                   validationTime: validationTime,
                   verificationResult: verificationResult,
                   isLoadShedderResponse: isLoadShedderResponse,
-                  isFallbackURLResponse: isFallbackURLResponse
+                  isFallbackUrlResponse: isFallbackUrlResponse
         )
     }
 

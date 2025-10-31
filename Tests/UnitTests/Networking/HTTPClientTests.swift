@@ -1358,7 +1358,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             body: mockedCachedResponse,
             verificationResult: .verified,
             isLoadShedderResponse: false,
-            isFallbackURLResponse: false
+            isFallbackUrlResponse: false
         )
 
         stub(condition: isPath(path)) { response in
@@ -1602,7 +1602,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             requestDate: requestDate,
             verificationResult: .notRequested,
             isLoadShedderResponse: false,
-            isFallbackURLResponse: false
+            isFallbackUrlResponse: false
         )
 
         stub(condition: isPath(path)) { _ in

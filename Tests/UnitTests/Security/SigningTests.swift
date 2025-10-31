@@ -593,7 +593,7 @@ class SigningTests: TestCase {
             requestHeaders: [:],
             publicKey: nil,
             isLoadShedderResponse: false,
-            isFallbackURLResponse: false
+            isFallbackUrlResponse: false
         )
 
         expect(verifiedResponse.verificationResult) == .notRequested
@@ -609,7 +609,7 @@ class SigningTests: TestCase {
             requestHeaders: [:],
             publicKey: self.publicKey,
             isLoadShedderResponse: false,
-            isFallbackURLResponse: false
+            isFallbackUrlResponse: false
         )
 
         expect(verifiedResponse.verificationResult) == .failed
@@ -633,7 +633,7 @@ class SigningTests: TestCase {
             requestHeaders: [:],
             publicKey: self.publicKey,
             isLoadShedderResponse: false,
-            isFallbackURLResponse: false
+            isFallbackUrlResponse: false
         )
 
         expect(verifiedResponse.verificationResult) == .failed
@@ -677,7 +677,7 @@ class SigningTests: TestCase {
             requestHeaders: requestHeaders,
             publicKey: self.publicKey,
             isLoadShedderResponse: false,
-            isFallbackURLResponse: false
+            isFallbackUrlResponse: false
         )
 
         expect(verifiedResponse.verificationResult) == .verified
@@ -720,7 +720,7 @@ class SigningTests: TestCase {
             requestHeaders: requestHeaders,
             publicKey: self.publicKey,
             isLoadShedderResponse: false,
-            isFallbackURLResponse: false
+            isFallbackUrlResponse: false
         )
 
         expect(verifiedResponse.verificationResult) == .verified
@@ -763,7 +763,7 @@ class SigningTests: TestCase {
             requestHeaders: requestHeaders,
             publicKey: self.publicKey,
             isLoadShedderResponse: false,
-            isFallbackURLResponse: false
+            isFallbackUrlResponse: false
         )
 
         expect(verifiedResponse.verificationResult) == .verified
@@ -787,7 +787,7 @@ class SigningTests: TestCase {
             requestHeaders: [:],
             publicKey: self.publicKey,
             isLoadShedderResponse: false,
-            isFallbackURLResponse: false
+            isFallbackUrlResponse: false
         )
 
         expect(verifiedResponse.verificationResult) == .notRequested

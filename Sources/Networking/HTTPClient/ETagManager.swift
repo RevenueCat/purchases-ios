@@ -181,7 +181,7 @@ private extension ETagManager {
                         data: data,
                         verificationResult: response.verificationResult,
                         isLoadShedderResponse: isLoadShedderResponse,
-                        isFallbackURLResponse: isFallbackURLRequest
+                        isFallbackUrlResponse: isFallbackURLRequest
                     ),
                     for: request
                 )
@@ -234,7 +234,7 @@ extension ETagManager {
         @DefaultDecodable.False
         var isLoadShedderResponse: Bool
         @DefaultDecodable.False
-        var isFallbackURLResponse: Bool
+        var isFallbackUrlResponse: Bool
 
         init(
             eTag: String,
@@ -243,7 +243,7 @@ extension ETagManager {
             validationTime: Date? = nil,
             verificationResult: VerificationResult,
             isLoadShedderResponse: Bool,
-            isFallbackURLResponse: Bool
+            isFallbackUrlResponse: Bool
         ) {
             self.eTag = eTag
             self.statusCode = statusCode
@@ -251,7 +251,7 @@ extension ETagManager {
             self.validationTime = validationTime
             self.verificationResult = verificationResult
             self.isLoadShedderResponse = isLoadShedderResponse
-            self.isFallbackURLResponse = isFallbackURLResponse
+            self.isFallbackUrlResponse = isFallbackUrlResponse
         }
 
     }
@@ -281,7 +281,7 @@ extension ETagManager.Response {
         )
         .verified(with: responseVerificationResult,
                   isLoadShedderResponse: self.isLoadShedderResponse,
-                  isFallbackURLResponse: self.isFallbackURLResponse)
+                  isFallbackUrlResponse: self.isFallbackUrlResponse)
     }
 
     fileprivate func withUpdatedValidationTime() -> Self {

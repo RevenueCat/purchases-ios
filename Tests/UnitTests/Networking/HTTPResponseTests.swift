@@ -34,7 +34,7 @@ class HTTPResponseTests: TestCase {
             requestHeaders: [:],
             publicKey: nil,
             isLoadShedderResponse: false,
-            isFallbackURLResponse: false
+            isFallbackUrlResponse: false
         )
 
         expect(verifiedResponse.verificationResult) == .notRequested
@@ -55,7 +55,7 @@ class HTTPResponseTests: TestCase {
             requestHeaders: [:],
             publicKey: key,
             isLoadShedderResponse: false,
-            isFallbackURLResponse: false
+            isFallbackUrlResponse: false
         )
 
         expect(verifiedResponse.verificationResult) == .notRequested
@@ -76,7 +76,7 @@ class HTTPResponseTests: TestCase {
             requestHeaders: [:],
             publicKey: key,
             isLoadShedderResponse: false,
-            isFallbackURLResponse: false
+            isFallbackUrlResponse: false
         )
 
         expect(verifiedResponse.verificationResult) == .failed
@@ -132,7 +132,7 @@ class HTTPResponseTests: TestCase {
             return .init(response: try Self.sampleResponse,
                          verificationResult: .notRequested,
                          isLoadShedderResponse: false,
-                         isFallbackURLResponse: false)
+                         isFallbackUrlResponse: false)
         }
     }
 

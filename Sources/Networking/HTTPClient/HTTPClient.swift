@@ -400,7 +400,7 @@ private extension HTTPClient {
                     requestHeaders: requestHeaders,
                     publicKey: request.verificationMode.publicKey,
                     isLoadShedderResponse: httpURLResponse.isLoadShedder,
-                    isFallbackURLResponse: request.isFallbackURLRequest
+                    isFallbackUrlResponse: request.isFallbackURLRequest
                 )
             }
             // Fetch from ETagManager if available

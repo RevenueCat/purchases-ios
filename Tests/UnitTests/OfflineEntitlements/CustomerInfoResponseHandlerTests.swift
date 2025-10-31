@@ -44,7 +44,7 @@ class NormalCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTes
                                   errorResponse: .default),
                       verificationResult: .verified,
                       isLoadShedderResponse: false,
-                      isFallbackURLResponse: false)
+                      isFallbackUrlResponse: false)
             ),
             nil
         )
@@ -63,7 +63,7 @@ class NormalCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTes
                                   errorResponse: .default),
                       verificationResult: .failed,
                       isLoadShedderResponse: false,
-                      isFallbackURLResponse: false)
+                      isFallbackUrlResponse: false)
             ),
             nil
         )
@@ -103,7 +103,7 @@ class NormalCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTes
                                   errorResponse: errorResponse),
                       verificationResult: .notRequested,
                       isLoadShedderResponse: false,
-                      isFallbackURLResponse: false)
+                      isFallbackUrlResponse: false)
             ),
             nil
         )
