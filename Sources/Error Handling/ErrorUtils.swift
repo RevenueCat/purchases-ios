@@ -425,11 +425,14 @@ enum ErrorUtils {
      * Constructs an Error with the ``ErrorCode/purchaseInvalidError`` code.
      */
     static func purchaseInvalidError(
+        message: String? = nil,
         error: Error? = nil,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> PurchasesError {
         return ErrorUtils.error(with: .purchaseInvalidError,
-                                underlyingError: error)
+                                message: message,
+                                underlyingError: error,
+                                fileName: fileName, functionName: functionName, line: line)
     }
 
     /**

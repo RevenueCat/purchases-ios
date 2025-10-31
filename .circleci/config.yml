@@ -125,20 +125,7 @@ commands:
           channel: "feed-circleci-ios-failures"
           event: fail
           template: basic_fail_1
-  set-maximum-duration:
-    parameters:
-      seconds:
-        type: integer
-        default: 600
-    steps:
-      - run:
-          name: Set maximum job duration to << parameters.seconds >> seconds
-          background: true
-          command: |
-            sleep << parameters.seconds >>
-            curl --request POST \
-            --url https://circleci.com/api/v2/project/gh/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/job/$CIRCLE_BUILD_NUM/cancel \
-            --header "Circle-Token: $CIRCLECI_API_TOKEN"
+
   install-runtime:
     parameters:
       runtime-name:
@@ -517,19 +504,6 @@ jobs:
           no_output_timeout: 30m
       - slack-notify-on-fail
 
-  spm-release-build-xcode-16:
-    executor:
-      name: macos-executor
-      xcode_version: "16.4"
-
-    steps:
-      - checkout
-      - run:
-          name: SPM Release Build
-          command: swift build -c release --target RevenueCat
-          no_output_timeout: 30m
-      - slack-notify-on-fail
-
   spm-release-build-xcode-15:
     executor:
       name: macos-executor
@@ -540,23 +514,6 @@ jobs:
       - run:
           name: SPM Release Build
           command: swift build -c release --target RevenueCat
-          no_output_timeout: 30m
-      - slack-notify-on-fail
-
-  spm-xcode-14-1:
-    executor:
-      name: macos-executor-for-macos-12_6
-      xcode_version: "14.1.0"
-
-    steps:
-      - checkout
-      - run:
-          name: SPM RevenueCat Release Build
-          command: swift build -c release --target RevenueCat
-          no_output_timeout: 30m
-      - run:
-          name: SPM RevenueCatUI Release Build
-          command: swift build -c release --target RevenueCatUI
           no_output_timeout: 30m
       - slack-notify-on-fail
 
@@ -1586,7 +1543,6 @@ jobs:
             git push --tags
 
 workflows:
-  version: 2
   generate-snapshot:
     when: << pipeline.parameters.generate_snapshots >>
     jobs:

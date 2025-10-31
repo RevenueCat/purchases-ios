@@ -88,6 +88,7 @@ enum PurchaseStrings {
     case sk2_observer_mode_error_processing_transaction(Error)
 
     case unable_to_find_root_view_controller_for_simulated_purchase
+    case invalid_quantity(quantity: Int)
 
     // Test Store
     case sync_purchases_simulated_store
@@ -349,6 +350,9 @@ extension PurchaseStrings: LogMessage {
 
         case .unable_to_find_root_view_controller_for_simulated_purchase:
             return "Unable to find root view controller to present Test Store purchase alert."
+
+        case let .invalid_quantity(quantity):
+            return "Quantity must be between 1 and 10, but got \(quantity)."
 
         case .sync_purchases_simulated_store:
             return "Syncing purchases not available in Test Store. Returning current CustomerInfo."
