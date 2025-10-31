@@ -415,7 +415,7 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(customerInfo) == expectedCustomerInfo
     }
 
-    func testPurchaseWithQuantitySetsPaymentQuantity() async throws {
+    func testPurchaseWithQuantitySucceeds() async throws {
         backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
         let product = try await self.fetchSk1Product(StoreKitConfigTestCase.consumableProductId)
