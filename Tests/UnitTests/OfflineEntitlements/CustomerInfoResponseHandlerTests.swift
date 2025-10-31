@@ -43,8 +43,8 @@ class NormalCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTes
                       body: .init(customerInfo: Self.sampleCustomerInfo,
                                   errorResponse: .default),
                       verificationResult: .verified,
-                     isLoadShedderResponse: false,
-                     isFallbackURLResponse: false)
+                      isLoadShedderResponse: false,
+                      isFallbackURLResponse: false)
             ),
             nil
         )

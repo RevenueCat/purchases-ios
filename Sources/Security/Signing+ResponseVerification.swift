@@ -15,6 +15,7 @@ import Foundation
 
 extension HTTPResponse where Body == Data? {
 
+    // swiftlint:disable:next function_parameter_count
     func verify(
         signing: SigningType,
         request: HTTPRequest,
