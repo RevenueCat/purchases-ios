@@ -1175,6 +1175,7 @@ jobs:
       - run:
           name: Run e2e tests (<< parameters.test_environment >>)
           command: |
+            echo $RC_E2E_TEST_TEST_VAR
             if [ "<< parameters.test_environment >>" = "load_shedder" ]; then
               export REVENUECAT_API_KEY="${RC_E2E_TEST_API_KEY_LOAD_SHEDDER_APP_STORE}"
             else
