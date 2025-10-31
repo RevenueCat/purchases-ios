@@ -124,7 +124,7 @@ aliases:
         - slack-secrets-ios
       matrix:
         parameters:
-          test_environment: ["production", "load_shedder", "fallback"]
+          test_environment: ["production", "load_shedder_primary", "load_shedder_secondary", "fallback"]
 
 commands:
   slack-notify-on-fail:
@@ -507,6 +507,14 @@ commands:
         type: enum
         enum: ["never", "primary_domain_down"]
         description: "Server error strategy for testing fallback behavior"
+      proxy_url_scheme:
+        type: string
+        default: ""
+        description: "Optional proxy URL scheme (e.g., 'https')"
+      proxy_url_host:
+        type: string
+        default: ""
+        description: "Optional proxy URL host (e.g., 'fortress-us-east-2.revenuecat.com')"
     steps:
       - run:
           name: Create XCConfig file
@@ -517,8 +525,14 @@ commands:
               echo ""
               echo "REVENUECAT_API_KEY = << parameters.api_key >>"
               echo "REVENUECAT_FORCE_SERVER_ERROR_STRATEGY = << parameters.force_server_error_strategy >>"
+              if [ -n "<< parameters.proxy_url_scheme >>" ]; then
+                echo "REVENUECAT_PROXY_URL_SCHEME = << parameters.proxy_url_scheme >>"
+              fi
+              if [ -n "<< parameters.proxy_url_host >>" ]; then
+                echo "REVENUECAT_PROXY_URL_HOST = << parameters.proxy_url_host >>"
+              fi
             } > CI.xcconfig
-            echo "✅ Created CI.xcconfig with REVENUECAT_API_KEY and REVENUECAT_FORCE_SERVER_ERROR_STRATEGY"
+            echo "✅ Created CI.xcconfig"
 
 jobs:
   validate-package-swift:
@@ -1179,7 +1193,7 @@ jobs:
     parameters:
       test_environment:
         type: enum
-        enum: ["production", "load_shedder", "fallback"]
+        enum: ["production", "load_shedder_primary", "load_shedder_secondary", "fallback"]
     executor:
       name: macos-executor
       xcode_version: "26.0.1"
@@ -1193,11 +1207,18 @@ jobs:
           install_swiftlint: false
       - when:
           condition:
-            equal: [ "load_shedder", << parameters.test_environment >> ]
+            equal: [ "load_shedder_primary", << parameters.test_environment >> ]
           steps:
             - setup_xcconfig:
                 api_key: ${RC_E2E_TEST_API_KEY_LOAD_SHEDDER_APP_STORE}
-                force_server_error_strategy: never
+      - when:
+          condition:
+            equal: [ "load_shedder_secondary", << parameters.test_environment >> ]
+          steps:
+            - setup_xcconfig:
+                api_key: ${RC_E2E_TEST_API_KEY_LOAD_SHEDDER_APP_STORE}
+                proxy_url_scheme: https
+                proxy_url_host: fortress-us-east-2.revenuecat.com
       - when:
           condition:
             equal: [ "fallback", << parameters.test_environment >> ]
@@ -1211,7 +1232,6 @@ jobs:
           steps:
             - setup_xcconfig:
                 api_key: ${RC_E2E_TEST_API_KEY_PRODUCTION_APP_STORE}
-                force_server_error_strategy: never
       - revenuecat/install-maestro
       - tuist-generate-workspace:
           target: "Maestro"
