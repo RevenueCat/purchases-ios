@@ -502,13 +502,13 @@ commands:
       - run:
           name: Create XCConfig file
           command: |
-            cat > CI.xcconfig << EOF
-            // Auto-generated. Do not commit to VCS
-            // Generated on $(date)
-
-            REVENUECAT_API_KEY = << parameters.api_key >>
-            REVENUECAT_FORCE_SERVER_ERROR_STRATEGY = << parameters.force_server_error_strategy >>
-            EOF
+            {
+              echo "// Auto-generated. Do not commit to VCS"
+              echo "// Generated on $(date)"
+              echo ""
+              echo "REVENUECAT_API_KEY = << parameters.api_key >>"
+              echo "REVENUECAT_FORCE_SERVER_ERROR_STRATEGY = << parameters.force_server_error_strategy >>"
+            } > CI.xcconfig
             echo "✅ Created CI.xcconfig with REVENUECAT_API_KEY and REVENUECAT_FORCE_SERVER_ERROR_STRATEGY"
 
 jobs:
