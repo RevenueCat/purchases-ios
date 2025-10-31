@@ -440,6 +440,18 @@ final class PurchasesOrchestrator {
 
         #endif
 
+        // Validate quantity if provided
+        if let quantity = params.quantity {
+            guard quantity >= 1 && quantity <= 10 else {
+                let errorMessage = Strings.purchase.invalid_quantity(quantity: quantity).description
+                let error = ErrorUtils.purchaseInvalidError(message: errorMessage)
+                self.operationDispatcher.dispatchOnMainActor {
+                    completion(nil, nil, error.asPublicError, false)
+                }
+                return
+            }
+        }
+
         purchase(product: product,
                  package: params.package,
                  promotionalOffer: params.promotionalOffer?.signedData,

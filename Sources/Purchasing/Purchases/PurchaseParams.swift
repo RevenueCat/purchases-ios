@@ -101,7 +101,9 @@ import Foundation
 
         /**
          * Set `quantity`.
-         * - Parameter quantity: The number of items to purchase. Defaults to 1 if not specified.
+         * - Parameter quantity: The number of items to purchase. Must be between 1 and 10 (inclusive).
+         *   If not specified, StoreKit will use its default quantity (typically 1).
+         * - Throws: ``ErrorCode/purchaseInvalidError`` if quantity is less than 1 or greater than 10.
          */
         @objc public func with(quantity: Int) -> Self {
             self.quantity = quantity

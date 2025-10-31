@@ -454,6 +454,43 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(transaction?.quantity) == 1
     }
 
+    func testPurchaseWithInvalidQuantityReturnsError() async throws {
+        let product = try await self.fetchSk1Product(StoreKitConfigTestCase.consumableProductId)
+        let storeProduct = StoreProduct(sk1Product: product)
+
+        // Test quantity too low (0)
+        let paramsTooLow = PurchaseParams.Builder(product: storeProduct)
+            .with(quantity: 0)
+            .build()
+
+        let (transaction1, _, error1, userCancelled1) = await withCheckedContinuation { continuation in
+            orchestrator.purchase(params: paramsTooLow,
+                                  trackDiagnostics: false) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(transaction1).to(beNil())
+        expect(userCancelled1) == false
+        expect(error1).to(matchError(ErrorCode.purchaseInvalidError))
+
+        // Test quantity too high (11)
+        let paramsTooHigh = PurchaseParams.Builder(product: storeProduct)
+            .with(quantity: 11)
+            .build()
+
+        let (transaction2, _, error2, userCancelled2) = await withCheckedContinuation { continuation in
+            orchestrator.purchase(params: paramsTooHigh,
+                                  trackDiagnostics: false) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(transaction2).to(beNil())
+        expect(userCancelled2) == false
+        expect(error2).to(matchError(ErrorCode.purchaseInvalidError))
+    }
+
     // MARK: - Paywalls
 
     func testPurchaseWithPresentedPaywall() async throws {
