@@ -177,6 +177,11 @@ public typealias ProductIdentifier = String
         return self.data.originalSource
     }
 
+    /// Whether the `CustomerInfo` instance was loaded from the device cache.
+    internal var isLoadedFromCache: Bool {
+        return self.data.loadedFromCache
+    }
+
     // MARK: -
 
     private let data: Contents
@@ -306,6 +311,15 @@ extension CustomerInfo {
         return .init(data: copy)
     }
 
+    /// Creates a copy of this ``CustomerInfo`` setting the `isLoadedFromCache` flag  to `true`.
+    func loadedFromCache() -> Self {
+        guard !self.isLoadedFromCache else { return self }
+
+        var copy = self.data
+        copy.loadedFromCache = true
+        return .init(data: copy)
+    }
+
 }
 
 extension CustomerInfo: RawDataContainer {
@@ -375,6 +389,7 @@ private extension CustomerInfo {
         var entitlementVerification: VerificationResult
         var schemaVersion: String?
         var originalSource: CustomerInfo.OriginalSource
+        var loadedFromCache: Bool = false
 
         init(response: CustomerInfoResponse,
              entitlementVerification: VerificationResult,
