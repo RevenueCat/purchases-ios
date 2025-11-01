@@ -73,7 +73,7 @@ extension PaywallEvent {
     public struct Data {
 
         // swiftlint:disable missing_docs
-        public var offeringIdentifier: String
+        public var offeringIdentifier: String?
         public var paywallRevision: Int
         public var sessionIdentifier: SessionID
         public var displayMode: PaywallViewMode
@@ -83,7 +83,7 @@ extension PaywallEvent {
         #if !os(tvOS) // For Paywalls V2
         @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
         public init(
-            offering: Offering,
+            offering: Offering?,
             paywallComponentsData: PaywallComponentsData,
             sessionID: SessionID,
             displayMode: PaywallViewMode,
@@ -91,7 +91,7 @@ extension PaywallEvent {
             darkMode: Bool
         ) {
             self.init(
-                offeringIdentifier: offering.identifier,
+                offeringIdentifier: offering?.identifier,
                 paywallRevision: paywallComponentsData.revision,
                 sessionID: sessionID,
                 displayMode: displayMode,
@@ -103,7 +103,7 @@ extension PaywallEvent {
 
         @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
         public init(
-            offering: Offering,
+            offering: Offering?,
             paywall: PaywallData,
             sessionID: SessionID,
             displayMode: PaywallViewMode,
@@ -111,7 +111,7 @@ extension PaywallEvent {
             darkMode: Bool
         ) {
             self.init(
-                offeringIdentifier: offering.identifier,
+                offeringIdentifier: offering?.identifier,
                 paywallRevision: paywall.revision,
                 sessionID: sessionID,
                 displayMode: displayMode,
@@ -122,7 +122,7 @@ extension PaywallEvent {
         // swiftlint:enable missing_docs
 
         init(
-            offeringIdentifier: String,
+            offeringIdentifier: String?,
             paywallRevision: Int,
             sessionID: SessionID,
             displayMode: PaywallViewMode,

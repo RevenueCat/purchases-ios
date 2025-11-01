@@ -21,7 +21,7 @@ import SwiftUI
 class PurchaseButtonComponentViewModel {
 
     private let component: PaywallComponent.PurchaseButtonComponent
-    private let offering: Offering
+    private let offering: Offering?
     let stackViewModel: StackComponentViewModel
 
     private let customWebCheckoutUrl: URL?
@@ -29,7 +29,7 @@ class PurchaseButtonComponentViewModel {
     init(
         localizationProvider: LocalizationProvider,
         component: PaywallComponent.PurchaseButtonComponent,
-        offering: Offering,
+        offering: Offering?,
         stackViewModel: StackComponentViewModel
     ) throws {
         self.component = component
@@ -62,7 +62,7 @@ class PurchaseButtonComponentViewModel {
     typealias LaunchWebCheckout = (url: URL, method: PaywallComponent.ButtonComponent.URLMethod, autoDismiss: Bool)
 
     func urlForWebCheckout(packageContext: PackageContext?) -> LaunchWebCheckout? {
-        guard let method = self.method else {
+        guard let method = self.method, let offering = self.offering else {
             return nil
         }
 

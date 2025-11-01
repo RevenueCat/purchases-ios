@@ -52,7 +52,7 @@ class ButtonComponentViewModel {
     init(
         component: PaywallComponent.ButtonComponent,
         localizationProvider: LocalizationProvider,
-        offering: Offering,
+        offering: Offering?,
         stackViewModel: StackComponentViewModel,
         sheetStackViewModel: StackComponentViewModel? = nil
     ) throws {

@@ -32,7 +32,7 @@ struct ViewModelFactory {
 
     func toRootViewModel(
         componentsConfig: PaywallComponentsData.PaywallComponentsConfig,
-        offering: Offering,
+        offering: Offering?,
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,
         colorScheme: ColorScheme
@@ -82,7 +82,7 @@ struct ViewModelFactory {
         packageValidator: PackageValidator,
         firstItemIgnoresSafeAreaInfo: RootViewModel.FirstItemShouldIgnoreSafeAreaInfo?,
         purchaseButtonCollector: PurchaseButtonCollector? = nil,
-        offering: Offering,
+        offering: Offering?,
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,
         colorScheme: ColorScheme
@@ -487,7 +487,7 @@ struct ViewModelFactory {
         purchaseButtonCollector: PurchaseButtonCollector?,
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,
-        offering: Offering,
+        offering: Offering?,
         colorScheme: ColorScheme
     ) throws -> StackComponentViewModel {
         let viewModels = try component.components.map { component in

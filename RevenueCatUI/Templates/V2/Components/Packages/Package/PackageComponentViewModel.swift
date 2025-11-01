@@ -27,14 +27,14 @@ class PackageComponentViewModel {
 
     init(
         component: PaywallComponent.PackageComponent,
-        offering: Offering,
+        offering: Offering?,
         stackViewModel: StackComponentViewModel,
         hasPurchaseButton: Bool
     ) {
         self.isSelectedByDefault = component.isSelectedByDefault
         self.promotionalOfferProductCode = component.applePromoOfferProductCode
 
-        self.package = offering.package(identifier: component.packageID)
+        self.package = offering?.package(identifier: component.packageID)
         if package == nil {
             Logger.warning(Strings.paywall_could_not_find_package(component.packageID))
         }

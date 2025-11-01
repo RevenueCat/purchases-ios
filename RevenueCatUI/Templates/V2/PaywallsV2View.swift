@@ -103,7 +103,7 @@ struct PaywallsV2View: View {
 
     private let paywallComponentsData: PaywallComponentsData
     private let uiConfigProvider: UIConfigProvider
-    private let offering: Offering
+    private let offering: Offering?
     private let purchaseHandler: PurchaseHandler
     private let onDismiss: () -> Void
     private let fallbackContent: FallbackContent
@@ -120,7 +120,7 @@ struct PaywallsV2View: View {
 
     public init(
         paywallComponents: Offering.PaywallComponents,
-        offering: Offering,
+        offering: Offering?,
         purchaseHandler: PurchaseHandler,
         introEligibilityChecker: TrialOrIntroEligibilityChecker,
         showZeroDecimalPlacePrices: Bool,
@@ -361,7 +361,7 @@ fileprivate extension PaywallsV2View {
         preferredLocales: [Locale],
         defaultLocale: String,
         uiConfigProvider: UIConfigProvider,
-        offering: Offering,
+        offering: Offering?,
         introEligibilityChecker: TrialOrIntroEligibilityChecker,
         showZeroDecimalPlacePrices: Bool,
         colorScheme: ColorScheme

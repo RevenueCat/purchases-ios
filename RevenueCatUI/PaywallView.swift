@@ -49,6 +49,9 @@ public struct PaywallView: View {
     private var offering: Offering?
 
     @State
+    private var paywallComponents: Offering.PaywallComponents?
+
+    @State
     private var customerInfo: CustomerInfo?
     @State
     private var error: NSError?
@@ -119,9 +122,29 @@ public struct PaywallView: View {
             )
     }
 
+    public init(
+        paywallComponents: Offering.PaywallComponents?,
+        offering: Offering?,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        displayCloseButton: Bool = false,
+        performPurchase: PerformPurchase? = nil,
+        performRestore: PerformRestore? = nil
+    ) {
+        self.init(
+            paywallComponents: paywallComponents,
+            offering: offering,
+            fonts: fonts,
+            displayCloseButton: displayCloseButton,
+            useDraftPaywall: false,
+            performPurchase: performPurchase,
+            performRestore: performRestore
+            )
+    }
+
     // swiftlint:disable:next missing_docs
     @_spi(Internal) public init(
-        offering: Offering,
+        paywallComponents: Offering.PaywallComponents? = nil,
+        offering: Offering?,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
         useDraftPaywall: Bool,
@@ -141,6 +164,8 @@ public struct PaywallView: View {
                 purchaseHandler: purchaseHandler
             )
         )
+
+        self._paywallComponents = .init(initialValue: paywallComponents)
     }
 
     init(configuration: PaywallViewConfiguration, paywallViewOwnsPurchaseHandler: Bool = true) {
@@ -279,6 +304,64 @@ public struct PaywallView: View {
 //            return self.defaultPaywallPromoOfferCache
 //        }
 //    }
+
+    @ViewBuilder
+    // swiftlint:disable:next function_body_length function_parameter_count
+    private func paywallViewForWorkflows(
+        for paywallComponents: Offering.PaywallComponents?,
+        offering: Offering?,
+        activelySubscribedProductIdentifiers: Set<String>,
+        fonts: PaywallFontProvider,
+        checker: TrialOrIntroEligibilityChecker,
+        purchaseHandler: PurchaseHandler
+    ) -> some View {
+
+        let showZeroDecimalPlacePrices = self.showZeroDecimalPlacePrices(
+            countries: offering?.paywall?.zeroDecimalPlaceCountries ?? []
+        )
+
+        if let paywallComponents {
+            PaywallsV2View(
+                paywallComponents: paywallComponents,
+                offering: offering,
+                purchaseHandler: purchaseHandler,
+                introEligibilityChecker: checker,
+                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+                onDismiss: {
+                    guard let onRequestedDismissal = self.onRequestedDismissal else {
+                        self.dismiss()
+                        return
+                    }
+                    onRequestedDismissal()
+                },
+                fallbackContent: .customView(AnyView(EmptyView())),
+                failedToLoadFont: { fontConfig in
+                    if Purchases.isConfigured {
+                        Purchases.shared.failedToLoadFontWithConfig(fontConfig)
+                    }
+                },
+                colorScheme: colorScheme
+            )
+        } else {
+            #if os(macOS)
+            DebugErrorView("Legacy paywalls are unsupported on macOS.", releaseBehavior: .errorView)
+            #else
+
+
+            if let error {
+                DebugErrorView(
+                    "\(error.description)\n" +
+                    "You can fix this by editing the paywall in the RevenueCat dashboard.\n" +
+                    "The displayed paywall contains default configuration.\n" +
+                    "This error will be hidden in production.",
+                    replacement: EmptyView()
+                )
+            } else {
+                EmptyView()
+            }
+            #endif
+        }
+    }
 
     @ViewBuilder
     // swiftlint:disable:next function_body_length function_parameter_count

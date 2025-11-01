@@ -22,7 +22,7 @@ extension FeatureEventsRequest {
         var type: EventType
         var appUserID: String
         var sessionID: String
-        var offeringID: String
+        var offeringID: String?
         var paywallRevision: Int
         var timestamp: UInt64
         var displayMode: PaywallViewMode
