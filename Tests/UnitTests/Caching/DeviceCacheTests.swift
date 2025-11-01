@@ -853,7 +853,7 @@ private extension DeviceCacheTests {
                             offerings: [offeringsData],
                             placements: nil,
                             targeting: nil,
-                            uiConfig: nil)
+                            uiConfig: nil, config: nil)
         )
     }
 
@@ -871,7 +871,8 @@ private extension Offerings {
             offerings: [],
             placements: nil,
             targeting: nil,
-            uiConfig: nil
+            uiConfig: nil,
+            config: nil
         )
     )
 
