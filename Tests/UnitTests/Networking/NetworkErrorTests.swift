@@ -223,7 +223,7 @@ class NetworkErrorTests: TestCase {
 
     func testSuccessfullySyncedFalse() {
         let errors = [
-            error(Self.decodingError),
+            error(NetworkError.decodingError()),
             error(Self.offlineError),
             error(Self.networkError),
             error(Self.dnsError),
@@ -262,7 +262,7 @@ class NetworkErrorTests: TestCase {
 
     func testFinishableFalse() {
         let errors = [
-            error(Self.decodingError),
+            error(NetworkError.decodingError()),
             error(Self.offlineError),
             error(Self.networkError),
             error(Self.dnsError),
@@ -298,7 +298,7 @@ class NetworkErrorTests: TestCase {
 
     func testServerDownFalse() {
         let errors = [
-            error(Self.decodingError),
+            error(NetworkError.decodingError()),
             error(Self.offlineError),
             error(Self.networkError),
             error(Self.dnsError),
@@ -318,6 +318,47 @@ class NetworkErrorTests: TestCase {
         }
     }
 
+    func testShouldFallBackToCachedOfferingsTrue() {
+        let errors = [
+            error(NetworkError.decodingError()),
+            error(Self.offlineError),
+            error(Self.networkError),
+            error(Self.dnsError),
+            error(Self.unableToCreateRequestError),
+            error(Self.unexpectedResponseError),
+            error(Self.responseError(.internalServerError)),
+            error(Self.responseError(.networkConnectTimeoutError)),
+            error(Self.responseError(.other(555))),
+            error(Self.signatureVerificationFailed)
+        ]
+
+        for error in errors {
+            check(error.0.shouldFallBackToCachedOfferings,
+                  condition: beTrue(),
+                  descrition: "Expected error's shouldFallBackToCachedOfferings to be true",
+                  file: error.1,
+                  line: error.2)
+        }
+    }
+
+    func testShouldFallBackToCachedOfferingsFalse() {
+        let errors = [
+            error(Self.responseError(.invalidRequest)),
+            error(Self.responseError(.unauthorized)),
+            error(Self.responseError(.forbidden)),
+            error(Self.responseError(.notFoundError)),
+            error(Self.responseError(.tooManyRequests))
+        ]
+
+        for error in errors {
+            check(error.0.shouldFallBackToCachedOfferings,
+                  condition: beFalse(),
+                  descrition: "Expected error's shouldFallBackToCachedOfferings to be false",
+                  file: error.1,
+                  line: error.2)
+        }
+    }
+
     // MARK: - Helpers
 
     /// Stores the file/line information so expectation failures can point to the line creating the error.
@@ -329,7 +370,7 @@ class NetworkErrorTests: TestCase {
     }
 
     private func check<T>(
-        _ value: T, condition: Nimble.Predicate<T>, descrition: String,
+        _ value: T, condition: Nimble.Matcher<T>, descrition: String,
         file: FileString = #file, line: UInt = #line
     ) {
         expect(
@@ -342,7 +383,6 @@ class NetworkErrorTests: TestCase {
     }
 
     private static let offlineError: NetworkError = .offlineConnection()
-    private static let decodingError: NetworkError = .decoding(NSError(domain: "domain", code: 20), Data())
     private static let networkError: NetworkError = .networkError(NSError(domain: "domain", code: 30))
     private static let dnsError: NetworkError = .dnsError(failedURL: URL(string: "https://google.com")!,
                                                           resolvedHost: "https://google.com")
@@ -390,6 +430,12 @@ extension NetworkError {
             function: function,
             line: line
         )
+    }
+
+    static func decodingError(
+        file: String = #fileID, function: String = #function, line: UInt = #line
+    ) -> Self {
+        return .networkError(NSError(domain: "domain", code: 30), file: file, function: function, line: line)
     }
 
 }
