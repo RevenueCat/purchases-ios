@@ -31,6 +31,8 @@ public enum PaywallComponent: Codable, Sendable, Hashable, Equatable {
     case video(VideoComponent)
 
     case countdown(CountdownComponent)
+    case inputSingleChoice(InputSingleChoiceComponent)
+    case inputOption(InputOptionComponent)
 
     public enum ComponentType: String, Codable, Sendable {
 
@@ -52,6 +54,9 @@ public enum PaywallComponent: Codable, Sendable, Hashable, Equatable {
         case carousel
         case video
         case countdown
+
+        case inputSingleChoice = "input_single_choice"
+        case inputOption = "input_option"
 
     }
 
@@ -125,6 +130,11 @@ extension PaywallComponent {
             try component.encode(to: encoder)
         case .countdown(let component):
             try container.encode(ComponentType.countdown, forKey: .type)
+        case .inputSingleChoice(let component):
+            try container.encode(ComponentType.inputSingleChoice, forKey: .type)
+            try component.encode(to: encoder)
+        case .inputOption(let component):
+            try container.encode(ComponentType.inputOption, forKey: .type)
             try component.encode(to: encoder)
         }
     }
@@ -211,6 +221,10 @@ extension PaywallComponent {
             return .video(try VideoComponent(from: decoder))
         case .countdown:
             return .countdown(try CountdownComponent(from: decoder))
+        case .inputSingleChoice:
+            return .inputSingleChoice(try InputSingleChoiceComponent(from: decoder))
+        case .inputOption:
+            return .inputOption(try InputOptionComponent(from: decoder))
         }
     }
 

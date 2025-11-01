@@ -957,6 +957,10 @@
 		7707A94C2CAD93AC006E0313 /* PaywallButtonComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94B2CAD93AC006E0313 /* PaywallButtonComponent.swift */; };
 		7707A94E2CAD94D2006E0313 /* ButtonComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94D2CAD94D2006E0313 /* ButtonComponentViewModel.swift */; };
 		7707A9502CAD9775006E0313 /* ButtonComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7707A94F2CAD9775006E0313 /* ButtonComponentView.swift */; };
+		E25EFD1C68F642968B96BBC6F879A6BE /* InputOptionComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E25EFD1C68F642968B96BBC6F879A6BE /* InputOptionComponentView.swift */; };
+		812457201F52492F9967849A80F545A1 /* InputOptionComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 812457201F52492F9967849A80F545A1 /* InputOptionComponentViewModel.swift */; };
+		84E6421257D34D87ABF0A6A22349391F /* InputSingleChoiceComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84E6421257D34D87ABF0A6A22349391F /* InputSingleChoiceComponentView.swift */; };
+		2944F528C5364A48B91D10C858125759 /* InputSingleChoiceComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2944F528C5364A48B91D10C858125759 /* InputSingleChoiceComponentViewModel.swift */; };
 		77089F9E2CD39EC100848CD5 /* ShadowModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77089F9D2CD39EC100848CD5 /* ShadowModifier.swift */; };
 		777FB4882C661C0600CD4749 /* SemanticVersionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 777FB4872C661C0600CD4749 /* SemanticVersionTests.swift */; };
 		7783606D2CCA7E14000785B8 /* PaywallStickyFooterComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7783606C2CCA7E14000785B8 /* PaywallStickyFooterComponent.swift */; };
@@ -1138,6 +1142,8 @@
 		88B1BB132C81479F001B7EE5 /* PaywallComponentTypeTransformers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B1BAE72C813A3C001B7EE5 /* PaywallComponentTypeTransformers.swift */; };
 		88DE93E12C211CBC0086B6D8 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DC5621624EC63420031F69B /* RevenueCat.framework */; };
 		88E679472C7503C1007E69D5 /* PaywallStackComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88E679462C7503C1007E69D5 /* PaywallStackComponent.swift */; };
+		3F2AFB5137842AEE0A276031 /* PaywallInputSingleChoiceComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08AE258A27342D43867A2EC2 /* PaywallInputSingleChoiceComponent.swift */; };
+		EB2525E14E2BC53A7817BD78 /* PaywallInputOptionComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6D383395A05D1F081A6F0AD /* PaywallInputOptionComponent.swift */; };
 		901DE80E2EA0E097007EAA86 /* AdTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 901DE80D2EA0E096007EAA86 /* AdTracker.swift */; };
 		9025C53D2EA66E2500845BCE /* PostFeatureEventsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9025C53C2EA66E2500845BCE /* PostFeatureEventsOperation.swift */; };
 		903A04342EB35929009B9CE4 /* EventsHTTPRequestPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 903A04332EB35929009B9CE4 /* EventsHTTPRequestPath.swift */; };
@@ -2628,6 +2634,12 @@
 		88B1BAE82C813A3C001B7EE5 /* StackComponentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StackComponentView.swift; sourceTree = "<group>"; };
 		88B1BAE92C813A3C001B7EE5 /* StackComponentViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StackComponentViewModel.swift; sourceTree = "<group>"; };
 		88E679462C7503C1007E69D5 /* PaywallStackComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallStackComponent.swift; sourceTree = "<group>"; };
+		08AE258A27342D43867A2EC2 /* PaywallInputSingleChoiceComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallInputSingleChoiceComponent.swift; sourceTree = "<group>"; };
+		E6D383395A05D1F081A6F0AD /* PaywallInputOptionComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallInputOptionComponent.swift; sourceTree = "<group>"; };
+		E25EFD1C68F642968B96BBC6F879A6BE /* InputOptionComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputOptionComponentView.swift; sourceTree = "<group>"; };
+		812457201F52492F9967849A80F545A1 /* InputOptionComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputOptionComponentViewModel.swift; sourceTree = "<group>"; };
+		84E6421257D34D87ABF0A6A22349391F /* InputSingleChoiceComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputSingleChoiceComponentView.swift; sourceTree = "<group>"; };
+		2944F528C5364A48B91D10C858125759 /* InputSingleChoiceComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputSingleChoiceComponentViewModel.swift; sourceTree = "<group>"; };
 		901DE80D2EA0E096007EAA86 /* AdTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdTracker.swift; sourceTree = "<group>"; };
 		9025C53C2EA66E2500845BCE /* PostFeatureEventsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostFeatureEventsOperation.swift; sourceTree = "<group>"; };
 		903A04332EB35929009B9CE4 /* EventsHTTPRequestPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventsHTTPRequestPath.swift; sourceTree = "<group>"; };
@@ -3131,6 +3143,8 @@
 				03C06FC82D479C6300600693 /* Carousel */,
 				88B1BAE62C813A3C001B7EE5 /* Image */,
 				03C72FC12D349BAE00297FEC /* Icon */,
+				6205C36860244BF2B5272AAFED40D8C9 /* InputOption */,
+				D8119217B44841B096D6E12FBA28FDD6 /* InputSingleChoice */,
 				2CC791542CC0452100FBE120 /* Packages */,
 				88B1BAEA2C813A3C001B7EE5 /* Stack */,
 				0354AA452D4029C300F9E330 /* Tabs */,
@@ -5225,6 +5239,24 @@
 			path = Button;
 			sourceTree = "<group>";
 		};
+		6205C36860244BF2B5272AAFED40D8C9 /* InputOption */ = {
+			isa = PBXGroup;
+			children = (
+				E25EFD1C68F642968B96BBC6F879A6BE /* InputOptionComponentView.swift */,
+				812457201F52492F9967849A80F545A1 /* InputOptionComponentViewModel.swift */,
+			);
+			path = InputOption;
+			sourceTree = "<group>";
+		};
+		D8119217B44841B096D6E12FBA28FDD6 /* InputSingleChoice */ = {
+			isa = PBXGroup;
+			children = (
+				84E6421257D34D87ABF0A6A22349391F /* InputSingleChoiceComponentView.swift */,
+				2944F528C5364A48B91D10C858125759 /* InputSingleChoiceComponentViewModel.swift */,
+			);
+			path = InputSingleChoice;
+			sourceTree = "<group>";
+		};
 		778360742CCA84FA000785B8 /* Root */ = {
 			isa = PBXGroup;
 			children = (
@@ -5617,6 +5649,8 @@
 				88AD01032C740CF400AA1F2B /* PaywallImageComponent.swift */,
 				03C72FBD2D34949600297FEC /* PaywallIconComponent.swift */,
 				88E679462C7503C1007E69D5 /* PaywallStackComponent.swift */,
+				08AE258A27342D43867A2EC2 /* PaywallInputSingleChoiceComponent.swift */,
+				E6D383395A05D1F081A6F0AD /* PaywallInputOptionComponent.swift */,
 				4D3BA4CB2D37D15E00668AFC /* PaywallTimelineComponent.swift */,
 				03C06FC62D46742600600693 /* PaywallCarouselComponent.swift */,
 				03E37BE92D30B32200CD9678 /* PaywallTabsComponent.swift */,
@@ -6922,6 +6956,8 @@
 				4DBF1F362B4D572400D52354 /* LocalReceiptFetcher.swift in Sources */,
 				57488A7F29CA145B0000EE7E /* ProductEntitlementMappingResponse.swift in Sources */,
 				88E679472C7503C1007E69D5 /* PaywallStackComponent.swift in Sources */,
+				3F2AFB5137842AEE0A276031 /* PaywallInputSingleChoiceComponent.swift in Sources */,
+				EB2525E14E2BC53A7817BD78 /* PaywallInputOptionComponent.swift in Sources */,
 				B34605BC279A6E380031CA74 /* CallbackCache.swift in Sources */,
 				3592E8862C2ED51700D7F91D /* CustomerCenterConfigCallback.swift in Sources */,
 				75ADC0722E437F8600210ECA /* SimulatedStoreProduct.swift in Sources */,
@@ -7638,6 +7674,10 @@
 				887A60BC2C1D037000E1A461 /* Template5View.swift in Sources */,
 				2C8EC7202CCF276100D6CCF8 /* PresentedPartials.swift in Sources */,
 				7707A9502CAD9775006E0313 /* ButtonComponentView.swift in Sources */,
+				E25EFD1C68F642968B96BBC6F879A6BE /* InputOptionComponentView.swift in Sources */,
+				812457201F52492F9967849A80F545A1 /* InputOptionComponentViewModel.swift in Sources */,
+				84E6421257D34D87ABF0A6A22349391F /* InputSingleChoiceComponentView.swift in Sources */,
+				2944F528C5364A48B91D10C858125759 /* InputSingleChoiceComponentViewModel.swift in Sources */,
 				16A7F4C62E564B97001F9FC8 /* TransitionModifier.swift in Sources */,
 				887A60BE2C1D037000E1A461 /* PaywallFooterViewController.swift in Sources */,
 				887A608A2C1D037000E1A461 /* PurchaseHandler.swift in Sources */,
@@ -9142,7 +9182,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2024 RevenueCat. All rights reserved.";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright ? 2024 RevenueCat. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -9193,7 +9233,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2024 RevenueCat. All rights reserved.";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright ? 2024 RevenueCat. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (

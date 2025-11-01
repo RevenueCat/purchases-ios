@@ -91,6 +91,10 @@ struct ComponentsView: View {
             VideoComponentView(viewModel: viewModel)
         case .countdown(let viewModel):
             CountdownComponentView(viewModel: viewModel, onDismiss: onDismiss)
+        case .inputSingleChoice(let viewModel):
+            InputSingleChoiceComponentView(viewModel: viewModel, onDismiss: onDismiss)
+        case .inputOption(let viewModel):
+            InputOptionComponentView(viewModel: viewModel, onDismiss: onDismiss)
         }
     }
 }

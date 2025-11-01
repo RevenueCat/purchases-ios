@@ -433,6 +433,9 @@ struct ViewModelFactory {
         case .countdown(let component):
             let countdownStackViewModel = try toStackViewModel(
                 component: component.countdownStack,
+        case .inputSingleChoice(let component):
+            let stackViewModel = try toStackViewModel(
+                component: component.stack,
                 packageValidator: packageValidator,
                 firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
                 purchaseButtonCollector: purchaseButtonCollector,
@@ -474,6 +477,28 @@ struct ViewModelFactory {
                     countdownStackViewModel: countdownStackViewModel,
                     endStackViewModel: endStackViewModel,
                     fallbackStackViewModel: fallbackStackViewModel
+            return .inputSingleChoice(
+                InputSingleChoiceComponentViewModel(
+                    component: component,
+                    stackViewModel: stackViewModel
+                )
+            )
+        case .inputOption(let component):
+            let stackViewModel = try toStackViewModel(
+                component: component.stack,
+                packageValidator: packageValidator,
+                firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+                purchaseButtonCollector: purchaseButtonCollector,
+                localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider,
+                offering: offering,
+                colorScheme: colorScheme
+            )
+
+            return .inputOption(
+                InputOptionComponentViewModel(
+                    component: component,
+                    stackViewModel: stackViewModel
                 )
             )
         }
@@ -605,6 +630,13 @@ struct ViewModelFactory {
             }
         case .countdown(let countdown):
             guard let first = countdown.countdownStack.components.first else {
+        case .inputSingleChoice(let inputSingleChoice):
+            guard let first = inputSingleChoice.stack.components.first else {
+                return nil
+            }
+            return self.findFullWidthImageViewIfItsTheFirst(first)
+        case .inputOption(let inputOption):
+            guard let first = inputOption.stack.components.first else {
                 return nil
             }
             return self.findFullWidthImageViewIfItsTheFirst(first)
