@@ -30,10 +30,25 @@ struct InputSingleChoiceComponentView: View {
     }
 
     var body: some View {
-        StackComponentView(
-            viewModel: self.viewModel.stackViewModel,
-            onDismiss: self.onDismiss
-        )
+        Button(action: {
+            performWorkflowAction()
+        }) {
+            StackComponentView(
+                viewModel: self.viewModel.stackViewModel,
+                onDismiss: self.onDismiss
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+
+    private func performWorkflowAction() {
+        if let onPressActionId = self.viewModel.onPressActionId {
+            NotificationCenter.default.post(
+                name: .workflowActionIdTriggered,
+                object: nil,
+                userInfo: ["actionId": onPressActionId]
+            )
+        }
     }
 }
 

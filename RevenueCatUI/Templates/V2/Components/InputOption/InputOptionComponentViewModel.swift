@@ -30,6 +30,10 @@ class InputOptionComponentViewModel {
         self.stackViewModel = stackViewModel
     }
 
+    var onPressActionId: String? {
+        return self.component.triggers?.onPress
+    }
+
 }
 
 #endif
