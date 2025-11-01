@@ -53,6 +53,17 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         )
     }
 
+    func testGetCustomerInfoComeFromLoadShedder() async throws {
+        _ = try await self.purchases.customerInfo()
+        self.logger.verifyMessageWasLogged(
+            Strings.network.request_handled_by_load_shedder(
+                HTTPRequest.Path.getCustomerInfo(appUserID: try self.purchases.appUserID)
+            ),
+            logMatchType: .exact(.info), // to avoid false positives with GET /offerings
+            level: .debug
+        )
+    }
+
     func testCanPurchaseSubsPackage() async throws {
         let data = try await self.purchaseMonthlyOffering()
 
@@ -62,6 +73,26 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         )
 
         self.verifyCustomerInfoWasNotComputedOffline(customerInfo: data.customerInfo)
+    }
+
+    func testPurchaseReturnsEntitlementFromLoadShedder() async throws {
+        self.logger.clearMessages()
+        try await self.purchaseMonthlyOffering()
+
+        try self.purchases.invalidateCustomerInfoCache()
+
+        self.logger.clearMessages()
+
+        let customerInfo = try await self.purchases.customerInfo()
+
+        self.logger.verifyMessageWasLogged(
+            Strings.network.request_handled_by_load_shedder(HTTPRequest.Path.getCustomerInfo(appUserID: try self.purchases.appUserID)),
+            logMatchType: .exact(.info), // check for `contain` could lead to false positives with GET /offerings
+            level: .debug
+        )
+
+        let entitlement = try XCTUnwrap(customerInfo.entitlements[Self.entitlementIdentifier])
+        XCTAssertTrue(entitlement.isActive)
     }
 
     func testCanPurchaseConsumablePackage() async throws {
