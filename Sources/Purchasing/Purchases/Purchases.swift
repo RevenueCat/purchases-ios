@@ -474,11 +474,25 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let eventsManager: EventsManagerType?
         do {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+                #if ENABLE_AD_EVENTS_TRACKING
+                let adEventStore: AdEventStoreType? = try? AdEventStore.createDefault(
+                    applicationSupportDirectory: applicationSupportDirectory
+                )
+                eventsManager = EventsManager(
+                    internalAPI: backend.internalAPI,
+                    userProvider: identityManager,
+                    store: try FeatureEventStore.createDefault(
+                        applicationSupportDirectory: applicationSupportDirectory
+                    ),
+                    adEventStore: adEventStore
+                )
+                #else
                 eventsManager = EventsManager(
                     internalAPI: backend.internalAPI,
                     userProvider: identityManager,
                     store: try FeatureEventStore.createDefault(applicationSupportDirectory: applicationSupportDirectory)
                 )
+                #endif
                 Logger.verbose(Strings.paywalls.event_manager_initialized)
             } else {
                 Logger.verbose(Strings.paywalls.event_manager_not_initialized_not_available)
@@ -2106,8 +2120,17 @@ internal extension Purchases {
     /// - Returns: the number of events posted
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func flushPaywallEvents(count: Int) async throws -> Int {
-        return try await self.eventsManager?.flushEvents(batchSize: count) ?? 0
+        return try await self.eventsManager?.flushFeatureEvents(batchSize: count) ?? 0
     }
+
+    #if ENABLE_AD_EVENTS_TRACKING
+    /// - Throws: if posting ad events fails
+    /// - Returns: the number of ad events posted
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    internal func flushAdEvents(count: Int) async throws -> Int {
+        return try await self.eventsManager?.flushAdEvents(count: count) ?? 0
+    }
+    #endif
 
 }
 
@@ -2149,7 +2172,7 @@ private extension Purchases {
         }
         #endif
 
-        self.purchasesOrchestrator.postFeatureEventsIfNeeded(delayed: true)
+        self.purchasesOrchestrator.postEventsIfNeeded(delayed: true)
 
         #endif
     }
@@ -2158,7 +2181,7 @@ private extension Purchases {
         self.systemInfo.isAppBackgroundedState = true
         self.dispatchSyncSubscriberAttributes()
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-        self.purchasesOrchestrator.postFeatureEventsIfNeeded()
+        self.purchasesOrchestrator.postEventsIfNeeded()
         #endif
     }
 

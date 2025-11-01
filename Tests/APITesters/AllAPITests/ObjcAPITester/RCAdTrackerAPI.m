@@ -34,47 +34,47 @@
                                                                                         mediatorName:RCMediatorName.appLovin
                                                                                            placement:@"home_screen"
                                                                                             adUnitId:@"ca-app-pub-123"
-                                                                                        adInstanceId:@"instance-123"];
+                                                                                        impressionId:@"instance-123"];
 
         // AdDisplayed API - without placement (convenience init)
         RCAdDisplayed *displayedNoPlacement __unused = [[RCAdDisplayed alloc] initWithNetworkName:@"AdMob"
                                                                                       mediatorName:RCMediatorName.appLovin
                                                                                           adUnitId:@"ca-app-pub-123"
-                                                                                      adInstanceId:@"instance-123"];
+                                                                                      impressionId:@"instance-123"];
 
         // AdDisplayed properties
         NSString *networkName __unused = displayedWithPlacement.networkName;
         RCMediatorName *mediator __unused = displayedWithPlacement.mediatorName;
         NSString *placement __unused = displayedWithPlacement.placement;
         NSString *adUnitId __unused = displayedWithPlacement.adUnitId;
-        NSString *adInstanceId __unused = displayedWithPlacement.adInstanceId;
+        NSString *impressionId __unused = displayedWithPlacement.impressionId;
 
         // AdOpened API - with placement
         RCAdOpened *openedWithPlacement __unused = [[RCAdOpened alloc] initWithNetworkName:@"AdMob"
                                                                                mediatorName:RCMediatorName.appLovin
                                                                                   placement:@"home_screen"
                                                                                    adUnitId:@"ca-app-pub-123"
-                                                                               adInstanceId:@"instance-123"];
+                                                                               impressionId:@"instance-123"];
 
         // AdOpened API - without placement (convenience init)
         RCAdOpened *openedNoPlacement __unused = [[RCAdOpened alloc] initWithNetworkName:@"AdMob"
                                                                              mediatorName:RCMediatorName.appLovin
                                                                                  adUnitId:@"ca-app-pub-123"
-                                                                             adInstanceId:@"instance-123"];
+                                                                             impressionId:@"instance-123"];
 
         // AdOpened properties
         NSString *openedNetworkName __unused = openedWithPlacement.networkName;
         RCMediatorName *openedMediator __unused = openedWithPlacement.mediatorName;
         NSString *openedPlacement __unused = openedWithPlacement.placement;
         NSString *openedAdUnitId __unused = openedWithPlacement.adUnitId;
-        NSString *openedAdInstanceId __unused = openedWithPlacement.adInstanceId;
+        NSString *openedImpressionId __unused = openedWithPlacement.impressionId;
 
         // AdRevenue API - with placement
         RCAdRevenue *revenueWithPlacement __unused = [[RCAdRevenue alloc] initWithNetworkName:@"AdMob"
                                                                                   mediatorName:RCMediatorName.appLovin
                                                                                      placement:@"home_screen"
                                                                                       adUnitId:@"ca-app-pub-123"
-                                                                                  adInstanceId:@"instance-123"
+                                                                                  impressionId:@"instance-123"
                                                                                  revenueMicros:1500000
                                                                                       currency:@"USD"
                                                                                      precision:RCAdRevenuePrecision.exact];
@@ -83,7 +83,7 @@
         RCAdRevenue *revenueNoPlacement __unused = [[RCAdRevenue alloc] initWithNetworkName:@"AdMob"
                                                                                mediatorName:RCMediatorName.appLovin
                                                                                    adUnitId:@"ca-app-pub-123"
-                                                                               adInstanceId:@"instance-123"
+                                                                               impressionId:@"instance-123"
                                                                               revenueMicros:1500000
                                                                                    currency:@"USD"
                                                                                   precision:RCAdRevenuePrecision.exact];
@@ -93,7 +93,7 @@
         RCMediatorName *revenueMediator __unused = revenueWithPlacement.mediatorName;
         NSString *revenuePlacement __unused = revenueWithPlacement.placement;
         NSString *revenueAdUnitId __unused = revenueWithPlacement.adUnitId;
-        NSString *revenueAdInstanceId __unused = revenueWithPlacement.adInstanceId;
+        NSString *revenueImpressionId __unused = revenueWithPlacement.impressionId;
         NSInteger revenueMicros __unused = revenueWithPlacement.revenueMicros;
         NSString *currency __unused = revenueWithPlacement.currency;
         RCAdRevenuePrecision *precision __unused = revenueWithPlacement.precision;
