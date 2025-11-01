@@ -40,7 +40,14 @@ struct ActiveSubscriptionButtonsView: View {
                         withActiveProductId: viewModel.purchaseInformation?.productIdentifier)
                 }, label: {
                     if self.viewModel.loadingPath?.id == path.id {
-                        TintedProgressView()
+                        if #available(iOS 26.0, *) {
+                            TintedProgressView()
+                                .padding()
+                        } else {
+                            TintedProgressView()
+                                .padding(.horizontal)
+                                .padding(.vertical, 12)
+                        }
                     } else {
                         if #available(iOS 26.0, *) {
                             CompatibilityLabeledContent(path.title)

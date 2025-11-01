@@ -73,6 +73,10 @@ enum Strings {
     case could_not_offer_for_active_subscriptions(String, String)
     case error_fetching_promotional_offer(Error)
     case promo_offer_not_loaded
+    case purchasing_promotional_offer(String, String)
+    case promo_offer_purchase_cancelled(String, String)
+    case promo_offer_purchase_succeeded(String, String, String)
+    case promo_offer_purchase_failed(String, String, Error)
     case could_not_determine_type_of_custom_url
     case active_product_is_not_apple_loading_without_product_information(Store)
     case could_not_find_product_loading_without_product_information(String)
@@ -217,6 +221,19 @@ extension Strings: CustomStringConvertible {
 
         case .promo_offer_not_loaded:
             return "Promotional offer details not loaded"
+
+        case let .purchasing_promotional_offer(productId, offerId):
+            return "Attempting promotional offer purchase for product '\(productId)' with offer '\(offerId)'."
+
+        case let .promo_offer_purchase_cancelled(productId, offerId):
+            return "Promotional offer purchase cancelled for product '\(productId)' with offer '\(offerId)'."
+
+        case let .promo_offer_purchase_succeeded(productId, offerId, transactionId):
+            return "Promotional offer purchase succeeded for product '\(productId)' with offer '\(offerId)'. " +
+            "Transaction: \(transactionId)"
+
+        case let .promo_offer_purchase_failed(productId, offerId, error):
+            return "Promotional offer purchase failed for product '\(productId)' with offer '\(offerId)': \(error)"
 
         case .could_not_offer_for_any_active_subscriptions:
             return "Could not find offer with id for any active subscription"

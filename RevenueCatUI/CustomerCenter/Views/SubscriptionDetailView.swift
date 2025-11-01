@@ -173,8 +173,8 @@ struct SubscriptionDetailView: View {
                     promoOfferDetails: promotionalOfferData.promoOfferDetails,
                     purchasesProvider: self.viewModel.purchasesProvider,
                     actionWrapper: self.viewModel.actionWrapper,
-                    onDismissPromotionalOfferView: { _ in
-                        viewModel.onDismissPromotionalOffer()
+                    onDismissPromotionalOfferView: { action in
+                        viewModel.onDismissPromotionalOffer(action: action)
                     }
                 )
                 .interactiveDismissDisabled()
