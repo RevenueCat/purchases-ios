@@ -21,6 +21,8 @@ import SwiftUI
 struct ButtonComponentView: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.openSheet) private var openSheet
+    @Environment(\.offerCodeRedemptionInitiatedAction)
+    private var offerCodeRedemptionInitiatedAction: OfferCodeRedemptionInitiatedAction?
     @State private var inAppBrowserURL: URL?
     @State private var showCustomerCenter = false
     @State private var offerCodeRedemptionSheet = false
@@ -127,7 +129,9 @@ struct ButtonComponentView: View {
         case .customerCenter:
             self.showCustomerCenter = true
         case .offerCodeRedemptionSheet:
-            self.openCodeRedemptionSheet()
+            Task {
+                await self.openCodeRedemptionSheet()
+            }
         case .url(let url, let method),
                 .privacyPolicy(let url, let method),
                 .terms(let url, let method):
@@ -142,7 +146,17 @@ struct ButtonComponentView: View {
         }
     }
 
-    private func openCodeRedemptionSheet() {
+    private func openCodeRedemptionSheet() async {
+        // Check if there's an offer code redemption interceptor
+        if let interceptor = self.offerCodeRedemptionInitiatedAction {
+            // Wait for the interceptor to call resume before proceeding
+            await withCheckedContinuation { continuation in
+                interceptor(resume: {
+                    continuation.resume()
+                })
+            }
+        }
+
 #if os(iOS) && !targetEnvironment(macCatalyst)
         // Call the method only if available
         Purchases.shared.presentCodeRedemptionSheet()
