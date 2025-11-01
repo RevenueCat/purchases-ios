@@ -21,9 +21,6 @@ struct VideoComponentView: View {
     let viewModel: VideoComponentViewModel
 
     @EnvironmentObject
-    private var packageContext: PackageContext
-
-    @EnvironmentObject
     private var introOfferEligibilityContext: IntroOfferEligibilityContext
 
     @EnvironmentObject
@@ -46,17 +43,7 @@ struct VideoComponentView: View {
 
     var body: some View {
         viewModel
-            .styles(
-                state: componentViewState,
-                condition: screenCondition,
-                isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
-                    package: self.packageContext.package
-                ),
-                isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
-                    for: self.packageContext.package
-                ),
-                colorScheme: colorScheme
-            ) { style in
+            .styles(state: componentViewState, condition: screenCondition, colorScheme: colorScheme) { style in
                 if style.visible {
                     let viewData = style.viewData(forDarkMode: colorScheme == .dark)
 

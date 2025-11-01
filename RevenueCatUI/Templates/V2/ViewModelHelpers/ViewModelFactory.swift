@@ -71,7 +71,8 @@ struct ViewModelFactory {
         return RootViewModel(
             stackViewModel: rootStackViewModel,
             stickyFooterViewModel: stickyFooterViewModel,
-            firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo
+            firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+            localizationProvider: localizationProvider
         )
     }
 

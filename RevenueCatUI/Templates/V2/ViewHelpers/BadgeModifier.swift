@@ -33,7 +33,7 @@ struct BadgeModifier: ViewModifier {
         let uiConfigProvider: UIConfigProvider
 
         var backgroundStyle: BackgroundStyle? {
-            stack.background?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
+            stack.background?.asDisplayable(uiConfigProvider: uiConfigProvider)
                 ?? stack.backgroundColor?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
         }
     }
