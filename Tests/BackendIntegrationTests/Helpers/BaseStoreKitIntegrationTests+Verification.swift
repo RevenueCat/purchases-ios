@@ -101,7 +101,7 @@ extension BaseStoreKitIntegrationTests {
     }
 
     func verifyTransactionWasFinished(
-        count: Int = 1,
+        count: Int? = 1,
         file: FileString = #file,
         line: UInt = #line
     ) {

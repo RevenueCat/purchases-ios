@@ -1,0 +1,67 @@
+{
+  "entitlements_by_product" : {
+    "com.revenuecat.500coins.1.99" : [
+
+    ],
+    "com.revenuecat.annual.10.99.1_free_week" : [
+      "premium"
+    ],
+    "com.revenuecat.annual_39.99.2_week_intro" : [
+      "premium"
+    ],
+    "com.revenuecat.annual_39.99.no_intro" : [
+      "premium"
+    ],
+    "com.revenuecat.intro_test.monthly.1_week_intro" : [
+
+    ],
+    "com.revenuecat.intro_test.monthly.no_intro" : [
+
+    ],
+    "com.revenuecat.lifetime.199.99" : [
+
+    ],
+    "com.revenuecat.loadShedder.monthly" : [
+
+    ],
+    "com.revenuecat.monthly.1.99.1_free_week" : [
+      "premium"
+    ],
+    "com.revenuecat.monthly.1.99.no_intro" : [
+      "premium"
+    ],
+    "com.revenuecat.monthly_4.99.1_week_intro" : [
+      "premium"
+    ],
+    "com.revenuecat.monthly_4.99.no_intro" : [
+      "premium"
+    ],
+    "com.revenuecat.monthly_9.99.super_premium.1_week_intro" : [
+      "super_premium"
+    ],
+    "com.revenuecat.weekly_1.99.3_day_intro" : [
+      "premium"
+    ],
+    "com.revenuecat.weekly_1.99.no_intro" : [
+      "premium"
+    ],
+    "consumable.10_coins" : [
+
+    ],
+    "gl_999_1m" : [
+
+    ],
+    "lifetime" : [
+      "premium"
+    ],
+    "non_renewing_subscription" : [
+      "premium"
+    ],
+    "rc_1099_1w" : [
+
+    ],
+    "shortest_duration" : [
+      "premium"
+    ]
+  }
+}
