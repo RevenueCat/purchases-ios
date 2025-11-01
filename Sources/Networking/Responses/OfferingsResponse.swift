@@ -54,7 +54,6 @@ struct OfferingsResponse {
     let placements: Placements?
     let targeting: Targeting?
     let uiConfig: UIConfig?
-
 }
 
 extension OfferingsResponse {
