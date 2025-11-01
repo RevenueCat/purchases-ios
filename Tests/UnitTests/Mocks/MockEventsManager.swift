@@ -23,10 +23,16 @@ actor MockEventsManager: EventsManagerType {
         self.trackedEvents.append(featureEvent)
     }
 
+    #if ENABLE_AD_EVENTS_TRACKING
+    func track(adEvent: AdEvent) async {
+        // Not implemented in mock
+    }
+    #endif
+
     var invokedFlushEvents = false
     var invokedFlushEventsCount = 0
 
-    func flushEvents(batchSize: Int) async -> Int {
+    func flushEvents(batchSize: Int) async throws -> Int {
         self.invokedFlushEvents = true
         self.invokedFlushEventsCount += 1
 
