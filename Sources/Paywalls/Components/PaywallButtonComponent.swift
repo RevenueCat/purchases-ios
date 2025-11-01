@@ -17,22 +17,29 @@ import Foundation
 
 public extension PaywallComponent {
 
+    struct ButtonTriggers: PaywallComponentBase {
+        public let onPress: String
+    }
+
     final class ButtonComponent: PaywallComponentBase {
 
         let type: ComponentType
         public let action: Action
         public let stack: PaywallComponent.StackComponent
         public let transition: PaywallComponent.Transition?
+        public let triggers: ButtonTriggers?
 
         public init(
             action: Action,
             stack: PaywallComponent.StackComponent,
-            transition: PaywallComponent.Transition? = nil
+            transition: PaywallComponent.Transition? = nil,
+            triggers: ButtonTriggers? = nil
         ) {
             self.type = .button
             self.action = action
             self.stack = stack
             self.transition = transition
+            self.triggers = triggers
         }
 
         private enum CodingKeys: String, CodingKey {
@@ -40,6 +47,7 @@ public extension PaywallComponent {
             case action
             case stack
             case transition
+            case triggers
         }
 
         required public init(from decoder: Decoder) throws {
@@ -48,6 +56,7 @@ public extension PaywallComponent {
             self.action = try container.decode(Action.self, forKey: .action)
             self.stack = try container.decode(PaywallComponent.StackComponent.self, forKey: .stack)
             self.transition = try container.decodeIfPresent(PaywallComponent.Transition.self, forKey: .transition)
+            self.triggers = try container.decodeIfPresent(ButtonTriggers.self, forKey: .triggers)
         }
 
         public func encode(to encoder: Encoder) throws {
@@ -56,6 +65,7 @@ public extension PaywallComponent {
             try container.encode(action, forKey: .action)
             try container.encode(stack, forKey: .stack)
             try container.encode(transition, forKey: .transition)
+            try container.encode(triggers, forKey: .triggers)
         }
 
         public func hash(into hasher: inout Hasher) {
@@ -63,13 +73,15 @@ public extension PaywallComponent {
             hasher.combine(action)
             hasher.combine(stack)
             hasher.combine(transition)
+            hasher.combine(triggers)
         }
 
         public static func == (lhs: ButtonComponent, rhs: ButtonComponent) -> Bool {
             return lhs.type == rhs.type &&
                    lhs.action == rhs.action &&
                    lhs.stack == rhs.stack &&
-                   lhs.transition == rhs.transition
+                   lhs.transition == rhs.transition &&
+                   lhs.triggers == rhs.triggers
 
         }
 
@@ -77,6 +89,7 @@ public extension PaywallComponent {
             case restorePurchases
             case navigateBack
             case navigateTo(destination: Destination)
+            case workflow
 
             case unknown
 
@@ -96,6 +109,8 @@ public extension PaywallComponent {
                 case .navigateTo(let destination):
                     try container.encode("navigate_to", forKey: .type)
                     try destination.encode(to: encoder)
+                case .workflow:
+                    try container.encode("workflow", forKey: .type)
                 case .unknown:
                     try container.encode("unknown", forKey: .type)
                 }
@@ -113,6 +128,8 @@ public extension PaywallComponent {
                 case "navigate_to":
                     let destination = try Destination(from: decoder)
                     self = .navigateTo(destination: destination)
+                case "workflow":
+                    self = .workflow
                 case "unknown":
                     self = .unknown
                 default:

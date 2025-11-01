@@ -26,6 +26,7 @@ class ButtonComponentViewModel {
         case navigateTo(destination: Destination)
         case sheet(RevenueCat.PaywallComponent.ButtonComponent.Sheet)
         case navigateBack
+        case workflow
         case unknown
     }
 
@@ -97,9 +98,15 @@ class ButtonComponentViewModel {
             }
         case .navigateBack:
             self.action = .navigateBack
+        case .workflow:
+            self.action = .workflow
         case .unknown:
             self.action = .unknown
         }
+    }
+
+    var onPressActionId: String? {
+        return self.component.triggers?.onPress
     }
 
     var hasUnknownAction: Bool {
@@ -126,6 +133,8 @@ class ButtonComponentViewModel {
         case .navigateTo:
             return false
         case .navigateBack:
+            return false
+        case .workflow:
             return false
         case .unknown:
             return false

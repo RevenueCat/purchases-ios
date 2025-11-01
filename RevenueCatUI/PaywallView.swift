@@ -249,7 +249,15 @@ public struct PaywallView: View {
             if let error = self.initializationError {
                 DebugErrorView(error.localizedDescription, releaseBehavior: .fatalError)
             } else if self.introEligibility.isConfigured, self.purchaseHandler.isConfigured {
-                if let offering = self.offering, let customerInfo = self.customerInfo {
+                if let paywallComponents = self.paywallComponents, let customerInfo = self.customerInfo {
+                    self.paywallViewForWorkflows(
+                        for: paywallComponents,
+                        offering: nil,
+                        activelySubscribedProductIdentifiers: customerInfo.activeSubscriptions,
+                        fonts: self.fonts,
+                        checker: self.introEligibility,
+                        purchaseHandler: self.purchaseHandler)
+                } else if let offering = self.offering, let customerInfo = self.customerInfo {
                     self.paywallView(for: offering,
                                      useDraftPaywall: self.useDraftPaywall,
                                      activelySubscribedProductIdentifiers: customerInfo.activeSubscriptions,

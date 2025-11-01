@@ -15,6 +15,10 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
+public extension Notification.Name {
+    static let workflowActionIdTriggered = Notification.Name("WorkflowActionIdTriggered")
+}
+
 #if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -97,6 +101,14 @@ struct ButtonComponentView: View {
             navigateTo(destination: destination)
         case .navigateBack:
             onDismiss()
+        case .workflow:
+            if let onPressActionId = self.viewModel.onPressActionId {
+                NotificationCenter.default.post(
+                    name: .workflowActionIdTriggered,
+                    object: nil,
+                    userInfo: ["actionId": onPressActionId]
+                )
+            }
         case .unknown:
             break
         case .sheet(let sheet):
