@@ -35,20 +35,9 @@ class MockOfferingsFactory: OfferingsFactory {
         let product = MockSK1Product(mockProductIdentifier: "monthly_freetrial")
         let storeProduct = SK1StoreProduct(sk1Product: product)
 
-        let response = OfferingsResponse(currentOfferingId: "base",
-                                         offerings: [
-                                            .init(identifier: "base", description: "This is the base offering",
-                                                  packages: [
-                                                    .init(identifier: "", platformProductIdentifier: "$rc_monthly", webCheckoutUrl: nil)
-                                                  ], webCheckoutUrl: nil)
-                                         ],
-                                         placements: nil,
-                                         targeting: nil,
-                                         uiConfig: nil)
-
         return Offerings(
             offerings: [
-                "base": Offering(
+                "base": Offering( // Corresponds to the OfferingsManagerTests.anyBackendOfferingsContents
                     identifier: "base",
                     serverDescription: "This is the base offering",
                     metadata: [:],
@@ -64,9 +53,7 @@ class MockOfferingsFactory: OfferingsFactory {
             currentOfferingID: "base",
             placements: nil,
             targeting: nil,
-            contents: Offerings.Contents(response: response,
-                                         fromFallbackUrl: false,
-                                         fromLoadShedder: false))
+            contents: contents)
     }
 }
 

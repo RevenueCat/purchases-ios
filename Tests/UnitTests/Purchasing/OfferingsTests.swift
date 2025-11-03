@@ -765,6 +765,71 @@ class OfferingsTests: TestCase {
         expect(offering.hasPaywall) == false
     }
 
+    // MARK: - Offerings.Contents
+
+    func testOfferingsContentsInitFromMainServer() throws {
+        let offeringResp: OfferingsResponse = try BaseHTTPResponseTest.decodeFixture("OfferingsWithPaywallComponents")
+        let contents = Offerings.Contents(response: offeringResp,
+                                          fromFallbackUrl: false,
+                                          fromLoadShedder: false)
+        expect(contents.originalSource) == .main
+        expect(contents.loadedFromCache) == false
+    }
+
+    func testOfferingsContentsInitFromFallbackUrl() throws {
+        let offeringResp: OfferingsResponse = try BaseHTTPResponseTest.decodeFixture("OfferingsWithPaywallComponents")
+        let contents = Offerings.Contents(response: offeringResp,
+                                          fromFallbackUrl: true,
+                                          fromLoadShedder: false)
+        expect(contents.originalSource) == .fallbackUrl
+        expect(contents.loadedFromCache) == false
+    }
+
+    func testOfferingsContentsInitFromLoadShedder() throws {
+        let offeringResp: OfferingsResponse = try BaseHTTPResponseTest.decodeFixture("OfferingsWithPaywallComponents")
+        let contents = Offerings.Contents(response: offeringResp,
+                                          fromFallbackUrl: false,
+                                          fromLoadShedder: true)
+        expect(contents.originalSource) == .loadShedder
+        expect(contents.loadedFromCache) == false
+    }
+
+    func testOfferingsContentsInitFromFallbackUrlAndLoadShedder() throws {
+        let offeringResp: OfferingsResponse = try BaseHTTPResponseTest.decodeFixture("OfferingsWithPaywallComponents")
+        let contents = Offerings.Contents(response: offeringResp,
+                                          fromFallbackUrl: true,
+                                          fromLoadShedder: true)
+
+        // This case should never happen, but `fromFallbackUrl` takes precedence over `fromLoadShedder`
+        expect(contents.originalSource) == .fallbackUrl
+        expect(contents.loadedFromCache) == false
+    }
+
+    func testOfferingsContentsCopyWithLoadedFromCache() throws {
+        let offeringResp: OfferingsResponse = try BaseHTTPResponseTest.decodeFixture("OfferingsWithPaywallComponents")
+        let contents = Offerings.Contents(response: offeringResp,
+                                          fromFallbackUrl: false,
+                                          fromLoadShedder: false)
+        expect(contents.loadedFromCache) == false
+
+        let copyFromCache = contents.copyWithLoadedFromCache()
+        expect(copyFromCache.loadedFromCache) == true
+    }
+
+    func testOfferingsContentsCopyWithLoadedFromCacheIsIdempotent() throws {
+        let offeringResp: OfferingsResponse = try BaseHTTPResponseTest.decodeFixture("OfferingsWithPaywallComponents")
+        let contents = Offerings.Contents(response: offeringResp,
+                                          fromFallbackUrl: false,
+                                          fromLoadShedder: false)
+        expect(contents.loadedFromCache) == false
+
+        let copyFromCache = contents.copyWithLoadedFromCache()
+        let copyFromCache2 = copyFromCache.copyWithLoadedFromCache()
+        let copyFromCache3 = copyFromCache2.copyWithLoadedFromCache()
+
+        expect(copyFromCache3.loadedFromCache) == true
+    }
+
 }
 
 private extension OfferingsTests {

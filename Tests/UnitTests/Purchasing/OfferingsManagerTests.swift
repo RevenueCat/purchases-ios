@@ -407,6 +407,7 @@ extension OfferingsManagerTests {
 
         expect(result).to(beSuccess())
         expect(result?.value) === MockData.sampleOfferings
+        expect(result?.value?.contents.loadedFromCache) == false
 
         expect(self.mockOfferings.invokedGetOfferingsForAppUserID) == false
         expect(self.mockDeviceCache.cacheOfferingsCount) == 0
@@ -430,6 +431,7 @@ extension OfferingsManagerTests {
         expect(result?.value?["base"]).toNot(beNil())
         expect(result?.value?["base"]!.monthly).toNot(beNil())
         expect(result?.value?["base"]!.monthly?.storeProduct).toNot(beNil())
+        expect(result?.value?.contents.loadedFromCache) == false
 
         expect(self.mockOfferings.invokedGetOfferingsForAppUserID) == true
         expect(self.mockDeviceCache.cacheOfferingsCount) == 1
@@ -449,6 +451,7 @@ extension OfferingsManagerTests {
         expect(result).to(beSuccess())
         expect(result?.value?.all).to(haveCount(1))
         expect(result?.value?.current?.identifier) == MockData.anyBackendOfferingsContents.response.currentOfferingId
+        expect(result?.value?.contents.loadedFromCache) == true
 
         expect(self.mockOfferings.invokedGetOfferingsForAppUserID) == true
         expect(self.mockDeviceCache.cacheOfferingsCount) == 0
@@ -592,6 +595,7 @@ extension OfferingsManagerTests {
         expect(result?.value?["base"]).toNot(beNil())
         expect(result?.value?["base"]!.monthly).toNot(beNil())
         expect(result?.value?["base"]!.monthly?.storeProduct).toNot(beNil())
+        expect(result?.value?.contents.loadedFromCache) == false
 
         expect(self.mockOfferings.invokedGetOfferingsForAppUserID) == true
         expect(self.mockDeviceCache.cacheOfferingsCount) == 1
