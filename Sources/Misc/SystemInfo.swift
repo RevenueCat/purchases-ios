@@ -162,6 +162,10 @@ class SystemInfo {
         }
     }
 
+    /*
+     Allows for updating the base URL for API calls that use `HTTPRequest.Path`.
+     Useful for testing in case we want to perform tests against another instance of our backend.
+     */
     static var apiBaseURL: URL {
         get { return self._apiBaseURL.value }
         set {

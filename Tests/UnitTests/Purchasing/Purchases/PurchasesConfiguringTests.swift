@@ -589,34 +589,6 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(self.backend.getCustomerInfoCallCount).toAlways(equal(0))
     }
 
-    // MARK: - API Base URL
-
-    func testDefaultAPIBaseURL() {
-        let defaultURL = URL(string: "https://api.revenuecat.com")!
-        expect(Purchases.apiBaseURL) == defaultURL
-    }
-
-    func testSettingAPIBaseURL() {
-        let originalURL = Purchases.apiBaseURL
-        defer { Purchases.apiBaseURL = originalURL }
-
-        let customURL = URL(string: "https://custom.example.com")!
-        Purchases.apiBaseURL = customURL
-
-        expect(Purchases.apiBaseURL) == customURL
-    }
-
-    func testAPIBaseURLPersistsAcrossGets() {
-        let originalURL = Purchases.apiBaseURL
-        defer { Purchases.apiBaseURL = originalURL }
-
-        let customURL = URL(string: "https://test.example.com")!
-        Purchases.apiBaseURL = customURL
-
-        expect(Purchases.apiBaseURL) == customURL
-        expect(Purchases.apiBaseURL) == customURL
-    }
-
   private static func create(
       purchasesAreCompletedBy: PurchasesAreCompletedBy,
       dangerousSettings: DangerousSettings = .init(),

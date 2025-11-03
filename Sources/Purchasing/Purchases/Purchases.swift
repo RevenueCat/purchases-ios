@@ -1981,15 +1981,6 @@ extension Purchases {
     @_spi(Internal) public var preferredLocaleOverride: String? {
         return self.systemInfo.preferredLocaleOverride
     }
-
-    // Allows overriding the API base URL. Useful for testing against alternative backends
-    static var apiBaseURL: URL {
-        get { SystemInfo.apiBaseURL }
-        set {
-            assert(!isConfigured, "The API base URL must be set before calling Purchases.configure()")
-            SystemInfo.apiBaseURL = newValue
-        }
-    }
 }
 
 extension Purchases: InternalPurchasesType {
