@@ -383,7 +383,7 @@ extension CustomerInfo: Identifiable {
 
 private extension CustomerInfo {
 
-    /// The actual contents of a ``CustomerInfo``: the response with the associated version.
+    /// The actual contents of a ``CustomerInfo``: the response with the associated version and other metadata.
     struct Contents {
 
         var response: CustomerInfoResponse
