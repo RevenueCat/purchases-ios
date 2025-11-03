@@ -14,7 +14,7 @@
 import Nimble
 import XCTest
 
-@testable @_spi(Internal) import RevenueCat
+@testable import RevenueCat
 
 class PurchasesConfiguringTests: BasePurchasesTests {
 
