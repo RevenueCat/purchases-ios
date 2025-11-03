@@ -109,17 +109,24 @@ commands:
         type: string
         default: .
     steps:
+      - run:
+          name: Write macOS Product Version to file
+          command: |
+            sw_vers -productVersion | cut -d. -f1,2 > .macos_version
+            echo "macOS version: $(cat .macos_version)"
       - restore_cache:
           keys:
-            - v2-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}
+            # This cache key should be updated whenever we change the Ruby version
+            - v4-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}-macos-{{ checksum ".macos_version" }}-ruby-3.2.0
       # CircleCI images fail on Ruby 3.3
       # https://github.com/fastlane/fastlane/issues/21794#issuecomment-2021331335
       - run:
-          name: Set Ruby 3.2.2
+          # We're using Ruby 3.2.0 here to avoid an issue that caused a crash with Fastlane and Ruby 3.2.2.
+          name: Set Ruby 3.2.0
           command: |
             eval "$(rbenv init -)"
-            rbenv install -s 3.2.2  # Replace with your required Ruby version
-            rbenv global 3.2.2
+            rbenv install -s 3.2.0  # Replace with your required Ruby version
+            rbenv global 3.2.0
             rbenv rehash
       - run:
           name: Verify Ruby version
@@ -132,7 +139,8 @@ commands:
               bundle config set --local path 'vendor/bundle'
               bundle install
       - save_cache:
-          key: v2-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}
+          # This cache key should be updated whenever we change the Ruby version
+          key: v4-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}-macos-{{ checksum ".macos_version" }}-ruby-3.2.0
           paths:
             - vendor/bundle
 
