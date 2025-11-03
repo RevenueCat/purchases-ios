@@ -447,15 +447,15 @@ extension CustomerInfo.Contents: Codable {
 extension CustomerInfo {
 
     /// Internal enum representing the original source of the ``CustomerInfo`` object.
-    enum OriginalSource: Codable {
+    enum OriginalSource: String, Codable {
         /// Main server
         case main
 
         /// Load shedder server
-        case loadShedder
+        case loadShedder = "load_shedder"
 
         /// Computed on device from offline entitlements
-        case offlineEntitlements
+        case offlineEntitlements = "offline_entitlements"
 
         init(entitlementVerification: VerificationResult, fromLoadShedder: Bool) {
             if entitlementVerification == .verifiedOnDevice {
