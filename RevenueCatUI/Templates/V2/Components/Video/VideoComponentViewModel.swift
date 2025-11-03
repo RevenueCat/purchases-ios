@@ -43,7 +43,6 @@ class VideoComponentViewModel {
     }
 
     @ViewBuilder
-    // swiftlint:disable:next function_parameter_count
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
