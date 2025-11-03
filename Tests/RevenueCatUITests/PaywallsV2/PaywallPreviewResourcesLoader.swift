@@ -163,7 +163,9 @@ class PaywallPreviewResourcesLoader {
                     unit: .week,
                     localizedTitle: "Weekly"
                 ))
-            ], data: offeringsResponseWithPackages)
+            ], contents: Offerings.Contents(response: offeringsResponseWithPackages,
+                                            fromFallbackUrl: false,
+                                            fromLoadShedder: false))
 
             result.merge(offerings!.all)
         }
