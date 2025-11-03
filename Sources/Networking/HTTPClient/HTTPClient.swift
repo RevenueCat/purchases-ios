@@ -963,3 +963,9 @@ private extension HTTPResponse where Body == Data {
     }
 
 }
+
+extension HTTPRequestPath {
+    var url: URL? {
+        self.url(baseURL: SystemInfo.apiBaseURL)
+    }
+}

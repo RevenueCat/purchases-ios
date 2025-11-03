@@ -144,6 +144,33 @@ class SystemInfoTests: TestCase {
 
     #endif
 
+    // MARK: - apiBaseURL
+
+    func testDefaultAPIBaseURL() {
+        expect(SystemInfo.apiBaseURL.absoluteString) == "https://api.revenuecat.com"
+    }
+
+    func testSettingAPIBaseURL() {
+        let originalURL = SystemInfo.apiBaseURL
+        defer { SystemInfo.apiBaseURL = originalURL }
+
+        let customURL = URL(string: "https://custom.example.com")!
+        SystemInfo.apiBaseURL = customURL
+
+        expect(SystemInfo.apiBaseURL) == customURL
+    }
+
+    func testAPIBaseURLPersistsAcrossGets() {
+        let originalURL = SystemInfo.apiBaseURL
+        defer { SystemInfo.apiBaseURL = originalURL }
+
+        let customURL = URL(string: "https://test.example.com")!
+        SystemInfo.apiBaseURL = customURL
+
+        expect(SystemInfo.apiBaseURL) == customURL
+        expect(SystemInfo.apiBaseURL) == customURL
+    }
+
 }
 
 private extension SystemInfo {
