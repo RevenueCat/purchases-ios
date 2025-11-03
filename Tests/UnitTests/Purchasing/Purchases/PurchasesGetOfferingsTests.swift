@@ -54,7 +54,7 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
         self.setupPurchases()
 
         self.mockOfferingsManager.stubbedOfferingsCompletionResult = .success(
-            try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:], data: .mockResponse))
+            try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:], contents: .mockContents))
         )
 
         let result: SK1Product? = waitUntilValue { completed in
@@ -99,7 +99,7 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
     func testCachedOfferings() throws {
         self.setupPurchases()
 
-        let offerings = try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:], data: .mockResponse))
+        let offerings = try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:], contents: .mockContents))
         self.mockOfferingsManager.stubbedOfferingsCompletionResult = .success(offerings)
 
         expect(self.purchases.cachedOfferings) === offerings
@@ -137,7 +137,9 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
             currentOfferingID: offering.identifier,
             placements: nil,
             targeting: nil,
-            response: offeringsResponse
+            contents: .init(response: offeringsResponse,
+                            fromFallbackUrl: false,
+                            fromLoadShedder: false) 
         )
 
         self.systemInfo.stubbedIsApplicationBackgrounded = false

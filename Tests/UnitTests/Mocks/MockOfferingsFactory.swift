@@ -12,18 +12,21 @@ class MockOfferingsFactory: OfferingsFactory {
 
     override func createOfferings(
         from storeProductsByID: [String: StoreProduct],
-        data: OfferingsResponse
+        contents: Offerings.Contents
     ) -> Offerings? {
         if emptyOfferings {
+            let response = OfferingsResponse(currentOfferingId: "base",
+                                             offerings: [],
+                                             placements: nil,
+                                             targeting: nil,
+                                             uiConfig: nil)
             return Offerings(offerings: [:],
                              currentOfferingID: "base",
                              placements: nil,
                              targeting: nil,
-                             response: .init(currentOfferingId: "base",
-                                             offerings: [],
-                                             placements: nil,
-                                             targeting: nil,
-                                             uiConfig: nil))
+                             contents: Offerings.Contents(response: response,
+                                                          fromFallbackUrl: false,
+                                                          fromLoadShedder: false))
         }
         if nilOfferings {
             return nil
@@ -31,6 +34,17 @@ class MockOfferingsFactory: OfferingsFactory {
 
         let product = MockSK1Product(mockProductIdentifier: "monthly_freetrial")
         let storeProduct = SK1StoreProduct(sk1Product: product)
+
+        let response = OfferingsResponse(currentOfferingId: "base",
+                                         offerings: [
+                                            .init(identifier: "base", description: "This is the base offering",
+                                                  packages: [
+                                                    .init(identifier: "", platformProductIdentifier: "$rc_monthly", webCheckoutUrl: nil)
+                                                  ], webCheckoutUrl: nil)
+                                         ],
+                                         placements: nil,
+                                         targeting: nil,
+                                         uiConfig: nil)
 
         return Offerings(
             offerings: [
@@ -50,14 +64,9 @@ class MockOfferingsFactory: OfferingsFactory {
             currentOfferingID: "base",
             placements: nil,
             targeting: nil,
-            response: .init(currentOfferingId: "base", offerings: [
-                .init(identifier: "base", description: "This is the base offering",
-                      packages: [
-                        .init(identifier: "", platformProductIdentifier: "$rc_monthly", webCheckoutUrl: nil)
-                      ], webCheckoutUrl: nil)
-            ], placements: nil, targeting: nil, uiConfig: nil)
-
-        )
+            contents: Offerings.Contents(response: response,
+                                         fromFallbackUrl: false,
+                                         fromLoadShedder: false))
     }
 }
 
@@ -80,5 +89,11 @@ extension OfferingsResponse {
         targeting: nil,
         uiConfig: nil
     )
+
+}
+
+extension Offerings.Contents {
+
+    static let mockContents: Self = .init(response: .mockResponse, fromFallbackUrl: false, fromLoadShedder: false)
 
 }

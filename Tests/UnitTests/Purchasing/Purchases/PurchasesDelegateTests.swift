@@ -94,7 +94,7 @@ class PurchasesDelegateTests: BasePurchasesTests {
         let delegate = GetCustomerInfoPurchasesDelegate()
         self.purchases.delegate = delegate
 
-        let offerings = self.offeringsFactory.createOfferings(from: [:], data: .mockResponse)
+        let offerings = self.offeringsFactory.createOfferings(from: [:], contents: .mockContents)
         let package = try XCTUnwrap(offerings?.all["base"]?.monthly)
 
         waitUntil { completion in

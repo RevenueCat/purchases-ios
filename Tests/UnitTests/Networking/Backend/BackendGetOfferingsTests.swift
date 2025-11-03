@@ -104,14 +104,15 @@ class BackendGetOfferingsTests: BaseBackendTests {
             response: .init(statusCode: .success, response: Self.oneOfferingResponse)
         )
 
-        let result: Atomic<Result<OfferingsResponse, BackendError>?> = nil
+        let result: Atomic<Result<Offerings.Contents, BackendError>?> = nil
         self.offerings.getOfferings(appUserID: Self.userID, isAppBackgrounded: false) {
             result.value = $0
         }
 
         expect(result.value).toEventuallyNot(beNil())
 
-        let response = try XCTUnwrap(result.value?.value)
+        let offeringsContents = try XCTUnwrap(result.value?.value)
+        let response = offeringsContents.response
         let offerings = try XCTUnwrap(response.offerings)
         let offeringA = try XCTUnwrap(offerings.first)
         let packages = try XCTUnwrap(offeringA.packages)

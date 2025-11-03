@@ -362,7 +362,9 @@ private extension PaywallCacheWarmingTests {
             currentOfferingID: Self.offeringIdentifier,
             placements: nil,
             targeting: nil,
-            response: offeringsResponse
+            contents: Offerings.Contents(response: offeringsResponse,
+                                         fromFallbackUrl: false,
+                                         fromLoadShedder: false)
         )
     }
 
