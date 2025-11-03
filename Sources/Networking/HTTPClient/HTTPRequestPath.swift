@@ -14,7 +14,7 @@
 import Foundation
 
 protocol HTTPRequestPath {
-    
+
     /// The base URL for requests to this path.
     static var serverHostURL: URL { get }
 
@@ -47,7 +47,7 @@ extension HTTPRequestPath {
     var fallbackUrls: [URL] {
         return []
     }
-    
+
     var url: URL? { return self.url(proxyURL: nil) }
 
     func url(proxyURL: URL? = nil, fallbackUrlIndex: Int? = nil) -> URL? {
@@ -122,11 +122,11 @@ extension HTTPRequest {
 }
 
 extension HTTPRequest.Path: HTTPRequestPath {
-    
+
     static var serverHostURL: URL {
         SystemInfo.apiBaseURL
     }
-    
+
     private static let fallbackServerHostURL = URL(string: "https://api-production.8-lives-cat.io")
 
     var fallbackUrls: [URL] {
