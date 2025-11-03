@@ -145,10 +145,15 @@ commands:
         type: string
         default: .
     steps:
+      - run:
+          name: Set macOS version environment variable
+          command: |
+            echo "export MACOS_VERSION=$(sw_vers -productVersion)" >> $BASH_ENV
+            source $BASH_ENV
       - restore_cache:
           keys:
             # This cache key should be updated whenever we change the Ruby version
-            - v4-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}-macos-{{ executor.machine.image }}-ruby-3.2.0
+            - v4-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}-macos-{{ .Environment.MACOS_VERSION }}-ruby-3.2.0
       # CircleCI images fail on Ruby 3.3
       # https://github.com/fastlane/fastlane/issues/21794#issuecomment-2021331335
       # Also, not using macos/switch-ruby because its broken
@@ -172,7 +177,7 @@ commands:
             bundle install
       - save_cache:
           # This cache key should be updated whenever we change the Ruby version
-          key: v4-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}-macos-{{ executor.machine.image }}-ruby-3.2.0
+          key: v4-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}-macos-{{ .Environment.MACOS_VERSION }}-ruby-3.2.0
           paths:
             - vendor/bundle
             - ~/.rbenv/versions/3.2.0
