@@ -276,7 +276,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let offlineEntitlementsManager: OfflineEntitlementsManager
     private let productsManager: ProductsManagerType
     private let customerInfoManager: CustomerInfoManager
-    private let paywallEventsManager: PaywallEventsManagerType?
+    private let eventsManager: EventsManagerType?
 
 #if ENABLE_AD_EVENTS_TRACKING
     private var _adTracker: Any?
@@ -287,7 +287,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         if let tracker = _adTracker as? AdTracker {
             return tracker
         }
-        let tracker = AdTracker(eventsManager: self.paywallEventsManager)
+        let tracker = AdTracker(eventsManager: self.eventsManager)
         _adTracker = tracker
         return tracker
     }
@@ -471,22 +471,22 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               appUserID: appUserID
         )
 
-        let paywallEventsManager: PaywallEventsManagerType?
+        let eventsManager: EventsManagerType?
         do {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-                paywallEventsManager = PaywallEventsManager(
+                eventsManager = EventsManager(
                     internalAPI: backend.internalAPI,
                     userProvider: identityManager,
-                    store: try PaywallEventStore.createDefault(applicationSupportDirectory: applicationSupportDirectory)
+                    store: try FeatureEventStore.createDefault(applicationSupportDirectory: applicationSupportDirectory)
                 )
                 Logger.verbose(Strings.paywalls.event_manager_initialized)
             } else {
                 Logger.verbose(Strings.paywalls.event_manager_not_initialized_not_available)
-                paywallEventsManager = nil
+                eventsManager = nil
             }
         } catch {
             Logger.verbose(Strings.paywalls.event_manager_failed_to_initialize(error))
-            paywallEventsManager = nil
+            eventsManager = nil
         }
 
         let attributionPoster = AttributionPoster(deviceCache: deviceCache,
@@ -587,7 +587,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     diagnosticsSynchronizer: diagnosticsSynchronizer,
                     diagnosticsTracker: diagnosticsTracker,
                     winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
-                    paywallEventsManager: paywallEventsManager,
+                    eventsManager: eventsManager,
                     webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper(backend: backend,
                                                                              identityManager: identityManager,
                                                                              customerInfoManager: customerInfoManager)
@@ -615,7 +615,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     storeMessagesHelper: storeMessagesHelper,
                     diagnosticsTracker: diagnosticsTracker,
                     winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
-                    paywallEventsManager: paywallEventsManager,
+                    eventsManager: eventsManager,
                     webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper(backend: backend,
                                                                              identityManager: identityManager,
                                                                              customerInfoManager: customerInfoManager)
@@ -669,7 +669,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   subscriberAttributes: subscriberAttributes,
                   operationDispatcher: operationDispatcher,
                   customerInfoManager: customerInfoManager,
-                  paywallEventsManager: paywallEventsManager,
+                  eventsManager: eventsManager,
                   productsManager: productsManager,
                   offeringsManager: offeringsManager,
                   offlineEntitlementsManager: offlineEntitlementsManager,
@@ -701,7 +701,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          subscriberAttributes: Attribution,
          operationDispatcher: OperationDispatcher,
          customerInfoManager: CustomerInfoManager,
-         paywallEventsManager: PaywallEventsManagerType?,
+         eventsManager: EventsManagerType?,
          productsManager: ProductsManagerType,
          offeringsManager: OfferingsManager,
          offlineEntitlementsManager: OfflineEntitlementsManager,
@@ -751,7 +751,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.attribution = subscriberAttributes
         self.operationDispatcher = operationDispatcher
         self.customerInfoManager = customerInfoManager
-        self.paywallEventsManager = paywallEventsManager
+        self.eventsManager = eventsManager
         self.productsManager = productsManager
         self.offeringsManager = offeringsManager
         self.offlineEntitlementsManager = offlineEntitlementsManager
@@ -1418,7 +1418,7 @@ public extension Purchases {
     /// Used by `RevenueCatUI` to keep track of ``PaywallEvent``s.
     func track(paywallEvent: PaywallEvent) async {
         self.purchasesOrchestrator.track(paywallEvent: paywallEvent)
-        await self.paywallEventsManager?.track(featureEvent: paywallEvent)
+        await self.eventsManager?.track(featureEvent: paywallEvent)
     }
 
     /// Used by `RevenueCatUI` to keep track of ``CustomerCenterEvent``s.
@@ -1426,7 +1426,7 @@ public extension Purchases {
         operationDispatcher.dispatchOnWorkerThread {
             // If we make CustomerCenterEventType implement FeatureEvent, we have to make FeatureEvent public
             guard let event = customerCenterEvent as? FeatureEvent else { return }
-            await self.paywallEventsManager?.track(featureEvent: event)
+            await self.eventsManager?.track(featureEvent: event)
         }
     }
 
@@ -2106,7 +2106,7 @@ internal extension Purchases {
     /// - Returns: the number of events posted
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func flushPaywallEvents(count: Int) async throws -> Int {
-        return try await self.paywallEventsManager?.flushEvents(batchSize: count) ?? 0
+        return try await self.eventsManager?.flushEvents(batchSize: count) ?? 0
     }
 
 }
@@ -2149,7 +2149,7 @@ private extension Purchases {
         }
         #endif
 
-        self.purchasesOrchestrator.postPaywallEventsIfNeeded(delayed: true)
+        self.purchasesOrchestrator.postFeatureEventsIfNeeded(delayed: true)
 
         #endif
     }
@@ -2158,7 +2158,7 @@ private extension Purchases {
         self.systemInfo.isAppBackgroundedState = true
         self.dispatchSyncSubscriberAttributes()
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-        self.purchasesOrchestrator.postPaywallEventsIfNeeded()
+        self.purchasesOrchestrator.postFeatureEventsIfNeeded()
         #endif
     }
 

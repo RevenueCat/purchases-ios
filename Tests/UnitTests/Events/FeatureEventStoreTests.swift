@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PaywallEventStoreTests.swift
+//  FeatureEventStoreTests.swift
 //
 //  Created by Nacho Soto on 9/5/23.
 
@@ -17,10 +17,10 @@ import Nimble
 import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-class PaywallEventStoreTests: TestCase {
+class FeatureEventStoreTests: TestCase {
 
     private var handler: MockFileHandler!
-    private var store: PaywallEventStore!
+    private var store: FeatureEventStore!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -34,20 +34,20 @@ class PaywallEventStoreTests: TestCase {
     // - MARK: -
 
     func testCreateDefaultDoesNotThrow() throws {
-        _ = try PaywallEventStore.createDefault(applicationSupportDirectory: nil)
+        _ = try FeatureEventStore.createDefault(applicationSupportDirectory: nil)
     }
 
     func testPersistsEventsAcrossInitialization() async throws {
         let container = Self.temporaryFolder()
 
-        var store = try PaywallEventStore.createDefault(
+        var store = try FeatureEventStore.createDefault(
             applicationSupportDirectory: container
         )
 
         await store.store(.randomImpressionEvent())
         await self.verifyEventsInStore(store, expectedCount: 1)
 
-        store = try PaywallEventStore.createDefault(
+        store = try FeatureEventStore.createDefault(
             applicationSupportDirectory: container
         )
         await self.verifyEventsInStore(store, expectedCount: 1)
@@ -58,21 +58,21 @@ class PaywallEventStoreTests: TestCase {
         let documents = Self.temporaryFolder()
 
         // 1. Initialize store with documents directory:
-        var store = try PaywallEventStore.createDefault(applicationSupportDirectory: documents)
+        var store = try FeatureEventStore.createDefault(applicationSupportDirectory: documents)
 
         // 2. Store event
         await store.store(.randomImpressionEvent())
         await self.verifyEventsInStore(store, expectedCount: 1)
 
         // 3. Initialize store with new directories
-        store = try PaywallEventStore.createDefault(
+        store = try FeatureEventStore.createDefault(
             applicationSupportDirectory: applicationSupport,
             documentsDirectory: documents
         )
         await self.verifyEventsInStore(store, expectedCount: 0)
 
         // 4. Verify events were removed
-        store = try PaywallEventStore.createDefault(applicationSupportDirectory: documents)
+        store = try FeatureEventStore.createDefault(applicationSupportDirectory: documents)
         await self.verifyEventsInStore(store, expectedCount: 0)
     }
 
@@ -91,7 +91,7 @@ class PaywallEventStoreTests: TestCase {
     }
 
     func testStoreOneEvent() async throws {
-        let event: StoredEvent = .randomImpressionEvent()
+        let event: StoredFeatureEvent = .randomImpressionEvent()
         await self.store.store(event)
 
         let events = await self.store.fetch(1)
@@ -109,8 +109,8 @@ class PaywallEventStoreTests: TestCase {
     }
 
     func testStoreMultipleEvents() async throws {
-        let event1: StoredEvent = .randomImpressionEvent()
-        let event2: StoredEvent = .randomImpressionEvent()
+        let event1: StoredFeatureEvent = .randomImpressionEvent()
+        let event2: StoredFeatureEvent = .randomImpressionEvent()
 
         await self.store.store(event1)
         await self.store.store(event2)
@@ -120,7 +120,7 @@ class PaywallEventStoreTests: TestCase {
     }
 
     func testFetchOnlySomeEvents() async throws {
-        let event: StoredEvent = .randomImpressionEvent()
+        let event: StoredFeatureEvent = .randomImpressionEvent()
 
         await self.store.store(event)
         await self.store.store(.randomImpressionEvent())
@@ -131,7 +131,7 @@ class PaywallEventStoreTests: TestCase {
     }
 
     func testFetchEventsWithUnrecognizedLines() async throws {
-        let event: StoredEvent = .randomImpressionEvent()
+        let event: StoredFeatureEvent = .randomImpressionEvent()
 
         await self.store.store(event)
         try await self.handler.append(line: "not an event")
@@ -151,7 +151,7 @@ class PaywallEventStoreTests: TestCase {
     }
 
     func testClearSingleEvent() async {
-        let event: StoredEvent = .randomImpressionEvent()
+        let event: StoredFeatureEvent = .randomImpressionEvent()
 
         await self.store.store(event)
         await self.store.clear(1)
@@ -161,7 +161,7 @@ class PaywallEventStoreTests: TestCase {
     }
 
     func testClearOnlyOneEvent() async throws {
-        let storedEvents: [StoredEvent] = [
+        let storedEvents: [StoredFeatureEvent] = [
             .randomImpressionEvent(),
             .randomImpressionEvent(),
             .randomImpressionEvent()
@@ -276,9 +276,9 @@ class PaywallEventStoreTests: TestCase {
 
     func testSizeLimitKeepsLatest11Events() async {
         // Store 60 events and keep track of them
-        var allEvents: [StoredEvent] = []
+        var allEvents: [StoredFeatureEvent] = []
         for _ in 0..<60 {
-            let event = StoredEvent.randomImpressionEvent()
+            let event = StoredFeatureEvent.randomImpressionEvent()
             allEvents.append(event)
             await self.store.store(event)
         }
@@ -287,7 +287,7 @@ class PaywallEventStoreTests: TestCase {
         await self.handler.setMockedFileSizeInKB(2100)
 
         // Store one more event, which should trigger cleanup
-        let finalEvent = StoredEvent.randomImpressionEvent()
+        let finalEvent = StoredFeatureEvent.randomImpressionEvent()
         allEvents.append(finalEvent)
         await self.store.store(finalEvent)
 
@@ -307,7 +307,7 @@ class PaywallEventStoreTests: TestCase {
 // MARK: - Extensions
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-private extension PaywallEventStoreTests {
+private extension FeatureEventStoreTests {
 
     static func temporaryFolder() -> URL {
         return FileManager.default
@@ -317,7 +317,7 @@ private extension PaywallEventStoreTests {
     }
 
     func verifyEventsInStore(
-        _ store: PaywallEventStore,
+        _ store: FeatureEventStore,
         expectedCount: Int,
         file: FileString = #file,
         line: UInt = #line
@@ -371,7 +371,7 @@ extension PaywallEvent {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension StoredEvent {
+private extension StoredFeatureEvent {
 
     static func randomImpressionEvent() -> Self {
         let event = PaywallEvent.randomImpressionEvent()

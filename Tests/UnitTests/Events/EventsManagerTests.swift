@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PaywallEventsManagerTests.swift
+//  EventsManagerTests.swift
 //
 //  Created by Nacho Soto on 9/6/23.
 
@@ -19,12 +19,12 @@ import Nimble
 import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-class PaywallEventsManagerTests: TestCase {
+class EventsManagerTests: TestCase {
 
     private var api: MockInternalAPI!
     private var userProvider: MockCurrentUserProvider!
-    private var store: MockPaywallEventStore!
-    private var manager: PaywallEventsManager!
+    private var store: MockFeatureEventStore!
+    private var manager: EventsManager!
     private var appSessionID = UUID()
 
     override func setUpWithError() throws {
@@ -52,7 +52,7 @@ class PaywallEventsManagerTests: TestCase {
 
         let events = await self.store.storedEvents
         expect(events) == [
-            try createStoredEvent(from: event)
+            try createStoredFeatureEvent(from: event)
         ]
     }
 
@@ -65,8 +65,8 @@ class PaywallEventsManagerTests: TestCase {
 
         let events = await self.store.storedEvents
         expect(events) == [
-            try createStoredEvent(from: event1),
-            try createStoredEvent(from: event2)
+            try createStoredFeatureEvent(from: event1),
+            try createStoredFeatureEvent(from: event2)
         ]
     }
 
@@ -85,7 +85,7 @@ class PaywallEventsManagerTests: TestCase {
         expect(result) == 1
 
         expect(self.api.invokedPostPaywallEvents) == true
-        expect(self.api.invokedPostPaywallEventsParameters) == [[try createStoredEvent(from: event)]]
+        expect(self.api.invokedPostPaywallEventsParameters) == [[try createStoredFeatureEvent(from: event)]]
 
         await self.verifyEmptyStore()
     }
@@ -102,8 +102,8 @@ class PaywallEventsManagerTests: TestCase {
 
         expect(self.api.invokedPostPaywallEvents) == true
         expect(self.api.invokedPostPaywallEventsParameters) == [
-            [try createStoredEvent(from: event1)],
-            [try createStoredEvent(from: event2)]
+            [try createStoredFeatureEvent(from: event1)],
+            [try createStoredFeatureEvent(from: event2)]
         ]
 
         await self.verifyEmptyStore()
@@ -119,9 +119,9 @@ class PaywallEventsManagerTests: TestCase {
 
         expect(self.api.invokedPostPaywallEvents) == true
         expect(self.api.invokedPostPaywallEventsParameters) == [
-            [try createStoredEvent(from: event1)],
-            [try createStoredEvent(from: event2)],
-            [try createStoredEvent(from: event3)]
+            [try createStoredFeatureEvent(from: event1)],
+            [try createStoredFeatureEvent(from: event2)],
+            [try createStoredFeatureEvent(from: event3)]
         ]
 
         await self.verifyEmptyStore()
@@ -139,9 +139,9 @@ class PaywallEventsManagerTests: TestCase {
 
         expect(self.api.invokedPostPaywallEvents) == true
         expect(self.api.invokedPostPaywallEventsParameters) == [
-            [try createStoredEvent(from: event1), try createStoredEvent(from: event2)],
-            [try createStoredEvent(from: event3), try createStoredEvent(from: event4)],
-            [try createStoredEvent(from: event5)]
+            [try createStoredFeatureEvent(from: event1), try createStoredFeatureEvent(from: event2)],
+            [try createStoredFeatureEvent(from: event3), try createStoredFeatureEvent(from: event4)],
+            [try createStoredFeatureEvent(from: event5)]
         ]
 
         await self.verifyEmptyStore()
@@ -149,7 +149,7 @@ class PaywallEventsManagerTests: TestCase {
 
     func testFlushWithUnsuccessfulPostError() async throws {
         let event = await self.storeRandomEvent()
-        let storedEvent = try createStoredEvent(from: event)
+        let storedEvent = try createStoredFeatureEvent(from: event)
         let expectedError: NetworkError = .offlineConnection()
 
         self.api.stubbedPostPaywallEventsCompletionResult = .networkError(expectedError)
@@ -196,8 +196,8 @@ class PaywallEventsManagerTests: TestCase {
         expect(result) == 2
         expect(self.api.invokedPostPaywallEvents) == true
         expect(self.api.invokedPostPaywallEventsParameters) == [
-            [try createStoredEvent(from: event1)],
-            [try createStoredEvent(from: event2)]
+            [try createStoredFeatureEvent(from: event1)],
+            [try createStoredFeatureEvent(from: event2)]
         ]
 
         await self.verifyEmptyStore()
@@ -221,13 +221,13 @@ class PaywallEventsManagerTests: TestCase {
 
         expect(self.api.invokedPostPaywallEvents) == true
         expect(self.api.invokedPostPaywallEventsParameters) == [
-            [try createStoredEvent(from: event1)]
+            [try createStoredFeatureEvent(from: event1)]
         ]
 
         // Both events should still be in the store since the first batch failed
         await self.verifyEvents([
-            try createStoredEvent(from: event1),
-            try createStoredEvent(from: event2)
+            try createStoredFeatureEvent(from: event1),
+            try createStoredFeatureEvent(from: event2)
         ])
     }
 
@@ -245,18 +245,18 @@ class PaywallEventsManagerTests: TestCase {
 
         // Flush with batch size 2, should only send 10 batches (20 events)
         let result = try await self.manager.flushEvents(batchSize: eventsPerBatch)
-        let expectedEventsFlushed = eventsPerBatch * PaywallEventsManager.maxBatchesPerFlush
+        let expectedEventsFlushed = eventsPerBatch * EventsManager.maxBatchesPerFlush
         expect(result) == expectedEventsFlushed
 
         // Verify exactly 10 batches were sent
-        expect(self.api.invokedPostPaywallEventsParameters).to(haveCount(PaywallEventsManager.maxBatchesPerFlush))
+        expect(self.api.invokedPostPaywallEventsParameters).to(haveCount(EventsManager.maxBatchesPerFlush))
 
         // Verify the first 10 batches match expected events
-        for batchIndex in 0..<PaywallEventsManager.maxBatchesPerFlush {
+        for batchIndex in 0..<EventsManager.maxBatchesPerFlush {
             let batchStartIndex = batchIndex * eventsPerBatch
             let batchEndIndex = batchStartIndex + eventsPerBatch
             let expectedBatch = try storedEvents[batchStartIndex..<batchEndIndex].map {
-                try createStoredEvent(from: $0)
+                try createStoredFeatureEvent(from: $0)
             }
             expect(self.api.invokedPostPaywallEventsParameters[batchIndex]) == expectedBatch
         }
@@ -305,7 +305,7 @@ class PaywallEventsManagerTests: TestCase {
         expect(self.api.invokedPostPaywallEvents) == true
         expect(self.api.invokedPostPaywallEventsParameters).to(haveCount(2))
         expect(self.api.invokedPostPaywallEventsParameters.first) == [
-            try createStoredEvent(from: event1)
+            try createStoredFeatureEvent(from: event1)
         ]
 
         self.logger.verifyMessageWasLogged(
@@ -325,7 +325,7 @@ class PaywallEventsManagerTests: TestCase {
 // MARK: - Private
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-private extension PaywallEventsManagerTests {
+private extension EventsManagerTests {
 
     func storeRandomEvent() async -> PaywallEvent {
         let event: PaywallEvent = .impression(.random(), .random())
@@ -340,7 +340,7 @@ private extension PaywallEventsManagerTests {
     }
 
     func verifyEvents(
-        _ expected: [StoredEvent],
+        _ expected: [StoredFeatureEvent],
         file: FileString = #filePath,
         line: UInt = #line
     ) async {
@@ -348,7 +348,7 @@ private extension PaywallEventsManagerTests {
         expect(file: file, line: line, events) == expected
     }
 
-    func createStoredEvent(from event: PaywallEvent) throws -> StoredEvent {
+    func createStoredFeatureEvent(from event: PaywallEvent) throws -> StoredFeatureEvent {
         return try XCTUnwrap(.init(event: event,
                                    userID: Self.userID,
                                    feature: .paywalls,
@@ -358,18 +358,18 @@ private extension PaywallEventsManagerTests {
 
 }
 
-// MARK: - MockPaywallEventStore
+// MARK: - MockFeatureEventStore
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-private actor MockPaywallEventStore: PaywallEventStoreType {
+private actor MockFeatureEventStore: FeatureEventStoreType {
 
-    var storedEvents: [StoredEvent] = []
+    var storedEvents: [StoredFeatureEvent] = []
 
-    func store(_ storedEvent: StoredEvent) {
+    func store(_ storedEvent: StoredFeatureEvent) {
         self.storedEvents.append(storedEvent)
     }
 
-    func fetch(_ count: Int) -> [StoredEvent] {
+    func fetch(_ count: Int) -> [StoredFeatureEvent] {
         return Array(self.storedEvents.prefix(count))
     }
 

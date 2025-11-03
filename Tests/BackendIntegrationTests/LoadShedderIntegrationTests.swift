@@ -54,14 +54,14 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testCanPurchaseSubsPackage() async throws {
-        try await self.purchaseMonthlyOffering()
+        let data = try await self.purchaseMonthlyOffering()
 
         self.logger.verifyMessageWasLogged(
             Strings.network.request_handled_by_load_shedder(HTTPRequest.Path.postReceiptData),
             level: .debug
         )
 
-        self.verifyCustomerInfoWasNotComputedOffline(logger: self.logger)
+        self.verifyCustomerInfoWasNotComputedOffline(customerInfo: data.customerInfo)
     }
 
     func testCanPurchaseConsumablePackage() async throws {
@@ -83,7 +83,7 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
             level: .debug
         )
 
-        self.verifyCustomerInfoWasNotComputedOffline(logger: self.logger)
+        self.verifyCustomerInfoWasNotComputedOffline(customerInfo: purchaseData.customerInfo)
     }
 
     func testCanPurchaseNonConsumablePackage() async throws {

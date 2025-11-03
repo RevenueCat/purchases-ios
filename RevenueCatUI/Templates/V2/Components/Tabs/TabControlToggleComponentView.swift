@@ -107,7 +107,8 @@ struct TabControlToggleComponentView_Previews: PreviewProvider {
         component: .init(components: []),
         localizationProvider: .init(
             locale: .init(identifier: "en-US"),
-            localizedStrings: [:])
+            localizedStrings: [:]),
+        colorScheme: .light
     )
 
     static var previews: some View {
@@ -122,7 +123,8 @@ struct TabControlToggleComponentView_Previews: PreviewProvider {
                     trackColorOn: .init(light: .hex("#dedede")),
                     trackColorOff: .init(light: .hex("#bebebe"))
                 ),
-                uiConfigProvider: .init(uiConfig: PreviewMock.uiConfig)
+                uiConfigProvider: .init(uiConfig: PreviewMock.uiConfig),
+                colorScheme: .light
             ),
             onDismiss: {}
         )
@@ -149,7 +151,8 @@ struct TabControlToggleComponentView_Previews: PreviewProvider {
                     trackColorOn: .init(light: .hex("#dedede")),
                     trackColorOff: .init(light: .hex("#bebebe"))
                 ),
-                uiConfigProvider: .init(uiConfig: PreviewMock.uiConfig)
+                uiConfigProvider: .init(uiConfig: PreviewMock.uiConfig),
+                colorScheme: .light
             ),
             onDismiss: {}
         )
