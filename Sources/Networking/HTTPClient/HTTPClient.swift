@@ -267,7 +267,6 @@ internal extension HTTPClient {
 
         func getCurrentRequestURL(proxyURL: URL?) -> URL? {
             return self.httpRequest.path.url(
-                baseURL: SystemInfo.apiBaseURL,
                 proxyURL: proxyURL,
                 fallbackUrlIndex: self.fallbackUrlIndex
             )
@@ -962,10 +961,4 @@ private extension HTTPResponse where Body == Data {
         )
     }
 
-}
-
-extension HTTPRequestPath {
-    var url: URL? {
-        self.url(baseURL: SystemInfo.apiBaseURL)
-    }
 }

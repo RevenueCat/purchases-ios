@@ -1983,9 +1983,12 @@ extension Purchases {
     }
 
     // Allows overriding the API base URL. Useful for testing against alternative backends
-    @_spi(Internal) public static var apiBaseURL: URL {
+    static var apiBaseURL: URL {
         get { SystemInfo.apiBaseURL }
-        set { SystemInfo.apiBaseURL = newValue }
+        set {
+            assert(!isConfigured, "The API base URL must be set before calling Purchases.configure()")
+            SystemInfo.apiBaseURL = newValue
+        }
     }
 }
 

@@ -217,12 +217,12 @@ class HTTPRequestTests: TestCase {
     func testURLWithNoProxy() {
         let path: HTTPRequest.Path = .health
         expect(path.url?.absoluteString) == "https://api.revenuecat.com/v1/health"
-        expect(path.url(baseURL: URL(string: "https://api.revenuecat.com")!, proxyURL: nil)?.absoluteString) == "https://api.revenuecat.com/v1/health"
+        expect(path.url(proxyURL: nil)?.absoluteString) == "https://api.revenuecat.com/v1/health"
     }
 
     func testURLWithProxy() {
         let path: HTTPRequest.Path = .health
-        expect(path.url(baseURL: URL(string: "https://api.revenuecat.com")!,proxyURL: URL(string: "https://test_url"))?.absoluteString) == "https://test_url/v1/health"
+        expect(path.url(proxyURL: URL(string: "https://test_url"))?.absoluteString) == "https://test_url/v1/health"
     }
 
     func testAddNonceIfRequiredWithExistingNonceDoesNotReplaceNonce() throws {
