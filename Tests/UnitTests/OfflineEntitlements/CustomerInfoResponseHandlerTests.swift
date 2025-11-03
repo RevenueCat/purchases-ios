@@ -49,7 +49,8 @@ class NormalCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTes
             nil
         )
         expect(result).to(beSuccess())
-        expect(result.value) == Self.sampleCustomerInfo.copy(with: .verified)
+        expect(result.value) == Self.sampleCustomerInfo.copy(with: .verified, fromLoadShedder: false)
+        expect(result.value?.originalSource) == .main
 
         expect(self.factory.createRequested) == false
     }
@@ -68,7 +69,8 @@ class NormalCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTes
             nil
         )
         expect(result).to(beSuccess())
-        expect(result.value) == Self.sampleCustomerInfo.copy(with: .failed)
+        expect(result.value) == Self.sampleCustomerInfo.copy(with: .failed, fromLoadShedder: false)
+        expect(result.value?.originalSource) == .main
 
         expect(self.factory.createRequested) == false
     }
@@ -108,7 +110,8 @@ class NormalCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTes
             nil
         )
         expect(result).to(beSuccess())
-        expect(result.value) == Self.sampleCustomerInfo.copy(with: .notRequested)
+        expect(result.value) == Self.sampleCustomerInfo.copy(with: .notRequested, fromLoadShedder: false)
+        expect(result.value?.originalSource) == .main
         expect(self.factory.createRequested) == false
 
         self.logger.verifyMessageWasLogged(
@@ -196,6 +199,7 @@ class OfflineCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTe
         let result = await self.handle(.failure(error), Self.mapping)
         expect(result).to(beSuccess())
         expect(result.value) == Self.offlineCustomerInfo
+        expect(result.value?.originalSource) == .offlineEntitlements
 
         expect(self.factory.createRequested) == true
         expect(self.factory.createRequestCount) == 1

@@ -254,7 +254,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
 
         self.backend.postReceiptResult = .success(
             try CustomerInfo(data: Self.emptyCustomerInfoData)
-                .copy(with: .verifiedOnDevice)
+                .copy(with: .verifiedOnDevice, fromLoadShedder: false)
         )
 
         transaction.mockState = SKPaymentTransactionState.purchased
