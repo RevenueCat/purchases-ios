@@ -266,7 +266,11 @@ internal extension HTTPClient {
         var path: String { self.httpRequest.path.relativePath }
 
         func getCurrentRequestURL(proxyURL: URL?) -> URL? {
-            return self.httpRequest.path.url(proxyURL: proxyURL, fallbackUrlIndex: self.fallbackUrlIndex)
+            return self.httpRequest.path.url(
+                baseURL: SystemInfo.apiBaseURL,
+                proxyURL: proxyURL,
+                fallbackUrlIndex: self.fallbackUrlIndex
+            )
         }
 
         func retriedRequest() -> Self {

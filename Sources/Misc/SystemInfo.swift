@@ -73,6 +73,9 @@ class SystemInfo {
     private static let _forceUniversalAppStore: Atomic<Bool> = false
     private static let _proxyURL: Atomic<URL?> = nil
 
+    // swiftlint:disable:next force_unwrapping
+    private static let _apiBaseURL: Atomic<URL> = .init(URL(string: "https://api.revenuecat.com")!)
+
     private lazy var _isSandbox: Bool = {
         return self.sandboxEnvironmentDetector.isSandbox
     }()
@@ -156,6 +159,13 @@ class SystemInfo {
             if let privateProxyURLString = newValue?.absoluteString {
                 Logger.info(Strings.configure.configuring_purchases_proxy_url_set(url: privateProxyURLString))
             }
+        }
+    }
+
+    static var apiBaseURL: URL {
+        get { return self._apiBaseURL.value }
+        set {
+            self._apiBaseURL.value = newValue
         }
     }
 

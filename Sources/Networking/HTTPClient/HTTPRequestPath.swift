@@ -15,9 +15,6 @@ import Foundation
 
 protocol HTTPRequestPath {
 
-    /// The base URL for requests to this path.
-    static var serverHostURL: URL { get }
-
     /// The fallback URLs to use when the main server is down.
     ///
     /// Not all endpoints have a fallback URL, but some do.
@@ -48,9 +45,7 @@ extension HTTPRequestPath {
         return []
     }
 
-    var url: URL? { return self.url(proxyURL: nil) }
-
-    func url(proxyURL: URL? = nil, fallbackUrlIndex: Int? = nil) -> URL? {
+    func url(baseURL primaryBaseURL: URL, proxyURL: URL? = nil, fallbackUrlIndex: Int? = nil) -> URL? {
         let baseURL: URL
         if let proxyURL {
             // When a Proxy URL is set, we don't support fallback URLs
@@ -63,7 +58,7 @@ extension HTTPRequestPath {
         } else if let fallbackUrlIndex {
             return self.fallbackUrls[safe: fallbackUrlIndex]
         } else {
-            baseURL = Self.serverHostURL
+            baseURL = primaryBaseURL
         }
         return URL(string: self.relativePath, relativeTo: baseURL)
     }
@@ -122,9 +117,6 @@ extension HTTPRequest {
 }
 
 extension HTTPRequest.Path: HTTPRequestPath {
-
-    // swiftlint:disable:next force_unwrapping
-    static let serverHostURL = URL(string: "https://api.revenuecat.com")!
 
     private static let fallbackServerHostURL = URL(string: "https://api-production.8-lives-cat.io")
 
