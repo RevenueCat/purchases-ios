@@ -55,7 +55,10 @@ import Foundation
         return all[currentOfferingID]?.copyWith(targeting: self.targeting)
     }
 
-    internal let response: OfferingsResponse
+    internal var response: OfferingsResponse {
+        return self.contents.response
+    }
+    internal let contents: Offerings.Contents
 
     private let currentOfferingID: String?
     private let placements: Placements?
@@ -66,13 +69,13 @@ import Foundation
         currentOfferingID: String?,
         placements: Placements?,
         targeting: Targeting?,
-        response: OfferingsResponse
+        contents: Offerings.Contents
     ) {
         self.all = offerings
         self.currentOfferingID = currentOfferingID
         self.placements = placements
         self.targeting = targeting
-        self.response = response
+        self.contents = contents
     }
 
 }
@@ -172,4 +175,82 @@ private extension Offering {
                         webCheckoutUrl: self.webCheckoutUrl
         )
     }
+}
+
+extension Offerings {
+
+    /// Internal enum representing the original source of the ``OfferingsResponse`` object.
+    enum OriginalSource: String, Codable {
+        /// Main server
+        case main
+
+        /// Load shedder server
+        case loadShedder = "load_shedder"
+
+        /// Fallback URL server
+        case fallbackUrl = "fallback_url"
+
+        init(fromFallbackUrl: Bool, fromLoadShedder: Bool) {
+            if fromFallbackUrl {
+                self = .fallbackUrl
+            } else if fromLoadShedder {
+                self = .loadShedder
+            } else {
+                self = .main
+            }
+        }
+    }
+
+}
+
+extension Offerings {
+
+    /// The actual contents of a ``Offerings``: the offerings response and other SDK-generated metadata.
+    struct Contents {
+        var response: OfferingsResponse
+        var originalSource: Offerings.OriginalSource
+        var loadedFromCache: Bool = false
+
+        init(response: OfferingsResponse, fromFallbackUrl: Bool, fromLoadShedder: Bool) {
+            self.response = response
+            self.originalSource = Offerings.OriginalSource(fromFallbackUrl: fromFallbackUrl,
+                                                           fromLoadShedder: fromLoadShedder)
+        }
+
+        /// Creates a copy of this ``CustomerInfo`` setting the `isLoadedFromCache` flag  to `true`.
+        func copyWithLoadedFromCache() -> Self {
+            guard !self.loadedFromCache else { return self }
+
+            var copy = self
+            copy.loadedFromCache = true
+            return copy
+        }
+    }
+}
+
+/// `Codable` implementation that puts the content of`response` and `originalSource`
+/// at the same level instead of nested.
+extension Offerings.Contents: Codable {
+
+    private enum CodingKeys: String, CodingKey {
+
+        case response
+        case originalSource
+
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try self.response.encode(to: encoder)
+        try container.encode(self.originalSource, forKey: .originalSource)
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        self.response = try OfferingsResponse(from: decoder)
+        self.originalSource = try container.decodeIfPresent(Offerings.OriginalSource.self,
+                                                            forKey: .originalSource) ?? .main
+    }
+
 }

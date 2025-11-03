@@ -17,7 +17,7 @@ class OfferingsAPI {
 
     typealias IntroEligibilityResponseHandler = ([String: IntroEligibility], BackendError?) -> Void
     typealias OfferSigningResponseHandler = Backend.ResponseHandler<PostOfferForSigningOperation.SigningData>
-    typealias OfferingsResponseHandler = Backend.ResponseHandler<OfferingsResponse>
+    typealias OfferingsResponseHandler = Backend.ResponseHandler<Offerings.Contents>
     typealias WebOfferingProductsResponseHandler = Backend.ResponseHandler<WebOfferingProductsResponse>
 
     private let offeringsCallbacksCache: CallbackCache<OfferingsCallback>

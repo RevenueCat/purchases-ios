@@ -120,8 +120,8 @@ class OfferingsManager {
         let preferredLocales = systemInfo.preferredLocales
         self.backend.offerings.getOfferings(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded) { result in
             switch result {
-            case let .success(response):
-                self.handleOfferingsBackendResult(with: response,
+            case let .success(contents):
+                self.handleOfferingsBackendResult(with: contents,
                                                   appUserID: appUserID,
                                                   fetchPolicy: fetchPolicy,
                                                   preferredLocales: preferredLocales,
@@ -195,14 +195,14 @@ private extension OfferingsManager {
         fetchPolicy: FetchPolicy,
         completion: (@escaping @Sendable (OfferingsResultData?) -> Void)
     ) {
-        guard let data = self.deviceCache.cachedOfferingsResponseData(appUserID: appUserID),
-              let response: OfferingsResponse = try? JSONDecoder.default.decode(jsonData: data, logErrors: true) else {
+        guard let data = self.deviceCache.cachedOfferingsContentsData(appUserID: appUserID),
+              let contents: Offerings.Contents = try? JSONDecoder.default.decode(jsonData: data, logErrors: true) else {
             completion(nil)
             return
         }
 
         self.createOfferings(
-            from: response,
+            from: contents.copyWithLoadedFromCache(),
             fetchPolicy: fetchPolicy,
             completion: { [cache = self.deviceCache] result in
                 switch result {
@@ -223,11 +223,11 @@ private extension OfferingsManager {
     }
 
     func createOfferings(
-        from response: OfferingsResponse,
+        from contents: Offerings.Contents,
         fetchPolicy: FetchPolicy,
         completion: @escaping (@Sendable (Result<OfferingsResultData, Error>) -> Void)
     ) {
-        let productIdentifiers = response.productIdentifiers
+        let productIdentifiers = contents.response.productIdentifiers
 
         guard !productIdentifiers.isEmpty else {
             let errorMessage = Strings.offering.configuration_error_no_products_for_offering.description
@@ -235,7 +235,7 @@ private extension OfferingsManager {
             return
         }
 
-        self.fetchProducts(withIdentifiers: productIdentifiers, fromResponse: response) { result in
+        self.fetchProducts(withIdentifiers: productIdentifiers, fromResponse: contents.response) { result in
             let products = result.value ?? []
 
             guard products.isEmpty == false else {
@@ -264,7 +264,7 @@ private extension OfferingsManager {
                 }
             }
 
-            if let createdOfferings = self.offeringsFactory.createOfferings(from: productsByID, data: response) {
+            if let createdOfferings = self.offeringsFactory.createOfferings(from: productsByID, contents: contents) {
                 completion(.success(OfferingsResultData(offerings: createdOfferings,
                                                         requestedProductIds: productIdentifiers,
                                                         notFoundProductIds: missingProductIDs)))
@@ -275,13 +275,13 @@ private extension OfferingsManager {
     }
 
     func handleOfferingsBackendResult(
-        with response: OfferingsResponse,
+        with contents: Offerings.Contents,
         appUserID: String,
         fetchPolicy: FetchPolicy,
         preferredLocales: [String],
         completion: (@MainActor @Sendable (Result<OfferingsResultData, Error>) -> Void)?
     ) {
-        self.createOfferings(from: response, fetchPolicy: fetchPolicy) { result in
+        self.createOfferings(from: contents, fetchPolicy: fetchPolicy) { result in
             switch result {
             case let .success(offeringsResultData):
                 Logger.rcSuccess(Strings.offering.offerings_stale_updated_from_network)

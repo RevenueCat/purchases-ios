@@ -73,7 +73,11 @@ private extension GetOfferingsOperation {
 
             self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
                 callbackObject.completion(response
-                    .map { $0.body }
+                    .map {
+                        Offerings.Contents(response: $0.body,
+                                           fromFallbackUrl: $0.isFallbackUrlResponse,
+                                           fromLoadShedder: $0.isLoadShedderResponse)
+                    }
                     .mapError(BackendError.networkError)
                 )
             }
