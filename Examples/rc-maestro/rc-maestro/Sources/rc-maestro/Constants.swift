@@ -44,10 +44,24 @@ enum Constants {
         guard let value = Bundle.main.object(forInfoDictionaryKey: "REVENUECAT_FORCE_SERVER_ERROR_STRATEGY") as? String else {
             return .never
         }
-        
+
         return ForceServerErrorStrategy(rawValue: value) ?? .never
     }
-    
+
+    /*
+     The API base URL to configure SystemInfo with
+     To be used in (e2e) tests in order to test against different environments
+     REVENUECAT_API_HOST = api-staging.revenuecat.com
+     */
+    static var apiBaseURL: URL? {
+        guard let host = Bundle.main.object(forInfoDictionaryKey: "REVENUECAT_API_HOST") as? String,
+              !host.isEmpty,
+              let url = URL(string: "https://" + host) else {
+            return nil
+        }
+        return url
+    }
+
     enum ForceServerErrorStrategy: String {
         case primaryDomainDown = "primary_domain_down"
         case never

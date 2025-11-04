@@ -508,6 +508,10 @@ commands:
         enum: ["never", "primary_domain_down"]
         default: "never"
         description: "Server error strategy for testing fallback behavior"
+      api_host:
+        type: string
+        default: ""
+        description: "Optional API host for testing (e.g., 'api-staging.revenuecat.com')"
       proxy_url_scheme:
         type: string
         default: ""
@@ -526,6 +530,9 @@ commands:
               echo ""
               echo "REVENUECAT_API_KEY = << parameters.api_key >>"
               echo "REVENUECAT_FORCE_SERVER_ERROR_STRATEGY = << parameters.force_server_error_strategy >>"
+              if [ -n "<< parameters.api_host >>" ]; then
+                echo "REVENUECAT_API_HOST = << parameters.api_host >>"
+              fi
               if [ -n "<< parameters.proxy_url_scheme >>" ]; then
                 echo "REVENUECAT_PROXY_URL_SCHEME = << parameters.proxy_url_scheme >>"
               fi
@@ -1211,15 +1218,15 @@ jobs:
             equal: [ "load_shedder_primary", << parameters.backend_environment >> ]
           steps:
             - setup_xcconfig:
-                api_key: ${RC_E2E_TEST_API_KEY_LOAD_SHEDDER_APP_STORE}
+                api_key: ${RC_E2E_TEST_API_KEY_PRODUCTION_APP_STORE}
+                api_host: https://fortress-us-east-1.revenuecat.com
       - when:
           condition:
             equal: [ "load_shedder_secondary", << parameters.backend_environment >> ]
           steps:
             - setup_xcconfig:
-                api_key: ${RC_E2E_TEST_API_KEY_LOAD_SHEDDER_APP_STORE}
-                proxy_url_scheme: https
-                proxy_url_host: fortress-us-east-2.revenuecat.com
+                api_key: ${RC_E2E_TEST_API_KEY_PRODUCTION_APP_STORE}
+                api_host: https://fortress-us-east-2.revenuecat.com
       - when:
           condition:
             equal: [ "fallback", << parameters.backend_environment >> ]

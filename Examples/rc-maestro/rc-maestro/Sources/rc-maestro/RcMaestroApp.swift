@@ -7,7 +7,12 @@ struct RcMaestroApp: App {
     init() {
         Purchases.logLevel = .verbose
         Purchases.proxyURL = Constants.proxyURL.flatMap { URL(string: $0) }
-        
+
+        // Set API base URL if provided (used in E2E tests)
+        if let apiBaseURL = Constants.apiBaseURL {
+            SystemInfo.apiBaseURL = apiBaseURL
+        }
+
         // Used in E2E tests
         Purchases.configure(
             with: .builder(withAPIKey: Constants.apiKey)
