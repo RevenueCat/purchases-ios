@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  MockPaywallEventsManager.swift
+//  MockEventsManager.swift
 //
 //  Created by Nacho Soto on 9/6/23.
 
@@ -15,7 +15,7 @@ import Foundation
 @testable import RevenueCat
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-actor MockPaywallEventsManager: PaywallEventsManagerType {
+actor MockEventsManager: EventsManagerType {
 
     var trackedEvents: [FeatureEvent] = []
 
@@ -23,10 +23,16 @@ actor MockPaywallEventsManager: PaywallEventsManagerType {
         self.trackedEvents.append(featureEvent)
     }
 
+    #if ENABLE_AD_EVENTS_TRACKING
+    func track(adEvent: AdEvent) async {
+        // Not implemented in mock
+    }
+    #endif
+
     var invokedFlushEvents = false
     var invokedFlushEventsCount = 0
 
-    func flushEvents(batchSize: Int) async -> Int {
+    func flushEvents(batchSize: Int) async throws -> Int {
         self.invokedFlushEvents = true
         self.invokedFlushEventsCount += 1
 

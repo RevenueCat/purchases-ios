@@ -32,7 +32,7 @@ extension Shape {
             if color.hasError {
                 self.fill()
             } else {
-                self.fill(color.toDynamicColor())
+                self.fill(color.toDynamicColor(with: colorScheme))
             }
         case .linear(let degrees, _):
             self.fill(

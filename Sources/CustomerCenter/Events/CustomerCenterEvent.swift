@@ -214,7 +214,7 @@ extension CustomerCenterBaseData: Equatable, Codable, Sendable {}
 
 extension CustomerCenterAnswerSubmittedEvent.Data: Equatable, Codable, Sendable {
 
-    // These keys are used for `StoredEvent` only
+    // These keys are used for `StoredFeatureEvent` only
     private enum CodingKeys: String, CodingKey {
 
         case base

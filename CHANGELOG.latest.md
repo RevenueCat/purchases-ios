@@ -1,12 +1,15 @@
 ## RevenueCat SDK
+### ✨ New Features
+* Add PurchaseParams method to set the quantity of products to purchase (#5730) via Mark Villacampa (@MarkVillacampa)
 ### 🐞 Bugfixes
-* Naive approach to handle the onPurchaseCompleted event for an offer code (#5655) via Jacob Rakidzich (@JZDesign)
-* Fix: Promo/Intro Offer Text not always displaying (#5660) via Jacob Rakidzich (@JZDesign)
-* Support Video as the hero component (#5684) via Jacob Rakidzich (@JZDesign)
-* Fix `FileHandler`'s potential crash on writing (#5675) via Antonio Pallares (@ajpallares)
-### Paywallv2
-#### ✨ New Features
-* MON-736 Gradient Borders (#5651) via Jacob Rakidzich (@JZDesign)
+* Dynamic Color by injecting the color scheme (#5706) via Jacob Rakidzich (@JZDesign)
+
+## RevenueCatUI SDK
+### Customer Center
+#### 🐞 Bugfixes
+* fix: Remove best effort renewal for Purchases in CustomerCenter (#5720) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* Add Loadshedder integration tests for v4 (#5689) via Antonio Pallares (@ajpallares)
+* Removed unused and deprecated CircleCI config values (#5731) via Rick (@rickvdl)
+* Refactor: Rename and reorganize FeatureEvents test files (#5728) via Pol Miro (@polmiro)
+* Refactor: Rename PaywallEventsManager to EventsManager and separate ad events (#5718) via Pol Miro (@polmiro)
