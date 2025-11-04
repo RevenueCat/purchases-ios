@@ -76,7 +76,8 @@ internal actor AdEventStore: AdEventStoreType {
     }
 
     // - Note: If removing these `count` events fails, it will attempt to
-    // remove the entire file. This ensures that the same events again aren't sent again.
+    // remove the entire file. This ensures that the same events again aren't sent again,
+    // but might mean that some events are not sent at all.
     func clear(_ count: Int) async {
         assert(count > 0, "Invalid count: \(count)")
 
