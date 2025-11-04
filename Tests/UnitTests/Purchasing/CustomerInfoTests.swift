@@ -965,10 +965,19 @@ class BasicCustomerInfoTests: TestCase {
     }
 
     func testOriginalSourceIsOfflineEntitlementsForVerifiedOnDevice() {
+        let offlineInfo = self.customerInfo.copy(with: .verifiedOnDevice, httpResponseSource: nil)
+        expect(offlineInfo.originalSource) == .offlineEntitlements
+
+        let offlineInfoWithLoadShedder = self.customerInfo.copy(with: .verifiedOnDevice,
+                                                                httpResponseSource: .loadShedder)
+        expect(offlineInfoWithLoadShedder.originalSource) == .offlineEntitlements
+    }
+
+    func testOriginalSourceIsOfflineEntitlementsForVerifiedOnDeviceEvenIfHttpResponseSourceSet() {
         let offlineInfo = self.customerInfo.copy(with: .verifiedOnDevice, httpResponseSource: .mainServer)
         expect(offlineInfo.originalSource) == .offlineEntitlements
 
-        // Even if fromLoadShedder is true, verifiedOnDevice should take precedence
+        // Even if httpResponseSource is set, verifiedOnDevice should take precedence
         let offlineInfoWithLoadShedder = self.customerInfo.copy(with: .verifiedOnDevice,
                                                                 httpResponseSource: .loadShedder)
         expect(offlineInfoWithLoadShedder.originalSource) == .offlineEntitlements
