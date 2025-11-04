@@ -726,7 +726,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         expect(self.eTagManager.invokedHTTPResultFromCacheOrBackendCount) == 1
     }
 
-    func testResponseSourceIsLoadShedderWhenHeaderIsTrue() throws {
+    func testResponseOriginalSourceIsLoadShedderWhenHeaderIsTrue() throws {
         let request = HTTPRequest(method: .get, path: .mockPath)
         let responseData = "{\"message\": \"something is great up in the cloud\"}".asData
         let eTag = "etag"
@@ -750,10 +750,10 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
 
         expect(result).toNot(beNil())
         expect(result).to(beSuccess())
-        expect(result?.value?.source) == .loadShedder
+        expect(result?.value?.originalSource) == .loadShedder
     }
 
-    func testResponseSourceIsNotLoadShedderWhenHeaderIsNotTrue() throws {
+    func testResponseOriginalSourceIsNotLoadShedderWhenHeaderIsNotTrue() throws {
         let request = HTTPRequest(method: .get, path: .mockPath)
         let responseData = "{\"message\": \"something is great up in the cloud\"}".asData
 
@@ -775,10 +775,10 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
 
         expect(result).toNot(beNil())
         expect(result).to(beSuccess())
-        expect(result?.value?.source) != .loadShedder
+        expect(result?.value?.originalSource) != .loadShedder
     }
 
-    func testResponseSourceIsNotLoadShedderWhenHeaderIsMissing() throws {
+    func testResponseOriginalSourceIsNotLoadShedderWhenHeaderIsMissing() throws {
         let request = HTTPRequest(method: .get, path: .mockPath)
         let responseData = "{\"message\": \"something is great up in the cloud\"}".asData
 
@@ -798,10 +798,10 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
 
         expect(result).toNot(beNil())
         expect(result).to(beSuccess())
-        expect(result?.value?.source) != .loadShedder
+        expect(result?.value?.originalSource) != .loadShedder
     }
 
-    func testResponseSourceIsFallbackUrlWhenUsingFallbackHost() throws {
+    func testResponseOriginalSourceIsFallbackUrlWhenUsingFallbackHost() throws {
         let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
         let responseData = "{\"mapping\": {}}".asData
 
@@ -833,10 +833,10 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
 
         expect(result).toNot(beNil())
         expect(result).to(beSuccess())
-        expect(result?.value?.source) == .fallbackUrl
+        expect(result?.value?.originalSource) == .fallbackUrl
     }
 
-    func testResponseSourceIsNotFallbackUrlWhenNotUsingFallbackHost() throws {
+    func testResponseOriginalSourceIsNotFallbackUrlWhenNotUsingFallbackHost() throws {
         let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
         let responseData = "{\"mapping\": {}}".asData
 
@@ -856,10 +856,10 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
 
         expect(result).toNot(beNil())
         expect(result).to(beSuccess())
-        expect(result?.value?.source) != .fallbackUrl
+        expect(result?.value?.originalSource) != .fallbackUrl
     }
 
-    func testResponseSourceIsFallbackUrlWhenBothLoadShedderAndFallbackUrlAreTrue() throws {
+    func testResponseOriginalSourceIsFallbackUrlWhenBothLoadShedderAndFallbackUrlAreTrue() throws {
         let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
         let responseData = "{\"mapping\": {}}".asData
 
@@ -893,7 +893,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
 
         expect(result).toNot(beNil())
         expect(result).to(beSuccess())
-        expect(result?.value?.source) == .fallbackUrl
+        expect(result?.value?.originalSource) == .fallbackUrl
     }
 
     func testLogsMessageWhenWhenBothLoadShedderAndFallbackUrlAreTrue() throws {
@@ -1592,7 +1592,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         expect(response?.value?.requestDate).to(beCloseToDate(requestDate))
         expect(response?.value?.verificationResult) == .notRequested
         expect(response?.value?.responseHeaders.keys).to(contain(Array(headers.keys.map(AnyHashable.init))))
-        expect(response?.value?.source) == .fallbackUrl
+        expect(response?.value?.originalSource) == .fallbackUrl
 
         expect(self.eTagManager.invokedETagHeaderParametersList).to(haveCount(1))
     }
