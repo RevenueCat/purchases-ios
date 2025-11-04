@@ -453,7 +453,7 @@ private extension BaseCustomerInfoResponseHandlerTests {
             "original_app_user_id": "nacho2",
             "other_purchases": [:] as [String: Any]
         ] as [String: Any]
-    ])!
+    ])!.copy(with: .verifiedOnDevice, fromLoadShedder: false)
 
 }
 
