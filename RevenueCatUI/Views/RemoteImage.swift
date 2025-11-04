@@ -278,7 +278,8 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
             }
         }
         .transition(self.transition)
-        .task(id: self.url) { // This cancels the previous task when the URL changes.
+        // This cancels the previous task when the URL or color scheme change, ensuring a proper update of the UI
+        .task(id: "\(self.url)\(self.colorScheme)") {
             #if DEBUG
             // Don't attempt to load if local image
             // This is used for paywall screenshot validation
