@@ -854,7 +854,7 @@ private extension DeviceCacheTests {
                                                                      placements: nil,
                                                                      targeting: nil,
                                                                      uiConfig: nil),
-                                         httpResponseSource: .mainServer)
+                                         httpResponseOriginalSource: .mainServer)
         )
     }
 
@@ -874,7 +874,7 @@ private extension Offerings {
             targeting: nil,
             uiConfig: nil
         ),
-                                     httpResponseSource: .mainServer)
+                                     httpResponseOriginalSource: .mainServer)
     )
 
 }

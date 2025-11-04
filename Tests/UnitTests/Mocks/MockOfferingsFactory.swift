@@ -25,7 +25,7 @@ class MockOfferingsFactory: OfferingsFactory {
                              placements: nil,
                              targeting: nil,
                              contents: Offerings.Contents(response: response,
-                                                          httpResponseSource: .mainServer))
+                                                          httpResponseOriginalSource: .mainServer))
         }
         if nilOfferings {
             return nil
@@ -80,6 +80,6 @@ extension OfferingsResponse {
 
 extension Offerings.Contents {
 
-    static let mockContents: Self = .init(response: .mockResponse, httpResponseSource: .mainServer)
+    static let mockContents: Self = .init(response: .mockResponse, httpResponseOriginalSource: .mainServer)
 
 }

@@ -143,7 +143,7 @@ class OfferingsTests: TestCase {
         let offerings = self.offeringsFactory.createOfferings(
             from: [:],
             contents: Offerings.Contents(response: response,
-                                         httpResponseSource: .mainServer)
+                                         httpResponseOriginalSource: .mainServer)
         )
 
         expect(offerings).to(beNil())
@@ -189,7 +189,7 @@ class OfferingsTests: TestCase {
             self.offeringsFactory.createOfferings(
                 from: products,
                 contents: Offerings.Contents(response: response,
-                                             httpResponseSource: .mainServer)
+                                             httpResponseOriginalSource: .mainServer)
             )
         )
 
@@ -259,7 +259,7 @@ class OfferingsTests: TestCase {
             self.offeringsFactory.createOfferings(
                 from: products,
                 contents: Offerings.Contents(response: response,
-                                             httpResponseSource: .mainServer)
+                                             httpResponseOriginalSource: .mainServer)
             )
         )
 
@@ -342,7 +342,7 @@ class OfferingsTests: TestCase {
             self.offeringsFactory.createOfferings(
                 from: products,
                 contents: Offerings.Contents(response: response,
-                                             httpResponseSource: .mainServer)
+                                             httpResponseOriginalSource: .mainServer)
             )
         )
 
@@ -382,7 +382,7 @@ class OfferingsTests: TestCase {
             self.offeringsFactory.createOfferings(
                 from: products,
                 contents: Offerings.Contents(response: response,
-                                             httpResponseSource: .mainServer)
+                                             httpResponseOriginalSource: .mainServer)
             )
         )
 
@@ -465,7 +465,7 @@ class OfferingsTests: TestCase {
             self.offeringsFactory.createOfferings(
                 from: products,
                 contents: Offerings.Contents(response: response,
-                                             httpResponseSource: .mainServer)
+                                             httpResponseOriginalSource: .mainServer)
             )
         )
 
@@ -583,7 +583,7 @@ class OfferingsTests: TestCase {
         let offerings = self.offeringsFactory.createOfferings(
             from: [:],
             contents: Offerings.Contents(response: offeringsResponse,
-                                         httpResponseSource: .mainServer)
+                                         httpResponseOriginalSource: .mainServer)
         )
 
         expect(offerings).to(beNil())
@@ -615,7 +615,7 @@ class OfferingsTests: TestCase {
         let offerings = try XCTUnwrap(
             self.offeringsFactory.createOfferings(from: storeProductsByID,
                                                   contents: Offerings.Contents(response: response,
-                                                                               httpResponseSource: .mainServer))
+                                                                               httpResponseOriginalSource: .mainServer))
         )
 
         expect(offerings.current).to(beNil())
@@ -762,7 +762,7 @@ class OfferingsTests: TestCase {
     func testOfferingsContentsInitFromMainServer() throws {
         let offeringResp: OfferingsResponse = try BaseHTTPResponseTest.decodeFixture("OfferingsWithPaywallComponents")
         let contents = Offerings.Contents(response: offeringResp,
-                                          httpResponseSource: .mainServer)
+                                          httpResponseOriginalSource: .mainServer)
         expect(contents.originalSource) == .main
         expect(contents.loadedFromCache) == false
     }
@@ -770,7 +770,7 @@ class OfferingsTests: TestCase {
     func testOfferingsContentsInitFromFallbackUrl() throws {
         let offeringResp: OfferingsResponse = try BaseHTTPResponseTest.decodeFixture("OfferingsWithPaywallComponents")
         let contents = Offerings.Contents(response: offeringResp,
-                                          httpResponseSource: .fallbackUrl)
+                                          httpResponseOriginalSource: .fallbackUrl)
         expect(contents.originalSource) == .fallbackUrl
         expect(contents.loadedFromCache) == false
     }
@@ -778,7 +778,7 @@ class OfferingsTests: TestCase {
     func testOfferingsContentsInitFromLoadShedder() throws {
         let offeringResp: OfferingsResponse = try BaseHTTPResponseTest.decodeFixture("OfferingsWithPaywallComponents")
         let contents = Offerings.Contents(response: offeringResp,
-                                          httpResponseSource: .loadShedder)
+                                          httpResponseOriginalSource: .loadShedder)
         expect(contents.originalSource) == .loadShedder
         expect(contents.loadedFromCache) == false
     }
@@ -786,7 +786,7 @@ class OfferingsTests: TestCase {
     func testOfferingsContentsCopyWithLoadedFromCache() throws {
         let offeringResp: OfferingsResponse = try BaseHTTPResponseTest.decodeFixture("OfferingsWithPaywallComponents")
         let contents = Offerings.Contents(response: offeringResp,
-                                          httpResponseSource: .mainServer)
+                                          httpResponseOriginalSource: .mainServer)
         expect(contents.loadedFromCache) == false
 
         let copyFromCache = contents.copyWithLoadedFromCache()
@@ -796,7 +796,7 @@ class OfferingsTests: TestCase {
     func testOfferingsContentsCopyWithLoadedFromCacheIsIdempotent() throws {
         let offeringResp: OfferingsResponse = try BaseHTTPResponseTest.decodeFixture("OfferingsWithPaywallComponents")
         let contents = Offerings.Contents(response: offeringResp,
-                                          httpResponseSource: .mainServer)
+                                          httpResponseOriginalSource: .mainServer)
         expect(contents.loadedFromCache) == false
 
         let copyFromCache = contents.copyWithLoadedFromCache()
@@ -845,7 +845,7 @@ private extension OfferingsTests {
             offeringsFactory.createOfferings(
                 from: products,
                 contents: Offerings.Contents(response: response,
-                                             httpResponseSource: .mainServer)
+                                             httpResponseOriginalSource: .mainServer)
             )
         )
 

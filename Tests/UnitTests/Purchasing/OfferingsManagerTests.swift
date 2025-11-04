@@ -175,7 +175,7 @@ extension OfferingsManagerTests {
                                                placements: nil,
                                                targeting: nil,
                                                uiConfig: nil),
-                               httpResponseSource: .mainServer)
+                               httpResponseOriginalSource: .mainServer)
             )
         self.mockOfferingsFactory.emptyOfferings = true
 
@@ -230,7 +230,7 @@ extension OfferingsManagerTests {
                                                placements: nil,
                                                targeting: nil,
                                                uiConfig: nil),
-                               httpResponseSource: .mainServer)
+                               httpResponseOriginalSource: .mainServer)
         )
         self.mockOfferingsFactory.emptyOfferings = true
 
@@ -737,7 +737,7 @@ private extension OfferingsManagerTests {
                 targeting: nil,
                 uiConfig: nil
             ),
-            httpResponseSource: .mainServer
+            httpResponseOriginalSource: .mainServer
         )
         static let backendOfferingsContentsWithUnknownProducts = Offerings.Contents(
             response: .init(
@@ -759,7 +759,7 @@ private extension OfferingsManagerTests {
                 targeting: nil,
                 uiConfig: nil
             ),
-            httpResponseSource: .mainServer
+            httpResponseOriginalSource: .mainServer
         )
         static let unexpectedBackendResponseError: BackendError = .unexpectedBackendResponse(
             .customerInfoNil
