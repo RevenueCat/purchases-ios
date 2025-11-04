@@ -1417,9 +1417,25 @@ jobs:
           test_plan: "BackendIntegrationTests-All-CI"
 
   loadshedder-integration-tests:
+    parameters:
+      backend:
+        type: enum
+        enum: ["load_shedder_us_east_1", "load_shedder_us_east_2"]
+        default: "load_shedder_us_east_1"
     executor:
       name: macos-executor
     steps:
+      - run:
+          name: Set API base URL
+          command: |
+            case "<< parameters.backend >>" in
+              "load_shedder_us_east_1")
+                echo 'export REVENUECAT_API_BASE_URL="https://fortress-us-east-1.revenuecat.com"' >> $BASH_ENV
+                ;;
+              "load_shedder_us_east_2")
+                echo 'export REVENUECAT_API_BASE_URL="https://fortress-us-east-2.revenuecat.com"' >> $BASH_ENV
+                ;;
+            esac
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-LoadShedder"
       - slack-notify-on-fail
@@ -1670,6 +1686,13 @@ workflows:
           context:
             - slack-secrets
       - loadshedder-integration-tests:
+          name: loadshedder-integration-tests-load-shedder-us-east-1
+          backend: "load_shedder_us_east_1"
+          context:
+            - slack-secrets
+      - loadshedder-integration-tests:
+          name: loadshedder-integration-tests-load-shedder-us-east-2
+          backend: "load_shedder_us_east_2"
           context:
             - slack-secrets
       - integration-tests-all
@@ -1739,6 +1762,13 @@ workflows:
           context:
             - slack-secrets-ios
       - loadshedder-integration-tests:
+          name: loadshedder-integration-tests-load-shedder-us-east-1
+          backend: "load_shedder_us_east_1"
+          context:
+            - slack-secrets-ios
+      - loadshedder-integration-tests:
+          name: loadshedder-integration-tests-load-shedder-us-east-2
+          backend: "load_shedder_us_east_2"
           context:
             - slack-secrets-ios
       - build-tv-watch-and-macos:
