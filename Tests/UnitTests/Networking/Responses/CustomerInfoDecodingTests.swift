@@ -226,13 +226,13 @@ class CustomerInfoVersion2DecodingTests: BaseHTTPResponseTest {
     }
 
     func testVerificationIsEncoded() throws {
-        let reencoded = try self.customerInfo.copy(with: .verified, fromLoadShedder: false).encodeAndDecode()
+        let reencoded = try self.customerInfo.copy(with: .verified, httpResponseSource: .mainServer).encodeAndDecode()
 
         expect(reencoded.entitlements.verification) == .verified
     }
 
     func testFailedVerificationIsEncoded() throws {
-        let reencoded = try self.customerInfo.copy(with: .failed, fromLoadShedder: false).encodeAndDecode()
+        let reencoded = try self.customerInfo.copy(with: .failed, httpResponseSource: .mainServer).encodeAndDecode()
 
         expect(reencoded.entitlements.verification) == .failed
     }
@@ -265,17 +265,17 @@ class CustomerInfoEncodingTests: BaseHTTPResponseTest {
     }
 
     func testEncodingWithVerifiedResponse() {
-        assertSnapshot(matching: self.customerInfo.copy(with: .verified, fromLoadShedder: false),
+        assertSnapshot(matching: self.customerInfo.copy(with: .verified, httpResponseSource: .mainServer),
                        as: .backwardsCompatibleFormattedJson)
     }
 
     func testEncodingWithFailedVerificationResponse() {
-        assertSnapshot(matching: self.customerInfo.copy(with: .failed, fromLoadShedder: false),
+        assertSnapshot(matching: self.customerInfo.copy(with: .failed, httpResponseSource: .mainServer),
                        as: .backwardsCompatibleFormattedJson)
     }
 
     func testEncodingLoadShedderResponse() throws {
-        assertSnapshot(matching: self.customerInfo.copy(with: .failed, fromLoadShedder: true),
+        assertSnapshot(matching: self.customerInfo.copy(with: .failed, httpResponseSource: .loadShedder),
                        as: .backwardsCompatibleFormattedJson)
     }
 

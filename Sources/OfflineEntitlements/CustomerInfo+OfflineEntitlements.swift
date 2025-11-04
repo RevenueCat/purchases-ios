@@ -48,7 +48,7 @@ extension CustomerInfo {
             response: content,
             entitlementVerification: Self.verification,
             sandboxEnvironmentDetector: sandboxEnvironmentDetector,
-            fromLoadShedder: false
+            httpResponseSource: nil
         )
     }
 

@@ -87,7 +87,7 @@ private extension LogInOperation {
             .map { response in
                 (
                     response.body.copy(with: response.verificationResult,
-                                       fromLoadShedder: response.isLoadShedderResponse),
+                                       httpResponseSource: response.source),
                     created: response.httpStatusCode == .createdSuccess
                 )
             }

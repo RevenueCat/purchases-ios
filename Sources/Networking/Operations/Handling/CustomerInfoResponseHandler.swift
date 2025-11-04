@@ -50,7 +50,7 @@ class CustomerInfoResponseHandler {
                 }
 
                 return response.body.customerInfo.copy(with: response.verificationResult,
-                                                       fromLoadShedder: response.isLoadShedderResponse)
+                                                       httpResponseSource: response.source)
             }
             .mapError(BackendError.networkError)
 

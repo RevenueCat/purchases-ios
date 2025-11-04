@@ -516,7 +516,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
 
     func testCachesCustomerInfoWithVerifiedEntitlements() throws {
         let appUserID = "myUser"
-        let info = self.mockCustomerInfo.copy(with: .verified, fromLoadShedder: false)
+        let info = self.mockCustomerInfo.copy(with: .verified, httpResponseSource: .mainServer)
 
         self.customerInfoManager.cache(customerInfo: info, appUserID: appUserID)
 
@@ -528,7 +528,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
 
     func testCachesCustomerInfoWithEntitlementVerificationNotRequested() throws {
         let appUserID = "myUser"
-        let info = self.mockCustomerInfo.copy(with: .notRequested, fromLoadShedder: false)
+        let info = self.mockCustomerInfo.copy(with: .notRequested, httpResponseSource: .mainServer)
 
         self.customerInfoManager.cache(customerInfo: info, appUserID: appUserID)
 
@@ -540,7 +540,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
 
     func testCachesCustomerInfoWithFailedVerification() throws {
         let appUserID = "myUser"
-        let info = self.mockCustomerInfo.copy(with: .failed, fromLoadShedder: false)
+        let info = self.mockCustomerInfo.copy(with: .failed, httpResponseSource: .mainServer)
 
         self.customerInfoManager.cache(customerInfo: info, appUserID: appUserID)
 
@@ -552,7 +552,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
 
     func testDoesNotCacheCustomerInfoWithLocalEntitlements() throws {
         let appUserID = "myUser"
-        let info = self.mockCustomerInfo.copy(with: .verifiedOnDevice, fromLoadShedder: false)
+        let info = self.mockCustomerInfo.copy(with: .verifiedOnDevice, httpResponseSource: nil)
 
         self.customerInfoManager.cache(customerInfo: info, appUserID: appUserID)
 
@@ -591,7 +591,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
     }
 
     func testCacheCustomerInfoSendsToDelegateWhenComputedOnDevice() {
-        let info = self.mockCustomerInfo.copy(with: .verifiedOnDevice, fromLoadShedder: false)
+        let info = self.mockCustomerInfo.copy(with: .verifiedOnDevice, httpResponseSource: nil)
 
         self.customerInfoManager.cache(customerInfo: info, appUserID: "myUser")
         expect(self.customerInfoManagerChangesCallCount).toEventually(equal(1))
@@ -600,8 +600,8 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
     }
 
     func testCacheCustomerInfoSendsToDelegateAfterCachingComputedOnDevice() {
-        let info1 = self.mockCustomerInfo.copy(with: .verifiedOnDevice, fromLoadShedder: false)
-        let info2 = self.mockCustomerInfo2.copy(with: .verifiedOnDevice, fromLoadShedder: false)
+        let info1 = self.mockCustomerInfo.copy(with: .verifiedOnDevice, httpResponseSource: nil)
+        let info2 = self.mockCustomerInfo2.copy(with: .verifiedOnDevice, httpResponseSource: nil)
 
         self.customerInfoManager.cache(customerInfo: info1, appUserID: info1.originalAppUserId)
         self.customerInfoManager.cache(customerInfo: info2, appUserID: info2.originalAppUserId)
@@ -631,7 +631,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
 
     func testCachedCustomerInfoHasIsLoadedFromCacheTrue() throws {
         let appUserID = "myUser"
-        let originalInfo = self.mockCustomerInfo.copy(with: .verified, fromLoadShedder: false)
+        let originalInfo = self.mockCustomerInfo.copy(with: .verified, httpResponseSource: .mainServer)
         expect(originalInfo.isLoadedFromCache) == false
 
         self.customerInfoManager.cache(customerInfo: originalInfo, appUserID: appUserID)
@@ -643,7 +643,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
 
     func testCachedCustomerInfoPreservesOriginalSourceMain() throws {
         let appUserID = "myUser"
-        let mainInfo = self.mockCustomerInfo.copy(with: .verified, fromLoadShedder: false)
+        let mainInfo = self.mockCustomerInfo.copy(with: .verified, httpResponseSource: .mainServer)
         expect(mainInfo.originalSource) == .main
 
         self.customerInfoManager.cache(customerInfo: mainInfo, appUserID: appUserID)
@@ -656,7 +656,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
 
     func testCachedCustomerInfoPreservesOriginalSourceLoadShedder() throws {
         let appUserID = "myUser"
-        let loadShedderInfo = self.mockCustomerInfo.copy(with: .verified, fromLoadShedder: true)
+        let loadShedderInfo = self.mockCustomerInfo.copy(with: .verified, httpResponseSource: nil)
         expect(loadShedderInfo.originalSource) == .loadShedder
 
         self.customerInfoManager.cache(customerInfo: loadShedderInfo, appUserID: appUserID)

@@ -49,7 +49,7 @@ class NormalCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTes
             nil
         )
         expect(result).to(beSuccess())
-        expect(result.value) == Self.sampleCustomerInfo.copy(with: .verified, fromLoadShedder: false)
+        expect(result.value) == Self.sampleCustomerInfo.copy(with: .verified, httpResponseSource: .mainServer)
         expect(result.value?.originalSource) == .main
 
         expect(self.factory.createRequested) == false
@@ -69,7 +69,7 @@ class NormalCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTes
             nil
         )
         expect(result).to(beSuccess())
-        expect(result.value) == Self.sampleCustomerInfo.copy(with: .failed, fromLoadShedder: false)
+        expect(result.value) == Self.sampleCustomerInfo.copy(with: .failed, httpResponseSource: .mainServer)
         expect(result.value?.originalSource) == .main
 
         expect(self.factory.createRequested) == false
@@ -110,7 +110,7 @@ class NormalCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTes
             nil
         )
         expect(result).to(beSuccess())
-        expect(result.value) == Self.sampleCustomerInfo.copy(with: .notRequested, fromLoadShedder: false)
+        expect(result.value) == Self.sampleCustomerInfo.copy(with: .notRequested, httpResponseSource: .mainServer)
         expect(result.value?.originalSource) == .main
         expect(self.factory.createRequested) == false
 
@@ -453,7 +453,7 @@ private extension BaseCustomerInfoResponseHandlerTests {
             "original_app_user_id": "nacho2",
             "other_purchases": [:] as [String: Any]
         ] as [String: Any]
-    ])!.copy(with: .verifiedOnDevice, fromLoadShedder: false)
+    ])!.copy(with: .verifiedOnDevice, httpResponseSource: nil)
 
 }
 
