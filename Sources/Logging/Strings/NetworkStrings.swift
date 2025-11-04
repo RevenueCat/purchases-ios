@@ -158,7 +158,8 @@ extension NetworkStrings: LogMessage {
             return "Disabling header parameter signature verification for '\(request.description)'"
 
         case let .api_request_response_both_fallback_and_load_shedder(request):
-            return "Request to fallback URL was handled by load shedder, which should never happen. Request: '\(request.description)'"
+            return "Request to fallback URL was handled by load shedder, " +
+            "which should never happen. Request: '\(request.description)'"
         #endif
         }
     }

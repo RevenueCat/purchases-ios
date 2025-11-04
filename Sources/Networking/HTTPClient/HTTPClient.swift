@@ -370,6 +370,7 @@ private extension HTTPClient {
     }
 
     /// - Returns `Result<VerifiedHTTPResponse<Data>, NetworkError>?`
+    // swiftlint:disable:next function_body_length
     private func createVerifiedResponse(
         request: Request,
         urlRequest: URLRequest,
