@@ -655,7 +655,7 @@ class ETagManagerTests: TestCase {
 
         // Regardless of the source of the .notModified response, this property should always respect the value from
         // disk as it contains the truth of whether the cached (original) response was served by the Load Shedder or not
-        expect(response?.isLoadShedderResponse) == false
+        expect(response?.source) != .loadShedder
     }
 
     func testResponseReturnsIsFallbackUrlResponseValueFromDiskAndNotFromServer() throws {
@@ -691,7 +691,7 @@ class ETagManagerTests: TestCase {
 
         // Regardless of the source of the .notModified response, this property should always respect the value from
         // disk as it contains the truth of whether the cached (original) response was served by the fallback url or not
-        expect(response?.isFallbackUrlResponse) == false
+        expect(response?.source) != .loadShedder
     }
 
     func testCachedResponseWithNoVerificationResultIsNotIgnored() throws {
