@@ -896,6 +896,47 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         expect(result?.value?.source) == .fallbackUrl
     }
 
+    func testLogsMessageWhenWhenBothLoadShedderAndFallbackUrlAreTrue() throws {
+        let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
+        let responseData = "{\"mapping\": {}}".asData
+
+        let fallbackURL = try XCTUnwrap(request.path.fallbackUrls.first)
+        stub(condition: isPath(request.path)) { urlRequest in
+            // Fail the main request to trigger fallback
+            if urlRequest.url?.absoluteString != fallbackURL.absoluteString {
+                // Primary URL response
+                return HTTPStubsResponse(
+                    data: Data(),
+                    statusCode: .internalServerError,
+                    headers: nil
+                )
+            } else {
+                // Fallback URL response
+                return HTTPStubsResponse(
+                    data: responseData,
+                    statusCode: .success,
+                    headers: [
+                        HTTPClient.ResponseHeader.isLoadShedder.rawValue: "true"
+                    ]
+                )
+            }
+        }
+
+        let _ = waitUntilValue { completion in
+            self.client.perform(request) { (response: DataResponse) in
+                completion(response)
+            }
+        }
+
+        
+
+        let expectedMessage = Strings.network.api_request_response_both_fallback_and_load_shedder(request).description
+        self.logger.verifyMessageWasLogged(
+            expectedMessage,
+            level: .warn
+        )
+    }
+
     func testResponseDeserialization() throws {
         struct CustomResponse: Codable, Equatable, HTTPResponseBody {
             let message: String
