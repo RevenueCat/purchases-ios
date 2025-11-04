@@ -922,13 +922,11 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             }
         }
 
-        let _ = waitUntilValue { completion in
-            self.client.perform(request) { (response: DataResponse) in
-                completion(response)
+        waitUntil { completion in
+            self.client.perform(request) { (_: DataResponse) in
+                completion()
             }
         }
-
-        
 
         let expectedMessage = Strings.network.api_request_response_both_fallback_and_load_shedder(request).description
         self.logger.verifyMessageWasLogged(
