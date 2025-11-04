@@ -50,7 +50,7 @@ class CustomerInfoResponseHandler {
                 }
 
                 return response.body.customerInfo.copy(with: response.verificationResult,
-                                                       httpResponseSource: response.source)
+                                                       httpResponseOriginalSource: response.originalSource)
             }
             .mapError(BackendError.networkError)
 

@@ -191,9 +191,9 @@ public typealias ProductIdentifier = String
     convenience init(response: CustomerInfoResponse,
                      entitlementVerification: VerificationResult,
                      sandboxEnvironmentDetector: SandboxEnvironmentDetector,
-                     httpResponseSource: HTTPResponseSource?) {
+                     httpResponseOriginalSource: HTTPResponseOriginalSource?) {
         let originalSource = OriginalSource(entitlementVerification: entitlementVerification,
-                                            httpResponseSource: httpResponseSource)
+                                            httpResponseOriginalSource: httpResponseOriginalSource)
         self.init(data: .init(response: response,
                               entitlementVerification: entitlementVerification,
                               schemaVersion: Self.currentSchemaVersion,
@@ -298,10 +298,10 @@ extension CustomerInfo {
     /// Creates a copy of this ``CustomerInfo`` modifying only the ``VerificationResult`` and the ``OriginalSource``.
     func copy(
         with entitlementVerification: VerificationResult,
-        httpResponseSource: HTTPResponseSource?
+        httpResponseOriginalSource: HTTPResponseOriginalSource?
     ) -> Self {
         let originalSource = OriginalSource(entitlementVerification: entitlementVerification,
-                                            httpResponseSource: httpResponseSource)
+                                            httpResponseOriginalSource: httpResponseOriginalSource)
         guard entitlementVerification != self.data.entitlementVerification ||
                 originalSource != self.data.originalSource
         else { return self }
@@ -457,11 +457,11 @@ extension CustomerInfo {
         /// Computed on device from offline entitlements
         case offlineEntitlements = "offline_entitlements"
 
-        init?(entitlementVerification: VerificationResult, httpResponseSource: HTTPResponseSource?) {
+        init?(entitlementVerification: VerificationResult, httpResponseOriginalSource: HTTPResponseOriginalSource?) {
             if entitlementVerification == .verifiedOnDevice {
                 self = .offlineEntitlements
             } else {
-                switch httpResponseSource {
+                switch httpResponseOriginalSource {
                 case .mainServer:
                     self = .main
                 case .loadShedder:

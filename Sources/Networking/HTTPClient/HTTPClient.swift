@@ -271,7 +271,10 @@ internal extension HTTPClient {
         var path: String { self.httpRequest.path.relativePath }
 
         func getCurrentRequestURL(proxyURL: URL?) -> URL? {
-            return self.httpRequest.path.url(proxyURL: proxyURL, fallbackUrlIndex: self.fallbackUrlIndex)
+            return self.httpRequest.path.url(
+                proxyURL: proxyURL,
+                fallbackUrlIndex: self.fallbackUrlIndex
+            )
         }
 
         func retriedRequest() -> Self {
@@ -367,6 +370,7 @@ private extension HTTPClient {
     }
 
     /// - Returns `Result<VerifiedHTTPResponse<Data>, NetworkError>?`
+    // swiftlint:disable:next function_body_length
     private func createVerifiedResponse(
         request: Request,
         urlRequest: URLRequest,
@@ -394,13 +398,22 @@ private extension HTTPClient {
             .mapToResponse(response: httpURLResponse, request: request.httpRequest)
             // Verify response
             .map { cachedResponse -> VerifiedHTTPResponse<Data?> in
+                let isLoadShedderResponse = httpURLResponse.isLoadShedder
+                let isFallbackUrlResponse = request.isFallbackURLRequest
+                #if DEBUG
+                if isFallbackUrlResponse && isLoadShedderResponse {
+                    Logger.warn(
+                        Strings.network.api_request_response_both_fallback_and_load_shedder(request.httpRequest)
+                    )
+                }
+                #endif
                 return cachedResponse.verify(
                     signing: self.signing(for: request.httpRequest),
                     request: request.httpRequest,
                     requestHeaders: requestHeaders,
                     publicKey: request.verificationMode.publicKey,
-                    isLoadShedderResponse: httpURLResponse.isLoadShedder,
-                    isFallbackUrlResponse: request.isFallbackURLRequest
+                    isLoadShedderResponse: isLoadShedderResponse,
+                    isFallbackUrlResponse: isFallbackUrlResponse
                 )
             }
             // Fetch from ETagManager if available

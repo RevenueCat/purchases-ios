@@ -87,7 +87,7 @@ private extension LogInOperation {
             .map { response in
                 (
                     response.body.copy(with: response.verificationResult,
-                                       httpResponseSource: response.source),
+                                       httpResponseOriginalSource: response.originalSource),
                     created: response.httpStatusCode == .createdSuccess
                 )
             }

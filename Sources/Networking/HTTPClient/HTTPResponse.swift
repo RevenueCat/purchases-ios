@@ -70,15 +70,15 @@ struct VerifiedHTTPResponse<Body: HTTPResponseBody>: HTTPResponseType {
 
     var response: HTTPResponse<Body>
     var verificationResult: VerificationResult
-    var source: HTTPResponseSource
+    var originalSource: HTTPResponseOriginalSource
 
     init(response: HTTPResponse<Body>,
          verificationResult: VerificationResult,
-         source: HTTPResponseSource
+         originalSource: HTTPResponseOriginalSource
     ) {
         self.response = response
         self.verificationResult = verificationResult
-        self.source = source
+        self.originalSource = originalSource
     }
 
     init(response: HTTPResponse<Body>,
@@ -88,8 +88,8 @@ struct VerifiedHTTPResponse<Body: HTTPResponseBody>: HTTPResponseType {
     ) {
         self.init(response: response,
                   verificationResult: verificationResult,
-                  source: HTTPResponseSource(isFallbackUrlResponse: isFallbackUrlResponse,
-                                             isLoadShedderResponse: isLoadShedderResponse))
+                  originalSource: HTTPResponseOriginalSource(isFallbackUrlResponse: isFallbackUrlResponse,
+                                                             isLoadShedderResponse: isLoadShedderResponse))
     }
 
     init(
@@ -253,7 +253,7 @@ extension VerifiedHTTPResponse {
         return .init(
             response: try self.response.mapBody(mapping),
             verificationResult: self.verificationResult,
-            source: self.source
+            originalSource: self.originalSource
         )
     }
 
@@ -267,7 +267,7 @@ enum HTTPResponseOrigin {
 }
 
 /// The server from which the HTTP response was received.
-enum HTTPResponseSource {
+enum HTTPResponseOriginalSource {
 
     case mainServer
     case loadShedder
