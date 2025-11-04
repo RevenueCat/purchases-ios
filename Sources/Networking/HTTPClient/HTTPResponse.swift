@@ -70,18 +70,26 @@ struct VerifiedHTTPResponse<Body: HTTPResponseBody>: HTTPResponseType {
 
     var response: HTTPResponse<Body>
     var verificationResult: VerificationResult
-    var isLoadShedderResponse: Bool
-    var isFallbackUrlResponse: Bool
+    var source: HTTPResponseSource
+
+    init(response: HTTPResponse<Body>,
+         verificationResult: VerificationResult,
+         source: HTTPResponseSource
+    ) {
+        self.response = response
+        self.verificationResult = verificationResult
+        self.source = source
+    }
 
     init(response: HTTPResponse<Body>,
          verificationResult: VerificationResult,
          isLoadShedderResponse: Bool,
          isFallbackUrlResponse: Bool
     ) {
-        self.response = response
-        self.verificationResult = verificationResult
-        self.isLoadShedderResponse = isLoadShedderResponse
-        self.isFallbackUrlResponse = isFallbackUrlResponse
+        self.init(response: response,
+                  verificationResult: verificationResult,
+                  source: HTTPResponseSource(isFallbackUrlResponse: isFallbackUrlResponse,
+                                             isLoadShedderResponse: isLoadShedderResponse))
     }
 
     init(
@@ -245,8 +253,7 @@ extension VerifiedHTTPResponse {
         return .init(
             response: try self.response.mapBody(mapping),
             verificationResult: self.verificationResult,
-            isLoadShedderResponse: self.isLoadShedderResponse,
-            isFallbackUrlResponse: self.isFallbackUrlResponse
+            source: self.source
         )
     }
 
@@ -256,5 +263,24 @@ enum HTTPResponseOrigin {
 
     case backend
     case cache
+
+}
+
+/// The server from which the HTTP response was received.
+enum HTTPResponseSource {
+
+    case mainServer
+    case loadShedder
+    case fallbackUrl
+
+    init(isFallbackUrlResponse: Bool, isLoadShedderResponse: Bool) {
+        if isFallbackUrlResponse {
+            self = .fallbackUrl
+        } else if isLoadShedderResponse {
+            self = .loadShedder
+        } else {
+            self = .mainServer
+        }
+    }
 
 }

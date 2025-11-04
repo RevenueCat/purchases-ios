@@ -273,7 +273,7 @@ class TransactionPosterTests: TestCase {
     // MARK: - shouldFinishTransaction
 
     func testShouldNotFinishWithOfflineCustomerInfo() throws {
-        let info = Self.mockCustomerInfo.copy(with: .verifiedOnDevice, fromLoadShedder: false)
+        let info = Self.mockCustomerInfo.copy(with: .verifiedOnDevice, httpResponseSource: nil)
 
         expect(
             TransactionPoster.shouldFinish(
@@ -469,7 +469,7 @@ private extension TransactionPosterTests {
         return CustomerInfo(response: response,
                             entitlementVerification: .notRequested,
                             sandboxEnvironmentDetector: self.systemInfo,
-                            fromLoadShedder: false)
+                            httpResponseSource: .mainServer)
     }
 
 }

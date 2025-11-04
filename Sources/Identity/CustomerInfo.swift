@@ -191,13 +191,13 @@ public typealias ProductIdentifier = String
     convenience init(response: CustomerInfoResponse,
                      entitlementVerification: VerificationResult,
                      sandboxEnvironmentDetector: SandboxEnvironmentDetector,
-                     fromLoadShedder: Bool) {
+                     httpResponseSource: HTTPResponseSource?) {
         let originalSource = OriginalSource(entitlementVerification: entitlementVerification,
-                                            fromLoadShedder: fromLoadShedder)
+                                            httpResponseSource: httpResponseSource)
         self.init(data: .init(response: response,
                               entitlementVerification: entitlementVerification,
                               schemaVersion: Self.currentSchemaVersion,
-                              originalSource: originalSource),
+                              originalSource: originalSource ?? .main),
                   sandboxEnvironmentDetector: sandboxEnvironmentDetector)
     }
 
@@ -298,17 +298,17 @@ extension CustomerInfo {
     /// Creates a copy of this ``CustomerInfo`` modifying only the ``VerificationResult`` and the ``OriginalSource``.
     func copy(
         with entitlementVerification: VerificationResult,
-        fromLoadShedder: Bool
+        httpResponseSource: HTTPResponseSource?
     ) -> Self {
         let originalSource = OriginalSource(entitlementVerification: entitlementVerification,
-                                            fromLoadShedder: fromLoadShedder)
+                                            httpResponseSource: httpResponseSource)
         guard entitlementVerification != self.data.entitlementVerification ||
                 originalSource != self.data.originalSource
         else { return self }
 
         var copy = self.data
         copy.entitlementVerification = entitlementVerification
-        copy.originalSource = originalSource
+        copy.originalSource = originalSource ?? .main
         return .init(data: copy)
     }
 
@@ -457,13 +457,20 @@ extension CustomerInfo {
         /// Computed on device from offline entitlements
         case offlineEntitlements = "offline_entitlements"
 
-        init(entitlementVerification: VerificationResult, fromLoadShedder: Bool) {
+        init?(entitlementVerification: VerificationResult, httpResponseSource: HTTPResponseSource?) {
             if entitlementVerification == .verifiedOnDevice {
                 self = .offlineEntitlements
-            } else if fromLoadShedder {
-                self = .loadShedder
             } else {
-                self = .main
+                switch httpResponseSource {
+                case .mainServer:
+                    self = .main
+                case .loadShedder:
+                    self = .main
+                case .fallbackUrl:
+                    return nil // CustomerInfo not supported from fallback URL
+                case .none:
+                    return nil
+                }
             }
         }
     }
