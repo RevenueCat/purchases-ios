@@ -88,7 +88,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
     func testUsesTheCorrectHost() throws {
         let hostCorrect: Atomic<Bool> = false
 
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        let host = try XCTUnwrap(SystemInfo.apiBaseURL.host)
         stub(condition: isHost(host)) { _ in
             hostCorrect.value = true
             return .emptySuccessResponse()
@@ -2121,7 +2121,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             headers: nil
         )
 
-        let mainHost = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        let mainHost = try XCTUnwrap(SystemInfo.apiBaseURL.host)
         stub(condition: isHost(mainHost)) { _ in
             return serverErrorResponse
         }
@@ -2472,7 +2472,7 @@ extension HTTPClientTests {
     func testPerformsAllRetriesIfAlwaysGetsRetryableStatusCode() throws {
         var requestCount = 0
 
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        let host = try XCTUnwrap(SystemInfo.apiBaseURL.host)
         stub(condition: isHost(host)) { _ in
             requestCount += 1
             return .emptyTooManyRequestsResponse()
@@ -2501,7 +2501,7 @@ extension HTTPClientTests {
 
     func testCorrectDelaysAreSentToOperationDispatcherForRetries() throws {
 
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        let host = try XCTUnwrap(SystemInfo.apiBaseURL.host)
         stub(condition: isHost(host)) { _ in
             return .emptyTooManyRequestsResponse()
         }
@@ -2527,7 +2527,7 @@ extension HTTPClientTests {
     func testRetryMessagesAreLoggedWhenRetriesExhausted() throws {
         var requestCount = 0
 
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        let host = try XCTUnwrap(SystemInfo.apiBaseURL.host)
         stub(condition: isHost(host)) { _ in
             requestCount += 1
             return .emptyTooManyRequestsResponse()
@@ -2552,7 +2552,7 @@ extension HTTPClientTests {
     }
 
     func testRetryMessagesAreNotLoggedWhenNoRetriesOccur() throws {
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        let host = try XCTUnwrap(SystemInfo.apiBaseURL.host)
         stub(condition: isHost(host)) { _ in
             return .emptySuccessResponse()
         }
@@ -2578,7 +2578,7 @@ extension HTTPClientTests {
     func testRetryCountHeaderIsAccurateWithNoRetries() throws {
         var retryCountHeaderValues: [String?] = []
 
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        let host = try XCTUnwrap(SystemInfo.apiBaseURL.host)
         stub(condition: isHost(host)) { urlRequest in
             let retryCountHeaderValue = urlRequest.allHTTPHeaderFields?[HTTPClient.RequestHeader.retryCount.rawValue]
             retryCountHeaderValues.append(retryCountHeaderValue)
@@ -2596,7 +2596,7 @@ extension HTTPClientTests {
     }
 
     func testDoesNotRetryUnsupportedURLPaths() throws {
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        let host = try XCTUnwrap(SystemInfo.apiBaseURL.host)
         var requestCount = 0
         stub(condition: isHost(host)) { _ in
             requestCount += 1
@@ -2616,7 +2616,7 @@ extension HTTPClientTests {
         var retryCountHeaderValues: [String?] = []
         var retryCount = 0
 
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        let host = try XCTUnwrap(SystemInfo.apiBaseURL.host)
         stub(condition: isHost(host)) { urlRequest in
             let retryCountHeaderValue = urlRequest.allHTTPHeaderFields?[HTTPClient.RequestHeader.retryCount.rawValue]
             retryCountHeaderValues.append(retryCountHeaderValue)
@@ -2642,7 +2642,7 @@ extension HTTPClientTests {
     func testRetryCountHeaderIsAccurateWhenAllRetriesAreExhausted() throws {
         var retryCountHeaderValues: [String?] = []
 
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        let host = try XCTUnwrap(SystemInfo.apiBaseURL.host)
         stub(condition: isHost(host)) { urlRequest in
             let retryCountHeaderValue = urlRequest.allHTTPHeaderFields?[HTTPClient.RequestHeader.retryCount.rawValue]
             retryCountHeaderValues.append(retryCountHeaderValue)
@@ -2662,7 +2662,7 @@ extension HTTPClientTests {
     func testSucceedsIfAlwaysGetsSuccessAfterOneRetry() throws {
         var requestCount = 0
 
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        let host = try XCTUnwrap(SystemInfo.apiBaseURL.host)
         stub(condition: isHost(host)) { _ in
             requestCount += 1
 
@@ -2832,7 +2832,7 @@ extension HTTPClientTests {
             headers: nil
         )
 
-        let host1 = try XCTUnwrap(type(of: mainPath).serverHostURL.host)
+        let host1 = try XCTUnwrap(SystemInfo.apiBaseURL.host)
         stub(condition: isHost(host1)) { _ in
             return serverErrorResponse
         }
@@ -2871,7 +2871,7 @@ extension HTTPClientTests {
         )
         let dnsErrorResponse = HTTPStubsResponse(error: dnsError)
 
-        let host1 = try XCTUnwrap(type(of: mainPath).serverHostURL.host)
+        let host1 = try XCTUnwrap(SystemInfo.apiBaseURL.host)
         stub(condition: isHost(host1)) { _ in
             return dnsErrorResponse
         }
@@ -2910,7 +2910,7 @@ extension HTTPClientTests {
         )
         let timeoutResponse = HTTPStubsResponse(error: timeoutError)
 
-        let host1 = try XCTUnwrap(type(of: mainPath).serverHostURL.host)
+        let host1 = try XCTUnwrap(SystemInfo.apiBaseURL.host)
         stub(condition: isHost(host1)) { _ in
             return timeoutResponse
         }
@@ -2948,7 +2948,7 @@ extension HTTPClientTests {
             headers: nil
         )
 
-        let host1 = try XCTUnwrap(type(of: mainPath).serverHostURL.host)
+        let host1 = try XCTUnwrap(SystemInfo.apiBaseURL.host)
         stub(condition: isHost(host1)) { _ in
             return serverErrorResponse
         }
@@ -3060,6 +3060,76 @@ extension HTTPClientTests {
         )
 
         expect(didRetry).to(beFalse())
+    }
+
+    // MARK: - Custom API Base URL
+
+    func testUsesDefaultAPIBaseURL() throws {
+        let request = HTTPRequest(method: .get, path: .mockPath)
+        let defaultHost = "api.revenuecat.com"
+
+        let hostCorrect: Atomic<Bool> = false
+        stub(condition: isHost(defaultHost)) { _ in
+            hostCorrect.value = true
+            return .emptySuccessResponse()
+        }
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: EmptyResponse) in completion() }
+        }
+
+        expect(hostCorrect.value) == true
+    }
+
+    func testUsesCustomAPIBaseURL() {
+        let originalURL = SystemInfo.apiBaseURL
+        defer { SystemInfo.apiBaseURL = originalURL }
+
+        let customHost = "custom.example.com"
+        let customURL = URL(string: "https://\(customHost)")!
+        SystemInfo.apiBaseURL = customURL
+
+        let request = HTTPRequest(method: .get, path: .mockPath)
+
+        let hostCorrect: Atomic<Bool> = false
+        stub(condition: isHost(customHost)) { _ in
+            hostCorrect.value = true
+            return .emptySuccessResponse()
+        }
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: EmptyResponse) in completion() }
+        }
+
+        expect(hostCorrect.value) == true
+    }
+
+    func testCustomAPIBaseURLPersistsAcrossRequests() {
+        let originalURL = SystemInfo.apiBaseURL
+        defer { SystemInfo.apiBaseURL = originalURL }
+
+        let customHost = "test.example.com"
+        let customURL = URL(string: "https://\(customHost)")!
+        SystemInfo.apiBaseURL = customURL
+
+        let requestCount: Atomic<Int> = .init(0)
+        stub(condition: isHost(customHost)) { _ in
+            requestCount.value += 1
+            return .emptySuccessResponse()
+        }
+
+        let request = HTTPRequest(method: .get, path: .mockPath)
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: EmptyResponse) in
+                // Perform a second request
+                self.client.perform(request) { (_: EmptyResponse) in
+                    completion()
+                }
+            }
+        }
+
+        expect(requestCount.value) == 2
     }
 
 }

@@ -73,6 +73,9 @@ class SystemInfo {
     private static let _forceUniversalAppStore: Atomic<Bool> = false
     private static let _proxyURL: Atomic<URL?> = nil
 
+    // swiftlint:disable:next force_unwrapping
+    private static let _apiBaseURL: Atomic<URL> = .init(URL(string: "https://api.revenuecat.com")!)
+
     private lazy var _isSandbox: Bool = {
         return self.sandboxEnvironmentDetector.isSandbox
     }()
@@ -156,6 +159,21 @@ class SystemInfo {
             if let privateProxyURLString = newValue?.absoluteString {
                 Logger.info(Strings.configure.configuring_purchases_proxy_url_set(url: privateProxyURLString))
             }
+        }
+    }
+
+    /*
+     Allows for updating the base URL for API calls that use `HTTPRequest.Path`.
+     Useful for testing in case we want to perform tests against another instance of our backend.
+     
+     We've decided not to use the proxy URL for this, because it's behavior is slightly different. 
+     Specifically, when using a proxy URL the fallback logic is not used, because all requests should 
+     be going through the proxy URL instead. 
+     */
+    static var apiBaseURL: URL {
+        get { return self._apiBaseURL.value }
+        set {
+            self._apiBaseURL.value = newValue
         }
     }
 

@@ -1981,7 +1981,6 @@ extension Purchases {
     @_spi(Internal) public var preferredLocaleOverride: String? {
         return self.systemInfo.preferredLocaleOverride
     }
-
 }
 
 extension Purchases: InternalPurchasesType {
