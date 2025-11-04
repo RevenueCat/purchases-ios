@@ -276,7 +276,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let offlineEntitlementsManager: OfflineEntitlementsManager
     private let productsManager: ProductsManagerType
     private let customerInfoManager: CustomerInfoManager
-    private let eventsManager: EventsManagerType?
+    internal let eventsManager: EventsManagerType?
 
 #if ENABLE_AD_EVENTS_TRACKING
     private var _adTracker: Any?
@@ -2123,15 +2123,6 @@ internal extension Purchases {
     func flushPaywallEvents(count: Int) async throws -> Int {
         return try await self.eventsManager?.flushFeatureEvents(batchSize: count) ?? 0
     }
-
-    #if ENABLE_AD_EVENTS_TRACKING
-    /// - Throws: if posting ad events fails
-    /// - Returns: the number of ad events posted
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    internal func flushAdEvents(count: Int) async throws -> Int {
-        return try await self.eventsManager?.flushAdEvents(count: count) ?? 0
-    }
-    #endif
 
 }
 

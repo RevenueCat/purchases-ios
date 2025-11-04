@@ -62,7 +62,7 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
     }
 
     func testFlushingEmptyAdEvents() async throws {
-        let result = try await Purchases.shared.flushAdEvents(count: 1)
+        let result = try await Purchases.shared.eventsManager?.flushAdEvents(count: 1) ?? 0
         expect(result) == 0
     }
 
@@ -78,10 +78,10 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
         await Purchases.shared.adTracker.trackAdDisplayed(displayedData)
         await Purchases.shared.adTracker.trackAdDisplayed(displayedData)
 
-        let result1 = try await Purchases.shared.flushAdEvents(count: 10)
+        let result1 = try await Purchases.shared.eventsManager?.flushAdEvents(count: 10) ?? 0
         expect(result1) == 3
 
-        let result2 = try await Purchases.shared.flushAdEvents(count: 10)
+        let result2 = try await Purchases.shared.eventsManager?.flushAdEvents(count: 10) ?? 0
         expect(result2) == 0
     }
 
@@ -105,12 +105,12 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
 
         await self.resetSingleton()
 
-        let result = try await Purchases.shared.flushAdEvents(count: 10)
+        let result = try await Purchases.shared.eventsManager?.flushAdEvents(count: 10) ?? 0
         expect(result) == 2
     }
 
     private func flushAndVerify(eventsCount: Int) async throws {
-        let result = try await Purchases.shared.flushAdEvents(count: eventsCount)
+        let result = try await Purchases.shared.eventsManager?.flushAdEvents(count: eventsCount) ?? 0
         expect(result) == eventsCount
 
         self.logger.verifyMessageWasLogged(
