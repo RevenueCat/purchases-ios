@@ -63,7 +63,7 @@ enum Constants {
     }
 
     enum ForceServerErrorStrategy: String {
-        case primaryDomainDown = "primary_domain_down"
+        case primaryBackendDown = "primary_backend_down"
         case never
     }
 }

@@ -23,7 +23,7 @@ struct RcMaestroApp: App {
                             switch Constants.forceServerErrorStrategy {
                             case .never:
                                 return false
-                            case .primaryDomainDown:
+                            case .primaryBackendDown:
                                 return request.fallbackUrlIndex == nil
                             }
                         }

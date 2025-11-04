@@ -505,7 +505,7 @@ commands:
         description: "The RevenueCat API key value"
       force_server_error_strategy:
         type: enum
-        enum: ["never", "primary_domain_down"]
+        enum: ["never", "primary_backend_down"]
         default: "never"
         description: "Server error strategy for testing fallback behavior"
       api_host:
@@ -1219,21 +1219,21 @@ jobs:
           steps:
             - setup_xcconfig:
                 api_key: ${RC_E2E_TEST_API_KEY_PRODUCTION_APP_STORE}
-                api_host: https://fortress-us-east-1.revenuecat.com
+                api_host: fortress-us-east-1.revenuecat.com
       - when:
           condition:
             equal: [ "load_shedder_us_east_2", << parameters.backend_environment >> ]
           steps:
             - setup_xcconfig:
                 api_key: ${RC_E2E_TEST_API_KEY_PRODUCTION_APP_STORE}
-                api_host: https://fortress-us-east-2.revenuecat.com
+                api_host: fortress-us-east-2.revenuecat.com
       - when:
           condition:
             equal: [ "fallback", << parameters.backend_environment >> ]
           steps:
             - setup_xcconfig:
                 api_key: ${RC_E2E_TEST_API_KEY_PRODUCTION_APP_STORE}
-                force_server_error_strategy: primary_domain_down
+                force_server_error_strategy: primary_backend_down
       - when:
           condition:
             equal: [ "production", << parameters.backend_environment >> ]
