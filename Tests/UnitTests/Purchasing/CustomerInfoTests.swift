@@ -1067,7 +1067,8 @@ private extension BasicCustomerInfoTests {
 
         expect(copy.entitlements.verification) == newVerification
 
-        let copyWithOriginalVerification = copy.copy(with: customerInfo.entitlements.verification, fromLoadShedder: false)
+        let copyWithOriginalVerification = copy.copy(with: customerInfo.entitlements.verification,
+                                                     fromLoadShedder: false)
         expect(copyWithOriginalVerification) == customerInfo
     }
 
