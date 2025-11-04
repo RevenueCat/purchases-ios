@@ -252,7 +252,7 @@ public struct PaywallView: View {
                 if let paywallComponents = self.paywallComponents, let customerInfo = self.customerInfo {
                     self.paywallViewForWorkflows(
                         for: paywallComponents,
-                        offering: nil,
+                        offering: self.offering,
                         activelySubscribedProductIdentifiers: customerInfo.activeSubscriptions,
                         fonts: self.fonts,
                         checker: self.introEligibility,
