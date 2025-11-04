@@ -124,7 +124,7 @@ aliases:
         - slack-secrets-ios
       matrix:
         parameters:
-          backend_environment: ["production", "load_shedder_primary", "load_shedder_secondary", "fallback"]
+          backend_environment: ["production", "load_shedder_us_east_1", "load_shedder_us_east_2", "fallback"]
 
 commands:
   slack-notify-on-fail:
@@ -1201,7 +1201,7 @@ jobs:
     parameters:
       backend_environment:
         type: enum
-        enum: ["production", "load_shedder_primary", "load_shedder_secondary", "fallback"]
+        enum: ["production", "load_shedder_us_east_1", "load_shedder_us_east_2", "fallback"]
     executor:
       name: macos-executor
       xcode_version: "26.0.1"
@@ -1215,14 +1215,14 @@ jobs:
           install_swiftlint: false
       - when:
           condition:
-            equal: [ "load_shedder_primary", << parameters.backend_environment >> ]
+            equal: [ "load_shedder_us_east_1", << parameters.backend_environment >> ]
           steps:
             - setup_xcconfig:
                 api_key: ${RC_E2E_TEST_API_KEY_PRODUCTION_APP_STORE}
                 api_host: https://fortress-us-east-1.revenuecat.com
       - when:
           condition:
-            equal: [ "load_shedder_secondary", << parameters.backend_environment >> ]
+            equal: [ "load_shedder_us_east_2", << parameters.backend_environment >> ]
           steps:
             - setup_xcconfig:
                 api_key: ${RC_E2E_TEST_API_KEY_PRODUCTION_APP_STORE}
