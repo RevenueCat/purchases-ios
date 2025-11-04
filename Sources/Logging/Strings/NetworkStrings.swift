@@ -54,6 +54,7 @@ enum NetworkStrings {
     case api_request_forcing_server_error(HTTPRequest)
     case api_request_forcing_signature_failure(HTTPRequest)
     case api_request_disabling_header_parameter_signature_verification(HTTPRequest)
+    case api_request_response_both_fallback_and_load_shedder(HTTPRequest)
     #endif
 
 }
@@ -155,6 +156,9 @@ extension NetworkStrings: LogMessage {
 
         case let .api_request_disabling_header_parameter_signature_verification(request):
             return "Disabling header parameter signature verification for '\(request.description)'"
+
+        case let .api_request_response_both_fallback_and_load_shedder(request):
+            return "Request to fallback URL was handled by load shedder, which should never happen. Request: '\(request.description)'"
         #endif
         }
     }
