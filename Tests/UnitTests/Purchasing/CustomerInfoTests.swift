@@ -969,7 +969,8 @@ class BasicCustomerInfoTests: TestCase {
         expect(offlineInfo.originalSource) == .offlineEntitlements
 
         // Even if fromLoadShedder is true, verifiedOnDevice should take precedence
-        let offlineInfoWithLoadShedder = self.customerInfo.copy(with: .verifiedOnDevice, httpResponseSource: .loadShedder)
+        let offlineInfoWithLoadShedder = self.customerInfo.copy(with: .verifiedOnDevice,
+                                                                httpResponseSource: .loadShedder)
         expect(offlineInfoWithLoadShedder.originalSource) == .offlineEntitlements
     }
 
