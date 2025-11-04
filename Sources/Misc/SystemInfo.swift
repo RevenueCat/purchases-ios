@@ -165,6 +165,9 @@ class SystemInfo {
     /*
      Allows for updating the base URL for API calls that use `HTTPRequest.Path`.
      Useful for testing in case we want to perform tests against another instance of our backend.
+     
+     We've decided not to use the proxy URL for this, because it's behavior is slightly different. 
+     Specifically, when using a proxy URL the fallback logic is not used, because all requests should be going through the proxy URL instead. 
      */
     static var apiBaseURL: URL {
         get { return self._apiBaseURL.value }
