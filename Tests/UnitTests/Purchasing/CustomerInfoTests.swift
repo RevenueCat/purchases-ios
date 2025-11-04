@@ -884,7 +884,8 @@ class BasicCustomerInfoTests: TestCase {
     }
 
     func testCopyWithSameVerificationResult() throws {
-        expect(self.customerInfo.copy(with: .notRequested, httpResponseSource: .mainServer)) === self.customerInfo
+        expect(self.customerInfo.copy(with: .notRequested,
+                                      httpResponseOriginalSource: .mainServer)) === self.customerInfo
     }
 
     func testCopyWithVerificationResultVerified() throws {
@@ -898,7 +899,8 @@ class BasicCustomerInfoTests: TestCase {
     }
 
     func testCopyWithVerificationResultNotRequested() throws {
-        self.verifyCopy(of: self.customerInfo.copy(with: .verified, httpResponseSource: .mainServer),
+        self.verifyCopy(of: self.customerInfo.copy(with: .verified,
+                                                   httpResponseOriginalSource: .mainServer),
                         onlyModifiesEntitlementVerification: .notRequested)
     }
 
@@ -920,25 +922,29 @@ class BasicCustomerInfoTests: TestCase {
     }
 
     func testIsNotComputedOfflineIfVerificationNotRequested() {
-        let info = self.customerInfo.copy(with: .notRequested, httpResponseSource: .mainServer)
+        let info = self.customerInfo.copy(with: .notRequested,
+                                          httpResponseOriginalSource: .mainServer)
         expect(info.isComputedOffline) == false
         expect(info.originalSource) == .main
     }
 
     func testIsNotComputedOfflineIfVerified() {
-        let info = self.customerInfo.copy(with: .verified, httpResponseSource: .mainServer)
+        let info = self.customerInfo.copy(with: .verified,
+                                          httpResponseOriginalSource: .mainServer)
         expect(info.isComputedOffline) == false
         expect(info.originalSource) == .main
     }
 
     func testIsNotComputedOfflineIfFailedVerification() {
-        let info = self.customerInfo.copy(with: .failed, httpResponseSource: .mainServer)
+        let info = self.customerInfo.copy(with: .failed,
+                                          httpResponseOriginalSource: .mainServer)
         expect(info.isComputedOffline) == false
         expect(info.originalSource) == .main
     }
 
     func testIsComputedOffline() throws {
-        let info = self.customerInfo.copy(with: .verifiedOnDevice, httpResponseSource: .mainServer)
+        let info = self.customerInfo.copy(with: .verifiedOnDevice,
+                                          httpResponseOriginalSource: .mainServer)
         expect(info.isComputedOffline) == true
         expect(info.originalSource) == .offlineEntitlements
     }
@@ -946,61 +952,73 @@ class BasicCustomerInfoTests: TestCase {
     // MARK: - originalSource tests
 
     func testOriginalSourceIsMainForNormalResponse() {
-        let verifiedInfo = self.customerInfo.copy(with: .verified, httpResponseSource: .mainServer)
+        let verifiedInfo = self.customerInfo.copy(with: .verified,
+                                                  httpResponseOriginalSource: .mainServer)
         expect(verifiedInfo.originalSource) == .main
 
-        let notRequestedInfo = self.customerInfo.copy(with: .notRequested, httpResponseSource: .mainServer)
+        let notRequestedInfo = self.customerInfo.copy(with: .notRequested,
+                                                      httpResponseOriginalSource: .mainServer)
         expect(notRequestedInfo.originalSource) == .main
 
-        let failedInfo = self.customerInfo.copy(with: .failed, httpResponseSource: .mainServer)
+        let failedInfo = self.customerInfo.copy(with: .failed,
+                                                httpResponseOriginalSource: .mainServer)
         expect(failedInfo.originalSource) == .main
     }
 
     func testOriginalSourceIsLoadShedderForLoadShedderResponse() {
-        let loadShedderInfo = self.customerInfo.copy(with: .verified, httpResponseSource: .loadShedder)
+        let loadShedderInfo = self.customerInfo.copy(with: .verified,
+                                                     httpResponseOriginalSource: .loadShedder)
         expect(loadShedderInfo.originalSource) == .loadShedder
 
-        let loadShedderNotRequestedInfo = self.customerInfo.copy(with: .notRequested, httpResponseSource: .loadShedder)
+        let loadShedderNotRequestedInfo = self.customerInfo.copy(with: .notRequested,
+                                                                 httpResponseOriginalSource: .loadShedder)
         expect(loadShedderNotRequestedInfo.originalSource) == .loadShedder
     }
 
     func testOriginalSourceIsOfflineEntitlementsForVerifiedOnDevice() {
-        let offlineInfo = self.customerInfo.copy(with: .verifiedOnDevice, httpResponseSource: nil)
+        let offlineInfo = self.customerInfo.copy(with: .verifiedOnDevice,
+                                                 httpResponseOriginalSource: nil)
         expect(offlineInfo.originalSource) == .offlineEntitlements
 
         let offlineInfoWithLoadShedder = self.customerInfo.copy(with: .verifiedOnDevice,
-                                                                httpResponseSource: .loadShedder)
+                                                                httpResponseOriginalSource: .loadShedder)
         expect(offlineInfoWithLoadShedder.originalSource) == .offlineEntitlements
     }
 
     func testOriginalSourceIsOfflineEntitlementsForVerifiedOnDeviceEvenIfHttpResponseSourceSet() {
-        let offlineInfo = self.customerInfo.copy(with: .verifiedOnDevice, httpResponseSource: .mainServer)
+        let offlineInfo = self.customerInfo.copy(with: .verifiedOnDevice,
+                                                 httpResponseOriginalSource: .mainServer)
         expect(offlineInfo.originalSource) == .offlineEntitlements
 
         // Even if httpResponseSource is set, verifiedOnDevice should take precedence
         let offlineInfoWithLoadShedder = self.customerInfo.copy(with: .verifiedOnDevice,
-                                                                httpResponseSource: .loadShedder)
+                                                                httpResponseOriginalSource: .loadShedder)
         expect(offlineInfoWithLoadShedder.originalSource) == .offlineEntitlements
     }
 
     func testOriginalSourceIsPreservedWhenCopying() {
-        let originalInfo = self.customerInfo.copy(with: .verified, httpResponseSource: .mainServer)
+        let originalInfo = self.customerInfo.copy(with: .verified,
+                                                  httpResponseOriginalSource: .mainServer)
         expect(originalInfo.originalSource) == .main
 
         // Copying with same verification should preserve originalSource
-        let copiedInfo = originalInfo.copy(with: .verified, httpResponseSource: .mainServer)
+        let copiedInfo = originalInfo.copy(with: .verified,
+                                           httpResponseOriginalSource: .mainServer)
         expect(copiedInfo.originalSource) == .main
 
         // Copying with different verification should update originalSource
-        let updatedInfo = originalInfo.copy(with: .failed, httpResponseSource: .mainServer)
+        let updatedInfo = originalInfo.copy(with: .failed,
+                                            httpResponseOriginalSource: .mainServer)
         expect(updatedInfo.originalSource) == .main
     }
 
     func testSameCustomerInfoWithDifferentOriginalSourcesAreEqual() {
-        let mainInfo = self.customerInfo.copy(with: .verified, httpResponseSource: .mainServer)
+        let mainInfo = self.customerInfo.copy(with: .verified,
+                                              httpResponseOriginalSource: .mainServer)
         expect(mainInfo.originalSource) == .main
 
-        let loadShedderInfo = mainInfo.copy(with: .verified, httpResponseSource: .loadShedder)
+        let loadShedderInfo = mainInfo.copy(with: .verified,
+                                            httpResponseOriginalSource: .loadShedder)
         expect(loadShedderInfo.originalSource) == .loadShedder
 
         expect(mainInfo) == loadShedderInfo
@@ -1072,13 +1090,13 @@ private extension BasicCustomerInfoTests {
         of customerInfo: CustomerInfo,
         onlyModifiesEntitlementVerification newVerification: VerificationResult
     ) {
-        let copy = customerInfo.copy(with: newVerification, httpResponseSource: .mainServer)
+        let copy = customerInfo.copy(with: newVerification, httpResponseOriginalSource: .mainServer)
         expect(customerInfo) != copy
 
         expect(copy.entitlements.verification) == newVerification
 
         let copyWithOriginalVerification = copy.copy(with: customerInfo.entitlements.verification,
-                                                     httpResponseSource: .mainServer)
+                                                     httpResponseOriginalSource: .mainServer)
         expect(copyWithOriginalVerification) == customerInfo
     }
 

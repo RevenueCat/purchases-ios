@@ -226,13 +226,15 @@ class CustomerInfoVersion2DecodingTests: BaseHTTPResponseTest {
     }
 
     func testVerificationIsEncoded() throws {
-        let reencoded = try self.customerInfo.copy(with: .verified, httpResponseSource: .mainServer).encodeAndDecode()
+        let reencoded = try self.customerInfo.copy(with: .verified,
+                                                   httpResponseOriginalSource: .mainServer).encodeAndDecode()
 
         expect(reencoded.entitlements.verification) == .verified
     }
 
     func testFailedVerificationIsEncoded() throws {
-        let reencoded = try self.customerInfo.copy(with: .failed, httpResponseSource: .mainServer).encodeAndDecode()
+        let reencoded = try self.customerInfo.copy(with: .failed,
+                                                   httpResponseOriginalSource: .mainServer).encodeAndDecode()
 
         expect(reencoded.entitlements.verification) == .failed
     }
@@ -265,17 +267,20 @@ class CustomerInfoEncodingTests: BaseHTTPResponseTest {
     }
 
     func testEncodingWithVerifiedResponse() {
-        assertSnapshot(matching: self.customerInfo.copy(with: .verified, httpResponseSource: .mainServer),
+        assertSnapshot(matching: self.customerInfo.copy(with: .verified,
+                                                        httpResponseOriginalSource: .mainServer),
                        as: .backwardsCompatibleFormattedJson)
     }
 
     func testEncodingWithFailedVerificationResponse() {
-        assertSnapshot(matching: self.customerInfo.copy(with: .failed, httpResponseSource: .mainServer),
+        assertSnapshot(matching: self.customerInfo.copy(with: .failed,
+                                                        httpResponseOriginalSource: .mainServer),
                        as: .backwardsCompatibleFormattedJson)
     }
 
     func testEncodingLoadShedderResponse() throws {
-        assertSnapshot(matching: self.customerInfo.copy(with: .failed, httpResponseSource: .loadShedder),
+        assertSnapshot(matching: self.customerInfo.copy(with: .failed,
+                                                        httpResponseOriginalSource: .loadShedder),
                        as: .backwardsCompatibleFormattedJson)
     }
 
