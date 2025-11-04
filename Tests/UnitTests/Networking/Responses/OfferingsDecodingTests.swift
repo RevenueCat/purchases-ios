@@ -122,7 +122,7 @@ class OfferingsContentsDecodingTests: BaseHTTPResponseTest {
     func testEncodingAndDecodingOfferingsContentsWithOriginalSourceMain() throws {
         let response: OfferingsResponse = try Self.decodeFixture("Offerings")
         let offeringsContents = Offerings.Contents(response: response,
-                                                   fromFallbackUrl: false, fromLoadShedder: false)
+                                                   httpResponseSource: .mainServer)
 
         let encodedData = try JSONEncoder().encode(offeringsContents)
         let decodedContents = try JSONDecoder().decode(Offerings.Contents.self, from: encodedData)
@@ -133,7 +133,7 @@ class OfferingsContentsDecodingTests: BaseHTTPResponseTest {
     func testEncodingAndDecodingOfferingsContentsWithOriginalSourceFallbackUrl() throws {
         let response: OfferingsResponse = try Self.decodeFixture("Offerings")
         let offeringsContents = Offerings.Contents(response: response,
-                                                   fromFallbackUrl: true, fromLoadShedder: false)
+                                                   httpResponseSource: .fallbackUrl)
 
         let encodedData = try JSONEncoder().encode(offeringsContents)
         let decodedContents = try JSONDecoder().decode(Offerings.Contents.self, from: encodedData)
@@ -144,7 +144,7 @@ class OfferingsContentsDecodingTests: BaseHTTPResponseTest {
     func testEncodingAndDecodingOfferingsContentsWithOriginalSourceLoadShedder() throws {
         let response: OfferingsResponse = try Self.decodeFixture("Offerings")
         let offeringsContents = Offerings.Contents(response: response,
-                                                   fromFallbackUrl: false, fromLoadShedder: true)
+                                                   httpResponseSource: .loadShedder)
 
         let encodedData = try JSONEncoder().encode(offeringsContents)
         let decodedContents = try JSONDecoder().decode(Offerings.Contents.self, from: encodedData)

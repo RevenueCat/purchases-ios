@@ -138,8 +138,7 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
             placements: nil,
             targeting: nil,
             contents: .init(response: offeringsResponse,
-                            fromFallbackUrl: false,
-                            fromLoadShedder: false) 
+                            httpResponseSource: .mainServer) 
         )
 
         self.systemInfo.stubbedIsApplicationBackgrounded = false

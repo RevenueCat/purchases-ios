@@ -190,13 +190,14 @@ extension Offerings {
         /// Fallback URL server
         case fallbackUrl = "fallback_url"
 
-        init(fromFallbackUrl: Bool, fromLoadShedder: Bool) {
-            if fromFallbackUrl {
-                self = .fallbackUrl
-            } else if fromLoadShedder {
-                self = .loadShedder
-            } else {
+        init(httpResponseSource: HTTPResponseSource) {
+            switch httpResponseSource {
+            case .mainServer:
                 self = .main
+            case .loadShedder:
+                self = .loadShedder
+            case .fallbackUrl:
+                self = .fallbackUrl
             }
         }
     }
@@ -211,10 +212,9 @@ extension Offerings {
         var originalSource: Offerings.OriginalSource
         var loadedFromCache: Bool = false
 
-        init(response: OfferingsResponse, fromFallbackUrl: Bool, fromLoadShedder: Bool) {
+        init(response: OfferingsResponse, httpResponseSource: HTTPResponseSource) {
             self.response = response
-            self.originalSource = Offerings.OriginalSource(fromFallbackUrl: fromFallbackUrl,
-                                                           fromLoadShedder: fromLoadShedder)
+            self.originalSource = Offerings.OriginalSource(httpResponseSource: httpResponseSource)
         }
 
         /// Creates a copy of this ``CustomerInfo`` setting the `isLoadedFromCache` flag  to `true`.

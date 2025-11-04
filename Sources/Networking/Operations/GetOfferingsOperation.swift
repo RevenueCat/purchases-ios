@@ -75,8 +75,7 @@ private extension GetOfferingsOperation {
                 callbackObject.completion(response
                     .map {
                         Offerings.Contents(response: $0.body,
-                                           fromFallbackUrl: $0.isFallbackUrlResponse,
-                                           fromLoadShedder: $0.isLoadShedderResponse)
+                                           httpResponseSource: $0.source)
                     }
                     .mapError(BackendError.networkError)
                 )

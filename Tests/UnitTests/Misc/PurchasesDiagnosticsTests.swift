@@ -44,8 +44,7 @@ class PurchasesDiagnosticsTests: TestCase {
                                                                            placements: nil,
                                                                            targeting: nil,
                                                                            uiConfig: nil),
-                                               fromFallbackUrl: false,
-                                               fromLoadShedder: false))
+                                               httpResponseSource: .mainServer))
         )
     }
 

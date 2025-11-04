@@ -363,8 +363,7 @@ private extension PaywallCacheWarmingTests {
             placements: nil,
             targeting: nil,
             contents: Offerings.Contents(response: offeringsResponse,
-                                         fromFallbackUrl: false,
-                                         fromLoadShedder: false)
+                                         httpResponseSource: .mainServer)
         )
     }
 
