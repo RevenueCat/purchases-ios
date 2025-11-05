@@ -85,7 +85,7 @@ class BaseLoadShedderStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
         SystemInfo.apiBaseURL = self.backend.apiBaseURL
         try await super.setUp()
     }
-    
+
     override func tearDown() async throws {
         SystemInfo.apiBaseURL = SystemInfo.defaultApiBaseURL
         try await super.tearDown()
