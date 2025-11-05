@@ -656,7 +656,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
 
     func testCachedCustomerInfoPreservesOriginalSourceLoadShedder() throws {
         let appUserID = "myUser"
-        let loadShedderInfo = self.mockCustomerInfo.copy(with: .verified, httpResponseOriginalSource: nil)
+        let loadShedderInfo = self.mockCustomerInfo.copy(with: .verified, httpResponseOriginalSource: .loadShedder)
         expect(loadShedderInfo.originalSource) == .loadShedder
 
         self.customerInfoManager.cache(customerInfo: loadShedderInfo, appUserID: appUserID)
