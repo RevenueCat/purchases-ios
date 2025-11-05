@@ -69,7 +69,7 @@
       ],
       "target" : {
         "containerPath" : "container:RevenueCat.xcodeproj",
-        "identifier" : "2DE20B6B264087FB004C597D",
+        "identifier" : "4B547C7901622A3858C2D9BC",
         "name" : "BackendIntegrationTests"
       }
     }
