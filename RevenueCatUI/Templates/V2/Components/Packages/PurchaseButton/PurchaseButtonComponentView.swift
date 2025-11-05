@@ -37,6 +37,8 @@ struct PurchaseButtonComponentView: View {
 
     @State private var inAppBrowserURL: URL?
 
+    @State private var awaitingResponseFromOnPurchaseInitiatedCallback = false
+
     private let viewModel: PurchaseButtonComponentViewModel
     private let onDismiss: () -> Void
 
@@ -48,7 +50,7 @@ struct PurchaseButtonComponentView: View {
     /// Show activity indicator only if purchase action in purchase handler
     var showActivityIndicatorOverContent: Bool {
         guard let actionType = self.purchaseHandler.actionTypeInProgress else {
-            return false
+            return awaitingResponseFromOnPurchaseInitiatedCallback
         }
 
         switch actionType {
@@ -103,7 +105,9 @@ struct PurchaseButtonComponentView: View {
     private func purchaseInApp() async throws {
         self.logIfInPreview(package: self.packageContext.package)
 
-        guard !self.purchaseHandler.actionInProgress else { return }
+        guard !self.purchaseHandler.actionInProgress && !awaitingResponseFromOnPurchaseInitiatedCallback else {
+            return
+        }
 
         guard let selectedPackage = self.packageContext.package else {
             Logger.error(Strings.no_selected_package_found)
@@ -112,6 +116,8 @@ struct PurchaseButtonComponentView: View {
 
         // Check if there's a purchase interceptor
         if let interceptor = self.purchaseInitiatedAction {
+            self.awaitingResponseFromOnPurchaseInitiatedCallback = true
+            defer { self.awaitingResponseFromOnPurchaseInitiatedCallback = false }
             // Wait for the interceptor to call resume before proceeding
             let result = await withCheckedContinuation { continuation in
                 let productIdentifier = selectedPackage.storeProduct.productIdentifier
