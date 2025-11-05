@@ -841,6 +841,15 @@ platform :ios do
       ],
       allow_empty: true
     )
+
+    replace_text_in_files(
+      previous_text: "REVENUECAT_API_BASE_URL",
+      new_text: ENV["REVENUECAT_API_BASE_URL"].to_s,
+      paths_of_files_to_update: [
+        './Tests/BackendIntegrationTests/Constants.swift'
+      ],
+      allow_empty: true
+    )
   end
 
   desc "Create XCFramework, and create GitHub release"
