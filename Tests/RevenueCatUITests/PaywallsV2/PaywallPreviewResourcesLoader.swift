@@ -164,8 +164,7 @@ class PaywallPreviewResourcesLoader {
                     localizedTitle: "Weekly"
                 ))
             ], contents: Offerings.Contents(response: offeringsResponseWithPackages,
-                                            fromFallbackUrl: false,
-                                            fromLoadShedder: false))
+                                            httpResponseOriginalSource: .mainServer))
 
             result.merge(offerings!.all)
         }
