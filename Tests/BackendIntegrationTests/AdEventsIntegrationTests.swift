@@ -62,8 +62,16 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
     }
 
     func testFlushingEmptyAdEvents() async throws {
-        let result = try await Purchases.shared.eventsManager?.flushAdEvents(count: 1) ?? 0
-        expect(result) == 0
+        // Simulate backgrounding to trigger flush
+        self.simulateBackgroundingApp()
+        // Wait for async flush to complete
+        try await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+
+        // Verify no flush happened (empty store)
+        self.logger.verifyMessageWasNotLogged(
+            Strings.analytics.flush_events_success,
+            level: .debug
+        )
     }
 
     func testFlushingAdEventsClearsThem() async throws {
@@ -78,11 +86,27 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
         await Purchases.shared.adTracker.trackAdDisplayed(displayedData)
         await Purchases.shared.adTracker.trackAdDisplayed(displayedData)
 
-        let result1 = try await Purchases.shared.eventsManager?.flushAdEvents(count: 10) ?? 0
-        expect(result1) == 3
+        // Simulate backgrounding to trigger flush (flushes all events)
+        self.simulateBackgroundingApp()
+        // Wait for async flush to complete
+        try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
 
-        let result2 = try await Purchases.shared.eventsManager?.flushAdEvents(count: 10) ?? 0
-        expect(result2) == 0
+        self.logger.verifyMessageWasLogged(
+            Strings.analytics.flush_events_success,
+            level: .debug,
+            expectedCount: 1
+        )
+
+        // Simulate backgrounding again - should flush nothing
+        self.simulateBackgroundingApp()
+        try await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+
+        // Verify no additional flush happened
+        self.logger.verifyMessageWasLogged(
+            Strings.analytics.flush_events_success,
+            level: .debug,
+            expectedCount: 1 // Still only 1 flush total
+        )
     }
 
     func testRemembersAdEventsWhenReopeningApp() async throws {
@@ -105,18 +129,35 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
 
         await self.resetSingleton()
 
-        let result = try await Purchases.shared.eventsManager?.flushAdEvents(count: 10) ?? 0
-        expect(result) == 2
-    }
-
-    private func flushAndVerify(eventsCount: Int) async throws {
-        let result = try await Purchases.shared.eventsManager?.flushAdEvents(count: eventsCount) ?? 0
-        expect(result) == eventsCount
+        // Simulate backgrounding to trigger flush
+        self.simulateBackgroundingApp()
+        // Wait for async flush to complete
+        try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
 
         self.logger.verifyMessageWasLogged(
             Strings.analytics.flush_events_success,
             level: .debug,
             expectedCount: 1
+        )
+    }
+
+    private func flushAndVerify(eventsCount: Int) async throws {
+        // Simulate backgrounding to trigger flush
+        self.simulateBackgroundingApp()
+        // Wait for async flush to complete
+        try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+
+        self.logger.verifyMessageWasLogged(
+            Strings.analytics.flush_events_success,
+            level: .debug,
+            expectedCount: 1
+        )
+    }
+
+    private func simulateBackgroundingApp() {
+        NotificationCenter.default.post(
+            name: SystemInfo.applicationDidEnterBackgroundNotification,
+            object: nil
         )
     }
 

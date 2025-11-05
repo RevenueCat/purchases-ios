@@ -276,7 +276,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let offlineEntitlementsManager: OfflineEntitlementsManager
     private let productsManager: ProductsManagerType
     private let customerInfoManager: CustomerInfoManager
-    internal let eventsManager: EventsManagerType?
+    private let eventsManager: EventsManagerType?
 
 #if ENABLE_AD_EVENTS_TRACKING
     private var _adTracker: Any?
