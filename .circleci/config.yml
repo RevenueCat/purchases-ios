@@ -713,7 +713,7 @@ jobs:
   run-revenuecat-ui-ios-26:
     executor:
       name: macos-executor
-      xcode_version: "26.0.1"
+      xcode_version: "26.1.0"
 
     steps:
       - checkout
@@ -729,7 +729,7 @@ jobs:
           command: bundle exec fastlane test_revenuecatui
           no_output_timeout: 15m
           environment:
-            DEVICE: iPhone 17,OS=26.0
+            DEVICE: iPhone 17,OS=26.1
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshots_repo_pr"
@@ -795,7 +795,7 @@ jobs:
   run-test-ios-26:
     executor:
       name: macos-executor
-      xcode_version: "26.0.1"
+      xcode_version: "26.1.0"
     steps:
       - checkout
       - install-dependencies:
@@ -805,7 +805,7 @@ jobs:
           command: bundle exec fastlane test_ios
           no_output_timeout: 15m
           environment:
-            SCAN_DEVICE: iPhone 17 (26.0)
+            SCAN_DEVICE: iPhone 17 (26.1)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
