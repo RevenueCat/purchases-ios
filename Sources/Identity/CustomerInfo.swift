@@ -465,7 +465,7 @@ extension CustomerInfo {
                 case .mainServer:
                     self = .main
                 case .loadShedder:
-                    self = .main
+                    self = .loadShedder
                 case .fallbackUrl:
                     return nil // CustomerInfo not supported from fallback URL
                 case .none:
