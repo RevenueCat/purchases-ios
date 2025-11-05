@@ -188,6 +188,30 @@ class AdEventStoreTests: TestCase {
         })
     }
 
+    func testSizeLimitTriggersCleanup() async throws {
+        let firstEvent: StoredAdEvent = .randomDisplayedEvent()
+        await self.store.store(firstEvent)
+
+        let events = await self.store.fetch(1)
+        expect(events) == [firstEvent]
+
+        // Mock file size to exceed size limit to test cleanup behavior
+        await self.handler.setMockedFileSizeInKB(2049)
+
+        // Store another event, which should trigger cleanup of old events
+        let secondEvent: StoredAdEvent = .randomDisplayedEvent()
+        await self.store.store(secondEvent)
+
+        // After cleanup, only the new event should remain
+        let remainingEvents = await self.store.fetch(2)
+        expect(remainingEvents) == [secondEvent]
+
+        // Verify cleanup was logged
+        expect(self.logger.messages).to(containElementSatisfying {
+            $0.level == .warn || $0.level == .info
+        })
+    }
+
 }
 
 // MARK: - Extensions
