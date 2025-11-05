@@ -86,52 +86,22 @@ public struct PurchaseInitiatedAction: Sendable {
     }
 }
 
-/// A container for a function that is invoked to resume or cancel a flow
-public struct ResumeAction {
-    private let action: (Bool) -> Void
-
-    /// Create a ResumeAction
-    /// - Parameter action: The handler that will be invoked later
-    public init(action: @escaping (Bool) -> Void) {
-        self.action = action
-    }
-
-    /// A function that is invoked to resume or cancel a flow
-    /// - Parameter shouldProceed: true if a flow should continue, false if not.
-    @MainActor
-    public func resume(shouldProceed: Bool) {
-        action(shouldProceed)
-    }
-}
-
-public extension ResumeAction {
-
-    /// A function that is invoked to resume or cancel a flow
-    /// - Parameter shouldProceed: true if a flow should continue, false if not.
-    @MainActor
-    func callAsFunction(shouldProceed: Bool = true) {
-        resume(shouldProceed: shouldProceed)
-    }
-}
-
 /// A wrapper for the offer code redemption initiated callback action.
 /// This allows intercepting and gating offer code redemption before it proceeds.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct OfferCodeRedemptionInitiatedAction: Sendable {
-    /// A closure that resumes the offer code redemption flow.
-    public typealias Resume = @MainActor @Sendable () -> Void
-
-    private let action: @Sendable (@escaping Resume) -> Void
+    private let action: @Sendable (ResumeAction) -> Void
 
     /// Creates a new offer code redemption initiated action.
     /// - Parameter action: The closure to invoke when offer code redemption is initiated.
     ///   The closure receives a resume callback that must be called to proceed.
-    public init(_ action: @escaping @Sendable (@escaping Resume) -> Void) {
+    public init(_ action: @escaping @Sendable (ResumeAction) -> Void) {
         self.action = action
     }
 
     /// Invokes the action with the resume callback.
-    func callAsFunction(resume: @escaping Resume) {
+    @MainActor
+    func callAsFunction(resume: ResumeAction) {
         action(resume)
     }
 }
@@ -358,7 +328,11 @@ extension View {
     ///             // Perform authentication or other pre-purchase logic
     ///             authenticateUser { success in
     ///                 if success {
-    ///                     resume() // Proceed with purchase
+    ///                     resume()
+    ///                     print("Auth complete. Purchase Sheet presented)")
+    ///                 } else {
+    ///                     resume(shouldProceed: false)
+    ///                     print("Auth failed, purchase flow canceled)")
     ///                 }
     ///             }
     ///         }
@@ -386,7 +360,11 @@ extension View {
     ///             // Perform pre-redemption logic
     ///             authenticateUser { success in
     ///                 if success {
-    ///                     resume() // Proceed with redemption
+    ///                     resume()
+    ///                     print("Auth complete. Offer Code Sheet presented)")
+    ///                 } else {
+    ///                     resume(shouldProceed: false)
+    ///                     print("Auth failed, offer code flow canceled)")
     ///                 }
     ///             }
     ///         }
