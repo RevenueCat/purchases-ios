@@ -13,7 +13,7 @@ enum Constants {
     static let apiKey = "REVENUECAT_API_KEY"
     static let loadShedderApiKey = "REVENUECAT_LOAD_SHEDDER_API_KEY"
     static let customEntitlementComputationApiKey = "REVENUECAT_CUSTOM_ENTITLEMENT_COMPUTATION_API_KEY"
-    
+
     // The API Base URL for the tests. Configures the main backend in the SDK while still using the fallback backend logic as opposed to the proxyURL
     static let apiBaseURL = "REVENUECAT_API_BASE_URL"
 

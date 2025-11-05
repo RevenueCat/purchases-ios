@@ -1686,12 +1686,12 @@ workflows:
           context:
             - slack-secrets
       - loadshedder-integration-tests:
-          name: loadshedder-integration-tests-load-shedder-us-east-1
+          name: loadshedder-integration-tests-us-east-1
           backend: "load_shedder_us_east_1"
           context:
             - slack-secrets
       - loadshedder-integration-tests:
-          name: loadshedder-integration-tests-load-shedder-us-east-2
+          name: loadshedder-integration-tests-us-east-2
           backend: "load_shedder_us_east_2"
           context:
             - slack-secrets
@@ -1762,12 +1762,12 @@ workflows:
           context:
             - slack-secrets-ios
       - loadshedder-integration-tests:
-          name: loadshedder-integration-tests-load-shedder-us-east-1
+          name: loadshedder-integration-tests-us-east-1
           backend: "load_shedder_us_east_1"
           context:
             - slack-secrets-ios
       - loadshedder-integration-tests:
-          name: loadshedder-integration-tests-load-shedder-us-east-2
+          name: loadshedder-integration-tests-us-east-2
           backend: "load_shedder_us_east_2"
           context:
             - slack-secrets-ios

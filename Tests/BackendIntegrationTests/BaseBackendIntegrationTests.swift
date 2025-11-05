@@ -71,7 +71,7 @@ class BaseBackendIntegrationTests: TestCase {
     func configurePurchases() {
         Purchases.proxyURL = self.proxyURL.flatMap(URL.init(string:))
         Purchases.logLevel = .verbose
-        
+
         if apiBaseURL.isNotEmpty, let apiBaseURL = URL(string: apiBaseURL) {
             SystemInfo.apiBaseURL = apiBaseURL
         }
