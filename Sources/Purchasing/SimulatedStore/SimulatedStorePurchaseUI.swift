@@ -56,141 +56,60 @@ struct DefaultSimulatedStorePurchaseUI: SimulatedStorePurchaseUI {
                     continuation.resume(returning: result)
                 }
 
-                #if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)
-                self.purchaseWithUIKit(product: product, completion: completion)
-                #elseif os(watchOS)
-                self.purchaseWithWatchKit(product: product, completion: completion)
-                #elseif os(macOS)
-                self.purchaseWithAppKit(product: product, completion: completion)
-                #endif
+                let alert = Alert(
+                    title: Self.purchaseAlertTitle,
+                    message: product.purchaseAlertMessage,
+                    actions: [
+                        .init(title: Self.purchaseActionTitle,
+                              callback: { _ in completion(.simulateSuccess) },
+                              style: .default),
+                        .init(title: Self.failureActionTitle,
+                              callback: { _ in completion(.simulateFailure) },
+                              style: .destructive),
+                        .init(title: Self.cancelActionTitle,
+                              callback: { _ in completion(.cancel) },
+                              style: .cancel)
+                    ], dismissCallback: {
+                        completion(.cancel)
+                    }
+                )
+
+                self.showAlert(alert) { (error: PurchasesError) in
+                    completion(.error(error))
+                }
             }
         }.value
     }
 
-    #if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)
-    @MainActor
-    func purchaseWithUIKit(
-        product: SimulatedStoreProduct, completion: @escaping @MainActor (SimulatedStorePurchaseUIResult) -> Void
-    ) {
-        guard let viewController = self.findTopViewController() else {
-            Logger.warn(Strings.purchase.unable_to_find_root_view_controller_for_simulated_purchase)
-            completion(.error(ErrorUtils.unknownError(
-                message: Strings.purchase.unable_to_find_root_view_controller_for_simulated_purchase.description
-            )))
-            return
-        }
+    #if !DEBUG
 
-        let alertController = UIAlertController(title: Self.purchaseAlertTitle,
-                                                message: product.purchaseAlertMessage,
-                                                preferredStyle: .alert)
+    /// Calling this method will show an alert indicating that a Test Store API key
+    /// is being used in a release build, which is not supported.
+    func showTestKeyInReleaseAlert() async {
+        await Task { @MainActor in
+            return await withUnsafeContinuation { continuation in
 
-        alertController.addAction(UIAlertAction(title: Self.failureActionTitle, style: .destructive) { _ in
-            completion(.simulateFailure)
-        })
+                let completion: () -> Void = continuation.resume
 
-        alertController.addAction(UIAlertAction(title: Self.cancelActionTitle, style: .cancel) { _ in
-            completion(.cancel)
-        })
+                let alert = Alert(
+                    title: TestKeyInReleaseAlert.title,
+                    message: TestKeyInReleaseAlert.message,
+                    actions: [
+                        .init(title: TestKeyInReleaseAlert.actionTitle,
+                              callback: { _ in completion() },
+                              style: .cancel)
+                    ], dismissCallback: {
+                        completion()
+                    }
+                )
 
-        alertController.addAction(UIAlertAction(title: Self.purchaseActionTitle, style: .default) { _ in
-            completion(.simulateSuccess)
-        })
-
-        viewController.present(alertController, animated: true)
-    }
-
-    @MainActor
-    func findTopViewController() -> UIViewController? {
-        guard let application = self.systemInfo.sharedUIApplication else {
-            return nil
-        }
-
-        let window: UIWindow?
-
-        // Try to get the window from the scene first
-        if #available(macCatalyst 13.1, *),
-           let windowScene = application.currentWindowScene {
-            if #available(iOS 15.0, macCatalyst 15.0, tvOS 15.0, *) {
-                window = windowScene.keyWindow
-            } else {
-                window = windowScene.windows.first(where: { $0.isKeyWindow })
+                self.showAlert(alert) { _ in
+                    completion()
+                }
             }
-        } else {
-            if #available(iOS 15.0, macCatalyst 15.0, *) {
-                window = nil
-            } else {
-                // Fallback to legacy approach on OSs where UIApplication's `windows` property is not deprecated
-                window = application.windows.first(where: { $0.isKeyWindow })
-            }
-        }
-
-        return window?.rootViewController?.topMostViewController()
+        }.value
     }
 
-    #endif
-
-    #if os(watchOS)
-    @MainActor
-    func purchaseWithWatchKit(
-        product: SimulatedStoreProduct, completion: @escaping @MainActor (SimulatedStorePurchaseUIResult) -> Void
-    ) {
-
-        let failureAction = WKAlertAction(title: Self.failureActionTitle, style: .destructive) {
-            completion(.simulateFailure)
-        }
-
-        let purchaseAction = WKAlertAction(title: Self.purchaseActionTitle, style: .default) {
-            completion(.simulateSuccess)
-        }
-
-        let cancelAction = WKAlertAction(title: Self.cancelActionTitle, style: .cancel) {
-            completion(.cancel)
-        }
-
-        WKInterfaceDevice.current().play(.click)
-
-        let controller = WKExtension.shared().rootInterfaceController
-        controller?.presentAlert(withTitle: Self.purchaseAlertTitle,
-                                 message: product.purchaseAlertMessage,
-                                 preferredStyle: .alert,
-                                 actions: [failureAction, cancelAction, purchaseAction])
-    }
-    #endif
-
-    #if os(macOS)
-    @MainActor
-    func purchaseWithAppKit(
-        product: SimulatedStoreProduct, completion: @escaping @MainActor (SimulatedStorePurchaseUIResult) -> Void
-    ) {
-        let alert = NSAlert()
-        alert.messageText = Self.purchaseAlertTitle
-        alert.informativeText = product.purchaseAlertMessage
-        alert.alertStyle = .informational
-
-        alert.addButton(withTitle: Self.purchaseActionTitle)
-        alert.addButton(withTitle: Self.cancelActionTitle)
-        alert.addButton(withTitle: Self.failureActionTitle)
-
-        let response = alert.runModal()
-
-        Task {
-
-            let simulatedResult: SimulatedStorePurchaseUIResult
-
-            switch response {
-            case .alertFirstButtonReturn:
-                simulatedResult = .simulateSuccess
-            case .alertSecondButtonReturn:
-                simulatedResult = .cancel
-            case .alertThirdButtonReturn:
-                simulatedResult = .simulateFailure
-            default:
-                simulatedResult = .simulateSuccess // Fallback case
-            }
-
-            completion(simulatedResult)
-        }
-    }
     #endif
 
 }
@@ -228,6 +147,16 @@ fileprivate extension DefaultSimulatedStorePurchaseUI {
     static let cancelActionTitle = "Cancel"
     static let failureActionTitle = "Test failed purchase"
 
+}
+
+fileprivate enum TestKeyInReleaseAlert {
+
+    static let title = "Wrong API Key"
+    static let message = "This app is using a test API key. " +
+    "To prepare for release, update your RevenueCat settings to use a production key.\n\n" +
+    "For more info, visit the RevenueCat dashboard."
+
+    static let actionTitle = "OK"
 }
 
 fileprivate extension SimulatedStoreProduct {
@@ -273,3 +202,174 @@ fileprivate extension StoreProductDiscount.DiscountType {
         }
     }
 }
+
+// MARK: - Generic Alert Model
+
+fileprivate extension DefaultSimulatedStorePurchaseUI {
+
+    struct Action {
+
+        enum Style {
+            case destructive
+            case cancel
+            case `default`
+        }
+
+        let title: String
+        let callback: @MainActor (String) -> Void
+        let style: Style
+    }
+
+    struct Alert {
+        let title: String
+        let message: String
+
+        /// Only up to 3 actions are supported on macOS.
+        let actions: [Action]
+        let dismissCallback: @MainActor () -> Void
+    }
+
+}
+
+fileprivate extension DefaultSimulatedStorePurchaseUI {
+
+    @MainActor
+    private func showAlert(_ alert: Alert, onError: (PurchasesError) -> Void) {
+
+        #if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)
+        guard let viewController = self.findTopViewController() else {
+            Logger.warn(Strings.purchase.unable_to_find_root_view_controller_for_simulated_purchase)
+            onError(ErrorUtils.unknownError(
+                message: Strings.purchase.unable_to_find_root_view_controller_for_simulated_purchase.description
+            ))
+            return
+        }
+
+        let alertController = UIAlertController(title: alert.title,
+                                                message: alert.message,
+                                                preferredStyle: .alert)
+
+        alert.actions.forEach { action in
+            let alertAction = UIAlertAction(title: action.title, style: action.style.alertActionStyle) { _ in
+                action.callback(action.title)
+            }
+            alertController.addAction(alertAction)
+        }
+
+        viewController.present(alertController, animated: true)
+
+        #elseif os(watchOS)
+
+        let actions: [WKAlertAction] = alert.actions.map { action in
+            WKAlertAction(title: action.title, style: action.style.alertActionStyle) {
+                action.callback(action.title)
+            }
+
+        }
+
+        WKInterfaceDevice.current().play(.click)
+
+        let controller = WKExtension.shared().rootInterfaceController
+        controller?.presentAlert(withTitle: alert.title,
+                                 message: alert.message,
+                                 preferredStyle: .alert,
+                                 actions: actions)
+
+        #elseif os(macOS)
+
+        let nsAlert = NSAlert()
+        nsAlert.messageText = alert.title
+        nsAlert.informativeText = alert.message
+        nsAlert.alertStyle = .informational
+
+        // Only up to 3 actions are supported on macOS. Keep a local array of the ones we actually show.
+        let displayedActions = Array(alert.actions.prefix(3))
+        displayedActions.forEach { action in
+            nsAlert.addButton(withTitle: action.title)
+        }
+
+        let response = nsAlert.runModal()
+
+        // Map the modal response to the button index (0-based).
+        let indexMap: [NSApplication.ModalResponse: Int] = [
+            .alertFirstButtonReturn: 0,
+            .alertSecondButtonReturn: 1,
+            .alertThirdButtonReturn: 2
+        ]
+        let selectedIndex = indexMap[response] ?? 0
+        let selectedAction = displayedActions[safe: selectedIndex]
+        selectedAction?.callback(selectedAction?.title ?? "")
+
+        #endif
+
+    }
+}
+
+extension DefaultSimulatedStorePurchaseUI.Action.Style {
+
+    #if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)
+
+    var alertActionStyle: UIAlertAction.Style {
+        switch self {
+            case .destructive:
+            return .destructive
+        case .cancel:
+            return .cancel
+        case .default:
+            return .default
+        }
+    }
+
+    #elseif os(watchOS)
+
+    var alertActionStyle: WKAlertActionStyle {
+        switch self {
+        case .destructive:
+            return .destructive
+        case .cancel:
+            return .cancel
+        case .default:
+            return .default
+        }
+    }
+
+    #endif
+}
+
+// MARK: - Helper
+
+#if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)
+
+fileprivate extension DefaultSimulatedStorePurchaseUI {
+
+    @MainActor
+    func findTopViewController() -> UIViewController? {
+        guard let application = self.systemInfo.sharedUIApplication else {
+            return nil
+        }
+
+        let window: UIWindow?
+
+        // Try to get the window from the scene first
+        if #available(macCatalyst 13.1, *),
+           let windowScene = application.currentWindowScene {
+            if #available(iOS 15.0, macCatalyst 15.0, tvOS 15.0, *) {
+                window = windowScene.keyWindow
+            } else {
+                window = windowScene.windows.first(where: { $0.isKeyWindow })
+            }
+        } else {
+            if #available(iOS 15.0, macCatalyst 15.0, *) {
+                window = nil
+            } else {
+                // Fallback to legacy approach on OSs where UIApplication's `windows` property is not deprecated
+                window = application.windows.first(where: { $0.isKeyWindow })
+            }
+        }
+
+        return window?.rootViewController?.topMostViewController()
+    }
+
+}
+
+#endif
