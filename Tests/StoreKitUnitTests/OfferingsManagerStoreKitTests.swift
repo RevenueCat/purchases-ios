@@ -97,8 +97,7 @@ private extension OfferingsManagerStoreKitTests {
 
         static let anyBackendOfferingsContents = Offerings.Contents(
             response: anyBackendOfferingsResponse,
-            fromFallbackUrl: false,
-            fromLoadShedder: false
+            httpResponseOriginalSource: .mainServer
         )
 
         static let anyBackendOfferingsResponse: OfferingsResponse = .init(
