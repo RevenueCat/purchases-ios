@@ -140,7 +140,7 @@ private extension UIViewController {
 
 // MARK: - Purchase Alert Details
 
-fileprivate extension DefaultSimulatedStorePurchaseUI {
+private extension DefaultSimulatedStorePurchaseUI {
 
     static let purchaseAlertTitle = "Test Purchase"
     static let purchaseActionTitle = "Test valid purchase"
@@ -149,7 +149,7 @@ fileprivate extension DefaultSimulatedStorePurchaseUI {
 
 }
 
-fileprivate enum TestKeyInReleaseAlert {
+private enum TestKeyInReleaseAlert {
 
     static let title = "Wrong API Key"
     static let message = "This app is using a test API key. " +
@@ -160,7 +160,7 @@ fileprivate enum TestKeyInReleaseAlert {
     static let actionTitle = "OK"
 }
 
-fileprivate extension SimulatedStoreProduct {
+private extension SimulatedStoreProduct {
 
     var purchaseAlertMessage: String {
         var message = "This is a test purchase and should only be used during development. In production, " +
@@ -182,7 +182,7 @@ fileprivate extension SimulatedStoreProduct {
 
 }
 
-fileprivate extension StoreProductDiscount {
+private extension StoreProductDiscount {
 
     var testPurchaseDescription: String {
         return "\(self.type.testPurchaseTitle): \(self.localizedPriceString) for " +
@@ -190,7 +190,7 @@ fileprivate extension StoreProductDiscount {
     }
 }
 
-fileprivate extension StoreProductDiscount.DiscountType {
+private extension StoreProductDiscount.DiscountType {
 
     var testPurchaseTitle: String {
         switch self {
@@ -206,10 +206,11 @@ fileprivate extension StoreProductDiscount.DiscountType {
 
 // MARK: - Generic Alert Model
 
-fileprivate extension DefaultSimulatedStorePurchaseUI {
+private extension DefaultSimulatedStorePurchaseUI {
 
     struct Action {
 
+        // swiftlint:disable:next nesting
         enum Style {
             case destructive
             case cancel
@@ -232,10 +233,10 @@ fileprivate extension DefaultSimulatedStorePurchaseUI {
 
 }
 
-fileprivate extension DefaultSimulatedStorePurchaseUI {
+private extension DefaultSimulatedStorePurchaseUI {
 
     @MainActor
-    private func showAlert(_ alert: Alert, onError: (PurchasesError) -> Void) {
+    func showAlert(_ alert: Alert, onError: (PurchasesError) -> Void) {
 
         #if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)
         guard let viewController = self.findTopViewController() else {
@@ -312,7 +313,7 @@ extension DefaultSimulatedStorePurchaseUI.Action.Style {
 
     var alertActionStyle: UIAlertAction.Style {
         switch self {
-            case .destructive:
+        case .destructive:
             return .destructive
         case .cancel:
             return .cancel

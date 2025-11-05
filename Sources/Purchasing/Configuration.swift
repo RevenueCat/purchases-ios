@@ -480,13 +480,14 @@ extension Configuration.APIKeyValidationResult {
         // as an XCFramework, since the XCFramework is built using the Release configuration.
         Task {
             let errorMessage = "[RevenueCat]: Test Store API key used in Release build. Please configure the " +
-            "App Store app on the RevenueCat dashboard and use its corresponding Apple API key before releasing. Visit https://rev.cat/sdk-test-store to learn more."
+            "App Store app on the RevenueCat dashboard and use its corresponding Apple API key before releasing. " +
+            "Visit https://rev.cat/sdk-test-store to learn more."
 
             Logger.error(errorMessage)
 
-            let ui = DefaultSimulatedStorePurchaseUI(systemInfo: systemInfo)
-            await ui.showTestKeyInReleaseAlert()
-            
+            let uiHelper = DefaultSimulatedStorePurchaseUI(systemInfo: systemInfo)
+            await uiHelper.showTestKeyInReleaseAlert()
+
             fatalError(errorMessage)
         }
         #endif
