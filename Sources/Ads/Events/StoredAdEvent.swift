@@ -23,7 +23,8 @@ struct StoredAdEvent {
     private(set) var appSessionID: UUID
 
     init?<T: Encodable>(event: T, userID: String, appSessionID: UUID) {
-        guard let encodedJSON = try? event.encodedJSON else {
+        guard let data = try? JSONEncoder.sortedKeys.encode(event),
+              let encodedJSON = String(data: data, encoding: .utf8) else {
             return nil
         }
 
@@ -58,25 +59,6 @@ extension StoredAdEvent: Codable {
 
 }
 
-extension StoredAdEvent: Equatable {
-
-    static func == (lhs: StoredAdEvent, rhs: StoredAdEvent) -> Bool {
-        guard lhs.userID == rhs.userID,
-              lhs.appSessionID == rhs.appSessionID else {
-            return false
-        }
-
-        // Compare decoded events instead of raw JSON strings
-        guard let lhsData = lhs.encodedEvent.data(using: .utf8),
-              let rhsData = rhs.encodedEvent.data(using: .utf8),
-              let lhsDict = try? JSONSerialization.jsonObject(with: lhsData) as? [String: Any],
-              let rhsDict = try? JSONSerialization.jsonObject(with: rhsData) as? [String: Any] else {
-            return false
-        }
-
-        return NSDictionary(dictionary: lhsDict).isEqual(rhsDict)
-    }
-
-}
+extension StoredAdEvent: Equatable {}
 
 #endif
