@@ -37,32 +37,6 @@
   },
   "testTargets" : [
     {
-      "skippedTests" : [
-        "LoadShedderSignatureVerificationWithoutHeaderHashIntegrationTests",
-        "LoadShedderSignatureVerificationWithoutHeaderHashIntegrationTests\/testCanGetOfferings()",
-        "LoadShedderSignatureVerificationWithoutHeaderHashIntegrationTests\/testCanPurchaseConsumablePackage()",
-        "LoadShedderSignatureVerificationWithoutHeaderHashIntegrationTests\/testCanPurchaseNonConsumablePackage()",
-        "LoadShedderSignatureVerificationWithoutHeaderHashIntegrationTests\/testCanPurchaseSubsPackage()",
-        "LoadShedderSignatureVerificationWithoutHeaderHashIntegrationTests\/testOfferingsComeFromLoadShedder()",
-        "LoadShedderSignatureVerificationWithoutHeaderHashIntegrationTests\/testProductEntitlementMapping()",
-        "LoadShedderSignatureVerificationWithoutHeaderHashIntegrationTests\/testProductEntitlementMappingComesFromLoadShedder()",
-        "LoadShedderStoreKit1IntegrationTests",
-        "LoadShedderStoreKit1IntegrationTests\/testCanGetOfferings()",
-        "LoadShedderStoreKit1IntegrationTests\/testCanPurchaseConsumablePackage()",
-        "LoadShedderStoreKit1IntegrationTests\/testCanPurchaseNonConsumablePackage()",
-        "LoadShedderStoreKit1IntegrationTests\/testCanPurchaseSubsPackage()",
-        "LoadShedderStoreKit1IntegrationTests\/testOfferingsComeFromLoadShedder()",
-        "LoadShedderStoreKit1IntegrationTests\/testProductEntitlementMapping()",
-        "LoadShedderStoreKit1IntegrationTests\/testProductEntitlementMappingComesFromLoadShedder()",
-        "LoadShedderStoreKit2IntegrationTests",
-        "LoadShedderStoreKit2IntegrationTests\/testCanGetOfferings()",
-        "LoadShedderStoreKit2IntegrationTests\/testCanPurchaseConsumablePackage()",
-        "LoadShedderStoreKit2IntegrationTests\/testCanPurchaseNonConsumablePackage()",
-        "LoadShedderStoreKit2IntegrationTests\/testCanPurchaseSubsPackage()",
-        "LoadShedderStoreKit2IntegrationTests\/testOfferingsComeFromLoadShedder()",
-        "LoadShedderStoreKit2IntegrationTests\/testProductEntitlementMapping()",
-        "LoadShedderStoreKit2IntegrationTests\/testProductEntitlementMappingComesFromLoadShedder()"
-      ],
       "target" : {
         "containerPath" : "container:RevenueCat.xcodeproj",
         "identifier" : "4B547C7901622A3858C2D9BC",
