@@ -39,6 +39,14 @@
     {
       "skippedTests" : [
         "BaseBackendIntegrationTests",
+        "BaseLoadShedderStoreKitIntegrationTests",
+        "BaseLoadShedderStoreKitIntegrationTests\/testCanGetOfferings()",
+        "BaseLoadShedderStoreKitIntegrationTests\/testCanPurchaseConsumablePackage()",
+        "BaseLoadShedderStoreKitIntegrationTests\/testCanPurchaseNonConsumablePackage()",
+        "BaseLoadShedderStoreKitIntegrationTests\/testCanPurchaseSubsPackage()",
+        "BaseLoadShedderStoreKitIntegrationTests\/testOfferingsComeFromLoadShedder()",
+        "BaseLoadShedderStoreKitIntegrationTests\/testProductEntitlementMapping()",
+        "BaseLoadShedderStoreKitIntegrationTests\/testProductEntitlementMappingComesFromLoadShedder()",
         "BaseOfflineStoreKitIntegrationTests",
         "BaseSignatureVerificationIntegrationTests",
         "BaseStoreKitIntegrationTests",
