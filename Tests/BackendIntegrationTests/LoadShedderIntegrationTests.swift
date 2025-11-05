@@ -19,20 +19,71 @@ import SnapshotTesting
 import StoreKit
 import XCTest
 
-class LoadShedderStoreKit2IntegrationTests: LoadShedderStoreKit1IntegrationTests {
-
-    override class var storeKitVersion: StoreKitVersion { .storeKit2 }
-
-}
-
-class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
-
-    override var apiKey: String { return Constants.loadShedderApiKey }
+class LoadShedderStoreKit1IntegrationTestsUsEast1: BaseLoadShedderStoreKitIntegrationTests {
 
     override class var storeKitVersion: StoreKitVersion { .storeKit1 }
 
+    override var backend: BaseLoadShedderStoreKitIntegrationTests.LoadShedderBackend { .usEast1 }
+
+}
+
+class LoadShedderStoreKit2IntegrationTestsUsEast1: BaseLoadShedderStoreKitIntegrationTests {
+
+    override class var storeKitVersion: StoreKitVersion { .storeKit2 }
+
+    override var backend: BaseLoadShedderStoreKitIntegrationTests.LoadShedderBackend { .usEast1 }
+
+}
+
+class LoadShedderStoreKit1IntegrationTestsUsEast2: BaseLoadShedderStoreKitIntegrationTests {
+
+    override class var storeKitVersion: StoreKitVersion { .storeKit1 }
+
+    override var backend: BaseLoadShedderStoreKitIntegrationTests.LoadShedderBackend { .usEast2 }
+}
+
+class LoadShedderStoreKit2IntegrationTestsUsEast2: BaseLoadShedderStoreKitIntegrationTests {
+
+    override class var storeKitVersion: StoreKitVersion { .storeKit2 }
+
+    override var backend: BaseLoadShedderStoreKitIntegrationTests.LoadShedderBackend { .usEast2 }
+}
+
+class BaseLoadShedderStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
+
+    override var apiKey: String { return Constants.loadShedderApiKey }
+
+    var backend: LoadShedderBackend {
+        XCTFail("Needs to be provided by the subclass")
+        return .usEast1
+    }
+
+    enum LoadShedderBackend {
+        case usEast1
+        case usEast2
+
+        var apiBaseURL: URL {
+            switch self {
+            case .usEast1:
+                return URL(string: "https://fortress-us-east-1.revenuecat.com")!
+            case .usEast2:
+                return URL(string: "https://fortress-us-east-2.revenuecat.com")!
+            }
+        }
+    }
+
+    override class var storeKitVersion: StoreKitVersion {
+        XCTFail("Needs to be provided by the subclass")
+        return .storeKit1
+    }
+
     override class var responseVerificationMode: Signing.ResponseVerificationMode {
         return Signing.enforcedVerificationMode()
+    }
+
+    override func setUp() async throws {
+        SystemInfo.apiBaseURL = self.backend.apiBaseURL
+        try await super.setUp()
     }
 
     // MARK: -
@@ -123,15 +174,18 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
             pollInterval: .milliseconds(100)
         )
     }
-
 }
 
 /// Header verification (see `HTTPRequest.headerParametersForSignatureHeader`) is enabled by default,
 /// but this helps verify that the backend is still signing correctly without it for older SDK versions.
 /// See also `SignatureVerificationWithoutHeaderHashIntegrationTests`.
-class LoadShedderSignatureVerificationWithoutHeaderHashIntegrationTests: LoadShedderStoreKit1IntegrationTests {
+class LoadShedderSignatureVerificationWithoutHeaderHashIntegrationTests: BaseLoadShedderStoreKitIntegrationTests {
 
     override var disableHeaderSignatureVerification: Bool { return true }
+
+    override class var storeKitVersion: StoreKitVersion { .storeKit1 }
+
+    override var backend: BaseLoadShedderStoreKitIntegrationTests.LoadShedderBackend { .usEast1 }
 
     override func tearDown() {
         self.logger.verifyMessageWasLogged(
