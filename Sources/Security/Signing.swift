@@ -41,6 +41,7 @@ final class Signing: SigningType {
         var nonce: Data?
         var etag: String?
         var requestDate: UInt64
+        var useFallbackPath: Bool
 
     }
 
@@ -244,7 +245,8 @@ extension Signing.SignatureParameters {
         requestBody: HTTPRequestBody? = nil,
         nonce: Data? = nil,
         etag: String? = nil,
-        requestDate: UInt64
+        requestDate: UInt64,
+        useFallbackPath: Bool = false
     ) {
         self.path = path
         self.message = message
@@ -253,6 +255,7 @@ extension Signing.SignatureParameters {
         self.nonce = nonce
         self.etag = etag
         self.requestDate = requestDate
+        self.useFallbackPath = useFallbackPath
     }
 
     func signature(salt: Data, apiKey: String) -> Data {
@@ -262,7 +265,13 @@ extension Signing.SignatureParameters {
 
     var asData: Data {
         let nonce: Data = self.nonce ?? .init()
-        let path: Data = self.path.relativePath.asData
+        let relativePath: String
+        if useFallbackPath, let fallbackRelativePath = self.path.fallbackRelativePath {
+            relativePath = fallbackRelativePath
+        } else {
+            relativePath = self.path.relativePath
+        }
+        let path: Data = relativePath.asData
         let postParameterHash: Data = self.requestBody?.postParameterHeader?.asData ?? .init()
         let headerParametersHash: Data = HTTPRequest.headerParametersForSignatureHeader(
             headers: self.requestHeaders,
