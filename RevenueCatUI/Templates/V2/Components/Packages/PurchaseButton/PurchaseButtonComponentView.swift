@@ -113,12 +113,13 @@ struct PurchaseButtonComponentView: View {
         // Check if there's a purchase interceptor
         if let interceptor = self.purchaseInitiatedAction {
             // Wait for the interceptor to call resume before proceeding
-            await withCheckedContinuation { continuation in
+            let result = await withCheckedContinuation { continuation in
                 let productIdentifier = selectedPackage.storeProduct.productIdentifier
-                interceptor(productIdentifier) {
-                    continuation.resume()
-                }
+                interceptor(productIdentifier, resume: ResumeAction { shouldProceed in
+                    continuation.resume(returning: shouldProceed)
+                })
             }
+            guard result else { return }
         }
 
         let promoOffer = self.paywallPromoOfferCache.get(for: selectedPackage)

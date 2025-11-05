@@ -70,21 +70,47 @@ public typealias RestoreStartedHandler = @MainActor @Sendable () -> Void
 /// This allows intercepting and gating purchase flows before they proceed.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct PurchaseInitiatedAction: Sendable {
-    /// A closure that resumes the purchase flow.
-    public typealias Resume = @MainActor @Sendable () -> Void
 
-    private let action: @Sendable (String, @escaping Resume) -> Void
+    private let action: @Sendable (String, ResumeAction) -> Void
 
     /// Creates a new purchase initiated action.
     /// - Parameter action: The closure to invoke when a purchase is initiated.
     ///   The closure receives the product identifier and a resume callback that must be called to proceed.
-    public init(_ action: @escaping @Sendable (String, @escaping Resume) -> Void) {
+    public init(_ action: @escaping @Sendable (String, ResumeAction) -> Void) {
         self.action = action
     }
 
     /// Invokes the action with the given product identifier and resume callback.
-    func callAsFunction(_ productIdentifier: String, resume: @escaping Resume) {
+    func callAsFunction(_ productIdentifier: String, resume: ResumeAction) {
         action(productIdentifier, resume)
+    }
+}
+
+/// A container for a function that is invoked to resume or cancel a flow
+public struct ResumeAction {
+    private let action: (Bool) -> Void
+
+    /// Create a ResumeAction
+    /// - Parameter action: The handler that will be invoked later
+    public init(action: @escaping (Bool) -> Void) {
+        self.action = action
+    }
+
+    /// A function that is invoked to resume or cancel a flow
+    /// - Parameter shouldProceed: true if a flow should continue, false if not.
+    @MainActor
+    public func resume(shouldProceed: Bool) {
+        action(shouldProceed)
+    }
+}
+
+public extension ResumeAction {
+
+    /// A function that is invoked to resume or cancel a flow
+    /// - Parameter shouldProceed: true if a flow should continue, false if not.
+    @MainActor
+    func callAsFunction(shouldProceed: Bool = true) {
+        resume(shouldProceed: shouldProceed)
     }
 }
 
@@ -342,7 +368,7 @@ extension View {
     /// ### Related Articles
     /// [Documentation](https://rev.cat/paywalls)
     public func onPurchaseInitiated(
-        _ action: @escaping @Sendable (String, @escaping PurchaseInitiatedAction.Resume) -> Void
+        _ action: @escaping @Sendable (String, ResumeAction) -> Void
     ) -> some View {
         self.environment(\.purchaseInitiatedAction, PurchaseInitiatedAction(action))
     }
