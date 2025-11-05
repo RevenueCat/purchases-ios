@@ -155,7 +155,7 @@ private enum TestKeyInReleaseAlert {
     static let message = "This app is using a test API key. " +
     "To prepare for release, update your RevenueCat settings to use a production key.\n\n" +
     "For more info, visit the RevenueCat dashboard.\n\n" +
-    "The app will close now to protect the security of test purchases"
+    "The app will close now to protect the security of test purchases."
 
     static let actionTitle = "OK"
 }
