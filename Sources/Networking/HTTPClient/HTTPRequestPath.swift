@@ -123,8 +123,9 @@ extension HTTPRequest {
 
 extension HTTPRequest.Path: HTTPRequestPath {
 
-    // swiftlint:disable:next force_unwrapping
-    static let serverHostURL = URL(string: "https://api.revenuecat.com")!
+    static var serverHostURL: URL {
+        SystemInfo.apiBaseURL
+    }
 
     private static let fallbackServerHostURL = URL(string: "https://api-production.8-lives-cat.io")
 

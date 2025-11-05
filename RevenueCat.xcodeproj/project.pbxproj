@@ -1963,7 +1963,7 @@
 		4F34AEEB2A5DCCBA00F4BCB0 /* VerificationResultTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerificationResultTests.swift; sourceTree = "<group>"; };
 		4F3C98692A44FA60009AECA3 /* ErrorResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorResponse.swift; sourceTree = "<group>"; };
 		4F3D56622A1E66A10070105A /* CustomerInfoManagerPostReceiptTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfoManagerPostReceiptTests.swift; sourceTree = "<group>"; };
-		4F4EBE202B7A85D400E57264 /* BackendIntegrationTests-Shedder.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "BackendIntegrationTests-Shedder.xctestplan"; sourceTree = "<group>"; };
+		4F4EBE202B7A85D400E57264 /* BackendIntegrationTests-LoadShedder.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "BackendIntegrationTests-LoadShedder.xctestplan"; sourceTree = "<group>"; };
 		4F4EECE32AAFA8DA0047DE7A /* __Snapshots__ */ = {isa = PBXFileReference; lastKnownFileType = folder; path = __Snapshots__; sourceTree = "<group>"; };
 		4F4FF3E02A3B731A0028018C /* ETagStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ETagStrings.swift; sourceTree = "<group>"; };
 		4F520EF22B06C7A700DB6770 /* CI-RevenueCat-Snapshots.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = "CI-RevenueCat-Snapshots.xctestplan"; path = "Tests/TestPlans/CI-RevenueCat-Snapshots.xctestplan"; sourceTree = "<group>"; };
@@ -4639,7 +4639,7 @@
 				4FE3A57E2B4C6BB40006A7FC /* BackendIntegrationTests-Other.xctestplan */,
 				4FE3A57D2B4C6BB40006A7FC /* BackendIntegrationTests-SK1.xctestplan */,
 				4FE3A57F2B4C6C560006A7FC /* BackendIntegrationTests-SK2.xctestplan */,
-				4F4EBE202B7A85D400E57264 /* BackendIntegrationTests-Shedder.xctestplan */,
+				4F4EBE202B7A85D400E57264 /* BackendIntegrationTests-LoadShedder.xctestplan */,
 			);
 			path = BackendIntegrationTests;
 			sourceTree = "<group>";
