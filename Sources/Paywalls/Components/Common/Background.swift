@@ -33,9 +33,7 @@ public extension PaywallComponent {
                 try container.encode(BackgroundType.image.rawValue, forKey: .type)
                 try container.encode(imageInfo, forKey: .value)
                 try container.encode(fitMode, forKey: .fitMode)
-                if let colorScheme {
-                    try container.encode(colorScheme, forKey: .colorOverlay)
-                }
+                try container.encodeIfPresent(colorScheme, forKey: .colorOverlay)
             case let .video(videoInfo, imageInfo, loop, mute, fitMode, colorScheme):
                 try container.encode(BackgroundType.video.rawValue, forKey: .type)
                 try container.encode(videoInfo, forKey: .value)
@@ -43,9 +41,7 @@ public extension PaywallComponent {
                 try container.encode(loop, forKey: .loop)
                 try container.encode(mute, forKey: .muteAudio)
                 try container.encode(fitMode, forKey: .fitMode)
-                if let colorScheme {
-                    try container.encode(colorScheme, forKey: .colorOverlay)
-                }
+                try container.encodeIfPresent(colorScheme, forKey: .colorOverlay)
             }
         }
 
