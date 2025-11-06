@@ -13,11 +13,11 @@ import XCTest
 
 class HTTPRequestTimeoutManagerTests: TestCase {
     
-    private var dateProvider: MockDateProvider!
+    private var dateProvider: MockCurrentDateProvider!
     private var manager: HTTPRequestTimeoutManager!
     
     override func setUp() {
-        self.dateProvider = MockDateProvider()
+        self.dateProvider = MockCurrentDateProvider()
         self.manager = .init(dateProvider: self.dateProvider)
         super.setUp()
     }
@@ -304,18 +304,6 @@ class HTTPRequestTimeoutManagerTests: TestCase {
             case .withoutFallback:
                 return []
             }
-        }
-    }
-    
-    class MockDateProvider: DateProvider, @unchecked Sendable {
-        private var date = Date(timeIntervalSince1970: 0)
-        
-        func advance(by timeInterval: TimeInterval) {
-            date = date.advanced(by: timeInterval)
-        }
-        
-        override func now() -> Date {
-            date
         }
     }
 }
