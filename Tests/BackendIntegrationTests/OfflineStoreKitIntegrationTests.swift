@@ -21,7 +21,6 @@ import XCTest
 class BaseOfflineStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
 
     override func setUp() async throws {
-        self.noServerErrors()
         try await super.setUp()
 
         await self.waitForPendingCustomerInfoRequests()
