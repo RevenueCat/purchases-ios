@@ -60,7 +60,7 @@ extension OfferingsManagerTests {
     func testOfferingsForAppUserIDReturnsNilIfMissingStoreProduct() throws {
         // given
         self.mockOfferingsFactory.emptyOfferings = true
-        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
 
         // when
         let result = waitUntilValue { completed in
@@ -77,7 +77,7 @@ extension OfferingsManagerTests {
 
     func testOfferingsForAppUserIDReturnsOfferingsIfSuccessBackendRequest() throws {
         // given
-        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
 
         // when
         let result = waitUntilValue { completed in
@@ -96,7 +96,7 @@ extension OfferingsManagerTests {
     func testOfferingsIgnoresProductsNotFoundAndLogsWarning() throws {
         // given
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(
-            MockData.backendOfferingsResponseWithUnknownProducts
+            MockData.backendOfferingsContentsWithUnknownProducts
         )
         self.mockProductsManager.stubbedProductsCompletionResult = .success([
             StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "monthly_freetrial"))
@@ -125,7 +125,7 @@ extension OfferingsManagerTests {
     func testOfferingsFailsIfSomeProductIsNotFound() throws {
         // given
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(
-            MockData.backendOfferingsResponseWithUnknownProducts
+            MockData.backendOfferingsContentsWithUnknownProducts
         )
         self.mockProductsManager.stubbedProductsCompletionResult = .success([
             StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "monthly_freetrial"))
@@ -170,12 +170,13 @@ extension OfferingsManagerTests {
     func testOfferingsForAppUserIDReturnsConfigurationErrorIfBackendReturnsEmpty() throws {
         // given
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(
-            .init(currentOfferingId: "",
-                  offerings: [],
-                  placements: nil,
-                  targeting: nil,
-                  uiConfig: nil)
-        )
+            Offerings.Contents(response: .init(currentOfferingId: "",
+                                               offerings: [],
+                                               placements: nil,
+                                               targeting: nil,
+                                               uiConfig: nil),
+                               httpResponseOriginalSource: .mainServer)
+            )
         self.mockOfferingsFactory.emptyOfferings = true
 
         // when
@@ -202,7 +203,7 @@ extension OfferingsManagerTests {
         let timeoutError = ErrorUtils.productRequestTimedOutError()
 
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(
-            MockData.anyBackendOfferingsResponse
+            MockData.anyBackendOfferingsContents
         )
         self.mockProductsManager.stubbedProductsCompletionResult = .failure(timeoutError)
 
@@ -224,11 +225,12 @@ extension OfferingsManagerTests {
     func testOfferingsLogsErrorInformationIfBackendReturnsEmpty() throws {
         // given
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(
-            .init(currentOfferingId: "",
-                  offerings: [],
-                  placements: nil,
-                  targeting: nil,
-                  uiConfig: nil)
+            Offerings.Contents(response: .init(currentOfferingId: "",
+                                               offerings: [],
+                                               placements: nil,
+                                               targeting: nil,
+                                               uiConfig: nil),
+                               httpResponseOriginalSource: .mainServer)
         )
         self.mockOfferingsFactory.emptyOfferings = true
 
@@ -255,7 +257,7 @@ extension OfferingsManagerTests {
 
     func testOfferingsForAppUserIDReturnsConfigurationErrorIfProductsRequestsReturnsEmpty() throws {
         // given
-        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
         self.mockProductsManager.stubbedProductsCompletionResult = .success(Set())
 
         // when
@@ -281,7 +283,7 @@ extension OfferingsManagerTests {
         let error = ErrorUtils.unknownError()
 
         // given
-        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
         self.mockProductsManager.stubbedProductsCompletionResult = .failure(error)
 
         // when
@@ -305,7 +307,7 @@ extension OfferingsManagerTests {
 
     func testOfferingsForAppUserIDReturnsUnexpectedBackendResponseIfOfferingsFactoryCantCreateOfferings() throws {
         // given
-        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
         self.mockOfferingsFactory.nilOfferings = true
 
         // when
@@ -351,7 +353,7 @@ extension OfferingsManagerTests {
 
     func testUpdateOfferingsCacheOK() throws {
         // given
-        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
         self.mockSystemInfo.stubbedIsApplicationBackgrounded = true
 
         let expectedCallCount = 1
@@ -403,6 +405,7 @@ extension OfferingsManagerTests {
 
         expect(result).to(beSuccess())
         expect(result?.value) === MockData.sampleOfferings
+        expect(result?.value?.loadedFromDiskCache) == false // Offerings loaded from memory, not disk
 
         expect(self.mockOfferings.invokedGetOfferingsForAppUserID) == false
         expect(self.mockDeviceCache.cacheOfferingsCount) == 0
@@ -410,7 +413,7 @@ extension OfferingsManagerTests {
 
     func testOfferingsForAppUserIdForcesNetworkRequestWhenFetchCurrentIsTrue() throws {
         // given
-        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
         self.mockDeviceCache.stubbedOfferings = MockData.sampleOfferings
 
         // when
@@ -426,6 +429,7 @@ extension OfferingsManagerTests {
         expect(result?.value?["base"]).toNot(beNil())
         expect(result?.value?["base"]!.monthly).toNot(beNil())
         expect(result?.value?["base"]!.monthly?.storeProduct).toNot(beNil())
+        expect(result?.value?.loadedFromDiskCache) == false
 
         expect(self.mockOfferings.invokedGetOfferingsForAppUserID) == true
         expect(self.mockDeviceCache.cacheOfferingsCount) == 1
@@ -434,7 +438,7 @@ extension OfferingsManagerTests {
     func testReturnsOfferingsFromDiskCacheIfNetworkRequestWithServerDown() throws {
         self.mockDeviceCache.stubbedOfferings = nil
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .failure(.networkError(.serverDown()))
-        self.mockDeviceCache.stubbedCachedOfferingsData = try MockData.anyBackendOfferingsResponse.jsonEncodedData
+        self.mockDeviceCache.stubbedCachedOfferingsData = try MockData.anyBackendOfferingsContents.jsonEncodedData
 
         let result: Result<Offerings, OfferingsManager.Error>? = waitUntilValue { completed in
             self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) { result in
@@ -444,7 +448,8 @@ extension OfferingsManagerTests {
 
         expect(result).to(beSuccess())
         expect(result?.value?.all).to(haveCount(1))
-        expect(result?.value?.current?.identifier) == MockData.anyBackendOfferingsResponse.currentOfferingId
+        expect(result?.value?.current?.identifier) == MockData.anyBackendOfferingsContents.response.currentOfferingId
+        expect(result?.value?.loadedFromDiskCache) == true
 
         expect(self.mockOfferings.invokedGetOfferingsForAppUserID) == true
         expect(self.mockDeviceCache.cacheOfferingsCount) == 0
@@ -457,7 +462,7 @@ extension OfferingsManagerTests {
 
         self.mockDeviceCache.stubbedOfferings = nil
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .failure(error)
-        self.mockDeviceCache.stubbedCachedOfferingsData = try MockData.anyBackendOfferingsResponse.jsonEncodedData
+        self.mockDeviceCache.stubbedCachedOfferingsData = try MockData.anyBackendOfferingsContents.jsonEncodedData
         self.mockOfferingsFactory.nilOfferings = true
 
         let result: Result<Offerings, OfferingsManager.Error>? = waitUntilValue { completed in
@@ -507,7 +512,7 @@ extension OfferingsManagerTests {
             diagnosticsTracker: self.mockDiagnosticsTracker
         )
 
-        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
 
         // when
         let result: Result<Offerings, OfferingsManager.Error>? = waitUntilValue { completed in
@@ -572,7 +577,7 @@ extension OfferingsManagerTests {
             diagnosticsTracker: self.mockDiagnosticsTracker
         )
 
-        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
         self.mockDeviceCache.stubbedOfferings = MockData.sampleOfferings
 
         // when
@@ -588,6 +593,7 @@ extension OfferingsManagerTests {
         expect(result?.value?["base"]).toNot(beNil())
         expect(result?.value?["base"]!.monthly).toNot(beNil())
         expect(result?.value?["base"]!.monthly?.storeProduct).toNot(beNil())
+        expect(result?.value?.loadedFromDiskCache) == false
 
         expect(self.mockOfferings.invokedGetOfferingsForAppUserID) == true
         expect(self.mockDeviceCache.cacheOfferingsCount) == 1
@@ -607,7 +613,7 @@ extension OfferingsManagerTests {
         // swiftlint:disable:next force_cast
         let mockDiagnosticsTracker = self.mockDiagnosticsTracker as! MockDiagnosticsTracker
 
-        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
 
         // when
         _ = waitUntilValue { completed in
@@ -665,7 +671,7 @@ extension OfferingsManagerTests {
         // swiftlint:disable:next force_cast
         let mockDiagnosticsTracker = self.mockDiagnosticsTracker as! MockDiagnosticsTracker
 
-        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
 
         // when
         _ = waitUntilValue { completed in
@@ -694,7 +700,7 @@ extension OfferingsManagerTests {
         // swiftlint:disable:next force_cast
         let mockDiagnosticsTracker = self.mockDiagnosticsTracker as! MockDiagnosticsTracker
 
-        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
 
         // when
         _ = waitUntilValue { completed in
@@ -714,46 +720,52 @@ private extension OfferingsManagerTests {
     enum MockData {
         static let anyAppUserID = ""
 
-        static let anyBackendOfferingsResponse: OfferingsResponse = .init(
-            currentOfferingId: "base",
-            offerings: [
-                .init(identifier: "base",
-                      description: "This is the base offering",
-                      packages: [
-                        .init(identifier: "$rc_monthly",
-                              platformProductIdentifier: "monthly_freetrial",
-                              webCheckoutUrl: nil)
-                      ],
-                      webCheckoutUrl: nil)
-            ],
-            placements: nil,
-            targeting: nil,
-            uiConfig: nil
+        static let anyBackendOfferingsContents = Offerings.Contents(
+            response: .init(
+                currentOfferingId: "base",
+                offerings: [
+                    .init(identifier: "base",
+                          description: "This is the base offering",
+                          packages: [
+                            .init(identifier: "$rc_monthly",
+                                  platformProductIdentifier: "monthly_freetrial",
+                                  webCheckoutUrl: nil)
+                          ],
+                          webCheckoutUrl: nil)
+                ],
+                placements: nil,
+                targeting: nil,
+                uiConfig: nil
+            ),
+            httpResponseOriginalSource: .mainServer
         )
-        static let backendOfferingsResponseWithUnknownProducts: OfferingsResponse = .init(
-            currentOfferingId: "base",
-            offerings: [
-                .init(identifier: "base",
-                      description: "This is the base offering",
-                      packages: [
-                        .init(identifier: "$rc_monthly",
-                              platformProductIdentifier: "monthly_freetrial",
-                              webCheckoutUrl: nil),
-                        .init(identifier: "$rc_yearly",
-                              platformProductIdentifier: "yearly_freetrial",
-                              webCheckoutUrl: nil)
-                      ],
-                      webCheckoutUrl: nil)
-            ],
-            placements: nil,
-            targeting: nil,
-            uiConfig: nil
+        static let backendOfferingsContentsWithUnknownProducts = Offerings.Contents(
+            response: .init(
+                currentOfferingId: "base",
+                offerings: [
+                    .init(identifier: "base",
+                          description: "This is the base offering",
+                          packages: [
+                            .init(identifier: "$rc_monthly",
+                                  platformProductIdentifier: "monthly_freetrial",
+                                  webCheckoutUrl: nil),
+                            .init(identifier: "$rc_yearly",
+                                  platformProductIdentifier: "yearly_freetrial",
+                                  webCheckoutUrl: nil)
+                          ],
+                          webCheckoutUrl: nil)
+                ],
+                placements: nil,
+                targeting: nil,
+                uiConfig: nil
+            ),
+            httpResponseOriginalSource: .mainServer
         )
         static let unexpectedBackendResponseError: BackendError = .unexpectedBackendResponse(
             .customerInfoNil
         )
         static let sampleOfferings: Offerings = .init(
-            offerings: MockData.anyBackendOfferingsResponse.offerings
+            offerings: MockData.anyBackendOfferingsContents.response.offerings
                 .map { offering in
                     Offering(
                         identifier: offering.identifier,
@@ -774,10 +786,11 @@ private extension OfferingsManagerTests {
                     )
                 }
                 .dictionaryWithKeys(\.identifier),
-            currentOfferingID: MockData.anyBackendOfferingsResponse.currentOfferingId,
+            currentOfferingID: MockData.anyBackendOfferingsContents.response.currentOfferingId,
             placements: nil,
             targeting: nil,
-            response: MockData.anyBackendOfferingsResponse
+            contents: MockData.anyBackendOfferingsContents,
+            loadedFromDiskCache: false
         )
     }
 

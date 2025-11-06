@@ -849,11 +849,13 @@ private extension DeviceCacheTests {
             currentOfferingID: "base",
             placements: nil,
             targeting: nil,
-            response: .init(currentOfferingId: "base",
-                            offerings: [offeringsData],
-                            placements: nil,
-                            targeting: nil,
-                            uiConfig: nil)
+            contents: Offerings.Contents(response: OfferingsResponse(currentOfferingId: "base",
+                                                                     offerings: [offeringsData],
+                                                                     placements: nil,
+                                                                     targeting: nil,
+                                                                     uiConfig: nil),
+                                         httpResponseOriginalSource: .mainServer),
+            loadedFromDiskCache: false
         )
     }
 
@@ -866,13 +868,15 @@ private extension Offerings {
         currentOfferingID: "",
         placements: nil,
         targeting: nil,
-        response: .init(
+        contents: Offerings.Contents(response: OfferingsResponse(
             currentOfferingId: "",
             offerings: [],
             placements: nil,
             targeting: nil,
             uiConfig: nil
-        )
+        ),
+                                     httpResponseOriginalSource: .mainServer),
+        loadedFromDiskCache: false
     )
 
 }

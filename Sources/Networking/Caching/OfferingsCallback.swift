@@ -16,6 +16,6 @@ import Foundation
 struct OfferingsCallback: CacheKeyProviding {
 
     let cacheKey: String
-    let completion: (Result<OfferingsResponse, BackendError>) -> Void
+    let completion: (Result<Offerings.Contents, BackendError>) -> Void
 
 }
