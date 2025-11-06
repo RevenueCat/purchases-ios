@@ -374,7 +374,7 @@ extension View {
     /// ### Related Articles
     /// [Documentation](https://rev.cat/paywalls)
     public func onOfferCodeRedemptionInitiated(
-        _ action: @escaping @Sendable (@escaping OfferCodeRedemptionInitiatedAction.Resume) -> Void
+        _ action: @escaping @Sendable (ResumeAction) -> Void
     ) -> some View {
         self.environment(\.offerCodeRedemptionInitiatedAction, OfferCodeRedemptionInitiatedAction(action))
     }

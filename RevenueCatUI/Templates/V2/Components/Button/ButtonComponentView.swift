@@ -27,6 +27,7 @@ struct ButtonComponentView: View {
     @State private var showCustomerCenter = false
     @State private var offerCodeRedemptionSheet = false
     @State private var showingWebPaywallLinkAlert = false
+    @State private var awaitingResponseFromOnCodeRedemptionInitiatedCallback = false
 
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
@@ -56,7 +57,9 @@ struct ButtonComponentView: View {
 
     /// Disable for any type of purchase handler action
     var shouldBeDisabled: Bool {
-        return self.viewModel.isRestoreAction && self.purchaseHandler.actionInProgress
+        return awaitingResponseFromOnCodeRedemptionInitiatedCallback || (
+            self.viewModel.isRestoreAction && self.purchaseHandler.actionInProgress
+        )
     }
 
     var body: some View {
@@ -149,12 +152,15 @@ struct ButtonComponentView: View {
     private func openCodeRedemptionSheet() async {
         // Check if there's an offer code redemption interceptor
         if let interceptor = self.offerCodeRedemptionInitiatedAction {
+            self.awaitingResponseFromOnCodeRedemptionInitiatedCallback = true
+            defer { self.awaitingResponseFromOnCodeRedemptionInitiatedCallback = false }
             // Wait for the interceptor to call resume before proceeding
-            await withCheckedContinuation { continuation in
-                interceptor(resume: {
-                    continuation.resume()
+            let result = await withCheckedContinuation { continuation in
+                interceptor(resume: ResumeAction { shouldProceed in
+                    continuation.resume(returning: shouldProceed)
                 })
             }
+            guard result else { return }
         }
 
 #if os(iOS) && !targetEnvironment(macCatalyst)
