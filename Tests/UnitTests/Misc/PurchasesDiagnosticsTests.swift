@@ -44,7 +44,8 @@ class PurchasesDiagnosticsTests: TestCase {
                                                                            placements: nil,
                                                                            targeting: nil,
                                                                            uiConfig: nil),
-                                               httpResponseOriginalSource: .mainServer))
+                                               httpResponseOriginalSource: .mainServer),
+                  loadedFromDiskCache: false)
         )
     }
 

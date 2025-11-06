@@ -17,7 +17,9 @@ import StoreKit
 
 class OfferingsFactory {
 
-    func createOfferings(from storeProductsByID: [String: StoreProduct], contents: Offerings.Contents) -> Offerings? {
+    func createOfferings(from storeProductsByID: [String: StoreProduct],
+                         contents: Offerings.Contents,
+                         loadedFromDiskCache: Bool) -> Offerings? {
         let data = contents.response
         let offerings: [String: Offering] = data
             .offerings
@@ -36,7 +38,8 @@ class OfferingsFactory {
                          currentOfferingID: data.currentOfferingId,
                          placements: createPlacement(with: data.placements),
                          targeting: data.targeting.flatMap { .init(revision: $0.revision, ruleId: $0.ruleId) },
-                         contents: contents)
+                         contents: contents,
+                         loadedFromDiskCache: loadedFromDiskCache)
     }
 
     func createOffering(

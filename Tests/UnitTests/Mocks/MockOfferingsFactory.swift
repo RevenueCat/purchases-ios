@@ -12,7 +12,8 @@ class MockOfferingsFactory: OfferingsFactory {
 
     override func createOfferings(
         from storeProductsByID: [String: StoreProduct],
-        contents: Offerings.Contents
+        contents: Offerings.Contents,
+        loadedFromDiskCache: Bool
     ) -> Offerings? {
         if emptyOfferings {
             let response = OfferingsResponse(currentOfferingId: "base",
@@ -25,7 +26,8 @@ class MockOfferingsFactory: OfferingsFactory {
                              placements: nil,
                              targeting: nil,
                              contents: Offerings.Contents(response: response,
-                                                          httpResponseOriginalSource: .mainServer))
+                                                          httpResponseOriginalSource: .mainServer),
+                             loadedFromDiskCache: loadedFromDiskCache)
         }
         if nilOfferings {
             return nil
@@ -52,7 +54,8 @@ class MockOfferingsFactory: OfferingsFactory {
             currentOfferingID: "base",
             placements: nil,
             targeting: nil,
-            contents: contents)
+            contents: contents,
+            loadedFromDiskCache: loadedFromDiskCache)
     }
 }
 

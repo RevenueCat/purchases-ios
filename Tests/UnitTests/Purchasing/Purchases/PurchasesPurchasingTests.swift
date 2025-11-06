@@ -629,7 +629,9 @@ class PurchasesPurchasingTests: BasePurchasesTests {
 
     func testPostsOfferingIfPurchasingPackage() throws {
         self.mockOfferingsManager.stubbedOfferingsCompletionResult = .success(
-            try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:], contents: .mockContents))
+            try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:],
+                                                                contents: .mockContents,
+                                                                loadedFromDiskCache: false))
         )
 
         let result: Package? = waitUntilValue { completion in
@@ -669,7 +671,9 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         var receivedError: NSError?
         var secondCompletionCalled = false
         self.mockOfferingsManager.stubbedOfferingsCompletionResult = .success(
-            try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:], contents: .mockContents))
+            try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:],
+                                                                contents: .mockContents,
+                                                                loadedFromDiskCache: false))
         )
 
         self.purchases.getOfferings { (newOfferings, _) in

@@ -202,7 +202,8 @@ private extension OfferingsManager {
         }
 
         self.createOfferings(
-            from: contents.copyWithLoadedFromCache(),
+            from: contents,
+            loadedFromDiskCache: true,
             fetchPolicy: fetchPolicy,
             completion: { [cache = self.deviceCache] result in
                 switch result {
@@ -224,6 +225,7 @@ private extension OfferingsManager {
 
     func createOfferings(
         from contents: Offerings.Contents,
+        loadedFromDiskCache: Bool,
         fetchPolicy: FetchPolicy,
         completion: @escaping (@Sendable (Result<OfferingsResultData, Error>) -> Void)
     ) {
@@ -264,7 +266,9 @@ private extension OfferingsManager {
                 }
             }
 
-            if let createdOfferings = self.offeringsFactory.createOfferings(from: productsByID, contents: contents) {
+            if let createdOfferings = self.offeringsFactory.createOfferings(from: productsByID,
+                                                                            contents: contents,
+                                                                            loadedFromDiskCache: loadedFromDiskCache) {
                 completion(.success(OfferingsResultData(offerings: createdOfferings,
                                                         requestedProductIds: productIdentifiers,
                                                         notFoundProductIds: missingProductIDs)))
@@ -281,7 +285,7 @@ private extension OfferingsManager {
         preferredLocales: [String],
         completion: (@MainActor @Sendable (Result<OfferingsResultData, Error>) -> Void)?
     ) {
-        self.createOfferings(from: contents, fetchPolicy: fetchPolicy) { result in
+        self.createOfferings(from: contents, loadedFromDiskCache: false, fetchPolicy: fetchPolicy) { result in
             switch result {
             case let .success(offeringsResultData):
                 Logger.rcSuccess(Strings.offering.offerings_stale_updated_from_network)

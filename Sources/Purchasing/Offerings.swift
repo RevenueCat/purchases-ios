@@ -60,6 +60,11 @@ import Foundation
     }
     internal let contents: Offerings.Contents
 
+    /// Indicates whether this ``Offerings`` object was loaded from the disk cache.
+    ///
+    /// `false` when loaded from memory cache or fetched from the network.
+    internal let loadedFromDiskCache: Bool
+
     private let currentOfferingID: String?
     private let placements: Placements?
     private let targeting: Targeting?
@@ -69,13 +74,15 @@ import Foundation
         currentOfferingID: String?,
         placements: Placements?,
         targeting: Targeting?,
-        contents: Offerings.Contents
+        contents: Offerings.Contents,
+        loadedFromDiskCache: Bool
     ) {
         self.all = offerings
         self.currentOfferingID = currentOfferingID
         self.placements = placements
         self.targeting = targeting
         self.contents = contents
+        self.loadedFromDiskCache = loadedFromDiskCache
     }
 
 }
@@ -210,20 +217,10 @@ extension Offerings {
     struct Contents {
         var response: OfferingsResponse
         var originalSource: Offerings.OriginalSource
-        var loadedFromCache: Bool = false
 
         init(response: OfferingsResponse, httpResponseOriginalSource: HTTPResponseOriginalSource) {
             self.response = response
             self.originalSource = Offerings.OriginalSource(httpResponseOriginalSource: httpResponseOriginalSource)
-        }
-
-        /// Creates a copy of this ``CustomerInfo`` setting the `isLoadedFromCache` flag  to `true`.
-        func copyWithLoadedFromCache() -> Self {
-            guard !self.loadedFromCache else { return self }
-
-            var copy = self
-            copy.loadedFromCache = true
-            return copy
         }
     }
 }

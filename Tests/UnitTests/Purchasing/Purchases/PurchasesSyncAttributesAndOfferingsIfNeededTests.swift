@@ -23,7 +23,9 @@ class PurchasesSyncAttributesAndOfferingsTests: BasePurchasesTests {
         self.setupPurchases()
 
         self.mockOfferingsManager.stubbedOfferingsCompletionResult = .success(
-            try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:], contents: .mockContents))
+            try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:],
+                                                                contents: .mockContents,
+                                                                loadedFromDiskCache: false))
         )
 
         let result: Offerings? = waitUntilValue { completed in
@@ -40,7 +42,9 @@ class PurchasesSyncAttributesAndOfferingsTests: BasePurchasesTests {
         self.setupPurchases()
 
         self.mockOfferingsManager.stubbedOfferingsCompletionResult = .success(
-            try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:], contents: .mockContents))
+            try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:],
+                                                                contents: .mockContents,
+                                                                loadedFromDiskCache: false))
         )
 
         let result: Offerings? = try await self.purchases.syncAttributesAndOfferingsIfNeeded()
