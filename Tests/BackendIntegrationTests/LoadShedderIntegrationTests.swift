@@ -109,15 +109,10 @@ class BaseLoadShedderStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
         )
     }
 
-    func testGetCustomerInfoComeFromLoadShedder() async throws {
-        _ = try await self.purchases.customerInfo()
-        self.logger.verifyMessageWasLogged(
-            Strings.network.request_handled_by_load_shedder(
-                HTTPRequest.Path.getCustomerInfo(appUserID: try self.purchases.appUserID)
-            ),
-            exactMatch: true, // to avoid false positives with GET /offerings
-            level: .debug
-        )
+    func testGetCustomerInfoIsOfflineComputedBeforeAnyPurchase() async throws {
+        // Get CustomerInfo from Load Shedder fails to find the subscriber info before any purchase is made
+        let offlineComputedCustomerInfo = try await self.purchases.customerInfo()
+        expect(offlineComputedCustomerInfo.originalSource) == .offlineEntitlements
     }
 
     func testCanPurchaseSubsPackage() async throws {
@@ -132,22 +127,13 @@ class BaseLoadShedderStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
         expect(data.customerInfo.originalSource) == .loadShedder
     }
 
-    func testPurchaseReturnsEntitlementFromLoadShedder() async throws {
+    func testPurchaseReturnsCustomerInfoFromLoadShedder() async throws {
         try await self.purchaseMonthlyOffering()
 
         try self.purchases.invalidateCustomerInfoCache()
 
-        self.logger.clearMessages()
-
         let customerInfo = try await self.purchases.customerInfo()
-
-        self.logger.verifyMessageWasLogged(
-            Strings.network.request_handled_by_load_shedder(
-                HTTPRequest.Path.getCustomerInfo(appUserID: try self.purchases.appUserID)
-            ),
-            exactMatch: true, // to avoid false positives with GET /offerings
-            level: .debug
-        )
+        expect(customerInfo.originalSource) == .loadShedder
 
         let entitlement = try XCTUnwrap(customerInfo.entitlements[Self.entitlementIdentifier])
         XCTAssertTrue(entitlement.isActive)
