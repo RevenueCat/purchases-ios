@@ -247,7 +247,7 @@ class CustomerInfoManager {
             let info: CustomerInfo = try JSONDecoder.default.decode(jsonData: customerInfoData)
 
             if info.schemaVersionIsCompatible {
-                return info
+                return info.loadedFromCache()
             } else {
                 let msg = Strings.customerInfo.cached_customerinfo_incompatible_schema.description
                 throw ErrorUtils.customerInfoError(withMessage: msg)
@@ -580,7 +580,8 @@ extension CustomerInfoManager {
                                                                rawData: [:])
         let previewCustomerInfo = CustomerInfo(response: previewCustomerInfoResponse,
                                                entitlementVerification: .verified,
-                                               sandboxEnvironmentDetector: BundleSandboxEnvironmentDetector.default)
+                                               sandboxEnvironmentDetector: BundleSandboxEnvironmentDetector.default,
+                                               httpResponseOriginalSource: .mainServer)
         return previewCustomerInfo
     }
 

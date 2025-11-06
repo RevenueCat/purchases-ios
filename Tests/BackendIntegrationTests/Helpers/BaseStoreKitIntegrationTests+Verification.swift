@@ -145,6 +145,14 @@ extension BaseStoreKitIntegrationTests {
             line: line,
             customerInfo.isComputedOffline
         ).to(beTrue(), description: "Expected customer info to be computed offline")
+        expect(
+            file: file,
+            line: line,
+            customerInfo.originalSource
+        ).to(equal(.offlineEntitlements), description: "Expected original source to be offline entitlements")
+        expect(customerInfo.isLoadedFromCache).to(
+            beFalse(),
+            description: "Offline-computed customer info is never loaded from cache")
     }
 
     func verifyCustomerInfoWasNotComputedOffline(
@@ -157,6 +165,11 @@ extension BaseStoreKitIntegrationTests {
             line: line,
             customerInfo.isComputedOffline
         ).to(beFalse(), description: "Expected customer info not to be computed offline")
+        expect(
+            file: file,
+            line: line,
+            customerInfo.originalSource
+        ).toNot(equal(.offlineEntitlements), description: "Expected original source not to be offline entitlements")
     }
 
     func verifyReceiptIsEventuallyPosted(
