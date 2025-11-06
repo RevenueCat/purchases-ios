@@ -161,6 +161,9 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         self.logger.verifyMessageWasLogged(Strings.offering.vending_offerings_cache_from_memory,
                                            level: .debug)
+        // Verify that offerings from main server have originalSource set to .main
+        // Note: This might be from cache, but cache preserves originalSource
+        expect(receivedOfferings.contents.originalSource) == .main
     }
 
     func testCanPurchasePackage() async throws {

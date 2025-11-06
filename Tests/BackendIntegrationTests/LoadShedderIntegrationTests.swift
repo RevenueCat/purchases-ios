@@ -93,20 +93,21 @@ class BaseLoadShedderStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
 
     // MARK: -
 
-    func testCanGetOfferings() async throws {
+    func testCanGetOfferingsFromLoadShedder() async throws {
         let receivedOfferings = try await self.purchases.offerings()
 
         expect(receivedOfferings.all).toNot(beEmpty())
-        assertSnapshot(matching: receivedOfferings.response, as: .formattedJson)
-    }
 
-    func testOfferingsComeFromLoadShedder() async throws {
+        assertSnapshot(matching: receivedOfferings.response, as: .formattedJson)
+
         self.logger.verifyMessageWasLogged(
             Strings.network.request_handled_by_load_shedder(
                 HTTPRequest.Path.getOfferings(appUserID: try self.purchases.appUserID)
             ),
             level: .debug
         )
+        // Verify originalSource is set to loadShedder
+        expect(receivedOfferings.contents.originalSource) == .loadShedder
     }
 
     func testGetCustomerInfoIsOfflineComputedBeforeAnyPurchase() async throws {

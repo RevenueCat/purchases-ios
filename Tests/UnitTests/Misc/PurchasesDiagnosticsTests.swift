@@ -39,11 +39,13 @@ class PurchasesDiagnosticsTests: TestCase {
                   currentOfferingID: nil,
                   placements: nil,
                   targeting: nil,
-                  response: .init(currentOfferingId: nil,
-                                  offerings: [],
-                                  placements: nil,
-                                  targeting: nil,
-                                  uiConfig: nil))
+                  contents: Offerings.Contents(response: OfferingsResponse(currentOfferingId: nil,
+                                                                           offerings: [],
+                                                                           placements: nil,
+                                                                           targeting: nil,
+                                                                           uiConfig: nil),
+                                               httpResponseOriginalSource: .mainServer),
+                  loadedFromDiskCache: false)
         )
     }
 
