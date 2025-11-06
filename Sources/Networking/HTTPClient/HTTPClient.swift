@@ -534,10 +534,25 @@ private extension HTTPClient {
 
         #if DEBUG
         // Meant only for testing error handling behavior of the SDK.
-        if let forceErrorStrategy = self.systemInfo.dangerousSettings.internalSettings.forceServerErrorStrategy,
-           forceErrorStrategy.shouldForceServerError(request) {
-            Logger.warn(Strings.network.api_request_forcing_server_error(request.httpRequest))
-            finalURLRequest = URLRequest(url: ForceServerErrorStrategy.forceServerErrorURL)
+        if let forceErrorStrategy = self.systemInfo.dangerousSettings.internalSettings.forceServerErrorStrategy {
+
+            if let fakeErrorResponse = forceErrorStrategy.fakeErrorResponseWithoutPerformingRequest(request) {
+
+                // `FB13133387`: when computing offline CustomerInfo, `StoreKit.Transaction.unfinished`
+                // might be empty if called immediately after `Product.purchase()`.
+                // This introduces a delay to simulate a real API request, and avoid that race condition.
+
+                Logger.warn(Strings.network.api_request_forcing_server_error(request.httpRequest))
+                DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(300)) {
+                    request.completionHandler?(.failure(fakeErrorResponse))
+                }
+                return
+            }
+
+            if forceErrorStrategy.shouldForceServerError(request) {
+                Logger.warn(Strings.network.api_request_forcing_server_error(request.httpRequest))
+                finalURLRequest = URLRequest(url: forceErrorStrategy.serverErrorURL)
+            }
         }
         #endif
 

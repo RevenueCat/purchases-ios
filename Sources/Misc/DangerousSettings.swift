@@ -165,9 +165,29 @@ internal protocol InternalDangerousSettingsType: Sendable {
 struct ForceServerErrorStrategy {
 
     // swiftlint:disable:next force_unwrapping
-    static let forceServerErrorURL = URL(string: "https://api.revenuecat.com/force-server-failure")!
+    static let defaultServerErrorURL = URL(string: "https://api.revenuecat.com/force-server-failure")!
 
+    let serverErrorURL: URL
+
+    /// If this returns a non-nil `NetworkError`, the `HTTPClient` will not perform the request
+    /// and will just return the error.
+    ///
+    /// Takes precedence over `shouldForceServerError`.
+    let fakeErrorResponseWithoutPerformingRequest: (HTTPClient.Request) -> NetworkError?
+
+    /// If this returns `true`, the `HTTPClient` will route the request to `forceServerErrorURL`.
     let shouldForceServerError: (HTTPClient.Request) -> Bool
+
+    init(
+        serverErrorURL: URL = Self.defaultServerErrorURL,
+        fakeErrorResponseWithoutPerformingRequest: @escaping (HTTPClient.Request) -> NetworkError? = { _ in nil },
+        shouldForceServerError: @escaping (HTTPClient.Request) -> Bool
+    ) {
+        self.serverErrorURL = serverErrorURL
+        self.fakeErrorResponseWithoutPerformingRequest = fakeErrorResponseWithoutPerformingRequest
+        self.shouldForceServerError = shouldForceServerError
+    }
+
 }
 
 #endif
