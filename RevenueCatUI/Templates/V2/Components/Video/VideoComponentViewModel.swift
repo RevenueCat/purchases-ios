@@ -100,7 +100,7 @@ extension VideoComponentViewModel: Hashable {
     }
 
     static func == (lhs: VideoComponentViewModel, rhs: VideoComponentViewModel) -> Bool {
-        lhs.component == rhs.component && lhs.imageSource == rhs.imageSource
+        lhs.component == rhs.component
     }
 }
 
