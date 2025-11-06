@@ -110,6 +110,12 @@ class BaseLoadShedderStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
         expect(receivedOfferings.contents.originalSource) == .loadShedder
     }
 
+    func testGetCustomerInfoIsOfflineComputedBeforeAnyPurchase() async throws {
+        // Get CustomerInfo from Load Shedder fails to find the subscriber info before any purchase is made
+        let offlineComputedCustomerInfo = try await self.purchases.customerInfo()
+        expect(offlineComputedCustomerInfo.originalSource) == .offlineEntitlements
+    }
+
     func testCanPurchaseSubsPackage() async throws {
         let data = try await self.purchaseMonthlyOffering()
 
@@ -120,6 +126,18 @@ class BaseLoadShedderStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
 
         self.verifyCustomerInfoWasNotComputedOffline(customerInfo: data.customerInfo)
         expect(data.customerInfo.originalSource) == .loadShedder
+    }
+
+    func testPurchaseReturnsCustomerInfoFromLoadShedder() async throws {
+        try await self.purchaseMonthlyOffering()
+
+        try self.purchases.invalidateCustomerInfoCache()
+
+        let customerInfo = try await self.purchases.customerInfo()
+        expect(customerInfo.originalSource) == .loadShedder
+
+        let entitlement = try XCTUnwrap(customerInfo.entitlements[Self.entitlementIdentifier])
+        XCTAssertTrue(entitlement.isActive)
     }
 
     func testCanPurchaseConsumablePackage() async throws {
