@@ -56,7 +56,7 @@ struct VideoComponentView: View {
                         if let imageSource, let imageViewModel = try? ImageComponentViewModel(
                             localizationProvider: viewModel.localizationProvider,
                             uiConfigProvider: viewModel.uiConfigProvider,
-                            component: .init(source: imageSource)
+                            component: .init(source: imageSource, fitMode: style.contentMode == .fill ? .fill : .fit)
                         ) {
                             ImageComponentView(viewModel: imageViewModel)
                         }
