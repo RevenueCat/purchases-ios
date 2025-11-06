@@ -63,15 +63,23 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
     func testGetCustomerInfo() async throws {
         let info = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
         expect(info.entitlements.all).to(beEmpty())
+        expect(info.isLoadedFromCache) == false
+        expect(info.originalSource) == .main
         expect(info.isComputedOffline) == false
     }
 
     func testGetCustomerInfoCaching() async throws {
-        _ = try await self.purchases.customerInfo()
+        let info1 = try await self.purchases.customerInfo()
+        expect(info1.isLoadedFromCache) == false
+        expect(info1.originalSource) == .main
+        expect(info1.isComputedOffline) == false
 
         self.logger.clearMessages()
 
-        _ = try await self.purchases.customerInfo()
+        let info2 = try await self.purchases.customerInfo()
+        expect(info2.isLoadedFromCache) == true
+        expect(info2.originalSource) == .main
+        expect(info2.isComputedOffline) == false
 
         self.logger.verifyMessageWasLogged(Strings.customerInfo.vending_cache, level: .debug)
         self.logger.verifyMessageWasNotLogged("API request started")
@@ -151,7 +159,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         _ = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
 
         // 2. Re-fetch user
-        _ = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
+        let info2 = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
 
         let expectedRequest = HTTPRequest(method: .get,
                                           path: .getCustomerInfo(appUserID: try self.purchases.appUserID))
@@ -160,6 +168,8 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         self.logger.verifyMessageWasLogged(
             Strings.network.api_request_completed(expectedRequest, httpCode: .notModified, metadata: nil)
         )
+
+        expect(info2.isLoadedFromCache) == false
     }
 
     func testGetCustomerInfoAfterLogInReturnsNotModified() async throws {
@@ -170,7 +180,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         _ = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
 
         // 3. Re-fetch user
-        _ = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
+        let info3 = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
 
         let expectedRequest = HTTPRequest(method: .get,
                                           path: .getCustomerInfo(appUserID: try self.purchases.appUserID))
@@ -179,6 +189,8 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         self.logger.verifyMessageWasLogged(
             Strings.network.api_request_completed(expectedRequest, httpCode: .notModified, metadata: nil)
         )
+
+        expect(info3.isLoadedFromCache) == false
     }
 
     func testOfferingsAreOnlyFetchedOnceOnSDKInitialization() async throws {

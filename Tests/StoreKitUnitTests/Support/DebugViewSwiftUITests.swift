@@ -53,7 +53,7 @@ class DebugViewSwiftUITests: TestCase {
             currentOfferingID: nil,
             placements: nil,
             targeting: nil,
-            response: .mockResponse
+            contents: .mockContents
         ))
 
         self.snapshot(model, width: 450, height: 900)

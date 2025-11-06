@@ -160,7 +160,7 @@ class DeviceCache {
 
     // MARK: - Offerings
 
-    func cachedOfferingsResponseData(appUserID: String) -> Data? {
+    func cachedOfferingsContentsData(appUserID: String) -> Data? {
         return self.userDefaults.read {
             $0.data(forKey: CacheKey.offerings(appUserID))
         }
@@ -173,7 +173,7 @@ class DeviceCache {
         self.cacheInMemory(offerings: offerings)
         self.offeringsCachePreferredLocales = preferredLocales
         self.userDefaults.write {
-            $0.set(codable: offerings.response, forKey: CacheKey.offerings(appUserID))
+            $0.set(codable: offerings.contents, forKey: CacheKey.offerings(appUserID))
         }
     }
 

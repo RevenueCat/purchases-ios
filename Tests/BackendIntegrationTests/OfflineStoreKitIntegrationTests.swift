@@ -80,15 +80,18 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         let info = try await self.purchases.customerInfo()
         expect(info.entitlements.all).to(beEmpty())
+        verifyCustomerInfoWasComputedOffline(customerInfo: info)
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testReturnsCachedCustomerInfo() async throws {
         self.serverDown()
 
-       _ = try await self.purchases.customerInfo()
+       let info = try await self.purchases.customerInfo()
 
-        self.logger.verifyMessageWasNotLogged(Strings.customerInfo.customerinfo_updated_offline)
+        verifyCustomerInfoWasNotComputedOffline(customerInfo: info)
+        expect(info.isLoadedFromCache) == true
+        expect(info.originalSource) == .main
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -101,6 +104,8 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         let info = try await self.purchases.customerInfo()
         expect(info.entitlements.all).toNot(beEmpty())
         try await self.verifyEntitlementWentThrough(info)
+
+        verifyCustomerInfoWasComputedOffline(customerInfo: info)
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
