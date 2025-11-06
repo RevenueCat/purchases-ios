@@ -38,7 +38,7 @@ class VideoComponentViewModel {
         self.component = component
 
         self.presentedOverrides = try self.component.overrides?.toPresentedOverrides {
-            try LocalizedVideoPartial.create(from: $0, using: localizationProvider.localizedStrings)
+            LocalizedVideoPartial.create(from: $0, using: localizationProvider.localizedStrings)
         }
     }
 
@@ -139,7 +139,7 @@ extension LocalizedVideoPartial {
     static func create(
         from partial: PaywallComponent.PartialVideoComponent,
         using localizedStrings: PaywallComponent.LocalizationDictionary
-    ) throws -> LocalizedVideoPartial {
+    ) -> LocalizedVideoPartial {
         return LocalizedVideoPartial(
             partial: partial
         )
