@@ -323,7 +323,6 @@ private struct LoadedPaywallsV2View: View {
                 view
                     .edgesIgnoringSafeArea(.top)
             })
-            .environmentObject(self.selectedPackageContext)
             .frame(maxHeight: .infinity, alignment: .topLeading)
             .backgroundStyle(
                 self.paywallState.componentsConfig.background
@@ -333,6 +332,7 @@ private struct LoadedPaywallsV2View: View {
                     ),
                 alignment: .top
             )
+            .environmentObject(self.selectedPackageContext)
             .edgesIgnoringSafeArea(.bottom)
         }
     }
