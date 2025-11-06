@@ -460,7 +460,7 @@ extension OfferingsManagerTests {
     func testReturnsOfferingsFromDiskCacheIfJSONDecodingError() throws {
         self.mockDeviceCache.stubbedOfferings = nil
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .failure(.networkError(.decodingError()))
-        self.mockDeviceCache.stubbedCachedOfferingsData = try MockData.anyBackendOfferingsResponse.jsonEncodedData
+        self.mockDeviceCache.stubbedCachedOfferingsData = try MockData.anyBackendOfferingsContents.jsonEncodedData
 
         let result: Result<Offerings, OfferingsManager.Error>? = waitUntilValue { completed in
             self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) { result in
@@ -470,7 +470,7 @@ extension OfferingsManagerTests {
 
         expect(result).to(beSuccess())
         expect(result?.value?.all).to(haveCount(1))
-        expect(result?.value?.current?.identifier) == MockData.anyBackendOfferingsResponse.currentOfferingId
+        expect(result?.value?.current?.identifier) == MockData.anyBackendOfferingsContents.response.currentOfferingId
 
         expect(self.mockOfferings.invokedGetOfferingsForAppUserID) == true
         expect(self.mockDeviceCache.cacheOfferingsCount) == 0
@@ -490,7 +490,7 @@ extension OfferingsManagerTests {
 
         self.mockDeviceCache.stubbedOfferings = nil
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .failure(error)
-        self.mockDeviceCache.stubbedCachedOfferingsData = try MockData.anyBackendOfferingsResponse.jsonEncodedData
+        self.mockDeviceCache.stubbedCachedOfferingsData = try MockData.anyBackendOfferingsContents.jsonEncodedData
         self.mockOfferingsFactory.nilOfferings = true
 
         let result: Result<Offerings, OfferingsManager.Error>? = waitUntilValue { completed in
