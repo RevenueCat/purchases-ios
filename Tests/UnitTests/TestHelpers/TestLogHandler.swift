@@ -93,14 +93,9 @@ extension TestLogHandler {
         self.loggedMessages.value.removeAll(keepingCapacity: false)
     }
 
-    enum LogMatchType {
-        case contains
-        case exact(LogIntent)
-    }
-
     func verifyMessageWasLogged(
         _ message: CustomStringConvertible,
-        logMatchType: LogMatchType = .contains,
+        exactMatch: Bool = false, // false checks for containment only
         level: LogLevel? = nil,
         expectedCount: Int? = nil,
         file: FileString = #file,
@@ -108,7 +103,7 @@ extension TestLogHandler {
     ) {
         precondition(expectedCount == nil || expectedCount! > 0)
 
-        let condition = Self.entryCondition(message: message, level: level, logMatchType: logMatchType)
+        let condition = Self.entryCondition(message: message, level: level, exactMatch: exactMatch)
 
         expect(
             file: file,
@@ -209,20 +204,12 @@ extension TestLogHandler {
     }
 
     private static func entryCondition(
-        message: CustomStringConvertible, level: LogLevel?, logMatchType: LogMatchType = .contains
+        message: CustomStringConvertible, level: LogLevel?, exactMatch: Bool = false
     ) -> EntryCondition {
         return { entry in
-            let isMatch: Bool
-
-            switch logMatchType {
-            case .contains:
-                isMatch = entry.message.contains(message.description)
-            case .exact(let logIntent):
-                let expectedMessage = [logIntent.prefix.notEmpty, message.description]
-                    .compactMap { $0 }
-                    .joined(separator: " ")
-                isMatch = expectedMessage == entry.message
-            }
+            let isMatch = exactMatch ?
+            entry.message == message.description :
+            entry.message.contains(message.description)
 
             guard isMatch else {
                 return false
