@@ -12,30 +12,44 @@ class HTTPRequestTimeoutManager {
     
     enum RequestResult {
         
-        /**
-         * Request succeeded on the main backend
+        /*
+         Request succeeded on the main backend
          */
         case successOnMainBackend
         
-        /**
-         * Request timed out on the main backend and supports fallback URLs
+        /*
+         Request timed out on the main backend and supports fallback URLs
          */
         case timeoutOnMainBackendSupportingFallback
         
-        /**
-         * Any other result (non-main backend, non-timeout errors, etc.)
+        /*
+         Any other result (non-main backend, non-timeout errors, etc.)
          */
         case other
     }
     
     enum Timeout: TimeInterval {
+        
+        /*
+          The default timeout
+         */
         case `default` = 30
+        
+        /*
+         The default timeout for backend requests that support a fallback
+         */
         case defaultForMainBackendRequestSupportingFallback = 5
+        
+        /*
+         The reduced timeout for requests with fallback support after timeout
+         */
         case reduced = 2
     }
     
+    // The amount of time after which the 'last timeout request received' state can be reset
     private static let timeoutResetInterval: TimeInterval = 10
     
+    // The last time at which a timeout was received from the main backend
     private var lastTimeoutRequestTime: Date?
     
     private let dateProvider: DateProvider
@@ -44,18 +58,25 @@ class HTTPRequestTimeoutManager {
         self.dateProvider = dateProvider
     }
     
+    /*
+     Determines the timeout to be used by the HTTP Request for the given path
+     */
     func timeout(for path: HTTPRequestPath, isFallback: Bool) -> TimeInterval {
         if shouldResetTimeout {
-            resetTimeout()
+            resetlastTimeoutRequestTime()
         }
         
         let timeout: Timeout
+        
+        // A fallback request or a request that supports a fallback
         if isFallback || path.fallbackUrls.isEmpty {
             timeout = .default
         }
+        // Main backend request when a timeout was previously received from the main backend
         else if lastTimeoutRequestTime != nil {
             timeout = .reduced
         }
+        // Main backend request that supports fallback, no timeout received recently
         else {
             timeout = .defaultForMainBackendRequestSupportingFallback
         }
@@ -63,10 +84,13 @@ class HTTPRequestTimeoutManager {
         return timeout.rawValue
     }
     
+    /*
+     Updates the internal state in response to the result received from the backend
+     */
     func recordRequestResult(_ result: RequestResult) {
         switch result {
         case .successOnMainBackend:
-            resetTimeout()
+            resetlastTimeoutRequestTime()
         case .timeoutOnMainBackendSupportingFallback:
             lastTimeoutRequestTime = dateProvider.now()
         case .other:
@@ -74,7 +98,7 @@ class HTTPRequestTimeoutManager {
         }
     }
     
-    private func resetTimeout() {
+    private func resetlastTimeoutRequestTime() {
         lastTimeoutRequestTime = nil
     }
     
