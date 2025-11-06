@@ -97,7 +97,6 @@ class VideoComponentViewModel {
 extension VideoComponentViewModel: Hashable {
     func hash(into hasher: inout Hasher) {
         hasher.combine(component)
-        hasher.combine(imageSource)
     }
 
     static func == (lhs: VideoComponentViewModel, rhs: VideoComponentViewModel) -> Bool {

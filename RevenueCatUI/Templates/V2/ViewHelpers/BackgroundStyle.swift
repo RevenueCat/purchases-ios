@@ -147,7 +147,6 @@ extension View {
     func backgroundStyle(
         _ backgroundStyle: BackgroundStyle?,
         alignment: Alignment = .center,
-        uiConfigProvider: UIConfigProvider? = nil
     ) -> some View {
         self.modifier(BackgroundStyleModifier(backgroundStyle: backgroundStyle, alignment: alignment))
     }
