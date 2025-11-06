@@ -27,6 +27,8 @@ class BaseHTTPClientTests<ETag: ETagManager>: TestCase {
     var eTagManager: ETag!
     var diagnosticsTracker: DiagnosticsTrackerType?
     var operationDispatcher: OperationDispatcher!
+    var dateProvider: MockCurrentDateProvider!
+    var timeoutManager: HTTPRequestTimeoutManager!
 
     fileprivate let apiKey = "MockAPIKey"
 
@@ -47,6 +49,9 @@ class BaseHTTPClientTests<ETag: ETagManager>: TestCase {
         }
         self.operationDispatcher = OperationDispatcher()
         MockDNSChecker.resetData()
+        
+        self.dateProvider = MockCurrentDateProvider()
+        self.timeoutManager = HTTPRequestTimeoutManager(dateProvider: dateProvider)
 
         // Subclasses must initialize `self.eTagManager` before this
         self.client = self.createClient()
@@ -73,7 +78,8 @@ class BaseHTTPClientTests<ETag: ETagManager>: TestCase {
                           diagnosticsTracker: self.diagnosticsTracker,
                           dnsChecker: MockDNSChecker.self,
                           requestTimeout: defaultTimeout.timeInterval,
-                          operationDispatcher: operationDispatcher)
+                          operationDispatcher: operationDispatcher,
+                          timeoutManager: timeoutManager)
     }
 }
 
@@ -1098,6 +1104,131 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         }
 
         expect(headerPresent.value) == true
+    }
+    
+    // MARK: Dynamic timeout management
+    
+    func testRecordsSuccessOnMainBackendAfterSuccessfulRequestToMainBackend() {
+        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test_user_id"))
+        
+        timeoutManager.recordRequestResult(.timeoutOnMainBackendSupportingFallback)
+        
+        XCTAssertEqual(
+            timeoutManager.timeout(
+                for: request.path,
+                isFallback: false
+            ),
+            HTTPRequestTimeoutManager.Timeout.reduced.rawValue
+        )
+        
+        stub(condition: isPath(request.path)) { request in
+            XCTAssertEqual(
+                request.timeoutInterval,
+                HTTPRequestTimeoutManager.Timeout.reduced.rawValue
+            )
+            return .emptySuccessResponse()
+        }
+        
+        waitUntil { completion in
+            self.client.perform(request) { (_: DataResponse) in completion() }
+        }
+        
+        XCTAssertEqual(
+            timeoutManager.timeout(
+                for: request.path,
+                isFallback: false
+            ),
+            HTTPRequestTimeoutManager.Timeout.defaultForMainBackendRequestSupportingFallback.rawValue
+        )
+    }
+    
+    func testRecordsTimeoutOnMainBackendWithFallbackWhenTimeoutOccursOnMainBackendWithFallback() {
+        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test_user_id"))
+        
+        // main request
+        stub(condition: isPath(request.path)) { request in
+            
+            // Main backend request should use the default for a main backend request supporting a fallback
+            XCTAssertEqual(
+                request.timeoutInterval,
+                HTTPRequestTimeoutManager.Timeout.defaultForMainBackendRequestSupportingFallback.rawValue
+            )
+            return .timeoutResponse()
+        }
+        
+        // fallback request
+        stub(condition: isHost(HTTPRequest.Path.fallbackServerHostURL!.host!)) { request in
+            
+            // Make sure it uses the default timeout because it's a fallback request
+            XCTAssertEqual(
+                request.timeoutInterval,
+                HTTPRequestTimeoutManager.Timeout.default.rawValue
+            )
+            return .emptySuccessResponse()
+        }
+        
+        waitUntil { completion in
+            self.client.perform(request) { (_: DataResponse) in completion() }
+        }
+    }
+    
+    func testRecordsOtherResultWhenTimeoutOccursOnMainBackendWithEndpointNotSupportingFallback() {
+        let request = HTTPRequest(method: .get, path: .logIn)
+        
+        // main request
+        stub(condition: isPath(request.path)) { request in
+            
+            // Main backend request should use the default since it doesn't support a fallback
+            XCTAssertEqual(
+                request.timeoutInterval,
+                HTTPRequestTimeoutManager.Timeout.default.rawValue
+            )
+            return .timeoutResponse()
+        }
+        
+        waitUntil { completion in
+            self.client.perform(request) { (_: DataResponse) in completion() }
+        }
+        
+        // Make sure it uses the default timeout because it doesn't support fallback requests
+        XCTAssertEqual(
+            timeoutManager.timeout(for: request.path, isFallback: false),
+            HTTPRequestTimeoutManager.Timeout.default.rawValue
+        )
+        
+        // Make sure it uses the default timeout for backend requests suppoting fallback
+        let requestSupportingFallback = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
+        XCTAssertEqual(
+            timeoutManager.timeout(for: requestSupportingFallback.path, isFallback: false),
+            HTTPRequestTimeoutManager.Timeout.defaultForMainBackendRequestSupportingFallback.rawValue
+        )
+    }
+    
+    func testRecordsOtherResultWhenRequestFailsWithoutTimeout() {
+        let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
+        
+        timeoutManager.recordRequestResult(.timeoutOnMainBackendSupportingFallback)
+        
+        // main request
+        stub(condition: isPath(request.path)) { request in
+            
+            // Main backend request should use the reduced timeout since it timed out before and supports fallback
+            XCTAssertEqual(
+                request.timeoutInterval,
+                HTTPRequestTimeoutManager.Timeout.reduced.rawValue
+            )
+            return .notFoundRespoonse()
+        }
+        
+        waitUntil { completion in
+            self.client.perform(request) { (_: DataResponse) in completion() }
+        }
+        
+        // Still reduced timeout because error was not a timeout
+        XCTAssertEqual(
+            timeoutManager.timeout(for: request.path, isFallback: false),
+            HTTPRequestTimeoutManager.Timeout.reduced.rawValue
+        )
     }
 
     #if os(macOS) || targetEnvironment(macCatalyst)
@@ -3181,6 +3312,18 @@ extension HTTPStubsResponse {
     static func serverDownResponse() -> HTTPStubsResponse {
         return .init(data: Data(),
                      statusCode: .internalServerError,
+                     headers: nil)
+    }
+    
+    static func notFoundRespoonse() -> HTTPStubsResponse {
+        return .init(data: Data(),
+                     statusCode: .notFoundError,
+                     headers: nil)
+    }
+    
+    static func timeoutResponse() -> HTTPStubsResponse {
+        return .init(data: Data(),
+                     statusCode: .networkConnectTimeoutError,
                      headers: nil)
     }
 
