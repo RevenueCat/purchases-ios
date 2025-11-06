@@ -282,15 +282,7 @@ extension Signing.SignatureParameters {
         let etag: Data = (self.etag ?? "").asData
         let message: Data = self.message ?? .init()
 
-        return (
-            nonce +
-            path +
-            postParameterHash +
-            headerParametersHash +
-            requestDate +
-            etag +
-            message
-        )
+        return (nonce + path + postParameterHash + headerParametersHash + requestDate + etag + message)
     }
 
 }

@@ -154,8 +154,13 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return []
         }
 
-        return Self.fallbackServerHostURLs.map { baseURL in
-            return URL(string: fallbackRelativePath, relativeTo: baseURL)!
+        return Self.fallbackServerHostURLs.compactMap { baseURL in
+            guard let baseURL = baseURL,
+                  let fallbackUrl = URL(string: fallbackRelativePath, relativeTo: baseURL) else {
+                assertionFailure("Invalid fallback URL configuration")
+                return nil
+            }
+            return fallbackUrl
         }
     }
 
