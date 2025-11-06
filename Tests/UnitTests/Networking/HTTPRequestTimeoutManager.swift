@@ -12,16 +12,16 @@ import XCTest
 @testable import RevenueCat
 
 class HTTPRequestTimeoutManagerTests: TestCase {
-    
+
     private var dateProvider: MockCurrentDateProvider!
     private var manager: HTTPRequestTimeoutManager!
-    
+
     override func setUp() {
         self.dateProvider = MockCurrentDateProvider()
         self.manager = .init(dateProvider: self.dateProvider)
         super.setUp()
     }
- 
+
     /// Tests that initially the default timeout for a main backend request support fallback is returned
     /// when the request supports a fallback
     func testDefaultTimeoutForPathWithFallback() {
@@ -30,7 +30,7 @@ class HTTPRequestTimeoutManagerTests: TestCase {
             HTTPRequestTimeoutManager.Timeout.defaultForMainBackendRequestSupportingFallback.rawValue
         )
     }
-    
+
     /// Initially the default timeout should be returned for a request that is a fallback request
     func testDefaultTimeoutForPathWithFallbackForFallbackRequest() {
         XCTAssertEqual(
@@ -38,7 +38,7 @@ class HTTPRequestTimeoutManagerTests: TestCase {
             HTTPRequestTimeoutManager.Timeout.default.rawValue
         )
     }
-    
+
     /// For a path that does not support fallbacks the default timeout should be used initially
     func testDefaultTimeoutForPathWithoutFallback() {
         XCTAssertEqual(
@@ -46,7 +46,7 @@ class HTTPRequestTimeoutManagerTests: TestCase {
             HTTPRequestTimeoutManager.Timeout.default.rawValue
         )
     }
-    
+
     /// For a path that does not support fallbacks but is a fallback request the default
     /// timeout should be used initially
     func testDefaultTimeoutForPathWithoutFallbackForFallbackRequest() {
@@ -55,18 +55,18 @@ class HTTPRequestTimeoutManagerTests: TestCase {
             HTTPRequestTimeoutManager.Timeout.default.rawValue
         )
     }
-    
+
     /// For a request to a path on the main backend that supports fallbacks, after a succesful request
     /// to the main backend (within the reset timeout interval) should use the reduced timeout
     func testTimeoutForPathWithFallbackAfterFailedRequestToMainBackend() {
         manager.recordRequestResult(.timeoutOnMainBackendSupportingFallback)
-        
+
         XCTAssertEqual(
             manager.timeout(for: Mockpath.withFallback, isFallback: false),
             HTTPRequestTimeoutManager.Timeout.reduced.rawValue
         )
     }
-    
+
     /// For a request to a path on the main backend that supports fallbacks, after a succesful request
     /// to the main backend after the reset timeout interval has elapsed
     /// should use the default timeout for a main backend request that supports fallbacks
@@ -276,25 +276,25 @@ class HTTPRequestTimeoutManagerTests: TestCase {
             HTTPRequestTimeoutManager.Timeout.default.rawValue
         )
     }
-    
+
     enum Mockpath: HTTPRequestPath {
         case withFallback
         case withoutFallback
-        
+
         static var serverHostURL: URL { URL(string: "https://api.revenuecat.com")! }
-        
+
         var authenticated: Bool { true }
-        
+
         var shouldSendEtag: Bool { true }
-        
+
         var supportsSignatureVerification: Bool { false }
-        
+
         var needsNonceForSigning: Bool { false }
-        
+
         var name: String { "Test" }
-        
+
         var relativePath: String { "/v1/test" }
-        
+
         var fallbackUrls: [URL] {
             switch self {
             case .withFallback:
