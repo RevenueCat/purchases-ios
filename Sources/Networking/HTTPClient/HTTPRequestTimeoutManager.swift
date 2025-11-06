@@ -9,7 +9,7 @@
 import Foundation
 
 class HTTPRequestTimeoutManager {
-    
+
     enum RequestResult {
 
         /// Request succeeded on the main backend
@@ -21,7 +21,7 @@ class HTTPRequestTimeoutManager {
         /// Any other result (non-main backend, non-timeout errors, etc.)
         case other
     }
-    
+
     enum Timeout: TimeInterval {
 
         /// The default timeout
@@ -33,19 +33,19 @@ class HTTPRequestTimeoutManager {
         /// The reduced timeout for requests with fallback support after timeout
         case reduced = 2
     }
-    
+
     // The amount of time after which the 'last timeout request received' state can be reset
     private static let timeoutResetInterval: TimeInterval = 10
-    
+
     // The last time at which a timeout was received from the main backend
     private var lastTimeoutRequestTime: Date?
-    
+
     private let dateProvider: DateProvider
-    
+
     init(dateProvider: DateProvider) {
         self.dateProvider = dateProvider
     }
-    
+
     /// Determines the timeout to be used by the HTTP Request for the given path.
     ///
     /// - Parameters:
@@ -56,9 +56,9 @@ class HTTPRequestTimeoutManager {
         if shouldResetTimeout {
             resetlastTimeoutRequestTime()
         }
-        
+
         let timeout: Timeout
-        
+
         // A fallback request or a request that supports a fallback
         if isFallback || path.fallbackUrls.isEmpty {
             timeout = .default
@@ -71,10 +71,10 @@ class HTTPRequestTimeoutManager {
         else {
             timeout = .defaultForMainBackendRequestSupportingFallback
         }
-        
+
         return timeout.rawValue
     }
-    
+
     /// Updates the internal state in response to the result received from the backend.
     ///
     /// - Parameter result: The result of the HTTP request
@@ -88,14 +88,14 @@ class HTTPRequestTimeoutManager {
             break
         }
     }
-    
+
     private func resetlastTimeoutRequestTime() {
         lastTimeoutRequestTime = nil
     }
-    
+
     private var shouldResetTimeout: Bool {
         guard let lastTimeoutRequestTime else { return false }
-        
+
         let timeElapsed = dateProvider.now().timeIntervalSince1970 - lastTimeoutRequestTime.timeIntervalSince1970
         return timeElapsed >= Self.timeoutResetInterval
     }

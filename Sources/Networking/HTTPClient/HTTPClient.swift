@@ -450,7 +450,7 @@ private extension HTTPClient {
         return result
     }
 
-    // swiftlint:disable:next function_parameter_count
+    // swiftlint:disable:next function_parameter_count function_body_length
     func handle(urlResponse: URLResponse?,
                 request: Request,
                 urlRequest: URLRequest,
@@ -465,7 +465,7 @@ private extension HTTPClient {
                                   data: data,
                                   error: networkError,
                                   requestStartTime: requestStartTime)
-        
+
         var requestTimeoutResult: HTTPRequestTimeoutManager.RequestResult = .other
 
         if let response = response {
@@ -485,7 +485,7 @@ private extension HTTPClient {
                 if response.isLoadShedder {
                     Logger.debug(Strings.network.request_handled_by_load_shedder(request.httpRequest.path))
                 }
-                
+
                 // todo rick: record succesful response here for determining timeout
                 requestTimeoutResult = .successOnMainBackend
 
@@ -500,20 +500,19 @@ private extension HTTPClient {
                 if httpURLResponse?.isLoadShedder == true {
                     Logger.debug(Strings.network.request_handled_by_load_shedder(request.httpRequest.path))
                 }
-                
+
                 if let error = networkError as? URLError, case .timedOut = error.code, !request.isFallbackURLRequest {
                     requestTimeoutResult = .timeoutOnMainBackendSupportingFallback
                 }
 
                 let retryOnFallbackHostScheduled = self.retryRequestWithNextFallbackHostIfNeeded(request: request,
-                                                                               error: error)
+                                                                                                 error: error)
                 if retryOnFallbackHostScheduled {
                     retryScheduled = true
-                    
+
                     // todo rick: record timeout on main backend for url supporting fallback
                     requestTimeoutResult = .timeoutOnMainBackendSupportingFallback
-                }
-                else {
+                } else {
                     retryScheduled = self.retryRequestIfNeeded(request: request,
                                                                httpURLResponse: httpURLResponse)
                 }
@@ -524,7 +523,7 @@ private extension HTTPClient {
             }
         } else {
             Logger.debug(Strings.network.retrying_request(httpMethod: request.method.httpMethod, path: request.path))
-            
+
             // todo rick: check if this logic is actually used, it looks like it isn't
             // at least not for no HTTP response cases, maybe verification can cause this
 
@@ -532,7 +531,7 @@ private extension HTTPClient {
                 $0.queuedRequests.insert(request.retriedRequest(), at: 0)
             }
         }
-        
+
         self.requestTimeoutManager.recordRequestResult(requestTimeoutResult)
 
         self.trackHttpRequestPerformedIfNeeded(request: request,
@@ -604,6 +603,8 @@ private extension HTTPClient {
             }
         }
         #endif
+
+        let requestStartTime = self.dateProvider.now()
 
         finalURLRequest.timeoutInterval = requestTimeoutManager.timeout(
             for: request.httpRequest.path,

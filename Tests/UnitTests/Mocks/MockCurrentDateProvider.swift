@@ -11,11 +11,11 @@ import Foundation
 
 class MockCurrentDateProvider: DateProvider, @unchecked Sendable {
     private var date = Date(timeIntervalSince1970: 0)
-    
+
     func advance(by timeInterval: TimeInterval) {
         date = date.advanced(by: timeInterval)
     }
-    
+
     override func now() -> Date {
         date
     }
