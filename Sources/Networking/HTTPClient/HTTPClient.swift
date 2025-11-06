@@ -35,6 +35,7 @@ class HTTPClient {
     private let dateProvider: DateProvider
     private let retriableStatusCodes: Set<HTTPStatusCode>
     private let operationDispatcher: OperationDispatcher
+    private let requestTimeoutManager: HTTPRequestTimeoutManager
 
     private let retryBackoffIntervals: [TimeInterval] = [
         TimeInterval(0),
@@ -71,6 +72,7 @@ class HTTPClient {
         self.authHeaders = HTTPClient.authorizationHeader(withAPIKey: apiKey)
         self.dateProvider = dateProvider
         self.operationDispatcher = operationDispatcher
+        self.requestTimeoutManager = HTTPRequestTimeoutManager(dateProvider: dateProvider)
     }
 
     /// - Parameter verificationMode: if `nil`, this will default to `SystemInfo.responseVerificationMode`
@@ -461,6 +463,8 @@ private extension HTTPClient {
                                   data: data,
                                   error: networkError,
                                   requestStartTime: requestStartTime)
+        
+        var requestTimeoutResult: HTTPRequestTimeoutManager.RequestResult = .other
 
         if let response = response {
             let httpURLResponse = urlResponse as? HTTPURLResponse
@@ -479,6 +483,9 @@ private extension HTTPClient {
                 if response.isLoadShedder {
                     Logger.debug(Strings.network.request_handled_by_load_shedder(request.httpRequest.path))
                 }
+                
+                // todo rick: record succesful response here for determining timeout
+                requestTimeoutResult = .successOnMainBackend
 
             case let .failure(error):
                 let httpURLResponse = urlResponse as? HTTPURLResponse
@@ -491,10 +498,20 @@ private extension HTTPClient {
                 if httpURLResponse?.isLoadShedder == true {
                     Logger.debug(Strings.network.request_handled_by_load_shedder(request.httpRequest.path))
                 }
+                
+                if let error = networkError as? URLError, case .timedOut = error.code, !request.isFallbackURLRequest {
+                    requestTimeoutResult = .timeoutOnMainBackendSupportingFallback
+                }
 
-                retryScheduled = self.retryRequestWithNextFallbackHostIfNeeded(request: request,
+                let retryOnFallbackHostScheduled = self.retryRequestWithNextFallbackHostIfNeeded(request: request,
                                                                                error: error)
-                if !retryScheduled {
+                if retryOnFallbackHostScheduled {
+                    retryScheduled = true
+                    
+                    // todo rick: record timeout on main backend for url supporting fallback
+                    requestTimeoutResult = .timeoutOnMainBackendSupportingFallback
+                }
+                else {
                     retryScheduled = self.retryRequestIfNeeded(request: request,
                                                                httpURLResponse: httpURLResponse)
                 }
@@ -505,11 +522,16 @@ private extension HTTPClient {
             }
         } else {
             Logger.debug(Strings.network.retrying_request(httpMethod: request.method.httpMethod, path: request.path))
+            
+            // todo rick: check if this logic is actually used, it looks like it isn't
+            // at least not for no HTTP response cases, maybe verification can cause this
 
             self.state.modify {
                 $0.queuedRequests.insert(request.retriedRequest(), at: 0)
             }
         }
+        
+        self.requestTimeoutManager.recordRequestResult(requestTimeoutResult)
 
         self.trackHttpRequestPerformedIfNeeded(request: request,
                                                host: urlRequest.url?.host,
@@ -580,6 +602,13 @@ private extension HTTPClient {
             }
         }
         #endif
+
+        finalURLRequest.timeoutInterval = requestTimeoutManager.timeout(
+            for: request.httpRequest.path,
+            isFallback: request.isFallbackURLRequest
+        )
+
+        let requestStartTime = self.dateProvider.now()
 
         // swiftlint:disable:next redundant_void_return
         let task = self.session.dataTask(with: finalURLRequest) { (data, urlResponse, error) -> Void in
