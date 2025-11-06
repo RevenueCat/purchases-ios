@@ -556,7 +556,7 @@ private extension HTTPClient {
         // Meant only for testing error handling behavior of the SDK.
         if let forceErrorStrategy = self.systemInfo.dangerousSettings.internalSettings.forceServerErrorStrategy {
 
-            if let fakeResponse = forceErrorStrategy.fakeResponseWithoutPerformingRequest(request) {
+            if let (fakeResponse, fakeData) = forceErrorStrategy.fakeResponseWithoutPerformingRequest(request) {
 
                 // `FB13133387`: when computing offline CustomerInfo, `StoreKit.Transaction.unfinished`
                 // might be empty if called immediately after `Product.purchase()`.
@@ -567,7 +567,7 @@ private extension HTTPClient {
                     self.handle(urlResponse: fakeResponse,
                                 request: request,
                                 urlRequest: urlRequest,
-                                data: Data(),
+                                data: fakeData,
                                 error: nil,
                                 requestStartTime: requestStartTime)
                 }
