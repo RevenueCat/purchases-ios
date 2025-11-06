@@ -130,7 +130,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         self.verifyNoTransactionsWereFinished()
 
         // 2. "Re-open" the app after the server is back
-        self.noServerErrors()
+        self.allServersUp()
         try self.purchases.invalidateCustomerInfoCache()
         await self.resetSingleton()
 
@@ -177,7 +177,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         // 2. Purchase again when the server is back up
         // (maybe the app failed the first time?)
-        self.noServerErrors()
+        self.allServersUp()
         try await self.purchaseMonthlyProduct()
 
         // 3. `CustomerInfo` should contain the purchase
@@ -212,7 +212,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         _ = try await self.purchases.purchase(product: product1)
 
-        self.noServerErrors()
+        self.allServersUp()
 
         let info = try await self.purchases.purchase(product: product2).customerInfo
 
@@ -229,7 +229,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         _ = try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
 
-        self.noServerErrors()
+        self.allServersUp()
 
         let task1 = Task { try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent) }
         let task2 = Task { try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent) }
@@ -263,7 +263,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         try await self.waitUntilUnfinishedTransactions { $0 >= 2 }
 
-        self.noServerErrors()
+        self.allServersUp()
 
         let customerInfo = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
         try await self.verifyEntitlementWentThrough(customerInfo)
@@ -312,7 +312,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         self.verifyNoTransactionsWereFinished()
 
         // 2. Server is back
-        self.noServerErrors()
+        self.allServersUp()
 
         // 3. Request current CustomerInfo
         let info1 = try await self.purchases.customerInfo()
@@ -346,7 +346,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         self.verifyNoTransactionsWereFinished()
 
         // 2. Server is back
-        self.noServerErrors()
+        self.allServersUp()
 
         // 3. Request current CustomerInfo
         let info = try await self.purchases.customerInfo()

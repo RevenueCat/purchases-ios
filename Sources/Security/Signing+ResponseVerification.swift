@@ -32,7 +32,8 @@ extension HTTPResponse where Body == Data? {
             requestDate: self.requestDate,
             request: request,
             publicKey: publicKey,
-            signing: signing
+            signing: signing,
+            isFallbackUrlResponse: isFallbackUrlResponse
         )
 
         #if DEBUG
@@ -60,7 +61,8 @@ extension HTTPResponse where Body == Data? {
         requestDate: Date?,
         request: HTTPRequest,
         publicKey: Signing.PublicKey?,
-        signing: SigningType
+        signing: SigningType,
+        isFallbackUrlResponse: Bool
     ) -> VerificationResult {
         guard let publicKey = publicKey, statusCode.isSuccessfulResponse else {
             return .notRequested
@@ -92,7 +94,8 @@ extension HTTPResponse where Body == Data? {
                             requestBody: request.requestBody,
                             nonce: request.nonce,
                             etag: HTTPResponse.value(forCaseInsensitiveHeaderField: .eTag, in: responseHeaders),
-                            requestDate: requestDate.millisecondsSince1970
+                            requestDate: requestDate.millisecondsSince1970,
+                            useFallbackPath: isFallbackUrlResponse
                           ),
                           publicKey: publicKey) {
             return .verified

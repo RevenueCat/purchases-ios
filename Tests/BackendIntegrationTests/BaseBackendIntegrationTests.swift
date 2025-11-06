@@ -243,11 +243,16 @@ extension BaseBackendIntegrationTests: InternalDangerousSettingsType {
     var disableHeaderSignatureVerification: Bool { return false }
     var testReceiptIdentifier: String? { return self.testUUID.uuidString }
 
-    final func serverDown() { self.forceServerErrorStrategy = .allServersDown }
-    final func noServerErrors() { self.forceServerErrorStrategy = nil }
+    final func serverDown() {
+        self.forceServerErrorStrategy = .allServersDown
+    }
 
-    final func noNetwork() {
-        self.forceServerErrorStrategy = .noNetwork
+    final func mainServerDown() {
+        self.forceServerErrorStrategy = .failExceptFallbackUrls
+    }
+
+    final func allServersUp() {
+        self.forceServerErrorStrategy = nil
     }
 
 }
