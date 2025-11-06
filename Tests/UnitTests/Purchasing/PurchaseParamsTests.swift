@@ -105,4 +105,28 @@ class PurchaseParamsTests: TestCase {
         }
     }
 
+    func testPurchaseParamsBuilderWithQuantity() async throws {
+        let product = MockSK1Product(mockProductIdentifier: "com.product.id1")
+        let storeProduct = StoreProduct(sk1Product: product)
+
+        let paramsDefault = PurchaseParams.Builder(product: storeProduct).build()
+        expect(paramsDefault.quantity).to(beNil())
+
+        let paramsWithQuantity = PurchaseParams.Builder(product: storeProduct)
+            .with(quantity: 5)
+            .build()
+        expect(paramsWithQuantity.quantity).to(equal(5))
+
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              storeProduct: storeProduct,
+                              offeringIdentifier: "offering",
+                              webCheckoutUrl: nil)
+        let paramsWithAllOptions = PurchaseParams.Builder(package: package)
+            .with(quantity: 3)
+            .build()
+        expect(paramsWithAllOptions.quantity).to(equal(3))
+        expect(paramsWithAllOptions.package).to(equal(package))
+    }
+
 }
