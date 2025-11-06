@@ -157,7 +157,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
         return Self.fallbackServerHostURLs.compactMap { baseURL in
             guard let baseURL = baseURL,
                   let fallbackUrl = URL(string: fallbackRelativePath, relativeTo: baseURL) else {
-                assertionFailure("Invalid fallback URL configuration")
+                let errorMessage = "Invalid fallback URL configuration for path: \(self.name)"
+                assertionFailure(errorMessage)
+                Logger.error(errorMessage)
                 return nil
             }
             return fallbackUrl
