@@ -118,6 +118,7 @@ class BaseLoadShedderStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
         )
 
         self.verifyCustomerInfoWasNotComputedOffline(customerInfo: data.customerInfo)
+        expect(data.customerInfo.originalSource) == .loadShedder
     }
 
     func testCanPurchaseConsumablePackage() async throws {
@@ -140,6 +141,7 @@ class BaseLoadShedderStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
         )
 
         self.verifyCustomerInfoWasNotComputedOffline(customerInfo: purchaseData.customerInfo)
+        expect(purchaseData.customerInfo.originalSource) == .loadShedder
     }
 
     func testCanPurchaseNonConsumablePackage() async throws {
