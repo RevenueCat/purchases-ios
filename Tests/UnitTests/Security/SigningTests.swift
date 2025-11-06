@@ -655,7 +655,8 @@ class SigningTests: TestCase {
                                                         requestHeaders: requestHeaders,
                                                         nonce: nonce.asData,
                                                         etag: nil,
-                                                        requestDate: requestDate),
+                                                        requestDate: requestDate,
+                                                        useFallbackPath: false),
                                       salt: salt.asData)
         let fullSignature = Self.fullSignature(
             intermediateKey: intermediateKey,
@@ -697,7 +698,8 @@ class SigningTests: TestCase {
                                                         requestHeaders: requestHeaders,
                                                         nonce: nonce.asData,
                                                         etag: etag,
-                                                        requestDate: requestDate),
+                                                        requestDate: requestDate,
+                                                        useFallbackPath: false),
                                       salt: salt.asData)
         let fullSignature = Self.fullSignature(
             intermediateKey: intermediateKey,
@@ -741,7 +743,8 @@ class SigningTests: TestCase {
                                                         requestHeaders: requestHeaders,
                                                         nonce: nil,
                                                         etag: nil,
-                                                        requestDate: requestDate),
+                                                        requestDate: requestDate,
+                                                        useFallbackPath: false),
                                       salt: salt.asData)
         let fullSignature = Self.fullSignature(
             intermediateKey: intermediateKey,
@@ -794,6 +797,299 @@ class SigningTests: TestCase {
 
         self.logger.verifyMessageWasNotLogged(Strings.signing.signature_was_requested_but_not_provided(request),
                                               allowNoMessages: true)
+    }
+
+    // MARK: - Fallback Path Tests
+
+    func testResponseVerificationWithNonceWithValidSignatureFallbackPath() throws {
+        let message = "Hello World"
+        let nonce = "0123456789ab"
+        let requestDate = Date().millisecondsSince1970
+        let intermediateKey = try self.createIntermediatePublicKeyData(expiration: Self.intermediateKeyFutureExpiration)
+        let salt = Self.createSalt()
+        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "userId"), nonce: nonce.asData)
+        let requestHeaders: HTTPRequest.Headers = [
+            HTTPClient.RequestHeader.sandbox.rawValue: "\(Bool.random())"
+        ]
+
+        let signature = try self.sign(parameters: .init(path: request.path,
+                                                        message: message.asData,
+                                                        requestHeaders: requestHeaders,
+                                                        nonce: nonce.asData,
+                                                        etag: nil,
+                                                        requestDate: requestDate,
+                                                        useFallbackPath: true),
+                                      salt: salt.asData)
+        let fullSignature = Self.fullSignature(
+            intermediateKey: intermediateKey,
+            salt: salt,
+            signature: signature
+        )
+
+        let response = HTTPResponse<Data?>(
+            httpStatusCode: .success,
+            responseHeaders: [
+                HTTPClient.ResponseHeader.signature.rawValue: fullSignature.base64EncodedString(),
+                HTTPClient.ResponseHeader.requestDate.rawValue: String(requestDate)
+            ],
+            body: message.asData
+        )
+        let verifiedResponse = response.verify(
+            signing: self.signing,
+            request: request,
+            requestHeaders: requestHeaders,
+            publicKey: self.publicKey,
+            isLoadShedderResponse: false,
+            isFallbackUrlResponse: true
+        )
+
+        expect(verifiedResponse.verificationResult) == .verified
+    }
+
+    func testResponseWithNonceWithValidSignatureDoesNotVerifyIfUseFallbackPathMismatch() throws {
+        let message = "Hello World"
+        let nonce = "0123456789ab"
+        let requestDate = Date().millisecondsSince1970
+        let intermediateKey = try self.createIntermediatePublicKeyData(expiration: Self.intermediateKeyFutureExpiration)
+        let salt = Self.createSalt()
+        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "userId"), nonce: nonce.asData)
+        let requestHeaders: HTTPRequest.Headers = [
+            HTTPClient.RequestHeader.sandbox.rawValue: "\(Bool.random())"
+        ]
+
+        let signature = try self.sign(parameters: .init(path: request.path,
+                                                        message: message.asData,
+                                                        requestHeaders: requestHeaders,
+                                                        nonce: nonce.asData,
+                                                        etag: nil,
+                                                        requestDate: requestDate,
+                                                        useFallbackPath: false),
+                                      salt: salt.asData)
+        let fullSignature = Self.fullSignature(
+            intermediateKey: intermediateKey,
+            salt: salt,
+            signature: signature
+        )
+
+        let response = HTTPResponse<Data?>(
+            httpStatusCode: .success,
+            responseHeaders: [
+                HTTPClient.ResponseHeader.signature.rawValue: fullSignature.base64EncodedString(),
+                HTTPClient.ResponseHeader.requestDate.rawValue: String(requestDate)
+            ],
+            body: message.asData
+        )
+        let verifiedResponse = response.verify(
+            signing: self.signing,
+            request: request,
+            requestHeaders: requestHeaders,
+            publicKey: self.publicKey,
+            isLoadShedderResponse: false,
+            isFallbackUrlResponse: true // Mismatch with useFallbackPath: false in signing
+        )
+
+        expect(verifiedResponse.verificationResult) == .failed
+    }
+
+    func testVerifySignatureWithFallbackPathForGetOfferings() throws {
+        let message = "Hello World"
+        let requestDate: UInt64 = 1677005916012
+        let intermediateKey = try self.createIntermediatePublicKeyData(expiration: Self.intermediateKeyFutureExpiration)
+        let salt = Self.createSalt()
+        let offeringsPath = HTTPRequest.Path.getOfferings(appUserID: "test_user")
+
+        // Sign with fallback path
+        let signatureWithFallback = try self.sign(
+            parameters: .init(
+                path: offeringsPath,
+                message: message.asData,
+                nonce: nil,
+                etag: nil,
+                requestDate: requestDate,
+                useFallbackPath: true
+            ),
+            salt: salt.asData
+        )
+        let fullSignatureWithFallback = Self.fullSignature(
+            intermediateKey: intermediateKey,
+            salt: salt,
+            signature: signatureWithFallback
+        )
+
+        // Verify with fallback path
+        expect(self.signing.verify(
+            signature: fullSignatureWithFallback.base64EncodedString(),
+            with: .init(
+                path: offeringsPath,
+                message: message.asData,
+                nonce: nil,
+                etag: nil,
+                requestDate: requestDate,
+                useFallbackPath: true
+            ),
+            publicKey: self.publicKey
+        )) == true
+    }
+
+    func testVerifySignatureWithFallbackPathForGetProductEntitlementMapping() throws {
+        let message = "Hello World"
+        let requestDate: UInt64 = 1677005916012
+        let intermediateKey = try self.createIntermediatePublicKeyData(expiration: Self.intermediateKeyFutureExpiration)
+        let salt = Self.createSalt()
+        let productEntitlementMappingPath = HTTPRequest.Path.getProductEntitlementMapping
+
+        // Sign with fallback path
+        let signatureWithFallback = try self.sign(
+            parameters: .init(
+                path: productEntitlementMappingPath,
+                message: message.asData,
+                nonce: nil,
+                etag: nil,
+                requestDate: requestDate,
+                useFallbackPath: true
+            ),
+            salt: salt.asData
+        )
+        let fullSignatureWithFallback = Self.fullSignature(
+            intermediateKey: intermediateKey,
+            salt: salt,
+            signature: signatureWithFallback
+        )
+
+        // Verify with fallback path
+        expect(self.signing.verify(
+            signature: fullSignatureWithFallback.base64EncodedString(),
+            with: .init(
+                path: productEntitlementMappingPath,
+                message: message.asData,
+                nonce: nil,
+                etag: nil,
+                requestDate: requestDate,
+                useFallbackPath: true
+            ),
+            publicKey: self.publicKey
+        )) == true
+    }
+
+    func testGetOfferingsSignatureWithFallbackPathDoesNotVerifyWithRegularPath() throws {
+        let message = "Hello World"
+        let requestDate: UInt64 = 1677005916012
+        let intermediateKey = try self.createIntermediatePublicKeyData(expiration: Self.intermediateKeyFutureExpiration)
+        let salt = Self.createSalt()
+        let offeringsPath = HTTPRequest.Path.getOfferings(appUserID: "test_user")
+
+        // Sign with regular path
+        let signatureRegular = try self.sign(
+            parameters: .init(
+                path: offeringsPath,
+                message: message.asData,
+                nonce: nil,
+                etag: nil,
+                requestDate: requestDate,
+                useFallbackPath: false
+            ),
+            salt: salt.asData
+        )
+        let fullSignatureWithRegular = Self.fullSignature(
+            intermediateKey: intermediateKey,
+            salt: salt,
+            signature: signatureRegular
+        )
+
+        // Verify with fallback path
+        expect(self.signing.verify(
+            signature: fullSignatureWithRegular.base64EncodedString(),
+            with: .init(
+                path: offeringsPath,
+                message: message.asData,
+                nonce: nil,
+                etag: nil,
+                requestDate: requestDate,
+                useFallbackPath: true
+            ),
+            publicKey: self.publicKey
+        )) == false
+    }
+
+    func testGetOfferingsSignatureWithRegularPathDoesNotVerifyWithFallbackPath() throws {
+        let message = "Hello World"
+        let requestDate: UInt64 = 1677005916012
+        let intermediateKey = try self.createIntermediatePublicKeyData(expiration: Self.intermediateKeyFutureExpiration)
+        let salt = Self.createSalt()
+        let offeringsPath = HTTPRequest.Path.getOfferings(appUserID: "test_user")
+
+        // Sign with regular path
+        let signatureRegular = try self.sign(
+            parameters: .init(
+                path: offeringsPath,
+                message: message.asData,
+                nonce: nil,
+                etag: nil,
+                requestDate: requestDate,
+                useFallbackPath: false
+            ),
+            salt: salt.asData
+        )
+        let fullSignatureWithRegular = Self.fullSignature(
+            intermediateKey: intermediateKey,
+            salt: salt,
+            signature: signatureRegular
+        )
+
+        // Verify with fallback path
+        expect(self.signing.verify(
+            signature: fullSignatureWithRegular.base64EncodedString(),
+            with: .init(
+                path: offeringsPath,
+                message: message.asData,
+                nonce: nil,
+                etag: nil,
+                requestDate: requestDate,
+                useFallbackPath: true
+            ),
+            publicKey: self.publicKey
+        )) == false
+    }
+
+    func testVerifySignatureWithFallbackPathForGetOfferingsWithEtag() throws {
+        let message = "Hello World"
+        let requestDate: UInt64 = 1677005916012
+        let intermediateKey = try self.createIntermediatePublicKeyData(expiration: Self.intermediateKeyFutureExpiration)
+        let etag = "97d4f0d2353d784a"
+        let salt = Self.createSalt()
+        let offeringsPath = HTTPRequest.Path.getOfferings(appUserID: "test_user")
+
+        // Sign with fallback path
+        let signatureWithFallback = try self.sign(
+            parameters: .init(
+                path: offeringsPath,
+                message: message.asData,
+                nonce: nil,
+                etag: etag,
+                requestDate: requestDate,
+                useFallbackPath: true
+            ),
+            salt: salt.asData
+        )
+        let fullSignatureWithFallback = Self.fullSignature(
+            intermediateKey: intermediateKey,
+            salt: salt,
+            signature: signatureWithFallback
+        )
+
+        // Verify with fallback path
+        expect(self.signing.verify(
+            signature: fullSignatureWithFallback.base64EncodedString(),
+            with: .init(
+                path: offeringsPath,
+                message: message.asData,
+                nonce: nil,
+                etag: etag,
+                requestDate: requestDate,
+                useFallbackPath: true
+            ),
+            publicKey: self.publicKey
+        )) == true
     }
 
 }

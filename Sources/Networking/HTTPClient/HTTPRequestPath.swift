@@ -40,12 +40,19 @@ protocol HTTPRequestPath {
 
     /// The full relative path for this endpoint.
     var relativePath: String { get }
+
+    /// The fallback relative path for this endpoint, if any.
+    var fallbackRelativePath: String? { get }
 }
 
 extension HTTPRequestPath {
 
     var fallbackUrls: [URL] {
         return []
+    }
+
+    var fallbackRelativePath: String? {
+        return nil
     }
 
     var url: URL? { return self.url(proxyURL: nil) }
@@ -127,22 +134,33 @@ extension HTTPRequest.Path: HTTPRequestPath {
         SystemInfo.apiBaseURL
     }
 
-    private static let fallbackServerHostURL = URL(string: "https://api-production.8-lives-cat.io")
+    private static let fallbackServerHostURLs = [
+        URL(string: "https://api-production.8-lives-cat.io")
+    ]
 
-    var fallbackUrls: [URL] {
+    var fallbackRelativePath: String? {
         switch self {
         case .getOfferings:
-            return [
-                // swiftlint:disable:next force_unwrapping
-                URL(string: "/v1/offerings", relativeTo: Self.fallbackServerHostURL)!
-            ]
+            return "/v1/offerings"
         case .getProductEntitlementMapping:
-            return [
-                // swiftlint:disable:next force_unwrapping
-                URL(string: "/v1/product_entitlement_mapping", relativeTo: Self.fallbackServerHostURL)!
-            ]
+            return "/v1/product_entitlement_mapping"
         default:
+            return nil
+        }
+    }
+
+    var fallbackUrls: [URL] {
+        guard let fallbackRelativePath = self.fallbackRelativePath else {
             return []
+        }
+
+        return Self.fallbackServerHostURLs.compactMap { baseURL in
+            guard let baseURL = baseURL,
+                  let fallbackUrl = URL(string: fallbackRelativePath, relativeTo: baseURL) else {
+                assertionFailure("Invalid fallback URL configuration")
+                return nil
+            }
+            return fallbackUrl
         }
     }
 
