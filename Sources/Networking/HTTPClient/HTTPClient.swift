@@ -486,8 +486,10 @@ private extension HTTPClient {
                     Logger.debug(Strings.network.request_handled_by_load_shedder(request.httpRequest.path))
                 }
 
-                // todo rick: record succesful response here for determining timeout
-                requestTimeoutResult = .successOnMainBackend
+                // Record successful response from the main backend
+                if !request.isFallbackURLRequest {
+                    requestTimeoutResult = .successOnMainBackend
+                }
 
             case let .failure(error):
                 let httpURLResponse = urlResponse as? HTTPURLResponse
@@ -510,7 +512,7 @@ private extension HTTPClient {
                 if retryOnFallbackHostScheduled {
                     retryScheduled = true
 
-                    // todo rick: record timeout on main backend for url supporting fallback
+                    // Record timeout on the main backend for a request that supports a fallback
                     requestTimeoutResult = .timeoutOnMainBackendSupportingFallback
                 } else {
                     retryScheduled = self.retryRequestIfNeeded(request: request,
