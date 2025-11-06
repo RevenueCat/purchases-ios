@@ -169,22 +169,22 @@ struct ForceServerErrorStrategy {
 
     let serverErrorURL: URL
 
-    /// If this returns a non-nil `NetworkError`, the `HTTPClient` will not perform the request
-    /// and will just return the error.
+    /// If this returns a non-nil `HTTPURLResponse`, the `HTTPClient` will not perform the request
+    /// and will just return the fake `HTTPURLResponse`.
     ///
     /// Takes precedence over `shouldForceServerError`.
-    let fakeErrorResponseWithoutPerformingRequest: (HTTPClient.Request) -> NetworkError?
+    let fakeResponseWithoutPerformingRequest: (HTTPClient.Request) -> HTTPURLResponse?
 
     /// If this returns `true`, the `HTTPClient` will route the request to `forceServerErrorURL`.
     let shouldForceServerError: (HTTPClient.Request) -> Bool
 
     init(
         serverErrorURL: URL = Self.defaultServerErrorURL,
-        fakeErrorResponseWithoutPerformingRequest: @escaping (HTTPClient.Request) -> NetworkError? = { _ in nil },
+        fakeResponseWithoutPerformingRequest: @escaping (HTTPClient.Request) -> HTTPURLResponse? = { _ in nil },
         shouldForceServerError: @escaping (HTTPClient.Request) -> Bool
     ) {
         self.serverErrorURL = serverErrorURL
-        self.fakeErrorResponseWithoutPerformingRequest = fakeErrorResponseWithoutPerformingRequest
+        self.fakeResponseWithoutPerformingRequest = fakeResponseWithoutPerformingRequest
         self.shouldForceServerError = shouldForceServerError
     }
 
