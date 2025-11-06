@@ -19,14 +19,26 @@ import SnapshotTesting
 import StoreKit
 import XCTest
 
-class FallbackURLUnsignedBackendIntegrationTests: FallbackURLSignedBackendIntegrationTests {
+class FallbackURLUnsignedBackendStoreKit2IntegrationTests: FallbackURLSignedBackendStoreKit2IntegrationTests {
 
     override class var responseVerificationMode: Signing.ResponseVerificationMode {
         return .disabled
     }
 }
 
-class FallbackURLSignedBackendIntegrationTests: BaseStoreKitIntegrationTests {
+class FallbackURLUnsignedBackendStoreKit1IntegrationTests: FallbackURLSignedBackendStoreKit1IntegrationTests {
+
+    override class var responseVerificationMode: Signing.ResponseVerificationMode {
+        return .disabled
+    }
+}
+
+class FallbackURLSignedBackendStoreKit1IntegrationTests: FallbackURLSignedBackendStoreKit2IntegrationTests {
+
+    override class var storeKitVersion: StoreKitVersion { .storeKit1 }
+}
+
+class FallbackURLSignedBackendStoreKit2IntegrationTests: BaseStoreKitIntegrationTests {
 
     override class var storeKitVersion: StoreKitVersion { .storeKit2 }
 

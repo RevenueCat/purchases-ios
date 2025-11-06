@@ -17,23 +17,25 @@ import StoreKit
 import XCTest
 
 // swiftlint:disable:next type_name
-class PurchasesFallbackURLBackendIntegrationTests: BaseStoreKitIntegrationTests {
+class PurchasesFallbackURLBackendStoreKit1IntegrationTests: PurchasesFallbackURLBackendStoreKit2IntegrationTests {
+
+    override class var storeKitVersion: StoreKitVersion { .storeKit1 }
+
+}
+
+// swiftlint:disable:next type_name
+class PurchasesFallbackURLBackendStoreKit2IntegrationTests: BaseStoreKitIntegrationTests {
 
     override class var storeKitVersion: StoreKitVersion { .storeKit2 }
 
-    private var mainServerDown: Bool = true // Initially for these tests, the main server is down
-
     override class var responseVerificationMode: Signing.ResponseVerificationMode {
-        return .disabled
+        return Signing.enforcedVerificationMode()
     }
 
-    override var forceServerErrorStrategy: ForceServerErrorStrategy? {
-        return .init { [weak self] (request: HTTPClient.Request) in
-            guard self?.mainServerDown == true else {
-                return false // no failures
-            }
-            return !request.isRequestToFallbackUrl // Only fail for main server requests
-        }
+    override func setUp() async throws {
+        self.mainServerDown()
+
+        try await super.setUp() // Initially for these tests, the main server is down
     }
 
     func testWhenOnlyFallbackURLThenCustomerInfoIsComputedOffline() async throws {
@@ -62,7 +64,7 @@ class PurchasesFallbackURLBackendIntegrationTests: BaseStoreKitIntegrationTests 
         XCTAssertTrue(offlineEntitlementInfo.isActive)
         verifyNoTransactionsWereFinished()
 
-        self.mainServerDown = false // Simulate main server recovery
+        self.allServersUp() // Simulate main server recovery
         logger.clearMessages()
 
         let onlineCustomerInfo = try await self.purchases.customerInfo()
@@ -87,7 +89,7 @@ class PurchasesFallbackURLBackendIntegrationTests: BaseStoreKitIntegrationTests 
         XCTAssertTrue(offlineEntitlementInfo.isActive)
         verifyNoTransactionsWereFinished()
 
-        self.mainServerDown = false // Simulate main server recovery
+        self.allServersUp() // Simulate main server recovery
         logger.clearMessages()
 
         await resetSingleton()
