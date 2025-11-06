@@ -84,12 +84,14 @@ fileprivate extension View {
                         .ignoresSafeArea()
                 }.overlay {
                     ZStack {
+                        HStack { Spacer() }
+                        VStack { Spacer() }
                         if let colorOverlay {
                             colorOverlay
                                 .toView(colorScheme: colorScheme)
                         }
                     }
-                    .frame(maxWidth: size?.width, maxHeight: size?.height)
+                    .edgesIgnoringSafeArea(.all)
                 }
                 .edgesIgnoringSafeArea(.all)
             }
@@ -99,12 +101,14 @@ fileprivate extension View {
                     VideoComponentView(viewModel: viewModel)
                         .overlay {
                             ZStack {
+                                HStack { Spacer() }
+                                VStack { Spacer() }
                                 if let colorOverlay {
                                     colorOverlay
                                         .toView(colorScheme: colorScheme)
                                 }
                             }
-                            .frame(maxWidth: size?.width, maxHeight: size?.height)
+                            .edgesIgnoringSafeArea(.all)
                         }
                         // enforces video clipping to the exact bounds of the view where .clipped does not
                         .mask(self.overlay(content: {
