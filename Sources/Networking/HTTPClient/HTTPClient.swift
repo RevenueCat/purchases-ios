@@ -52,7 +52,9 @@ class HTTPClient {
          retriableStatusCodes: Set<HTTPStatusCode> = Set([.tooManyRequests]),
          requestTimeout: TimeInterval = Configuration.networkTimeoutDefault,
          dateProvider: DateProvider = DateProvider(),
-         operationDispatcher: OperationDispatcher) {
+         operationDispatcher: OperationDispatcher,
+         timeoutManager: HTTPRequestTimeoutManager? = nil,
+    ) {
         let config = URLSessionConfiguration.ephemeral
         config.httpMaximumConnectionsPerHost = 1
         config.timeoutIntervalForRequest = requestTimeout
@@ -72,7 +74,7 @@ class HTTPClient {
         self.authHeaders = HTTPClient.authorizationHeader(withAPIKey: apiKey)
         self.dateProvider = dateProvider
         self.operationDispatcher = operationDispatcher
-        self.requestTimeoutManager = HTTPRequestTimeoutManager(dateProvider: dateProvider)
+        self.requestTimeoutManager = timeoutManager ?? HTTPRequestTimeoutManager(dateProvider: dateProvider)
     }
 
     /// - Parameter verificationMode: if `nil`, this will default to `SystemInfo.responseVerificationMode`
