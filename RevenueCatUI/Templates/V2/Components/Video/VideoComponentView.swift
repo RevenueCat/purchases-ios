@@ -148,12 +148,13 @@ struct VideoComponentView: View {
                         stagedURL.publisher
                             .eraseToAnyPublisher()
                             .removeDuplicates()
-                            .debounce(for: 0.300, scheduler: RunLoop.main)
                     ) { output in
                         // in the event that the download of the high res video is so fast that it tries to set the
                         // url moments after the low_res was set, we need to delay a tiny bit to ensure the rerender
                         // actually occurs. This happens consistently with small file sizes and great connection
-                        cachedURL = output
+                        Task { @MainActor in
+                            self.cachedURL = output
+                        }
                     }
                 }
             }
