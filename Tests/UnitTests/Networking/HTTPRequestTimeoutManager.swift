@@ -22,10 +22,8 @@ class HTTPRequestTimeoutManagerTests: TestCase {
         super.setUp()
     }
  
-    /*
-     Tests that initially the default timeout for a main backend request support fallback is returned
-     when the request supports a fallback
-     */
+    /// Tests that initially the default timeout for a main backend request support fallback is returned
+    /// when the request supports a fallback
     func testDefaultTimeoutForPathWithFallback() {
         XCTAssertEqual(
             manager.timeout(for: Mockpath.withFallback, isFallback: false),
@@ -33,9 +31,7 @@ class HTTPRequestTimeoutManagerTests: TestCase {
         )
     }
     
-    /*
-     Initially the default timeout should be returned for a request that is a fallback request
-     */
+    /// Initially the default timeout should be returned for a request that is a fallback request
     func testDefaultTimeoutForPathWithFallbackForFallbackRequest() {
         XCTAssertEqual(
             manager.timeout(for: Mockpath.withFallback, isFallback: true),
@@ -43,9 +39,7 @@ class HTTPRequestTimeoutManagerTests: TestCase {
         )
     }
     
-    /*
-     For a path that does not support fallbacks the default timeout should be used initially
-     */
+    /// For a path that does not support fallbacks the default timeout should be used initially
     func testDefaultTimeoutForPathWithoutFallback() {
         XCTAssertEqual(
             manager.timeout(for: Mockpath.withoutFallback, isFallback: false),
@@ -53,10 +47,8 @@ class HTTPRequestTimeoutManagerTests: TestCase {
         )
     }
     
-    /*
-     For a path that does not support fallbacks but is a fallback request the default
-     timeout should be used initially
-     */
+    /// For a path that does not support fallbacks but is a fallback request the default
+    /// timeout should be used initially
     func testDefaultTimeoutForPathWithoutFallbackForFallbackRequest() {
         XCTAssertEqual(
             manager.timeout(for: Mockpath.withoutFallback, isFallback: true),
@@ -64,10 +56,8 @@ class HTTPRequestTimeoutManagerTests: TestCase {
         )
     }
     
-    /*
-     For a request to a path on the main backend that supports fallbacks, after a succesful request
-     to the main backend (within the reset timeout interval) should use the reduced timeout
-     */
+    /// For a request to a path on the main backend that supports fallbacks, after a succesful request
+    /// to the main backend (within the reset timeout interval) should use the reduced timeout
     func testTimeoutForPathWithFallbackAfterFailedRequestToMainBackend() {
         manager.recordRequestResult(.timeoutOnMainBackendSupportingFallback)
         
@@ -77,11 +67,9 @@ class HTTPRequestTimeoutManagerTests: TestCase {
         )
     }
     
-    /*
-     For a request to a path on the main backend that supports fallbacks, after a succesful request
-     to the main backend after the reset timeout interval has elapsed
-     should use the default timeout for a main backend request that supports fallbacks
-     */
+    /// For a request to a path on the main backend that supports fallbacks, after a succesful request
+    /// to the main backend after the reset timeout interval has elapsed
+    /// should use the default timeout for a main backend request that supports fallbacks
     func testTimeoutForPathWithFallbackAfterFailedRequestToMainBackendShouldExpire() {
         manager.recordRequestResult(.timeoutOnMainBackendSupportingFallback)
 
@@ -102,9 +90,7 @@ class HTTPRequestTimeoutManagerTests: TestCase {
         )
     }
 
-    /*
-     After a succesful request on the main backend the last timeout request date should be reset
-     */
+    /// After a succesful request on the main backend the last timeout request date should be reset
     func testSuccessOnMainBackendResetsTimeoutState() {
         // Record timeout first
         manager.recordRequestResult(.timeoutOnMainBackendSupportingFallback)
@@ -121,9 +107,7 @@ class HTTPRequestTimeoutManagerTests: TestCase {
         )
     }
 
-    /*
-     Receving a `.other` After a timeout on the main backend should not change the state
-     */
+    /// Receving a `.other` After a timeout on the main backend should not change the state
     func testOtherResultDoesNotChangeTimeoutState() {
         // Record timeout first
         manager.recordRequestResult(.timeoutOnMainBackendSupportingFallback)
@@ -140,9 +124,7 @@ class HTTPRequestTimeoutManagerTests: TestCase {
         )
     }
 
-    /*
-     Ensures that the timeout does not reset before the `timeoutResetInterval`
-     */
+    /// Ensures that the timeout does not reset before the `timeoutResetInterval`
     func testTimeoutDoesNotResetBeforeResetInterval() {
         // Record timeout
         manager.recordRequestResult(.timeoutOnMainBackendSupportingFallback)
@@ -161,9 +143,7 @@ class HTTPRequestTimeoutManagerTests: TestCase {
         )
     }
 
-    /*
-     Ensures that the timeout does not reset if no timeout has occurred
-     */
+    /// Ensures that the timeout does not reset if no timeout has occurred
     func testTimeoutDoesNotResetIfNoTimeoutHasOccurred() {
         // No timeout recorded
         XCTAssertEqual(
@@ -181,10 +161,8 @@ class HTTPRequestTimeoutManagerTests: TestCase {
         )
     }
 
-    /*
-     Ensures that regardless of multiple calls going out after each other the state
-     is always up to date
-     */
+    /// Ensures that regardless of multiple calls going out after each other the state
+    /// is always up to date
     func testMultipleTimeoutsUpdateTimeoutStateCorrectly() {
         // First timeout
         manager.recordRequestResult(.timeoutOnMainBackendSupportingFallback)
@@ -213,10 +191,8 @@ class HTTPRequestTimeoutManagerTests: TestCase {
         )
     }
 
-    /*
-     Ensures that a succes on the main backend after a timeout resets the timeout
-     right away
-     */
+    /// Ensures that a succes on the main backend after a timeout resets the timeout
+    /// right away
     func testSuccessOnMainBackendResetsTimeoutEvenIfTimeoutOccurredRecently() {
         // Record timeout
         manager.recordRequestResult(.timeoutOnMainBackendSupportingFallback)
@@ -236,10 +212,8 @@ class HTTPRequestTimeoutManagerTests: TestCase {
         )
     }
 
-    /*
-     Ensures that multiple follow up requests all use the reduced timeout
-     after a timeout on the main backend when the request supports a fallback
-     */
+    /// Ensures that multiple follow up requests all use the reduced timeout
+    /// after a timeout on the main backend when the request supports a fallback
     func testTimeoutStatePersistsAcrossMultipleGetTimeoutCalls() {
         // Record timeout
         manager.recordRequestResult(.timeoutOnMainBackendSupportingFallback)
@@ -259,10 +233,8 @@ class HTTPRequestTimeoutManagerTests: TestCase {
         )
     }
 
-    /*
-     Ensures that fallback endpoints always use the default timeout even
-     after recording a timeout
-     */
+    /// Ensures that fallback endpoints always use the default timeout even
+    /// after recording a timeout
     func testFallbackRequestsAlwaysUseDefaultTimeoutRegardlessOfTimeoutState() {
         // Record timeout
         manager.recordRequestResult(.timeoutOnMainBackendSupportingFallback)
@@ -281,10 +253,8 @@ class HTTPRequestTimeoutManagerTests: TestCase {
         )
     }
 
-    /*
-     Ensures that endpoints without fallback support always use the default timeout
-     even after recording a timeout
-     */
+    /// Ensures that endpoints without fallback support always use the default timeout
+    /// even after recording a timeout
     func testEndpointsWithoutFallbackSupportAlwaysUseDefaultTimeout() {
         // Initially
         XCTAssertEqual(
