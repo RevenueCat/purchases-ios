@@ -11,38 +11,26 @@ import Foundation
 class HTTPRequestTimeoutManager {
     
     enum RequestResult {
-        
-        /*
-         Request succeeded on the main backend
-         */
+
+        /// Request succeeded on the main backend
         case successOnMainBackend
-        
-        /*
-         Request timed out on the main backend and supports fallback URLs
-         */
+
+        /// Request timed out on the main backend and supports fallback URLs
         case timeoutOnMainBackendSupportingFallback
-        
-        /*
-         Any other result (non-main backend, non-timeout errors, etc.)
-         */
+
+        /// Any other result (non-main backend, non-timeout errors, etc.)
         case other
     }
     
     enum Timeout: TimeInterval {
-        
-        /*
-          The default timeout
-         */
+
+        /// The default timeout
         case `default` = 30
-        
-        /*
-         The default timeout for backend requests that support a fallback
-         */
+
+        /// The default timeout for backend requests that support a fallback
         case defaultForMainBackendRequestSupportingFallback = 5
-        
-        /*
-         The reduced timeout for requests with fallback support after timeout
-         */
+
+        /// The reduced timeout for requests with fallback support after timeout
         case reduced = 2
     }
     
@@ -58,9 +46,12 @@ class HTTPRequestTimeoutManager {
         self.dateProvider = dateProvider
     }
     
-    /*
-     Determines the timeout to be used by the HTTP Request for the given path
-     */
+    /// Determines the timeout to be used by the HTTP Request for the given path.
+    ///
+    /// - Parameters:
+    ///   - path: The HTTP request path for which to determine the timeout
+    ///   - isFallback: Whether this is a fallback request
+    /// - Returns: The timeout interval in seconds
     func timeout(for path: HTTPRequestPath, isFallback: Bool) -> TimeInterval {
         if shouldResetTimeout {
             resetlastTimeoutRequestTime()
@@ -84,9 +75,9 @@ class HTTPRequestTimeoutManager {
         return timeout.rawValue
     }
     
-    /*
-     Updates the internal state in response to the result received from the backend
-     */
+    /// Updates the internal state in response to the result received from the backend.
+    ///
+    /// - Parameter result: The result of the HTTP request
     func recordRequestResult(_ result: RequestResult) {
         switch result {
         case .successOnMainBackend:
