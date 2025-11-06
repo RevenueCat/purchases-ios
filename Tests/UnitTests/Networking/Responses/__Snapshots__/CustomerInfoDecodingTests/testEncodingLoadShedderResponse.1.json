@@ -1,6 +1,6 @@
 {
-  "entitlement_verification" : 1,
-  "original_source" : "main",
+  "entitlement_verification" : 2,
+  "original_source" : "load_shedder",
   "request_date" : "2022-03-08T17:42:58Z",
   "schema_version" : "3",
   "subscriber" : {

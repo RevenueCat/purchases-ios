@@ -49,7 +49,9 @@ class NormalCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTes
             nil
         )
         expect(result).to(beSuccess())
-        expect(result.value) == Self.sampleCustomerInfo.copy(with: .verified)
+        expect(result.value) == Self.sampleCustomerInfo.copy(with: .verified,
+                                                             httpResponseOriginalSource: .mainServer)
+        expect(result.value?.originalSource) == .main
 
         expect(self.factory.createRequested) == false
     }
@@ -68,7 +70,9 @@ class NormalCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTes
             nil
         )
         expect(result).to(beSuccess())
-        expect(result.value) == Self.sampleCustomerInfo.copy(with: .failed)
+        expect(result.value) == Self.sampleCustomerInfo.copy(with: .failed,
+                                                             httpResponseOriginalSource: .mainServer)
+        expect(result.value?.originalSource) == .main
 
         expect(self.factory.createRequested) == false
     }
@@ -108,7 +112,9 @@ class NormalCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTes
             nil
         )
         expect(result).to(beSuccess())
-        expect(result.value) == Self.sampleCustomerInfo.copy(with: .notRequested)
+        expect(result.value) == Self.sampleCustomerInfo.copy(with: .notRequested,
+                                                             httpResponseOriginalSource: .mainServer)
+        expect(result.value?.originalSource) == .main
         expect(self.factory.createRequested) == false
 
         self.logger.verifyMessageWasLogged(
@@ -196,6 +202,7 @@ class OfflineCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTe
         let result = await self.handle(.failure(error), Self.mapping)
         expect(result).to(beSuccess())
         expect(result.value) == Self.offlineCustomerInfo
+        expect(result.value?.originalSource) == .offlineEntitlements
 
         expect(self.factory.createRequested) == true
         expect(self.factory.createRequestCount) == 1
@@ -449,7 +456,7 @@ private extension BaseCustomerInfoResponseHandlerTests {
             "original_app_user_id": "nacho2",
             "other_purchases": [:] as [String: Any]
         ] as [String: Any]
-    ])!
+    ])!.copy(with: .verifiedOnDevice, httpResponseOriginalSource: nil)
 
 }
 
