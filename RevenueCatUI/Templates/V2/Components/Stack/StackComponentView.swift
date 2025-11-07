@@ -791,7 +791,7 @@ extension StackComponentViewModel {
             )
         }
 
-        try self.init(
+        self.init(
             component: component,
             viewModels: viewModels,
             badgeViewModels: badgeViewModels ?? [],

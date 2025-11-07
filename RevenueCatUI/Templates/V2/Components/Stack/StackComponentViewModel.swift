@@ -35,17 +35,17 @@ class StackComponentViewModel {
         badgeViewModels: [PaywallComponentViewModel],
         shouldApplySafeAreaInset: Bool = false,
         uiConfigProvider: UIConfigProvider
-    ) throws {
+    ) {
         self.component = component
         self.viewModels = viewModels
         self.uiConfigProvider = uiConfigProvider
         self.badgeViewModels = badgeViewModels
         self.shouldApplySafeAreaInset = shouldApplySafeAreaInset
-        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides { $0 }
+        self.presentedOverrides = self.component.overrides?.toPresentedOverrides { $0 }
     }
 
-    func copy(withViewModels newViewModels: [PaywallComponentViewModel]) throws -> StackComponentViewModel {
-        return try StackComponentViewModel(
+    func copy(withViewModels newViewModels: [PaywallComponentViewModel]) -> StackComponentViewModel {
+        return StackComponentViewModel(
             component: self.component,
             viewModels: newViewModels,
             badgeViewModels: self.badgeViewModels,

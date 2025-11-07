@@ -34,13 +34,13 @@ class CarouselComponentViewModel {
         uiConfigProvider: UIConfigProvider,
         component: PaywallComponent.CarouselComponent,
         pageStackViewModels: [StackComponentViewModel]
-    ) throws {
+    ) {
         self.localizationProvider = localizationProvider
         self.uiConfigProvider = uiConfigProvider
         self.component = component
         self.pageStackViewModels = pageStackViewModels
 
-        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides { $0 }
+        self.presentedOverrides = self.component.overrides?.toPresentedOverrides { $0 }
     }
 
     @ViewBuilder
