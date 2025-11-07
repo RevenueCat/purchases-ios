@@ -58,6 +58,12 @@ custom_rules:
     message: "In older versions of xcode build tools, this is not supported and will fail in CI"
     severity: error
 
+  no_trailing_comma_multiline:
+    name: "No Trailing Commas"
+    regex: ',\s*\n\s*\)'
+    message: "Trailing commas are not allowed"
+    severity: error
+
 identifier_name:
   max_length:
     warning: 60
