@@ -23,8 +23,6 @@ struct PurchaseButton: View {
     let fonts: PaywallFontProvider
     let mode: PaywallViewMode
 
-    @State private var awaitingResponseFromOnPurchaseInitiatedCallback = false
-
     @EnvironmentObject
     private var introEligibilityViewModel: IntroEligibilityViewModel
     @EnvironmentObject
@@ -83,7 +81,7 @@ struct PurchaseButton: View {
 
     private var button: some View {
         AsyncButton {
-            guard !self.purchaseHandler.actionInProgress && !awaitingResponseFromOnPurchaseInitiatedCallback else {
+            guard !self.purchaseHandler.actionInProgress else {
                 return
             }
             guard !self.selectedPackage.currentlySubscribed else {
@@ -93,14 +91,14 @@ struct PurchaseButton: View {
 
             // Check if there's a purchase interceptor
             if let interceptor = self.purchaseInitiatedAction {
-                self.awaitingResponseFromOnPurchaseInitiatedCallback = true
-                defer { self.awaitingResponseFromOnPurchaseInitiatedCallback = false }
                 // Wait for the interceptor to call resume before proceeding
-                let result = await withCheckedContinuation { continuation in
-                    let productIdentifier = self.selectedPackage.content.storeProduct.productIdentifier
-                    interceptor(productIdentifier, resume: ResumeAction { shouldProceed in
-                        continuation.resume(returning: shouldProceed)
-                    })
+                let result = await self.purchaseHandler.withPendingPurchaseContinuation {
+                    await withCheckedContinuation { continuation in
+                        let productIdentifier = self.selectedPackage.content.storeProduct.productIdentifier
+                        interceptor(productIdentifier, resume: ResumeAction { shouldProceed in
+                            continuation.resume(returning: shouldProceed)
+                        })
+                    }
                 }
                 guard result else { return }
             }
@@ -121,9 +119,9 @@ struct PurchaseButton: View {
             #if !os(watchOS)
             .padding()
             #endif
-            .hidden(if: !self.isEnabled || awaitingResponseFromOnPurchaseInitiatedCallback)
+            .hidden(if: !self.isEnabled)
             .overlay {
-                if !self.isEnabled || awaitingResponseFromOnPurchaseInitiatedCallback {
+                if !self.isEnabled {
                     ProgressView()
                         .progressViewStyle(.circular)
                         .tint(self.colors.callToActionForegroundColor)

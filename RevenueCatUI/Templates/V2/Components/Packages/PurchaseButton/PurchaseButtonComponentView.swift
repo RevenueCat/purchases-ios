@@ -37,8 +37,6 @@ struct PurchaseButtonComponentView: View {
 
     @State private var inAppBrowserURL: URL?
 
-    @State private var awaitingResponseFromOnPurchaseInitiatedCallback = false
-
     private let viewModel: PurchaseButtonComponentViewModel
     private let onDismiss: () -> Void
 
@@ -50,11 +48,11 @@ struct PurchaseButtonComponentView: View {
     /// Show activity indicator only if purchase action in purchase handler
     var showActivityIndicatorOverContent: Bool {
         guard let actionType = self.purchaseHandler.actionTypeInProgress else {
-            return awaitingResponseFromOnPurchaseInitiatedCallback
+            return false
         }
 
         switch actionType {
-        case .purchase:
+        case .purchase, .pendingPurchaseContinuation:
             return true
         case .restore:
             return false
@@ -105,7 +103,7 @@ struct PurchaseButtonComponentView: View {
     private func purchaseInApp() async throws {
         self.logIfInPreview(package: self.packageContext.package)
 
-        guard !self.purchaseHandler.actionInProgress && !awaitingResponseFromOnPurchaseInitiatedCallback else {
+        guard !self.purchaseHandler.actionInProgress else {
             return
         }
 
@@ -116,14 +114,13 @@ struct PurchaseButtonComponentView: View {
 
         // Check if there's a purchase interceptor
         if let interceptor = self.purchaseInitiatedAction {
-            self.awaitingResponseFromOnPurchaseInitiatedCallback = true
-            defer { self.awaitingResponseFromOnPurchaseInitiatedCallback = false }
-            // Wait for the interceptor to call resume before proceeding
-            let result = await withCheckedContinuation { continuation in
-                let productIdentifier = selectedPackage.storeProduct.productIdentifier
-                interceptor(productIdentifier, resume: ResumeAction { shouldProceed in
-                    continuation.resume(returning: shouldProceed)
-                })
+            let result = await self.purchaseHandler.withPendingPurchaseContinuation {
+                await withCheckedContinuation { continuation in
+                    let productIdentifier = selectedPackage.storeProduct.productIdentifier
+                    interceptor(productIdentifier, resume: ResumeAction { shouldProceed in
+                        continuation.resume(returning: shouldProceed)
+                    })
+                }
             }
             guard result else { return }
         }

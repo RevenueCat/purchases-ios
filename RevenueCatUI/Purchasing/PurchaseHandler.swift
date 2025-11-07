@@ -23,6 +23,8 @@ final class PurchaseHandler: ObservableObject {
 
     enum ActionType {
 
+        /// This is a pre-purchase or redeem code step where consuming applications can perform work
+        case pendingPurchaseContinuation
         case purchase
         case restore
 
@@ -188,6 +190,18 @@ final class PurchaseHandler: ObservableObject {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PurchaseHandler {
+    func withPendingPurchaseContinuation<T>(_ continuation: () async throws -> T) async rethrows -> T {
+        await MainActor.run {
+            startAction(.pendingPurchaseContinuation)
+        }
+        let result = try await continuation()
+        await MainActor.run {
+            if actionTypeInProgress == .pendingPurchaseContinuation {
+                self.actionTypeInProgress = nil
+            }
+        }
+        return result
+    }
 
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func invalidateCustomerInfoCache() {
