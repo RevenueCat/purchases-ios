@@ -15,7 +15,9 @@ import XCTest
 
 /// Generic `ETagManager` type allows subclasses to use either `MockETagManager`
 /// or the real `ETagManager`.
-class BaseHTTPClientTests<ETag: ETagManager>: TestCase {
+/// Generic `TimeoutManager` type allows subclasses to use either `MockHTTPRequestTimeoutManager`
+/// or the real `HTTPRequestTimeoutManager`.
+class BaseHTTPClientTests<ETag: ETagManager, TimeoutManager: HTTPRequestTimeoutManagerType>: TestCase {
 
     typealias EmptyResponse = VerifiedHTTPResponse<HTTPEmptyResponseBody>.Result
     typealias DataResponse = VerifiedHTTPResponse<Data>.Result
@@ -28,7 +30,7 @@ class BaseHTTPClientTests<ETag: ETagManager>: TestCase {
     var diagnosticsTracker: DiagnosticsTrackerType?
     var operationDispatcher: OperationDispatcher!
     var dateProvider: MockCurrentDateProvider!
-    var timeoutManager: HTTPRequestTimeoutManager!
+    var timeoutManager: TimeoutManager!
 
     fileprivate let apiKey = "MockAPIKey"
 
@@ -51,9 +53,8 @@ class BaseHTTPClientTests<ETag: ETagManager>: TestCase {
         MockDNSChecker.resetData()
 
         self.dateProvider = MockCurrentDateProvider()
-        self.timeoutManager = HTTPRequestTimeoutManager(dateProvider: dateProvider)
 
-        // Subclasses must initialize `self.eTagManager` before this
+        // Subclasses must initialize `self.eTagManager` and `self.timeoutManager` before this
         self.client = self.createClient()
     }
 
@@ -83,10 +84,11 @@ class BaseHTTPClientTests<ETag: ETagManager>: TestCase {
     }
 }
 
-final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
+final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTimeoutManager> {
 
     override func setUpWithError() throws {
         self.eTagManager = MockETagManager()
+        self.timeoutManager = HTTPRequestTimeoutManager(dateProvider: MockCurrentDateProvider())
 
         try super.setUpWithError()
     }
@@ -3428,4 +3430,101 @@ private struct AnyEncodableRequestBody: HTTPRequestBody, Decodable {
 
     var contentForSignature: [(key: String, value: String?)] { [] }
 
+}
+
+// MARK: - HTTPClient Timeout Manager Tests
+
+/// Tests that verify the HTTPClient correctly communicates with the HTTPRequestTimeoutManager
+/// by asserting on recorded events rather than resulting behavior.
+final class HTTPClientTimeoutManagerTests: BaseHTTPClientTests<MockETagManager, MockHTTPRequestTimeoutManager> {
+
+    override func setUpWithError() throws {
+        self.eTagManager = MockETagManager()
+        let mockTimeoutManager = MockHTTPRequestTimeoutManager()
+        self.timeoutManager = mockTimeoutManager
+
+        try super.setUpWithError()
+    }
+
+    /// Verifies that when a timeout occurs on the main backend for an endpoint that supports fallback,
+    /// the HTTPClient records the correct events
+    func testRecordsTimeoutOnMainBackendAndOtherOnFallbackSuccessWithFallbackEvent() throws {
+        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test_user_id"))
+
+        // main request times out
+        stub(condition: isPath(request.path)) { _ in
+            return .timeoutResponse()
+        }
+
+        // fallback request succeeds
+        let fallbackPath = try XCTUnwrap(request.path.fallbackRelativePath)
+        stub(condition: isPath(fallbackPath)) { _ in
+            return .emptySuccessResponse()
+        }
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: DataResponse) in completion() }
+        }
+
+        // Assert that the correct event was recorded
+        expect(self.timeoutManager.recordedResults).to(haveCount(2))
+        expect(self.timeoutManager.recordedResults) == [
+            .timeoutOnMainBackendSupportingFallback,
+            .other
+        ]
+    }
+
+    /// Verifies that when a timeout occurs on the main backend for an endpoint that does NOT support fallback,
+    /// the HTTPClient records the "other" event
+    func testRecordsOtherResultWhenTimeoutOccursOnEndpointWithoutFallbackSupport() {
+        let request = HTTPRequest(method: .get, path: .logIn)
+
+        stub(condition: isPath(request.path)) { _ in
+            return .timeoutResponse()
+        }
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: DataResponse) in completion() }
+        }
+
+        // Assert that the "other" event was recorded
+        expect(self.timeoutManager.recordedResults).to(haveCount(1))
+        expect(self.timeoutManager.recordedResults.first) == .other
+    }
+
+    /// Verifies that when a request fails with a non-timeout error,
+    /// the HTTPClient records the "other" event
+    func testRecordsOtherResultWhenRequestFailsWithoutTimeout() {
+        let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
+
+        stub(condition: isPath(request.path)) { _ in
+            return .notFoundRespoonse()
+        }
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: DataResponse) in completion() }
+        }
+
+        // Assert that the "other" event was recorded
+        expect(self.timeoutManager.recordedResults).to(haveCount(1))
+        expect(self.timeoutManager.recordedResults.first) == .other
+    }
+
+    /// Verifies that when a request succeeds on the main backend,
+    /// the HTTPClient records the success event
+    func testRecordsSuccessOnMainBackendWhenRequestSucceeds() {
+        let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
+
+        stub(condition: isPath(request.path)) { _ in
+            return .emptySuccessResponse()
+        }
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: DataResponse) in completion() }
+        }
+
+        // Assert that the success event was recorded
+        expect(self.timeoutManager.recordedResults).to(haveCount(1))
+        expect(self.timeoutManager.recordedResults.first) == .successOnMainBackend
+    }
 }
