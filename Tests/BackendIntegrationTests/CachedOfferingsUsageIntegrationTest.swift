@@ -31,7 +31,7 @@ class CachedOfferingsUsageIntegrationTest: BaseStoreKitIntegrationTests {
     func testCachedOfferingsAreUsedWhenCachedOfferingsExistsAndServerCannotBeReached() async throws {
         let networkOfferings = try await Purchases.shared.offerings()
 
-        self.noNetwork()
+        self.serverDown()
         await resetSingleton()
 
         let cachedOfferings = try await Purchases.shared.offerings()
