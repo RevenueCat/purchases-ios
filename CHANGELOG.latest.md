@@ -1,9 +1,4 @@
-## RevenueCatUI SDK
-### Customer Center
-#### 🐞 Bugfixes
-* Fix `EXC_BAD_ACCESS` when opening promotional offers in Customer Center (#5762) via Cesar de la Vega (@vegaro)
-
 ### 🔄 Other Changes
-* Add Load shedder integration tests for Get Customer Info (#5713) via Antonio Pallares (@ajpallares)
-* Add internal `Offerings` source properties (#5749) via Antonio Pallares (@ajpallares)
-* Add Internal `CustomerInfo` source properties (#5737) via Antonio Pallares (@ajpallares)
+* Use cached offerings on network errors (#5707) via Antonio Pallares (@ajpallares)
+* Allow the use of Test Store in release builds using the uiPreview dangerous setting for the RC Mobile app (#5765) via Rick (@rickvdl)
+* Fix signature verification fallback urls (#5756) via Antonio Pallares (@ajpallares)
