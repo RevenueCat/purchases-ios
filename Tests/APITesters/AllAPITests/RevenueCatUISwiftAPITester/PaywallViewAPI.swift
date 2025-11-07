@@ -24,7 +24,7 @@ struct App: View {
     private var restoreStarted: RestoreStartedHandler = { }
     private var failureHandler: PurchaseFailureHandler = { (_: NSError) in }
 
-    private var purchaseInitiated = { (_: String, _: ResumeAction) in }
+    private var purchaseInitiated = { (_: Package, _: ResumeAction) in }
 
     #if !os(watchOS)
     private var paywallTierChange: PaywallTierChangeHandler = { (_: PaywallData.Tier, _: String) in }
