@@ -148,10 +148,7 @@ extension DisplayableColorScheme {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
 
-    func backgroundStyle(
-        _ backgroundStyle: BackgroundStyle?,
-        alignment: Alignment = .center,
-    ) -> some View {
+    func backgroundStyle(_ backgroundStyle: BackgroundStyle?, alignment: Alignment = .center ) -> some View {
         self.modifier(BackgroundStyleModifier(backgroundStyle: backgroundStyle, alignment: alignment))
     }
 
