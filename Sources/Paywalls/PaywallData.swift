@@ -809,27 +809,3 @@ extension PaywallData: Sendable {}
 // MARK: - Identifiable
 
 extension PaywallData.Tier: Identifiable {}
-
-// MARK: - Extensions
-
-private extension Locale {
-
-    func sharesLanguageCode(with other: Locale) -> Bool {
-        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-            return self.language.isEquivalent(to: other.language) || self.language.hasCommonParent(with: other.language)
-        } else if let l = self.languageCode?.lowercased(), let r = other.languageCode?.lowercased() {
-            return l == r
-        } else {
-            return self.identifier.firstLanguageSubtag == other.identifier.firstLanguageSubtag
-        }
-    }
-
-}
-
-private extension String {
-    var firstLanguageSubtag: String? {
-        // Handle identifiers like "ar", "ar-SA", "ar_SA", "fr", "fr_FR", etc.
-        let parts = self.split { $0 == "-" || $0 == "_" }
-        return parts.first.map { String($0).lowercased() }
-    }
-}
