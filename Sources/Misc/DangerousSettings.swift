@@ -65,12 +65,6 @@ import Foundation
     @_spi(Internal) public let uiPreviewMode: Bool
 
     /**
-     * if `true`, the SDK will allow initialization with a Test Store
-     * api key in release builds.
-     */
-    @_spi(Internal) public let allowTestStoreApiKeyInReleaseBuilds: Bool
-
-    /**
      * A property meant for apps that do their own entitlements computation, separated from RevenueCat.
      * It:
      *   - disables automatic CustomerInfo cache updates
@@ -116,25 +110,22 @@ import Foundation
     /**
      * Used to initialize the SDK in UI preview mode.
      *
-     * - Parameter uiPreviewMode: if `true`, the SDK will return a set of mock products instead of the
-     * - Parameter allowTestStoreApiKeyInReleaseBuilds: if `true` the SDK will allow the use of a test store API key in release builds.
-     * products obtained from StoreKit. This is useful for testing or preview purposes.
+     * - Parameter uiPreviewMode: if `true`, the SDK will return a set of mock products instead
+     * of the products obtained from StoreKit. This is useful for testing or preview purposes.
      */
-    @_spi(Internal) public convenience init(uiPreviewMode: Bool, allowTestStoreApiKeyInReleaseBuilds: Bool) {
-        self.init(autoSyncPurchases: false, internalSettings: Internal.default, uiPreviewMode: uiPreviewMode, allowTestStoreApiKeyInReleaseBuilds: allowTestStoreApiKeyInReleaseBuilds)
+    @_spi(Internal) public convenience init(uiPreviewMode: Bool) {
+        self.init(autoSyncPurchases: false, internalSettings: Internal.default, uiPreviewMode: uiPreviewMode)
     }
 
     /// Designated initializer
     internal init(autoSyncPurchases: Bool,
                   customEntitlementComputation: Bool = false,
                   internalSettings: InternalDangerousSettingsType,
-                  uiPreviewMode: Bool = false,
-                  allowTestStoreApiKeyInReleaseBuilds: Bool = false) {
+                  uiPreviewMode: Bool = false) {
         self.autoSyncPurchases = autoSyncPurchases
         self.internalSettings = internalSettings
         self.customEntitlementComputation = customEntitlementComputation
         self.uiPreviewMode = uiPreviewMode
-        self.allowTestStoreApiKeyInReleaseBuilds = allowTestStoreApiKeyInReleaseBuilds
     }
 
 }

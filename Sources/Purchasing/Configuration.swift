@@ -470,7 +470,7 @@ extension Configuration.APIKeyValidationResult {
 
     func checkForSimulatedStoreAPIKeyInRelease(systemInfo: SystemInfo) {
         #if !DEBUG
-        guard self == .simulatedStore, !systemInfo.dangerousSettings.allowTestStoreApiKeyInReleaseBuilds else {
+        guard self == .simulatedStore, !systemInfo.dangerousSettings.uiPreviewMode else {
             return
         }
 
