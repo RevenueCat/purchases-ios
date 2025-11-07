@@ -8,7 +8,23 @@
 
 import Foundation
 
-class HTTPRequestTimeoutManager {
+protocol HTTPRequestTimeoutManagerType {
+
+    /// Determines the timeout to be used by the HTTP Request for the given path.
+    ///
+    /// - Parameters:
+    ///   - path: The HTTP request path for which to determine the timeout
+    ///   - isFallback: Whether this is a fallback request
+    /// - Returns: The timeout interval in seconds
+    func timeout(for path: HTTPRequestPath, isFallback: Bool) -> TimeInterval
+
+    /// Updates the internal state in response to the result received from the backend.
+    ///
+    /// - Parameter result: The result of the HTTP request
+    func recordRequestResult(_ result: HTTPRequestTimeoutManager.RequestResult)
+}
+
+class HTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
 
     enum RequestResult {
 
@@ -42,7 +58,7 @@ class HTTPRequestTimeoutManager {
 
     private let dateProvider: DateProvider
 
-    init(dateProvider: DateProvider) {
+    init(dateProvider: DateProvider = .init()) {
         self.dateProvider = dateProvider
     }
 
