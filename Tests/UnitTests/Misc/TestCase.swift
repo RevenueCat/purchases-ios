@@ -99,4 +99,11 @@ extension HTTPClient.Request {
         return self.fallbackUrlIndex != nil
     }
 
+    /// Forces server error by pointing to an unreachable address.
+    static let noNetwork = ForceServerErrorStrategy(
+        // swiftlint:disable:next force_unwrapping
+        serverErrorURL: URL(string: "http://localhost:100/unreachable-address")!,
+        shouldForceServerError: { _ in true }
+    )
+
 }

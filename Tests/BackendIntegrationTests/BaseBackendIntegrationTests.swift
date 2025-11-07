@@ -47,7 +47,7 @@ class BaseBackendIntegrationTests: TestCase {
 
     private var mainThreadMonitor: MainThreadMonitor!
 
-    private(set) var forceServerErrorStrategy: ForceServerErrorStrategy?
+    var forceServerErrorStrategy: ForceServerErrorStrategy?
 
     static var isSandbox: Bool = true {
         didSet {

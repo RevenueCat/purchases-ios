@@ -20,7 +20,7 @@ enum OfferingStrings {
 
     case cannot_find_product_configuration_error(identifiers: Set<String>)
     case fetching_offerings_error(error: OfferingsManager.Error, underlyingError: Error?)
-    case fetching_offerings_failed_server_down
+    case error_fetching_offerings_using_disk_cache
     case found_existing_product_request(identifiers: Set<String>)
     case no_cached_offerings_fetching_from_network
     case offerings_stale_updated_from_network
@@ -69,8 +69,8 @@ extension OfferingStrings: LogMessage {
 
             return result
 
-        case .fetching_offerings_failed_server_down:
-            return "Error fetching offerings: server appears down"
+        case .error_fetching_offerings_using_disk_cache:
+            return "Error fetching offerings. Using disk cache"
 
         case .found_existing_product_request(let identifiers):
             return "Found an existing request for products: \(identifiers), appending " +

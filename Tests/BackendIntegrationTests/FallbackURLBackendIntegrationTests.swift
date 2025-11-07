@@ -42,12 +42,13 @@ class FallbackURLSignedBackendStoreKit2IntegrationTests: BaseStoreKitIntegration
 
     override class var storeKitVersion: StoreKitVersion { .storeKit2 }
 
-    override var forceServerErrorStrategy: ForceServerErrorStrategy? {
-        return .failExceptFallbackUrls
-    }
-
     override class var responseVerificationMode: Signing.ResponseVerificationMode {
         return Signing.enforcedVerificationMode()
+    }
+
+    override func setUp() async throws {
+        self.mainServerDown()
+        try await super.setUp()
     }
 
     func testCanGetOfferingsFromFallbackURL() async throws {

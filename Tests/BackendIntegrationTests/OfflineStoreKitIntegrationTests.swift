@@ -21,7 +21,6 @@ import XCTest
 class BaseOfflineStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
 
     override func setUp() async throws {
-        self.allServersUp()
         try await super.setUp()
 
         await self.waitForPendingCustomerInfoRequests()
@@ -369,8 +368,9 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
 class OfflineWithNoMappingStoreKitIntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
-    override var forceServerErrorStrategy: ForceServerErrorStrategy? {
-        return ForceServerErrorStrategy.allServersDown
+    override func setUp() async throws {
+        self.serverDown()
+        try await super.setUp()
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
