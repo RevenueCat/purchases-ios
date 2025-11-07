@@ -71,18 +71,18 @@ public typealias RestoreStartedHandler = @MainActor @Sendable () -> Void
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct PurchaseInitiatedAction: Sendable {
 
-    private let action: @Sendable (String, ResumeAction) -> Void
+    private let action: @Sendable (RevenueCat.Package, ResumeAction) -> Void
 
     /// Creates a new purchase initiated action.
     /// - Parameter action: The closure to invoke when a purchase is initiated.
-    ///   The closure receives the product identifier and a resume callback that must be called to proceed.
-    public init(_ action: @escaping @Sendable (String, ResumeAction) -> Void) {
+    ///   The closure receives the package and a resume callback that must be called to proceed.
+    public init(_ action: @escaping @Sendable (RevenueCat.Package, ResumeAction) -> Void) {
         self.action = action
     }
 
     /// Invokes the action with the given product identifier and resume callback.
-    func callAsFunction(_ productIdentifier: String, resume: ResumeAction) {
-        action(productIdentifier, resume)
+    func callAsFunction(_ package: RevenueCat.Package, resume: ResumeAction) {
+        action(package, resume)
     }
 }
 
@@ -323,8 +323,8 @@ extension View {
     /// ```swift
     ///  var body: some View {
     ///     PaywallView()
-    ///         .onPurchaseInitiated { productIdentifier, resume in
-    ///             print("Intercepting purchase for product: \(productIdentifier)")
+    ///         .onPurchaseInitiated { package, resume in
+    ///             print("Intercepting purchase for package: \(package)")
     ///             // Perform authentication or other pre-purchase logic
     ///             authenticateUser { success in
     ///                 if success {
@@ -342,7 +342,7 @@ extension View {
     /// ### Related Articles
     /// [Documentation](https://rev.cat/paywalls)
     public func onPurchaseInitiated(
-        _ action: @escaping @Sendable (String, ResumeAction) -> Void
+        _ action: @escaping @Sendable (RevenueCat.Package, ResumeAction) -> Void
     ) -> some View {
         self.environment(\.purchaseInitiatedAction, PurchaseInitiatedAction(action))
     }

@@ -116,8 +116,7 @@ struct PurchaseButtonComponentView: View {
         if let interceptor = self.purchaseInitiatedAction {
             let result = await self.purchaseHandler.withPendingPurchaseContinuation {
                 await withCheckedContinuation { continuation in
-                    let productIdentifier = selectedPackage.storeProduct.productIdentifier
-                    interceptor(productIdentifier, resume: ResumeAction { shouldProceed in
+                    interceptor(selectedPackage, resume: ResumeAction { shouldProceed in
                         continuation.resume(returning: shouldProceed)
                     })
                 }
