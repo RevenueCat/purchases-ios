@@ -46,14 +46,14 @@ extension PaywallComponentsData.PaywallComponentsConfig {
             self.collectAllImageURLs(in: $0.stack)
         } ?? []
 
-        return rootStackImageURLs + stickFooterImageURLs
+        return rootStackImageURLs + stickFooterImageURLs + self.background.allImageURLS
     }
 
     var allLowResVideoUrls: [URLWithValidation] {
         let rootStackVideoURLs = self.collectAllVideoURLs(in: self.stack)
         let stickFooterVideoURLs = self.stickyFooter.flatMap { self.collectAllVideoURLs(in: $0.stack) } ?? []
 
-        return rootStackVideoURLs + stickFooterVideoURLs
+        return rootStackVideoURLs + stickFooterVideoURLs + self.background.lowResVideoUrls
     }
 
     // swiftlint:disable:next cyclomatic_complexity function_body_length
@@ -68,6 +68,7 @@ extension PaywallComponentsData.PaywallComponentsConfig {
     ) -> [URL] {
 
         var urls: [URL] = []
+        urls += stack.background?.allImageURLS ?? []
         for component in stack.components {
             var includeHighResInComponentHeirarchy = includeHighResInComponentHeirarchy
             if includeHighResInComponentHeirarchy(component) {
@@ -173,6 +174,7 @@ extension PaywallComponentsData.PaywallComponentsConfig {
     private func collectAllVideoURLs(in stack: PaywallComponent.StackComponent) -> [URLWithValidation] {
 
         var urls: [URLWithValidation] = []
+        urls += stack.background?.lowResVideoUrls ?? []
         for component in stack.components {
             switch component {
             case .text:
@@ -309,5 +311,34 @@ private extension PaywallComponent.VideoComponent {
             }
         }
         .compactMap { $0 }
+    }
+}
+
+private extension PaywallComponent.Background {
+    var allImageURLS: [URL] {
+        switch self {
+        case .image(let imageURLS, _, _):
+            return imageURLS.imageUrls
+        case .video(_, let imageURLS, _, _, _, _):
+            return imageURLS.imageUrls
+        default:
+            return []
+        }
+    }
+
+    var lowResVideoUrls: [URLWithValidation] {
+        switch self {
+        case .video(let urls, _, _, _, _, _):
+            let sources: [PaywallComponent.VideoUrls?] = [urls.light, urls.dark]
+            return sources.compactMap { source in
+                if let url = source?.urlLowRes {
+                    return URLWithValidation(url: url, checksum: source?.checksumLowRes)
+                } else {
+                    return nil
+                }
+            }
+        default:
+            return []
+        }
     }
 }

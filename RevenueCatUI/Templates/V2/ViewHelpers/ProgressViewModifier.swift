@@ -40,7 +40,7 @@ struct ProgressViewModifier: ViewModifier {
             let colorInfo = displayableColorScheme.effectiveColor(for: colorScheme)
             ProgressView()
                 .progressViewStyle(CircularProgressViewStyle(tint: bestTint(for: colorInfo)))
-        case .image, .none:
+        case .image, .video, .none:
             ProgressView()
                 .progressViewStyle(CircularProgressViewStyle(tint: .gray))
         }

@@ -16,10 +16,12 @@ import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum BackgroundStyle: Hashable {
 
     case color(DisplayableColorScheme)
     case image(PaywallComponent.ThemeImageUrls, PaywallComponent.FitMode, DisplayableColorScheme?)
+    case video(VideoComponentViewModel, DisplayableColorScheme?)
 
 }
 
@@ -82,14 +84,38 @@ fileprivate extension View {
                         .ignoresSafeArea()
                 }.overlay {
                     ZStack {
+                        HStack { Spacer() }
+                        VStack { Spacer() }
                         if let colorOverlay {
                             colorOverlay
                                 .toView(colorScheme: colorScheme)
                         }
                     }
-                    .frame(maxWidth: size?.width, maxHeight: size?.height)
+                    .edgesIgnoringSafeArea(.all)
                 }
                 .edgesIgnoringSafeArea(.all)
+            }
+        case let .video(viewModel, colorOverlay):
+            self.background(alignment: alignment) {
+                ZStack {
+                    VideoComponentView(viewModel: viewModel)
+                        .overlay {
+                            ZStack {
+                                HStack { Spacer() }
+                                VStack { Spacer() }
+                                if let colorOverlay {
+                                    colorOverlay
+                                        .toView(colorScheme: colorScheme)
+                                }
+                            }
+                            .edgesIgnoringSafeArea(.all)
+                        }
+                        // enforces video clipping to the exact bounds of the view where .clipped does not
+                        .mask(self.overlay(content: {
+                            Color.black
+                        }))
+                        .edgesIgnoringSafeArea(.all)
+                }
             }
         }
     }
@@ -122,25 +148,16 @@ extension DisplayableColorScheme {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
 
-    func backgroundStyle(_ backgroundStyle: BackgroundStyle?, alignment: Alignment = .center) -> some View {
+    func backgroundStyle(
+        _ backgroundStyle: BackgroundStyle?,
+        alignment: Alignment = .center,
+    ) -> some View {
         self.modifier(BackgroundStyleModifier(backgroundStyle: backgroundStyle, alignment: alignment))
     }
 
 }
 
-extension BackgroundStyle {
-
-    var backgroundStyle: BackgroundStyle? {
-        switch self {
-        case .color(let value):
-            return .color(value)
-        case let .image(value, fitMode, color):
-            return .image(value, fitMode, color)
-        }
-    }
-
-}
-
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension DisplayableColorScheme {
 
     var backgroundStyle: BackgroundStyle {
