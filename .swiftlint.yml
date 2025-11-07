@@ -9,6 +9,7 @@ excluded:
   - scan_derived_data
   - .git
   - .build
+  - ./**/Project.swift
 
 opt_in_rules:
   - force_unwrapping
