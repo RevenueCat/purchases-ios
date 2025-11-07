@@ -43,18 +43,20 @@ class VideoComponentViewModel {
     }
 
     @ViewBuilder
+    // swiftlint:disable:next function_parameter_count
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
         colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (VideoComponentStyle) -> some View
     ) -> some View {
         let localizedPartial = LocalizedVideoPartial.buildPartial(
             state: state,
             condition: condition,
-            // Intro and Promo offers do not impact this component
-            isEligibleForIntroOffer: false,
-            isEligibleForPromoOffer: false,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
             with: self.presentedOverrides
         )
         let partial = localizedPartial?.partial
