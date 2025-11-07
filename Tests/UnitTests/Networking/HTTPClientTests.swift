@@ -1142,7 +1142,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         )
     }
 
-    func testRecordsTimeoutOnMainBackendWithFallbackWhenTimeoutOccursOnMainBackendWithFallback() {
+    func testRecordsTimeoutOnMainBackendWithFallbackWhenTimeoutOccursOnMainBackendWithFallback() throws {
         let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test_user_id"))
 
         // main request
@@ -1157,7 +1157,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         }
 
         // fallback request
-        stub(condition: isHost(HTTPRequest.Path.fallbackServerHostURL!.host!)) { request in
+        let fallbackPath = try XCTUnwrap(request.path.fallbackRelativePath)
+        stub(condition: isPath(fallbackPath)) { request in
 
             // Make sure it uses the default timeout because it's a fallback request
             XCTAssertEqual(
