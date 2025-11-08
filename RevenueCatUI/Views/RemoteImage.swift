@@ -113,9 +113,6 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
     let expectedSize: CGSize?
     let content: (Image, CGSize) -> Content
 
-    @State
-    private var loadedFromCache: Bool
-
     // Preferred method of loading images
 
     @StateObject
@@ -137,7 +134,8 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
         }
         #endif
 
-        if self.loadedFromCache {
+        let loadedFromCache = highResFileLoader.wasLoadedFromCache || lowResFileLoader.wasLoadedFromCache
+        if loadedFromCache {
             // No transition if image is fully loaded from cache
             return .identity
         } else {
@@ -174,37 +172,38 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
         self.expectedSize = expectedSize
         self.colorScheme = colorScheme
 
-        var lowResURLForScheme: URL?
-        switch self.colorScheme {
+        let highResURL = Self.selectURL(
+            lightURL: url,
+            darkURL: darkUrl,
+            for: colorScheme
+        )
+
+        let lowResURL = Self.selectURL(
+            lightURL: lowResUrl,
+            darkURL: darkLowResUrl ?? lowResUrl,
+            for: colorScheme
+        )
+
+        let highResLoader = FileImageLoader(fileRepository: .shared, url: highResURL)
+        let lowResLoader = FileImageLoader(fileRepository: .shared, url: lowResURL)
+
+        self._highResFileLoader = .init(wrappedValue: highResLoader)
+        self._lowResFileLoader = .init(wrappedValue: lowResLoader)
+    }
+
+    private static func selectURL(
+        lightURL: URL?,
+        darkURL: URL?,
+        for colorScheme: ColorScheme
+    ) -> URL? {
+        switch colorScheme {
         case .dark:
-            lowResURLForScheme = self.darkLowResUrl ?? self.lowResUrl
+            return darkURL ?? lightURL
         case .light:
             fallthrough
         @unknown default:
-            lowResURLForScheme = self.lowResUrl
+            return lightURL
         }
-
-        var highResURLForScheme: URL
-        switch self.colorScheme {
-        case .dark:
-            highResURLForScheme = self.darkUrl ?? self.url
-        case .light:
-            fallthrough
-        @unknown default:
-            highResURLForScheme = self.url
-        }
-
-        let high = FileImageLoader(fileRepository: .shared,
-                                   url: highResURLForScheme)
-        let low = FileImageLoader(fileRepository: .shared,
-                                   url: lowResURLForScheme)
-
-        let loaded =  high.result != nil || low.result != nil
-        self._loadedFromCache = .init(wrappedValue: loaded)
-
-        self._highResFileLoader = .init(wrappedValue: high)
-
-        self._lowResFileLoader = .init(wrappedValue: low)
     }
 
     var body: some View {
