@@ -48,7 +48,7 @@ class IconComponentViewModel {
         switch self.component.size.height {
         case .fixed(let width):
             fixedWidth = CGFloat(width)
-        case .fit, .fill, .relative(_):
+        case .fit, .fill, .relative:
             fixedWidth = nil
         }
 
@@ -56,7 +56,7 @@ class IconComponentViewModel {
         switch self.component.size.height {
         case .fixed(let height):
             fixedHeight = CGFloat(height)
-        case .fit, .fill, .relative(_):
+        case .fit, .fill, .relative:
             fixedHeight = nil
         }
 
@@ -82,11 +82,7 @@ class IconComponentViewModel {
             expectedHeight = 32
         }
 
-        let size = CGSize(width: expectedWidth, height: expectedHeight)
-
-        
-
-        return size
+        return CGSize(width: expectedWidth, height: expectedHeight)
     }
 
     @ViewBuilder
