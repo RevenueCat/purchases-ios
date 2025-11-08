@@ -42,10 +42,14 @@ final class FileImageLoader: ObservableObject {
             for: url,
             withChecksum: nil
         )?.asImageAndSize
+
+        self.wasLoadedFromCache = self.result != nil
     }
 
     @Published
     private(set) var result: Value?
+
+    private(set) var wasLoadedFromCache: Bool = false
 
     func load() async {
         if self.result != nil {
