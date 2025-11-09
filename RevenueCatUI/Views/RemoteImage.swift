@@ -214,7 +214,9 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
 
     var body: some View {
         Group {
-            if let value = self.highResFileLoader.result {
+            if let imageAndSize = self.localImage {
+                content(imageAndSize.0, imageAndSize.1)
+            } else if let value = self.highResFileLoader.result {
                 content(value.0, value.1)
             } else if let value = lowResFileLoader.result {
                 content(value.0, value.1)
