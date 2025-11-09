@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 #if canImport(UIKit)
 import UIKit
@@ -15,7 +15,6 @@ import AppKit
 #endif
 
 import SwiftUI
-@_spi(Internal) import RevenueCat
 
 @MainActor
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
@@ -38,12 +37,13 @@ final class FileImageLoader: ObservableObject {
             return
         }
 
-        self.result = fileRepository.getCachedFileURL(
+        let result = fileRepository.getCachedFileURL(
             for: url,
             withChecksum: nil
         )?.asImageAndSize
 
-        self.wasLoadedFromCache = self.result != nil
+        self.wasLoadedFromCache = result != nil
+        self.result = result
     }
 
     @Published
@@ -59,7 +59,6 @@ final class FileImageLoader: ObservableObject {
         guard let url = self.url else {
             return
         }
-
 
         Task.detached(priority: .utility) {
             do {
