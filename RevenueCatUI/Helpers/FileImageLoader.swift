@@ -16,13 +16,13 @@ import AppKit
 
 import SwiftUI
 
-@MainActor
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 final class FileImageLoader: ObservableObject {
 
     let fileRepository: FileRepository
     let url: URL?
 
+    @MainActor
     init(fileRepository: FileRepository, url: URL?) {
         self.fileRepository = fileRepository
         self.url = url
@@ -32,6 +32,7 @@ final class FileImageLoader: ObservableObject {
 
     typealias Value = (image: Image, size: CGSize)
 
+    @MainActor
     private func loadFromCache(url: URL?) {
         guard let url = url else {
             return
@@ -46,13 +47,13 @@ final class FileImageLoader: ObservableObject {
         self.result = result
     }
 
-    @Published
+    @Published @MainActor
     private(set) var result: Value?
 
     private(set) var wasLoadedFromCache: Bool = false
 
     func load() async {
-        if self.result != nil {
+        if await self.result != nil {
             return
         }
 
@@ -60,18 +61,18 @@ final class FileImageLoader: ObservableObject {
             return
         }
 
-        Task.detached(priority: .utility) {
-            do {
-                let imageInfo = try await self.fileRepository.generateOrGetCachedFileURL(
-                    for: url, withChecksum: nil
-                ).asImageAndSize
+        do {
+            let imageInfo = try await self.fileRepository.generateOrGetCachedFileURL(
+                for: url, withChecksum: nil
+            ).asImageAndSize
 
-                await MainActor.run {
-                    self.result = imageInfo
-                }
-            } catch {
+            guard !Task.isCancelled else { return }
 
+            await MainActor.run {
+                self.result = imageInfo
             }
+        } catch {
+
         }
     }
 
