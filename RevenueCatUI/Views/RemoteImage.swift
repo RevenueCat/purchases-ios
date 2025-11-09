@@ -254,8 +254,9 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
                 return
             }
 
-            await self.lowResFileLoader.load()
-            await self.highResFileLoader.load()
+            async let high: Void = await self.lowResFileLoader.load()
+            async let low: Void = await self.highResFileLoader.load()
+            _ = await (high, low)
 
             if self.highResFileLoader.result == nil {
                 switch self.colorScheme {
