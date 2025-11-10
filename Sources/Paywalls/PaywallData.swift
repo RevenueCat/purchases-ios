@@ -209,7 +209,7 @@ extension PaywallData {
             Locale(identifier: locale).sharesLanguageCode(with: requiredLocale)
         }?.value ??
         localizationByLocale.first { locale, _ in
-            Locale(identifier: locale).sharesLanguageCode(with: requiredLocale, strictMatching: false)
+            Locale(identifier: locale).sharesLanguageCode(with: requiredLocale, stricterMatching: false)
         }?.value
     }
 

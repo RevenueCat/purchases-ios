@@ -19,66 +19,83 @@ final class LocaleComparisonTests: TestCase {
 
     func test_sharesLanguageCode() {
         let testCases = [
-            (Locale(identifier: "en_US"), Locale(identifier: "en_GB"), true, false, #line as UInt),
-            (Locale(identifier: "ar_SA"), Locale(identifier: "ar-SA"), true, false, #line),
-            (Locale(identifier: "ar"), Locale(identifier: "ar-SA"), true, false, #line),
-            (Locale(identifier: "fr"), Locale(identifier: "fr_FR"), true, false, #line),
-            (Locale(identifier: "fr"), Locale(identifier: "en_US"), false, false, #line),
-            (Locale(identifier: "ar-SA"), Locale(identifier: "en_US"), false, false, #line),
-            (Locale(identifier: "ar_SA"), Locale(identifier: "en_US"), false, false, #line),
-            (Locale(identifier: "es"), Locale(identifier: "es"), true, false, #line),
-            (Locale(identifier: "de-DE"), Locale(identifier: "de-CH"), true, false, #line),
-            (Locale(identifier: "pt_BR"), Locale(identifier: "pt_PT"), true, false, #line),
-            (Locale(identifier: "zh-CN"), Locale(identifier: "zh_TW"), true, false, #line),
-            (Locale(identifier: "it"), Locale(identifier: "ja"), false, false, #line),
-            (Locale(identifier: "en"), Locale(identifier: "de-DE"), false, false, #line),
-            (Locale(identifier: "EN-US"), Locale(identifier: "en_us"), true, false, #line),
-            (Locale(identifier: "sr-Latn"), Locale(identifier: "sr-Cyrl"), true, false, #line),
-            (Locale(identifier: "az-Latn"), Locale(identifier: "ru-Cyrl"), false, false, #line),
-            (Locale(identifier: "fil"), Locale(identifier: "fil-PH"), true, false, #line),
-            (Locale(identifier: ""), Locale(identifier: ""), true, false, #line),
-            (Locale(identifier: "es-MX"), Locale(identifier: "es-AR"), true, false, #line),
-            (Locale(identifier: "no-NO"), Locale(identifier: "nb-NO"), true, false, #line),
-            (Locale(identifier: "zh"), Locale(identifier: "ja"), false, false, #line),
-            (Locale(identifier: "zh-Hant-TW"), Locale(identifier: "zh-Hans-CN"), true, false, #line),
-            (Locale(identifier: "invalid-code"), Locale(identifier: "en-US"), false, false, #line),
-            (Locale(identifier: "in"), Locale(identifier: "id"), true, false, #line),
-            (Locale(identifier: "ko-KR"), Locale(identifier: "ko"), true, false, #line),
+            TestCase(first: "en_US", second: "en_GB", expectedResult: true, strict: false, line: #line),
+            TestCase(first: "ar_SA", second: "ar-SA", expectedResult: true, strict: false, line: #line),
+            TestCase(first: "ar", second: "ar-SA", expectedResult: true, strict: false, line: #line),
+            TestCase(first: "fr", second: "fr_FR", expectedResult: true, strict: false, line: #line),
+            TestCase(first: "fr", second: "en_US", expectedResult: false, strict: false, line: #line),
+            TestCase(first: "ar-SA", second: "en_US", expectedResult: false, strict: false, line: #line),
+            TestCase(first: "ar_SA", second: "en_US", expectedResult: false, strict: false, line: #line),
+            TestCase(first: "es", second: "es", expectedResult: true, strict: false, line: #line),
+            TestCase(first: "de-DE", second: "de-CH", expectedResult: true, strict: false, line: #line),
+            TestCase(first: "pt_BR", second: "pt_PT", expectedResult: true, strict: false, line: #line),
+            TestCase(first: "zh-CN", second: "zh_TW", expectedResult: true, strict: false, line: #line),
+            TestCase(first: "it", second: "ja", expectedResult: false, strict: false, line: #line),
+            TestCase(first: "en", second: "de-DE", expectedResult: false, strict: false, line: #line),
+            TestCase(first: "EN-US", second: "en_us", expectedResult: true, strict: false, line: #line),
+            TestCase(first: "sr-Latn", second: "sr-Cyrl", expectedResult: true, strict: false, line: #line),
+            TestCase(first: "az-Latn", second: "ru-Cyrl", expectedResult: false, strict: false, line: #line),
+            TestCase(first: "fil", second: "fil-PH", expectedResult: true, strict: false, line: #line),
+            TestCase(first: "", second: "", expectedResult: true, strict: false, line: #line),
+            TestCase(first: "es-MX", second: "es-AR", expectedResult: true, strict: false, line: #line),
+            // Same language, new + deprecated codes
+            TestCase(first: "no-NO", second: "nb-NO", expectedResult: true, strict: false, line: #line),
+            TestCase(first: "zh", second: "ja", expectedResult: false, strict: false, line: #line),
+            TestCase(first: "zh-Hant-TW", second: "zh-Hans-CN", expectedResult: true, strict: false, line: #line),
+            TestCase(first: "invalid-code", second: "en-US", expectedResult: false, strict: false, line: #line),
+            // Same language, new + deprecated codes
+            TestCase(first: "in", second: "id", expectedResult: true, strict: false, line: #line),
+            TestCase(first: "ko-KR", second: "ko", expectedResult: true, strict: false, line: #line),
             // With Strict Matching
-            (Locale(identifier: "en_US"), Locale(identifier: "en_GB"), false, true, #line),
-            (Locale(identifier: "ar_SA"), Locale(identifier: "ar-SA"), true, true, #line),
-            (Locale(identifier: "ar"), Locale(identifier: "ar-SA"), false, true, #line),
-            (Locale(identifier: "fr"), Locale(identifier: "fr_FR"), true, true, #line),
-            (Locale(identifier: "fr"), Locale(identifier: "en_US"), false, true, #line),
-            (Locale(identifier: "ar-SA"), Locale(identifier: "en_US"), false, true, #line),
-            (Locale(identifier: "ar_SA"), Locale(identifier: "en_US"), false, true, #line),
-            (Locale(identifier: "es"), Locale(identifier: "es"), true, true, #line),
-            (Locale(identifier: "de-DE"), Locale(identifier: "de-CH"), false, true, #line),
-            (Locale(identifier: "pt_BR"), Locale(identifier: "pt_PT"), false, true, #line),
-            (Locale(identifier: "zh-CN"), Locale(identifier: "zh_TW"), false, true, #line),
-            (Locale(identifier: "it"), Locale(identifier: "ja"), false, true, #line),
-            (Locale(identifier: "en"), Locale(identifier: "de-DE"), false, true, #line),
-            (Locale(identifier: "EN-US"), Locale(identifier: "en_us"), true, true, #line),
-            (Locale(identifier: "sr-Latn"), Locale(identifier: "sr-Cyrl"), false, true, #line),
-            (Locale(identifier: "az-Latn"), Locale(identifier: "ru-Cyrl"), false, true, #line),
-            (Locale(identifier: "fil"), Locale(identifier: "fil-PH"), true, true, #line),
-            (Locale(identifier: ""), Locale(identifier: ""), true, true, #line),
-            (Locale(identifier: "es-MX"), Locale(identifier: "es-AR"), false, true, #line),
-            (Locale(identifier: "no-NO"), Locale(identifier: "nb-NO"), true, true, #line),
-            (Locale(identifier: "zh"), Locale(identifier: "ja"), false, true, #line),
-            (Locale(identifier: "zh-Hant-TW"), Locale(identifier: "zh-Hans-CN"), false, true, #line),
-            (Locale(identifier: "invalid-code"), Locale(identifier: "en-US"), false, true, #line),
-            (Locale(identifier: "in"), Locale(identifier: "id"), true, true, #line),
-            (Locale(identifier: "ko-KR"), Locale(identifier: "ko"), true, true, #line)
+            TestCase(first: "en_US", second: "en_GB", expectedResult: false, strict: true, line: #line),
+            TestCase(first: "ar_SA", second: "ar-SA", expectedResult: true, strict: true, line: #line),
+            TestCase(first: "ar", second: "ar-SA", expectedResult: false, strict: true, line: #line),
+            TestCase(first: "fr", second: "en_US", expectedResult: false, strict: true, line: #line),
+            TestCase(first: "ar-SA", second: "en_US", expectedResult: false, strict: true, line: #line),
+            TestCase(first: "ar_SA", second: "en_US", expectedResult: false, strict: true, line: #line),
+            TestCase(first: "es", second: "es", expectedResult: true, strict: true, line: #line),
+            TestCase(first: "de-DE", second: "de-CH", expectedResult: false, strict: true, line: #line),
+            TestCase(first: "pt_BR", second: "pt_PT", expectedResult: false, strict: true, line: #line),
+            TestCase(first: "zh-CN", second: "zh_TW", expectedResult: false, strict: true, line: #line),
+            TestCase(first: "it", second: "ja", expectedResult: false, strict: true, line: #line),
+            TestCase(first: "en", second: "de-DE", expectedResult: false, strict: true, line: #line),
+            TestCase(first: "EN-US", second: "en_us", expectedResult: true, strict: true, line: #line),
+            TestCase(first: "sr-Latn", second: "sr-Cyrl", expectedResult: false, strict: true, line: #line),
+            TestCase(first: "az-Latn", second: "ru-Cyrl", expectedResult: false, strict: true, line: #line),
+            TestCase(first: "", second: "", expectedResult: true, strict: true, line: #line),
+            TestCase(first: "es-MX", second: "es-AR", expectedResult: false, strict: true, line: #line),
+            // Same language, new + deprecated codes
+            TestCase(first: "no-NO", second: "nb-NO", expectedResult: true, strict: true, line: #line),
+            TestCase(first: "zh", second: "ja", expectedResult: false, strict: true, line: #line),
+            TestCase(first: "zh-Hant-TW", second: "zh-Hans-CN", expectedResult: false, strict: true, line: #line),
+            TestCase(first: "invalid-code", second: "en-US", expectedResult: false, strict: true, line: #line),
+            // Same language, new + deprecated codes
+            TestCase(first: "in", second: "id", expectedResult: true, strict: true, line: #line)
         ]
 
-        testCases.forEach { first, second, expectedResult, strict, line in
+        testCases.forEach { testCase in
             XCTAssertEqual(
-                expectedResult,
-                first.sharesLanguageCode(with: second, strictMatching: strict),
-                line: line
+                testCase.expectedResult,
+                testCase.first
+                    .sharesLanguageCode(with: testCase.second, stricterMatching: testCase.strict),
+                line: testCase.line
             )
         }
     }
 
+    struct TestCase {
+        let first: Locale
+        let second: Locale
+        let expectedResult: Bool
+        let strict: Bool
+        let line: UInt
+
+        init(first: String, second: String, expectedResult: Bool, strict: Bool, line: UInt) {
+            self.first = Locale(identifier: first)
+            self.second = Locale(identifier: second)
+            self.expectedResult = expectedResult
+            self.strict = strict
+            self.line = line
+        }
+    }
 }
