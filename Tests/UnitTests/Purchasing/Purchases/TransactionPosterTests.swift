@@ -383,6 +383,7 @@ class TransactionPosterTests: TestCase {
         expect(self.backend.invokedPostReceiptDataParameters?.observerMode) == self.systemInfo.observerMode
 
         expect(self.receiptFetcher.receiptDataCalled) == false
+        expect(self.transactionFetcher.appTransactionJWSCalled.value) == false
     }
 
 }
