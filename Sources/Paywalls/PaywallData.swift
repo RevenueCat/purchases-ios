@@ -207,6 +207,9 @@ extension PaywallData {
         localizationByLocale[requiredLocale.identifier] ??
         localizationByLocale.first { locale, _ in
             Locale(identifier: locale).sharesLanguageCode(with: requiredLocale)
+        }?.value ??
+        localizationByLocale.first { locale, _ in
+            Locale(identifier: locale).sharesLanguageCode(with: requiredLocale, strictMatching: false)
         }?.value
     }
 

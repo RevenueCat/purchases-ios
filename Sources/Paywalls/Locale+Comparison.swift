@@ -15,18 +15,26 @@ import Foundation
 
 extension Locale {
 
-    func sharesLanguageCode(with other: Locale) -> Bool {
+    func sharesLanguageCode(with other: Locale, strictMatching: Bool = true) -> Bool {
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
             if self.language.isEquivalent(to: other.language) {
                 return true
+            } else {
+                if strictMatching { return false }
             }
         }
 
-        if let left = firstLanguageSubtag, let right = other.firstLanguageSubtag {
-            return left == right
+        if !strictMatching {
+            if let left = firstLanguageSubtag, let right = other.firstLanguageSubtag {
+                return left == right
+            }
         }
 
-        return self.languageCode?.lowercased() == other.languageCode?.lowercased()
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            return self.language.languageCode == other.language.languageCode
+        } else {
+            return self.languageCode == other.languageCode
+        }
     }
 
     var firstLanguageSubtag: String? {
