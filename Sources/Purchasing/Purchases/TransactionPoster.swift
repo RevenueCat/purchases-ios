@@ -107,7 +107,7 @@ final class TransactionPoster: TransactionPosterType {
             switch result {
             case .success(let encodedReceipt):
                 self.product(with: productIdentifier) { product in
-                    self.transactionFetcher.appTransactionJWS { appTransaction in
+                    self.getAppTransactionJWSIfNeeded { appTransaction in
                         self.postReceipt(transaction: transaction,
                                          purchasedTransactionData: data,
                                          receipt: encodedReceipt,
@@ -285,6 +285,14 @@ private extension TransactionPoster {
                     completion(.failure(BackendError.missingReceiptFile(receiptURL)))
                 }
             }
+        }
+    }
+
+    func getAppTransactionJWSIfNeeded(_ completion: @escaping (String?) -> Void) {
+        if systemInfo.isSimulatedStoreAPIKey {
+            completion(nil)
+        } else {
+            self.transactionFetcher.appTransactionJWS(completion)
         }
     }
 
