@@ -423,18 +423,18 @@ commands:
   tuist-generate-workspace:
     description: "Install Tuist and generate workspace"
     parameters:
-      target:
+      query:
         type: string
         default: ""
-        description: "Optional target to generate (e.g., 'Maestro'). If empty, generates all targets."
+        description: "Optional query to pass to Tuist when generating workspace."
     steps:
       - revenuecat/install-tuist
       - run:
           name: Generate Tuist workspace
           command: |
             export PATH="$HOME/.local/share/mise/shims:$PATH"
-            if [ -n "<< parameters.target >>" ]; then
-              tuist install && tuist generate << parameters.target >> --no-open
+            if [ -n "<< parameters.query >>" ]; then
+              tuist install && tuist generate << parameters.query >> --no-open
             else
               tuist install && tuist generate --no-open
             fi
@@ -1242,7 +1242,7 @@ jobs:
                 api_key: ${RC_E2E_TEST_API_KEY_PRODUCTION_APP_STORE}
       - revenuecat/install-maestro
       - tuist-generate-workspace:
-          target: "Maestro"
+          query: "Maestro"
       - run:
           name: Run e2e tests (<< parameters.backend_environment >>)
           command: bundle exec fastlane run_maestro_e2e_tests
