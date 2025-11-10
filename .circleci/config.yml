@@ -519,7 +519,7 @@ commands:
       proxy_url_host:
         type: string
         default: ""
-        description: "Optional proxy URL host (e.g., 'fortress-us-east-2.revenuecat.com')"
+        description: "Optional proxy URL host (e.g., 'proxy.revenuecat.com')"
     steps:
       - run:
           name: Create XCConfig file

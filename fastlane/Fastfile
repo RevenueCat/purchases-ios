@@ -818,13 +818,13 @@ platform :ios do
     end
 
     # note: it's called "run" tests but these tests only need to build to run
-    workspace_path = 'RevenueCat-Tuist.xcworkspace'
-    unless File.directory?(workspace_path)
-      UI.important("#{workspace_path} not found. Run `tuist generate --no-open` before invoking this lane.")
+    xcworkspace = 'RevenueCat-Tuist.xcworkspace'
+    unless File.directory?(xcworkspace)
+      UI.important("#{xcworkspace} not found. Run `tuist generate --no-open` before invoking this lane.")
     end
 
     xcodebuild(
-      workspace: "RevenueCat-Tuist.xcworkspace",
+      workspace: xcworkspace,
       scheme: "Maestro",
       sdk: "iphonesimulator",
       configuration: "Debug",
