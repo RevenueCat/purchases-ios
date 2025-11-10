@@ -317,7 +317,7 @@ private extension SubscriptionDetailView {
         Button {
             viewModel.showCreateTicket = true
         } label: {
-            CompatibilityLabeledContent("Create a Ticket")
+            CompatibilityLabeledContent(localization[.contactSupport])
         }
         .padding(.horizontal)
         .buttonStyle(.customerCenterButtonStyle(for: colorScheme))
