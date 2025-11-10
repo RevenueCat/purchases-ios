@@ -52,7 +52,7 @@ struct RcMaestroApp: App {
             return nil
         }
         
-        return E2ETestFlow(rawValue: string) ?? nil
+        return E2ETestFlow(rawValue: string)
     }
 }
 
@@ -64,9 +64,9 @@ enum E2ETestFlow: String {
     var view: some View {
         switch self {
         case .subscribeFromV1Paywall:
-            E2ETestFlowView.SubscriberFromV1Paywall()
+            E2ETestFlowView.SubscribeFromV1Paywall()
         case .subscribeFromV2Paywall:
-            E2ETestFlowView.SubscriberFromV2Paywall()
+            E2ETestFlowView.SubscribeFromV2Paywall()
         }
     }
 }

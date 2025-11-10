@@ -11,7 +11,7 @@ import RevenueCat
 import RevenueCatUI
 
 extension E2ETestFlowView {
-    struct SubscriberFromV1Paywall: View {
+    struct SubscribeFromV1Paywall: View {
         
         @State private var offering: Offering?
         @State private var presentPaywall = false
