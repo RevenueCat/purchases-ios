@@ -47,7 +47,7 @@ class BaseBackendIntegrationTests: TestCase {
 
     private var mainThreadMonitor: MainThreadMonitor!
 
-    private(set) var forceServerErrorStrategy: ForceServerErrorStrategy?
+    var forceServerErrorStrategy: ForceServerErrorStrategy?
 
     static var isSandbox: Bool = true {
         didSet {
@@ -65,16 +65,11 @@ class BaseBackendIntegrationTests: TestCase {
     var enableReceiptFetchRetry: Bool = true
 
     var apiKey: String { return Constants.apiKey }
-    var apiBaseURL: String { return Constants.apiBaseURL }
     var proxyURL: String? { return Constants.proxyURL }
 
     func configurePurchases() {
         Purchases.proxyURL = self.proxyURL.flatMap(URL.init(string:))
         Purchases.logLevel = .verbose
-
-        if apiBaseURL.isNotEmpty, let apiBaseURL = URL(string: apiBaseURL) {
-            SystemInfo.apiBaseURL = apiBaseURL
-        }
 
         Purchases.configure(withAPIKey: self.apiKey,
                             appUserID: nil,
@@ -103,8 +98,7 @@ class BaseBackendIntegrationTests: TestCase {
 
         guard self.apiKey != "REVENUECAT_API_KEY",
               self.apiKey != "REVENUECAT_LOAD_SHEDDER_API_KEY",
-              self.proxyURL != "REVENUECAT_PROXY_URL",
-              self.apiBaseURL != "REVENUECAT_API_BASE_URL" else {
+              self.proxyURL != "REVENUECAT_PROXY_URL" else {
             throw ErrorUtils.configurationError(message: "Must set configuration in `Constants.swift`")
         }
 
@@ -249,7 +243,16 @@ extension BaseBackendIntegrationTests: InternalDangerousSettingsType {
     var disableHeaderSignatureVerification: Bool { return false }
     var testReceiptIdentifier: String? { return self.testUUID.uuidString }
 
-    final func serverDown() { self.forceServerErrorStrategy = .allServersDown }
-    final func serverUp() { self.forceServerErrorStrategy = nil }
+    final func serverDown() {
+        self.forceServerErrorStrategy = .allServersDown
+    }
+
+    final func mainServerDown() {
+        self.forceServerErrorStrategy = .failExceptFallbackUrls
+    }
+
+    final func allServersUp() {
+        self.forceServerErrorStrategy = nil
+    }
 
 }

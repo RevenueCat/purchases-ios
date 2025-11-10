@@ -32,14 +32,14 @@ class VideoComponentViewModel {
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,
         component: PaywallComponent.VideoComponent
-    ) throws {
+    ) {
         self.localizationProvider = localizationProvider
         self.uiConfigProvider = uiConfigProvider
         self.component = component
 
-        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides {
-            try LocalizedVideoPartial.create(from: $0, using: localizationProvider.localizedStrings)
-        }
+        self.presentedOverrides = self.component.overrides?.toPresentedOverrides {
+            LocalizedVideoPartial.create(from: $0, using: localizationProvider.localizedStrings)
+        } ?? []
     }
 
     @ViewBuilder
@@ -93,7 +93,17 @@ class VideoComponentViewModel {
 
         apply(style)
     }
+}
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension VideoComponentViewModel: Hashable {
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(component)
+    }
+
+    static func == (lhs: VideoComponentViewModel, rhs: VideoComponentViewModel) -> Bool {
+        lhs.component == rhs.component
+    }
 }
 
 struct LocalizedVideoPartial: PresentedPartial {
@@ -130,7 +140,7 @@ extension LocalizedVideoPartial {
     static func create(
         from partial: PaywallComponent.PartialVideoComponent,
         using localizedStrings: PaywallComponent.LocalizationDictionary
-    ) throws -> LocalizedVideoPartial {
+    ) -> LocalizedVideoPartial {
         return LocalizedVideoPartial(
             partial: partial
         )

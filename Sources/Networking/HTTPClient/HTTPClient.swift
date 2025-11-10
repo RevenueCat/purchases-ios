@@ -550,16 +550,36 @@ private extension HTTPClient {
 
         var finalURLRequest = urlRequest
 
+        let requestStartTime = self.dateProvider.now()
+
         #if DEBUG
         // Meant only for testing error handling behavior of the SDK.
-        if let forceErrorStrategy = self.systemInfo.dangerousSettings.internalSettings.forceServerErrorStrategy,
-           forceErrorStrategy.shouldForceServerError(request) {
-            Logger.warn(Strings.network.api_request_forcing_server_error(request.httpRequest))
-            finalURLRequest = URLRequest(url: ForceServerErrorStrategy.forceServerErrorURL)
+        if let forceErrorStrategy = self.systemInfo.dangerousSettings.internalSettings.forceServerErrorStrategy {
+
+            if let (fakeResponse, fakeData) = forceErrorStrategy.fakeResponseWithoutPerformingRequest(request) {
+
+                // `FB13133387`: when computing offline CustomerInfo, `StoreKit.Transaction.unfinished`
+                // might be empty if called immediately after `Product.purchase()`.
+                // This introduces a delay to simulate a real API request, and avoid that race condition.
+
+                Logger.warn(Strings.network.api_request_faking_error_response(request.httpRequest))
+                DispatchQueue.global().asyncAfter(deadline: .now() + .milliseconds(300)) {
+                    self.handle(urlResponse: fakeResponse,
+                                request: request,
+                                urlRequest: urlRequest,
+                                data: fakeData,
+                                error: nil,
+                                requestStartTime: requestStartTime)
+                }
+                return
+            }
+
+            if forceErrorStrategy.shouldForceServerError(request) {
+                Logger.warn(Strings.network.api_request_forcing_server_error(request.httpRequest))
+                finalURLRequest = URLRequest(url: forceErrorStrategy.serverErrorURL)
+            }
         }
         #endif
-
-        let requestStartTime = self.dateProvider.now()
 
         // swiftlint:disable:next redundant_void_return
         let task = self.session.dataTask(with: finalURLRequest) { (data, urlResponse, error) -> Void in

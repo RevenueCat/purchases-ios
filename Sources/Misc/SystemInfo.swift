@@ -74,7 +74,8 @@ class SystemInfo {
     private static let _proxyURL: Atomic<URL?> = nil
 
     // swiftlint:disable:next force_unwrapping
-    private static let _apiBaseURL: Atomic<URL> = .init(URL(string: "https://api.revenuecat.com")!)
+    static let defaultApiBaseURL = URL(string: "https://api.revenuecat.com")!
+    private static let _apiBaseURL: Atomic<URL> = .init(defaultApiBaseURL)
 
     private lazy var _isSandbox: Bool = {
         return self.sandboxEnvironmentDetector.isSandbox
@@ -97,7 +98,7 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "5.47.0-SNAPSHOT"
+        return "5.48.0-SNAPSHOT"
     }
 
     static var systemVersion: String {

@@ -38,3 +38,7 @@
 // REVENUECAT_PROXY_URL_HOST = localhost:9000
 
 // Because two slashes are interpreted as a comment in this file, the scheme and host need to be set separately
+
+// The following configuration options can be used when running the E2E tests through the Tuist generated Maestro project
+// REVENUECAT_FORCE_SERVER_ERROR_STRATEGY = primary_backend_down / never
+// REVENUECAT_API_HOST = custom-api-host.revenuecat.com

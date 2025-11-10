@@ -218,6 +218,14 @@ archive all platforms
 
 run API Tests
 
+### ios run_maestro_e2e_tests
+
+```sh
+[bundle exec] fastlane ios run_maestro_e2e_tests
+```
+
+run_maestro_e2e_tests
+
 ### ios replace_api_key_integration_tests
 
 ```sh

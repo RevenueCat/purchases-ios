@@ -1,3 +1,45 @@
+## 5.47.0
+## RevenueCatUI SDK
+### Paywallv2
+#### ✨ New Features
+* Video Background  (#5704) via Jacob Rakidzich (@JZDesign)
+* Add a delay hook for a purchase flow (#5690) via Jacob Rakidzich (@JZDesign)
+
+### 🔄 Other Changes
+* Fix pipeline: Remove trailing comma (#5771) via Jacob Rakidzich (@JZDesign)
+* Add `PromotionalOfferViewTests` (#5766) via Cesar de la Vega (@vegaro)
+
+## 5.46.3
+### 🔄 Other Changes
+* Use cached offerings on network errors (#5707) via Antonio Pallares (@ajpallares)
+* Allow the use of Test Store in release builds using the uiPreview dangerous setting for the RC Mobile app (#5765) via Rick (@rickvdl)
+* Fix signature verification fallback urls (#5756) via Antonio Pallares (@ajpallares)
+
+## 5.46.2
+## RevenueCatUI SDK
+### Customer Center
+#### 🐞 Bugfixes
+* Fix `EXC_BAD_ACCESS` when opening promotional offers in Customer Center (#5762) via Cesar de la Vega (@vegaro)
+
+### 🔄 Other Changes
+* Add Load shedder integration tests for Get Customer Info (#5713) via Antonio Pallares (@ajpallares)
+* Add internal `Offerings` source properties (#5749) via Antonio Pallares (@ajpallares)
+* Add Internal `CustomerInfo` source properties (#5737) via Antonio Pallares (@ajpallares)
+
+## 5.46.1
+## RevenueCat SDK
+### 🐞 Bugfixes
+* FIX: background image didn't update to dark mode when the colorscheme changed (#5740) via Jacob Rakidzich (@JZDesign)
+
+### 🔄 Other Changes
+* Update get offerings snapshot for Load Shedder integration tests (#5758) via Antonio Pallares (@ajpallares)
+* Show alert before crashing when Test API key is used in Release builds (#5755) via Antonio Pallares (@ajpallares)
+* Moved load shedder API tests to us-east-1 and us-east-2 configuration from the CircleCI config into the tests itself (#5750) via Rick (@rickvdl)
+* Run load shedder integration tests against both us-east-1 and us-east-2 (#5732) via Rick (@rickvdl)
+* Add backend source to `VerifiedHTTPResponse` (#5736) via Antonio Pallares (@ajpallares)
+* Added an internal API for overriding the API base URL (#5739) via Rick (@rickvdl)
+* Fix CircleCI builds (#5738) via Antonio Pallares (@ajpallares)
+
 ## 5.46.0
 ## RevenueCat SDK
 ### ✨ New Features

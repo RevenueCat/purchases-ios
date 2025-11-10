@@ -422,7 +422,7 @@ extension BasePurchasesTests {
                 return
             }
 
-            completion(.success(.mockResponse))
+            completion(.success(.mockContents))
         }
 
         var postOfferForSigningCalled = false
