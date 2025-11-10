@@ -181,6 +181,12 @@ struct SubscriptionDetailView: View {
                 .environment(\.appearance, appearance)
                 .environment(\.localization, localization)
             }
+            .sheet(isPresented: $viewModel.showCreateTicket) {
+                CreateTicketView(isPresented: $viewModel.showCreateTicket)
+                    .environment(\.appearance, appearance)
+                    .environment(\.localization, localization)
+                    .environment(\.navigationOptions, navigationOptions)
+            }
             .alert(isPresented: $showSimulatorAlert, content: {
                 return Alert(
                     title: Text("Can't open URL"),
@@ -256,6 +262,11 @@ private extension SubscriptionDetailView {
                         .padding(.vertical, 16)
                 }
 
+                if viewModel.shouldShowContactSupport {
+                    createTicketButton
+                        .padding(.vertical, 16)
+                }
+
                 if customerInfoViewModel.shouldShowUserDetailsSection {
                     accountDetailsView
                 }
@@ -300,6 +311,17 @@ private extension SubscriptionDetailView {
         }
         .padding(.horizontal)
         .buttonStyle(.customerCenterButtonStyle(for: colorScheme))
+    }
+
+    var createTicketButton: some View {
+        Button {
+            viewModel.showCreateTicket = true
+        } label: {
+            CompatibilityLabeledContent("Create a Ticket")
+        }
+        .padding(.horizontal)
+        .buttonStyle(.customerCenterButtonStyle(for: colorScheme))
+        .tint(colorScheme == .dark ? .white : .black)
     }
 
     var seeAllSubscriptionsButton: some View {
