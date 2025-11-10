@@ -36,6 +36,7 @@ class BaseBackendTests: TestCase {
     private(set) var customerCenterConfig: CustomerCenterConfigAPI!
     private(set) var redeemWebPurchaseAPI: RedeemWebPurchaseAPI!
     private(set) var virtualCurrenciesAPI: VirtualCurrenciesAPI!
+    private(set) var createTicketAPI: CreateTicketAPI!
 
     static let apiKey = "asharedsecret"
     static let userID = "user"
@@ -92,6 +93,7 @@ class BaseBackendTests: TestCase {
         self.customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
         self.redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
         self.virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
+        self.createTicketAPI = CreateTicketAPI(backendConfig: backendConfig)
 
         self.backend = Backend(backendConfig: backendConfig,
                                customerAPI: customer,
@@ -102,7 +104,8 @@ class BaseBackendTests: TestCase {
                                internalAPI: self.internalAPI,
                                customerCenterConfig: self.customerCenterConfig,
                                redeemWebPurchaseAPI: self.redeemWebPurchaseAPI,
-                               virtualCurrenciesAPI: self.virtualCurrenciesAPI)
+                               virtualCurrenciesAPI: self.virtualCurrenciesAPI,
+                               createTicketAPI: self.createTicketAPI)
     }
 
     var verificationMode: Configuration.EntitlementVerificationMode {
