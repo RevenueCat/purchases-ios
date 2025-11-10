@@ -686,6 +686,7 @@ import Foundation
         @_spi(Internal) public let displayUserDetailsSection: Bool
         @_spi(Internal) public let displayVirtualCurrencies: Bool
         @_spi(Internal) public let shouldWarnCustomersAboutMultipleSubscriptions: Bool
+        @_spi(Internal) public let supportTickets: SupportTickets?
 
         @_spi(Internal) public init(
             email: String,
@@ -693,7 +694,8 @@ import Foundation
             displayPurchaseHistoryLink: Bool,
             displayUserDetailsSection: Bool,
             displayVirtualCurrencies: Bool,
-            shouldWarnCustomersAboutMultipleSubscriptions: Bool
+            shouldWarnCustomersAboutMultipleSubscriptions: Bool,
+            supportTickets: SupportTickets? = nil
         ) {
             self.email = email
             self.shouldWarnCustomerToUpdate = shouldWarnCustomerToUpdate
@@ -701,6 +703,24 @@ import Foundation
             self.displayUserDetailsSection = displayUserDetailsSection
             self.displayVirtualCurrencies = displayVirtualCurrencies
             self.shouldWarnCustomersAboutMultipleSubscriptions = shouldWarnCustomersAboutMultipleSubscriptions
+            self.supportTickets = supportTickets
+        }
+
+        @_spi(Internal) public struct SupportTickets: Equatable {
+            @_spi(Internal) public let allowCreation: Bool
+            @_spi(Internal) public let customerType: CustomerType
+
+            @_spi(Internal) public init(allowCreation: Bool, customerType: CustomerType) {
+                self.allowCreation = allowCreation
+                self.customerType = customerType
+            }
+
+            @_spi(Internal) public enum CustomerType: String, Equatable {
+                case active
+                case notActive = "not_active"
+                case all
+                case none
+            }
         }
 
     }
@@ -933,6 +953,16 @@ extension CustomerCenterConfigData.Support {
         self.displayVirtualCurrencies = response.displayVirtualCurrencies ?? false
         self.shouldWarnCustomersAboutMultipleSubscriptions = response.shouldWarnCustomersAboutMultipleSubscriptions
             ?? false
+        self.supportTickets = response.supportTickets.map { SupportTickets(from: $0) }
+    }
+
+}
+
+extension CustomerCenterConfigData.Support.SupportTickets {
+
+    init(from response: CustomerCenterConfigResponse.Support.SupportTickets) {
+        self.allowCreation = response.allowCreation
+        self.customerType = CustomerType(rawValue: response.customerType) ?? .none
     }
 
 }

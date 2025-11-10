@@ -255,18 +255,17 @@ private extension SubscriptionDetailView {
                         .padding(.vertical, 16)
                 }
 
-                if let url = support?.supportURL(
+                if support?.supportTickets?.allowCreation == true,
+                   viewModel.shouldShowContactSupport {
+                    createTicketButton
+                        .padding(.vertical, 16)
+                } else if let url = support?.supportURL(
                     localization: localization,
                     purchasesProvider: viewModel.purchasesProvider
                 ),
-                   viewModel.shouldShowContactSupport,
-                   URLUtilities.canOpenURL(url) || RuntimeUtils.isSimulator {
+                          viewModel.shouldShowContactSupport,
+                          URLUtilities.canOpenURL(url) || RuntimeUtils.isSimulator {
                     contactSupportView(url)
-                        .padding(.vertical, 16)
-                }
-
-                if viewModel.shouldShowContactSupport {
-                    createTicketButton
                         .padding(.vertical, 16)
                 }
 
