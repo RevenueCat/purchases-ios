@@ -9,7 +9,7 @@
 //
 //  CreateTicketView.swift
 //
-//  Created by Rosie Watson on 11/10/2025.
+//  Created by Rosie Watson on 11/10/2025
 
 @_spi(Internal) import RevenueCat
 import SwiftUI
@@ -46,8 +46,14 @@ struct CreateTicketView: View {
     @State
     private var isSubmitting: Bool = false
 
-    init(isPresented: Binding<Bool>) {
+    @State
+    private var errorMessage: String?
+
+    private let purchasesProvider: CustomerCenterPurchasesType
+
+    init(isPresented: Binding<Bool>, purchasesProvider: CustomerCenterPurchasesType) {
         self._isPresented = isPresented
+        self.purchasesProvider = purchasesProvider
     }
 
     var body: some View {
@@ -80,6 +86,12 @@ struct CreateTicketView: View {
                         }
                     }
                     .disabled(email.isEmpty || description.isEmpty || isSubmitting)
+
+                    if let errorMessage = errorMessage {
+                        Text(errorMessage)
+                            .foregroundColor(.red)
+                            .font(.caption)
+                    }
                 }
             }
             .dismissCircleButtonToolbarIfNeeded(
@@ -100,17 +112,31 @@ struct CreateTicketView: View {
 
     private func submitTicket() {
         isSubmitting = true
+        errorMessage = nil
 
-        // Simulate a submission
         Task {
-            try? await Task.sleep(nanoseconds: 1_500_000_000)
-            await MainActor.run {
-                Logger.debug("Support ticket submitted:")
-                Logger.debug("Email: \(email)")
-                Logger.debug("Description: \(description)")
+            do {
+                let sent = try await purchasesProvider.createTicket(
+                    customerEmail: email,
+                    ticketDescription: description
+                )
 
-                isSubmitting = false
-                isPresented = false
+                await MainActor.run {
+                    isSubmitting = false
+
+                    if sent {
+                        Logger.debug("Support ticket submitted successfully")
+                        isPresented = false
+                    } else {
+                        errorMessage = "Failed to submit ticket. Please try again."
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    isSubmitting = false
+                    errorMessage = "An error occurred: \(error.localizedDescription)"
+                    Logger.error("Failed to submit support ticket: \(error)")
+                }
             }
         }
     }
@@ -125,11 +151,14 @@ struct CreateTicketView_Previews: PreviewProvider {
 
     static var previews: some View {
         ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
-            CreateTicketView(isPresented: .constant(true))
-                .environment(\.localization, CustomerCenterConfigData.default.localization)
-                .environment(\.appearance, CustomerCenterConfigData.default.appearance)
-                .preferredColorScheme(colorScheme)
-                .previewDisplayName("Create Ticket - \(colorScheme)")
+            CreateTicketView(
+                isPresented: .constant(true),
+                purchasesProvider: MockCustomerCenterPurchases()
+            )
+            .environment(\.localization, CustomerCenterConfigData.default.localization)
+            .environment(\.appearance, CustomerCenterConfigData.default.appearance)
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Create Ticket - \(colorScheme)")
         }
     }
 

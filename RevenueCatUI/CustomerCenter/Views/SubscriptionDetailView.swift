@@ -182,10 +182,13 @@ struct SubscriptionDetailView: View {
                 .environment(\.localization, localization)
             }
             .sheet(isPresented: $viewModel.showCreateTicket) {
-                CreateTicketView(isPresented: $viewModel.showCreateTicket)
-                    .environment(\.appearance, appearance)
-                    .environment(\.localization, localization)
-                    .environment(\.navigationOptions, navigationOptions)
+                CreateTicketView(
+                    isPresented: $viewModel.showCreateTicket,
+                    purchasesProvider: self.viewModel.purchasesProvider
+                )
+                .environment(\.appearance, appearance)
+                .environment(\.localization, localization)
+                .environment(\.navigationOptions, navigationOptions)
             }
             .alert(isPresented: $showSimulatorAlert, content: {
                 return Alert(

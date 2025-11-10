@@ -77,6 +77,9 @@ import SwiftUI
 
     func offerings() async throws -> RevenueCat.Offerings
 
+    @Sendable
+    func createTicket(customerEmail: String, ticketDescription: String) async throws -> Bool
+
     // MARK: - Subscription Management
 
     #if os(iOS) || os(visionOS)
