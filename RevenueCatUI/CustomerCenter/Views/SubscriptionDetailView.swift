@@ -255,7 +255,7 @@ private extension SubscriptionDetailView {
                         .padding(.vertical, 16)
                 }
 
-                if support?.supportTickets?.allowCreation == true,
+                if viewModel.shouldShowCreateTicketButton(supportTickets: support?.supportTickets),
                    viewModel.shouldShowContactSupport {
                     createTicketButton
                         .padding(.vertical, 16)

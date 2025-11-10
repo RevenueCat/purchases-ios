@@ -37,6 +37,30 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
         purchaseInformation?.store != .appStore
     }
 
+    var hasActiveSubscription: Bool {
+        !customerInfoViewModel.subscriptionsSection.isEmpty
+    }
+
+    func shouldShowCreateTicketButton(
+        supportTickets: CustomerCenterConfigData.Support.SupportTickets?
+    ) -> Bool {
+        guard let supportTickets = supportTickets,
+              supportTickets.allowCreation else {
+            return false
+        }
+
+        switch supportTickets.customerType {
+        case .all:
+            return true
+        case .active:
+            return hasActiveSubscription
+        case .notActive:
+            return !hasActiveSubscription
+        case .none:
+            return false
+        }
+    }
+
     override var allowMissingPurchase: Bool {
         allowsMissingPurchaseAction
     }
