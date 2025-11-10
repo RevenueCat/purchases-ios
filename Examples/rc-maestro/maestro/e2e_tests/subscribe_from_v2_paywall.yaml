@@ -5,6 +5,7 @@ name: Subscribe to product through V2 Paywall for default offering
 - launchApp:
     arguments: 
         e2e_test_flow: subscribe_from_v2_paywall
+# - assertVisible: "pro entitlement: inactive" todo rick: enable once multiple purchases work in a single e2e test
 - tapOn:
     text: "Present Paywall"
 - assertVisible: "Paywall V2"
@@ -19,3 +20,7 @@ name: Subscribe to product through V2 Paywall for default offering
 - takeScreenshot: "subscribe_from_v2_paywall - IAP Confirmation"
 - tapOn:
     text: "OK"
+- assertVisible: "pro entitlement: active"
+- assertVisible: "verification: verified"
+- assertVisible: "customer info source: ${MAESTRO_BACKEND_SOURCE}"
+- takeScreenshot: "subscribe_from_v2_paywall - unlocked entitlement"

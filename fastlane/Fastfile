@@ -804,12 +804,79 @@ platform :ios do
     )
   end
   
+  desc "Setup XCConfig file for E2E tests"
+  private_lane :setup_xcconfig do |options|
+    api_key = options[:api_key] || UI.user_error!("api_key is required")
+    force_server_error_strategy = options[:force_server_error_strategy] || "never"
+    api_host = options[:api_host] || ""
+    proxy_url_scheme = options[:proxy_url_scheme] || ""
+    proxy_url_host = options[:proxy_url_host] || ""
+
+    base_path = "#{Dir.pwd}/.."
+    xcconfig_path = "#{base_path}/CI.xcconfig"
+
+    UI.message("Creating XCConfig file at #{xcconfig_path}")
+
+    content = [
+      "// Auto-generated. Do not commit to VCS",
+      "// Generated on #{Time.now}",
+      "",
+      "REVENUECAT_API_KEY = #{api_key}",
+      "REVENUECAT_FORCE_SERVER_ERROR_STRATEGY = #{force_server_error_strategy}"
+    ]
+
+    content << "REVENUECAT_API_HOST = #{api_host}" unless api_host.empty?
+    content << "REVENUECAT_PROXY_URL_SCHEME = #{proxy_url_scheme}" unless proxy_url_scheme.empty?
+    content << "REVENUECAT_PROXY_URL_HOST = #{proxy_url_host}" unless proxy_url_host.empty?
+
+    File.write(xcconfig_path, content.join("\n"))
+    UI.success("✅ Created CI.xcconfig")
+  end
+
   desc "run_maestro_e2e_tests"
   lane :run_maestro_e2e_tests do |options|
+    backend_environment = options[:backend_environment] || "production"
     bundle_id = "com.revenuecat.maestro.ios"
     base_path = "#{Dir.pwd}/.."
 
-    UI.message("Running Maestro E2E tests")
+    UI.message("Running Maestro E2E tests for backend environment: #{backend_environment}")
+
+    # Get API key from environment variable
+    api_key = ENV["REVENUECAT_API_KEY"]
+    UI.user_error!("REVENUECAT_API_KEY environment variable must be set") unless api_key
+
+    # Determine configuration based on backend environment
+    api_host = ""
+    force_server_error_strategy = "never"
+    maestro_backend_source = ""
+
+    case backend_environment
+    when "load_shedder_us_east_1"
+      api_host = "fortress-us-east-1.revenuecat.com"
+      maestro_backend_source = "load_shedder"
+    when "load_shedder_us_east_2"
+      api_host = "fortress-us-east-2.revenuecat.com"
+      maestro_backend_source = "load_shedder"
+    when "fallback"
+      force_server_error_strategy = "primary_backend_down"
+      maestro_backend_source = "main"
+    when "production"
+      # Use defaults
+      maestro_backend_source = "main"
+    else
+      UI.user_error!("Invalid backend_environment: #{backend_environment}. Must be one of: production, load_shedder_us_east_1, load_shedder_us_east_2, fallback")
+    end
+
+    # Set MAESTRO_BACKEND_SOURCE environment variable
+    ENV["MAESTRO_BACKEND_SOURCE"] = maestro_backend_source
+    UI.message("Set MAESTRO_BACKEND_SOURCE to: #{maestro_backend_source}")
+
+    # Setup XCConfig with the appropriate configuration
+    setup_xcconfig(
+      api_key: api_key,
+      api_host: api_host,
+      force_server_error_strategy: force_server_error_strategy
+    )
 
     storekit_config_path = "#{base_path}/Examples/rc-maestro/rc-maestro/Resources/StoreKit/app787ddb07e6.storekit"
 
