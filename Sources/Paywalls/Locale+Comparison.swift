@@ -24,22 +24,10 @@ extension Locale {
             }
         }
 
-        if !strictMatching {
-            if let left = firstLanguageSubtag, let right = other.firstLanguageSubtag {
-                return left == right
-            }
-        }
-
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
             return self.language.languageCode == other.language.languageCode
         } else {
             return self.languageCode == other.languageCode
         }
-    }
-
-    var firstLanguageSubtag: String? {
-        // Handle identifiers like "ar", "ar-SA", "ar_SA", "fr", "fr_FR", etc.
-        let parts = self.identifier.split { $0 == "-" || $0 == "_" }
-        return parts.first.map { String($0).lowercased() }
     }
 }
