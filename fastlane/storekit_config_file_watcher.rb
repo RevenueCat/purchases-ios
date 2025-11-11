@@ -49,52 +49,38 @@ def get_storekit_paths(bundle_id)
   storekit_file = File.join(storekit_dir, 'Configuration.storekit')
 
   {
-    app_group: storekit_app_group,
-    octane_path: octane_path,
     storekit_dir: storekit_dir,
     storekit_file: storekit_file
   }
 end
 
-def setup_storekit_config(bundle_id, source_config, paths)
-  begin
-    # Create directory structure if needed
-    FileUtils.mkdir_p(paths[:storekit_dir]) unless File.directory?(paths[:storekit_dir])
+def setup_storekit_config(bundle_id, source_config)
+  paths = get_storekit_paths(bundle_id)
+  return false unless paths
 
-    # Copy config if it doesn't exist
-    unless File.exist?(paths[:storekit_file])
-      FileUtils.cp(source_config, paths[:storekit_file])
-      puts "[#{Time.now}] ✅ Recreated StoreKit config at: #{paths[:storekit_file]}"
-      return true
-    end
-  rescue => e
-    puts "[#{Time.now}] ❌ Error setting up StoreKit config: #{e.message}"
-    return false
+  # Check if config already exists
+  return true if File.exist?(paths[:storekit_file])
+
+  # Create directory structure if needed
+  FileUtils.mkdir_p(paths[:storekit_dir]) unless File.directory?(paths[:storekit_dir])
+
+  # Copy config file
+  FileUtils.cp(source_config, paths[:storekit_file])
+
+  if File.exist?(paths[:storekit_file])
+    puts "[#{Time.now}] ✅ Recreated StoreKit config at: #{paths[:storekit_file]}"
+    true
+  else
+    puts "[#{Time.now}] ❌ Failed to create StoreKit config"
+    false
   end
-  false
 end
 
 puts "🔍 Starting StoreKit config file watcher..."
 puts "   Bundle ID: #{bundle_id}"
 puts "   Source config: #{storekit_config_source}"
-
-# Get initial paths
-paths = get_storekit_paths(bundle_id)
-unless paths
-  puts "❌ Could not determine StoreKit paths"
-  exit 1
-end
-
-puts "   Watching: #{paths[:storekit_file]}"
+puts "   Checking every 0.5 seconds..."
 puts ""
-
-# Track what exists
-last_check = {
-  app_group: File.exist?(paths[:app_group]),
-  octane_path: File.exist?(paths[:octane_path]),
-  storekit_dir: File.exist?(paths[:storekit_dir]),
-  storekit_file: File.exist?(paths[:storekit_file])
-}
 
 # Handle shutdown gracefully
 shutdown = false
@@ -107,40 +93,15 @@ trap('INT') do
   shutdown = true
 end
 
-# Watch loop
+# Watch loop - just call setup repeatedly
+# It will early return if the file already exists
 loop do
   break if shutdown
 
   begin
-    # Check if paths still exist
-    current_check = {
-      app_group: File.exist?(paths[:app_group]),
-      octane_path: File.exist?(paths[:octane_path]),
-      storekit_dir: File.exist?(paths[:storekit_dir]),
-      storekit_file: File.exist?(paths[:storekit_file])
-    }
-
-    # Detect deletions
-    if current_check != last_check
-      puts "[#{Time.now}] 🔄 Change detected:"
-
-      [:app_group, :octane_path, :storekit_dir, :storekit_file].each do |key|
-        if last_check[key] && !current_check[key]
-          puts "   - #{key} was deleted"
-        end
-      end
-
-      # If any part of the path was deleted, recreate the config
-      if current_check.values.any? { |exists| !exists }
-        puts "[#{Time.now}] 🔧 Recreating StoreKit configuration..."
-        setup_storekit_config(bundle_id, storekit_config_source, paths)
-      end
-
-      last_check = current_check
-    end
-
+    setup_storekit_config(bundle_id, storekit_config_source)
   rescue => e
-    puts "[#{Time.now}] ⚠️  Error in watch loop: #{e.message}"
+    puts "[#{Time.now}] ⚠️  Error: #{e.message}"
   end
 
   sleep 0.5

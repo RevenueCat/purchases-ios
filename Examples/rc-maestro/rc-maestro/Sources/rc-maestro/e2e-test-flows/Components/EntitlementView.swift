@@ -20,7 +20,17 @@ struct EntitlementView: View {
     
     var body: some View {
         VStack {
-            Text(identifier + " entitlement: " + (entitlement?.isActive == true ? "active" : "inactive"))
+            if let entitlement {
+                if entitlement.isActive {
+                    Text("entitlement: active (\(entitlement.identifier))")
+                } else {
+                    Text("entitlement: inactive")
+                }
+            }
+            else {
+                Text("entitlement: nil")
+            }
+
             if let entitlement {
                 Text("verification: " + entitlement.verification.stringValue)
             }

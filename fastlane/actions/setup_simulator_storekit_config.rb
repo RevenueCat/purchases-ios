@@ -69,6 +69,12 @@ module Fastlane
         storekit_dir = File.join(octane_path, bundle_id, "Configuration.storekit")
         storekit_file = File.join(storekit_dir, "Configuration.storekit")
 
+        # Check if config already exists
+        if File.exist?(storekit_file)
+          UI.message("StoreKit configuration already exists at: #{storekit_file}")
+          return storekit_file
+        end
+
         UI.message("Creating directory: #{storekit_dir}")
         Actions.sh("mkdir", "-p", storekit_dir, log: false)
 
