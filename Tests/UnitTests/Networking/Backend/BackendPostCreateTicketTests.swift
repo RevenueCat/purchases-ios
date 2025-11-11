@@ -32,7 +32,7 @@ class BackendPostCreateTicketTests: BaseBackendTests {
         var receivedResult: Result<CreateTicketResponse, BackendError>?
 
         waitUntil { completed in
-            self.backend.createTicketAPI.postCreateTicket(
+            self.backend.customerCenterConfig.postCreateTicket(
                 appUserID: Self.userID,
                 customerEmail: "test@example.com",
                 ticketDescription: "Test ticket description"
@@ -61,7 +61,7 @@ class BackendPostCreateTicketTests: BaseBackendTests {
         var receivedResult: Result<CreateTicketResponse, BackendError>?
 
         waitUntil { completed in
-            self.backend.createTicketAPI.postCreateTicket(
+            self.backend.customerCenterConfig.postCreateTicket(
                 appUserID: Self.userID,
                 customerEmail: "test@example.com",
                 ticketDescription: "Test ticket description"
@@ -85,7 +85,7 @@ class BackendPostCreateTicketTests: BaseBackendTests {
         var receivedResult: Result<CreateTicketResponse, BackendError>?
 
         waitUntil { completed in
-            self.backend.createTicketAPI.postCreateTicket(
+            self.backend.customerCenterConfig.postCreateTicket(
                 appUserID: "",
                 customerEmail: "test@example.com",
                 ticketDescription: "Test ticket description"
@@ -114,7 +114,7 @@ class BackendPostCreateTicketTests: BaseBackendTests {
         var receivedResult: Result<CreateTicketResponse, BackendError>?
 
         waitUntil { completed in
-            self.backend.createTicketAPI.postCreateTicket(
+            self.backend.customerCenterConfig.postCreateTicket(
                 appUserID: Self.userID,
                 customerEmail: "test@example.com",
                 ticketDescription: "Test ticket description"
@@ -144,7 +144,7 @@ class BackendPostCreateTicketTests: BaseBackendTests {
         let testDescription = "Test ticket description"
 
         waitUntil { completed in
-            self.backend.createTicketAPI.postCreateTicket(
+            self.backend.customerCenterConfig.postCreateTicket(
                 appUserID: Self.userID,
                 customerEmail: testEmail,
                 ticketDescription: testDescription
@@ -173,7 +173,7 @@ class BackendPostCreateTicketTests: BaseBackendTests {
         )
 
         waitUntil { completed in
-            self.backend.createTicketAPI.postCreateTicket(
+            self.backend.customerCenterConfig.postCreateTicket(
                 appUserID: Self.userID,
                 customerEmail: "test@example.com",
                 ticketDescription: "Test ticket description"

@@ -17,6 +17,7 @@ import Foundation
 class CustomerCenterConfigAPI {
 
     typealias CustomerCenterConfigResponseHandler = Backend.ResponseHandler<CustomerCenterConfigResponse>
+    typealias CreateTicketResponseHandler = PostCreateTicketOperation.CreateTicketResponseHandler
 
     private let customerCenterConfigResponseCallbacksCache: CallbackCache<CustomerCenterConfigCallback>
     private let backendConfig: BackendConfiguration
@@ -45,6 +46,21 @@ class CustomerCenterConfigAPI {
             delay: .default(forBackgroundedApp: isAppBackgrounded),
             cacheStatus: cacheStatus
         )
+    }
+
+    func postCreateTicket(appUserID: String,
+                          customerEmail: String,
+                          ticketDescription: String,
+                          completion: @escaping CreateTicketResponseHandler) {
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+                                                                appUserID: appUserID)
+
+        let operation = PostCreateTicketOperation(configuration: config,
+                                                  customerEmail: customerEmail,
+                                                  ticketDescription: ticketDescription,
+                                                  responseHandler: completion)
+
+        self.backendConfig.operationQueue.addOperation(operation)
     }
 
 }

@@ -1447,9 +1447,9 @@ public extension Purchases {
     /// Used by `RevenueCatUI` to create a support ticket
     @_spi(Internal) func createTicket(customerEmail: String, ticketDescription: String) async throws -> Bool {
         let response = try await Async.call { completion in
-            self.backend.createTicketAPI.postCreateTicket(appUserID: self.appUserID,
-                                                          customerEmail: customerEmail,
-                                                          ticketDescription: ticketDescription) { result in
+            self.backend.customerCenterConfig.postCreateTicket(appUserID: self.appUserID,
+                                                               customerEmail: customerEmail,
+                                                               ticketDescription: ticketDescription) { result in
                 completion(result.mapError(\.asPublicError))
             }
         }
