@@ -51,9 +51,6 @@ final class CreateTicketViewTests: TestCase {
         let mockPurchases = MockCustomerCenterPurchases()
         mockPurchases.createTicketResult = .success(true)
 
-        // Verify initial state
-        expect(mockPurchases.createTicketCallCount) == 0
-
         // Create the view and simulate ticket creation
         _ = CreateTicketView(
             isPresented: .constant(true),
@@ -61,12 +58,12 @@ final class CreateTicketViewTests: TestCase {
         )
 
         // Simulate the submitTicket action by calling the mock directly
-        _ = try? await mockPurchases.createTicket(
+        let result = try? await mockPurchases.createTicket(
             customerEmail: "test@example.com",
             ticketDescription: "Test description"
         )
 
-        expect(mockPurchases.createTicketCallCount) == 1
+        expect(result) == true
     }
 
     @MainActor
