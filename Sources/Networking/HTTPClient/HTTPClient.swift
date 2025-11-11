@@ -53,7 +53,7 @@ class HTTPClient {
          requestTimeout: TimeInterval = Configuration.networkTimeoutDefault,
          dateProvider: DateProvider = DateProvider(),
          operationDispatcher: OperationDispatcher,
-         timeoutManager: HTTPRequestTimeoutManagerType? = nil,
+         timeoutManager: HTTPRequestTimeoutManagerType? = nil
     ) {
         let config = URLSessionConfiguration.ephemeral
         config.httpMaximumConnectionsPerHost = 1
