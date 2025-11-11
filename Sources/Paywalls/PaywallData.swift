@@ -207,6 +207,9 @@ extension PaywallData {
         localizationByLocale[requiredLocale.identifier] ??
         localizationByLocale.first { locale, _ in
             Locale(identifier: locale).sharesLanguageCode(with: requiredLocale)
+        }?.value ??
+        localizationByLocale.first { locale, _ in
+            Locale(identifier: locale).sharesLanguageCode(with: requiredLocale, stricterMatching: false)
         }?.value
     }
 
@@ -809,17 +812,3 @@ extension PaywallData: Sendable {}
 // MARK: - Identifiable
 
 extension PaywallData.Tier: Identifiable {}
-
-// MARK: - Extensions
-
-private extension Locale {
-
-    func sharesLanguageCode(with other: Locale) -> Bool {
-        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-            return self.language.isEquivalent(to: other.language)
-        } else {
-            return self.languageCode == other.languageCode
-        }
-    }
-
-}
