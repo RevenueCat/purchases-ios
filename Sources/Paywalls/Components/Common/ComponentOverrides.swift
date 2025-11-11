@@ -33,13 +33,13 @@ public extension PaywallComponent {
 
     }
 
-    enum Condition: String, Codable, Sendable, Hashable, Equatable {
+    enum Condition: Codable, Sendable, Hashable, Equatable {
 
-        case compact
-        case medium
-        case expanded
-        case introOffer = "intro_offer"
-        case promoOffer = "promo_offer"
+        case orientation(ArrayOperatorType, [OrientationType])
+        case screenSize(ArrayOperatorType, [String])
+        case selectedPackage
+        case introOffer
+        case promoOffer
         case selected
 
         // For unknown cases
@@ -49,12 +49,16 @@ public extension PaywallComponent {
             var container = encoder.container(keyedBy: CodingKeys.self)
 
             switch self {
-            case .compact:
-                try container.encodeIfPresent(ConditionType.compact.rawValue, forKey: .type)
-            case .medium:
-                try container.encode(ConditionType.medium.rawValue, forKey: .type)
-            case .expanded:
-                try container.encode(ConditionType.expanded.rawValue, forKey: .type)
+            case .orientation(let operand, let orientations):
+                try container.encode(ConditionType.orientation.rawValue, forKey: .type)
+                try container.encode(operand, forKey: .operator)
+                try container.encode(orientations, forKey: .orientations)
+            case .screenSize(let operand, let screenSizes):
+                try container.encode(ConditionType.screenSize.rawValue, forKey: .type)
+                try container.encode(operand, forKey: .operator)
+                try container.encode(screenSizes, forKey: .sizes)
+            case .selectedPackage:
+                try container.encode(ConditionType.selectedPackage.rawValue, forKey: .type)
             case .introOffer:
                 try container.encode(ConditionType.introOffer.rawValue, forKey: .type)
             case .promoOffer:
@@ -63,7 +67,7 @@ public extension PaywallComponent {
                 try container.encode(ConditionType.selected.rawValue, forKey: .type)
             case .unsupported:
                 // Encode a default value for unsupported
-                try container.encode(Self.unsupported.rawValue, forKey: .type)
+                try container.encode("unknown", forKey: .type)
             }
         }
 
@@ -73,12 +77,16 @@ public extension PaywallComponent {
 
             if let conditionType = ConditionType(rawValue: rawValue) {
                 switch conditionType {
-                case .compact:
-                    self = .compact
-                case .medium:
-                    self = .medium
-                case .expanded:
-                    self = .expanded
+                case .orientation:
+                    let operand = try container.decode(ArrayOperatorType.self, forKey: .operator)
+                    let orientations = try container.decode([OrientationType].self, forKey: .orientations)
+                    self = .orientation(operand, orientations)
+                case .screenSize:
+                    let operand = try container.decode(ArrayOperatorType.self, forKey: .operator)
+                    let sizes = try container.decode([String].self, forKey: .sizes)
+                    self = .screenSize(operand, sizes)
+                case .selectedPackage:
+                    self = .selectedPackage
                 case .introOffer:
                     self = .introOffer
                 case .promoOffer:
@@ -95,18 +103,46 @@ public extension PaywallComponent {
         private enum CodingKeys: String, CodingKey {
 
             case type
+            case sizes
+            case `operator`
+            case orientations
 
         }
 
         // swiftlint:disable:next nesting
         private enum ConditionType: String, Decodable {
 
-            case compact
-            case medium
-            case expanded
+            case orientation = "orientation"
+            case screenSize = "screen_size"
+            case selectedPackage = "selected_package"
             case introOffer = "intro_offer"
             case promoOffer = "promo_offer"
             case selected
+
+        }
+
+        // swiftlint:disable:next nesting
+        public enum ArrayOperatorType: String, Codable, Sendable, Hashable, Equatable {
+
+            // swiftlint:disable:next identifier_name
+            case `in` = "in"
+            case notIn = "not_in"
+
+        }
+
+        // swiftlint:disable:next nesting
+        public enum EqualityOperatorType: String, Codable, Sendable, Hashable, Equatable {
+
+            case `equals` = "="
+            case notEquals = "!="
+
+        }
+
+        // swiftlint:disable:next nesting
+        public enum OrientationType: String, Codable, Sendable, Hashable, Equatable {
+
+            case portrait
+            case landscape
 
         }
 

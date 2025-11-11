@@ -13,7 +13,7 @@
 //
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 #if !os(tvOS) // For Paywalls V2
 
@@ -74,6 +74,7 @@ extension PresentedPartial {
         return presentedPartial
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     private static func shouldApply(
         for conditions: [PaywallComponent.Condition],
         state: ComponentViewState,
@@ -84,10 +85,33 @@ extension PresentedPartial {
         // Early return when any condition evaluates to false
         for condition in conditions {
             switch condition {
-            case .compact, .medium, .expanded:
-                if !activeCondition.applicableConditions.contains(condition) {
+            case .orientation(let operand, let orientations):
+                let active = activeCondition.orientation.rawValue
+
+                switch operand {
+                case .in:
+                    return orientations.contains(where: { $0.rawValue == active })
+                case .notIn:
+                    return !orientations.contains(where: { $0.rawValue == active })
+                @unknown default:
                     return false
                 }
+            case .screenSize(let operand, let sizes):
+                guard let active = activeCondition.screenSize?.name else {
+                    return false
+                }
+
+                switch operand {
+                case .in:
+                    return sizes.contains(where: { $0 == active })
+                case .notIn:
+                    return !sizes.contains(where: { $0 == active })
+                @unknown default:
+                    return false
+                }
+            case .selectedPackage:
+                // WIP: Logic
+                return false
             case .introOffer:
                 if !isEligibleForIntroOffer {
                     return false
@@ -102,23 +126,12 @@ extension PresentedPartial {
                 }
             case .unsupported:
                 return false
+            @unknown default:
+                return false
             }
         }
 
         return true
-    }
-
-}
-
-private extension ScreenCondition {
-
-    /// Returns applicable condition types based on current screen condition
-    var applicableConditions: [PaywallComponent.Condition] {
-        switch self {
-        case .compact: return [.compact]
-        case .medium: return [.compact, .medium]
-        case .expanded: return [.compact, .medium, .expanded]
-        }
     }
 
 }
