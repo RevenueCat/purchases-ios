@@ -503,7 +503,10 @@ private extension HTTPClient {
                     Logger.debug(Strings.network.request_handled_by_load_shedder(request.httpRequest.path))
                 }
 
-                if let error = networkError as? URLError, case .timedOut = error.code, !request.isFallbackURLRequest {
+                // A timeout on a main backend URL for a request that has a fallback URL
+                if let error = networkError as? URLError, case .timedOut = error.code,
+                    !request.isFallbackURLRequest,
+                    !request.httpRequest.path.fallbackUrls.isEmpty {
                     requestTimeoutResult = .timeoutOnMainBackendSupportingFallback
                 }
 
@@ -525,9 +528,6 @@ private extension HTTPClient {
             }
         } else {
             Logger.debug(Strings.network.retrying_request(httpMethod: request.method.httpMethod, path: request.path))
-
-            // todo rick: check if this logic is actually used, it looks like it isn't
-            // at least not for no HTTP response cases, maybe verification can cause this
 
             self.state.modify {
                 $0.queuedRequests.insert(request.retriedRequest(), at: 0)
