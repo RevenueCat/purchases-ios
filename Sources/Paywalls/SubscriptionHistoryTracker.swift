@@ -63,9 +63,16 @@ import StoreKit
                 result.isVerifiedAutoRenewable
             }
 
+            if ProcessInfo.isRunningRevenueCatTests {
+                print("TEST: Finished enumerating Transaction.currentEntitlements")
+            }
+
             if !found {
                 found = await StoreKit.Transaction.all.contains { result in
                     result.isVerifiedAutoRenewable
+                }
+                if ProcessInfo.isRunningRevenueCatTests {
+                    print("TEST: Finished enumerating Transaction.all")
                 }
             }
 
