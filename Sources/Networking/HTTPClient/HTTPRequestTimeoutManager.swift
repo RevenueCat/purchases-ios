@@ -75,7 +75,7 @@ class HTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
 
         let timeout: Timeout
 
-        // A fallback request or a request that supports a fallback
+        // A fallback request or a request that doesn't support a fallback
         if isFallback || path.fallbackUrls.isEmpty {
             timeout = .default
         }
