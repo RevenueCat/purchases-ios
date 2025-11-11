@@ -1,7 +1,7 @@
 orbs:
   macos: circleci/macos@2.5.1
   slack: circleci/slack@5.0.0
-  revenuecat: revenuecat/sdks-common-config@3.2.0
+  revenuecat: revenuecat/sdks-common-config@3.9.0
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -116,6 +116,15 @@ aliases:
         ignore: /.*/
       branches:
         only: main
+  maestro-e2e-test-job: &maestro-e2e-test-job
+    run-maestro-e2e-tests:
+      name: run-maestro-e2e-tests-<< matrix.backend_environment >>
+      context:
+        - e2e-tests
+        - slack-secrets-ios
+      matrix:
+        parameters:
+          backend_environment: ["production", "load_shedder_us_east_1", "load_shedder_us_east_2", "fallback"]
 
 commands:
   slack-notify-on-fail:
@@ -145,10 +154,15 @@ commands:
         type: string
         default: .
     steps:
+      - run:
+          name: Write macOS Product Version to file
+          command: |
+            sw_vers -productVersion | cut -d. -f1,2 > .macos_version
+            echo "macOS version: $(cat .macos_version)"
       - restore_cache:
           keys:
             # This cache key should be updated whenever we change the Ruby version
-            - v4-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}-ruby-3.2.0
+            - v4-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}-macos-{{ checksum ".macos_version" }}-ruby-3.2.0
       # CircleCI images fail on Ruby 3.3
       # https://github.com/fastlane/fastlane/issues/21794#issuecomment-2021331335
       # Also, not using macos/switch-ruby because its broken
@@ -172,7 +186,7 @@ commands:
             bundle install
       - save_cache:
           # This cache key should be updated whenever we change the Ruby version
-          key: v4-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}-ruby-3.2.0
+          key: v4-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}-macos-{{ checksum ".macos_version" }}-ruby-3.2.0
           paths:
             - vendor/bundle
             - ~/.rbenv/versions/3.2.0
@@ -408,13 +422,22 @@ commands:
 
   tuist-generate-workspace:
     description: "Install Tuist and generate workspace"
+    parameters:
+      query:
+        type: string
+        default: ""
+        description: "Optional query to pass to Tuist when generating workspace."
     steps:
       - revenuecat/install-tuist
       - run:
           name: Generate Tuist workspace
           command: |
             export PATH="$HOME/.local/share/mise/shims:$PATH"
-            tuist install && tuist generate --no-open
+            if [ -n "<< parameters.query >>" ]; then
+              tuist install && tuist generate << parameters.query >> --no-open
+            else
+              tuist install && tuist generate --no-open
+            fi
 
   create-snapshot-pr-if-needed:
     parameters:
@@ -474,6 +497,50 @@ commands:
     steps:
       - revenuecat/set-ssh-key-for-git:
           fingerprint: "SHA256:UYi3gsOInLRPZy6MPho7Yr/YK1VmjDvPGo7sJvIcnPM"
+
+  setup_xcconfig:
+    parameters:
+      api_key:
+        type: string
+        description: "The RevenueCat API key value"
+      force_server_error_strategy:
+        type: enum
+        enum: ["never", "primary_backend_down"]
+        default: "never"
+        description: "Server error strategy for testing fallback behavior"
+      api_host:
+        type: string
+        default: ""
+        description: "Optional API host for testing (e.g., 'api-staging.revenuecat.com')"
+      proxy_url_scheme:
+        type: string
+        default: ""
+        description: "Optional proxy URL scheme (e.g., 'https')"
+      proxy_url_host:
+        type: string
+        default: ""
+        description: "Optional proxy URL host (e.g., 'proxy.revenuecat.com')"
+    steps:
+      - run:
+          name: Create XCConfig file
+          command: |
+            {
+              echo "// Auto-generated. Do not commit to VCS"
+              echo "// Generated on $(date)"
+              echo ""
+              echo "REVENUECAT_API_KEY = << parameters.api_key >>"
+              echo "REVENUECAT_FORCE_SERVER_ERROR_STRATEGY = << parameters.force_server_error_strategy >>"
+              if [ -n "<< parameters.api_host >>" ]; then
+                echo "REVENUECAT_API_HOST = << parameters.api_host >>"
+              fi
+              if [ -n "<< parameters.proxy_url_scheme >>" ]; then
+                echo "REVENUECAT_PROXY_URL_SCHEME = << parameters.proxy_url_scheme >>"
+              fi
+              if [ -n "<< parameters.proxy_url_host >>" ]; then
+                echo "REVENUECAT_PROXY_URL_HOST = << parameters.proxy_url_host >>"
+              fi
+            } > CI.xcconfig
+            echo "✅ Created CI.xcconfig"
 
 jobs:
   validate-package-swift:
@@ -1130,6 +1197,64 @@ jobs:
           test_plan: "BackendIntegrationTests-CustomEntitlements"
       - slack-notify-on-fail
 
+  run-maestro-e2e-tests:
+    parameters:
+      backend_environment:
+        type: enum
+        enum: ["production", "load_shedder_us_east_1", "load_shedder_us_east_2", "fallback"]
+    executor:
+      name: macos-executor
+      xcode_version: "26.0.1"
+    steps:
+      - macos/preboot-simulator:
+          version: "18.6"
+          platform: "iOS"
+          device: "iPhone 16 Pro"
+      - checkout
+      - install-dependencies:
+          install_swiftlint: false
+      - when:
+          condition:
+            equal: [ "load_shedder_us_east_1", << parameters.backend_environment >> ]
+          steps:
+            - setup_xcconfig:
+                api_key: ${RC_E2E_TEST_API_KEY_PRODUCTION_APP_STORE}
+                api_host: fortress-us-east-1.revenuecat.com
+      - when:
+          condition:
+            equal: [ "load_shedder_us_east_2", << parameters.backend_environment >> ]
+          steps:
+            - setup_xcconfig:
+                api_key: ${RC_E2E_TEST_API_KEY_PRODUCTION_APP_STORE}
+                api_host: fortress-us-east-2.revenuecat.com
+      - when:
+          condition:
+            equal: [ "fallback", << parameters.backend_environment >> ]
+          steps:
+            - setup_xcconfig:
+                api_key: ${RC_E2E_TEST_API_KEY_PRODUCTION_APP_STORE}
+                force_server_error_strategy: primary_backend_down
+      - when:
+          condition:
+            equal: [ "production", << parameters.backend_environment >> ]
+          steps:
+            - setup_xcconfig:
+                api_key: ${RC_E2E_TEST_API_KEY_PRODUCTION_APP_STORE}
+      - revenuecat/install-maestro
+      - tuist-generate-workspace:
+          query: "Maestro"
+      - run:
+          name: Run e2e tests (<< parameters.backend_environment >>)
+          command: bundle exec fastlane run_maestro_e2e_tests
+          no_output_timeout: 15m
+        
+        # todo: implement error / success notifications through Slack
+
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output
+
   release-checks:
     executor:
       name: macos-executor
@@ -1408,25 +1533,8 @@ jobs:
     executor:
       name: macos-executor
     steps:
-      - checkout
-      - setup-git-credentials
-      - trust-github-key
-      - install-dependencies
-      - update-spm-installation-commit
-      - run:
-          name: Backend and LoadShedder integration tests
-          command: bundle exec fastlane backend_integration_tests test_plan:"BackendIntegrationTests-All-CI"
-          no_output_timeout: 5m
-          environment:
-            SCAN_DEVICE: iPhone 16 (18.5)
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/ios
-          bundle_name: BackendIntegrationTests
-      - store_test_results:
-          path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/xctest
-          destination: scan-test-output
+      - run-backend-tests:
+          test_plan: "BackendIntegrationTests-All-CI"
 
   loadshedder-integration-tests-old-major:
     parameters:
@@ -1675,6 +1783,14 @@ workflows:
             - slack-secrets
       - integration-tests-all
 
+  daily-maestro-e2e-tests:
+    when:
+      and:
+        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+        - equal: ["maestro_e2e_tests", << pipeline.schedule.name >>]
+    jobs:
+      - <<: *maestro-e2e-test-job
+
   manual-trigger-bump:
     when:
       equal: [bump, << pipeline.parameters.action >>]
@@ -1724,6 +1840,7 @@ workflows:
         - equal:
             ["run-from-github-comments", << pipeline.parameters.GHA_Meta >>]
     jobs:
+      - <<: *maestro-e2e-test-job
       - backend-integration-tests-SK1:
           context:
             - slack-secrets-ios

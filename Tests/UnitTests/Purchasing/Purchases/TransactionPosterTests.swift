@@ -273,7 +273,7 @@ class TransactionPosterTests: TestCase {
     // MARK: - shouldFinishTransaction
 
     func testShouldNotFinishWithOfflineCustomerInfo() throws {
-        let info = Self.mockCustomerInfo.copy(with: .verifiedOnDevice)
+        let info = Self.mockCustomerInfo.copy(with: .verifiedOnDevice, httpResponseOriginalSource: nil)
 
         expect(
             TransactionPoster.shouldFinish(
@@ -383,6 +383,7 @@ class TransactionPosterTests: TestCase {
         expect(self.backend.invokedPostReceiptDataParameters?.observerMode) == self.systemInfo.observerMode
 
         expect(self.receiptFetcher.receiptDataCalled) == false
+        expect(self.transactionFetcher.appTransactionJWSCalled.value) == false
     }
 
 }
@@ -468,7 +469,8 @@ private extension TransactionPosterTests {
         )
         return CustomerInfo(response: response,
                             entitlementVerification: .notRequested,
-                            sandboxEnvironmentDetector: self.systemInfo)
+                            sandboxEnvironmentDetector: self.systemInfo,
+                            httpResponseOriginalSource: .mainServer)
     }
 
 }

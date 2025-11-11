@@ -189,7 +189,9 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
                 statusCode: .success,
                 data: try cachedResponse.jsonEncodedData,
                 validationTime: Self.date1,
-                verificationResult: .verified
+                verificationResult: .verified,
+                isLoadShedderResponse: false,
+                isFallbackUrlResponse: false
             )
         )
 
@@ -366,7 +368,9 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                 eTag: Self.eTag,
                 statusCode: .success,
                 data: body,
-                verificationResult: .verified
+                verificationResult: .verified,
+                isLoadShedderResponse: false,
+                isFallbackUrlResponse: false
             )
         )
 
@@ -503,7 +507,9 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                 eTag: Self.eTag,
                 statusCode: .success,
                 data: .init(),
-                verificationResult: .notRequested
+                verificationResult: .notRequested,
+                isLoadShedderResponse: false,
+                isFallbackUrlResponse: false
             )
         )
 
@@ -529,7 +535,9 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                 eTag: Self.eTag,
                 statusCode: .success,
                 data: cachedResponse,
-                verificationResult: .verified
+                verificationResult: .verified,
+                isLoadShedderResponse: false,
+                isFallbackUrlResponse: false
             )
         )
         self.signing.stubbedVerificationResult = false
@@ -556,7 +564,9 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                 statusCode: .success,
                 data: cachedResponse,
                 validationTime: Self.date1,
-                verificationResult: .verified
+                verificationResult: .verified,
+                isLoadShedderResponse: false,
+                isFallbackUrlResponse: false
             )
         )
 
@@ -584,7 +594,9 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                 statusCode: .success,
                 data: cachedResponse,
                 validationTime: Self.date1,
-                verificationResult: .verified
+                verificationResult: .verified,
+                isLoadShedderResponse: false,
+                isFallbackUrlResponse: false
             )
         )
 
@@ -614,7 +626,9 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                 statusCode: .success,
                 data: cachedResponse,
                 validationTime: Self.date1,
-                verificationResult: .verified
+                verificationResult: .verified,
+                isLoadShedderResponse: false,
+                isFallbackUrlResponse: false
             )
         )
 
@@ -639,7 +653,9 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                 statusCode: .success,
                 data: cachedResponse,
                 validationTime: Self.date1,
-                verificationResult: .failed
+                verificationResult: .failed,
+                isLoadShedderResponse: false,
+                isFallbackUrlResponse: false
             )
         )
 
@@ -701,7 +717,9 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                 statusCode: .success,
                 data: cachedResponse,
                 validationTime: Self.date1,
-                verificationResult: .verified
+                verificationResult: .verified,
+                isLoadShedderResponse: false,
+                isFallbackUrlResponse: false
             )
         )
 
@@ -934,13 +952,18 @@ private extension ETagManager.Response {
         statusCode: HTTPStatusCode,
         data: Encodable,
         validationTime: Date? = nil,
-        verificationResult: VerificationResult
+        verificationResult: VerificationResult,
+        isLoadShedderResponse: Bool,
+        isFallbackUrlResponse: Bool
+
     ) throws {
         self.init(eTag: eTag,
                   statusCode: statusCode,
                   data: try data.jsonEncodedData,
                   validationTime: validationTime,
-                  verificationResult: verificationResult
+                  verificationResult: verificationResult,
+                  isLoadShedderResponse: isLoadShedderResponse,
+                  isFallbackUrlResponse: isFallbackUrlResponse
         )
     }
 

@@ -133,7 +133,7 @@ extension Array {
         P: PresentedPartial
     >(
         convert: (T) throws -> P
-    ) throws -> PresentedOverrides<P>
+    ) rethrows -> PresentedOverrides<P>
     where Element == PaywallComponent.ComponentOverride<T> {
         return try self.compactMap { partial in
             let presentedPartial = try convert(partial.properties)
