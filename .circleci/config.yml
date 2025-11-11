@@ -462,10 +462,6 @@ commands:
         type: string
     steps:
       - checkout
-      - macos/preboot-simulator:
-          version: "18.5"
-          platform: "iOS"
-          device: "iPhone 16"
       - install-dependencies
       - update-spm-installation-commit
       - run:
@@ -644,10 +640,6 @@ jobs:
 
     steps:
       - checkout
-      - macos/preboot-simulator:
-          version: "15.5"
-          platform: "iOS"
-          device: "iPhone 13"
       - install-dependencies:
           install_xcbeautify: false
           install_mint: true
@@ -681,10 +673,6 @@ jobs:
 
     steps:
       - checkout
-      - macos/preboot-simulator:
-          version: "16.4"
-          platform: "iOS"
-          device: "iPhone 14"
       - install-dependencies:
           install_xcbeautify: false
           install_mint: true
@@ -722,10 +710,6 @@ jobs:
 
     steps:
       - checkout
-      - macos/preboot-simulator:
-          version: "17.5"
-          platform: "iOS"
-          device: "iPhone 15 Pro"
       - install-dependencies:
           install_xcbeautify: false
           install_mint: true
@@ -762,10 +746,6 @@ jobs:
 
     steps:
       - checkout
-      - macos/preboot-simulator:
-          version: "18.5"
-          platform: "iOS"
-          device: "iPhone 16"
       - install-dependencies:
           install_swiftlint: false
       - update-spm-installation-commit
@@ -799,10 +779,6 @@ jobs:
 
     steps:
       - checkout
-      - macos/preboot-simulator:
-          version: "26.0"
-          platform: "iOS"
-          device: "iPhone 17"
       - install-dependencies:
           install_swiftlint: false
       - update-spm-installation-commit
@@ -834,10 +810,6 @@ jobs:
       name: macos-executor
     steps:
       - checkout
-      - macos/preboot-simulator:
-          version: "11.5"
-          platform: "watchOS"
-          device: "Apple Watch Series 10 (46mm)"
       - install-dependencies
       - update-spm-installation-commit
       - run:
@@ -888,10 +860,6 @@ jobs:
       xcode_version: "26.0.1"
     steps:
       - checkout
-      - macos/preboot-simulator:
-          version: "26.0"
-          platform: "iOS"
-          device: "iPhone 17"
       - install-dependencies:
           install_swiftlint: false
       - run:
@@ -920,10 +888,6 @@ jobs:
 
     steps:
       - checkout
-      - macos/preboot-simulator:
-          version: "18.5"
-          platform: "iOS"
-          device: "iPhone 16"
       - install-dependencies:
           install_swiftlint: false
       - run:
@@ -952,10 +916,6 @@ jobs:
 
     steps:
       - checkout
-      - macos/preboot-simulator:
-          version: "17.5"
-          platform: "iOS"
-          device: "iPhone 15"
       - install-dependencies:
           install_xcbeautify: false
           install_mint: true
@@ -987,10 +947,6 @@ jobs:
 
     steps:
       - checkout
-      - macos/preboot-simulator:
-          version: "16.4"
-          platform: "iOS"
-          device: "iPhone 14"
       - install-dependencies:
           install_xcbeautify: false
           install_mint: true
@@ -1080,10 +1036,6 @@ jobs:
       name: macos-executor
     steps:
       - checkout
-      - macos/preboot-simulator:
-          version: "11.5"
-          platform: "watchOS"
-          device: "Apple Watch Series 10 (46mm)"
       - install-dependencies
       - run:
           name: Run tests
@@ -1295,7 +1247,7 @@ jobs:
           name: Run e2e tests (<< parameters.backend_environment >>)
           command: bundle exec fastlane run_maestro_e2e_tests
           no_output_timeout: 15m
-
+        
         # todo: implement error / success notifications through Slack
 
       - store_test_results:
