@@ -17,7 +17,7 @@ module Fastlane
         UI.message("App container path: #{container_path}")
 
         # Extract the base path up to and including "data/Containers"
-        unless container_path =~ /(.*\/data\/Containers)\//
+        unless container_path =~ /(.*\/data\/Containers)/
           UI.user_error!("Could not extract base path from: #{container_path}")
         end
 

@@ -2,10 +2,11 @@ appId: com.revenuecat.maestro.ios
 name: Subscribe to product through V2 Paywall for default offering
 
 ---
+- clearState
 - launchApp:
-    arguments: 
+    arguments:
         e2e_test_flow: subscribe_from_v2_paywall
-# - assertVisible: "pro entitlement: inactive" todo rick: enable once multiple purchases work in a single e2e test
+- assertVisible: "pro entitlement: inactive"
 - tapOn:
     text: "Present Paywall"
 - assertVisible: "Paywall V2"

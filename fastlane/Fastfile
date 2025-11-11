@@ -836,7 +836,6 @@ platform :ios do
   desc "run_maestro_e2e_tests"
   lane :run_maestro_e2e_tests do |options|
     backend_environment = options[:backend_environment] || "production"
-    bundle_id = "com.revenuecat.maestro.ios"
     base_path = "#{Dir.pwd}/.."
 
     UI.message("Running Maestro E2E tests for backend environment: #{backend_environment}")
@@ -878,13 +877,6 @@ platform :ios do
       force_server_error_strategy: force_server_error_strategy
     )
 
-    storekit_config_path = "#{base_path}/Examples/rc-maestro/rc-maestro/Resources/StoreKit/app787ddb07e6.storekit"
-
-    # Verify StoreKit config exists
-    unless File.exist?(storekit_config_path)
-      UI.user_error!("StoreKit configuration not found: #{storekit_config_path}")
-    end
-
     # note: it's called "run" tests but these tests only need to build to run
     xcworkspace = 'RevenueCat-Tuist.xcworkspace'
     unless File.directory?(xcworkspace)
@@ -899,26 +891,51 @@ platform :ios do
       derivedDataPath: "./build"
     )
 
+    bundle_id = "com.revenuecat.maestro.ios"
+    storekit_config_path = "#{base_path}/Examples/rc-maestro/rc-maestro/Resources/StoreKit/app787ddb07e6.storekit"
+
+    # Install app to simulator
+    UI.message("Installing app to simulator...")
     sh("xcrun", "simctl", "install", "booted", "#{base_path}/build/Build/Products/Debug-iphonesimulator/Maestro.app")
 
-    # Setup StoreKit configuration in simulator
+    # Setup StoreKit configuration initially
+    UI.message("Setting up initial StoreKit configuration...")
     setup_simulator_storekit_config(
       bundle_id: bundle_id,
       storekit_config_path: storekit_config_path
     )
 
-    # Construct the flow directory path
-    flow_dir = "#{base_path}/Examples/rc-maestro/maestro/e2e_tests"
+    # Start file watcher in background
+    UI.message("Starting StoreKit config file watcher...")
+    watcher_script = "#{base_path}/fastlane/storekit_config_file_watcher.rb"
+    watcher_pid = Process.spawn(
+      "ruby", watcher_script,
+      bundle_id, storekit_config_path
+    )
 
-    # Verify the flow directory exists
-    unless File.directory?(flow_dir)
-      UI.user_error!("Flow directory not found: #{flow_dir}")
+    # Give watcher time to start
+    sleep 1
+    UI.success("✓ StoreKit config watcher started (PID: #{watcher_pid})")
+
+    begin
+      # Construct the flow directory path
+      flow_dir = "#{base_path}/Examples/rc-maestro/maestro/e2e_tests"
+
+      # Verify the flow directory exists
+      unless File.directory?(flow_dir)
+        UI.user_error!("Flow directory not found: #{flow_dir}")
+      end
+
+      UI.message("Using flow directory: #{flow_dir}")
+
+      sh("maestro", "test", "--format", "junit", "--output", "test_output/maestro/report.xml", "--test-output-dir", "test_output/maestro", flow_dir)
+    ensure
+      # Always stop the watcher, even if Maestro fails
+      UI.message("Stopping StoreKit config watcher...")
+      Process.kill('TERM', watcher_pid) rescue nil
+      Process.wait(watcher_pid) rescue nil
+      UI.success("✓ StoreKit config watcher stopped")
     end
-
-    UI.message("Using flow directory: #{flow_dir}")
-
-    sh("maestro", "test", "--format", "junit", "--output", "test_output/maestro/report.xml", "--test-output-dir", "test_output/maestro", flow_dir)
-
   end
 
   desc "replace API KEY for installation and integration tests"
