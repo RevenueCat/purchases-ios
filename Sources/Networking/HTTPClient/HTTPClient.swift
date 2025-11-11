@@ -606,14 +606,10 @@ private extension HTTPClient {
         }
         #endif
 
-        let requestStartTime = self.dateProvider.now()
-
         finalURLRequest.timeoutInterval = requestTimeoutManager.timeout(
             for: request.httpRequest.path,
             isFallback: request.isFallbackURLRequest
         )
-
-        let requestStartTime = self.dateProvider.now()
 
         // swiftlint:disable:next redundant_void_return
         let task = self.session.dataTask(with: finalURLRequest) { (data, urlResponse, error) -> Void in
