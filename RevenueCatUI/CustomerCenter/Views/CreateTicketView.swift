@@ -59,14 +59,14 @@ struct CreateTicketView: View {
     var body: some View {
         CompatibilityNavigationStack {
             Form {
-                Section(header: Text("Email")) {
-                    TextField("Enter your email", text: $email)
+                Section(header: Text(localization[.email])) {
+                    TextField(localization[.enterEmail], text: $email)
                         .keyboardType(.emailAddress)
                         .autocapitalization(.none)
                         .textContentType(.emailAddress)
                 }
 
-                Section(header: Text("Description")) {
+                Section(header: Text(localization[.description])) {
                     TextEditor(text: $description)
                         .frame(minHeight: 150)
                 }
@@ -79,7 +79,7 @@ struct CreateTicketView: View {
                                 ProgressView()
                                     .progressViewStyle(CircularProgressViewStyle())
                             } else {
-                                Text("Submit")
+                                Text(localization[.submitTicket])
                                     .font(.headline)
                             }
                             Spacer()
@@ -103,7 +103,7 @@ struct CreateTicketView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar(content: {
                 ToolbarItem(placement: .principal) {
-                    Text("Create a Ticket")
+                    Text(localization[.supportTicketCreate])
                         .font(.headline)
                 }
             })
@@ -128,7 +128,7 @@ struct CreateTicketView: View {
                         Logger.debug("Support ticket submitted successfully")
                         isPresented = false
                     } else {
-                        errorMessage = "Failed to submit ticket. Please try again."
+                        errorMessage = localization[.supportTicketFailed]
                     }
                 }
             } catch {

@@ -174,6 +174,13 @@ import Foundation
             case actionsSectionTitle = "actions_section_title"
             case subscriptionsSectionTitle = "subscriptions_section_title"
             case purchasesSectionTitle = "purchases_section_title"
+            case supportTicketCreate = "support_ticket_create"
+            case email = "email"
+            case enterEmail = "enter_email"
+            case description = "description"
+            case sent = "sent"
+            case supportTicketFailed = "support_ticket_failed"
+            case submitTicket = "submit_ticket"
 
             @_spi(Internal) public var defaultValue: String {
                 switch self {
@@ -414,6 +421,20 @@ import Foundation
                     return "Purchases"
                 case .testStore:
                     return "Test Store"
+                case .supportTicketCreate:
+                    return "Create a support ticket"
+                case .email:
+                    return "Email"
+                case .enterEmail:
+                    return "Enter your email"
+                case .description:
+                    return "Description"
+                case .sent:
+                    return "Message sent"
+                case .supportTicketFailed:
+                    return "Failed to send, please try again."
+                case .submitTicket:
+                    return "Submit ticket"
                 }
             }
         }
