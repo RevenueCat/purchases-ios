@@ -177,6 +177,8 @@ class PurchaseDeferredPurchasesSK2Tests: BasePurchasesTests {
             for: self.product
         )
 
+        print("TEST: running on thread: \(Thread.current). Is main: \(Thread.isMainThread)")
+
         waitUntil { completed in
             if self.purchasesDelegate.makeDeferredPurchase != nil {
                 completed()
