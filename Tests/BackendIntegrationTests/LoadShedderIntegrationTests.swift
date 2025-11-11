@@ -176,6 +176,8 @@ class BaseLoadShedderStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
             Strings.network.request_handled_by_load_shedder(HTTPRequest.Path.postReceiptData),
             level: .debug
         )
+
+        expect(purchaseData.customerInfo.originalSource) == .loadShedder
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
