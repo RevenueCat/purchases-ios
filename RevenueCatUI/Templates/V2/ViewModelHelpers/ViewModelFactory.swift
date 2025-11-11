@@ -14,6 +14,7 @@
 
 import Foundation
 import RevenueCat
+import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
 
@@ -33,7 +34,8 @@ struct ViewModelFactory {
         componentsConfig: PaywallComponentsData.PaywallComponentsConfig,
         offering: Offering,
         localizationProvider: LocalizationProvider,
-        uiConfigProvider: UIConfigProvider
+        uiConfigProvider: UIConfigProvider,
+        colorScheme: ColorScheme
     ) throws -> RootViewModel {
         let firstItemIgnoresSafeAreaInfo = self.findFullWidthImageViewIfItsTheFirst(.stack(componentsConfig.stack))
 
@@ -44,7 +46,8 @@ struct ViewModelFactory {
             purchaseButtonCollector: nil,
             localizationProvider: localizationProvider,
             uiConfigProvider: uiConfigProvider,
-            offering: offering
+            offering: offering,
+            colorScheme: colorScheme
         )
 
         let stickyFooterViewModel = try componentsConfig.stickyFooter.flatMap {
@@ -55,7 +58,8 @@ struct ViewModelFactory {
                 purchaseButtonCollector: nil,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
-                offering: offering
+                offering: offering,
+                colorScheme: colorScheme
             )
 
             return StickyFooterComponentViewModel(
@@ -67,7 +71,8 @@ struct ViewModelFactory {
         return RootViewModel(
             stackViewModel: rootStackViewModel,
             stickyFooterViewModel: stickyFooterViewModel,
-            firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo
+            firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+            localizationProvider: localizationProvider
         )
     }
 
@@ -79,7 +84,8 @@ struct ViewModelFactory {
         purchaseButtonCollector: PurchaseButtonCollector? = nil,
         offering: Offering,
         localizationProvider: LocalizationProvider,
-        uiConfigProvider: UIConfigProvider
+        uiConfigProvider: UIConfigProvider,
+        colorScheme: ColorScheme
     ) throws -> PaywallComponentViewModel {
         switch component {
         case .text(let component):
@@ -100,7 +106,7 @@ struct ViewModelFactory {
             )
         case .icon(let component):
             return .icon(
-                try IconComponentViewModel(
+                IconComponentViewModel(
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     component: component
@@ -115,7 +121,8 @@ struct ViewModelFactory {
                     purchaseButtonCollector: purchaseButtonCollector,
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
-                    offering: offering
+                    offering: offering,
+                    colorScheme: colorScheme
                 )
             )
         case .button(let component):
@@ -126,7 +133,8 @@ struct ViewModelFactory {
                 purchaseButtonCollector: purchaseButtonCollector,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
-                offering: offering
+                offering: offering,
+                colorScheme: colorScheme
             )
 
             var sheetStackViewModel: StackComponentViewModel?
@@ -139,7 +147,8 @@ struct ViewModelFactory {
                     purchaseButtonCollector: purchaseButtonCollector,
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
-                    offering: offering
+                    offering: offering,
+                    colorScheme: colorScheme
                 )
             }
 
@@ -164,7 +173,8 @@ struct ViewModelFactory {
                 purchaseButtonCollector: packagePurchaseButtonCollector,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
-                offering: offering
+                offering: offering,
+                colorScheme: colorScheme
             )
 
             let hasPurchaseButton = packagePurchaseButtonCollector.hasPurchaseButton
@@ -197,7 +207,8 @@ struct ViewModelFactory {
                 purchaseButtonCollector: purchaseButtonCollector,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
-                offering: offering
+                offering: offering,
+                colorScheme: colorScheme
             )
 
             return .purchaseButton(
@@ -216,7 +227,8 @@ struct ViewModelFactory {
                 purchaseButtonCollector: purchaseButtonCollector,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
-                offering: offering
+                offering: offering,
+                colorScheme: colorScheme
             )
 
             return .stickyFooter(
@@ -235,7 +247,7 @@ struct ViewModelFactory {
                         component: descriptionComponent
                     )
                 }
-                return try TimelineItemViewModel(
+                return TimelineItemViewModel(
                     component: item,
                     title: try TextComponentViewModel(
                         localizationProvider: localizationProvider,
@@ -243,7 +255,7 @@ struct ViewModelFactory {
                         component: item.title
                     ),
                     description: description,
-                    icon: try IconComponentViewModel(
+                    icon: IconComponentViewModel(
                         localizationProvider: localizationProvider,
                         uiConfigProvider: uiConfigProvider,
                         component: item.icon
@@ -252,7 +264,7 @@ struct ViewModelFactory {
             }
 
             return .timeline(
-                try TimelineComponentViewModel(
+                TimelineComponentViewModel(
                     component: component,
                     items: models,
                     uiConfigProvider: uiConfigProvider
@@ -266,7 +278,8 @@ struct ViewModelFactory {
                 purchaseButtonCollector: purchaseButtonCollector,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
-                offering: offering
+                offering: offering,
+                colorScheme: colorScheme
             )
 
             // Fixme: use a an actual stack component returned by the backend
@@ -313,7 +326,8 @@ struct ViewModelFactory {
                 purchaseButtonCollector: purchaseButtonCollector,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
-                offering: offering
+                offering: offering,
+                colorScheme: colorScheme
             )
 
             let tabViewModels: [TabViewModel] = try component.tabs.map { tab in
@@ -326,7 +340,8 @@ struct ViewModelFactory {
                     purchaseButtonCollector: purchaseButtonCollector,
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
-                    offering: offering
+                    offering: offering,
+                    colorScheme: colorScheme
                 )
 
                 // Merging into entire paywall package validator
@@ -344,7 +359,7 @@ struct ViewModelFactory {
             }
 
             return .tabs(
-                try TabsComponentViewModel(
+                TabsComponentViewModel(
                     component: component,
                     controlStackViewModel: controlStackViewModel,
                     tabViewModels: tabViewModels,
@@ -366,7 +381,8 @@ struct ViewModelFactory {
                 purchaseButtonCollector: purchaseButtonCollector,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
-                offering: offering
+                offering: offering,
+                colorScheme: colorScheme
             )
 
             return .tabControlButton(
@@ -380,7 +396,8 @@ struct ViewModelFactory {
             return .tabControlToggle(
                 try TabControlToggleComponentViewModel(
                     component: component,
-                    uiConfigProvider: uiConfigProvider
+                    uiConfigProvider: uiConfigProvider,
+                    colorScheme: colorScheme
                 )
             )
         case .carousel(let component):
@@ -392,12 +409,13 @@ struct ViewModelFactory {
                     purchaseButtonCollector: purchaseButtonCollector,
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
-                    offering: offering
+                    offering: offering,
+                    colorScheme: colorScheme
                 )
             }
 
             return .carousel(
-                try CarouselComponentViewModel(
+                CarouselComponentViewModel(
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     component: component,
@@ -406,7 +424,7 @@ struct ViewModelFactory {
             )
         case .video(let component):
             return .video(
-                try VideoComponentViewModel(
+                VideoComponentViewModel(
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     component: component
@@ -423,7 +441,8 @@ struct ViewModelFactory {
         purchaseButtonCollector: PurchaseButtonCollector?,
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,
-        offering: Offering
+        offering: Offering,
+        colorScheme: ColorScheme
     ) throws -> StackComponentViewModel {
         let viewModels = try component.components.map { component in
             try self.toViewModel(
@@ -433,7 +452,8 @@ struct ViewModelFactory {
                 purchaseButtonCollector: purchaseButtonCollector,
                 offering: offering,
                 localizationProvider: localizationProvider,
-                uiConfigProvider: uiConfigProvider
+                uiConfigProvider: uiConfigProvider,
+                colorScheme: colorScheme
             )
         }
 
@@ -446,7 +466,8 @@ struct ViewModelFactory {
                 purchaseButtonCollector: nil,
                 offering: offering,
                 localizationProvider: localizationProvider,
-                uiConfigProvider: uiConfigProvider
+                uiConfigProvider: uiConfigProvider,
+                colorScheme: colorScheme
             )
         } ?? []
 
@@ -454,7 +475,7 @@ struct ViewModelFactory {
         // This is only used with ZStack children that aren't the background
         let shouldApplySafeAreaInset = component == firstItemIgnoresSafeAreaInfo?.parentZStack
 
-        return try StackComponentViewModel(
+        return StackComponentViewModel(
             component: component,
             viewModels: viewModels,
             badgeViewModels: badgeViewModels,

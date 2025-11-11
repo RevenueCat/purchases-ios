@@ -1645,13 +1645,13 @@ SWIFT_CLASS("_TtC10RevenueCat28PostAttributionDataOperation")
 @interface PostAttributionDataOperation : NetworkOperation
 @end
 
-SWIFT_CLASS("_TtC10RevenueCat28PostOfferForSigningOperation")
-@interface PostOfferForSigningOperation : NetworkOperation
+/// A <code>NetworkOperation</code> for posting feature events to the feature events endpoint.
+SWIFT_CLASS("_TtC10RevenueCat26PostFeatureEventsOperation")
+@interface PostFeatureEventsOperation : NetworkOperation
 @end
 
-/// A <code>NetworkOperation</code> for posting <code>PaywallEvent</code>s.
-SWIFT_CLASS("_TtC10RevenueCat26PostPaywallEventsOperation")
-@interface PostPaywallEventsOperation : NetworkOperation
+SWIFT_CLASS("_TtC10RevenueCat28PostOfferForSigningOperation")
+@interface PostOfferForSigningOperation : NetworkOperation
 @end
 
 SWIFT_CLASS("_TtC10RevenueCat24PostReceiptDataOperation")
@@ -1848,6 +1848,14 @@ SWIFT_CLASS_NAMED("Builder")
 /// \param promotionalOffer The <code>PromotionalOffer</code> to apply to the purchase.
 ///
 - (nonnull instancetype)withPromotionalOffer:(RCPromotionalOffer * _Nonnull)promotionalOffer SWIFT_WARN_UNUSED_RESULT;
+/// Set <code>quantity</code>.
+/// \param quantity The number of items to purchase. Must be between 1 and 10 (inclusive).
+/// If not specified, StoreKit will use its default quantity (typically 1).
+///
+///
+/// throws:
+/// <code>ErrorCode/purchaseInvalidError</code> if quantity is less than 1 or greater than 10.
+- (nonnull instancetype)withQuantity:(NSInteger)quantity SWIFT_WARN_UNUSED_RESULT;
 /// Sets a win-back offer for the purchase.
 /// Fetch a winBackOffer to use with this function with <code>Purchases/eligibleWinBackOffers(forProduct:)</code>
 /// or <code>Purchases/eligibleWinBackOffers(forProduct:completion)</code>.
@@ -3929,12 +3937,12 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCSubscriptionPeriodUnit, "Unit", open) {
 };
 
 @interface RCSubscriptionPeriod (SWIFT_EXTENSION(RevenueCat))
-@property (nonatomic, readonly, copy) NSString * _Nonnull debugDescription;
+/// The number of units per subscription period
+@property (nonatomic, readonly) NSInteger numberOfUnits SWIFT_AVAILABILITY(macos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(watchos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(tvos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(ios,unavailable,message="'numberOfUnits' has been renamed to 'value'");
 @end
 
 @interface RCSubscriptionPeriod (SWIFT_EXTENSION(RevenueCat))
-/// The number of units per subscription period
-@property (nonatomic, readonly) NSInteger numberOfUnits SWIFT_AVAILABILITY(macos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(watchos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(tvos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(ios,unavailable,message="'numberOfUnits' has been renamed to 'value'");
+@property (nonatomic, readonly, copy) NSString * _Nonnull debugDescription;
 @end
 
 SWIFT_CLASS("_TtC10RevenueCat20TrackingManagerProxy")

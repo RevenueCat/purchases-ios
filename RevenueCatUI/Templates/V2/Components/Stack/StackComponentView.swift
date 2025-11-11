@@ -70,7 +70,8 @@ struct StackComponentView: View {
             ),
             isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                 for: self.packageContext.package
-            )
+            ),
+            colorScheme: colorScheme
         ) { style in
             if style.visible {
                 self.make(style: style)
@@ -316,7 +317,8 @@ struct StackComponentView_Previews: PreviewProvider {
                     localizedStrings: [
                         "text_1": .string("Hey")
                     ]
-                )
+                ),
+                colorScheme: .light
             ),
             onDismiss: {}
         )
@@ -345,7 +347,8 @@ struct StackComponentView_Previews: PreviewProvider {
                     localizedStrings: [
                         "text_1": .string("Hey")
                     ]
-                )
+                ),
+                colorScheme: .light
             ),
             onDismiss: {}
         )
@@ -375,7 +378,8 @@ struct StackComponentView_Previews: PreviewProvider {
                         localizedStrings: [
                             "text_1": .string("Hey")
                         ]
-                    )
+                    ),
+                    colorScheme: .light
                 ),
                 onDismiss: {}
             )
@@ -400,7 +404,8 @@ struct StackComponentView_Previews: PreviewProvider {
                         localizedStrings: [
                             "text_1": .string("Hey")
                         ]
-                    )
+                    ),
+                    colorScheme: .light
                 ),
                 onDismiss: {}
             )
@@ -425,7 +430,8 @@ struct StackComponentView_Previews: PreviewProvider {
                         localizedStrings: [
                             "text_1": .string("Hey")
                         ]
-                    )
+                    ),
+                    colorScheme: .light
                 ),
                 onDismiss: {}
             )
@@ -450,7 +456,8 @@ struct StackComponentView_Previews: PreviewProvider {
                         localizedStrings: [
                             "text_1": .string("Hey")
                         ]
-                    )
+                    ),
+                    colorScheme: .light
                 ),
                 onDismiss: {}
             )
@@ -508,7 +515,8 @@ struct StackComponentView_Previews: PreviewProvider {
                         localizedStrings: [
                             "text_1": .string("Hey")
                         ]
-                    )
+                    ),
+                    colorScheme: .light
                 ),
                 onDismiss: {}
             )
@@ -551,7 +559,8 @@ struct StackComponentView_Previews: PreviewProvider {
                         localizedStrings: [
                             "text_1": .string("Hey")
                         ]
-                    )
+                    ),
+                    colorScheme: .light
                 ),
                 onDismiss: {},
                 showActivityIndicatorOverContent: true
@@ -625,7 +634,8 @@ struct StackComponentView_Previews: PreviewProvider {
                     localizedStrings: [
                         "text_1": .string("Hey")
                     ]
-                )
+                ),
+                colorScheme: .light
             ),
             onDismiss: {}
         )
@@ -686,7 +696,8 @@ func stackAlignmentAndDistributionPreviews(dimensions: [PaywallComponent.Dimensi
                     localizationProvider: .init(
                         locale: Locale.current,
                         localizedStrings: [:]
-                    )
+                    ),
+                    colorScheme: .light
                 ),
                 onDismiss: {}
             )
@@ -745,7 +756,8 @@ extension StackComponentViewModel {
 
     convenience init(
         component: PaywallComponent.StackComponent,
-        localizationProvider: LocalizationProvider
+        localizationProvider: LocalizationProvider,
+        colorScheme: ColorScheme
     ) throws {
         let validator = PackageValidator()
         let factory = ViewModelFactory()
@@ -762,7 +774,8 @@ extension StackComponentViewModel {
                 firstItemIgnoresSafeAreaInfo: nil,
                 offering: offering,
                 localizationProvider: localizationProvider,
-                uiConfigProvider: uiConfigProvider
+                uiConfigProvider: uiConfigProvider,
+                colorScheme: colorScheme
             )
         }
 
@@ -773,11 +786,12 @@ extension StackComponentViewModel {
                 firstItemIgnoresSafeAreaInfo: nil,
                 offering: offering,
                 localizationProvider: localizationProvider,
-                uiConfigProvider: uiConfigProvider
+                uiConfigProvider: uiConfigProvider,
+                colorScheme: colorScheme
             )
         }
 
-        try self.init(
+        self.init(
             component: component,
             viewModels: viewModels,
             badgeViewModels: badgeViewModels ?? [],

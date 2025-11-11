@@ -1,3 +1,89 @@
+## 5.47.0
+## RevenueCatUI SDK
+### Paywallv2
+#### ✨ New Features
+* Video Background  (#5704) via Jacob Rakidzich (@JZDesign)
+* Add a delay hook for a purchase flow (#5690) via Jacob Rakidzich (@JZDesign)
+
+### 🔄 Other Changes
+* Fix pipeline: Remove trailing comma (#5771) via Jacob Rakidzich (@JZDesign)
+* Add `PromotionalOfferViewTests` (#5766) via Cesar de la Vega (@vegaro)
+
+## 5.46.3
+### 🔄 Other Changes
+* Use cached offerings on network errors (#5707) via Antonio Pallares (@ajpallares)
+* Allow the use of Test Store in release builds using the uiPreview dangerous setting for the RC Mobile app (#5765) via Rick (@rickvdl)
+* Fix signature verification fallback urls (#5756) via Antonio Pallares (@ajpallares)
+
+## 5.46.2
+## RevenueCatUI SDK
+### Customer Center
+#### 🐞 Bugfixes
+* Fix `EXC_BAD_ACCESS` when opening promotional offers in Customer Center (#5762) via Cesar de la Vega (@vegaro)
+
+### 🔄 Other Changes
+* Add Load shedder integration tests for Get Customer Info (#5713) via Antonio Pallares (@ajpallares)
+* Add internal `Offerings` source properties (#5749) via Antonio Pallares (@ajpallares)
+* Add Internal `CustomerInfo` source properties (#5737) via Antonio Pallares (@ajpallares)
+
+## 5.46.1
+## RevenueCat SDK
+### 🐞 Bugfixes
+* FIX: background image didn't update to dark mode when the colorscheme changed (#5740) via Jacob Rakidzich (@JZDesign)
+
+### 🔄 Other Changes
+* Update get offerings snapshot for Load Shedder integration tests (#5758) via Antonio Pallares (@ajpallares)
+* Show alert before crashing when Test API key is used in Release builds (#5755) via Antonio Pallares (@ajpallares)
+* Moved load shedder API tests to us-east-1 and us-east-2 configuration from the CircleCI config into the tests itself (#5750) via Rick (@rickvdl)
+* Run load shedder integration tests against both us-east-1 and us-east-2 (#5732) via Rick (@rickvdl)
+* Add backend source to `VerifiedHTTPResponse` (#5736) via Antonio Pallares (@ajpallares)
+* Added an internal API for overriding the API base URL (#5739) via Rick (@rickvdl)
+* Fix CircleCI builds (#5738) via Antonio Pallares (@ajpallares)
+
+## 5.46.0
+## RevenueCat SDK
+### ✨ New Features
+* Add PurchaseParams method to set the quantity of products to purchase (#5730) via Mark Villacampa (@MarkVillacampa)
+### 🐞 Bugfixes
+* Dynamic Color by injecting the color scheme (#5706) via Jacob Rakidzich (@JZDesign)
+
+## RevenueCatUI SDK
+### Customer Center
+#### 🐞 Bugfixes
+* fix: Remove best effort renewal for Purchases in CustomerCenter (#5720) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Removed unused and deprecated CircleCI config values (#5731) via Rick (@rickvdl)
+* Refactor: Rename and reorganize FeatureEvents test files (#5728) via Pol Miro (@polmiro)
+* Refactor: Rename PaywallEventsManager to EventsManager and separate ad events (#5718) via Pol Miro (@polmiro)
+
+## 5.45.1
+## RevenueCat SDK
+### 🐞 Bugfixes
+* FIX: Video Component speed and overlay issues (#5716) via Jacob Rakidzich (@JZDesign)
+* Flush many batches paywall events (#5687) via Pol Miro (@polmiro)
+* Fix image shadow issue (#5708) via Jacob Rakidzich (@JZDesign)
+* Add size limit to PaywallEventStore to prevent unbounded growth (#5688) via Pol Miro (@polmiro)
+* Invert priority of iOS offers when rendering Paywall Text Component  (#5699) via Jacob Rakidzich (@JZDesign)
+
+## RevenueCatUI SDK
+### Customer Center
+#### 🐞 Bugfixes
+* fix: Use tint color for See All Purchases (#5697) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Fix some incorrect tests (#5723) via Antonio Pallares (@ajpallares)
+* Improve Customer Info offline computation checks in tests (#5714) via Antonio Pallares (@ajpallares)
+* [CI] Set xcbeautify version for Xcode 15 (#5722) via Antonio Pallares (@ajpallares)
+* Fix API tests (#5721) via Antonio Pallares (@ajpallares)
+* [SDK-4153] Use static fallback urls (#5709) via Antonio Pallares (@ajpallares)
+* Adapt Load Shedder Integration tests to changes in project (#5715) via Antonio Pallares (@ajpallares)
+* Obj-c compatible APIs for non subscription revenue (#5685) via Pol Miro (@polmiro)
+* Add non paid revenue reporting infra (#5640) via Pol Miro (@polmiro)
+* Adapt integration tests to changes in project (#5711) via Antonio Pallares (@ajpallares)
+* Allowing HTTP requests to be retried with fallback host after netwok / DNS errors as well as 5xx errors (#5703) via Rick (@rickvdl)
+* Add infrastructure to enable richer server-down integration tests (#5700) via Antonio Pallares (@ajpallares)
+
 ## 5.45.0
 ## RevenueCat SDK
 ### 🐞 Bugfixes

@@ -18,10 +18,10 @@ protocol HTTPRequestPath {
     /// The base URL for requests to this path.
     static var serverHostURL: URL { get }
 
-    /// The fallback hosts to use when the main server is down.
+    /// The fallback URLs to use when the main server is down.
     ///
-    /// Not all endpoints have a fallback host, but some do.
-    var fallbackHosts: [URL] { get }
+    /// Not all endpoints have a fallback URL, but some do.
+    var fallbackUrls: [URL] { get }
 
     /// Whether requests to this path are authenticated.
     var authenticated: Bool { get }
@@ -40,25 +40,35 @@ protocol HTTPRequestPath {
 
     /// The full relative path for this endpoint.
     var relativePath: String { get }
+
+    /// The fallback relative path for this endpoint, if any.
+    var fallbackRelativePath: String? { get }
 }
 
 extension HTTPRequestPath {
 
-    var fallbackHosts: [URL] {
+    var fallbackUrls: [URL] {
         return []
+    }
+
+    var fallbackRelativePath: String? {
+        return nil
     }
 
     var url: URL? { return self.url(proxyURL: nil) }
 
-    func url(proxyURL: URL? = nil, fallbackHostIndex: Int? = nil) -> URL? {
+    func url(proxyURL: URL? = nil, fallbackUrlIndex: Int? = nil) -> URL? {
         let baseURL: URL
         if let proxyURL {
-            baseURL = proxyURL
-        } else if let fallbackHostIndex {
-            guard let fallbackHost = self.fallbackHosts[safe: fallbackHostIndex] else {
+            // When a Proxy URL is set, we don't support fallback URLs
+            guard fallbackUrlIndex == nil else {
+                // This is to safe guard against a potential infinite loop if the caller mistakenly
+                // passes both a proxyURL and a fallbackUrlIndex.
                 return nil
             }
-            baseURL = fallbackHost
+            baseURL = proxyURL
+        } else if let fallbackUrlIndex {
+            return self.fallbackUrls[safe: fallbackUrlIndex]
         } else {
             baseURL = Self.serverHostURL
         }
@@ -91,7 +101,7 @@ extension HTTPRequest {
 
     }
 
-    enum PaywallPath: Hashable {
+    enum FeatureEventsPath: Hashable {
 
         case postEvents
 
@@ -120,16 +130,39 @@ extension HTTPRequest {
 
 extension HTTPRequest.Path: HTTPRequestPath {
 
-    // swiftlint:disable:next force_unwrapping
-    static let serverHostURL = URL(string: "https://api.revenuecat.com")!
+    static var serverHostURL: URL {
+        SystemInfo.apiBaseURL
+    }
 
-    var fallbackHosts: [URL] {
+    private static let fallbackServerHostURLs = [
+        URL(string: "https://api-production.8-lives-cat.io")
+    ]
+
+    var fallbackRelativePath: String? {
         switch self {
-        case .getOfferings, .getProductEntitlementMapping:
-            // swiftlint:disable:next force_unwrapping
-            return [URL(string: "https://api-production.8-lives-cat.io")!]
+        case .getOfferings:
+            return "/v1/offerings"
+        case .getProductEntitlementMapping:
+            return "/v1/product_entitlement_mapping"
         default:
+            return nil
+        }
+    }
+
+    var fallbackUrls: [URL] {
+        guard let fallbackRelativePath = self.fallbackRelativePath else {
             return []
+        }
+
+        return Self.fallbackServerHostURLs.compactMap { baseURL in
+            guard let baseURL = baseURL,
+                  let fallbackUrl = URL(string: fallbackRelativePath, relativeTo: baseURL) else {
+                let errorMessage = "Invalid fallback URL configuration for path: \(self.name)"
+                assertionFailure(errorMessage)
+                Logger.error(errorMessage)
+                return nil
+            }
+            return fallbackUrl
         }
     }
 

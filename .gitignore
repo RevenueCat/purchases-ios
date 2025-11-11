@@ -66,6 +66,9 @@ fastlane/.env
 # Local build settings
 Local.xcconfig
 
+# CI Build settings
+CI.xcconfig
+
 # Gets created when Cursor is used with the sswg Swift extension
 /.index-build/
 

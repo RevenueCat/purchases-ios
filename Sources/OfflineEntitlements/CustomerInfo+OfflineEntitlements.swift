@@ -47,7 +47,8 @@ extension CustomerInfo {
         self.init(
             response: content,
             entitlementVerification: Self.verification,
-            sandboxEnvironmentDetector: sandboxEnvironmentDetector
+            sandboxEnvironmentDetector: sandboxEnvironmentDetector,
+            httpResponseOriginalSource: nil
         )
     }
 

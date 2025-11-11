@@ -35,7 +35,7 @@ class TabsComponentViewModel {
         controlStackViewModel: StackComponentViewModel,
         tabViewModels: [TabViewModel],
         uiConfigProvider: UIConfigProvider
-    ) throws {
+    ) {
         self.component = component
         self.controlStackViewModel = controlStackViewModel
         self.tabViewModels = Dictionary(uniqueKeysWithValues: tabViewModels.map { tabViewModel in
@@ -45,7 +45,7 @@ class TabsComponentViewModel {
         self.defaultTabId = component.defaultTabId
         self.uiConfigProvider = uiConfigProvider
 
-        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides { $0 }
+        self.presentedOverrides = self.component.overrides?.toPresentedOverrides { $0 }
     }
 
 }
@@ -126,7 +126,8 @@ struct TabsComponentStyle {
         backgroundColor: PaywallComponent.ColorScheme?,
         shape: PaywallComponent.Shape?,
         border: PaywallComponent.Border?,
-        shadow: PaywallComponent.Shadow?
+        shadow: PaywallComponent.Shadow?,
+        colorScheme: ColorScheme
     ) {
         self.visible = visible
         self.size = size
@@ -135,7 +136,7 @@ struct TabsComponentStyle {
         self.margin = margin.edgeInsets
         self.shape = shape?.shape
         self.border = border?.border(uiConfigProvider: uiConfigProvider)
-        self.shadow = shadow?.shadow(uiConfigProvider: uiConfigProvider)
+        self.shadow = shadow?.shadow(uiConfigProvider: uiConfigProvider, colorScheme: colorScheme)
     }
 
 }

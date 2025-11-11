@@ -126,7 +126,8 @@ struct PaywallsV2View: View {
         showZeroDecimalPlacePrices: Bool,
         onDismiss: @escaping () -> Void,
         fallbackContent: FallbackContent,
-        failedToLoadFont: @escaping UIConfigProvider.FailedToLoadFont
+        failedToLoadFont: @escaping UIConfigProvider.FailedToLoadFont,
+        colorScheme: ColorScheme
     ) {
         let uiConfigProvider = UIConfigProvider(
             uiConfig: paywallComponents.uiConfig,
@@ -161,7 +162,8 @@ struct PaywallsV2View: View {
                 uiConfigProvider: uiConfigProvider,
                 offering: offering,
                 introEligibilityChecker: introEligibilityChecker,
-                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+                colorScheme: colorScheme
             ))
         )
     }
@@ -321,13 +323,16 @@ private struct LoadedPaywallsV2View: View {
                 view
                     .edgesIgnoringSafeArea(.top)
             })
-            .environmentObject(self.selectedPackageContext)
             .frame(maxHeight: .infinity, alignment: .topLeading)
             .backgroundStyle(
                 self.paywallState.componentsConfig.background
-                    .asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle,
+                    .asDisplayable(
+                        uiConfigProvider: uiConfigProvider,
+                        localizationProvider: paywallState.rootViewModel.localizationProvider
+                    ),
                 alignment: .top
             )
+            .environmentObject(self.selectedPackageContext)
             .edgesIgnoringSafeArea(.bottom)
         }
     }
@@ -358,7 +363,8 @@ fileprivate extension PaywallsV2View {
         uiConfigProvider: UIConfigProvider,
         offering: Offering,
         introEligibilityChecker: TrialOrIntroEligibilityChecker,
-        showZeroDecimalPlacePrices: Bool
+        showZeroDecimalPlacePrices: Bool,
+        colorScheme: ColorScheme
     ) -> Result<PaywallState, Error> {
         // Step 1: Get localization
         let localizationProvider = Self.chooseLocalization(
@@ -373,7 +379,8 @@ fileprivate extension PaywallsV2View {
                 componentsConfig: componentsConfig,
                 offering: offering,
                 localizationProvider: localizationProvider,
-                uiConfigProvider: uiConfigProvider
+                uiConfigProvider: uiConfigProvider,
+                colorScheme: colorScheme
             )
 
             // WIP: Maybe re-enable this later or add some warnings

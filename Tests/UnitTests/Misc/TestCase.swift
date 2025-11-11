@@ -88,8 +88,22 @@ extension ForceServerErrorStrategy {
 
     /// Forces server error in all requests except those made to the fallback API hosts.
     static let failExceptFallbackUrls: ForceServerErrorStrategy = .init { (request: HTTPClient.Request) in
-        let isRequestToFallbackUrl = request.fallbackHostIndex != nil
-        return !isRequestToFallbackUrl
+        return !request.isRequestToFallbackUrl
     }
+
+}
+
+extension HTTPClient.Request {
+
+    var isRequestToFallbackUrl: Bool {
+        return self.fallbackUrlIndex != nil
+    }
+
+    /// Forces server error by pointing to an unreachable address.
+    static let noNetwork = ForceServerErrorStrategy(
+        // swiftlint:disable:next force_unwrapping
+        serverErrorURL: URL(string: "http://localhost:100/unreachable-address")!,
+        shouldForceServerError: { _ in true }
+    )
 
 }

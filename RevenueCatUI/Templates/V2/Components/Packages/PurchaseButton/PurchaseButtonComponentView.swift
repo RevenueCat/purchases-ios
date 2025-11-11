@@ -23,6 +23,9 @@ struct PurchaseButtonComponentView: View {
     @Environment(\.openURL)
     private var openURL
 
+    @Environment(\.purchaseInitiatedAction)
+    private var purchaseInitiatedAction: PurchaseInitiatedAction?
+
     @EnvironmentObject
     private var packageContext: PackageContext
 
@@ -49,7 +52,7 @@ struct PurchaseButtonComponentView: View {
         }
 
         switch actionType {
-        case .purchase:
+        case .purchase, .pendingPurchaseContinuation:
             return true
         case .restore:
             return false
@@ -100,11 +103,25 @@ struct PurchaseButtonComponentView: View {
     private func purchaseInApp() async throws {
         self.logIfInPreview(package: self.packageContext.package)
 
-        guard !self.purchaseHandler.actionInProgress else { return }
+        guard !self.purchaseHandler.actionInProgress else {
+            return
+        }
 
         guard let selectedPackage = self.packageContext.package else {
             Logger.error(Strings.no_selected_package_found)
             return
+        }
+
+        // Check if there's a purchase interceptor
+        if let interceptor = self.purchaseInitiatedAction {
+            let result = await self.purchaseHandler.withPendingPurchaseContinuation {
+                await withCheckedContinuation { continuation in
+                    interceptor(selectedPackage, resume: ResumeAction { shouldProceed in
+                        continuation.resume(returning: shouldProceed)
+                    })
+                }
+            }
+            guard result else { return }
         }
 
         let promoOffer = self.paywallPromoOfferCache.get(for: selectedPackage)
@@ -210,12 +227,16 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                         "id_2": .string("Hello, world intro offer")
                     ]
                 ),
-                offering: Offering(identifier: "",
-                                   serverDescription: "",
-                                   availablePackages: [],
-                                   webCheckoutUrl: nil)
+                offering: Offering(
+                    identifier: "",
+                    serverDescription: "",
+                    availablePackages: [],
+                    webCheckoutUrl: nil
+                ),
+                colorScheme: .light
             ),
-            onDismiss: {}
+            onDismiss: {
+            }
         )
         .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
@@ -255,12 +276,16 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                         "id_2": .string("Hello, world intro offer")
                     ]
                 ),
-                offering: Offering(identifier: "",
-                                   serverDescription: "",
-                                   availablePackages: [],
-                                   webCheckoutUrl: nil)
+                offering: Offering(
+                    identifier: "",
+                    serverDescription: "",
+                    availablePackages: [],
+                    webCheckoutUrl: nil
+                ),
+                colorScheme: .light
             ),
-            onDismiss: {}
+            onDismiss: {
+            }
         )
         .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
@@ -274,7 +299,8 @@ fileprivate extension PurchaseButtonComponentViewModel {
     convenience init(
         component: PaywallComponent.PurchaseButtonComponent,
         localizationProvider: LocalizationProvider,
-        offering: Offering
+        offering: Offering,
+        colorScheme: ColorScheme
     ) throws {
         let factory = ViewModelFactory()
         let stackViewModel = try factory.toStackViewModel(
@@ -284,7 +310,8 @@ fileprivate extension PurchaseButtonComponentViewModel {
             purchaseButtonCollector: nil,
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-            offering: offering
+            offering: offering,
+            colorScheme: colorScheme
         )
 
         try self.init(

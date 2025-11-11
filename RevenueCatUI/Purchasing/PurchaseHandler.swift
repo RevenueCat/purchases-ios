@@ -23,6 +23,8 @@ final class PurchaseHandler: ObservableObject {
 
     enum ActionType {
 
+        /// This is a pre-purchase or redeem code step where consuming applications can perform work
+        case pendingPurchaseContinuation
         case purchase
         case restore
 
@@ -188,6 +190,18 @@ final class PurchaseHandler: ObservableObject {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PurchaseHandler {
+    func withPendingPurchaseContinuation<T>(_ continuation: () async throws -> T) async rethrows -> T {
+        await MainActor.run {
+            startAction(.pendingPurchaseContinuation)
+        }
+        let result = try await continuation()
+        await MainActor.run {
+            if actionTypeInProgress == .pendingPurchaseContinuation {
+                self.actionTypeInProgress = nil
+            }
+        }
+        return result
+    }
 
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func invalidateCustomerInfoCache() {
@@ -609,6 +623,34 @@ extension EnvironmentValues {
     var onRequestedDismissal: (() -> Void)? {
         get { self[RequestedDismissalKey.self] }
         set { self[RequestedDismissalKey.self] = newValue }
+    }
+}
+
+/// `EnvironmentKey` for storing the purchase initiated interceptor action.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct PurchaseInitiatedActionKey: EnvironmentKey {
+    static let defaultValue: PurchaseInitiatedAction? = nil
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension EnvironmentValues {
+    var purchaseInitiatedAction: PurchaseInitiatedAction? {
+        get { self[PurchaseInitiatedActionKey.self] }
+        set { self[PurchaseInitiatedActionKey.self] = newValue }
+    }
+}
+
+/// `EnvironmentKey` for storing the offer code redemption initiated interceptor action.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct OfferCodeRedemptionInitiatedActionKey: EnvironmentKey {
+    static let defaultValue: OfferCodeRedemptionInitiatedAction? = nil
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension EnvironmentValues {
+    var offerCodeRedemptionInitiatedAction: OfferCodeRedemptionInitiatedAction? {
+        get { self[OfferCodeRedemptionInitiatedActionKey.self] }
+        set { self[OfferCodeRedemptionInitiatedActionKey.self] = newValue }
     }
 }
 

@@ -32,22 +32,24 @@ class VideoComponentViewModel {
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,
         component: PaywallComponent.VideoComponent
-    ) throws {
+    ) {
         self.localizationProvider = localizationProvider
         self.uiConfigProvider = uiConfigProvider
         self.component = component
 
-        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides {
-            try LocalizedVideoPartial.create(from: $0, using: localizationProvider.localizedStrings)
-        }
+        self.presentedOverrides = self.component.overrides?.toPresentedOverrides {
+            LocalizedVideoPartial.create(from: $0, using: localizationProvider.localizedStrings)
+        } ?? []
     }
 
     @ViewBuilder
+    // swiftlint:disable:next function_parameter_count
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
+        colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (VideoComponentStyle) -> some View
     ) -> some View {
         let localizedPartial = LocalizedVideoPartial.buildPartial(
@@ -85,12 +87,23 @@ class VideoComponentViewModel {
             checksumLowRes: partial?.source?.light.checksumLowRes ?? self.component.source.light.checksumLowRes,
             darkChecksum: partial?.source?.dark?.checksum ?? self.component.source.dark?.checksum,
             darkChecksumLowRes: partial?.source?.dark?.checksumLowRes ?? self.component.source.dark?.checksumLowRes,
-            uiConfigProvider: self.uiConfigProvider
+            uiConfigProvider: self.uiConfigProvider,
+            colorScheme: colorScheme
         )
 
         apply(style)
     }
+}
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension VideoComponentViewModel: Hashable {
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(component)
+    }
+
+    static func == (lhs: VideoComponentViewModel, rhs: VideoComponentViewModel) -> Bool {
+        lhs.component == rhs.component
+    }
 }
 
 struct LocalizedVideoPartial: PresentedPartial {
@@ -127,7 +140,7 @@ extension LocalizedVideoPartial {
     static func create(
         from partial: PaywallComponent.PartialVideoComponent,
         using localizedStrings: PaywallComponent.LocalizationDictionary
-    ) throws -> LocalizedVideoPartial {
+    ) -> LocalizedVideoPartial {
         return LocalizedVideoPartial(
             partial: partial
         )
@@ -190,7 +203,8 @@ struct VideoComponentStyle {
         checksumLowRes: Checksum? = nil,
         darkChecksum: Checksum? = nil,
         darkChecksumLowRes: Checksum? = nil,
-        uiConfigProvider: UIConfigProvider
+        uiConfigProvider: UIConfigProvider,
+        colorScheme: ColorScheme
     ) {
         self.visible = visible
         self.showControls = showControls
@@ -211,7 +225,7 @@ struct VideoComponentStyle {
         self.padding = (padding ?? .zero).edgeInsets
         self.margin = (margin ?? .zero).edgeInsets
         self.border = border?.border(uiConfigProvider: uiConfigProvider)
-        self.shadow = shadow?.shadow(uiConfigProvider: uiConfigProvider)
+        self.shadow = shadow?.shadow(uiConfigProvider: uiConfigProvider, colorScheme: colorScheme)
         self.checksum = checksum
         self.checksumLowRes = checksumLowRes
         self.darkChecksum = darkChecksum

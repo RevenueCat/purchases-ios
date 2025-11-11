@@ -174,6 +174,7 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     var packageParamsBuilder = PurchaseParams.Builder(package: pack)
         .with(promotionalOffer: offer)
+        .with(quantity: 3)
 
     #if ENABLE_TRANSACTION_METADATA
     packageParamsBuilder = packageParamsBuilder.with(metadata: ["foo":"bar"])
@@ -186,6 +187,7 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
 
     var productParamsBuilder = PurchaseParams.Builder(product: storeProduct)
         .with(promotionalOffer: offer)
+        .with(quantity: 5)
 
     #if ENABLE_TRANSACTION_METADATA
     productParamsBuilder = productParamsBuilder.with(metadata: ["foo":"bar"])
@@ -305,7 +307,9 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(product: stp,
                                                                                       promotionalOffer: offer)
 
-        var params = PurchaseParams.Builder(package: pack).with(promotionalOffer: offer)
+        var params = PurchaseParams.Builder(package: pack)
+            .with(promotionalOffer: offer)
+            .with(quantity: 2)
 
         #if ENABLE_TRANSACTION_METADATA
         params = params.with(metadata: ["foo":"bar"])

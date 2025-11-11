@@ -33,7 +33,7 @@ struct BadgeModifier: ViewModifier {
         let uiConfigProvider: UIConfigProvider
 
         var backgroundStyle: BackgroundStyle? {
-            stack.background?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
+            stack.background?.asDisplayable(uiConfigProvider: uiConfigProvider)
                 ?? stack.backgroundColor?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
         }
     }
@@ -396,7 +396,8 @@ struct BadgePreviews: View {
                         "text_1": .string("Feature 1\nFeature 2\nFeature 3\nFeature 4"),
                         "text_2": .string("Special Discount\nSave 50%")
                     ]
-                )
+                ),
+                colorScheme: .light
             ),
             onDismiss: {}
         )
