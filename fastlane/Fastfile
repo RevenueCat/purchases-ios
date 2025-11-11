@@ -802,6 +802,56 @@ platform :ios do
       configuration: 'release',
     )
   end
+  
+  desc "run_maestro_e2e_tests"
+  lane :run_maestro_e2e_tests do |options|
+    bundle_id = "com.revenuecat.maestro.ios"
+    base_path = "#{Dir.pwd}/.."
+
+    UI.message("Running Maestro E2E tests")
+
+    storekit_config_path = "#{base_path}/Examples/rc-maestro/rc-maestro/Resources/StoreKit/app787ddb07e6.storekit"
+
+    # Verify StoreKit config exists
+    unless File.exist?(storekit_config_path)
+      UI.user_error!("StoreKit configuration not found: #{storekit_config_path}")
+    end
+
+    # note: it's called "run" tests but these tests only need to build to run
+    xcworkspace = 'RevenueCat-Tuist.xcworkspace'
+    unless File.directory?(xcworkspace)
+      UI.important("#{xcworkspace} not found. Run `tuist generate --no-open` before invoking this lane.")
+    end
+
+    xcodebuild(
+      workspace: xcworkspace,
+      scheme: "Maestro",
+      sdk: "iphonesimulator",
+      configuration: "Debug",
+      derivedDataPath: "./build"
+    )
+
+    sh("xcrun", "simctl", "install", "booted", "#{base_path}/build/Build/Products/Debug-iphonesimulator/Maestro.app")
+
+    # Setup StoreKit configuration in simulator
+    setup_simulator_storekit_config(
+      bundle_id: bundle_id,
+      storekit_config_path: storekit_config_path
+    )
+
+    # Construct the flow directory path
+    flow_dir = "#{base_path}/Examples/rc-maestro/maestro/e2e_tests"
+
+    # Verify the flow directory exists
+    unless File.directory?(flow_dir)
+      UI.user_error!("Flow directory not found: #{flow_dir}")
+    end
+
+    UI.message("Using flow directory: #{flow_dir}")
+
+    sh("maestro", "test", "--format", "junit", "--output", "test_output/maestro/report.xml", "--test-output-dir", "test_output/maestro", flow_dir)
+
+  end
 
   desc "replace API KEY for installation and integration tests"
   lane :replace_api_key_integration_tests do

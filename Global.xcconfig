@@ -24,4 +24,5 @@
 // Note that this file is read by the RevenueCat, PurchaseTester and PaywallsTester projects.
 // ======
 
+#include? "CI.xcconfig"
 #include? "Local.xcconfig"
