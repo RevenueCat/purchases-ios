@@ -848,27 +848,43 @@ platform :ios do
     api_host = ""
     force_server_error_strategy = "never"
     maestro_backend_source = ""
+    entitlement_verification_result = ""
+    customer_info_source = ""
 
     case backend_environment
     when "load_shedder_us_east_1"
       api_host = "fortress-us-east-1.revenuecat.com"
       maestro_backend_source = "load_shedder"
+      entitlement_verification_result = "verified"
+      customer_info_source = "load_shedder"
     when "load_shedder_us_east_2"
       api_host = "fortress-us-east-2.revenuecat.com"
       maestro_backend_source = "load_shedder"
+      entitlement_verification_result = "verified"
+      customer_info_source = "load_shedder"
     when "fallback"
       force_server_error_strategy = "primary_backend_down"
-      maestro_backend_source = "main"
+      maestro_backend_source = "fallback"
+      entitlement_verification_result = "verified_on_device"
+      customer_info_source = "offline_entitlements"
     when "production"
       # Use defaults
       maestro_backend_source = "main"
+      entitlement_verification_result = "verified"
+      customer_info_source = "main"
     else
       UI.user_error!("Invalid backend_environment: #{backend_environment}. Must be one of: production, load_shedder_us_east_1, load_shedder_us_east_2, fallback")
     end
 
-    # Set MAESTRO_BACKEND_SOURCE environment variable
+    # Set environment variables for Maestro
     ENV["MAESTRO_BACKEND_SOURCE"] = maestro_backend_source
-    UI.message("Set MAESTRO_BACKEND_SOURCE to: #{maestro_backend_source}")
+    ENV["MAESTRO_EXPECTED_VERIFICATION_RESULT"] = entitlement_verification_result
+    ENV["MAESTRO_EXPECTED_CUSTOMER_INFO_SOURCE"] = customer_info_source
+
+    UI.message("Setting Maestro environment variables:")
+    UI.message("  MAESTRO_BACKEND_SOURCE: #{maestro_backend_source}")
+    UI.message("  MAESTRO_EXPECTED_VERIFICATION_RESULT: #{entitlement_verification_result}")
+    UI.message("  MAESTRO_EXPECTED_CUSTOMER_INFO_SOURCE: #{customer_info_source}")
 
     # Setup XCConfig with the appropriate configuration
     setup_xcconfig(

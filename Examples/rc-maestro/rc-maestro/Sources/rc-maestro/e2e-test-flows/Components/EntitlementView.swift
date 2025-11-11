@@ -43,11 +43,11 @@ fileprivate extension VerificationResult {
     var stringValue: String {
         switch self {
         case .notRequested:
-            return "notRequested"
+            return "not_requested"
         case .verified:
             return "verified"
         case .verifiedOnDevice:
-            return "verifiedOnDevice"
+            return "verified_on_device"
         case .failed:
             return "failed"
         }

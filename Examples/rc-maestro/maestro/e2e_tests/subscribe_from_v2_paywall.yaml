@@ -22,6 +22,6 @@ name: Subscribe to product through V2 Paywall for default offering
 - tapOn:
     text: "OK"
 - assertVisible: "pro entitlement: active"
-- assertVisible: "verification: verified"
-- assertVisible: "customer info source: ${MAESTRO_BACKEND_SOURCE}"
 - takeScreenshot: "subscribe_from_v2_paywall - unlocked entitlement"
+- assertVisible: "verification: ${MAESTRO_EXPECTED_VERIFICATION_RESULT}"
+- assertVisible: "customer info source: ${MAESTRO_EXPECTED_CUSTOMER_INFO_SOURCE}"
