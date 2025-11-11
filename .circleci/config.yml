@@ -18,7 +18,8 @@ parameters:
         run-manual-docs-deploy,
         update_paywall_templates,
         record_paywall_screenshots,
-        tuist
+        tuist,
+        temp-run-test
       ]
     default: default
   generate_snapshots:
@@ -1247,7 +1248,7 @@ jobs:
           name: Run e2e tests (<< parameters.backend_environment >>)
           command: bundle exec fastlane run_maestro_e2e_tests
           no_output_timeout: 15m
-        
+
         # todo: implement error / success notifications through Slack
 
       - store_test_results:
@@ -1941,3 +1942,12 @@ workflows:
       equal: [tuist, << pipeline.parameters.action >>]
     jobs:
       - test-tuist-generate-workspace
+
+  temp-run-test-ios-15-16-17-18:
+    when:
+      equal: [temp-run-test, << pipeline.parameters.action >>]
+    jobs:
+      - run-test-ios-15
+      - run-test-ios-16
+      - run-test-ios-17
+      - run-test-ios-18
