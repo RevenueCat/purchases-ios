@@ -118,6 +118,7 @@ private extension LoadingPaywallView {
     static let weeklyProduct = TestStoreProduct(
         localizedTitle: "Weekly",
         price: 1.99,
+        currencyCode: "USD",
         localizedPriceString: "$1.99",
         productIdentifier: "com.revenuecat.product_1",
         productType: .autoRenewableSubscription,
@@ -128,6 +129,7 @@ private extension LoadingPaywallView {
     static let monthlyProduct = TestStoreProduct(
         localizedTitle: "Monthly",
         price: 12.99,
+        currencyCode: "USD",
         localizedPriceString: "$12.99",
         productIdentifier: "com.revenuecat.product_2",
         productType: .autoRenewableSubscription,
@@ -138,6 +140,7 @@ private extension LoadingPaywallView {
     static let annualProduct = TestStoreProduct(
         localizedTitle: "Annual",
         price: 69.49,
+        currencyCode: "USD",
         localizedPriceString: "$69.49",
         productIdentifier: "com.revenuecat.product_3",
         productType: .autoRenewableSubscription,
