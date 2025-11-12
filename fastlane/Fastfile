@@ -803,7 +803,7 @@ platform :ios do
       configuration: 'release',
     )
   end
-  
+
   desc "run_maestro_e2e_tests"
   lane :run_maestro_e2e_tests do |options|
     bundle_id = "com.revenuecat.maestro.ios"
@@ -1768,4 +1768,37 @@ lane :send_slack_loadshedder_integration_test_in_major do |options|
     success: success,
     default_payloads: [:git_branch]
   )
+end
+
+desc "Trigger mobile app SDK update workflow"
+lane :trigger_mobile_app_sdk_update do
+  require 'rest-client'
+
+  sdk_version = current_version_number
+  mobile_app_repo = "revenuecat-mobile-ios"
+
+  # Get CircleCI token
+  circle_token = ENV["MOBILE_APP_CIRCLECI_TOKEN"]
+  UI.user_error! "Please set the MOBILE_APP_CIRCLECI_TOKEN environment variable" unless circle_token
+
+  # Make request to trigger mobile app pipeline
+  headers = {"Circle-Token": circle_token, "Content-Type": "application/json", "Accept": "application/json"}
+  data = {
+    parameters: {
+      bump_sdk: true,
+      sdk_version: sdk_version
+    },
+    branch: "main"
+  }
+  url = "https://circleci.com/api/v2/project/github/RevenueCat/#{mobile_app_repo}/pipeline"
+
+  begin
+    resp = RestClient.post url, data.to_json, headers
+    number = JSON.parse(resp.body)["number"]
+    workflow_url = "https://app.circleci.com/pipelines/github/RevenueCat/#{mobile_app_repo}/#{number}"
+    UI.success "✅ Triggered mobile app SDK update workflow: #{workflow_url}"
+  rescue => e
+    UI.error "❌ Failed to trigger mobile app SDK update workflow: #{e.message}"
+    raise e
+  end
 end
