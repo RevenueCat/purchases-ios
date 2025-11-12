@@ -30,6 +30,8 @@ extension E2ETestFlowView {
                 else {
                     Text("Loading offerings...")
                 }
+                
+                EntitlementView(identifier: "pro")
             }
             .task {
                 let offerings = try? await Purchases.shared.offerings()

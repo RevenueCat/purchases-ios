@@ -804,19 +804,87 @@ platform :ios do
     )
   end
   
+  desc "Setup XCConfig file for E2E tests"
+  private_lane :setup_xcconfig do |options|
+    api_key = options[:api_key] || UI.user_error!("api_key is required")
+    force_server_error_strategy = options[:force_server_error_strategy] || "never"
+    api_host = options[:api_host] || ""
+    proxy_url_scheme = options[:proxy_url_scheme] || ""
+    proxy_url_host = options[:proxy_url_host] || ""
+
+    base_path = "#{Dir.pwd}/.."
+    xcconfig_path = "#{base_path}/CI.xcconfig"
+
+    UI.message("Creating XCConfig file at #{xcconfig_path}")
+
+    content = [
+      "// Auto-generated. Do not commit to VCS",
+      "// Generated on #{Time.now}",
+      "",
+      "REVENUECAT_API_KEY = #{api_key}",
+      "REVENUECAT_FORCE_SERVER_ERROR_STRATEGY = #{force_server_error_strategy}"
+    ]
+
+    content << "REVENUECAT_API_HOST = #{api_host}" unless api_host.empty?
+    content << "REVENUECAT_PROXY_URL_SCHEME = #{proxy_url_scheme}" unless proxy_url_scheme.empty?
+    content << "REVENUECAT_PROXY_URL_HOST = #{proxy_url_host}" unless proxy_url_host.empty?
+
+    File.write(xcconfig_path, content.join("\n"))
+    UI.success("✅ Created CI.xcconfig")
+  end
+
   desc "run_maestro_e2e_tests"
   lane :run_maestro_e2e_tests do |options|
-    bundle_id = "com.revenuecat.maestro.ios"
+    backend_environment = options[:backend_environment] || "production"
     base_path = "#{Dir.pwd}/.."
 
-    UI.message("Running Maestro E2E tests")
+    UI.message("Running Maestro E2E tests for backend environment: #{backend_environment}")
 
-    storekit_config_path = "#{base_path}/Examples/rc-maestro/rc-maestro/Resources/StoreKit/app787ddb07e6.storekit"
+    # Get API key from environment variable
+    api_key = ENV["REVENUECAT_API_KEY"]
+    UI.user_error!("REVENUECAT_API_KEY environment variable must be set") unless api_key
 
-    # Verify StoreKit config exists
-    unless File.exist?(storekit_config_path)
-      UI.user_error!("StoreKit configuration not found: #{storekit_config_path}")
+    # Determine configuration based on backend environment
+    api_host = ""
+    force_server_error_strategy = "never"
+    entitlement_verification_result = ""
+    customer_info_source = ""
+
+    case backend_environment
+    when "load_shedder_us_east_1"
+      api_host = "fortress-us-east-1.revenuecat.com"
+      entitlement_verification_result = "verified"
+      customer_info_source = "load_shedder"
+    when "load_shedder_us_east_2"
+      api_host = "fortress-us-east-2.revenuecat.com"
+      entitlement_verification_result = "verified"
+      customer_info_source = "load_shedder"
+    when "fallback"
+      force_server_error_strategy = "primary_backend_down"
+      entitlement_verification_result = "verified_on_device"
+      customer_info_source = "offline_entitlements"
+    when "production"
+      # Use defaults
+      entitlement_verification_result = "verified"
+      customer_info_source = "main"
+    else
+      UI.user_error!("Invalid backend_environment: #{backend_environment}. Must be one of: production, load_shedder_us_east_1, load_shedder_us_east_2, fallback")
     end
+
+    # Set environment variables for Maestro
+    ENV["MAESTRO_EXPECTED_VERIFICATION_RESULT"] = entitlement_verification_result
+    ENV["MAESTRO_EXPECTED_CUSTOMER_INFO_SOURCE"] = customer_info_source
+
+    UI.message("Setting Maestro environment variables:")
+    UI.message("  MAESTRO_EXPECTED_VERIFICATION_RESULT: #{entitlement_verification_result}")
+    UI.message("  MAESTRO_EXPECTED_CUSTOMER_INFO_SOURCE: #{customer_info_source}")
+
+    # Setup XCConfig with the appropriate configuration
+    setup_xcconfig(
+      api_key: api_key,
+      api_host: api_host,
+      force_server_error_strategy: force_server_error_strategy
+    )
 
     # note: it's called "run" tests but these tests only need to build to run
     xcworkspace = 'RevenueCat-Tuist.xcworkspace'
@@ -832,26 +900,44 @@ platform :ios do
       derivedDataPath: "./build"
     )
 
+    bundle_id = "com.revenuecat.maestro.ios"
+    storekit_config_path = "#{base_path}/Examples/rc-maestro/rc-maestro/Resources/StoreKit/app787ddb07e6.storekit"
+
+    # Install app to simulator
+    UI.message("Installing app to simulator...")
     sh("xcrun", "simctl", "install", "booted", "#{base_path}/build/Build/Products/Debug-iphonesimulator/Maestro.app")
 
-    # Setup StoreKit configuration in simulator
-    setup_simulator_storekit_config(
-      bundle_id: bundle_id,
-      storekit_config_path: storekit_config_path
+    # Start file watcher in background
+    UI.message("Starting StoreKit config file watcher...")
+    watcher_script = "#{base_path}/fastlane/storekit_config_file_watcher.rb"
+    watcher_pid = Process.spawn(
+      "ruby", watcher_script,
+      bundle_id, storekit_config_path
     )
 
-    # Construct the flow directory path
-    flow_dir = "#{base_path}/Examples/rc-maestro/maestro/e2e_tests"
+    # Give watcher time to start
+    sleep 1
+    UI.success("✓ StoreKit config watcher started (PID: #{watcher_pid})")
 
-    # Verify the flow directory exists
-    unless File.directory?(flow_dir)
-      UI.user_error!("Flow directory not found: #{flow_dir}")
+    begin
+      # Construct the flow directory path
+      flow_dir = "#{base_path}/Examples/rc-maestro/maestro/e2e_tests"
+
+      # Verify the flow directory exists
+      unless File.directory?(flow_dir)
+        UI.user_error!("Flow directory not found: #{flow_dir}")
+      end
+
+      UI.message("Using flow directory: #{flow_dir}")
+
+      sh("maestro", "test", "--format", "junit", "--output", "test_output/maestro/report.xml", "--test-output-dir", "test_output/maestro", flow_dir)
+    ensure
+      # Always stop the watcher, even if Maestro fails
+      UI.message("Stopping StoreKit config watcher...")
+      Process.kill('TERM', watcher_pid) rescue nil
+      Process.wait(watcher_pid) rescue nil
+      UI.success("✓ StoreKit config watcher stopped")
     end
-
-    UI.message("Using flow directory: #{flow_dir}")
-
-    sh("maestro", "test", "--format", "junit", "--output", "test_output/maestro/report.xml", "--test-output-dir", "test_output/maestro", flow_dir)
-
   end
 
   desc "replace API KEY for installation and integration tests"
