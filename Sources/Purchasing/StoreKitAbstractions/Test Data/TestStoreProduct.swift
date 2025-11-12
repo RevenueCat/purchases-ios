@@ -50,6 +50,7 @@ public struct TestStoreProduct {
 
     public var localizedTitle: String
     public var price: Decimal
+    public var currencyCode: String?
     public var localizedPriceString: String
     public var localizedPricePerDay: String?
     public var localizedPricePerWeek: String?
@@ -68,6 +69,7 @@ public struct TestStoreProduct {
     public init(
         localizedTitle: String,
         price: Decimal,
+        currencyCode: String,
         localizedPriceString: String,
         productIdentifier: String,
         productType: StoreProduct.ProductType,
@@ -81,6 +83,7 @@ public struct TestStoreProduct {
     ) {
         self.localizedTitle = localizedTitle
         self.price = price
+        self.currencyCode = currencyCode
         self.localizedPriceString = localizedPriceString
         self.productIdentifier = productIdentifier
         self.productType = productType
@@ -103,10 +106,6 @@ public struct TestStoreProduct {
 extension TestStoreProduct: StoreProductType {
 
     internal var productCategory: StoreProduct.ProductCategory { return self.productType.productCategory }
-
-    internal var currencyCode: String? {
-        return self.locale.rc_currencyCode
-    }
 
     internal var priceFormatter: NumberFormatter? {
         return self.currencyCode.map {
