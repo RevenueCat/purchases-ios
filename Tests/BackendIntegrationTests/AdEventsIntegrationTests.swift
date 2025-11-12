@@ -64,13 +64,17 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
     func testFlushingEmptyAdEvents() async throws {
         // Simulate backgrounding to trigger flush
         self.simulateBackgroundingApp()
-        // Wait for async flush to complete
-        try await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+
+        await self.logger.waitForMessage(
+            "Ad event flush with empty store",
+            level: .verbose
+        )
 
         // Verify no flush happened (empty store)
         self.logger.verifyMessageWasNotLogged(
             Strings.analytics.flush_events_success,
-            level: .debug
+            level: .debug,
+            allowNoMessages: true
         )
     }
 
@@ -88,8 +92,11 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
 
         // Simulate backgrounding to trigger flush (flushes all events)
         self.simulateBackgroundingApp()
-        // Wait for async flush to complete
-        try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+
+        await self.logger.waitForMessage(
+            Strings.analytics.flush_events_success,
+            level: .debug
+        )
 
         self.logger.verifyMessageWasLogged(
             Strings.analytics.flush_events_success,
@@ -99,7 +106,11 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
 
         // Simulate backgrounding again - should flush nothing
         self.simulateBackgroundingApp()
-        try await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+
+        await self.logger.waitForMessage(
+            "Ad event flush with empty store",
+            level: .verbose
+        )
 
         // Verify no additional flush happened
         self.logger.verifyMessageWasLogged(
@@ -131,8 +142,11 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
 
         // Simulate backgrounding to trigger flush
         self.simulateBackgroundingApp()
-        // Wait for async flush to complete
-        try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+
+        await self.logger.waitForMessage(
+            Strings.analytics.flush_events_success,
+            level: .debug
+        )
 
         self.logger.verifyMessageWasLogged(
             Strings.analytics.flush_events_success,
@@ -144,8 +158,16 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
     private func flushAndVerify(eventsCount: Int) async throws {
         // Simulate backgrounding to trigger flush
         self.simulateBackgroundingApp()
-        // Wait for async flush to complete
-        try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+
+        await self.logger.waitForMessage(
+            Strings.analytics.flush_events_success,
+            level: .debug
+        )
+
+        self.logger.verifyMessageWasLogged(
+            "Ad event flush starting with \(eventsCount) event(s)",
+            level: .verbose
+        )
 
         self.logger.verifyMessageWasLogged(
             Strings.analytics.flush_events_success,
