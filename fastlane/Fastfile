@@ -416,9 +416,10 @@ platform :ios do
   desc "Build the Paywalls Test app for Emerge Snapshots"
   lane :build_paywalls_tester_for_emerge do |options|
     build_paywalls_tester_for_emerge_ios(options)
-    build_paywalls_tester_for_emerge_mac(platform: "mac-catalyst-scaled-to-match-ipad")
+    # November 2025: Emerge snapshots for these platforms are flaky, disabling for now.
+    # build_paywalls_tester_for_emerge_mac(platform: "mac-catalyst-scaled-to-match-ipad")
+    # build_paywalls_tester_for_emerge_mac(platform: "mac-native")
     build_paywalls_tester_for_emerge_mac(platform: "mac-catalyst-optimized-for-mac")
-    build_paywalls_tester_for_emerge_mac(platform: "mac-native")
 
 
     # As of July 2025, Emerge Tools does not support iOS apps on Mac yet.
