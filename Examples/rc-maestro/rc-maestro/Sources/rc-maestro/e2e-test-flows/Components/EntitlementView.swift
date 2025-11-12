@@ -22,13 +22,13 @@ struct EntitlementView: View {
         VStack {
             if let entitlement {
                 if entitlement.isActive {
-                    Text("entitlement: active (\(entitlement.identifier))")
+                    Text("entitlement (\(entitlement.identifier)): active")
                 } else {
-                    Text("entitlement: inactive")
+                    Text("entitlement (\(entitlement.identifier)): inactive")
                 }
             }
             else {
-                Text("entitlement: nil")
+                Text("entitlement (\(identifier)): nil")
             }
 
             if let entitlement {

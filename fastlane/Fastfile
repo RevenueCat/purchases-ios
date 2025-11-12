@@ -907,13 +907,6 @@ platform :ios do
     UI.message("Installing app to simulator...")
     sh("xcrun", "simctl", "install", "booted", "#{base_path}/build/Build/Products/Debug-iphonesimulator/Maestro.app")
 
-    # Setup StoreKit configuration initially
-    UI.message("Setting up initial StoreKit configuration...")
-    setup_simulator_storekit_config(
-      bundle_id: bundle_id,
-      storekit_config_path: storekit_config_path
-    )
-
     # Start file watcher in background
     UI.message("Starting StoreKit config file watcher...")
     watcher_script = "#{base_path}/fastlane/storekit_config_file_watcher.rb"
