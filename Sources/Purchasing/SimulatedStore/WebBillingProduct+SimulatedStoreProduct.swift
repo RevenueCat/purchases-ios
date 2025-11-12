@@ -66,7 +66,8 @@ extension WebBillingProductsResponse.Product {
                                                           productType: self.productType.storeProductType,
                                                           localizedDescription: self.description ?? "",
                                                           subscriptionPeriod: period,
-                                                          introductoryDiscount: introDiscount)
+                                                          introductoryDiscount: introDiscount,
+                                                          locale: locale)
         return simulatedStoreProduct.toStoreProduct()
     }
 
