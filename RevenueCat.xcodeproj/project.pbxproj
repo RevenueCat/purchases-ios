@@ -101,8 +101,6 @@
 		16F376262E93F1E300ADF649 /* LargeItemCacheTypeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F376252E93F1E300ADF649 /* LargeItemCacheTypeTests.swift */; };
 		1D20E1D62EBCF80E00ABE4CD /* HTTPRequestTimeoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D20E1D52EBCF80E00ABE4CD /* HTTPRequestTimeoutManager.swift */; };
 		1D20E1D82EBCF82900ABE4CD /* HTTPRequestTimeoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D20E1D72EBCF82900ABE4CD /* HTTPRequestTimeoutManager.swift */; };
-		1D20E1E42EBD096500ABE4CD /* MockCurrentDateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D20E1E32EBD096500ABE4CD /* MockCurrentDateProvider.swift */; };
-		1D20E1E52EBD096500ABE4CD /* MockCurrentDateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D20E1E32EBD096500ABE4CD /* MockCurrentDateProvider.swift */; };
 		1D73D6612EBDD5CB00A9F0F3 /* MockHTTPRequestTimeoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D73D6602EBDD5CB00A9F0F3 /* MockHTTPRequestTimeoutManager.swift */; };
 		1D73D6622EBDD5CB00A9F0F3 /* MockHTTPRequestTimeoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D73D6602EBDD5CB00A9F0F3 /* MockHTTPRequestTimeoutManager.swift */; };
 		1DB9B2A72E57373900252D58 /* OfferingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DB9B2A62E57373600252D58 /* OfferingTests.swift */; };
@@ -1587,7 +1585,6 @@
 		16F376252E93F1E300ADF649 /* LargeItemCacheTypeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeItemCacheTypeTests.swift; sourceTree = "<group>"; };
 		1D20E1D52EBCF80E00ABE4CD /* HTTPRequestTimeoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPRequestTimeoutManager.swift; sourceTree = "<group>"; };
 		1D20E1D72EBCF82900ABE4CD /* HTTPRequestTimeoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPRequestTimeoutManager.swift; sourceTree = "<group>"; };
-		1D20E1E32EBD096500ABE4CD /* MockCurrentDateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockCurrentDateProvider.swift; sourceTree = "<group>"; };
 		1D73D6602EBDD5CB00A9F0F3 /* MockHTTPRequestTimeoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockHTTPRequestTimeoutManager.swift; sourceTree = "<group>"; };
 		1DB9B2A62E57373600252D58 /* OfferingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferingTests.swift; sourceTree = "<group>"; };
 		1DEF75892ECF0EFE00614CB2 /* CreateTicketView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateTicketView.swift; sourceTree = "<group>"; };
@@ -3975,7 +3972,6 @@
 				351B513C26D4491E00BD2BD7 /* MockDeviceCache.swift */,
 				F584742F278D00C0001B1CE6 /* MockDNSChecker.swift */,
 				35D83311262FBD4200E60AC5 /* MockETagManager.swift */,
-				1D20E1E32EBD096500ABE4CD /* MockCurrentDateProvider.swift */,
 				4FB2B5502AA7DBA40087EDB5 /* MockFileHandler.swift */,
 				5759B41D296DFD4C002472D5 /* MockFileReader.swift */,
 				351B514C26D44A8600BD2BD7 /* MockHTTPClient.swift */,
@@ -6644,7 +6640,6 @@
 				3543914526F926D900E669DF /* SKProductSubscriptionDurationExtensions.swift in Sources */,
 				3543913926F90FFB00E669DF /* MockBackend.swift in Sources */,
 				F5FCD3FC27DA2034003BDC04 /* PriceFormatterProviderTests.swift in Sources */,
-				1D20E1E42EBD096500ABE4CD /* MockCurrentDateProvider.swift in Sources */,
 				F5355163286B70E0009CA47A /* OfferingsManagerStoreKitTests.swift in Sources */,
 				35C272A22BC4084C005A0CE8 /* MockDiagnosticsTracker.swift in Sources */,
 				5791A1C82767FC9400C972AA /* ManageSubscriptionsHelperTests.swift in Sources */,
@@ -7295,7 +7290,6 @@
 				351B515C26D44B7900BD2BD7 /* MockIntroEligibilityCalculator.swift in Sources */,
 				5733D01128D00354008638D8 /* PromotionalOfferTests.swift in Sources */,
 				57544C28285FA94B004E54D5 /* MockAttributeSyncing.swift in Sources */,
-				1D20E1E52EBD096500ABE4CD /* MockCurrentDateProvider.swift in Sources */,
 				4F34AEEC2A5DCCBA00F4BCB0 /* VerificationResultTests.swift in Sources */,
 				FD2046832CB833CD00166727 /* MockStoreKit2PurchaseIntentListenerDelegate.swift in Sources */,
 				356523AC2CF890F400B6E3EA /* CustomerCenterEventsRequestTests.swift in Sources */,
