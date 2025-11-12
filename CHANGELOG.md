@@ -3,7 +3,7 @@
 ### 🐞 Bugfixes
 * FIX: Overlay sometimes blocking taps (#5786) via Jacob Rakidzich (@JZDesign)
 * Fix icon loading animation issues and offload Image creation to background thread (#5775) via Josh Holtz (@joshdholtz)
-* MON-1157 Support language families (#5753) via Jacob Rakidzich (@JZDesign)
+* Support language families (#5753) via Jacob Rakidzich (@JZDesign)
 * Prevent Apple Account login prompt when making a Test Store purchase (#5777) via Antonio Pallares (@ajpallares)
 
 ## RevenueCatUI SDK
