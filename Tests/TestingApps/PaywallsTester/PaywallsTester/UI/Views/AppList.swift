@@ -47,6 +47,8 @@ struct AppList: View {
 }
 
 #Preview {
+    #if !os(macOS)
     AppList()
-    .environmentObject(ApplicationData())
+        .environmentObject(ApplicationData())
+    #endif
 }
