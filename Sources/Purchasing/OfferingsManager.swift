@@ -378,6 +378,7 @@ private extension OfferingsManager {
             let testProduct = TestStoreProduct(
                 localizedTitle: "PRO \(productType.type)",
                 price: Decimal(productType.price),
+                currencyCode: "USD",
                 localizedPriceString: String(format: "$%.2f", productType.price),
                 productIdentifier: identifier,
                 productType: productType.period == nil ? .nonConsumable : .autoRenewableSubscription,
