@@ -23,6 +23,8 @@ extension E2ETestFlowView {
                     presentPaywall = true
                 }
                 .buttonStyle(.borderedProminent)
+                
+                EntitlementView(identifier: "pro")
             }
             .sheet(isPresented: $presentPaywall) {
                 PaywallView()
