@@ -11,8 +11,6 @@
 //  
 //  Created by Nacho Soto on 7/19/23.
 
-// swiftlint:disable file_length
-
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
@@ -113,16 +111,13 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
     let expectedSize: CGSize?
     let content: (Image, CGSize) -> Content
 
-    @State
-    private var imageLoadedFrom: ImageLoadedFrom?
-
     // Preferred method of loading images
 
-    @State
-    private var highResCachedImage: (Image, CGSize)?
+    @StateObject
+    private var highResFileLoader: FileImageLoader
 
-    @State
-    private var lowResCachedImage: (Image, CGSize)?
+    @StateObject
+    private var lowResFileLoader: FileImageLoader
 
     // Legacy method of loading images
 
@@ -145,12 +140,21 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
         }
         #endif
 
-        if self.lowResCachedImage != nil || self.highResCachedImage != nil {
+        let loadedFromCache = highResFileLoader.wasLoadedFromCache || lowResFileLoader.wasLoadedFromCache
+        if loadedFromCache {
             // No transition if image is fully loaded from cache
             return .identity
         } else {
             return .opacity.animation(Constants.defaultAnimation)
         }
+    }
+
+    var localImage: (Image, CGSize)? {
+        guard url.isFileURL else {
+            return nil
+        }
+
+        return url.asImageAndSize
     }
 
     init(
@@ -174,93 +178,53 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
         self.expectedSize = expectedSize
         self.colorScheme = colorScheme
 
-        let highRes = self.fileRepository
-            .getCachedFileURL(for: self.highResFileUrlForScheme, withChecksum: nil)?
-            .asImageAndSize
-        let lowRes = self.lowResURLForScheme
-            .flatMap { fileRepository.getCachedFileURL(for: $0, withChecksum: nil) }?
-            .asImageAndSize
+        let highResURL = Self.selectURL(
+            lightURL: url,
+            darkURL: darkUrl,
+            for: colorScheme
+        )
 
-        self._highResCachedImage = .init(initialValue: highRes)
-        self._lowResCachedImage = .init(initialValue: lowRes)
+        let lowResURL = Self.selectURL(
+            lightURL: lowResUrl,
+            darkURL: darkLowResUrl ?? lowResUrl,
+            for: colorScheme
+        )
+
+        let highResLoader = FileImageLoader(fileRepository: .shared, url: highResURL)
+        let lowResLoader = FileImageLoader(fileRepository: .shared, url: lowResURL)
+
+        self._highResFileLoader = .init(wrappedValue: highResLoader)
+        self._lowResFileLoader = .init(wrappedValue: lowResLoader)
     }
 
-    var localImage: (Image, CGSize)? {
-        guard url.isFileURL else {
-            return nil
-        }
-
-        return url.asImageAndSize
-    }
-
-    let fileRepository = FileRepository.shared
-
-    var lowResURLForScheme: URL? {
-        switch self.colorScheme {
+    private static func selectURL(
+        lightURL: URL?,
+        darkURL: URL?,
+        for colorScheme: ColorScheme
+    ) -> URL? {
+        switch colorScheme {
         case .dark:
-            return self.darkLowResUrl ?? self.lowResUrl
+            return darkURL ?? lightURL
         case .light:
             fallthrough
         @unknown default:
-            return self.lowResUrl
+            return lightURL
         }
-    }
-
-    var highResURLForScheme: URL? {
-        switch self.colorScheme {
-        case .dark:
-            return self.darkUrl ?? self.url
-        case .light:
-            fallthrough
-        @unknown default:
-            return self.url
-        }
-    }
-
-    var highResFileUrlForScheme: URL {
-        switch self.colorScheme {
-        case .dark:
-            return self.darkUrl ?? self.url
-        case .light:
-            fallthrough
-        @unknown default:
-            return self.url
-        }
-    }
-
-    var imageInfoToUse: (Image, CGSize)? {
-        // Priority 1 - local bundle image
-        if let imageAndSize = self.localImage {
-            return imageAndSize
-        }
-
-        // Priority 2 - high res FileRepository
-        if let imageAndSize = self.highResCachedImage {
-            return imageAndSize
-        }
-
-        // Priority 3 - high res URLSession Cache
-        if case let .success(result) = highResLoader.result {
-            return (result.image, result.size)
-        }
-
-        // Priority 4 - low res FileRepository
-        if let imageAndSize = self.lowResCachedImage {
-            return imageAndSize
-        }
-
-        // Priority 5 - low res FileRepository
-        if case let .success(result) = lowResLoader.result {
-            return (result.image, result.size)
-        }
-
-        return nil
     }
 
     var body: some View {
         Group {
-            if let imageInfoToUse = self.imageInfoToUse {
-                content(imageInfoToUse.0, imageInfoToUse.1)
+            if let imageAndSize = self.localImage {
+                content(imageAndSize.0, imageAndSize.1)
+            } else if let value = self.highResFileLoader.result {
+                content(value.0, value.1)
+            } else if let value = lowResFileLoader.result {
+                content(value.0, value.1)
+            // Legacy loaders used by paywalls v1
+            } else if case let .success(result) = highResLoader.result {
+                content(result.image, result.size)
+            } else if case let .success(result) = lowResLoader.result {
+                content(result.image, result.size)
             } else if case let .failure(highResError) = highResLoader.result {
                 if !fetchLowRes {
                     emptyView(error: highResError)
@@ -288,27 +252,15 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
             }
             #endif
 
-            // 1. Only attempt to fetch the low res again if we don't have it
-            if self.lowResCachedImage == nil, let url = self.lowResURLForScheme {
-                self.lowResCachedImage = self.fileRepository
-                    .getCachedFileURL(for: url, withChecksum: nil)?.asImageAndSize
-                self.imageLoadedFrom = .lowResFileRepository
+            guard self.highResFileLoader.result == nil else {
+                return
             }
 
-            // 2. Fetch the high res to replace the initial low res
-            do {
-                let highResCachedImage = try await self.fileRepository.generateOrGetCachedFileURL(
-                    for: self.highResFileUrlForScheme,
-                    withChecksum: nil
-                ).asImageAndSize
-                self.highResCachedImage = highResCachedImage
-                self.imageLoadedFrom = .highResFileRepository
-            } catch {
+            async let high: Void = await self.lowResFileLoader.load()
+            async let low: Void = await self.highResFileLoader.load()
+            _ = await (high, low)
 
-            }
-
-            // 3. Load using legacy URLSession cache if needed
-            if self.highResCachedImage == nil {
+            if self.highResFileLoader.result == nil {
                 switch self.colorScheme {
                 case .dark:
                     await loadImages(
@@ -332,7 +284,6 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
             async let lowResLoad: Void = lowResLoader.load(url: lowResLoc)
             async let highResLoad: Void = highResLoader.load(url: url)
             _ = await (lowResLoad, highResLoad)
-            self.imageLoadedFrom = .urlSessionCache
         } else {
             await highResLoader.load(url: url)
         }
@@ -361,36 +312,6 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
                 }
             }
         }
-    }
-
-}
-
-private enum ImageLoadedFrom: String {
-    case localBundle
-    case lowResFileRepositoryDirectCache
-    case lowResFileRepository
-    case highResFileRepositoryDirectCache
-    case highResFileRepository
-    case urlSessionCache
-    case failed
-}
-
-private extension URL {
-
-    var asImageAndSize: (Image, CGSize)? {
-        #if os(macOS)
-        if let image = NSImage(contentsOfFile: self.path) {
-            return (Image(nsImage: image), image.size)
-        } else {
-            return nil
-        }
-        #else
-        if let image = UIImage(contentsOfFile: self.path) {
-            return (Image(uiImage: image), image.size)
-        } else {
-            return nil
-        }
-        #endif
     }
 
 }
