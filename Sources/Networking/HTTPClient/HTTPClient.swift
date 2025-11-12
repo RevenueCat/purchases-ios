@@ -506,7 +506,7 @@ private extension HTTPClient {
                 // A timeout on a main backend URL for a request that has a fallback URL
                 if let error = networkError as? URLError, case .timedOut = error.code,
                     !request.isFallbackURLRequest,
-                    !request.httpRequest.path.fallbackUrls.isEmpty {
+                    request.httpRequest.path.supportsFallbackURLs {
                     requestTimeoutResult = .timeoutOnMainBackendSupportingFallback
                 }
 
