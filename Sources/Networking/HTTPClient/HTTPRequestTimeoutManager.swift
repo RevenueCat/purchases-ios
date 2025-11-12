@@ -51,7 +51,7 @@ class HTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
     }
 
     // The amount of time after which the 'last timeout request received' state can be reset
-    private static let timeoutResetInterval: TimeInterval = 10
+    private static let timeoutResetInterval: TimeInterval = 600 // 10 minutes
 
     // The last time at which a timeout was received from the main backend
     private var lastTimeoutRequestTime: Date?
@@ -62,24 +62,18 @@ class HTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
         self.dateProvider = dateProvider
     }
 
-    /// Determines the timeout to be used by the HTTP Request for the given path.
-    ///
-    /// - Parameters:
-    ///   - path: The HTTP request path for which to determine the timeout
-    ///   - isFallback: Whether this is a fallback request
-    /// - Returns: The timeout interval in seconds
     func timeout(for path: HTTPRequestPath, isFallback: Bool) -> TimeInterval {
         if shouldResetTimeout {
-            resetlastTimeoutRequestTime()
+            resetLastTimeoutRequestTime()
         }
 
         let timeout: Timeout
 
         // A fallback request or a request that doesn't support a fallback
-        if isFallback || path.fallbackUrls.isEmpty {
+        if isFallback || !path.supportsFallbackURLs {
             timeout = .default
         }
-        // Main backend request when a timeout was previously received from the main backend
+        // Main backend request that supports fallback when a timeout was previously received from the main backend
         else if lastTimeoutRequestTime != nil {
             timeout = .reduced
         }
@@ -91,13 +85,10 @@ class HTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
         return timeout.rawValue
     }
 
-    /// Updates the internal state in response to the result received from the backend.
-    ///
-    /// - Parameter result: The result of the HTTP request
     func recordRequestResult(_ result: RequestResult) {
         switch result {
         case .successOnMainBackend:
-            resetlastTimeoutRequestTime()
+            resetLastTimeoutRequestTime()
         case .timeoutOnMainBackendSupportingFallback:
             lastTimeoutRequestTime = dateProvider.now()
         case .other:
@@ -105,14 +96,14 @@ class HTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
         }
     }
 
-    private func resetlastTimeoutRequestTime() {
+    private func resetLastTimeoutRequestTime() {
         lastTimeoutRequestTime = nil
     }
 
     private var shouldResetTimeout: Bool {
         guard let lastTimeoutRequestTime else { return false }
 
-        let timeElapsed = dateProvider.now().timeIntervalSince1970 - lastTimeoutRequestTime.timeIntervalSince1970
+        let timeElapsed = dateProvider.now().timeIntervalSince(lastTimeoutRequestTime)
         return timeElapsed >= Self.timeoutResetInterval
     }
 }
