@@ -56,6 +56,7 @@ class FallbackURLSignedBackendStoreKit2IntegrationTests: BaseStoreKitIntegration
 
         expect(receivedOfferings.all).toNot(beEmpty())
         assertSnapshot(matching: receivedOfferings.response, as: .formattedJson)
+        expect(receivedOfferings.contents.originalSource) == .fallbackUrl
     }
 
     func testCanGetProductEntitlementMappingFromFallbackURL() async throws {
