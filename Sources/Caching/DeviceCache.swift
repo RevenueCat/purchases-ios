@@ -183,7 +183,7 @@ class DeviceCache {
 
     // MARK: - Offerings
 
-    func cachedOfferingsResponseData(appUserID: String) -> Data? {
+    func cachedOfferingsContentsData(appUserID: String) -> Data? {
         // Large data used to be stored in the user defaults and resulted in crashes, we need to ensure that
         // we are cleaning out that data
         userDefaults.write { defaults in
@@ -207,7 +207,7 @@ class DeviceCache {
         // For the cache we need the preferred locales that were used in the request.
         self.cacheInMemory(offerings: offerings)
         self.offeringsCachePreferredLocales = preferredLocales
-        self.largeItemCache.set(codable: offerings.response, forKey: CacheKey.offerings(appUserID))
+        self.largeItemCache.set(codable: offerings.contents, forKey: CacheKey.offerings(appUserID))
     }
 
     func cacheInMemory(offerings: Offerings) {

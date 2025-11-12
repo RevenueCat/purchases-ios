@@ -74,13 +74,16 @@ final class MockStoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
         }
     }
 
+    let appTransactionJWSCalled = Atomic<Bool>(false)
     var appTransactionJWS: String? {
         get async {
+            self.appTransactionJWSCalled.value = true
             return self.stubbedAppTransactionJWS
         }
     }
 
     func appTransactionJWS(_ completion: @escaping (String?) -> Void) {
+        self.appTransactionJWSCalled.value = true
         completion(self.stubbedAppTransactionJWS)
     }
 

@@ -19,38 +19,101 @@ import SnapshotTesting
 import StoreKit
 import XCTest
 
-class LoadShedderStoreKit2IntegrationTests: LoadShedderStoreKit1IntegrationTests {
+class LoadShedderStoreKit1IntegrationTestsUsEast1: BaseLoadShedderStoreKitIntegrationTests {
 
-    override class var storeKitVersion: StoreKitVersion { .storeKit2 }
+    override class var storeKitVersion: StoreKitVersion { .storeKit1 }
+
+    override var backend: BaseLoadShedderStoreKitIntegrationTests.LoadShedderBackend { .usEast1 }
 
 }
 
-class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
+class LoadShedderStoreKit2IntegrationTestsUsEast1: BaseLoadShedderStoreKitIntegrationTests {
+
+    override class var storeKitVersion: StoreKitVersion { .storeKit2 }
+
+    override var backend: BaseLoadShedderStoreKitIntegrationTests.LoadShedderBackend { .usEast1 }
+
+}
+
+class LoadShedderStoreKit1IntegrationTestsUsEast2: BaseLoadShedderStoreKitIntegrationTests {
+
+    override class var storeKitVersion: StoreKitVersion { .storeKit1 }
+
+    override var backend: BaseLoadShedderStoreKitIntegrationTests.LoadShedderBackend { .usEast2 }
+}
+
+class LoadShedderStoreKit2IntegrationTestsUsEast2: BaseLoadShedderStoreKitIntegrationTests {
+
+    override class var storeKitVersion: StoreKitVersion { .storeKit2 }
+
+    override var backend: BaseLoadShedderStoreKitIntegrationTests.LoadShedderBackend { .usEast2 }
+}
+
+class BaseLoadShedderStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
 
     override var apiKey: String { return Constants.loadShedderApiKey }
 
-    override class var storeKitVersion: StoreKitVersion { .storeKit1 }
+    var backend: LoadShedderBackend {
+        XCTFail("Needs to be provided by the subclass")
+        return .usEast1
+    }
+
+    enum LoadShedderBackend {
+        case usEast1
+        case usEast2
+
+        var apiBaseURL: URL {
+            switch self {
+            case .usEast1:
+                return URL(string: "https://fortress-us-east-1.revenuecat.com")!
+            case .usEast2:
+                return URL(string: "https://fortress-us-east-2.revenuecat.com")!
+            }
+        }
+    }
+
+    override class var storeKitVersion: StoreKitVersion {
+        XCTFail("Needs to be provided by the subclass")
+        return .storeKit1
+    }
 
     override class var responseVerificationMode: Signing.ResponseVerificationMode {
         return Signing.enforcedVerificationMode()
     }
 
+    override func setUp() async throws {
+        SystemInfo.apiBaseURL = self.backend.apiBaseURL
+        try await super.setUp()
+    }
+
+    override func tearDown() async throws {
+        SystemInfo.apiBaseURL = SystemInfo.defaultApiBaseURL
+        try await super.tearDown()
+    }
+
     // MARK: -
 
-    func testCanGetOfferings() async throws {
+    func testCanGetOfferingsFromLoadShedder() async throws {
         let receivedOfferings = try await self.purchases.offerings()
 
         expect(receivedOfferings.all).toNot(beEmpty())
-        assertSnapshot(matching: receivedOfferings.response, as: .formattedJson)
-    }
 
-    func testOfferingsComeFromLoadShedder() async throws {
+        assertSnapshot(matching: receivedOfferings.response, as: .formattedJson)
+
         self.logger.verifyMessageWasLogged(
             Strings.network.request_handled_by_load_shedder(
                 HTTPRequest.Path.getOfferings(appUserID: try self.purchases.appUserID)
             ),
             level: .debug
         )
+        // Verify originalSource is set to loadShedder
+        expect(receivedOfferings.contents.originalSource) == .loadShedder
+    }
+
+    func testGetCustomerInfoIsOfflineComputedBeforeAnyPurchase() async throws {
+        // Get CustomerInfo from Load Shedder fails to find the subscriber info before any purchase is made
+        let offlineComputedCustomerInfo = try await self.purchases.customerInfo()
+        expect(offlineComputedCustomerInfo.originalSource) == .offlineEntitlements
     }
 
     func testCanPurchaseSubsPackage() async throws {
@@ -62,6 +125,19 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         )
 
         self.verifyCustomerInfoWasNotComputedOffline(customerInfo: data.customerInfo)
+        expect(data.customerInfo.originalSource) == .loadShedder
+    }
+
+    func testPurchaseReturnsCustomerInfoFromLoadShedder() async throws {
+        try await self.purchaseMonthlyOffering()
+
+        try self.purchases.invalidateCustomerInfoCache()
+
+        let customerInfo = try await self.purchases.customerInfo()
+        expect(customerInfo.originalSource) == .loadShedder
+
+        let entitlement = try XCTUnwrap(customerInfo.entitlements[Self.entitlementIdentifier])
+        XCTAssertTrue(entitlement.isActive)
     }
 
     func testCanPurchaseConsumablePackage() async throws {
@@ -84,6 +160,7 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         )
 
         self.verifyCustomerInfoWasNotComputedOffline(customerInfo: purchaseData.customerInfo)
+        expect(purchaseData.customerInfo.originalSource) == .loadShedder
     }
 
     func testCanPurchaseNonConsumablePackage() async throws {
@@ -99,6 +176,8 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
             Strings.network.request_handled_by_load_shedder(HTTPRequest.Path.postReceiptData),
             level: .debug
         )
+
+        expect(purchaseData.customerInfo.originalSource) == .loadShedder
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -123,15 +202,18 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
             pollInterval: .milliseconds(100)
         )
     }
-
 }
 
 /// Header verification (see `HTTPRequest.headerParametersForSignatureHeader`) is enabled by default,
 /// but this helps verify that the backend is still signing correctly without it for older SDK versions.
 /// See also `SignatureVerificationWithoutHeaderHashIntegrationTests`.
-class LoadShedderSignatureVerificationWithoutHeaderHashIntegrationTests: LoadShedderStoreKit1IntegrationTests {
+class LoadShedderSignatureVerificationWithoutHeaderHashIntegrationTests: BaseLoadShedderStoreKitIntegrationTests {
 
     override var disableHeaderSignatureVerification: Bool { return true }
+
+    override class var storeKitVersion: StoreKitVersion { .storeKit1 }
+
+    override var backend: BaseLoadShedderStoreKitIntegrationTests.LoadShedderBackend { .usEast1 }
 
     override func tearDown() {
         self.logger.verifyMessageWasLogged(
