@@ -329,7 +329,8 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         self.systemInfo.stubbedIsApplicationBackgrounded = false
         self.backend.overrideHealthReportAvailabilityResponse = HealthReportAvailability(reportLogs: false)
         self.setupPurchases()
-        await expect(self.backend.healthReportAvailabilityRequests).toEventually(equal([identityManager.currentAppUserID]))
+        await expect(self.backend.healthReportAvailabilityRequests)
+            .toEventually(equal([identityManager.currentAppUserID]))
         await expect(self.backend.healthReportRequests).toEventually(equal([]))
     }
 

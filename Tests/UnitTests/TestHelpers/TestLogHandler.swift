@@ -246,7 +246,8 @@ extension TestLogHandler: LogMessageObserver {
                 beLessThan(self.capacity),
                 description: "\(count) messages have been stored. " +
                 "This is likely a programming error and \(self) " +
-                "(created by \(self.testIdentifier) in \(self.creationContext.file):\(self.creationContext.line) has leaked."
+                "(created by \(self.testIdentifier) in \(self.creationContext.file):\(self.creationContext.line) " +
+                "has leaked."
             )
         }
     }
