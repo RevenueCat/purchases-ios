@@ -909,6 +909,7 @@
 		751192DD2E39147600E583CC /* MockWebBillingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751192DC2E39147600E583CC /* MockWebBillingAPI.swift */; };
 		751192DE2E39147600E583CC /* MockWebBillingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751192DC2E39147600E583CC /* MockWebBillingAPI.swift */; };
 		751192E02E39149200E583CC /* WebBillingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751192DF2E39149200E583CC /* WebBillingAPI.swift */; };
+		751BE2CF2EC64FE50011C4CB /* PostReceiptDataOperationFactoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751BE2CE2EC64FE50011C4CB /* PostReceiptDataOperationFactoryTests.swift */; };
 		753C77232EAB828E00CA4F9C /* FallbackURLBackendIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753C77222EAB828E00CA4F9C /* FallbackURLBackendIntegrationTests.swift */; };
 		75425E0F2D5DFA9F00E25F60 /* PaywallComponentsDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75425E0E2D5DFA9F00E25F60 /* PaywallComponentsDataTests.swift */; };
 		7542E4E92DEDCC2A002CE340 /* PaywallFontManagerType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7542E4E82DEDCC2A002CE340 /* PaywallFontManagerType.swift */; };
@@ -2381,6 +2382,7 @@
 		750B39FD2E40940F005E141D /* PurchasesOrchestratorSimulatedStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesOrchestratorSimulatedStoreTests.swift; sourceTree = "<group>"; };
 		751192DC2E39147600E583CC /* MockWebBillingAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockWebBillingAPI.swift; sourceTree = "<group>"; };
 		751192DF2E39149200E583CC /* WebBillingAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebBillingAPI.swift; sourceTree = "<group>"; };
+		751BE2CE2EC64FE50011C4CB /* PostReceiptDataOperationFactoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostReceiptDataOperationFactoryTests.swift; sourceTree = "<group>"; };
 		753C77222EAB828E00CA4F9C /* FallbackURLBackendIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackURLBackendIntegrationTests.swift; sourceTree = "<group>"; };
 		75425E0E2D5DFA9F00E25F60 /* PaywallComponentsDataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallComponentsDataTests.swift; sourceTree = "<group>"; };
 		7542E4E82DEDCC2A002CE340 /* PaywallFontManagerType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallFontManagerType.swift; sourceTree = "<group>"; };
@@ -4832,6 +4834,7 @@
 				5796A39827D6C1E000653165 /* BackendPostSubscriberAttributesTests.swift */,
 				57DB164F298C4327008F6707 /* BackendSignatureVerificationTests.swift */,
 				5796A38027D6B78500653165 /* BaseBackendTest.swift */,
+				751BE2CE2EC64FE50011C4CB /* PostReceiptDataOperationFactoryTests.swift */,
 				35109DAA2BC6E436001030C8 /* BackendPostDiagnosticsTests.swift */,
 				1EFA950C2CDB6B6500CA5951 /* BackendPostRedeemWebPurchaseTests.swift */,
 				35F38B472C30104E00CD29FD /* BackendGetCustomerCenterConfigTests.swift */,
@@ -7300,6 +7303,7 @@
 				57D62F182D4A73F8000235DC /* CustomerCenterEventCreationDataDefault.swift in Sources */,
 				2C6CC1162B8D2B6900432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift in Sources */,
 				4F6ABC7C2A81673F00250E63 /* PaywallCacheWarmingTests.swift in Sources */,
+				751BE2CF2EC64FE50011C4CB /* PostReceiptDataOperationFactoryTests.swift in Sources */,
 				57D04BB827D947C6006DAC06 /* HTTPResponseTests.swift in Sources */,
 				2C08B2E92CD40DBF0024857B /* ButtonComponentTests.swift in Sources */,
 				5796A38127D6B78500653165 /* BaseBackendTest.swift in Sources */,
