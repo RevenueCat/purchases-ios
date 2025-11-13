@@ -64,10 +64,7 @@ final class TestLogHandler {
 
     deinit {
         Self.sharedHandler.remove(observer: self)
-        self.cancelAllPendingWaits()
     }
-
-    private let pendingWaits: Atomic<[PendingWait]> = .init([])
 
     /// If a test overrides `Purchases.verboseLogHandler` or `Logger.internalLogHandler`
     /// this needs to be called to re-install the test handler.
@@ -91,7 +88,7 @@ extension TestLogHandler: Sendable {}
 
 extension TestLogHandler {
 
-    fileprivate typealias EntryCondition = @Sendable (MessageData) -> Bool
+    private typealias EntryCondition = @Sendable (MessageData) -> Bool
 
     /// Useful if you want to ignore messages logged so far.
     func clearMessages() {
@@ -130,41 +127,6 @@ extension TestLogHandler {
                 description: "Message '\(message)' expected \(expectedCount) times"
             )
         }
-    }
-
-    func waitForMessage(
-        _ message: CustomStringConvertible,
-        level: LogLevel? = nil
-    ) async {
-        let condition = Self.entryCondition(message: message, level: level)
-
-        if self.messages.contains(where: condition) {
-            return
-        }
-
-        let id = UUID()
-
-        await withTaskCancellationHandler(handler: {
-            self.cancelPendingWait(id: id)
-        }, operation: {
-            await withCheckedContinuation { continuation in
-                var shouldResumeImmediately = false
-
-                self.pendingWaits.modify { waits in
-                    if self.messages.contains(where: condition) {
-                        shouldResumeImmediately = true
-                    } else {
-                        waits.append(.init(id: id,
-                                           condition: condition,
-                                           continuation: continuation))
-                    }
-                }
-
-                if shouldResumeImmediately {
-                    continuation.resume()
-                }
-            }
-        })
     }
 
     func verifyMessageIsEventuallyLogged(
@@ -260,33 +222,6 @@ extension TestLogHandler {
 
 }
 
-private extension TestLogHandler {
-
-    struct PendingWait: @unchecked Sendable {
-        let id: UUID
-        let condition: EntryCondition
-        let continuation: CheckedContinuation<Void, Never>
-    }
-
-    func cancelPendingWait(id: UUID) {
-        let wait = self.pendingWaits.modify { waits -> PendingWait? in
-            guard let index = waits.firstIndex(where: { $0.id == id }) else {
-                return nil
-            }
-
-            return waits.remove(at: index)
-        }
-
-        wait?.continuation.resume()
-    }
-
-    func cancelAllPendingWaits() {
-        let waits = self.pendingWaits.getAndSet([])
-        waits.forEach { $0.continuation.resume() }
-    }
-
-}
-
 // MARK: - Private
 
 private extension TestLogHandler {
@@ -301,10 +236,8 @@ private extension TestLogHandler {
 extension TestLogHandler: LogMessageObserver {
 
     func didReceive(message: String, with level: LogLevel) {
-        let messageData: MessageData = (level, message)
-
         self.loggedMessages.modify {
-            $0.append(messageData)
+            $0.append((level, message))
 
             let count = $0.count
 
@@ -315,23 +248,6 @@ extension TestLogHandler: LogMessageObserver {
                 "(created in \(self.creationContext.file):\(self.creationContext.line) has leaked."
             )
         }
-
-        let continuations = self.pendingWaits.modify { waits -> [CheckedContinuation<Void, Never>] in
-            var continuations: [CheckedContinuation<Void, Never>] = []
-
-            waits.removeAll { wait in
-                if wait.condition(messageData) {
-                    continuations.append(wait.continuation)
-                    return true
-                }
-
-                return false
-            }
-
-            return continuations
-        }
-
-        continuations.forEach { $0.resume() }
     }
 
     private static let defaultMessageLimit = 200

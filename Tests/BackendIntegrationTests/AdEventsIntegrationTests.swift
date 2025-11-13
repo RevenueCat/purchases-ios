@@ -65,7 +65,7 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
         // Simulate backgrounding to trigger flush
         self.simulateBackgroundingApp()
 
-        await self.logger.waitForMessage(
+        try await self.logger.verifyMessageIsEventuallyLogged(
             "Ad event flush with empty store",
             level: .verbose
         )
@@ -93,7 +93,7 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
         // Simulate backgrounding to trigger flush (flushes all events)
         self.simulateBackgroundingApp()
 
-        await self.logger.waitForMessage(
+        try await self.logger.verifyMessageIsEventuallyLogged(
             Strings.analytics.flush_events_success,
             level: .debug
         )
@@ -107,7 +107,7 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
         // Simulate backgrounding again - should flush nothing
         self.simulateBackgroundingApp()
 
-        await self.logger.waitForMessage(
+        try await self.logger.verifyMessageIsEventuallyLogged(
             "Ad event flush with empty store",
             level: .verbose
         )
@@ -143,7 +143,7 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
         // Simulate backgrounding to trigger flush
         self.simulateBackgroundingApp()
 
-        await self.logger.waitForMessage(
+        try await self.logger.verifyMessageIsEventuallyLogged(
             Strings.analytics.flush_events_success,
             level: .debug
         )
@@ -159,7 +159,7 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
         // Simulate backgrounding to trigger flush
         self.simulateBackgroundingApp()
 
-        await self.logger.waitForMessage(
+        try await self.logger.verifyMessageIsEventuallyLogged(
             Strings.analytics.flush_events_success,
             level: .debug
         )
