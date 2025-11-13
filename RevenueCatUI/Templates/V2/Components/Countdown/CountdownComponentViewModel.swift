@@ -1,4 +1,12 @@
 //
+//  CountdownComponentViewModel.swift
+//  RevenueCat
+//
+//  Created by Josh Holtz on 11/12/25.
+//
+
+
+//
 //  Copyright RevenueCat Inc. All Rights Reserved.
 //
 //  Licensed under the MIT License (the "License");
