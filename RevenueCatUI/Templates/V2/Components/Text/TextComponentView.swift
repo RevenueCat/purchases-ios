@@ -700,7 +700,7 @@ struct TextComponentView_Previews: PreviewProvider {
                     text: "id_1",
                     color: .init(light: .hex("#000000")),
                     overrides: [
-                        .init(conditions: [ ], properties: .init(
+                        .init(conditions: [ .screenSize(.in, ["medium"]) ], properties: .init(
                             text: "id_2"
                         ))
                     ]
