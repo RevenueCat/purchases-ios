@@ -49,8 +49,8 @@ public extension PaywallComponent {
             case type
             case name
             case style
-            case countdownStack = "countdownStack"
-            case endStack = "endStack"
+            case countdownStack
+            case endStack
             case fallback
             case overrides
         }
@@ -100,14 +100,54 @@ public extension PaywallComponent {
                    lhs.overrides == rhs.overrides
         }
 
-        public struct CountdownStyle: Codable, Sendable, Hashable, Equatable {
-            public let type: String
-            public let date: Date
+        public enum CountdownStyle: Codable, Sendable, Hashable, Equatable {
 
-            public init(type: String = "date", date: Date) {
-                self.type = type
-                self.date = date
+            case date(Date)
+
+            public var date: Date {
+                switch self {
+                case .date(let value):
+                    return value
+                }
             }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: CodingKeys.self)
+
+                switch self {
+                case .date(let date):
+                    try container.encode(CountdownStyleType.date.rawValue, forKey: .type)
+                    try container.encode(date, forKey: .date)
+                }
+            }
+
+            public init(from decoder: Decoder) throws {
+                do {
+                    let container = try decoder.container(keyedBy: CodingKeys.self)
+                    let type = try container.decode(CountdownStyleType.self, forKey: .type)
+
+                    switch type {
+                    case .date:
+                        let dateValue = try container.decode(Date.self, forKey: .date)
+                        self = .date(dateValue)
+                    }
+                } catch {
+                    // Default to date with epoch if decoding fails
+                    self = .date(Date(timeIntervalSince1970: 0))
+                }
+            }
+
+            // swiftlint:disable:next nesting
+            private enum CodingKeys: String, CodingKey {
+                case type
+                case date
+            }
+
+            // swiftlint:disable:next nesting
+            private enum CountdownStyleType: String, Decodable {
+                case date
+            }
+
         }
     }
 

@@ -66,7 +66,6 @@ struct CountdownTime {
     }
 }
 
-
 // MARK: - CountdownState
 
 @MainActor
@@ -90,16 +89,16 @@ final class CountdownState: ObservableObject {
     // MARK: - Public API
 
     func start() {
-        guard timer == nil, let _ = targetDate, !hasEnded else { return }
+        guard self.timer == nil, self.targetDate != nil, !self.hasEnded else { return }
 
-        let t = Timer(timeInterval: 1.0, repeats: true) { [weak self] _ in
+        let timer = Timer(timeInterval: 1.0, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 self?.updateCountdown()
             }
         }
 
-        RunLoop.main.add(t, forMode: .common)
-        timer = t
+        RunLoop.main.add(timer, forMode: .common)
+        self.timer = timer
     }
 
     func stop() {
@@ -132,23 +131,6 @@ final class CountdownState: ObservableObject {
         stop()
     }
 
-    // MARK: - ISO8601 Parsing (Modern API)
-
-    private static func parseISO8601(_ s: String) -> Date? {
-        // Try fractional seconds first
-        let fractional = Date.ISO8601FormatStyle()
-            .time(includingFractionalSeconds: true)
-
-        if let d = try? fractional.parse(s) {
-            return d
-        }
-
-        // Then without fractional seconds
-        let noFraction = Date.ISO8601FormatStyle()
-            .time(includingFractionalSeconds: false)
-
-        return try? noFraction.parse(s)
-    }
 }
 
 #endif
