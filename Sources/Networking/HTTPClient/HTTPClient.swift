@@ -74,7 +74,10 @@ class HTTPClient {
         self.authHeaders = HTTPClient.authorizationHeader(withAPIKey: apiKey)
         self.dateProvider = dateProvider
         self.operationDispatcher = operationDispatcher
-        self.requestTimeoutManager = timeoutManager ?? HTTPRequestTimeoutManager(dateProvider: dateProvider)
+        self.requestTimeoutManager = timeoutManager ?? HTTPRequestTimeoutManager(
+            defaultTimeout: timeout,
+            dateProvider: dateProvider
+        )
     }
 
     /// - Parameter verificationMode: if `nil`, this will default to `SystemInfo.responseVerificationMode`
