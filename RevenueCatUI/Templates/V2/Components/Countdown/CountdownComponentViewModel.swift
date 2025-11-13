@@ -7,6 +7,7 @@
 
 import Foundation
 @_spi(Internal) import RevenueCat
+
 #if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -29,34 +30,6 @@ class CountdownComponentViewModel {
         self.fallbackStackViewModel = fallbackStackViewModel
     }
 
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct CountdownTime {
-    let days: Int
-    let hours: Int
-    let minutes: Int
-    let seconds: Int
-
-    static let zero = CountdownTime(days: 0, hours: 0, minutes: 0, seconds: 0)
-
-    init(days: Int, hours: Int, minutes: Int, seconds: Int) {
-        self.days = days
-        self.hours = hours
-        self.minutes = minutes
-        self.seconds = seconds
-    }
-
-    init(interval: TimeInterval) {
-        let totalSeconds = max(0, Int(interval))
-
-        let days = totalSeconds / 86_400
-        let hours = (totalSeconds % 86_400) / 3_600
-        let minutes = (totalSeconds % 3_600) / 60
-        let seconds = totalSeconds % 60
-
-        self.init(days: days, hours: hours, minutes: minutes, seconds: seconds)
-    }
 }
 
 // MARK: - CountdownState
@@ -127,3 +100,31 @@ final class CountdownState: ObservableObject {
 }
 
 #endif
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct CountdownTime {
+    let days: Int
+    let hours: Int
+    let minutes: Int
+    let seconds: Int
+
+    static let zero = CountdownTime(days: 0, hours: 0, minutes: 0, seconds: 0)
+
+    init(days: Int, hours: Int, minutes: Int, seconds: Int) {
+        self.days = days
+        self.hours = hours
+        self.minutes = minutes
+        self.seconds = seconds
+    }
+
+    init(interval: TimeInterval) {
+        let totalSeconds = max(0, Int(interval))
+
+        let days = totalSeconds / 86_400
+        let hours = (totalSeconds % 86_400) / 3_600
+        let minutes = (totalSeconds % 3_600) / 60
+        let seconds = totalSeconds % 60
+
+        self.init(days: days, hours: hours, minutes: minutes, seconds: seconds)
+    }
+}
