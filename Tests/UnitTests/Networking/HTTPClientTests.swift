@@ -32,6 +32,9 @@ class BaseHTTPClientTests<ETag: ETagManager, TimeoutManager: HTTPRequestTimeoutM
     var dateProvider: MockCurrentDateProvider!
     var timeoutManager: TimeoutManager!
 
+    // Something very specific on purpose to make sure we can differentiate it in tests from adjusted timeouts
+    let defaultRequestTimeout: TimeInterval = 3.21
+
     fileprivate let apiKey = "MockAPIKey"
 
     override func setUpWithError() throws {
@@ -78,7 +81,7 @@ class BaseHTTPClientTests<ETag: ETagManager, TimeoutManager: HTTPRequestTimeoutM
                           signing: self.signing,
                           diagnosticsTracker: self.diagnosticsTracker,
                           dnsChecker: MockDNSChecker.self,
-                          requestTimeout: defaultTimeout.timeInterval,
+                          requestTimeout: defaultRequestTimeout,
                           operationDispatcher: operationDispatcher,
                           timeoutManager: timeoutManager)
     }
@@ -88,7 +91,10 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
     override func setUpWithError() throws {
         self.eTagManager = MockETagManager()
-        self.timeoutManager = HTTPRequestTimeoutManager(dateProvider: MockCurrentDateProvider())
+        self.timeoutManager = HTTPRequestTimeoutManager(
+            defaultTimeout: defaultRequestTimeout,
+            dateProvider: MockCurrentDateProvider()
+        )
 
         try super.setUpWithError()
     }
@@ -1140,7 +1146,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
                 for: request.path,
                 isFallback: false
             ),
-            HTTPRequestTimeoutManager.Timeout.defaultForMainBackendRequestSupportingFallback.rawValue
+            HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
         )
     }
 
@@ -1153,7 +1159,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             // Main backend request should use the default for a main backend request supporting a fallback
             XCTAssertEqual(
                 request.timeoutInterval,
-                HTTPRequestTimeoutManager.Timeout.defaultForMainBackendRequestSupportingFallback.rawValue
+                HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
             )
             return .timeoutResponse()
         }
@@ -1163,10 +1169,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         stub(condition: isPath(fallbackPath)) { request in
 
             // Make sure it uses the default timeout because it's a fallback request
-            XCTAssertEqual(
-                request.timeoutInterval,
-                HTTPRequestTimeoutManager.Timeout.default.rawValue
-            )
+            XCTAssertEqual(request.timeoutInterval, self.defaultRequestTimeout)
             return .emptySuccessResponse()
         }
 
@@ -1182,10 +1185,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         stub(condition: isPath(request.path)) { request in
 
             // Main backend request should use the default since it doesn't support a fallback
-            XCTAssertEqual(
-                request.timeoutInterval,
-                HTTPRequestTimeoutManager.Timeout.default.rawValue
-            )
+            XCTAssertEqual(request.timeoutInterval, self.defaultRequestTimeout)
             return .timeoutResponse()
         }
 
@@ -1194,16 +1194,13 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         }
 
         // Make sure it uses the default timeout because it doesn't support fallback requests
-        XCTAssertEqual(
-            timeoutManager.timeout(for: request.path, isFallback: false),
-            HTTPRequestTimeoutManager.Timeout.default.rawValue
-        )
+        XCTAssertEqual(timeoutManager.timeout(for: request.path, isFallback: false), self.defaultRequestTimeout)
 
         // Make sure it uses the default timeout for backend requests suppoting fallback
         let requestSupportingFallback = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
         XCTAssertEqual(
             timeoutManager.timeout(for: requestSupportingFallback.path, isFallback: false),
-            HTTPRequestTimeoutManager.Timeout.defaultForMainBackendRequestSupportingFallback.rawValue
+            HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
         )
     }
 
@@ -1517,7 +1514,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             }
         }
 
-        self.waitForExpectations(timeout: defaultTimeout.timeInterval)
+        self.waitForExpectations(timeout: defaultRequestTimeout)
         expect(completionCallCount.value) == serialRequests
     }
 
@@ -1556,7 +1553,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             expectations[1].fulfill()
         }
 
-        self.waitForExpectations(timeout: defaultTimeout.timeInterval)
+        self.waitForExpectations(timeout: defaultRequestTimeout)
 
         expect(firstRequestFinished.value) == true
         expect(secondRequestFinished.value) == true
@@ -1613,7 +1610,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             expectations[2].fulfill()
         }
 
-        self.waitForExpectations(timeout: defaultTimeout.timeInterval)
+        self.waitForExpectations(timeout: defaultRequestTimeout)
 
         expect(firstRequestFinished.value) == true
         expect(secondRequestFinished.value) == true
@@ -3440,7 +3437,7 @@ final class HTTPClientTimeoutManagerTests: BaseHTTPClientTests<MockETagManager, 
 
     override func setUpWithError() throws {
         self.eTagManager = MockETagManager()
-        let mockTimeoutManager = MockHTTPRequestTimeoutManager()
+        let mockTimeoutManager = MockHTTPRequestTimeoutManager(defaultTimeout: defaultRequestTimeout)
         self.timeoutManager = mockTimeoutManager
 
         try super.setUpWithError()

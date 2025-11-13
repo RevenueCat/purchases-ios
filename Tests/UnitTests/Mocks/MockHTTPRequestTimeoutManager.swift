@@ -11,12 +11,18 @@ import Foundation
 
 class MockHTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
 
+    private let defaultTimeout: TimeInterval
     private(set) var recordedResults: [HTTPRequestTimeoutManager.RequestResult] = []
     private(set) var timeoutCallCount = 0
     private(set) var lastTimeoutPath: HTTPRequestPath?
     private(set) var lastTimeoutIsFallback: Bool?
 
-    var timeoutToReturn: TimeInterval = HTTPRequestTimeoutManager.Timeout.default.rawValue
+    init(defaultTimeout: TimeInterval) {
+        self.defaultTimeout = defaultTimeout
+        self.timeoutToReturn = defaultTimeout
+    }
+
+    var timeoutToReturn: TimeInterval
 
     func timeout(for path: HTTPRequestPath, isFallback: Bool) -> TimeInterval {
         timeoutCallCount += 1
@@ -34,6 +40,6 @@ class MockHTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
         timeoutCallCount = 0
         lastTimeoutPath = nil
         lastTimeoutIsFallback = nil
-        timeoutToReturn = HTTPRequestTimeoutManager.Timeout.default.rawValue
+        timeoutToReturn = defaultTimeout
     }
 }
