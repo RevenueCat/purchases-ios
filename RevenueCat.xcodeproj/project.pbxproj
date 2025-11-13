@@ -28,6 +28,7 @@
 		038211982DCA730C003C02C3 /* ButtonWithFooterPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 038211952DCA730C003C02C3 /* ButtonWithFooterPreview.swift */; };
 		038213602DCAF6BE003C02C3 /* OpenSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0382135F2DCAF6BE003C02C3 /* OpenSheet.swift */; };
 		038213DB2DD4979A003C02C3 /* PurchaseButtonComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 038213DA2DD4979A003C02C3 /* PurchaseButtonComponentTests.swift */; };
+		0387D3C82EC51F09008E4A6B /* FileImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0387D3C72EC51F09008E4A6B /* FileImageLoader.swift */; };
 		038EC8232DE7A8B300786C42 /* TakeScreenshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 038EC8222DE7A8AC00786C42 /* TakeScreenshot.swift */; };
 		03A98CEF2D1EE048009BCA61 /* FallbackComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98CEE2D1EE040009BCA61 /* FallbackComponentTests.swift */; };
 		03A98CF12D222F5F009BCA61 /* FallbackComponentPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98CF02D222F53009BCA61 /* FallbackComponentPreview.swift */; };
@@ -55,9 +56,9 @@
 		03F446262D2FE1510046129A /* MaskShapePropertyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F446252D2FE1510046129A /* MaskShapePropertyTests.swift */; };
 		03F446552D303E350046129A /* PaddingPropertyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F446542D303E350046129A /* PaddingPropertyTests.swift */; };
 		03F446572D303FA10046129A /* CornerRadiusesPropertyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F446562D303FA10046129A /* CornerRadiusesPropertyTests.swift */; };
+		16216FEF2EBB8641008ACFE9 /* ResumeAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16216FEE2EBB8641008ACFE9 /* ResumeAction.swift */; };
 		162170152EBE50F0008ACFE9 /* LocaleComparisonTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 162170142EBE50F0008ACFE9 /* LocaleComparisonTests.swift */; };
 		1621701C2EBE5581008ACFE9 /* Locale+Comparison.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1621701B2EBE5581008ACFE9 /* Locale+Comparison.swift */; };
-		16216FEF2EBB8641008ACFE9 /* ResumeAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16216FEE2EBB8641008ACFE9 /* ResumeAction.swift */; };
 		1622D3FB2E900DE000C20E3C /* ChecksumTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1622D3FA2E900DE000C20E3C /* ChecksumTests.swift */; };
 		1622D3FD2E900F8200C20E3C /* Checksum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1622D3FC2E900F8200C20E3C /* Checksum.swift */; };
 		1622D40E2E90189F00C20E3C /* URLWithValidation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1622D40D2E90189F00C20E3C /* URLWithValidation.swift */; };
@@ -1490,6 +1491,7 @@
 		038211962DCA730C003C02C3 /* PurchaseButtonInPackagePreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseButtonInPackagePreview.swift; sourceTree = "<group>"; };
 		0382135F2DCAF6BE003C02C3 /* OpenSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenSheet.swift; sourceTree = "<group>"; };
 		038213DA2DD4979A003C02C3 /* PurchaseButtonComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseButtonComponentTests.swift; sourceTree = "<group>"; };
+		0387D3C72EC51F09008E4A6B /* FileImageLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileImageLoader.swift; sourceTree = "<group>"; };
 		038EC8222DE7A8AC00786C42 /* TakeScreenshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TakeScreenshot.swift; sourceTree = "<group>"; };
 		03A98CEE2D1EE040009BCA61 /* FallbackComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackComponentTests.swift; sourceTree = "<group>"; };
 		03A98CF02D222F53009BCA61 /* FallbackComponentPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackComponentPreview.swift; sourceTree = "<group>"; };
@@ -1518,9 +1520,9 @@
 		03F446252D2FE1510046129A /* MaskShapePropertyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaskShapePropertyTests.swift; sourceTree = "<group>"; };
 		03F446542D303E350046129A /* PaddingPropertyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaddingPropertyTests.swift; sourceTree = "<group>"; };
 		03F446562D303FA10046129A /* CornerRadiusesPropertyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerRadiusesPropertyTests.swift; sourceTree = "<group>"; };
+		16216FEE2EBB8641008ACFE9 /* ResumeAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResumeAction.swift; sourceTree = "<group>"; };
 		162170142EBE50F0008ACFE9 /* LocaleComparisonTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleComparisonTests.swift; sourceTree = "<group>"; };
 		1621701B2EBE5581008ACFE9 /* Locale+Comparison.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Locale+Comparison.swift"; sourceTree = "<group>"; };
-		16216FEE2EBB8641008ACFE9 /* ResumeAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResumeAction.swift; sourceTree = "<group>"; };
 		1622D3FA2E900DE000C20E3C /* ChecksumTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChecksumTests.swift; sourceTree = "<group>"; };
 		1622D3FC2E900F8200C20E3C /* Checksum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Checksum.swift; sourceTree = "<group>"; };
 		1622D40D2E90189F00C20E3C /* URLWithValidation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLWithValidation.swift; sourceTree = "<group>"; };
@@ -5254,6 +5256,7 @@
 		887A5FE72C1D037000E1A461 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				0387D3C72EC51F09008E4A6B /* FileImageLoader.swift */,
 				16216FEE2EBB8641008ACFE9 /* ResumeAction.swift */,
 				16E146B12E99FC7E0089B609 /* PurchaseResultComparator.swift */,
 				57F7DAAA2D9E906100855622 /* RuntimeUtils.swift */,
@@ -7596,6 +7599,7 @@
 				2C8EC71B2CCDD43900D6CCF8 /* ComponentViewState.swift in Sources */,
 				77089F9E2CD39EC100848CD5 /* ShadowModifier.swift in Sources */,
 				0354AA462D4029C300F9E330 /* TabControlButtonComponentViewModel.swift in Sources */,
+				0387D3C82EC51F09008E4A6B /* FileImageLoader.swift in Sources */,
 				030F918E2D5664410085103F /* LocaleExtensions.swift in Sources */,
 				0354AA472D4029C300F9E330 /* TabControlComponentViewModel.swift in Sources */,
 				0354AA482D4029C300F9E330 /* TabsComponentView.swift in Sources */,
