@@ -59,6 +59,7 @@ class CarouselComponentViewModel {
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackage: packageContext.package,
             with: self.presentedOverrides
         )
 

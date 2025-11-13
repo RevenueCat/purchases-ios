@@ -58,6 +58,7 @@ class TextComponentViewModel {
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: promoOffer != nil,
+            selectedPackage: packageContext.package,
             with: self.presentedOverrides
         )
         let partial = localizedPartial?.partial

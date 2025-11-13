@@ -48,11 +48,13 @@ extension PresentedPartial {
     ///   - condition: Current screen condition (compact/medium/expanded)
     ///   - presentedOverrides: Override configurations to apply
     /// - Returns: Configured partial component
+    // swiftlint:disable:next function_parameter_count
     static func buildPartial(
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
+        selectedPackage: Package?,
         with presentedOverrides: PresentedOverrides<Self>?
     ) -> Self? {
         guard let presentedOverrides else {
@@ -66,7 +68,8 @@ extension PresentedPartial {
             state: state,
             activeCondition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
-            isEligibleForPromoOffer: isEligibleForPromoOffer
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackage: selectedPackage
         ) {
             presentedPartial = Self.combine(presentedPartial, with: presentedOverride.properties)
         }
@@ -74,13 +77,14 @@ extension PresentedPartial {
         return presentedPartial
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
+    // swiftlint:disable:next cyclomatic_complexity function_parameter_count
     private static func shouldApply(
         for conditions: [PaywallComponent.Condition],
         state: ComponentViewState,
         activeCondition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
-        isEligibleForPromoOffer: Bool
+        isEligibleForPromoOffer: Bool,
+        selectedPackage: Package?
     ) -> Bool {
         // Early return when any condition evaluates to false
         for condition in conditions {
@@ -109,8 +113,17 @@ extension PresentedPartial {
                 @unknown default:
                     return false
                 }
-            case .selectedPackage:
-                // WIP: Logic
+            case let .selectedPackage(operand, packages):
+                if let selectedPackage = selectedPackage {
+                    switch operand {
+                    case .in:
+                        return packages.contains(where: { $0 == selectedPackage.identifier })
+                    case .notIn:
+                        return !packages.contains(where: { $0 == selectedPackage.identifier })
+                    @unknown default:
+                        return false
+                    }
+                }
                 return false
             case .introOffer:
                 if !isEligibleForIntroOffer {

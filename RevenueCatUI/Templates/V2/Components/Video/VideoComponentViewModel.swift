@@ -58,6 +58,7 @@ class VideoComponentViewModel {
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackage: packageContext.package,
             with: self.presentedOverrides
         )
         let partial = localizedPartial?.partial

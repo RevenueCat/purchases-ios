@@ -58,6 +58,7 @@ class TimelineComponentViewModel {
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackage: packageContext.package,
             with: self.presentedOverrides
         )
 
@@ -115,6 +116,7 @@ class TimelineItemViewModel {
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackage: packageContext.package,
             with: self.presentedOverrides
         )
 
