@@ -73,7 +73,7 @@ class HTTPRequestTimeoutManagerTests: TestCase {
     func testTimeoutForPathWithFallbackAfterFailedRequestToMainBackendShouldExpire() {
         manager.recordRequestResult(.timeoutOnMainBackendSupportingFallback)
 
-        // expire time is 10s
+        // expire time is 10m
         dateProvider.advance(by: 2)
 
         XCTAssertEqual(
@@ -81,8 +81,8 @@ class HTTPRequestTimeoutManagerTests: TestCase {
             HTTPRequestTimeoutManager.Timeout.reduced.rawValue
         )
 
-        // expire time is 10s
-        dateProvider.advance(by: 11)
+        // expire time is 10m
+        dateProvider.advance(by: 11 * 60)
 
         XCTAssertEqual(
             manager.timeout(for: Mockpath.withFallback, isFallback: false),
