@@ -51,7 +51,7 @@ public enum PaywallComponent: Codable, Sendable, Hashable, Equatable {
 
         case carousel
         case video
-        case countdown = "countdown_dev"
+        case countdown
 
     }
 
