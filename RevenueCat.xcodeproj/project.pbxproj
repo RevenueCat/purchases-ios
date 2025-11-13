@@ -7397,7 +7397,6 @@
 				75D9DE082D79FC0E0068554F /* DiagnosticsEventEncodingTests.swift in Sources */,
 				5793397228E77A6E00C1232C /* MockPaymentQueue.swift in Sources */,
 				16E2B7F12EA01DFA00F04A7A /* SynchronizedLargeItemCacheTests.swift in Sources */,
-				4FFCED832AA941B200118EF4 /* PaywallEventsBackendTests.swift in Sources */,
 				5796A38A27D6B96300653165 /* BackendGetCustomerInfoTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
