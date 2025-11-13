@@ -183,22 +183,14 @@ class DeviceCache {
 
     // MARK: - Offerings
 
-    func cachedOfferingsContentsData(appUserID: String) -> Data? {
+    func cachedOfferingsContents(appUserID: String) -> Offerings.Contents? {
         // Large data used to be stored in the user defaults and resulted in crashes, we need to ensure that
         // we are cleaning out that data
         userDefaults.write { defaults in
             defaults.removeObject(forKey: CacheKey.offerings(appUserID))
         }
 
-        guard let cacheURL = self.cacheURL else {
-            return nil
-        }
-
-        let fileURL = cacheURL.appendingPathComponent(CacheKey.offerings(appUserID).rawValue)
-
-        return self.largeItemCache.read { cache, _ in
-            try? cache.loadFile(at: fileURL)
-        }
+        return largeItemCache.value(forKey: CacheKey.offerings(appUserID))
     }
 
     func cache(offerings: Offerings, preferredLocales: [String], appUserID: String) {

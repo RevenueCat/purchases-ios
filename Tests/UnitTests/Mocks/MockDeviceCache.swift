@@ -140,8 +140,8 @@ class MockDeviceCache: DeviceCache {
         self.clearCachedOfferingsCount += 1
     }
 
-    override func cachedOfferingsContentsData(appUserID: String) -> Data? {
-        return self.stubbedCachedOfferingsData
+    override func cachedOfferingsContents(appUserID: String) -> Offerings.Contents? {
+        return self.stubbedOfferings?.contents
     }
 
     override func offeringsCacheStatus(isAppBackgrounded: Bool) -> CacheStatus {
