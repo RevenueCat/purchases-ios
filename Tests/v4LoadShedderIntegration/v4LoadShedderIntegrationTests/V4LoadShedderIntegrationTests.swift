@@ -35,7 +35,7 @@ final class V4LoadShedderIntegrationTests: XCTestCase {
         userDefaults.removePersistentDomain(forName: userDefaultsSuite)
         try configureTestSession()
 
-        Purchases.configure(withAPIKey: self.apiKey,
+        Purchases.configure(withAPIKey: self.apiKey + "bad",
                             appUserID: nil,
                             observerMode: false,
                             userDefaults: userDefaults,

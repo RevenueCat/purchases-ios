@@ -12,7 +12,7 @@ name: Subscribe to product through V1 Paywall for alternative offering
 - assertVisible: "Paywall V1"
 - takeScreenshot: "subscribe_from_v1_paywall - Paywall"
 - tapOn:
-    text: "Monthly"
+    text: "Monsthly"
 - tapOn:
     text: "Continue"
 - takeScreenshot: "subscribe_from_v1_paywall - IAP Sheet"

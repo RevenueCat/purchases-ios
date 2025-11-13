@@ -71,7 +71,7 @@ class BaseBackendIntegrationTests: TestCase {
         Purchases.proxyURL = self.proxyURL.flatMap(URL.init(string:))
         Purchases.logLevel = .verbose
 
-        Purchases.configure(withAPIKey: self.apiKey,
+        Purchases.configure(withAPIKey: self.apiKey + "bad",
                             appUserID: nil,
                             observerMode: Self.observerMode,
                             userDefaults: self.userDefaults,
