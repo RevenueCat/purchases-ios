@@ -12,8 +12,9 @@
 //  Created by Josh Holtz on 1/25/25.
 
 import Nimble
-import RevenueCat
+@testable import RevenueCat
 @testable import RevenueCatUI
+import StoreKit
 import XCTest
 
 #if !os(tvOS) // For Paywalls V2
@@ -21,9 +22,24 @@ import XCTest
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class PresentedPartialsTest: TestCase {
 
+    private func createPackageWithIdentifier(_ identifier: String) -> Package {
+        // Create a minimal package for testing
+        // The buildPartial only needs package.identifier for selectedPackage conditions
+        let product = TestSK1Product(identifier: identifier)
+        let storeProduct = StoreProduct(sk1Product: product)
+
+        return Package(
+            identifier: identifier,
+            packageType: .unknown,
+            storeProduct: storeProduct,
+            offeringIdentifier: "test",
+            webCheckoutUrl: nil
+        )
+    }
+
     func testNoPresentedPartials() {
         let state = ComponentViewState.default
-        let condition = ScreenCondition.compact
+        let condition = ScreenCondition.default
         let isEligibleForIntroOffer = false
         let isEligibleForPromoOffer = false
 
@@ -34,21 +50,23 @@ class PresentedPartialsTest: TestCase {
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackage: nil,
             with: presentedOverrides
         )
 
         expect(result).to(beNil())
     }
 
-    func testPresentedPartialsCompactAppliedForCompact() {
+    func testPresentedPartialsSelectedPackageAppliedWhenMatches() {
         let state = ComponentViewState.default
-        let condition = ScreenCondition.compact
+        let condition = ScreenCondition.default
         let isEligibleForIntroOffer = false
         let isEligibleForPromoOffer = false
+        let selectedPackage = createPackageWithIdentifier("rc_annual")
 
         let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
             .init(conditions: [
-                .compact
+                .selectedPackage(.in, ["rc_annual"])
             ], properties: .init(
                 margin: .zero
             ))
@@ -59,6 +77,7 @@ class PresentedPartialsTest: TestCase {
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackage: selectedPackage,
             with: presentedOverrides
         )
 
@@ -69,15 +88,16 @@ class PresentedPartialsTest: TestCase {
         expect(result).to(equal(expected))
     }
 
-    func testPresentedPartialsMediumNotAppliedForCompact() {
+    func testPresentedPartialsSelectedPackageNotAppliedWhenDoesNotMatch() {
         let state = ComponentViewState.default
-        let condition = ScreenCondition.compact
+        let condition = ScreenCondition.default
         let isEligibleForIntroOffer = false
         let isEligibleForPromoOffer = false
+        let selectedPackage = createPackageWithIdentifier("rc_monthly")
 
         let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
             .init(conditions: [
-                .medium
+                .selectedPackage(.in, ["rc_annual"])
             ], properties: .init(
                 margin: .zero
             ))
@@ -88,27 +108,29 @@ class PresentedPartialsTest: TestCase {
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackage: selectedPackage,
             with: presentedOverrides
         )
 
         expect(result).to(beNil())
     }
 
-    func testPresentedPartialsCompactAndMediumAppliedForMedium() {
+    func testPresentedPartialsMultipleConditionsAppliedInOrder() {
         let state = ComponentViewState.default
-        let condition = ScreenCondition.medium
+        let condition = ScreenCondition.default
         let isEligibleForIntroOffer = false
         let isEligibleForPromoOffer = false
+        let selectedPackage = createPackageWithIdentifier("rc_annual")
 
         let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
             .init(conditions: [
-                .compact
+                .selectedPackage(.in, ["rc_monthly", "rc_annual"])
             ], properties: .init(
                 padding: .zero,
                 margin: .zero
             )),
             .init(conditions: [
-                .medium
+                .selectedPackage(.in, ["rc_annual"])
             ], properties: .init(
                 spacing: 8,
                 margin: .init(top: 2, bottom: 2, leading: 2, trailing: 2)
@@ -120,6 +142,7 @@ class PresentedPartialsTest: TestCase {
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackage: selectedPackage,
             with: presentedOverrides
         )
 
@@ -134,7 +157,7 @@ class PresentedPartialsTest: TestCase {
 
     func testPresentedPartialsSelectedAppliedWhenSelected() {
         let state = ComponentViewState.selected
-        let condition = ScreenCondition.medium
+        let condition = ScreenCondition.default
         let isEligibleForIntroOffer = false
         let isEligibleForPromoOffer = false
 
@@ -151,6 +174,7 @@ class PresentedPartialsTest: TestCase {
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackage: nil,
             with: presentedOverrides
         )
 
@@ -163,7 +187,7 @@ class PresentedPartialsTest: TestCase {
 
     func testPresentedPartialsSelectedNotAppliedWhenNotSelected() {
         let state = ComponentViewState.default
-        let condition = ScreenCondition.medium
+        let condition = ScreenCondition.default
         let isEligibleForIntroOffer = false
         let isEligibleForPromoOffer = false
 
@@ -180,6 +204,7 @@ class PresentedPartialsTest: TestCase {
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackage: nil,
             with: presentedOverrides
         )
 
@@ -205,6 +230,7 @@ class PresentedPartialsTest: TestCase {
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackage: nil,
             with: presentedOverrides
         )
 
@@ -234,6 +260,7 @@ class PresentedPartialsTest: TestCase {
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackage: nil,
             with: presentedOverrides
         )
 
@@ -243,3 +270,25 @@ class PresentedPartialsTest: TestCase {
 }
 
 #endif
+
+// Simple mock product for testing - only used to satisfy Package init requirements
+private class TestSK1Product: SK1Product, @unchecked Sendable {
+    let testIdentifier: String
+
+    init(identifier: String) {
+        self.testIdentifier = identifier
+        super.init()
+    }
+
+    override var productIdentifier: String {
+        return testIdentifier
+    }
+
+    override var price: NSDecimalNumber {
+        return NSDecimalNumber(string: "9.99")
+    }
+
+    override var priceLocale: Locale {
+        return Locale(identifier: "en_US")
+    }
+}
