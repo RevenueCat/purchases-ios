@@ -40,11 +40,8 @@ class HTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
 
     enum Timeout: TimeInterval {
 
-        /// The default timeout
-        case `default` = 30
-
         /// The default timeout for backend requests that support a fallback
-        case defaultForMainBackendRequestSupportingFallback = 5
+        case mainBackendRequestSupportingFallback = 5
 
         /// The reduced timeout for requests with fallback support after timeout
         case reduced = 2
@@ -56,9 +53,16 @@ class HTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
     // The last time at which a timeout was received from the main backend
     private var lastTimeoutRequestTime: Date?
 
+    // The default timeout to use
+    private let defaultTimeout: TimeInterval
+
     private let dateProvider: DateProvider
 
-    init(dateProvider: DateProvider = .init()) {
+    init(
+        defaultTimeout: TimeInterval,
+        dateProvider: DateProvider = .init()
+    ) {
+        self.defaultTimeout = defaultTimeout
         self.dateProvider = dateProvider
     }
 
@@ -67,22 +71,22 @@ class HTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
             resetLastTimeoutRequestTime()
         }
 
-        let timeout: Timeout
+        let timeout: TimeInterval
 
         // A fallback request or a request that doesn't support a fallback
         if isFallback || !path.supportsFallbackURLs {
-            timeout = .default
+            timeout = self.defaultTimeout
         }
         // Main backend request that supports fallback when a timeout was previously received from the main backend
         else if lastTimeoutRequestTime != nil {
-            timeout = .reduced
+            timeout = Timeout.reduced.rawValue
         }
         // Main backend request that supports fallback, no timeout received recently
         else {
-            timeout = .defaultForMainBackendRequestSupportingFallback
+            timeout = Timeout.mainBackendRequestSupportingFallback.rawValue
         }
 
-        return timeout.rawValue
+        return timeout
     }
 
     func recordRequestResult(_ result: RequestResult) {
