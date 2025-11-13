@@ -56,29 +56,6 @@ class DeviceCache {
 
     // MARK: - generic methods
 
-    func update<Key: DeviceCacheKeyType, Value: Codable>(
-        key: Key,
-        default defaultValue: Value,
-        updater: @Sendable (inout Value) -> Void
-    ) {
-        self.largeItemCache.write { cache, cacheURL in
-            guard let cacheURL = cacheURL else { return }
-            let fileURL = cacheURL.appendingPathComponent(key.rawValue)
-
-            var value: Value = defaultValue
-            if let data = try? cache.loadFile(at: fileURL),
-               let decoded: Value = try? JSONDecoder.default.decode(jsonData: data, logErrors: true) {
-                value = decoded
-            }
-
-            updater(&value)
-
-            if let data = try? JSONEncoder.default.encode(value: value, logErrors: true) {
-                try? cache.saveData(data, to: fileURL)
-            }
-        }
-    }
-
     func value<Key: DeviceCacheKeyType, Value: Codable>(for key: Key) -> Value? {
         // Large data used to be stored in the user defaults and resulted in crashes, we need to ensure that
         // we are cleaning out that data

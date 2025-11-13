@@ -27,14 +27,14 @@ internal final class SynchronizedLargeItemCache {
     }
 
     /// Performs a synchronized read operation
-    func read<T>(_ action: (LargeItemCacheType, URL?) throws -> T) rethrows -> T {
+    internal func read<T>(_ action: (LargeItemCacheType, URL?) throws -> T) rethrows -> T {
         return try self.lock.perform {
             return try action(self.cache, self.documentURL)
         }
     }
 
     /// Performs a synchronized write operation
-    func write(_ action: (LargeItemCacheType, URL?) throws -> Void) rethrows {
+    internal func write(_ action: (LargeItemCacheType, URL?) throws -> Void) rethrows {
         return try self.lock.perform {
             try action(self.cache, self.documentURL)
         }
