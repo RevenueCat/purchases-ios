@@ -5,20 +5,6 @@
 //  Created by Josh Holtz on 11/12/25.
 //
 
-
-//
-//  Copyright RevenueCat Inc. All Rights Reserved.
-//
-//  Licensed under the MIT License (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//      https://opensource.org/licenses/MIT
-//
-//  CountdownComponentView.swift
-//
-//  Created by Josh Holtz on 1/14/25.
-
 import Foundation
 import RevenueCat
 import SwiftUI
