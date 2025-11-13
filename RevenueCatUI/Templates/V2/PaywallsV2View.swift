@@ -173,6 +173,7 @@ struct PaywallsV2View: View {
             if let errorInfo = self.paywallComponentsData.errorInfo, !errorInfo.isEmpty {
                 // Show fallback paywall and debug error message that
                 // occurred while decoding the paywall
+                let _ = print("error", errorInfo)
                 self.fallbackViewWithErrorMessage(
                     "Error decoding paywall response on: \(errorInfo.keys.joined(separator: ", "))"
                 )
