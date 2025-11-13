@@ -47,6 +47,7 @@ class VideoComponentViewModel {
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
+        packageContext: PackageContext,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
         colorScheme: ColorScheme,

@@ -50,6 +50,7 @@ struct TimelineComponentView: View {
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
+            packageContext: self.packageContext,
             isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                 package: self.packageContext.package
             ),
@@ -72,6 +73,7 @@ struct TimelineComponentView: View {
                 item.styles(
                     state: self.componentViewState,
                     condition: self.screenCondition,
+                    packageContext: self.packageContext,
                     isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                         package: self.packageContext.package
                     ),
@@ -97,6 +99,7 @@ struct TimelineComponentView: View {
                     item.styles(
                         state: self.componentViewState,
                         condition: self.screenCondition,
+                        packageContext: self.packageContext,
                         isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                             package: self.packageContext.package
                         ),
