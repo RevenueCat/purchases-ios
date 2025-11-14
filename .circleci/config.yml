@@ -121,7 +121,7 @@ aliases:
       name: run-maestro-e2e-tests-<< matrix.backend_environment >>
       context:
         - e2e-tests
-        - slack-secrets
+        - slack-secrets-ios
       matrix:
         parameters:
           backend_environment: ["production", "load_shedder_us_east_1", "load_shedder_us_east_2", "fallback"]
@@ -1774,98 +1774,98 @@ workflows:
       - <<: *maestro-e2e-test-job
       - backend-integration-tests-SK1:
           context:
-            - slack-secrets
+            - slack-secrets-ios
       - backend-integration-tests-SK2:
           context:
-            - slack-secrets
+            - slack-secrets-ios
       - backend-integration-tests-custom-entitlements:
           context:
-            - slack-secrets
+            - slack-secrets-ios
       - backend-integration-tests-other:
           context:
-            - slack-secrets
+            - slack-secrets-ios
       - backend-integration-tests-offline:
           context:
-            - slack-secrets
+            - slack-secrets-ios
       - build-tv-watch-and-macos:
           context:
-            - slack-secrets
+            - slack-secrets-ios
       - build-visionos:
           context:
-            - slack-secrets
+            - slack-secrets-ios
       - docs-build:
           context:
-            - slack-secrets
+            - slack-secrets-ios
       - run-test-ios-14:
           context:
-            - slack-secrets
+            - slack-secrets-ios
       - run-test-ios-15:
           context:
-            - slack-secrets
+            - slack-secrets-ios
       - run-test-ios-16:
           context:
-            - slack-secrets
+            - slack-secrets-ios
       - run-test-ios-17:
           context:
-            - slack-secrets
+            - slack-secrets-ios
       - run-test-macos:
           context:
-            - slack-secrets
+            - slack-secrets-ios
       - run-test-tvos:
           context:
-            - slack-secrets
+            - slack-secrets-ios
       - run-test-watchos:
           context:
-            - slack-secrets
+            - slack-secrets-ios
       - spm-receipt-parser:
           context:
-            - slack-secrets
+            - slack-secrets-ios
       - spm-release-build:
           context:
-            - slack-secrets
+            - slack-secrets-ios
       - spm-release-build-xcode-14:
           context:
-            - slack-secrets
+            - slack-secrets-ios
       - spm-release-build-xcode-15:
           context:
-            - slack-secrets
+            - slack-secrets-ios
       - spm-revenuecat-ui-ios-15:
           context:
-            - slack-secrets
+            - slack-secrets-ios
       - spm-revenuecat-ui-ios-16:
           context:
-            - slack-secrets
+            - slack-secrets-ios
       - run-revenuecat-ui-ios-17:
           context:
-            - slack-secrets
+            - slack-secrets-ios
       - spm-revenuecat-ui-watchos:
           context:
-            - slack-secrets
+            - slack-secrets-ios
       - installation-tests-cocoapods:
           context:
-            - slack-secrets
+            - slack-secrets-ios
       - installation-tests-swift-package-manager:
           context:
-            - slack-secrets
+            - slack-secrets-ios
       - installation-tests-custom-entitlement-computation-swift-package-manager:
           context:
-            - slack-secrets
+            - slack-secrets-ios
       - installation-tests-carthage:
           context:
-            - slack-secrets
+            - slack-secrets-ios
       - installation-tests-xcode-direct-integration:
           context:
-            - slack-secrets
+            - slack-secrets-ios
       - installation-tests-receipt-parser:
           context:
-            - slack-secrets
+            - slack-secrets-ios
       - api-tests:
           context:
-            - slack-secrets
+            - slack-secrets-ios
       - deploy-purchase-tester:
           dry_run: true
           context:
-            - slack-secrets
+            - slack-secrets-ios
 
   test-tuist-workflow:
     when:
