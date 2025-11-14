@@ -434,7 +434,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(storeProduct.priceFormatter?.locale) == locale
         expect(storeProduct.priceFormatter?.currencyCode) == "EUR"
     }
-    
+
     func testTestProductWithCustomLocaleAndCurrency() {
         let locale: Locale = .init(identifier: "en_ES")
         let product = TestStoreProduct(
@@ -453,7 +453,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(storeProduct.priceFormatter?.locale) == locale
         expect(storeProduct.priceFormatter?.currencyCode) == "USD"
     }
-    
+
     func testTestProductWithCustomCurrency() {
         let locale: Locale = .init(identifier: "en_US")
         let product = TestStoreProduct(
