@@ -62,7 +62,9 @@ final class TestLogHandler {
         Self.sharedHandler.add(observer: self)
     }
 
-    deinit { Self.sharedHandler.remove(observer: self) }
+    deinit {
+        Self.sharedHandler.remove(observer: self)
+    }
 
     /// If a test overrides `Purchases.verboseLogHandler` or `Logger.internalLogHandler`
     /// this needs to be called to re-install the test handler.
