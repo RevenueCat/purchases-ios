@@ -841,7 +841,7 @@ final class PurchasesOrchestrator {
         }
     }
 
-    func postFeatureEventsIfNeeded(delayed: Bool = false) {
+    func postEventsIfNeeded(delayed: Bool = false) {
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
               let manager = self.eventsManager else { return }
 
@@ -854,6 +854,22 @@ final class PurchasesOrchestrator {
         }
         self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) {
             _ = try? await manager.flushEvents(batchSize: EventsManager.defaultEventBatchSize)
+        }
+    }
+
+    func postFeatureEventsIfNeeded(delayed: Bool = false) {
+        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
+              let manager = self.eventsManager else { return }
+
+        let delay: JitterableDelay
+        if delayed {
+            delay = .long
+        } else {
+            // When backgrounding, the app only has about 5 seconds to perform work
+            delay = .none
+        }
+        self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) {
+            _ = try? await manager.flushFeatureEvents(batchSize: EventsManager.defaultEventBatchSize)
         }
     }
 
