@@ -161,13 +161,7 @@ class DeviceCache {
     // MARK: - Offerings
 
     func cachedOfferingsContents(appUserID: String) -> Offerings.Contents? {
-        // Large data used to be stored in the user defaults and resulted in crashes, we need to ensure that
-        // we are cleaning out that data
-        userDefaults.write { defaults in
-            defaults.removeObject(forKey: CacheKey.offerings(appUserID))
-        }
-
-        return largeItemCache.value(forKey: CacheKey.offerings(appUserID))
+        return self.value(for: CacheKey.offerings(appUserID))
     }
 
     func cache(offerings: Offerings, preferredLocales: [String], appUserID: String) {
