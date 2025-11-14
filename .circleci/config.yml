@@ -1602,7 +1602,7 @@ workflows:
     jobs:
       - slack-notify-test:
           context:
-            - slack-secrets-ios
+            - slack-secrets
 
   generate-snapshot:
     when: << pipeline.parameters.generate_snapshots >>
