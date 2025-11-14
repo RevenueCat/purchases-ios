@@ -34,7 +34,6 @@ class CountdownComponentViewModel {
 
 // MARK: - CountdownState
 
-@MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class CountdownState: ObservableObject {
 
@@ -47,7 +46,6 @@ final class CountdownState: ObservableObject {
 
     // MARK: - Init
 
-    /// Provide a Date directly.
     init(targetDate: Date?, countFrom: PaywallComponent.CountdownComponent.CountFrom) {
         self.targetDate = targetDate
         self.countFrom = countFrom
@@ -55,7 +53,6 @@ final class CountdownState: ObservableObject {
     }
 
     deinit {
-        // Not calling stop because of async needed
         timer?.invalidate()
         timer = nil
     }
@@ -63,13 +60,12 @@ final class CountdownState: ObservableObject {
     // MARK: - Public API
 
     func start() {
-        guard self.timer == nil, self.targetDate != nil, !self.hasEnded else { return }
+        guard timer == nil, targetDate != nil, !hasEnded else { return }
 
-        let timer = Timer(timeInterval: 1.0, repeats: true) { [weak self] _ in
-            Task { @MainActor in
-                guard let self = self else { return }
-                self.updateCountdown()
-            }
+        // This schedules the timer on the *current* run loop,
+        // which is the main run loop if you call `start()` from the main thread
+        let timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            self?.updateCountdown()
         }
 
         RunLoop.main.add(timer, forMode: .common)
@@ -96,7 +92,7 @@ final class CountdownState: ObservableObject {
             return
         }
 
-        countdownTime = CountdownTime(interval: delta, countFrom: self.countFrom)
+        countdownTime = CountdownTime(interval: delta, countFrom: countFrom)
     }
 
     private func finish() {
