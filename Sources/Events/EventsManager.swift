@@ -28,6 +28,18 @@ protocol EventsManagerType {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func flushEvents(batchSize: Int) async throws -> Int
 
+    /// - Throws: if posting feature events fails
+    /// - Returns: the number of feature events posted
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func flushFeatureEvents(batchSize: Int) async throws -> Int
+
+    #if ENABLE_AD_EVENTS_TRACKING
+    /// - Throws: if posting ad events fails
+    /// - Returns: the number of ad events posted
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func flushAdEvents(count: Int) async throws -> Int
+    #endif
+
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -38,8 +50,28 @@ actor EventsManager: EventsManagerType {
     private let store: FeatureEventStoreType
     private var appSessionID: UUID
 
+    #if ENABLE_AD_EVENTS_TRACKING
+    private let adEventStore: AdEventStoreType?
+    private var adFlushInProgress = false
+    #endif
+
     private var flushInProgress = false
 
+    #if ENABLE_AD_EVENTS_TRACKING
+    init(
+        internalAPI: InternalAPI,
+        userProvider: CurrentUserProvider,
+        store: FeatureEventStoreType,
+        appSessionID: UUID = SystemInfo.appSessionID,
+        adEventStore: AdEventStoreType? = nil
+    ) {
+        self.internalAPI = internalAPI
+        self.userProvider = userProvider
+        self.store = store
+        self.appSessionID = appSessionID
+        self.adEventStore = adEventStore
+    }
+    #else
     init(
         internalAPI: InternalAPI,
         userProvider: CurrentUserProvider,
@@ -51,6 +83,7 @@ actor EventsManager: EventsManagerType {
         self.store = store
         self.appSessionID = appSessionID
     }
+    #endif
 
     func track(featureEvent: FeatureEvent) async {
         guard let event: StoredFeatureEvent = .init(event: featureEvent,
@@ -66,14 +99,33 @@ actor EventsManager: EventsManagerType {
 
     #if ENABLE_AD_EVENTS_TRACKING
     func track(adEvent: AdEvent) async {
-        // Ad events are not yet implemented.
-        // They should not be sent through the feature events system.
-        // They require their own StoredAdEvent, AdEventStore, and
-        // InternalAPI.postAdEvents() using HTTPRequest.AdPath.postEvents
+        guard let store = self.adEventStore else {
+            Logger.warn(EventsManagerStrings.ad_event_tracking_disabled)
+            return
+        }
+
+        guard let event: StoredAdEvent = .init(event: adEvent,
+                                               userID: self.userProvider.currentAppUserID,
+                                               appSessionID: self.appSessionID) else {
+            Logger.error(EventsManagerStrings.ad_event_cannot_serialize)
+            return
+        }
+        await store.store(event)
     }
     #endif
 
     func flushEvents(batchSize: Int) async throws -> Int {
+        let featureEventsFlushed = try await self.flushFeatureEvents(batchSize: batchSize)
+
+        #if ENABLE_AD_EVENTS_TRACKING
+        let adEventsFlushed = try await self.flushAdEvents(count: batchSize)
+        return featureEventsFlushed + adEventsFlushed
+        #else
+        return featureEventsFlushed
+        #endif
+    }
+
+    func flushFeatureEvents(batchSize: Int) async throws -> Int {
         guard !self.flushInProgress else {
             Logger.debug(Strings.paywalls.event_flush_already_in_progress)
             return 0
@@ -123,4 +175,98 @@ actor EventsManager: EventsManagerType {
     static let defaultEventBatchSize = 50
     static let maxBatchesPerFlush = 10
 
+    #if ENABLE_AD_EVENTS_TRACKING
+    func flushAdEvents(count: Int) async throws -> Int {
+        guard let store = self.adEventStore else {
+            Logger.warn(EventsManagerStrings.ad_event_tracking_disabled)
+            return 0
+        }
+
+        guard !self.adFlushInProgress else {
+            Logger.debug(EventsManagerStrings.ad_event_flush_already_in_progress)
+            return 0
+        }
+        self.adFlushInProgress = true
+        defer { self.adFlushInProgress = false }
+
+        let events = await store.fetch(count)
+
+        guard !events.isEmpty else {
+            Logger.verbose(EventsManagerStrings.ad_event_flush_with_empty_store)
+            return 0
+        }
+
+        Logger.verbose(EventsManagerStrings.ad_event_flush_starting(events.count))
+
+        do {
+            try await self.internalAPI.postAdEvents(events: events)
+            Logger.debug(EventsManagerStrings.ad_events_flushed_successfully)
+
+            await store.clear(count)
+
+            return events.count
+        } catch {
+            Logger.error(EventsManagerStrings.ad_event_sync_failed(error))
+
+            if let backendError = error as? BackendError,
+               backendError.successfullySynced {
+                await store.clear(count)
+            }
+
+            throw error
+        }
+    }
+    #endif
+
 }
+
+// MARK: - Messages
+
+#if ENABLE_AD_EVENTS_TRACKING
+// swiftlint:disable identifier_name
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private enum EventsManagerStrings {
+
+    case ad_event_tracking_disabled
+    case ad_event_cannot_serialize
+    case ad_event_flush_already_in_progress
+    case ad_event_flush_with_empty_store
+    case ad_event_flush_starting(Int)
+    case ad_events_flushed_successfully
+    case ad_event_sync_failed(Error)
+
+}
+// swiftlint:enable identifier_name
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension EventsManagerStrings: LogMessage {
+
+    var description: String {
+        switch self {
+        case .ad_event_tracking_disabled:
+            return "Ad event tracking is disabled - no ad event store configured"
+
+        case .ad_event_cannot_serialize:
+            return "Cannot serialize ad event"
+
+        case .ad_event_flush_already_in_progress:
+            return "Ad event flush already in progress"
+
+        case .ad_event_flush_with_empty_store:
+            return "Ad event flush with empty store"
+
+        case let .ad_event_flush_starting(count):
+            return "Ad event flush starting with \(count) event(s)"
+
+        case .ad_events_flushed_successfully:
+            return "Ad events flushed successfully"
+
+        case let .ad_event_sync_failed(error):
+            return "Ad event sync failed: \(error)"
+        }
+    }
+
+    var category: String { return "ad_events_manager" }
+
+}
+#endif
