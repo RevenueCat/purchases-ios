@@ -416,12 +416,51 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(storeProduct.isFamilyShareable) == isFamilyShareable
     }
 
+    // Legacy behavior: if no currencyCode is passed it will take the currencyCode from the locale
     func testTestProductWithCustomLocale() {
         let locale: Locale = .init(identifier: "es_ES")
         let product = TestStoreProduct(
             localizedTitle: "product",
             price: 3.99,
             localizedPriceString: "$3.99",
+            productIdentifier: "identifier",
+            productType: .autoRenewableSubscription,
+            localizedDescription: "",
+            locale: locale
+        )
+        let storeProduct = product.toStoreProduct()
+
+        expect(storeProduct.currencyCode) == "EUR"
+        expect(storeProduct.priceFormatter?.locale) == locale
+        expect(storeProduct.priceFormatter?.currencyCode) == "EUR"
+    }
+    
+    func testTestProductWithCustomLocaleAndCurrency() {
+        let locale: Locale = .init(identifier: "en_ES")
+        let product = TestStoreProduct(
+            localizedTitle: "product",
+            price: 3.99,
+            currencyCode: "USD",
+            localizedPriceString: "$3.99",
+            productIdentifier: "identifier",
+            productType: .autoRenewableSubscription,
+            localizedDescription: "",
+            locale: locale
+        )
+        let storeProduct = product.toStoreProduct()
+
+        expect(storeProduct.currencyCode) == "USD"
+        expect(storeProduct.priceFormatter?.locale) == locale
+        expect(storeProduct.priceFormatter?.currencyCode) == "USD"
+    }
+    
+    func testTestProductWithCustomCurrency() {
+        let locale: Locale = .init(identifier: "en_US")
+        let product = TestStoreProduct(
+            localizedTitle: "product",
+            price: 3.99,
+            currencyCode: "EUR",
+            localizedPriceString: "€3.99",
             productIdentifier: "identifier",
             productType: .autoRenewableSubscription,
             localizedDescription: "",
