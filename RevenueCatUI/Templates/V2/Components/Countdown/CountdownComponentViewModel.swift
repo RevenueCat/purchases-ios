@@ -54,6 +54,12 @@ final class CountdownState: ObservableObject {
         updateCountdown()
     }
 
+    deinit {
+        // Not calling stop because of async needed
+        timer?.invalidate()
+        timer = nil
+    }
+
     // MARK: - Public API
 
     func start() {
