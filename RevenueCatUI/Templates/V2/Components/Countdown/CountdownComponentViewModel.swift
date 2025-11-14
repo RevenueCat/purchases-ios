@@ -5,6 +5,7 @@
 //  Created by Josh Holtz on 11/12/25.
 //
 
+import Combine
 import Foundation
 @_spi(Internal) import RevenueCat
 
@@ -34,6 +35,7 @@ class CountdownComponentViewModel {
 
 // MARK: - CountdownState
 
+@MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class CountdownState: ObservableObject {
 
@@ -42,10 +44,12 @@ final class CountdownState: ObservableObject {
 
     let targetDate: Date?
     let countFrom: PaywallComponent.CountdownComponent.CountFrom
-    private var timer: Timer?
+    private var timer: Timer.TimerPublisher?
+    private var cancellable: AnyCancellable?
 
     // MARK: - Init
 
+    /// Provide a Date directly.
     init(targetDate: Date?, countFrom: PaywallComponent.CountdownComponent.CountFrom) {
         self.targetDate = targetDate
         self.countFrom = countFrom
@@ -53,28 +57,31 @@ final class CountdownState: ObservableObject {
     }
 
     deinit {
-        timer?.invalidate()
+        // Not calling stop because of async needed
+        timer?.connect().cancel()
         timer = nil
+        cancellable = nil
     }
 
     // MARK: - Public API
 
     func start() {
-        guard timer == nil, targetDate != nil, !hasEnded else { return }
+        guard self.timer == nil, self.targetDate != nil, !self.hasEnded else { return }
 
-        // This schedules the timer on the *current* run loop,
-        // which is the main run loop if you call `start()` from the main thread
-        let timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            self?.updateCountdown()
-        }
-
-        RunLoop.main.add(timer, forMode: .common)
+        let timer = Timer.publish(every: 1.0, on: RunLoop.main, in: .default)
         self.timer = timer
+        self.cancellable = timer.autoconnect()
+            .eraseToAnyPublisher()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.updateCountdown()
+        }
     }
 
     func stop() {
-        timer?.invalidate()
+        timer?.connect().cancel()
         timer = nil
+        cancellable = nil
     }
 
     // MARK: - Internal logic
@@ -92,7 +99,7 @@ final class CountdownState: ObservableObject {
             return
         }
 
-        countdownTime = CountdownTime(interval: delta, countFrom: countFrom)
+        countdownTime = CountdownTime(interval: delta, countFrom: self.countFrom)
     }
 
     private func finish() {
