@@ -121,7 +121,7 @@ aliases:
       name: run-maestro-e2e-tests-<< matrix.backend_environment >>
       context:
         - e2e-tests
-        - slack-secrets-ios
+        - slack-secrets
       matrix:
         parameters:
           backend_environment: ["production", "load_shedder_us_east_1", "load_shedder_us_east_2", "fallback"]
