@@ -14,7 +14,7 @@ import XCTest
 
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
 class ProductsManagerFactoryTests: StoreKitConfigTestCase {
-    
+
     var mockSystemInfo: MockSystemInfo!
     var mockDeviceCache: MockDeviceCache!
     var mockBackend: MockBackend!
@@ -27,10 +27,10 @@ class ProductsManagerFactoryTests: StoreKitConfigTestCase {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSomething() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
-        
+
         testSession.locale = Locale(identifier: "ro_RO")
         let manager = try createSut(storeKitVersion: .storeKit2, storefront: MockStorefront(countryCode: "ro_RO"))
-        
+
         let offeringsResponse = OfferingsResponse(
             currentOfferingId: "default",
             offerings: [.init(
@@ -65,16 +65,16 @@ class ProductsManagerFactoryTests: StoreKitConfigTestCase {
                 ]
             )
         )
-        
+
         mockOfferingsAPI.stubbedGetOfferingsCompletionResult = .success(offeringsResponse)
-        
+
         // when
         let result = waitUntilValue { completed in
             self.offeringsManager.offerings(appUserID: "") {
                 completed($0)
             }
         }
-        
+
         mockDeviceCache.stubbedOfferings = result?.value
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
@@ -100,14 +100,14 @@ class ProductsManagerFactoryTests: StoreKitConfigTestCase {
             preferredLocalesProvider: preferredLocalesProvider
         )
         mockSystemInfo.stubbedStorefront = storefront
-        
+
         mockDeviceCache = MockDeviceCache(
             systemInfo: mockSystemInfo
         )
         mockBackend = MockBackend()
-        
+
         mockOfferingsAPI = try XCTUnwrap(mockBackend.offerings as? MockOfferingsAPI)
-        
+
         let productsManager = ProductsManagerFactory.createManager(
             apiKeyValidationResult: .validApplePlatform,
             diagnosticsTracker: nil,
@@ -116,7 +116,7 @@ class ProductsManagerFactoryTests: StoreKitConfigTestCase {
             deviceCache: mockDeviceCache,
             requestTimeout: 60
         )
-        
+
         self.offeringsManager = OfferingsManager(
             deviceCache: mockDeviceCache,
             operationDispatcher: mockOperationDispatcher,
@@ -126,10 +126,10 @@ class ProductsManagerFactoryTests: StoreKitConfigTestCase {
             productsManager: productsManager,
             diagnosticsTracker: nil
         )
-        
+
         return productsManager
     }
-    
+
     override func changeStorefront(_ new: String, file: FileString = #fileID, line: UInt = #line) async throws {
         mockSystemInfo.stubbedStorefront = MockStorefront(countryCode: new)
         try await super.changeStorefront(new, file: file, line: line)

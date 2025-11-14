@@ -412,7 +412,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let offeringsFactory = OfferingsFactory()
         let receiptParser = PurchasesReceiptParser.default
         let transactionsManager = TransactionsManager(receiptParser: receiptParser)
-        
+
         let productsManager = CachingProductsManager(
             manager: ProductsManagerFactory.createManager(apiKeyValidationResult: apiKeyValidationResult,
                                                           diagnosticsTracker: diagnosticsTracker,
