@@ -5,6 +5,7 @@
 //  Created by Josh Holtz on 11/12/25.
 //
 
+import Combine
 import Foundation
 @_spi(Internal) import RevenueCat
 
@@ -43,7 +44,8 @@ final class CountdownState: ObservableObject {
 
     let targetDate: Date?
     let countFrom: PaywallComponent.CountdownComponent.CountFrom
-    private var timer: Timer?
+    private var timer: Timer.TimerPublisher?
+    private var cancellable: AnyCancellable?
 
     // MARK: - Init
 
@@ -56,8 +58,9 @@ final class CountdownState: ObservableObject {
 
     deinit {
         // Not calling stop because of async needed
-        timer?.invalidate()
+        timer?.connect().cancel()
         timer = nil
+        cancellable = nil
     }
 
     // MARK: - Public API
@@ -65,19 +68,20 @@ final class CountdownState: ObservableObject {
     func start() {
         guard self.timer == nil, self.targetDate != nil, !self.hasEnded else { return }
 
-        let timer = Timer(timeInterval: 1.0, repeats: true) { [weak self] _ in
-            Task { @MainActor in
-                self?.updateCountdown()
-            }
-        }
-
-        RunLoop.main.add(timer, forMode: .common)
+        let timer = Timer.publish(every: 1.0, on: RunLoop.main, in: .default)
         self.timer = timer
+        self.cancellable = timer.autoconnect()
+            .eraseToAnyPublisher()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.updateCountdown()
+        }
     }
 
     func stop() {
-        timer?.invalidate()
+        timer?.connect().cancel()
         timer = nil
+        cancellable = nil
     }
 
     // MARK: - Internal logic
