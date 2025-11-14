@@ -63,6 +63,7 @@ private func checkStoreProductCreation(discount: TestStoreProductDiscount) {
     _ = TestStoreProduct(
         localizedTitle: "",
         price: 1.99,
+        currencyCode: "USD",
         localizedPriceString: "",
         productIdentifier: "",
         productType: .autoRenewableSubscription,
