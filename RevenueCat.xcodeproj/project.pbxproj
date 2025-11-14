@@ -29,6 +29,8 @@
 		038213602DCAF6BE003C02C3 /* OpenSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0382135F2DCAF6BE003C02C3 /* OpenSheet.swift */; };
 		038213DB2DD4979A003C02C3 /* PurchaseButtonComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 038213DA2DD4979A003C02C3 /* PurchaseButtonComponentTests.swift */; };
 		0387D3C82EC51F09008E4A6B /* FileImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0387D3C72EC51F09008E4A6B /* FileImageLoader.swift */; };
+		0387D4AE2EC58AA5008E4A6B /* CountdownComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0387D4AC2EC58AA5008E4A6B /* CountdownComponentViewModel.swift */; };
+		0387D4AF2EC58AA5008E4A6B /* CountdownComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0387D4AB2EC58AA5008E4A6B /* CountdownComponentView.swift */; };
 		038EC8232DE7A8B300786C42 /* TakeScreenshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 038EC8222DE7A8AC00786C42 /* TakeScreenshot.swift */; };
 		03A98CEF2D1EE048009BCA61 /* FallbackComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98CEE2D1EE040009BCA61 /* FallbackComponentTests.swift */; };
 		03A98CF12D222F5F009BCA61 /* FallbackComponentPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03A98CF02D222F53009BCA61 /* FallbackComponentPreview.swift */; };
@@ -1246,6 +1248,7 @@
 		B3F3E8DA277158FE0047A5B9 /* DNSChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F3E8D9277158FE0047A5B9 /* DNSChecker.swift */; };
 		B3F8418F26F3A93400E560FB /* ErrorCodeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3F8418E26F3A93400E560FB /* ErrorCodeTests.swift */; };
 		DBD2432F2EBDF4BC0066AC6F /* PromotionalOfferViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBD243292EBDF4B80066AC6F /* PromotionalOfferViewTests.swift */; };
+		DDD45A15A641C0FF0BEF6178 /* PaywallCountdownComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A05E9E1B04B32B832DB194 /* PaywallCountdownComponent.swift */; };
 		F516BD29282434070083480B /* StoreKit2StorefrontListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = F516BD28282434070083480B /* StoreKit2StorefrontListener.swift */; };
 		F52CFAFC28290AE500E8ABC5 /* StoreKit2StorefrontListenerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F516BD322828FDD90083480B /* StoreKit2StorefrontListenerTests.swift */; };
 		F530E4FF275646EF001AF6BD /* MacDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = F530E4FE275646EF001AF6BD /* MacDevice.swift */; };
@@ -1500,6 +1503,8 @@
 		0382135F2DCAF6BE003C02C3 /* OpenSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenSheet.swift; sourceTree = "<group>"; };
 		038213DA2DD4979A003C02C3 /* PurchaseButtonComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseButtonComponentTests.swift; sourceTree = "<group>"; };
 		0387D3C72EC51F09008E4A6B /* FileImageLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileImageLoader.swift; sourceTree = "<group>"; };
+		0387D4AB2EC58AA5008E4A6B /* CountdownComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountdownComponentView.swift; sourceTree = "<group>"; };
+		0387D4AC2EC58AA5008E4A6B /* CountdownComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountdownComponentViewModel.swift; sourceTree = "<group>"; };
 		038EC8222DE7A8AC00786C42 /* TakeScreenshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TakeScreenshot.swift; sourceTree = "<group>"; };
 		03A98CEE2D1EE040009BCA61 /* FallbackComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackComponentTests.swift; sourceTree = "<group>"; };
 		03A98CF02D222F53009BCA61 /* FallbackComponentPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackComponentPreview.swift; sourceTree = "<group>"; };
@@ -2719,6 +2724,7 @@
 		B3F8418E26F3A93400E560FB /* ErrorCodeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorCodeTests.swift; sourceTree = "<group>"; };
 		DBD243292EBDF4B80066AC6F /* PromotionalOfferViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromotionalOfferViewTests.swift; sourceTree = "<group>"; };
 		EFB3CBAA73855779FE828CE2 /* ProductsFetcherSK1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductsFetcherSK1.swift; sourceTree = "<group>"; };
+		F1A05E9E1B04B32B832DB194 /* PaywallCountdownComponent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PaywallCountdownComponent.swift; sourceTree = "<group>"; };
 		F516BD28282434070083480B /* StoreKit2StorefrontListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2StorefrontListener.swift; sourceTree = "<group>"; };
 		F516BD322828FDD90083480B /* StoreKit2StorefrontListenerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2StorefrontListenerTests.swift; sourceTree = "<group>"; };
 		F530E4FE275646EF001AF6BD /* MacDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacDevice.swift; sourceTree = "<group>"; };
@@ -2960,6 +2966,15 @@
 			path = Tabs;
 			sourceTree = "<group>";
 		};
+		0387D4AD2EC58AA5008E4A6B /* Countdown */ = {
+			isa = PBXGroup;
+			children = (
+				0387D4AB2EC58AA5008E4A6B /* CountdownComponentView.swift */,
+				0387D4AC2EC58AA5008E4A6B /* CountdownComponentViewModel.swift */,
+			);
+			path = Countdown;
+			sourceTree = "<group>";
+		};
 		03A98D2E2D240C2D009BCA61 /* RevenueCatUI */ = {
 			isa = PBXGroup;
 			children = (
@@ -3095,6 +3110,7 @@
 		2C7457432CEA6470004ACE52 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				0387D4AD2EC58AA5008E4A6B /* Countdown */,
 				164681CD2E6B577600854AA5 /* Video */,
 				2C7457472CEA66AB004ACE52 /* ComponentsView.swift */,
 				7707A94A2CAD936A006E0313 /* Button */,
@@ -5587,6 +5603,7 @@
 				2C2AEB3A2CA7209F00A50F38 /* PaywallPackageComponent.swift */,
 				2C2AEB3E2CA7235300A50F38 /* PaywallPurchaseButtonComponent.swift */,
 				7783606C2CCA7E14000785B8 /* PaywallStickyFooterComponent.swift */,
+				F1A05E9E1B04B32B832DB194 /* PaywallCountdownComponent.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -6046,8 +6063,6 @@
 			dependencies = (
 			);
 			name = RevenueCat;
-			packageProductDependencies = (
-			);
 			productName = Purchases;
 			productReference = 2DC5621624EC63420031F69B /* RevenueCat.framework */;
 			productType = "com.apple.product-type.framework";
@@ -6212,8 +6227,6 @@
 				88DE93E42C211CBC0086B6D8 /* PBXTargetDependency */,
 			);
 			name = RevenueCatUI;
-			packageProductDependencies = (
-			);
 			productName = RevenueCatUIDev;
 			productReference = 887A5FBA2C1D036200E1A461 /* RevenueCatUI.framework */;
 			productType = "com.apple.product-type.framework";
@@ -7107,6 +7120,7 @@
 				42F1DF385E3C1F9903A07FBF /* ProductsFetcherSK1.swift in Sources */,
 				805B60C97993B311CEC93EAF /* ProductsFetcherSK2.swift in Sources */,
 				03C06FC72D46742D00600693 /* PaywallCarouselComponent.swift in Sources */,
+				DDD45A15A641C0FF0BEF6178 /* PaywallCountdownComponent.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -7800,6 +7814,8 @@
 				2CC791592CC0452100FBE120 /* PurchaseButtonComponentView.swift in Sources */,
 				2CC7915A2CC0452100FBE120 /* PackageComponentViewModel.swift in Sources */,
 				887A60772C1D037000E1A461 /* TemplateViewConfiguration+Images.swift in Sources */,
+				0387D4AE2EC58AA5008E4A6B /* CountdownComponentViewModel.swift in Sources */,
+				0387D4AF2EC58AA5008E4A6B /* CountdownComponentView.swift in Sources */,
 				7707A94E2CAD94D2006E0313 /* ButtonComponentViewModel.swift in Sources */,
 				887A60842C1D037000E1A461 /* ConsistentPackageContentView.swift in Sources */,
 				887A60C42C1D037000E1A461 /* IconView.swift in Sources */,

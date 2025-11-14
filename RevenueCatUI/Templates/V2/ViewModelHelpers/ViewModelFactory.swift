@@ -430,6 +430,52 @@ struct ViewModelFactory {
                     component: component
                 )
             )
+        case .countdown(let component):
+            let countdownStackViewModel = try toStackViewModel(
+                component: component.countdownStack,
+                packageValidator: packageValidator,
+                firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+                purchaseButtonCollector: purchaseButtonCollector,
+                localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider,
+                offering: offering,
+                colorScheme: colorScheme
+            )
+
+            let endStackViewModel = try component.endStack.map { endStack in
+                try toStackViewModel(
+                    component: endStack,
+                    packageValidator: packageValidator,
+                    firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+                    purchaseButtonCollector: purchaseButtonCollector,
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider,
+                    offering: offering,
+                    colorScheme: colorScheme
+                )
+            }
+
+            let fallbackStackViewModel = try component.fallback.map { fallback in
+                try toStackViewModel(
+                    component: fallback,
+                    packageValidator: packageValidator,
+                    firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+                    purchaseButtonCollector: purchaseButtonCollector,
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider,
+                    offering: offering,
+                    colorScheme: colorScheme
+                )
+            }
+
+            return .countdown(
+                CountdownComponentViewModel(
+                    component: component,
+                    countdownStackViewModel: countdownStackViewModel,
+                    endStackViewModel: endStackViewModel,
+                    fallbackStackViewModel: fallbackStackViewModel
+                )
+            )
         }
     }
 
@@ -557,6 +603,11 @@ struct ViewModelFactory {
             case .fit, .fixed, .relative:
                 return nil
             }
+        case .countdown(let countdown):
+            guard let first = countdown.countdownStack.components.first else {
+                return nil
+            }
+            return self.findFullWidthImageViewIfItsTheFirst(first)
         }
     }
 
