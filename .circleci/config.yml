@@ -18,7 +18,8 @@ parameters:
         run-manual-docs-deploy,
         update_paywall_templates,
         record_paywall_screenshots,
-        tuist
+        tuist,
+        test-slack-notifications
       ]
     default: default
   generate_snapshots:
@@ -134,6 +135,14 @@ commands:
           channel: "feed-circleci-ios-failures"
           event: fail
           template: basic_fail_1
+
+  slack-notify-test:
+    steps:
+      - slack/notify:
+          branch_pattern: slack-notify-test
+          channel: "feed-circleci-ios-failures"
+          event: always
+          template: basic_success_1
 
   install-runtime:
     parameters:
@@ -499,6 +508,11 @@ commands:
           fingerprint: "SHA256:UYi3gsOInLRPZy6MPho7Yr/YK1VmjDvPGo7sJvIcnPM"
 
 jobs:
+  slack-notify-test:
+    executor:
+      name: macos-executor
+    steps:
+      - slack-notify-test
   validate-package-swift:
     parameters:
       xcode_version:
@@ -1582,6 +1596,14 @@ jobs:
             git push --tags
 
 workflows:
+  test-slack-notifications:
+    when:
+      equal: [test-slack-notifications, << pipeline.parameters.action >>]
+    jobs:
+      - slack-notify-test:
+          context:
+            - slack-secrets-ios
+
   generate-snapshot:
     when: << pipeline.parameters.generate_snapshots >>
     jobs:
