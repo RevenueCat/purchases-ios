@@ -139,14 +139,6 @@ public struct UIConfig: Codable, Equatable, Sendable {
 
 }
 
-#else
-
-public struct UIConfig: Codable, Equatable, Sendable {
-
-}
-
-#endif
-
 public extension UIConfig.ScreenSize {
     enum Defaults {
         public static let all = [ mobile, tablet, desktop ]
@@ -156,3 +148,11 @@ public extension UIConfig.ScreenSize {
         public static let desktop = UIConfig.ScreenSize(name: "desktop", width: 1024)
     }
 }
+
+#else
+
+public struct UIConfig: Codable, Equatable, Sendable {
+
+}
+
+#endif
