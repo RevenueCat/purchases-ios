@@ -128,7 +128,10 @@ class MockDeviceCache: DeviceCache {
     }
 
     override func cachedOfferingsContents(appUserID: String) -> Offerings.Contents? {
-        return self.stubbedOfferings?.contents
+        if let stubbedCachedOfferingsData {
+            return try? JSONDecoder.default.decode(Offerings.Contents.self, from: stubbedCachedOfferingsData)
+        }
+        return nil
     }
 
     override func offeringsCacheStatus(isAppBackgrounded: Bool) -> CacheStatus {
