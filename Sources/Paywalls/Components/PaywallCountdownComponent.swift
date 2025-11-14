@@ -22,6 +22,7 @@ public extension PaywallComponent {
         let type: ComponentType
         public let name: String?
         public let style: CountdownStyle
+        public let countFrom: CountFrom
         public let countdownStack: PaywallComponent.StackComponent
         public let endStack: PaywallComponent.StackComponent?
         public let fallback: PaywallComponent.StackComponent?
@@ -31,6 +32,7 @@ public extension PaywallComponent {
             id: String? = nil,
             name: String? = nil,
             style: CountdownStyle,
+            countFrom: CountFrom,
             countdownStack: PaywallComponent.StackComponent,
             endStack: PaywallComponent.StackComponent? = nil,
             fallback: PaywallComponent.StackComponent? = nil,
@@ -39,6 +41,7 @@ public extension PaywallComponent {
             self.type = .countdown
             self.name = name
             self.style = style
+            self.countFrom = countFrom
             self.countdownStack = countdownStack
             self.endStack = endStack
             self.fallback = fallback
@@ -49,6 +52,7 @@ public extension PaywallComponent {
             case type
             case name
             case style
+            case countFrom
             case countdownStack
             case endStack
             case fallback
@@ -60,6 +64,7 @@ public extension PaywallComponent {
             self.type = try container.decode(ComponentType.self, forKey: .type)
             self.name = try container.decodeIfPresent(String.self, forKey: .name)
             self.style = try container.decode(CountdownStyle.self, forKey: .style)
+            self.countFrom = try container.decode(CountFrom.self, forKey: .countFrom)
             self.countdownStack = try container.decode(PaywallComponent.StackComponent.self, forKey: .countdownStack)
             self.endStack = try container.decodeIfPresent(PaywallComponent.StackComponent.self, forKey: .endStack)
             self.fallback = try container.decodeIfPresent(PaywallComponent.StackComponent.self, forKey: .fallback)
@@ -74,6 +79,7 @@ public extension PaywallComponent {
             try container.encode(type, forKey: .type)
             try container.encodeIfPresent(name, forKey: .name)
             try container.encode(style, forKey: .style)
+            try container.encode(countFrom, forKey: .countFrom)
             try container.encode(countdownStack, forKey: .countdownStack)
             try container.encode(endStack, forKey: .endStack)
             try container.encode(fallback, forKey: .fallback)
@@ -84,6 +90,7 @@ public extension PaywallComponent {
             hasher.combine(type)
             hasher.combine(name)
             hasher.combine(style)
+            hasher.combine(countFrom)
             hasher.combine(countdownStack)
             hasher.combine(endStack)
             hasher.combine(fallback)
@@ -94,6 +101,7 @@ public extension PaywallComponent {
             return lhs.type == rhs.type &&
                    lhs.name == rhs.name &&
                    lhs.style == rhs.style &&
+                   lhs.countFrom == rhs.countFrom &&
                    lhs.countdownStack == rhs.countdownStack &&
                    lhs.endStack == rhs.endStack &&
                    lhs.fallback == rhs.fallback &&
@@ -148,6 +156,13 @@ public extension PaywallComponent {
                 case date
             }
 
+        }
+
+        // swiftlint:disable:next nesting
+        public enum CountFrom: String, Codable, Sendable, Hashable, Equatable {
+            case days
+            case hours
+            case minutes
         }
     }
 

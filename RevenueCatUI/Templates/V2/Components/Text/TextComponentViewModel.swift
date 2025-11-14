@@ -100,8 +100,6 @@ class TextComponentViewModel {
         countdownTime: CountdownTime? = nil
     ) -> String {
 
-//        print("JOSH CountdownTime", countdownTime)
-
         let processedWithV2 = Self.processTextV2(
             text,
             packageContext: packageContext,

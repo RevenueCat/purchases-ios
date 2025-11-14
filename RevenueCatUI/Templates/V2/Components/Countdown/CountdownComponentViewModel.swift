@@ -42,13 +42,15 @@ final class CountdownState: ObservableObject {
     @Published private(set) var countdownTime: CountdownTime = .zero
 
     let targetDate: Date?
+    let countFrom: PaywallComponent.CountdownComponent.CountFrom
     private var timer: Timer?
 
     // MARK: - Init
 
     /// Provide a Date directly.
-    init(targetDate: Date?) {
+    init(targetDate: Date?, countFrom: PaywallComponent.CountdownComponent.CountFrom) {
         self.targetDate = targetDate
+        self.countFrom = countFrom
         updateCountdown()
     }
 
@@ -87,8 +89,7 @@ final class CountdownState: ObservableObject {
             return
         }
 
-        countdownTime = CountdownTime(interval: delta)
-        hasEnded = false
+        countdownTime = CountdownTime(interval: delta, countFrom: self.countFrom)
     }
 
     private func finish() {
@@ -108,23 +109,43 @@ struct CountdownTime {
     let minutes: Int
     let seconds: Int
 
-    static let zero = CountdownTime(days: 0, hours: 0, minutes: 0, seconds: 0)
+    let countFrom: PaywallComponent.CountdownComponent.CountFrom
 
-    init(days: Int, hours: Int, minutes: Int, seconds: Int) {
+    static let zero = CountdownTime(days: 0, hours: 0, minutes: 0, seconds: 0, countFrom: .days)
+
+    init(days: Int, hours: Int, minutes: Int, seconds: Int, countFrom: PaywallComponent.CountdownComponent.CountFrom) {
         self.days = days
         self.hours = hours
         self.minutes = minutes
         self.seconds = seconds
+        self.countFrom = countFrom
     }
 
-    init(interval: TimeInterval) {
+    init(interval: TimeInterval, countFrom: PaywallComponent.CountdownComponent.CountFrom) {
         let totalSeconds = max(0, Int(interval))
 
-        let days = totalSeconds / 86_400
-        let hours = (totalSeconds % 86_400) / 3_600
-        let minutes = (totalSeconds % 3_600) / 60
-        let seconds = totalSeconds % 60
+        switch countFrom {
+        case .days:
+            let days = totalSeconds / 86_400
+            let hours = (totalSeconds % 86_400) / 3_600
+            let minutes = (totalSeconds % 3_600) / 60
+            let seconds = totalSeconds % 60
 
-        self.init(days: days, hours: hours, minutes: minutes, seconds: seconds)
+            self.init(days: days, hours: hours, minutes: minutes, seconds: seconds, countFrom: countFrom)
+
+        case .hours:
+            let hours = totalSeconds / 3_600
+            let minutes = (totalSeconds % 3_600) / 60
+            let seconds = totalSeconds % 60
+
+            self.init(days: 0, hours: hours, minutes: minutes, seconds: seconds, countFrom: countFrom)
+
+        case .minutes:
+            let minutes = totalSeconds / 60
+            let seconds = totalSeconds % 60
+
+            self.init(days: 0, hours: 0, minutes: minutes, seconds: seconds, countFrom: countFrom)
+        }
     }
+
 }
