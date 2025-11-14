@@ -358,12 +358,7 @@ class DeviceCache {
     }
 
     var cachedProductEntitlementMapping: ProductEntitlementMapping? {
-        // Large data used to be stored in the user defaults and resulted in crashes, we need to ensure that
-        // we are cleaning out that data
-        userDefaults.write { defaults in
-            defaults.removeObject(forKey: CacheKeys.productEntitlementMapping)
-        }
-        return self.largeItemCache.value(forKey: CacheKeys.productEntitlementMapping)
+        return self.value(for: CacheKeys.productEntitlementMapping)
     }
 
     // MARK: - StoreKit 2
