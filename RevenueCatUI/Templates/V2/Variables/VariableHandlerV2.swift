@@ -44,7 +44,8 @@ struct VariableHandlerV2 {
         with package: Package,
         locale: Locale,
         localizations: [String: String],
-        promoOffer: PromotionalOffer? = nil
+        promoOffer: PromotionalOffer? = nil,
+        countdownTime: CountdownTime? = nil
     ) -> String {
         let whisker = Whisker(template: text) { variableRaw, functionRaw in
             let variable = self.findVariable(variableRaw)
@@ -56,7 +57,8 @@ struct VariableHandlerV2 {
                 localizations: localizations,
                 discountRelativeToMostExpensivePerMonth: self.discountRelativeToMostExpensivePerMonth,
                 date: self.dateProvider(),
-                promoOffer: promoOffer
+                promoOffer: promoOffer,
+                countdownTime: countdownTime
             ) ?? ""
 
             return function?.process(processedVariable) ?? processedVariable
@@ -214,6 +216,16 @@ enum VariablesV2: String {
     case productRelativeDiscount = "product.relative_discount"
     case productStoreProductName = "product.store_product_name"
 
+    // Countdown variables
+    case countDaysWithZero = "count_days_with_zero"
+    case countDaysWithoutZero = "count_days_without_zero"
+    case countHoursWithZero = "count_hours_with_zero"
+    case countHoursWithoutZero = "count_hours_without_zero"
+    case countMinutesWithZero = "count_minutes_with_zero"
+    case countMinutesWithoutZero = "count_minutes_without_zero"
+    case countSecondsWithZero = "count_seconds_with_zero"
+    case countSecondsWithoutZero = "count_seconds_without_zero"
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -235,7 +247,8 @@ extension VariablesV2 {
         localizations: [String: String],
         discountRelativeToMostExpensivePerMonth: Double?,
         date: Date,
-        promoOffer: PromotionalOffer?
+        promoOffer: PromotionalOffer?,
+        countdownTime: CountdownTime?
     ) -> String {
         switch self {
         case .productCurrencyCode:
@@ -343,6 +356,22 @@ extension VariablesV2 {
             )
         case .productStoreProductName:
             return self.productStoreProductName(package: package)
+        case .countDaysWithZero:
+            return self.countdownValue(countdownTime: countdownTime, format: .daysWithZero)
+        case .countDaysWithoutZero:
+            return self.countdownValue(countdownTime: countdownTime, format: .daysWithoutZero)
+        case .countHoursWithZero:
+            return self.countdownValue(countdownTime: countdownTime, format: .hoursWithZero)
+        case .countHoursWithoutZero:
+            return self.countdownValue(countdownTime: countdownTime, format: .hoursWithoutZero)
+        case .countMinutesWithZero:
+            return self.countdownValue(countdownTime: countdownTime, format: .minutesWithZero)
+        case .countMinutesWithoutZero:
+            return self.countdownValue(countdownTime: countdownTime, format: .minutesWithoutZero)
+        case .countSecondsWithZero:
+            return self.countdownValue(countdownTime: countdownTime, format: .secondsWithZero)
+        case .countSecondsWithoutZero:
+            return self.countdownValue(countdownTime: countdownTime, format: .secondsWithoutZero)
         }
     }
 
@@ -754,6 +783,38 @@ extension VariablesV2 {
 
     func productStoreProductName(package: Package) -> String {
         return package.storeProduct.localizedTitle
+    }
+
+    enum CountdownFormat {
+        case daysWithZero, daysWithoutZero
+        case hoursWithZero, hoursWithoutZero
+        case minutesWithZero, minutesWithoutZero
+        case secondsWithZero, secondsWithoutZero
+    }
+
+    func countdownValue(countdownTime: CountdownTime?, format: CountdownFormat) -> String {
+        guard let time = countdownTime else {
+            return ""
+        }
+
+        switch format {
+        case .daysWithZero:
+            return String(format: "%02d", time.days)
+        case .daysWithoutZero:
+            return "\(time.days)"
+        case .hoursWithZero:
+            return String(format: "%02d", time.hours)
+        case .hoursWithoutZero:
+            return "\(time.hours)"
+        case .minutesWithZero:
+            return String(format: "%02d", time.minutes)
+        case .minutesWithoutZero:
+            return "\(time.minutes)"
+        case .secondsWithZero:
+            return String(format: "%02d", time.seconds)
+        case .secondsWithoutZero:
+            return "\(time.seconds)"
+        }
     }
 
 }

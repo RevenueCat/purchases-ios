@@ -51,6 +51,7 @@ class TextComponentViewModel {
         packageContext: PackageContext,
         isEligibleForIntroOffer: Bool,
         promoOffer: PromotionalOffer?,
+        countdownTime: CountdownTime? = nil,
         @ViewBuilder apply: @escaping (TextComponentStyle) -> some View
     ) -> some View {
         let localizedPartial = LocalizedTextPartial.buildPartial(
@@ -72,7 +73,8 @@ class TextComponentViewModel {
                 variableConfig: uiConfigProvider.variableConfig,
                 locale: self.localizationProvider.locale,
                 localizations: self.uiConfigProvider.getLocalizations(for: self.localizationProvider.locale),
-                promoOffer: promoOffer
+                promoOffer: promoOffer,
+                countdownTime: countdownTime
             ),
             fontName: partial?.fontName ?? self.component.fontName,
             fontWeight: partial?.fontWeightResolved ?? self.component.fontWeightResolved,
@@ -94,15 +96,18 @@ class TextComponentViewModel {
         variableConfig: UIConfig.VariableConfig,
         locale: Locale,
         localizations: [String: String],
-        promoOffer: PromotionalOffer? = nil
+        promoOffer: PromotionalOffer? = nil,
+        countdownTime: CountdownTime? = nil
     ) -> String {
+
         let processedWithV2 = Self.processTextV2(
             text,
             packageContext: packageContext,
             variableConfig: variableConfig,
             locale: locale,
             localizations: localizations,
-            promoOffer: promoOffer
+            promoOffer: promoOffer,
+            countdownTime: countdownTime
         )
         // Note: This is temporary while in closed beta and shortly after
         let processedWithV2AndV1 = Self.processTextV1(
@@ -120,7 +125,8 @@ class TextComponentViewModel {
         variableConfig: UIConfig.VariableConfig,
         locale: Locale,
         localizations: [String: String],
-        promoOffer: PromotionalOffer? = nil
+        promoOffer: PromotionalOffer? = nil,
+        countdownTime: CountdownTime? = nil
     ) -> String {
         guard let package = packageContext.package else {
             return text
@@ -143,7 +149,8 @@ class TextComponentViewModel {
             with: package,
             locale: locale,
             localizations: localizations,
-            promoOffer: promoOffer
+            promoOffer: promoOffer,
+            countdownTime: countdownTime
         )
     }
 
