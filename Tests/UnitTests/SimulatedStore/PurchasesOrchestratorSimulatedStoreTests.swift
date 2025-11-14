@@ -156,6 +156,7 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
         let testProduct = TestStoreProduct(
             localizedTitle: "Test Product",
             price: 9.99,
+            currencyCode: "USD",
             localizedPriceString: "$9.99",
             productIdentifier: "test.product",
             productType: .autoRenewableSubscription,

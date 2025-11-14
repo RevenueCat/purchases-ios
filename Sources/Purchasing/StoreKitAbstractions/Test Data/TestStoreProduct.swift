@@ -69,7 +69,7 @@ public struct TestStoreProduct {
     public init(
         localizedTitle: String,
         price: Decimal,
-        currencyCode: String,
+        currencyCode: String? = nil,
         localizedPriceString: String,
         productIdentifier: String,
         productType: StoreProduct.ProductType,
@@ -83,7 +83,7 @@ public struct TestStoreProduct {
     ) {
         self.localizedTitle = localizedTitle
         self.price = price
-        self.currencyCode = currencyCode
+        self.currencyCode = currencyCode ?? locale.rc_currencyCode
         self.localizedPriceString = localizedPriceString
         self.productIdentifier = productIdentifier
         self.productType = productType

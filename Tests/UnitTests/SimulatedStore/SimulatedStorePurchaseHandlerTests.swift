@@ -182,6 +182,7 @@ class SimulatedStorePurchaseHandlerTests: TestCase {
 
     private static let testStoreProduct = TestStoreProduct(localizedTitle: "Title",
                                                            price: 1.99,
+                                                           currencyCode: "USD",
                                                            localizedPriceString: "$1.99",
                                                            productIdentifier: "product",
                                                            productType: .autoRenewableSubscription,
