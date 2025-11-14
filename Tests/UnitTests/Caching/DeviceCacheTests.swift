@@ -424,7 +424,7 @@ class DeviceCacheTests: TestCase {
         // Verify that removeObject was called on the file cache with the correct key
         expect(self.mockFileCache.removeInvocations.count) == 1
         let expectedURL = self.mockFileCache.cacheDirectory?
-            .appendingPathComponent("docs–com.revenuecat.data")
+            .appendingPathComponent("docs–RevenueCat")
             .appendingPathComponent("com.revenuecat.userdefaults.offerings.\(appUserID)")
         expect(self.mockFileCache.removeInvocations.first) == expectedURL
     }
