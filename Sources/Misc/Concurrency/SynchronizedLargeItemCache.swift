@@ -38,10 +38,18 @@ internal final class SynchronizedLargeItemCache {
         }
     }
 
+    /// Get the file URL for a specific cache key
+    private func getFileURL(for key: DeviceCacheKeyType) -> URL? {
+        guard let documentURL = self.documentURL else {
+            return nil
+        }
+        return documentURL.appendingPathComponent(key.rawValue)
+    }
+
     /// Save a codable value to the cache
     @discardableResult
     func set<T: Encodable>(codable value: T, forKey key: DeviceCacheKeyType) -> Bool {
-        guard let documentURL = self.documentURL else {
+        guard let fileURL = self.getFileURL(for: key) else {
             Logger.error("Cache URL is not available")
             return false
         }
@@ -49,8 +57,6 @@ internal final class SynchronizedLargeItemCache {
         guard let data = try? JSONEncoder.default.encode(value: value, logErrors: true) else {
             return false
         }
-
-        let fileURL = documentURL.appendingPathComponent(key.rawValue)
 
         do {
             try self.write { cache, _ in
@@ -65,11 +71,9 @@ internal final class SynchronizedLargeItemCache {
 
     /// Load a codable value from the cache
     func value<T: Decodable>(forKey key: DeviceCacheKeyType) -> T? {
-        guard let documentURL = self.documentURL else {
+        guard let fileURL = self.getFileURL(for: key) else {
             return nil
         }
-
-        let fileURL = documentURL.appendingPathComponent(key.rawValue)
 
         return self.read { cache, _ in
             guard let data = try? cache.loadFile(at: fileURL) else {
@@ -82,11 +86,9 @@ internal final class SynchronizedLargeItemCache {
 
     /// Remove a cached item
     func removeObject(forKey key: DeviceCacheKeyType) {
-        guard let documentURL = self.documentURL else {
+        guard let fileURL = self.getFileURL(for: key) else {
             return
         }
-
-        let fileURL = documentURL.appendingPathComponent(key.rawValue)
 
         self.write { _, _ in
             try? self.cache.remove(fileURL)

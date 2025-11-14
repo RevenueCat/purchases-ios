@@ -56,7 +56,7 @@ class DeviceCache {
 
     // MARK: - generic methods
 
-    func value<Key: DeviceCacheKeyType, Value: Codable>(for key: Key) -> Value? {
+    private func value<Key: DeviceCacheKeyType, Value: Codable>(for key: Key) -> Value? {
         // Large data used to be stored in the user defaults and resulted in crashes, we need to ensure that
         // we are cleaning out that data
         userDefaults.write { defaults in
@@ -86,6 +86,8 @@ class DeviceCache {
 
             // Clear offerings cache.
             self.offeringsCachedObject.clearCache()
+            // Remove offerings from UserDefaults to clear any pre-existing data from
+            // before the migration to largeItemCache
             userDefaults.removeObject(forKey: CacheKey.offerings(oldAppUserID))
 
             // Clear virtual currencies cache

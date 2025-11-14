@@ -410,6 +410,78 @@ class DeviceCacheTests: TestCase {
         expect(self.mockFileCache.removeInvocations.count == 1)
     }
 
+    func testClearCachesRemovesOfferingsFromLargeItemCache() throws {
+        let appUserID = "testUser"
+        let offerings = try Self.createSampleOfferings()
+
+        self.mockFileCache.stubSaveData(with: .success(.init(data: .init(), url: .mockFileLocation)))
+        self.deviceCache.cache(offerings: offerings, preferredLocales: ["en-US"], appUserID: appUserID)
+
+        expect(self.mockFileCache.removeInvocations.count) == 0
+
+        self.deviceCache.clearCaches(oldAppUserID: appUserID, andSaveWithNewUserID: "newUser")
+
+        // Verify that removeObject was called on the file cache with the correct key
+        expect(self.mockFileCache.removeInvocations.count) == 1
+        let expectedURL = self.mockFileCache.cacheDirectory?
+            .appendingPathComponent("docs–com.revenuecat.data")
+            .appendingPathComponent("com.revenuecat.userdefaults.offerings.\(appUserID)")
+        expect(self.mockFileCache.removeInvocations.first) == expectedURL
+    }
+
+    func testCachedOfferingsContentsRemovesOldUserDefaultsCache() throws {
+        let appUserID = "testUser"
+        let offerings = try Self.createSampleOfferings()
+        let offeringsKey = "com.revenuecat.userdefaults.offerings.\(appUserID)"
+
+        // Put some data in UserDefaults to simulate old cached data
+        self.mockUserDefaults.mockValues[offeringsKey] = try offerings.contents.jsonEncodedData
+
+        self.mockFileCache.stubLoadFile(with: .success(try offerings.contents.jsonEncodedData))
+
+        // Call cachedOfferingsContents
+        _ = self.deviceCache.cachedOfferingsContents(appUserID: appUserID)
+
+        // Verify that the old UserDefaults cache was removed
+        expect(self.mockUserDefaults.removeObjectForKeyCalledValues).to(contain(offeringsKey))
+    }
+
+    func testCachedOfferingsContentsReturnsSameContentAsSaved() throws {
+        let appUserID = "testUser"
+        let offerings = try Self.createSampleOfferings()
+
+        self.mockFileCache.stubSaveData(with: .success(.init(data: .init(), url: .mockFileLocation)))
+        self.mockFileCache.stubLoadFile(with: .success(try offerings.contents.jsonEncodedData))
+
+        // Cache the offerings
+        self.deviceCache.cache(offerings: offerings, preferredLocales: ["en-US"], appUserID: appUserID)
+
+        // Retrieve the cached offerings contents
+        let cachedContents: Offerings.Contents? = self.deviceCache.cachedOfferingsContents(appUserID: appUserID)
+
+        // Verify that the cached contents match what was saved
+        expect(cachedContents).toNot(beNil())
+        expect(cachedContents?.response.currentOfferingId) == offerings.contents.response.currentOfferingId
+        expect(cachedContents?.response.offerings.count) == offerings.contents.response.offerings.count
+    }
+
+    func testOfferingsAreNeverSavedToUserDefaults() throws {
+        let appUserID = "testUser"
+        let offerings = try Self.createSampleOfferings()
+        let offeringsKey = "com.revenuecat.userdefaults.offerings.\(appUserID)"
+
+        self.mockFileCache.stubSaveData(with: .success(.init(data: .init(), url: .mockFileLocation)))
+
+        // Cache the offerings
+        self.deviceCache.cache(offerings: offerings, preferredLocales: ["en-US"], appUserID: appUserID)
+
+        // Verify that offerings were NOT saved to UserDefaults
+        expect(self.mockUserDefaults.mockValues[offeringsKey]).to(beNil())
+
+        // Verify that offerings WERE saved to the file cache
+        expect(self.mockFileCache.saveDataInvocations.count) == 1
+    }
+
     func testSetLatestAdvertisingIdsByNetworkSentMapsAttributionNetworksToStringKeys() {
         let userId = "asdf"
         let token = "token"

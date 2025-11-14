@@ -19,18 +19,6 @@ class MockDeviceCache: DeviceCache {
     var invokedUpdateKey: Bool = false
     var invokedUpdateKeyParameters: [(key: String, newValue: Any)] = []
 
-    var stubbedValueForKey: [Any] = []
-    var invokedValueForKey: Bool = false
-    var invokedValueForKeyParameters: [String] = []
-
-    override func value<Key: DeviceCacheKeyType, Value: Codable>(for key: Key) -> Value? {
-        self.invokedValueForKey = true
-        self.invokedValueForKeyParameters.append(key.rawValue)
-
-        // swiftlint:disable:next force_cast
-        return self.stubbedValueForKey.popFirst() as! Value?
-    }
-
     // MARK: appUserID
 
     var stubbedAppUserID: String?
