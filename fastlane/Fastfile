@@ -942,7 +942,11 @@ platform :ios do
     rescue => e
       raise e
     ensure
-      slack_backend_integration_test_results(environment: backend_environment, success: success)
+      slack_backend_integration_test_results(
+        environment: backend_environment, 
+        success: success, 
+        message_binary_solo_on_failure: false
+      )
       ping_heartbeat_monitor(url: heartbeat_monitor_ping_url)
 
       # Always stop the watcher, even if Maestro fails
@@ -1281,7 +1285,11 @@ platform :ios do
     ensure
       if options[:test_plan] == "BackendIntegrationTests-All-CI"
         # In the All CI backend integration test plan the load shedder tests are ran against us-east-1 and us-east-2 and all the other tests are ran against production
-        slack_backend_integration_test_results(environment: "production, load_shedder_us_east_1, load_shedder_us_east_2", success: success)
+        slack_backend_integration_test_results(
+          environment: "production, load_shedder_us_east_1, load_shedder_us_east_2", 
+          success: success, 
+          message_binary_solo_on_failure: false
+        )
         ping_heartbeat_monitor(url: ENV['HEARTBEAT_MONITOR_URL_BACKEND_INTEGRATION_TESTS'])
       end
     end
@@ -1311,7 +1319,12 @@ platform :ios do
     rescue => exception
       raise exception
     ensure
-      slack_backend_integration_test_results(environment: "load_shedder_us_east_1", success: success, version: major)
+      slack_backend_integration_test_results(
+        environment: "load_shedder_us_east_1", 
+        success: success, 
+        version: major,
+        message_binary_solo_on_failure: false
+      )
       ping_heartbeat_monitor(url: ENV["HEARTBEAT_MONITOR_URL_LOAD_SHEDDER_V#{major}_INTEGRATION_TESTS"])
     end
   end
