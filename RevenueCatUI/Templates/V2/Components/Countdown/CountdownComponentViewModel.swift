@@ -67,7 +67,8 @@ final class CountdownState: ObservableObject {
 
         let timer = Timer(timeInterval: 1.0, repeats: true) { [weak self] _ in
             Task { @MainActor in
-                self?.updateCountdown()
+                guard let self = self else { return }
+                self.updateCountdown()
             }
         }
 
