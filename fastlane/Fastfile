@@ -849,24 +849,29 @@ platform :ios do
     force_server_error_strategy = "never"
     entitlement_verification_result = ""
     customer_info_source = ""
+    heartbeat_monitor_ping_url = ""
 
     case backend_environment
     when "load_shedder_us_east_1"
       api_host = "fortress-us-east-1.revenuecat.com"
       entitlement_verification_result = "verified"
       customer_info_source = "load_shedder"
+      heartbeat_monitor_ping_url = ENV["HEARTBEAT_MONITOR_URL_E2E_TESTS_LOAD_SHEDDER_US_EAST_1"]
     when "load_shedder_us_east_2"
       api_host = "fortress-us-east-2.revenuecat.com"
       entitlement_verification_result = "verified"
       customer_info_source = "load_shedder"
+      heartbeat_monitor_ping_url = ENV["HEARTBEAT_MONITOR_URL_E2E_TESTS_LOAD_SHEDDER_US_EAST_2"]
     when "fallback"
       force_server_error_strategy = "primary_backend_down"
       entitlement_verification_result = "verified_on_device"
       customer_info_source = "offline_entitlements"
+      heartbeat_monitor_ping_url = ENV["HEARTBEAT_MONITOR_URL_E2E_TESTS_FALLBACK"]
     when "production"
       # Use defaults
       entitlement_verification_result = "verified"
       customer_info_source = "main"
+      heartbeat_monitor_ping_url = ENV["HEARTBEAT_MONITOR_URL_E2E_TESTS_PRODUCTION"]
     else
       UI.user_error!("Invalid backend_environment: #{backend_environment}. Must be one of: production, load_shedder_us_east_1, load_shedder_us_east_2, fallback")
     end
@@ -919,6 +924,7 @@ platform :ios do
     sleep 1
     UI.success("✓ StoreKit config watcher started (PID: #{watcher_pid})")
 
+    success = false
     begin
       # Construct the flow directory path
       flow_dir = "#{base_path}/Examples/rc-maestro/maestro/e2e_tests"
@@ -931,7 +937,18 @@ platform :ios do
       UI.message("Using flow directory: #{flow_dir}")
 
       sh("maestro", "test", "--format", "junit", "--output", "test_output/maestro/report.xml", "--test-output-dir", "test_output/maestro", flow_dir)
+      
+      success = true
+    rescue => e
+      raise e
     ensure
+      slack_backend_integration_test_results(
+        environment: backend_environment, 
+        success: success, 
+        message_binary_solo_on_failure: false
+      )
+      ping_heartbeat_monitor(url: heartbeat_monitor_ping_url)
+
       # Always stop the watcher, even if Maestro fails
       UI.message("Stopping StoreKit config watcher...")
       Process.kill('TERM', watcher_pid) rescue nil
@@ -1247,19 +1264,35 @@ platform :ios do
     fetch_snapshots
     replace_api_key_integration_tests
 
-    scan_with_flaky_test_retries(
-      scheme: "BackendIntegrationTests",
-      ensure_devices_found: true,
-      derived_data_path: "scan_derived_data",
-      output_types: 'junit',
-      output_style: 'raw',
-      result_bundle: true,
-      testplan: options[:test_plan],
-      configuration: 'Debug',
-      output_directory: "fastlane/test_output/xctest/ios",
+    success = false
+    begin
+      scan_with_flaky_test_retries(
+        scheme: "BackendIntegrationTests",
+        ensure_devices_found: true,
+        derived_data_path: "scan_derived_data",
+        output_types: 'junit',
+        output_style: 'raw',
+        result_bundle: true,
+        testplan: options[:test_plan],
+        configuration: 'Debug',
+        output_directory: "fastlane/test_output/xctest/ios",
 
-      number_of_flaky_retries: 5 # Number of retries in an xcodebuild run
-    )
+        number_of_flaky_retries: 5 # Number of retries in an xcodebuild run
+      )
+      success = true
+    rescue => exception
+      raise exception
+    ensure
+      if options[:test_plan] == "BackendIntegrationTests-All-CI"
+        # In the All CI backend integration test plan the load shedder tests are ran against us-east-1 and us-east-2 and all the other tests are ran against production
+        slack_backend_integration_test_results(
+          environment: "production, load_shedder_us_east_1, load_shedder_us_east_2", 
+          success: success, 
+          message_binary_solo_on_failure: false
+        )
+        ping_heartbeat_monitor(url: ENV['HEARTBEAT_MONITOR_URL_BACKEND_INTEGRATION_TESTS'])
+      end
+    end
   end
 
   desc "Run LoadShedder tests in old major"
@@ -1286,7 +1319,13 @@ platform :ios do
     rescue => exception
       raise exception
     ensure
-      send_slack_loadshedder_integration_test_in_major(success: success, major: major)
+      slack_backend_integration_test_results(
+        environment: "load_shedder_us_east_1", 
+        success: success, 
+        version: major,
+        message_binary_solo_on_failure: false
+      )
+      ping_heartbeat_monitor(url: ENV["HEARTBEAT_MONITOR_URL_LOAD_SHEDDER_V#{major}_INTEGRATION_TESTS"])
     end
   end
 
@@ -1834,24 +1873,4 @@ def current_paywall_preview_resources_commit
 end
 def update_paywall_preview_resources_commit(hash)
   File.write(paywall_preview_resources_commit_file, hash)
-end
-
-# Slack
-
-lane :send_slack_loadshedder_integration_test_in_major do |options|
-  success = options[:success] || false
-  major = options[:major] || UI.user_error!("Please provide :major (Integer, e.g., 3 or 4)")
-  major = major.to_i
-  message =
-      if success
-          "iOS load shedder integration tests v#{major} finished successfully"
-      else
-          "iOS load shedder integration tests v#{major} failed"
-      end
-  slack(
-    message: message,
-    slack_url: ENV["SLACK_URL_LOAD_SHEDDER_INTEGRATION_TESTS"],
-    success: success,
-    default_payloads: [:git_branch]
-  )
 end
