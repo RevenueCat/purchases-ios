@@ -92,9 +92,9 @@ class SubscriberAttributeTests: TestCase {
 
     func testAsDictionaryIncludesIgnoreTimeInCacheIdentity() throws {
         let subscriberAttribute = SubscriberAttribute(withKey: "test key",
-                                                     value: "test value",
-                                                     dateProvider: MockDateProvider(stubbedNow: Date()),
-                                                     ignoreTimeInCacheIdentity: true)
+                                                      value: "test value",
+                                                      dateProvider: MockDateProvider(stubbedNow: Date()),
+                                                      ignoreTimeInCacheIdentity: true)
 
         let receivedDictionary = subscriberAttribute.asDictionary()
         expect(receivedDictionary.keys).to(haveCount(5))
@@ -163,13 +163,13 @@ class SubscriberAttributeTests: TestCase {
         let dateProvider2 = MockDateProvider(stubbedNow: time2)
 
         let attribute1 = SubscriberAttribute(withKey: "key",
-                                            value: "value",
-                                            dateProvider: dateProvider1,
-                                            ignoreTimeInCacheIdentity: true)
+                                             value: "value",
+                                             dateProvider: dateProvider1,
+                                             ignoreTimeInCacheIdentity: true)
         let attribute2 = SubscriberAttribute(withKey: "key",
-                                            value: "value",
-                                            dateProvider: dateProvider2,
-                                            ignoreTimeInCacheIdentity: true)
+                                             value: "value",
+                                             dateProvider: dateProvider2,
+                                             ignoreTimeInCacheIdentity: true)
 
         // When ignoreTimeInCacheIdentity is true, only different setTime should still produce same cache keys
         expect(attribute1.individualizedCacheKeyPart) == attribute2.individualizedCacheKeyPart
@@ -204,14 +204,14 @@ class SubscriberAttributeTests: TestCase {
         let dateProvider2 = MockDateProvider(stubbedNow: time2)
 
         let attribute = SubscriberAttribute(withKey: "key",
-                                             value: "value",
-                                             dateProvider: dateProvider1,
-                                             ignoreTimeInCacheIdentity: false)
+                                            value: "value",
+                                            dateProvider: dateProvider1,
+                                            ignoreTimeInCacheIdentity: false)
 
         let attributeDifferentTime = SubscriberAttribute(withKey: "key",
-                                                          value: "value",
-                                                          dateProvider: dateProvider2,
-                                                          ignoreTimeInCacheIdentity: false)
+                                                         value: "value",
+                                                         dateProvider: dateProvider2,
+                                                         ignoreTimeInCacheIdentity: false)
 
         let dict1: SubscriberAttribute.Dictionary = ["key": attribute]
         let dict2: SubscriberAttribute.Dictionary = ["key": attributeDifferentTime]

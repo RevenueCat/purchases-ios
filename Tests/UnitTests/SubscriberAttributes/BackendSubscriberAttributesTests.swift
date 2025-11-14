@@ -449,15 +449,15 @@ class BackendSubscriberAttributesTests: TestCase {
             await withUnsafeContinuation { continuation in
                 // First POST receipt call
                 backend.post(receipt: self.receipt,
-                                  productData: nil,
-                                  transactionData: .init(
-                                    appUserID: self.appUserID,
-                                    presentedOfferingContext: nil,
-                                    unsyncedAttributes: subscriberAttributesByKey,
-                                    storefront: nil,
-                                    source: .init(isRestore: false, initiationSource: .purchase)
-                                  ),
-                                  observerMode: false) { _ in
+                             productData: nil,
+                             transactionData: .init(
+                                appUserID: self.appUserID,
+                                presentedOfferingContext: nil,
+                                unsyncedAttributes: subscriberAttributesByKey,
+                                storefront: nil,
+                                source: .init(isRestore: false, initiationSource: .purchase)
+                             ),
+                             observerMode: false) { _ in
                     continuation.resume()
                 }
             }

@@ -82,7 +82,8 @@ extension SubscriberAttribute {
         }
 
         let value = dictionary[Key.value.rawValue] as? String
-        let ignoreTimeInCacheIdentity = (dictionary[Key.ignoreTimeInCacheIdentity.rawValue] as? NSNumber)?.boolValue ?? false
+        let ignoreTimeInCacheIdentity = (dictionary[Key.ignoreTimeInCacheIdentity.rawValue] as? NSNumber)?.boolValue
+        ?? false
 
         self.init(
             withKey: key,

@@ -184,4 +184,3 @@ class PostReceiptDataOperationFactoryTests: TestCase {
     }
 
 }
-
