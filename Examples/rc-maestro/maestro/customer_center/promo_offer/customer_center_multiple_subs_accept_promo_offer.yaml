@@ -6,7 +6,8 @@ onFlowComplete:
         file: ../../utils/cancel_subscription_group.yaml
         env:
             SUBSCRIPTION_GROUP: "subscription.group.1"
-  - waitForAnimationToEnd
+  - waitForAnimationToEnd:
+      timeout: 5000
   - runFlow: 
         file: ../../utils/cancel_subscription_group.yaml
         env:

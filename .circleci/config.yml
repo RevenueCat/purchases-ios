@@ -15,6 +15,7 @@ parameters:
         default,
         bump,
         run-manual-tests,
+        maestro,
         run-manual-docs-deploy,
         update_paywall_templates,
         record_paywall_screenshots,
@@ -1015,6 +1016,82 @@ jobs:
           destination: scan-test-output
       - slack-notify-on-fail
 
+  run-maestro-tests:
+    executor:
+      name: macos-executor
+      xcode_version: "16.4.0"
+
+    steps:
+      - checkout
+      - tuist-generate-workspace
+      - run:
+          name: Install Maestro CLI
+          command: |
+            set -e
+            brew tap mobile-dev-inc/tap
+            brew install maestro
+      - run:
+          name: Configure Local.xcconfig for Maestro
+          command: |
+            set -e
+            if [ -z "${IOS_API_KEY:-}" ]; then
+              echo "IOS_API_KEY environment variable must be set for Maestro tests" >&2
+              exit 1
+            fi
+            {
+              echo "REVENUECAT_API_KEY = ${IOS_API_KEY}"
+              if [ -n "${REVENUECAT_PROXY_URL_SCHEME:-}" ]; then
+                echo "REVENUECAT_PROXY_URL_SCHEME = ${REVENUECAT_PROXY_URL_SCHEME}"
+              fi
+              if [ -n "${REVENUECAT_PROXY_URL_HOST:-}" ]; then
+                echo "REVENUECAT_PROXY_URL_HOST = ${REVENUECAT_PROXY_URL_HOST}"
+              fi
+            } > Local.xcconfig
+      - run:
+          name: Build and install Maestro app
+          command: |
+            set -eo pipefail
+            export PATH="$HOME/.local/share/mise/shims:$PATH"
+            IOS_RUNTIME=$(xcrun simctl list runtimes | grep -m 1 "iOS 17.5" | awk -F ' - ' '{print $NF}')
+            if [ -z "$IOS_RUNTIME" ]; then
+              echo "Failed to find iOS 17.5 runtime" >&2
+              exit 1
+            fi
+            DEVICE_ID=$(xcrun simctl create "RevenueCatMaestroTests" "iPhone 15" "$IOS_RUNTIME")
+            echo "$DEVICE_ID" > maestro_device_id
+            xcrun simctl boot "$DEVICE_ID"
+            xcrun simctl bootstatus "$DEVICE_ID" -b
+            xcodebuild \
+              -workspace RevenueCat-Tuist.xcworkspace \
+              -scheme Maestro \
+              -configuration Debug \
+              -destination "id=$DEVICE_ID" \
+              -derivedDataPath ./DerivedData \
+              build
+            xcrun simctl uninstall "$DEVICE_ID" com.revenuecat.maestro.ios || true
+            xcrun simctl install "$DEVICE_ID" ./DerivedData/Build/Products/Debug-iphonesimulator/Maestro.app
+      - run:
+          name: Run Maestro tests
+          command: |
+            set -eo pipefail
+            DEVICE_ID=$(cat maestro_device_id)
+            mkdir -p maestro-results
+            MAESTRO_CLI_NO_ANALYTICS=1 maestro --udid "$DEVICE_ID" test Examples/rc-maestro/maestro --format junit --output maestro-results/junit.xml 2>&1 | tee maestro-results/output.log
+      - store_test_results:
+          path: maestro-results
+      - store_artifacts:
+          path: maestro-results
+          destination: maestro
+      - run:
+          name: Cleanup simulator
+          when: always
+          command: |
+            if [ -f maestro_device_id ]; then
+              DEVICE_ID=$(cat maestro_device_id)
+              xcrun simctl shutdown "$DEVICE_ID" || true
+              xcrun simctl delete "$DEVICE_ID" || true
+            fi
+
   run-test-ios-14:
     executor:
       name: macos-executor-for-macos-12_6
@@ -1755,6 +1832,15 @@ workflows:
     jobs:
       - docs-deploy
 
+  manual-trigger-maestro:
+    when:
+      equal: [maestro, << pipeline.parameters.action >>]
+    jobs:
+      - run-maestro-tests:
+          context:
+            - slack-secrets-ios
+            - maestro
+
   # To trigger tests manually, log into circleCI, select the project, a branch, and then click "Trigger Pipeline"
   # in the top right hand corner of the screen. In the modal that appears, set the following parameter fields
   # and click "Trigger Pipeline" to begin the pipeline:
@@ -1817,6 +1903,10 @@ workflows:
       - run-test-watchos:
           context:
             - slack-secrets-ios
+      - run-maestro-tests:
+          context:
+            - slack-secrets-ios
+            - maestro
       - spm-receipt-parser:
           context:
             - slack-secrets-ios
