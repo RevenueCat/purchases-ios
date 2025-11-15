@@ -67,6 +67,9 @@ public struct PaywallView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    @Environment(\.purchaseDisplayCloseButton)
+    private var purchaseDisplayCloseButton
+
     /// Create a view to display the paywall in `Offerings.current`.
     ///
     /// - Parameter fonts: An optional ``PaywallFontProvider``.
@@ -237,7 +240,7 @@ public struct PaywallView: View {
                     DebugErrorView("Legacy paywalls are unsupported on macOS.", releaseBehavior: .errorView)
                     #else
                     LoadingPaywallView(mode: self.mode,
-                                       displayCloseButton: self.displayCloseButton)
+                                       displayCloseButton: self.purchaseDisplayCloseButton ?? self.displayCloseButton)
                         .transition(Self.transition)
                         .task {
                             do {
@@ -312,7 +315,7 @@ public struct PaywallView: View {
                     template: PaywallData.defaultTemplate,
                     mode: self.mode,
                     fonts: fonts,
-                    displayCloseButton: self.displayCloseButton,
+                    displayCloseButton: self.purchaseDisplayCloseButton ?? self.displayCloseButton,
                     introEligibility: checker,
                     purchaseHandler: purchaseHandler,
                     locale: purchaseHandler.preferredLocaleOverride ?? .current,
