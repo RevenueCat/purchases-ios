@@ -17,7 +17,7 @@ import SwiftUI
 extension View {
     /// Overrides default `DisplayCloseButton` of the paywall.
     /// Pass `nil` to remove the override.
-    func purchaseDisplayCloseButton(_ displayCloseButton: Bool?) -> some View {
+    public func purchaseDisplayCloseButton(_ displayCloseButton: Bool?) -> some View {
         environment(\.purchaseDisplayCloseButton, displayCloseButton)
     }
 }
