@@ -249,7 +249,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     }
 
     @objc public var storeFrontCountryCode: String? {
-        systemInfo.storefront?.countryCode
+        systemInfo.syncStorefront?.countryCode
     }
 
     @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
