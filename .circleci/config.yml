@@ -133,6 +133,7 @@ commands:
       # we will probably remove these at some point when we move all jobs to use the Fastlane Slack integration
       - run:
           name: Set Slack environment variables
+          when: always
           command: |
             echo 'export SLACK_ACCESS_TOKEN="${SLACK_ACCESS_TOKEN_CIRCLE_CI_NOTIFY_ORB_IOS}"' >> $BASH_ENV
             echo 'export SLACK_DEFAULT_CHANNEL="${SLACK_DEFAULT_CHANNEL_CIRCLE_CI_NOTIFY_ORB_IOS}"' >> $BASH_ENV
