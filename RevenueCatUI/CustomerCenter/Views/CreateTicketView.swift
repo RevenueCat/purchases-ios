@@ -95,9 +95,24 @@ struct CreateTicketView: View {
                 }
 
                 Section(header: Text(localization[.description])) {
-                    TextEditor(text: $description)
+                    TextEditor(text: Binding(
+                        get: { description },
+                        set: { newValue in
+                            if newValue.count <= 250 {
+                                description = newValue
+                            }
+                        }
+                    ))
                         .frame(minHeight: 150)
                         .focused($focusedField, equals: .description)
+
+                    Text(
+                        localization[.characterCount]
+                            .replacingOccurrences(of: "{{ count }}", with: "\(description.count)/250")
+                    )
+                        .font(.caption)
+                        .foregroundColor(description.count >= 250 ? .red : .secondary)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
                 }
 
                 Section {

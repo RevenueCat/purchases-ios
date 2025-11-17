@@ -181,6 +181,7 @@ import Foundation
             case sent = "sent"
             case supportTicketFailed = "support_ticket_failed"
             case submitTicket = "submit_ticket"
+            case characterCount = "character_count"
 
             @_spi(Internal) public var defaultValue: String {
                 switch self {
@@ -435,6 +436,8 @@ import Foundation
                     return "Failed to send, please try again."
                 case .submitTicket:
                     return "Submit ticket"
+                case .characterCount:
+                    return "{{ count }} characters"
                 }
             }
         }
