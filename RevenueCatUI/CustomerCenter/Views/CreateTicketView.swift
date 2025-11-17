@@ -146,6 +146,7 @@ struct CreateTicketView: View {
     private func submitTicket() {
         hasAttemptedSubmit = true
         errorMessage = nil
+        focusedField = nil
 
         // Don't proceed if validation fails
         guard isValidEmail && !description.isEmpty else {
