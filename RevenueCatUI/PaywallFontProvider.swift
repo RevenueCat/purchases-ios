@@ -124,7 +124,6 @@ private extension Font.TextStyle {
         case .caption: return .caption1
         case .caption2: return .caption2
 
-
         // Font.TextStyle.caption3 was introduced with tvOS 18.0/Xcode 16.0, but
         // was removed without warning in Xcode 16.1/tvOS 18.1 and hasn't been reintroduced
         // since.
