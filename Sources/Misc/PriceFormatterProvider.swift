@@ -174,7 +174,7 @@ class CurrencySymbolOverridingPriceFormatter: NumberFormatter, @unchecked Sendab
 
     /// Cardinal plural selection per CLDR/ICU baseline:
     /// - Non-integers → .other
-    /// - Integers: 0 → .zero, 1 → .one, 2 → .two, else → .other
+    /// - Integers: 0 → .zero, 1 → .one, 2 → .two, 3...4 → .few, 5...10 → .many, else → .other
     /// This function is intentionally locale-agnostic; apply your locale-specific rules upstream.
     /// Spec reference: Unicode TR35 (Plural Rules).
     private func rule(for value: NSNumber) -> PriceFormattingRuleSet.CurrencySymbolOverride.PluralRule {
@@ -193,11 +193,14 @@ class CurrencySymbolOverridingPriceFormatter: NumberFormatter, @unchecked Sendab
         // Per CLDR/ICU, decimals are "other" unless a locale defines explicit fraction rules.
         guard isInteger else { return .other }
 
-        // Integer-only mapping; locale-specific categories like "few"/"many" are handled elsewhere.
+        // Integer mapping matching VariableHandlerV2.swift logic:
+        // 0 → .zero, 1 → .one, 2 → .two, 3...4 → .few, 5...10 → .many, else → .other
         switch intValue {
         case 0: return .zero
         case 1: return .one
         case 2: return .two
+        case 3...4: return .few
+        case 5...10: return .many
         default: return .other
         }
     }
