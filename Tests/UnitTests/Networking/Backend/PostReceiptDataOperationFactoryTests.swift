@@ -28,10 +28,7 @@ class PostReceiptDataOperationFactoryTests: TestCase {
             platformInfo: nil,
             finishTransactions: true,
             storefrontProvider: MockStorefrontProvider(),
-            storeKitVersion: .default,
-            responseVerificationMode: .disabled,
-            isAppBackgrounded: false,
-            preferredLocalesProvider: .mock()
+            responseVerificationMode: .disabled
         )
         let httpClient = MockHTTPClient(
             apiKey: "test_key",
@@ -77,8 +74,7 @@ class PostReceiptDataOperationFactoryTests: TestCase {
             productData: nil,
             receipt: self.receipt,
             observerMode: false,
-            testReceiptIdentifier: nil,
-            appTransaction: nil
+            testReceiptIdentifier: nil
         )
 
         let postData2 = PostReceiptDataOperation.PostData(
@@ -92,8 +88,7 @@ class PostReceiptDataOperationFactoryTests: TestCase {
             productData: nil,
             receipt: self.receipt,
             observerMode: false,
-            testReceiptIdentifier: nil,
-            appTransaction: nil
+            testReceiptIdentifier: nil
         )
 
         let factory1 = PostReceiptDataOperation.createFactory(
@@ -146,8 +141,7 @@ class PostReceiptDataOperationFactoryTests: TestCase {
             productData: nil,
             receipt: self.receipt,
             observerMode: false,
-            testReceiptIdentifier: nil,
-            appTransaction: nil
+            testReceiptIdentifier: nil
         )
 
         let postData2 = PostReceiptDataOperation.PostData(
@@ -161,8 +155,7 @@ class PostReceiptDataOperationFactoryTests: TestCase {
             productData: nil,
             receipt: self.receipt,
             observerMode: false,
-            testReceiptIdentifier: nil,
-            appTransaction: nil
+            testReceiptIdentifier: nil
         )
 
         let factory1 = PostReceiptDataOperation.createFactory(
