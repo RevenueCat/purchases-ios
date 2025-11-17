@@ -45,69 +45,6 @@ final class CreateTicketViewTests: TestCase {
         expect(viewController.view).toNot(beNil())
         #endif
     }
-
-    @MainActor
-    func testCreateTicketViewCallsPurchasesProviderOnSubmit() async {
-        let mockPurchases = MockCustomerCenterPurchases()
-        mockPurchases.createTicketResult = .success(true)
-
-        // Create the view and simulate ticket creation
-        _ = CreateTicketView(
-            isPresented: .constant(true),
-            purchasesProvider: mockPurchases
-        )
-
-        // Simulate the submitTicket action by calling the mock directly
-        let result = try? await mockPurchases.createTicket(
-            customerEmail: "test@example.com",
-            ticketDescription: "Test description"
-        )
-
-        expect(result) == true
-    }
-
-    @MainActor
-    func testCreateTicketViewHandlesSuccessfulSubmission() async {
-        let mockPurchases = MockCustomerCenterPurchases()
-        mockPurchases.createTicketResult = .success(true)
-
-        let result = try? await mockPurchases.createTicket(
-            customerEmail: "test@example.com",
-            ticketDescription: "Test description"
-        )
-
-        expect(result) == true
-    }
-
-    @MainActor
-    func testCreateTicketViewHandlesFailedSubmission() async {
-        let mockPurchases = MockCustomerCenterPurchases()
-        mockPurchases.createTicketResult = .success(false)
-
-        let result = try? await mockPurchases.createTicket(
-            customerEmail: "test@example.com",
-            ticketDescription: "Test description"
-        )
-
-        expect(result) == false
-    }
-
-    @MainActor
-    func testCreateTicketViewHandlesError() async {
-        let mockPurchases = MockCustomerCenterPurchases()
-        let expectedError = NSError(domain: "TestError", code: 123)
-        mockPurchases.createTicketResult = .failure(expectedError)
-
-        do {
-            _ = try await mockPurchases.createTicket(
-                customerEmail: "test@example.com",
-                ticketDescription: "Test description"
-            )
-            fail("Expected error to be thrown")
-        } catch {
-            expect((error as NSError).code) == 123
-        }
-    }
 }
 
 #endif
