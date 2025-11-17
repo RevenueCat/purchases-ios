@@ -1264,7 +1264,6 @@ jobs:
           command: bundle exec fastlane build_and_publish_docs
           environment:
             DOCS_IOS_VERSION: "17.4"
-      - slack-notify-on-fail
 
   make-release:
     executor:
@@ -1278,7 +1277,6 @@ jobs:
           name: Deploy new version
           command: bundle exec fastlane release
           no_output_timeout: 30m
-      - slack-notify-on-fail
 
   push-revenuecat-pod:
     executor:
@@ -1291,7 +1289,6 @@ jobs:
           name: Deploy new version
           command: bundle exec fastlane push_revenuecat_pod
           no_output_timeout: 30m
-      - slack-notify-on-fail
 
   push-revenuecatui-pod:
     executor:
@@ -1304,7 +1301,6 @@ jobs:
           name: Deploy new version
           command: bundle exec fastlane push_revenuecatui_pod
           no_output_timeout: 30m
-      - slack-notify-on-fail
 
   prepare-next-version:
     executor:
@@ -1317,7 +1313,6 @@ jobs:
       - run:
           name: Prepare next version
           command: bundle exec fastlane prepare_next_version
-      - slack-notify-on-fail
 
   installation-tests-cocoapods:
     executor:
@@ -1663,20 +1658,14 @@ workflows:
     jobs:
       - make-release:
           <<: *release-tags
-          context:
-            - slack-secrets
       - push-revenuecat-pod:
           requires:
             - make-release
           <<: *release-tags
-          context:
-            - slack-secrets
       - push-revenuecatui-pod:
           requires:
             - push-revenuecat-pod
           <<: *release-tags
-          context:
-            - slack-secrets
       - deploy-to-spm:
           requires:
             - make-release
@@ -1685,8 +1674,6 @@ workflows:
           requires:
             - make-release
           <<: *release-tags
-          context:
-            - slack-secrets
       - deploy-purchase-tester:
           dry_run: false
           requires:
@@ -1700,8 +1687,6 @@ workflows:
     jobs:
       - prepare-next-version:
           <<: *only-main-branch
-          context:
-            - slack-secrets
 
   danger:
     jobs:
