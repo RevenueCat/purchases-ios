@@ -1663,14 +1663,20 @@ workflows:
     jobs:
       - make-release:
           <<: *release-tags
+          context:
+            - slack-secrets
       - push-revenuecat-pod:
           requires:
             - make-release
           <<: *release-tags
+          context:
+            - slack-secrets
       - push-revenuecatui-pod:
           requires:
             - push-revenuecat-pod
           <<: *release-tags
+          context:
+            - slack-secrets
       - deploy-to-spm:
           requires:
             - make-release
@@ -1679,6 +1685,8 @@ workflows:
           requires:
             - make-release
           <<: *release-tags
+          context:
+            - slack-secrets
       - deploy-purchase-tester:
           dry_run: false
           requires:
@@ -1692,6 +1700,8 @@ workflows:
     jobs:
       - prepare-next-version:
           <<: *only-main-branch
+          context:
+            - slack-secrets
 
   danger:
     jobs:
