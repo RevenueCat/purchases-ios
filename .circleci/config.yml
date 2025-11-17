@@ -629,6 +629,31 @@ jobs:
           path: fastlane/test_output/xctest
           destination: scan-test-output
 
+  run-test-ios-18:
+    <<: *base-job
+    steps:
+      - checkout
+      - install-dependencies:
+          install_swiftlint: << parameters.install_swiftlint >>
+      - run:
+          name: Run tests
+          command: bundle exec fastlane test_ios
+          no_output_timeout: 15m
+          environment:
+            SCAN_DEVICE: iPhone 16 (18.5)
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: RevenueCat
+      - create-snapshot-pr-if-needed:
+          condition: << pipeline.parameters.generate_snapshots >>
+          job: "create_snapshot_pr"
+          version: "ios-17"
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
+
   run-test-ios-16:
     <<: *base-job
     steps:
@@ -1206,6 +1231,8 @@ workflows:
   generate-snapshot:
     when: << pipeline.parameters.generate_snapshots >>
     jobs:
+      - run-test-ios-18:
+          xcode_version: '16.4'
       - run-test-ios-17:
           xcode_version: '15.2'
       - run-test-ios-16:
