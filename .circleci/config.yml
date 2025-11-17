@@ -395,31 +395,31 @@ commands:
           command: bundle exec fastlane backend_integration_tests test_plan:"<< parameters.test_plan >>"
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 15 (17.4.0)
+            SCAN_DEVICE: iPhone 16 (18.5)
       - run:
           name: Run RETRY 1 (of 4) backend_integration Tests
           command: bundle exec fastlane retry_failed_tests retry_attempt:1
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 15 Pro (17.4.0)
+            SCAN_DEVICE: iPhone 16 (18.5)
       - run:
           name: Run RETRY 2 (of 4) backend_integration Tests
           command: bundle exec fastlane retry_failed_tests retry_attempt:2
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 15 Pro Max (17.4.0)
+            SCAN_DEVICE: iPhone 16 (18.5)
       - run:
           name: Run RETRY 3 (of 4) backend_integration Tests
           command: bundle exec fastlane retry_failed_tests retry_attempt:3
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 15 Plus (17.4.0)
+            SCAN_DEVICE: iPhone 16 (18.5)
       - run:
           name: Run RETRY 4 (of 4) backend_integration Tests
           command: bundle exec fastlane retry_failed_tests retry_attempt:4 fail_build:true
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 15 Pro (17.4.0)
+            SCAN_DEVICE: iPhone 16 (18.5)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: BackendIntegrationTests
