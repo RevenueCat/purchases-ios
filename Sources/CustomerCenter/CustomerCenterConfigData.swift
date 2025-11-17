@@ -733,10 +733,16 @@ import Foundation
         @_spi(Internal) public struct SupportTickets: Equatable {
             @_spi(Internal) public let allowCreation: Bool
             @_spi(Internal) public let customerType: CustomerType
+            @_spi(Internal) public let customerDetails: CustomerDetails?
 
-            @_spi(Internal) public init(allowCreation: Bool, customerType: CustomerType) {
+            @_spi(Internal) public init(
+                allowCreation: Bool,
+                customerType: CustomerType,
+                customerDetails: CustomerDetails? = nil
+            ) {
                 self.allowCreation = allowCreation
                 self.customerType = customerType
+                self.customerDetails = customerDetails
             }
 
             @_spi(Internal) public enum CustomerType: String, Equatable {
@@ -744,6 +750,55 @@ import Foundation
                 case notActive = "not_active"
                 case all
                 case none
+            }
+
+            @_spi(Internal) public struct CustomerDetails: Equatable {
+                @_spi(Internal) public let activeEntitlements: Bool
+                @_spi(Internal) public let appUserId: Bool
+                @_spi(Internal) public let attConsent: Bool
+                @_spi(Internal) public let country: Bool
+                @_spi(Internal) public let deviceVersion: Bool
+                @_spi(Internal) public let email: Bool
+                @_spi(Internal) public let facebookAnonId: Bool
+                @_spi(Internal) public let idfa: Bool
+                @_spi(Internal) public let idfv: Bool
+                @_spi(Internal) public let ipAddress: Bool
+                @_spi(Internal) public let lastOpened: Bool
+                @_spi(Internal) public let lastSeenAppVersion: Bool
+                @_spi(Internal) public let totalSpent: Bool
+                @_spi(Internal) public let userSince: Bool
+
+                @_spi(Internal) public init(
+                    activeEntitlements: Bool = false,
+                    appUserId: Bool = false,
+                    attConsent: Bool = false,
+                    country: Bool = false,
+                    deviceVersion: Bool = false,
+                    email: Bool = false,
+                    facebookAnonId: Bool = false,
+                    idfa: Bool = false,
+                    idfv: Bool = false,
+                    ipAddress: Bool = false,
+                    lastOpened: Bool = false,
+                    lastSeenAppVersion: Bool = false,
+                    totalSpent: Bool = false,
+                    userSince: Bool = false
+                ) {
+                    self.activeEntitlements = activeEntitlements
+                    self.appUserId = appUserId
+                    self.attConsent = attConsent
+                    self.country = country
+                    self.deviceVersion = deviceVersion
+                    self.email = email
+                    self.facebookAnonId = facebookAnonId
+                    self.idfa = idfa
+                    self.idfv = idfv
+                    self.ipAddress = ipAddress
+                    self.lastOpened = lastOpened
+                    self.lastSeenAppVersion = lastSeenAppVersion
+                    self.totalSpent = totalSpent
+                    self.userSince = userSince
+                }
             }
         }
 
@@ -987,6 +1042,28 @@ extension CustomerCenterConfigData.Support.SupportTickets {
     init(from response: CustomerCenterConfigResponse.Support.SupportTickets) {
         self.allowCreation = response.allowCreation
         self.customerType = CustomerType(rawValue: response.customerType) ?? .none
+        self.customerDetails = response.customerDetails.map { CustomerDetails(from: $0) }
+    }
+
+}
+
+extension CustomerCenterConfigData.Support.SupportTickets.CustomerDetails {
+
+    init(from response: CustomerCenterConfigResponse.Support.SupportTickets.CustomerDetails) {
+        self.activeEntitlements = response.activeEntitlements ?? false
+        self.appUserId = response.appUserId ?? false
+        self.attConsent = response.attConsent ?? false
+        self.country = response.country ?? false
+        self.deviceVersion = response.deviceVersion ?? false
+        self.email = response.email ?? false
+        self.facebookAnonId = response.facebookAnonId ?? false
+        self.idfa = response.idfa ?? false
+        self.idfv = response.idfv ?? false
+        self.ipAddress = response.ipAddress ?? false
+        self.lastOpened = response.lastOpened ?? false
+        self.lastSeenAppVersion = response.lastSeenAppVersion ?? false
+        self.totalSpent = response.totalSpent ?? false
+        self.userSince = response.userSince ?? false
     }
 
 }

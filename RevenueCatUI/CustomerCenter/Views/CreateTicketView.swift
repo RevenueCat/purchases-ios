@@ -138,10 +138,6 @@ struct CreateTicketView: View {
                     }
                 }
             }
-            .contentShape(Rectangle())
-            .onTapGesture {
-                focusedField = nil
-            }
             .dismissCircleButtonToolbarIfNeeded(
                 navigationOptions: navigationOptions,
                 customDismiss: {
@@ -153,6 +149,12 @@ struct CreateTicketView: View {
                 ToolbarItem(placement: .principal) {
                     Text(localization[.supportTicketCreate])
                         .font(.headline)
+                }
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button(localization[.done]) {
+                        focusedField = nil
+                    }
                 }
             })
         }
