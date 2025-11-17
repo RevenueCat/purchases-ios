@@ -49,11 +49,20 @@ struct CreateTicketView: View {
     @State
     private var errorMessage: String?
 
+    @State
+    private var hasAttemptedSubmit: Bool = false
+
     private let purchasesProvider: CustomerCenterPurchasesType
 
     init(isPresented: Binding<Bool>, purchasesProvider: CustomerCenterPurchasesType) {
         self._isPresented = isPresented
         self.purchasesProvider = purchasesProvider
+    }
+
+    private var isValidEmail: Bool {
+        let emailRegex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
+        let emailPredicate = NSPredicate(format: "SELF MATCHES %@", emailRegex)
+        return emailPredicate.evaluate(with: email)
     }
 
     var body: some View {
@@ -64,6 +73,12 @@ struct CreateTicketView: View {
                         .keyboardType(.emailAddress)
                         .autocapitalization(.none)
                         .textContentType(.emailAddress)
+
+                    if hasAttemptedSubmit && !email.isEmpty && !isValidEmail {
+                        Text("Please enter a valid email address")
+                            .font(.caption)
+                            .foregroundColor(.red)
+                    }
                 }
 
                 Section(header: Text(localization[.description])) {
@@ -111,8 +126,15 @@ struct CreateTicketView: View {
     }
 
     private func submitTicket() {
-        isSubmitting = true
+        hasAttemptedSubmit = true
         errorMessage = nil
+
+        // Don't proceed if validation fails
+        guard isValidEmail && !description.isEmpty else {
+            return
+        }
+
+        isSubmitting = true
 
         Task {
             do {
