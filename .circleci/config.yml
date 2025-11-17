@@ -742,6 +742,8 @@ jobs:
           install_swiftlint: false
       - install-xcbeautify-for-xcode15
       - update-spm-installation-commit
+      - install-runtime:
+          runtime-name: iOS 15.5
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
