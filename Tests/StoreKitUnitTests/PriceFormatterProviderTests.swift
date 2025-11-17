@@ -49,9 +49,13 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
 
     func testReturnsCachedPriceFormatterForWebProducts() throws {
         let currencyCode = "USD"
-        let firstPriceFormatter = self.priceFormatterProvider.priceFormatterForWebProducts(withCurrencyCode: currencyCode)
+        let firstPriceFormatter = self.priceFormatterProvider.priceFormatterForWebProducts(
+            withCurrencyCode: currencyCode
+        )
 
-        let secondPriceFormatter = self.priceFormatterProvider.priceFormatterForWebProducts(withCurrencyCode: currencyCode)
+        let secondPriceFormatter = self.priceFormatterProvider.priceFormatterForWebProducts(
+            withCurrencyCode: currencyCode
+        )
 
         expect(firstPriceFormatter) === secondPriceFormatter
     }
@@ -104,10 +108,10 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
         expect(priceFormatter.currencySymbol) == "€"
         XCTAssert(type(of: priceFormatter) == CurrencySymbolOverridingPriceFormatter.self)
 
-        XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 0)), "zero 0,00")
-        XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 1)), "one 1,00")
-        XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 2)), "two 2,00")
-        XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 3)), "other 3,00")
+        XCTAssertEqual(priceFormatter.string(from: NSNumber(value: 0)), "zero 0,00")
+        XCTAssertEqual(priceFormatter.string(from: NSNumber(value: 1)), "one 1,00")
+        XCTAssertEqual(priceFormatter.string(from: NSNumber(value: 2)), "two 2,00")
+        XCTAssertEqual(priceFormatter.string(from: NSNumber(value: 3)), "other 3,00")
     }
 
     func testSk1PriceFormatterCurrencySymbolOverridingUsesCachedPriceFormatter() async throws {
@@ -182,10 +186,10 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
         expect(priceFormatter.currencySymbol) == "€"
         XCTAssert(type(of: priceFormatter) == CurrencySymbolOverridingPriceFormatter.self)
 
-        XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 0)), "zero 0,00")
-        XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 1)), "one 1,00")
-        XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 2)), "two 2,00")
-        XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 3)), "other 3,00")
+        XCTAssertEqual(priceFormatter.string(from: NSNumber(value: 0)), "zero 0,00")
+        XCTAssertEqual(priceFormatter.string(from: NSNumber(value: 1)), "one 1,00")
+        XCTAssertEqual(priceFormatter.string(from: NSNumber(value: 2)), "two 2,00")
+        XCTAssertEqual(priceFormatter.string(from: NSNumber(value: 3)), "other 3,00")
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -212,9 +216,9 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
         expect(priceFormatter.currencySymbol) == "RON"
         XCTAssert(type(of: priceFormatter) == CurrencySymbolOverridingPriceFormatter.self)
 
-        XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 0)), "0,00 lei")
-        XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 1)), "1,00 leu")
-        XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 2)), "2,00 lei")
+        XCTAssertEqual(priceFormatter.string(from: NSNumber(value: 0)), "0,00 lei")
+        XCTAssertEqual(priceFormatter.string(from: NSNumber(value: 1)), "1,00 leu")
+        XCTAssertEqual(priceFormatter.string(from: NSNumber(value: 2)), "2,00 lei")
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -268,10 +272,10 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
         expect(priceFormatter.currencySymbol) == "€"
         XCTAssert(type(of: priceFormatter) == CurrencySymbolOverridingPriceFormatter.self)
 
-        XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 0)), "zero 0,00")
-        XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 1)), "one 1,00")
-        XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 2)), "two 2,00")
-        XCTAssertEqual(priceFormatter.string(from: NSNumber(integerLiteral: 3)), "other 3,00")
+        XCTAssertEqual(priceFormatter.string(from: NSNumber(value: 0)), "zero 0,00")
+        XCTAssertEqual(priceFormatter.string(from: NSNumber(value: 1)), "one 1,00")
+        XCTAssertEqual(priceFormatter.string(from: NSNumber(value: 2)), "two 2,00")
+        XCTAssertEqual(priceFormatter.string(from: NSNumber(value: 3)), "other 3,00")
     }
 
     func testWebProductsFormatterCurrencySymbolOverridingUsesCachedPriceFormatter() async throws {

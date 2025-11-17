@@ -64,7 +64,9 @@ final class ProductsFetcherSK1: NSObject {
                     completion(skProducts.map { Set($0.map {
                         SK1StoreProduct(
                             sk1Product: $0,
-                            priceFormatterProvider: .init(priceFormattingRuleSet: self?.priceFormattingRuleSetProvider.priceFormattingRuleSet())
+                            priceFormatterProvider: .init(
+                                priceFormattingRuleSet: self?.priceFormattingRuleSetProvider.priceFormattingRuleSet()
+                            )
                         )})
                     })
                 }
