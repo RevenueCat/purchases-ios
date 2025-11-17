@@ -406,6 +406,7 @@ class BackendSubscriberAttributesTests: TestCase {
         expect(self.mockHTTPClient.calls).to(beEmpty())
     }
 
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func testPostReceiptCachesRequestsWhenOnlyConsentStatusTimestampDiffers() async {
         // Snapshot of Post receipt is already recorded in other tests
         self.mockHTTPClient.disableSnapshotTesting()
@@ -413,7 +414,7 @@ class BackendSubscriberAttributesTests: TestCase {
         // This ensures that the date provider returns a different date each time.
         // So the consentStatus timestamp will differ between requests
         let subsequentNows: [Date] = (1...100).map { offset in
-            self.referenceDate.advanced(by: .seconds(offset))
+            return self.referenceDate.advanced(by: TimeInterval(offset))
         }
         let dateProvider = MockDateProvider(stubbedNow: self.referenceDate, subsequentNows: subsequentNows)
 
