@@ -131,6 +131,8 @@ commands:
     steps:
       # Map custom variable names to the Slack orb variables, since the default variable names are already used by the Fastlane Slack integration
       # we will probably remove these at some point when we move all jobs to use the Fastlane Slack integration
+      # Note: It's safe to modify SLACK_ACCESS_TOKEN and SLACK_DEFAULT_CHANNEL here because this command is always
+      # called as the last step in jobs, so it won't interfere with Fastlane commands that run before it
       - run:
           name: Set Slack environment variables
           when: always
