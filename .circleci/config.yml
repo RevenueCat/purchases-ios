@@ -598,7 +598,7 @@ jobs:
           no_output_timeout: 15m
           environment:
             PLATFORM: watchOS Simulator
-            DEVICE: Apple Watch Series 9 (45mm),OS=10.4
+            DEVICE: Apple Watch Series 10 (46mm),OS=11.5
             BUILD_SDK: watchsimulator
       - compress_result_bundle:
           directory: fastlane/test_output
