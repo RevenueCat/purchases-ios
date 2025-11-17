@@ -72,12 +72,12 @@ internal struct SK1StoreProduct: StoreProductType {
 
     var introductoryDiscount: StoreProductDiscount? {
         return self.underlyingSK1Product.introductoryPrice
-            .flatMap(StoreProductDiscount.init)
+            .flatMap { StoreProductDiscount(sk1Discount: $0, priceFormatterProvider: self.priceFormatterProvider) }
     }
 
     var discounts: [StoreProductDiscount] {
         return self.underlyingSK1Product.discounts
-            .compactMap(StoreProductDiscount.init)
+            .compactMap { StoreProductDiscount(sk1Discount: $0, priceFormatterProvider: self.priceFormatterProvider) }
     }
 
 }
