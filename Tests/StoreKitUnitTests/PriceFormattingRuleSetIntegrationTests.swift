@@ -44,6 +44,10 @@ class PriceFormattingRuleSetIntegrationTests: StoreKitConfigTestCase {
         try await testPriceFormatterWithoutRuleSetUsesDefaultFormatter(storeKitVersion: .storeKit2)
     }
 
+    func testDiscountPriceFormattingWithRuleSetSK1() async throws {
+        try await testDiscountPriceFormattingWithRuleSet(storeKitVersion: .storeKit1)
+    }
+
     private func testPriceFormattingRuleSetWithRomanianCurrency(storeKitVersion: StoreKitVersion) async throws {
         testSession.locale = Locale(identifier: "ro_RO")
         
@@ -173,7 +177,87 @@ class PriceFormattingRuleSetIntegrationTests: StoreKitConfigTestCase {
         expect(unwrappedFirstProduct.priceFormatter?.string(from: NSNumber(integerLiteral: 0))) == "0,00 RON"
         expect(unwrappedFirstProduct.priceFormatter?.string(from: NSNumber(integerLiteral: 1))) == "1,00 RON"
         expect(unwrappedFirstProduct.priceFormatter?.string(from: NSNumber(integerLiteral: 2))) == "2,00 RON"
-        expect(unwrappedFirstProduct.priceFormatter?.string(from: NSNumber(floatLiteral: 0.25))) == "0,25 RON"
+        expect(unwrappedFirstProduct.priceFormatter?.string(from: NSNumber(floatLiteral: 0.25))) == "0,25 RON"
+    }
+
+    private func testDiscountPriceFormattingWithRuleSet(storeKitVersion: StoreKitVersion) async throws {
+        testSession.locale = Locale(identifier: "ro_RO")
+        
+        try await changeStorefront("ROU")
+        
+        let manager = try createSut(storeKitVersion: storeKitVersion, storefront: MockStorefront(countryCode: "ROU"))
+
+        let offeringsResponse = OfferingsResponse(
+            currentOfferingId: "default",
+            offerings: [.init(
+                identifier: "default",
+                description: "Default offering",
+                packages: [
+                    .init(
+                        identifier: "monthly",
+                        platformProductIdentifier: "com.revenuecat.monthly_4.99.1_week_intro",
+                        webCheckoutUrl: nil
+                    )
+                ],
+                webCheckoutUrl: nil
+            )],
+            placements: nil,
+            targeting: nil,
+            uiConfig: .init(
+                app: .init(colors: [:], fonts: [:]),
+                localizations: [:],
+                variableConfig: .init(variableCompatibilityMap: [:], functionCompatibilityMap: [:]),
+                priceFormattingRuleSets: [
+                    "ROU": .init(currencySymbolOverrides: [
+                        "RON": .init(
+                            zero: "lei",
+                            one: "leu",
+                            two: "lei",
+                            few: "lei",
+                            many: "lei",
+                            other: "lei"
+                        )
+                    ])
+                ]
+            )
+        )
+
+        mockOfferingsAPI.stubbedGetOfferingsCompletionResult = .success(.init(response: offeringsResponse, httpResponseOriginalSource: .mainServer))
+
+        let result = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: "") {
+                completed($0)
+            }
+        }
+
+        mockDeviceCache.stubbedOfferings = result?.value
+
+        let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
+        var receivedProducts: Set<StoreProduct>?
+
+        receivedProducts = try await manager.products(withIdentifiers: Set([identifier]))
+
+        expect(receivedProducts).notTo(beNil())
+        let unwrappedFirstProduct = try XCTUnwrap(receivedProducts?.first)
+        expect(unwrappedFirstProduct.currencyCode) == "RON"
+
+        // Test introductory discount (free trial, price 0.0)
+        if let introductoryDiscount = unwrappedFirstProduct.introductoryDiscount {
+            expect(introductoryDiscount.price) == 0.0
+            // Free trial should format as "0,00 lei" (zero uses "lei")
+            expect(introductoryDiscount.localizedPriceString) == "0,00 lei"
+        }
+
+        // Test promotional discounts
+        let discounts = unwrappedFirstProduct.discounts
+        expect(discounts.count) >= 2
+
+        // Find discounts by price to avoid order dependency
+        let discount40_99 = try XCTUnwrap(discounts.first { $0.price == 40.99 })
+        expect(discount40_99.localizedPriceString) == "40,99 lei"
+
+        let discount20_15 = try XCTUnwrap(discounts.first { $0.price == 20.15 })
+        expect(discount20_15.localizedPriceString) == "20,15 lei"
     }
 
     private func createSut(storeKitVersion: StoreKitVersion, storefront: any StorefrontType) throws -> ProductsManagerType {
