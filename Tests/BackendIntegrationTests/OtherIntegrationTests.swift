@@ -193,7 +193,8 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
     }
 
     func testRequestPaywallImages() async throws {
-        let offering = try await XCTAsyncUnwrap(try await self.purchases.offerings().current)
+        let offering = try await XCTAsyncUnwrap(try await self.purchases.offerings().all["alternate_offering"])
+
         let paywall = try XCTUnwrap(offering.paywall)
         let images = paywall.allImageURLs
 
@@ -215,7 +216,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
                 )
             expect(urlResponse.value(forHTTPHeaderField: "Content-Type"))
                 .to(
-                    equal("image/jpeg"),
+                    equal("image/heic"),
                     description: "Unexpected content type for image: \(imageURL)"
                 )
         }
