@@ -16,7 +16,7 @@ import StoreKit
 @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
 internal struct SK1StoreProductDiscount: StoreProductDiscountType {
 
-    init?(sk1Discount: SK1ProductDiscount) {
+    init?(sk1Discount: SK1ProductDiscount, priceFormatterProvider: PriceFormatterProvider? = nil) {
         guard let paymentMode = StoreProductDiscount.PaymentMode(skProductDiscountPaymentMode: sk1Discount.paymentMode),
               let subscriptionPeriod = SubscriptionPeriod.from(sk1SubscriptionPeriod: sk1Discount.subscriptionPeriod),
               let type = StoreProductDiscount.DiscountType.from(sk1Discount: sk1Discount)
@@ -31,6 +31,7 @@ internal struct SK1StoreProductDiscount: StoreProductDiscountType {
         self.subscriptionPeriod = subscriptionPeriod
         self.numberOfPeriods = sk1Discount.numberOfPeriods
         self.type = type
+        self.priceFormatterProvider = priceFormatterProvider ?? .init(priceFormattingRuleSet: nil)
     }
 
     let underlyingSK1Discount: SK1ProductDiscount
@@ -47,7 +48,7 @@ internal struct SK1StoreProductDiscount: StoreProductDiscountType {
         return self.priceFormatter.string(from: self.underlyingSK1Discount.price) ?? ""
     }
 
-    private let priceFormatterProvider: PriceFormatterProvider = .init(priceFormattingRuleSet: nil) // todo rick
+    private let priceFormatterProvider: PriceFormatterProvider
 
     private var priceFormatter: NumberFormatter {
         return self.priceFormatterProvider.priceFormatterForSK1(
