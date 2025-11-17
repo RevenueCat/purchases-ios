@@ -57,7 +57,7 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
         \(configuration.appUserID)-\(postData.isRestore)-\(postData.receipt.hash)
         -\(postData.productData?.cacheKey ?? "")
         -\(postData.presentedOfferingIdentifier ?? "")-\(postData.observerMode)
-        -\(postData.subscriberAttributesByKey?.debugDescription ?? "")
+        -\(postData.subscriberAttributesByKey?.individualizedCacheKeyPart ?? "")
         """
 
         return .init({ cacheKey in
