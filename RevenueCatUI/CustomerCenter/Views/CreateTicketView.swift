@@ -52,11 +52,19 @@ struct CreateTicketView: View {
     @State
     private var hasAttemptedSubmit: Bool = false
 
+    @FocusState
+    private var focusedField: Field?
+
     private let purchasesProvider: CustomerCenterPurchasesType
 
     init(isPresented: Binding<Bool>, purchasesProvider: CustomerCenterPurchasesType) {
         self._isPresented = isPresented
         self.purchasesProvider = purchasesProvider
+    }
+
+    private enum Field: Hashable {
+        case email
+        case description
     }
 
     private var isValidEmail: Bool {
@@ -73,6 +81,11 @@ struct CreateTicketView: View {
                         .keyboardType(.emailAddress)
                         .autocapitalization(.none)
                         .textContentType(.emailAddress)
+                        .focused($focusedField, equals: .email)
+                        .submitLabel(.next)
+                        .onSubmit {
+                            focusedField = .description
+                        }
 
                     if hasAttemptedSubmit && !email.isEmpty && !isValidEmail {
                         Text("Please enter a valid email address")
@@ -84,6 +97,7 @@ struct CreateTicketView: View {
                 Section(header: Text(localization[.description])) {
                     TextEditor(text: $description)
                         .frame(minHeight: 150)
+                        .focused($focusedField, equals: .description)
                 }
 
                 Section {
