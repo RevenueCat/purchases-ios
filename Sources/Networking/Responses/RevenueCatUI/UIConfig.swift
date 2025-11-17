@@ -199,6 +199,7 @@ public struct PriceFormattingRuleSet: Sendable {
             }
         }
 
+        // swiftlint:disable:next nesting
         public enum PluralRule {
             case zero, one, two, few, many, other
         }

@@ -38,7 +38,8 @@ enum ProductsManagerFactory {
                             guard let storefrontCountryCode = systemInfo.storefront?.countryCode else {
                                 return nil
                             }
-                            return deviceCache.cachedOfferings?.response.uiConfig?.priceFormattingRuleSets[storefrontCountryCode]
+                            return deviceCache.cachedOfferings?.response.uiConfig?
+                                .priceFormattingRuleSets[storefrontCountryCode]
                         }
                     )
                 )
