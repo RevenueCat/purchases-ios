@@ -263,10 +263,10 @@ private extension SubscriptionDetailView {
                     localization: localization,
                     purchasesProvider: viewModel.purchasesProvider
                 ),
-                          viewModel.shouldShowContactSupport,
-                          URLUtilities.canOpenURL(url) || RuntimeUtils.isSimulator {
-                    contactSupportView(url)
-                        .padding(.vertical, 16)
+                  viewModel.shouldShowContactSupport,
+                  URLUtilities.canOpenURL(url) || RuntimeUtils.isSimulator {
+                        contactSupportView(url)
+                            .padding(.vertical, 16)
                 }
 
                 if customerInfoViewModel.shouldShowUserDetailsSection {
