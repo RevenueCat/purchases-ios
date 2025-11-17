@@ -139,7 +139,7 @@ extension BaseStoreKitIntegrationTests {
         file: FileString = #file,
         line: UInt = #line
     ) async throws -> PurchaseResultData {
-        let logger = TestLogHandler()
+        let logger = TestLogHandler(testIdentifier: self.name)
 
         let data = try await self.purchases.purchase(package: self.monthlyPackage)
 
@@ -162,7 +162,7 @@ extension BaseStoreKitIntegrationTests {
         file: FileString = #file,
         line: UInt = #line
     ) async throws -> PurchaseResultData {
-        let logger = TestLogHandler()
+        let logger = TestLogHandler(testIdentifier: self.name)
 
         let data: PurchaseResultData
 
@@ -206,7 +206,7 @@ extension BaseStoreKitIntegrationTests {
         file: FileString = #file,
         line: UInt = #line
     ) async throws -> PurchaseResultData {
-        let logger = TestLogHandler()
+        let logger = TestLogHandler(testIdentifier: self.name)
         let product = try await StoreKit.Product.products(for: [Self.weeklyWith3DayTrial]).first!
 
         let data = try await self.purchases.purchase(product: StoreProduct(sk2Product: product))

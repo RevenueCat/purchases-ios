@@ -164,6 +164,23 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                 })
             case .video(let video):
                 urls += video.imageUrls
+            case .countdown(let countdown):
+                urls += self.collectAllImageURLs(
+                    in: countdown.countdownStack,
+                    includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
+                )
+                if let endStack = countdown.endStack {
+                    urls += self.collectAllImageURLs(
+                        in: endStack,
+                        includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
+                    )
+                }
+                if let fallback = countdown.fallback {
+                    urls += self.collectAllImageURLs(
+                        in: fallback,
+                        includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
+                    )
+                }
             }
         }
 
@@ -211,6 +228,14 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                 })
             case .video(let video):
                 urls += video.lowResVideoUrls
+            case .countdown(let countdown):
+                urls += self.collectAllVideoURLs(in: countdown.countdownStack)
+                if let endStack = countdown.endStack {
+                    urls += self.collectAllVideoURLs(in: endStack)
+                }
+                if let fallback = countdown.fallback {
+                    urls += self.collectAllVideoURLs(in: fallback)
+                }
             }
         }
 

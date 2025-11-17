@@ -121,7 +121,7 @@ aliases:
       name: run-maestro-e2e-tests-<< matrix.backend_environment >>
       context:
         - e2e-tests
-        - slack-secrets-ios
+        - slack-secrets
       matrix:
         parameters:
           backend_environment: ["production", "load_shedder_us_east_1", "load_shedder_us_east_2", "fallback"]
@@ -497,50 +497,6 @@ commands:
     steps:
       - revenuecat/set-ssh-key-for-git:
           fingerprint: "SHA256:UYi3gsOInLRPZy6MPho7Yr/YK1VmjDvPGo7sJvIcnPM"
-
-  setup_xcconfig:
-    parameters:
-      api_key:
-        type: string
-        description: "The RevenueCat API key value"
-      force_server_error_strategy:
-        type: enum
-        enum: ["never", "primary_backend_down"]
-        default: "never"
-        description: "Server error strategy for testing fallback behavior"
-      api_host:
-        type: string
-        default: ""
-        description: "Optional API host for testing (e.g., 'api-staging.revenuecat.com')"
-      proxy_url_scheme:
-        type: string
-        default: ""
-        description: "Optional proxy URL scheme (e.g., 'https')"
-      proxy_url_host:
-        type: string
-        default: ""
-        description: "Optional proxy URL host (e.g., 'proxy.revenuecat.com')"
-    steps:
-      - run:
-          name: Create XCConfig file
-          command: |
-            {
-              echo "// Auto-generated. Do not commit to VCS"
-              echo "// Generated on $(date)"
-              echo ""
-              echo "REVENUECAT_API_KEY = << parameters.api_key >>"
-              echo "REVENUECAT_FORCE_SERVER_ERROR_STRATEGY = << parameters.force_server_error_strategy >>"
-              if [ -n "<< parameters.api_host >>" ]; then
-                echo "REVENUECAT_API_HOST = << parameters.api_host >>"
-              fi
-              if [ -n "<< parameters.proxy_url_scheme >>" ]; then
-                echo "REVENUECAT_PROXY_URL_SCHEME = << parameters.proxy_url_scheme >>"
-              fi
-              if [ -n "<< parameters.proxy_url_host >>" ]; then
-                echo "REVENUECAT_PROXY_URL_HOST = << parameters.proxy_url_host >>"
-              fi
-            } > CI.xcconfig
-            echo "✅ Created CI.xcconfig"
 
 jobs:
   validate-package-swift:
@@ -1213,41 +1169,16 @@ jobs:
       - checkout
       - install-dependencies:
           install_swiftlint: false
-      - when:
-          condition:
-            equal: [ "load_shedder_us_east_1", << parameters.backend_environment >> ]
-          steps:
-            - setup_xcconfig:
-                api_key: ${RC_E2E_TEST_API_KEY_PRODUCTION_APP_STORE}
-                api_host: fortress-us-east-1.revenuecat.com
-      - when:
-          condition:
-            equal: [ "load_shedder_us_east_2", << parameters.backend_environment >> ]
-          steps:
-            - setup_xcconfig:
-                api_key: ${RC_E2E_TEST_API_KEY_PRODUCTION_APP_STORE}
-                api_host: fortress-us-east-2.revenuecat.com
-      - when:
-          condition:
-            equal: [ "fallback", << parameters.backend_environment >> ]
-          steps:
-            - setup_xcconfig:
-                api_key: ${RC_E2E_TEST_API_KEY_PRODUCTION_APP_STORE}
-                force_server_error_strategy: primary_backend_down
-      - when:
-          condition:
-            equal: [ "production", << parameters.backend_environment >> ]
-          steps:
-            - setup_xcconfig:
-                api_key: ${RC_E2E_TEST_API_KEY_PRODUCTION_APP_STORE}
       - revenuecat/install-maestro
       - tuist-generate-workspace:
           query: "Maestro"
       - run:
           name: Run e2e tests (<< parameters.backend_environment >>)
-          command: bundle exec fastlane run_maestro_e2e_tests
+          command: bundle exec fastlane run_maestro_e2e_tests backend_environment:<< parameters.backend_environment >>
           no_output_timeout: 15m
-        
+          environment:
+            REVENUECAT_API_KEY: ${RC_E2E_TEST_API_KEY_PRODUCTION_APP_STORE}
+
         # todo: implement error / success notifications through Slack
 
       - store_test_results:
