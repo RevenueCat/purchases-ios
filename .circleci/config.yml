@@ -137,6 +137,12 @@ commands:
           command: |
             echo 'export SLACK_ACCESS_TOKEN="${SLACK_ACCESS_TOKEN_CIRCLE_CI_NOTIFY_ORB_IOS}"' >> $BASH_ENV
             echo 'export SLACK_DEFAULT_CHANNEL="${SLACK_DEFAULT_CHANNEL_CIRCLE_CI_NOTIFY_ORB_IOS}"' >> $BASH_ENV
+            source $BASH_ENV
+            if [ "$SLACK_ACCESS_TOKEN" = "$SLACK_ACCESS_TOKEN_CIRCLE_CI_NOTIFY_ORB_IOS" ]; then
+              echo "✓ SLACK_ACCESS_TOKEN correctly set to custom variable value"
+            else
+              echo "✗ SLACK_ACCESS_TOKEN mismatch - expected value from SLACK_ACCESS_TOKEN_CIRCLE_CI_NOTIFY_ORB_IOS"
+            fi
       - slack/notify:
           channel: "feed-circleci-ios-failures"
           event: fail
