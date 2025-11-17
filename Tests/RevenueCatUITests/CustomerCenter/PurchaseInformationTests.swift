@@ -1501,4 +1501,101 @@ final class PurchaseInformationTests: TestCase {
         expect(oneTimeInfo.title) == "One-time Purchase"
     }
 
+    func testSubscriptionWithNonConsumableProductTypeIsNotLifetime() throws {
+        let customerInfo = CustomerInfoFixtures.customerInfoWithAppleSubscriptions
+        let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
+
+        let mockProduct = TestStoreProduct(
+            localizedTitle: "Monthly Subscription",
+            price: 9.99,
+            localizedPriceString: "$9.99",
+            productIdentifier: entitlement.productIdentifier,
+            productType: .nonConsumable,
+            localizedDescription: "Monthly subscription",
+            subscriptionGroupIdentifier: "group",
+            subscriptionPeriod: .init(value: 1, unit: .month),
+            introductoryDiscount: nil,
+            locale: Self.locale
+        )
+
+        let mockTransaction = MockTransaction(
+            productIdentifier: entitlement.productIdentifier,
+            store: .appStore,
+            type: .subscription(
+                isActive: true,
+                willRenew: true,
+                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
+                isTrial: false,
+                ownershipType: .purchased
+            ),
+            isCancelled: false,
+            managementURL: URL(string: "https://www.revenuecat.com")!,
+            price: .init(currency: "USD", amount: 9.99),
+            displayName: "A subscription",
+            periodType: .normal,
+            purchaseDate: Date(),
+            isSandbox: false,
+            isSubscription: true
+        )
+
+        let subscriptionInfo = PurchaseInformation(
+            entitlement: entitlement,
+            subscribedProduct: mockProduct.toStoreProduct(),
+            transaction: mockTransaction,
+            customerInfoRequestedDate: Date(),
+            dateFormatter: Self.mockDateFormatter,
+            numberFormatter: Self.mockNumberFormatter,
+            managementURL: URL(string: "https://www.revenuecat.com")!,
+            localization: Self.mockLocalization
+        )
+
+        expect(subscriptionInfo.isLifetime).to(beFalse())
+        expect(subscriptionInfo.isSubscription) == true
+        expect(subscriptionInfo.productType) == .nonConsumable
+    }
+
+    func testNonConsumableNonSubscriptionIsLifetime() throws {
+        let mockProduct = TestStoreProduct(
+            localizedTitle: "Lifetime Access",
+            price: 49.99,
+            localizedPriceString: "$49.99",
+            productIdentifier: "lifetime_product",
+            productType: .nonConsumable,
+            localizedDescription: "Lifetime access",
+            subscriptionGroupIdentifier: nil,
+            subscriptionPeriod: nil,
+            introductoryDiscount: nil,
+            locale: Self.locale
+        )
+
+        let mockTransaction = MockTransaction(
+            productIdentifier: "lifetime_product",
+            store: .appStore,
+            type: .nonSubscription,
+            isCancelled: false,
+            managementURL: nil,
+            price: .init(currency: "USD", amount: 49.99),
+            displayName: "Lifetime product",
+            periodType: .normal,
+            purchaseDate: Date(),
+            isSandbox: false,
+            isSubscription: false
+        )
+
+        let purchaseInfo = PurchaseInformation(
+            entitlement: nil,
+            subscribedProduct: mockProduct.toStoreProduct(),
+            transaction: mockTransaction,
+            customerInfoRequestedDate: Date(),
+            dateFormatter: Self.mockDateFormatter,
+            numberFormatter: Self.mockNumberFormatter,
+            managementURL: nil,
+            localization: Self.mockLocalization
+        )
+
+        expect(purchaseInfo.isLifetime).to(beTrue())
+        expect(purchaseInfo.isSubscription) == false
+        expect(purchaseInfo.productType) == .nonConsumable
+    }
+
 }

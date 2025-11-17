@@ -229,6 +229,8 @@ struct PurchaseInformation {
         self.productType = subscribedProduct?.productType
 
         self.isLifetime = subscribedProduct?.productType == .nonConsumable
+            && subscribedProduct?.productCategory == .nonSubscription
+            && !transaction.isSubscription
 
         // Use entitlement data if available, otherwise derive from transaction
         if let entitlement = entitlement {
