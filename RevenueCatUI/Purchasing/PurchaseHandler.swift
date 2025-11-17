@@ -92,7 +92,7 @@ final class PurchaseHandler: ObservableObject {
 
     /// Set manually by `setRestored(:_)` once the user is notified that restoring was successful..
     @Published
-    fileprivate(set) var restoredCustomerInfo: CustomerInfo?
+    fileprivate(set) var restoredCustomerInfo: RestoreResult?
 
     /// Error produced during a purchase.
     @Published
@@ -385,14 +385,14 @@ extension PurchaseHandler {
         let customerInfo = try await self.purchases.customerInfo()
 
         // This is done by `RestorePurchasesButton` when using RevenueCat logic.
-        self.setRestored(customerInfo)
+        self.setRestored(customerInfo, success: result.success)
 
         return (info: customerInfo, result.success)
     }
 
     @MainActor
-    func setRestored(_ customerInfo: CustomerInfo) {
-        self.restoredCustomerInfo = customerInfo
+    func setRestored(_ customerInfo: CustomerInfo, success: Bool = true) {
+        self.restoredCustomerInfo = .init(customerInfo: customerInfo, success: success)
     }
 
     func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
@@ -428,6 +428,15 @@ extension PurchaseHandler {
     private func startAction(_ type: PurchaseHandler.ActionType) {
         withAnimation(Constants.fastAnimation) {
             self.actionTypeInProgress = type
+        }
+    }
+
+    struct RestoreResult: Equatable {
+        let customerInfo: CustomerInfo
+        let success: Bool
+
+        static func == (lhs: RestoreResult, rhs: RestoreResult) -> Bool {
+            return lhs.success == rhs.success && lhs.customerInfo === rhs.customerInfo
         }
     }
 
@@ -581,9 +590,9 @@ struct PurchasedResultPreferenceKey: PreferenceKey {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct RestoredCustomerInfoPreferenceKey: PreferenceKey {
 
-    static var defaultValue: CustomerInfo?
+    static var defaultValue: PurchaseHandler.RestoreResult?
 
-    static func reduce(value: inout CustomerInfo?, nextValue: () -> CustomerInfo?) {
+    static func reduce(value: inout PurchaseHandler.RestoreResult?, nextValue: () -> PurchaseHandler.RestoreResult?) {
         value = nextValue()
     }
 

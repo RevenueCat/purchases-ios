@@ -186,7 +186,7 @@ struct APIKeyDashboardList: View {
         .sheet(item: self.$presentedPaywall) { paywall in
             PaywallPresenter(offering: paywall.offering, mode: paywall.mode, introEligility: .eligible)
                 .onRestoreCompleted { _ in
-                    self.presentedPaywall = nil
+//                    self.presentedPaywall = nil
                 }
                 .onAppear {
                     if let errorInfo = paywall.offering.paywallComponents?.data.errorInfo {
