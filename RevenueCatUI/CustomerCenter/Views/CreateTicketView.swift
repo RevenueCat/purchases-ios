@@ -123,6 +123,10 @@ struct CreateTicketView: View {
                     }
                 }
             }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                focusedField = nil
+            }
             .dismissCircleButtonToolbarIfNeeded(
                 navigationOptions: navigationOptions,
                 customDismiss: {
