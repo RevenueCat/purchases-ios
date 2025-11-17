@@ -45,4 +45,5 @@ class MockSKProductDiscountWithNoPriceLocale: SKProductDiscount {
 
 }
 
+@available(iOS 11.2, macCatalyst 13.0, tvOS 11.2, macOS 10.13.2, *)
 extension MockSKProductDiscountWithNoPriceLocale: @unchecked Sendable {}
