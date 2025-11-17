@@ -194,8 +194,7 @@ platform :ios do
       # Host app isn't available on watchOS
       testplan: "CI-RevenueCat",
       configuration: 'Debug',
-      output_directory: "fastlane/test_output/xctest/watchos",
-      fail_build: false
+      output_directory: "fastlane/test_output/xctest/watchos"
     )
   end
 
