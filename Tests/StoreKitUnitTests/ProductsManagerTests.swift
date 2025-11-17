@@ -121,7 +121,10 @@ class ProductsManagerTests: StoreKitConfigTestCase {
                 "USD": .init(zero: "bucks", one: "bucks", two: "bucks", few: "bucks", many: "bucks", other: "bucks")
             ])
         }
-        let manager = self.createManager(storeKitVersion: .storeKit1, priceFormattingRuleSetProvider: priceFormattingRuleSetProvider)
+        let manager = self.createManager(
+            storeKitVersion: .storeKit1,
+            priceFormattingRuleSetProvider: priceFormattingRuleSetProvider
+        )
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
         var receivedProducts: Set<StoreProduct>?
@@ -157,7 +160,10 @@ class ProductsManagerTests: StoreKitConfigTestCase {
                 "USD": .init(zero: "bucks", one: "bucks", two: "bucks", few: "bucks", many: "bucks", other: "bucks")
             ])
         }
-        let manager = self.createManager(storeKitVersion: .storeKit2, priceFormattingRuleSetProvider: priceFormattingRuleSetProvider)
+        let manager = self.createManager(
+            storeKitVersion: .storeKit2,
+            priceFormattingRuleSetProvider: priceFormattingRuleSetProvider
+        )
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
         var receivedProducts: Set<StoreProduct>?
@@ -188,7 +194,8 @@ class ProductsManagerTests: StoreKitConfigTestCase {
     fileprivate func createManager(storeKitVersion: StoreKitVersion,
                                    storefront: StorefrontType? = nil,
                                    diagnosticsTracker: DiagnosticsTrackerType? = nil,
-                                   priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider = .empty) -> ProductsManager {
+                                   priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider = .empty
+        ) -> ProductsManager {
         let platformInfo = Purchases.PlatformInfo(flavor: "xyz", version: "123")
         let systemInfo = MockSystemInfo(
             platformInfo: platformInfo,

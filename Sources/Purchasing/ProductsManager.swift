@@ -51,7 +51,9 @@ class ProductsManager: NSObject, ProductsManagerType {
         self.priceFormattingRuleSetProvider = priceFormattingRuleSetProvider
 
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
-            self._productsFetcherSK2 = ProductsFetcherSK2(priceFormattingRuleSetProvider: priceFormattingRuleSetProvider)
+            self._productsFetcherSK2 = ProductsFetcherSK2(
+                priceFormattingRuleSetProvider: priceFormattingRuleSetProvider
+            )
         } else {
             self._productsFetcherSK2 = nil
         }

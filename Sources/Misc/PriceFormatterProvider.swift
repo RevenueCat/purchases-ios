@@ -45,8 +45,9 @@ final class PriceFormatterProvider: Sendable {
 
         return self.cachedPriceFormatterForSK1.modify { formatter in
             if let formatter = formatter as? CurrencySymbolOverridingPriceFormatter {
+                let override = priceFormattingRuleSet?.currencySymbolOverride(currencyCode: formatter.currencyCode)
                 if formatter.locale == locale,
-                    formatter.currencySymbolOverride == priceFormattingRuleSet?.currencySymbolOverride(currencyCode: formatter.currencyCode) {
+                    formatter.currencySymbolOverride == override {
                     return formatter
                 }
             } else if let formatter = formatter, formatter.locale == locale {
@@ -59,7 +60,9 @@ final class PriceFormatterProvider: Sendable {
             )
 
             // If there is a currency symbol override for the currencyCode of the new formatter, use that
-            if let currencySymbolOverride = priceFormattingRuleSet?.currencySymbolOverride(currencyCode: newFormatter.currencyCode) {
+            if let currencySymbolOverride = priceFormattingRuleSet?.currencySymbolOverride(
+                currencyCode: newFormatter.currencyCode
+            ) {
                 newFormatter =  makePriceFormatterForSK1(
                     with: locale,
                     currencySymbolOverride: currencySymbolOverride
@@ -120,10 +123,14 @@ final class PriceFormatterProvider: Sendable {
         )
 
         if let formatter = cachedPriceFormatter as? CurrencySymbolOverridingPriceFormatter {
-            if formatter.currencyCode == currencyCode, formatter.locale == locale, formatter.currencySymbolOverride == currencySymbolOverride {
+            if formatter.currencyCode == currencyCode,
+                formatter.locale == locale,
+                formatter.currencySymbolOverride == currencySymbolOverride {
                 return formatter
             }
-        } else if let formatter = cachedPriceFormatter, formatter.currencyCode == currencyCode, formatter.locale == locale {
+        } else if let formatter = cachedPriceFormatter,
+                    formatter.currencyCode == currencyCode,
+                    formatter.locale == locale {
             return formatter
         }
 
@@ -178,17 +185,17 @@ class CurrencySymbolOverridingPriceFormatter: NumberFormatter, @unchecked Sendab
     /// This function is intentionally locale-agnostic; apply your locale-specific rules upstream.
     /// Spec reference: Unicode TR35 (Plural Rules).
     private func rule(for value: NSNumber) -> PriceFormattingRuleSet.CurrencySymbolOverride.PluralRule {
-        let n = value.doubleValue
+        let numberValue = value.doubleValue
 
         // Guard weird numerics
-        if n.isNaN || n.isInfinite { return .other }
+        if numberValue.isNaN || numberValue.isInfinite { return .other }
 
-        guard let intValue = Int64(exactly: n) else {
+        guard let intValue = Int64(exactly: numberValue) else {
             return .other
         }
 
         // Check if value has any fractional part
-        let isInteger = n == Double(intValue)
+        let isInteger = numberValue == Double(intValue)
 
         // Per CLDR/ICU, decimals are "other" unless a locale defines explicit fraction rules.
         guard isInteger else { return .other }

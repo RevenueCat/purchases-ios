@@ -50,9 +50,9 @@ class PriceFormattingRuleSetIntegrationTests: StoreKitConfigTestCase {
 
     private func testPriceFormattingRuleSetWithRomanianCurrency(storeKitVersion: StoreKitVersion) async throws {
         testSession.locale = Locale(identifier: "ro_RO")
-        
+
         try await changeStorefront("ROU")
-        
+
         // Use ROU (Romania's ISO 3166-1 Alpha-3 country code) to match the rule set key
         let manager = try createSut(storeKitVersion: storeKitVersion, storefront: MockStorefront(countryCode: "ROU"))
 
@@ -92,7 +92,9 @@ class PriceFormattingRuleSetIntegrationTests: StoreKitConfigTestCase {
             )
         )
 
-        mockOfferingsAPI.stubbedGetOfferingsCompletionResult = .success(.init(response: offeringsResponse, httpResponseOriginalSource: .mainServer))
+        mockOfferingsAPI.stubbedGetOfferingsCompletionResult = .success(
+            .init(response: offeringsResponse, httpResponseOriginalSource: .mainServer)
+        )
 
         // when
         let result = waitUntilValue { completed in
@@ -111,18 +113,18 @@ class PriceFormattingRuleSetIntegrationTests: StoreKitConfigTestCase {
         expect(receivedProducts).notTo(beNil())
         let unwrappedFirstProduct = try XCTUnwrap(receivedProducts?.first)
         expect(unwrappedFirstProduct.currencyCode) == "RON"
-        
+
         let unwrappedPriceFormatter = try XCTUnwrap(unwrappedFirstProduct.priceFormatter)
         XCTAssert(type(of: unwrappedPriceFormatter) == CurrencySymbolOverridingPriceFormatter.self)
-        expect(unwrappedFirstProduct.priceFormatter?.string(from: NSNumber(integerLiteral: 0))) == "0,00 lei"
-        expect(unwrappedFirstProduct.priceFormatter?.string(from: NSNumber(integerLiteral: 1))) == "1,00 leu"
-        expect(unwrappedFirstProduct.priceFormatter?.string(from: NSNumber(integerLiteral: 2))) == "2,00 lei"
-        expect(unwrappedFirstProduct.priceFormatter?.string(from: NSNumber(floatLiteral: 0.25))) == "0,25 lei"
+        expect(unwrappedFirstProduct.priceFormatter?.string(from: NSNumber(value: 0))) == "0,00 lei"
+        expect(unwrappedFirstProduct.priceFormatter?.string(from: NSNumber(value: 1))) == "1,00 leu"
+        expect(unwrappedFirstProduct.priceFormatter?.string(from: NSNumber(value: 2))) == "2,00 lei"
+        expect(unwrappedFirstProduct.priceFormatter?.string(from: NSNumber(value: 0.25))) == "0,25 lei"
     }
 
     private func testPriceFormatterWithoutRuleSetUsesDefaultFormatter(storeKitVersion: StoreKitVersion) async throws {
         testSession.locale = Locale(identifier: "ro_RO")
-        
+
         try await changeStorefront("ROU")
         let manager = try createSut(storeKitVersion: storeKitVersion, storefront: MockStorefront(countryCode: "ROU"))
 
@@ -151,7 +153,9 @@ class PriceFormattingRuleSetIntegrationTests: StoreKitConfigTestCase {
             )
         )
 
-        mockOfferingsAPI.stubbedGetOfferingsCompletionResult = .success(.init(response: offeringsResponse, httpResponseOriginalSource: .mainServer))
+        mockOfferingsAPI.stubbedGetOfferingsCompletionResult = .success(
+            .init(response: offeringsResponse, httpResponseOriginalSource: .mainServer)
+        )
 
         // when
         let result = waitUntilValue { completed in
@@ -170,21 +174,21 @@ class PriceFormattingRuleSetIntegrationTests: StoreKitConfigTestCase {
         expect(receivedProducts).notTo(beNil())
         let unwrappedFirstProduct = try XCTUnwrap(receivedProducts?.first)
         expect(unwrappedFirstProduct.currencyCode) == "RON"
-        
+
         let unwrappedPriceFormatter = try XCTUnwrap(unwrappedFirstProduct.priceFormatter)
         // Should be a regular NumberFormatter
         XCTAssert(type(of: unwrappedPriceFormatter) == NumberFormatter.self)
-        expect(unwrappedFirstProduct.priceFormatter?.string(from: NSNumber(integerLiteral: 0))) == "0,00 RON"
-        expect(unwrappedFirstProduct.priceFormatter?.string(from: NSNumber(integerLiteral: 1))) == "1,00 RON"
-        expect(unwrappedFirstProduct.priceFormatter?.string(from: NSNumber(integerLiteral: 2))) == "2,00 RON"
-        expect(unwrappedFirstProduct.priceFormatter?.string(from: NSNumber(floatLiteral: 0.25))) == "0,25 RON"
+        expect(unwrappedFirstProduct.priceFormatter?.string(from: NSNumber(value: 0))) == "0,00 RON"
+        expect(unwrappedFirstProduct.priceFormatter?.string(from: NSNumber(value: 1))) == "1,00 RON"
+        expect(unwrappedFirstProduct.priceFormatter?.string(from: NSNumber(value: 2))) == "2,00 RON"
+        expect(unwrappedFirstProduct.priceFormatter?.string(from: NSNumber(value: 0.25))) == "0,25 RON"
     }
 
     private func testDiscountPriceFormattingWithRuleSet(storeKitVersion: StoreKitVersion) async throws {
         testSession.locale = Locale(identifier: "ro_RO")
-        
+
         try await changeStorefront("ROU")
-        
+
         let manager = try createSut(storeKitVersion: storeKitVersion, storefront: MockStorefront(countryCode: "ROU"))
 
         let offeringsResponse = OfferingsResponse(
@@ -222,7 +226,9 @@ class PriceFormattingRuleSetIntegrationTests: StoreKitConfigTestCase {
             )
         )
 
-        mockOfferingsAPI.stubbedGetOfferingsCompletionResult = .success(.init(response: offeringsResponse, httpResponseOriginalSource: .mainServer))
+        mockOfferingsAPI.stubbedGetOfferingsCompletionResult = .success(
+            .init(response: offeringsResponse, httpResponseOriginalSource: .mainServer)
+        )
 
         let result = waitUntilValue { completed in
             self.offeringsManager.offerings(appUserID: "") {
@@ -253,14 +259,17 @@ class PriceFormattingRuleSetIntegrationTests: StoreKitConfigTestCase {
         expect(discounts.count) >= 2
 
         // Find discounts by price to avoid order dependency
-        let discount40_99 = try XCTUnwrap(discounts.first { $0.price == 40.99 })
-        expect(discount40_99.localizedPriceString) == "40,99 lei"
+        let discount4099 = try XCTUnwrap(discounts.first { $0.price == 40.99 })
+        expect(discount4099.localizedPriceString) == "40,99 lei"
 
-        let discount20_15 = try XCTUnwrap(discounts.first { $0.price == 20.15 })
-        expect(discount20_15.localizedPriceString) == "20,15 lei"
+        let discount2015 = try XCTUnwrap(discounts.first { $0.price == 20.15 })
+        expect(discount2015.localizedPriceString) == "20,15 lei"
     }
 
-    private func createSut(storeKitVersion: StoreKitVersion, storefront: any StorefrontType) throws -> ProductsManagerType {
+    private func createSut(
+        storeKitVersion: StoreKitVersion,
+        storefront: any StorefrontType
+    ) throws -> ProductsManagerType {
         mockSystemInfo = MockSystemInfo(
             platformInfo: Purchases.PlatformInfo(
                 flavor: "xyz",
@@ -309,4 +318,3 @@ class PriceFormattingRuleSetIntegrationTests: StoreKitConfigTestCase {
         try await super.changeStorefront(new, file: file, line: line)
     }
 }
-
