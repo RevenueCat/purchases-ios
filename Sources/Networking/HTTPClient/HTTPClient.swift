@@ -510,7 +510,7 @@ private extension HTTPClient {
                 if let error = networkError as? URLError, case .timedOut = error.code,
                     !request.isFallbackURLRequest,
                     request.httpRequest.path.supportsFallbackURLs {
-                    requestTimeoutResult = .timeoutOnMainBackendSupportingFallback
+                    requestTimeoutResult = .timeoutOnMainBackendForFallbackSupportedEndpoint
                 }
 
                 let retryOnFallbackHostScheduled = self.retryRequestWithNextFallbackHostIfNeeded(request: request,
@@ -519,7 +519,7 @@ private extension HTTPClient {
                     retryScheduled = true
 
                     // Record timeout on the main backend for a request that supports a fallback
-                    requestTimeoutResult = .timeoutOnMainBackendSupportingFallback
+                    requestTimeoutResult = .timeoutOnMainBackendForFallbackSupportedEndpoint
                 } else {
                     retryScheduled = self.retryRequestIfNeeded(request: request,
                                                                httpURLResponse: httpURLResponse)
