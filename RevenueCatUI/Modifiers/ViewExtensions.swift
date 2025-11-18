@@ -120,18 +120,23 @@ extension View {
     }
 
     @ViewBuilder
-    func scrollableIfNecessary(_ axis: Axis = .vertical, enabled: Bool = true) -> some View {
+    func scrollableIfNecessary(
+        _ axis: Axis = .vertical,
+        enabled: Bool = true,
+        centerContent: Bool = true
+    ) -> some View {
         if enabled {
             if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
                 ViewThatFits(in: axis.scrollViewAxis) {
-                    self
+                    self.centerContentIfNeeded(axis, centerContent: centerContent)
 
                     ScrollView(axis.scrollViewAxis) {
                         self
                     }
                 }
             } else {
-                self.modifier(ScrollableIfNecessaryModifier(axis: axis))
+                self.modifier(ScrollableIfNecessaryModifier(axis: axis,
+                                                            centerContent: centerContent))
             }
         } else {
             self
@@ -141,11 +146,15 @@ extension View {
     /// Equivalent to `scrollableIfNecessary` except that it's always scrollable on iOS 15
     /// to work around issues with that iOS 15 implementation in some instances.
     @ViewBuilder
-    func scrollableIfNecessaryWhenAvailable(_ axis: Axis = .vertical, enabled: Bool = true) -> some View {
+    func scrollableIfNecessaryWhenAvailable(
+        _ axis: Axis = .vertical,
+        enabled: Bool = true,
+        centerContent: Bool = true
+    ) -> some View {
         if enabled {
             if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
                 ViewThatFits(in: axis.scrollViewAxis) {
-                    self
+                    self.centerContentIfNeeded(axis, centerContent: centerContent)
 
                     ScrollView(axis.scrollViewAxis) {
                         self
@@ -153,7 +162,7 @@ extension View {
                 }
             } else {
                 self
-                    .centeredContent(axis)
+                    .centerContentIfNeeded(axis, centerContent: centerContent)
                     .scrollable(if: enabled)
             }
         } else {
@@ -176,6 +185,18 @@ extension View {
                 self
                 Spacer()
             }
+        }
+    }
+
+    @ViewBuilder
+    fileprivate func centerContentIfNeeded(
+        _ axis: Axis,
+        centerContent: Bool
+    ) -> some View {
+        if centerContent {
+            self.centeredContent(axis)
+        } else {
+            self
         }
     }
 
@@ -234,29 +255,61 @@ private struct DefaultVerticalPaddingModifier: ViewModifier {
 private struct ScrollableIfNecessaryModifier: ViewModifier {
 
     var axis: Axis
+    var centerContent: Bool
 
     @State
     private var overflowing: Bool = false
 
     func body(content: Content) -> some View {
         GeometryReader { geometry in
-            content
-                .centeredContent(self.axis)
-                .background(
-                    GeometryReader { contentGeometry in
-                        Color.clear
-                            .onAppear {
-                                switch self.axis {
-                                case .horizontal:
-                                    self.overflowing = contentGeometry.size.width > geometry.size.width
-                                case .vertical:
-                                    self.overflowing = contentGeometry.size.height > geometry.size.height
+            let containerSize = geometry.size
+
+            self.centerContentIfNeeded(
+                content
+                    .background(
+                        GeometryReader { contentGeometry in
+                            Color.clear
+                                .onAppear {
+                                    self.updateOverflowing(
+                                        contentSize: contentGeometry.size,
+                                        containerSize: containerSize
+                                    )
                                 }
-                            }
-                    }
-                )
+                                .onChange(of: contentGeometry.size) { newSize in
+                                    self.updateOverflowing(
+                                        contentSize: newSize,
+                                        containerSize: containerSize
+                                    )
+                                }
+                        }
+                    )
+            )
         }
         .scrollable(self.axis.scrollViewAxis, if: self.overflowing)
+    }
+
+    @ViewBuilder
+    private func centerContentIfNeeded(_ content: some View) -> some View {
+        if self.centerContent {
+            content.centeredContent(self.axis)
+        } else {
+            content
+        }
+    }
+
+    private func updateOverflowing(contentSize: CGSize, containerSize: CGSize) {
+        let isOverflowing: Bool
+
+        switch self.axis {
+        case .horizontal:
+            isOverflowing = contentSize.width > containerSize.width
+        case .vertical:
+            isOverflowing = contentSize.height > containerSize.height
+        }
+
+        if self.overflowing != isOverflowing {
+            self.overflowing = isOverflowing
+        }
     }
 
 }

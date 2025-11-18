@@ -165,13 +165,9 @@ fileprivate extension View {
         if enabled {
             switch dimension {
             case .horizontal:
-                ScrollView(.horizontal) {
-                    self
-                }
+                self.scrollableIfNecessaryWhenAvailable(.horizontal, centerContent: false)
             case .vertical:
-                ScrollView(.vertical) {
-                    self
-                }
+                self.scrollableIfNecessaryWhenAvailable(.vertical, centerContent: false)
             case .zlayer:
                 self
             }
