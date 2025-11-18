@@ -662,7 +662,7 @@ jobs:
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
-          version: "ios-17"
+          version: "ios-18"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
