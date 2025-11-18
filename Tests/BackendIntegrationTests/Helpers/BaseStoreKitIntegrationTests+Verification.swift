@@ -149,17 +149,11 @@ extension BaseStoreKitIntegrationTests {
     }
 
     func verifyCustomerInfoWasNotComputedOffline(
-        logger: TestLogHandler? = nil,
+        customerInfo: CustomerInfo,
         file: FileString = #file,
         line: UInt = #line
     ) {
-        let logger: TestLogHandler = logger ?? self.logger
-
-        logger.verifyMessageWasNotLogged(
-            Strings.offlineEntitlements.computing_offline_customer_info,
-            file: file,
-            line: line
-        )
+        XCTAssertFalse(customerInfo.isComputedOffline)
     }
 
     func verifyReceiptIsEventuallyPosted(
