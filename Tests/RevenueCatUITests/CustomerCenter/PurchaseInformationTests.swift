@@ -1598,4 +1598,48 @@ final class PurchaseInformationTests: TestCase {
         expect(purchaseInfo.productType) == .nonConsumable
     }
 
+    func testConsumableIsNotLifetime() throws {
+        let mockProduct = TestStoreProduct(
+            localizedTitle: "100 Coins",
+            price: 0.99,
+            localizedPriceString: "$0.99",
+            productIdentifier: "consumable_product",
+            productType: .consumable,
+            localizedDescription: "100 gold coins",
+            subscriptionGroupIdentifier: nil,
+            subscriptionPeriod: nil,
+            introductoryDiscount: nil,
+            locale: Self.locale
+        )
+
+        let mockTransaction = MockTransaction(
+            productIdentifier: "consumable_product",
+            store: .appStore,
+            type: .nonSubscription,
+            isCancelled: false,
+            managementURL: nil,
+            price: .init(currency: "USD", amount: 0.99),
+            displayName: "Consumable product",
+            periodType: .normal,
+            purchaseDate: Date(),
+            isSandbox: false,
+            isSubscription: false
+        )
+
+        let purchaseInfo = PurchaseInformation(
+            entitlement: nil,
+            subscribedProduct: mockProduct.toStoreProduct(),
+            transaction: mockTransaction,
+            customerInfoRequestedDate: Date(),
+            dateFormatter: Self.mockDateFormatter,
+            numberFormatter: Self.mockNumberFormatter,
+            managementURL: nil,
+            localization: Self.mockLocalization
+        )
+
+        expect(purchaseInfo.isLifetime).to(beFalse())
+        expect(purchaseInfo.isSubscription) == false
+        expect(purchaseInfo.productType) == .consumable
+    }
+
 }
