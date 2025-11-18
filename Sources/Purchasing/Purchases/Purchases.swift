@@ -2307,9 +2307,9 @@ private extension Purchases {
         self.offeringsManager.updateOfferingsCache(
             appUserID: self.appUserID,
             isAppBackgrounded: isAppBackgrounded
-        ) { [cache = self.paywallCache] offeringsResultData in
+        ) { [weak self] offeringsResultData in
             if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *),
-               let cache = cache, let offerings = offeringsResultData.value?.offerings {
+               let self = self, let cache = self.paywallCache, let offerings = offeringsResultData.value?.offerings {
                 self.operationDispatcher.dispatchOnWorkerThread {
                     await withTaskGroup(of: Void.self) { group in
                         group.addTask {
