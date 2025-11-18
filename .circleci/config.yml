@@ -1368,6 +1368,7 @@ workflows:
       - spm-revenuecat-ui-ios-17
       - spm-revenuecat-ui-watchos
       - run-test-macos
+      - run-test-ios-18
       - run-test-ios-17
       - run-test-ios-16
       - run-test-ios-15
