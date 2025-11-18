@@ -1119,7 +1119,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     func testRecordsSuccessOnMainBackendAfterSuccessfulRequestToMainBackend() {
         let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test_user_id"))
 
-        timeoutManager.recordRequestResult(.timeoutOnMainBackendSupportingFallback)
+        timeoutManager.recordRequestResult(.timeoutOnMainBackendForFallbackSupportedEndpoint)
 
         XCTAssertEqual(
             timeoutManager.timeout(
@@ -1207,7 +1207,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     func testRecordsOtherResultWhenRequestFailsWithoutTimeout() {
         let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
 
-        timeoutManager.recordRequestResult(.timeoutOnMainBackendSupportingFallback)
+        timeoutManager.recordRequestResult(.timeoutOnMainBackendForFallbackSupportedEndpoint)
 
         // main request
         stub(condition: isPath(request.path)) { request in
@@ -3556,7 +3556,7 @@ final class HTTPClientTimeoutManagerTests: BaseHTTPClientTests<MockETagManager, 
         // Assert that the correct event was recorded
         expect(self.timeoutManager.recordedResults).to(haveCount(2))
         expect(self.timeoutManager.recordedResults) == [
-            .timeoutOnMainBackendSupportingFallback,
+            .timeoutOnMainBackendForFallbackSupportedEndpoint,
             .other
         ]
     }

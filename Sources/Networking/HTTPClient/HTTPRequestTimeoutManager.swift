@@ -31,8 +31,8 @@ class HTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
         /// Request succeeded on the main backend
         case successOnMainBackend
 
-        /// Request timed out on the main backend and supports fallback URLs
-        case timeoutOnMainBackendSupportingFallback
+        /// Request timed out on the main backend endpoint and supports fallback URLs
+        case timeoutOnMainBackendForFallbackSupportedEndpoint
 
         /// Any other result (non-main backend, non-timeout errors, etc.)
         case other
@@ -93,7 +93,7 @@ class HTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
         switch result {
         case .successOnMainBackend:
             resetLastTimeoutRequestTime()
-        case .timeoutOnMainBackendSupportingFallback:
+        case .timeoutOnMainBackendForFallbackSupportedEndpoint:
             lastTimeoutRequestTime = dateProvider.now()
         case .other:
             break
