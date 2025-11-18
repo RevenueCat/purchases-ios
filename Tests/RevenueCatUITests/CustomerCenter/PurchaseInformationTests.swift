@@ -1503,6 +1503,10 @@ final class PurchaseInformationTests: TestCase {
     }
 
     func testSK1SubscriptionIsNotLifetime() throws {
+        // SK1 products always report productType as .nonConsumable, regardless of actual type.
+        // Subscriptions should never show "Lifetime" badge, even though they report as .nonConsumable.
+        // We use transaction.isSubscription and product.sk1Product checks to prevent this.
+        
         let customerInfo = CustomerInfoFixtures.customerInfoWithAppleSubscriptions
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
 
@@ -1552,6 +1556,11 @@ final class PurchaseInformationTests: TestCase {
     }
 
     func testSK1NonConsumableIsNotLifetime() throws {
+        // SK1 products always report productType as .nonConsumable, but we can't distinguish
+        // between actual non-consumables and consumables in SK1. To be safe and avoid showing
+        // incorrect "Lifetime" badges, we don't show the badge for any SK1 products.
+        // Only SK2 products (iOS 15+) have reliable productType information.
+        
         let sk1Product = TestSK1Product(
             productIdentifier: "lifetime_product",
             price: 49.99,
@@ -1568,6 +1577,51 @@ final class PurchaseInformationTests: TestCase {
             managementURL: nil,
             price: .init(currency: "USD", amount: 49.99),
             displayName: "Lifetime product",
+            periodType: .normal,
+            purchaseDate: Date(),
+            isSandbox: false,
+            isSubscription: false
+        )
+
+        let purchaseInfo = PurchaseInformation(
+            entitlement: nil,
+            subscribedProduct: mockProduct,
+            transaction: mockTransaction,
+            customerInfoRequestedDate: Date(),
+            dateFormatter: Self.mockDateFormatter,
+            numberFormatter: Self.mockNumberFormatter,
+            managementURL: nil,
+            localization: Self.mockLocalization
+        )
+
+        expect(purchaseInfo.isLifetime).to(beFalse())
+        expect(purchaseInfo.isSubscription) == false
+        expect(purchaseInfo.productType) == StoreProduct.ProductType.nonConsumable
+        expect(mockProduct.sk1Product).toNot(beNil())
+    }
+
+    func testSK1ConsumableIsNotLifetime() throws {
+        // SK1 products always report productType as .nonConsumable, but we can't distinguish
+        // between actual non-consumables and consumables in SK1. To be safe and avoid showing
+        // incorrect "Lifetime" badges, we don't show the badge for any SK1 products.
+        // Only SK2 products (iOS 15+) have reliable productType information.
+        
+        let sk1Product = TestSK1Product(
+            productIdentifier: "consumable_product",
+            price: 0.99,
+            priceLocale: Locale(identifier: "en_US"),
+            subscriptionPeriod: nil
+        )
+        let mockProduct = StoreProduct(sk1Product: sk1Product)
+
+        let mockTransaction = MockTransaction(
+            productIdentifier: "consumable_product",
+            store: .appStore,
+            type: .nonSubscription,
+            isCancelled: false,
+            managementURL: nil,
+            price: .init(currency: "USD", amount: 0.99),
+            displayName: "Consumable product",
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
