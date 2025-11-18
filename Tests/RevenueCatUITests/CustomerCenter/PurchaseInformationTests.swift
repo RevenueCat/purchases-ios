@@ -12,6 +12,7 @@
 //  Created by Cesar de la Vega on 10/25/24.
 
 import Nimble
+import StoreKit
 import XCTest
 
 @_spi(Internal) import RevenueCat
@@ -1501,22 +1502,17 @@ final class PurchaseInformationTests: TestCase {
         expect(oneTimeInfo.title) == "One-time Purchase"
     }
 
-    func testSubscriptionWithNonConsumableProductTypeIsNotLifetime() throws {
+    func testSK1SubscriptionIsNotLifetime() throws {
         let customerInfo = CustomerInfoFixtures.customerInfoWithAppleSubscriptions
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
 
-        let mockProduct = TestStoreProduct(
-            localizedTitle: "Monthly Subscription",
-            price: 9.99,
-            localizedPriceString: "$9.99",
+        let sk1Product = TestSK1Product(
             productIdentifier: entitlement.productIdentifier,
-            productType: .nonConsumable,
-            localizedDescription: "Monthly subscription",
-            subscriptionGroupIdentifier: "group",
-            subscriptionPeriod: .init(value: 1, unit: .month),
-            introductoryDiscount: nil,
-            locale: Self.locale
+            price: 9.99,
+            priceLocale: Locale(identifier: "en_US"),
+            subscriptionPeriod: SKProductSubscriptionPeriod()
         )
+        let mockProduct = StoreProduct(sk1Product: sk1Product)
 
         let mockTransaction = MockTransaction(
             productIdentifier: entitlement.productIdentifier,
@@ -1531,7 +1527,7 @@ final class PurchaseInformationTests: TestCase {
             isCancelled: false,
             managementURL: URL(string: "https://www.revenuecat.com")!,
             price: .init(currency: "USD", amount: 9.99),
-            displayName: "A subscription",
+            displayName: "Monthly subscription",
             periodType: .normal,
             purchaseDate: Date(),
             isSandbox: false,
@@ -1540,7 +1536,7 @@ final class PurchaseInformationTests: TestCase {
 
         let subscriptionInfo = PurchaseInformation(
             entitlement: entitlement,
-            subscribedProduct: mockProduct.toStoreProduct(),
+            subscribedProduct: mockProduct,
             transaction: mockTransaction,
             customerInfoRequestedDate: Date(),
             dateFormatter: Self.mockDateFormatter,
@@ -1551,22 +1547,18 @@ final class PurchaseInformationTests: TestCase {
 
         expect(subscriptionInfo.isLifetime).to(beFalse())
         expect(subscriptionInfo.isSubscription) == true
-        expect(subscriptionInfo.productType) == .nonConsumable
+        expect(subscriptionInfo.productType) == StoreProduct.ProductType.nonConsumable
+        expect(mockProduct.sk1Product).toNot(beNil())
     }
 
-    func testNonConsumableNonSubscriptionIsLifetime() throws {
-        let mockProduct = TestStoreProduct(
-            localizedTitle: "Lifetime Access",
-            price: 49.99,
-            localizedPriceString: "$49.99",
+    func testSK1NonConsumableIsNotLifetime() throws {
+        let sk1Product = TestSK1Product(
             productIdentifier: "lifetime_product",
-            productType: .nonConsumable,
-            localizedDescription: "Lifetime access",
-            subscriptionGroupIdentifier: nil,
-            subscriptionPeriod: nil,
-            introductoryDiscount: nil,
-            locale: Self.locale
+            price: 49.99,
+            priceLocale: Locale(identifier: "en_US"),
+            subscriptionPeriod: nil
         )
+        let mockProduct = StoreProduct(sk1Product: sk1Product)
 
         let mockTransaction = MockTransaction(
             productIdentifier: "lifetime_product",
@@ -1584,51 +1576,7 @@ final class PurchaseInformationTests: TestCase {
 
         let purchaseInfo = PurchaseInformation(
             entitlement: nil,
-            subscribedProduct: mockProduct.toStoreProduct(),
-            transaction: mockTransaction,
-            customerInfoRequestedDate: Date(),
-            dateFormatter: Self.mockDateFormatter,
-            numberFormatter: Self.mockNumberFormatter,
-            managementURL: nil,
-            localization: Self.mockLocalization
-        )
-
-        expect(purchaseInfo.isLifetime).to(beTrue())
-        expect(purchaseInfo.isSubscription) == false
-        expect(purchaseInfo.productType) == .nonConsumable
-    }
-
-    func testConsumableIsNotLifetime() throws {
-        let mockProduct = TestStoreProduct(
-            localizedTitle: "100 Coins",
-            price: 0.99,
-            localizedPriceString: "$0.99",
-            productIdentifier: "consumable_product",
-            productType: .consumable,
-            localizedDescription: "100 gold coins",
-            subscriptionGroupIdentifier: nil,
-            subscriptionPeriod: nil,
-            introductoryDiscount: nil,
-            locale: Self.locale
-        )
-
-        let mockTransaction = MockTransaction(
-            productIdentifier: "consumable_product",
-            store: .appStore,
-            type: .nonSubscription,
-            isCancelled: false,
-            managementURL: nil,
-            price: .init(currency: "USD", amount: 0.99),
-            displayName: "Consumable product",
-            periodType: .normal,
-            purchaseDate: Date(),
-            isSandbox: false,
-            isSubscription: false
-        )
-
-        let purchaseInfo = PurchaseInformation(
-            entitlement: nil,
-            subscribedProduct: mockProduct.toStoreProduct(),
+            subscribedProduct: mockProduct,
             transaction: mockTransaction,
             customerInfoRequestedDate: Date(),
             dateFormatter: Self.mockDateFormatter,
@@ -1639,7 +1587,33 @@ final class PurchaseInformationTests: TestCase {
 
         expect(purchaseInfo.isLifetime).to(beFalse())
         expect(purchaseInfo.isSubscription) == false
-        expect(purchaseInfo.productType) == .consumable
+        expect(purchaseInfo.productType) == StoreProduct.ProductType.nonConsumable
+        expect(mockProduct.sk1Product).toNot(beNil())
     }
 
+}
+
+private class TestSK1Product: SKProduct, @unchecked Sendable {
+    private let _productIdentifier: String
+    private let _price: NSDecimalNumber
+    private let _priceLocale: Locale
+    private let _subscriptionPeriod: SKProductSubscriptionPeriod?
+
+    init(productIdentifier: String,
+         price: Decimal = 0.99,
+         priceLocale: Locale = Locale(identifier: "en_US"),
+         subscriptionPeriod: SKProductSubscriptionPeriod? = nil) {
+        self._productIdentifier = productIdentifier
+        self._price = price as NSDecimalNumber
+        self._priceLocale = priceLocale
+        self._subscriptionPeriod = subscriptionPeriod
+        super.init()
+    }
+
+    override var productIdentifier: String { _productIdentifier }
+    override var price: NSDecimalNumber { _price }
+    override var priceLocale: Locale { _priceLocale }
+    
+    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
+    override var subscriptionPeriod: SKProductSubscriptionPeriod? { _subscriptionPeriod }
 }
