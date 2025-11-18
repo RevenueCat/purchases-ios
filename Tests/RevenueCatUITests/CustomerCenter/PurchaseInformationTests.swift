@@ -1506,7 +1506,7 @@ final class PurchaseInformationTests: TestCase {
         // SK1 products always report productType as .nonConsumable, regardless of actual type.
         // Subscriptions should never show "Lifetime" badge, even though they report as .nonConsumable.
         // We use transaction.isSubscription and product.sk1Product checks to prevent this.
-        
+
         let customerInfo = CustomerInfoFixtures.customerInfoWithAppleSubscriptions
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
 
@@ -1560,7 +1560,7 @@ final class PurchaseInformationTests: TestCase {
         // between actual non-consumables and consumables in SK1. To be safe and avoid showing
         // incorrect "Lifetime" badges, we don't show the badge for any SK1 products.
         // Only SK2 products (iOS 15+) have reliable productType information.
-        
+
         let sk1Product = TestSK1Product(
             productIdentifier: "lifetime_product",
             price: 49.99,
@@ -1605,7 +1605,7 @@ final class PurchaseInformationTests: TestCase {
         // between actual non-consumables and consumables in SK1. To be safe and avoid showing
         // incorrect "Lifetime" badges, we don't show the badge for any SK1 products.
         // Only SK2 products (iOS 15+) have reliable productType information.
-        
+
         let sk1Product = TestSK1Product(
             productIdentifier: "consumable_product",
             price: 0.99,
@@ -1667,7 +1667,7 @@ private class TestSK1Product: SKProduct, @unchecked Sendable {
     override var productIdentifier: String { _productIdentifier }
     override var price: NSDecimalNumber { _price }
     override var priceLocale: Locale { _priceLocale }
-    
+
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     override var subscriptionPeriod: SKProductSubscriptionPeriod? { _subscriptionPeriod }
 }
