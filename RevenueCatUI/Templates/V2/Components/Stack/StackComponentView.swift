@@ -164,10 +164,24 @@ fileprivate extension View {
     ) -> some View {
         if enabled {
             switch dimension {
-            case .horizontal:
-                self.scrollableIfNecessaryWhenAvailable(.horizontal, centerContent: false)
-            case .vertical:
-                self.scrollableIfNecessaryWhenAvailable(.vertical, centerContent: false)
+            case .horizontal(let verticalAlignment, let distribution):
+                self.scrollableIfNecessaryWhenAvailable(
+                    .horizontal,
+                    centerContent: false,
+                    alignment: Alignment(
+                        horizontal: distribution.horizontalFrameAlignment.horizontal,
+                        vertical: verticalAlignment.frameAlignment.vertical
+                    )
+                )
+            case .vertical(let horizontalAlignment, let distribution):
+                self.scrollableIfNecessaryWhenAvailable(
+                    .vertical,
+                    centerContent: false,
+                    alignment: Alignment(
+                        horizontal: horizontalAlignment.frameAlignment.horizontal,
+                        vertical: distribution.verticalFrameAlignment.vertical
+                    )
+                )
             case .zlayer:
                 self
             }

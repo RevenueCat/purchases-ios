@@ -149,12 +149,17 @@ extension View {
     func scrollableIfNecessaryWhenAvailable(
         _ axis: Axis = .vertical,
         enabled: Bool = true,
-        centerContent: Bool = true
+        centerContent: Bool = true,
+        alignment: Alignment = .center
     ) -> some View {
         if enabled {
             if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
                 ViewThatFits(in: axis.scrollViewAxis) {
-                    self.centerContentIfNeeded(axis, centerContent: centerContent)
+                    self
+                        .centerContentIfNeeded(axis, centerContent: centerContent)
+                        .frame(maxWidth: axis == .horizontal ? .infinity : nil,
+                               maxHeight: axis == .vertical ? .infinity : nil,
+                               alignment: centerContent ? .center : alignment)
 
                     ScrollView(axis.scrollViewAxis) {
                         self

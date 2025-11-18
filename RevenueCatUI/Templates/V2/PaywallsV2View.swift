@@ -323,7 +323,7 @@ private struct LoadedPaywallsV2View: View {
                 view
                     .edgesIgnoringSafeArea(.top)
             })
-            .frame(maxHeight: .infinity, alignment: .topLeading)
+            .frame(maxHeight: .infinity, alignment: paywallState.rootViewModel.frameAlignment)
             .backgroundStyle(
                 self.paywallState.componentsConfig.background
                     .asDisplayable(
