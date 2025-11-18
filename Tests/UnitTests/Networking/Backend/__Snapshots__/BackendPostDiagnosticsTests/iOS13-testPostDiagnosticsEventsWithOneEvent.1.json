@@ -17,17 +17,18 @@
   },
   "request" : {
     "body" : {
-      "app_user_id" : "user",
-      "fetch_token" : "YW4gYXdlc29tZSBkaXNjb3VudA==",
-      "generate_offers" : [
+      "entries" : [
         {
-          "offer_id" : "offerid",
-          "product_id" : "a_great_product",
-          "subscription_group" : "sub_group"
+          "name" : "customer_info_verification_result",
+          "properties" : {
+            "verification_result" : "FAILED"
+          },
+          "timestamp" : "2023-09-06T19:42:08Z",
+          "version" : 1
         }
       ]
     },
     "method" : "POST",
-    "url" : "https://api.revenuecat.com/v1/offers"
+    "url" : "https://api-diagnostics.revenuecat.com/v1/diagnostics"
   }
 }
