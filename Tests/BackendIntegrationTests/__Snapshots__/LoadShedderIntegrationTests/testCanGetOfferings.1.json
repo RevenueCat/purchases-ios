@@ -18,6 +18,20 @@
           "platform_product_identifier" : "com.revenuecat.loadShedder.monthly"
         }
       ],
+      "paywall" : null
+    },
+    {
+      "description" : "an alternative offering",
+      "identifier" : "alternative offering",
+      "metadata" : {
+
+      },
+      "packages" : [
+        {
+          "identifier" : "$rc_monthly",
+          "platform_product_identifier" : "com.revenuecat.loadShedder.monthly"
+        }
+      ],
       "paywall" : {
         "asset_base_url" : "https://assets.pawwalls.com",
         "config" : {
@@ -39,7 +53,12 @@
           "display_restore_purchases" : true,
           "images" : {
             "background" : null,
-            "header" : "903907_1693958145.jpg",
+            "header" : null,
+            "icon" : null
+          },
+          "images_heic" : {
+            "background" : null,
+            "header" : null,
             "icon" : null
           },
           "packages" : [
@@ -51,34 +70,20 @@
         "localized_strings" : {
           "en_US" : {
             "call_to_action" : "Continue",
-            "call_to_action_with_intro_offer" : "Continue",
+            "call_to_action_with_intro_offer" : null,
             "features" : [
 
             ],
-            "offer_details" : "{{ total_price_and_per_month }}",
-            "offer_details_with_intro_offer" : "Try {{ sub_offer_duration }} for free, then {{ total_price_and_per_month }}",
+            "offer_details" : "Total price per period: {{ price_per_period }}",
+            "offer_details_with_intro_offer" : null,
             "offer_name" : null,
-            "subtitle" : "Get access to all content",
-            "title" : "Ignite your child's curiosity"
+            "subtitle" : "Test Load shedder subtitle",
+            "title" : "Test load shedder alternate offering"
           }
         },
         "revision" : 1,
         "template_name" : "1"
       }
-    },
-    {
-      "description" : "an alternative offering",
-      "identifier" : "alternative offering",
-      "metadata" : {
-
-      },
-      "packages" : [
-        {
-          "identifier" : "$rc_monthly",
-          "platform_product_identifier" : "com.revenuecat.loadShedder.monthly"
-        }
-      ],
-      "paywall" : null
     },
     {
       "description" : "Consumables",
