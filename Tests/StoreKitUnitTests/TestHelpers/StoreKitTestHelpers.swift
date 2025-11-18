@@ -61,7 +61,6 @@ extension XCTestCase {
     }
 
     func verifyNoUnfinishedTransactions(file: FileString = #filePath, line: UInt = #line) async {
-    func verifyNoUnfinishedTransactions(file: StaticString = #file, line: UInt = #line) async {
         let unfinished = await StoreKit.Transaction.unfinished.extractValues()
         expect(file: file, line: line, unfinished).to(beEmpty())
     }
