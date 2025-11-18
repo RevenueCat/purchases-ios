@@ -244,25 +244,6 @@ platform :ios do
        "#{output_dir}/images")
   end
 
-  private_lane :create_or_checkout_branch do |options|
-    branch_name = options[:branch_name] || UI.user_error!("No branch name provided")
-
-    # Check if branch exists locally or remotely
-    branch_exists_locally = sh("git", "branch", "--list", branch_name).length > 0
-    branch_exists_remotely = sh("git", "ls-remote", "--heads", "origin", branch_name).length > 0
-
-    if branch_exists_locally || branch_exists_remotely
-      UI.message("Branch #{branch_name} already exists, checking it out")
-      sh("git", "checkout", branch_name)
-      if branch_exists_remotely
-        sh("git", "pull", "origin", branch_name)
-      end
-    else
-      UI.message("Creating new branch #{branch_name}")
-      sh("git", "checkout", "-b", branch_name)
-    end
-  end
-
   private_lane :commit_push_and_create_pr_if_necessary do |options|
     branch_name = options[:branch_name] || UI.user_error!("No branch_name provided")
     commit_message = options[:commit_message] || UI.user_error!("No commit_message provided")
