@@ -36,6 +36,31 @@ extension XCTestCase {
         }
     }
 
+    func setLongestTestSessionTimeRate(_ testSession: SKTestSession) {
+        if #available(iOS 16.4, macOS 13.3, tvOS 16.4, watchOS 9.4, *) {
+            #if swift(>=5.8)
+            testSession.timeRate = .oneRenewalEveryFifteenMinutes
+            #else
+            testSession.timeRate = SKTestSession.TimeRate.monthlyRenewalEveryHour
+            #endif
+        } else if #available(iOS 15.2, tvOS 15.2, macOS 12.1, watchOS 8.3, *) {
+            testSession.timeRate = SKTestSession.TimeRate.monthlyRenewalEveryHour
+        }
+    }
+
+    // Some tests were randomly failing on CI when using `.oneRenewalEveryTwoSeconds` due to a race condition where the
+    // purchase would expire before the receipt was posted.
+    // This time rate is used to work around that issue by having a longer time rate.
+    func setOneSecondIsOneDayTimeRate(_ testSession: SKTestSession) {
+        // Using rawValue: 6 because the compiler shows this warning for `.oneSecondIsOneDay`:
+        // 'oneSecondIsOneDay' was deprecated in iOS 15.2: renamed to
+        // 'SKTestSession.TimeRate.monthlyRenewalEveryThirtySeconds'
+        // However, we've found that their behavior is not equivalent since using `monthlyRenewalEveryThirtySeconds`
+        // results in a crash in our tests.
+        testSession.timeRate = .init(rawValue: 6)! // == .oneSecondIsOneDay
+    }
+
+    func verifyNoUnfinishedTransactions(file: FileString = #filePath, line: UInt = #line) async {
     func verifyNoUnfinishedTransactions(file: StaticString = #file, line: UInt = #line) async {
         let unfinished = await StoreKit.Transaction.unfinished.extractValues()
         expect(file: file, line: line, unfinished).to(beEmpty())
