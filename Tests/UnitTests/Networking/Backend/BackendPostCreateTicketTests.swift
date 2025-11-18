@@ -17,7 +17,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class BackendPostCreateTicketTests: BaseBackendTests {
+final class BackendPostCreateTicketTests: BaseBackendTests {
 
     override func createClient() -> MockHTTPClient {
         super.createClient(#file)
