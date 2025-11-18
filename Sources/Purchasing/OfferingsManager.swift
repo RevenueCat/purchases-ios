@@ -195,8 +195,7 @@ private extension OfferingsManager {
         fetchPolicy: FetchPolicy,
         completion: (@escaping @Sendable (OfferingsResultData?) -> Void)
     ) {
-        guard let data = self.deviceCache.cachedOfferingsContentsData(appUserID: appUserID),
-              let contents: Offerings.Contents = try? JSONDecoder.default.decode(jsonData: data, logErrors: true) else {
+        guard let contents = self.deviceCache.cachedOfferingsContents(appUserID: appUserID) else {
             completion(nil)
             return
         }

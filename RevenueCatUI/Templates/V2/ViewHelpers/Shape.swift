@@ -148,6 +148,7 @@ struct ShapeModifier: ViewModifier {
                         view.clipShape(shape).overlay {
                             border.color.toView(colorScheme: colorScheme)
                                 .mask(shape.strokeBorder(Color.black, lineWidth: border.width))
+                                .allowsHitTesting(false)
                         }
                     }
             }
@@ -185,6 +186,7 @@ private struct ConcaveMaskModifier: ViewModifier {
                 view.overlay {
                     border.color.toView(colorScheme: colorScheme)
                         .mask(shape.strokeBorder(Color.black, lineWidth: border.width))
+                        .allowsHitTesting(false)
                 }
             }
     }
@@ -261,6 +263,7 @@ private struct ConvexMaskModifier: ViewModifier {
                 view.overlay {
                     border.color.toView(colorScheme: colorScheme)
                         .mask(shape.strokeBorder(Color.black, lineWidth: border.width))
+                        .allowsHitTesting(false)
                 }
             }
     }

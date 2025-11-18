@@ -520,7 +520,7 @@ class OfferingsTests: TestCase {
         expect(missing).to(beNil())
 
         do {
-            let logger = TestLogHandler()
+            let logger = TestLogHandler(testIdentifier: self.name)
 
             expect(offeringA.getMetadataValue(for: "dictionary") as Data?)
                 .to(beNil())

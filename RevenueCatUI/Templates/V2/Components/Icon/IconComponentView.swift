@@ -41,7 +41,7 @@ struct IconComponentView: View {
     let viewModel: IconComponentViewModel
 
     var body: some View {
-        viewModel.styles(
+        self.viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
             packageContext: self.packageContext,
@@ -55,7 +55,10 @@ struct IconComponentView: View {
         ) { style in
             if style.visible {
                 RemoteImage(
-                    url: style.url
+                    url: style.url,
+                    // The expectedSize is important
+                    // It renders a clear image if actual image is being fetched
+                    expectedSize: self.viewModel.expectedSize
                 ) { (image, size) in
                     self.renderImage(image, size, with: style)
                 }

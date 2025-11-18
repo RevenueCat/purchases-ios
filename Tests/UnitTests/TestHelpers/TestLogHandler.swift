@@ -37,7 +37,7 @@ import Nimble
 /// private var testLogHandler: TestLogHandler!
 /// override func setUp() {
 ///     super.setUp()
-///     self.testLogHandler = TestLogHandler()
+///     self.testLogHandler = TestLogHandler(testIdentifier: self.name)
 /// }
 ///
 /// override func tearDown() {
@@ -51,18 +51,23 @@ final class TestLogHandler {
 
     var messages: [MessageData] { return self.loggedMessages.value }
     private let capacity: Int
+    private let testIdentifier: String
 
     init(
         capacity: Int = TestLogHandler.defaultMessageLimit,
+        testIdentifier: String,
         file: String = #fileID,
         line: UInt = #line
     ) {
         self.capacity = capacity
+        self.testIdentifier = testIdentifier
         self.creationContext = .init(file: file, line: line)
         Self.sharedHandler.add(observer: self)
     }
 
-    deinit { Self.sharedHandler.remove(observer: self) }
+    deinit {
+        Self.sharedHandler.remove(observer: self)
+    }
 
     /// If a test overrides `Purchases.verboseLogHandler` or `Logger.internalLogHandler`
     /// this needs to be called to re-install the test handler.
@@ -243,7 +248,8 @@ extension TestLogHandler: LogMessageObserver {
                 beLessThan(self.capacity),
                 description: "\(count) messages have been stored. " +
                 "This is likely a programming error and \(self) " +
-                "(created in \(self.creationContext.file):\(self.creationContext.line) has leaked."
+                "(created by \(self.testIdentifier) in \(self.creationContext.file):\(self.creationContext.line) " +
+                "has leaked."
             )
         }
     }

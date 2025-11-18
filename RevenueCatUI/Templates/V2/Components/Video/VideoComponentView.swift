@@ -151,6 +151,7 @@ struct VideoComponentView: View {
                     .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
                         view.overlay(
                             Color.clear.backgroundStyle(.color(colorOverlay))
+                                .allowsHitTesting(false)
                         )
                     })
                     .padding(style.padding.extend(by: style.border?.width ?? 0))

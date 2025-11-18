@@ -37,6 +37,9 @@ struct TextComponentView: View {
     @Environment(\.screenCondition)
     private var screenCondition
 
+    @Environment(\.countdownTime)
+    private var countdownTime: CountdownTime?
+
     private let viewModel: TextComponentViewModel
 
     internal init(viewModel: TextComponentViewModel) {
@@ -51,10 +54,15 @@ struct TextComponentView: View {
             isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                 package: self.packageContext.package
             ),
-            promoOffer: self.paywallPromoOfferCache.get(for: self.packageContext.package)
+            promoOffer: self.paywallPromoOfferCache.get(for: self.packageContext.package),
+            countdownTime: countdownTime
         ) { style in
             if style.visible {
-                NonLocalizedMarkdownText(text: style.text, font: style.font, fontWeight: style.fontWeight)
+                NonLocalizedMarkdownText(
+                    text: style.text,
+                    font: style.font,
+                    fontWeight: style.fontWeight
+                )
                     .fixedSize(horizontal: false, vertical: true)
                     .multilineTextAlignment(style.textAlignment)
                     .foregroundColorScheme(style.color)
