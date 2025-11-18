@@ -182,6 +182,13 @@ platform :ios do
 
   desc "Runs all the watchOS tests"
   lane :test_watchos do |options|
+    generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
+    if generate_snapshots
+       test_plan = "CI-RevenueCat-Snapshots"
+    else
+      test_plan = "CI-RevenueCat"
+    end
+
     scan(
       step_name: "scan - watchOS",
       device: ENV['SCAN_DEVICE'] || "Apple Watch Series 10 (46mm)",
@@ -189,12 +196,13 @@ platform :ios do
       scheme: "RevenueCat",
       prelaunch_simulator: true,
       output_types: 'junit',
-      number_of_retries: 5,
       result_bundle: true,
       # Host app isn't available on watchOS
-      testplan: "CI-RevenueCat",
+      testplan: test_plan,
       configuration: 'Debug',
-      output_directory: "fastlane/test_output/xctest/watchos"
+      output_directory: "fastlane/test_output/xctest/watchos",
+      number_of_retries: generate_snapshots ? 0 : 5,
+      fail_build: !generate_snapshots
     )
   end
 
