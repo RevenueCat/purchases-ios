@@ -56,6 +56,7 @@ struct CreateTicketView: View {
     private var focusedField: Field?
 
     private let purchasesProvider: CustomerCenterPurchasesType
+    private let maxCharacters = 250
 
     init(isPresented: Binding<Bool>, purchasesProvider: CustomerCenterPurchasesType) {
         self._isPresented = isPresented
@@ -96,7 +97,7 @@ struct CreateTicketView: View {
                     TextEditor(text: Binding(
                         get: { description },
                         set: { newValue in
-                            if newValue.count <= 250 {
+                            if newValue.count <= maxCharacters {
                                 description = newValue
                             }
                         }
@@ -106,10 +107,10 @@ struct CreateTicketView: View {
 
                     Text(
                         localization[.characterCount]
-                            .replacingOccurrences(of: "{{ count }}", with: "\(description.count)/250")
+                            .replacingOccurrences(of: "{{ count }}", with: "\(description.count)/\(maxCharacters)")
                     )
                         .font(.caption)
-                        .foregroundColor(description.count >= 250 ? .red : .secondary)
+                        .foregroundColor(description.count >= maxCharacters ? .red : .secondary)
                         .frame(maxWidth: .infinity, alignment: .trailing)
                 }
 
