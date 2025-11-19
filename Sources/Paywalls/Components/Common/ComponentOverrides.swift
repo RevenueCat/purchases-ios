@@ -38,7 +38,7 @@ public extension PaywallComponent {
         case orientation(ArrayOperatorType, [OrientationType])
         case screenSize(ArrayOperatorType, [String])
         case selectedPackage(ArrayOperatorType, [String])
-        case introOffer
+        case introOffer(EqualityOperatorType, Bool)
         case promoOffer
         case selected
 
@@ -92,7 +92,9 @@ public extension PaywallComponent {
                     let packages = try container.decode([String].self, forKey: .packages)
                     self = .selectedPackage(operand, packages)
                 case .introOffer:
-                    self = .introOffer
+                    let operand = try container.decode(EqualityOperatorType.self, forKey: .operator)
+                    let value = try container.decode(Bool.self, forKey: .packages)
+                    self = .introOffer(operand, value)
                 case .promoOffer:
                     self = .promoOffer
                 case .selected:
@@ -120,7 +122,7 @@ public extension PaywallComponent {
             case orientation = "orientation"
             case screenSize = "screen_size"
             case selectedPackage = "selected_package"
-            case introOffer = "intro_offer"
+            case introOffer = "introductory_offer"
             case promoOffer = "promo_offer"
             case selected
 

@@ -125,7 +125,15 @@ extension PresentedPartial {
                     }
                 }
                 return false
-            case .introOffer:
+            case .introOffer(let operand, let value):
+                switch operand {
+                case .equals:
+                    return isEligibleForIntroOffer == value
+                case .notEquals:
+                    return isEligibleForIntroOffer != value
+                @unknown default:
+                    return false
+                }
                 if !isEligibleForIntroOffer {
                     return false
                 }
