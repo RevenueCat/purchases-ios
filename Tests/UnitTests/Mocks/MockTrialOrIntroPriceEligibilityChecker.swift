@@ -79,3 +79,5 @@ class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheck
     }
 
 }
+
+extension MockTrialOrIntroPriceEligibilityChecker: @unchecked Sendable {}

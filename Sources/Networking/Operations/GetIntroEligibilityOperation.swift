@@ -38,6 +38,9 @@ class GetIntroEligibilityOperation: NetworkOperation {
 
 }
 
+// Restating inherited @unchecked Sendable from Foundation's Operation
+extension GetIntroEligibilityOperation: @unchecked Sendable {}
+
 private extension GetIntroEligibilityOperation {
 
     func getIntroEligibility(completion: @escaping () -> Void) {

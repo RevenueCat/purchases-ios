@@ -52,6 +52,9 @@ class CacheableNetworkOperation: NetworkOperation, CacheKeyProviding {
 
 }
 
+// Restating inherited @unchecked Sendable from Foundation's Operation
+extension CacheableNetworkOperation: @unchecked Sendable {}
+
 class NetworkOperation: Operation {
 
     let httpClient: HTTPClient
@@ -188,6 +191,9 @@ class NetworkOperation: Operation {
     }
 
 }
+
+// Restating inherited @unchecked Sendable from Foundation's Operation
+extension NetworkOperation: @unchecked Sendable {}
 
 protocol AppUserConfiguration {
 

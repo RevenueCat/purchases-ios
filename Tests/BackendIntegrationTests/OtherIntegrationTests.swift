@@ -18,11 +18,38 @@ import XCTest
 
 class OtherIntegrationTests: BaseBackendIntegrationTests {
 
+    private var testSession: SKTestSession!
+
     override func setUp() async throws {
         // Some tests need to introspect logs during initialization.
         super.initializeLogger()
 
+        if self.testSession == nil {
+            try await self.configureTestSession()
+        }
+
         try await super.setUp()
+    }
+
+    func configureTestSession() async throws {
+        assert(self.testSession == nil, "SKTestSession already configured")
+
+        self.testSession = try SKTestSession(configurationFileNamed: Constants.storeKitConfigFileName)
+        self.testSession.resetToDefaultState()
+        self.testSession.disableDialogs = true
+        self.testSession.clearTransactions()
+        if #available(iOS 15.2, *) {
+            self.testSession.timeRate = .monthlyRenewalEveryThirtySeconds
+        } else {
+            self.testSession.timeRate = .oneSecondIsOneDay
+        }
+
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            // Despite calling `SKTestSession.clearTransactions` tests sometimes
+            // begin with leftover transactions. This ensures that we remove them
+            // to always start with a clean state.
+            await self.deleteAllTransactions(session: self.testSession)
+        }
     }
 
     func testGetCustomerInfo() async throws {
@@ -193,7 +220,8 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
     }
 
     func testRequestPaywallImages() async throws {
-        let offering = try await XCTAsyncUnwrap(try await self.purchases.offerings().current)
+        let offering = try await XCTAsyncUnwrap(try await self.purchases.offerings().all["alternate_offering"])
+
         let paywall = try XCTUnwrap(offering.paywall)
         let images = paywall.allImageURLs
 
@@ -215,7 +243,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
                 )
             expect(urlResponse.value(forHTTPHeaderField: "Content-Type"))
                 .to(
-                    equal("image/jpeg"),
+                    equal("image/heic"),
                     description: "Unexpected content type for image: \(imageURL)"
                 )
         }

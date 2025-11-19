@@ -39,3 +39,5 @@ class MockIdentityAPI: IdentityAPI {
     }
 
 }
+
+extension MockIdentityAPI: @unchecked Sendable {}

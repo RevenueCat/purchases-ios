@@ -26,3 +26,5 @@ class MockAppleReceiptBuilder: AppleReceiptBuilder {
         return stubbedBuildResult
     }
 }
+
+extension MockAppleReceiptBuilder: @unchecked Sendable {}

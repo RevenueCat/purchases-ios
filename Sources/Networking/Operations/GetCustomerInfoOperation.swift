@@ -67,6 +67,9 @@ final class GetCustomerInfoOperation: CacheableNetworkOperation {
 
 }
 
+// Restating inherited @unchecked Sendable from Foundation's Operation
+extension GetCustomerInfoOperation: @unchecked Sendable {}
+
 private extension GetCustomerInfoOperation {
 
     func getCustomerInfo(completion: @escaping () -> Void) {

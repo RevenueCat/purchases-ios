@@ -512,6 +512,9 @@ extension BasePurchasesTests {
     }
 }
 
+extension BasePurchasesTests.MockBackend: @unchecked Sendable {}
+extension BasePurchasesTests.MockOfferingsAPI: @unchecked Sendable {}
+
 private extension BasePurchasesTests {
 
     func clearReferences() {

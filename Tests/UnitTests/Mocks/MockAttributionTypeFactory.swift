@@ -49,3 +49,5 @@ class MockAttributionTypeFactory: AttributionTypeFactory {
     }
 
 }
+
+extension MockAttributionTypeFactory: @unchecked Sendable {}

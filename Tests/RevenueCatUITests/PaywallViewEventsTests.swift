@@ -29,7 +29,9 @@ class PaywallViewEventsTests: TestCase {
     private let mode: PaywallViewMode = .random
     private let scheme: ColorScheme = Bool.random() ? .dark : .light
 
+    private var impressionEventExpectation: XCTestExpectation!
     private var closeEventExpectation: XCTestExpectation!
+
     override func setUp() {
         super.setUp()
 
@@ -42,20 +44,29 @@ class PaywallViewEventsTests: TestCase {
                     await self?.track(event)
                 }
             }
+        self.impressionEventExpectation = XCTestExpectation(description: "Impression event")
         self.closeEventExpectation = .init(description: "Close event")
     }
 
     func testPaywallImpressionEvent() async throws {
-        try await self.runDuringViewLifetime {}
 
-        expect(self.events).to(containElementSatisfying { $0.eventType == .impression })
+        try await self.runDuringViewLifetime {
+            await Task.yield()
+        }
+
+        await self.fulfillment(of: [impressionEventExpectation], timeout: 3)
+
+        expect(self.events)
+            .to(containElementSatisfying { $0.eventType == .impression })
 
         let event = try XCTUnwrap(self.events.first { $0.eventType == .impression })
         self.verifyEventData(event.data)
     }
 
     func testPaywallCloseEvent() async throws {
-        try await self.runDuringViewLifetime {}
+        try await self.runDuringViewLifetime {
+            await Task.yield()
+        }
         await self.waitForCloseEvent()
 
         expect(self.events).to(haveCount(2))
@@ -66,7 +77,9 @@ class PaywallViewEventsTests: TestCase {
     }
 
     func testCloseEventHasSameSessionID() async throws {
-        try await self.runDuringViewLifetime {}
+        try await self.runDuringViewLifetime {
+            await Task.yield()
+        }
         await self.waitForCloseEvent()
 
         expect(self.events).to(haveCount(2))
@@ -92,8 +105,12 @@ class PaywallViewEventsTests: TestCase {
     func testDifferentPaywallsCreateSeparateSessionIdentifiers() async throws {
         self.closeEventExpectation.expectedFulfillmentCount = 2
 
-        try await self.runDuringViewLifetime {}
-        try await self.runDuringViewLifetime {}
+        try await self.runDuringViewLifetime {
+            await Task.yield()
+        }
+        try await self.runDuringViewLifetime {
+            await Task.yield()
+        }
 
         await self.waitForCloseEvent()
 
@@ -129,7 +146,7 @@ private extension PaywallViewEventsTests {
         self.events.append(event)
 
         switch event {
-        case .impression: break
+        case .impression: self.impressionEventExpectation.fulfill()
         case .cancel: break
         case .close: self.closeEventExpectation.fulfill()
         }

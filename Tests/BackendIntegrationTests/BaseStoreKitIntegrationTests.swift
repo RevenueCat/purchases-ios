@@ -98,9 +98,16 @@ extension BaseStoreKitIntegrationTests {
         }
     }
 
+    var offeringWithV1Paywall: Offering {
+        get async throws {
+            return try await XCTAsyncUnwrap(try await self.purchases.offerings().all["alternate_offering"])
+        }
+    }
+
     var monthlyPackage: Package {
         get async throws {
-            return try await XCTAsyncUnwrap(try await self.currentOffering.monthly)
+            let monthyPackage = try await XCTAsyncUnwrap(try await self.currentOffering.monthly)
+            return monthyPackage
         }
     }
 
@@ -133,8 +140,6 @@ extension BaseStoreKitIntegrationTests {
         file: FileString = #file,
         line: UInt = #line
     ) async throws -> PurchaseResultData {
-        let logger = TestLogHandler()
-
         let data = try await self.purchases.purchase(package: self.monthlyPackage)
 
         try await self.verifyEntitlementWentThrough(data.customerInfo,
@@ -143,7 +148,7 @@ extension BaseStoreKitIntegrationTests {
 
         if !allowOfflineEntitlements {
             // Avoid false positives if the API returned a 500 and customer info was computed offline
-            self.verifyCustomerInfoWasNotComputedOffline(logger: logger, file: file, line: line)
+            self.verifyCustomerInfoWasNotComputedOffline(customerInfo: data.customerInfo, file: file, line: line)
         }
 
         return data
@@ -155,8 +160,6 @@ extension BaseStoreKitIntegrationTests {
         file: FileString = #file,
         line: UInt = #line
     ) async throws -> PurchaseResultData {
-        let logger = TestLogHandler()
-
         let data = try await self.purchases.purchase(product: self.monthlyPackage.storeProduct)
 
         try await self.verifyEntitlementWentThrough(data.customerInfo,
@@ -165,7 +168,7 @@ extension BaseStoreKitIntegrationTests {
 
         if !allowOfflineEntitlements {
             // Avoid false positives if the API returned a 500 and customer info was computed offline
-            self.verifyCustomerInfoWasNotComputedOffline(logger: logger, file: file, line: line)
+            self.verifyCustomerInfoWasNotComputedOffline(customerInfo: data.customerInfo, file: file, line: line)
         }
 
         return data
@@ -177,7 +180,6 @@ extension BaseStoreKitIntegrationTests {
         file: FileString = #file,
         line: UInt = #line
     ) async throws -> PurchaseResultData {
-        let logger = TestLogHandler()
         let product = try await StoreKit.Product.products(for: [Self.weeklyWith3DayTrial]).first!
 
         let data = try await self.purchases.purchase(product: StoreProduct(sk2Product: product))
@@ -188,7 +190,7 @@ extension BaseStoreKitIntegrationTests {
 
         if !allowOfflineEntitlements {
             // Avoid false positives if the API returned a 500 and customer info was computed offline
-            self.verifyCustomerInfoWasNotComputedOffline(logger: logger, file: file, line: line)
+            self.verifyCustomerInfoWasNotComputedOffline(customerInfo: data.customerInfo, file: file, line: line)
         }
 
         return data

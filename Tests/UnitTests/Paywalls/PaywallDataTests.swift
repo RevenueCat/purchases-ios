@@ -148,20 +148,18 @@ class PaywallDataTests: BaseHTTPResponseTest {
     }
 
     func testLocalesOrderedByPriority() throws {
-        let expected: [String]
-
-        if #available(iOS 17.0, tvOS 17.0, watchOS 10.0, *) {
-            expected = [
-                "en_US",
-                "en-US"
-            ]
-        } else {
-            expected = [
-                "en_US",
-                // `Locale.preferredLanguages` returns `en` before iOS 17.
-                "en"
-            ]
-        }
+        #if swift(>=5.9)
+        let expected = [
+            "en_US",
+            "en-US"
+        ]
+        #else
+        let expected = [
+            "en_US",
+            // `Locale.preferredLanguages` returns `en` before iOS 17.
+            "en"
+        ]
+        #endif
 
         expect(PaywallData.localesOrderedByPriority.map(\.identifier)) == expected
     }

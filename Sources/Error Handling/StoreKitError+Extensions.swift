@@ -36,6 +36,12 @@ extension StoreKitError: PurchasesErrorConvertible {
             return ErrorUtils.storeProblemError(error: self)
 #endif
 
+        #if compiler(>=6.1)
+        // StoreKitError.unsupported was introduced in iOS 18.4, which shipped with Xcode 16.3 beta 1 / Swift 6.1
+        case .unsupported:
+            return ErrorUtils.purchaseInvalidError(error: self)
+        #endif
+
         case .unknown:
             /// See also https://github.com/RevenueCat/purchases-ios/issues/392
             /// `StoreKitError` doesn't conform to `CustomNSError` as of `iOS 15.2`

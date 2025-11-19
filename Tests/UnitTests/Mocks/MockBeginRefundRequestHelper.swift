@@ -58,3 +58,5 @@ class MockBeginRefundRequestHelper: BeginRefundRequestHelper {
 #endif
 
 }
+
+extension MockBeginRefundRequestHelper: @unchecked Sendable {}

@@ -16,6 +16,9 @@ class MockSKProductDiscount: MockSKProductDiscountWithNoPriceLocale {
 
 }
 
+@available(iOS 11.2, macCatalyst 13.0, tvOS 11.2, macOS 10.13.2, *)
+extension MockSKProductDiscount: @unchecked Sendable {}
+
 // See https://github.com/RevenueCat/purchases-ios/issues/1521
 @available(iOS 11.2, macCatalyst 13.0, tvOS 11.2, macOS 10.13.2, *)
 class MockSKProductDiscountWithNoPriceLocale: SKProductDiscount {
@@ -42,3 +45,6 @@ class MockSKProductDiscountWithNoPriceLocale: SKProductDiscount {
     }
 
 }
+
+@available(iOS 11.2, macCatalyst 13.0, tvOS 11.2, macOS 10.13.2, *)
+extension MockSKProductDiscountWithNoPriceLocale: @unchecked Sendable {}

@@ -115,6 +115,9 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
 
 }
 
+// Restating inherited @unchecked Sendable from Foundation's Operation
+extension PostReceiptDataOperation: @unchecked Sendable {}
+
 extension PostReceiptDataOperation {
 
     struct PostData {
