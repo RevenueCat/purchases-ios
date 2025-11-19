@@ -16,6 +16,17 @@ import SwiftUI
 #if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct FlexSpacer: View {
+    let weight: Int
+    
+    var body: some View {
+        ForEach(0..<weight, id: \.self) { _ in
+            Spacer(minLength: 0)
+        }
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct FlexVStack: View {
     let alignment: HorizontalAlignment
     let justifyContent: JustifyContent
@@ -52,7 +63,7 @@ struct FlexVStack: View {
                 ForEach(0..<componentViewModels.count, id: \.self) { index in
                     ComponentsView(componentViewModels: [self.componentViewModels[index]], onDismiss: self.onDismiss)
                 }
-                Spacer()
+                Spacer(minLength: 0)
 
             case .end:
                 Spacer(minLength: 0)
@@ -64,23 +75,38 @@ struct FlexVStack: View {
                 ForEach(0..<componentViewModels.count, id: \.self) { index in
                     ComponentsView(componentViewModels: [self.componentViewModels[index]], onDismiss: self.onDismiss)
                     if index < self.componentViewModels.count - 1 {
-                        Spacer(minLength: 0)
+                        if let spacing = self.spacing {
+                            Spacer(minLength: spacing)
+                        } else {
+                            Spacer(minLength: 0)
+                        }
                     }
                 }
 
             case .spaceAround:
                 ForEach(0..<componentViewModels.count, id: \.self) { index in
-                    Spacer(minLength: 0)
+                    if index == 0 {
+                        FlexSpacer(weight: 1)
+                    }
                     ComponentsView(componentViewModels: [self.componentViewModels[index]], onDismiss: self.onDismiss)
-                    Spacer(minLength: 0)
+                    if index < self.componentViewModels.count - 1 {
+                        if let spacing = self.spacing {
+                            Spacer(minLength: spacing)
+                        }
+                        FlexSpacer(weight: 2)
+                    } else {
+                        FlexSpacer(weight: 1)
+                    }
                 }
 
             case .spaceEvenly:
                 ForEach(0..<componentViewModels.count, id: \.self) { index in
-                    Spacer(minLength: 0)
+                    FlexSpacer(weight: 1)
                     ComponentsView(componentViewModels: [self.componentViewModels[index]], onDismiss: self.onDismiss)
+                    if index == self.componentViewModels.count - 1 {
+                        FlexSpacer(weight: 1)
+                    }
                 }
-                Spacer(minLength: 0)
             }
         }
     }
