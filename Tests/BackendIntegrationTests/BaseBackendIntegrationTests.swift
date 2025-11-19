@@ -119,11 +119,14 @@ class BaseBackendIntegrationTests: TestCase {
         self.testUUID = UUID()
 
         self.clearReceiptIfExists()
+        self.checkForExistingDirectories()
         await self.createPurchases()
         self.verifyPurchasesDoesNotLeak()
     }
 
     override func tearDown() {
+        self.clearDirectories()
+
         super.tearDown()
 
         self.mainThreadMonitor = nil
@@ -157,14 +160,35 @@ class BaseBackendIntegrationTests: TestCase {
 
 private extension BaseBackendIntegrationTests {
 
-    func clearReceiptIfExists() {
-        let manager = FileManager.default
+    var fileManager: FileManager {
+        .default
+    }
+    
+    // URLs to storage directories where the SDK can store caches or documents
+    var storageDirectoryURLs: [URL] {
+        let directoryNames = [
+            "RevenueCat", // used by DeviceCache and FileRepository
+            "revenuecat" // used by EventStore's
+        ]
 
-        guard let url = Bundle.main.appStoreReceiptURL, manager.fileExists(atPath: url.path) else { return }
+        let baseUrls = [
+            fileManager.urls(for: .cachesDirectory, in: .userDomainMask),
+            fileManager.urls(for: .documentDirectory, in: .userDomainMask)
+        ].flatMap(\.self)
+
+        return baseUrls.flatMap { baseURL -> [URL] in
+            return directoryNames.map { directoryName -> URL in
+                return baseURL.appendingPathComponent(directoryName, isDirectory: true)
+            }
+        }
+    }
+
+    func clearReceiptIfExists() {
+        guard let url = Bundle.main.appStoreReceiptURL, fileManager.fileExists(atPath: url.path) else { return }
 
         do {
             Logger.info(TestMessage.removing_receipt(url))
-            try manager.removeItem(at: url)
+            try fileManager.removeItem(at: url)
         } catch {
             Logger.appleWarning(TestMessage.error_removing_url(url, error))
         }
@@ -185,6 +209,30 @@ private extension BaseBackendIntegrationTests {
                 beNil(),
                 description: "Found existing user after clearing UserDefaults"
             )
+    }
+
+    func checkForExistingDirectories() {
+        for directoryURL in storageDirectoryURLs {
+            // Verify that the storage directories are empty before running tests
+            // Reusing cache / document files across tests would lead to flaky failures.
+            expect(fileManager.fileExists(atPath: directoryURL.path))
+                .to(
+                    beFalse(),
+                    description: "Found existing cache / document directory at \(directoryURL.path)"
+                )
+        }
+    }
+
+    func clearDirectories() {
+        for directoryURL in storageDirectoryURLs {
+            guard fileManager.fileExists(atPath: directoryURL.path) else { continue }
+            
+            do {
+                try fileManager.removeItem(at: directoryURL)
+            } catch {
+                Logger.appleWarning(TestMessage.error_removing_directory(directoryURL, error))
+            }
+        }
     }
 
     func createPurchases() async {
