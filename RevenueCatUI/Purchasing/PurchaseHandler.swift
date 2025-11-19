@@ -391,7 +391,7 @@ extension PurchaseHandler {
     }
 
     @MainActor
-    func setRestored(_ customerInfo: CustomerInfo, success: Bool = true) {
+    func setRestored(_ customerInfo: CustomerInfo, success: Bool) {
         self.restoredCustomerInfo = .init(customerInfo: customerInfo, success: success)
     }
 

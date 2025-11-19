@@ -34,7 +34,8 @@ struct ButtonComponentView: View {
     private let viewModel: ButtonComponentViewModel
     private let onDismiss: () -> Void
 
-    internal init(viewModel: ButtonComponentViewModel, onDismiss: @escaping () -> Void) {
+    internal init(viewModel: ButtonComponentViewModel,
+                  onDismiss: @escaping () -> Void) {
         self.viewModel = viewModel
         self.onDismiss = onDismiss
     }
