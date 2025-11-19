@@ -21,7 +21,7 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 internal struct FlexSpacer: View {
     let weight: Int
-    
+
     var body: some View {
         ForEach(0..<weight, id: \.self) { _ in
             Spacer(minLength: 0)
@@ -30,4 +30,3 @@ internal struct FlexSpacer: View {
 }
 
 #endif
-

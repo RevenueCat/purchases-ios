@@ -621,7 +621,7 @@ private extension PaywallComponent.StackComponent {
         guard self.size.height == .fit else {
             return self
         }
-        
+
         return PaywallComponent.StackComponent(
             visible: self.visible,
             components: self.components,

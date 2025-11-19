@@ -37,7 +37,7 @@ struct FlexVStack: View {
         self.componentViewModels = componentViewModels
         self.onDismiss = onDismiss
     }
-    
+
     var body: some View {
         VStack(alignment: self.alignment, spacing: 0) {
             switch justifyContent {
