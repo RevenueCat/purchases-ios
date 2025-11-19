@@ -16,6 +16,7 @@ import Foundation
 
 // swiftlint:disable file_length type_body_length
 class DeviceCache {
+    private static let defaultBasePath = "RevenueCat"
 
     var cachedAppUserID: String? { return self._cachedAppUserID.value }
     var cachedLegacyAppUserID: String? { return self._cachedLegacyAppUserID.value }
@@ -23,6 +24,7 @@ class DeviceCache {
 
     private let systemInfo: SystemInfo
     private let userDefaults: SynchronizedUserDefaults
+    private let largeItemCache: SynchronizedLargeItemCache
     private let offeringsCachedObject: InMemoryCachedObject<Offerings>
 
     private let _cachedAppUserID: Atomic<String?>
@@ -31,15 +33,19 @@ class DeviceCache {
     private var userDefaultsObserver: NSObjectProtocol?
 
     private var offeringsCachePreferredLocales: [String] = []
+    private let cacheURL: URL?
 
     init(systemInfo: SystemInfo,
          userDefaults: UserDefaults,
+         fileManager: LargeItemCacheType = FileManager.default,
          offeringsCachedObject: InMemoryCachedObject<Offerings> = .init()) {
         self.offeringsCachedObject = offeringsCachedObject
         self.systemInfo = systemInfo
         self.userDefaults = .init(userDefaults: userDefaults)
         self._cachedAppUserID = .init(userDefaults.string(forKey: CacheKeys.appUserDefaults))
         self._cachedLegacyAppUserID = .init(userDefaults.string(forKey: CacheKeys.legacyGeneratedAppUserDefaults))
+        self.cacheURL = fileManager.createDocumentDirectoryIfNeeded(basePath: Self.defaultBasePath)
+        self.largeItemCache = .init(cache: fileManager, basePath: Self.defaultBasePath)
 
         Logger.verbose(Strings.purchase.device_cache_init(self))
     }
@@ -50,22 +56,13 @@ class DeviceCache {
 
     // MARK: - generic methods
 
-    func update<Key: DeviceCacheKeyType, Value: Codable>(
-        key: Key,
-        default defaultValue: Value,
-        updater: @Sendable (inout Value) -> Void
-    ) {
-        self.userDefaults.write {
-            var value: Value = $0.value(forKey: key) ?? defaultValue
-            updater(&value)
-            $0.set(codable: value, forKey: key)
+    private func value<Key: DeviceCacheKeyType, Value: Codable>(for key: Key) -> Value? {
+        // Large data used to be stored in the user defaults and resulted in crashes, we need to ensure that
+        // we are cleaning out that data
+        userDefaults.write { defaults in
+            defaults.removeObject(forKey: key)
         }
-    }
-
-    func value<Key: DeviceCacheKeyType, Value: Codable>(for key: Key) -> Value? {
-        self.userDefaults.read {
-            $0.value(forKey: key)
-        }
+        return self.largeItemCache.value(forKey: key)
     }
 
     // MARK: - appUserID
@@ -89,6 +86,8 @@ class DeviceCache {
 
             // Clear offerings cache.
             self.offeringsCachedObject.clearCache()
+            // Remove offerings from UserDefaults to clear any pre-existing data from
+            // before the migration to largeItemCache
             userDefaults.removeObject(forKey: CacheKey.offerings(oldAppUserID))
 
             // Clear virtual currencies cache
@@ -106,6 +105,9 @@ class DeviceCache {
             self._cachedAppUserID.value = newUserID
             self._cachedLegacyAppUserID.value = nil
         }
+
+        // Clear offerings cache from large item cache
+        self.largeItemCache.removeObject(forKey: CacheKey.offerings(oldAppUserID))
     }
 
     // MARK: - CustomerInfo
@@ -160,10 +162,8 @@ class DeviceCache {
 
     // MARK: - Offerings
 
-    func cachedOfferingsContentsData(appUserID: String) -> Data? {
-        return self.userDefaults.read {
-            $0.data(forKey: CacheKey.offerings(appUserID))
-        }
+    func cachedOfferingsContents(appUserID: String) -> Offerings.Contents? {
+        return self.value(for: CacheKey.offerings(appUserID))
     }
 
     func cache(offerings: Offerings, preferredLocales: [String], appUserID: String) {
@@ -172,9 +172,7 @@ class DeviceCache {
         // For the cache we need the preferred locales that were used in the request.
         self.cacheInMemory(offerings: offerings)
         self.offeringsCachePreferredLocales = preferredLocales
-        self.userDefaults.write {
-            $0.set(codable: offerings.contents, forKey: CacheKey.offerings(appUserID))
-        }
+        self.largeItemCache.set(codable: offerings.contents, forKey: CacheKey.offerings(appUserID))
     }
 
     func cacheInMemory(offerings: Offerings) {
@@ -184,9 +182,7 @@ class DeviceCache {
     func clearOfferingsCache(appUserID: String) {
         self.offeringsCachedObject.clearCache()
         self.offeringsCachePreferredLocales = []
-        self.userDefaults.write {
-            $0.removeObject(forKey: CacheKey.offerings(appUserID))
-        }
+        self.largeItemCache.removeObject(forKey: CacheKey.offerings(appUserID))
     }
 
     func isOfferingsCacheStale(isAppBackgrounded: Bool) -> Bool {
@@ -353,13 +349,18 @@ class DeviceCache {
     }
 
     func store(productEntitlementMapping: ProductEntitlementMapping) {
-        self.userDefaults.write {
-            Self.store($0, productEntitlementMapping: productEntitlementMapping)
+        if self.largeItemCache.set(
+            codable: productEntitlementMapping,
+            forKey: CacheKeys.productEntitlementMapping
+        ) {
+            self.userDefaults.write {
+                $0.set(Date(), forKey: CacheKeys.productEntitlementMappingLastUpdated)
+            }
         }
     }
 
     var cachedProductEntitlementMapping: ProductEntitlementMapping? {
-        return self.userDefaults.read(Self.productEntitlementMapping)
+        return self.value(for: CacheKeys.productEntitlementMapping)
     }
 
     // MARK: - StoreKit 2
@@ -678,20 +679,6 @@ private extension DeviceCache {
         return userDefaults.date(forKey: CacheKeys.productEntitlementMappingLastUpdated)
     }
 
-    static func productEntitlementMapping(_ userDefaults: UserDefaults) -> ProductEntitlementMapping? {
-        return userDefaults.value(forKey: CacheKeys.productEntitlementMapping)
-    }
-
-    static func store(
-        _ userDefaults: UserDefaults,
-        productEntitlementMapping mapping: ProductEntitlementMapping
-    ) {
-        if userDefaults.set(codable: mapping,
-                            forKey: CacheKeys.productEntitlementMapping) {
-            userDefaults.set(Date(), forKey: CacheKeys.productEntitlementMappingLastUpdated)
-        }
-    }
-
     static func virtualCurrenciesLastUpdated(
         _ userDefaults: UserDefaults,
         appUserID: String
@@ -723,25 +710,6 @@ private extension DeviceCache {
 }
 
 fileprivate extension UserDefaults {
-
-    /// - Returns: whether the value could be saved
-    @discardableResult
-    func set<T: Codable>(codable: T, forKey key: DeviceCacheKeyType) -> Bool {
-        guard let data = try? JSONEncoder.default.encode(value: codable, logErrors: true) else {
-            return false
-        }
-
-        self.set(data, forKey: key)
-        return true
-    }
-
-    func value<T: Decodable>(forKey key: DeviceCacheKeyType) -> T? {
-        guard let data = self.data(forKey: key) else {
-            return nil
-        }
-
-        return try? JSONDecoder.default.decode(jsonData: data, logErrors: true)
-    }
 
     func set(_ value: Any?, forKey key: DeviceCacheKeyType) {
         self.set(value, forKey: key.rawValue)

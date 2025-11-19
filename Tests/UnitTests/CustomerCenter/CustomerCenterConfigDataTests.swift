@@ -138,7 +138,8 @@ final class CustomerCenterConfigDataTests: TestCase {
                     displayPurchaseHistoryLink: true,
                     displayUserDetailsSection: true,
                     displayVirtualCurrencies: true,
-                    shouldWarnCustomersAboutMultipleSubscriptions: false
+                    shouldWarnCustomersAboutMultipleSubscriptions: false,
+                    supportTickets: nil
                 ),
                 changePlans: []
             ),
@@ -163,13 +164,16 @@ final class CustomerCenterConfigDataTests: TestCase {
         expect(configData.appearance.buttonBackgroundColor.dark!.stringRepresentation) == "#8B4513"
 
         expect(configData.screens.count) == 1
-        let managementScreen = try XCTUnwrap(configData.screens[CustomerCenterConfigData.Screen.ScreenType.management])
+        guard let managementScreen = configData.screens[CustomerCenterConfigData.Screen.ScreenType.management] else {
+            fail("Expected management screen to exist")
+            return
+        }
         expect(managementScreen.type.rawValue) == "MANAGEMENT"
         expect(managementScreen.title) == "Management Screen"
         expect(managementScreen.subtitle) == "Manage your account"
         expect(managementScreen.paths.count) == 4
 
-        let paths = try XCTUnwrap(managementScreen.paths)
+        let paths = managementScreen.paths
 
         expect(paths[0].id) == "path1"
         expect(paths[0].title) == "Path 1"

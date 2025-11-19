@@ -1458,6 +1458,19 @@ public extension Purchases {
         return CustomerCenterConfigData(from: response)
     }
 
+    /// Used by `RevenueCatUI` to create a support ticket
+    @_spi(Internal) func createTicket(customerEmail: String, ticketDescription: String) async throws -> Bool {
+        let response = try await Async.call { completion in
+            self.backend.customerCenterConfig.postCreateTicket(appUserID: self.appUserID,
+                                                               customerEmail: customerEmail,
+                                                               ticketDescription: ticketDescription) { result in
+                completion(result.mapError(\.asPublicError))
+            }
+        }
+
+        return response.sent
+    }
+
 #if !os(tvOS)
 
     /// Used by `RevenueCatUI` to notify `RevenueCat` when a font in a paywall fails to load.
@@ -2307,9 +2320,9 @@ private extension Purchases {
         self.offeringsManager.updateOfferingsCache(
             appUserID: self.appUserID,
             isAppBackgrounded: isAppBackgrounded
-        ) { [cache = self.paywallCache] offeringsResultData in
+        ) { [weak self] offeringsResultData in
             if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *),
-               let cache = cache, let offerings = offeringsResultData.value?.offerings {
+               let self = self, let cache = self.paywallCache, let offerings = offeringsResultData.value?.offerings {
                 self.operationDispatcher.dispatchOnWorkerThread {
                     await withTaskGroup(of: Void.self) { group in
                         group.addTask {

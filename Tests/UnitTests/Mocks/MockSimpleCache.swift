@@ -14,7 +14,6 @@
 import Foundation
 @testable import RevenueCat
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
 class MockSimpleCache: LargeItemCacheType, @unchecked Sendable {
 
     var cacheDirectory: URL?
@@ -23,6 +22,11 @@ class MockSimpleCache: LargeItemCacheType, @unchecked Sendable {
     var saveDataInvocations: [SaveData] = []
     var saveDataResponses: [Result<SaveData, Error>] = []
 
+    var loadFileInvocations = [URL]()
+    var loadFileResponses = [Result<Data, Error>]()
+
+    var removeInvocations = [URL]()
+
     var cachedContentExistsInvocations: [URL] = []
     var cachedContentExistsResponses: [Bool] = []
 
@@ -30,6 +34,17 @@ class MockSimpleCache: LargeItemCacheType, @unchecked Sendable {
         self.cacheDirectory = cacheDirectory
     }
 
+    func saveData(_ data: Data, to url: URL) throws {
+        saveDataInvocations.append(.init(data: data, url: url))
+        switch saveDataResponses[saveDataInvocations.count - 1] {
+        case .failure(let error):
+            throw error
+        default:
+            break
+        }
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, visionOS 1.0, watchOS 8.0, *)
     func saveData(
         _ bytes: AsyncThrowingStream<UInt8, any Error>,
         to url: URL,
@@ -73,12 +88,33 @@ class MockSimpleCache: LargeItemCacheType, @unchecked Sendable {
     }
 
     func loadFile(at url: URL) throws -> Data {
-        assert(false, "to do: implement later when used")
-        return Data()
+        try lock.withLock {
+            loadFileInvocations.append(url)
+            switch loadFileResponses[loadFileInvocations.count - 1] {
+            case .success(let data):
+                return data
+            case .failure(let error):
+                throw error
+            }
+        }
+    }
+
+    func stubLoadFile(at index: Int = 0, with result: Result<Data, Error>) {
+        lock.withLock {
+            loadFileResponses.insert(result, at: index)
+        }
+    }
+
+    func remove(_ url: URL) throws {
+        removeInvocations.append(url)
     }
 
     func createCacheDirectoryIfNeeded(basePath: String) -> URL? {
         cacheDirectory?.appendingPathComponent(basePath)
+    }
+
+    func createDocumentDirectoryIfNeeded(basePath: String) -> URL? {
+        cacheDirectory?.appendingPathComponent("docs–" + basePath)
     }
 
     struct SaveData: Equatable {

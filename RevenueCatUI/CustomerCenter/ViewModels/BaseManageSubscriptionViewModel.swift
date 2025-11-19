@@ -67,6 +67,9 @@ class BaseManageSubscriptionViewModel: ObservableObject {
     var showAllInAppCurrenciesScreen: Bool = false
 
     @Published
+    var showCreateTicket: Bool = false
+
+    @Published
     private(set) var refundRequestStatus: RefundRequestStatus?
 
     private var error: Error?
