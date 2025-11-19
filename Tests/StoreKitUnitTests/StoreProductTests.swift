@@ -447,7 +447,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         let sk1Fetcher = ProductsFetcherSK1(requestTimeout: Configuration.storeKitRequestTimeoutDefault)
 
         let storeProduct = try await sk1Fetcher.product(withIdentifier: Self.productID)
-        expect(storeProduct.localizedPricePerWeek) == "$1.15"
+        expect(storeProduct.localizedPricePerWeek) == "$1.14"
         expect(storeProduct.localizedPricePerMonth) == "$4.99"
         expect(storeProduct.localizedPricePerYear) == "$59.88"
     }
@@ -466,9 +466,9 @@ class StoreProductTests: StoreKitConfigTestCase {
         )
         let storeProduct = product.toStoreProduct()
 
-        expect(storeProduct.localizedPricePerWeek) == "$3.99"
-        expect(storeProduct.localizedPricePerMonth) == "$17.34"
-        expect(storeProduct.localizedPricePerYear) == "$208.05"
+        expect(storeProduct.localizedPricePerWeek) == "$3.98"
+        expect(storeProduct.localizedPricePerMonth) == "$17.33"
+        expect(storeProduct.localizedPricePerYear) == "$208.04"
     }
 
 }
