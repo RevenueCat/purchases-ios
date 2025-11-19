@@ -16,17 +16,6 @@ import SwiftUI
 #if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct FlexSpacer: View {
-    let weight: Int
-    
-    var body: some View {
-        ForEach(0..<weight, id: \.self) { _ in
-            Spacer(minLength: 0)
-        }
-    }
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct FlexVStack: View {
     let alignment: HorizontalAlignment
     let justifyContent: JustifyContent
