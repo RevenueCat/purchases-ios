@@ -37,13 +37,18 @@ struct FlexVStack: View {
         self.componentViewModels = componentViewModels
         self.onDismiss = onDismiss
     }
-
+    
     var body: some View {
-        VStack(alignment: self.alignment, spacing: self.spacing) {
+        VStack(alignment: self.alignment, spacing: 0) {
             switch justifyContent {
             case .start:
                 ForEach(0..<componentViewModels.count, id: \.self) { index in
                     ComponentsView(componentViewModels: [self.componentViewModels[index]], onDismiss: self.onDismiss)
+                    if index < self.componentViewModels.count - 1 {
+                        if let spacing = self.spacing {
+                            Spacer(minLength: spacing)
+                        }
+                    }
                 }
                 Spacer(minLength: 0)
 
@@ -51,6 +56,11 @@ struct FlexVStack: View {
                 Spacer(minLength: 0)
                 ForEach(0..<componentViewModels.count, id: \.self) { index in
                     ComponentsView(componentViewModels: [self.componentViewModels[index]], onDismiss: self.onDismiss)
+                    if index < self.componentViewModels.count - 1 {
+                        if let spacing = self.spacing {
+                            Spacer(minLength: spacing)
+                        }
+                    }
                 }
                 Spacer(minLength: 0)
 
@@ -58,6 +68,11 @@ struct FlexVStack: View {
                 Spacer(minLength: 0)
                 ForEach(0..<componentViewModels.count, id: \.self) { index in
                     ComponentsView(componentViewModels: [self.componentViewModels[index]], onDismiss: self.onDismiss)
+                    if index < self.componentViewModels.count - 1 {
+                        if let spacing = self.spacing {
+                            Spacer(minLength: spacing)
+                        }
+                    }
                 }
 
             case .spaceBetween:
@@ -92,7 +107,11 @@ struct FlexVStack: View {
                 ForEach(0..<componentViewModels.count, id: \.self) { index in
                     FlexSpacer(weight: 1)
                     ComponentsView(componentViewModels: [self.componentViewModels[index]], onDismiss: self.onDismiss)
-                    if index == self.componentViewModels.count - 1 {
+                    if index < self.componentViewModels.count - 1 {
+                        if let spacing = self.spacing {
+                            Spacer(minLength: spacing)
+                        }
+                    } else {
                         FlexSpacer(weight: 1)
                     }
                 }

@@ -19,7 +19,7 @@ import SwiftUI
 /// Creates multiple `Spacer()` instances to achieve proportional space distribution.
 /// For example, `FlexSpacer(weight: 2)` will take twice as much space as `FlexSpacer(weight: 1)`.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct FlexSpacer: View {
+internal struct FlexSpacer: View {
     let weight: Int
     
     var body: some View {
