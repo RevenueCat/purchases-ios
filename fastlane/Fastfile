@@ -244,25 +244,6 @@ platform :ios do
        "#{output_dir}/images")
   end
 
-  private_lane :create_or_checkout_branch do |options|
-    branch_name = options[:branch_name] || UI.user_error!("No branch name provided")
-
-    # Check if branch exists locally or remotely
-    branch_exists_locally = sh("git", "branch", "--list", branch_name).length > 0
-    branch_exists_remotely = sh("git", "ls-remote", "--heads", "origin", branch_name).length > 0
-
-    if branch_exists_locally || branch_exists_remotely
-      UI.message("Branch #{branch_name} already exists, checking it out")
-      sh("git", "checkout", branch_name)
-      if branch_exists_remotely
-        sh("git", "pull", "origin", branch_name)
-      end
-    else
-      UI.message("Creating new branch #{branch_name}")
-      sh("git", "checkout", "-b", branch_name)
-    end
-  end
-
   private_lane :commit_push_and_create_pr_if_necessary do |options|
     branch_name = options[:branch_name] || UI.user_error!("No branch_name provided")
     commit_message = options[:commit_message] || UI.user_error!("No commit_message provided")
@@ -280,8 +261,10 @@ platform :ios do
       )
 
       create_pr_if_necessary(
-        repo: repo,
-        branch_name: branch_name,
+        github_pr_token: ENV["GITHUB_TOKEN"],
+        repo_name: repo,
+        base_branch: "main",
+        head_branch: branch_name,
         title: title,
         body: body,
         labels: labels,
@@ -312,41 +295,6 @@ platform :ios do
         sh("git", "commit", "-m", commit_message)
         sh("git", "push", "-u", "origin", branch_name)
       end
-    end
-  end
-
-  private_lane :create_pr_if_necessary do |options|
-    branch_name = options[:branch_name] || UI.user_error!("No branch_name provided")
-    title = options[:title] || UI.user_error!("No title provided")
-    body = options[:body] || UI.user_error!("No body provided")
-    repo = options[:repo] || REPO_NAME
-    repo_with_owner = "RevenueCat/#{repo}"
-    base = options[:base] || "main"
-    labels = options[:labels] || []
-    team_reviewers = options[:team_reviewers] || []
-
-    existing_pr = github_api(
-      api_token: ENV["GITHUB_TOKEN"],
-      path: "/repos/#{repo_with_owner}/pulls?head=RevenueCat:#{branch_name}&state=open"
-    )
-
-    if existing_pr[:json].length == 0
-      pr_url = create_pull_request(
-        repo: repo_with_owner,
-        title: title,
-        body: body,
-        base: base,
-        head: branch_name,
-        api_token: ENV["GITHUB_TOKEN"],
-        labels: labels,
-        team_reviewers: team_reviewers
-      )
-
-      if pr_url.nil?
-        UI.user_error!("Failed to create pull request.")
-      end
-    else
-      UI.message("PR already exists.")
     end
   end
 
