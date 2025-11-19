@@ -163,7 +163,7 @@ private extension BaseBackendIntegrationTests {
     var fileManager: FileManager {
         .default
     }
-    
+
     // URLs to storage directories where the SDK can store caches or documents
     var storageDirectoryURLs: [URL] {
         let directoryNames = [
@@ -226,7 +226,7 @@ private extension BaseBackendIntegrationTests {
     func clearDirectories() {
         for directoryURL in storageDirectoryURLs {
             guard fileManager.fileExists(atPath: directoryURL.path) else { continue }
-            
+
             do {
                 try fileManager.removeItem(at: directoryURL)
             } catch {
