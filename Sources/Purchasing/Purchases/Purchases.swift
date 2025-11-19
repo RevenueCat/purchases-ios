@@ -1458,6 +1458,19 @@ public extension Purchases {
         return CustomerCenterConfigData(from: response)
     }
 
+    /// Used by `RevenueCatUI` to create a support ticket
+    @_spi(Internal) func createTicket(customerEmail: String, ticketDescription: String) async throws -> Bool {
+        let response = try await Async.call { completion in
+            self.backend.customerCenterConfig.postCreateTicket(appUserID: self.appUserID,
+                                                               customerEmail: customerEmail,
+                                                               ticketDescription: ticketDescription) { result in
+                completion(result.mapError(\.asPublicError))
+            }
+        }
+
+        return response.sent
+    }
+
 #if !os(tvOS)
 
     /// Used by `RevenueCatUI` to notify `RevenueCat` when a font in a paywall fails to load.

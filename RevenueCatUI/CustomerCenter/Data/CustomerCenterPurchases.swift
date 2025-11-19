@@ -98,6 +98,13 @@ final class CustomerCenterPurchases: CustomerCenterPurchasesType {
         return try await Purchases.shared.offerings()
     }
 
+    func createTicket(customerEmail: String, ticketDescription: String) async throws -> Bool {
+        return try await Purchases.shared.createTicket(
+            customerEmail: customerEmail,
+            ticketDescription: ticketDescription
+        )
+    }
+
     #if os(iOS) || os(visionOS)
     func beginRefundRequest(forProduct productID: String) async throws -> RefundRequestStatus {
         try await Purchases.shared.beginRefundRequest(forProduct: productID)
