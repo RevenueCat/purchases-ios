@@ -1270,7 +1270,7 @@ platform :ios do
       slack_backend_integration_test_results(
         environment: "load_shedder_us_east_1", 
         success: success, 
-        version: major,
+        version: major.to_s,
         message_binary_solo_on_failure: false
       )
       ping_heartbeat_monitor(url: ENV["HEARTBEAT_MONITOR_URL_LOAD_SHEDDER_V#{major}_INTEGRATION_TESTS"])
