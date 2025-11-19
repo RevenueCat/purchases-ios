@@ -144,7 +144,7 @@ struct Template7View: TemplateViewType {
                         // Compensate for additional padding on condensed mode + iPad
                         : self.defaultVerticalPaddingLength.map { $0 * -1 }
                     )
-                    .scrollableIfNecessaryWhenAvailable(enabled: self.configuration.mode.isFullScreen)
+                    .scrollableIfNecessaryWhenAvailable(apply: self.configuration.mode.isFullScreen)
             }
 
             if self.configuration.mode.shouldDisplayInlineOfferDetails(displayingAllPlans: self.displayingAllPlans) {
