@@ -21,19 +21,53 @@ struct SubscriberAttribute {
     let value: String
     var isSynced: Bool
 
-    init(withKey key: String, value: String?, isSynced: Bool, setTime: Date) {
+    /// Whether the `setTime` should be ignored when generating the `individualizedCacheKeyPart`.
+    ///
+    /// If `true`, two attributes with the same `key` and `value` but different `setTime` will be treated as
+    /// identical (e.g. to avoid duplicate Post Receipt requests when only `updated_at_ms` differs).
+    let ignoreTimeInCacheIdentity: Bool
+
+    init(
+        withKey key: String,
+        value: String?,
+        isSynced: Bool,
+        setTime: Date,
+        ignoreTimeInCacheIdentity: Bool = false
+    ) {
         self.key = key
         self.value = value ?? ""
         self.isSynced = isSynced
         self.setTime = setTime
+        self.ignoreTimeInCacheIdentity = ignoreTimeInCacheIdentity
     }
 
-    init(withKey key: String, value: String?, dateProvider: DateProvider = DateProvider()) {
-        self.init(withKey: key, value: value, isSynced: false, setTime: dateProvider.now())
+    init(
+        withKey key: String,
+        value: String?,
+        dateProvider: DateProvider = DateProvider(),
+        ignoreTimeInCacheIdentity: Bool = false
+    ) {
+        self.init(
+            withKey: key,
+            value: value,
+            isSynced: false,
+            setTime: dateProvider.now(),
+            ignoreTimeInCacheIdentity: ignoreTimeInCacheIdentity
+        )
     }
 
-    init(attribute: ReservedSubscriberAttribute, value: String?, dateProvider: DateProvider = DateProvider()) {
-        self.init(withKey: attribute.rawValue, value: value, dateProvider: dateProvider)
+    init(
+        attribute: ReservedSubscriberAttribute,
+        value: String?,
+        dateProvider: DateProvider = DateProvider(),
+        ignoreTimeInCacheIdentity: Bool = false
+    ) {
+        self.init(
+            withKey: attribute.rawValue,
+            value: value,
+            dateProvider: dateProvider,
+            ignoreTimeInCacheIdentity: ignoreTimeInCacheIdentity
+        )
     }
 
 }
@@ -48,20 +82,34 @@ extension SubscriberAttribute {
         }
 
         let value = dictionary[Key.value.rawValue] as? String
+        let ignoreTimeInCacheIdentity = (dictionary[Key.ignoreTimeInCacheIdentity.rawValue] as? NSNumber)?.boolValue
+        ?? false
 
-        self.init(withKey: key, value: value, isSynced: isSynced, setTime: setTime)
+        self.init(
+            withKey: key,
+            value: value,
+            isSynced: isSynced,
+            setTime: setTime,
+            ignoreTimeInCacheIdentity: ignoreTimeInCacheIdentity
+        )
     }
 
     func asDictionary() -> [String: NSObject] {
         return [Key.key.rawValue: self.key as NSString,
                 Key.value.rawValue: self.value as NSString,
                 Key.isSynced.rawValue: NSNumber(value: self.isSynced),
-                Key.setTime.rawValue: self.setTime as NSDate]
+                Key.setTime.rawValue: self.setTime as NSDate,
+                Key.ignoreTimeInCacheIdentity.rawValue: NSNumber(value: self.ignoreTimeInCacheIdentity)]
     }
 
     func asBackendDictionary() -> [String: Any] {
         return [BackendKey.value.rawValue: self.value,
                 BackendKey.timestamp.rawValue: self.setTime.millisecondsSince1970]
+    }
+
+    var individualizedCacheKeyPart: String {
+        return "[SubscriberAttribute] key: \(self.key) value: \(self.value)" +
+        (ignoreTimeInCacheIdentity ? "" : " setTime: \(self.setTime)")
     }
 
 }
@@ -89,6 +137,15 @@ extension SubscriberAttribute {
     }
 }
 
+extension SubscriberAttribute.Dictionary {
+
+    var individualizedCacheKeyPart: String {
+        return self.mapValues {
+            $0.individualizedCacheKeyPart
+        }.debugDescription
+    }
+}
+
 // MARK: - Private
 
 extension SubscriberAttribute {
@@ -99,6 +156,7 @@ extension SubscriberAttribute {
         case value
         case isSynced
         case setTime
+        case ignoreTimeInCacheIdentity
 
     }
 

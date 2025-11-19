@@ -53,6 +53,7 @@ class MockHTTPClient: HTTPClient {
 
     var mocks: [URL: Response] = [:]
     var calls: [Call] = []
+    private var shouldAssertSnapshot: Bool = true
 
     init(apiKey: String,
          systemInfo: SystemInfo,
@@ -70,6 +71,11 @@ class MockHTTPClient: HTTPClient {
                    diagnosticsTracker: diagnosticsTracker,
                    dnsChecker: dnsChecker,
                    requestTimeout: requestTimeout)
+    }
+
+    /// Disables snapshot testing for this mock HTTP client.
+    func disableSnapshotTesting() {
+        self.shouldAssertSnapshot = false
     }
 
     private let sourceTestFile: StaticString
@@ -94,10 +100,12 @@ class MockHTTPClient: HTTPClient {
         DispatchQueue.main.async {
             self.calls.append(call)
 
-            assertSnapshot(matching: call,
-                           as: .formattedJson,
-                           file: self.sourceTestFile,
-                           testName: CurrentTestCaseTracker.osVersionAndTestName)
+            if self.shouldAssertSnapshot {
+                assertSnapshot(matching: call,
+                               as: .formattedJson,
+                               file: self.sourceTestFile,
+                               testName: CurrentTestCaseTracker.osVersionAndTestName)
+            }
 
             let mock = self.mocks[request.path.url!] ?? .init(statusCode: .success)
 
