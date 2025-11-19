@@ -99,7 +99,8 @@ final class CustomerAPI {
             let attributionStatus = self.attributionFetcher.authorizationStatus
             let consentStatus = SubscriberAttribute(attribute: ReservedSubscriberAttribute.consentStatus,
                                                     value: attributionStatus.description,
-                                                    dateProvider: self.backendConfig.dateProvider)
+                                                    dateProvider: self.backendConfig.dateProvider,
+                                                    ignoreTimeInCacheIdentity: true)
             subscriberAttributesToPost?[consentStatus.key] = consentStatus
         }
 

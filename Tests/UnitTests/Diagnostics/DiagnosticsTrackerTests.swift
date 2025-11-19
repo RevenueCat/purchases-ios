@@ -31,7 +31,7 @@ class DiagnosticsTrackerTests: TestCase {
 
         self.fileHandler = try Self.createWithTemporaryFile()
         self.handler = .init(self.fileHandler)
-        self.dateProvider = .init(stubbedNow: Self.eventTimestamp1)
+        self.dateProvider = .init(stubbedNow: Self.eventTimestamp1, subsequentNows: Self.eventTimestamp2)
         self.tracker = .init(diagnosticsFileHandler: self.handler,
                              dateProvider: self.dateProvider)
     }
@@ -68,7 +68,6 @@ class DiagnosticsTrackerTests: TestCase {
                                       timestamp: Self.eventTimestamp2)
 
         await self.tracker.track(event1)
-        self.dateProvider.stubbedNowResult = Self.eventTimestamp2
         await self.tracker.track(event2)
 
         let entries = await self.handler.getEntries()
