@@ -38,8 +38,20 @@ public extension PaywallComponent {
         case orientation(ArrayOperatorType, [OrientationType])
         case screenSize(ArrayOperatorType, [String])
         case selectedPackage(ArrayOperatorType, [String])
+
+        /// Compares the selected package's intro-offer eligibility (not the whole paywall) against [value].
+        /// This matches the package the customer currently has highlighted in the UI.
         case introOffer(EqualityOperatorType, Bool)
+
+        /// Compares against whether any package on the paywall has an intro offer.
+        case anyIntroOffer(EqualityOperatorType, Bool)
+
+        /// Compares the selected package's promo-offer eligibility (not the whole paywall) against [value].
+        /// This matches the package the customer currently has highlighted in the UI.
         case promoOffer(EqualityOperatorType, Bool)
+
+        /// Compares against whether any package on the paywall has a promo offer.
+        case anyPromoOffer(EqualityOperatorType, Bool)
         case selected
 
         // For unknown cases
@@ -65,8 +77,16 @@ public extension PaywallComponent {
                 try container.encode(ConditionType.introOffer.rawValue, forKey: .type)
                 try container.encode(operand, forKey: .operator)
                 try container.encode(value, forKey: .value)
+            case let .anyIntroOffer(operand, value):
+                try container.encode(ConditionType.anyIntroOffer.rawValue, forKey: .type)
+                try container.encode(operand, forKey: .operator)
+                try container.encode(value, forKey: .value)
             case let .promoOffer(operand, value):
                 try container.encode(ConditionType.promoOffer.rawValue, forKey: .type)
+                try container.encode(operand, forKey: .operator)
+                try container.encode(value, forKey: .value)
+            case let .anyPromoOffer(operand, value):
+                try container.encode(ConditionType.anyPromoOffer.rawValue, forKey: .type)
                 try container.encode(operand, forKey: .operator)
                 try container.encode(value, forKey: .value)
             case .selected:
@@ -97,12 +117,20 @@ public extension PaywallComponent {
                     self = .selectedPackage(operand, packages)
                 case .introOffer:
                     let operand = try container.decode(EqualityOperatorType.self, forKey: .operator)
-                    let value = try container.decode(Bool.self, forKey: .packages)
+                    let value = try container.decode(Bool.self, forKey: .value)
                     self = .introOffer(operand, value)
+                case .anyIntroOffer:
+                    let operand = try container.decode(EqualityOperatorType.self, forKey: .operator)
+                    let value = try container.decode(Bool.self, forKey: .value)
+                    self = .anyIntroOffer(operand, value)
                 case .promoOffer:
                     let operand = try container.decode(EqualityOperatorType.self, forKey: .operator)
-                    let value = try container.decode(Bool.self, forKey: .packages)
+                    let value = try container.decode(Bool.self, forKey: .value)
                     self = .promoOffer(operand, value)
+                case .anyPromoOffer:
+                    let operand = try container.decode(EqualityOperatorType.self, forKey: .operator)
+                    let value = try container.decode(Bool.self, forKey: .value)
+                    self = .anyPromoOffer(operand, value)
                 case .selected:
                     self = .selected
                 }
@@ -130,7 +158,9 @@ public extension PaywallComponent {
             case screenSize = "screen_size"
             case selectedPackage = "selected_package"
             case introOffer = "introductory_offer"
+            case anyIntroOffer = "introductory_offer_available"
             case promoOffer = "promo_offer"
+            case anyPromoOffer = "promo_offer_available"
             case selected
 
         }
