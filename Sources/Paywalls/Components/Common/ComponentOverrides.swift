@@ -39,7 +39,7 @@ public extension PaywallComponent {
         case screenSize(ArrayOperatorType, [String])
         case selectedPackage(ArrayOperatorType, [String])
         case introOffer(EqualityOperatorType, Bool)
-        case promoOffer
+        case promoOffer(EqualityOperatorType, Bool)
         case selected
 
         // For unknown cases
@@ -61,10 +61,14 @@ public extension PaywallComponent {
                 try container.encode(ConditionType.selectedPackage.rawValue, forKey: .type)
                 try container.encode(operand, forKey: .operator)
                 try container.encode(packages, forKey: .packages)
-            case .introOffer:
+            case let .introOffer(operand, value):
                 try container.encode(ConditionType.introOffer.rawValue, forKey: .type)
-            case .promoOffer:
+                try container.encode(operand, forKey: .operator)
+                try container.encode(value, forKey: .value)
+            case let .promoOffer(operand, value):
                 try container.encode(ConditionType.promoOffer.rawValue, forKey: .type)
+                try container.encode(operand, forKey: .operator)
+                try container.encode(value, forKey: .value)
             case .selected:
                 try container.encode(ConditionType.selected.rawValue, forKey: .type)
             case .unsupported:
@@ -96,7 +100,9 @@ public extension PaywallComponent {
                     let value = try container.decode(Bool.self, forKey: .packages)
                     self = .introOffer(operand, value)
                 case .promoOffer:
-                    self = .promoOffer
+                    let operand = try container.decode(EqualityOperatorType.self, forKey: .operator)
+                    let value = try container.decode(Bool.self, forKey: .packages)
+                    self = .promoOffer(operand, value)
                 case .selected:
                     self = .selected
                 }
@@ -113,6 +119,7 @@ public extension PaywallComponent {
             case `operator`
             case orientations
             case packages
+            case value
 
         }
 

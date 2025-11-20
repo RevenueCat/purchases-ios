@@ -267,6 +267,310 @@ class PresentedPartialsTest: TestCase {
         expect(result).to(beNil())
     }
 
+    func testPresentedPartialsPromoOfferAppliedWhenPromoOffer() {
+        let state = ComponentViewState.default
+        let condition = ScreenCondition.medium
+        let isEligibleForIntroOffer = false
+        let isEligibleForPromoOffer = true
+
+        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
+            .init(conditions: [
+                .promoOffer(.equals, true)
+            ], properties: .init(
+                padding: .zero
+            ))
+        ]
+
+        let result = PresentedStackPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackage: nil,
+            with: presentedOverrides
+        )
+
+        let expected: PresentedStackPartial = .init(
+            padding: .zero
+        )
+
+        expect(result).to(equal(expected))
+    }
+
+    func testPresentedPartialsPromoOfferNotAppliedWhenNotPromoOffer() {
+        let state = ComponentViewState.default
+        let condition = ScreenCondition.medium
+        let isEligibleForIntroOffer = false
+        let isEligibleForPromoOffer = false
+
+        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
+            .init(conditions: [
+                .promoOffer(.equals, true)
+            ], properties: .init(
+                padding: .zero
+            ))
+        ]
+
+        let result = PresentedStackPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackage: nil,
+            with: presentedOverrides
+        )
+
+        expect(result).to(beNil())
+    }
+
+    func testPresentedPartialsSelectedPackageNotInOperator() {
+        let state = ComponentViewState.default
+        let condition = ScreenCondition.default
+        let isEligibleForIntroOffer = false
+        let isEligibleForPromoOffer = false
+        let selectedPackage = createPackageWithIdentifier("rc_monthly")
+
+        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
+            .init(conditions: [
+                .selectedPackage(.notIn, ["rc_annual", "rc_six_month"])
+            ], properties: .init(
+                margin: .zero
+            ))
+        ]
+
+        let result = PresentedStackPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackage: selectedPackage,
+            with: presentedOverrides
+        )
+
+        let expected: PresentedStackPartial = .init(
+            margin: .zero
+        )
+
+        expect(result).to(equal(expected))
+    }
+
+    func testPresentedPartialsIntroOfferNotEqualsOperator() {
+        let state = ComponentViewState.default
+        let condition = ScreenCondition.medium
+        let isEligibleForIntroOffer = false
+        let isEligibleForPromoOffer = false
+
+        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
+            .init(conditions: [
+                .introOffer(.notEquals, true)
+            ], properties: .init(
+                padding: .zero
+            ))
+        ]
+
+        let result = PresentedStackPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackage: nil,
+            with: presentedOverrides
+        )
+
+        let expected: PresentedStackPartial = .init(
+            padding: .zero
+        )
+
+        expect(result).to(equal(expected))
+    }
+
+    func testPresentedPartialsIntroOfferEqualsWhenFalse() {
+        let state = ComponentViewState.default
+        let condition = ScreenCondition.medium
+        let isEligibleForIntroOffer = false
+        let isEligibleForPromoOffer = false
+
+        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
+            .init(conditions: [
+                .introOffer(.equals, false)
+            ], properties: .init(
+                padding: .zero
+            ))
+        ]
+
+        let result = PresentedStackPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackage: nil,
+            with: presentedOverrides
+        )
+
+        let expected: PresentedStackPartial = .init(
+            padding: .zero
+        )
+
+        expect(result).to(equal(expected))
+    }
+
+    func testPresentedPartialsMultipleDifferentConditionTypes() {
+        let state = ComponentViewState.selected
+        let condition = ScreenCondition.default
+        let isEligibleForIntroOffer = true
+        let isEligibleForPromoOffer = false
+        let selectedPackage = createPackageWithIdentifier("rc_annual")
+
+        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
+            .init(conditions: [
+                .selected,
+                .introOffer(.equals, true),
+                .selectedPackage(.in, ["rc_annual"])
+            ], properties: .init(
+                margin: .zero
+            ))
+        ]
+
+        let result = PresentedStackPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackage: selectedPackage,
+            with: presentedOverrides
+        )
+
+        let expected: PresentedStackPartial = .init(
+            margin: .zero
+        )
+
+        expect(result).to(equal(expected))
+    }
+
+    func testPresentedPartialsAllConditionsMustMatch() {
+        let state = ComponentViewState.selected
+        let condition = ScreenCondition.default
+        let isEligibleForIntroOffer = true
+        let isEligibleForPromoOffer = false
+        let selectedPackage = createPackageWithIdentifier("rc_annual")
+
+        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
+            .init(conditions: [
+                .selected,
+                .introOffer(.equals, true),
+                .selectedPackage(.in, ["rc_annual"])
+            ], properties: .init(
+                margin: .zero
+            ))
+        ]
+
+        let result = PresentedStackPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackage: selectedPackage,
+            with: presentedOverrides
+        )
+
+        let expected: PresentedStackPartial = .init(
+            margin: .zero
+        )
+
+        expect(result).to(equal(expected))
+    }
+
+    func testPresentedPartialsPartialConditionMatchDoesNotApply() {
+        let state = ComponentViewState.selected
+        let condition = ScreenCondition.default
+        let isEligibleForIntroOffer = false
+        let isEligibleForPromoOffer = false
+        let selectedPackage = createPackageWithIdentifier("rc_annual")
+
+        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
+            .init(conditions: [
+                .selected,
+                .introOffer(.equals, true),
+                .selectedPackage(.in, ["rc_annual"])
+            ], properties: .init(
+                margin: .zero
+            ))
+        ]
+
+        let result = PresentedStackPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackage: selectedPackage,
+            with: presentedOverrides
+        )
+
+        expect(result).to(beNil())
+    }
+
+    func testPresentedPartialsNilSelectedPackageWithPackageCondition() {
+        let state = ComponentViewState.default
+        let condition = ScreenCondition.default
+        let isEligibleForIntroOffer = false
+        let isEligibleForPromoOffer = false
+
+        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
+            .init(conditions: [
+                .selectedPackage(.in, ["rc_annual"])
+            ], properties: .init(
+                margin: .zero
+            ))
+        ]
+
+        let result = PresentedStackPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackage: nil,
+            with: presentedOverrides
+        )
+
+        expect(result).to(beNil())
+    }
+
+    func testPresentedPartialsLaterOverridesWinForConflictingProperties() {
+        let state = ComponentViewState.default
+        let condition = ScreenCondition.default
+        let isEligibleForIntroOffer = false
+        let isEligibleForPromoOffer = false
+        let selectedPackage = createPackageWithIdentifier("rc_annual")
+
+        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
+            .init(conditions: [
+                .selectedPackage(.in, ["rc_annual"])
+            ], properties: .init(
+                margin: .zero
+            )),
+            .init(conditions: [
+                .selectedPackage(.in, ["rc_annual"])
+            ], properties: .init(
+                margin: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
+            ))
+        ]
+
+        let result = PresentedStackPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackage: selectedPackage,
+            with: presentedOverrides
+        )
+
+        let expected: PresentedStackPartial = .init(
+            margin: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
+        )
+
+        expect(result).to(equal(expected))
+    }
+
 }
 
 #endif

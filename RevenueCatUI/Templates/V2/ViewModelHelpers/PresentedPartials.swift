@@ -137,7 +137,15 @@ extension PresentedPartial {
                 if !isEligibleForIntroOffer {
                     return false
                 }
-            case .promoOffer:
+            case .promoOffer(let operand, let value):
+                switch operand {
+                case .equals:
+                    return isEligibleForPromoOffer == value
+                case .notEquals:
+                    return isEligibleForPromoOffer != value
+                @unknown default:
+                    return false
+                }
                 if !isEligibleForPromoOffer {
                     return false
                 }
