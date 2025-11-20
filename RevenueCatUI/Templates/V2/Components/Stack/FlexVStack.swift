@@ -46,7 +46,7 @@ struct FlexVStack: View {
                     ComponentsView(componentViewModels: [self.componentViewModels[index]], onDismiss: self.onDismiss)
                     if index < self.componentViewModels.count - 1 {
                         if let spacing = self.spacing {
-                            Spacer(minLength: spacing)
+                            Spacer().frame(height: spacing)
                         }
                     }
                 }
@@ -58,7 +58,7 @@ struct FlexVStack: View {
                     ComponentsView(componentViewModels: [self.componentViewModels[index]], onDismiss: self.onDismiss)
                     if index < self.componentViewModels.count - 1 {
                         if let spacing = self.spacing {
-                            Spacer(minLength: spacing)
+                            Spacer().frame(height: spacing)
                         }
                     }
                 }
@@ -70,7 +70,7 @@ struct FlexVStack: View {
                     ComponentsView(componentViewModels: [self.componentViewModels[index]], onDismiss: self.onDismiss)
                     if index < self.componentViewModels.count - 1 {
                         if let spacing = self.spacing {
-                            Spacer(minLength: spacing)
+                            Spacer().frame(height: spacing)
                         }
                     }
                 }
@@ -80,7 +80,7 @@ struct FlexVStack: View {
                     ComponentsView(componentViewModels: [self.componentViewModels[index]], onDismiss: self.onDismiss)
                     if index < self.componentViewModels.count - 1 {
                         if let spacing = self.spacing {
-                            Spacer(minLength: spacing)
+                            Spacer().frame(height: spacing)
                         } else {
                             Spacer(minLength: 0)
                         }
@@ -95,7 +95,7 @@ struct FlexVStack: View {
                     ComponentsView(componentViewModels: [self.componentViewModels[index]], onDismiss: self.onDismiss)
                     if index < self.componentViewModels.count - 1 {
                         if let spacing = self.spacing {
-                            Spacer(minLength: spacing)
+                            Spacer().frame(height: spacing)
                         }
                         FlexSpacer(weight: 2)
                     } else {
@@ -109,7 +109,7 @@ struct FlexVStack: View {
                     ComponentsView(componentViewModels: [self.componentViewModels[index]], onDismiss: self.onDismiss)
                     if index < self.componentViewModels.count - 1 {
                         if let spacing = self.spacing {
-                            Spacer(minLength: spacing)
+                            Spacer().frame(height: spacing)
                         }
                     } else {
                         FlexSpacer(weight: 1)
