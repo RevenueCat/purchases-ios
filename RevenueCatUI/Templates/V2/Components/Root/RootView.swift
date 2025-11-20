@@ -70,6 +70,8 @@ struct RootView: View {
         .bottomSheet(sheet: $sheetViewModel, safeAreaInsets: self.safeAreaInsets)
         .onChangeOf(sheetViewModel) { newValue in
             if newValue == nil {
+                // Reset package selection to default when sheet is dismissed to prevent
+                // purchasing a hidden package that was selected in the sheet
                 packageContext.package = defaultPackage
             }
         }
