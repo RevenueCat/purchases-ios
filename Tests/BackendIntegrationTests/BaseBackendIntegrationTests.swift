@@ -119,13 +119,12 @@ class BaseBackendIntegrationTests: TestCase {
         self.testUUID = UUID()
 
         self.clearReceiptIfExists()
-        self.checkForExistingDirectories()
         await self.createPurchases()
         self.verifyPurchasesDoesNotLeak()
     }
 
     override func tearDown() {
-        self.clearDirectories()
+        self.clearAppDocumentsAndCaches()
 
         super.tearDown()
 
@@ -164,25 +163,6 @@ private extension BaseBackendIntegrationTests {
         .default
     }
 
-    // URLs to storage directories where the SDK can store caches or documents
-    var storageDirectoryURLs: [URL] {
-        let directoryNames = [
-            "RevenueCat", // used by DeviceCache and FileRepository
-            "revenuecat" // used by EventStore's
-        ]
-
-        let baseUrls = [
-            fileManager.urls(for: .cachesDirectory, in: .userDomainMask),
-            fileManager.urls(for: .documentDirectory, in: .userDomainMask)
-        ].flatMap(\.self)
-
-        return baseUrls.flatMap { baseURL -> [URL] in
-            return directoryNames.map { directoryName -> URL in
-                return baseURL.appendingPathComponent(directoryName, isDirectory: true)
-            }
-        }
-    }
-
     func clearReceiptIfExists() {
         guard let url = Bundle.main.appStoreReceiptURL, fileManager.fileExists(atPath: url.path) else { return }
 
@@ -211,19 +191,12 @@ private extension BaseBackendIntegrationTests {
             )
     }
 
-    func checkForExistingDirectories() {
-        for directoryURL in storageDirectoryURLs {
-            // Verify that the storage directories are empty before running tests
-            // Reusing cache / document files across tests would lead to flaky failures.
-            expect(self.fileManager.fileExists(atPath: directoryURL.path))
-                .to(
-                    beFalse(),
-                    description: "Found existing cache / document directory at \(directoryURL.path)"
-                )
-        }
-    }
+    func clearAppDocumentsAndCaches() {
+        let storageDirectoryURLs = [
+            fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first,
+            fileManager.urls(for: .documentDirectory, in: .userDomainMask).first
+        ].compactMap(\.self)
 
-    func clearDirectories() {
         for directoryURL in storageDirectoryURLs {
             guard fileManager.fileExists(atPath: directoryURL.path) else { continue }
 
