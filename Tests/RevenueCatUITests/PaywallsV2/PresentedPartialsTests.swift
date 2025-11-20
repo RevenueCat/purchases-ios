@@ -219,7 +219,7 @@ class PresentedPartialsTest: TestCase {
 
         let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
             .init(conditions: [
-                .introOffer
+                .introOffer(.equals, true)
             ], properties: .init(
                 padding: .zero
             ))
@@ -249,7 +249,7 @@ class PresentedPartialsTest: TestCase {
 
         let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
             .init(conditions: [
-                .introOffer
+                .introOffer(.equals, true)
             ], properties: .init(
                 padding: .zero
             ))
