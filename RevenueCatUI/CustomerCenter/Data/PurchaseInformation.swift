@@ -228,7 +228,10 @@ struct PurchaseInformation {
             && transaction.store != .promotional
         self.productType = subscribedProduct?.productType
 
-        self.isLifetime = subscribedProduct?.productType == .nonConsumable
+        self.isLifetime = Self.determineIsLifetime(
+            subscribedProduct: subscribedProduct,
+            transaction: transaction
+        )
 
         // Use entitlement data if available, otherwise derive from transaction
         if let entitlement = entitlement {
@@ -511,6 +514,27 @@ extension PurchaseInformation {
 }
 
 extension PurchaseInformation {
+
+    private static func determineIsLifetime(
+        subscribedProduct: StoreProduct?,
+        transaction: Transaction
+    ) -> Bool {
+        guard !transaction.isSubscription,
+              let product = subscribedProduct,
+              product.productCategory == .nonSubscription else {
+            // If it's a subscription it's not a lifetime product
+            return false
+        }
+
+        // If it's a SK2 product, we need to check if it's a non-consumable product
+        if product.sk1Product == nil {
+            return product.productType == .nonConsumable
+        }
+
+        // In SK1 products, productType is always .nonConsumable
+        // we don't know if it's a lifetime product or not so we default to false
+        return false
+    }
 
     private static func determineTitle(
         subscribedProduct: StoreProduct?,

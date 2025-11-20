@@ -34,6 +34,7 @@ enum TestMessage: LogMessage {
     case removing_receipt(URL)
     case error_removing_url(URL, Error)
     case receipt_content(String)
+    case error_removing_directory(URL, Error)
     case current_entitlements([StoreKit.VerificationResult<StoreKit.Transaction>])
     case unfinished_transactions([StoreKit.VerificationResult<StoreKit.Transaction>])
     case unable_parse_receipt_without_sdk
@@ -69,6 +70,9 @@ extension TestMessage {
 
         case let .error_removing_url(url, error):
             return "Error attempting to remove receipt URL '\(url)': \(error)"
+
+        case let .error_removing_directory(url, error):
+            return "Error attempting to remove directory at URL '\(url)': \(error)"
 
         case let .receipt_content(receipt):
             return "Receipt content:\n\(receipt)"
