@@ -215,7 +215,7 @@ private extension BaseBackendIntegrationTests {
         for directoryURL in storageDirectoryURLs {
             // Verify that the storage directories are empty before running tests
             // Reusing cache / document files across tests would lead to flaky failures.
-            expect(fileManager.fileExists(atPath: directoryURL.path))
+            expect(self.fileManager.fileExists(atPath: directoryURL.path))
                 .to(
                     beFalse(),
                     description: "Found existing cache / document directory at \(directoryURL.path)"
