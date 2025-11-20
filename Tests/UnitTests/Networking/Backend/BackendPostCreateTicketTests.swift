@@ -134,7 +134,7 @@ final class BackendPostCreateTicketTests: BaseBackendTests {
         }
     }
 
-    func testPostCreateTicketSendsCorrectParameters() {
+    func testPostCreateTicketSendsCorrectParameters() throws {
         self.httpClient.mock(
             requestPath: .postCreateTicket,
             response: .init(statusCode: .success, response: ["sent": true])
@@ -156,8 +156,7 @@ final class BackendPostCreateTicketTests: BaseBackendTests {
         expect(self.httpClient.calls).to(haveCount(1))
 
         if let call = self.httpClient.calls.first,
-           let bodyData = call.request?.httpBody,
-           let bodyDict = try? JSONSerialization.jsonObject(with: bodyData) as? [String: Any] {
+           let bodyDict = try call.request.requestBody?.asDictionary() {
             expect(bodyDict["app_user_id"] as? String) == Self.userID
             expect(bodyDict["customer_email"] as? String) == testEmail
             expect(bodyDict["issue_description"] as? String) == testDescription
@@ -166,7 +165,7 @@ final class BackendPostCreateTicketTests: BaseBackendTests {
         }
     }
 
-    func testPostCreateTicketUsesCorrectHTTPMethod() {
+    func testPostCreateTicketUsesCorrectHTTPMethod() throws {
         self.httpClient.mock(
             requestPath: .postCreateTicket,
             response: .init(statusCode: .success, response: ["sent": true])
@@ -185,8 +184,9 @@ final class BackendPostCreateTicketTests: BaseBackendTests {
         expect(self.httpClient.calls).to(haveCount(1))
 
         if let call = self.httpClient.calls.first {
-            expect(call.path) == .postCreateTicket
-            expect(call.request?.httpMethod) == "POST"
+            let path = try XCTUnwrap(call.request.path as? HTTPRequest.Path)
+            expect(path) == .postCreateTicket
+            expect(call.request.method.httpMethod) == "POST"
         } else {
             fail("Expected HTTP call to be made")
         }
