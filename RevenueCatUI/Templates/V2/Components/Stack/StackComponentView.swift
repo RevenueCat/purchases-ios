@@ -320,6 +320,7 @@ struct StackComponentView_Previews: PreviewProvider {
                 ),
                 colorScheme: .light
             ),
+            isScrollableByDefault: true,
             onDismiss: {}
         )
         .previewRequiredPaywallsV2Properties()
@@ -350,6 +351,7 @@ struct StackComponentView_Previews: PreviewProvider {
                 ),
                 colorScheme: .light
             ),
+            isScrollableByDefault: true,
             onDismiss: {}
         )
         .previewRequiredPaywallsV2Properties()
@@ -381,6 +383,7 @@ struct StackComponentView_Previews: PreviewProvider {
                     ),
                     colorScheme: .light
                 ),
+                isScrollableByDefault: true,
                 onDismiss: {}
             )
 
@@ -407,6 +410,7 @@ struct StackComponentView_Previews: PreviewProvider {
                     ),
                     colorScheme: .light
                 ),
+                isScrollableByDefault: true,
                 onDismiss: {}
             )
 
@@ -433,6 +437,7 @@ struct StackComponentView_Previews: PreviewProvider {
                     ),
                     colorScheme: .light
                 ),
+                isScrollableByDefault: true,
                 onDismiss: {}
             )
 
@@ -459,6 +464,7 @@ struct StackComponentView_Previews: PreviewProvider {
                     ),
                     colorScheme: .light
                 ),
+                isScrollableByDefault: true,
                 onDismiss: {}
             )
         }
@@ -518,6 +524,7 @@ struct StackComponentView_Previews: PreviewProvider {
                     ),
                     colorScheme: .light
                 ),
+                isScrollableByDefault: true,
                 onDismiss: {}
             )
         }
@@ -562,6 +569,7 @@ struct StackComponentView_Previews: PreviewProvider {
                     ),
                     colorScheme: .light
                 ),
+                isScrollableByDefault: true,
                 onDismiss: {},
                 showActivityIndicatorOverContent: true
             )
@@ -637,6 +645,7 @@ struct StackComponentView_Previews: PreviewProvider {
                 ),
                 colorScheme: .light
             ),
+            isScrollableByDefault: true,
             onDismiss: {}
         )
         .previewRequiredPaywallsV2Properties()
@@ -699,6 +708,7 @@ func stackAlignmentAndDistributionPreviews(dimensions: [PaywallComponent.Dimensi
                     ),
                     colorScheme: .light
                 ),
+                isScrollableByDefault: true,
                 onDismiss: {}
             )
             .previewRequiredPaywallsV2Properties()
