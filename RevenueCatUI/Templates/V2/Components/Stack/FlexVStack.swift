@@ -81,9 +81,8 @@ struct FlexVStack: View {
                     if index < self.componentViewModels.count - 1 {
                         if let spacing = self.spacing {
                             Spacer().frame(height: spacing)
-                        } else {
-                            Spacer(minLength: 0)
                         }
+                        Spacer(minLength: 0)
                     }
                 }
 
