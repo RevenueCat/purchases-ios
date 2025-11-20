@@ -101,6 +101,10 @@
 		16F376262E93F1E300ADF649 /* LargeItemCacheTypeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F376252E93F1E300ADF649 /* LargeItemCacheTypeTests.swift */; };
 		1DB9B2A72E57373900252D58 /* OfferingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DB9B2A62E57373600252D58 /* OfferingTests.swift */; };
 		1DEF758A2ECF0EFE00614CB2 /* CreateTicketView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DEF75892ECF0EFE00614CB2 /* CreateTicketView.swift */; };
+		1DEF75932ECF130500614CB2 /* EmailValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DEF75922ECF130500614CB2 /* EmailValidator.swift */; };
+		1DEF759A2ECF139F00614CB2 /* CreateTicketViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DEF75992ECF139F00614CB2 /* CreateTicketViewTests.swift */; };
+		1DEF759C2ECF13A600614CB2 /* EmailValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DEF759B2ECF13A600614CB2 /* EmailValidatorTests.swift */; };
+		1DEF759E2ECF13C000614CB2 /* BackendPostCreateTicketTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DEF759D2ECF13C000614CB2 /* BackendPostCreateTicketTests.swift */; };
 		1E2F911B2CC918ED00BDB016 /* ContactSupportUtilitiesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E2F911A2CC918ED00BDB016 /* ContactSupportUtilitiesTests.swift */; };
 		1E2F91722CCFA98C00BDB016 /* WebRedemptionStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E2F91712CCFA98C00BDB016 /* WebRedemptionStrings.swift */; };
 		1E42CC6C2D7F1A0500E0EE8D /* CacheStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E42CC6B2D7F1A0500E0EE8D /* CacheStatus.swift */; };
@@ -1577,6 +1581,10 @@
 		16F376252E93F1E300ADF649 /* LargeItemCacheTypeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeItemCacheTypeTests.swift; sourceTree = "<group>"; };
 		1DB9B2A62E57373600252D58 /* OfferingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferingTests.swift; sourceTree = "<group>"; };
 		1DEF75892ECF0EFE00614CB2 /* CreateTicketView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateTicketView.swift; sourceTree = "<group>"; };
+		1DEF75922ECF130500614CB2 /* EmailValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailValidator.swift; sourceTree = "<group>"; };
+		1DEF75992ECF139F00614CB2 /* CreateTicketViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateTicketViewTests.swift; sourceTree = "<group>"; };
+		1DEF759B2ECF13A600614CB2 /* EmailValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailValidatorTests.swift; sourceTree = "<group>"; };
+		1DEF759D2ECF13C000614CB2 /* BackendPostCreateTicketTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendPostCreateTicketTests.swift; sourceTree = "<group>"; };
 		1E2F911A2CC918ED00BDB016 /* ContactSupportUtilitiesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactSupportUtilitiesTests.swift; sourceTree = "<group>"; };
 		1E2F91712CCFA98C00BDB016 /* WebRedemptionStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRedemptionStrings.swift; sourceTree = "<group>"; };
 		1E42CC6B2D7F1A0500E0EE8D /* CacheStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheStatus.swift; sourceTree = "<group>"; };
@@ -4292,8 +4300,10 @@
 			children = (
 				DBD243292EBDF4B80066AC6F /* PromotionalOfferViewTests.swift */,
 				57B0E87F2DFAC2C400EB5FE1 /* PurchaseCardViewBadgeTests.swift */,
+				1DEF75992ECF139F00614CB2 /* CreateTicketViewTests.swift */,
 				577E58232DF86D390015BB60 /* PromotionalOfferViewModelTests.swift */,
 				57BB08672DD3D9EA007493E1 /* SubscriptionDetailViewModelTests.swift */,
+				1DEF759B2ECF13A600614CB2 /* EmailValidatorTests.swift */,
 				57BB08632DD3BE2D007493E1 /* BaseManageSubscriptionViewModelTests.swift */,
 				576F15462DD4AB64003D8EEC /* DiscountsHandlerTests.swift */,
 				577782B42D91829D00F97EB4 /* CustomerCenterActionWrapperTests.swift */,
@@ -4869,6 +4879,7 @@
 				755C26A52E310B7B006DD0AE /* BackendGetWebBillingProductsTests.swift */,
 				579D2E3928F0BF5A0094B36F /* BackendInternalTests.swift */,
 				5796A38B27D6BA1600653165 /* BackendLoginTests.swift */,
+				1DEF759D2ECF13C000614CB2 /* BackendPostCreateTicketTests.swift */,
 				57488BF129CB84D40000EE7E /* BackendOfflineEntitlementsTests.swift */,
 				A56C2E002819C33500995421 /* BackendPostAdServicesTokenTests.swift */,
 				A56DFDF1286665E600EF2E32 /* BackendPostAttributionDataTests.swift */,
@@ -4953,6 +4964,7 @@
 		5798C9032DF1985700F44400 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				1DEF75922ECF130500614CB2 /* EmailValidator.swift */,
 				80CDB7B52E69C35100D7DB9E /* CustomerCenterStylingUtilities.swift */,
 				5798C8FF2DF1985700F44400 /* CustomerCenterLocalizationStrings.swift */,
 				5798C9002DF1985700F44400 /* CustomerCenterStoreKitUtilities.swift */,
@@ -7446,6 +7458,7 @@
 				5791FDBE299419D900F1FEDA /* MockSigning.swift in Sources */,
 				57FDAA9A2846C2BD009A48F1 /* PurchasesDelegateTests.swift in Sources */,
 				351B516026D44BB600BD2BD7 /* MockAttributionDataMigrator.swift in Sources */,
+				1DEF759E2ECF13C000614CB2 /* BackendPostCreateTicketTests.swift in Sources */,
 				2DDF41E024F6F527005BC22D /* MockInAppPurchaseBuilder.swift in Sources */,
 				37E352973B0901E3CAA717E1 /* DateFormatter+ExtensionsTests.swift in Sources */,
 				03F446262D2FE1510046129A /* MaskShapePropertyTests.swift in Sources */,
@@ -7648,6 +7661,7 @@
 				353FDC0F2CA446FA0055F328 /* StoreProductDiscount+Extensions.swift in Sources */,
 				03A98CF12D222F5F009BCA61 /* FallbackComponentPreview.swift in Sources */,
 				887A60862C1D037000E1A461 /* FooterHidingModifier.swift in Sources */,
+				1DEF75932ECF130500614CB2 /* EmailValidator.swift in Sources */,
 				4D3BA5882D432E5900668AFC /* Fill.swift in Sources */,
 				887A60C02C1D037000E1A461 /* AsyncButton.swift in Sources */,
 				831660B62E3AAA4E00855312 /* FixMacButtonsModifier.swift in Sources */,
@@ -7865,6 +7879,7 @@
 				1E2F911B2CC918ED00BDB016 /* ContactSupportUtilitiesTests.swift in Sources */,
 				887A63352C1D177800E1A461 /* OSVersionEquivalent.swift in Sources */,
 				887A63362C1D177800E1A461 /* SnapshotTesting+Extensions.swift in Sources */,
+				1DEF759A2ECF139F00614CB2 /* CreateTicketViewTests.swift in Sources */,
 				887A63372C1D177800E1A461 /* TestCase.swift in Sources */,
 				57BB08642DD3BE37007493E1 /* BaseManageSubscriptionViewModelTests.swift in Sources */,
 				887A63382C1D177800E1A461 /* PurchaseHandlerTests.swift in Sources */,
@@ -7886,6 +7901,7 @@
 				887A633E2C1D177800E1A461 /* Template3ViewTests.swift in Sources */,
 				755B63E52E7438D500919833 /* TestLogHandler.swift in Sources */,
 				030F918C2D55C9DC0085103F /* LocaleFinderTests.swift in Sources */,
+				1DEF759C2ECF13A600614CB2 /* EmailValidatorTests.swift in Sources */,
 				887A633F2C1D177800E1A461 /* Template4ViewTests.swift in Sources */,
 				577E58262DF86F390015BB60 /* MockTransaction.swift in Sources */,
 				887A63402C1D177800E1A461 /* Template5ViewTests.swift in Sources */,
