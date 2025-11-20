@@ -110,7 +110,8 @@ struct LoadedTabsComponentView: View {
                     package: tabViewModel.defaultSelectedPackage,
                     variableContext: .init(
                         packages: tabViewModel.packages,
-                        showZeroDecimalPlacePrices: parentPackageContext.variableContext.showZeroDecimalPlacePrices
+                        showZeroDecimalPlacePrices: parentPackageContext.variableContext.showZeroDecimalPlacePrices,
+                        hasAnyPromoOffer: tabViewModel.hasAnyPromoOffer
                     )
                 )
                 return (key, packageContext)

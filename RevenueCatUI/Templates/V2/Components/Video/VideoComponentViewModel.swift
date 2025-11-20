@@ -58,6 +58,8 @@ class VideoComponentViewModel {
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            anyPackageHasIntroOffer: packageContext.variableContext.hasAnyIntroOffer,
+            anyPackageHasPromoOffer: packageContext.variableContext.hasAnyPromoOffer,
             selectedPackage: packageContext.package,
             with: self.presentedOverrides
         )

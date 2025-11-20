@@ -59,6 +59,8 @@ class TextComponentViewModel {
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: promoOffer != nil,
+            anyPackageHasIntroOffer: packageContext.variableContext.hasAnyIntroOffer,
+            anyPackageHasPromoOffer: packageContext.variableContext.hasAnyPromoOffer,
             selectedPackage: packageContext.package,
             with: self.presentedOverrides
         )

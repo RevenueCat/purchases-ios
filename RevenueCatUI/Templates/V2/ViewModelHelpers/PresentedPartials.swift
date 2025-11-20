@@ -46,6 +46,10 @@ extension PresentedPartial {
     /// - Parameters:
     ///   - state: Current view state (selected/unselected)
     ///   - condition: Current screen condition (compact/medium/expanded)
+    ///   - isEligibleForIntroOffer: Whether the selected package is intro-eligible.
+    ///   - isEligibleForPromoOffer: Whether the selected package is promo-eligible.
+    ///   - anyPackageHasIntroOffer: Whether any package in the context exposes an intro offer.
+    ///   - anyPackageHasPromoOffer: Whether any package in the context exposes a promo offer.
     ///   - presentedOverrides: Override configurations to apply
     /// - Returns: Configured partial component
     // swiftlint:disable:next function_parameter_count
@@ -54,6 +58,8 @@ extension PresentedPartial {
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
+        anyPackageHasIntroOffer: Bool = false,
+        anyPackageHasPromoOffer: Bool = false,
         selectedPackage: Package?,
         with presentedOverrides: PresentedOverrides<Self>?
     ) -> Self? {
@@ -69,6 +75,8 @@ extension PresentedPartial {
             activeCondition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            anyPackageHasIntroOffer: anyPackageHasIntroOffer,
+            anyPackageHasPromoOffer: anyPackageHasPromoOffer,
             selectedPackage: selectedPackage
         ) {
             presentedPartial = Self.combine(presentedPartial, with: presentedOverride.properties)
@@ -84,6 +92,8 @@ extension PresentedPartial {
         activeCondition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
+        anyPackageHasIntroOffer: Bool,
+        anyPackageHasPromoOffer: Bool,
         selectedPackage: Package?
     ) -> Bool {
         // Early return when any condition evaluates to false
@@ -134,12 +144,30 @@ extension PresentedPartial {
                 @unknown default:
                     return false
                 }
+            case .anyIntroOffer(let operand, let value):
+                switch operand {
+                case .equals:
+                    return anyPackageHasIntroOffer == value
+                case .notEquals:
+                    return anyPackageHasIntroOffer != value
+                @unknown default:
+                    return false
+                }
             case .promoOffer(let operand, let value):
                 switch operand {
                 case .equals:
                     return isEligibleForPromoOffer == value
                 case .notEquals:
                     return isEligibleForPromoOffer != value
+                @unknown default:
+                    return false
+                }
+            case .anyPromoOffer(let operand, let value):
+                switch operand {
+                case .equals:
+                    return anyPackageHasPromoOffer == value
+                case .notEquals:
+                    return anyPackageHasPromoOffer != value
                 @unknown default:
                     return false
                 }

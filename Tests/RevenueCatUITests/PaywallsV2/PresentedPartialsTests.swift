@@ -267,6 +267,62 @@ class PresentedPartialsTest: TestCase {
         expect(result).to(beNil())
     }
 
+    func testPresentedPartialsAnyIntroOfferAppliedWhenAnyPackageHasIntroOffer() {
+        let state = ComponentViewState.default
+        let condition = ScreenCondition.medium
+        let anyPackageHasIntroOffer = true
+
+        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
+            .init(conditions: [
+                .anyIntroOffer(.equals, true)
+            ], properties: .init(
+                padding: .zero
+            ))
+        ]
+
+        let result = PresentedStackPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            anyPackageHasIntroOffer: anyPackageHasIntroOffer,
+            selectedPackage: nil,
+            with: presentedOverrides
+        )
+
+        let expected: PresentedStackPartial = .init(
+            padding: .zero
+        )
+
+        expect(result).to(equal(expected))
+    }
+
+    func testPresentedPartialsAnyIntroOfferNotAppliedWhenNoPackagesHaveIntroOffer() {
+        let state = ComponentViewState.default
+        let condition = ScreenCondition.medium
+        let anyPackageHasIntroOffer = false
+
+        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
+            .init(conditions: [
+                .anyIntroOffer(.equals, true)
+            ], properties: .init(
+                padding: .zero
+            ))
+        ]
+
+        let result = PresentedStackPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            anyPackageHasIntroOffer: anyPackageHasIntroOffer,
+            selectedPackage: nil,
+            with: presentedOverrides
+        )
+
+        expect(result).to(beNil())
+    }
+
     func testPresentedPartialsPromoOfferAppliedWhenPromoOffer() {
         let state = ComponentViewState.default
         let condition = ScreenCondition.medium
@@ -316,6 +372,62 @@ class PresentedPartialsTest: TestCase {
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackage: nil,
+            with: presentedOverrides
+        )
+
+        expect(result).to(beNil())
+    }
+
+    func testPresentedPartialsAnyPromoOfferAppliedWhenAnyPackageHasPromoOffer() {
+        let state = ComponentViewState.default
+        let condition = ScreenCondition.medium
+        let anyPackageHasPromoOffer = true
+
+        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
+            .init(conditions: [
+                .anyPromoOffer(.equals, true)
+            ], properties: .init(
+                padding: .zero
+            ))
+        ]
+
+        let result = PresentedStackPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            anyPackageHasPromoOffer: anyPackageHasPromoOffer,
+            selectedPackage: nil,
+            with: presentedOverrides
+        )
+
+        let expected: PresentedStackPartial = .init(
+            padding: .zero
+        )
+
+        expect(result).to(equal(expected))
+    }
+
+    func testPresentedPartialsAnyPromoOfferNotAppliedWhenNoPackagesHavePromoOffer() {
+        let state = ComponentViewState.default
+        let condition = ScreenCondition.medium
+        let anyPackageHasPromoOffer = false
+
+        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
+            .init(conditions: [
+                .anyPromoOffer(.equals, true)
+            ], properties: .init(
+                padding: .zero
+            ))
+        ]
+
+        let result = PresentedStackPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            anyPackageHasPromoOffer: anyPackageHasPromoOffer,
             selectedPackage: nil,
             with: presentedOverrides
         )

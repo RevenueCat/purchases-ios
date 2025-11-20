@@ -23,18 +23,34 @@ class PackageContext: ObservableObject {
 
         let mostExpensivePricePerMonth: Double?
         let showZeroDecimalPlacePrices: Bool
+        let hasAnyIntroOffer: Bool
+        let hasAnyPromoOffer: Bool
 
-        init(packages: [Package], showZeroDecimalPlacePrices: Bool = true) {
+        init(
+            packages: [Package],
+            showZeroDecimalPlacePrices: Bool = true,
+            hasAnyPromoOffer: Bool = false
+        ) {
             let mostExpensivePricePerMonth = Self.mostExpensivePricePerMonth(in: packages)
+            let hasAnyIntroOffer = Self.containsIntroOffer(in: packages)
             self.init(
                 mostExpensivePricePerMonth: mostExpensivePricePerMonth,
-                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+                hasAnyIntroOffer: hasAnyIntroOffer,
+                hasAnyPromoOffer: hasAnyPromoOffer
             )
         }
 
-        init(mostExpensivePricePerMonth: Double? = nil, showZeroDecimalPlacePrices: Bool = true) {
+        init(
+            mostExpensivePricePerMonth: Double? = nil,
+            showZeroDecimalPlacePrices: Bool = true,
+            hasAnyIntroOffer: Bool = false,
+            hasAnyPromoOffer: Bool = false
+        ) {
             self.mostExpensivePricePerMonth = mostExpensivePricePerMonth
             self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
+            self.hasAnyIntroOffer = hasAnyIntroOffer
+            self.hasAnyPromoOffer = hasAnyPromoOffer
         }
 
         private static func mostExpensivePricePerMonth(in packages: [Package]) -> Double? {
@@ -53,6 +69,12 @@ class PackageContext: ObservableObject {
                     return productA.pricePerMonth.doubleValue < productB.pricePerMonth.doubleValue
                 }
                 .map(\.pricePerMonth.doubleValue)
+        }
+
+        private static func containsIntroOffer(in packages: [Package]) -> Bool {
+            return packages.contains { package in
+                return package.storeProduct.introductoryDiscount != nil
+            }
         }
 
     }

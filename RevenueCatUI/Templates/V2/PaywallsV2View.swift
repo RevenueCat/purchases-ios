@@ -35,6 +35,10 @@ struct PaywallState {
         self.packageInfos.map(\.package)
     }
 
+    var hasAnyPromoOffer: Bool {
+        return self.packageInfos.contains { $0.promotionalOfferProductCode != nil }
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -308,7 +312,8 @@ private struct LoadedPaywallsV2View: View {
                 package: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
                 variableContext: .init(
                     packages: paywallState.packages,
-                    showZeroDecimalPlacePrices: paywallState.showZeroDecimalPlacePrices
+                    showZeroDecimalPlacePrices: paywallState.showZeroDecimalPlacePrices,
+                    hasAnyPromoOffer: paywallState.hasAnyPromoOffer
                 )
             )
         )

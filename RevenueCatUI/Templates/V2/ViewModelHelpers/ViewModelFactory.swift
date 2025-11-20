@@ -354,6 +354,9 @@ struct ViewModelFactory {
                     stackViewModel: tabsStackViewModel.copy(withViewModels: [.stack(stackViewModel)]),
                     defaultSelectedPackage: tabPackageValidator.defaultSelectedPackage,
                     packages: tabPackageValidator.packages,
+                    hasAnyPromoOffer: tabPackageValidator.packageInfos.contains { info in
+                        info.promotionalOfferProductCode != nil
+                    },
                     uiConfigProvider: uiConfigProvider
                 )
             }
