@@ -41,10 +41,10 @@ rescue StandardError => e
 end
 
 def check_swift_files_in_project
-  project_file = 'RevenueCat.xcodeproj/project.pbxproj'
+  project_file = 'RevenueCat.xcodeproj'
   
   unless File.exist?(project_file)
-    warn("RevenueCat.xcodeproj/project.pbxproj not found")
+    warn("RevenueCat.xcodeproj not found")
     return
   end
   
