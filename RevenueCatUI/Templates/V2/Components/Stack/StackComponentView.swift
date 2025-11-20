@@ -700,7 +700,7 @@ func stackAlignmentAndDistributionPreviews(dimensions: [PaywallComponent.Dimensi
                         spacing: 10,
                         backgroundColor: .init(light: .hex("#ff0000")),
                         padding: .init(top: 10, bottom: 10, leading: 10, trailing: 10),
-                        overflow: overflow
+                        overflow: nil
                     ),
                     localizationProvider: .init(
                         locale: Locale.current,
