@@ -45,7 +45,7 @@ class IconComponentViewModel {
         let fixedHeight: CGFloat?
 
         // Get fixed width (if exists)
-        switch self.component.size.height {
+        switch self.component.size.width {
         case .fixed(let width):
             fixedWidth = CGFloat(width)
         case .fit, .fill, .relative:
