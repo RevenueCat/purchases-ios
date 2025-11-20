@@ -1,3 +1,60 @@
+## 5.48.0
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Fix countdown component for older ios version (#5799) via Josh Holtz (@joshdholtz)
+
+## RevenueCatUI SDK
+### Paywallv2
+#### ✨ New Features
+* Paywalls countdown component (#5790) via Josh Holtz (@joshdholtz)
+
+### 🔄 Other Changes
+* Fix slack_backend_integration_test_results Fastlane action crashing during integration / e2e tests (#5798) via Rick (@rickvdl)
+* Backend integration / E2E test Slack alerting + health check pings (#5792) via Rick (@rickvdl)
+* Reduce flakiness of some tests (#5724) via Antonio Pallares (@ajpallares)
+* Support for flushing non subscription in the Events Manager (#5726) via Pol Miro (@polmiro)
+* Ensure that multiline trailing commas result in an error (#5772) via Jacob Rakidzich (@JZDesign)
+
+## 5.47.1
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Add FileImageLoader to project (#5788) via Josh Holtz (@joshdholtz)
+* FIX: Overlay sometimes blocking taps (#5786) via Jacob Rakidzich (@JZDesign)
+* Fix icon loading animation issues and offload Image creation to background thread (#5775) via Josh Holtz (@joshdholtz)
+* Support language families (#5753) via Jacob Rakidzich (@JZDesign)
+* Prevent Apple Account login prompt when making a Test Store purchase (#5777) via Antonio Pallares (@ajpallares)
+
+## RevenueCatUI SDK
+### Customer Center
+#### 🐞 Bugfixes
+* fix: Resume request refund on Promo decline or fail (#5695) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5781) via RevenueCat Git Bot (@RCGitBot)
+* Add backend source and entitlement assertions to E2E tests (#5778) via Rick (@rickvdl)
+* Disabling Emerge snapshots for macOS (designed for iPad + native) since they are flaky (#5782) via Rick (@rickvdl)
+* Bump fastlane-plugin-revenuecat_internal from `9362b21` to `1e3e3fd` (#5783) via dependabot[bot] (@dependabot[bot])
+* Added remaining backend source assertions in backend integration tests (#5780) via Rick (@rickvdl)
+* Bump fastlane-plugin-revenuecat_internal from `525d48c` to `9362b21` (#5776) via dependabot[bot] (@dependabot[bot])
+* Automated E2E Tests on all backend environments (#5712) via Rick (@rickvdl)
+
+## 5.47.0
+## RevenueCatUI SDK
+### Paywallv2
+#### ✨ New Features
+* Video Background  (#5704) via Jacob Rakidzich (@JZDesign)
+* Add a delay hook for a purchase flow (#5690) via Jacob Rakidzich (@JZDesign)
+
+### 🔄 Other Changes
+* Fix pipeline: Remove trailing comma (#5771) via Jacob Rakidzich (@JZDesign)
+* Add `PromotionalOfferViewTests` (#5766) via Cesar de la Vega (@vegaro)
+
+## 5.46.3
+### 🔄 Other Changes
+* Use cached offerings on network errors (#5707) via Antonio Pallares (@ajpallares)
+* Allow the use of Test Store in release builds using the uiPreview dangerous setting for the RC Mobile app (#5765) via Rick (@rickvdl)
+* Fix signature verification fallback urls (#5756) via Antonio Pallares (@ajpallares)
+
 ## 5.46.2
 ## RevenueCatUI SDK
 ### Customer Center

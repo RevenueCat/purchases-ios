@@ -71,7 +71,8 @@ struct ViewModelFactory {
         return RootViewModel(
             stackViewModel: rootStackViewModel,
             stickyFooterViewModel: stickyFooterViewModel,
-            firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo
+            firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+            localizationProvider: localizationProvider
         )
     }
 
@@ -105,7 +106,7 @@ struct ViewModelFactory {
             )
         case .icon(let component):
             return .icon(
-                try IconComponentViewModel(
+                IconComponentViewModel(
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     component: component
@@ -246,7 +247,7 @@ struct ViewModelFactory {
                         component: descriptionComponent
                     )
                 }
-                return try TimelineItemViewModel(
+                return TimelineItemViewModel(
                     component: item,
                     title: try TextComponentViewModel(
                         localizationProvider: localizationProvider,
@@ -254,7 +255,7 @@ struct ViewModelFactory {
                         component: item.title
                     ),
                     description: description,
-                    icon: try IconComponentViewModel(
+                    icon: IconComponentViewModel(
                         localizationProvider: localizationProvider,
                         uiConfigProvider: uiConfigProvider,
                         component: item.icon
@@ -263,7 +264,7 @@ struct ViewModelFactory {
             }
 
             return .timeline(
-                try TimelineComponentViewModel(
+                TimelineComponentViewModel(
                     component: component,
                     items: models,
                     uiConfigProvider: uiConfigProvider
@@ -358,7 +359,7 @@ struct ViewModelFactory {
             }
 
             return .tabs(
-                try TabsComponentViewModel(
+                TabsComponentViewModel(
                     component: component,
                     controlStackViewModel: controlStackViewModel,
                     tabViewModels: tabViewModels,
@@ -414,7 +415,7 @@ struct ViewModelFactory {
             }
 
             return .carousel(
-                try CarouselComponentViewModel(
+                CarouselComponentViewModel(
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     component: component,
@@ -423,10 +424,56 @@ struct ViewModelFactory {
             )
         case .video(let component):
             return .video(
-                try VideoComponentViewModel(
+                VideoComponentViewModel(
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     component: component
+                )
+            )
+        case .countdown(let component):
+            let countdownStackViewModel = try toStackViewModel(
+                component: component.countdownStack,
+                packageValidator: packageValidator,
+                firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+                purchaseButtonCollector: purchaseButtonCollector,
+                localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider,
+                offering: offering,
+                colorScheme: colorScheme
+            )
+
+            let endStackViewModel = try component.endStack.map { endStack in
+                try toStackViewModel(
+                    component: endStack,
+                    packageValidator: packageValidator,
+                    firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+                    purchaseButtonCollector: purchaseButtonCollector,
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider,
+                    offering: offering,
+                    colorScheme: colorScheme
+                )
+            }
+
+            let fallbackStackViewModel = try component.fallback.map { fallback in
+                try toStackViewModel(
+                    component: fallback,
+                    packageValidator: packageValidator,
+                    firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
+                    purchaseButtonCollector: purchaseButtonCollector,
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider,
+                    offering: offering,
+                    colorScheme: colorScheme
+                )
+            }
+
+            return .countdown(
+                CountdownComponentViewModel(
+                    component: component,
+                    countdownStackViewModel: countdownStackViewModel,
+                    endStackViewModel: endStackViewModel,
+                    fallbackStackViewModel: fallbackStackViewModel
                 )
             )
         }
@@ -474,7 +521,7 @@ struct ViewModelFactory {
         // This is only used with ZStack children that aren't the background
         let shouldApplySafeAreaInset = component == firstItemIgnoresSafeAreaInfo?.parentZStack
 
-        return try StackComponentViewModel(
+        return StackComponentViewModel(
             component: component,
             viewModels: viewModels,
             badgeViewModels: badgeViewModels,
@@ -556,6 +603,11 @@ struct ViewModelFactory {
             case .fit, .fixed, .relative:
                 return nil
             }
+        case .countdown(let countdown):
+            guard let first = countdown.countdownStack.components.first else {
+                return nil
+            }
+            return self.findFullWidthImageViewIfItsTheFirst(first)
         }
     }
 

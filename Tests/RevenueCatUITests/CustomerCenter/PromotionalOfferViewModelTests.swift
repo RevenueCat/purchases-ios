@@ -14,7 +14,7 @@
 import Combine
 import Nimble
 @_spi(Internal) @testable import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 import StoreKit
 import XCTest
 
@@ -164,6 +164,7 @@ final class PromotionalOfferViewModelTests: TestCase {
 
         expect(capturedAction!.isFailure).to(beTrue())
     }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

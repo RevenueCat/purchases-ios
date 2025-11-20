@@ -69,7 +69,7 @@ struct VideoComponentView: View {
                         if let imageSource, let imageViewModel = try? ImageComponentViewModel(
                             localizationProvider: viewModel.localizationProvider,
                             uiConfigProvider: viewModel.uiConfigProvider,
-                            component: .init(source: imageSource)
+                            component: .init(source: imageSource, fitMode: style.contentMode == .fill ? .fill : .fit)
                         ) {
                             ImageComponentView(viewModel: imageViewModel)
                         }
@@ -150,6 +150,7 @@ struct VideoComponentView: View {
                     .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
                         view.overlay(
                             Color.clear.backgroundStyle(.color(colorOverlay))
+                                .allowsHitTesting(false)
                         )
                     })
                     .padding(style.padding.extend(by: style.border?.width ?? 0))
@@ -161,12 +162,13 @@ struct VideoComponentView: View {
                         stagedURL.publisher
                             .eraseToAnyPublisher()
                             .removeDuplicates()
-                            .debounce(for: 0.300, scheduler: RunLoop.main)
                     ) { output in
                         // in the event that the download of the high res video is so fast that it tries to set the
                         // url moments after the low_res was set, we need to delay a tiny bit to ensure the rerender
                         // actually occurs. This happens consistently with small file sizes and great connection
-                        cachedURL = output
+                        Task { @MainActor in
+                            self.cachedURL = output
+                        }
                     }
                 }
             }

@@ -41,7 +41,7 @@ struct IconComponentView: View {
     let viewModel: IconComponentViewModel
 
     var body: some View {
-        viewModel.styles(
+        self.viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
             isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
@@ -54,7 +54,10 @@ struct IconComponentView: View {
         ) { style in
             if style.visible {
                 RemoteImage(
-                    url: style.url
+                    url: style.url,
+                    // The expectedSize is important
+                    // It renders a clear image if actual image is being fetched
+                    expectedSize: self.viewModel.expectedSize
                 ) { (image, size) in
                     self.renderImage(image, size, with: style)
                 }
@@ -112,8 +115,7 @@ struct IconComponentView_Previews: PreviewProvider {
         // Default
         VStack {
             IconComponentView(
-                // swiftlint:disable:next force_try
-                viewModel: try! .init(
+                viewModel: .init(
                     localizationProvider: .init(
                         locale: Locale.current,
                         localizedStrings: [:]
@@ -144,8 +146,7 @@ struct IconComponentView_Previews: PreviewProvider {
         // Default - Background
         VStack {
             IconComponentView(
-                // swiftlint:disable:next force_try
-                viewModel: try! .init(
+                viewModel: .init(
                     localizationProvider: .init(
                         locale: Locale.current,
                         localizedStrings: [:]

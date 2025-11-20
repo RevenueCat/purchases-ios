@@ -9,6 +9,7 @@ excluded:
   - scan_derived_data
   - .git
   - .build
+  - ./**/Project.swift
 
 opt_in_rules:
   - force_unwrapping
@@ -56,6 +57,12 @@ custom_rules:
     name: "No Assignments from Switch Statements"
     regex: " = switch "
     message: "In older versions of xcode build tools, this is not supported and will fail in CI"
+    severity: error
+
+  no_trailing_comma_multiline:
+    name: "No Trailing Commas"
+    regex: ',\s*\n\s*\)'
+    message: "Trailing commas are not allowed"
     severity: error
 
 identifier_name:

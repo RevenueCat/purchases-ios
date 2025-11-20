@@ -457,7 +457,57 @@ extension OfferingsManagerTests {
         expect(self.mockDeviceCache.clearOfferingsCacheTimestampCount) == 1
     }
 
-    func testFailsToCreateOfferingsFromDiskCache() throws {
+    func testReturnsOfferingsFromDiskCacheIfJSONDecodingError() throws {
+        self.mockDeviceCache.stubbedOfferings = nil
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .failure(.networkError(.decodingError()))
+        self.mockDeviceCache.stubbedCachedOfferingsData = try MockData.anyBackendOfferingsContents.jsonEncodedData
+
+        let result: Result<Offerings, OfferingsManager.Error>? = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) { result in
+                completed(result)
+            }
+        }
+
+        expect(result).to(beSuccess())
+        expect(result?.value?.all).to(haveCount(1))
+        expect(result?.value?.current?.identifier) == MockData.anyBackendOfferingsContents.response.currentOfferingId
+
+        expect(self.mockOfferings.invokedGetOfferingsForAppUserID) == true
+        expect(self.mockDeviceCache.cacheOfferingsCount) == 0
+        expect(self.mockDeviceCache.cacheOfferingsInMemoryCount) == 1
+        expect(self.mockDeviceCache.clearOfferingsCacheTimestampCount) == 1
+    }
+
+    func testGetOfferingsReturnsNilIf4XXError() throws {
+        let errorResponse = ErrorResponse(code: .invalidSubscriberAttributes,
+                                          originalCode: BackendErrorCode.invalidSubscriberAttributes.rawValue,
+                                          message: "Invalid Attributes",
+                                          attributeErrors: [
+                                            "$email": "invalid"
+                                          ])
+
+        let error: BackendError = .networkError(.errorResponse(errorResponse, .invalidRequest))
+
+        self.mockDeviceCache.stubbedOfferings = nil
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .failure(error)
+        self.mockDeviceCache.stubbedCachedOfferingsData = try MockData.anyBackendOfferingsContents.jsonEncodedData
+        self.mockOfferingsFactory.nilOfferings = true
+
+        let result: Result<Offerings, OfferingsManager.Error>? = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) { result in
+                completed(result)
+            }
+        }
+
+        expect(result).to(beFailure())
+        expect(result?.error).to(matchError(OfferingsManager.Error.backendError(error)))
+
+        expect(self.mockOfferings.invokedGetOfferingsForAppUserID) == true
+        expect(self.mockDeviceCache.cacheOfferingsCount) == 0
+        expect(self.mockDeviceCache.cacheOfferingsInMemoryCount) == 0
+    }
+
+    func testGetOfferingsReturnsNilWhenFailingToCreateOfferingsFromDiskCacheResponse() throws {
         let error: BackendError = .networkError(.serverDown())
 
         self.mockDeviceCache.stubbedOfferings = nil

@@ -1,0 +1,27 @@
+appId: com.revenuecat.maestro.ios
+name: Subscribe to product through V2 Paywall for default offering
+
+---
+- clearState
+- launchApp:
+    arguments:
+        e2e_test_flow: subscribe_from_v2_paywall
+- assertVisible: "entitlement (pro): nil"
+- tapOn:
+    text: "Present Paywall"
+- assertVisible: "Paywall V2"
+- takeScreenshot: "subscribe_from_v2_paywall - Paywall"
+- tapOn:
+    text: "Yearly"
+- tapOn:
+    text: "Continue"
+- takeScreenshot: "subscribe_from_v2_paywall - IAP Sheet"
+- tapOn:
+    text: "Subscribe"
+- takeScreenshot: "subscribe_from_v2_paywall - IAP Confirmation"
+- tapOn:
+    text: "OK"
+- assertVisible: "entitlement (pro): active"
+- takeScreenshot: "subscribe_from_v2_paywall - unlocked entitlement"
+- assertVisible: "verification: ${MAESTRO_EXPECTED_VERIFICATION_RESULT}"
+- assertVisible: "customer info source: ${MAESTRO_EXPECTED_CUSTOMER_INFO_SOURCE}"

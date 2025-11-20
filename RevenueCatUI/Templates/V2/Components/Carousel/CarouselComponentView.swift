@@ -821,7 +821,7 @@ extension CarouselComponentViewModel {
             )
         }
 
-        try self.init(
+        self.init(
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
             component: component,

@@ -17,7 +17,7 @@ import Nimble
 import XCTest
 
 // swiftlint:disable:next type_name
-class SubscriberAttributesManagerIntegrationTests: BaseBackendIntegrationTests {
+class SubscriberAttributesManagerIntegrationTests: BaseStoreKitIntegrationTests {
 
     private var attribution: Attribution!
     private var userID: String!

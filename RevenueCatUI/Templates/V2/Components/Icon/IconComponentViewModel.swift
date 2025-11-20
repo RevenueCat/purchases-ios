@@ -32,12 +32,57 @@ class IconComponentViewModel {
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,
         component: PaywallComponent.IconComponent
-    ) throws {
+    ) {
         self.localizationProvider = localizationProvider
         self.uiConfigProvider = uiConfigProvider
         self.component = component
 
-        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides { $0 }
+        self.presentedOverrides = self.component.overrides?.toPresentedOverrides { $0 }
+    }
+
+    var expectedSize: CGSize {
+        let fixedWidth: CGFloat?
+        let fixedHeight: CGFloat?
+
+        // Get fixed width (if exists)
+        switch self.component.size.height {
+        case .fixed(let width):
+            fixedWidth = CGFloat(width)
+        case .fit, .fill, .relative:
+            fixedWidth = nil
+        }
+
+        // Get fixed height (if exists)
+        switch self.component.size.height {
+        case .fixed(let height):
+            fixedHeight = CGFloat(height)
+        case .fit, .fill, .relative:
+            fixedHeight = nil
+        }
+
+        let expectedWidth: CGFloat
+        let expectedHeight: CGFloat
+
+        switch (fixedWidth, fixedHeight) {
+        // We have both
+        case let (.some(width), .some(height)):
+            expectedWidth = width
+            expectedHeight = height
+        // Safe enough to assume square icon so set height to width
+        case let (.some(width), nil):
+            expectedWidth = width
+            expectedHeight = width
+        // Safe enough to assume square icon so set wdith to height
+        case let (nil, .some(height)):
+            expectedWidth = height
+            expectedHeight = height
+        // This should never happen becuase a width or height is required for icon
+        case (nil, nil):
+            expectedWidth = 32
+            expectedHeight = 32
+        }
+
+        return CGSize(width: expectedWidth, height: expectedHeight)
     }
 
     @ViewBuilder
@@ -121,10 +166,6 @@ struct IconComponentStyle {
     let iconBackgroundShape: ShapeModifier.Shape?
     let iconBackgroundBorder: ShapeModifier.BorderInfo?
     let iconBackgroundShadow: ShadowModifier.ShadowInfo?
-
-//    shape: PaywallComponent.Shape?,
-//    border: PaywallComponent.Border?,
-//    shadow: PaywallComponent.Shadow?,
 
     init(
         visible: Bool = true,

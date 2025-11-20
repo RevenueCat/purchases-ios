@@ -283,3 +283,17 @@ extension BackendError {
     typealias Source = ErrorSource
 
 }
+
+extension BackendError {
+
+    /// Whether to fall back to cached offerings in case of this error when fetching offerings.
+    var shouldFallBackToCachedOfferings: Bool {
+        switch self {
+        case .networkError(let networkError):
+            return networkError.shouldFallBackToCachedOfferings
+        default:
+            return true
+        }
+    }
+
+}

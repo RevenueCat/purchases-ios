@@ -1,7 +1,7 @@
 orbs:
   macos: circleci/macos@2.5.1
   slack: circleci/slack@5.0.0
-  revenuecat: revenuecat/sdks-common-config@3.2.0
+  revenuecat: revenuecat/sdks-common-config@3.9.0
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -116,10 +116,29 @@ aliases:
         ignore: /.*/
       branches:
         only: main
+  maestro-e2e-test-job: &maestro-e2e-test-job
+    run-maestro-e2e-tests:
+      name: run-maestro-e2e-tests-<< matrix.backend_environment >>
+      context:
+        - e2e-tests
+        - slack-secrets
+      matrix:
+        parameters:
+          backend_environment: ["production", "load_shedder_us_east_1", "load_shedder_us_east_2", "fallback"]
 
 commands:
   slack-notify-on-fail:
     steps:
+      # Map custom variable names to the Slack orb variables, since the default variable names are already used by the Fastlane Slack integration
+      # we will probably remove these at some point when we move all jobs to use the Fastlane Slack integration
+      # Note: It's safe to modify SLACK_ACCESS_TOKEN and SLACK_DEFAULT_CHANNEL here because this command is always
+      # called as the last step in jobs, so it won't interfere with Fastlane commands that run before it
+      - run:
+          name: Set Slack environment variables
+          when: always
+          command: |
+            echo 'export SLACK_ACCESS_TOKEN="${SLACK_ACCESS_TOKEN_CIRCLE_CI_NOTIFY_ORB_IOS}"' >> $BASH_ENV
+            echo 'export SLACK_DEFAULT_CHANNEL="${SLACK_DEFAULT_CHANNEL_CIRCLE_CI_NOTIFY_ORB_IOS}"' >> $BASH_ENV
       - slack/notify:
           branch_pattern: main
           channel: "feed-circleci-ios-failures"
@@ -413,13 +432,22 @@ commands:
 
   tuist-generate-workspace:
     description: "Install Tuist and generate workspace"
+    parameters:
+      query:
+        type: string
+        default: ""
+        description: "Optional query to pass to Tuist when generating workspace."
     steps:
       - revenuecat/install-tuist
       - run:
           name: Generate Tuist workspace
           command: |
             export PATH="$HOME/.local/share/mise/shims:$PATH"
-            tuist install && tuist generate --no-open
+            if [ -n "<< parameters.query >>" ]; then
+              tuist install && tuist generate << parameters.query >> --no-open
+            else
+              tuist install && tuist generate --no-open
+            fi
 
   create-snapshot-pr-if-needed:
     parameters:
@@ -1135,6 +1163,39 @@ jobs:
           test_plan: "BackendIntegrationTests-CustomEntitlements"
       - slack-notify-on-fail
 
+  run-maestro-e2e-tests:
+    parameters:
+      backend_environment:
+        type: enum
+        enum: ["production", "load_shedder_us_east_1", "load_shedder_us_east_2", "fallback"]
+    executor:
+      name: macos-executor
+      xcode_version: "26.0.1"
+    steps:
+      - macos/preboot-simulator:
+          version: "18.6"
+          platform: "iOS"
+          device: "iPhone 16 Pro"
+      - checkout
+      - install-dependencies:
+          install_swiftlint: false
+      - revenuecat/install-maestro
+      - tuist-generate-workspace:
+          query: "Maestro"
+      - run:
+          name: Run e2e tests (<< parameters.backend_environment >>)
+          command: bundle exec fastlane run_maestro_e2e_tests backend_environment:<< parameters.backend_environment >>
+          no_output_timeout: 15m
+          environment:
+            REVENUECAT_API_KEY: ${RC_E2E_TEST_API_KEY_PRODUCTION_APP_STORE}
+
+        # todo: implement error / success notifications through Slack
+
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output
+
   release-checks:
     executor:
       name: macos-executor
@@ -1203,7 +1264,6 @@ jobs:
           command: bundle exec fastlane build_and_publish_docs
           environment:
             DOCS_IOS_VERSION: "17.4"
-      - slack-notify-on-fail
 
   make-release:
     executor:
@@ -1217,7 +1277,6 @@ jobs:
           name: Deploy new version
           command: bundle exec fastlane release
           no_output_timeout: 30m
-      - slack-notify-on-fail
 
   push-revenuecat-pod:
     executor:
@@ -1230,7 +1289,6 @@ jobs:
           name: Deploy new version
           command: bundle exec fastlane push_revenuecat_pod
           no_output_timeout: 30m
-      - slack-notify-on-fail
 
   push-revenuecatui-pod:
     executor:
@@ -1243,7 +1301,6 @@ jobs:
           name: Deploy new version
           command: bundle exec fastlane push_revenuecatui_pod
           no_output_timeout: 30m
-      - slack-notify-on-fail
 
   prepare-next-version:
     executor:
@@ -1256,7 +1313,6 @@ jobs:
       - run:
           name: Prepare next version
           command: bundle exec fastlane prepare_next_version
-      - slack-notify-on-fail
 
   installation-tests-cocoapods:
     executor:
@@ -1663,6 +1719,14 @@ workflows:
             - slack-secrets
       - integration-tests-all
 
+  daily-maestro-e2e-tests:
+    when:
+      and:
+        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+        - equal: ["maestro_e2e_tests", << pipeline.schedule.name >>]
+    jobs:
+      - <<: *maestro-e2e-test-job
+
   manual-trigger-bump:
     when:
       equal: [bump, << pipeline.parameters.action >>]
@@ -1712,100 +1776,101 @@ workflows:
         - equal:
             ["run-from-github-comments", << pipeline.parameters.GHA_Meta >>]
     jobs:
+      - <<: *maestro-e2e-test-job
       - backend-integration-tests-SK1:
           context:
-            - slack-secrets-ios
+            - slack-secrets
       - backend-integration-tests-SK2:
           context:
-            - slack-secrets-ios
+            - slack-secrets
       - backend-integration-tests-custom-entitlements:
           context:
-            - slack-secrets-ios
+            - slack-secrets
       - backend-integration-tests-other:
           context:
-            - slack-secrets-ios
+            - slack-secrets
       - backend-integration-tests-offline:
           context:
-            - slack-secrets-ios
+            - slack-secrets
       - build-tv-watch-and-macos:
           context:
-            - slack-secrets-ios
+            - slack-secrets
       - build-visionos:
           context:
-            - slack-secrets-ios
+            - slack-secrets
       - docs-build:
           context:
-            - slack-secrets-ios
+            - slack-secrets
       - run-test-ios-14:
           context:
-            - slack-secrets-ios
+            - slack-secrets
       - run-test-ios-15:
           context:
-            - slack-secrets-ios
+            - slack-secrets
       - run-test-ios-16:
           context:
-            - slack-secrets-ios
+            - slack-secrets
       - run-test-ios-17:
           context:
-            - slack-secrets-ios
+            - slack-secrets
       - run-test-macos:
           context:
-            - slack-secrets-ios
+            - slack-secrets
       - run-test-tvos:
           context:
-            - slack-secrets-ios
+            - slack-secrets
       - run-test-watchos:
           context:
-            - slack-secrets-ios
+            - slack-secrets
       - spm-receipt-parser:
           context:
-            - slack-secrets-ios
+            - slack-secrets
       - spm-release-build:
           context:
-            - slack-secrets-ios
+            - slack-secrets
       - spm-release-build-xcode-14:
           context:
-            - slack-secrets-ios
+            - slack-secrets
       - spm-release-build-xcode-15:
           context:
-            - slack-secrets-ios
+            - slack-secrets
       - spm-revenuecat-ui-ios-15:
           context:
-            - slack-secrets-ios
+            - slack-secrets
       - spm-revenuecat-ui-ios-16:
           context:
-            - slack-secrets-ios
+            - slack-secrets
       - run-revenuecat-ui-ios-17:
           context:
-            - slack-secrets-ios
+            - slack-secrets
       - spm-revenuecat-ui-watchos:
           context:
-            - slack-secrets-ios
+            - slack-secrets
       - installation-tests-cocoapods:
           context:
-            - slack-secrets-ios
+            - slack-secrets
       - installation-tests-swift-package-manager:
           context:
-            - slack-secrets-ios
+            - slack-secrets
       - installation-tests-custom-entitlement-computation-swift-package-manager:
           context:
-            - slack-secrets-ios
+            - slack-secrets
       - installation-tests-carthage:
           context:
-            - slack-secrets-ios
+            - slack-secrets
       - installation-tests-xcode-direct-integration:
           context:
-            - slack-secrets-ios
+            - slack-secrets
       - installation-tests-receipt-parser:
           context:
-            - slack-secrets-ios
+            - slack-secrets
       - api-tests:
           context:
-            - slack-secrets-ios
+            - slack-secrets
       - deploy-purchase-tester:
           dry_run: true
           context:
-            - slack-secrets-ios
+            - slack-secrets
 
   test-tuist-workflow:
     when:

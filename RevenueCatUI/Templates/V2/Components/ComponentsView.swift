@@ -92,6 +92,8 @@ struct ComponentsView: View {
             CarouselComponentView(viewModel: viewModel, onDismiss: onDismiss)
         case .video(let viewModel):
             VideoComponentView(viewModel: viewModel)
+        case .countdown(let viewModel):
+            CountdownComponentView(viewModel: viewModel, onDismiss: onDismiss)
         }
     }
 }

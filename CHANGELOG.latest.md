@@ -1,9 +1,15 @@
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Fix countdown component for older ios version (#5799) via Josh Holtz (@joshdholtz)
+
 ## RevenueCatUI SDK
-### Customer Center
-#### 🐞 Bugfixes
-* Fix `EXC_BAD_ACCESS` when opening promotional offers in Customer Center (#5762) via Cesar de la Vega (@vegaro)
+### Paywallv2
+#### ✨ New Features
+* Paywalls countdown component (#5790) via Josh Holtz (@joshdholtz)
 
 ### 🔄 Other Changes
-* Add Load shedder integration tests for Get Customer Info (#5713) via Antonio Pallares (@ajpallares)
-* Add internal `Offerings` source properties (#5749) via Antonio Pallares (@ajpallares)
-* Add Internal `CustomerInfo` source properties (#5737) via Antonio Pallares (@ajpallares)
+* Fix slack_backend_integration_test_results Fastlane action crashing during integration / e2e tests (#5798) via Rick (@rickvdl)
+* Backend integration / E2E test Slack alerting + health check pings (#5792) via Rick (@rickvdl)
+* Reduce flakiness of some tests (#5724) via Antonio Pallares (@ajpallares)
+* Support for flushing non subscription in the Events Manager (#5726) via Pol Miro (@polmiro)
+* Ensure that multiline trailing commas result in an error (#5772) via Jacob Rakidzich (@JZDesign)

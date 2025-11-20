@@ -67,6 +67,9 @@ class BaseManageSubscriptionViewModel: ObservableObject {
     var showAllInAppCurrenciesScreen: Bool = false
 
     @Published
+    var showCreateTicket: Bool = false
+
+    @Published
     private(set) var refundRequestStatus: RefundRequestStatus?
 
     private var error: Error?
@@ -135,8 +138,18 @@ class BaseManageSubscriptionViewModel: ObservableObject {
         }
     }
 
-    func onDismissPromotionalOffer() {
+    func onDismissPromotionalOffer(action: PromotionalOfferViewAction) {
         self.promotionalOfferData = nil
+        defer {
+            self.loadingPath = nil
+        }
+
+        if let path = self.loadingPath,
+           !action.shouldTerminateCurrentPathFlow {
+            Task.detached(priority: .userInitiated) { @MainActor in
+                await self.onPathSelected(path: path)
+            }
+        }
     }
 
     func onDismissInAppBrowser() {

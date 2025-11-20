@@ -47,7 +47,7 @@ class BaseBackendIntegrationTests: TestCase {
 
     private var mainThreadMonitor: MainThreadMonitor!
 
-    private(set) var forceServerErrorStrategy: ForceServerErrorStrategy?
+    var forceServerErrorStrategy: ForceServerErrorStrategy?
 
     static var isSandbox: Bool = true {
         didSet {
@@ -124,6 +124,8 @@ class BaseBackendIntegrationTests: TestCase {
     }
 
     override func tearDown() {
+        self.clearAppDocumentsAndCaches()
+
         super.tearDown()
 
         self.mainThreadMonitor = nil
@@ -157,14 +159,16 @@ class BaseBackendIntegrationTests: TestCase {
 
 private extension BaseBackendIntegrationTests {
 
-    func clearReceiptIfExists() {
-        let manager = FileManager.default
+    var fileManager: FileManager {
+        .default
+    }
 
-        guard let url = Bundle.main.appStoreReceiptURL, manager.fileExists(atPath: url.path) else { return }
+    func clearReceiptIfExists() {
+        guard let url = Bundle.main.appStoreReceiptURL, fileManager.fileExists(atPath: url.path) else { return }
 
         do {
             Logger.info(TestMessage.removing_receipt(url))
-            try manager.removeItem(at: url)
+            try fileManager.removeItem(at: url)
         } catch {
             Logger.appleWarning(TestMessage.error_removing_url(url, error))
         }
@@ -185,6 +189,23 @@ private extension BaseBackendIntegrationTests {
                 beNil(),
                 description: "Found existing user after clearing UserDefaults"
             )
+    }
+
+    func clearAppDocumentsAndCaches() {
+        let storageDirectoryURLs = [
+            fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first,
+            fileManager.urls(for: .documentDirectory, in: .userDomainMask).first
+        ].compactMap(\.self)
+
+        for directoryURL in storageDirectoryURLs {
+            guard fileManager.fileExists(atPath: directoryURL.path) else { continue }
+
+            do {
+                try fileManager.removeItem(at: directoryURL)
+            } catch {
+                Logger.appleWarning(TestMessage.error_removing_directory(directoryURL, error))
+            }
+        }
     }
 
     func createPurchases() async {

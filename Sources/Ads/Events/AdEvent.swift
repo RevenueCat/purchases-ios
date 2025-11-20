@@ -27,7 +27,7 @@ internal protocol AdEventData {
     var mediatorName: MediatorName { get }
     var placement: String? { get }
     var adUnitId: String { get }
-    var adInstanceId: String { get }
+    var impressionId: String { get }
 }
 
 /// Type representing an ad mediation network name.
@@ -72,20 +72,20 @@ internal protocol AdEventData {
     @objc public private(set) var mediatorName: MediatorName
     @objc public private(set) var placement: String?
     @objc public private(set) var adUnitId: String
-    @objc public private(set) var adInstanceId: String
+    @objc public private(set) var impressionId: String
 
     @objc public init(
         networkName: String,
         mediatorName: MediatorName,
         placement: String?,
         adUnitId: String,
-        adInstanceId: String
+        impressionId: String
     ) {
         self.networkName = networkName
         self.mediatorName = mediatorName
         self.placement = placement
         self.adUnitId = adUnitId
-        self.adInstanceId = adInstanceId
+        self.impressionId = impressionId
         super.init()
     }
 
@@ -93,14 +93,14 @@ internal protocol AdEventData {
         networkName: String,
         mediatorName: MediatorName,
         adUnitId: String,
-        adInstanceId: String
+        impressionId: String
     ) {
         self.init(
             networkName: networkName,
             mediatorName: mediatorName,
             placement: nil,
             adUnitId: adUnitId,
-            adInstanceId: adInstanceId
+            impressionId: impressionId
         )
     }
     // swiftlint:enable missing_docs
@@ -113,7 +113,7 @@ internal protocol AdEventData {
                self.mediatorName == other.mediatorName &&
                self.placement == other.placement &&
                self.adUnitId == other.adUnitId &&
-               self.adInstanceId == other.adInstanceId
+               self.impressionId == other.impressionId
     }
 
     public override var hash: Int {
@@ -122,7 +122,7 @@ internal protocol AdEventData {
         hasher.combine(mediatorName)
         hasher.combine(placement)
         hasher.combine(adUnitId)
-        hasher.combine(adInstanceId)
+        hasher.combine(impressionId)
         return hasher.finalize()
     }
 
@@ -136,20 +136,20 @@ internal protocol AdEventData {
     @objc public private(set) var mediatorName: MediatorName
     @objc public private(set) var placement: String?
     @objc public private(set) var adUnitId: String
-    @objc public private(set) var adInstanceId: String
+    @objc public private(set) var impressionId: String
 
     @objc public init(
         networkName: String,
         mediatorName: MediatorName,
         placement: String?,
         adUnitId: String,
-        adInstanceId: String
+        impressionId: String
     ) {
         self.networkName = networkName
         self.mediatorName = mediatorName
         self.placement = placement
         self.adUnitId = adUnitId
-        self.adInstanceId = adInstanceId
+        self.impressionId = impressionId
         super.init()
     }
 
@@ -157,14 +157,14 @@ internal protocol AdEventData {
         networkName: String,
         mediatorName: MediatorName,
         adUnitId: String,
-        adInstanceId: String
+        impressionId: String
     ) {
         self.init(
             networkName: networkName,
             mediatorName: mediatorName,
             placement: nil,
             adUnitId: adUnitId,
-            adInstanceId: adInstanceId
+            impressionId: impressionId
         )
     }
     // swiftlint:enable missing_docs
@@ -177,7 +177,7 @@ internal protocol AdEventData {
                self.mediatorName == other.mediatorName &&
                self.placement == other.placement &&
                self.adUnitId == other.adUnitId &&
-               self.adInstanceId == other.adInstanceId
+               self.impressionId == other.impressionId
     }
 
     public override var hash: Int {
@@ -186,7 +186,7 @@ internal protocol AdEventData {
         hasher.combine(mediatorName)
         hasher.combine(placement)
         hasher.combine(adUnitId)
-        hasher.combine(adInstanceId)
+        hasher.combine(impressionId)
         return hasher.finalize()
     }
 
@@ -200,7 +200,7 @@ internal protocol AdEventData {
     @objc public private(set) var mediatorName: MediatorName
     @objc public private(set) var placement: String?
     @objc public private(set) var adUnitId: String
-    @objc public private(set) var adInstanceId: String
+    @objc public private(set) var impressionId: String
     @objc public private(set) var revenueMicros: Int
     @objc public private(set) var currency: String
     @objc public private(set) var precision: Precision
@@ -210,7 +210,7 @@ internal protocol AdEventData {
         mediatorName: MediatorName,
         placement: String?,
         adUnitId: String,
-        adInstanceId: String,
+        impressionId: String,
         revenueMicros: Int,
         currency: String,
         precision: Precision
@@ -219,7 +219,7 @@ internal protocol AdEventData {
         self.mediatorName = mediatorName
         self.placement = placement
         self.adUnitId = adUnitId
-        self.adInstanceId = adInstanceId
+        self.impressionId = impressionId
         self.revenueMicros = revenueMicros
         self.currency = currency
         self.precision = precision
@@ -230,7 +230,7 @@ internal protocol AdEventData {
         networkName: String,
         mediatorName: MediatorName,
         adUnitId: String,
-        adInstanceId: String,
+        impressionId: String,
         revenueMicros: Int,
         currency: String,
         precision: Precision
@@ -240,7 +240,7 @@ internal protocol AdEventData {
             mediatorName: mediatorName,
             placement: nil,
             adUnitId: adUnitId,
-            adInstanceId: adInstanceId,
+            impressionId: impressionId,
             revenueMicros: revenueMicros,
             currency: currency,
             precision: precision
@@ -256,7 +256,7 @@ internal protocol AdEventData {
                self.mediatorName == other.mediatorName &&
                self.placement == other.placement &&
                self.adUnitId == other.adUnitId &&
-               self.adInstanceId == other.adInstanceId &&
+               self.impressionId == other.impressionId &&
                self.revenueMicros == other.revenueMicros &&
                self.currency == other.currency &&
                self.precision == other.precision
@@ -268,7 +268,7 @@ internal protocol AdEventData {
         hasher.combine(mediatorName)
         hasher.combine(placement)
         hasher.combine(adUnitId)
-        hasher.combine(adInstanceId)
+        hasher.combine(impressionId)
         hasher.combine(revenueMicros)
         hasher.combine(currency)
         hasher.combine(precision)

@@ -32,7 +32,7 @@ class TestCase: XCTestCase {
     final func initializeLogger() {
         guard self.logger == nil else { return }
 
-        self.logger = TestLogHandler(capacity: 1000)
+        self.logger = TestLogHandler(capacity: 1000, testIdentifier: self.name)
     }
 
     @MainActor
@@ -98,5 +98,12 @@ extension HTTPClient.Request {
     var isRequestToFallbackUrl: Bool {
         return self.fallbackUrlIndex != nil
     }
+
+    /// Forces server error by pointing to an unreachable address.
+    static let noNetwork = ForceServerErrorStrategy(
+        // swiftlint:disable:next force_unwrapping
+        serverErrorURL: URL(string: "http://localhost:100/unreachable-address")!,
+        shouldForceServerError: { _ in true }
+    )
 
 }

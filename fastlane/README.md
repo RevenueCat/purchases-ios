@@ -37,14 +37,6 @@ Removes the Examples directory before building with Carthage to prevent unnecess
 
 
 
-### send_slack_loadshedder_integration_test_in_major
-
-```sh
-[bundle exec] fastlane send_slack_loadshedder_integration_test_in_major
-```
-
-
-
 ----
 
 
@@ -217,6 +209,14 @@ archive all platforms
 ```
 
 run API Tests
+
+### ios run_maestro_e2e_tests
+
+```sh
+[bundle exec] fastlane ios run_maestro_e2e_tests
+```
+
+run_maestro_e2e_tests
 
 ### ios replace_api_key_integration_tests
 
