@@ -134,9 +134,6 @@ extension PresentedPartial {
                 @unknown default:
                     return false
                 }
-                if !isEligibleForIntroOffer {
-                    return false
-                }
             case .promoOffer(let operand, let value):
                 switch operand {
                 case .equals:
@@ -144,9 +141,6 @@ extension PresentedPartial {
                 case .notEquals:
                     return isEligibleForPromoOffer != value
                 @unknown default:
-                    return false
-                }
-                if !isEligibleForPromoOffer {
                     return false
                 }
             case .selected:
