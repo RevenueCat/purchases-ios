@@ -195,7 +195,7 @@ struct StackComponentStyle {
             case .scroll:
                 return true
             }
-        }) ?? false
+        })
     }
 
     var vstackStrategy: StackStrategy {
