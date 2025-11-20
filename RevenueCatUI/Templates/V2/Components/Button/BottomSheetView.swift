@@ -45,18 +45,6 @@ struct BottomSheetOverlayModifier: ViewModifier {
     @Binding var sheetViewModel: SheetViewModel?
     let safeAreaInsets: EdgeInsets
 
-    @EnvironmentObject
-    private var packageContext: PackageContext
-
-    @EnvironmentObject
-    private var purchaseHandler: PurchaseHandler
-
-    @EnvironmentObject
-    private var introOfferEligibilityContext: IntroOfferEligibilityContext
-
-    @EnvironmentObject
-    private var paywallPromoOfferCache: PaywallPromoOfferCache
-
     @State private var parentHeight: CGFloat?
 
     var sheetHeight: CGFloat? {
@@ -108,10 +96,6 @@ struct BottomSheetOverlayModifier: ViewModifier {
                             trailing: 0
                         )
                     )
-                    .environmentObject(packageContext)
-                    .environmentObject(purchaseHandler)
-                    .environmentObject(introOfferEligibilityContext)
-                    .environmentObject(paywallPromoOfferCache)
                     .applyIfLet(self.sheetHeight, apply: { view, height in
                         view.frame(height: height)
                     })
