@@ -51,6 +51,7 @@ class TextComponentViewModel {
         packageContext: PackageContext,
         isEligibleForIntroOffer: Bool,
         promoOffer: PromotionalOffer?,
+        anyPackageHasPromoOffer: Bool,
         countdownTime: CountdownTime? = nil,
         @ViewBuilder apply: @escaping (TextComponentStyle) -> some View
     ) -> some View {
@@ -60,7 +61,7 @@ class TextComponentViewModel {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: promoOffer != nil,
             anyPackageHasIntroOffer: packageContext.variableContext.hasAnyIntroOffer,
-            anyPackageHasPromoOffer: packageContext.variableContext.hasAnyPromoOffer,
+            anyPackageHasPromoOffer: anyPackageHasPromoOffer,
             selectedPackage: packageContext.package,
             with: self.presentedOverrides
         )

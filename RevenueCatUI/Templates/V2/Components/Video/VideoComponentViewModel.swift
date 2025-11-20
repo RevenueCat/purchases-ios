@@ -50,6 +50,7 @@ class VideoComponentViewModel {
         packageContext: PackageContext,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
+        anyPackageHasPromoOffer: Bool,
         colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (VideoComponentStyle) -> some View
     ) -> some View {
@@ -59,7 +60,7 @@ class VideoComponentViewModel {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             anyPackageHasIntroOffer: packageContext.variableContext.hasAnyIntroOffer,
-            anyPackageHasPromoOffer: packageContext.variableContext.hasAnyPromoOffer,
+            anyPackageHasPromoOffer: anyPackageHasPromoOffer,
             selectedPackage: packageContext.package,
             with: self.presentedOverrides
         )

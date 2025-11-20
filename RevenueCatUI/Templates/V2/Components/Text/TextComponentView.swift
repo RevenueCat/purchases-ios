@@ -55,6 +55,7 @@ struct TextComponentView: View {
                 package: self.packageContext.package
             ),
             promoOffer: self.paywallPromoOfferCache.get(for: self.packageContext.package),
+            anyPackageHasPromoOffer: self.packageContext.hasEligiblePromoOffer(using: self.paywallPromoOfferCache),
             countdownTime: countdownTime
         ) { style in
             if style.visible {

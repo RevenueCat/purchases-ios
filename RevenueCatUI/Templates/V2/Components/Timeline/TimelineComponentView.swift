@@ -47,6 +47,7 @@ struct TimelineComponentView: View {
     @State private var maxIconWidth: CGFloat = 0
 
     var body: some View {
+        let anyPromoOffer = self.packageContext.hasEligiblePromoOffer(using: self.paywallPromoOfferCache)
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
@@ -56,17 +57,19 @@ struct TimelineComponentView: View {
             ),
             isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                 for: self.packageContext.package
-            )
+            ),
+            anyPackageHasPromoOffer: anyPromoOffer
         ) { style in
             if style.visible {
-                timeline(style: style)
+                timeline(style: style, anyPackageHasPromoOffer: anyPromoOffer)
             }
         }
     }
 
     @ViewBuilder
     private func timeline(
-        style: TimelineComponentStyle
+        style: TimelineComponentStyle,
+        anyPackageHasPromoOffer: Bool
     ) -> some View {
         VStack(alignment: .leading, spacing: style.itemSpacing ?? 0) {
             ForEach(viewModel.items, id: \.component) { item in
@@ -79,7 +82,8 @@ struct TimelineComponentView: View {
                     ),
                     isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                         for: self.packageContext.package
-                    )
+                    ),
+                    anyPackageHasPromoOffer: anyPackageHasPromoOffer
                 ) { itemStyle in
                     if itemStyle.visible {
                         timelineRow(itemStyle: itemStyle, style: style)
@@ -105,7 +109,8 @@ struct TimelineComponentView: View {
                         ),
                         isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                             for: self.packageContext.package
-                        )
+                        ),
+                        anyPackageHasPromoOffer: anyPackageHasPromoOffer
                     ) { itemStyle in
                         if itemStyle.visible {
                             let next = viewModel.items.indices.contains(index + 1) ? viewModel.items[index + 1] : nil

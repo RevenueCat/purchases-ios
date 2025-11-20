@@ -55,6 +55,7 @@ class ImageComponentViewModel {
         packageContext: PackageContext,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
+        anyPackageHasPromoOffer: Bool,
         colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (ImageComponentStyle) -> some View
     ) -> some View {
@@ -64,7 +65,7 @@ class ImageComponentViewModel {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             anyPackageHasIntroOffer: packageContext.variableContext.hasAnyIntroOffer,
-            anyPackageHasPromoOffer: packageContext.variableContext.hasAnyPromoOffer,
+            anyPackageHasPromoOffer: anyPackageHasPromoOffer,
             selectedPackage: packageContext.package,
             with: self.presentedOverrides
         )

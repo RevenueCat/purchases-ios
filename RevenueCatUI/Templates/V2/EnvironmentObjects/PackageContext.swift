@@ -21,36 +21,35 @@ class PackageContext: ObservableObject {
 
     struct VariableContext {
 
+        let packages: [Package]
         let mostExpensivePricePerMonth: Double?
         let showZeroDecimalPlacePrices: Bool
         let hasAnyIntroOffer: Bool
-        let hasAnyPromoOffer: Bool
 
         init(
             packages: [Package],
-            showZeroDecimalPlacePrices: Bool = true,
-            hasAnyPromoOffer: Bool = false
+            showZeroDecimalPlacePrices: Bool = true
         ) {
             let mostExpensivePricePerMonth = Self.mostExpensivePricePerMonth(in: packages)
             let hasAnyIntroOffer = Self.containsIntroOffer(in: packages)
             self.init(
+                packages: packages,
                 mostExpensivePricePerMonth: mostExpensivePricePerMonth,
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
-                hasAnyIntroOffer: hasAnyIntroOffer,
-                hasAnyPromoOffer: hasAnyPromoOffer
+                hasAnyIntroOffer: hasAnyIntroOffer
             )
         }
 
         init(
+            packages: [Package] = [],
             mostExpensivePricePerMonth: Double? = nil,
             showZeroDecimalPlacePrices: Bool = true,
-            hasAnyIntroOffer: Bool = false,
-            hasAnyPromoOffer: Bool = false
+            hasAnyIntroOffer: Bool = false
         ) {
+            self.packages = packages
             self.mostExpensivePricePerMonth = mostExpensivePricePerMonth
             self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
             self.hasAnyIntroOffer = hasAnyIntroOffer
-            self.hasAnyPromoOffer = hasAnyPromoOffer
         }
 
         private static func mostExpensivePricePerMonth(in packages: [Package]) -> Double? {
@@ -94,6 +93,20 @@ class PackageContext: ObservableObject {
     func update(package: Package?, variableContext: VariableContext) {
         self.package = package
         self.variableContext = variableContext
+    }
+
+    func packagesForEligibility() -> [Package] {
+        if !self.variableContext.packages.isEmpty {
+            return self.variableContext.packages
+        } else if let package {
+            return [package]
+        } else {
+            return []
+        }
+    }
+
+    func hasEligiblePromoOffer(using cache: PaywallPromoOfferCache) -> Bool {
+        return cache.hasEligibleOffer(in: self.packagesForEligibility())
     }
 
 }

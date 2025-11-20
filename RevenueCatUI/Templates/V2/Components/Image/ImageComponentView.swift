@@ -53,6 +53,7 @@ struct ImageComponentView: View {
             isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                 for: self.packageContext.package
             ),
+            anyPackageHasPromoOffer: self.packageContext.hasEligiblePromoOffer(using: self.paywallPromoOfferCache),
             colorScheme: colorScheme
         ) { style in
             if style.visible {

@@ -58,21 +58,17 @@ class TabViewModel {
     let stackViewModel: StackComponentViewModel
     let defaultSelectedPackage: Package?
     let packages: [Package]
-    let hasAnyPromoOffer: Bool
-
     init(
         tab: PaywallComponent.TabsComponent.Tab,
         stackViewModel: StackComponentViewModel,
         defaultSelectedPackage: Package?,
         packages: [Package],
-        hasAnyPromoOffer: Bool,
         uiConfigProvider: UIConfigProvider
     ) throws {
         self.tab = tab
         self.stackViewModel = stackViewModel
         self.defaultSelectedPackage = defaultSelectedPackage
         self.packages = packages
-        self.hasAnyPromoOffer = hasAnyPromoOffer
         self.uiConfigProvider = uiConfigProvider
     }
 

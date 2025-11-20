@@ -51,6 +51,7 @@ class TimelineComponentViewModel {
         packageContext: PackageContext,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
+        anyPackageHasPromoOffer: Bool,
         @ViewBuilder apply: @escaping (TimelineComponentStyle) -> some View
     ) -> some View {
         let partial = PresentedTimelinePartial.buildPartial(
@@ -59,7 +60,7 @@ class TimelineComponentViewModel {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             anyPackageHasIntroOffer: packageContext.variableContext.hasAnyIntroOffer,
-            anyPackageHasPromoOffer: packageContext.variableContext.hasAnyPromoOffer,
+            anyPackageHasPromoOffer: anyPackageHasPromoOffer,
             selectedPackage: packageContext.package,
             with: self.presentedOverrides
         )
@@ -111,6 +112,7 @@ class TimelineItemViewModel {
         packageContext: PackageContext,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
+        anyPackageHasPromoOffer: Bool,
         @ViewBuilder apply: @escaping (TimelineItemStyle) -> some View
     ) -> some View {
         let partial = PresentedTimelineItemPartial.buildPartial(
@@ -119,7 +121,7 @@ class TimelineItemViewModel {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             anyPackageHasIntroOffer: packageContext.variableContext.hasAnyIntroOffer,
-            anyPackageHasPromoOffer: packageContext.variableContext.hasAnyPromoOffer,
+            anyPackageHasPromoOffer: anyPackageHasPromoOffer,
             selectedPackage: packageContext.package,
             with: self.presentedOverrides
         )

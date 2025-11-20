@@ -51,6 +51,7 @@ class CarouselComponentViewModel {
         packageContext: PackageContext,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
+        anyPackageHasPromoOffer: Bool,
         colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (CarouselComponentStyle) -> some View
     ) -> some View {
@@ -60,7 +61,7 @@ class CarouselComponentViewModel {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             anyPackageHasIntroOffer: packageContext.variableContext.hasAnyIntroOffer,
-            anyPackageHasPromoOffer: packageContext.variableContext.hasAnyPromoOffer,
+            anyPackageHasPromoOffer: anyPackageHasPromoOffer,
             selectedPackage: packageContext.package,
             with: self.presentedOverrides
         )
