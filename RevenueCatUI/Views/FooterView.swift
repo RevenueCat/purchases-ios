@@ -234,7 +234,7 @@ private struct RestorePurchasesButton: View {
                     Logger.debug(Strings.setting_restored_customer_info)
                     self.showRestoredCustomerInfoAlert = false
                     self.restoredCustomerInfo = nil
-                    self.purchaseHandler.setRestored(restoredCustomerInfo)
+                    self.purchaseHandler.setRestored(restoredCustomerInfo, success: true)
                 }
             } label: { Text("OK") }
         }
