@@ -108,8 +108,6 @@ struct VideoComponentView: View {
                                     guard url != cachedURL else { return }
                                     await MainActor.run {
                                         self.stagedURL = url
-                                        // If we have a cached video, no need to display a fallback image
-                                        self.imageSource = nil
                                     }
                                 } catch {
                                     await MainActor.run {
@@ -160,15 +158,14 @@ struct VideoComponentView: View {
                     .padding(style.margin)
                     .onReceive(
                         stagedURL.publisher
+                            .receive(on: RunLoop.main)
                             .eraseToAnyPublisher()
                             .removeDuplicates()
                     ) { output in
                         // in the event that the download of the high res video is so fast that it tries to set the
                         // url moments after the low_res was set, we need to delay a tiny bit to ensure the rerender
                         // actually occurs. This happens consistently with small file sizes and great connection
-                        Task { @MainActor in
-                            self.cachedURL = output
-                        }
+                        self.cachedURL = output
                     }
                 }
             }
