@@ -49,12 +49,14 @@ struct VideoComponentView: View {
             .styles(
                 state: componentViewState,
                 condition: screenCondition,
+                packageContext: self.packageContext,
                 isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                     package: self.packageContext.package
                 ),
                 isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                     for: self.packageContext.package
                 ),
+                anyPackageHasPromoOffer: self.packageContext.hasEligiblePromoOffer(using: self.paywallPromoOfferCache),
                 colorScheme: colorScheme
             ) { style in
                 if style.visible {

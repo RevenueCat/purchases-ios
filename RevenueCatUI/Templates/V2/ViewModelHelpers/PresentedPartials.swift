@@ -13,7 +13,7 @@
 //
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 #if !os(tvOS) // For Paywalls V2
 
@@ -46,13 +46,21 @@ extension PresentedPartial {
     /// - Parameters:
     ///   - state: Current view state (selected/unselected)
     ///   - condition: Current screen condition (compact/medium/expanded)
+    ///   - isEligibleForIntroOffer: Whether the selected package is intro-eligible.
+    ///   - isEligibleForPromoOffer: Whether the selected package is promo-eligible.
+    ///   - anyPackageHasIntroOffer: Whether any package in the context exposes an intro offer.
+    ///   - anyPackageHasPromoOffer: Whether any package in the context exposes a promo offer.
     ///   - presentedOverrides: Override configurations to apply
     /// - Returns: Configured partial component
+    // swiftlint:disable:next function_parameter_count
     static func buildPartial(
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
+        anyPackageHasIntroOffer: Bool = false,
+        anyPackageHasPromoOffer: Bool = false,
+        selectedPackage: Package?,
         with presentedOverrides: PresentedOverrides<Self>?
     ) -> Self? {
         guard let presentedOverrides else {
@@ -66,7 +74,10 @@ extension PresentedPartial {
             state: state,
             activeCondition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
-            isEligibleForPromoOffer: isEligibleForPromoOffer
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            anyPackageHasIntroOffer: anyPackageHasIntroOffer,
+            anyPackageHasPromoOffer: anyPackageHasPromoOffer,
+            selectedPackage: selectedPackage
         ) {
             presentedPartial = Self.combine(presentedPartial, with: presentedOverride.properties)
         }
@@ -74,26 +85,90 @@ extension PresentedPartial {
         return presentedPartial
     }
 
+    // swiftlint:disable:next cyclomatic_complexity function_parameter_count
     private static func shouldApply(
         for conditions: [PaywallComponent.Condition],
         state: ComponentViewState,
         activeCondition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
-        isEligibleForPromoOffer: Bool
+        isEligibleForPromoOffer: Bool,
+        anyPackageHasIntroOffer: Bool,
+        anyPackageHasPromoOffer: Bool,
+        selectedPackage: Package?
     ) -> Bool {
         // Early return when any condition evaluates to false
         for condition in conditions {
             switch condition {
-            case .compact, .medium, .expanded:
-                if !activeCondition.applicableConditions.contains(condition) {
+            case .orientation(let operand, let orientations):
+                let active = activeCondition.orientation.rawValue
+
+                switch operand {
+                case .in:
+                    return orientations.contains(where: { $0.rawValue == active })
+                case .notIn:
+                    return !orientations.contains(where: { $0.rawValue == active })
+                @unknown default:
                     return false
                 }
-            case .introOffer:
-                if !isEligibleForIntroOffer {
+            case .screenSize(let operand, let sizes):
+                guard let active = activeCondition.screenSize?.name else {
                     return false
                 }
-            case .promoOffer:
-                if !isEligibleForPromoOffer {
+
+                switch operand {
+                case .in:
+                    return sizes.contains(where: { $0 == active })
+                case .notIn:
+                    return !sizes.contains(where: { $0 == active })
+                @unknown default:
+                    return false
+                }
+            case let .selectedPackage(operand, packages):
+                if let selectedPackage = selectedPackage {
+                    switch operand {
+                    case .in:
+                        return packages.contains(where: { $0 == selectedPackage.identifier })
+                    case .notIn:
+                        return !packages.contains(where: { $0 == selectedPackage.identifier })
+                    @unknown default:
+                        return false
+                    }
+                }
+                return false
+            case .introOffer(let operand, let value):
+                switch operand {
+                case .equals:
+                    return isEligibleForIntroOffer == value
+                case .notEquals:
+                    return isEligibleForIntroOffer != value
+                @unknown default:
+                    return false
+                }
+            case .anyIntroOffer(let operand, let value):
+                switch operand {
+                case .equals:
+                    return anyPackageHasIntroOffer == value
+                case .notEquals:
+                    return anyPackageHasIntroOffer != value
+                @unknown default:
+                    return false
+                }
+            case .promoOffer(let operand, let value):
+                switch operand {
+                case .equals:
+                    return isEligibleForPromoOffer == value
+                case .notEquals:
+                    return isEligibleForPromoOffer != value
+                @unknown default:
+                    return false
+                }
+            case .anyPromoOffer(let operand, let value):
+                switch operand {
+                case .equals:
+                    return anyPackageHasPromoOffer == value
+                case .notEquals:
+                    return anyPackageHasPromoOffer != value
+                @unknown default:
                     return false
                 }
             case .selected:
@@ -102,23 +177,12 @@ extension PresentedPartial {
                 }
             case .unsupported:
                 return false
+            @unknown default:
+                return false
             }
         }
 
         return true
-    }
-
-}
-
-private extension ScreenCondition {
-
-    /// Returns applicable condition types based on current screen condition
-    var applicableConditions: [PaywallComponent.Condition] {
-        switch self {
-        case .compact: return [.compact]
-        case .medium: return [.compact, .medium]
-        case .expanded: return [.compact, .medium, .expanded]
-        }
     }
 
 }

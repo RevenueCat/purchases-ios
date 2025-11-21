@@ -22,13 +22,26 @@ public struct UIConfig: Codable, Equatable, Sendable {
 
         public var colors: [String: PaywallComponent.ColorScheme]
         public var fonts: [String: FontsConfig]
+        public var screenSizes: [ScreenSize]?
 
         public init(colors: [String: PaywallComponent.ColorScheme],
-                    fonts: [String: FontsConfig]) {
+                    fonts: [String: FontsConfig],
+                    screenSizes: [ScreenSize]? = nil) {
             self.colors = colors
             self.fonts = fonts
+            self.screenSizes = screenSizes
         }
 
+    }
+
+    public struct ScreenSize: Codable, Equatable, Sendable {
+        @_spi(Internal) public let name: String
+        @_spi(Internal) public let width: Int
+
+        @_spi(Internal) public init(name: String, width: Int) {
+            self.name = name
+            self.width = width
+        }
     }
 
     public struct FontsConfig: Codable, Equatable, Sendable {
@@ -124,6 +137,16 @@ public struct UIConfig: Codable, Equatable, Sendable {
         self.variableConfig = variableConfig
     }
 
+}
+
+public extension UIConfig.ScreenSize {
+    enum Defaults {
+        public static let all = [ mobile, tablet, desktop ]
+
+        public static let mobile = UIConfig.ScreenSize(name: "mobile", width: 375)
+        public static let tablet = UIConfig.ScreenSize(name: "tablet", width: 700)
+        public static let desktop = UIConfig.ScreenSize(name: "desktop", width: 1024)
+    }
 }
 
 #else
