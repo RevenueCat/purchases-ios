@@ -158,13 +158,14 @@ struct VideoComponentView: View {
                     .padding(style.margin)
                     .onReceive(
                         stagedURL.publisher
+                            // in the event that the download of the high res video is so fast that it tries to set the
+                            // url moments after the low_res was set, we need to delay a bit to ensure the re-render
+                            // actually occurs. This happens consistently with small file sizes and great connection
+                            .debounce(for: .milliseconds(500), scheduler: RunLoop.main)
                             .receive(on: RunLoop.main)
                             .eraseToAnyPublisher()
                             .removeDuplicates()
                     ) { output in
-                        // in the event that the download of the high res video is so fast that it tries to set the
-                        // url moments after the low_res was set, we need to delay a tiny bit to ensure the rerender
-                        // actually occurs. This happens consistently with small file sizes and great connection
                         self.cachedURL = output
                     }
                 }
