@@ -93,16 +93,6 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                     urls += image.source.highResImageUrls
                 }
 
-            case .inputSingleChoice(let inputSingleChoice):
-                urls += self.collectAllImageURLs(
-                    in: inputSingleChoice.stack,
-                    includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
-                )
-            case .inputOption(let inputOption):
-                urls += self.collectAllImageURLs(
-                    in: inputOption.stack,
-                    includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
-                )
             case .stack(let stack):
                 urls += self.collectAllImageURLs(
                     in: stack,
@@ -210,10 +200,6 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                 break
             case .image:
                 break
-            case .inputSingleChoice(let inputSingleChoice):
-                urls += self.collectAllVideoURLs(in: inputSingleChoice.stack)
-            case .inputOption(let inputOption):
-                urls += self.collectAllVideoURLs(in: inputOption.stack)
             case .stack(let stack):
                 urls += self.collectAllVideoURLs(in: stack)
             case .button(let button):
