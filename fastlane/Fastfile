@@ -16,6 +16,16 @@ def current_version_number
   File.read("#{File.dirname(__FILE__)}/../.version").strip
 end
 
+# Hack to work around a Fastlane quirk where plugin actions are run from the parent of the current working directory.
+# We switch to the first subdirectory, then run the action. The action will run from the parent of the subdirectory, which is
+# our actual current working directory. The obvious limitation is that this doesn't work if the current working directory
+# does not have any subdirectories.
+# This is only needed when our current working directory is not the ./fastlane directory.
+# https://docs.fastlane.tools/advanced/fastlane/#directory-behavior
+def run_plugin_action_in_current_directory(&block)
+  Dir.chdir(Dir["*/"].first.chomp("/"), &block)
+end
+
 files_with_version_number = {
   './RevenueCat.podspec' => ['s.version          = "{x}"'],
   './RevenueCatUI.podspec' => ['s.version          = "{x}"'],
@@ -176,7 +186,10 @@ platform :ios do
       sh("git", "fetch")
       sh("git", "checkout", "main")
       sh("git", "pull")
-      create_or_checkout_branch(branch_name: target_repository_branch)
+
+      run_plugin_action_in_current_directory do
+        create_or_checkout_branch(branch_name: target_repository_branch)
+      end
       target_repository_name = sh("basename -s .git \"$(git config --get remote.origin.url)\"").strip
     end
     UI.user_error!("Failed to determine target repository name") if target_repository_name.nil? || target_repository_name.empty?
@@ -260,16 +273,18 @@ platform :ios do
         commit_message: commit_message
       )
 
-      create_pr_if_necessary(
-        github_pr_token: ENV["GITHUB_TOKEN"],
-        repo_name: repo,
-        base_branch: "main",
-        head_branch: branch_name,
-        title: title,
-        body: body,
-        labels: labels,
-        team_reviewers: team_reviewers
-      )
+      run_plugin_action_in_current_directory do
+        create_pr_if_necessary(
+          github_pr_token: ENV["GITHUB_TOKEN"],
+          repo_name: repo,
+          base_branch: "main",
+          head_branch: branch_name,
+          title: title,
+          body: body,
+          labels: labels,
+          team_reviewers: team_reviewers
+        )
+      end
     else
       UI.message("No changes detected. Skipping commit, push, and PR creation.")
     end

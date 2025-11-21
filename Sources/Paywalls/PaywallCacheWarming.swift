@@ -14,7 +14,6 @@
 
 import Foundation
 
-// swiftlint:disable file_length
 protocol PaywallCacheWarmingType: Sendable {
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
@@ -119,15 +118,11 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         guard !videoURLs.isEmpty else { return }
 
         Logger.verbose(Strings.paywalls.warming_up_videos(videoURLs: videoURLs))
-        await withTaskGroup(of: URL?.self) { [weak self] group in
-            for source in videoURLs {
-                group.addTask { [weak self] in
-                    try? await self?.fileRepository.generateOrGetCachedFileURL(
-                        for: source.url,
-                        withChecksum: source.checksum
-                    )
-                }
-            }
+        for source in videoURLs {
+            _ = try? await self.fileRepository.generateOrGetCachedFileURL(
+                for: source.url,
+                withChecksum: source.checksum
+            )
         }
     }
 
@@ -136,12 +131,8 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         let allFontURLs = Set(allFontsInPaywallsNamed.map(\.url))
         Logger.verbose(Strings.paywalls.warming_up_fonts(fontsURLS: allFontURLs))
 
-        await withTaskGroup(of: Void.self) { group in
-            for font in allFontsInPaywallsNamed {
-                group.addTask {
-                    await self.installFont(from: font)
-                }
-            }
+        for font in allFontsInPaywallsNamed {
+            await self.installFont(from: font)
         }
     }
 
