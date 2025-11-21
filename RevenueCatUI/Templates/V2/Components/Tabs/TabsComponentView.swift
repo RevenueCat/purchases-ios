@@ -87,6 +87,8 @@ struct LoadedTabsComponentView: View {
     @State
     private var tierPackageContexts: [String: PackageContext]
 
+    @State var wasConfigured: Bool = false
+
     var activeTabViewModel: TabViewModel? {
         return self.viewModel.tabViewModels[self.tabControlContext.selectedTabId] ??
             self.viewModel.tabViewModels.values.first
@@ -133,6 +135,21 @@ struct LoadedTabsComponentView: View {
             )
             .environmentObject(self.tabControlContext)
             .environmentObject(tierPackageContext)
+            .onAppear {
+                if !wasConfigured {
+                    self.wasConfigured = true
+                    // In the event that the tabs components contain unique selected packages, we need to ensure that
+                    // the first selected tab's selected package is propagated up to the purchase button. This sends
+                    // that signal only for the initially rendered tab, then the onChange passed into the loadedTabView
+                    // handles subsequent changes
+                    if let package = tierPackageContext.package {
+                        self.packageContext.update(
+                            package: package,
+                            variableContext: tierPackageContext.variableContext
+                        )
+                    }
+                }
+            }
         }
     }
 
