@@ -141,12 +141,21 @@ extension View {
     /// Equivalent to `scrollableIfNecessary` except that it's always scrollable on iOS 15
     /// to work around issues with that iOS 15 implementation in some instances.
     @ViewBuilder
-    func scrollableIfNecessaryWhenAvailable(_ axis: Axis = .vertical, enabled: Bool = true) -> some View {
-        if enabled {
+    func scrollableIfNecessaryWhenAvailable(
+        _ axis: Axis = .vertical,
+        apply: Bool = true,
+        alignment: Alignment = .topLeading
+    ) -> some View {
+        if apply {
             if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
                 ViewThatFits(in: axis.scrollViewAxis) {
+                    // When content FITS: respect the distribution alignment
                     self
+                        .frame(maxWidth: axis == .horizontal ? .infinity : nil,
+                               maxHeight: axis == .vertical ? .infinity : nil,
+                               alignment: alignment)
 
+                    // When content is TOO LONG: scroll it
                     ScrollView(axis.scrollViewAxis) {
                         self
                     }
@@ -154,7 +163,7 @@ extension View {
             } else {
                 self
                     .centeredContent(axis)
-                    .scrollable(if: enabled)
+                    .scrollable(if: true)
             }
         } else {
             self

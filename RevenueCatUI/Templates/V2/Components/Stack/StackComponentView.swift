@@ -164,14 +164,22 @@ fileprivate extension View {
     ) -> some View {
         if enabled {
             switch dimension {
-            case .horizontal:
-                ScrollView(.horizontal) {
-                    self
-                }
-            case .vertical:
-                ScrollView(.vertical) {
-                    self
-                }
+            case .horizontal(let verticalAlignment, let distribution):
+                self.scrollableIfNecessaryWhenAvailable(
+                    .horizontal,
+                    alignment: Alignment(
+                        horizontal: distribution.horizontalFrameAlignment.horizontal,
+                        vertical: verticalAlignment.frameAlignment.vertical
+                    )
+                )
+            case .vertical(let horizontalAlignment, let distribution):
+                self.scrollableIfNecessaryWhenAvailable(
+                    .vertical,
+                    alignment: Alignment(
+                        horizontal: horizontalAlignment.frameAlignment.horizontal,
+                        vertical: distribution.verticalFrameAlignment.vertical
+                    )
+                )
             case .zlayer:
                 self
             }

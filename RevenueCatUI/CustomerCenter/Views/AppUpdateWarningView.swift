@@ -78,7 +78,7 @@ struct AppUpdateWarningView: View {
                     }
                     .padding(.horizontal, 24)
                 })
-                .scrollableIfNecessary(.vertical)
+                .scrollableIfNecessaryWhenAvailable(.vertical, alignment: .top)
             }
     }
 }
