@@ -61,6 +61,7 @@ struct IconComponentView: View {
                 ) { (image, size) in
                     self.renderImage(image, size, with: style)
                 }
+                .id(style.url)
                 .padding(style.padding.extend(by: style.iconBackgroundBorder?.width ?? 0))
                 .shape(border: style.iconBackgroundBorder,
                        shape: style.iconBackgroundShape,
