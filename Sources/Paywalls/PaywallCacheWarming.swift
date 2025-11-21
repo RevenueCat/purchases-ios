@@ -119,7 +119,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
         Logger.verbose(Strings.paywalls.warming_up_videos(videoURLs: videoURLs))
         for source in videoURLs {
-            try? await self.fileRepository.generateOrGetCachedFileURL(
+            _ = try? await self.fileRepository.generateOrGetCachedFileURL(
                 for: source.url,
                 withChecksum: source.checksum
             )
