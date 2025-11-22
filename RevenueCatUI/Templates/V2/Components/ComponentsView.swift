@@ -25,15 +25,18 @@ struct ComponentsView: View {
     let componentViewModels: [PaywallComponentViewModel]
     let applySafeAreaInsetForZStackChildren: Bool
     private let onDismiss: () -> Void
+    private let defaultPackage: Package?
 
     init(
         componentViewModels: [PaywallComponentViewModel],
         ignoreSafeArea: Bool = false,
-        onDismiss: @escaping () -> Void
+        onDismiss: @escaping () -> Void,
+        defaultPackage: Package? = nil
     ) {
         self.componentViewModels = componentViewModels
         self.applySafeAreaInsetForZStackChildren = ignoreSafeArea
         self.onDismiss = onDismiss
+        self.defaultPackage = defaultPackage
     }
 
     var body: some View {
@@ -58,7 +61,7 @@ struct ComponentsView: View {
     private func view(for item: PaywallComponentViewModel) -> some View {
         switch item {
         case .root(let viewModel):
-            RootView(viewModel: viewModel, onDismiss: onDismiss)
+            RootView(viewModel: viewModel, onDismiss: onDismiss, defaultPackage: defaultPackage)
         case .text(let viewModel):
             TextComponentView(viewModel: viewModel)
         case .image(let viewModel):

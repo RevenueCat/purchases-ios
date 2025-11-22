@@ -309,7 +309,8 @@ private struct LoadedPaywallsV2View: View {
             VStack(spacing: 0) {
                 ComponentsView(
                     componentViewModels: [.root(paywallState.rootViewModel)],
-                    onDismiss: self.onDismiss
+                    onDismiss: self.onDismiss,
+                    defaultPackage: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage
                 )
                 .fixMacButtons()
             }
