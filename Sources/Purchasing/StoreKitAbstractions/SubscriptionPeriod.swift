@@ -200,7 +200,7 @@ extension SubscriptionPeriod {
     }
 
     private static let roundingBehavior = NSDecimalNumberHandler(
-        roundingMode: .plain,
+        roundingMode: .down,
         scale: 2,
         raiseOnExactness: false,
         raiseOnOverflow: false,
