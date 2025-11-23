@@ -192,7 +192,7 @@ struct PaywallsV2View: View {
                         onDismiss: self.onDismiss
                     )
                     .id(redrawTrigger)
-                    .environment(\.screenCondition, self.screenCondition)
+                    .environmentObject(self.screenCondition)
                     .environmentObject(self.purchaseHandler)
                     .environmentObject(self.introOfferEligibilityContext)
                     .environmentObject(self.paywallPromoOfferCache)

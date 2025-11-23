@@ -34,8 +34,8 @@ struct TextComponentView: View {
     @Environment(\.componentViewState)
     private var componentViewState
 
-    @Environment(\.screenCondition)
-    private var screenCondition
+    @EnvironmentObject
+    private var screenCondition: ScreenCondition
 
     @Environment(\.countdownTime)
     private var countdownTime: CountdownTime?

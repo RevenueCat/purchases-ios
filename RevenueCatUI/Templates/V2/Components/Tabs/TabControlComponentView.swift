@@ -29,8 +29,8 @@ struct TabControlComponentView: View {
     @Environment(\.componentViewState)
     private var componentViewState
 
-    @Environment(\.screenCondition)
-    private var screenCondition
+    @EnvironmentObject
+    private var screenCondition: ScreenCondition
 
     @EnvironmentObject
     private var tabControlContext: TabControlContext

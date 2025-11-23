@@ -89,7 +89,7 @@ struct PreviewRequiredPaywallsV2Properties: ViewModifier {
             .environmentObject(PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker()))
             .environmentObject(PurchaseHandler.default())
             .environmentObject(self.packageContext ?? Self.defaultPackageContext)
-            .environment(\.screenCondition, screenCondition)
+            .environmentObject(screenCondition)
             .environment(\.componentViewState, componentViewState)
             .environment(\.safeAreaInsets, EdgeInsets())
             .fixMacButtons() // Matches the properties applied in LoadedPaywallsV2View

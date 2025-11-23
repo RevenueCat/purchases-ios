@@ -113,17 +113,4 @@ class ScreenCondition: ObservableObject {
     }
 }
 
-struct ScreenConditionKey: EnvironmentKey {
-    static let defaultValue = ScreenCondition()
-}
-
-extension EnvironmentValues {
-
-    var screenCondition: ScreenCondition {
-        get { self[ScreenConditionKey.self] }
-        set { self[ScreenConditionKey.self] = newValue }
-    }
-
-}
-
 #endif
