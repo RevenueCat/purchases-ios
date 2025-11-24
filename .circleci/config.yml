@@ -1717,7 +1717,9 @@ workflows:
           major: "4"
           context:
             - slack-secrets
-      - integration-tests-all
+      - integration-tests-all:
+          context:
+            - slack-secrets
 
   daily-maestro-e2e-tests:
     when:
