@@ -17,7 +17,7 @@ import Foundation
  * A generic object that performs all write and read operations atomically.
  * Use it to prevent data races when accessing an object.
  *
- * - Important: The closures aren't re-entrant.
+ * - Important: The closures aren't re-entrant unless specified during construction.
  * In other words, `Atomic` instances cannot be used from within the `modify` and `withValue` closures
  *
  * Usage:
@@ -56,9 +56,9 @@ internal final class Atomic<T> {
         set { modify { $0 = newValue } }
     }
 
-    init(_ value: T) {
+    init(_ value: T, lock: Lock = Lock()) {
         self._value = value
-        self.lock = Lock()
+        self.lock = lock
     }
 
     @discardableResult

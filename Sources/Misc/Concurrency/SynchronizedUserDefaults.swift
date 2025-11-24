@@ -21,7 +21,7 @@ internal final class SynchronizedUserDefaults {
     private let atomic: Atomic<UserDefaults>
 
     init(userDefaults: UserDefaults) {
-        self.atomic = .init(userDefaults)
+        self.atomic = .init(userDefaults, lock: .init(.recursive))
     }
 
     func read<T>(_ action: (UserDefaults) throws -> T) rethrows -> T {
