@@ -15,12 +15,11 @@ name: Subscribe to product through V1 Paywall for alternative offering
     text: "Monthly"
 - tapOn:
     text: "Continue"
-- takeScreenshot: "subscribe_from_v1_paywall - IAP Sheet"
-- tapOn:
-    text: "Subscribe"
-- takeScreenshot: "subscribe_from_v1_paywall- IAP Confirmation"
-- tapOn:
-    text: "OK"
+- runFlow:
+    file: ../utils/confirm_purchase.yaml
+    env:
+      MAESTRO_STORE: ${MAESTRO_STORE:-app_store}
+      SCREENSHOT_PREFIX: subscribe_from_v1_paywall
 - assertVisible: "entitlement (pro): active"
 - takeScreenshot: "subscribe_from_v1_paywall - unlocked entitlement"
 - assertVisible: "verification: ${MAESTRO_EXPECTED_VERIFICATION_RESULT}"

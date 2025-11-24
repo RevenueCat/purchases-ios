@@ -1,0 +1,26 @@
+appId: com.revenuecat.maestro.ios
+name: Confirm purchase - handles both IAP Sheet and Test Store Purchase Alert
+
+---
+# Handle Test Store Purchase Alert flow
+- runFlow:
+    when:
+      true: ${MAESTRO_STORE == 'test_store'}
+    commands:
+      - takeScreenshot: "${SCREENSHOT_PREFIX} - Test Store Purchase Alert"
+      - assertVisible: "Test purchase"
+      - tapOn:
+          text: "Test valid purchase"
+
+# Handle regular IAP Sheet flow (default)
+- runFlow:
+    when:
+      true: ${MAESTRO_STORE == 'app_store'}
+    commands:
+      - takeScreenshot: "${SCREENSHOT_PREFIX} - IAP Sheet"
+      - tapOn:
+          text: "Subscribe"
+      - takeScreenshot: "${SCREENSHOT_PREFIX} - IAP Confirmation"
+      - tapOn:
+          text: "OK"
+
