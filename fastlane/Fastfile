@@ -1141,8 +1141,8 @@ platform :ios do
 
     Dir.mktmpdir {|dir|
       xcodebuild(
-        project: 'RevenueCat.xcodeproj',
         scheme: 'RevenueCat',
+        workspace: 'RevenueCat.xcworkspace',
         derivedDataPath: dir,
         configuration: 'release',
         arch: arch,
