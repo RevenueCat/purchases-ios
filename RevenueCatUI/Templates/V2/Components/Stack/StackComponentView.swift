@@ -168,10 +168,12 @@ fileprivate extension View {
                 ScrollView(.horizontal) {
                     self
                 }
+                .scrollBounceBehaviorBasedOnSize()
             case .vertical:
                 ScrollView(.vertical) {
                     self
                 }
+                .scrollBounceBehaviorBasedOnSize()
             case .zlayer:
                 self
             }
