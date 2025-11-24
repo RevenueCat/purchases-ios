@@ -1,3 +1,9 @@
+# This flow requires passing some parameters:
+#  MAESTRO_STORE environment variable. app_store or test_store. Defaults to test_store.
+#  SCREENSHOT_PREFIX environment variable. Used to prefix the screenshot name.
+# Example:
+# maestro test -e MAESTRO_STORE=test_store -e SCREENSHOT_PREFIX=subscribe_from_v1_paywall confirm_purchase.yml
+
 appId: com.revenuecat.maestro.ios
 name: Confirm purchase - handles both IAP Sheet and Test Store Purchase Alert
 env:

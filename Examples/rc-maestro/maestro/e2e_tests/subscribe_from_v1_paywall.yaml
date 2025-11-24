@@ -1,3 +1,10 @@
+# This flow requires passing some parameters:
+#  MAESTRO_STORE environment variable. app_store or test_store. Defaults to test_store.
+#  MAESTRO_EXPECTED_VERIFICATION_RESULT environment variable.
+#  MAESTRO_EXPECTED_CUSTOMER_INFO_SOURCE environment variable.
+# Example:
+# maestro test -e MAESTRO_STORE=test_store -e MAESTRO_EXPECTED_VERIFICATION_RESULT=verified -e MAESTRO_EXPECTED_CUSTOMER_INFO_SOURCE=main subscribe_from_v2_paywall.yaml
+
 appId: com.revenuecat.maestro.ios
 name: Subscribe to product through V1 Paywall for alternative offering
 
