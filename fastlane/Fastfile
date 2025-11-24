@@ -841,7 +841,7 @@ platform :ios do
       heartbeat_monitor_ping_url = ENV["HEARTBEAT_MONITOR_URL_E2E_TESTS_PRODUCTION_TEST_STORE"]
       store = "test_store"
     else
-      UI.user_error!("Invalid backend_environment: #{backend_environment}. Must be one of: production, load_shedder_us_east_1, load_shedder_us_east_2, fallback")
+      UI.user_error!("Invalid backend_environment: #{backend_environment}. Must be one of: production, load_shedder_us_east_1, load_shedder_us_east_2, fallback, production_test_store")
     end
 
     # Set environment variables for Maestro
