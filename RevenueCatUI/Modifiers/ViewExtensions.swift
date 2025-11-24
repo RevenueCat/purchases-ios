@@ -150,6 +150,7 @@ extension View {
                     ScrollView(axis.scrollViewAxis) {
                         self
                     }
+                    .scrollBounceBehaviorBasedOnSize()
                 }
             } else {
                 self
@@ -257,6 +258,7 @@ private struct ScrollableIfNecessaryModifier: ViewModifier {
                 )
         }
         .scrollable(self.axis.scrollViewAxis, if: self.overflowing)
+        .scrollBounceBehaviorBasedOnSize()
     }
 
 }
