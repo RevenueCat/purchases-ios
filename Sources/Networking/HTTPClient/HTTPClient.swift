@@ -513,14 +513,10 @@ private extension HTTPClient {
                     requestTimeoutResult = .timeoutOnMainBackendForFallbackSupportedEndpoint
                 }
 
-                let retryOnFallbackHostScheduled = self.retryRequestWithNextFallbackHostIfNeeded(request: request,
-                                                                                                 error: error)
-                if retryOnFallbackHostScheduled {
-                    retryScheduled = true
+                retryScheduled = self.retryRequestWithNextFallbackHostIfNeeded(request: request,
+                                                                               error: error)
 
-                    // Record timeout on the main backend for a request that supports a fallback
-                    requestTimeoutResult = .timeoutOnMainBackendForFallbackSupportedEndpoint
-                } else {
+                if !retryScheduled {
                     retryScheduled = self.retryRequestIfNeeded(request: request,
                                                                httpURLResponse: httpURLResponse)
                 }

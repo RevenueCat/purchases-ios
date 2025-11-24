@@ -1231,6 +1231,38 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         )
     }
 
+    func testRecordsOtherResultWhenRequestFailsWithTriggeringFallbackError() throws {
+        let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
+
+        // main request fails with server error (triggers fallback)
+        stub(condition: isPath(request.path)) { request in
+            // Main backend request should use the default timeout for a request supporting fallback
+            XCTAssertEqual(
+                request.timeoutInterval,
+                HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
+            )
+            return .serverDownResponse()
+        }
+
+        // fallback request succeeds
+        let fallbackHost = try XCTUnwrap(request.path.fallbackUrls.first?.host)
+        stub(condition: isHost(fallbackHost)) { request in
+            // Fallback request should use the default timeout
+            XCTAssertEqual(request.timeoutInterval, self.defaultRequestTimeout)
+            return .emptySuccessResponse()
+        }
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: DataResponse) in completion() }
+        }
+
+        // Timeout should remain at mainBackendRequestSupportingFallback because .other doesn't change the timeout state
+        XCTAssertEqual(
+            timeoutManager.timeout(for: request.path, isFallback: false),
+            HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
+        )
+    }
+
     func testFullHTTPRequestTimeoutFlow() {
 
         enum MainBackendTimeoutRequestPath: HTTPRequestPath {
@@ -3595,6 +3627,31 @@ final class HTTPClientTimeoutManagerTests: BaseHTTPClientTests<MockETagManager, 
         // Assert that the "other" event was recorded
         expect(self.timeoutManager.recordedResults).to(haveCount(1))
         expect(self.timeoutManager.recordedResults.first) == .other
+    }
+
+    /// Verifies that when a request fails with a server error that triggers a fallback,
+    /// the HTTPClient records the "other" event for both the main backend failure and fallback success
+    func testRecordsOtherResultWhenRequestFailsWithTriggeringFallbackError() throws {
+        let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
+
+        // main request fails with server error (triggers fallback)
+        stub(condition: isPath(request.path)) { _ in
+            return .serverDownResponse()
+        }
+
+        // fallback request succeeds
+        let fallbackPath = try XCTUnwrap(request.path.fallbackRelativePath)
+        stub(condition: isPath(fallbackPath)) { _ in
+            return .emptySuccessResponse()
+        }
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: DataResponse) in completion() }
+        }
+
+        // Assert that "other" events were recorded for both main backend failure and fallback success
+        expect(self.timeoutManager.recordedResults).to(haveCount(2))
+        expect(self.timeoutManager.recordedResults) == [.other, .other]
     }
 
     /// Verifies that when a request succeeds on the main backend,
