@@ -18,7 +18,6 @@ name: Subscribe to product through V2 Paywall for default offering
 - runFlow:
     file: ../utils/confirm_purchase.yaml
     env:
-      MAESTRO_STORE: ${MAESTRO_STORE:-app_store}
       SCREENSHOT_PREFIX: subscribe_from_v2_paywall
 - assertVisible: "entitlement (pro): active"
 - takeScreenshot: "subscribe_from_v2_paywall - unlocked entitlement"
