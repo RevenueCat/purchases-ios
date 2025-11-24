@@ -98,15 +98,20 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
         Logger.verbose(Strings.paywalls.warming_up_images(imageURLs: imageURLs))
 
-        for url in imageURLs {
-            // Preferred method - load with FileRepository
-            _ = try? await fileRepository.generateOrGetCachedFileURL(for: url, withChecksum: nil)
+        await withTaskGroup(of: Void.self) { group in
+            for url in imageURLs {
+                group.addTask { [weak self] in
+                    guard let self = self else { return }
+                    // Preferred method - load with FileRepository
+                    _ = try? await self.fileRepository.generateOrGetCachedFileURL(for: url, withChecksum: nil)
 
-            // Legacy method - load with URLSession
-            do {
-                try await self.imageFetcher.downloadImage(url)
-            } catch {
-                Logger.error(Strings.paywalls.error_prefetching_image(url, error))
+                    // Legacy method - load with URLSession
+                    do {
+                        try await self.imageFetcher.downloadImage(url)
+                    } catch {
+                        Logger.error(Strings.paywalls.error_prefetching_image(url, error))
+                    }
+                }
             }
         }
     }
@@ -119,10 +124,10 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         guard !videoURLs.isEmpty else { return }
 
         Logger.verbose(Strings.paywalls.warming_up_videos(videoURLs: videoURLs))
-        await withTaskGroup(of: URL?.self) { [weak self] group in
+        await withTaskGroup(of: Void.self) { group in
             for source in videoURLs {
                 group.addTask { [weak self] in
-                    try? await self?.fileRepository.generateOrGetCachedFileURL(
+                    _ = try? await self?.fileRepository.generateOrGetCachedFileURL(
                         for: source.url,
                         withChecksum: source.checksum
                     )
@@ -138,8 +143,8 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
         await withTaskGroup(of: Void.self) { group in
             for font in allFontsInPaywallsNamed {
-                group.addTask {
-                    await self.installFont(from: font)
+                group.addTask { [weak self] in
+                    await self?.installFont(from: font)
                 }
             }
         }
