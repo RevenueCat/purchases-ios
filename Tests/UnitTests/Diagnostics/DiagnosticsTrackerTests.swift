@@ -132,7 +132,8 @@ class DiagnosticsTrackerTests: TestCase {
                                                backendErrorCode: 7121,
                                                resultOrigin: .cache,
                                                verificationResult: .verified,
-                                               isRetry: false)
+                                               isRetry: false,
+                                               connectionErrorReason: .noNetwork)
         let entries = await self.handler.getEntries()
         Self.expectEventArrayWithoutId(entries, [
             .init(name: .httpRequestPerformed,
@@ -145,7 +146,8 @@ class DiagnosticsTrackerTests: TestCase {
                     responseCode: 200,
                     backendErrorCode: 7121,
                     etagHit: true,
-                    isRetry: false
+                    isRetry: false,
+                    connectionErrorReason: .noNetwork
                   ),
                   timestamp: Self.eventTimestamp1,
                   appSessionId: SystemInfo.appSessionID)
@@ -208,6 +210,166 @@ class DiagnosticsTrackerTests: TestCase {
                   timestamp: Self.eventTimestamp2,
                   appSessionId: SystemInfo.appSessionID)
         ])
+    }
+
+    // MARK: - ConnectionErrorReason
+
+    func testConnectionErrorReasonFromNetworkErrorWithTimeout() {
+        let timeoutError = URLError(.timedOut)
+        let networkError = NetworkError.networkError(timeoutError)
+        let connectionErrorReason = ConnectionErrorReason(from: networkError)
+
+        expect(connectionErrorReason) == .timeout
+    }
+
+    func testConnectionErrorReasonFromNetworkErrorWithNotConnectedToInternet() {
+        let noNetworkError = URLError(.notConnectedToInternet)
+        let networkError = NetworkError.networkError(noNetworkError)
+        let connectionErrorReason = ConnectionErrorReason(from: networkError)
+
+        expect(connectionErrorReason) == .noNetwork
+    }
+
+    func testConnectionErrorReasonFromNetworkErrorWithCannotConnectToHost() {
+        let cannotConnectError = URLError(.cannotConnectToHost)
+        let networkError = NetworkError.networkError(cannotConnectError)
+        let connectionErrorReason = ConnectionErrorReason(from: networkError)
+
+        expect(connectionErrorReason) == .noNetwork
+    }
+
+    func testConnectionErrorReasonFromNetworkErrorWithCannotFindHost() {
+        let cannotFindHostError = URLError(.cannotFindHost)
+        let networkError = NetworkError.networkError(cannotFindHostError)
+        let connectionErrorReason = ConnectionErrorReason(from: networkError)
+
+        expect(connectionErrorReason) == .noNetwork
+    }
+
+    func testConnectionErrorReasonFromNetworkErrorWithNetworkConnectionLost() {
+        let connectionLostError = URLError(.networkConnectionLost)
+        let networkError = NetworkError.networkError(connectionLostError)
+        let connectionErrorReason = ConnectionErrorReason(from: networkError)
+
+        expect(connectionErrorReason) == .noNetwork
+    }
+
+    func testConnectionErrorReasonFromNetworkErrorWithDNSLookupFailed() {
+        let dnsError = URLError(.dnsLookupFailed)
+        let networkError = NetworkError.networkError(dnsError)
+        let connectionErrorReason = ConnectionErrorReason(from: networkError)
+
+        expect(connectionErrorReason) == .noNetwork
+    }
+
+    func testConnectionErrorReasonFromNetworkErrorWithUnknown() {
+        let unknownError = URLError(.unknown)
+        let networkError = NetworkError.networkError(unknownError)
+        let connectionErrorReason = ConnectionErrorReason(from: networkError)
+
+        expect(connectionErrorReason) == .noNetwork
+    }
+
+    func testConnectionErrorReasonFromDNSError() {
+        let failedURL = URL(string: "https://example.com")!
+        let dnsError = NetworkError.dnsError(failedURL: failedURL, resolvedHost: nil)
+        let connectionErrorReason = ConnectionErrorReason(from: dnsError)
+
+        expect(connectionErrorReason) == .noNetwork
+    }
+
+    func testConnectionErrorReasonFromDNSErrorWithResolvedHost() {
+        let failedURL = URL(string: "https://example.com")!
+        let resolvedHost = "https://resolved.example.com"
+        let dnsError = NetworkError.dnsError(failedURL: failedURL, resolvedHost: resolvedHost)
+        let connectionErrorReason = ConnectionErrorReason(from: dnsError)
+
+        expect(connectionErrorReason) == .noNetwork
+    }
+
+    func testConnectionErrorReasonFromUnexpectedResponse() {
+        let response = HTTPURLResponse(
+            url: URL(string: "https://example.com")!,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: nil
+        )
+        let unexpectedResponseError = NetworkError.unexpectedResponse(response)
+        let connectionErrorReason = ConnectionErrorReason(from: unexpectedResponseError)
+
+        expect(connectionErrorReason) == .noNetwork
+    }
+
+    func testConnectionErrorReasonFromUnexpectedResponseWithNil() {
+        let unexpectedResponseError = NetworkError.unexpectedResponse(nil)
+        let connectionErrorReason = ConnectionErrorReason(from: unexpectedResponseError)
+
+        expect(connectionErrorReason) == .noNetwork
+    }
+
+    func testConnectionErrorReasonFromDecodingError() {
+        let decodingError = NSError(domain: "domain", code: 20)
+        let networkError = NetworkError.decoding(decodingError, Data())
+        let connectionErrorReason = ConnectionErrorReason(from: networkError)
+
+        expect(connectionErrorReason) == .other
+    }
+
+    func testConnectionErrorReasonFromUnableToCreateRequest() {
+        let path: HTTPRequest.Path = .getCustomerInfo(appUserID: "user_id")
+        let unableToCreateRequestError = NetworkError.unableToCreateRequest(path)
+        let connectionErrorReason = ConnectionErrorReason(from: unableToCreateRequestError)
+
+        expect(connectionErrorReason) == .other
+    }
+
+    func testConnectionErrorReasonFromErrorResponse() {
+        let errorResponse = ErrorResponse(code: .invalidAPIKey,
+                                          originalCode: BackendErrorCode.invalidAPIKey.rawValue,
+                                          message: nil)
+        let errorResponseError = NetworkError.errorResponse(errorResponse, .unauthorized)
+        let connectionErrorReason = ConnectionErrorReason(from: errorResponseError)
+
+        expect(connectionErrorReason) == .other
+    }
+
+    func testConnectionErrorReasonFromSignatureVerificationFailed() {
+        let signatureError = NetworkError.signatureVerificationFailed(path: HTTPRequest.Path.health, code: .success)
+        let connectionErrorReason = ConnectionErrorReason(from: signatureError)
+
+        expect(connectionErrorReason) == .other
+    }
+
+    func testConnectionErrorReasonFromNetworkErrorWithBadURL() {
+        let badURLError = URLError(.badURL)
+        let networkError = NetworkError.networkError(badURLError)
+        let connectionErrorReason = ConnectionErrorReason(from: networkError)
+
+        expect(connectionErrorReason) == .noNetwork
+    }
+
+    func testConnectionErrorReasonFromNetworkErrorWithUnsupportedURL() {
+        let unsupportedURLError = URLError(.unsupportedURL)
+        let networkError = NetworkError.networkError(unsupportedURLError)
+        let connectionErrorReason = ConnectionErrorReason(from: networkError)
+
+        expect(connectionErrorReason) == .noNetwork
+    }
+
+    func testConnectionErrorReasonFromNetworkErrorWithResourceUnavailable() {
+        let resourceUnavailableError = URLError(.resourceUnavailable)
+        let networkError = NetworkError.networkError(resourceUnavailableError)
+        let connectionErrorReason = ConnectionErrorReason(from: networkError)
+
+        expect(connectionErrorReason) == .noNetwork
+    }
+
+    func testConnectionErrorReasonFromNetworkErrorWithHTTPTooManyRedirects() {
+        let tooManyRedirectsError = URLError(.httpTooManyRedirects)
+        let networkError = NetworkError.networkError(tooManyRedirectsError)
+        let connectionErrorReason = ConnectionErrorReason(from: networkError)
+
+        expect(connectionErrorReason) == .noNetwork
     }
 
     // MARK: - Purchase Attempt
