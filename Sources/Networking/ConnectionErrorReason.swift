@@ -7,9 +7,9 @@
 //
 
 enum ConnectionErrorReason: String, Codable {
-    case timeout
-    case noNetwork
-    case other
+    case timeout = "TIMEOUT"
+    case noNetwork = "NO_NETWORK"
+    case other = "OTHER"
 }
 
 extension ConnectionErrorReason {
