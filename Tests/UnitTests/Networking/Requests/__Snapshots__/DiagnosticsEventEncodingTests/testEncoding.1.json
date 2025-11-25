@@ -4,6 +4,7 @@
   "name" : "http_request_performed",
   "properties" : {
     "backend_error_code" : 500,
+    "connection_error_reason" : "noNetwork",
     "endpoint_name" : "log_in",
     "error_code" : 1,
     "error_message" : "OK",
