@@ -684,7 +684,8 @@ private extension HTTPClient {
                                                              backendErrorCode: nil,
                                                              resultOrigin: response.origin,
                                                              verificationResult: verificationResult,
-                                                             isRetry: request.retried)
+                                                             isRetry: request.retried,
+                                                             connectionErrorReason: nil)
             case let .failure(error):
                 var responseCode = -1
                 var backendErrorCode: Int?
@@ -700,7 +701,8 @@ private extension HTTPClient {
                                                              backendErrorCode: backendErrorCode,
                                                              resultOrigin: nil,
                                                              verificationResult: .notRequested,
-                                                             isRetry: request.retried)
+                                                             isRetry: request.retried,
+                                                             connectionErrorReason: .init(from: error))
             }
         }
     }

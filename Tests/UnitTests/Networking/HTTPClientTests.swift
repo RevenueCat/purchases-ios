@@ -2314,7 +2314,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             nil,
             .backend,
             .notRequested,
-            false
+            false,
+            nil
         )))
     }
 
@@ -2353,7 +2354,90 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             7225,
             nil,
             .notRequested,
-            false
+            false,
+            .other
+        )))
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testDiagnosticsHttpRequestPerformedTrackedOnTimeoutError() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let request = HTTPRequest(method: .get, path: .mockPath)
+
+        let timeoutError = NSError(
+            domain: NSURLErrorDomain,
+            code: NSURLErrorTimedOut,
+            userInfo: [NSLocalizedDescriptionKey: "The request timed out."]
+        )
+
+        stub(condition: isPath(request.path)) { _ in
+            return HTTPStubsResponse(error: timeoutError)
+        }
+
+        await waitUntil { completion in
+            self.client.perform(request) { (_: EmptyResponse) in completion() }
+        }
+
+        // swiftlint:disable:next force_cast
+        let mockDiagnosticsTracker = self.diagnosticsTracker as! MockDiagnosticsTracker
+        await expect(mockDiagnosticsTracker.trackedHttpRequestPerformedParams.value.count).toEventually(equal(1))
+        guard let trackedParams = mockDiagnosticsTracker.trackedHttpRequestPerformedParams.value.first else {
+            fail("Should have at least one call to tracked diagnostics")
+            return
+        }
+        expect(trackedParams).to(matchTrackParams((
+            "log_in",
+            "api.revenuecat.com",
+            -1, // Any
+            false,
+            -1, // No HTTP status code for connection errors
+            nil,
+            nil,
+            .notRequested,
+            false,
+            .timeout
+        )))
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testDiagnosticsHttpRequestPerformedTrackedOnNoNetworkError() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let request = HTTPRequest(method: .get, path: .mockPath)
+
+        let noNetworkError = NSError(
+            domain: NSURLErrorDomain,
+            code: NSURLErrorNotConnectedToInternet,
+            userInfo: [NSLocalizedDescriptionKey: "The Internet connection appears to be offline."]
+        )
+
+        stub(condition: isPath(request.path)) { _ in
+            return HTTPStubsResponse(error: noNetworkError)
+        }
+
+        await waitUntil { completion in
+            self.client.perform(request) { (_: EmptyResponse) in completion() }
+        }
+
+        // swiftlint:disable:next force_cast
+        let mockDiagnosticsTracker = self.diagnosticsTracker as! MockDiagnosticsTracker
+        await expect(mockDiagnosticsTracker.trackedHttpRequestPerformedParams.value.count).toEventually(equal(1))
+        guard let trackedParams = mockDiagnosticsTracker.trackedHttpRequestPerformedParams.value.first else {
+            fail("Should have at least one call to tracked diagnostics")
+            return
+        }
+        expect(trackedParams).to(matchTrackParams((
+            "log_in",
+            "api.revenuecat.com",
+            -1, // Any
+            false,
+            -1, // No HTTP status code for connection errors
+            nil,
+            nil,
+            .notRequested,
+            false,
+            .noNetwork
         )))
     }
 
@@ -2406,7 +2490,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             0,
             nil,
             .notRequested,
-            false
+            false,
+            .other
         )))
         expect(trackedParams1).to(matchTrackParams((
             "get_product_entitlement_mapping",
@@ -2417,7 +2502,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             nil,
             .backend,
             .notRequested,
-            false
+            false,
+            nil
         )))
     }
 
@@ -3386,10 +3472,11 @@ extension HTTPClientTests {
 }
 
 // swiftlint:disable large_tuple
+// swiftlint:disable line_length
 
 private func matchTrackParams(
-    _ data: (String, String?, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult, Bool)
-) -> Nimble.Predicate<(String, String?, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult, Bool)> {
+    _ data: (String, String?, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult, Bool, ConnectionErrorReason?)
+) -> Nimble.Predicate<(String, String?, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult, Bool, ConnectionErrorReason?)> {
     return .init {
         let other = try $0.evaluate()
         let timeInterval = other?.2 ?? -1
@@ -3401,13 +3488,15 @@ private func matchTrackParams(
                        other?.5 == data.5 &&
                        other?.6 == data.6 &&
                        other?.7 == data.7 &&
-                       other?.8 == data.8)
+                       other?.8 == data.8 &&
+                       other?.9 == data.9)
 
         return .init(bool: matches, message: .fail("Diagnostics tracked params do not match"))
     }
 }
 
 // swiftlint:enable large_tuple
+// swiftlint:enable line_length
 
 func isPath(_ path: HTTPRequestPath) -> HTTPStubsTestBlock {
     return isPath(path.relativePath)
