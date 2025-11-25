@@ -267,7 +267,7 @@ class DiagnosticsTrackerTests: TestCase {
         let networkError = NetworkError.networkError(unknownError)
         let connectionErrorReason = ConnectionErrorReason(from: networkError)
 
-        expect(connectionErrorReason) == .noNetwork
+        expect(connectionErrorReason) == .other
     }
 
     func testConnectionErrorReasonFromDNSError() {
@@ -345,7 +345,7 @@ class DiagnosticsTrackerTests: TestCase {
         let networkError = NetworkError.networkError(badURLError)
         let connectionErrorReason = ConnectionErrorReason(from: networkError)
 
-        expect(connectionErrorReason) == .noNetwork
+        expect(connectionErrorReason) == .other
     }
 
     func testConnectionErrorReasonFromNetworkErrorWithUnsupportedURL() {
@@ -353,7 +353,7 @@ class DiagnosticsTrackerTests: TestCase {
         let networkError = NetworkError.networkError(unsupportedURLError)
         let connectionErrorReason = ConnectionErrorReason(from: networkError)
 
-        expect(connectionErrorReason) == .noNetwork
+        expect(connectionErrorReason) == .other
     }
 
     func testConnectionErrorReasonFromNetworkErrorWithResourceUnavailable() {
@@ -361,7 +361,7 @@ class DiagnosticsTrackerTests: TestCase {
         let networkError = NetworkError.networkError(resourceUnavailableError)
         let connectionErrorReason = ConnectionErrorReason(from: networkError)
 
-        expect(connectionErrorReason) == .noNetwork
+        expect(connectionErrorReason) == .other
     }
 
     func testConnectionErrorReasonFromNetworkErrorWithHTTPTooManyRedirects() {
@@ -369,7 +369,47 @@ class DiagnosticsTrackerTests: TestCase {
         let networkError = NetworkError.networkError(tooManyRedirectsError)
         let connectionErrorReason = ConnectionErrorReason(from: networkError)
 
+        expect(connectionErrorReason) == .other
+    }
+
+    func testConnectionErrorReasonFromNetworkErrorWithInternationalRoamingOff() {
+        let roamingOffError = URLError(.internationalRoamingOff)
+        let networkError = NetworkError.networkError(roamingOffError)
+        let connectionErrorReason = ConnectionErrorReason(from: networkError)
+
         expect(connectionErrorReason) == .noNetwork
+    }
+
+    func testConnectionErrorReasonFromNetworkErrorWithCallIsActive() {
+        let callIsActiveError = URLError(.callIsActive)
+        let networkError = NetworkError.networkError(callIsActiveError)
+        let connectionErrorReason = ConnectionErrorReason(from: networkError)
+
+        expect(connectionErrorReason) == .noNetwork
+    }
+
+    func testConnectionErrorReasonFromNetworkErrorWithDataNotAllowed() {
+        let dataNotAllowedError = URLError(.dataNotAllowed)
+        let networkError = NetworkError.networkError(dataNotAllowedError)
+        let connectionErrorReason = ConnectionErrorReason(from: networkError)
+
+        expect(connectionErrorReason) == .noNetwork
+    }
+
+    func testConnectionErrorReasonFromNetworkErrorWithBadServerResponse() {
+        let badServerResponseError = URLError(.badServerResponse)
+        let networkError = NetworkError.networkError(badServerResponseError)
+        let connectionErrorReason = ConnectionErrorReason(from: networkError)
+
+        expect(connectionErrorReason) == .other
+    }
+
+    func testConnectionErrorReasonFromNetworkErrorWithSecureConnectionFailed() {
+        let secureConnectionFailedError = URLError(.secureConnectionFailed)
+        let networkError = NetworkError.networkError(secureConnectionFailedError)
+        let connectionErrorReason = ConnectionErrorReason(from: networkError)
+
+        expect(connectionErrorReason) == .other
     }
 
     // MARK: - Purchase Attempt
