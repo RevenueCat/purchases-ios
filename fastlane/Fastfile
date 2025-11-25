@@ -1255,7 +1255,7 @@ platform :ios do
       if options[:test_plan] == "BackendIntegrationTests-All-CI"
         # In the All CI backend integration test plan the load shedder tests are ran against us-east-1 and us-east-2 and all the other tests are ran against production
         slack_backend_integration_test_results(
-          environment: "production, load_shedder_us_east_1, load_shedder_us_east_2, fallback, production_test_store",
+          environment: "production, load_shedder_us_east_1, load_shedder_us_east_2, fallback",
           success: success,
           message_binary_solo_on_failure: false
         )
