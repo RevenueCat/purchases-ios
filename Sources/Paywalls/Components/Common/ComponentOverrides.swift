@@ -158,7 +158,7 @@ public extension PaywallComponent {
             case screenSize = "screen_size"
             case selectedPackage = "selected_package"
             case introOffer = "intro_offer"
-            case anyIntroOffer = "intro_offer_available"
+            case anyIntroOffer = "introductory_offer_available"
             case promoOffer = "promo_offer"
             case anyPromoOffer = "promo_offer_available"
             case selected
