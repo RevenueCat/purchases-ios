@@ -1736,6 +1736,7 @@ workflows:
     jobs:
       - <<: *maestro-e2e-test-job
       - run-maestro-e2e-tests:
+          name: run-maestro-e2e-tests-production-test-store
           backend_environment: "production"
           store: "test_store"
           context:
@@ -1793,6 +1794,7 @@ workflows:
     jobs:
       - <<: *maestro-e2e-test-job
       - run-maestro-e2e-tests:
+          name: run-maestro-e2e-tests-production-test-store
           backend_environment: "production"
           store: "test_store"
           context:
