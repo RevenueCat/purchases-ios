@@ -18,7 +18,8 @@ import RevenueCat
 extension TrialOrIntroEligibilityChecker {
 
     /// Creates a mock `TrialOrIntroEligibilityChecker` with a constant result.
-    static func producing(eligibility: @autoclosure @escaping () -> IntroEligibilityStatus) -> Self {
+    @_spi(Internal)
+    public static func producing(eligibility: @autoclosure @escaping () -> IntroEligibilityStatus) -> Self {
         return .init { packages in
             return Dictionary(
                 uniqueKeysWithValues: Set(packages)
@@ -34,6 +35,7 @@ extension TrialOrIntroEligibilityChecker {
     }
 #if DEBUG
     /// Creates a copy of this `TrialOrIntroEligibilityChecker` with a delay.
+    @_spi(Internal)
     func with(delay seconds: TimeInterval) -> Self {
         return .init { [checker = self.checker] in
             await Task.sleep(seconds: seconds)
