@@ -18,7 +18,8 @@ parameters:
         run-manual-docs-deploy,
         update_paywall_templates,
         record_paywall_screenshots,
-        tuist
+        tuist,
+        run-maestro-E2E-test-for-test-store
       ]
     default: default
   generate_snapshots:
@@ -1748,6 +1749,18 @@ workflows:
       equal: [bump, << pipeline.parameters.action >>]
     jobs:
       - release-train
+
+  run-maestro-e2e-tests-for-test-store:
+    when:
+      equal: [run-maestro-E2E-test-for-test-store, << pipeline.parameters.action >>]
+    jobs:
+      - run-maestro-e2e-tests:
+          name: run-maestro-e2e-tests-production-test-store
+          backend_environment: "production"
+          store: "test_store"
+          context:
+            - maestro-e2e-tests
+            - slack-secrets
 
   record-and-push-paywall-template-screenshots:
     when:
