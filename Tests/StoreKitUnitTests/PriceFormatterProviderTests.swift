@@ -88,16 +88,18 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
 
     func testSk1PriceFormatterCurrencySymbolOverriding() async throws {
         priceFormatterProvider = .init(
-            priceFormattingRuleSet: .init(currencySymbolOverrides: [
-                "EUR": .init(
-                    zero: "zero",
-                    one: "one",
-                    two: "two",
-                    few: "few",
-                    many: "many",
-                    other: "other"
-                )
-            ])
+            priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider(
+                priceFormattingRuleSet: PriceFormattingRuleSet(currencySymbolOverrides: [
+                    "EUR": .init(
+                        zero: "zero",
+                        one: "one",
+                        two: "two",
+                        few: "few",
+                        many: "many",
+                        other: "other"
+                    )
+                ])
+            )
         )
 
         let priceFormatter = priceFormatterProvider.priceFormatterForSK1(
@@ -118,16 +120,18 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
 
     func testSk1PriceFormatterCurrencySymbolOverridingUsesCachedPriceFormatter() async throws {
         priceFormatterProvider = .init(
-            priceFormattingRuleSet: .init(currencySymbolOverrides: [
-                "EUR": .init(
-                    zero: "zero",
-                    one: "one",
-                    two: "two",
-                    few: "few",
-                    many: "many",
-                    other: "other"
-                )
-            ])
+            priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider(
+                priceFormattingRuleSet: PriceFormattingRuleSet(currencySymbolOverrides: [
+                    "EUR": .init(
+                        zero: "zero",
+                        one: "one",
+                        two: "two",
+                        few: "few",
+                        many: "many",
+                        other: "other"
+                    )
+                ])
+            )
         )
 
         let firstPriceFormatter = priceFormatterProvider.priceFormatterForSK1(
@@ -167,16 +171,18 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSk2PriceFormatterCurrencySymbolOverriding() async throws {
         priceFormatterProvider = .init(
-            priceFormattingRuleSet: .init(currencySymbolOverrides: [
-                "EUR": .init(
-                    zero: "zero",
-                    one: "one",
-                    two: "two",
-                    few: "few",
-                    many: "many",
-                    other: "other"
-                )
-            ])
+            priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider(
+                priceFormattingRuleSet: PriceFormattingRuleSet(currencySymbolOverrides: [
+                    "EUR": .init(
+                        zero: "zero",
+                        one: "one",
+                        two: "two",
+                        few: "few",
+                        many: "many",
+                        other: "other"
+                    )
+                ])
+            )
         )
 
         let priceFormatter = priceFormatterProvider.priceFormatterForSK2(
@@ -199,16 +205,18 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSk2PriceFormatterCurrencySymbolOverridingRomania() async throws {
         priceFormatterProvider = .init(
-            priceFormattingRuleSet: .init(currencySymbolOverrides: [
-                "RON": .init(
-                    zero: "lei",
-                    one: "leu",
-                    two: "lei",
-                    few: "lei",
-                    many: "lei",
-                    other: "lei"
-                )
-            ])
+            priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider(
+                priceFormattingRuleSet: PriceFormattingRuleSet(currencySymbolOverrides: [
+                    "RON": .init(
+                        zero: "lei",
+                        one: "leu",
+                        two: "lei",
+                        few: "lei",
+                        many: "lei",
+                        other: "lei"
+                    )
+                ])
+            )
         )
 
         let priceFormatter = priceFormatterProvider.priceFormatterForSK2(
@@ -228,16 +236,18 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSk2PriceFormatterCurrencySymbolOverridingUsesCachedPriceFormatter() async throws {
         priceFormatterProvider = .init(
-            priceFormattingRuleSet: .init(currencySymbolOverrides: [
-                "EUR": .init(
-                    zero: "zero",
-                    one: "one",
-                    two: "two",
-                    few: "few",
-                    many: "many",
-                    other: "other"
-                )
-            ])
+            priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider(
+                priceFormattingRuleSet: PriceFormattingRuleSet(currencySymbolOverrides: [
+                    "EUR": .init(
+                        zero: "zero",
+                        one: "one",
+                        two: "two",
+                        few: "few",
+                        many: "many",
+                        other: "other"
+                    )
+                ])
+            )
         )
 
         let firstPriceFormatter = priceFormatterProvider.priceFormatterForSK2(
@@ -255,16 +265,18 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
 
     func testWebProductsPriceFormatterCurrencySymbolOverriding() async throws {
         priceFormatterProvider = .init(
-            priceFormattingRuleSet: .init(currencySymbolOverrides: [
-                "EUR": .init(
-                    zero: "zero",
-                    one: "one",
-                    two: "two",
-                    few: "few",
-                    many: "many",
-                    other: "other"
-                )
-            ])
+            priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider(
+                priceFormattingRuleSet: PriceFormattingRuleSet(currencySymbolOverrides: [
+                    "EUR": .init(
+                        zero: "zero",
+                        one: "one",
+                        two: "two",
+                        few: "few",
+                        many: "many",
+                        other: "other"
+                    )
+                ])
+            )
         )
 
         let priceFormatter = priceFormatterProvider.priceFormatterForWebProducts(
@@ -286,16 +298,18 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
 
     func testWebProductsFormatterCurrencySymbolOverridingUsesCachedPriceFormatter() async throws {
         priceFormatterProvider = .init(
-            priceFormattingRuleSet: .init(currencySymbolOverrides: [
-                "EUR": .init(
-                    zero: "zero",
-                    one: "one",
-                    two: "two",
-                    few: "few",
-                    many: "many",
-                    other: "other"
-                )
-            ])
+            priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider(
+                priceFormattingRuleSet: PriceFormattingRuleSet(currencySymbolOverrides: [
+                    "EUR": .init(
+                        zero: "zero",
+                        one: "one",
+                        two: "two",
+                        few: "few",
+                        many: "many",
+                        other: "other"
+                    )
+                ])
+            )
         )
 
         let firstPriceFormatter = priceFormatterProvider.priceFormatterForWebProducts(
