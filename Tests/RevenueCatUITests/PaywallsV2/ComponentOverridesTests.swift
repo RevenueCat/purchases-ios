@@ -56,7 +56,7 @@ final class ComponentOverridesTests: TestCase {
         [
           {
             "conditions": [
-              { "type": "intro_offer_available", "operator": "!=", "value": false }
+              { "type": "introductory_offer_available", "operator": "!=", "value": false }
             ],
             "properties": { }
           }
