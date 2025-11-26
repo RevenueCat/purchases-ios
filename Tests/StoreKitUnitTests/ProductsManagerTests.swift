@@ -115,12 +115,11 @@ class ProductsManagerTests: StoreKitConfigTestCase {
     }
 
     func testUsePriceFormattingRuleSetWithStorefrontSwitchSK1() async throws {
-        let priceFormattingRuleSetProvider = PriceFormattingRuleSetProvider {
-            .init(currencySymbolOverrides: [
-                "EUR": .init(zero: "e", one: "e", two: "e", few: "e", many: "e", other: "e"),
-                "USD": .init(zero: "bucks", one: "bucks", two: "bucks", few: "bucks", many: "bucks", other: "bucks")
-            ])
-        }
+        let ruleSet = PriceFormattingRuleSet(currencySymbolOverrides: [
+            "EUR": .init(zero: "e", one: "e", two: "e", few: "e", many: "e", other: "e"),
+            "USD": .init(zero: "bucks", one: "bucks", two: "bucks", few: "bucks", many: "bucks", other: "bucks")
+        ])
+        let priceFormattingRuleSetProvider = PriceFormattingRuleSetProvider(priceFormattingRuleSet: ruleSet)
         let manager = self.createManager(
             storeKitVersion: .storeKit1,
             priceFormattingRuleSetProvider: priceFormattingRuleSetProvider
@@ -154,12 +153,11 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testUsePriceFormattingRuleSetWithStorefrontSwitchSK2() async throws {
-        let priceFormattingRuleSetProvider = PriceFormattingRuleSetProvider {
-            .init(currencySymbolOverrides: [
-                "EUR": .init(zero: "e", one: "e", two: "e", few: "e", many: "e", other: "e"),
-                "USD": .init(zero: "bucks", one: "bucks", two: "bucks", few: "bucks", many: "bucks", other: "bucks")
-            ])
-        }
+        let ruleSet = PriceFormattingRuleSet(currencySymbolOverrides: [
+            "EUR": .init(zero: "e", one: "e", two: "e", few: "e", many: "e", other: "e"),
+            "USD": .init(zero: "bucks", one: "bucks", two: "bucks", few: "bucks", many: "bucks", other: "bucks")
+        ])
+        let priceFormattingRuleSetProvider = PriceFormattingRuleSetProvider(priceFormattingRuleSet: ruleSet)
         let manager = self.createManager(
             storeKitVersion: .storeKit2,
             priceFormattingRuleSetProvider: priceFormattingRuleSetProvider

@@ -31,7 +31,7 @@ internal struct SK1StoreProductDiscount: StoreProductDiscountType {
         self.subscriptionPeriod = subscriptionPeriod
         self.numberOfPeriods = sk1Discount.numberOfPeriods
         self.type = type
-        self.priceFormatterProvider = priceFormatterProvider ?? .init(priceFormattingRuleSet: nil)
+        self.priceFormatterProvider = priceFormatterProvider ?? .init(priceFormattingRuleSetProvider: nil)
     }
 
     let underlyingSK1Discount: SK1ProductDiscount

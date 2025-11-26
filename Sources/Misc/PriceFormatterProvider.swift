@@ -17,10 +17,10 @@ import Foundation
 /// This provider caches the formatter to improve the performance.
 final class PriceFormatterProvider: Sendable {
 
-    private let priceFormattingRuleSet: PriceFormattingRuleSet?
+    private let priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider?
 
-    init(priceFormattingRuleSet: PriceFormattingRuleSet? = nil) {
-        self.priceFormattingRuleSet = priceFormattingRuleSet
+    init(priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider? = nil) {
+        self.priceFormattingRuleSetProvider = priceFormattingRuleSetProvider
     }
 
     private let cachedPriceFormatterForSK1: Atomic<NumberFormatter?> = nil
@@ -45,7 +45,7 @@ final class PriceFormatterProvider: Sendable {
 
         return self.cachedPriceFormatterForSK1.modify { formatter in
             if let formatter = formatter as? CurrencySymbolOverridingPriceFormatter {
-                let override = priceFormattingRuleSet?.currencySymbolOverride(currencyCode: formatter.currencyCode)
+                let override = priceFormattingRuleSetProvider?.currencySymbolOverride(for: formatter.currencyCode)
                 if formatter.locale == locale,
                     formatter.currencySymbolOverride == override {
                     return formatter
@@ -60,8 +60,8 @@ final class PriceFormatterProvider: Sendable {
             )
 
             // If there is a currency symbol override for the currencyCode of the new formatter, use that
-            if let currencySymbolOverride = priceFormattingRuleSet?.currencySymbolOverride(
-                currencyCode: newFormatter.currencyCode
+            if let currencySymbolOverride = priceFormattingRuleSetProvider?.currencySymbolOverride(
+                for: newFormatter.currencyCode
             ) {
                 newFormatter =  makePriceFormatterForSK1(
                     with: locale,
@@ -118,8 +118,8 @@ final class PriceFormatterProvider: Sendable {
         currencyCode: String,
         locale: Locale
     ) -> NumberFormatter {
-        let currencySymbolOverride = priceFormattingRuleSet?.currencySymbolOverride(
-            currencyCode: currencyCode
+        let currencySymbolOverride = priceFormattingRuleSetProvider?.currencySymbolOverride(
+            for: currencyCode
         )
 
         if let formatter = cachedPriceFormatter as? CurrencySymbolOverridingPriceFormatter {
