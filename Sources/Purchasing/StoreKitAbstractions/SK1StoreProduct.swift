@@ -15,7 +15,10 @@ import StoreKit
 
 internal struct SK1StoreProduct: StoreProductType {
 
-    init(sk1Product: SK1Product, priceFormatterProvider: PriceFormatterProvider = .init()) {
+    init(
+        sk1Product: SK1Product,
+        priceFormatterProvider: PriceFormatterProvider = .init(priceFormattingRuleSetProvider: nil)
+    ) {
         self.underlyingSK1Product = sk1Product
         self.priceFormatterProvider = priceFormatterProvider
     }

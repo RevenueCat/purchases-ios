@@ -213,6 +213,9 @@ private extension OfferingsManager {
                     cache.cacheInMemory(offerings: offeringsResultData.offerings)
                     cache.forceOfferingsCacheStale()
 
+                    // Update the price formatting rule set provider from cached contents
+                    self.updatePriceFormattingRuleSetProvider(from: contents.response)
+
                     completion(offeringsResultData)
 
                 case .failure:
@@ -294,6 +297,10 @@ private extension OfferingsManager {
                 self.deviceCache.cache(offerings: offeringsResultData.offerings,
                                        preferredLocales: preferredLocales,
                                        appUserID: appUserID)
+
+                // Update the price formatting rule set provider in ProductsManager
+                self.updatePriceFormattingRuleSetProvider(from: contents.response)
+
                 self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(offeringsResultData))
 
             case let .failure(error):
@@ -334,6 +341,15 @@ private extension OfferingsManager {
                 completion(value)
             }
         }
+    }
+
+    private func updatePriceFormattingRuleSetProvider(from response: OfferingsResponse) {
+        guard let storefrontCountryCode = self.systemInfo.storefront?.countryCode else {
+            return
+        }
+
+        let ruleSet = response.uiConfig?.priceFormattingRuleSets[storefrontCountryCode]
+        self.productsManager.updatePriceFormattingRuleSet(ruleSet)
     }
 
     private func fetchProducts(

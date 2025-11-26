@@ -43,7 +43,7 @@ actor ProductsFetcherSK2 {
             return Set(storeKitProducts.map { SK2StoreProduct(
                 sk2Product: $0,
                 priceFormatterProvider: .init(
-                    priceFormattingRuleSet: priceFormattingRuleSetProvider.priceFormattingRuleSet()
+                    priceFormattingRuleSetProvider: priceFormattingRuleSetProvider
                 )
             )})
         } catch {

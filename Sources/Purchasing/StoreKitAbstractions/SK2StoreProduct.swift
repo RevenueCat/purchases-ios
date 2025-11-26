@@ -16,7 +16,10 @@ import StoreKit
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 internal struct SK2StoreProduct: StoreProductType {
 
-    init(sk2Product: SK2Product, priceFormatterProvider: PriceFormatterProvider = .init(priceFormattingRuleSet: nil)) {
+    init(
+        sk2Product: SK2Product,
+        priceFormatterProvider: PriceFormatterProvider = .init(priceFormattingRuleSetProvider: nil)
+    ) {
         self._underlyingSK2Product = .init(sk2Product)
         self.priceFormatterProvider = priceFormatterProvider
     }
