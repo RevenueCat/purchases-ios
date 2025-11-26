@@ -1741,7 +1741,7 @@ workflows:
           backend_environment: "production"
           store: "test_store"
           context:
-            - maestro-e2e-tests
+            - e2e-tests
             - slack-secrets
 
   manual-trigger-bump:
@@ -1811,7 +1811,7 @@ workflows:
           backend_environment: "production"
           store: "test_store"
           context:
-            - maestro-e2e-tests
+            - e2e-tests
             - slack-secrets
       - backend-integration-tests-SK1:
           context:
