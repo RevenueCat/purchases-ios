@@ -56,7 +56,7 @@ final class ComponentOverridesTests: TestCase {
         [
           {
             "conditions": [
-              { "type": "intro_offer_available", "operator": "!=", "value": false }
+              { "type": "introductory_offer_available", "operator": "!=", "value": false }
             ],
             "properties": { }
           }
@@ -79,7 +79,7 @@ final class ComponentOverridesTests: TestCase {
         }
     }
 
-    func testIntroOfferWithoutOperatorOrValueFailsDecoding() throws {
+    func testIntroOfferDefaultsOperatorAndValueWhenMissing() throws {
         let json = """
         [
           {
@@ -91,12 +91,20 @@ final class ComponentOverridesTests: TestCase {
         ]
         """.data(using: .utf8)!
 
-        expect {
-            try JSONDecoder.default.decode(
-                PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent>.self,
-                from: json
-            )
-        }.to(throwError())
+        let overrides = try JSONDecoder.default.decode(
+            PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent>.self,
+            from: json
+        )
+
+        let condition = try XCTUnwrap(overrides.first?.conditions.first)
+
+        switch condition {
+        case let .introOffer(operatorType, value):
+            expect(operatorType) == .equals
+            expect(value) == true
+        default:
+            fail("Expected introOffer condition")
+        }
     }
 
 }
