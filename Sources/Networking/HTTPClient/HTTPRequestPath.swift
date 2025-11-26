@@ -51,6 +51,10 @@ extension HTTPRequestPath {
         return []
     }
 
+    var supportsFallbackURLs: Bool {
+        !fallbackUrls.isEmpty
+    }
+
     var fallbackRelativePath: String? {
         return nil
     }
