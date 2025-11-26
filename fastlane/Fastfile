@@ -796,9 +796,16 @@ platform :ios do
     UI.success("✅ Created CI.xcconfig")
   end
 
+  # Runs Maestro E2E tests.
+  # Parameters:
+  #   - backend_environment: ["production", "load_shedder_us_east_1", "load_shedder_us_east_2", "fallback"]
+  #   - store: ["app_store", "test_store"]
+  #
+  # Note that currently the "test_store" store is only available in the production environment.
   desc "run_maestro_e2e_tests"
   lane :run_maestro_e2e_tests do |options|
     backend_environment = options[:backend_environment] || "production"
+    store = options[:store] || "app_store"
     base_path = "#{Dir.pwd}/.."
 
     UI.message("Running Maestro E2E tests for backend environment: #{backend_environment}")
@@ -813,7 +820,6 @@ platform :ios do
     entitlement_verification_result = ""
     customer_info_source = ""
     heartbeat_monitor_ping_url = ""
-    store = "app_store"
 
     case backend_environment
     when "load_shedder_us_east_1"
@@ -839,7 +845,6 @@ platform :ios do
       entitlement_verification_result = "verified"
       customer_info_source = "main"
       heartbeat_monitor_ping_url = ENV["HEARTBEAT_MONITOR_URL_E2E_TESTS_PRODUCTION_TEST_STORE"]
-      store = "test_store"
     else
       UI.user_error!("Invalid backend_environment: #{backend_environment}. Must be one of: production, load_shedder_us_east_1, load_shedder_us_east_2, fallback, production_test_store")
     end

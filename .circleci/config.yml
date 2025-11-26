@@ -124,7 +124,7 @@ aliases:
         - slack-secrets
       matrix:
         parameters:
-          backend_environment: ["production", "load_shedder_us_east_1", "load_shedder_us_east_2", "fallback", "production_test_store"]
+          backend_environment: ["production", "load_shedder_us_east_1", "load_shedder_us_east_2", "fallback"]
 
 commands:
   slack-notify-on-fail:
@@ -1167,7 +1167,11 @@ jobs:
     parameters:
       backend_environment:
         type: enum
-        enum: ["production", "load_shedder_us_east_1", "load_shedder_us_east_2", "fallback", "production_test_store"]
+        enum: ["production", "load_shedder_us_east_1", "load_shedder_us_east_2", "fallback"]
+      store:
+        type: enum
+        enum: ["app_store", "test_store"]
+        default: "app_store"
     executor:
       name: macos-executor
       xcode_version: "26.0.1"
@@ -1185,14 +1189,14 @@ jobs:
       - run:
           name: Set API key for e2e tests
           command: |
-            if [ "<< parameters.backend_environment >>" == "production_test_store" ]; then
+            if [ "<< parameters.store >>" == "test_store" ]; then
               echo 'export REVENUECAT_API_KEY="${RC_E2E_TEST_API_KEY_PRODUCTION_TEST_STORE}"' >> $BASH_ENV
             else
               echo 'export REVENUECAT_API_KEY="${RC_E2E_TEST_API_KEY_PRODUCTION_APP_STORE}"' >> $BASH_ENV
             fi
       - run:
           name: Run e2e tests (<< parameters.backend_environment >>)
-          command: bundle exec fastlane run_maestro_e2e_tests backend_environment:<< parameters.backend_environment >>
+          command: bundle exec fastlane run_maestro_e2e_tests backend_environment:<< parameters.backend_environment >> store:<< parameters.store >>
           no_output_timeout: 15m
       - store_test_results:
           path: fastlane/test_output
@@ -1731,6 +1735,12 @@ workflows:
         - equal: ["maestro_e2e_tests", << pipeline.schedule.name >>]
     jobs:
       - <<: *maestro-e2e-test-job
+      - run-maestro-e2e-tests:
+          backend_environment: "production"
+          store: "test_store"
+          context:
+            - maestro-e2e-tests
+            - slack-secrets
 
   manual-trigger-bump:
     when:
@@ -1782,6 +1792,12 @@ workflows:
             ["run-from-github-comments", << pipeline.parameters.GHA_Meta >>]
     jobs:
       - <<: *maestro-e2e-test-job
+      - run-maestro-e2e-tests:
+          backend_environment: "production"
+          store: "test_store"
+          context:
+            - maestro-e2e-tests
+            - slack-secrets
       - backend-integration-tests-SK1:
           context:
             - slack-secrets
