@@ -1759,7 +1759,7 @@ workflows:
           backend_environment: "production"
           store: "test_store"
           context:
-            - maestro-e2e-tests
+            - e2e-tests
             - slack-secrets
 
   record-and-push-paywall-template-screenshots:
