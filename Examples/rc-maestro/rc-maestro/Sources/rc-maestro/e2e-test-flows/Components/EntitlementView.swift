@@ -7,7 +7,11 @@
 //
 
 import SwiftUI
+#if DEBUG
 @testable import RevenueCat
+#else
+import RevenueCat
+#endif
 
 struct EntitlementView: View {
     let identifier: String
@@ -34,9 +38,11 @@ struct EntitlementView: View {
             if let entitlement {
                 Text("verification: " + entitlement.verification.stringValue)
             }
+            #if DEBUG
             if let customerInfo {
                 Text("customer info source: " + customerInfo.originalSource.rawValue)
             }
+            #endif
         }
         .padding()
         .background(Color.gray.opacity(0.5))

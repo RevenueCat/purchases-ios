@@ -1,0 +1,11 @@
+appId: com.revenuecat.maestro.ios
+name: Test Store in Release Configuration
+
+---
+- clearState
+- launchApp
+- assertVisible: "Wrong API Key"
+- tapOn:
+    text: "OK"
+- assertVisible:
+    id: "spotlight-pill" # This is the indicator that the app has crashed and we're seeing the dashboard

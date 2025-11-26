@@ -210,6 +210,14 @@ archive all platforms
 
 run API Tests
 
+### ios run_maestro_test_for_test_store_in_release_configuration
+
+```sh
+[bundle exec] fastlane ios run_maestro_test_for_test_store_in_release_configuration
+```
+
+run_maestro_test_for_test_store_in_release_configuration
+
 ### ios run_maestro_e2e_tests
 
 ```sh

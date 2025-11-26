@@ -1,5 +1,9 @@
 import SwiftUI
+#if DEBUG
 @testable import RevenueCat
+#else
+import RevenueCat
+#endif
 
 @main
 struct RcMaestroApp: App {
@@ -8,6 +12,7 @@ struct RcMaestroApp: App {
         Purchases.logLevel = .verbose
         Purchases.proxyURL = Constants.proxyURL.flatMap { URL(string: $0) }
 
+        #if DEBUG
         // Set API base URL if provided (used in E2E tests)
         if let apiBaseURL = Constants.apiBaseURL {
             SystemInfo.apiBaseURL = apiBaseURL
@@ -31,6 +36,9 @@ struct RcMaestroApp: App {
                 ))
                 .build()
         )
+        #else
+        Purchases.configure(withAPIKey: Constants.apiKey)
+        #endif
     }
 
     var body: some Scene {

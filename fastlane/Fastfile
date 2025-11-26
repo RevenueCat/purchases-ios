@@ -796,6 +796,62 @@ platform :ios do
     UI.success("✅ Created CI.xcconfig")
   end
 
+  # Runs Maestro tests for Test Store in Release Configuration.
+  # This test is used to verify that the SDK is correctly configured to show the alert
+  # and crash when the test store is used in release configuration.
+  desc "run_maestro_test_for_test_store_in_release_configuration"
+  lane :run_maestro_test_for_test_store_in_release_configuration do
+    backend_environment = "production"
+    store = "test_store"
+    base_path = "#{Dir.pwd}/.."
+
+    UI.message("Running Maestro tests for Test Store in Release Configuration")
+
+    # Get API key from environment variable
+    api_key = ENV["REVENUECAT_API_KEY"]
+    UI.user_error!("REVENUECAT_API_KEY environment variable must be set") unless api_key
+
+    # Set environment variables for Maestro
+    ENV["MAESTRO_STORE"] = "test_store"
+
+    # Setup XCConfig with the appropriate configuration
+    setup_xcconfig(
+      api_key: api_key,
+      api_host: "", # Default host
+      force_server_error_strategy: "never"
+    )
+
+    # note: it's called "run" tests but these tests only need to build to run
+    xcworkspace = 'RevenueCat-Tuist.xcworkspace'
+    unless File.directory?(xcworkspace)
+      UI.important("#{xcworkspace} not found. Run `tuist generate --no-open` before invoking this lane.")
+    end
+
+    xcodebuild(
+      workspace: xcworkspace,
+      scheme: "Maestro",
+      sdk: "iphonesimulator",
+      configuration: "Release",
+      derivedDataPath: "./build"
+    )
+
+    # Install app to simulator
+    UI.message("Installing app to simulator...")
+    sh("xcrun", "simctl", "install", "booted", "#{base_path}/build/Build/Products/Release-iphonesimulator/Maestro.app")
+
+    # Construct the flow directory path
+    flow_dir = "#{base_path}/Examples/rc-maestro/maestro/test_store_release_config"
+
+    # Verify the flow directory exists
+    unless File.directory?(flow_dir)
+      UI.user_error!("Flow directory not found: #{flow_dir}")
+    end
+
+    UI.message("Using flow directory: #{flow_dir}")
+
+    sh("maestro", "test", "--format", "junit", "--output", "test_output/maestro/report.xml", "--test-output-dir", "test_output/maestro", flow_dir)
+  end
+
   # Runs Maestro E2E tests.
   # Parameters:
   #   - backend_environment: ["production", "load_shedder_us_east_1", "load_shedder_us_east_2", "fallback"]
