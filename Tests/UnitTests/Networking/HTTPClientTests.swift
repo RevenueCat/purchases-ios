@@ -1154,7 +1154,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test_user_id"))
 
         // main request
-        stub(condition: isPath(request.path)) { request in
+        let url = try XCTUnwrap(request.path.url?.absoluteString)
+        stub(condition: isAbsoluteURLString(url)) { request in
 
             // Main backend request should use the default for a main backend request supporting a fallback
             XCTAssertEqual(
@@ -1165,8 +1166,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         }
 
         // fallback request
-        let fallbackPath = try XCTUnwrap(request.path.fallbackRelativePath)
-        stub(condition: isPath(fallbackPath)) { request in
+        let fallbackUrl = try XCTUnwrap(request.path.fallbackUrls.first?.absoluteString)
+        stub(condition: isAbsoluteURLString(fallbackUrl)) { request in
 
             // Make sure it uses the default timeout because it's a fallback request
             XCTAssertEqual(request.timeoutInterval, self.defaultRequestTimeout)
@@ -1235,7 +1236,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
 
         // main request fails with server error (triggers fallback)
-        stub(condition: isPath(request.path)) { request in
+        let url = try XCTUnwrap(request.path.url?.absoluteString)
+        stub(condition: isAbsoluteURLString(url)) { request in
             // Main backend request should use the default timeout for a request supporting fallback
             XCTAssertEqual(
                 request.timeoutInterval,
@@ -1245,8 +1247,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         }
 
         // fallback request succeeds
-        let fallbackHost = try XCTUnwrap(request.path.fallbackUrls.first?.host)
-        stub(condition: isHost(fallbackHost)) { request in
+        let fallbackUrl = try XCTUnwrap(request.path.fallbackUrls.first?.absoluteString)
+        stub(condition: isAbsoluteURLString(fallbackUrl)) { request in
             // Fallback request should use the default timeout
             XCTAssertEqual(request.timeoutInterval, self.defaultRequestTimeout)
             return .emptySuccessResponse()
@@ -3444,9 +3446,7 @@ extension HTTPStubsResponse {
     }
 
     static func timeoutResponse() -> HTTPStubsResponse {
-        return .init(data: Data(),
-                     statusCode: .networkConnectTimeoutError,
-                     headers: nil)
+        return .init(error: URLError(.timedOut))
     }
 
     convenience init(data: Data, statusCode: HTTPStatusCode, headers: HTTPClient.RequestHeaders?) {
@@ -3571,13 +3571,14 @@ final class HTTPClientTimeoutManagerTests: BaseHTTPClientTests<MockETagManager, 
         let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test_user_id"))
 
         // main request times out
-        stub(condition: isPath(request.path)) { _ in
+        let url = try XCTUnwrap(request.path.url?.absoluteString)
+        stub(condition: isAbsoluteURLString(url)) { _ in
             return .timeoutResponse()
         }
 
         // fallback request succeeds
-        let fallbackPath = try XCTUnwrap(request.path.fallbackRelativePath)
-        stub(condition: isPath(fallbackPath)) { _ in
+        let fallbackUrl = try XCTUnwrap(request.path.fallbackUrls.first?.absoluteString)
+        stub(condition: isAbsoluteURLString(fallbackUrl)) { _ in
             return .emptySuccessResponse()
         }
 
@@ -3635,13 +3636,14 @@ final class HTTPClientTimeoutManagerTests: BaseHTTPClientTests<MockETagManager, 
         let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
 
         // main request fails with server error (triggers fallback)
-        stub(condition: isPath(request.path)) { _ in
+        let url = try XCTUnwrap(request.path.url?.absoluteString)
+        stub(condition: isAbsoluteURLString(url)) { _ in
             return .serverDownResponse()
         }
 
         // fallback request succeeds
-        let fallbackPath = try XCTUnwrap(request.path.fallbackRelativePath)
-        stub(condition: isPath(fallbackPath)) { _ in
+        let fallbackUrl = try XCTUnwrap(request.path.fallbackUrls.first?.absoluteString)
+        stub(condition: isAbsoluteURLString(fallbackUrl)) { _ in
             return .emptySuccessResponse()
         }
 
