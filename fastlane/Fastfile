@@ -925,11 +925,13 @@ platform :ios do
       )
       ping_heartbeat_monitor(url: heartbeat_monitor_ping_url)
 
-      # Always stop the watcher, even if Maestro fails
-      UI.message("Stopping StoreKit config watcher...")
-      Process.kill('TERM', watcher_pid) rescue nil
-      Process.wait(watcher_pid) rescue nil
-      UI.success("✓ StoreKit config watcher stopped")
+      if store == "app_store"
+        # Always stop the watcher, even if Maestro fails
+        UI.message("Stopping StoreKit config watcher...")
+        Process.kill('TERM', watcher_pid) rescue nil
+        Process.wait(watcher_pid) rescue nil
+        UI.success("✓ StoreKit config watcher stopped")
+      end
     end
   end
 
