@@ -35,6 +35,7 @@ class HTTPClient {
     private let dateProvider: DateProvider
     private let retriableStatusCodes: Set<HTTPStatusCode>
     private let operationDispatcher: OperationDispatcher
+    private let requestTimeoutManager: HTTPRequestTimeoutManagerType
 
     private let retryBackoffIntervals: [TimeInterval] = [
         TimeInterval(0),
@@ -51,7 +52,9 @@ class HTTPClient {
          retriableStatusCodes: Set<HTTPStatusCode> = Set([.tooManyRequests]),
          requestTimeout: TimeInterval = Configuration.networkTimeoutDefault,
          dateProvider: DateProvider = DateProvider(),
-         operationDispatcher: OperationDispatcher) {
+         operationDispatcher: OperationDispatcher,
+         timeoutManager: HTTPRequestTimeoutManagerType? = nil
+    ) {
         let config = URLSessionConfiguration.ephemeral
         config.httpMaximumConnectionsPerHost = 1
         config.timeoutIntervalForRequest = requestTimeout
@@ -71,6 +74,10 @@ class HTTPClient {
         self.authHeaders = HTTPClient.authorizationHeader(withAPIKey: apiKey)
         self.dateProvider = dateProvider
         self.operationDispatcher = operationDispatcher
+        self.requestTimeoutManager = timeoutManager ?? HTTPRequestTimeoutManager(
+            defaultTimeout: timeout,
+            dateProvider: dateProvider
+        )
     }
 
     /// - Parameter verificationMode: if `nil`, this will default to `SystemInfo.responseVerificationMode`
@@ -446,7 +453,7 @@ private extension HTTPClient {
         return result
     }
 
-    // swiftlint:disable:next function_parameter_count
+    // swiftlint:disable:next function_parameter_count function_body_length
     func handle(urlResponse: URLResponse?,
                 request: Request,
                 urlRequest: URLRequest,
@@ -461,6 +468,8 @@ private extension HTTPClient {
                                   data: data,
                                   error: networkError,
                                   requestStartTime: requestStartTime)
+
+        var requestTimeoutResult: HTTPRequestTimeoutManager.RequestResult = .other
 
         if let response = response {
             let httpURLResponse = urlResponse as? HTTPURLResponse
@@ -480,6 +489,11 @@ private extension HTTPClient {
                     Logger.debug(Strings.network.request_handled_by_load_shedder(request.httpRequest.path))
                 }
 
+                // Record successful response from the main backend
+                if !request.isFallbackURLRequest {
+                    requestTimeoutResult = .successOnMainBackend
+                }
+
             case let .failure(error):
                 let httpURLResponse = urlResponse as? HTTPURLResponse
 
@@ -492,8 +506,16 @@ private extension HTTPClient {
                     Logger.debug(Strings.network.request_handled_by_load_shedder(request.httpRequest.path))
                 }
 
+                // A timeout on a main backend URL for a request that has a fallback URL
+                if let error = networkError as? URLError, case .timedOut = error.code,
+                    !request.isFallbackURLRequest,
+                    request.httpRequest.path.supportsFallbackURLs {
+                    requestTimeoutResult = .timeoutOnMainBackendForFallbackSupportedEndpoint
+                }
+
                 retryScheduled = self.retryRequestWithNextFallbackHostIfNeeded(request: request,
                                                                                error: error)
+
                 if !retryScheduled {
                     retryScheduled = self.retryRequestIfNeeded(request: request,
                                                                httpURLResponse: httpURLResponse)
@@ -510,6 +532,8 @@ private extension HTTPClient {
                 $0.queuedRequests.insert(request.retriedRequest(), at: 0)
             }
         }
+
+        self.requestTimeoutManager.recordRequestResult(requestTimeoutResult)
 
         self.trackHttpRequestPerformedIfNeeded(request: request,
                                                host: urlRequest.url?.host,
@@ -580,6 +604,11 @@ private extension HTTPClient {
             }
         }
         #endif
+
+        finalURLRequest.timeoutInterval = requestTimeoutManager.timeout(
+            for: request.httpRequest.path,
+            isFallback: request.isFallbackURLRequest
+        )
 
         // swiftlint:disable:next redundant_void_return
         let task = self.session.dataTask(with: finalURLRequest) { (data, urlResponse, error) -> Void in
