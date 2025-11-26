@@ -879,14 +879,14 @@ platform :ios do
       derivedDataPath: "./build"
     )
 
-    bundle_id = "com.revenuecat.maestro.ios"
-    storekit_config_path = "#{base_path}/Examples/rc-maestro/rc-maestro/Resources/StoreKit/app787ddb07e6.storekit"
-
     # Install app to simulator
     UI.message("Installing app to simulator...")
     sh("xcrun", "simctl", "install", "booted", "#{base_path}/build/Build/Products/Debug-iphonesimulator/Maestro.app")
 
     if store == "app_store"
+      bundle_id = "com.revenuecat.maestro.ios"
+      storekit_config_path = "#{base_path}/Examples/rc-maestro/rc-maestro/Resources/StoreKit/app787ddb07e6.storekit"
+
       # Start file watcher in background
       UI.message("Starting StoreKit config file watcher...")
       watcher_script = "#{base_path}/fastlane/storekit_config_file_watcher.rb"
