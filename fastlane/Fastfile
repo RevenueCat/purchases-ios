@@ -886,17 +886,19 @@ platform :ios do
     UI.message("Installing app to simulator...")
     sh("xcrun", "simctl", "install", "booted", "#{base_path}/build/Build/Products/Debug-iphonesimulator/Maestro.app")
 
-    # Start file watcher in background
-    UI.message("Starting StoreKit config file watcher...")
-    watcher_script = "#{base_path}/fastlane/storekit_config_file_watcher.rb"
-    watcher_pid = Process.spawn(
-      "ruby", watcher_script,
-      bundle_id, storekit_config_path
-    )
+    if store == "app_store"
+      # Start file watcher in background
+      UI.message("Starting StoreKit config file watcher...")
+      watcher_script = "#{base_path}/fastlane/storekit_config_file_watcher.rb"
+      watcher_pid = Process.spawn(
+        "ruby", watcher_script,
+        bundle_id, storekit_config_path
+      )
 
-    # Give watcher time to start
-    sleep 1
-    UI.success("✓ StoreKit config watcher started (PID: #{watcher_pid})")
+      # Give watcher time to start
+      sleep 1
+      UI.success("✓ StoreKit config watcher started (PID: #{watcher_pid})")
+    end
 
     success = false
     begin
