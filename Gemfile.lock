@@ -6,7 +6,8 @@ GIT
 
 GIT
   remote: https://github.com/RevenueCat/fastlane-plugin-revenuecat_internal
-  revision: efca66388304a9ef267978e7b96b81a08af69525
+  revision: 1889d24f15771d25dbf04ee6143ff51c5d5ad3ca
+  branch: rickvdl/fix-scan-flaky-test-reruns
   specs:
     fastlane-plugin-revenuecat_internal (0.1.0)
       nokogiri
