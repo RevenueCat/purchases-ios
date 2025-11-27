@@ -12,7 +12,7 @@
 //  Created by Josh Holtz on 9/26/24.
 
 import Foundation
-@_spi(Internal) import RevenueCat
+import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2

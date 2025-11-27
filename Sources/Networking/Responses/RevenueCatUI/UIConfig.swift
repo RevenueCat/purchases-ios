@@ -116,7 +116,6 @@ public struct UIConfig: Codable, Equatable, Sendable {
     public var localizations: [String: [String: String]]
     public var variableConfig: VariableConfig
 
-    @_spi(Internal)
     public init(app: AppConfig,
                 localizations: [String: [String: String]],
                 variableConfig: VariableConfig) {
@@ -128,8 +127,6 @@ public struct UIConfig: Codable, Equatable, Sendable {
 
 #else
 
-public struct UIConfig: Codable, Equatable, Sendable {
-    public init() {}
-}
+public struct UIConfig: Codable, Equatable, Sendable {}
 
 #endif
