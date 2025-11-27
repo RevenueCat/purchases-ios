@@ -11,8 +11,3 @@ snapshots:
       - excludedPreviews:
           - type: regex
             value: ^(?!(PaywallsTester|RevenueCatUI)).*
-  macos:
-    runSettings:
-      - excludedPreviews:
-          - type: regex
-            value: .*AppList.*
