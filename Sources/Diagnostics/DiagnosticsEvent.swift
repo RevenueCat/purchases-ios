@@ -117,6 +117,7 @@ struct DiagnosticsEvent: Codable, Equatable {
         let price: Float?
         let currency: String?
         let reason: String?
+        let connectionErrorReason: ConnectionErrorReason?
 
         init(verificationResult: String? = nil,
              endpointName: String? = nil,
@@ -155,7 +156,8 @@ struct DiagnosticsEvent: Codable, Equatable {
              expirationDate: Date? = nil,
              price: Float? = nil,
              currency: String? = nil,
-             reason: String? = nil) {
+             reason: String? = nil,
+             connectionErrorReason: ConnectionErrorReason? = nil) {
             self.verificationResult = verificationResult
             self.endpointName = endpointName
             self.host = host
@@ -194,6 +196,7 @@ struct DiagnosticsEvent: Codable, Equatable {
             self.price = price
             self.currency = currency
             self.reason = reason
+            self.connectionErrorReason = connectionErrorReason
         }
 
         static let empty = Properties()

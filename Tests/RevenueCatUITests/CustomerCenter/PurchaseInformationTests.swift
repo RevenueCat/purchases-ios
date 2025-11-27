@@ -1645,6 +1645,148 @@ final class PurchaseInformationTests: TestCase {
         expect(mockProduct.sk1Product).toNot(beNil())
     }
 
+    func testSK1SubscriptionIsAppStoreRenewable() throws {
+        let customerInfo = CustomerInfoFixtures.customerInfoWithAppleSubscriptions
+        let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
+
+        let sk1Product = TestSK1Product(
+            productIdentifier: entitlement.productIdentifier,
+            price: 9.99,
+            priceLocale: Locale(identifier: "en_US"),
+            subscriptionPeriod: TestSK1SubscriptionPeriod(numberOfUnits: 1, unit: .month)
+        )
+        let mockProduct = StoreProduct(sk1Product: sk1Product)
+
+        let mockTransaction = MockTransaction(
+            productIdentifier: entitlement.productIdentifier,
+            store: .appStore,
+            type: .subscription(
+                isActive: true,
+                willRenew: true,
+                expiresDate: Date().addingTimeInterval(60*60*24*30),
+                isTrial: false,
+                ownershipType: .purchased
+            ),
+            isCancelled: false,
+            managementURL: nil,
+            price: .init(currency: "USD", amount: 9.99),
+            displayName: "Monthly",
+            periodType: .normal,
+            purchaseDate: Date(),
+            isSandbox: false,
+            isSubscription: true
+        )
+
+        let purchaseInfo = PurchaseInformation(
+            entitlement: entitlement,
+            subscribedProduct: mockProduct,
+            transaction: mockTransaction,
+            customerInfoRequestedDate: Date(),
+            dateFormatter: Self.mockDateFormatter,
+            numberFormatter: Self.mockNumberFormatter,
+            managementURL: nil,
+            localization: Self.mockLocalization
+        )
+
+        expect(purchaseInfo.isAppStoreRenewableSubscription).to(beTrue())
+        expect(purchaseInfo.isSubscription) == true
+        expect(purchaseInfo.store) == Store.appStore
+    }
+
+    func testSK2SubscriptionIsAppStoreRenewable() throws {
+        let customerInfo = CustomerInfoFixtures.customerInfoWithAppleSubscriptions
+        let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
+
+        let mockProduct = TestStoreProduct(
+            localizedTitle: "Monthly",
+            price: 9.99,
+            localizedPriceString: "$9.99",
+            productIdentifier: entitlement.productIdentifier,
+            productType: .autoRenewableSubscription,
+            localizedDescription: "Monthly subscription"
+        )
+
+        let mockTransaction = MockTransaction(
+            productIdentifier: entitlement.productIdentifier,
+            store: .appStore,
+            type: .subscription(
+                isActive: true,
+                willRenew: true,
+                expiresDate: Date().addingTimeInterval(60*60*24*30),
+                isTrial: false,
+                ownershipType: .purchased
+            ),
+            isCancelled: false,
+            managementURL: nil,
+            price: .init(currency: "USD", amount: 9.99),
+            displayName: "Monthly",
+            periodType: .normal,
+            purchaseDate: Date(),
+            isSandbox: false,
+            isSubscription: true
+        )
+
+        let purchaseInfo = PurchaseInformation(
+            entitlement: entitlement,
+            subscribedProduct: mockProduct.toStoreProduct(),
+            transaction: mockTransaction,
+            customerInfoRequestedDate: Date(),
+            dateFormatter: Self.mockDateFormatter,
+            numberFormatter: Self.mockNumberFormatter,
+            managementURL: nil,
+            localization: Self.mockLocalization
+        )
+
+        expect(purchaseInfo.isAppStoreRenewableSubscription).to(beTrue())
+        expect(purchaseInfo.isSubscription) == true
+        expect(purchaseInfo.productType) == StoreProduct.ProductType.autoRenewableSubscription
+    }
+
+    func testNonRenewableSubscriptionIsNotAppStoreRenewable() throws {
+        let mockProduct = TestStoreProduct(
+            localizedTitle: "Seasonal Pass",
+            price: 19.99,
+            localizedPriceString: "$19.99",
+            productIdentifier: "seasonal_pass",
+            productType: .nonRenewableSubscription,
+            localizedDescription: "3-month pass"
+        )
+
+        let mockTransaction = MockTransaction(
+            productIdentifier: "seasonal_pass",
+            store: .appStore,
+            type: .subscription(
+                isActive: true,
+                willRenew: false,
+                expiresDate: Date().addingTimeInterval(60*60*24*90),
+                isTrial: false,
+                ownershipType: .purchased
+            ),
+            isCancelled: false,
+            managementURL: nil,
+            price: .init(currency: "USD", amount: 19.99),
+            displayName: "Seasonal Pass",
+            periodType: .normal,
+            purchaseDate: Date().addingTimeInterval(-60*60*24),
+            isSandbox: false,
+            isSubscription: true
+        )
+
+        let purchaseInfo = PurchaseInformation(
+            entitlement: nil,
+            subscribedProduct: mockProduct.toStoreProduct(),
+            transaction: mockTransaction,
+            customerInfoRequestedDate: Date(),
+            dateFormatter: Self.mockDateFormatter,
+            numberFormatter: Self.mockNumberFormatter,
+            managementURL: nil,
+            localization: Self.mockLocalization
+        )
+
+        expect(purchaseInfo.isAppStoreRenewableSubscription).to(beFalse())
+        expect(purchaseInfo.productType) == StoreProduct.ProductType.nonRenewableSubscription
+    }
+
 }
 
 private class TestSK1Product: SKProduct, @unchecked Sendable {
@@ -1670,4 +1812,19 @@ private class TestSK1Product: SKProduct, @unchecked Sendable {
 
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     override var subscriptionPeriod: SKProductSubscriptionPeriod? { _subscriptionPeriod }
+}
+
+@available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
+private class TestSK1SubscriptionPeriod: SKProductSubscriptionPeriod, @unchecked Sendable {
+    private let _numberOfUnits: Int
+    private let _unit: SKProduct.PeriodUnit
+
+    init(numberOfUnits: Int, unit: SKProduct.PeriodUnit) {
+        self._numberOfUnits = numberOfUnits
+        self._unit = unit
+        super.init()
+    }
+
+    override var numberOfUnits: Int { _numberOfUnits }
+    override var unit: SKProduct.PeriodUnit { _unit }
 }

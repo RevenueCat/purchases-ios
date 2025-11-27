@@ -1,15 +1,17 @@
 ## RevenueCat SDK
 ### 🐞 Bugfixes
-* Fix countdown component for older ios version (#5799) via Josh Holtz (@joshdholtz)
+* [MON-1122] Changes the rounding mode to `.down` instead of `.plain` (#5821) via Pol Piella Abadia (@polpielladev)
 
 ## RevenueCatUI SDK
 ### Paywallv2
-#### ✨ New Features
-* Paywalls countdown component (#5790) via Josh Holtz (@joshdholtz)
+#### 🐞 Bugfixes
+* Select default package on `BottomSheetView` dismissal (#5797) via Cesar de la Vega (@vegaro)
+* Set paywall as non-scrolling if shorter than screen (#5857) via Cesar de la Vega (@vegaro)
 
 ### 🔄 Other Changes
-* Fix slack_backend_integration_test_results Fastlane action crashing during integration / e2e tests (#5798) via Rick (@rickvdl)
-* Backend integration / E2E test Slack alerting + health check pings (#5792) via Rick (@rickvdl)
-* Reduce flakiness of some tests (#5724) via Antonio Pallares (@ajpallares)
-* Support for flushing non subscription in the Events Manager (#5726) via Pol Miro (@polmiro)
-* Ensure that multiline trailing commas result in an error (#5772) via Jacob Rakidzich (@JZDesign)
+* Bump fastlane from 2.228.0 to 2.229.0 (#5855) via dependabot[bot] (@dependabot[bot])
+* Track `connection_error_reason` property in diagnostics for HTTP errors (#5860) via Rick (@rickvdl)
+* Add client side timeout logic for endpoints that support fallback URLs (#5760) via Rick (@rickvdl)
+* Prevent CI from editing root Package.resolved (#5856) via Antonio Pallares (@ajpallares)
+* Fixed daily integration-tests-all run missing the Circle CI context (#5853) via Rick (@rickvdl)
+* Bump fastlane-plugin-revenuecat_internal from `083ced9` to `efca663` (#5854) via dependabot[bot] (@dependabot[bot])

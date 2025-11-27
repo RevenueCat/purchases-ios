@@ -47,9 +47,7 @@ struct AppList: View {
 }
 
 #Preview {
-    // November 2025: this view is always flaky in Emerge snapshots running on macOS, disabling on macOS for now
-    #if !os(macOS)
+    // November 2025: this view is always flaky in Emerge snapshots running on macOS, excluded via emerge_config.yaml
     AppList()
         .environmentObject(ApplicationData())
-    #endif
 }
