@@ -73,7 +73,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
         // Note: this test passes only because the method `clearCache`
         // is manually executed. `ProductsManager` does not detect Storefront changes to invalidate the
-        // cache. The changes are now managed by `StoreKit2StorefrontListenerDelegate`.
+        // cache. The changes are now managed by `PurchasesOrchestrator`.
         manager.clearCache()
 
         receivedProducts = try await manager.products(withIdentifiers: Set([identifier]))
@@ -103,7 +103,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
         // Note: this test passes only because the method `clearCache`
         // is manually executed. `ProductsManager` does not detect Storefront changes to invalidate the
-        // cache. The changes are now managed by `StoreKit2StorefrontListenerDelegate`.
+        // cache. The changes are now managed by `PurchasesOrchestrator`.
         manager.clearCache()
 
         receivedProducts = try await manager.products(withIdentifiers: Set([identifier]))
@@ -139,7 +139,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
         // Note: this test passes only because the method `clearCache`
         // is manually executed. `ProductsManager` does not detect Storefront changes to invalidate the
-        // cache. The changes are now managed by `StoreKit2StorefrontListenerDelegate`.
+        // cache. The changes are now managed by `PurchasesOrchestrator`.
         manager.clearCache()
 
         receivedProducts = try await manager.products(withIdentifiers: Set([identifier]))
@@ -177,7 +177,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
         // Note: this test passes only because the method `clearCache`
         // is manually executed. `ProductsManager` does not detect Storefront changes to invalidate the
-        // cache. The changes are now managed by `StoreKit2StorefrontListenerDelegate`.
+        // cache. The changes are now managed by `PurchasesOrchestrator`.
         manager.clearCache()
 
         receivedProducts = try await manager.products(withIdentifiers: Set([identifier]))
