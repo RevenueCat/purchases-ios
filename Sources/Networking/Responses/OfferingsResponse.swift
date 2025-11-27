@@ -51,10 +51,8 @@ struct OfferingsResponse {
 
     struct Config {
         @DefaultDecodable.EmptyDictionary
-        var priceFormattingRuleSets: [
-            // storefront country code -> ruleset
-            String: PriceFormattingRuleSet
-        ]
+        // storefront country code -> ruleset
+        var priceFormattingRuleSets: [String: PriceFormattingRuleSet]
 
         init(priceFormattingRuleSets: [String: PriceFormattingRuleSet]) {
             self.priceFormattingRuleSets = priceFormattingRuleSets
@@ -102,11 +100,11 @@ extension OfferingsResponse: HTTPResponseBody {}
 
 /*
  Contains a set of rules that will be used when formatting a price
- Currrently only supports overriding the currencySymbol per currency
+ Currently only supports overriding the currencySymbol per currency
  */
 struct PriceFormattingRuleSet: Sendable {
 
-    // currencyCode: CurrencySymbolOverride
+    // currencyCode -> CurrencySymbolOverride
     private var currencySymbolOverrides: [String: CurrencySymbolOverride]
 
     init(currencySymbolOverrides: [String: CurrencySymbolOverride]) {

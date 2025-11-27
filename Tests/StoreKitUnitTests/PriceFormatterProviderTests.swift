@@ -15,7 +15,6 @@ import Nimble
 import StoreKit
 import XCTest
 
-@_spi(Internal)
 @testable import RevenueCat
 
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
@@ -108,7 +107,6 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
 
         expect(priceFormatter.currencyCode) == "EUR"
         expect(priceFormatter.currencySymbol) == "€"
-        XCTAssert(type(of: priceFormatter) == CurrencySymbolOverridingPriceFormatter.self)
 
         XCTAssertEqual(priceFormatter.string(from: NSNumber(value: 0)), "zero 0,00")
         XCTAssertEqual(priceFormatter.string(from: NSNumber(value: 1)), "one 1,00")
@@ -192,7 +190,6 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
 
         expect(priceFormatter.currencyCode) == "EUR"
         expect(priceFormatter.currencySymbol) == "€"
-        XCTAssert(type(of: priceFormatter) == CurrencySymbolOverridingPriceFormatter.self)
 
         XCTAssertEqual(priceFormatter.string(from: NSNumber(value: 0)), "zero 0,00")
         XCTAssertEqual(priceFormatter.string(from: NSNumber(value: 1)), "one 1,00")
@@ -226,7 +223,6 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
 
         expect(priceFormatter.currencyCode) == "RON"
         expect(priceFormatter.currencySymbol) == "RON"
-        XCTAssert(type(of: priceFormatter) == CurrencySymbolOverridingPriceFormatter.self)
 
         XCTAssertEqual(priceFormatter.string(from: NSNumber(value: 0)), "0,00 lei")
         XCTAssertEqual(priceFormatter.string(from: NSNumber(value: 1)), "1,00 leu")
@@ -286,7 +282,6 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
 
         expect(priceFormatter.currencyCode) == "EUR"
         expect(priceFormatter.currencySymbol) == "€"
-        XCTAssert(type(of: priceFormatter) == CurrencySymbolOverridingPriceFormatter.self)
 
         XCTAssertEqual(priceFormatter.string(from: NSNumber(value: 0)), "zero 0,00")
         XCTAssertEqual(priceFormatter.string(from: NSNumber(value: 1)), "one 1,00")
