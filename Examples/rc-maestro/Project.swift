@@ -5,6 +5,7 @@ import Foundation
 let project = Project(
     name: "Maestro",
     organizationName: .revenueCatOrgName,
+    packages: .projectPackages,
     settings: .appProject,
     targets: [
         .target(
@@ -34,7 +35,7 @@ let project = Project(
                 .revenueCat,
                 .revenueCatUI,
                 .storeKit
-            ],
+            ].compactMap { $0 },
             settings: .appTarget
         )
     ],

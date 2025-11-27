@@ -13,7 +13,7 @@ var projects: [Path] = [
     "./Projects/PaywallValidationTester"
 ]
 
-if Environment.local {
+if Environment.dependencyMode == .localXcodeProject {
     projects.append("./Projects/RevenueCat")
     projects.append("./Projects/RevenueCatUI")
 } else {
