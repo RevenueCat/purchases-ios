@@ -75,21 +75,21 @@ class PriceFormattingRuleSetIntegrationTests: StoreKitConfigTestCase {
             uiConfig: .init(
                 app: .init(colors: [:], fonts: [:]),
                 localizations: [:],
-                variableConfig: .init(variableCompatibilityMap: [:], functionCompatibilityMap: [:]),
-                priceFormattingRuleSets: [
-                    // Use ROU to match the storefront country code
-                    "ROU": .init(currencySymbolOverrides: [
-                        "RON": .init(
-                            zero: "lei",
-                            one: "leu",
-                            two: "lei",
-                            few: "lei",
-                            many: "lei",
-                            other: "lei"
-                        )
-                    ])
-                ]
-            )
+                variableConfig: .init(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
+            ),
+            config: .init(priceFormattingRuleSets: [
+                // Use ROU to match the storefront country code
+                "ROU": .init(currencySymbolOverrides: [
+                    "RON": .init(
+                        zero: "lei",
+                        one: "leu",
+                        two: "lei",
+                        few: "lei",
+                        many: "lei",
+                        other: "lei"
+                    )
+                ])
+            ])
         )
 
         mockOfferingsAPI.stubbedGetOfferingsCompletionResult = .success(
@@ -148,9 +148,9 @@ class PriceFormattingRuleSetIntegrationTests: StoreKitConfigTestCase {
             uiConfig: .init(
                 app: .init(colors: [:], fonts: [:]),
                 localizations: [:],
-                variableConfig: .init(variableCompatibilityMap: [:], functionCompatibilityMap: [:]),
-                priceFormattingRuleSets: [:]
-            )
+                variableConfig: .init(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
+            ),
+            config: .init(priceFormattingRuleSets: [:])
         )
 
         mockOfferingsAPI.stubbedGetOfferingsCompletionResult = .success(
@@ -210,20 +210,20 @@ class PriceFormattingRuleSetIntegrationTests: StoreKitConfigTestCase {
             uiConfig: .init(
                 app: .init(colors: [:], fonts: [:]),
                 localizations: [:],
-                variableConfig: .init(variableCompatibilityMap: [:], functionCompatibilityMap: [:]),
-                priceFormattingRuleSets: [
-                    "ROU": .init(currencySymbolOverrides: [
-                        "RON": .init(
-                            zero: "lei",
-                            one: "leu",
-                            two: "lei",
-                            few: "lei",
-                            many: "lei",
-                            other: "lei"
-                        )
-                    ])
-                ]
-            )
+                variableConfig: .init(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
+            ),
+            config: .init(priceFormattingRuleSets: [
+                "ROU": .init(currencySymbolOverrides: [
+                    "RON": .init(
+                        zero: "lei",
+                        one: "leu",
+                        two: "lei",
+                        few: "lei",
+                        many: "lei",
+                        other: "lei"
+                    )
+                ])
+            ])
         )
 
         mockOfferingsAPI.stubbedGetOfferingsCompletionResult = .success(

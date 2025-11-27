@@ -348,7 +348,7 @@ private extension OfferingsManager {
             return
         }
 
-        let ruleSet = response.uiConfig?.priceFormattingRuleSets[storefrontCountryCode]
+        let ruleSet = response.config?.priceFormattingRuleSets[storefrontCountryCode]
         self.productsManager.updatePriceFormattingRuleSet(ruleSet)
     }
 

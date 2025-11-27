@@ -124,7 +124,8 @@ class PaywallPreviewResourcesLoader {
                 offerings: offeringsWithPackages,
                 placements: offeringsResponse.placements,
                 targeting: offeringsResponse.targeting,
-                uiConfig: offeringsResponse.uiConfig
+                uiConfig: offeringsResponse.uiConfig,
+                config: offeringsResponse.config
             )
 
             let offerings = OfferingsFactory().createOfferings(from: [
