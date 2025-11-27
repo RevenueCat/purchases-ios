@@ -239,8 +239,7 @@ enum PreviewMock {
         variableConfig: .init(
             variableCompatibilityMap: [:],
             functionCompatibilityMap: [:]
-        ),
-        priceFormattingRuleSets: [:]
+        )
     )
 
 }
