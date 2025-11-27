@@ -72,11 +72,7 @@ class PriceFormattingRuleSetIntegrationTests: StoreKitConfigTestCase {
             )],
             placements: nil,
             targeting: nil,
-            uiConfig: .init(
-                app: .init(colors: [:], fonts: [:]),
-                localizations: [:],
-                variableConfig: .init(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
-            ),
+            uiConfig: nil,
             config: .init(priceFormattingRuleSets: [
                 // Use ROU to match the storefront country code
                 "ROU": .init(currencySymbolOverrides: [
@@ -145,11 +141,7 @@ class PriceFormattingRuleSetIntegrationTests: StoreKitConfigTestCase {
             )],
             placements: nil,
             targeting: nil,
-            uiConfig: .init(
-                app: .init(colors: [:], fonts: [:]),
-                localizations: [:],
-                variableConfig: .init(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
-            ),
+            uiConfig: nil,
             config: .init(priceFormattingRuleSets: [:])
         )
 
@@ -207,11 +199,7 @@ class PriceFormattingRuleSetIntegrationTests: StoreKitConfigTestCase {
             )],
             placements: nil,
             targeting: nil,
-            uiConfig: .init(
-                app: .init(colors: [:], fonts: [:]),
-                localizations: [:],
-                variableConfig: .init(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
-            ),
+            uiConfig: nil,
             config: .init(priceFormattingRuleSets: [
                 "ROU": .init(currencySymbolOverrides: [
                     "RON": .init(
