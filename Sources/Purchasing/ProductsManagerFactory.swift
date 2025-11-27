@@ -31,7 +31,7 @@ enum ProductsManagerFactory {
                 // Get the ruleset from cached offerings if available
                 var cachedRuleSet: PriceFormattingRuleSet?
                 if let storefrontCountryCode = systemInfo.storefront?.countryCode {
-                    cachedRuleSet = deviceCache.cachedOfferings?.response.uiConfig?
+                    cachedRuleSet = deviceCache.cachedOfferings?.response.config?
                         .priceFormattingRuleSets[storefrontCountryCode]
                 }
 

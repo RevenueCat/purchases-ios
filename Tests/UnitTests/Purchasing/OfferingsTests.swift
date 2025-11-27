@@ -138,7 +138,8 @@ class OfferingsTests: TestCase {
             ],
             placements: nil,
             targeting: nil,
-            uiConfig: nil
+            uiConfig: nil,
+            config: nil
         )
         let offerings = self.offeringsFactory.createOfferings(
             from: [:],
@@ -184,7 +185,8 @@ class OfferingsTests: TestCase {
             ],
             placements: nil,
             targeting: nil,
-            uiConfig: nil
+            uiConfig: nil,
+            config: nil
         )
         let offerings = try XCTUnwrap(
             self.offeringsFactory.createOfferings(
@@ -255,7 +257,8 @@ class OfferingsTests: TestCase {
                                 "placement_name_with_nil": nil
                               ])),
             targeting: .init(revision: 1, ruleId: "abc123"),
-            uiConfig: nil
+            uiConfig: nil,
+            config: nil
         )
         let offerings = try XCTUnwrap(
             self.offeringsFactory.createOfferings(
@@ -339,7 +342,8 @@ class OfferingsTests: TestCase {
                                 "placement_name_with_nil": nil
                               ])),
             targeting: nil,
-            uiConfig: nil
+            uiConfig: nil,
+            config: nil
         )
         let offerings = try XCTUnwrap(
             self.offeringsFactory.createOfferings(
@@ -380,7 +384,8 @@ class OfferingsTests: TestCase {
             ],
             placements: nil,
             targeting: .init(revision: 1, ruleId: "abc123"),
-            uiConfig: nil
+            uiConfig: nil,
+            config: nil
         )
         let offerings = try XCTUnwrap(
             self.offeringsFactory.createOfferings(
@@ -463,7 +468,8 @@ class OfferingsTests: TestCase {
             ],
             placements: nil,
             targeting: nil,
-            uiConfig: nil
+            uiConfig: nil,
+            config: nil
         )
 
         let offerings = try XCTUnwrap(
@@ -617,7 +623,8 @@ class OfferingsTests: TestCase {
             ],
             placements: nil,
             targeting: nil,
-            uiConfig: nil
+            uiConfig: nil,
+            config: nil
         )
         let offerings = try XCTUnwrap(
             self.offeringsFactory.createOfferings(from: storeProductsByID,
@@ -821,7 +828,8 @@ private extension OfferingsTests {
             ],
             placements: nil,
             targeting: nil,
-            uiConfig: nil
+            uiConfig: nil,
+            config: nil
         )
         let offerings = try XCTUnwrap(
             offeringsFactory.createOfferings(

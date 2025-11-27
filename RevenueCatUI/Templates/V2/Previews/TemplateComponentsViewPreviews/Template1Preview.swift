@@ -164,8 +164,7 @@ private enum Template1Preview {
             variableConfig: .init(
                 variableCompatibilityMap: [:],
                 functionCompatibilityMap: [:]
-            ),
-            priceFormattingRuleSets: [:]
+            )
         ),
         data: data
     )

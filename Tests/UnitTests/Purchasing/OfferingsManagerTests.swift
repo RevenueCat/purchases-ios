@@ -174,7 +174,8 @@ extension OfferingsManagerTests {
                                                offerings: [],
                                                placements: nil,
                                                targeting: nil,
-                                               uiConfig: nil),
+                                               uiConfig: nil,
+                                               config: nil),
                                httpResponseOriginalSource: .mainServer)
             )
         self.mockOfferingsFactory.emptyOfferings = true
@@ -229,7 +230,8 @@ extension OfferingsManagerTests {
                                                offerings: [],
                                                placements: nil,
                                                targeting: nil,
-                                               uiConfig: nil),
+                                               uiConfig: nil,
+                                               config: nil),
                                httpResponseOriginalSource: .mainServer)
         )
         self.mockOfferingsFactory.emptyOfferings = true
@@ -785,7 +787,8 @@ private extension OfferingsManagerTests {
                 ],
                 placements: nil,
                 targeting: nil,
-                uiConfig: nil
+                uiConfig: nil,
+                config: nil
             ),
             httpResponseOriginalSource: .mainServer
         )
@@ -807,7 +810,8 @@ private extension OfferingsManagerTests {
                 ],
                 placements: nil,
                 targeting: nil,
-                uiConfig: nil
+                uiConfig: nil,
+                config: nil
             ),
             httpResponseOriginalSource: .mainServer
         )
