@@ -1,27 +1,17 @@
 ## RevenueCat SDK
 ### 🐞 Bugfixes
-* Fix: Ensure the initial tab selects the package on first appearance (#5850) via Jacob Rakidzich (@JZDesign)
-* Fix icon not updating on selection of package (#5846) via Jacob Rakidzich (@JZDesign)
-* Fix Crashes: Move large object cacheing off of user defaults to file storage (#5652) via Jacob Rakidzich (@JZDesign)
-* Prevent duplicate post receipt requests (#5795) via Antonio Pallares (@ajpallares)
+* [MON-1122] Changes the rounding mode to `.down` instead of `.plain` (#5821) via Pol Piella Abadia (@polpielladev)
 
 ## RevenueCatUI SDK
-### Customer Center
-#### ✨ New Features
-* CC-582 |  Allow for support ticket creation (#5779) via Rosie Watson (@RosieWatson)
+### Paywallv2
 #### 🐞 Bugfixes
-* Fix SK1 products always showing Lifetime badge (#5811) via Cesar de la Vega (@vegaro)
+* Select default package on `BottomSheetView` dismissal (#5797) via Cesar de la Vega (@vegaro)
+* Set paywall as non-scrolling if shorter than screen (#5857) via Cesar de la Vega (@vegaro)
 
 ### 🔄 Other Changes
-* Allow downloads of paywall assets in parallel when warming up cache (#5849) via Antonio Pallares (@ajpallares)
-* Simplify cache warming (#5847) via Antonio Pallares (@ajpallares)
-* Update backend integration test reference snapshots (#5839) via Rick (@rickvdl)
-* Add missing files to workspace (#5833) via Rick (@rickvdl)
-* Runs plugin actions from correct directory (#5830) via JayShortway (@JayShortway)
-* Clearing documents and cache directories used by the SDK in tests (#5831) via Rick (@rickvdl)
-* Fixed passing major version as integer to send Slack alert action which accepts a string instead (#5829) via Rick (@rickvdl)
-* Uses some git+GitHub lanes from Fastlane plugin (#5823) via JayShortway (@JayShortway)
-* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5824) via RevenueCat Git Bot (@RCGitBot)
-* Fix strong retain cycle on `Purchases` instance (#5818) via Antonio Pallares (@ajpallares)
-* Removed Slack actions from CircleCI config for release jobs that don't add much value and were not working before (#5808) via Rick (@rickvdl)
-* Migrate to slack-secrets context again after fixing conflict between orb and Fastlane Slack action (#5806) via Rick (@rickvdl)
+* Bump fastlane from 2.228.0 to 2.229.0 (#5855) via dependabot[bot] (@dependabot[bot])
+* Track `connection_error_reason` property in diagnostics for HTTP errors (#5860) via Rick (@rickvdl)
+* Add client side timeout logic for endpoints that support fallback URLs (#5760) via Rick (@rickvdl)
+* Prevent CI from editing root Package.resolved (#5856) via Antonio Pallares (@ajpallares)
+* Fixed daily integration-tests-all run missing the Circle CI context (#5853) via Rick (@rickvdl)
+* Bump fastlane-plugin-revenuecat_internal from `083ced9` to `efca663` (#5854) via dependabot[bot] (@dependabot[bot])
