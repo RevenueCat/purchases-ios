@@ -21,6 +21,7 @@ let allDeploymentTargets: DeploymentTargets = .multiplatform(
 let project = Project(
     name: "PaywallValidationTester",
     organizationName: .revenueCatOrgName,
+    packages: .projectPackages,
     settings: .appProject,
     targets: [
         .target(
@@ -42,7 +43,7 @@ let project = Project(
             dependencies: [
                 .revenueCat,
                 .revenueCatUI
-            ]
+            ].compactMap { $0 }
         )
     ],
     schemes: [

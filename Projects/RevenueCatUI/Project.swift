@@ -12,6 +12,7 @@ let allDeploymentTargets: DeploymentTargets = .multiplatform(
 let project = Project(
     name: "RevenueCatUI",
     organizationName: .revenueCatOrgName,
+    packages: .projectPackages,
     settings: .framework,
     targets: [
         .target(
@@ -26,7 +27,7 @@ let project = Project(
             ],
             dependencies: [
                 .revenueCat
-            ]
+            ].compactMap { $0 }
         ),
 
                 // MARK: – RevenueCat Tests
