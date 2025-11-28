@@ -94,7 +94,10 @@ let package = Package(
                 resources: [
                     .copy("../Sources/PrivacyInfo.xcprivacy")
                 ],
-                swiftSettings: [visionOSSetting] + ciCompilerFlags + additionalCompilerFlags),
+                swiftSettings: [
+                    .define("ENABLE_AD_EVENTS_TRACKING"),
+                    visionOSSetting
+                ] + ciCompilerFlags + additionalCompilerFlags),
         .target(name: "RevenueCat_CustomEntitlementComputation",
                 path: "CustomEntitlementComputation",
                 exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"],
