@@ -15,7 +15,7 @@
 final class PriceFormattingRuleSetProvider: @unchecked Sendable {
     private let priceFormattingRuleSet: Atomic<PriceFormattingRuleSet?>
 
-    init(priceFormattingRuleSet: PriceFormattingRuleSet? = nil) {
+    init(priceFormattingRuleSet: PriceFormattingRuleSet?) {
         self.priceFormattingRuleSet = Atomic(priceFormattingRuleSet)
     }
 
@@ -31,6 +31,4 @@ final class PriceFormattingRuleSetProvider: @unchecked Sendable {
     func updatePriceFormattingRuleSet(_ ruleSet: PriceFormattingRuleSet?) {
         self.priceFormattingRuleSet.value = ruleSet
     }
-
-    static let empty = PriceFormattingRuleSetProvider(priceFormattingRuleSet: nil)
 }

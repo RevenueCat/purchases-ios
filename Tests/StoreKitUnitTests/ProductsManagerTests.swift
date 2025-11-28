@@ -188,10 +188,11 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         expect(unwrappedFirstProduct.localizedPricePerMonth) == "e 4,99"
     }
 
+    // swiftlint:disable line_length
     fileprivate func createManager(storeKitVersion: StoreKitVersion,
                                    storefront: StorefrontType? = nil,
                                    diagnosticsTracker: DiagnosticsTrackerType? = nil,
-                                   priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider = .empty
+                                   priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider = .init(priceFormattingRuleSet: nil)
         ) -> ProductsManager {
         let platformInfo = Purchases.PlatformInfo(flavor: "xyz", version: "123")
         let systemInfo = MockSystemInfo(
@@ -207,7 +208,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
             priceFormattingRuleSetProvider: priceFormattingRuleSetProvider
         )
     }
-
+    // swiftlint:enable line_length
 }
 
 // swiftlint:disable type_name
