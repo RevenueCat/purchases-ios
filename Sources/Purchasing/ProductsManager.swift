@@ -24,7 +24,7 @@ class ProductsManager: NSObject, ProductsManagerType {
     private let diagnosticsTracker: DiagnosticsTrackerType?
     private let systemInfo: SystemInfo
     private let dateProvider: DateProvider
-    let priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider
+    private let priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider
 
     private let _productsFetcherSK2: (any Sendable)?
 
@@ -40,7 +40,7 @@ class ProductsManager: NSObject, ProductsManagerType {
         systemInfo: SystemInfo,
         requestTimeout: TimeInterval,
         dateProvider: DateProvider = DateProvider(),
-        priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider = .empty
+        priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider = .init(priceFormattingRuleSet: nil)
     ) {
         self.priceFormattingRuleSetProvider = priceFormattingRuleSetProvider
         self.productsFetcherSK1 = ProductsFetcherSK1(productsRequestFactory: productsRequestFactory,

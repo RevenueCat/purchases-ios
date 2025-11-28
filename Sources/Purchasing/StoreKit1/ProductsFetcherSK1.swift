@@ -36,7 +36,7 @@ final class ProductsFetcherSK1: NSObject {
     ///     - Retries up to ``Self.numberOfRetries``
     ///     - Timeout specified by this parameter
     init(productsRequestFactory: ProductsRequestFactory = ProductsRequestFactory(),
-         priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider = .empty,
+         priceFormattingRuleSetProvider: PriceFormattingRuleSetProvider = .init(priceFormattingRuleSet: nil),
          requestTimeout: TimeInterval) {
         self.productsRequestFactory = productsRequestFactory
         self.priceFormattingRuleSetProvider = priceFormattingRuleSetProvider
