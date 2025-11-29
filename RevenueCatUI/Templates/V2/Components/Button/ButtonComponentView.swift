@@ -118,10 +118,11 @@ struct ButtonComponentView: View {
         let (customerInfo, success) = try await self.purchaseHandler.restorePurchases()
         if success {
             Logger.debug(Strings.restored_purchases)
-            self.purchaseHandler.setRestored(customerInfo)
         } else {
             Logger.debug(Strings.restore_purchases_with_empty_result)
         }
+
+        self.purchaseHandler.setRestored(customerInfo)
     }
 
     private func navigateTo(destination: ButtonComponentViewModel.Destination) {
