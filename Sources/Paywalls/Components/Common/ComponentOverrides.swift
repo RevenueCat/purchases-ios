@@ -116,8 +116,8 @@ public extension PaywallComponent {
                     let packages = try container.decode([String].self, forKey: .packages)
                     self = .selectedPackage(operand, packages)
                 case .introOffer:
-                    let operand = try container.decode(EqualityOperatorType.self, forKey: .operator)
-                    let value = try container.decode(Bool.self, forKey: .value)
+                    let operand = try container.decodeIfPresent(EqualityOperatorType.self, forKey: .operator) ?? .equals
+                    let value = try container.decodeIfPresent(Bool.self, forKey: .value) ?? true
                     self = .introOffer(operand, value)
                 case .anyIntroOffer:
                     let operand = try container.decode(EqualityOperatorType.self, forKey: .operator)
@@ -157,7 +157,7 @@ public extension PaywallComponent {
             case orientation = "orientation"
             case screenSize = "screen_size"
             case selectedPackage = "selected_package"
-            case introOffer = "introductory_offer"
+            case introOffer = "intro_offer"
             case anyIntroOffer = "introductory_offer_available"
             case promoOffer = "promo_offer"
             case anyPromoOffer = "promo_offer_available"
