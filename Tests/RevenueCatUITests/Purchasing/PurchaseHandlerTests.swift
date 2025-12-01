@@ -154,9 +154,10 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.actionInProgress) == false
         expect(handler.restoreInProgress) == false
 
-        handler.setRestored(TestData.customerInfo)
+        handler.setRestored(TestData.customerInfo, success: false)
 
-        expect(handler.restoredCustomerInfo) === TestData.customerInfo
+        expect(handler.restoredCustomerInfo?.customerInfo) === TestData.customerInfo
+        expect(handler.restoredCustomerInfo?.success) == false
         expect(handler.purchaseResult).to(beNil())
         expect(handler.packageBeingPurchased).to(beNil())
         expect(handler.actionInProgress) == false

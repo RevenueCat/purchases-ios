@@ -545,8 +545,11 @@ private struct PresentingPaywallModifier: ViewModifier {
         }
         .onRestoreCompleted { customerInfo in
             self.restoreCompleted?(customerInfo)
+        }
+        .onPreferenceChange(RestoredCustomerInfoPreferenceKey.self) { result in
+            guard let result else { return }
 
-            if !self.shouldDisplay(customerInfo) {
+            if result.success && !self.shouldDisplay(result.customerInfo) {
                 self.close()
             }
         }
