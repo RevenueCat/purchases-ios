@@ -33,8 +33,8 @@ struct StackComponentView: View {
     @Environment(\.componentViewState)
     private var componentViewState
 
-    @Environment(\.screenCondition)
-    private var screenCondition
+    @EnvironmentObject
+    private var screenCondition: ScreenCondition
 
     @Environment(\.colorScheme)
     private var colorScheme
