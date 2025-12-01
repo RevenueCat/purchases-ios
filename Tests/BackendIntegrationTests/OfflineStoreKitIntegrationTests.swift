@@ -319,7 +319,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         try await self.verifyEntitlementWentThrough(info1)
 
         // 4. Ensure transaction is finished
-        self.verifyTransactionWasFinished()
+        self.verifyAnyTransactionWasFinished()
 
         // 5. Restart app
         try self.purchases.invalidateCustomerInfoCache()
