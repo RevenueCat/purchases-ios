@@ -43,7 +43,7 @@ let project = Project(
                 .revenueCat,
                 .revenueCatUI,
                 .storeKit
-            ].compactMap { $0 },
+            ],
             settings: .appTarget
         )
     ],

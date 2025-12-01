@@ -89,7 +89,7 @@ let project = Project(
                 .revenueCat,
                 .revenueCatUI,
                 .receiptparser,
-            ].compactMap { $0 },
+            ],
             settings: .framework
         ),
     ],

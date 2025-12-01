@@ -47,7 +47,7 @@ let project = Project(
             ),
             dependencies: [
                 .revenueCat
-            ].compactMap { $0 },
+            ],
             metadata: .metadata(tags: ["APITester"])
         ),
 
@@ -67,7 +67,7 @@ let project = Project(
             ),
             dependencies: [
                 .revenueCat
-            ].compactMap { $0 },
+            ],
             metadata: .metadata(tags: ["APITester"])
         ),
 
@@ -87,7 +87,7 @@ let project = Project(
             ),
             dependencies: [
                 .receiptparser
-            ].compactMap { $0 },
+            ],
             metadata: .metadata(tags: ["APITester"])
         ),
 
@@ -112,7 +112,7 @@ let project = Project(
             ),
             dependencies: [
                 .revenueCatUI
-            ].compactMap { $0 },
+            ],
             metadata: .metadata(tags: ["APITester"])
         ),
 
