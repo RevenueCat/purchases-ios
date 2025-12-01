@@ -300,7 +300,10 @@ extension BaseStoreKitIntegrationTests {
         return try XCTUnwrap(transactions.first)
     }
 
-    static let finishingTransactionLog = "Finishing transaction"
+    static let finishingAnyTransactionLog = "Finishing transaction"
+    static func finishingSpecificTransactionLog(transaction: StoreTransaction) -> String {
+        return "Finishing transaction '\(transaction.id)' for product '\(transaction.productIdentifier)'"
+    }
 
 }
 
