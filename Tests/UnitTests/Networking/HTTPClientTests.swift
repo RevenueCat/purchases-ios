@@ -1265,7 +1265,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         )
     }
 
-    func testFullHTTPRequestTimeoutFlow() {
+    func testFullHTTPRequestTimeoutFlow() async {
 
         enum MainBackendTimeoutRequestPath: HTTPRequestPath {
             static let serverHostURL = URL(string: "http://10.255.255.255")! // Unroutable IP to force a timeout
@@ -1335,7 +1335,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             return .emptySuccessResponse()
         }
 
-        waitUntil(timeout: .seconds(Int(defaultRequestTimeout) + 1)) { completion in
+        await waitUntil(timeout: .seconds(Int(defaultRequestTimeout) + 1)) { completion in
             self.client.perform(firstRequest) { (_: DataResponse) in
                 // A new request that supports fallback to the main backend
                 // should use the default timeout since previously a timeout was received

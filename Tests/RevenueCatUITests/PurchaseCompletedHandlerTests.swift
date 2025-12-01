@@ -228,7 +228,7 @@ class PurchaseCompletedHandlerTests: TestCase {
         Task {
             _ = try await Self.purchaseHandler.restorePurchases()
             // Simulates what `RestorePurchasesButton` does after dismissing the alert.
-            Self.purchaseHandler.setRestored(TestData.customerInfo)
+            Self.purchaseHandler.setRestored(TestData.customerInfo, success: false)
         }
 
         expect(customerInfo).toEventually(be(TestData.customerInfo))

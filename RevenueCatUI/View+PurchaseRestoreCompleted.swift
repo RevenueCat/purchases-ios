@@ -482,9 +482,9 @@ private struct OnRestoreCompletedModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .onPreferenceChange(RestoredCustomerInfoPreferenceKey.self) { customerInfo in
-                if let customerInfo {
-                    self.handler(customerInfo)
+            .onPreferenceChange(RestoredCustomerInfoPreferenceKey.self) { result in
+                if let result {
+                    self.handler(result.customerInfo)
                 }
             }
     }

@@ -69,7 +69,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
     }
 
     func testGetCustomerInfoCaching() async throws {
-        let info1 = try await self.purchases.customerInfo()
+        let info1 = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
         expect(info1.isLoadedFromCache) == false
         expect(info1.originalSource) == .main
         expect(info1.isComputedOffline) == false

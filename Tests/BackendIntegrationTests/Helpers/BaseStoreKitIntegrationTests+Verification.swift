@@ -100,14 +100,27 @@ extension BaseStoreKitIntegrationTests {
         )
     }
 
-    func verifyTransactionWasFinished(
+    func verifyAnyTransactionWasFinished(
         count: Int? = 1,
         file: FileString = #file,
         line: UInt = #line
     ) {
-        self.logger.verifyMessageWasLogged(Self.finishingTransactionLog,
+        self.logger.verifyMessageWasLogged(Self.finishingAnyTransactionLog,
                                            level: .info,
                                            expectedCount: count,
+                                           file: file,
+                                           line: line)
+    }
+
+    func verifySpecificTransactionWasFinished(
+        _ storeTransaction: StoreTransaction,
+        file: FileString = #file,
+        line: UInt = #line
+    ) {
+        let expectedLog = Self.finishingSpecificTransactionLog(transaction: storeTransaction)
+        self.logger.verifyMessageWasLogged(expectedLog,
+                                           level: .info,
+                                           expectedCount: 1,
                                            file: file,
                                            line: line)
     }
@@ -116,7 +129,16 @@ extension BaseStoreKitIntegrationTests {
         file: FileString = #file,
         line: UInt = #line
     ) {
-        self.logger.verifyMessageWasNotLogged(Self.finishingTransactionLog, file: file, line: line)
+        self.logger.verifyMessageWasNotLogged(Self.finishingAnyTransactionLog, file: file, line: line)
+    }
+
+    func verifySpecificTransactionWasNotFinished(
+        _ storeTransaction: StoreTransaction,
+        file: FileString = #file,
+        line: UInt = #line
+    ) {
+        let expectedLog = Self.finishingSpecificTransactionLog(transaction: storeTransaction)
+        self.logger.verifyMessageWasNotLogged(expectedLog, file: file, line: line)
     }
 
     func verifyTransactionIsEventuallyFinished(
@@ -125,7 +147,7 @@ extension BaseStoreKitIntegrationTests {
         line: UInt = #line
     ) async throws {
         try await self.logger.verifyMessageIsEventuallyLogged(
-            Self.finishingTransactionLog,
+            Self.finishingAnyTransactionLog,
             level: .info,
             expectedCount: count,
             timeout: .seconds(5),

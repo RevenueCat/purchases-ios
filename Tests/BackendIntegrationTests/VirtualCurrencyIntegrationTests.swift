@@ -38,7 +38,7 @@ class VirtualCurrencyStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         assertAllVirtualCurrenciesHaveZeroBalances(virtualCurrenciesBeforePurchase)
 
         try await self.purchaseConsumablePackage()
-        self.verifyTransactionWasFinished()
+        self.verifyAnyTransactionWasFinished()
 
         try self.purchases.invalidateVirtualCurrenciesCache()
 
@@ -70,7 +70,7 @@ class VirtualCurrencyStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         assertAllVirtualCurrenciesHaveZeroBalances(virtualCurrenciesBeforePurchase)
 
         try await self.purchaseNonConsumablePackage()
-        self.verifyTransactionWasFinished()
+        self.verifyAnyTransactionWasFinished()
 
         try self.purchases.invalidateVirtualCurrenciesCache()
 
@@ -101,7 +101,7 @@ class VirtualCurrencyStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         assertAllVirtualCurrenciesHaveZeroBalances(virtualCurrenciesBeforePurchase)
 
         try await self.purchaseMonthlyOffering()
-        self.verifyTransactionWasFinished()
+        self.verifyAnyTransactionWasFinished()
 
         try self.purchases.invalidateVirtualCurrenciesCache()
 
@@ -132,7 +132,7 @@ class VirtualCurrencyStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         assertAllVirtualCurrenciesHaveZeroBalances(virtualCurrenciesBeforePurchase)
 
         try await self.purchaseNonRenewingSubscriptionPackage()
-        self.verifyTransactionWasFinished()
+        self.verifyAnyTransactionWasFinished()
 
         try self.purchases.invalidateVirtualCurrenciesCache()
 
