@@ -27,7 +27,7 @@ let project = Project(
             ],
             dependencies: [
                 .revenueCat
-            ].compactMap { $0 }
+            ]
         ),
 
                 // MARK: – RevenueCat Tests

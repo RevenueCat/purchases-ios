@@ -3,49 +3,49 @@ import ProjectDescription
 extension TargetDependency {
     /// Returns the RevenueCat dependency based on the dependency mode
     /// - Returns: A TargetDependency for RevenueCat
-    public static var revenueCat: TargetDependency? {
+    public static var revenueCat: TargetDependency {
         switch Environment.dependencyMode {
         case .localSwiftPackage:
-            return .revenueCatRemoteSwiftPackage // Local SPM dependency is added via the project's packages
+            return .revenueCatSwiftPackageDependency
         case .remoteSwiftPackage:
-            return .revenueCatRemoteSwiftPackage
+            return .revenueCatSwiftPackageDependency
         case .remoteXcodeProject:
-            return .revenueCatRemoteXcodeProject
+            return .revenueCatRemoteXcodeProjectDependency
         case .localXcodeProject:
-            return .revenueCatXcodeProject
+            return .revenueCatXcodeProjectDependency
         }
     }
 
     /// Returns the RevenueCatUI dependency based on the dependency mode
     /// - Returns: A TargetDependency for RevenueCatUI
-    public static var revenueCatUI: TargetDependency? {
+    public static var revenueCatUI: TargetDependency {
         switch Environment.dependencyMode {
         case .localSwiftPackage:
-            return .revenueCatUIRemoteSwiftPackage // Local SPM dependency is added via the project's packages
+            return .revenueCatUISwiftPackageDependency
         case .remoteSwiftPackage:
-            return .revenueCatUIRemoteSwiftPackage
+            return .revenueCatUISwiftPackageDependency
         case .remoteXcodeProject:
-            return .revenueCatUIRemoteXcodeProject
+            return .revenueCatUIRemoteXcodeProjectDependency
         case .localXcodeProject:
-            return .revenueCatUIXcodeProject
+            return .revenueCatUIXcodeProjectDependency
         }
     }
 
     // RevenueCat
 
     /// Returns the remote RevenueCat dependency as Tuist's XcodeProj-based dependency
-    static var revenueCatRemoteXcodeProject: TargetDependency {
+    static var revenueCatRemoteXcodeProjectDependency: TargetDependency {
         .external(name: "RevenueCat")
     }
 
     /// Returns the remote RevenueCat Swift Package Manager dependency
-    static var revenueCatRemoteSwiftPackage: TargetDependency {
+    static var revenueCatSwiftPackageDependency: TargetDependency {
         .package(product: "RevenueCat", type: .runtime)
     }
 
     /// Returns the Xcode project RevenueCat dependency
     /// - Returns: A TargetDependency for RevenueCat from Xcode project
-    static var revenueCatXcodeProject: TargetDependency {
+    static var revenueCatXcodeProjectDependency: TargetDependency {
         .project(
             target: "RevenueCat",
             path: .relativeToRoot("Projects/RevenueCat"))
@@ -54,18 +54,18 @@ extension TargetDependency {
     // RevenueCatUI
 
     /// Returns the remote RevenueCat dependency as Tuist's XcodeProj-based dependency
-    static var revenueCatUIRemoteXcodeProject: TargetDependency {
+    static var revenueCatUIRemoteXcodeProjectDependency: TargetDependency {
         .external(name: "RevenueCatUI")
     }
 
     /// Returns the remote RevenueCat Swift Package Manager dependency
-    static var revenueCatUIRemoteSwiftPackage: TargetDependency {
+    static var revenueCatUISwiftPackageDependency: TargetDependency {
         .package(product: "RevenueCatUI", type: .runtime)
     }
 
     /// Returns the Xcode project RevenueCatUI dependency
     /// - Returns: A TargetDependency for RevenueCat from Xcode project
-    static var revenueCatUIXcodeProject: TargetDependency {
+    static var revenueCatUIXcodeProjectDependency: TargetDependency {
         .project(
             target: "RevenueCat",
             path: .relativeToRoot("Projects/RevenueCatUI"))

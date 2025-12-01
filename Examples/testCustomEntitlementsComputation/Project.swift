@@ -38,7 +38,7 @@ let project = Project(
             dependencies: [
                 .revenueCat,
                 .revenueCatUI,
-            ].compactMap { $0 },
+            ],
             settings: .appTarget(including: [
                     "APPLICATION_EXTENSION_API_ONLY": "YES",
                     "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "$(inherited) ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION"

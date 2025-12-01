@@ -31,7 +31,7 @@ let project = Project(
             dependencies: [
                 .revenueCat,
                 .revenueCatUI,
-            ].compactMap { $0 },
+            ],
             settings: .appTarget
         )
     ],
