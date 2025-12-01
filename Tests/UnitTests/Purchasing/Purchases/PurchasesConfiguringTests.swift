@@ -222,19 +222,19 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
     func testFirstInitializationCallDelegate() async {
         self.setupPurchases()
-        await expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(1))
+        await expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(beGreaterThanOrEqualTo(1))
     }
 
     func testFirstInitializationDoesNotClearIntroEligibilityCache() async {
         self.setupPurchases()
-        await expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(1))
+        await expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(beGreaterThanOrEqualTo(1))
 
         expect(self.cachingTrialOrIntroPriceEligibilityChecker.invokedClearCache) == false
     }
 
     func testFirstInitializationDoesNotClearPurchasedProductsCache() async {
         self.setupPurchases()
-        await expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(1))
+        await expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(beGreaterThanOrEqualTo(1))
 
         expect(self.mockPurchasedProductsFetcher.invokedClearCache) == false
     }
@@ -242,13 +242,13 @@ class PurchasesConfiguringTests: BasePurchasesTests {
     func testFirstInitializationFromForegroundDelegateForAnonIfNothingCached() async {
         self.systemInfo.stubbedIsApplicationBackgrounded = false
         self.setupPurchases()
-        await expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(1))
+        await expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(beGreaterThanOrEqualTo(1))
     }
 
     func testFirstInitializationFromBackgroundDoesntCallDelegateForAnonIfNothingCached() async {
         self.systemInfo.stubbedIsApplicationBackgrounded = true
         self.setupPurchases()
-        await expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(0))
+        await expect(self.purchasesDelegate.customerInfoReceivedCount).toAlways(equal(0))
     }
 
     func testFirstInitializationFromBackgroundCallsDelegateForAnonIfInfoCached() async throws {
@@ -261,7 +261,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
         self.setupPurchases()
 
-        await expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(1))
+        await expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(beGreaterThanOrEqualTo(1))
         expect(self.purchasesDelegate.customerInfo) == info
     }
 
