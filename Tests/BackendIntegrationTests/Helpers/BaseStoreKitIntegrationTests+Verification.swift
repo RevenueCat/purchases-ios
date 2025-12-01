@@ -113,7 +113,7 @@ extension BaseStoreKitIntegrationTests {
     }
 
     func verifySpecificTransactionWasFinished(
-        storeTransaction: StoreTransaction,
+        _ storeTransaction: StoreTransaction,
         file: FileString = #file,
         line: UInt = #line
     ) {
@@ -133,7 +133,7 @@ extension BaseStoreKitIntegrationTests {
     }
 
     func verifySpecificTransactionWasNotFinished(
-        storeTransaction: StoreTransaction,
+        _ storeTransaction: StoreTransaction,
         file: FileString = #file,
         line: UInt = #line
     ) {

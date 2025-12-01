@@ -52,7 +52,7 @@ class PurchasesFallbackURLBackendStoreKit2IntegrationTests: BaseStoreKitIntegrat
         verifyCustomerInfoWasComputedOffline(customerInfo: purchaseData.customerInfo)
 
         let transaction = try XCTUnwrap(purchaseData.transaction)
-        verifySpecificTransactionWasNotFinished(storeTransaction: transaction)
+        verifySpecificTransactionWasNotFinished(transaction)
     }
 
     func testPostsPurchasePerformedOnFallbackURLWhenRecoveringToMainServer() async throws {
@@ -60,14 +60,14 @@ class PurchasesFallbackURLBackendStoreKit2IntegrationTests: BaseStoreKitIntegrat
         verifyCustomerInfoWasComputedOffline(customerInfo: purchaseData.customerInfo)
 
         let transaction = try XCTUnwrap(purchaseData.transaction)
-        verifySpecificTransactionWasNotFinished(storeTransaction: transaction)
+        verifySpecificTransactionWasNotFinished(transaction)
 
         let offlineCustomerInfo = try await self.purchases.customerInfo()
 
         XCTAssertTrue(offlineCustomerInfo.isComputedOffline)
         let offlineEntitlementInfo = try XCTUnwrap(offlineCustomerInfo.entitlements[Self.entitlementIdentifier])
         XCTAssertTrue(offlineEntitlementInfo.isActive)
-        verifySpecificTransactionWasNotFinished(storeTransaction: transaction)
+        verifySpecificTransactionWasNotFinished(transaction)
 
         self.allServersUp() // Simulate main server recovery
         logger.clearMessages()
@@ -75,7 +75,7 @@ class PurchasesFallbackURLBackendStoreKit2IntegrationTests: BaseStoreKitIntegrat
         let onlineCustomerInfo = try await self.purchases.customerInfo()
 
         verifyCustomerInfoWasNotComputedOffline(customerInfo: onlineCustomerInfo)
-        verifySpecificTransactionWasFinished(storeTransaction: transaction)
+        verifySpecificTransactionWasFinished(transaction)
 
         XCTAssertFalse(onlineCustomerInfo.isComputedOffline)
         let onlineEntitlementInfo = try XCTUnwrap(onlineCustomerInfo.entitlements[Self.entitlementIdentifier])

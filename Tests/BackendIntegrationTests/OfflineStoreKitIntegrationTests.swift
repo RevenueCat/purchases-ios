@@ -307,9 +307,10 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         // 1. Purchase while server is down
         self.serverDown()
-        try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
+        let resultData = try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
 
-        self.verifyNoTransactionsWereFinished()
+        let transaction = try XCTUnwrap(resultData.transaction)
+        self.verifySpecificTransactionWasNotFinished(transaction)
 
         // 2. Server is back
         self.allServersUp()
@@ -319,7 +320,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         try await self.verifyEntitlementWentThrough(info1)
 
         // 4. Ensure transaction is finished
-        self.verifyAnyTransactionWasFinished()
+        self.verifySpecificTransactionWasFinished(transaction)
 
         // 5. Restart app
         try self.purchases.invalidateCustomerInfoCache()
