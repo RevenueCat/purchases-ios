@@ -40,31 +40,7 @@ class ScreenCondition: ObservableObject {
     @Published private(set) var orientation: Orientation = .unknown
     @Published private(set) var screenSize: UIConfig.ScreenSize?
 
-    // MARK: - Platform/idiom helpers
-
-    private var isPhone: Bool {
-        #if os(iOS)
-        return UIDevice.current.userInterfaceIdiom == .phone
-        #else
-        return false
-        #endif
-    }
-
-    /// Treat iPhone landscape as “use landscape layout”.
-    /// tvOS/macOS/watchOS handled explicitly.
-    private var shouldUseLandscapeLayout: Bool {
-        #if os(tvOS)
-        // tvOS never reports .compact; we want wide/horizontal layouts.
-        return true
-        #elseif os(macOS)
-        return false
-        #elseif os(watchOS)
-        return false
-        #else
-        // On iPhone this is `.compact` in landscape. On iPad it’s often `.regular`.
-        return self.verticalSizeClass == .compact
-        #endif
-    }
+    // MARK: - helpers
 
     init(screenSizes: [UIConfig.ScreenSize] = []) {
         self.screenSizes = screenSizes
@@ -77,36 +53,19 @@ class ScreenCondition: ObservableObject {
             return
         }
 
-        // 1) Derive current orientation from the actual rendered size
+        // Derive current orientation from the actual rendered size
         if size.width > size.height {
             self.orientation = .landscape
-        } else if size.height > size.width {
-            self.orientation = .portrait
         } else {
-            self.orientation = .portrait // square -> treat as portrait
+            self.orientation = .portrait
         }
 
-        // 2) Choose bucketing policy
-        // - iPhone portrait -> short side (stable)
-        // - iPhone landscape -> actual width (let it “grow”)
-        // - Everyone else -> short side (stable across rotation / windowing)
-        let useActualWidth: Bool = {
-            #if os(iOS)
-            if isPhone {
-                // Prefer size class when available (most reliable on iPhone),
-                // fall back to inferred orientation from geometry.
-                return shouldUseLandscapeLayout || orientation == .landscape
-            }
-            #endif
-            return false
-        }()
-
-        // 3) Compute effective width according to policy
-        let effectiveWidth: CGFloat = useActualWidth ? size.width : min(size.width, size.height)
+        // Compute effective width according to policy
+        let effectiveWidth: CGFloat = min(size.width, size.height)
 
         let screenSizeWithDefault = self.screenSizes.isEmpty ? UIConfig.ScreenSize.Defaults.all : self.screenSizes
 
-        // 4) Treat class.width as a MIN breakpoint
+        // Treat class.width as a MIN breakpoint
         self.screenSize = screenSizeWithDefault.last(where: {
             CGFloat($0.width) <= effectiveWidth
         }) ?? self.screenSizes.first
