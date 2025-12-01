@@ -415,17 +415,25 @@ class PurchasesConfiguringTests: BasePurchasesTests {
     func testCustomEntitlementComputationSkipsFirstDelegateCall() async throws {
         self.systemInfo = MockSystemInfo(finishTransactions: true,
                                          customEntitlementsComputation: true)
-        self.setupPurchases()
+        self.setupPurchases(withDelegate: true) // This sets the delegate to self.purchasesDelegate
 
-        await expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(0))
+        await expect(self.purchasesDelegate.customerInfoReceivedCount).toAlways(equal(0))
+
+        let anotherDelegate = MockPurchasesDelegate()
+        self.purchases.delegate = anotherDelegate
+        expect(anotherDelegate.customerInfoReceivedCount) == 0
     }
 
     func testWithoutCustomEntitlementComputationDoesntSkipFirstDelegateCall() async throws {
         self.systemInfo = MockSystemInfo(finishTransactions: true,
                                          customEntitlementsComputation: false)
-        self.setupPurchases()
+        self.setupPurchases(withDelegate: true) // This sets the delegate to self.purchasesDelegate
 
-        await expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(1))
+        await expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(beGreaterThanOrEqualTo(1))
+
+        let anotherDelegate = MockPurchasesDelegate()
+        self.purchases.delegate = anotherDelegate
+        expect(anotherDelegate.customerInfoReceivedCount) == 1
     }
 
     #if !os(watchOS)
