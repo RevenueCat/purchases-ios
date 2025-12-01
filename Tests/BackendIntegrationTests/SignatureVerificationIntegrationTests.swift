@@ -265,7 +265,7 @@ class EnforcedSignatureVerificationIntegrationTests: BaseSignatureVerificationIn
         try await self.verifyEntitlementWentThrough(info)
 
         // 4. Verify transaction was finished
-        self.verifyTransactionWasFinished()
+        self.verifyAnyTransactionWasFinished()
     }
 
 }

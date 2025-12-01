@@ -34,7 +34,8 @@ struct ButtonComponentView: View {
     private let viewModel: ButtonComponentViewModel
     private let onDismiss: () -> Void
 
-    internal init(viewModel: ButtonComponentViewModel, onDismiss: @escaping () -> Void) {
+    internal init(viewModel: ButtonComponentViewModel,
+                  onDismiss: @escaping () -> Void) {
         self.viewModel = viewModel
         self.onDismiss = onDismiss
     }
@@ -118,10 +119,11 @@ struct ButtonComponentView: View {
         let (customerInfo, success) = try await self.purchaseHandler.restorePurchases()
         if success {
             Logger.debug(Strings.restored_purchases)
-            self.purchaseHandler.setRestored(customerInfo)
         } else {
             Logger.debug(Strings.restore_purchases_with_empty_result)
         }
+
+        self.purchaseHandler.setRestored(customerInfo, success: success)
     }
 
     private func navigateTo(destination: ButtonComponentViewModel.Destination) {
