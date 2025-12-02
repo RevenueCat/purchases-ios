@@ -853,7 +853,7 @@ final class PurchasesOrchestrator {
             delay = .none
         }
         self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) {
-            _ = try? await manager.flushEvents(batchSize: EventsManager.defaultEventBatchSize)
+            await self.flushEventsWithBackgroundTask(manager: manager)
         }
     }
 
@@ -869,9 +869,76 @@ final class PurchasesOrchestrator {
             delay = .none
         }
         self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) {
-            _ = try? await manager.flushFeatureEvents(batchSize: EventsManager.defaultEventBatchSize)
+            await self.flushFeatureEventsWithBackgroundTask(manager: manager)
         }
     }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    private func flushEventsWithBackgroundTask(manager: EventsManagerType) async {
+        #if os(iOS) || os(tvOS) || VISION_OS
+        let backgroundTaskID = await self.beginBackgroundTask(named: "com.revenuecat.flushEvents")
+        defer {
+            if let backgroundTaskID = backgroundTaskID {
+                Task { @MainActor in
+                    SystemInfo.sharedUIApplication?.endBackgroundTask(backgroundTaskID)
+                }
+            }
+        }
+        #endif
+
+        do {
+            _ = try await manager.flushEvents(batchSize: EventsManager.defaultEventBatchSize)
+        } catch {
+            Logger.error(Strings.paywalls.event_flush_failed(error))
+        }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    private func flushFeatureEventsWithBackgroundTask(manager: EventsManagerType) async {
+        #if os(iOS) || os(tvOS) || VISION_OS
+        let backgroundTaskID = await self.beginBackgroundTask(named: "com.revenuecat.flushFeatureEvents")
+        defer {
+            if let backgroundTaskID = backgroundTaskID {
+                Task { @MainActor in
+                    SystemInfo.sharedUIApplication?.endBackgroundTask(backgroundTaskID)
+                }
+            }
+        }
+        #endif
+
+        do {
+            _ = try await manager.flushFeatureEvents(batchSize: EventsManager.defaultEventBatchSize)
+        } catch {
+            Logger.error(Strings.paywalls.event_flush_failed(error))
+        }
+    }
+
+    #if os(iOS) || os(tvOS) || VISION_OS
+    @MainActor
+    private func beginBackgroundTask(named taskName: String) -> UIBackgroundTaskIdentifier? {
+        guard let application = SystemInfo.sharedUIApplication else {
+            Logger.warn(Strings.paywalls.background_task_unavailable)
+            return nil
+        }
+
+        var backgroundTaskID: UIBackgroundTaskIdentifier?
+        backgroundTaskID = application.beginBackgroundTask(withName: taskName) {
+            Logger.warn(Strings.paywalls.background_task_expired(taskName))
+            if let taskID = backgroundTaskID {
+                application.endBackgroundTask(taskID)
+                backgroundTaskID = .invalid
+            }
+        }
+
+        if backgroundTaskID == .invalid {
+            Logger.warn(Strings.paywalls.background_task_failed(taskName))
+            return nil
+        }
+
+        Logger.debug(Strings.paywalls.background_task_started(taskName))
+        return backgroundTaskID
+    }
+    #endif
 
 #if os(iOS) || os(macOS) || VISION_OS
 
