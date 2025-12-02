@@ -59,6 +59,10 @@ extension String {
         }
     }
 
+    private static let remainderStartLength = 2
+    private static let remainderEndLength = 4
+    private static let redactionPlaceholder = "********"
+
     var asRedactedAPIKey: String {
         let prefix: String.SubSequence
         let remainder: String.SubSequence
@@ -75,14 +79,15 @@ extension String {
             remainder = self[...]
         }
 
-        // If fewer than 6 characters after the underscore → return unredacted
-        guard remainder.count >= 6 else {
+        // If fewer than 6 characters to redact → return unredacted
+        let minimumLengthToRedact = Self.remainderStartLength + Self.remainderEndLength
+        guard remainder.count >= minimumLengthToRedact else {
             return self
         }
 
         // Take first 2 and last 4 characters
-        let start = remainder.prefix(2)
-        let end = remainder.suffix(4)
+        let start = remainder.prefix(Self.remainderStartLength)
+        let end = remainder.suffix(Self.remainderEndLength)
 
         return "\(prefix)\(start)********\(end)"
     }
