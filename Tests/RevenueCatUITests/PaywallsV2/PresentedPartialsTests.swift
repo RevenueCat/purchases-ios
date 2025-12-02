@@ -569,6 +569,7 @@ class PresentedPartialsTest: TestCase {
         let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
             .init(conditions: [
                 .selected,
+                .unsupported,
                 .introOffer(.equals, true),
                 .selectedPackage(.in, ["rc_annual"])
             ], properties: .init(

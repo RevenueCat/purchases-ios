@@ -176,7 +176,7 @@ extension PresentedPartial {
                     return false
                 }
             case .unsupported:
-                return false
+                return true // ignore unsupported case and show partial
             @unknown default:
                 return false
             }
