@@ -98,6 +98,22 @@ internal protocol AdImpressionEventData: AdEventData {
         super.init()
     }
 
+    public convenience init(
+        networkName: String,
+        mediatorName: MediatorName,
+        placement: String?,
+        adUnitId: String,
+        mediatorErrorCode: Int?
+    ) {
+        self.init(
+            networkName: networkName,
+            mediatorName: mediatorName,
+            placement: placement,
+            adUnitId: adUnitId,
+            mediatorErrorCode: mediatorErrorCode.map(NSNumber.init(value:))
+        )
+    }
+
     @objc public convenience init(
         networkName: String,
         mediatorName: MediatorName,
