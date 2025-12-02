@@ -28,6 +28,22 @@ class AdFeatureEventsRequestTests: TestCase {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
     }
 
+    func testFailedToLoadEvent() throws {
+        let event = AdEvent.failedToLoad(Self.eventCreationData, Self.failedToLoadData)
+        let storedEvent = try Self.createStoredAdEvent(from: event)
+        let requestEvent: AdEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        assertSnapshot(matching: requestEvent, as: .formattedJson)
+    }
+
+    func testLoadedEvent() throws {
+        let event = AdEvent.loaded(Self.eventCreationData, Self.loadedData)
+        let storedEvent = try Self.createStoredAdEvent(from: event)
+        let requestEvent: AdEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        assertSnapshot(matching: requestEvent, as: .formattedJson)
+    }
+
     func testDisplayedEvent() throws {
         let event = AdEvent.displayed(Self.eventCreationData, Self.eventData)
         let storedEvent = try Self.createStoredAdEvent(from: event)
@@ -46,22 +62,6 @@ class AdFeatureEventsRequestTests: TestCase {
 
     func testRevenueEvent() throws {
         let event = AdEvent.revenue(Self.eventCreationData, Self.revenueData)
-        let storedEvent = try Self.createStoredAdEvent(from: event)
-        let requestEvent: AdEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
-
-        assertSnapshot(matching: requestEvent, as: .formattedJson)
-    }
-
-    func testLoadedEvent() throws {
-        let event = AdEvent.loaded(Self.eventCreationData, Self.loadedData)
-        let storedEvent = try Self.createStoredAdEvent(from: event)
-        let requestEvent: AdEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
-
-        assertSnapshot(matching: requestEvent, as: .formattedJson)
-    }
-
-    func testFailedToLoadEvent() throws {
-        let event = AdEvent.failedToLoad(Self.eventCreationData, Self.failedToLoadData)
         let storedEvent = try Self.createStoredAdEvent(from: event)
         let requestEvent: AdEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
 
@@ -114,6 +114,22 @@ private extension AdFeatureEventsRequestTests {
         date: .init(timeIntervalSince1970: 1694029328)
     )
 
+    static let failedToLoadData: AdFailedToLoad = .init(
+        networkName: "AdMob",
+        mediatorName: .appLovin,
+        placement: "home_screen",
+        adUnitId: "ca-app-pub-123456789",
+        mediatorErrorCode: 3
+    )
+
+    static let loadedData: AdLoaded = .init(
+        networkName: "AdMob",
+        mediatorName: .appLovin,
+        placement: "home_screen",
+        adUnitId: "ca-app-pub-123456789",
+        impressionId: "impression-123"
+    )
+
     static let eventData: AdDisplayed = .init(
         networkName: "AdMob",
         mediatorName: .appLovin,
@@ -139,22 +155,6 @@ private extension AdFeatureEventsRequestTests {
         revenueMicros: 1500000,
         currency: "USD",
         precision: .exact
-    )
-
-    static let loadedData: AdLoaded = .init(
-        networkName: "AdMob",
-        mediatorName: .appLovin,
-        placement: "home_screen",
-        adUnitId: "ca-app-pub-123456789",
-        impressionId: "impression-123"
-    )
-
-    static let failedToLoadData: AdFailedToLoad = .init(
-        networkName: "AdMob",
-        mediatorName: .appLovin,
-        placement: "home_screen",
-        adUnitId: "ca-app-pub-123456789",
-        mediatorErrorCode: 3
     )
 
     static let userID = "test-user-id"

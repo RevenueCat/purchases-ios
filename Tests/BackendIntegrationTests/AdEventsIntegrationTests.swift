@@ -27,7 +27,15 @@ import XCTest
 final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
 
     func testTrackingAndFlushingAdEvents() async throws {
-        let displayedData = AdDisplayed(
+        let failedToLoadData = AdFailedToLoad(
+            networkName: "AdMob",
+            mediatorName: .appLovin,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            mediatorErrorCode: 3
+        )
+
+        let loadedData = AdLoaded(
             networkName: "AdMob",
             mediatorName: .appLovin,
             placement: "home_screen",
@@ -35,12 +43,20 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
             impressionId: "impression-123"
         )
 
-        let openedData = AdOpened(
+        let displayedData = AdDisplayed(
             networkName: "AdMob",
             mediatorName: .appLovin,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-456"
+        )
+
+        let openedData = AdOpened(
+            networkName: "AdMob",
+            mediatorName: .appLovin,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-321"
         )
 
         let revenueData = AdRevenue(
@@ -54,27 +70,11 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
             precision: .exact
         )
 
-        let loadedData = AdLoaded(
-            networkName: "AdMob",
-            mediatorName: .appLovin,
-            placement: "home_screen",
-            adUnitId: "ca-app-pub-123",
-            impressionId: "impression-321"
-        )
-
-        let failedToLoadData = AdFailedToLoad(
-            networkName: "AdMob",
-            mediatorName: .appLovin,
-            placement: "home_screen",
-            adUnitId: "ca-app-pub-123",
-            mediatorErrorCode: 3
-        )
-
+        await Purchases.shared.adTracker.trackAdFailedToLoad(failedToLoadData)
+        await Purchases.shared.adTracker.trackAdLoaded(loadedData)
         await Purchases.shared.adTracker.trackAdDisplayed(displayedData)
         await Purchases.shared.adTracker.trackAdOpened(openedData)
         await Purchases.shared.adTracker.trackAdRevenue(revenueData)
-        await Purchases.shared.adTracker.trackAdLoaded(loadedData)
-        await Purchases.shared.adTracker.trackAdFailedToLoad(failedToLoadData)
 
         try await flushAndVerify(eventsCount: 5)
     }

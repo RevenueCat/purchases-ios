@@ -71,11 +71,11 @@ extension AdEventsRequest.AdEventRequest {
 
     enum EventType: String {
 
+        case failedToLoad = "rc_ads_ad_failed_to_load"
+        case loaded = "rc_ads_ad_loaded"
         case displayed = "rc_ads_ad_displayed"
         case opened = "rc_ads_ad_opened"
         case revenue = "rc_ads_ad_revenue"
-        case loaded = "rc_ads_ad_loaded"
-        case failedToLoad = "rc_ads_ad_failed_to_load"
 
     }
 
@@ -122,11 +122,11 @@ private extension AdEvent {
 
     var eventType: AdEventsRequest.AdEventRequest.EventType {
         switch self {
+        case .failedToLoad: return .failedToLoad
+        case .loaded: return .loaded
         case .displayed: return .displayed
         case .opened: return .opened
         case .revenue: return .revenue
-        case .loaded: return .loaded
-        case .failedToLoad: return .failedToLoad
         }
 
     }

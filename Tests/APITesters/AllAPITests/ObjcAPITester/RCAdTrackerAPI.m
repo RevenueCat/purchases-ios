@@ -29,6 +29,26 @@
         RCAdRevenuePrecision *unknown __unused = RCAdRevenuePrecision.unknown;
         NSString *precisionRawValue __unused = exact.rawValue;
 
+        // AdFailedToLoad API - with placement
+        RCAdFailedToLoad *failedWithPlacement __unused = [[RCAdFailedToLoad alloc] initWithNetworkName:@"AdMob"
+                                                                                        mediatorName:RCMediatorName.appLovin
+                                                                                           placement:@"home_screen"
+                                                                                            adUnitId:@"ca-app-pub-123"
+                                                                                  mediatorErrorCode:@3];
+
+        // AdFailedToLoad API - without placement
+        RCAdFailedToLoad *failedNoPlacement __unused = [[RCAdFailedToLoad alloc] initWithNetworkName:@"AdMob"
+                                                                                       mediatorName:RCMediatorName.appLovin
+                                                                                           adUnitId:@"ca-app-pub-123"
+                                                                                 mediatorErrorCode:nil];
+
+        // AdFailedToLoad properties
+        NSString *failedNetworkName __unused = failedWithPlacement.networkName;
+        RCMediatorName *failedMediator __unused = failedWithPlacement.mediatorName;
+        NSString *failedPlacement __unused = failedWithPlacement.placement;
+        NSString *failedAdUnitId __unused = failedWithPlacement.adUnitId;
+        NSNumber *failedMediatorErrorCode __unused = failedWithPlacement.mediatorErrorCode;
+
         // AdDisplayed API - with placement
         RCAdDisplayed *displayedWithPlacement __unused = [[RCAdDisplayed alloc] initWithNetworkName:@"AdMob"
                                                                                         mediatorName:RCMediatorName.appLovin
@@ -118,35 +138,19 @@
         NSString *currency __unused = revenueWithPlacement.currency;
         RCAdRevenuePrecision *precision __unused = revenueWithPlacement.precision;
 
-        // AdFailedToLoad API - with placement
-        RCAdFailedToLoad *failedWithPlacement __unused = [[RCAdFailedToLoad alloc] initWithNetworkName:@"AdMob"
-                                                                                        mediatorName:RCMediatorName.appLovin
-                                                                                           placement:@"home_screen"
-                                                                                            adUnitId:@"ca-app-pub-123"
-                                                                                  mediatorErrorCode:@3];
-
-        // AdFailedToLoad API - without placement
-        RCAdFailedToLoad *failedNoPlacement __unused = [[RCAdFailedToLoad alloc] initWithNetworkName:@"AdMob"
-                                                                                       mediatorName:RCMediatorName.appLovin
-                                                                                           adUnitId:@"ca-app-pub-123"
-                                                                                 mediatorErrorCode:nil];
-
-        // AdFailedToLoad properties
-        NSString *failedNetworkName __unused = failedWithPlacement.networkName;
-        RCMediatorName *failedMediator __unused = failedWithPlacement.mediatorName;
-        NSString *failedPlacement __unused = failedWithPlacement.placement;
-        NSString *failedAdUnitId __unused = failedWithPlacement.adUnitId;
-        NSNumber *failedMediatorErrorCode __unused = failedWithPlacement.mediatorErrorCode;
-
         // AdTracker API
         RCAdTracker *adTracker __unused = RCPurchases.sharedPurchases.adTracker;
 
         // AdTracker methods with completion handlers
-        [adTracker trackAdDisplayed:displayedWithPlacement completion:^{
+        [adTracker trackAdFailedToLoad:failedWithPlacement completion:^{
             // Completion handler
         }];
 
         [adTracker trackAdLoaded:loadedWithPlacement completion:^{
+            // Completion handler
+        }];
+
+        [adTracker trackAdDisplayed:displayedWithPlacement completion:^{
             // Completion handler
         }];
 
@@ -155,10 +159,6 @@
         }];
 
         [adTracker trackAdRevenue:revenueWithPlacement completion:^{
-            // Completion handler
-        }];
-
-        [adTracker trackAdFailedToLoad:failedWithPlacement completion:^{
             // Completion handler
         }];
     }

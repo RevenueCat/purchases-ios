@@ -67,6 +67,134 @@ internal protocol AdImpressionEventData: AdEventData {
 
 }
 
+/// Data for ad failed to load events.
+@_spi(Experimental) @objc(RCAdFailedToLoad) public final class AdFailedToLoad: NSObject, AdEventData {
+
+    // swiftlint:disable missing_docs
+    @objc public private(set) var networkName: String
+    @objc public private(set) var mediatorName: MediatorName
+    @objc public private(set) var placement: String?
+    @objc public private(set) var adUnitId: String
+    @objc public private(set) var mediatorErrorCode: NSNumber?
+
+    @objc public init(
+        networkName: String,
+        mediatorName: MediatorName,
+        placement: String?,
+        adUnitId: String,
+        mediatorErrorCode: NSNumber?
+    ) {
+        self.networkName = networkName
+        self.mediatorName = mediatorName
+        self.placement = placement
+        self.adUnitId = adUnitId
+        self.mediatorErrorCode = mediatorErrorCode
+        super.init()
+    }
+
+    @objc public convenience init(
+        networkName: String,
+        mediatorName: MediatorName,
+        adUnitId: String,
+        mediatorErrorCode: NSNumber? = nil
+    ) {
+        self.init(
+            networkName: networkName,
+            mediatorName: mediatorName,
+            placement: nil,
+            adUnitId: adUnitId,
+            mediatorErrorCode: mediatorErrorCode
+        )
+    }
+    // swiftlint:enable missing_docs
+
+    // MARK: - NSObject overrides for equality
+
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? AdFailedToLoad else { return false }
+        return self.networkName == other.networkName &&
+               self.mediatorName == other.mediatorName &&
+               self.placement == other.placement &&
+               self.adUnitId == other.adUnitId &&
+               self.mediatorErrorCode == other.mediatorErrorCode
+    }
+
+    public override var hash: Int {
+        var hasher = Hasher()
+        hasher.combine(networkName)
+        hasher.combine(mediatorName)
+        hasher.combine(placement)
+        hasher.combine(adUnitId)
+        hasher.combine(mediatorErrorCode)
+        return hasher.finalize()
+    }
+
+}
+
+/// Data for ad loaded events.
+@_spi(Experimental) @objc(RCAdLoaded) public final class AdLoaded: NSObject, AdImpressionEventData {
+
+    // swiftlint:disable missing_docs
+    @objc public private(set) var networkName: String
+    @objc public private(set) var mediatorName: MediatorName
+    @objc public private(set) var placement: String?
+    @objc public private(set) var adUnitId: String
+    @objc public private(set) var impressionId: String
+
+    @objc public init(
+        networkName: String,
+        mediatorName: MediatorName,
+        placement: String?,
+        adUnitId: String,
+        impressionId: String
+    ) {
+        self.networkName = networkName
+        self.mediatorName = mediatorName
+        self.placement = placement
+        self.adUnitId = adUnitId
+        self.impressionId = impressionId
+        super.init()
+    }
+
+    @objc public convenience init(
+        networkName: String,
+        mediatorName: MediatorName,
+        adUnitId: String,
+        impressionId: String
+    ) {
+        self.init(
+            networkName: networkName,
+            mediatorName: mediatorName,
+            placement: nil,
+            adUnitId: adUnitId,
+            impressionId: impressionId
+        )
+    }
+    // swiftlint:enable missing_docs
+
+    // MARK: - NSObject overrides for equality
+
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? AdLoaded else { return false }
+        return self.networkName == other.networkName &&
+               self.mediatorName == other.mediatorName &&
+               self.placement == other.placement &&
+               self.adUnitId == other.adUnitId &&
+               self.impressionId == other.impressionId
+    }
+
+    public override var hash: Int {
+        var hasher = Hasher()
+        hasher.combine(networkName)
+        hasher.combine(mediatorName)
+        hasher.combine(placement)
+        hasher.combine(adUnitId)
+        hasher.combine(impressionId)
+        return hasher.finalize()
+    }
+
+}
+
 /// Data for ad displayed events.
 @_spi(Experimental) @objc(RCAdDisplayed) public final class AdDisplayed: NSObject, AdImpressionEventData {
 
@@ -280,134 +408,6 @@ internal protocol AdImpressionEventData: AdEventData {
 
 }
 
-/// Data for ad loaded events.
-@_spi(Experimental) @objc(RCAdLoaded) public final class AdLoaded: NSObject, AdImpressionEventData {
-
-    // swiftlint:disable missing_docs
-    @objc public private(set) var networkName: String
-    @objc public private(set) var mediatorName: MediatorName
-    @objc public private(set) var placement: String?
-    @objc public private(set) var adUnitId: String
-    @objc public private(set) var impressionId: String
-
-    @objc public init(
-        networkName: String,
-        mediatorName: MediatorName,
-        placement: String?,
-        adUnitId: String,
-        impressionId: String
-    ) {
-        self.networkName = networkName
-        self.mediatorName = mediatorName
-        self.placement = placement
-        self.adUnitId = adUnitId
-        self.impressionId = impressionId
-        super.init()
-    }
-
-    @objc public convenience init(
-        networkName: String,
-        mediatorName: MediatorName,
-        adUnitId: String,
-        impressionId: String
-    ) {
-        self.init(
-            networkName: networkName,
-            mediatorName: mediatorName,
-            placement: nil,
-            adUnitId: adUnitId,
-            impressionId: impressionId
-        )
-    }
-    // swiftlint:enable missing_docs
-
-    // MARK: - NSObject overrides for equality
-
-    public override func isEqual(_ object: Any?) -> Bool {
-        guard let other = object as? AdLoaded else { return false }
-        return self.networkName == other.networkName &&
-               self.mediatorName == other.mediatorName &&
-               self.placement == other.placement &&
-               self.adUnitId == other.adUnitId &&
-               self.impressionId == other.impressionId
-    }
-
-    public override var hash: Int {
-        var hasher = Hasher()
-        hasher.combine(networkName)
-        hasher.combine(mediatorName)
-        hasher.combine(placement)
-        hasher.combine(adUnitId)
-        hasher.combine(impressionId)
-        return hasher.finalize()
-    }
-
-}
-
-/// Data for ad failed to load events.
-@_spi(Experimental) @objc(RCAdFailedToLoad) public final class AdFailedToLoad: NSObject, AdEventData {
-
-    // swiftlint:disable missing_docs
-    @objc public private(set) var networkName: String
-    @objc public private(set) var mediatorName: MediatorName
-    @objc public private(set) var placement: String?
-    @objc public private(set) var adUnitId: String
-    @objc public private(set) var mediatorErrorCode: NSNumber?
-
-    @objc public init(
-        networkName: String,
-        mediatorName: MediatorName,
-        placement: String?,
-        adUnitId: String,
-        mediatorErrorCode: NSNumber?
-    ) {
-        self.networkName = networkName
-        self.mediatorName = mediatorName
-        self.placement = placement
-        self.adUnitId = adUnitId
-        self.mediatorErrorCode = mediatorErrorCode
-        super.init()
-    }
-
-    @objc public convenience init(
-        networkName: String,
-        mediatorName: MediatorName,
-        adUnitId: String,
-        mediatorErrorCode: NSNumber? = nil
-    ) {
-        self.init(
-            networkName: networkName,
-            mediatorName: mediatorName,
-            placement: nil,
-            adUnitId: adUnitId,
-            mediatorErrorCode: mediatorErrorCode
-        )
-    }
-    // swiftlint:enable missing_docs
-
-    // MARK: - NSObject overrides for equality
-
-    public override func isEqual(_ object: Any?) -> Bool {
-        guard let other = object as? AdFailedToLoad else { return false }
-        return self.networkName == other.networkName &&
-               self.mediatorName == other.mediatorName &&
-               self.placement == other.placement &&
-               self.adUnitId == other.adUnitId &&
-               self.mediatorErrorCode == other.mediatorErrorCode
-    }
-
-    public override var hash: Int {
-        var hasher = Hasher()
-        hasher.combine(networkName)
-        hasher.combine(mediatorName)
-        hasher.combine(placement)
-        hasher.combine(adUnitId)
-        hasher.combine(mediatorErrorCode)
-        return hasher.finalize()
-    }
-
-}
-
 extension AdRevenue {
 
     /// Type representing the level of accuracy for reported revenue values.
@@ -461,6 +461,12 @@ internal enum AdEvent {
 
     // swiftlint:enable type_name
 
+    /// An ad failed to load.
+    case failedToLoad(CreationData, AdFailedToLoad)
+
+    /// An ad successfully loaded.
+    case loaded(CreationData, AdLoaded)
+
     /// An ad impression was displayed.
     case displayed(CreationData, AdDisplayed)
 
@@ -469,12 +475,6 @@ internal enum AdEvent {
 
     /// An ad impression generated revenue.
     case revenue(CreationData, AdRevenue)
-
-    /// An ad successfully loaded.
-    case loaded(CreationData, AdLoaded)
-
-    /// An ad failed to load.
-    case failedToLoad(CreationData, AdFailedToLoad)
 
 }
 
@@ -503,55 +503,53 @@ extension AdEvent {
     /// - Returns: the underlying ``AdEvent/CreationData-swift.struct`` for this event.
     internal var creationData: CreationData {
         switch self {
+        case let .failedToLoad(creationData, _): return creationData
+        case let .loaded(creationData, _): return creationData
         case let .displayed(creationData, _): return creationData
         case let .opened(creationData, _): return creationData
         case let .revenue(creationData, _): return creationData
-        case let .loaded(creationData, _): return creationData
-        case let .failedToLoad(creationData, _): return creationData
         }
     }
 
     /// - Returns: the underlying ad event data for this event.
     internal var eventData: AdEventData {
         switch self {
+        case let .failedToLoad(_, failed):
+            return failed
+        case let .loaded(_, loaded):
+            return loaded
         case let .displayed(_, displayed):
             return displayed
         case let .opened(_, opened):
             return opened
         case let .revenue(_, revenue):
             return revenue
-        case let .loaded(_, loaded):
-            return loaded
-        case let .failedToLoad(_, failed):
-            return failed
         }
     }
 
     /// - Returns: the underlying ``AdRevenue`` for revenue events.
     internal var revenueData: AdRevenue? {
         switch self {
-        case .displayed, .opened:
+        case .failedToLoad, .loaded, .displayed, .opened:
             return nil
         case let .revenue(_, revenueData):
             return revenueData
-        case .loaded, .failedToLoad:
-            return nil
         }
     }
 
     /// - Returns: the impression identifier for events that include it.
     internal var impressionIdentifier: String? {
         switch self {
+        case .failedToLoad:
+            return nil
+        case let .loaded(_, data):
+            return data.impressionId
         case let .displayed(_, data):
             return data.impressionId
         case let .opened(_, data):
             return data.impressionId
         case let .revenue(_, data):
             return data.impressionId
-        case let .loaded(_, data):
-            return data.impressionId
-        case .failedToLoad:
-            return nil
         }
     }
 
@@ -560,7 +558,7 @@ extension AdEvent {
         switch self {
         case let .failedToLoad(_, data):
             return data.mediatorErrorCode?.intValue
-        case .displayed, .opened, .revenue, .loaded:
+        case .loaded, .displayed, .opened, .revenue:
             return nil
         }
     }
