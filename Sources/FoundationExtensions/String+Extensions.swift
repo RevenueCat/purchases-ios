@@ -60,15 +60,20 @@ extension String {
     }
 
     var asRedactedAPIKey: String {
-        guard let underscoreIndex = self.firstIndex(of: "_") else {
-            return self // No underscore → do not redact
+        let prefix: String.SubSequence
+        let remainder: String.SubSequence
+
+        if let underscoreIndex = self.firstIndex(of: "_") {
+            // Prefix including underscore
+            prefix = self[..<self.index(after: underscoreIndex)]
+
+            // Remainder after underscore
+            remainder = self[self.index(after: underscoreIndex)...]
+        } else {
+            // Legacy API keys without a prefix
+            prefix = ""
+            remainder = self[...]
         }
-
-        // Prefix including underscore
-        let prefix = self[..<self.index(after: underscoreIndex)]
-
-        // Remainder after underscore
-        let remainder = self[self.index(after: underscoreIndex)...]
 
         // If fewer than 6 characters after the underscore → return unredacted
         guard remainder.count >= 6 else {

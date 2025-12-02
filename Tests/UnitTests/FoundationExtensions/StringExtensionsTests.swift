@@ -73,9 +73,6 @@ class StringExtensionsTests: TestCase {
         expect("_abc".asRedactedAPIKey) == "_abc"
         expect("test_".asRedactedAPIKey) == "test_"
 
-        // No underscore at all → should NOT redact
-        expect("noUnderscoreKey123456".asRedactedAPIKey) == "noUnderscoreKey123456"
-
         // Multiple underscores: only the first underscore counts
         expect("test_abcd_efghijkl".asRedactedAPIKey) == "test_ab********ijkl"
 
@@ -84,6 +81,10 @@ class StringExtensionsTests: TestCase {
 
         // Single underscore only → should crash and should NOT redact
         expect("_".asRedactedAPIKey) == "_"
+
+        // Legacy API keys without a prefix
+        expect("g9h2g7q36fg".asRedactedAPIKey) == "g9********36fg"
+        expect("ab34e".asRedactedAPIKey) == "ab34e"
     }
 
 }
