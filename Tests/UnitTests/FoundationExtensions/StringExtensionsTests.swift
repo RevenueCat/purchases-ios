@@ -59,4 +59,31 @@ class StringExtensionsTests: TestCase {
         == "$RCAnonymousID%3A8252eb283bbc4453a3f81c978f1a6ee1"
     }
 
+    func testAsRedactedApiKey() {
+        expect("test_CtDegh822fag83yggTUVkajsJ".asRedactedAPIKey) == "test_Ct********ajsJ"
+
+        // Exactly 6 characters after underscore (minimal redactable remainder)
+        expect("test_123456".asRedactedAPIKey) == "test_12********3456"
+        expect("api_abcdef".asRedactedAPIKey) == "api_ab********cdef"
+        expect("_abcdef".asRedactedAPIKey) == "_ab********cdef"
+        expect("a_123456".asRedactedAPIKey) == "a_12********3456"
+
+        // Short remainder: <6 chars → should NOT redact
+        expect("test_12345".asRedactedAPIKey) == "test_12345"
+        expect("_abc".asRedactedAPIKey) == "_abc"
+        expect("test_".asRedactedAPIKey) == "test_"
+
+        // No underscore at all → should NOT redact
+        expect("noUnderscoreKey123456".asRedactedAPIKey) == "noUnderscoreKey123456"
+
+        // Multiple underscores: only the first underscore counts
+        expect("test_abcd_efghijkl".asRedactedAPIKey) == "test_ab********ijkl"
+
+        // Empty string → should NOT crash and should NOT redact
+        expect("".asRedactedAPIKey) == ""
+
+        // Single underscore only → should crash and should NOT redact
+        expect("_".asRedactedAPIKey) == "_"
+    }
+
 }
