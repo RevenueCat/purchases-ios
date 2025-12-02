@@ -38,7 +38,7 @@ import Foundation
      mediatorName: .appLovin,
      placement: "home_screen",
      adUnitId: "ca-app-pub-123",
-     adInstanceId: "instance-456"
+     impressionId: "impression-456"
  ))
 
  // Track ad revenue
@@ -47,7 +47,7 @@ import Foundation
      mediatorName: .appLovin,
      placement: "home_screen",
      adUnitId: "ca-app-pub-123",
-     adInstanceId: "instance-456",
+     impressionId: "impression-456",
      revenueMicros: 1500000,  // $1.50
      currency: "USD",
      precision: .exact
@@ -80,7 +80,7 @@ public final class AdTracker: NSObject {
          mediatorName: .appLovin,
          placement: "home_screen",
          adUnitId: "ca-app-pub-123",
-         adInstanceId: "instance-456"
+         impressionId: "impression-456"
      ))
      ```
      */
@@ -103,7 +103,7 @@ public final class AdTracker: NSObject {
          mediatorName: .appLovin,
          placement: "home_screen",
          adUnitId: "ca-app-pub-123",
-         adInstanceId: "instance-456"
+         impressionId: "impression-456"
      ))
      ```
      */
@@ -127,7 +127,7 @@ public final class AdTracker: NSObject {
          mediatorName: .appLovin,
          placement: "home_screen",
          adUnitId: "ca-app-pub-123",
-         adInstanceId: "instance-456",
+         impressionId: "impression-456",
          revenueMicros: 1500000,  // $1.50
          currency: "USD",
          precision: .exact

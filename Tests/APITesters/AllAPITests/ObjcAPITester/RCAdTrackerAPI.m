@@ -34,13 +34,13 @@
                                                                                         mediatorName:RCMediatorName.appLovin
                                                                                            placement:@"home_screen"
                                                                                             adUnitId:@"ca-app-pub-123"
-                                                                                        impressionId:@"instance-123"];
+                                                                                        impressionId:@"impression-123"];
 
         // AdDisplayed API - without placement (convenience init)
         RCAdDisplayed *displayedNoPlacement __unused = [[RCAdDisplayed alloc] initWithNetworkName:@"AdMob"
                                                                                       mediatorName:RCMediatorName.appLovin
                                                                                           adUnitId:@"ca-app-pub-123"
-                                                                                      impressionId:@"instance-123"];
+                                                                                      impressionId:@"impression-123"];
 
         // AdDisplayed properties
         NSString *networkName __unused = displayedWithPlacement.networkName;
@@ -54,13 +54,13 @@
                                                                                mediatorName:RCMediatorName.appLovin
                                                                                   placement:@"home_screen"
                                                                                    adUnitId:@"ca-app-pub-123"
-                                                                               impressionId:@"instance-123"];
+                                                                               impressionId:@"impression-123"];
 
         // AdOpened API - without placement (convenience init)
         RCAdOpened *openedNoPlacement __unused = [[RCAdOpened alloc] initWithNetworkName:@"AdMob"
                                                                              mediatorName:RCMediatorName.appLovin
                                                                                  adUnitId:@"ca-app-pub-123"
-                                                                             impressionId:@"instance-123"];
+                                                                             impressionId:@"impression-123"];
 
         // AdOpened properties
         NSString *openedNetworkName __unused = openedWithPlacement.networkName;
@@ -74,7 +74,7 @@
                                                                                   mediatorName:RCMediatorName.appLovin
                                                                                      placement:@"home_screen"
                                                                                       adUnitId:@"ca-app-pub-123"
-                                                                                  impressionId:@"instance-123"
+                                                                                  impressionId:@"impression-123"
                                                                                  revenueMicros:1500000
                                                                                       currency:@"USD"
                                                                                      precision:RCAdRevenuePrecision.exact];
@@ -83,7 +83,7 @@
         RCAdRevenue *revenueNoPlacement __unused = [[RCAdRevenue alloc] initWithNetworkName:@"AdMob"
                                                                                mediatorName:RCMediatorName.appLovin
                                                                                    adUnitId:@"ca-app-pub-123"
-                                                                               impressionId:@"instance-123"
+                                                                               impressionId:@"impression-123"
                                                                               revenueMicros:1500000
                                                                                    currency:@"USD"
                                                                                   precision:RCAdRevenuePrecision.exact];

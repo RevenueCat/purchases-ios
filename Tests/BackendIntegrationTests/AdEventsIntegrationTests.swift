@@ -32,7 +32,7 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
             mediatorName: .appLovin,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
-            impressionId: "instance-123"
+            impressionId: "impression-123"
         )
 
         let openedData = AdOpened(
@@ -40,7 +40,7 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
             mediatorName: .appLovin,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
-            impressionId: "instance-456"
+            impressionId: "impression-456"
         )
 
         let revenueData = AdRevenue(
@@ -48,7 +48,7 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
             mediatorName: .appLovin,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
-            impressionId: "instance-789",
+            impressionId: "impression-789",
             revenueMicros: 1500000,
             currency: "USD",
             precision: .exact
@@ -83,7 +83,7 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
             networkName: "AdMob",
             mediatorName: .appLovin,
             adUnitId: "ca-app-pub-123",
-            impressionId: "instance-123"
+            impressionId: "impression-123"
         )
 
         await Purchases.shared.adTracker.trackAdDisplayed(displayedData)
@@ -125,14 +125,14 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
             networkName: "AdMob",
             mediatorName: .appLovin,
             adUnitId: "ca-app-pub-123",
-            impressionId: "instance-123"
+            impressionId: "impression-123"
         )
 
         let openedData = AdOpened(
             networkName: "AdMob",
             mediatorName: .appLovin,
             adUnitId: "ca-app-pub-456",
-            impressionId: "instance-456"
+            impressionId: "impression-456"
         )
 
         await Purchases.shared.adTracker.trackAdDisplayed(displayedData)
