@@ -274,7 +274,7 @@ class PresentedPartialsTest: TestCase {
 
         let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
             .init(conditions: [
-                .anyIntroOffer(.equals, true)
+                .anyPackageContainsIntroOffer(.equals, true)
             ], properties: .init(
                 padding: .zero
             ))
@@ -304,7 +304,7 @@ class PresentedPartialsTest: TestCase {
 
         let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
             .init(conditions: [
-                .anyIntroOffer(.equals, true)
+                .anyPackageContainsIntroOffer(.equals, true)
             ], properties: .init(
                 padding: .zero
             ))
@@ -386,7 +386,7 @@ class PresentedPartialsTest: TestCase {
 
         let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
             .init(conditions: [
-                .anyPromoOffer(.equals, true)
+                .anyPackageContainsPromoOffer(.equals, true)
             ], properties: .init(
                 padding: .zero
             ))
@@ -416,7 +416,7 @@ class PresentedPartialsTest: TestCase {
 
         let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
             .init(conditions: [
-                .anyPromoOffer(.equals, true)
+                .anyPackageContainsPromoOffer(.equals, true)
             ], properties: .init(
                 padding: .zero
             ))

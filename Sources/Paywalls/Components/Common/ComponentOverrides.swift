@@ -37,6 +37,8 @@ public extension PaywallComponent {
 
         case orientation(ArrayOperatorType, [OrientationType])
         case screenSize(ArrayOperatorType, [String])
+
+        /// Compares that the selected package against [value]
         case selectedPackage(ArrayOperatorType, [String])
 
         /// Compares the selected package's intro-offer eligibility (not the whole paywall) against [value].
@@ -44,14 +46,16 @@ public extension PaywallComponent {
         case introOffer(EqualityOperatorType, Bool)
 
         /// Compares against whether any package on the paywall has an intro offer.
-        case anyIntroOffer(EqualityOperatorType, Bool)
+        case anyPackageContainsIntroOffer(EqualityOperatorType, Bool)
 
         /// Compares the selected package's promo-offer eligibility (not the whole paywall) against [value].
         /// This matches the package the customer currently has highlighted in the UI.
         case promoOffer(EqualityOperatorType, Bool)
 
         /// Compares against whether any package on the paywall has a promo offer.
-        case anyPromoOffer(EqualityOperatorType, Bool)
+        case anyPackageContainsPromoOffer(EqualityOperatorType, Bool)
+
+        /// Is the current component selected?
         case selected
 
         // For unknown cases
@@ -77,16 +81,16 @@ public extension PaywallComponent {
                 try container.encode(ConditionType.introOffer.rawValue, forKey: .type)
                 try container.encode(operand, forKey: .operator)
                 try container.encode(value, forKey: .value)
-            case let .anyIntroOffer(operand, value):
-                try container.encode(ConditionType.anyIntroOffer.rawValue, forKey: .type)
+            case let .anyPackageContainsIntroOffer(operand, value):
+                try container.encode(ConditionType.anyPackageContainsIntroOffer.rawValue, forKey: .type)
                 try container.encode(operand, forKey: .operator)
                 try container.encode(value, forKey: .value)
             case let .promoOffer(operand, value):
                 try container.encode(ConditionType.promoOffer.rawValue, forKey: .type)
                 try container.encode(operand, forKey: .operator)
                 try container.encode(value, forKey: .value)
-            case let .anyPromoOffer(operand, value):
-                try container.encode(ConditionType.anyPromoOffer.rawValue, forKey: .type)
+            case let .anyPackageContainsPromoOffer(operand, value):
+                try container.encode(ConditionType.anyPackageContainsPromoOffer.rawValue, forKey: .type)
                 try container.encode(operand, forKey: .operator)
                 try container.encode(value, forKey: .value)
             case .selected:
@@ -119,18 +123,18 @@ public extension PaywallComponent {
                     let operand = try container.decodeIfPresent(EqualityOperatorType.self, forKey: .operator) ?? .equals
                     let value = try container.decodeIfPresent(Bool.self, forKey: .value) ?? true
                     self = .introOffer(operand, value)
-                case .anyIntroOffer:
+                case .anyPackageContainsIntroOffer:
                     let operand = try container.decode(EqualityOperatorType.self, forKey: .operator)
                     let value = try container.decode(Bool.self, forKey: .value)
-                    self = .anyIntroOffer(operand, value)
+                    self = .anyPackageContainsIntroOffer(operand, value)
                 case .promoOffer:
                     let operand = try container.decode(EqualityOperatorType.self, forKey: .operator)
                     let value = try container.decode(Bool.self, forKey: .value)
                     self = .promoOffer(operand, value)
-                case .anyPromoOffer:
+                case .anyPackageContainsPromoOffer:
                     let operand = try container.decode(EqualityOperatorType.self, forKey: .operator)
                     let value = try container.decode(Bool.self, forKey: .value)
-                    self = .anyPromoOffer(operand, value)
+                    self = .anyPackageContainsPromoOffer(operand, value)
                 case .selected:
                     self = .selected
                 }
@@ -158,9 +162,9 @@ public extension PaywallComponent {
             case screenSize = "screen_size"
             case selectedPackage = "selected_package"
             case introOffer = "intro_offer"
-            case anyIntroOffer = "introductory_offer_available"
+            case anyPackageContainsIntroOffer = "introductory_offer_available"
             case promoOffer = "promo_offer"
-            case anyPromoOffer = "promo_offer_available"
+            case anyPackageContainsPromoOffer = "promo_offer_available"
             case selected
 
         }

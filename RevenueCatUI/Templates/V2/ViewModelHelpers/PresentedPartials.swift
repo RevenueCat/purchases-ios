@@ -144,7 +144,7 @@ extension PresentedPartial {
                 @unknown default:
                     return false
                 }
-            case .anyIntroOffer(let operand, let value):
+            case .anyPackageContainsIntroOffer(let operand, let value):
                 switch operand {
                 case .equals:
                     return anyPackageHasIntroOffer == value
@@ -162,7 +162,7 @@ extension PresentedPartial {
                 @unknown default:
                     return false
                 }
-            case .anyPromoOffer(let operand, let value):
+            case .anyPackageContainsPromoOffer(let operand, let value):
                 switch operand {
                 case .equals:
                     return anyPackageHasPromoOffer == value

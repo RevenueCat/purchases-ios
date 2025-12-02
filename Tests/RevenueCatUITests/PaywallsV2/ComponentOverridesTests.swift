@@ -71,7 +71,7 @@ final class ComponentOverridesTests: TestCase {
         let condition = try XCTUnwrap(overrides.first?.conditions.first)
 
         switch condition {
-        case let .anyIntroOffer(operatorType, value):
+        case let .anyPackageContainsIntroOffer(operatorType, value):
             expect(operatorType) == .notEquals
             expect(value) == false
         default:
