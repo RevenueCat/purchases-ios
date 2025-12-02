@@ -22,6 +22,46 @@ import XCTest
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class ComponentOverridesTests: TestCase {
+    typealias ComparisonOperatorType = PaywallComponent.Condition.ComparisonOperatorType
+
+    func testDecodesAppVersionCondition() throws {
+        let testCases = [
+            (ComparisonOperatorType.lessThan, "12.12.12", "<", 121212),
+            (ComparisonOperatorType.equal, "12.01.120", "=", 1201120),
+            (ComparisonOperatorType.greaterThan, "1", ">", 1),
+            (ComparisonOperatorType.greaterThanOrEqual, "100.100.100", ">=", 100100100),
+            (ComparisonOperatorType.lessThanOrEqual, "001.101.101", "<=", 1101101)
+        ]
+
+        try testCases.forEach { expectedOperand, value, operand, expectedValue in
+            let json = """
+            [
+              {
+                "conditions": [
+                  { "type": "app_version", "operator": "\(operand)", "value": "\(value)" }
+                ],
+                "properties": { }
+              }
+            ]
+            """.data(using: .utf8)!
+
+                let overrides = try JSONDecoder.default.decode(
+                    PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent>.self,
+                    from: json
+                )
+
+                let condition = try XCTUnwrap(overrides.first?.conditions.first)
+
+                switch condition {
+                case let .appVersion(operatorType, value):
+                    expect(operatorType) == expectedOperand
+                    expect(value) == expectedValue
+                default:
+                    fail("Expected app version condition")
+                }
+
+        }
+    }
 
     func testDecodesIntroOfferCondition() throws {
         let json = """

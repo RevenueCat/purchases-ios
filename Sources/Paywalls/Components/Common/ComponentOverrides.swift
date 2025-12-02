@@ -58,6 +58,9 @@ public extension PaywallComponent {
         /// Is the current component selected?
         case selected
 
+        /// Compares the app version (as integer with dots removed) against [value]
+        case appVersion(ComparisonOperatorType, Int)
+
         // For unknown cases
         case unsupported
 
@@ -95,12 +98,17 @@ public extension PaywallComponent {
                 try container.encode(value, forKey: .value)
             case .selected:
                 try container.encode(ConditionType.selected.rawValue, forKey: .type)
+            case let .appVersion(operand, value):
+                try container.encode(ConditionType.appVersion.rawValue, forKey: .type)
+                try container.encode(operand, forKey: .operator)
+                try container.encode(String(value), forKey: .value)
             case .unsupported:
                 // Encode a default value for unsupported
                 try container.encode("unknown", forKey: .type)
             }
         }
 
+        // swiftlint:disable:next cyclomatic_complexity
         public init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             let rawValue = try container.decode(String.self, forKey: .type)
@@ -137,6 +145,15 @@ public extension PaywallComponent {
                     self = .anyPackageContainsPromoOffer(operand, value)
                 case .selected:
                     self = .selected
+                case .appVersion:
+                    let operand = try container.decode(ComparisonOperatorType.self, forKey: .operator)
+                    let versionString = try container.decode(String.self, forKey: .value)
+                    let cleanedVersion = versionString.replacingOccurrences(of: ".", with: "")
+                    if let versionInt = Int(cleanedVersion) {
+                        self = .appVersion(operand, versionInt)
+                    } else {
+                        self = .unsupported
+                    }
                 }
             } else {
                 self = .unsupported
@@ -166,6 +183,7 @@ public extension PaywallComponent {
             case promoOffer = "promo_offer"
             case anyPackageContainsPromoOffer = "promo_offer_available"
             case selected
+            case appVersion = "app_version"
 
         }
 
@@ -183,6 +201,17 @@ public extension PaywallComponent {
 
             case `equals` = "="
             case notEquals = "!="
+
+        }
+
+        // swiftlint:disable:next nesting
+        public enum ComparisonOperatorType: String, Codable, Sendable, Hashable, Equatable {
+
+            case lessThan = "<"
+            case lessThanOrEqual = "<="
+            case equal = "="
+            case greaterThan = ">"
+            case greaterThanOrEqual = ">="
 
         }
 

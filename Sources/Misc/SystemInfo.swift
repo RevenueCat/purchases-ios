@@ -23,8 +23,8 @@ import WatchKit
 import AppKit
 #endif
 
-// swiftlint:disable file_length
-class SystemInfo {
+// swiftlint:disable file_length missing_docs
+@_spi(Internal) public class SystemInfo {
 
     // swiftlint:disable:next force_unwrapping
     static let appleSubscriptionsURL = URL(string: "https://apps.apple.com/account/subscriptions")!
@@ -105,7 +105,8 @@ class SystemInfo {
         return ProcessInfo.processInfo.operatingSystemVersionString
     }
 
-    static var appVersion: String {
+    @_spi(Internal)
+    public static var appVersion: String {
         return Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
     }
 
