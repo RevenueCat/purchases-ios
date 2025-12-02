@@ -350,7 +350,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             preferredLocalesProvider: PreferredLocalesProvider(preferredLocaleOverride: preferredLocale)
         )
 
-        apiKeyValidationResult.checkForSimulatedStoreAPIKeyInRelease(systemInfo: systemInfo)
+        apiKeyValidationResult.checkForSimulatedStoreAPIKeyInRelease(systemInfo: systemInfo, apiKey: apiKey)
 
         let receiptFetcher = ReceiptFetcher(requestFetcher: fetcher, systemInfo: systemInfo)
         let eTagManager = ETagManager()
