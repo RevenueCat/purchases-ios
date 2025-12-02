@@ -75,7 +75,13 @@ internal protocol AdImpressionEventData: AdEventData {
     @objc public private(set) var mediatorName: MediatorName
     @objc public private(set) var placement: String?
     @objc public private(set) var adUnitId: String
-    @objc public private(set) var mediatorErrorCode: NSNumber?
+    private let mediatorErrorCodeRawValue: Int?
+    @objc public var mediatorErrorCode: NSNumber? {
+        return self.mediatorErrorCodeRawValue.map(NSNumber.init(value:))
+    }
+    public var mediatorErrorCodeValue: Int? {
+        return self.mediatorErrorCodeRawValue
+    }
 
     @objc public init(
         networkName: String,
@@ -88,7 +94,7 @@ internal protocol AdImpressionEventData: AdEventData {
         self.mediatorName = mediatorName
         self.placement = placement
         self.adUnitId = adUnitId
-        self.mediatorErrorCode = mediatorErrorCode
+        self.mediatorErrorCodeRawValue = mediatorErrorCode?.intValue
         super.init()
     }
 
@@ -127,6 +133,14 @@ internal protocol AdImpressionEventData: AdEventData {
         hasher.combine(adUnitId)
         hasher.combine(mediatorErrorCode)
         return hasher.finalize()
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case networkName
+        case mediatorName
+        case placement
+        case adUnitId
+        case mediatorErrorCodeRawValue = "mediatorErrorCode"
     }
 
 }
