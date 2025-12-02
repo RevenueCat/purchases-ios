@@ -52,6 +52,22 @@ class AdFeatureEventsRequestTests: TestCase {
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
 
+    func testLoadedEvent() throws {
+        let event = AdEvent.loaded(Self.eventCreationData, Self.loadedData)
+        let storedEvent = try Self.createStoredAdEvent(from: event)
+        let requestEvent: AdEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        assertSnapshot(matching: requestEvent, as: .formattedJson)
+    }
+
+    func testFailedToLoadEvent() throws {
+        let event = AdEvent.failedToLoad(Self.eventCreationData, Self.failedToLoadData)
+        let storedEvent = try Self.createStoredAdEvent(from: event)
+        let requestEvent: AdEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        assertSnapshot(matching: requestEvent, as: .formattedJson)
+    }
+
     func testCanInitFromDeserializedEvent() throws {
         let expectedUserID = "test-user"
         let adEventCreationData: AdEvent.CreationData = .init(
@@ -123,6 +139,22 @@ private extension AdFeatureEventsRequestTests {
         revenueMicros: 1500000,
         currency: "USD",
         precision: .exact
+    )
+
+    static let loadedData: AdLoaded = .init(
+        networkName: "AdMob",
+        mediatorName: .appLovin,
+        placement: "home_screen",
+        adUnitId: "ca-app-pub-123456789",
+        impressionId: "impression-123"
+    )
+
+    static let failedToLoadData: AdFailedToLoad = .init(
+        networkName: "AdMob",
+        mediatorName: .appLovin,
+        placement: "home_screen",
+        adUnitId: "ca-app-pub-123456789",
+        mediatorErrorCode: 3
     )
 
     static let userID = "test-user-id"

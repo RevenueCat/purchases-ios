@@ -117,6 +117,60 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         expect(eventData.precision) == .exact
     }
 
+    func testTrackAdLoadedStoresEvent() async throws {
+        let loadedData = AdLoaded(
+            networkName: "AdMob",
+            mediatorName: .appLovin,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123"
+        )
+
+        await self.purchases.adTracker.trackAdLoaded(loadedData)
+
+        let trackedEvents = try await self.mockEventsManager.trackedEvents
+
+        expect(trackedEvents).to(haveCount(1))
+
+        guard case let .loaded(_, eventData) = trackedEvents.first as? AdEvent else {
+            fail("Expected AdEvent.loaded but got \(String(describing: trackedEvents.first))")
+            return
+        }
+
+        expect(eventData.networkName) == "AdMob"
+        expect(eventData.mediatorName) == .appLovin
+        expect(eventData.placement) == "home_screen"
+        expect(eventData.adUnitId) == "ca-app-pub-123"
+        expect((eventData as? AdLoaded)?.impressionId) == "impression-123"
+    }
+
+    func testTrackAdFailedToLoadStoresEvent() async throws {
+        let failedData = AdFailedToLoad(
+            networkName: "AdMob",
+            mediatorName: .appLovin,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            mediatorErrorCode: 3
+        )
+
+        await self.purchases.adTracker.trackAdFailedToLoad(failedData)
+
+        let trackedEvents = try await self.mockEventsManager.trackedEvents
+
+        expect(trackedEvents).to(haveCount(1))
+
+        guard case let .failedToLoad(_, eventData) = trackedEvents.first as? AdEvent else {
+            fail("Expected AdEvent.failedToLoad but got \(String(describing: trackedEvents.first))")
+            return
+        }
+
+        expect(eventData.networkName) == "AdMob"
+        expect(eventData.mediatorName) == .appLovin
+        expect(eventData.placement) == "home_screen"
+        expect(eventData.adUnitId) == "ca-app-pub-123"
+        expect((eventData as? AdFailedToLoad)?.mediatorErrorCode?.intValue) == 3
+    }
+
 }
 
 #endif

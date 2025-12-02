@@ -54,11 +54,13 @@ extension AdEventsRequest {
         var mediatorName: String
         var placement: String?
         var adUnitId: String
-        var impressionId: String
+        var impressionId: String?
         // For revenue events only:
         var revenueMicros: Int?
         var currency: String?
         var precision: String?
+        // For failed to load events only:
+        var mediatorErrorCode: Int?
 
     }
 
@@ -72,6 +74,8 @@ extension AdEventsRequest.AdEventRequest {
         case displayed = "rc_ads_ad_displayed"
         case opened = "rc_ads_ad_opened"
         case revenue = "rc_ads_ad_revenue"
+        case loaded = "rc_ads_ad_loaded"
+        case failedToLoad = "rc_ads_ad_failed_to_load"
 
     }
 
@@ -97,10 +101,11 @@ extension AdEventsRequest.AdEventRequest {
                 mediatorName: eventData.mediatorName.rawValue,
                 placement: eventData.placement,
                 adUnitId: eventData.adUnitId,
-                impressionId: eventData.impressionId,
+                impressionId: adEvent.impressionIdentifier,
                 revenueMicros: adEvent.revenueData?.revenueMicros,
                 currency: adEvent.revenueData?.currency,
-                precision: adEvent.revenueData?.precision.rawValue
+                precision: adEvent.revenueData?.precision.rawValue,
+                mediatorErrorCode: adEvent.mediatorErrorCode
             )
         } catch {
             Logger.error(Strings.paywalls.event_cannot_deserialize(error))
@@ -120,6 +125,8 @@ private extension AdEvent {
         case .displayed: return .displayed
         case .opened: return .opened
         case .revenue: return .revenue
+        case .loaded: return .loaded
+        case .failedToLoad: return .failedToLoad
         }
 
     }
@@ -150,6 +157,7 @@ extension AdEventsRequest.AdEventRequest: Encodable {
         case revenueMicros
         case currency
         case precision
+        case mediatorErrorCode
 
     }
 
