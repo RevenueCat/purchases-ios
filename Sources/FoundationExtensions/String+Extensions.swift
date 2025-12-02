@@ -59,6 +59,28 @@ extension String {
         }
     }
 
+    var asRedactedAPIKey: String {
+        guard let underscoreIndex = self.firstIndex(of: "_") else {
+            return self // No underscore → do not redact
+        }
+
+        // Prefix including underscore
+        let prefix = self[..<self.index(after: underscoreIndex)]
+
+        // Remainder after underscore
+        let remainder = self[self.index(after: underscoreIndex)...]
+
+        // If fewer than 6 characters after the underscore → return unredacted
+        guard remainder.count >= 6 else {
+            return self
+        }
+
+        // Take first 2 and last 4 characters
+        let start = remainder.prefix(2)
+        let end = remainder.suffix(4)
+
+        return "\(prefix)\(start)********\(end)"
+    }
 }
 
 // MARK: -
