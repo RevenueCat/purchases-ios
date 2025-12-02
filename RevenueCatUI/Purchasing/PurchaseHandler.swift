@@ -620,6 +620,26 @@ struct RestoreErrorPreferenceKey: PreferenceKey {
 
 }
 
+enum ExitPaywallRequest: Equatable {
+
+    case none
+    case requested
+
+}
+
+struct ExitPaywallRequestPreferenceKey: PreferenceKey {
+
+    static var defaultValue: ExitPaywallRequest = .none
+
+    static func reduce(value: inout ExitPaywallRequest, nextValue: () -> ExitPaywallRequest) {
+        let next = nextValue()
+        if next == .requested {
+            value = .requested
+        }
+    }
+
+}
+
 // MARK: Environment keys
 
 /// `EnvironmentKey` for storing closure triggered when paywall should be dismissed.

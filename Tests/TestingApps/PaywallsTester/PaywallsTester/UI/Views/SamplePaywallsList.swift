@@ -53,7 +53,12 @@ struct SamplePaywallsList: View {
                     introEligibility: Self.introEligibility
                 ))
             case .presentIfNeeded:
-                fatalError()
+                PresentIfNeededWrapperView(
+                    offering: Self.loader.offering(for: template),
+                    customerInfo: Self.loader.customerInfo,
+                    introEligibility: Self.introEligibility,
+                    onDismiss: { self.display = nil }
+                )
 
             #if !os(watchOS) && !os(macOS)
             case .footer, .condensedFooter:
@@ -410,5 +415,36 @@ struct SamplePaywallsList_Previews: PreviewProvider {
     static var previews: some View {
         SamplePaywallsList()
     }
+}
+
+// MARK: - Present Paywall If Needed Wrapper
+
+private struct PresentIfNeededWrapperView: View {
+
+    let offering: Offering
+    let customerInfo: CustomerInfo
+    let introEligibility: TrialOrIntroEligibilityChecker
+    let onDismiss: () -> Void
+
+    var body: some View {
+        Text("Preparing paywall…")
+            .presentPaywallIfNeeded(
+                offering: self.offering,
+                introEligibility: self.introEligibility,
+                shouldDisplay: { _ in true },
+                purchaseStarted: nil,
+                purchaseCompleted: nil,
+                purchaseCancelled: nil,
+                restoreStarted: nil,
+                restoreCompleted: nil,
+                purchaseFailure: nil,
+                restoreFailure: nil,
+                onDismiss: self.onDismiss,
+                customerInfoFetcher: {
+                    self.customerInfo
+                }
+            )
+    }
+
 }
 

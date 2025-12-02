@@ -43,7 +43,7 @@ internal extension PaywallTesterViewMode {
     }
     
     var isAvailableOnExamples: Bool {
-        return self != .presentIfNeeded
+        return true
     }
 
     var mode: PaywallViewMode {

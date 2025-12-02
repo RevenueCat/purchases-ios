@@ -456,12 +456,18 @@ private struct PresentingPaywallModifier: ViewModifier {
     @State
     private var data: Data?
 
+    @State
+    private var exitPaywallRequested: Bool = false
+
+    @State
+    private var exitPaywallAlreadyPresented: Bool = false
+
     func body(content: Content) -> some View {
         Group {
             switch presentationMode {
             case .sheet:
                 content
-                    .sheet(item: self.$data, onDismiss: self.onDismiss) { data in
+                    .sheet(item: self.$data, onDismiss: self.handlePaywallDismissal) { data in
                         self.paywallView(data)
                         // The default height given to sheets on Mac Catalyst is too small, and looks terrible.
                         // So we need to give it a more reasonable default size. This is the height of an
@@ -476,7 +482,7 @@ private struct PresentingPaywallModifier: ViewModifier {
             #if !os(macOS)
             case .fullScreen:
                 content
-                    .fullScreenCover(item: self.$data, onDismiss: self.onDismiss) { data in
+                    .fullScreenCover(item: self.$data, onDismiss: self.handlePaywallDismissal) { data in
                         self.paywallView(data)
                     }
             #endif
@@ -560,12 +566,30 @@ private struct PresentingPaywallModifier: ViewModifier {
             self.restoreFailure?($0)
         }
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
+        .onPreferenceChange(ExitPaywallRequestPreferenceKey.self) { request in
+            self.exitPaywallRequested = (request == .requested)
+        }
     }
 
     private func close() {
         Logger.debug(Strings.dismissing_paywall)
 
         self.data = nil
+    }
+
+    @MainActor
+    private func handlePaywallDismissal() {
+        if self.exitPaywallRequested && !self.exitPaywallAlreadyPresented {
+            self.exitPaywallAlreadyPresented = true
+            self.exitPaywallRequested = false
+            Task {
+                await self.updateCustomerInfo()
+            }
+        } else {
+            self.exitPaywallRequested = false
+            self.exitPaywallAlreadyPresented = false
+            self.onDismiss?()
+        }
     }
 
 }

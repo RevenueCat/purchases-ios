@@ -108,6 +108,7 @@ struct PaywallsV2View: View {
     private let onDismiss: () -> Void
     private let fallbackContent: FallbackContent
     @State private var didFinishEligibilityCheck: Bool = false
+    @State private var exitPaywallRequest: ExitPaywallRequest = .none
 
     // There is a timing issue where the screen will completely render before the offers cache is primed
     // This is necessary to ensure that the view displays the offer text when it is available
@@ -183,7 +184,10 @@ struct PaywallsV2View: View {
                         introOfferEligibilityContext: introOfferEligibilityContext,
                         paywallState: paywallState,
                         uiConfigProvider: self.uiConfigProvider,
-                        onDismiss: self.onDismiss
+                        onDismiss: {
+                            self.exitPaywallRequest = .requested
+                            self.onDismiss()
+                        }
                     )
                     .id(redrawTrigger)
                     .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
@@ -192,6 +196,7 @@ struct PaywallsV2View: View {
                     .environmentObject(self.paywallPromoOfferCache)
                     .disabled(self.purchaseHandler.actionInProgress)
                     .onAppear {
+                        self.exitPaywallRequest = .none
                         self.purchaseHandler.trackPaywallImpression(
                             self.createEventData()
                         )
@@ -199,6 +204,7 @@ struct PaywallsV2View: View {
                     .onDisappear { self.purchaseHandler.trackPaywallClose() }
                     .onChangeOf(self.purchaseHandler.purchased) { purchased in
                         if purchased {
+                            self.exitPaywallRequest = .none
                             self.onDismiss()
                         }
                     }
@@ -229,6 +235,8 @@ struct PaywallsV2View: View {
                                 value: self.purchaseHandler.purchaseError as NSError?)
                     .preference(key: RestoreErrorPreferenceKey.self,
                                 value: self.purchaseHandler.restoreError as NSError?)
+                    .preference(key: ExitPaywallRequestPreferenceKey.self,
+                                value: self.exitPaywallRequest)
                 case .failure(let error):
                     // Show fallback paywall and debug error message that
                     // occurred while validating data and view models
