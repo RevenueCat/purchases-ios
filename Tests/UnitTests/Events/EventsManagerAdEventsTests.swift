@@ -49,7 +49,7 @@ class EventsManagerAdEventsTests: TestCase {
         )
     }
 
-    // MARK: - flushEvents (combined)
+    // MARK: - flushAllEvents (combined)
 
     func testFlushEventsFlushesFeatureAndAdEvents() async throws {
         // Store feature events
@@ -62,7 +62,7 @@ class EventsManagerAdEventsTests: TestCase {
         let adEvent1 = await self.storeRandomAdEvent()
         let adEvent2 = await self.storeRandomAdEvent()
 
-        let result = try await self.manager.flushEvents(batchSize: 10)
+        let result = try await self.manager.flushAllEvents(batchSize: 10)
 
         // Should have flushed both types
         expect(result) == 4
@@ -74,7 +74,7 @@ class EventsManagerAdEventsTests: TestCase {
     }
 
     func testFlushEventsReturnsZeroWhenBothStoresEmpty() async throws {
-        let result = try await self.manager.flushEvents(batchSize: 1)
+        let result = try await self.manager.flushAllEvents(batchSize: 1)
         expect(result) == 0
     }
 
@@ -82,7 +82,7 @@ class EventsManagerAdEventsTests: TestCase {
         let featureEvent: PaywallEvent = .impression(.random(), .random())
         await self.manager.track(featureEvent: featureEvent)
 
-        let result = try await self.manager.flushEvents(batchSize: 10)
+        let result = try await self.manager.flushAllEvents(batchSize: 10)
 
         expect(result) == 1
 
@@ -94,7 +94,7 @@ class EventsManagerAdEventsTests: TestCase {
         _ = await self.storeRandomAdEvent()
         _ = await self.storeRandomAdEvent()
 
-        let result = try await self.manager.flushEvents(batchSize: 10)
+        let result = try await self.manager.flushAllEvents(batchSize: 10)
 
         expect(result) == 2
 
@@ -110,7 +110,7 @@ class EventsManagerAdEventsTests: TestCase {
         self.api.stubbedPostPaywallEventsCompletionResult = .networkError(expectedError)
 
         do {
-            _ = try await self.manager.flushEvents(batchSize: 10)
+            _ = try await self.manager.flushAllEvents(batchSize: 10)
             fail("Expected error")
         } catch BackendError.networkError(expectedError) {
             // Expected
@@ -136,7 +136,7 @@ class EventsManagerAdEventsTests: TestCase {
         self.api.stubbedPostAdEventsCompletionResult = .networkError(expectedError)
 
         do {
-            _ = try await self.manager.flushEvents(batchSize: 10)
+            _ = try await self.manager.flushAllEvents(batchSize: 10)
             fail("Expected error")
         } catch BackendError.networkError(expectedError) {
             // Expected

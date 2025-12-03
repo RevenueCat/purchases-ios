@@ -30,7 +30,7 @@ protocol EventsManagerType {
     /// - Throws: if posting events fails
     /// - Returns: the number of events posted
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func flushEvents(batchSize: Int) async throws -> Int
+    func flushAllEvents(batchSize: Int) async throws -> Int
 
     /// - Throws: if posting feature events fails
     /// - Returns: the number of feature events posted
@@ -119,11 +119,11 @@ actor EventsManager: EventsManagerType {
     }
     #endif
 
-    func flushEvents(batchSize: Int = defaultEventBatchSize) async throws -> Int {
+    func flushAllEvents(batchSize: Int = defaultEventBatchSize) async throws -> Int {
         #if os(iOS) || os(tvOS) || VISION_OS
         let endBackgroundTask: (() -> Void)?
         if !self.systemInfo.isAppExtension {
-            endBackgroundTask = await self.beginBackgroundTask(named: "com.revenuecat.flushEvents")
+            endBackgroundTask = await self.beginBackgroundTask(named: "com.revenuecat.flushAllEvents")
         } else {
             endBackgroundTask = nil
         }

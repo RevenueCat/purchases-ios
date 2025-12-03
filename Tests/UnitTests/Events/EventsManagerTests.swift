@@ -71,10 +71,10 @@ class EventsManagerTests: TestCase {
         ]
     }
 
-    // MARK: - flushEvents
+    // MARK: - flushAllEvents
 
     func testFlushEmptyStore() async throws {
-        let result = try await self.manager.flushEvents(batchSize: 1)
+        let result = try await self.manager.flushAllEvents(batchSize: 1)
         expect(result) == 0
         expect(self.api.invokedPostPaywallEvents) == false
     }
@@ -82,7 +82,7 @@ class EventsManagerTests: TestCase {
     func testFlushOneEvent() async throws {
         let event = await self.storeRandomEvent()
 
-        let result = try await self.manager.flushEvents(batchSize: 1)
+        let result = try await self.manager.flushAllEvents(batchSize: 1)
         expect(result) == 1
 
         expect(self.api.invokedPostPaywallEvents) == true
@@ -95,8 +95,8 @@ class EventsManagerTests: TestCase {
         let event1 = await self.storeRandomEvent()
         let event2 = await self.storeRandomEvent()
 
-        let result1 = try await self.manager.flushEvents(batchSize: 1)
-        let result2 = try await self.manager.flushEvents(batchSize: 1)
+        let result1 = try await self.manager.flushAllEvents(batchSize: 1)
+        let result2 = try await self.manager.flushAllEvents(batchSize: 1)
 
         expect(result1) == 2
         expect(result2) == 0
@@ -115,7 +115,7 @@ class EventsManagerTests: TestCase {
         let event2 = await self.storeRandomEvent()
         let event3 = await self.storeRandomEvent()
 
-        let result = try await self.manager.flushEvents(batchSize: 1)
+        let result = try await self.manager.flushAllEvents(batchSize: 1)
         expect(result) == 3
 
         expect(self.api.invokedPostPaywallEvents) == true
@@ -135,7 +135,7 @@ class EventsManagerTests: TestCase {
         let event4 = await self.storeRandomEvent()
         let event5 = await self.storeRandomEvent()
 
-        let result = try await self.manager.flushEvents(batchSize: 2)
+        let result = try await self.manager.flushAllEvents(batchSize: 2)
         expect(result) == 5
 
         expect(self.api.invokedPostPaywallEvents) == true
@@ -155,7 +155,7 @@ class EventsManagerTests: TestCase {
 
         self.api.stubbedPostPaywallEventsCompletionResult = .networkError(expectedError)
         do {
-            _ = try await self.manager.flushEvents(batchSize: 1)
+            _ = try await self.manager.flushAllEvents(batchSize: 1)
             fail("Expected error")
         } catch BackendError.networkError(expectedError) {
             // Expected
@@ -176,7 +176,7 @@ class EventsManagerTests: TestCase {
             .errorResponse(.defaultResponse, .invalidRequest)
         )
 
-        let result = try await self.manager.flushEvents(batchSize: 1)
+        let result = try await self.manager.flushAllEvents(batchSize: 1)
 
         expect(result) == 1
         expect(self.api.invokedPostPaywallEvents) == true
@@ -192,7 +192,7 @@ class EventsManagerTests: TestCase {
             .errorResponse(.defaultResponse, .invalidRequest)
         )
 
-        let result = try await self.manager.flushEvents(batchSize: 1)
+        let result = try await self.manager.flushAllEvents(batchSize: 1)
 
         expect(result) == 2
         expect(self.api.invokedPostPaywallEvents) == true
@@ -212,7 +212,7 @@ class EventsManagerTests: TestCase {
         self.api.stubbedPostPaywallEventsCompletionResult = .networkError(expectedError)
 
         do {
-            _ = try await self.manager.flushEvents(batchSize: 1)
+            _ = try await self.manager.flushAllEvents(batchSize: 1)
             fail("Expected error")
         } catch BackendError.networkError(expectedError) {
             // Expected
@@ -245,7 +245,7 @@ class EventsManagerTests: TestCase {
         }
 
         // Flush with batch size 2, should only send 10 batches (20 events)
-        let result = try await self.manager.flushEvents(batchSize: eventsPerBatch)
+        let result = try await self.manager.flushAllEvents(batchSize: eventsPerBatch)
         let expectedEventsFlushed = eventsPerBatch * EventsManager.maxBatchesPerFlush
         expect(result) == expectedEventsFlushed
 
@@ -292,8 +292,8 @@ class EventsManagerTests: TestCase {
         }
 
         let manager = self.manager!
-        async let result1 = manager.flushEvents(batchSize: 1)
-        async let result2 = manager.flushEvents(batchSize: 1)
+        async let result1 = manager.flushAllEvents(batchSize: 1)
+        async let result2 = manager.flushAllEvents(batchSize: 1)
 
         // Signal the API call to complete
         continuation.continuation.yield()

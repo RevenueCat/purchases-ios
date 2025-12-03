@@ -854,7 +854,7 @@ final class PurchasesOrchestrator {
         }
         self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) {
             do {
-                _ = try await manager.flushEvents()
+                _ = try await manager.flushAllEvents()
             } catch {
                 Logger.error(Strings.paywalls.event_flush_failed(error))
             }
