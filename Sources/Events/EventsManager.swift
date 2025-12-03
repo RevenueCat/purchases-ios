@@ -150,7 +150,7 @@ actor EventsManager: EventsManagerType {
 // MARK: - Private Methods
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-private extension EventsManager {
+extension EventsManager {
 
     func flushEvents(batchSize: Int) async throws -> Int {
         let featureEventsFlushed = try await self.flushFeatureEvents(batchSize: batchSize)
