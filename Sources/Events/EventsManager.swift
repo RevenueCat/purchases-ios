@@ -13,6 +13,10 @@
 
 import Foundation
 
+#if os(iOS) || os(tvOS) || VISION_OS
+import UIKit
+#endif
+
 protocol EventsManagerType {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -23,32 +27,25 @@ protocol EventsManagerType {
     func track(adEvent: AdEvent) async
     #endif
 
-    /// - Throws: if posting events fails
-    /// - Returns: the number of events posted
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func flushEvents(batchSize: Int) async throws -> Int
+    func flushEventsWithBackgroundTask() async
 
-    /// - Throws: if posting feature events fails
-    /// - Returns: the number of feature events posted
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func flushFeatureEvents(batchSize: Int) async throws -> Int
-
-    #if ENABLE_AD_EVENTS_TRACKING
-    /// - Throws: if posting ad events fails
-    /// - Returns: the number of ad events posted
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func flushAdEvents(count: Int) async throws -> Int
-    #endif
+    func flushFeatureEventsWithBackgroundTask() async
 
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 actor EventsManager: EventsManagerType {
+    
+    static let defaultEventBatchSize = 50
+    static let maxBatchesPerFlush = 10
 
     private let internalAPI: InternalAPI
     private let userProvider: CurrentUserProvider
     private let store: FeatureEventStoreType
     private var appSessionID: UUID
+    private let systemInfo: SystemInfo
 
     #if ENABLE_AD_EVENTS_TRACKING
     private let adEventStore: AdEventStoreType?
@@ -62,12 +59,14 @@ actor EventsManager: EventsManagerType {
         internalAPI: InternalAPI,
         userProvider: CurrentUserProvider,
         store: FeatureEventStoreType,
+        systemInfo: SystemInfo,
         appSessionID: UUID = SystemInfo.appSessionID,
         adEventStore: AdEventStoreType? = nil
     ) {
         self.internalAPI = internalAPI
         self.userProvider = userProvider
         self.store = store
+        self.systemInfo = systemInfo
         self.appSessionID = appSessionID
         self.adEventStore = adEventStore
     }
@@ -76,11 +75,13 @@ actor EventsManager: EventsManagerType {
         internalAPI: InternalAPI,
         userProvider: CurrentUserProvider,
         store: FeatureEventStoreType,
+        systemInfo: SystemInfo,
         appSessionID: UUID = SystemInfo.appSessionID
     ) {
         self.internalAPI = internalAPI
         self.userProvider = userProvider
         self.store = store
+        self.systemInfo = systemInfo
         self.appSessionID = appSessionID
     }
     #endif
@@ -113,6 +114,43 @@ actor EventsManager: EventsManagerType {
         await store.store(event)
     }
     #endif
+
+    func flushEventsWithBackgroundTask() async {
+        #if os(iOS) || os(tvOS) || VISION_OS
+        let endBackgroundTask = await self.beginBackgroundTask(named: "com.revenuecat.flushEvents")
+        defer {
+            endBackgroundTask?()
+        }
+        #endif
+
+        do {
+            _ = try await self.flushEvents(batchSize: Self.defaultEventBatchSize)
+        } catch {
+            Logger.error(Strings.paywalls.event_flush_failed(error))
+        }
+    }
+
+    func flushFeatureEventsWithBackgroundTask() async {
+        #if os(iOS) || os(tvOS) || VISION_OS
+        let endBackgroundTask = await self.beginBackgroundTask(named: "com.revenuecat.flushFeatureEvents")
+        defer {
+            endBackgroundTask?()
+        }
+        #endif
+
+        do {
+            _ = try await self.flushFeatureEvents(batchSize: Self.defaultEventBatchSize)
+        } catch {
+            Logger.error(Strings.paywalls.event_flush_failed(error))
+        }
+    }
+
+}
+
+// MARK: - Private Methods
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+private extension EventsManager {
 
     func flushEvents(batchSize: Int) async throws -> Int {
         let featureEventsFlushed = try await self.flushFeatureEvents(batchSize: batchSize)
@@ -172,9 +210,6 @@ actor EventsManager: EventsManagerType {
         return totalFlushed
     }
 
-    static let defaultEventBatchSize = 50
-    static let maxBatchesPerFlush = 10
-
     #if ENABLE_AD_EVENTS_TRACKING
     func flushAdEvents(count: Int) async throws -> Int {
         guard let store = self.adEventStore else {
@@ -214,6 +249,53 @@ actor EventsManager: EventsManagerType {
             }
 
             throw error
+        }
+    }
+    #endif
+
+    #if os(iOS) || os(tvOS) || VISION_OS
+    @MainActor
+    func beginBackgroundTask(named taskName: String) -> (() -> Void)? {
+        guard let application = SystemInfo.sharedUIApplication else {
+            Logger.warn(Strings.paywalls.background_task_unavailable)
+            
+            if self.systemInfo.isAppExtension {
+                let semaphore = DispatchSemaphore(value: 0)
+                ProcessInfo.processInfo.performExpiringActivity(withReason: taskName) { expired in
+                    guard !expired else {
+                        Logger.warn(Strings.paywalls.background_task_expired(taskName))
+                        return
+                    }
+                    semaphore.wait()
+                }
+                Logger.debug(Strings.paywalls.background_task_started(taskName))
+                return {
+                    semaphore.signal()
+                }
+            }
+            
+            return nil
+        }
+
+        var backgroundTaskID: UIBackgroundTaskIdentifier?
+        backgroundTaskID = application.beginBackgroundTask(withName: taskName) {
+            Logger.warn(Strings.paywalls.background_task_expired(taskName))
+            if let taskID = backgroundTaskID {
+                application.endBackgroundTask(taskID)
+                backgroundTaskID = .invalid
+            }
+        }
+
+        if backgroundTaskID == .invalid {
+            Logger.warn(Strings.paywalls.background_task_failed(taskName))
+            return nil
+        }
+
+        Logger.debug(Strings.paywalls.background_task_started(taskName))
+        return {
+            if let taskID = backgroundTaskID {
+                application.endBackgroundTask(taskID)
+            }
         }
     }
     #endif

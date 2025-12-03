@@ -39,6 +39,7 @@ class EventsManagerTests: TestCase {
             internalAPI: self.api,
             userProvider: self.userProvider,
             store: self.store,
+            systemInfo: MockSystemInfo(finishTransactions: true),
             appSessionID: self.appSessionID
         )
     }
