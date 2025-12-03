@@ -2144,6 +2144,7 @@ internal extension Purchases {
             """
     )
     func flushPaywallEvents(count: Int) async throws -> Int {
+        try await self.eventsManager?.flushFeatureEvents(batchSize: count)
         return 0
     }
 
