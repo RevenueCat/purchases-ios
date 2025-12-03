@@ -517,7 +517,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         let manager = try self.mockEventsManager
 
-        try await asyncWait { await manager.invokedFlushFeatureEvents == true }
+        try await asyncWait { await manager.invokedFlushFeatureEventsWithBackgroundTask == true }
 
         expect(self.operationDispatcher.invokedDispatchAsyncOnWorkerThreadDelayParam) == JitterableDelay.none
     }
