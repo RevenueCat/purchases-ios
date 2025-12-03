@@ -25,6 +25,7 @@ public extension PaywallComponent {
         public let padding: Padding
         public let margin: Padding
         public let fontWeightInt: Int?
+        public let conditionalVisibilityFallback: Bool?
 
         public let overrides: ComponentOverrides<PartialTextComponent>?
 
@@ -45,6 +46,7 @@ public extension PaywallComponent {
             fontSize: CGFloat = 16,
             horizontalAlignment: HorizontalAlignment = .center,
             overrides: ComponentOverrides<PartialTextComponent>? = nil,
+            conditionalVisibilityFallback: Bool? = nil,
             fontWeightInt: Int? = nil
         ) {
             self.type = .text
@@ -60,6 +62,7 @@ public extension PaywallComponent {
             self.fontSize = fontSize
             self.horizontalAlignment = horizontalAlignment
             self.overrides = overrides
+            self.conditionalVisibilityFallback = conditionalVisibilityFallback
             self.fontWeightInt = fontWeightInt
         }
 
@@ -77,6 +80,7 @@ public extension PaywallComponent {
             case padding
             case margin
             case overrides
+            case conditionalVisibilityFallback
             case fontWeightInt
         }
 
@@ -97,6 +101,10 @@ public extension PaywallComponent {
             self.overrides = try container.decodeIfPresent(
                 ComponentOverrides<PartialTextComponent>.self,
                 forKey: .overrides
+            )
+            self.conditionalVisibilityFallback = try container.decodeIfPresent(
+                Bool.self,
+                forKey: .conditionalVisibilityFallback
             )
             self.fontWeightInt = try container.decodeIfPresent(Int.self, forKey: .fontWeightInt)
 
@@ -126,6 +134,7 @@ public extension PaywallComponent {
             try container.encode(padding, forKey: .padding)
             try container.encode(margin, forKey: .margin)
             try container.encodeIfPresent(overrides, forKey: .overrides)
+            try container.encodeIfPresent(conditionalVisibilityFallback, forKey: .conditionalVisibilityFallback)
             try container.encodeIfPresent(fontWeightInt, forKey: .fontWeightInt)
             try container.encode(fontSize, forKey: .fontSize)
         }
@@ -144,6 +153,7 @@ public extension PaywallComponent {
             hasher.combine(padding)
             hasher.combine(margin)
             hasher.combine(overrides)
+            hasher.combine(conditionalVisibilityFallback)
             hasher.combine(fontWeightInt)
         }
 
@@ -161,7 +171,8 @@ public extension PaywallComponent {
                    lhs.padding == rhs.padding &&
                    lhs.margin == rhs.margin &&
                    lhs.overrides == rhs.overrides &&
-                    lhs.fontWeightInt == rhs.fontWeightInt
+                   lhs.conditionalVisibilityFallback == rhs.conditionalVisibilityFallback &&
+                   lhs.fontWeightInt == rhs.fontWeightInt
         }
     }
 

@@ -46,6 +46,7 @@ public extension PaywallComponent {
         public let overflow: Overflow?
 
         public let overrides: ComponentOverrides<PartialStackComponent>?
+        public let conditionalVisibilityFallback: Bool?
 
         public init(
             visible: Bool? = nil,
@@ -62,7 +63,8 @@ public extension PaywallComponent {
             shadow: Shadow? = nil,
             badge: Badge? = nil,
             overflow: Overflow? = nil,
-            overrides: ComponentOverrides<PartialStackComponent>? = nil
+            overrides: ComponentOverrides<PartialStackComponent>? = nil,
+            conditionalVisibilityFallback: Bool? = nil
         ) {
             self.visible = visible
             self.components = components
@@ -80,6 +82,7 @@ public extension PaywallComponent {
             self.badge = badge
             self.overflow = overflow
             self.overrides = overrides
+            self.conditionalVisibilityFallback = conditionalVisibilityFallback
         }
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
@@ -98,6 +101,7 @@ public extension PaywallComponent {
             hasher.combine(badge)
             hasher.combine(overflow)
             hasher.combine(overrides)
+            hasher.combine(conditionalVisibilityFallback)
         }
 
         public static func == (lhs: StackComponent, rhs: StackComponent) -> Bool {
@@ -116,7 +120,8 @@ public extension PaywallComponent {
                    lhs.shadow == rhs.shadow &&
                    lhs.badge == rhs.badge &&
                    lhs.overflow == rhs.overflow &&
-                   lhs.overrides == rhs.overrides
+                   lhs.overrides == rhs.overrides &&
+                   lhs.conditionalVisibilityFallback == rhs.conditionalVisibilityFallback
         }
     }
 
