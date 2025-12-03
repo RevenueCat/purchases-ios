@@ -24,7 +24,7 @@ import AppKit
 #endif
 
 // swiftlint:disable file_length missing_docs
-public class SystemInfo {
+class SystemInfo {
 
     // swiftlint:disable:next force_unwrapping
     static let appleSubscriptionsURL = URL(string: "https://apps.apple.com/account/subscriptions")!
