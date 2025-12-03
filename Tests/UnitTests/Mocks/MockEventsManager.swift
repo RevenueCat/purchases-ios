@@ -23,20 +23,20 @@ actor MockEventsManager: EventsManagerType {
         self.trackedEvents.append(featureEvent)
     }
 
-    var invokedFlushEventsWithBackgroundTask = false
-    var invokedFlushEventsWithBackgroundTaskCount = 0
+    var invokedFlushEvents = false
+    var invokedFlushEventsCount = 0
 
-    func flushEventsWithBackgroundTask() async {
-        self.invokedFlushEventsWithBackgroundTask = true
-        self.invokedFlushEventsWithBackgroundTaskCount += 1
+    func flushEvents() async {
+        self.invokedFlushEvents = true
+        self.invokedFlushEventsCount += 1
     }
 
-    var invokedFlushFeatureEventsWithBackgroundTask = false
-    var invokedFlushFeatureEventsWithBackgroundTaskCount = 0
+    var invokedFlushFeatureEvents = false
+    var invokedFlushFeatureEventsCount = 0
 
-    func flushFeatureEventsWithBackgroundTask() async {
-        self.invokedFlushFeatureEventsWithBackgroundTask = true
-        self.invokedFlushFeatureEventsWithBackgroundTaskCount += 1
+    func flushFeatureEvents() async {
+        self.invokedFlushFeatureEvents = true
+        self.invokedFlushFeatureEventsCount += 1
     }
 
     #if ENABLE_AD_EVENTS_TRACKING

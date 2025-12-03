@@ -28,10 +28,10 @@ protocol EventsManagerType {
     #endif
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func flushEventsWithBackgroundTask() async
+    func flushEvents() async
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func flushFeatureEventsWithBackgroundTask() async
+    func flushFeatureEvents() async
 
 }
 
@@ -115,7 +115,7 @@ actor EventsManager: EventsManagerType {
     }
     #endif
 
-    func flushEventsWithBackgroundTask() async {
+    func flushEvents() async {
         #if os(iOS) || os(tvOS) || VISION_OS
         let endBackgroundTask = await self.beginBackgroundTask(named: "com.revenuecat.flushEvents")
         defer {
@@ -130,7 +130,7 @@ actor EventsManager: EventsManagerType {
         }
     }
 
-    func flushFeatureEventsWithBackgroundTask() async {
+    func flushFeatureEvents() async {
         #if os(iOS) || os(tvOS) || VISION_OS
         let endBackgroundTask = await self.beginBackgroundTask(named: "com.revenuecat.flushFeatureEvents")
         defer {
@@ -146,7 +146,7 @@ actor EventsManager: EventsManagerType {
     }
 
     // MARK: - Internal Methods (for testing)
-    // External consumers should use flushEventsWithBackgroundTask() and flushFeatureEventsWithBackgroundTask()
+    // External consumers should use flushEvents() and flushFeatureEvents() which provide background task support
 
     func flushEvents(batchSize: Int) async throws -> Int {
         let featureEventsFlushed = try await self.flushFeatureEvents(batchSize: batchSize)

@@ -853,7 +853,7 @@ final class PurchasesOrchestrator {
             delay = .none
         }
         self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) {
-            await manager.flushEventsWithBackgroundTask()
+            await manager.flushEvents()
         }
     }
 
@@ -869,7 +869,7 @@ final class PurchasesOrchestrator {
             delay = .none
         }
         self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) {
-            await manager.flushFeatureEventsWithBackgroundTask()
+            await manager.flushFeatureEvents()
         }
     }
 

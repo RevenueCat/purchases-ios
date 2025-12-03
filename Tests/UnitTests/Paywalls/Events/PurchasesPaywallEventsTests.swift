@@ -33,7 +33,7 @@ class PurchasesPaywallEventsTests: BasePurchasesTests {
 
         let manager = try self.mockEventsManager
 
-        try await asyncWait { await manager.invokedFlushEventsWithBackgroundTask == true }
+        try await asyncWait { await manager.invokedFlushEvents == true }
 
         expect(self.mockOperationDispatcher.invokedDispatchAsyncOnWorkerThreadDelayParam) == .long
     }
@@ -43,7 +43,7 @@ class PurchasesPaywallEventsTests: BasePurchasesTests {
 
         let manager = try self.mockEventsManager
 
-        try await asyncWait { await manager.invokedFlushEventsWithBackgroundTask == true }
+        try await asyncWait { await manager.invokedFlushEvents == true }
 
         expect(self.mockOperationDispatcher.invokedDispatchAsyncOnWorkerThreadDelayParam) == JitterableDelay.none
     }
