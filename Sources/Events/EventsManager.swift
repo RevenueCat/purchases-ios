@@ -28,10 +28,10 @@ protocol EventsManagerType {
     #endif
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func flushEvents() async
+    func flushEvents(batchSize: Int) async throws -> Int
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func flushFeatureEvents() async
+    func flushFeatureEvents(batchSize: Int) async throws -> Int
 
 }
 
@@ -115,41 +115,20 @@ actor EventsManager: EventsManagerType {
     }
     #endif
 
-    func flushEvents() async {
+    func flushEvents(batchSize: Int = defaultEventBatchSize) async throws -> Int {
         #if os(iOS) || os(tvOS) || VISION_OS
-        let endBackgroundTask = await self.beginBackgroundTask(named: "com.revenuecat.flushEvents")
+        let endBackgroundTask: (() -> Void)?
+        if !self.systemInfo.isAppExtension {
+            endBackgroundTask = await self.beginBackgroundTask(named: "com.revenuecat.flushEvents")
+        } else {
+            endBackgroundTask = nil
+        }
         defer {
             endBackgroundTask?()
         }
         #endif
 
-        do {
-            _ = try await self.flushEvents(batchSize: Self.defaultEventBatchSize)
-        } catch {
-            Logger.error(Strings.paywalls.event_flush_failed(error))
-        }
-    }
-
-    func flushFeatureEvents() async {
-        #if os(iOS) || os(tvOS) || VISION_OS
-        let endBackgroundTask = await self.beginBackgroundTask(named: "com.revenuecat.flushFeatureEvents")
-        defer {
-            endBackgroundTask?()
-        }
-        #endif
-
-        do {
-            _ = try await self.flushFeatureEvents(batchSize: Self.defaultEventBatchSize)
-        } catch {
-            Logger.error(Strings.paywalls.event_flush_failed(error))
-        }
-    }
-
-    // MARK: - Internal Methods (for testing)
-    // External consumers should use flushEvents() and flushFeatureEvents() which provide background task support
-
-    func flushEvents(batchSize: Int) async throws -> Int {
-        let featureEventsFlushed = try await self.flushFeatureEvents(batchSize: batchSize)
+        let featureEventsFlushed = try await self.flushFeatureEventsInternal(batchSize: batchSize)
 
         #if ENABLE_AD_EVENTS_TRACKING
         let adEventsFlushed = try await self.flushAdEvents(count: batchSize)
@@ -159,7 +138,33 @@ actor EventsManager: EventsManagerType {
         #endif
     }
 
-    func flushFeatureEvents(batchSize: Int) async throws -> Int {
+    func flushFeatureEvents(batchSize: Int = defaultEventBatchSize) async throws -> Int {
+        #if os(iOS) || os(tvOS) || VISION_OS
+        let endBackgroundTask: (() -> Void)?
+        if !self.systemInfo.isAppExtension {
+            endBackgroundTask = await self.beginBackgroundTask(named: "com.revenuecat.flushFeatureEvents")
+        } else {
+            endBackgroundTask = nil
+        }
+        defer {
+            endBackgroundTask?()
+        }
+        #endif
+
+        return try await self.flushFeatureEventsInternal(batchSize: batchSize)
+    }
+
+    static let defaultEventBatchSize = 50
+    static let maxBatchesPerFlush = 10
+
+}
+
+// MARK: - Private Helpers
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+private extension EventsManager {
+
+    func flushFeatureEventsInternal(batchSize: Int) async throws -> Int {
         guard !self.flushInProgress else {
             Logger.debug(Strings.paywalls.event_flush_already_in_progress)
             return 0
@@ -261,22 +266,6 @@ private extension EventsManager {
     func beginBackgroundTask(named taskName: String) -> (() -> Void)? {
         guard let application = SystemInfo.sharedUIApplication else {
             Logger.warn(Strings.paywalls.background_task_unavailable)
-
-            if self.systemInfo.isAppExtension {
-                let semaphore = DispatchSemaphore(value: 0)
-                ProcessInfo.processInfo.performExpiringActivity(withReason: taskName) { expired in
-                    guard !expired else {
-                        Logger.warn(Strings.paywalls.background_task_expired(taskName))
-                        return
-                    }
-                    semaphore.wait()
-                }
-                Logger.debug(Strings.paywalls.background_task_started(taskName))
-                return {
-                    semaphore.signal()
-                }
-            }
-
             return nil
         }
 

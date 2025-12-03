@@ -2134,18 +2134,10 @@ internal extension Purchases {
         self.offeringsManager.invalidateCachedOfferings(appUserID: self.appUserID)
     }
 
+    @_spi(Internal)
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    @available(
-        *,
-        deprecated,
-        message: """
-            Paywall events are now automatically flushed with background task support. \
-            Manual flushing is no longer necessary.
-            """
-    )
     func flushPaywallEvents(count: Int) async throws -> Int {
-        try await self.eventsManager?.flushFeatureEvents(batchSize: count)
-        return 0
+        return try await self.eventsManager?.flushFeatureEvents(batchSize: count) ?? 0
     }
 
 }
