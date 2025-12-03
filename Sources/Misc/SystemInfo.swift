@@ -23,7 +23,7 @@ import WatchKit
 import AppKit
 #endif
 
-// swiftlint:disable file_length missing_docs
+// swiftlint:disable file_length
 class SystemInfo {
 
     // swiftlint:disable:next force_unwrapping
@@ -423,6 +423,8 @@ private extension SystemInfo {
 
     #endif
 }
+
+// swiftlint:disable missing_docs
 
 @_spi(Internal)
 public enum InternalSystemInfo {
