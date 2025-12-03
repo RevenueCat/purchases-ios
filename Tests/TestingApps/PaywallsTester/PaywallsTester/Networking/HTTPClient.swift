@@ -82,7 +82,7 @@ public final class HTTPClient: Sendable {
     }
 
     private let session: URLSession = {
-        let configuration = URLSessionConfiguration.back
+        let configuration = URLSessionConfiguration.default
         configuration.httpShouldSetCookies = true
         configuration.httpCookieStorage = .sharedCookieStorage(
             forGroupContainerIdentifier: UserDefaults.sharedAppGroup

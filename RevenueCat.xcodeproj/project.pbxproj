@@ -1,3 +1,5 @@
+		88B944032D1F12BE00F65F2C /* PaywallViewConfiguration+ExitPaywall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B944022D1F12BE00F65F2C /* PaywallViewConfiguration+ExitPaywall.swift */; };
+		88B944022D1F12BE00F65F2C /* PaywallViewConfiguration+ExitPaywall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PaywallViewConfiguration+ExitPaywall.swift"; sourceTree = "<group>"; };
 // !$*UTF8*$!
 {
 	archiveVersion = 1;
@@ -1092,6 +1094,7 @@
 		887A60CE2C1D037000E1A461 /* View+PresentPaywall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A60622C1D037000E1A461 /* View+PresentPaywall.swift */; };
 		887A60CF2C1D037000E1A461 /* View+PresentPaywallFooter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A60632C1D037000E1A461 /* View+PresentPaywallFooter.swift */; };
 		887A60D02C1D037000E1A461 /* View+PurchaseRestoreCompleted.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A60642C1D037000E1A461 /* View+PurchaseRestoreCompleted.swift */; };
+		88B944012D1F10A100F65F2C /* Offering+ExitPaywall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B944002D1F10A100F65F2C /* Offering+ExitPaywall.swift */; };
 		887A632B2C1D177800E1A461 /* LocalizedAlertErrorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A61282C1D168B00E1A461 /* LocalizedAlertErrorTests.swift */; };
 		887A632C2C1D177800E1A461 /* PackageVariablesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A61292C1D168B00E1A461 /* PackageVariablesTests.swift */; };
 		887A632D2C1D177800E1A461 /* PaywallDataValidationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A612A2C1D168B00E1A461 /* PaywallDataValidationTests.swift */; };
@@ -2584,6 +2587,7 @@
 		887A60622C1D037000E1A461 /* View+PresentPaywall.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "View+PresentPaywall.swift"; sourceTree = "<group>"; };
 		887A60632C1D037000E1A461 /* View+PresentPaywallFooter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "View+PresentPaywallFooter.swift"; sourceTree = "<group>"; };
 		887A60642C1D037000E1A461 /* View+PurchaseRestoreCompleted.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "View+PurchaseRestoreCompleted.swift"; sourceTree = "<group>"; };
+		88B944002D1F10A100F65F2C /* Offering+ExitPaywall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Offering+ExitPaywall.swift"; sourceTree = "<group>"; };
 		887A61282C1D168B00E1A461 /* LocalizedAlertErrorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalizedAlertErrorTests.swift; sourceTree = "<group>"; };
 		887A61292C1D168B00E1A461 /* PackageVariablesTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PackageVariablesTests.swift; sourceTree = "<group>"; };
 		887A612A2C1D168B00E1A461 /* PaywallDataValidationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallDataValidationTests.swift; sourceTree = "<group>"; };
@@ -5493,6 +5497,8 @@
 				2D2AFE902C6A9EF500D1B0B4 /* Binding+Extensions.swift */,
 				887A60602C1D037000E1A461 /* PaywallFontProvider.swift */,
 				887A60612C1D037000E1A461 /* PaywallView.swift */,
+				88B944022D1F12BE00F65F2C /* PaywallViewConfiguration+ExitPaywall.swift */,
+				88B944002D1F10A100F65F2C /* Offering+ExitPaywall.swift */,
 				887A60622C1D037000E1A461 /* View+PresentPaywall.swift */,
 				887A60632C1D037000E1A461 /* View+PresentPaywallFooter.swift */,
 				887A60642C1D037000E1A461 /* View+PurchaseRestoreCompleted.swift */,
@@ -7651,6 +7657,8 @@
 				038213602DCAF6BE003C02C3 /* OpenSheet.swift in Sources */,
 				03C72FC32D349BAE00297FEC /* IconComponentView.swift in Sources */,
 				887A60702C1D037000E1A461 /* PaywallTemplate.swift in Sources */,
+				88B944012D1F10A100F65F2C /* Offering+ExitPaywall.swift in Sources */,
+				88B944032D1F12BE00F65F2C /* PaywallViewConfiguration+ExitPaywall.swift in Sources */,
 				1E8A607F2CDCE5EC0034ACF3 /* View+OnRedeemWebPurchaseAttempt.swift in Sources */,
 				887A60882C1D037000E1A461 /* MockPurchases.swift in Sources */,
 				887A60BC2C1D037000E1A461 /* Template5View.swift in Sources */,

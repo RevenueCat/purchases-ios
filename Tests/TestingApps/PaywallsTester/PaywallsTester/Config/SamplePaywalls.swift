@@ -36,7 +36,9 @@ final class SamplePaywallLoader {
         return .init(
             identifier: Self.offeringIdentifier,
             serverDescription: Self.offeringIdentifier,
-            metadata: [:],
+            metadata: [
+                "rc_exit_offering_id": Self.offeringIdentifier2
+            ],
             paywall: self.paywall(for: template),
             availablePackages: self.packages,
             webCheckoutUrl: nil
@@ -48,7 +50,9 @@ final class SamplePaywallLoader {
         return .init(
             identifier: Self.offeringIdentifier,
             serverDescription: Self.offeringIdentifier,
-            metadata: [:],
+            metadata: [
+                "rc_exit_offering_id": Self.offeringIdentifier2
+            ],
             availablePackages: self.packages,
             webCheckoutUrl: nil
         )
@@ -59,7 +63,9 @@ final class SamplePaywallLoader {
         return .init(
             identifier: Self.offeringIdentifier,
             serverDescription: Self.offeringIdentifier,
-            metadata: [:],
+            metadata: [
+                "rc_exit_offering_id": Self.offeringIdentifier2
+            ],
             paywall: nil,
             availablePackages: self.packages,
             webCheckoutUrl: nil
@@ -70,7 +76,9 @@ final class SamplePaywallLoader {
         return .init(
             identifier: Self.offeringIdentifier,
             serverDescription: Self.offeringIdentifier,
-            metadata: [:],
+            metadata: [
+                "rc_exit_offering_id": Self.offeringIdentifier2
+            ],
             paywall: Self.unrecognizedTemplate(),
             availablePackages: self.packages,
             webCheckoutUrl: nil
@@ -108,6 +116,7 @@ private extension SamplePaywallLoader {
     static let threeMonthPackage = TestData.threeMonthPackage
     static let annualPackage = TestData.annualPackage
     static let lifetimePackage = TestData.lifetimePackage
+
 }
 
 // MARK: - Paywalls
@@ -563,6 +572,7 @@ private extension SamplePaywallLoader {
     )
 
     static let offeringIdentifier = "offering"
+    static let offeringIdentifier2 = "alpha"
     static let paywallAssetBaseURL = URL(string: "https://assets.pawwalls.com")!
     static let tosURL = URL(string: "https://revenuecat.com/tos")!
 

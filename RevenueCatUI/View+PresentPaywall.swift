@@ -362,25 +362,30 @@ extension View {
         onDismiss: (() -> Void)? = nil,
         customerInfoFetcher: @escaping CustomerInfoFetcher
     ) -> some View {
+        let content = PaywallViewConfiguration.Content.optionalOffering(offering)
+
         return self
-            .modifier(PresentingPaywallModifier(
-                shouldDisplay: shouldDisplay,
-                myAppPurchaseLogic: myAppPurchaseLogic,
-                presentationMode: presentationMode,
-                purchaseStarted: purchaseStarted,
-                purchaseCompleted: purchaseCompleted,
-                purchaseCancelled: purchaseCancelled,
-                restoreCompleted: restoreCompleted,
-                purchaseFailure: purchaseFailure,
-                restoreStarted: restoreStarted,
-                restoreFailure: restoreFailure,
-                onDismiss: onDismiss,
-                content: .optionalOffering(offering),
-                fontProvider: fonts,
-                customerInfoFetcher: customerInfoFetcher,
-                introEligibility: introEligibility,
-                purchaseHandler: purchaseHandler
-            ))
+            .modifier(
+                PresentingPaywallModifier(
+                    shouldDisplay: shouldDisplay,
+                    myAppPurchaseLogic: myAppPurchaseLogic,
+                    presentationMode: presentationMode,
+                    purchaseStarted: purchaseStarted,
+                    purchaseCompleted: purchaseCompleted,
+                    purchaseCancelled: purchaseCancelled,
+                    restoreCompleted: restoreCompleted,
+                    purchaseFailure: purchaseFailure,
+                    restoreStarted: restoreStarted,
+                    restoreFailure: restoreFailure,
+                    onDismiss: onDismiss,
+                    content: content,
+                    exitContent: content.exitPaywallContent,
+                    fontProvider: fonts,
+                    customerInfoFetcher: customerInfoFetcher,
+                    introEligibility: introEligibility,
+                    purchaseHandler: purchaseHandler
+                )
+            )
     }
 
 }
@@ -407,7 +412,6 @@ private struct PresentingPaywallModifier: ViewModifier {
     var restoreFailure: PurchaseFailureHandler?
     var onDismiss: (() -> Void)?
 
-    var content: PaywallViewConfiguration.Content
     var fontProvider: PaywallFontProvider
 
     var customerInfoFetcher: View.CustomerInfoFetcher
@@ -426,6 +430,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         restoreFailure: PurchaseFailureHandler?,
         onDismiss: (() -> Void)?,
         content: PaywallViewConfiguration.Content,
+        exitContent: PaywallViewConfiguration.Content?,
         fontProvider: PaywallFontProvider,
         customerInfoFetcher: @escaping View.CustomerInfoFetcher,
         introEligibility: TrialOrIntroEligibilityChecker?,
@@ -441,13 +446,18 @@ private struct PresentingPaywallModifier: ViewModifier {
         self.purchaseFailure = purchaseFailure
         self.restoreFailure = restoreFailure
         self.onDismiss = onDismiss
-        self.content = content
         self.fontProvider = fontProvider
         self.customerInfoFetcher = customerInfoFetcher
         self.introEligibility = introEligibility
-        self._purchaseHandler = .init(wrappedValue: purchaseHandler ??
-                                      PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
-                                                              performRestore: myAppPurchaseLogic?.performRestore))
+        self._purchaseHandler = .init(
+            wrappedValue: purchaseHandler ??
+                PurchaseHandler.default(
+                    performPurchase: myAppPurchaseLogic?.performPurchase,
+                    performRestore: myAppPurchaseLogic?.performRestore
+                )
+        )
+        self._activeContent = .init(initialValue: content)
+        self._exitContent = .init(initialValue: exitContent)
     }
 
     @StateObject
@@ -455,6 +465,10 @@ private struct PresentingPaywallModifier: ViewModifier {
 
     @State
     private var data: Data?
+    @State
+    private var activeContent: PaywallViewConfiguration.Content
+    @State
+    private var exitContent: PaywallViewConfiguration.Content?
 
     @State
     private var exitPaywallRequested: Bool = false
@@ -529,7 +543,7 @@ private struct PresentingPaywallModifier: ViewModifier {
     private func paywallView(_ data: Data) -> some View {
         PaywallView(
             configuration: .init(
-                content: self.content,
+                content: self.activeContent,
                 customerInfo: data.customerInfo,
                 fonts: self.fontProvider,
                 displayCloseButton: true,
@@ -579,9 +593,13 @@ private struct PresentingPaywallModifier: ViewModifier {
 
     @MainActor
     private func handlePaywallDismissal() {
-        if self.exitPaywallRequested && !self.exitPaywallAlreadyPresented {
+        if self.exitPaywallRequested && !self.exitPaywallAlreadyPresented, let exitContent = self.exitContent {
             self.exitPaywallAlreadyPresented = true
             self.exitPaywallRequested = false
+            self.exitContent = nil
+
+            self.activeContent = exitContent
+
             Task {
                 await self.updateCustomerInfo()
             }
