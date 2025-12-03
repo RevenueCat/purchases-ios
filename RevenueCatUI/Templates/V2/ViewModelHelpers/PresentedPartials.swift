@@ -61,7 +61,7 @@ extension PresentedPartial {
         isEligibleForPromoOffer: Bool,
         anyPackageHasIntroOffer: Bool = false,
         anyPackageHasPromoOffer: Bool = false,
-        appVersionInt: Int = SystemInfo.appVersion.extractNumber() ?? 0,
+        appVersionInt: Int = InternalSystemInfo.appVersion().extractNumber() ?? 0,
         selectedPackage: Package?,
         with presentedOverrides: PresentedOverrides<Self>?
     ) -> Self? {

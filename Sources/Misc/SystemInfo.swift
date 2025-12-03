@@ -24,7 +24,7 @@ import AppKit
 #endif
 
 // swiftlint:disable file_length missing_docs
-@_spi(Internal) public class SystemInfo {
+public class SystemInfo {
 
     // swiftlint:disable:next force_unwrapping
     static let appleSubscriptionsURL = URL(string: "https://apps.apple.com/account/subscriptions")!
@@ -105,8 +105,7 @@ import AppKit
         return ProcessInfo.processInfo.operatingSystemVersionString
     }
 
-    @_spi(Internal)
-    public static var appVersion: String {
+    static var appVersion: String {
         return Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
     }
 
@@ -423,4 +422,11 @@ private extension SystemInfo {
     }
 
     #endif
+}
+
+@_spi(Internal)
+public enum InternalSystemInfo {
+    public func appVersion() -> String {
+        return SystemInfo.appVersion
+    }
 }
