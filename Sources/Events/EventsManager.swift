@@ -37,7 +37,7 @@ protocol EventsManagerType {
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 actor EventsManager: EventsManagerType {
-    
+
     static let defaultEventBatchSize = 50
     static let maxBatchesPerFlush = 10
 
@@ -145,12 +145,8 @@ actor EventsManager: EventsManagerType {
         }
     }
 
-}
-
-// MARK: - Private Methods
-
-@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-extension EventsManager {
+    // MARK: - Internal Methods (for testing)
+    // External consumers should use flushEventsWithBackgroundTask() and flushFeatureEventsWithBackgroundTask()
 
     func flushEvents(batchSize: Int) async throws -> Int {
         let featureEventsFlushed = try await self.flushFeatureEvents(batchSize: batchSize)
@@ -253,12 +249,19 @@ extension EventsManager {
     }
     #endif
 
+}
+
+// MARK: - Private Helpers
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+private extension EventsManager {
+
     #if os(iOS) || os(tvOS) || VISION_OS
     @MainActor
     func beginBackgroundTask(named taskName: String) -> (() -> Void)? {
         guard let application = SystemInfo.sharedUIApplication else {
             Logger.warn(Strings.paywalls.background_task_unavailable)
-            
+
             if self.systemInfo.isAppExtension {
                 let semaphore = DispatchSemaphore(value: 0)
                 ProcessInfo.processInfo.performExpiringActivity(withReason: taskName) { expired in
@@ -273,7 +276,7 @@ extension EventsManager {
                     semaphore.signal()
                 }
             }
-            
+
             return nil
         }
 
