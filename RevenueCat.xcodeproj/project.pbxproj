@@ -64,8 +64,9 @@
 		162216CE2EDF8D1500C36EE2 /* ScreenConditionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 162216CD2EDF8D1500C36EE2 /* ScreenConditionTests.swift */; };
 		162216CF2EDF8D1500C36EE2 /* ScreenConditionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 162216CD2EDF8D1500C36EE2 /* ScreenConditionTests.swift */; };
 		162216DF2EE08CFB00C36EE2 /* String+extractNumber.swift in Sources */ = {isa = PBXBuildFile; fileRef = 162216DE2EE08CFB00C36EE2 /* String+extractNumber.swift */; };
-		162216E12EE08D4800C36EE2 /* String+ExtractNumberTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 162216E02EE08D4800C36EE2 /* String+ExtractNumberTests.swift */; };
 		162216E22EE08EA500C36EE2 /* String+extractNumber.swift in Sources */ = {isa = PBXBuildFile; fileRef = 162216DE2EE08CFB00C36EE2 /* String+extractNumber.swift */; };
+		162216E42EE0947A00C36EE2 /* String+ExtractNumberTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 162216E32EE0947A00C36EE2 /* String+ExtractNumberTests.swift */; };
+		162216E52EE0947A00C36EE2 /* String+ExtractNumberTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 162216E32EE0947A00C36EE2 /* String+ExtractNumberTests.swift */; };
 		1622D3FB2E900DE000C20E3C /* ChecksumTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1622D3FA2E900DE000C20E3C /* ChecksumTests.swift */; };
 		1622D3FD2E900F8200C20E3C /* Checksum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1622D3FC2E900F8200C20E3C /* Checksum.swift */; };
 		1622D40E2E90189F00C20E3C /* URLWithValidation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1622D40D2E90189F00C20E3C /* URLWithValidation.swift */; };
@@ -1546,7 +1547,7 @@
 		1621701B2EBE5581008ACFE9 /* Locale+Comparison.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Locale+Comparison.swift"; sourceTree = "<group>"; };
 		162216CD2EDF8D1500C36EE2 /* ScreenConditionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenConditionTests.swift; sourceTree = "<group>"; };
 		162216DE2EE08CFB00C36EE2 /* String+extractNumber.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+extractNumber.swift"; sourceTree = "<group>"; };
-		162216E02EE08D4800C36EE2 /* String+ExtractNumberTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+ExtractNumberTests.swift"; sourceTree = "<group>"; };
+		162216E32EE0947A00C36EE2 /* String+ExtractNumberTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+ExtractNumberTests.swift"; sourceTree = "<group>"; };
 		1622D3FA2E900DE000C20E3C /* ChecksumTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChecksumTests.swift; sourceTree = "<group>"; };
 		1622D3FC2E900F8200C20E3C /* Checksum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Checksum.swift; sourceTree = "<group>"; };
 		1622D40D2E90189F00C20E3C /* URLWithValidation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLWithValidation.swift; sourceTree = "<group>"; };
@@ -4139,7 +4140,6 @@
 		35272E1A26D0023400F22C3B /* Misc */ = {
 			isa = PBXGroup;
 			children = (
-				162216E02EE08D4800C36EE2 /* String+ExtractNumberTests.swift */,
 				16BCA37B2E4D9DD700B39E7F /* XCTestCase+Yield.swift */,
 				16BCA3712E4D9BBC00B39E7F /* XCTestCase+MemoryLeakTracking.swift */,
 				5310820E2E097DEE00F71174 /* SDKHealthManagerTests.swift */,
@@ -4165,6 +4165,7 @@
 				4FEF41AC2B4F301800CD699F /* MacAppStoreDetectorTests.swift */,
 				2C7F0AD42B8EEF0B00381179 /* RateLimiterTests.swift */,
 				1EF46BC52D9C1FA7005C94A6 /* PurchasesSystemInfoTests.swift */,
+				162216E32EE0947A00C36EE2 /* String+ExtractNumberTests.swift */,
 			);
 			path = Misc;
 			sourceTree = "<group>";
@@ -7235,7 +7236,6 @@
 				351B514926D44A2F00BD2BD7 /* MockCustomerInfoManager.swift in Sources */,
 				4F5C05BF2A43A2C500651C7D /* LocaleExtensionsTests.swift in Sources */,
 				5766AAC9283E88CF00FA6091 /* PurchasesGetCustomerInfoTests.swift in Sources */,
-				162216E12EE08D4800C36EE2 /* String+ExtractNumberTests.swift in Sources */,
 				351B517426D44F4B00BD2BD7 /* MockPaymentDiscount.swift in Sources */,
 				57488B8B29CB756A0000EE7E /* ProductEntitlementMappingTests.swift in Sources */,
 				57ACB12428174B9F000DCC9F /* CustomerInfo+TestExtensions.swift in Sources */,
@@ -7262,6 +7262,7 @@
 				4F05876F2A5DE03F00E9A834 /* PaywallDataTests.swift in Sources */,
 				2DDF41CC24F6F4C3005BC22D /* AppleReceiptBuilderTests.swift in Sources */,
 				903A06612EB4B728009B9CE4 /* MockEventsManager.swift in Sources */,
+				162216E42EE0947A00C36EE2 /* String+ExtractNumberTests.swift in Sources */,
 				03F446552D303E350046129A /* PaddingPropertyTests.swift in Sources */,
 				575A8EE52922C9F300936709 /* MockStoreKit2TransactionListenerDelegate.swift in Sources */,
 				4F9BB63F2A7AFB72001C120D /* MockPayment.swift in Sources */,
@@ -7822,6 +7823,7 @@
 				5798C9722DF1985700F44400 /* DiscountsHandler.swift in Sources */,
 				5798C9732DF1985700F44400 /* PurchaseHistoryViewModel.swift in Sources */,
 				5798C9742DF1985700F44400 /* Transaction.swift in Sources */,
+				162216E52EE0947A00C36EE2 /* String+ExtractNumberTests.swift in Sources */,
 				5798C9752DF1985700F44400 /* SubscriptionDetailView.swift in Sources */,
 				5798C9772DF1985700F44400 /* FallbackNoSubscriptionsView.swift in Sources */,
 				5798C9782DF1985700F44400 /* CustomerCenterNavigationOptions.swift in Sources */,
