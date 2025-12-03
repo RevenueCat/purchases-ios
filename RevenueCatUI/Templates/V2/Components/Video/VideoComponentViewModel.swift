@@ -62,6 +62,7 @@ class VideoComponentViewModel {
             anyPackageHasIntroOffer: packageContext.variableContext.hasAnyIntroOffer,
             anyPackageHasPromoOffer: anyPackageHasPromoOffer,
             selectedPackage: packageContext.package,
+            evaluateUnknownConditionsAs: component.evaluateUnknownConditionsAs,
             with: self.presentedOverrides
         )
         let partial = localizedPartial?.partial

@@ -134,6 +134,7 @@ public extension PaywallComponent {
         public let pageControl: PageControl?
 
         public let overrides: ComponentOverrides<PartialCarouselComponent>?
+        public let evaluateUnknownConditionsAs: Bool?
 
         public init(
             visible: Bool? = nil,
@@ -152,7 +153,8 @@ public extension PaywallComponent {
             loop: Bool = false,
             autoAdvance: PaywallComponent.CarouselComponent.AutoAdvanceSlides? = nil,
             pageControl: PageControl? = nil,
-            overrides: ComponentOverrides<PartialCarouselComponent>? = nil
+            overrides: ComponentOverrides<PartialCarouselComponent>? = nil,
+            evaluateUnknownConditionsAs: Bool? = nil
         ) {
             self.type = .carousel
 
@@ -173,6 +175,7 @@ public extension PaywallComponent {
             self.autoAdvance = autoAdvance
             self.pageControl = pageControl
             self.overrides = overrides
+            self.evaluateUnknownConditionsAs = evaluateUnknownConditionsAs
         }
 
         public static func == (lhs: CarouselComponent, rhs: CarouselComponent) -> Bool {
@@ -193,7 +196,8 @@ public extension PaywallComponent {
                 lhs.loop == rhs.loop &&
                 lhs.autoAdvance == rhs.autoAdvance &&
                 lhs.pageControl == rhs.pageControl &&
-                lhs.overrides == rhs.overrides
+                lhs.overrides == rhs.overrides &&
+                lhs.evaluateUnknownConditionsAs == rhs.evaluateUnknownConditionsAs
         }
 
         // MARK: - Hashable
@@ -216,6 +220,7 @@ public extension PaywallComponent {
             hasher.combine(autoAdvance)
             hasher.combine(pageControl)
             hasher.combine(overrides)
+            hasher.combine(evaluateUnknownConditionsAs)
         }
 
     }

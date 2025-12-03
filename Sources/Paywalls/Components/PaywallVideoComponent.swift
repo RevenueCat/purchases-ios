@@ -35,6 +35,7 @@ extension PaywallComponent {
         public let margin: Padding?
         public let border: Border?
         public let shadow: Shadow?
+        public let evaluateUnknownConditionsAs: Bool?
 
         public let overrides: ComponentOverrides<PartialVideoComponent>?
 
@@ -54,6 +55,7 @@ extension PaywallComponent {
             margin: Padding? = nil,
             border: Border? = nil,
             shadow: Shadow? = nil,
+            evaluateUnknownConditionsAs: Bool? = nil,
             overrides: ComponentOverrides<PartialVideoComponent>? = nil
         ) {
             self.type = .video
@@ -72,6 +74,7 @@ extension PaywallComponent {
             self.margin = margin
             self.border = border
             self.shadow = shadow
+            self.evaluateUnknownConditionsAs = evaluateUnknownConditionsAs
             self.overrides = overrides
         }
 
@@ -91,6 +94,7 @@ extension PaywallComponent {
             hasher.combine(border)
             hasher.combine(shadow)
             hasher.combine(overrides)
+            hasher.combine(evaluateUnknownConditionsAs)
             hasher.combine(source)
             hasher.combine(fallbackSource)
         }
@@ -111,6 +115,7 @@ extension PaywallComponent {
             lhs.border == rhs.border &&
             lhs.shadow == rhs.shadow &&
             lhs.overrides == rhs.overrides &&
+            lhs.evaluateUnknownConditionsAs == rhs.evaluateUnknownConditionsAs &&
             lhs.fallbackSource == rhs.fallbackSource &&
             lhs.source == rhs.source
         }
