@@ -24,6 +24,33 @@ import XCTest
 final class ComponentOverridesTests: TestCase {
     typealias ComparisonOperatorType = PaywallComponent.Condition.ComparisonOperatorType
 
+    func test_defaultsToUnsupportedOnUnknownCondition() throws {
+        let json = """
+        [
+          {
+            "conditions": [
+              { "type": "Some-unknown-condition", "operator": "<", "value": "12" }
+            ],
+            "properties": { }
+          }
+        ]
+        """.data(using: .utf8)!
+
+        let overrides = try JSONDecoder.default.decode(
+            PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent>.self,
+            from: json
+        )
+
+        let condition = try XCTUnwrap(overrides.first?.conditions.first)
+
+        switch condition {
+        case .unsupported:
+            XCTAssert(true) // success
+        default:
+            fail("Expected app version condition")
+        }
+    }
+
     func testDecodesAppVersionCondition() throws {
         let testCases = [
             (ComparisonOperatorType.lessThan, "12.12.12", "<", 121212),
@@ -38,27 +65,27 @@ final class ComponentOverridesTests: TestCase {
             [
               {
                 "conditions": [
-                  { "type": "app_version", "operator": "\(operand)", "value": "\(value)" }
+                  { "type": "app_version", "operator": "\(operand)", "ios_version": "\(value)" }
                 ],
                 "properties": { }
               }
             ]
             """.data(using: .utf8)!
 
-                let overrides = try JSONDecoder.default.decode(
-                    PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent>.self,
-                    from: json
-                )
+            let overrides = try JSONDecoder.default.decode(
+                PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent>.self,
+                from: json
+            )
 
-                let condition = try XCTUnwrap(overrides.first?.conditions.first)
+            let condition = try XCTUnwrap(overrides.first?.conditions.first)
 
-                switch condition {
-                case let .appVersion(operatorType, value):
-                    expect(operatorType) == expectedOperand
-                    expect(value) == expectedValue
-                default:
-                    fail("Expected app version condition")
-                }
+            switch condition {
+            case let .appVersion(operatorType, value):
+                expect(operatorType) == expectedOperand
+                expect(value) == expectedValue
+            default:
+                fail("Expected app version condition")
+            }
 
         }
     }

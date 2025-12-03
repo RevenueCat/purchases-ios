@@ -101,7 +101,7 @@ public extension PaywallComponent {
             case let .appVersion(operand, value):
                 try container.encode(ConditionType.appVersion.rawValue, forKey: .type)
                 try container.encode(operand, forKey: .operator)
-                try container.encode(String(value), forKey: .value)
+                try container.encode(String(value), forKey: .iosVersion)
             case .unsupported:
                 // Encode a default value for unsupported
                 try container.encode("unknown", forKey: .type)
@@ -110,53 +110,55 @@ public extension PaywallComponent {
 
         // swiftlint:disable:next cyclomatic_complexity
         public init(from decoder: Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
-            let rawValue = try container.decode(String.self, forKey: .type)
+            do {
+                let container = try decoder.container(keyedBy: CodingKeys.self)
+                let rawValue = try container.decode(String.self, forKey: .type)
 
-            if let conditionType = ConditionType(rawValue: rawValue) {
-                switch conditionType {
-                case .orientation:
-                    let operand = try container.decode(ArrayOperatorType.self, forKey: .operator)
-                    let orientations = try container.decode([OrientationType].self, forKey: .orientations)
-                    self = .orientation(operand, orientations)
-                case .screenSize:
-                    let operand = try container.decode(ArrayOperatorType.self, forKey: .operator)
-                    let sizes = try container.decode([String].self, forKey: .sizes)
-                    self = .screenSize(operand, sizes)
-                case .selectedPackage:
-                    let operand = try container.decode(ArrayOperatorType.self, forKey: .operator)
-                    let packages = try container.decode([String].self, forKey: .packages)
-                    self = .selectedPackage(operand, packages)
-                case .introOffer:
-                    let operand = try container.decodeIfPresent(EqualityOperatorType.self, forKey: .operator) ?? .equals
-                    let value = try container.decodeIfPresent(Bool.self, forKey: .value) ?? true
-                    self = .introOffer(operand, value)
-                case .anyPackageContainsIntroOffer:
-                    let operand = try container.decode(EqualityOperatorType.self, forKey: .operator)
-                    let value = try container.decode(Bool.self, forKey: .value)
-                    self = .anyPackageContainsIntroOffer(operand, value)
-                case .promoOffer:
-                    let operand = try container.decode(EqualityOperatorType.self, forKey: .operator)
-                    let value = try container.decode(Bool.self, forKey: .value)
-                    self = .promoOffer(operand, value)
-                case .anyPackageContainsPromoOffer:
-                    let operand = try container.decode(EqualityOperatorType.self, forKey: .operator)
-                    let value = try container.decode(Bool.self, forKey: .value)
-                    self = .anyPackageContainsPromoOffer(operand, value)
-                case .selected:
-                    self = .selected
-                case .appVersion:
-                    let operand = try container.decode(ComparisonOperatorType.self, forKey: .operator)
-                    let versionString = try container.decode(String.self, forKey: .value)
-                    if let versionInt = SystemInfo.appVersion.extractNumber() {
-                        self = .appVersion(operand, versionInt)
-                    } else {
-                        self = .unsupported
+                if let conditionType = ConditionType(rawValue: rawValue) {
+                    switch conditionType {
+                    case .orientation:
+                        let operand = try container.decode(ArrayOperatorType.self, forKey: .operator)
+                        let orientations = try container.decode([OrientationType].self, forKey: .orientations)
+                        self = .orientation(operand, orientations)
+                    case .screenSize:
+                        let operand = try container.decode(ArrayOperatorType.self, forKey: .operator)
+                        let sizes = try container.decode([String].self, forKey: .sizes)
+                        self = .screenSize(operand, sizes)
+                    case .selectedPackage:
+                        let operand = try container.decode(ArrayOperatorType.self, forKey: .operator)
+                        let packages = try container.decode([String].self, forKey: .packages)
+                        self = .selectedPackage(operand, packages)
+                    case .introOffer:
+                        let operand = try container
+                            .decodeIfPresent(EqualityOperatorType.self, forKey: .operator) ?? .equals
+                        let value = try container.decodeIfPresent(Bool.self, forKey: .value) ?? true
+                        self = .introOffer(operand, value)
+                    case .anyPackageContainsIntroOffer:
+                        let operand = try container.decode(EqualityOperatorType.self, forKey: .operator)
+                        let value = try container.decode(Bool.self, forKey: .value)
+                        self = .anyPackageContainsIntroOffer(operand, value)
+                    case .promoOffer:
+                        let operand = try container.decode(EqualityOperatorType.self, forKey: .operator)
+                        let value = try container.decode(Bool.self, forKey: .value)
+                        self = .promoOffer(operand, value)
+                    case .anyPackageContainsPromoOffer:
+                        let operand = try container.decode(EqualityOperatorType.self, forKey: .operator)
+                        let value = try container.decode(Bool.self, forKey: .value)
+                        self = .anyPackageContainsPromoOffer(operand, value)
+                    case .selected:
+                        self = .selected
+                    case .appVersion:
+                        let operand = try container.decode(ComparisonOperatorType.self, forKey: .operator)
+                        let versionString = try container.decode(String.self, forKey: .iosVersion)
+
+                        if let versionInt = versionString.extractNumber() {
+                            self = .appVersion(operand, versionInt)
+                        } else {
+                            self = .unsupported
+                        }
                     }
-                }
-            } else {
-                self = .unsupported
-            }
+                } else { self = .unsupported }
+            } catch { self = .unsupported }
         }
 
         // swiftlint:disable:next nesting
@@ -168,6 +170,7 @@ public extension PaywallComponent {
             case orientations
             case packages
             case value
+            case iosVersion
 
         }
 
