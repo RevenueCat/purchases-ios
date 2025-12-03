@@ -17,6 +17,6 @@ import Foundation
 
     /// Take all numbers out of a string and return an Int if present
     func extractNumber() -> Int? {
-        Int(filter { "0"..."9" ~= $0 })
+        return Int(filter { "0"..."9" ~= $0 })
     }
 }
