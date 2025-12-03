@@ -42,16 +42,16 @@ public final class PaywallFooterViewController: PaywallViewController {
     /// the default purchase and restore implementations are used and these closures are ignored.
     public init(
         offering: Offering? = nil,
-        performPurchase: PerformPurchase,
-        performRestore: PerformRestore,
+        performPurchase: @escaping PerformPurchase,
+        performRestore: @escaping PerformRestore,
         dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
     ) {
         super.init(content: .optionalOffering(offering),
                    fonts: DefaultPaywallFontProvider(),
                    displayCloseButton: false,
                    shouldBlockTouchEvents: false,
-                   performPurchase: nil,
-                   performRestore: nil,
+                   performPurchase: performPurchase,
+                   performRestore: performRestore,
                    dismissRequestedHandler: dismissRequestedHandler)
     }
 
