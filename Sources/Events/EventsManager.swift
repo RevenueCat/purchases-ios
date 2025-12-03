@@ -27,9 +27,13 @@ protocol EventsManagerType {
     func track(adEvent: AdEvent) async
     #endif
 
+    /// - Throws: if posting events fails
+    /// - Returns: the number of events posted
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func flushEvents(batchSize: Int) async throws -> Int
 
+    /// - Throws: if posting feature events fails
+    /// - Returns: the number of feature events posted
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func flushFeatureEvents(batchSize: Int) async throws -> Int
 
@@ -265,13 +269,13 @@ private extension EventsManager {
     @MainActor
     func beginBackgroundTask(named taskName: String) -> (() -> Void)? {
         guard let application = SystemInfo.sharedUIApplication else {
-            Logger.warn(Strings.paywalls.background_task_unavailable)
+            Logger.warn(EventsManagerStrings.background_task_unavailable)
             return nil
         }
 
         var backgroundTaskID: UIBackgroundTaskIdentifier?
         backgroundTaskID = application.beginBackgroundTask(withName: taskName) {
-            Logger.warn(Strings.paywalls.background_task_expired(taskName))
+            Logger.warn(EventsManagerStrings.background_task_expired(taskName))
             if let taskID = backgroundTaskID {
                 application.endBackgroundTask(taskID)
                 backgroundTaskID = .invalid
@@ -279,11 +283,11 @@ private extension EventsManager {
         }
 
         if backgroundTaskID == .invalid {
-            Logger.warn(Strings.paywalls.background_task_failed(taskName))
+            Logger.warn(EventsManagerStrings.background_task_failed(taskName))
             return nil
         }
 
-        Logger.debug(Strings.paywalls.background_task_started(taskName))
+        Logger.debug(EventsManagerStrings.background_task_started(taskName))
         return {
             if let taskID = backgroundTaskID {
                 application.endBackgroundTask(taskID)
@@ -296,11 +300,16 @@ private extension EventsManager {
 
 // MARK: - Messages
 
-#if ENABLE_AD_EVENTS_TRACKING
 // swiftlint:disable identifier_name
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private enum EventsManagerStrings {
 
+    case background_task_unavailable
+    case background_task_expired(String)
+    case background_task_failed(String)
+    case background_task_started(String)
+
+    #if ENABLE_AD_EVENTS_TRACKING
     case ad_event_tracking_disabled
     case ad_event_cannot_serialize
     case ad_event_flush_already_in_progress
@@ -308,6 +317,7 @@ private enum EventsManagerStrings {
     case ad_event_flush_starting(Int)
     case ad_events_flushed_successfully
     case ad_event_sync_failed(Error)
+    #endif
 
 }
 // swiftlint:enable identifier_name
@@ -317,6 +327,19 @@ extension EventsManagerStrings: LogMessage {
 
     var description: String {
         switch self {
+        case .background_task_unavailable:
+            return "Background task unavailable"
+
+        case .background_task_expired(let taskName):
+            return "Background task expired: \(taskName)"
+
+        case .background_task_failed(let taskName):
+            return "Background task failed to start: \(taskName)"
+
+        case .background_task_started(let taskName):
+            return "Background task started: \(taskName)"
+
+        #if ENABLE_AD_EVENTS_TRACKING
         case .ad_event_tracking_disabled:
             return "Ad event tracking is disabled - no ad event store configured"
 
@@ -337,10 +360,10 @@ extension EventsManagerStrings: LogMessage {
 
         case let .ad_event_sync_failed(error):
             return "Ad event sync failed: \(error)"
+        #endif
         }
     }
 
-    var category: String { return "ad_events_manager" }
+    var category: String { return "events_manager" }
 
 }
-#endif
