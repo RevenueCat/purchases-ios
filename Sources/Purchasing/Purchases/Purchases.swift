@@ -493,7 +493,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 eventsManager = EventsManager(
                     internalAPI: backend.internalAPI,
                     userProvider: identityManager,
-                    store: try FeatureEventStore.createDefault(applicationSupportDirectory: applicationSupportDirectory),
+                    store: try FeatureEventStore.createDefault(
+                        applicationSupportDirectory: applicationSupportDirectory
+                    ),
                     systemInfo: systemInfo
                 )
                 #endif
@@ -2133,7 +2135,14 @@ internal extension Purchases {
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    @available(*, deprecated, message: "Paywall events are now automatically flushed with background task support. Manual flushing is no longer necessary.")
+    @available(
+        *,
+        deprecated,
+        message: """
+            Paywall events are now automatically flushed with background task support. \
+            Manual flushing is no longer necessary.
+            """
+    )
     func flushPaywallEvents(count: Int) async throws -> Int {
         return 0
     }
