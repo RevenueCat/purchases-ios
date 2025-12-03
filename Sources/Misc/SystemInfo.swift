@@ -426,7 +426,7 @@ private extension SystemInfo {
 
 @_spi(Internal)
 public enum InternalSystemInfo {
-    public func appVersion() -> String {
+    public static func appVersion() -> String {
         return SystemInfo.appVersion
     }
 }
