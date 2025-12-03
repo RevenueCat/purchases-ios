@@ -366,7 +366,7 @@ struct ContentView_Previews: PreviewProvider {
                     padding: .init(top: 5, bottom: 5, leading: 5, trailing: 5),
                     margin: .init(top: 5, bottom: 5, leading: 5, trailing: 5),
                     items: items,
-                    conditionalVisibilityFallback: nil,
+                    evaluateUnknownConditionsAs: nil,
                     overrides: nil
                 ), localizationProvider: LocalizationProvider(
                     locale: Locale.current,

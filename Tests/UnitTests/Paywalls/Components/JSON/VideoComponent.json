@@ -19,6 +19,7 @@
   },
   "fit_mode": "fill",
   "id": "P0Tzh3p6d3",
+  "evaluate_unknown_conditions_as": true,
   "loop": true,
   "mask_shape": {
     "corners": {

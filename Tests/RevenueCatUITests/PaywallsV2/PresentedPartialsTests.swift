@@ -51,7 +51,7 @@ class PresentedPartialsTest: TestCase {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackage: nil,
-            conditionalVisibilityFallback: nil,
+            evaluateUnknownConditionsAs: nil,
             with: presentedOverrides
         )
 
@@ -79,7 +79,7 @@ class PresentedPartialsTest: TestCase {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackage: selectedPackage,
-            conditionalVisibilityFallback: nil,
+            evaluateUnknownConditionsAs: nil,
             with: presentedOverrides
         )
 
@@ -111,7 +111,7 @@ class PresentedPartialsTest: TestCase {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackage: selectedPackage,
-            conditionalVisibilityFallback: nil,
+            evaluateUnknownConditionsAs: nil,
             with: presentedOverrides
         )
 
@@ -146,7 +146,7 @@ class PresentedPartialsTest: TestCase {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackage: selectedPackage,
-            conditionalVisibilityFallback: nil,
+            evaluateUnknownConditionsAs: nil,
             with: presentedOverrides
         )
 
@@ -179,7 +179,7 @@ class PresentedPartialsTest: TestCase {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackage: nil,
-            conditionalVisibilityFallback: nil,
+            evaluateUnknownConditionsAs: nil,
             with: presentedOverrides
         )
 
@@ -210,7 +210,7 @@ class PresentedPartialsTest: TestCase {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackage: nil,
-            conditionalVisibilityFallback: nil,
+            evaluateUnknownConditionsAs: nil,
             with: presentedOverrides
         )
 
@@ -237,7 +237,7 @@ class PresentedPartialsTest: TestCase {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackage: nil,
-            conditionalVisibilityFallback: nil,
+            evaluateUnknownConditionsAs: nil,
             with: presentedOverrides
         )
 
@@ -268,7 +268,7 @@ class PresentedPartialsTest: TestCase {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackage: nil,
-            conditionalVisibilityFallback: nil,
+            evaluateUnknownConditionsAs: nil,
             with: presentedOverrides
         )
 
@@ -295,7 +295,7 @@ class PresentedPartialsTest: TestCase {
             isEligibleForPromoOffer: false,
             anyPackageHasIntroOffer: anyPackageHasIntroOffer,
             selectedPackage: nil,
-            conditionalVisibilityFallback: nil,
+            evaluateUnknownConditionsAs: nil,
             with: presentedOverrides
         )
 
@@ -326,7 +326,7 @@ class PresentedPartialsTest: TestCase {
             isEligibleForPromoOffer: false,
             anyPackageHasIntroOffer: anyPackageHasIntroOffer,
             selectedPackage: nil,
-            conditionalVisibilityFallback: nil,
+            evaluateUnknownConditionsAs: nil,
             with: presentedOverrides
         )
 
@@ -353,7 +353,7 @@ class PresentedPartialsTest: TestCase {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackage: nil,
-            conditionalVisibilityFallback: nil,
+            evaluateUnknownConditionsAs: nil,
             with: presentedOverrides
         )
 
@@ -384,7 +384,7 @@ class PresentedPartialsTest: TestCase {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackage: nil,
-            conditionalVisibilityFallback: nil,
+            evaluateUnknownConditionsAs: nil,
             with: presentedOverrides
         )
 
@@ -411,7 +411,7 @@ class PresentedPartialsTest: TestCase {
             isEligibleForPromoOffer: false,
             anyPackageHasPromoOffer: anyPackageHasPromoOffer,
             selectedPackage: nil,
-            conditionalVisibilityFallback: nil,
+            evaluateUnknownConditionsAs: nil,
             with: presentedOverrides
         )
 
@@ -442,7 +442,7 @@ class PresentedPartialsTest: TestCase {
             isEligibleForPromoOffer: false,
             anyPackageHasPromoOffer: anyPackageHasPromoOffer,
             selectedPackage: nil,
-            conditionalVisibilityFallback: nil,
+            evaluateUnknownConditionsAs: nil,
             with: presentedOverrides
         )
 
@@ -470,7 +470,7 @@ class PresentedPartialsTest: TestCase {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackage: selectedPackage,
-            conditionalVisibilityFallback: nil,
+            evaluateUnknownConditionsAs: nil,
             with: presentedOverrides
         )
 
@@ -501,7 +501,7 @@ class PresentedPartialsTest: TestCase {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackage: nil,
-            conditionalVisibilityFallback: nil,
+            evaluateUnknownConditionsAs: nil,
             with: presentedOverrides
         )
 
@@ -532,7 +532,7 @@ class PresentedPartialsTest: TestCase {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackage: nil,
-            conditionalVisibilityFallback: nil,
+            evaluateUnknownConditionsAs: nil,
             with: presentedOverrides
         )
 
@@ -566,7 +566,7 @@ class PresentedPartialsTest: TestCase {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackage: selectedPackage,
-            conditionalVisibilityFallback: nil,
+            evaluateUnknownConditionsAs: nil,
             with: presentedOverrides
         )
 
@@ -601,7 +601,7 @@ class PresentedPartialsTest: TestCase {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackage: selectedPackage,
-            conditionalVisibilityFallback: nil,
+            evaluateUnknownConditionsAs: nil,
             with: presentedOverrides
         )
 
@@ -634,7 +634,7 @@ class PresentedPartialsTest: TestCase {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackage: selectedPackage,
-            conditionalVisibilityFallback: nil,
+            evaluateUnknownConditionsAs: nil,
             with: presentedOverrides
         )
 
@@ -665,7 +665,7 @@ class PresentedPartialsTest: TestCase {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackage: selectedPackage,
-            conditionalVisibilityFallback: nil,
+            evaluateUnknownConditionsAs: nil,
             with: presentedOverrides
         )
 
@@ -696,7 +696,7 @@ class PresentedPartialsTest: TestCase {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackage: selectedPackage,
-            conditionalVisibilityFallback: false,
+            evaluateUnknownConditionsAs: false,
             with: presentedOverrides
         )
 
@@ -726,7 +726,7 @@ class PresentedPartialsTest: TestCase {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackage: selectedPackage,
-            conditionalVisibilityFallback: nil,
+            evaluateUnknownConditionsAs: nil,
             with: presentedOverrides
         )
 
@@ -753,7 +753,7 @@ class PresentedPartialsTest: TestCase {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackage: nil,
-            conditionalVisibilityFallback: nil,
+            evaluateUnknownConditionsAs: nil,
             with: presentedOverrides
         )
 
@@ -786,7 +786,7 @@ class PresentedPartialsTest: TestCase {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackage: selectedPackage,
-            conditionalVisibilityFallback: nil,
+            evaluateUnknownConditionsAs: nil,
             with: presentedOverrides
         )
 

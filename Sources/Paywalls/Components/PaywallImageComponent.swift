@@ -26,7 +26,7 @@ public extension PaywallComponent {
         public let shadow: Shadow?
 
         public let overrides: ComponentOverrides<PartialImageComponent>?
-        public let conditionalVisibilityFallback: Bool?
+        public let evaluateUnknownConditionsAs: Bool?
 
         public init(
             visible: Bool? = nil,
@@ -41,7 +41,7 @@ public extension PaywallComponent {
             border: Border? = nil,
             shadow: Shadow? = nil,
             overrides: ComponentOverrides<PartialImageComponent>? = nil,
-            conditionalVisibilityFallback: Bool? = nil
+            evaluateUnknownConditionsAs: Bool? = nil
         ) {
             self.type = .image
             self.visible = visible
@@ -56,7 +56,7 @@ public extension PaywallComponent {
             self.border = border
             self.shadow = shadow
             self.overrides = overrides
-            self.conditionalVisibilityFallback = conditionalVisibilityFallback
+            self.evaluateUnknownConditionsAs = evaluateUnknownConditionsAs
         }
 
         public func hash(into hasher: inout Hasher) {
@@ -73,7 +73,7 @@ public extension PaywallComponent {
             hasher.combine(border)
             hasher.combine(shadow)
             hasher.combine(overrides)
-            hasher.combine(conditionalVisibilityFallback)
+            hasher.combine(evaluateUnknownConditionsAs)
         }
 
         public static func == (lhs: ImageComponent, rhs: ImageComponent) -> Bool {
@@ -90,7 +90,7 @@ public extension PaywallComponent {
                    lhs.border == rhs.border &&
                    lhs.shadow == rhs.shadow &&
                    lhs.overrides == rhs.overrides &&
-                   lhs.conditionalVisibilityFallback == rhs.conditionalVisibilityFallback
+                   lhs.evaluateUnknownConditionsAs == rhs.evaluateUnknownConditionsAs
         }
     }
 

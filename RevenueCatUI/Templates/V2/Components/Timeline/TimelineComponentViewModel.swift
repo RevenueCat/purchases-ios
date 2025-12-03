@@ -62,7 +62,7 @@ class TimelineComponentViewModel {
             anyPackageHasIntroOffer: packageContext.variableContext.hasAnyIntroOffer,
             anyPackageHasPromoOffer: anyPackageHasPromoOffer,
             selectedPackage: packageContext.package,
-            conditionalVisibilityFallback: component.conditionalVisibilityFallback,
+            evaluateUnknownConditionsAs: component.evaluateUnknownConditionsAs,
             with: self.presentedOverrides
         )
 
@@ -124,7 +124,7 @@ class TimelineItemViewModel {
             anyPackageHasIntroOffer: packageContext.variableContext.hasAnyIntroOffer,
             anyPackageHasPromoOffer: anyPackageHasPromoOffer,
             selectedPackage: packageContext.package,
-            conditionalVisibilityFallback: nil,
+            evaluateUnknownConditionsAs: nil,
             with: self.presentedOverrides
         )
 

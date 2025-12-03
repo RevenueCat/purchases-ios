@@ -42,6 +42,7 @@ class VideoComponentTests: TestCase {
         XCTAssertNotNil(video.shadow)
         XCTAssertFalse(video.showControls)
         XCTAssertNotNil(video.size)
+        XCTAssertTrue(video.evaluateUnknownConditionsAs.unsafelyUnwrapped)
         XCTAssertEqual(video, video2)
 
     }
