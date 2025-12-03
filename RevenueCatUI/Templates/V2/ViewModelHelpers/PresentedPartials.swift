@@ -61,6 +61,7 @@ extension PresentedPartial {
         anyPackageHasIntroOffer: Bool = false,
         anyPackageHasPromoOffer: Bool = false,
         selectedPackage: Package?,
+        conditionalVisibilityFallback: Bool?,
         with presentedOverrides: PresentedOverrides<Self>?
     ) -> Self? {
         guard let presentedOverrides else {
@@ -77,6 +78,7 @@ extension PresentedPartial {
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             anyPackageHasIntroOffer: anyPackageHasIntroOffer,
             anyPackageHasPromoOffer: anyPackageHasPromoOffer,
+            conditionalVisibilityFallback: conditionalVisibilityFallback,
             selectedPackage: selectedPackage
         ) {
             presentedPartial = Self.combine(presentedPartial, with: presentedOverride.properties)
@@ -94,6 +96,7 @@ extension PresentedPartial {
         isEligibleForPromoOffer: Bool,
         anyPackageHasIntroOffer: Bool,
         anyPackageHasPromoOffer: Bool,
+        conditionalVisibilityFallback: Bool?,
         selectedPackage: Package?
     ) -> Bool {
         // Early return when any condition evaluates to false
@@ -176,7 +179,8 @@ extension PresentedPartial {
                     return false
                 }
             case .unsupported:
-                return true // ignore unsupported case and show partial
+                // if a fallback is specified, use it, otherwise ignore the unsupported condition entirely
+                return conditionalVisibilityFallback ?? true
             @unknown default:
                 return false
             }

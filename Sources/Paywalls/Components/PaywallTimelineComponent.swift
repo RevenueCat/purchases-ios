@@ -28,7 +28,7 @@ public extension PaywallComponent {
         public let padding: Padding
         public let margin: Padding
         public let items: [Item]
-
+        public let conditionalVisibilityFallback: Bool?
         public let overrides: ComponentOverrides<PartialTimelineComponent>?
 
         public init(
@@ -41,6 +41,7 @@ public extension PaywallComponent {
             padding: Padding,
             margin: Padding,
             items: [Item],
+            conditionalVisibilityFallback: Bool?,
             overrides: ComponentOverrides<PartialTimelineComponent>?
         ) {
             self.type = .timeline
@@ -53,6 +54,7 @@ public extension PaywallComponent {
             self.padding = padding
             self.margin = margin
             self.items = items
+            self.conditionalVisibilityFallback = conditionalVisibilityFallback
             self.overrides = overrides
         }
 
@@ -68,7 +70,8 @@ public extension PaywallComponent {
                    lhs.size == rhs.size &&
                    lhs.padding == rhs.padding &&
                    lhs.margin == rhs.margin &&
-                   lhs.items == rhs.items
+                   lhs.items == rhs.items &&
+                   lhs.conditionalVisibilityFallback == rhs.conditionalVisibilityFallback
         }
 
         public func hash(into hasher: inout Hasher) {
@@ -81,6 +84,7 @@ public extension PaywallComponent {
             hasher.combine(padding)
             hasher.combine(margin)
             hasher.combine(items)
+            hasher.combine(conditionalVisibilityFallback)
         }
 
         public final class Item: Codable, Sendable, Hashable, Equatable {

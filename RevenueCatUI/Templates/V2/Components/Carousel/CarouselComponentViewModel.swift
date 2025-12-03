@@ -63,6 +63,7 @@ class CarouselComponentViewModel {
             anyPackageHasIntroOffer: packageContext.variableContext.hasAnyIntroOffer,
             anyPackageHasPromoOffer: anyPackageHasPromoOffer,
             selectedPackage: packageContext.package,
+            conditionalVisibilityFallback: component.conditionalVisibilityFallback,
             with: self.presentedOverrides
         )
 
