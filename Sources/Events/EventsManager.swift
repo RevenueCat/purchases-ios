@@ -119,7 +119,7 @@ actor EventsManager: EventsManagerType {
     }
     #endif
 
-    func flushAllEvents(batchSize: Int = defaultEventBatchSize) async throws -> Int {
+    func flushAllEvents(batchSize: Int) async throws -> Int {
         #if os(iOS) || os(tvOS) || VISION_OS
         let endBackgroundTask: (() -> Void)?
         if !self.systemInfo.isAppExtension {
@@ -142,7 +142,7 @@ actor EventsManager: EventsManagerType {
         #endif
     }
 
-    func flushFeatureEvents(batchSize: Int = defaultEventBatchSize) async throws -> Int {
+    func flushFeatureEvents(batchSize: Int) async throws -> Int {
         #if os(iOS) || os(tvOS) || VISION_OS
         let endBackgroundTask: (() -> Void)?
         if !self.systemInfo.isAppExtension {
@@ -157,9 +157,6 @@ actor EventsManager: EventsManagerType {
 
         return try await self.flushFeatureEventsInternal(batchSize: batchSize)
     }
-
-    static let defaultEventBatchSize = 50
-    static let maxBatchesPerFlush = 10
 
 }
 

@@ -854,7 +854,7 @@ final class PurchasesOrchestrator {
         }
         self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) {
             do {
-                _ = try await manager.flushAllEvents()
+                _ = try await manager.flushAllEvents(batchSize: EventsManager.defaultEventBatchSize)
             } catch {
                 Logger.error(Strings.paywalls.event_flush_failed(error))
             }
@@ -874,7 +874,7 @@ final class PurchasesOrchestrator {
         }
         self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) {
             do {
-                _ = try await manager.flushFeatureEvents()
+                _ = try await manager.flushFeatureEvents(batchSize: EventsManager.defaultEventBatchSize)
             } catch {
                 Logger.error(Strings.paywalls.event_flush_failed(error))
             }
