@@ -148,8 +148,7 @@ public extension PaywallComponent {
                 case .appVersion:
                     let operand = try container.decode(ComparisonOperatorType.self, forKey: .operator)
                     let versionString = try container.decode(String.self, forKey: .value)
-                    let cleanedVersion = versionString.replacingOccurrences(of: ".", with: "")
-                    if let versionInt = Int(cleanedVersion) {
+                    if let versionInt = SystemInfo.appVersion.extractNumber() {
                         self = .appVersion(operand, versionInt)
                     } else {
                         self = .unsupported
