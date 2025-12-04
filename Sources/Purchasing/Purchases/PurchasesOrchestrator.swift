@@ -728,7 +728,7 @@ final class PurchasesOrchestrator {
                 // iOS version availability check is made by this function's availability requirement
                 #available(macOS 15.4, tvOS 18.4, watchOS 11.4, visionOS 2.4, *) {
 
-                // introductoryOfferEligibilityJWS wasn't introduced until iOS 18.4 and Xcode 16.3, which shipped with
+                // introductoryOfferEligibility wasn't introduced until iOS 18.4 and Xcode 16.3, which shipped with
                 // version 6.1 of the Swift compiler.
                 #if compiler(>=6.1)
                 Logger.debug(
@@ -742,11 +742,11 @@ final class PurchasesOrchestrator {
                 // iOS version availability check is made by this function's availability requirement
                 #available(macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *) {
 
-                // introductoryOfferEligibilityJWS wasn't introduced until iOS 26.0 and Xcode 26.0, which shipped with
-                // version 6. of the Swift compiler.
+                // promotionalOffer wasn't introduced until iOS 26.0 and Xcode 26.0, which shipped with
+                // version 6.2 of the Swift compiler.
                 #if compiler(>=6.2)
                 Logger.debug(
-                    Strings.storeKit.sk2_purchasing_added_custom_introductory_offer_eligibility_jws
+                    Strings.storeKit.sk2_purchasing_added_custom_promotional_offer_jws(promotionalOfferOptions.offerID)
                 )
 
                 // We use formUnion since Product.PurchaseOption.promotionalOffer returns an array of purchase options

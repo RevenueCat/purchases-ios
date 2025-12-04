@@ -41,7 +41,7 @@ enum StoreKitStrings {
 
     case sk2_purchasing_added_custom_introductory_offer_eligibility_jws
 
-    case sk2_purchasing_added_custom_promotional_offer_jws
+    case sk2_purchasing_added_custom_promotional_offer_jws(String)
 
     case sk2_purchasing_added_uuid_option(UUID)
 
@@ -146,8 +146,8 @@ extension StoreKitStrings: LogMessage {
         case .sk2_purchasing_added_custom_introductory_offer_eligibility_jws:
             return "Adding Product.PurchaseOption for developer-provided introductoryOfferEligibilityJWS"
 
-        case .sk2_purchasing_added_custom_promotional_offer_jws:
-            return "Adding Product.PurchaseOption for developer-provided promotionalOfferJWS"
+        case let .sk2_purchasing_added_custom_promotional_offer_jws(offerID):
+            return "Adding Product.PurchaseOption for developer-provided promotionalOfferJWS with offer ID '\(offerID)'"
 
         case let .sk2_purchasing_added_uuid_option(uuid):
             return "Adding Product.PurchaseOption for .appAccountToken '\(uuid)'"
