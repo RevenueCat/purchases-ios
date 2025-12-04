@@ -739,8 +739,8 @@ final class PurchasesOrchestrator {
             }
 
             if let promotionalOfferOptions,
-                // iOS & macOS version availability check is made by this function's availability requirement
-                #available(tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
+                // iOS, tvOS, watchOS, & macOS version availability check is made by this function's availability requirement
+                #available(visionOS 1.0, *) {
                 // promotionalOffer wasn't introduced until iOS 26.0 and Xcode 26.0, which shipped with
                 // version 6.2 of the Swift compiler.
                 #if compiler(>=6.2)
