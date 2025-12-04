@@ -1,9 +1,18 @@
+## RevenueCat SDK
+### 🐞 Bugfixes
+* fix: Call onRestoreCompleted if there are no subscriptions / non subscriptions (#5813) via Facundo Menzella (@facumenzella)
+
 ## RevenueCatUI SDK
 ### Customer Center
 #### 🐞 Bugfixes
-* Fix missing Customer Center actions on SK1 purchases (#5883) via Cesar de la Vega (@vegaro)
+* Remove extra check for showing new support ticket creation button (#5896) via Rosie Watson (@RosieWatson)
 
 ### 🔄 Other Changes
-* Automated E2E tests for the Test Store (#5859) via Antonio Pallares (@ajpallares)
-* Bump fastlane from 2.229.0 to 2.229.1 (#5882) via dependabot[bot] (@dependabot[bot])
-* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#5876) via RevenueCat Git Bot (@RCGitBot)
+* Add custom purchase and restore logic handlers to UIKit paywalls (#5902) via Antonio Pallares (@ajpallares)
+* Add extra non subscription events (#5895) via Pol Miro (@polmiro)
+* Show redacted Test Api key in alert when detected in Release configuration (#5897) via Antonio Pallares (@ajpallares)
+* Improve flakiness of some tests (#5893) via Antonio Pallares (@ajpallares)
+* Improve DangerFile detection of added / deleted files (#5845) via Facundo Menzella (@facumenzella)
+* Fix flaky test (#5887) via Antonio Pallares (@ajpallares)
+* Remove CI step to install unused dependency (#5890) via Antonio Pallares (@ajpallares)
+* Disable Emerge snapshots for mac catalyst because of flakiness (#5885) via Rick (@rickvdl)
