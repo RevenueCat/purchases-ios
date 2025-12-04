@@ -629,6 +629,7 @@ final class PurchasesOrchestrator {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    // swiftlint:disable:next function_parameter_count
     func purchase(sk2Product product: SK2Product,
                   package: Package?,
                   promotionalOffer: PromotionalOffer.SignedData?,

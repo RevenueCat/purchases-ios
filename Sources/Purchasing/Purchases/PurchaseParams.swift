@@ -161,6 +161,7 @@ import Foundation
 
         #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
+        // swiftlint:disable line_length
         /**
          * Sets an introductoryOfferEligibility JWS to be included with the purchase. StoreKit 2 only.
          * - Parameter introductoryOfferEligibilityJWS: The ``introductoryOfferEligibility JWS`` to apply to the purchase.
@@ -176,6 +177,7 @@ import Foundation
             return self
         }
 
+        // swiftlint:disable line_length
         /**
          * Sets an promotionalOffer JWS to be included with the purchase. StoreKit 2 only.
          * - Parameter promotionalOfferJWS: The ``promotionalOffer JWS`` to apply to the purchase.

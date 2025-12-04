@@ -11,7 +11,8 @@ import Foundation
 /**
  * ``StoreKit2PromotionalOfferPurchaseOptions`` can be used to apply promotional offers to StoreKit 2 purchases.
  */
-@objc(StoreKit2PromotionalOfferPurchaseOptions) public final class StoreKit2PromotionalOfferPurchaseOptions: NSObject, Sendable {
+@objc(StoreKit2PromotionalOfferPurchaseOptions)
+public final class StoreKit2PromotionalOfferPurchaseOptions: NSObject, Sendable {
     /// The id property of the subscription offer to apply.
     public let offerID: String
 

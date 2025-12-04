@@ -282,7 +282,6 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOfferOptions: nil
         )
 
-
         expect(result.transaction) == transaction.verifiedStoreTransaction
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
@@ -507,7 +506,6 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             promotionalOfferOptions: nil
         )
 
-
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
         _ = try await self.orchestrator.purchase(
             sk2Product: product,
@@ -517,7 +515,6 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             introductoryOfferEligibilityJWS: nil,
             promotionalOfferOptions: nil
         )
-
 
         expect(
             self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData
