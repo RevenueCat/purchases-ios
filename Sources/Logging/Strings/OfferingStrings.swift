@@ -180,7 +180,7 @@ extension OfferingStrings: LogMessage {
 }
 
 
-extension Configuration.APIKeyValidationResult {
+private extension Configuration.APIKeyValidationResult {
 
     var storeNameForLogging: String? {
         switch self {
