@@ -178,7 +178,12 @@ private func checkPurchaseParams() {
 
     if #available(iOS 15.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *) {
         let _ = PurchaseParams.Builder(package: pack)
-            .with(promotionalOfferJWS: "abc123")
+            .with(
+                promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions(
+                    offerID: "abc",
+                    compactJWS: "123"
+                )
+            )
     }
 
     if #available(iOS 15.0, macOS 15.4, tvOS 18.4, watchOS 11.4, visionOS 2.4, *) {
@@ -194,7 +199,12 @@ private func checkPurchaseParams() {
 
     if #available(iOS 15.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *) {
         let _ = PurchaseParams.Builder(product: storeProduct)
-            .with(promotionalOfferJWS: "abc123")
+            .with(
+                promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions(
+                    offerID: "abc",
+                    compactJWS: "123"
+                )
+            )
     }
 
     if #available(iOS 15.0, macOS 15.4, tvOS 18.4, watchOS 11.4, visionOS 2.4, *) {

@@ -646,7 +646,7 @@ final class PurchasesOrchestrator {
                     promotionalOffer: promotionalOffer,
                     winBackOffer: winBackOffer?.discount.sk2Discount,
                     introductoryOfferEligibilityJWS: introductoryOfferEligibilityJWS,
-                    promotionalOfferJWS: promotionalOfferOptions,
+                    promotionalOfferOptions: promotionalOfferOptions,
                     metadata: metadata,
                     quantity: quantity
                 )
@@ -1501,7 +1501,9 @@ extension PurchasesOrchestrator: StoreKit2PurchaseIntentListenerDelegate {
                                     sk2Product: purchaseIntent.product,
                                     package: nil,
                                     promotionalOffer: nil,
-                                    winBackOffer: offer
+                                    winBackOffer: offer,
+                                    introductoryOfferEligibilityJWS: nil,
+                                    promotionalOfferOptions: nil
                                 )
 
                                 self.operationDispatcher.dispatchOnMainActor {
