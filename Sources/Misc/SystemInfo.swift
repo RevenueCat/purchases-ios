@@ -35,7 +35,7 @@ class SystemInfo {
     }
 
     let storeKitVersion: StoreKitVersion
-    private let apiKeyValidationResult: Configuration.APIKeyValidationResult
+    let apiKeyValidationResult: Configuration.APIKeyValidationResult
 
     /// Whether the API key used to configure the SDK is a Simulated Store API key.
     var isSimulatedStoreAPIKey: Bool {
