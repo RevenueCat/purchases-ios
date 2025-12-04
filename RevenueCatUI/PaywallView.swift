@@ -509,9 +509,6 @@ struct LoadedOfferingPaywallView: View {
     @Environment(\.dismiss)
     private var dismiss
 
-    @State
-    private var exitPaywallRequest: ExitPaywallRequest = .none
-
     init(
         offering: Offering,
         activelySubscribedProductIdentifiers: Set<String>,
@@ -555,8 +552,6 @@ struct LoadedOfferingPaywallView: View {
                         value: self.purchaseHandler.purchaseError as NSError?)
             .preference(key: RestoreErrorPreferenceKey.self,
                         value: self.purchaseHandler.restoreError as NSError?)
-            .preference(key: ExitPaywallRequestPreferenceKey.self,
-                        value: self.exitPaywallRequest)
     }
 
     @ViewBuilder
@@ -580,13 +575,11 @@ struct LoadedOfferingPaywallView: View {
             .environmentObject(self.purchaseHandler)
             .disabled(self.purchaseHandler.actionInProgress)
             .onAppear {
-                self.exitPaywallRequest = .none
                 self.purchaseHandler.trackPaywallImpression(self.createEventData())
             }
             .onDisappear { self.purchaseHandler.trackPaywallClose() }
             .onChangeOf(self.purchaseHandler.purchased) { purchased in
                 if purchased {
-                    self.exitPaywallRequest = .none
                     guard let onRequestedDismissal = self.onRequestedDismissal else {
                         if self.mode.isFullScreen {
                             Logger.debug(Strings.dismissing_paywall)
@@ -647,7 +640,6 @@ struct LoadedOfferingPaywallView: View {
     private func makeToolbar(color: Color?) -> some ToolbarContent {
         ToolbarItem(placement: .destructiveAction) {
             Button {
-                self.exitPaywallRequest = .requested
                 guard let onRequestedDismissal = self.onRequestedDismissal else {
                     self.dismiss()
                     return
