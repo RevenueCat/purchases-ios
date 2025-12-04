@@ -35,7 +35,11 @@ class SystemInfo {
     }
 
     let storeKitVersion: StoreKitVersion
-    let apiKeyValidationResult: Configuration.APIKeyValidationResult
+    private var _apiKeyValidationResult: Configuration.APIKeyValidationResult
+    var apiKeyValidationResult: Configuration.APIKeyValidationResult {
+        get { return self._apiKeyValidationResult }
+        set { self._apiKeyValidationResult = newValue }
+    }
 
     /// Whether the API key used to configure the SDK is a Simulated Store API key.
     var isSimulatedStoreAPIKey: Bool {
@@ -201,7 +205,7 @@ class SystemInfo {
         self._isAppBackgroundedState = .init(isAppBackgrounded ?? false)
         self.operationDispatcher = operationDispatcher
         self.storeKitVersion = storeKitVersion
-        self.apiKeyValidationResult = apiKeyValidationResult
+        self._apiKeyValidationResult = apiKeyValidationResult
         self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
         self.storefrontProvider = storefrontProvider
         self.responseVerificationMode = responseVerificationMode

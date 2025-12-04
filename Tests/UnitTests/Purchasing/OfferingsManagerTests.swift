@@ -191,7 +191,9 @@ extension OfferingsManagerTests {
 
         switch result?.error {
         case let .configurationError(message, underlyingError, _):
-            expect(message) == Strings.offering.configuration_error_no_products_for_offering.description
+            expect(message) == Strings.offering.configuration_error_no_products_for_offering(
+                apiKeyValidationResult: .validApplePlatform
+            ).description
             expect(underlyingError).to(beNil())
         default:
             fail("Unexpected result")
@@ -250,7 +252,129 @@ extension OfferingsManagerTests {
             LogIntent.appleError.prefix,
             "Error fetching offerings -",
             OfferingsManager.Error.configurationError("", underlyingError: nil).localizedDescription +
-            "\n" + Strings.offering.configuration_error_no_products_for_offering.description
+            "\n" + Strings.offering.configuration_error_no_products_for_offering(
+                apiKeyValidationResult: .validApplePlatform
+            ).description
+        ]
+            .joined(separator: " ")
+    }
+
+    func testOfferingsLogsErrorInformationIfBackendReturnsOfferingsWithNoPackagesForAppStoreApiKey() throws {
+        // given
+        self.mockSystemInfo.apiKeyValidationResult = .validApplePlatform
+        self.mockOfferings.stubbedGetOfferingsCompletionResult =
+            .success(MockData.backendOfferingsContentsWothEmptyPackages)
+        self.mockOfferingsFactory.emptyOfferings = false
+
+        // when
+        let result = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) {
+                completed($0)
+            }
+        }
+
+        // then
+        expect(result).to(beFailure())
+
+        let error = try XCTUnwrap(logger.messages.filter { $0.level == .error }.first)
+
+        expect(error.message) == [
+            LogIntent.appleError.prefix,
+            "Error fetching offerings -",
+            OfferingsManager.Error.configurationError("", underlyingError: nil).localizedDescription +
+            "\n" + Strings.offering.configuration_error_no_products_for_offering(
+                apiKeyValidationResult: .validApplePlatform
+            ).description
+        ]
+            .joined(separator: " ")
+    }
+
+    func testOfferingsLogsErrorInformationIfBackendReturnsOfferingsWithNoPackagesForTestStoreApiKey() throws {
+        // given
+        self.mockSystemInfo.apiKeyValidationResult = .simulatedStore
+        self.mockOfferings.stubbedGetOfferingsCompletionResult =
+            .success(MockData.backendOfferingsContentsWothEmptyPackages)
+        self.mockOfferingsFactory.emptyOfferings = false
+
+        // when
+        let result = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) {
+                completed($0)
+            }
+        }
+
+        // then
+        expect(result).to(beFailure())
+
+        let error = try XCTUnwrap(logger.messages.filter { $0.level == .error }.first)
+
+        expect(error.message) == [
+            LogIntent.appleError.prefix,
+            "Error fetching offerings -",
+            OfferingsManager.Error.configurationError("", underlyingError: nil).localizedDescription +
+            "\n" + Strings.offering.configuration_error_no_products_for_offering(
+                apiKeyValidationResult: .simulatedStore
+            ).description
+        ]
+            .joined(separator: " ")
+    }
+
+    func testOfferingsLogsErrorInformationIfBackendReturnsOfferingsWithNoPackagesForLegacyApiKey() throws {
+        // given
+        self.mockSystemInfo.apiKeyValidationResult = .legacy
+        self.mockOfferings.stubbedGetOfferingsCompletionResult =
+            .success(MockData.backendOfferingsContentsWothEmptyPackages)
+        self.mockOfferingsFactory.emptyOfferings = false
+
+        // when
+        let result = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) {
+                completed($0)
+            }
+        }
+
+        // then
+        expect(result).to(beFailure())
+
+        let error = try XCTUnwrap(logger.messages.filter { $0.level == .error }.first)
+
+        expect(error.message) == [
+            LogIntent.appleError.prefix,
+            "Error fetching offerings -",
+            OfferingsManager.Error.configurationError("", underlyingError: nil).localizedDescription +
+            "\n" + Strings.offering.configuration_error_no_products_for_offering(
+                apiKeyValidationResult: .legacy
+            ).description
+        ]
+            .joined(separator: " ")
+    }
+
+    func testOfferingsLogsErrorInformationIfBackendReturnsOfferingsWithNoPackagesForOtherPlatformApiKey() throws {
+        // given
+        self.mockSystemInfo.apiKeyValidationResult = .otherPlatforms
+        self.mockOfferings.stubbedGetOfferingsCompletionResult =
+            .success(MockData.backendOfferingsContentsWothEmptyPackages)
+        self.mockOfferingsFactory.emptyOfferings = false
+
+        // when
+        let result = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) {
+                completed($0)
+            }
+        }
+
+        // then
+        expect(result).to(beFailure())
+
+        let error = try XCTUnwrap(logger.messages.filter { $0.level == .error }.first)
+
+        expect(error.message) == [
+            LogIntent.appleError.prefix,
+            "Error fetching offerings -",
+            OfferingsManager.Error.configurationError("", underlyingError: nil).localizedDescription +
+            "\n" + Strings.offering.configuration_error_no_products_for_offering(
+                apiKeyValidationResult: .otherPlatforms
+            ).description
         ]
             .joined(separator: " ")
     }
@@ -803,6 +927,21 @@ private extension OfferingsManagerTests {
                                   platformProductIdentifier: "yearly_freetrial",
                                   webCheckoutUrl: nil)
                           ],
+                          webCheckoutUrl: nil)
+                ],
+                placements: nil,
+                targeting: nil,
+                uiConfig: nil
+            ),
+            httpResponseOriginalSource: .mainServer
+        )
+        static let backendOfferingsContentsWothEmptyPackages = Offerings.Contents(
+            response: .init(
+                currentOfferingId: "base",
+                offerings: [
+                    .init(identifier: "base",
+                          description: "This is the base offering",
+                          packages: [],
                           webCheckoutUrl: nil)
                 ],
                 placements: nil,
