@@ -187,7 +187,7 @@ import Foundation
          *
          * Availability: iOS 15.0+, macOS 26.0+, tvOS 26.0+, watchOS 26.0+, visionOS 26.0+
          */
-        @available(iOS 15.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *)
+        @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
         @objc public func with(promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions) -> Self {
             self.promotionalOfferOptions = promotionalOfferOptions
             return self
