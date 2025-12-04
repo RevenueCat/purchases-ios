@@ -440,6 +440,18 @@ final class PurchasesOrchestrator {
 
         #endif
 
+        #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
+        let introductoryOfferEligibilityJWS = params.introductoryOfferEligibilityJWS
+        let promotionalOfferOptions = params.promotionalOfferOptions
+
+        #else
+
+        let introductoryOfferEligibilityJWS: String? = nil
+        let promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions? = nil
+
+        #endif
+
         // Validate quantity if provided
         if let quantity = params.quantity {
             guard quantity >= 1 && quantity <= 10 else {
@@ -456,6 +468,8 @@ final class PurchasesOrchestrator {
                  package: params.package,
                  promotionalOffer: params.promotionalOffer?.signedData,
                  winBackOffer: winBackOffer,
+                 introductoryOfferEligibilityJWS: introductoryOfferEligibilityJWS,
+                 promotionalOfferOptions: promotionalOfferOptions,
                  metadata: metadata,
                  quantity: params.quantity,
                  trackDiagnostics: trackDiagnostics,
@@ -466,6 +480,8 @@ final class PurchasesOrchestrator {
                   package: Package?,
                   promotionalOffer: PromotionalOffer.SignedData? = nil,
                   winBackOffer: WinBackOffer? = nil,
+                  introductoryOfferEligibilityJWS: String? = nil,
+                  promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions? = nil,
                   metadata: [String: String]? = nil,
                   quantity: Int? = nil,
                   trackDiagnostics: Bool,
@@ -503,6 +519,8 @@ final class PurchasesOrchestrator {
                           package: package,
                           promotionalOffer: promotionalOffer,
                           winBackOffer: winBackOffer,
+                          introductoryOfferEligibilityJWS: introductoryOfferEligibilityJWS,
+                          promotionalOfferOptions: promotionalOfferOptions,
                           metadata: metadata,
                           quantity: quantity,
                           completion: completionWithTracking)
@@ -615,6 +633,8 @@ final class PurchasesOrchestrator {
                   package: Package?,
                   promotionalOffer: PromotionalOffer.SignedData?,
                   winBackOffer: WinBackOffer?,
+                  introductoryOfferEligibilityJWS: String?,
+                  promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?,
                   metadata: [String: String]? = nil,
                   quantity: Int? = nil,
                   completion: @escaping PurchaseCompletedBlock) {
@@ -625,6 +645,8 @@ final class PurchasesOrchestrator {
                     package: package,
                     promotionalOffer: promotionalOffer,
                     winBackOffer: winBackOffer?.discount.sk2Discount,
+                    introductoryOfferEligibilityJWS: introductoryOfferEligibilityJWS,
+                    promotionalOfferJWS: promotionalOfferOptions,
                     metadata: metadata,
                     quantity: quantity
                 )
@@ -663,6 +685,8 @@ final class PurchasesOrchestrator {
                   package: Package?,
                   promotionalOffer: PromotionalOffer.SignedData? = nil,
                   winBackOffer: Product.SubscriptionOffer? = nil,
+                  introductoryOfferEligibilityJWS: String?,
+                  promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?,
                   metadata: [String: String]? = nil,
                   quantity: Int? = nil) async throws -> PurchaseResultData {
         let result: Product.PurchaseResult
@@ -697,6 +721,41 @@ final class PurchasesOrchestrator {
                 options.insert(.winBackOffer(winBackOffer))
                 winBackOfferApplied = true
 #endif
+            }
+
+            if let introductoryOfferEligibilityJWS,
+                // iOS version availability check is made by this function's availability requirement
+                #available(macOS 15.4, tvOS 18.4, watchOS 11.4, visionOS 2.4, *) {
+
+                // introductoryOfferEligibilityJWS wasn't introduced until iOS 18.4 and Xcode 16.3, which shipped with
+                // version 6.1 of the Swift compiler.
+                #if compiler(>=6.1)
+                Logger.debug(
+                    Strings.storeKit.sk2_purchasing_added_custom_introductory_offer_eligibility_jws
+                )
+                options.insert(.introductoryOfferEligibility(compactJWS: introductoryOfferEligibilityJWS))
+                #endif
+            }
+
+            if let promotionalOfferOptions,
+                // iOS version availability check is made by this function's availability requirement
+                #available(macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *) {
+
+                // introductoryOfferEligibilityJWS wasn't introduced until iOS 26.0 and Xcode 26.0, which shipped with
+                // version 6. of the Swift compiler.
+                #if compiler(>=6.2)
+                Logger.debug(
+                    Strings.storeKit.sk2_purchasing_added_custom_introductory_offer_eligibility_jws
+                )
+
+                // We use formUnion since Product.PurchaseOption.promotionalOffer returns an array of purchase options
+                options.formUnion(
+                    Product.PurchaseOption.promotionalOffer(
+                        promotionalOfferOptions.offerID,
+                        compactJWS: promotionalOfferOptions.compactJWS
+                    )
+                )
+                #endif
             }
 
             self.cachePresentedOfferingContext(package: package, productIdentifier: sk2Product.id)

@@ -41,6 +41,13 @@ import Foundation
 
     #endif
 
+    #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
+    let introductoryOfferEligibilityJWS: String?
+    let promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?
+
+    #endif
+
     private init(with builder: Builder) {
         self.promotionalOffer = builder.promotionalOffer
         self.product = builder.product
@@ -52,6 +59,11 @@ import Foundation
         self.winBackOffer = builder.winBackOffer
         self.metadata = builder.metadata
 
+        #endif
+
+        #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        self.introductoryOfferEligibilityJWS = builder.introductoryOfferEligibilityJWS
+        self.promotionalOfferOptions = builder.promotionalOfferOptions
         #endif
     }
 
@@ -66,6 +78,13 @@ import Foundation
 
         private(set) var winBackOffer: WinBackOffer?
         private(set) var metadata: [String: String]?
+
+        #endif
+
+        #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
+        private(set) var introductoryOfferEligibilityJWS: String?
+        private(set) var promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?
 
         #endif
 
@@ -135,6 +154,40 @@ import Foundation
         @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
         @objc public func with(winBackOffer: WinBackOffer) -> Self {
             self.winBackOffer = winBackOffer
+            return self
+        }
+
+        #endif
+
+        #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
+        /**
+         * Sets an introductoryOfferEligibility JWS to be included with the purchase. StoreKit 2 only.
+         * - Parameter introductoryOfferEligibilityJWS: The ``introductoryOfferEligibility JWS`` to apply to the purchase.
+         *
+         * Refer to https://developer.apple.com/documentation/storekit/product/purchaseoption/introductoryoffereligibility(compactjws:)
+         * for more information.
+         *
+         * Availability: iOS 15.0+, macOS 15.4+, tvOS 18.4+, watchOS 11.4+, visionOS 2.4+
+         */
+        @available(iOS 15.0, macOS 15.4, tvOS 18.4, watchOS 11.4, visionOS 2.4, *)
+        @objc public func with(introductoryOfferEligibilityJWS: String) -> Self {
+            self.introductoryOfferEligibilityJWS = introductoryOfferEligibilityJWS
+            return self
+        }
+
+        /**
+         * Sets an promotionalOffer JWS to be included with the purchase. StoreKit 2 only.
+         * - Parameter promotionalOfferJWS: The ``promotionalOffer JWS`` to apply to the purchase.
+         *
+         * Refer to https://developer.apple.com/documentation/storekit/product/purchaseoption/promotionaloffer(_:compactjws:)
+         * for more information.
+         *
+         * Availability: iOS 15.0+, macOS 26.0+, tvOS 26.0+, watchOS 26.0+, visionOS 26.0+
+         */
+        @available(iOS 15.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *)
+        @objc public func with(promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions) -> Self {
+            self.promotionalOfferOptions = promotionalOfferOptions
             return self
         }
 
