@@ -287,6 +287,7 @@ extension OfferingsManagerTests {
             ).description
         ]
             .joined(separator: " ")
+        expect(error.message).to(contain("an App Store API key"))
     }
 
     func testOfferingsLogsErrorInformationIfBackendReturnsOfferingsWithNoPackagesForTestStoreApiKey() throws {
@@ -317,6 +318,7 @@ extension OfferingsManagerTests {
             ).description
         ]
             .joined(separator: " ")
+        expect(error.message).to(contain("a Test Store API key"))
     }
 
     func testOfferingsLogsErrorInformationIfBackendReturnsOfferingsWithNoPackagesForLegacyApiKey() throws {
@@ -347,6 +349,7 @@ extension OfferingsManagerTests {
             ).description
         ]
             .joined(separator: " ")
+        expect(error.message).to(contain("an App Store API key"))
     }
 
     func testOfferingsLogsErrorInformationIfBackendReturnsOfferingsWithNoPackagesForOtherPlatformApiKey() throws {
@@ -377,6 +380,8 @@ extension OfferingsManagerTests {
             ).description
         ]
             .joined(separator: " ")
+        expect(error.message).toNot(contain("an App Store API key"))
+        expect(error.message).toNot(contain("a Test Store API key"))
     }
 
     func testOfferingsForAppUserIDReturnsConfigurationErrorIfProductsRequestsReturnsEmpty() throws {
