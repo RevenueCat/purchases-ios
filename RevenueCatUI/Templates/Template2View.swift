@@ -153,6 +153,7 @@ struct Template2View: TemplateViewType {
             .foregroundColor(self.configuration.colors.text1Color)
             .font(self.font(for: .largeTitle).bold())
             .defaultHorizontalPadding()
+            .accessibilityAddTraits(.isHeader)
     }
 
     private var subtitle: some View {
