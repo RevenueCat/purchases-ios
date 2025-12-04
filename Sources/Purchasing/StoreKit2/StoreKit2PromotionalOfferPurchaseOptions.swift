@@ -14,10 +14,10 @@ import Foundation
 @objc(StoreKit2PromotionalOfferPurchaseOptions)
 public final class StoreKit2PromotionalOfferPurchaseOptions: NSObject, Sendable {
     /// The id property of the subscription offer to apply.
-    public let offerID: String
+    @objc public let offerID: String
 
     /// The JWS signature used to validate a promotional offer.
-    public let compactJWS: String
+    @objc public let compactJWS: String
 
     /**
      * Creates a new ``StoreKit2PromotionalOfferPurchaseOptions`` instance.
@@ -25,7 +25,7 @@ public final class StoreKit2PromotionalOfferPurchaseOptions: NSObject, Sendable 
      *   - offerID: The id property of the subscription offer to apply.
      *   - compactJWS: The JWS signature used to validate a promotional offer.
      */
-    public init(
+    @objc public init(
         offerID: String,
         compactJWS: String
     ) {
