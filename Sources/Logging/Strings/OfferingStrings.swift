@@ -179,7 +179,6 @@ extension OfferingStrings: LogMessage {
 
 }
 
-
 private extension Configuration.APIKeyValidationResult {
 
     var storeNameForLogging: String? {
