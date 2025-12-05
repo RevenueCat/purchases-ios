@@ -39,10 +39,8 @@ struct ViewModelFactory {
     ) throws -> RootViewModel {
         let firstItemIgnoresSafeAreaInfo = self.findFullWidthImageViewIfItsTheFirst(.stack(componentsConfig.stack))
 
-        let rootStackComponent = componentsConfig.stack.withFilledHeightIfNeeded()
-
         let rootStackViewModel = try toStackViewModel(
-            component: rootStackComponent,
+            component: componentsConfig.stack,
             packageValidator: self.packageValidator,
             firstItemIgnoresSafeAreaInfo: firstItemIgnoresSafeAreaInfo,
             purchaseButtonCollector: nil,
@@ -615,31 +613,6 @@ struct ViewModelFactory {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension PaywallComponent.StackComponent {
-    func withFilledHeightIfNeeded() -> PaywallComponent.StackComponent {
-        guard self.size.height == .fit else {
-            return self
-        }
 
-        return PaywallComponent.StackComponent(
-            visible: self.visible,
-            components: self.components,
-            dimension: self.dimension,
-            size: PaywallComponent.Size(width: .fill, height: .fill),
-            spacing: self.spacing,
-            backgroundColor: self.backgroundColor,
-            background: self.background,
-            padding: self.padding,
-            margin: self.margin,
-            shape: self.shape,
-            border: self.border,
-            shadow: self.shadow,
-            badge: self.badge,
-            overflow: self.overflow,
-            overrides: self.overrides
-        )
-    }
-}
 
 #endif
