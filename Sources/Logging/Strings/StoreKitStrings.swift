@@ -41,7 +41,7 @@ enum StoreKitStrings {
 
     case sk2_purchasing_added_custom_introductory_offer_eligibility_jws
 
-    case sk2_purchasing_added_custom_promotional_offer_jws(String)
+    case sk2_purchasing_added_custom_promotional_offer_jws(offerID: String)
 
     case sk2_purchasing_added_uuid_option(UUID)
 
