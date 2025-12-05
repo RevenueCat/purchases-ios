@@ -18,7 +18,8 @@ parameters:
         run-manual-docs-deploy,
         update_paywall_templates,
         record_paywall_screenshots,
-        tuist
+        tuist,
+        maestro-tests-everywhere
       ]
     default: default
   generate_snapshots:
@@ -1774,6 +1775,19 @@ workflows:
       equal: [run-manual-docs-deploy, << pipeline.parameters.action >>]
     jobs:
       - docs-deploy
+
+  maestro-tests-everywhere:
+    when:
+      equal: [maestro-tests-everywhere, << pipeline.parameters.action >>]
+    jobs:
+      - <<: *maestro-e2e-test-job
+      - run-maestro-e2e-tests:
+          name: run-maestro-e2e-tests-production-test-store
+          backend_environment: "production"
+          store: "test_store"
+          context:
+            - e2e-tests
+            - slack-secrets
 
   # To trigger tests manually, log into circleCI, select the project, a branch, and then click "Trigger Pipeline"
   # in the top right hand corner of the screen. In the modal that appears, set the following parameter fields
