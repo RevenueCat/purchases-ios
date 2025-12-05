@@ -97,7 +97,7 @@ public extension PaywallComponent {
                 try container.encode(ConditionType.selected.rawValue, forKey: .type)
             case .unsupported:
                 // Encode a default value for unsupported
-                try container.encode("unknown", forKey: .type)
+                try container.encode("unsupported", forKey: .type)
             }
         }
 
