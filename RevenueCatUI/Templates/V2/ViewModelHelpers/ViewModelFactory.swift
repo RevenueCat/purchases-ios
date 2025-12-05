@@ -613,6 +613,4 @@ struct ViewModelFactory {
 
 }
 
-
-
 #endif
