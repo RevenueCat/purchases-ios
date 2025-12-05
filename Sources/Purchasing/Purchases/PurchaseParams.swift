@@ -179,8 +179,8 @@ import Foundation
 
         // swiftlint:disable line_length
         /**
-         * Sets an promotionalOffer JWS to be included with the purchase. StoreKit 2 only.
-         * - Parameter promotionalOfferJWS: The ``promotionalOffer JWS`` to apply to the purchase.
+         * Sets a promotionalOfferOptions to be included with the purchase. StoreKit 2 only.
+         * - Parameter promotionalOfferOptions: The ``promotionalOfferOptions`` to apply to the purchase.
          *
          * Refer to https://developer.apple.com/documentation/storekit/product/purchaseoption/promotionaloffer(_:compactjws:)
          * for more information.
