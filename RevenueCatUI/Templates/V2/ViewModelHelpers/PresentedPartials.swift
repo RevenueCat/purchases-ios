@@ -104,11 +104,15 @@ extension PresentedPartial {
 
                 switch operand {
                 case .in:
-                    return orientations.contains(where: { $0.rawValue == active })
+                    if !orientations.contains(where: { $0.rawValue == active }) {
+                        return false
+                    }
                 case .notIn:
-                    return !orientations.contains(where: { $0.rawValue == active })
+                    if orientations.contains(where: { $0.rawValue == active }) {
+                        return false
+                    }
                 @unknown default:
-                    return false
+                    break
                 }
             case .screenSize(let operand, let sizes):
                 guard let active = activeCondition.screenSize?.name else {
@@ -117,68 +121,91 @@ extension PresentedPartial {
 
                 switch operand {
                 case .in:
-                    return sizes.contains(where: { $0 == active })
+                    if !sizes.contains(where: { $0 == active }) {
+                        return false
+                    }
                 case .notIn:
-                    return !sizes.contains(where: { $0 == active })
+                    if sizes.contains(where: { $0 == active }) {
+                        return false
+                    }
                 @unknown default:
-                    return false
+                    break
                 }
             case let .selectedPackage(operand, packages):
                 if let selectedPackage = selectedPackage {
                     switch operand {
                     case .in:
-                        return packages.contains(where: { $0 == selectedPackage.identifier })
+                        if !packages.contains(where: { $0 == selectedPackage.identifier }) {
+                            return false
+                        }
                     case .notIn:
-                        return !packages.contains(where: { $0 == selectedPackage.identifier })
+                        if packages.contains(where: { $0 == selectedPackage.identifier }) {
+                            return false
+                        }
                     @unknown default:
-                        return false
+                        break
                     }
                 }
-                return false
             case .introOffer(let operand, let value):
                 switch operand {
                 case .equals:
-                    return isEligibleForIntroOffer == value
+                    if !(isEligibleForIntroOffer == value) {
+                        return false
+                    }
                 case .notEquals:
-                    return isEligibleForIntroOffer != value
+                    if !(isEligibleForIntroOffer != value) {
+                        return false
+                    }
                 @unknown default:
-                    return false
+                    break
                 }
             case .anyPackageContainsIntroOffer(let operand, let value):
                 switch operand {
                 case .equals:
-                    return anyPackageHasIntroOffer == value
+                    if !(anyPackageHasIntroOffer == value) {
+                        return false
+                    }
                 case .notEquals:
-                    return anyPackageHasIntroOffer != value
+                    if !(anyPackageHasIntroOffer != value) {
+                        return false
+                    }
                 @unknown default:
-                    return false
+                    break
                 }
             case .promoOffer(let operand, let value):
                 switch operand {
                 case .equals:
-                    return isEligibleForPromoOffer == value
+                    if !(isEligibleForPromoOffer == value) {
+                        return false
+                    }
                 case .notEquals:
-                    return isEligibleForPromoOffer != value
+                    if !(isEligibleForPromoOffer != value) {
+                        return false
+                    }
                 @unknown default:
-                    return false
+                    break
                 }
             case .anyPackageContainsPromoOffer(let operand, let value):
                 switch operand {
                 case .equals:
-                    return anyPackageHasPromoOffer == value
+                    if !(anyPackageHasPromoOffer == value) {
+                        return false
+                    }
                 case .notEquals:
-                    return anyPackageHasPromoOffer != value
+                    if !(anyPackageHasPromoOffer != value) {
+                        return false
+                    }
                 @unknown default:
-                    return false
+                    break
                 }
             case .selected:
                 if state != .selected {
                     return false
                 }
             case .unsupported:
-                return true // ignore unsupported case and show partial
+                break // ignore unsupported case and show partial
             @unknown default:
-                return false
+                break
             }
         }
 
