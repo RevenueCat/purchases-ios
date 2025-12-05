@@ -164,7 +164,7 @@ import Foundation
         // swiftlint:disable line_length
         /**
          * Sets an introductoryOfferEligibility JWS to be included with the purchase. StoreKit 2 only.
-         * - Parameter introductoryOfferEligibilityJWS: The ``introductoryOfferEligibility JWS`` to apply to the purchase.
+         * - Parameter introductoryOfferEligibilityJWS: The ``introductoryOfferEligibilityJWS`` to apply to the purchase.
          *
          * Refer to https://developer.apple.com/documentation/storekit/product/purchaseoption/introductoryoffereligibility(compactjws:)
          * for more information.
