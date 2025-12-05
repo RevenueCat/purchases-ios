@@ -725,7 +725,8 @@ final class PurchasesOrchestrator {
             }
 
             if let introductoryOfferEligibilityJWS,
-                // iOS version availability check is made by this function's availability requirement
+                // We omit the iOS version availability check here because it's value is the same as this function's
+                // availability requirement. Including it here generates a warning that we'd like to avoid.
                 #available(macOS 15.4, tvOS 18.4, watchOS 11.4, visionOS 2.4, *) {
 
                 // introductoryOfferEligibility wasn't introduced until iOS 18.4 and Xcode 16.3, which shipped with
