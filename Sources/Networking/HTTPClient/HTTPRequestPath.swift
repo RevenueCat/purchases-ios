@@ -51,6 +51,10 @@ extension HTTPRequestPath {
         return []
     }
 
+    var supportsFallbackURLs: Bool {
+        !fallbackUrls.isEmpty
+    }
+
     var fallbackRelativePath: String? {
         return nil
     }
@@ -98,6 +102,7 @@ extension HTTPRequest {
         case getCustomerCenterConfig(appUserID: String)
         case getVirtualCurrencies(appUserID: String)
         case postRedeemWebPurchase
+        case postCreateTicket
 
     }
 
@@ -181,7 +186,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .getVirtualCurrencies,
-                .appHealthReport:
+                .appHealthReport,
+                .postCreateTicket:
             return true
 
         case .health,
@@ -205,7 +211,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .getVirtualCurrencies,
-                .appHealthReport:
+                .appHealthReport,
+                .postCreateTicket:
             return true
         case .health,
              .appHealthReportAvailability:
@@ -231,7 +238,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postAdServicesToken,
                 .postOfferForSigning,
                 .postRedeemWebPurchase,
-                .getCustomerCenterConfig:
+                .getCustomerCenterConfig,
+                .postCreateTicket:
             return false
         }
     }
@@ -254,7 +262,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postRedeemWebPurchase,
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
-                .appHealthReport:
+                .appHealthReport,
+                .postCreateTicket:
             return false
         }
     }
@@ -312,6 +321,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case let .getVirtualCurrencies(appUserID):
             return "subscribers/\(Self.escape(appUserID))/virtual_currencies"
+
+        case .postCreateTicket:
+            return "customercenter/support/create-ticket"
         }
     }
 
@@ -364,6 +376,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .appHealthReportAvailability:
             return "get_app_health_report_availability"
+
+        case .postCreateTicket:
+            return "post_create_ticket"
 
         }
     }

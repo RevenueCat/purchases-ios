@@ -181,6 +181,15 @@ struct SubscriptionDetailView: View {
                 .environment(\.appearance, appearance)
                 .environment(\.localization, localization)
             }
+            .sheet(isPresented: $viewModel.showCreateTicket) {
+                CreateTicketView(
+                    isPresented: $viewModel.showCreateTicket,
+                    purchasesProvider: self.viewModel.purchasesProvider
+                )
+                .environment(\.appearance, appearance)
+                .environment(\.localization, localization)
+                .environment(\.navigationOptions, navigationOptions)
+            }
             .alert(isPresented: $showSimulatorAlert, content: {
                 return Alert(
                     title: Text("Can't open URL"),
@@ -246,14 +255,17 @@ private extension SubscriptionDetailView {
                         .padding(.vertical, 16)
                 }
 
-                if let url = support?.supportURL(
+                if viewModel.shouldShowCreateTicketButton(supportTickets: support?.supportTickets) {
+                    createTicketButton
+                        .padding(.vertical, 16)
+                } else if let url = support?.supportURL(
                     localization: localization,
                     purchasesProvider: viewModel.purchasesProvider
                 ),
-                   viewModel.shouldShowContactSupport,
-                   URLUtilities.canOpenURL(url) || RuntimeUtils.isSimulator {
-                    contactSupportView(url)
-                        .padding(.vertical, 16)
+                  viewModel.shouldShowContactSupport,
+                  URLUtilities.canOpenURL(url) || RuntimeUtils.isSimulator {
+                        contactSupportView(url)
+                            .padding(.vertical, 16)
                 }
 
                 if customerInfoViewModel.shouldShowUserDetailsSection {
@@ -300,6 +312,17 @@ private extension SubscriptionDetailView {
         }
         .padding(.horizontal)
         .buttonStyle(.customerCenterButtonStyle(for: colorScheme))
+    }
+
+    var createTicketButton: some View {
+        Button {
+            viewModel.showCreateTicket = true
+        } label: {
+            CompatibilityLabeledContent(localization[.contactSupport])
+        }
+        .padding(.horizontal)
+        .buttonStyle(.customerCenterButtonStyle(for: colorScheme))
+        .tint(colorScheme == .dark ? .white : .black)
     }
 
     var seeAllSubscriptionsButton: some View {
