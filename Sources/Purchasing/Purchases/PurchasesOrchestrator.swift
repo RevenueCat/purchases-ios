@@ -745,7 +745,9 @@ final class PurchasesOrchestrator {
                 // version 6.2 of the Swift compiler.
                 #if compiler(>=6.2)
                 Logger.debug(
-                    Strings.storeKit.sk2_purchasing_added_custom_promotional_offer_jws(promotionalOfferOptions.offerID)
+                    Strings.storeKit.sk2_purchasing_added_custom_promotional_offer_jws(
+                        offerID: promotionalOfferOptions.offerID
+                    )
                 )
 
                 // We use formUnion since Product.PurchaseOption.promotionalOffer returns an array of purchase options
