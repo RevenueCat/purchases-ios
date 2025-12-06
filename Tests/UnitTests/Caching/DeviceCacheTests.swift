@@ -937,7 +937,8 @@ private extension DeviceCacheTests {
                                                                      offerings: [offeringsData],
                                                                      placements: nil,
                                                                      targeting: nil,
-                                                                     uiConfig: nil),
+                                                                     uiConfig: nil,
+                                                                     config: nil),
                                          httpResponseOriginalSource: .mainServer),
             loadedFromDiskCache: false
         )
@@ -957,7 +958,8 @@ private extension Offerings {
             offerings: [],
             placements: nil,
             targeting: nil,
-            uiConfig: nil
+            uiConfig: nil,
+            config: nil
         ),
                                      httpResponseOriginalSource: .mainServer),
         loadedFromDiskCache: false

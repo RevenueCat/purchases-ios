@@ -219,8 +219,11 @@ extension StoreProductDiscount {
 
 extension StoreProductDiscount {
 
-    internal convenience init?(sk1Discount: SK1ProductDiscount) {
-        guard let discount = SK1StoreProductDiscount(sk1Discount: sk1Discount) else { return nil }
+    internal convenience init?(sk1Discount: SK1ProductDiscount, priceFormatterProvider: PriceFormatterProvider? = nil) {
+        guard let discount = SK1StoreProductDiscount(
+            sk1Discount: sk1Discount,
+            priceFormatterProvider: priceFormatterProvider
+        ) else { return nil }
 
         self.init(discount)
     }
