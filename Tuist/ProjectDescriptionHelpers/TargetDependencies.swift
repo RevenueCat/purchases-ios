@@ -1,28 +1,77 @@
 import ProjectDescription
 
 extension TargetDependency {
-    /// Returns a RevenueCat dependency that can be either local or external
-    /// - Parameter local: If true, returns a local project dependency. If false, returns an external dependency
-    /// from spm
+    /// Returns the RevenueCat dependency based on the dependency mode
     /// - Returns: A TargetDependency for RevenueCat
     public static var revenueCat: TargetDependency {
-        if Environment.local {
-            .project(
-                target: "RevenueCat",
-                path: .relativeToRoot("Projects/RevenueCat")
-            )
-        } else {
-            .revenueCatLocal
+        switch Environment.dependencyMode {
+        case .localSwiftPackage:
+            return .revenueCatSwiftPackageDependency
+        case .remoteSwiftPackage:
+            return .revenueCatSwiftPackageDependency
+        case .remoteXcodeProject:
+            return .revenueCatRemoteXcodeProjectDependency
+        case .localXcodeProject:
+            return .revenueCatXcodeProjectDependency
         }
     }
 
-    /// Returns a local RevenueCat dependency from SPM
-    /// - Returns: A TargetDependency for RevenueCat from external source
-    public static var revenueCatLocal: TargetDependency {
-        .external(
-            name: "RevenueCat"
-        )
+    /// Returns the RevenueCatUI dependency based on the dependency mode
+    /// - Returns: A TargetDependency for RevenueCatUI
+    public static var revenueCatUI: TargetDependency {
+        switch Environment.dependencyMode {
+        case .localSwiftPackage:
+            return .revenueCatUISwiftPackageDependency
+        case .remoteSwiftPackage:
+            return .revenueCatUISwiftPackageDependency
+        case .remoteXcodeProject:
+            return .revenueCatUIRemoteXcodeProjectDependency
+        case .localXcodeProject:
+            return .revenueCatUIXcodeProjectDependency
+        }
     }
+
+    // RevenueCat
+
+    /// Returns the remote RevenueCat dependency as Tuist's XcodeProj-based dependency
+    static var revenueCatRemoteXcodeProjectDependency: TargetDependency {
+        .external(name: "RevenueCat")
+    }
+
+    /// Returns the remote RevenueCat Swift Package Manager dependency
+    static var revenueCatSwiftPackageDependency: TargetDependency {
+        .package(product: "RevenueCat", type: .runtime)
+    }
+
+    /// Returns the Xcode project RevenueCat dependency
+    /// - Returns: A TargetDependency for RevenueCat from Xcode project
+    static var revenueCatXcodeProjectDependency: TargetDependency {
+        .project(
+            target: "RevenueCat",
+            path: .relativeToRoot("Projects/RevenueCat"))
+    }
+
+    // RevenueCatUI
+
+    /// Returns the remote RevenueCat dependency as Tuist's XcodeProj-based dependency
+    static var revenueCatUIRemoteXcodeProjectDependency: TargetDependency {
+        .external(name: "RevenueCatUI")
+    }
+
+    /// Returns the remote RevenueCat Swift Package Manager dependency
+    static var revenueCatUISwiftPackageDependency: TargetDependency {
+        .package(product: "RevenueCatUI", type: .runtime)
+    }
+
+    /// Returns the Xcode project RevenueCatUI dependency
+    /// - Returns: A TargetDependency for RevenueCat from Xcode project
+    static var revenueCatUIXcodeProjectDependency: TargetDependency {
+        .project(
+            target: "RevenueCat",
+            path: .relativeToRoot("Projects/RevenueCatUI"))
+    }
+
+    // Custom Entitlement Computation
 
     /// Returns a RevenueCat dependency with custom entitlement computation enabled
     /// - Returns: A TargetDependency for RevenueCat_CustomEntitlementComputation
@@ -30,29 +79,6 @@ extension TargetDependency {
         .project(
             target: "RevenueCat_CustomEntitlementComputation",
             path: .relativeToRoot("Projects/RevenueCat")
-        )
-    }
-
-    /// Returns a RevenueCatUI dependency that can be either local or external
-    /// - Parameter local: If true, returns a local project dependency. If false, returns an external dependency 
-    /// from spm
-    /// - Returns: A TargetDependency for RevenueCatUI
-    public static var revenueCatUI: TargetDependency {
-        if Environment.local {
-            .project(
-                target: "RevenueCatUI",
-                path: .relativeToRoot("Projects/RevenueCatUI")
-            )
-        } else {
-            .revenueCatUILocal
-        }
-    }
-
-    /// Returns a local RevenueCatUI dependency from SPM
-    /// - Returns: A TargetDependency for RevenueCatUI from external source
-    public static var revenueCatUILocal: TargetDependency {
-        .external(
-            name: "RevenueCatUI"
         )
     }
 

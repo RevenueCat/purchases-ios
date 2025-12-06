@@ -30,6 +30,7 @@ let allDestinations = destinations + [.appleWatch]
 let project = Project(
     name: "PurchaseTester",
     organizationName: .revenueCatOrgName,
+    packages: .projectPackages,
     settings: .appProject,
     targets: [
         .target(

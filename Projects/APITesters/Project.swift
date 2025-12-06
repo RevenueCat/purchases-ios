@@ -25,6 +25,7 @@ let allDeploymentTargets: DeploymentTargets = .multiplatform(
 let project = Project(
     name: "APITesters",
     organizationName: .revenueCatOrgName,
+    packages: .projectPackages,
     settings: .framework,
     targets: [
         .target(
