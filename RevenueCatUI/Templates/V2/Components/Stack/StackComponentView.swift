@@ -92,6 +92,13 @@ struct StackComponentView: View {
                     viewModels: self.viewModel.viewModels,
                     onDismiss: self.onDismiss
                 )
+                // Padding needs to be applied before scrollview so it applies to the inner stack
+                .padding(style.padding.extend(by: style.border?.width ?? 0))
+                .padding(additionalPadding)
+                .scrollableIfEnabled(
+                    style.dimension,
+                    enabled: style.scrollable ?? self.isScrollableByDefault
+                )
                 // This alignment positions the inner VStack horizontally and vertically
                 .size(style.size,
                       horizontalAlignment: horizontalAlignment.frameAlignment,
@@ -103,6 +110,13 @@ struct StackComponentView: View {
                     distribution: distribution,
                     viewModels: self.viewModel.viewModels,
                     onDismiss: self.onDismiss
+                )
+                // Padding needs to be applied before scrollview so it applies to the inner stack
+                .padding(style.padding.extend(by: style.border?.width ?? 0))
+                .padding(additionalPadding)
+                .scrollableIfEnabled(
+                    style.dimension,
+                    enabled: style.scrollable ?? self.isScrollableByDefault
                 )
                 // This alignment positions the inner VStack horizontally and vertically
                 .size(style.size,
@@ -117,6 +131,13 @@ struct StackComponentView: View {
                         onDismiss: self.onDismiss
                     )
                 }
+                // Padding needs to be applied before scrollview so it applies to the inner stack
+                .padding(style.padding.extend(by: style.border?.width ?? 0))
+                .padding(additionalPadding)
+                .scrollableIfEnabled(
+                    style.dimension,
+                    enabled: style.scrollable ?? self.isScrollableByDefault
+                )
                 // These alignments define the position of inner components inside the ZStack
                 .size(style.size,
                       horizontalAlignment: alignment.stackAlignment,
@@ -124,15 +145,9 @@ struct StackComponentView: View {
             }
         }
         .hidden(if: self.showActivityIndicatorOverContent)
-        .padding(style.padding.extend(by: style.border?.width ?? 0))
-        .padding(additionalPadding)
         .applyIf(self.showActivityIndicatorOverContent, apply: { view in
             view.progressOverlay(for: style.backgroundStyle)
         })
-        .scrollableIfEnabled(
-            style.dimension,
-            enabled: style.scrollable ?? self.isScrollableByDefault
-        )
         .shape(border: nil,
                shape: style.shape,
                background: style.backgroundStyle,
@@ -477,22 +492,22 @@ struct StackComponentView_Previews: PreviewProvider {
                         components: [
                             .stack(.init(
                                 components: [],
-                                size: .init(width: .fixed(300), height: .fixed(50)),
+                                size: .init(width: .fixed(50), height: .fixed(50)),
                                 backgroundColor: .init(light: .hex("#ff0000"))
                             )),
                             .stack(.init(
                                 components: [],
-                                size: .init(width: .fixed(300), height: .fixed(50)),
+                                size: .init(width: .fixed(10), height: .fixed(10)),
                                 backgroundColor: .init(light: .hex("#00ff00"))
                             )),
                             .stack(.init(
                                 components: [],
-                                size: .init(width: .fixed(300), height: .fixed(50)),
+                                size: .init(width: .fixed(30), height: .fixed(30)),
                                 backgroundColor: .init(light: .hex("#0000ff"))
                             )),
                             .stack(.init(
                                 components: [],
-                                size: .init(width: .fixed(300), height: .fixed(50)),
+                                size: .init(width: .fixed(100), height: .fixed(100)),
                                 backgroundColor: .init(light: .hex("#000000"))
                             ))
                         ],
@@ -526,6 +541,64 @@ struct StackComponentView_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Scrollable - HStack")
+
+        // Scrollable - VStack
+        VStack(spacing: 0) {
+            StackComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    component: .init(
+                        components: [
+                            .stack(.init(
+                                components: [],
+                                size: .init(width: .fixed(50), height: .fixed(50)),
+                                backgroundColor: .init(light: .hex("#ff0000"))
+                            )),
+                            .stack(.init(
+                                components: [],
+                                size: .init(width: .fixed(10), height: .fixed(10)),
+                                backgroundColor: .init(light: .hex("#00ff00"))
+                            )),
+                            .stack(.init(
+                                components: [],
+                                size: .init(width: .fixed(30), height: .fixed(30)),
+                                backgroundColor: .init(light: .hex("#0000ff"))
+                            )),
+                            .stack(.init(
+                                components: [],
+                                size: .init(width: .fixed(100), height: .fixed(100)),
+                                backgroundColor: .init(light: .hex("#000000"))
+                            ))
+                        ],
+                        dimension: .vertical(.center, .start),
+                        size: .init(
+                            width: .fit,
+                            height: .fixed(400)
+                        ),
+                        spacing: 10,
+                        backgroundColor: .init(light: .hex("#ffcc00")),
+                        padding: .init(top: 80, bottom: 80, leading: 20, trailing: 20),
+                        margin: .init(top: 80, bottom: 80, leading: 20, trailing: 20),
+                        shape: .rectangle(.init(topLeading: 20,
+                                                topTrailing: 20,
+                                                bottomLeading: 20,
+                                                bottomTrailing: 20)),
+                        border: .init(color: .init(light: .hex("#0000ff")), width: 6),
+                        overflow: .scroll
+                    ),
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: [
+                            "text_1": .string("Hey")
+                        ]
+                    )
+                ),
+                onDismiss: {}
+            )
+        }
+        .previewRequiredEnvironmentProperties()
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Scrollable - VStack")
 
         // Progress
         let colorOptions: [(String, String, PaywallComponent.ColorInfo)] = [
@@ -689,7 +762,7 @@ func stackAlignmentAndDistributionPreviews(dimensions: [PaywallComponent.Dimensi
                     component: PaywallComponent.StackComponent(
                         components: innerStacks(dimension: dimension),
                         dimension: dimension,
-                        size: .init(width: .fill, height: .fixed(150)),
+                        size: .init(width: .fill, height: .fixed(170)),
                         spacing: 10,
                         backgroundColor: .init(light: .hex("#ff0000")),
                         padding: .init(top: 10, bottom: 10, leading: 10, trailing: 10),
