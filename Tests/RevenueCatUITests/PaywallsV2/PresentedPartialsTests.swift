@@ -684,6 +684,350 @@ class PresentedPartialsTest: TestCase {
         expect(result).to(equal(expected))
     }
 
+    // MARK: - App Version Condition Tests
+
+    func testPresentedPartialsAppVersionLessThanAppliedWhenLess() {
+        let state = ComponentViewState.default
+        let condition = ScreenCondition.default
+        let appVersionInt = 123 // e.g., "1.2.3" -> 123
+
+        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
+            .init(conditions: [
+                .appVersion(.lessThan, 200)
+            ], properties: .init(
+                margin: .zero
+            ))
+        ]
+
+        let result = PresentedStackPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            appVersionInt: appVersionInt,
+            selectedPackage: nil,
+            with: presentedOverrides
+        )
+
+        let expected: PresentedStackPartial = .init(
+            margin: .zero
+        )
+
+        expect(result).to(equal(expected))
+    }
+
+    func testPresentedPartialsAppVersionLessThanNotAppliedWhenGreaterOrEqual() {
+        let state = ComponentViewState.default
+        let condition = ScreenCondition.default
+        let appVersionInt = 200
+
+        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
+            .init(conditions: [
+                .appVersion(.lessThan, 200)
+            ], properties: .init(
+                margin: .zero
+            ))
+        ]
+
+        let result = PresentedStackPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            appVersionInt: appVersionInt,
+            selectedPackage: nil,
+            with: presentedOverrides
+        )
+
+        expect(result).to(beNil())
+    }
+
+    func testPresentedPartialsAppVersionLessThanOrEqualAppliedWhenEqual() {
+        let state = ComponentViewState.default
+        let condition = ScreenCondition.default
+        let appVersionInt = 200
+
+        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
+            .init(conditions: [
+                .appVersion(.lessThanOrEqual, 200)
+            ], properties: .init(
+                margin: .zero
+            ))
+        ]
+
+        let result = PresentedStackPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            appVersionInt: appVersionInt,
+            selectedPackage: nil,
+            with: presentedOverrides
+        )
+
+        let expected: PresentedStackPartial = .init(
+            margin: .zero
+        )
+
+        expect(result).to(equal(expected))
+    }
+
+    func testPresentedPartialsAppVersionLessThanOrEqualNotAppliedWhenGreater() {
+        let state = ComponentViewState.default
+        let condition = ScreenCondition.default
+        let appVersionInt = 201
+
+        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
+            .init(conditions: [
+                .appVersion(.lessThanOrEqual, 200)
+            ], properties: .init(
+                margin: .zero
+            ))
+        ]
+
+        let result = PresentedStackPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            appVersionInt: appVersionInt,
+            selectedPackage: nil,
+            with: presentedOverrides
+        )
+
+        expect(result).to(beNil())
+    }
+
+    func testPresentedPartialsAppVersionEqualAppliedWhenEqual() {
+        let state = ComponentViewState.default
+        let condition = ScreenCondition.default
+        let appVersionInt = 123
+
+        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
+            .init(conditions: [
+                .appVersion(.equal, 123)
+            ], properties: .init(
+                margin: .zero
+            ))
+        ]
+
+        let result = PresentedStackPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            appVersionInt: appVersionInt,
+            selectedPackage: nil,
+            with: presentedOverrides
+        )
+
+        let expected: PresentedStackPartial = .init(
+            margin: .zero
+        )
+
+        expect(result).to(equal(expected))
+    }
+
+    func testPresentedPartialsAppVersionEqualNotAppliedWhenNotEqual() {
+        let state = ComponentViewState.default
+        let condition = ScreenCondition.default
+        let appVersionInt = 124
+
+        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
+            .init(conditions: [
+                .appVersion(.equal, 123)
+            ], properties: .init(
+                margin: .zero
+            ))
+        ]
+
+        let result = PresentedStackPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            appVersionInt: appVersionInt,
+            selectedPackage: nil,
+            with: presentedOverrides
+        )
+
+        expect(result).to(beNil())
+    }
+
+    func testPresentedPartialsAppVersionGreaterThanAppliedWhenGreater() {
+        let state = ComponentViewState.default
+        let condition = ScreenCondition.default
+        let appVersionInt = 201
+
+        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
+            .init(conditions: [
+                .appVersion(.greaterThan, 200)
+            ], properties: .init(
+                margin: .zero
+            ))
+        ]
+
+        let result = PresentedStackPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            appVersionInt: appVersionInt,
+            selectedPackage: nil,
+            with: presentedOverrides
+        )
+
+        let expected: PresentedStackPartial = .init(
+            margin: .zero
+        )
+
+        expect(result).to(equal(expected))
+    }
+
+    func testPresentedPartialsAppVersionGreaterThanNotAppliedWhenLessOrEqual() {
+        let state = ComponentViewState.default
+        let condition = ScreenCondition.default
+        let appVersionInt = 200
+
+        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
+            .init(conditions: [
+                .appVersion(.greaterThan, 200)
+            ], properties: .init(
+                margin: .zero
+            ))
+        ]
+
+        let result = PresentedStackPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            appVersionInt: appVersionInt,
+            selectedPackage: nil,
+            with: presentedOverrides
+        )
+
+        expect(result).to(beNil())
+    }
+
+    func testPresentedPartialsAppVersionGreaterThanOrEqualAppliedWhenEqual() {
+        let state = ComponentViewState.default
+        let condition = ScreenCondition.default
+        let appVersionInt = 200
+
+        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
+            .init(conditions: [
+                .appVersion(.greaterThanOrEqual, 200)
+            ], properties: .init(
+                margin: .zero
+            ))
+        ]
+
+        let result = PresentedStackPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            appVersionInt: appVersionInt,
+            selectedPackage: nil,
+            with: presentedOverrides
+        )
+
+        let expected: PresentedStackPartial = .init(
+            margin: .zero
+        )
+
+        expect(result).to(equal(expected))
+    }
+
+    func testPresentedPartialsAppVersionGreaterThanOrEqualNotAppliedWhenLess() {
+        let state = ComponentViewState.default
+        let condition = ScreenCondition.default
+        let appVersionInt = 199
+
+        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
+            .init(conditions: [
+                .appVersion(.greaterThanOrEqual, 200)
+            ], properties: .init(
+                margin: .zero
+            ))
+        ]
+
+        let result = PresentedStackPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            appVersionInt: appVersionInt,
+            selectedPackage: nil,
+            with: presentedOverrides
+        )
+
+        expect(result).to(beNil())
+    }
+
+    func testPresentedPartialsAppVersionCombinedWithOtherConditions() {
+        let state = ComponentViewState.selected
+        let condition = ScreenCondition.default
+        let appVersionInt = 150
+        let selectedPackage = createPackageWithIdentifier("rc_annual")
+
+        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
+            .init(conditions: [
+                .selected,
+                .appVersion(.greaterThanOrEqual, 100),
+                .selectedPackage(.in, ["rc_annual"])
+            ], properties: .init(
+                margin: .zero
+            ))
+        ]
+
+        let result = PresentedStackPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            appVersionInt: appVersionInt,
+            selectedPackage: selectedPackage,
+            with: presentedOverrides
+        )
+
+        let expected: PresentedStackPartial = .init(
+            margin: .zero
+        )
+
+        expect(result).to(equal(expected))
+    }
+
+    func testPresentedPartialsAppVersionCombinedWithOtherConditionsFailsWhenVersionNotMet() {
+        let state = ComponentViewState.selected
+        let condition = ScreenCondition.default
+        let appVersionInt = 50
+        let selectedPackage = createPackageWithIdentifier("rc_annual")
+
+        let presentedOverrides: PresentedOverrides<PresentedStackPartial> = [
+            .init(conditions: [
+                .selected,
+                .appVersion(.greaterThanOrEqual, 100),
+                .selectedPackage(.in, ["rc_annual"])
+            ], properties: .init(
+                margin: .zero
+            ))
+        ]
+
+        let result = PresentedStackPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            appVersionInt: appVersionInt,
+            selectedPackage: selectedPackage,
+            with: presentedOverrides
+        )
+
+        expect(result).to(beNil())
+    }
+
 }
 
 #endif

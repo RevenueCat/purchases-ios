@@ -50,6 +50,7 @@ extension PresentedPartial {
     ///   - isEligibleForPromoOffer: Whether the selected package is promo-eligible.
     ///   - anyPackageHasIntroOffer: Whether any package in the context exposes an intro offer.
     ///   - anyPackageHasPromoOffer: Whether any package in the context exposes a promo offer.
+    ///   - appVersionInt: The app version as an integer (dots removed from version string).
     ///   - presentedOverrides: Override configurations to apply
     /// - Returns: Configured partial component
     // swiftlint:disable:next function_parameter_count
@@ -60,6 +61,7 @@ extension PresentedPartial {
         isEligibleForPromoOffer: Bool,
         anyPackageHasIntroOffer: Bool = false,
         anyPackageHasPromoOffer: Bool = false,
+        appVersionInt: Int = InternalSystemInfo.appVersion().extractNumber() ?? 0,
         selectedPackage: Package?,
         with presentedOverrides: PresentedOverrides<Self>?
     ) -> Self? {
@@ -77,6 +79,7 @@ extension PresentedPartial {
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             anyPackageHasIntroOffer: anyPackageHasIntroOffer,
             anyPackageHasPromoOffer: anyPackageHasPromoOffer,
+            appVersionInt: appVersionInt,
             selectedPackage: selectedPackage
         ) {
             presentedPartial = Self.combine(presentedPartial, with: presentedOverride.properties)
@@ -94,6 +97,7 @@ extension PresentedPartial {
         isEligibleForPromoOffer: Bool,
         anyPackageHasIntroOffer: Bool,
         anyPackageHasPromoOffer: Bool,
+        appVersionInt: Int,
         selectedPackage: Package?
     ) -> Bool {
         // Early return when any condition evaluates to false
@@ -200,6 +204,31 @@ extension PresentedPartial {
                 }
             case .selected:
                 if state != .selected {
+                    return false
+                }
+            case .appVersion(let operand, let value):
+                switch operand {
+                case .lessThan:
+                    if !(appVersionInt < value) {
+                        return false
+                    }
+                case .lessThanOrEqual:
+                    if !(appVersionInt <= value) {
+                        return false
+                    }
+                case .equal:
+                    if !(appVersionInt == value) {
+                        return false
+                    }
+                case .greaterThan:
+                    if !(appVersionInt > value) {
+                        return false
+                    }
+                case .greaterThanOrEqual:
+                    if !(appVersionInt >= value) {
+                        return false
+                    }
+                @unknown default:
                     return false
                 }
             case .unsupported:

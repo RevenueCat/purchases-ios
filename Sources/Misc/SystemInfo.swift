@@ -423,3 +423,12 @@ private extension SystemInfo {
 
     #endif
 }
+
+// swiftlint:disable missing_docs
+
+@_spi(Internal)
+public enum InternalSystemInfo {
+    public static func appVersion() -> String {
+        return SystemInfo.appVersion
+    }
+}
