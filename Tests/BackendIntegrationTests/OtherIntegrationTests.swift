@@ -18,6 +18,12 @@ import OHHTTPStubsSwift
 import StoreKitTest
 import XCTest
 
+class RandomFailingTests: XCTest {
+    func test() {
+        XCTAssertFalse(Bool.random())
+    }
+}
+
 class OtherIntegrationTests: BaseBackendIntegrationTests {
 
     private var testSession: SKTestSession!
