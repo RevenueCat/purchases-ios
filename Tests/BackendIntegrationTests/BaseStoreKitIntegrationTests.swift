@@ -141,7 +141,7 @@ extension BaseStoreKitIntegrationTests {
     ) async throws -> PurchaseResultData {
         let logger = TestLogHandler(testIdentifier: self.name)
 
-        let data = try await self.purchases.purchase(package: self.monthlyPackage)
+        let data = try await self.purchase(package: self.monthlyPackage, file: file, line: line)
 
         try await self.verifyEntitlementWentThrough(data.customerInfo,
                                                     file: file,
@@ -174,18 +174,18 @@ extension BaseStoreKitIntegrationTests {
             let params = PurchaseParams.Builder(product: product)
                 .with(metadata: metadata)
                 .build()
-            data = try await self.purchases.purchase(params)
+            data = try await self.purchase(params: params, file: file, line: line)
             #else
-            data = try await self.purchases.purchase(product: product)
+            data = try await self.purchase(product: product, file: file, line: line)
             #endif
 
         } else {
             let product = try await self.monthlyPackage.storeProduct
-            data = try await self.purchases.purchase(product: product)
+            data = try await self.purchase(product: product, file: file, line: line)
         }
         #else
         let product = try await self.monthlyPackage.storeProduct
-        data = try await self.purchases.purchase(product: product)
+        data = try await self.purchase(product: product, file: file, line: line)
         #endif
 
         try await self.verifyEntitlementWentThrough(data.customerInfo,
@@ -209,7 +209,7 @@ extension BaseStoreKitIntegrationTests {
         let logger = TestLogHandler(testIdentifier: self.name)
         let product = try await StoreKit.Product.products(for: [Self.weeklyWith3DayTrial]).first!
 
-        let data = try await self.purchases.purchase(product: StoreProduct(sk2Product: product))
+        let data = try await self.purchase(product: StoreProduct(sk2Product: product), file: file, line: line)
 
         try await self.verifyEntitlementWentThrough(data.customerInfo,
                                                     file: file,
@@ -237,7 +237,7 @@ extension BaseStoreKitIntegrationTests {
             file: file, line: line
         )
 
-        return try await self.purchases.purchase(package: package)
+        return try await self.purchase(package: package, file: FileString(fromStaticString: file), line: line)
     }
 
     @discardableResult
@@ -246,7 +246,7 @@ extension BaseStoreKitIntegrationTests {
         line: UInt = #line
     ) async throws -> PurchaseResultData {
         let package = try await XCTAsyncUnwrap(try await self.currentOffering.lifetime)
-        return try await self.purchases.purchase(package: package)
+        return try await self.purchase(package: package, file: file, line: line)
     }
 
     @discardableResult
@@ -255,7 +255,31 @@ extension BaseStoreKitIntegrationTests {
         line: UInt = #line
     ) async throws -> PurchaseResultData {
         let package = try await XCTAsyncUnwrap(try await self.currentOffering[Self.nonRenewingPackage])
-        return try await self.purchases.purchase(package: package)
+        return try await self.purchase(package: package, file: file, line: line)
+    }
+
+    func purchase(package: Package, file: FileString, line: UInt) async throws -> PurchaseResultData {
+        let data = try await self.purchases.purchase(package: package)
+        if let transaction = data.transaction {
+            Logger.info(TestMessage.made_purchase(transaction: transaction, file: file, line: line))
+        }
+        return data
+    }
+
+    func purchase(product: StoreProduct, file: FileString, line: UInt) async throws -> PurchaseResultData {
+        let data = try await self.purchases.purchase(product: product)
+        if let transaction = data.transaction {
+            Logger.info(TestMessage.made_purchase(transaction: transaction, file: file, line: line))
+        }
+        return data
+    }
+
+    func purchase(params: PurchaseParams, file: FileString, line: UInt) async throws -> PurchaseResultData {
+        let data = try await self.purchases.purchase(params)
+        if let transaction = data.transaction {
+            Logger.info(TestMessage.made_purchase(transaction: transaction, file: file, line: line))
+        }
+        return data
     }
 
     func expireSubscription(_ entitlement: EntitlementInfo) async throws {
@@ -353,4 +377,18 @@ extension BaseStoreKitIntegrationTests {
         }
     }
 
+}
+
+extension FileString {
+
+    // See Nimble's FileString definition
+    init(fromStaticString staticString: StaticString) {
+    #if !canImport(Darwin)
+    // Nimble's FileString == StaticString
+    self = staticString
+    #else
+    // Nimble's FileString == String
+    self = String(describing: staticString)
+    #endif
+    }
 }
