@@ -51,6 +51,7 @@ class TextComponentViewModel {
         packageContext: PackageContext,
         isEligibleForIntroOffer: Bool,
         promoOffer: PromotionalOffer?,
+        anyPackageHasPromoOffer: Bool,
         countdownTime: CountdownTime? = nil,
         @ViewBuilder apply: @escaping (TextComponentStyle) -> some View
     ) -> some View {
@@ -59,6 +60,9 @@ class TextComponentViewModel {
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: promoOffer != nil,
+            anyPackageHasIntroOffer: packageContext.variableContext.hasAnyIntroOffer,
+            anyPackageHasPromoOffer: anyPackageHasPromoOffer,
+            selectedPackage: packageContext.package,
             with: self.presentedOverrides
         )
         let partial = localizedPartial?.partial
