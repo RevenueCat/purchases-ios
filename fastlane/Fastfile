@@ -604,7 +604,7 @@ platform :ios do
       test_plan = "CI-AllTests"
     end
 
-    scan_with_flaky_test_retries(
+    scan(
       step_name: "scan - iPhone",
       device: ENV['SCAN_DEVICE'] || "iPhone 12 (15.2)",
       ensure_devices_found: true,
@@ -616,14 +616,13 @@ platform :ios do
       configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/ios",
       number_of_retries: generate_snapshots ? 0 : 5, # Number of retries in an xcodebuild run
-      fail_build: !generate_snapshots,
-      number_of_flaky_retries: generate_snapshots ? 0 : 5 # Number of retries in an xcodebuild run
+      fail_build: !generate_snapshots
     )
   end
 
   desc "Runs all the tvOS tests"
   lane :test_tvos do |options|
-    scan_with_flaky_test_retries(
+    scan(
       step_name: "scan - Apple TV",
       device: ENV['SCAN_DEVICE'] || "Apple TV",
       ensure_devices_found: true,
@@ -634,9 +633,7 @@ platform :ios do
       result_bundle: true,
       testplan: "CI-AllTests",
       configuration: 'Debug',
-      output_directory: "fastlane/test_output/xctest/tvos",
-
-      number_of_flaky_retries: 5 # Number of xcodebuild runs to retry
+      output_directory: "fastlane/test_output/xctest/tvos"
     )
   end
 
@@ -649,7 +646,7 @@ platform :ios do
       test_plan = "CI-RevenueCat"
     end
 
-    scan_with_flaky_test_retries(
+    scan(
       step_name: "scan - watchOS",
       device: ENV['SCAN_DEVICE'] || "Apple Watch Series 10 (46mm)",
       ensure_devices_found: true,
@@ -662,9 +659,7 @@ platform :ios do
       configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/watchos",
       number_of_retries: generate_snapshots ? 0 : 5, # Number of retries in an xcodebuild run
-      fail_build: !generate_snapshots,
-
-      number_of_flaky_retries: generate_snapshots ? 0 : 5 # Number of retries in an xcodebuild run
+      fail_build: !generate_snapshots
     )
   end
 
@@ -1240,7 +1235,7 @@ platform :ios do
 
     success = false
     begin
-      scan_with_flaky_test_retries(
+      scan(
         scheme: "BackendIntegrationTests",
         ensure_devices_found: true,
         derived_data_path: "scan_derived_data",
@@ -1250,8 +1245,7 @@ platform :ios do
         testplan: options[:test_plan],
         configuration: 'Debug',
         output_directory: "fastlane/test_output/xctest/ios",
-
-        number_of_flaky_retries: 5 # Number of retries in an xcodebuild run
+        number_of_retries: 5 # Number of retries in an xcodebuild run
       )
       success = true
     rescue => exception
