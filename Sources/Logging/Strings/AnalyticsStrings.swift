@@ -17,6 +17,10 @@ import Foundation
 enum AnalyticsStrings {
 
     case flush_events_success
+    case background_task_started
+    case background_task_expired
+    case background_task_failed_to_start
+    case background_task_unavailable
 }
 
 extension AnalyticsStrings: LogMessage {
@@ -26,6 +30,14 @@ extension AnalyticsStrings: LogMessage {
         switch self {
         case .flush_events_success:
             return "Events flush succeeded"
+        case .background_task_started:
+            return "Background task started for event flush"
+        case .background_task_expired:
+            return "Background task expired before event flush completed"
+        case .background_task_failed_to_start:
+            return "Background task failed to start for event flush"
+        case .background_task_unavailable:
+            return "Background task unavailable for event flush"
         }
     }
 }

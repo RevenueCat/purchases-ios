@@ -14,6 +14,10 @@
 import Foundation
 import StoreKit
 
+#if os(iOS) || os(tvOS) || VISION_OS
+import UIKit
+#endif
+
 @objc protocol PurchasesOrchestratorDelegate {
 
     func readyForPromotedProduct(_ product: StoreProduct,
@@ -907,18 +911,27 @@ final class PurchasesOrchestrator {
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
               let manager = self.eventsManager else { return }
 
-        let delay: JitterableDelay
         if delayed {
-            delay = .long
+            // When entering foreground, use jittered delay to avoid DDOS
+            self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: .long) {
+                do {
+                    _ = try await manager.flushAllEvents(batchSize: EventsManager.defaultEventBatchSize)
+                } catch {
+                    Logger.error(Strings.paywalls.event_flush_failed(error))
+                }
+            }
         } else {
-            // When backgrounding, the app only has about 5 seconds to perform work
-            delay = .none
-        }
-        self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) {
-            do {
-                _ = try await manager.flushAllEvents(batchSize: EventsManager.defaultEventBatchSize)
-            } catch {
-                Logger.error(Strings.paywalls.event_flush_failed(error))
+            // When backgrounding, request background task SYNCHRONOUSLY before async dispatch
+            // to ensure iOS knows we have pending work before the app is suspended.
+            // This follows the same pattern as Amplitude-Swift's HttpClient.
+            let endBackgroundTask = self.beginBackgroundTaskIfPossible()
+            Task {
+                defer { endBackgroundTask?() }
+                do {
+                    _ = try await manager.flushAllEvents(batchSize: EventsManager.defaultEventBatchSize)
+                } catch {
+                    Logger.error(Strings.paywalls.event_flush_failed(error))
+                }
             }
         }
     }
@@ -927,18 +940,27 @@ final class PurchasesOrchestrator {
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
               let manager = self.eventsManager else { return }
 
-        let delay: JitterableDelay
         if delayed {
-            delay = .long
+            // When entering foreground, use jittered delay to avoid DDOS
+            self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: .long) {
+                do {
+                    _ = try await manager.flushFeatureEvents(batchSize: EventsManager.defaultEventBatchSize)
+                } catch {
+                    Logger.error(Strings.paywalls.event_flush_failed(error))
+                }
+            }
         } else {
-            // When backgrounding, the app only has about 5 seconds to perform work
-            delay = .none
-        }
-        self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) {
-            do {
-                _ = try await manager.flushFeatureEvents(batchSize: EventsManager.defaultEventBatchSize)
-            } catch {
-                Logger.error(Strings.paywalls.event_flush_failed(error))
+            // When backgrounding, request background task SYNCHRONOUSLY before async dispatch
+            // to ensure iOS knows we have pending work before the app is suspended.
+            // This follows the same pattern as Amplitude-Swift's HttpClient.
+            let endBackgroundTask = self.beginBackgroundTaskIfPossible()
+            Task {
+                defer { endBackgroundTask?() }
+                do {
+                    _ = try await manager.flushFeatureEvents(batchSize: EventsManager.defaultEventBatchSize)
+                } catch {
+                    Logger.error(Strings.paywalls.event_flush_failed(error))
+                }
             }
         }
     }
@@ -2280,6 +2302,58 @@ extension PurchasesOrchestrator: StoreKit2ObserverModePurchaseDetectorDelegate {
             verifiedTransaction: verifiedTransaction,
             jwsRepresentation: jwsRepresentation
         )
+    }
+
+}
+
+// MARK: - Background Task Support
+
+private extension PurchasesOrchestrator {
+
+    /// Begins a background task synchronously to inform iOS that we have pending work.
+    ///
+    /// This must be called BEFORE dispatching any async work to ensure iOS knows about
+    /// the pending work before the app is suspended. This follows the same pattern as
+    /// Amplitude-Swift's HttpClient, which wraps each network request with background
+    /// task protection requested synchronously at the call site.
+    ///
+    /// - Returns: A closure to call when the work is complete, or `nil` if background
+    ///   tasks are unavailable (e.g., in app extensions or on platforms that don't support them).
+    func beginBackgroundTaskIfPossible() -> (() -> Void)? {
+        #if os(iOS) || os(tvOS) || VISION_OS
+        guard !self.systemInfo.isAppExtension else {
+            return nil
+        }
+
+        guard let application = self.systemInfo.sharedUIApplication else {
+            Logger.debug(Strings.analytics.background_task_unavailable)
+            return nil
+        }
+
+        var backgroundTaskID: UIBackgroundTaskIdentifier = .invalid
+        backgroundTaskID = application.beginBackgroundTask(withName: "com.revenuecat.postEvents") {
+            // Expiration handler - task took too long
+            Logger.warn(Strings.analytics.background_task_expired)
+            if backgroundTaskID != .invalid {
+                application.endBackgroundTask(backgroundTaskID)
+                backgroundTaskID = .invalid
+            }
+        }
+
+        if backgroundTaskID == .invalid {
+            Logger.debug(Strings.analytics.background_task_failed_to_start)
+            return nil
+        }
+
+        Logger.verbose(Strings.analytics.background_task_started)
+        return {
+            if backgroundTaskID != .invalid {
+                application.endBackgroundTask(backgroundTaskID)
+            }
+        }
+        #else
+        return nil
+        #endif
     }
 
 }
