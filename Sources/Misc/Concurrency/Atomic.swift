@@ -78,6 +78,11 @@ internal final class Atomic<T> {
 
     @discardableResult
     func withValue<Result>(_ action: (T) throws -> Result) rethrows -> Result {
+        if Thread.isMainThread {
+            // If we're already on the main thread, execute directly to avoid deadlock.
+            return try action(_value)
+        }
+
         return try lock.perform {
             try action(_value)
         }
