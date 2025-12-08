@@ -183,11 +183,10 @@ private extension ETagManager {
     }
 
     func storeIfPossible(_ response: Response, for request: URLRequest) {
-        if let cacheKey = Self.cacheKey(for: request),
-           let dataToStore = response.asData() {
+        if let cacheKey = Self.cacheKey(for: request) {
             Logger.verbose(Strings.etag.storing_response(request, response))
 
-            self.cache.set(codable: dataToStore, forKey: cacheKey)
+            self.cache.set(codable: response, forKey: cacheKey)
         }
     }
 

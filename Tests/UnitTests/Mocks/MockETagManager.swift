@@ -14,7 +14,8 @@ import Foundation
 class MockETagManager: ETagManager {
 
     init() {
-        super.init(userDefaults: MockUserDefaults())
+        super.init(largeItemCache: .init(cache: FileManager.default, basePath: "tests"))
+        // TO DO: Fix this…
     }
 
     struct ETagHeaderRequest {

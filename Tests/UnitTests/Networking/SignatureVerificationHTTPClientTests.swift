@@ -23,13 +23,15 @@ import XCTest
 class BaseSignatureVerificationHTTPClientTests: BaseHTTPClientTests<ETagManager, HTTPRequestTimeoutManager> {
 
     private var userDefaultsSuiteName: String!
-    fileprivate var userDefaults: UserDefaults!
+    fileprivate var userDefaults: UserDefaults! // TO DO: FIX
 
     override func setUpWithError() throws {
         // Note: these tests use the real `ETagManager` and `HTTPRequestTimeoutManager`
         self.userDefaultsSuiteName = UUID().uuidString
         self.userDefaults = .init(suiteName: self.userDefaultsSuiteName)!
-        self.eTagManager = ETagManager(userDefaults: self.userDefaults)
+        self.eTagManager = ETagManager(
+            largeItemCache: .init(cache: FileManager.default, basePath: "tests…")
+        ) // TO DO: FIX
         self.timeoutManager = HTTPRequestTimeoutManager(defaultTimeout: defaultTimeout.timeInterval)
 
         try super.setUpWithError()
@@ -941,7 +943,7 @@ private extension BaseSignatureVerificationHTTPClientTests {
 
     private func setETagCache(_ response: ETagManager.Response, for request: URLRequest) throws {
         self.userDefaults.set(try response.jsonEncodedData,
-                              forKey: try XCTUnwrap(ETagManager.cacheKey(for: request)))
+                              forKey: try XCTUnwrap(ETagManager.cacheKey(for: request)?.rawValue))
     }
 
 }
